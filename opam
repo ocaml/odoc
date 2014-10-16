@@ -1,0 +1,17 @@
+opam-version: "1"
+maintainer: "lpw25@cl.cam.ac.uk"
+authors: [
+  "Leo White <lpw25@cl.cam.ac.uk>"
+]
+license: "ISC"
+depends: [
+  "xmlm"
+  "assemblage"
+]
+ocaml-version: [= "4.02.0+doc"]
+build: [
+  ["assemblage" "setup" "--dumpast=false"]
+  [make]
+  [make "install"]
+]
+remove: ["ocamlfind" "remove" "doc-ock"]

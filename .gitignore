@@ -1,0 +1,20 @@
+
+### OCaml ###
+*.annot
+*.cmo
+*.cma
+*.cmi
+*.cmt
+*.cmti
+*.a
+*.o
+*.cmx
+*.cmxs
+*.cmxa
+
+### Assemblage ###
+Makefile
+META
+*.install
+_build
+.merlin
