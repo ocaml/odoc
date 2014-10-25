@@ -19,7 +19,7 @@ open DocOckTypes.Documentation
 
 module Env = DocOckEnvironment
 
-let map_opt f = function
+let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
@@ -82,7 +82,7 @@ and read_text_element env : Documentation.text_element -> 'a text_element =
   | Newline -> Newline
   | Title(i, l, txt) -> Title(i, l, read_text env txt)
   | Ref(rk, s, txt) ->
-      Reference(read_reference env rk s, map_opt (read_text env) txt)
+      Reference(read_reference env rk s, opt_map (read_text env) txt)
   | Special_ref srk -> Special (read_special_reference env srk)
   | Target (target, code) -> Target (target, code)
 

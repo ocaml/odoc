@@ -157,8 +157,8 @@ and Signature : sig
     | ClassType of 'a ClassType.t
     | Module of 'a Module.t
     | ModuleType of 'a ModuleType.t
-    | Comment of 'a Documentation.t
     | Include of 'a ModuleType.expr
+    | Comment of 'a Documentation.comment
 
   type 'a t = 'a item list
 
@@ -281,8 +281,8 @@ end
 and Class : sig
 
   type 'a decl =
-    | ClassType of 'a ClassType.t
-    | Arrow of TypeExpr.label * 'a TypeExpr.t * 'a decl
+    | ClassType of 'a ClassType.expr
+    | Arrow of TypeExpr.label option * 'a TypeExpr.t * 'a decl
 
   type 'a t =
     { id: 'a Identifier.class_;
@@ -306,7 +306,7 @@ and ClassType : sig
       doc: 'a Documentation.t;
       virtual_: bool;
       params: TypeDecl.param list;
-      expr: 'a expr option; }
+      expr: 'a expr; }
 
 end
 
@@ -315,11 +315,11 @@ end
 and ClassSignature : sig
 
   type 'a item =
-    | InstanceVariable of string * bool * bool * 'a TypeExpr.t
-    | Method of string * bool * bool * 'a TypeExpr.t
+    | InstanceVariable of 'a InstanceVariable.t
+    | Method of 'a Method.t
     | Constraint of 'a TypeExpr.t * 'a TypeExpr.t
-    | Comment of 'a Documentation.t
     | Inherit of 'a ClassType.expr
+    | Comment of 'a Documentation.comment
 
   type 'a t =
     { self: 'a TypeExpr.t;
@@ -332,7 +332,7 @@ end
 and Method : sig
 
   type 'a t =
-    { id: 'a Identifier.value;
+    { id: 'a Identifier.method_;
       doc: 'a Documentation.t;
       private_: bool;
       virtual_: bool;
@@ -345,7 +345,7 @@ end
 and InstanceVariable : sig
 
   type 'a t =
-    { id: 'a Identifier.value;
+    { id: 'a Identifier.instance_variable;
       doc: 'a Documentation.t;
       mutable_: bool;
       virtual_: bool;
