@@ -133,7 +133,7 @@ and ModuleType : sig
     | Ident of 'a Path.module_type
     | Signature of 'a Signature.t
     | Functor of (string * 'a expr) option * 'a expr
-    | With of 'a expr * 'a substitution list * 'a Signature.t
+    | With of 'a expr * 'a substitution list
     | TypeOf of 'a Module.decl
 
   type 'a t =
@@ -157,8 +157,8 @@ and Signature : sig
     | ClassType of 'a ClassType.t
     | Module of 'a Module.t
     | ModuleType of 'a ModuleType.t
-    | Include of 'a ModuleType.expr * 'a Signature.t
     | Comment of 'a Documentation.t
+    | Include of 'a ModuleType.expr
 
   type 'a t = 'a item list
 
@@ -318,8 +318,8 @@ and ClassSignature : sig
     | InstanceVariable of string * bool * bool * 'a TypeExpr.t
     | Method of string * bool * bool * 'a TypeExpr.t
     | Constraint of 'a TypeExpr.t * 'a TypeExpr.t
-    | Inherit of 'a ClassType.t * 'a ClassSignature.t
     | Comment of 'a Documentation.t
+    | Inherit of 'a ClassType.expr
 
   type 'a t =
     { self: 'a TypeExpr.t;
