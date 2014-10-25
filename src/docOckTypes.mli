@@ -111,6 +111,12 @@ module rec Module : sig
       doc: 'a Documentation.t;
       type_: 'a decl; }
 
+  module Equation : sig
+
+    type 'a t = 'a decl
+
+  end
+
 end
 
 (** {3 Modules Types} *)
@@ -118,8 +124,8 @@ end
 and ModuleType : sig
 
   type 'a substitution =
-    | ModuleDecl of Fragment.module_ * 'a Module.decl
-    | TypeDecl of Fragment.type_ * 'a TypeDecl.t
+    | ModuleDecl of Fragment.module_ * 'a Module.Equation.t
+    | TypeDecl of Fragment.type_ * 'a TypeDecl.Equation.t
     | ModuleSubst of Fragment.module_ * 'a Path.module_
     | TypeSubst of Fragment.type_ * 'a TypeExpr.t
 
@@ -200,6 +206,15 @@ and TypeDecl : sig
       manifest: 'a TypeExpr.t option;
       constraints: ('a TypeExpr.t * 'a TypeExpr.t) list;
       kind: 'a kind option; }
+
+  module Equation : sig
+
+    type 'a t =
+      { params: param list;
+        private_: bool;
+        manifest: 'a TypeExpr.t; }
+
+  end
 
 end
 
