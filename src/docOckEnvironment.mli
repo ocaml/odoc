@@ -28,9 +28,13 @@ val add_module_type : 'a signature -> 'a t -> Ident.t -> 'a t
 
 val add_type : 'a signature -> 'a t -> Ident.t -> 'a t
 
-val add_field : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_constructor : 'a type_ -> 'a t -> Ident.t -> 'a t
 
-val add_constructor : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_field : 'a type_ -> 'a t -> Ident.t -> 'a t
+
+val add_extension : 'a signature -> 'a t -> Ident.t -> 'a t
+
+val add_exception : 'a signature -> 'a t -> Ident.t -> 'a t
 
 val add_value : 'a signature -> 'a t -> Ident.t -> 'a t
 
@@ -41,6 +45,8 @@ val add_class_type : 'a signature -> 'a t -> Ident.t -> 'a t
 val add_method : 'a class_signature -> 'a t -> string -> 'a t
 
 val add_instance_variable : 'a class_signature -> 'a t -> string -> 'a t
+
+val add_label : 'a container -> 'a t -> string -> 'a t
 
 
 module Path : sig
@@ -77,9 +83,13 @@ module Reference : sig
 
   val read_type : 'a t -> string -> 'a Reference.type_
 
+  val read_constructor : 'a t -> string -> 'a Reference.constructor
+
   val read_field : 'a t -> string -> 'a Reference.field
 
-  val read_constructor : 'a t -> string -> 'a Reference.constructor
+  val read_extension : 'a t -> string -> 'a Reference.extension
+
+  val read_exception : 'a t -> string -> 'a Reference.exception_
 
   val read_value : 'a t -> string -> 'a Reference.value
 
@@ -90,6 +100,8 @@ module Reference : sig
   val read_method : 'a t -> string -> 'a Reference.method_
 
   val read_instance_variable : 'a t -> string -> 'a Reference.instance_variable
+
+  val read_label : 'a t -> string -> 'a Reference.label
 
   val read_element : 'a t -> string -> 'a Reference.any
 

@@ -39,13 +39,15 @@ module Documentation : sig
     | Type of 'a Reference.type_
     | Constructor of 'a Reference.constructor
     | Field of 'a Reference.field
+    | Extension of 'a Reference.extension
+    | Exception of 'a Reference.exception_
     | Value of 'a Reference.value
     | Class of 'a Reference.class_
     | ClassType of 'a Reference.class_type
     | Method of 'a Reference.method_
     | InstanceVariable of 'a Reference.instance_variable
     | Element of 'a Reference.any
-    | Section of string
+    | Section of 'a Reference.label
     | Link of string
     | Custom of string * string
 
@@ -144,7 +146,7 @@ and Signature : sig
     | External of 'a External.t
     | Type of 'a TypeDecl.t
     | TypExt of 'a Extension.t
-    | Exception of 'a Constructor.t
+    | Exception of 'a Exception.t
     | Class of 'a Class.t
     | ClassType of 'a ClassType.t
     | Module of 'a Module.t
@@ -159,6 +161,25 @@ end
 (** {3 Type Declarations} *)
 
 and TypeDecl : sig
+
+  module Constructor : sig
+
+    type 'a t =
+      { id: 'a Identifier.constructor;
+        doc: 'a Documentation.t;
+        args: 'a TypeExpr.t list;
+        res: 'a TypeExpr.t option; }
+
+  end
+
+  module Field : sig
+
+    type 'a t =
+      { id: 'a Identifier.field;
+        doc: 'a Documentation.t;
+        type_: 'a TypeExpr.t; }
+
+  end
 
   type 'a kind =
     | Variant of 'a Constructor.t list
@@ -186,6 +207,16 @@ end
 
 and Extension : sig
 
+  module Constructor : sig
+
+    type 'a t =
+      { id: 'a Identifier.extension;
+        doc: 'a Documentation.t;
+        args: 'a TypeExpr.t list;
+        res: 'a TypeExpr.t option; }
+
+  end
+
   type 'a t =
     { type_path: 'a Path.type_;
       doc: 'a Documentation.t;
@@ -195,26 +226,14 @@ and Extension : sig
 
 end
 
-(** {3 Variant constructors} *)
-
-and Constructor : sig
+(** {3 Exception} *)
+and Exception : sig
 
   type 'a t =
-    { id: 'a Identifier.constructor;
+    { id: 'a Identifier.exception_;
       doc: 'a Documentation.t;
       args: 'a TypeExpr.t list;
       res: 'a TypeExpr.t option; }
-
-end
-
-(** {3 Record fields} *)
-
-and Field : sig
-
-  type 'a t =
-    { id: 'a Identifier.field;
-      doc: 'a Documentation.t;
-      type_: 'a TypeExpr.t; }
 
 end
 

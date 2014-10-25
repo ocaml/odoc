@@ -43,7 +43,7 @@ and read_reference env rk s =
   | RK_type ->
       Type (Env.Reference.read_type env s)
   | RK_exception ->
-      Constructor (Env.Reference.read_constructor env s)
+      Exception (Env.Reference.read_exception env s)
   | RK_recfield ->
       Field (Env.Reference.read_field env s)
   | RK_const ->
@@ -60,7 +60,8 @@ and read_reference env rk s =
       Method (Env.Reference.read_method env s)
   | RK_element ->
       Element (Env.Reference.read_element env s)
-  | RK_section -> Section s
+  | RK_section ->
+      Section (Env.Reference.read_label env s)
   | RK_link -> Link s
   | RK_custom k -> Custom(k, s)
 

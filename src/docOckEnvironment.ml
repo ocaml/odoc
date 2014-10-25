@@ -18,66 +18,76 @@ open DocOckPaths.Identifier
 
 module StringTbl = Map.Make(String)
 
+type 'a type_ident = ('a, [`Type|`Class|`ClassType]) t
+
+type 'a constructor_ident =  ('a, [`Constructor|`Extension|`Exception]) t
+
+type 'a extension_ident =  ('a, [`Extension|`Exception]) t
+
+type 'a class_type_ident = ('a, [`Class|`ClassType]) t
+
+type 'a parent_ident = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
+
 type 'a t =
   { modules : 'a module_ Ident.tbl;
     module_types : 'a module_type Ident.tbl;
-    classes : 'a class_ Ident.tbl;
-    class_types : 'a class_type Ident.tbl;
-    types : 'a type_ Ident.tbl;
-    values : 'a value Ident.tbl;
+    types : 'a type_ident Ident.tbl;
+    constructors : 'a constructor_ident Ident.tbl;
     fields : 'a field Ident.tbl;
-    constructors : 'a constructor Ident.tbl;
+    extensions : 'a extension_ident Ident.tbl;
+    exceptions : 'a exception_ Ident.tbl;
+    values : 'a value Ident.tbl;
+    classes : 'a class_ Ident.tbl;
+    class_types : 'a class_type_ident Ident.tbl;
     methods : 'a method_ StringTbl.t;
     instance_variables : 'a instance_variable StringTbl.t;
+    labels : 'a label StringTbl.t;
+    parents : 'a parent_ident StringTbl.t;
     elements : 'a any StringTbl.t; }
 
 let empty =
   { modules = Ident.empty;
     module_types = Ident.empty;
+    types = Ident.empty;
+    constructors = Ident.empty;
+    fields = Ident.empty;
+    extensions = Ident.empty;
+    exceptions = Ident.empty;
+    values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
-    types = Ident.empty;
-    values = Ident.empty;
-    fields = Ident.empty;
-    constructors = Ident.empty;
     methods = StringTbl.empty;
     instance_variables = StringTbl.empty;
+    labels = StringTbl.empty;
+    parents = StringTbl.empty;
     elements = StringTbl.empty; }
 
 let add_module parent env id =
   let name = Ident.name id in
   let identifier = Module(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
              modules = Ident.add id identifier env.modules }
 
 let add_argument parent arg env id =
   let name = Ident.name id in
   let identifier = Argument(parent, arg, name) in
   { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
              modules = Ident.add id identifier env.modules }
 
 let add_module_type parent env id =
   let name = Ident.name id in
   let identifier = ModuleType(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
              module_types = Ident.add id identifier env.module_types }
-
-let add_class parent env id =
-  let name = Ident.name id in
-  let identifier = Class(parent, name) in
-  { env with elements = StringTbl.add name identifier env.elements;
-             classes = Ident.add id identifier env.classes }
-
-let add_class_type parent env id =
-  let name = Ident.name id in
-  let identifier = ClassType(parent, name) in
-  { env with elements = StringTbl.add name identifier env.elements;
-             class_types = Ident.add id identifier env.class_types }
 
 let add_type parent env id =
   let name = Ident.name id in
   let identifier = Type(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
              types = Ident.add id identifier env.types }
 
 let add_value parent env id =
@@ -86,17 +96,49 @@ let add_value parent env id =
   { env with elements = StringTbl.add name identifier env.elements;
              values = Ident.add id identifier env.values }
 
+let add_constructor parent env id =
+  let name = Ident.name id in
+  let identifier = Constructor(parent, name) in
+  { env with elements = StringTbl.add name identifier env.elements;
+             constructors = Ident.add id identifier env.constructors }
+
 let add_field parent env id =
   let name = Ident.name id in
   let identifier = Field(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              fields = Ident.add id identifier env.fields }
 
-let add_constructor parent env id =
+let add_extension parent env id =
   let name = Ident.name id in
-  let identifier = Constructor(parent, name) in
+  let identifier = Extension(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
-             constructors = Ident.add id identifier env.constructors }
+             constructors = Ident.add id identifier env.constructors;
+             extensions = Ident.add id identifier env.extensions }
+
+let add_exception parent env id =
+  let name = Ident.name id in
+  let identifier = Exception(parent, name) in
+  { env with elements = StringTbl.add name identifier env.elements;
+             constructors = Ident.add id identifier env.constructors;
+             extensions = Ident.add id identifier env.extensions;
+             exceptions = Ident.add id identifier env.exceptions }
+
+let add_class parent env id =
+  let name = Ident.name id in
+  let identifier = Class(parent, name) in
+  { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
+             types = Ident.add id identifier env.types;
+             class_types = Ident.add id identifier env.class_types;
+             classes = Ident.add id identifier env.classes }
+
+let add_class_type parent env id =
+  let name = Ident.name id in
+  let identifier = ClassType(parent, name) in
+  { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
+             types = Ident.add id identifier env.types;
+             class_types = Ident.add id identifier env.class_types }
 
 let add_method parent env name =
   let identifier = Method(parent, name) in
@@ -107,6 +149,11 @@ let add_instance_variable parent env name =
   let identifier = InstanceVariable(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              instance_variables = StringTbl.add name identifier env.instance_variables }
+
+let add_label parent env name =
+  let identifier = Label(parent, name) in
+  { env with elements = StringTbl.add name identifier env.elements;
+             labels = StringTbl.add name identifier env.labels }
 
 let find_module env id =
   Ident.find_same id env.modules
@@ -139,6 +186,12 @@ let lookup_constructor env name =
 let lookup_field env name =
   Ident.find_name name env.fields
 
+let lookup_extension env name =
+  Ident.find_name name env.extensions
+
+let lookup_exception env name =
+  Ident.find_name name env.exceptions
+
 let lookup_value env name =
   Ident.find_name name env.values
 
@@ -154,40 +207,47 @@ let lookup_method env name =
 let lookup_instance_variable env name =
   StringTbl.find name env.instance_variables
 
+let lookup_label env name =
+  StringTbl.find name env.labels
+
+let lookup_parent env name =
+  StringTbl.find name env.parents
+
 let lookup_element env name =
   StringTbl.find name env.elements
 
 
 module Path = struct
 
+  open DocOckPaths.Path.Resolved
   open DocOckPaths.Path
 
   let read_module_ident env id =
     if Ident.persistent id then Root (Ident.name id)
     else
       try
-        ident_module (find_module env id)
+        Resolved (Identifier  (find_module env id))
       with Not_found -> assert false
 
   let read_module_type_ident env id =
     try
-      ident_module_type (find_module_type env id)
+      Resolved (Identifier (find_module_type env id))
+    with Not_found -> assert false
+
+  let read_type_ident env id =
+    try
+      Resolved (Identifier (find_type env id))
     with Not_found -> assert false
 
   let read_class_ident env id : 'a class_ =
     try
-      ident_class (find_class env id)
+      Resolved (Identifier (find_class env id))
     with Not_found -> assert false
 
   let read_class_type_ident env id : 'a class_type =
     try
-      ident_class_type (find_class_type env id)
-    with Not_found -> class_type_of_class (read_class_ident env id)
-
-  let read_type_ident env id =
-    try
-      ident_type (find_type env id)
-    with Not_found -> type_of_class_type (read_class_type_ident env id)
+      Resolved (Identifier (find_class_type env id))
+    with Not_found -> assert false
 
   let rec read_module env = function
     | Path.Pident id -> read_module_ident env id
@@ -240,53 +300,73 @@ module Reference = struct
 
   let read_module_ident env name =
     try
-      ident_module (lookup_module env name)
+      Resolved (Identifier (lookup_module env name))
     with Not_found -> Root name
 
   let read_module_type_ident env name =
     try
-      ident_module_type (lookup_module_type env name)
+      Resolved (Identifier (lookup_module_type env name))
     with Not_found -> Root name
-
-  let read_class_ident env name =
-    try
-      ident_class (lookup_class env name)
-    with Not_found -> Root name
-
-  let read_class_type_ident env name =
-    try
-      ident_class_type (lookup_class_type env name)
-    with Not_found -> class_type_of_class (read_class_ident env name)
 
   let read_type_ident env name =
     try
-      ident_type (lookup_type env name)
-    with Not_found -> type_of_class_type (read_class_type_ident env name)
+      Resolved (Identifier (lookup_type env name))
+    with Not_found -> Root name
 
 
   let read_constructor_ident env name =
     try
-      ident_constructor (lookup_constructor env name)
+      Resolved (Identifier (lookup_constructor env name))
     with Not_found -> Root name
 
   let read_field_ident env name =
     try
-      ident_field (lookup_field env name)
+      Resolved (Identifier (lookup_field env name))
+    with Not_found -> Root name
+
+  let read_extension_ident env name =
+    try
+      Resolved (Identifier (lookup_extension env name))
+    with Not_found -> Root name
+
+  let read_exception_ident env name =
+    try
+      Resolved (Identifier (lookup_exception env name))
     with Not_found -> Root name
 
   let read_value_ident env name =
     try
-      ident_value (lookup_value env name)
+      Resolved (Identifier (lookup_value env name))
+    with Not_found -> Root name
+
+  let read_class_ident env name =
+    try
+      Resolved (Identifier (lookup_class env name))
+    with Not_found -> Root name
+
+  let read_class_type_ident env name =
+    try
+      Resolved (Identifier (lookup_class_type env name))
     with Not_found -> Root name
 
   let read_method_ident env name =
     try
-      ident_method (lookup_method env name)
+      Resolved (Identifier (lookup_method env name))
     with Not_found -> Root name
 
   let read_instance_variable_ident env name =
     try
-      ident_instance_variable (lookup_instance_variable env name)
+      Resolved (Identifier (lookup_instance_variable env name))
+    with Not_found -> Root name
+
+  let read_label_ident env name =
+    try
+      Resolved (Identifier (lookup_label env name))
+    with Not_found -> Root name
+
+  let read_parent_ident env name =
+    try
+      Resolved (Identifier (lookup_parent env name))
     with Not_found -> Root name
 
   let read_element_ident env name =
@@ -294,72 +374,93 @@ module Reference = struct
       Resolved (Identifier (lookup_element env name))
     with Not_found -> Root name
 
-  let rec read_module_longident env = function
-    | Longident.Lident s -> read_module_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+  let rec read_parent env = function
+    | Longident.Lident s -> read_parent_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_module env s =
-    read_module_longident env (Longident.parse s)
+    match Longident.parse s with
+    | Longident.Lident s -> read_module_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
 
   let read_module_type env s =
     match Longident.parse s with
     | Longident.Lident s -> read_module_type_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
-    | Longident.Lapply(_, _) -> assert false
-
-  let read_class env s =
-    match Longident.parse s with
-    | Longident.Lident s -> read_class_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
-    | Longident.Lapply(_, _) -> assert false
-
-  let read_class_type env s =
-    match Longident.parse s with
-    | Longident.Lident s -> read_class_type_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_type env s =
     match Longident.parse s with
     | Longident.Lident s -> read_type_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
-    | Longident.Lapply(_, _) -> assert false
-
-  let read_value env s =
-    match Longident.parse s with
-    | Longident.Lident s -> read_value_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
-    | Longident.Lapply(_, _) -> assert false
-
-  let read_field env s =
-    match Longident.parse s with
-    | Longident.Lident s -> read_field_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_constructor env s =
     match Longident.parse s with
     | Longident.Lident s -> read_constructor_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_field env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_field_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_extension env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_extension_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_exception env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_exception_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_value env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_value_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_class env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_class_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_class_type env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_class_type_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_method env s =
     match Longident.parse s with
     | Longident.Lident s -> read_method_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_instance_variable env s =
     match Longident.parse s with
     | Longident.Lident s -> read_instance_variable_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
+    | Longident.Lapply(_, _) -> assert false
+
+  let read_label env s =
+    match Longident.parse s with
+    | Longident.Lident s -> read_label_ident env s
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
   let read_element env s =
     match Longident.parse s with
     | Longident.Lident s -> read_element_ident env s
-    | Longident.Ldot(lid, s) -> Dot(read_module_longident env lid, s)
+    | Longident.Ldot(lid, s) -> Dot(read_parent env lid, s)
     | Longident.Lapply(_, _) -> assert false
 
 end
