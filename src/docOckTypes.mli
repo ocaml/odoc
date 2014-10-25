@@ -196,7 +196,11 @@ and TypeDecl : sig
     | Pos
     | Neg
 
-  type param = string * variance option
+  type param_desc =
+    | Any
+    | Var of string
+
+  type param = param_desc * variance option
 
   type 'a t =
     { id: 'a Identifier.type_;
@@ -235,7 +239,7 @@ and Extension : sig
   type 'a t =
     { type_path: 'a Path.type_;
       doc: 'a Documentation.t;
-      type_params: string list;
+      type_params: TypeDecl.param list;
       private_: bool;
       constructors: 'a Constructor.t list; }
 
