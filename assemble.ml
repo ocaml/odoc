@@ -24,11 +24,13 @@ let doc = Flags.( v (`Compile `Byte) ["-doc"]
                      @@@ v (`Compile `Native) ["-doc"] )
 
 (* Compilation units *)
+let docOckPaths = unit "docOckPaths" (`Path ["src"])
 
-let units = []
+let units =
+  [ docOckPaths ]
 
 (* Library *)
-let l = lib (*~flags:doc*) ~deps:lib_pkgs "doc-ock" (`Units units)
+let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
 
 (* Assemble *)
 let () = assemble (project "doc-ock-lib" [l])

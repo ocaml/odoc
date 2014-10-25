@@ -1,0 +1,623 @@
+(*
+ * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
+
+module Identifier = struct
+
+  type kind =
+    [ `Module | `ModuleType | `Type
+    | `Constructor | `Field | `Value
+    | `Class | `ClassType | `Method | `InstanceVariable ]
+
+  type ('a, 'b) t =
+    | Root : 'a -> ('a, [< kind > `Module]) t
+    | Module : 'a signature * string -> ('a, [< kind > `Module]) t
+    | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
+    | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
+    | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+    | Constructor : 'a signature * string -> ('a, [< kind > `Constructor]) t
+    | Field : 'a signature * string -> ('a, [< kind > `Field]) t
+    | Value : 'a signature * string -> ('a, [< kind > `Value]) t
+    | Class : 'a signature * string -> ('a, [< kind > `Class]) t
+    | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
+    | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
+    | InstanceVariable : 'a class_signature * string ->
+                           ('a, [< kind > `InstanceVariable]) t
+
+  and 'a signature = ('a, [`Module|`ModuleType]) t
+
+  and 'a module_ = ('a, [`Module]) t
+
+  and 'a module_type = ('a, [`ModuleType]) t
+
+  and 'a type_ =  ('a, [`Type]) t
+
+  and 'a constructor = ('a, [`Constructor]) t
+
+  and 'a field = ('a, [`Field]) t
+
+  and 'a value = ('a, [`Value]) t
+
+  and 'a class_ = ('a, [`Class]) t
+
+  and 'a class_type = ('a, [`ClassType]) t
+
+  and 'a class_signature = ('a, [`Class|`ClassType]) t
+
+  and 'a method_ = ('a, [`Method]) t
+
+  and 'a instance_variable = ('a, [`InstanceVariable]) t
+
+  and 'a any = ('a, kind) t
+
+  let module_signature : 'a module_ -> 'a signature = function
+    | Root _ | Module _ | Argument _ as x -> x
+
+  let module_type_signature : 'a module_type -> 'a signature  = function
+    | ModuleType _ as x -> x
+
+  let class_signature : 'a class_ -> 'a class_signature = function
+    | Class _ as x -> x
+
+  let class_type_signature : 'a class_type -> 'a class_signature = function
+    | ClassType _ as x -> x
+
+  let any : type k. ('a, k) t -> 'a any = function
+    | Root _ as x -> x
+    | Module _ as x -> x
+    | Argument _ as x -> x
+    | ModuleType _ as x -> x
+    | Type _ as x -> x
+    | Constructor _ as x -> x
+    | Field _ as x -> x
+    | Value _ as x -> x
+    | Class _ as x -> x
+    | ClassType _ as x -> x
+    | Method _ as x -> x
+    | InstanceVariable _ as x -> x
+
+end
+
+
+
+module Path = struct
+
+  (* Separate types module to avoid repeating type definitions *)
+  module rec Types : sig
+
+    module Resolved : sig
+
+      type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+
+      type ('a, 'b) t =
+        | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
+        | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
+        | Apply : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
+        | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
+        | Type : 'a module_ * string -> ('a, [< kind > `Type]) t
+        | Class : 'a module_ * string -> ('a, [< kind > `Class]) t
+        | ClassType : 'a module_ * string -> ('a, [< kind > `ClassType]) t
+
+      and 'a module_ = ('a, [`Module]) t
+
+      and 'a module_type = ('a, [`ModuleType]) t
+
+      and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+
+      and 'a class_ = ('a, [`Class]) t
+
+      and 'a class_type = ('a, [`Class|`ClassType]) t
+
+      and 'a any = ('a, kind) t
+
+    end
+
+    module Path : sig
+
+      type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+
+      type ('a, 'b) t =
+      | Resolved : ('a, 'b) Types.Resolved.t -> ('a, 'b) t
+      | Root : string -> ('a, [< kind >`Module]) t
+      | Dot : 'a module_ * string -> ('a, [< kind]) t
+      | Apply : 'a module_ * 'a module_ -> ('a, [< kind >`Module]) t
+
+      and 'a module_ = ('a, [`Module]) t
+
+      and 'a module_type = ('a, [`ModuleType]) t
+
+      and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+
+      and 'a class_ = ('a, [`Class]) t
+
+      and 'a class_type = ('a, [`Class|`ClassType]) t
+
+      and 'a any = ('a, kind) t
+
+    end
+
+  end = Types
+
+  module Resolved = struct
+
+    open Identifier
+
+    include Types.Resolved
+
+    let ident_module (m: 'a Identifier.module_) = Identifier m
+
+    let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
+
+    let ident_type : 'a Identifier.type_ -> 'a type_ = function
+    | Type _ as t -> Identifier t
+
+    let ident_class (c: 'a Identifier.class_) = Identifier c
+
+    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+      | ClassType _ as ct -> Identifier ct
+
+    let class_type_of_class : 'a class_ -> 'a class_type = function
+      | Class _ | Identifier (Class _) as x -> x
+
+    let type_of_class : 'a class_ -> 'a type_ = function
+      | Class _ | Identifier (Class _) as x -> x
+
+    let type_of_class_type : 'a class_type -> 'a type_ = function
+      | Class _ | ClassType _ | Identifier (Class _ | ClassType _) as x -> x
+
+    let any : type k. ('a, k) t -> 'a any = function
+      | Identifier (Root _) as x -> x
+      | Identifier (Module _) as x -> x
+      | Identifier (Argument _) as x -> x
+      | Identifier (ModuleType _) as x -> x
+      | Identifier (Type _) as x -> x
+      | Identifier (Class _) as x -> x
+      | Identifier (ClassType _) as x -> x
+      | Module _ as x -> x
+      | Apply _ as x -> x
+      | ModuleType _ as x -> x
+      | Type _ as x -> x
+      | Class _ as x -> x
+      | ClassType _ as x -> x
+
+    let rec identifier : type k. ('a, k) t -> ('a, k) Identifier.t = function
+      | Identifier id -> id
+      | Module(m, n) -> Module(module_signature (identifier m), n)
+      | Apply(m, _) -> begin
+          match identifier m with
+          | Root _ | Module _ | Argument _ as x -> x
+        end
+      | ModuleType(m, n) -> ModuleType(module_signature (identifier m), n)
+      | Type(m, n) -> Type(module_signature (identifier m), n)
+      | Class(m, n) -> Class(module_signature (identifier m), n)
+      | ClassType(m, n) -> ClassType(module_signature (identifier m), n)
+
+  end
+
+  open Identifier
+  open Resolved
+
+  include Types.Path
+
+  let ident_module (m: 'a Identifier.module_) = Resolved (Identifier m)
+
+  let ident_module_type (mt: 'a Identifier.module_type) =
+    Resolved (Identifier mt)
+
+  let ident_type : 'a Identifier.type_ -> 'a type_ = function
+    | Type _ as t -> Resolved (Identifier t)
+
+  let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
+
+  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+    | ClassType _ as ct -> Resolved (Identifier ct)
+
+  let class_type_of_class : 'a class_ -> 'a class_type = function
+    | Resolved (Class _ | Identifier (Class _)) | Dot _ as x -> x
+
+  let type_of_class : 'a class_ -> 'a type_ = function
+    | Resolved (Class _ | Identifier (Class _)) | Dot _ as x -> x
+
+  let type_of_class_type : 'a class_type -> 'a type_ = function
+    | Resolved (Class _ | ClassType _ | Identifier (Class _ | ClassType _))
+    | Dot _ as x -> x
+
+  let any : type k. ('a, k) t -> 'a any = function
+    | Resolved (Identifier (Root _)) as x -> x
+    | Resolved (Identifier (Module _)) as x -> x
+    | Resolved (Identifier (Argument _)) as x -> x
+    | Resolved (Identifier (ModuleType _)) as x -> x
+    | Resolved (Identifier (Type _)) as x -> x
+    | Resolved (Identifier (Class _)) as x -> x
+    | Resolved (Identifier (ClassType _)) as x -> x
+    | Resolved (Module _) as x -> x
+    | Resolved (Apply _) as x -> x
+    | Resolved (ModuleType _) as x -> x
+    | Resolved (Type _) as x -> x
+    | Resolved (Class _) as x -> x
+    | Resolved (ClassType _) as x -> x
+    | Root _ as x -> x
+    | Dot _ as x -> x
+    | Apply _ as x -> x
+
+end
+
+
+
+module Fragment = struct
+
+  module Resolved = struct
+
+    type kind = [ `Module | `Type | `Class | `ClassType ]
+
+    type sort = [ `Root | `Branch ]
+
+    type ('a, 'b) raw =
+      | Root : ('a, [< sort > `Root]) raw
+      | Module : signature * string -> ([< kind > `Module], [< sort > `Branch]) raw
+      | Type : signature * string -> ([< kind > `Type], [< sort > `Branch]) raw
+      | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
+      | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
+
+    and signature = ([`Module], [`Root | `Branch]) raw
+
+    and 'a t = ('a, [`Branch]) raw
+
+    and module_ = [`Module] t
+
+    and type_ = [`Type|`Class|`ClassType] t
+
+    and any = kind t
+
+    let any : type k. k t -> any = function
+      | Module _ as x -> x
+      | Type _ as x -> x
+      | Class _ as x -> x
+      | ClassType _ as x -> x
+
+    let path (root : 'a Path.module_) frag =
+      match root with
+      | Path.Resolved root ->
+          let rec loop : type k. k t -> ('a, k) Path.Resolved.t = function
+            | Module(Root, n) -> Path.Resolved.Module(root, n)
+            | Module(Module _ as m, n) -> Path.Resolved.Module(loop m, n)
+            | Type(Root, n) -> Path.Resolved.Type(root, n)
+            | Type(Module _ as m, n) -> Path.Resolved.Type(loop m, n)
+            | Class(Root, n) -> Path.Resolved.Class(root, n)
+            | Class(Module _ as m, n) -> Path.Resolved.Class(loop m, n)
+            | ClassType(Root, n) -> Path.Resolved.ClassType(root, n)
+            | ClassType(Module _ as m, n) -> Path.Resolved.ClassType(loop m, n)
+          in
+            Path.Resolved (loop frag)
+      | _ ->
+          let rec loop : type k. k t -> ('a, k) Path.t = function
+            | Module(Root, n) -> Path.Dot(root, n)
+            | Module(Module _ as m, n) -> Path.Dot(loop m, n)
+            | Type(Root, n) -> Path.Dot(root, n)
+            | Type(Module _ as m, n) -> Path.Dot(loop m, n)
+            | Class(Root, n) -> Path.Dot(root, n)
+            | Class(Module _ as m, n) -> Path.Dot(loop m, n)
+            | ClassType(Root, n) -> Path.Dot(root, n)
+            | ClassType(Module _ as m, n) -> Path.Dot(loop m, n)
+          in
+            loop frag
+
+    let rec identifier :
+      type k. 'a Identifier.signature -> k t -> ('a, k) Identifier.t =
+        fun root -> function
+        | Module(Root, n) -> Identifier.Module(root, n)
+        | Module(Module _ as m, n) ->
+            let m = Identifier.module_signature (identifier root m) in
+              Identifier.Module(m, n)
+        | Type(Root, n) -> Identifier.Type(root, n)
+        | Type(Module _ as m, n) ->
+            let m = Identifier.module_signature (identifier root m) in
+              Identifier.Type(m, n)
+        | Class(Root, n) -> Identifier.Class(root, n)
+        | Class(Module _ as m, n) ->
+            let m = Identifier.module_signature (identifier root m) in
+              Identifier.Class(m, n)
+        | ClassType(Root, n) -> Identifier.ClassType(root, n)
+        | ClassType(Module _ as m, n) ->
+            let m = Identifier.module_signature (identifier root m) in
+              Identifier.ClassType(m, n)
+
+  end
+
+  open Resolved
+
+  type kind = [ `Module | `Type | `Class | `ClassType ]
+
+  type 'a t =
+    | Resolved : 'a Resolved.t -> 'a t
+    | Dot : module_ * string -> [< kind] t
+
+  and module_ = [`Module] t
+
+  and type_ = [`Type|`Class|`ClassType] t
+
+  and any = kind t
+
+  let any : type k. k t -> any = function
+    | Resolved (Module _) as x -> x
+    | Resolved (Type _) as x -> x
+    | Resolved (Class _) as x -> x
+    | Resolved (ClassType _) as x -> x
+    | Dot _ as x -> x
+
+  let rec path : type k. 'a Path.module_ -> k t -> ('a, k) Path.t =
+   fun root -> function
+    | Resolved r -> Resolved.path root r
+    | Dot(m, s) -> Path.Dot(path root m, s)
+
+  (*let identifier root frag =*)
+
+end
+
+
+
+module Reference = struct
+
+  module Resolved = struct
+
+    open Identifier
+
+    type kind =
+      [ `Module | `ModuleType | `Type
+      | `Constructor | `Field | `Value
+      | `Class | `ClassType | `Method | `InstanceVariable ]
+
+    type ('a, 'b) t =
+      | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
+      | Module : 'a signature * string -> ('a, [< kind > `Module]) t
+      | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
+      | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+      | Constructor : 'a signature * string -> ('a, [< kind > `Constructor]) t
+      | Field : 'a signature * string -> ('a, [< kind > `Field]) t
+      | Value : 'a signature * string -> ('a, [< kind > `Value]) t
+      | Class : 'a signature * string -> ('a, [< kind > `Class]) t
+      | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
+      | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
+      | InstanceVariable : 'a class_signature * string ->
+                             ('a, [< kind > `InstanceVariable]) t
+
+    and 'a module_ = ('a, [`Module]) t
+
+    and 'a module_type = ('a, [`ModuleType]) t
+
+    and 'a signature = ('a, [`Module|`ModuleType]) t
+
+    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+
+    and 'a constructor = ('a, [`Constructor]) t
+
+    and 'a field = ('a, [`Field]) t
+
+    and 'a value = ('a, [`Value]) t
+
+    and 'a class_ = ('a, [`Class]) t
+
+    and 'a class_type = ('a, [`Class|`ClassType]) t
+
+    and 'a class_signature = ('a, [`Class|`ClassType]) t
+
+    and 'a method_ = ('a, [`Method]) t
+
+    and 'a instance_variable = ('a, [`InstanceVariable]) t
+
+    and 'a any = ('a, kind) t
+
+    let ident_module (m: 'a Identifier.module_) = Identifier m
+
+    let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
+
+    let ident_type : 'a Identifier.type_ -> 'a type_ = function
+    | Type _ as t -> Identifier t
+
+    let ident_constructor (c: 'a Identifier.constructor) = Identifier c
+
+    let ident_field (f: 'a Identifier.field) = Identifier f
+
+    let ident_value (v: 'a Identifier.value) = Identifier v
+
+    let ident_class (c: 'a Identifier.class_) = Identifier c
+
+    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+      | ClassType _ as ct -> Identifier ct
+
+    let ident_method (m : 'a Identifier.method_) = Identifier m
+
+    let ident_instance_variable (iv : 'a Identifier.instance_variable) =
+      Identifier iv
+
+    let module_signature : 'a module_ -> 'a signature = function
+      | Identifier (Root _ | Module _ | Argument _) | Module _ as x -> x
+
+    let module_type_signature : 'a module_type -> 'a signature = function
+      | Identifier (ModuleType _) | ModuleType _ as x -> x
+
+    let class_signature : 'a class_ -> 'a class_signature = function
+      | Identifier (Class _) | Class _ as x -> x
+
+    let class_type_signature : 'a class_type -> 'a class_signature = function
+      | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
+
+    let class_type_of_class : 'a class_ -> 'a class_type = function
+      | Identifier (Class _) | Class _ as x -> x
+
+    let type_of_class : 'a class_ -> 'a type_ = function
+      | Identifier (Class _) | Class _ as x -> x
+
+    let type_of_class_type : 'a class_type -> 'a type_ = function
+      | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
+
+    let any : type k. ('a, k) t -> 'a any = function
+      | Identifier (Root _ ) as x -> x
+      | Identifier (Module _) as x -> x
+      | Identifier (Argument _ ) as x -> x
+      | Identifier (ModuleType _) as x -> x
+      | Identifier (Type _) as x -> x
+      | Identifier (Constructor _) as x -> x
+      | Identifier (Field _) as x -> x
+      | Identifier (Value _) as x -> x
+      | Identifier (Class _) as x -> x
+      | Identifier (ClassType _) as x -> x
+      | Identifier (Method _) as x -> x
+      | Identifier (InstanceVariable _) as x -> x
+      | Module _ as x -> x
+      | ModuleType _ as x -> x
+      | Type _ as x -> x
+      | Constructor _ as x -> x
+      | Field _ as x -> x
+      | Value _ as x -> x
+      | Class _ as x -> x
+      | ClassType _ as x -> x
+      | Method _ as x -> x
+      | InstanceVariable _ as x -> x
+
+    let rec identifier: type k. ('a, k) t -> ('a, k) Identifier.t = function
+       | Identifier id -> id
+       | Module(s, n) -> Module(identifier s, n)
+       | ModuleType(s, n) -> ModuleType(identifier s, n)
+       | Type(s, n) -> Type(identifier s, n)
+       | Constructor(s, n) -> Constructor(identifier s, n)
+       | Field(s, n) -> Field(identifier s, n)
+       | Value(s, n) -> Value(identifier s, n)
+       | Class(s, n) -> Class(identifier s, n)
+       | ClassType(s, n) -> ClassType(identifier s, n)
+       | Method(s, n) -> Method(identifier s, n)
+       | InstanceVariable(s, n) -> InstanceVariable(identifier s, n)
+
+  end
+
+  open Identifier
+  open Resolved
+
+  type kind =
+    [ `Module | `ModuleType | `Type
+    | `Constructor | `Field | `Value
+    | `Class | `ClassType | `Method | `InstanceVariable ]
+
+  type ('a, 'b) t =
+    | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
+    | Root : string -> ('a, [< kind]) t
+    | Dot : 'a module_ * string -> ('a, [< kind]) t
+
+  and 'a module_ = ('a, [`Module]) t
+
+  and 'a module_type = ('a, [`ModuleType]) t
+
+  and 'a signature = ('a, [`Module|`ModuleType]) t
+
+  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
+
+  and 'a constructor = ('a, [`Constructor]) t
+
+  and 'a field = ('a, [`Field]) t
+
+  and 'a value = ('a, [`Value]) t
+
+  and 'a class_ = ('a, [`Class]) t
+
+  and 'a class_type = ('a, [`Class|`ClassType]) t
+
+  and 'a class_signature = ('a, [`Class|`ClassType]) t
+
+  and 'a method_ = ('a, [`Method]) t
+
+  and 'a instance_variable = ('a, [`InstanceVariable]) t
+
+  and 'a any = ('a, kind) t
+
+  let ident_module (m: 'a Identifier.module_) = Resolved (Identifier m)
+
+  let ident_module_type (mt: 'a Identifier.module_type) =
+    Resolved (Identifier mt)
+
+  let ident_type : 'a Identifier.type_ -> 'a type_ = function
+    | Type _ as t -> Resolved (Identifier t)
+
+  let ident_constructor (c: 'a Identifier.constructor) =
+    Resolved (Identifier c)
+
+  let ident_field (f: 'a Identifier.field) = Resolved (Identifier f)
+
+  let ident_value (v: 'a Identifier.value) = Resolved (Identifier v)
+
+  let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
+
+  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
+    | ClassType _ as ct -> Resolved (Identifier ct)
+
+  let ident_method (m : 'a Identifier.method_) = Resolved (Identifier m)
+
+  let ident_instance_variable (iv : 'a Identifier.instance_variable) =
+    Resolved (Identifier iv)
+
+  let module_signature : 'a module_ -> 'a signature = function
+    | Resolved (Identifier (Root _ | Module _ | Argument _) | Module _)
+    | Root _ | Dot _ as x -> x
+
+  let module_type_signature : 'a module_type -> 'a signature = function
+    | Resolved (Identifier (ModuleType _) | ModuleType _)
+    | Root _ | Dot _ as x -> x
+
+  let class_signature : 'a class_ -> 'a class_signature = function
+    | Resolved (Identifier (Class _) | Class _)
+    | Root _ | Dot _ as x -> x
+
+  let class_type_signature : 'a class_type -> 'a class_signature = function
+    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
+    | Root _ | Dot _ as x -> x
+
+  let class_type_of_class : 'a class_ -> 'a class_type = function
+    | Resolved (Identifier (Class _) | Class _)
+    | Root _ | Dot _ as x -> x
+
+  let type_of_class : 'a class_ -> 'a type_ = function
+    | Resolved (Identifier (Class _) | Class _)
+    | Root _ | Dot _ as x -> x
+
+  let type_of_class_type : 'a class_type -> 'a type_ = function
+    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
+    | Root _ | Dot _ as x -> x
+
+  let any : type k. ('a, k) t -> 'a any = function
+    | Resolved (Identifier (Root _)) as x -> x
+    | Resolved (Identifier (Module _)) as x -> x
+    | Resolved (Identifier (Argument _)) as x -> x
+    | Resolved (Identifier (ModuleType _)) as x -> x
+    | Resolved (Identifier (Type _)) as x -> x
+    | Resolved (Identifier (Constructor _)) as x -> x
+    | Resolved (Identifier (Field _)) as x -> x
+    | Resolved (Identifier (Value _)) as x -> x
+    | Resolved (Identifier (Class _)) as x -> x
+    | Resolved (Identifier (ClassType _)) as x -> x
+    | Resolved (Identifier (Method _)) as x -> x
+    | Resolved (Identifier (InstanceVariable _)) as x -> x
+    | Resolved (Module _) as x -> x
+    | Resolved (ModuleType _) as x -> x
+    | Resolved (Type _) as x -> x
+    | Resolved (Constructor _) as x -> x
+    | Resolved (Field _) as x -> x
+    | Resolved (Value _) as x -> x
+    | Resolved (Class _) as x -> x
+    | Resolved (ClassType _) as x -> x
+    | Resolved (Method _) as x -> x
+    | Resolved (InstanceVariable _) as x -> x
+    | Root _ as x -> x
+    | Dot _ as x -> x
+
+end
