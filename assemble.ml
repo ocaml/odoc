@@ -26,11 +26,13 @@ let doc = Flags.( v (`Compile `Byte) ["-doc"]
 (* Compilation units *)
 let docOckPaths = unit "docOckPaths" (`Path ["src"])
 let docOckTypes = unit "docOckTypes" (`Path ["src"])
+let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
 
 
 let units =
   [ docOckPaths;
-    docOckTypes; ]
+    docOckTypes;
+    docOckEnvironment; ]
 
 (* Library *)
 let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
