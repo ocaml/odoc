@@ -424,7 +424,7 @@ end
 module Unit : sig
 
   type 'a import =
-    | Unresolved of string * Digest.t
+    | Unresolved of string * Digest.t option
     | Resolved of 'a
 
   type 'a t =
