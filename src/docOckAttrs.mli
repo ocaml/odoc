@@ -14,29 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Assemblage
+open DocOckTypes.Documentation
 
-(* OCamlfind packages *)
-let pkgs = [pkg "xmlm"; pkg "compiler-libs.common";]
+val empty : 'a t
 
-(* Doc flag *)
-let doc = Flags.( v (`Compile `Byte) ["-doc"]
-                     @@@ v (`Compile `Native) ["-doc"] )
+val read_attributes : 'a DocOckEnvironment.t -> Parsetree.attributes ->
+                        'a t
 
-(* Compilation units *)
-let docOckPaths = unit "docOckPaths" (`Path ["src"])
-let docOckTypes = unit "docOckTypes" (`Path ["src"])
-let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
-let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
+val read_comment : 'a DocOckEnvironment.t -> Parsetree.attribute ->
+                     'a comment option
 
-let units =
-  [ docOckPaths;
-    docOckTypes;
-    docOckEnvironment;
-    docOckAttrs; ]
-
-(* Library *)
-let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
-
-(* Assemble *)
-let () = assemble (project "doc-ock-lib" [l])
+val read_comments : 'a DocOckEnvironment.t -> Parsetree.attributes ->
+                      'a comment list
