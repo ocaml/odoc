@@ -326,7 +326,7 @@ and ClassSignature : sig
     | Comment of 'a Documentation.comment
 
   type 'a t =
-    { self: 'a TypeExpr.t;
+    { self: 'a TypeExpr.t option;
       items: 'a item list; }
 
 end
