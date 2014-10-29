@@ -14,31 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Assemblage
 
-(* OCamlfind packages *)
-let pkgs = [pkg "xmlm"; pkg "compiler-libs.common";]
+val read_interface: 'a -> Types.signature -> 'a DocOckTypes.Module.t
 
-(* Doc flag *)
-let doc = Flags.( v (`Compile `Byte) ["-doc"]
-                     @@@ v (`Compile `Native) ["-doc"] )
-
-(* Compilation units *)
-let docOckPaths = unit "docOckPaths" (`Path ["src"])
-let docOckTypes = unit "docOckTypes" (`Path ["src"])
-let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
-let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
-let docOckCmi = unit "docOckCmi" (`Path ["src"])
-
-let units =
-  [ docOckPaths;
-    docOckTypes;
-    docOckEnvironment;
-    docOckAttrs;
-    docOckCmi ]
-
-(* Library *)
-let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
-
-(* Assemble *)
-let () = assemble (project "doc-ock-lib" [l])
+(* Used to resolve `module type of`. Can be removed once we support
+   `.cmt` files.*)
+val read_module_type : 'a DocOckEnvironment.t ->
+                       'a DocOckPaths.Identifier.signature -> int ->
+                       Types.module_type -> 'a DocOckTypes.ModuleType.expr
