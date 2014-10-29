@@ -30,6 +30,7 @@ let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
 let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
 let docOckCmi = unit "docOckCmi" (`Path ["src"])
 let docOckCmti = unit "docOckCmti" (`Path ["src"])
+let docOck = unit "docOck" (`Path ["src"])
 
 let units =
   [ docOckPaths;
@@ -37,7 +38,8 @@ let units =
     docOckEnvironment;
     docOckAttrs;
     docOckCmi;
-    docOckCmti ]
+    docOckCmti;
+    docOck ]
 
 (* Library *)
 let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
