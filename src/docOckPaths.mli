@@ -215,6 +215,8 @@ module Fragment : sig
 
     and any = kind t
 
+    val module_signature : module_ -> signature
+
     val any : 'a t -> any
 
     val path: 'a Path.module_ -> 'b t -> ('a, 'b) Path.t
@@ -272,6 +274,8 @@ module Reference : sig
       | InstanceVariable : 'a class_signature * string ->
                              ('a, [< kind > `InstanceVariable]) t
       | Label : 'a container * string -> ('a, [< kind > `Label]) t
+
+    and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
 
     and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
 
@@ -350,7 +354,15 @@ module Reference : sig
 
     val container_of_class_signature : 'a class_signature -> 'a container
 
+    val parent_of_signature : 'a signature -> 'a parent
+
+    val parent_of_class_signature : 'a class_signature -> 'a parent
+
+    val parent_of_datatype : 'a datatype -> 'a parent
+
     val class_type_of_class : 'a class_ -> 'a class_type
+
+    val type_of_datatype : 'a datatype -> 'a type_
 
     val type_of_class : 'a class_ -> 'a type_
 
@@ -459,7 +471,15 @@ module Reference : sig
 
   val container_of_class_signature : 'a class_signature -> 'a container
 
+  val parent_of_signature : 'a signature -> 'a parent
+
+  val parent_of_class_signature : 'a class_signature -> 'a parent
+
+  val parent_of_datatype : 'a datatype -> 'a parent
+
   val class_type_of_class : 'a class_ -> 'a class_type
+
+  val type_of_datatype : 'a datatype -> 'a type_
 
   val type_of_class : 'a class_ -> 'a type_
 

@@ -302,6 +302,9 @@ module Fragment = struct
 
     and any = kind t
 
+    let module_signature : module_ -> signature = function
+      | Module _ as x -> x
+
     let any : type k. k t -> any = function
       | Module _ as x -> x
       | Type _ as x -> x
@@ -383,8 +386,6 @@ module Fragment = struct
     | Resolved r -> Resolved.path root r
     | Dot(m, s) -> Path.Dot(path root m, s)
 
-  (*let identifier root frag =*)
-
 end
 
 
@@ -417,6 +418,8 @@ module Reference = struct
       | InstanceVariable : 'a class_signature * string ->
                              ('a, [< kind > `InstanceVariable]) t
       | Label : 'a container * string -> ('a, [< kind > `Label]) t
+
+    and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
 
     and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
 
@@ -507,8 +510,22 @@ module Reference = struct
       function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
+    let parent_of_signature : 'a signature -> 'a parent = function
+      | Identifier (Root _ | Module _ | Argument _ | ModuleType _)
+      | Module _ | ModuleType _ as x -> x
+
+    let parent_of_class_signature : 'a class_signature -> 'a parent =
+      function
+      | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
+
+    let parent_of_datatype : 'a datatype -> 'a parent = function
+      | Identifier (Type _) | Type _ as x -> x
+
     let class_type_of_class : 'a class_ -> 'a class_type = function
       | Identifier (Class _) | Class _ as x -> x
+
+    let type_of_datatype : 'a datatype -> 'a type_ = function
+      | Identifier (Type _) | Type _ as x -> x
 
     let type_of_class : 'a class_ -> 'a type_ = function
       | Identifier (Class _) | Class _ as x -> x
@@ -686,8 +703,25 @@ module Reference = struct
     | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
     | Root _ | Dot _ as x -> x
 
+  let parent_of_signature : 'a signature -> 'a parent = function
+    | Resolved (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
+                | Module _ | ModuleType _)
+    | Root _ | Dot _ as x -> x
+
+  let parent_of_class_signature : 'a class_signature -> 'a parent = function
+    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
+    | Root _ | Dot _ as x -> x
+
+  let parent_of_datatype : 'a datatype -> 'a parent = function
+    | Resolved (Identifier (Type _) | Type _)
+    | Root _ | Dot _ as x -> x
+
   let class_type_of_class : 'a class_ -> 'a class_type = function
     | Resolved (Identifier (Class _) | Class _)
+    | Root _ | Dot _ as x -> x
+
+  let type_of_datatype : 'a datatype -> 'a type_ = function
+    | Resolved (Identifier (Type _) | Type _)
     | Root _ | Dot _ as x -> x
 
   let type_of_class : 'a class_ -> 'a type_ = function
