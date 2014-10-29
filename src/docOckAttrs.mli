@@ -14,15 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open DocOckPaths
 open DocOckTypes.Documentation
 
 val empty : 'a t
 
-val read_attributes : 'a DocOckEnvironment.t -> Parsetree.attributes ->
-                        'a t
+val read_attributes : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+                       Parsetree.attributes -> 'a t
 
-val read_comment : 'a DocOckEnvironment.t -> Parsetree.attribute ->
-                     'a comment option
+val read_comment : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+                   Parsetree.attribute -> 'a comment option
 
-val read_comments : 'a DocOckEnvironment.t -> Parsetree.attributes ->
-                      'a comment list
+val read_comments : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+                    Parsetree.attributes -> 'a comment list
+
+open DocOckEnvironment
+
+val add_attributes : 'a Identifier.container -> Parsetree.attributes -> 'a t -> 'a t
+
+val add_comment : 'a Identifier.container -> Parsetree.attribute -> 'a t -> 'a t
+
+val add_comments : 'a Identifier.container -> Parsetree.attributes -> 'a t -> 'a t
+

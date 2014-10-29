@@ -71,7 +71,7 @@ module Documentation : sig
     | List of 'a text list
     | Enum of 'a text list
     | Newline
-    | Title of int * string option * 'a text
+    | Title of int * 'a Identifier.label option * 'a text
     | Reference of 'a reference * 'a text option
     | Target of string option * string
     | Special of 'a special
