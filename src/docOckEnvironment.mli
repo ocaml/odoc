@@ -20,33 +20,33 @@ type 'a t
 
 val empty : 'a t
 
-val add_module : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_module : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_argument : 'a signature -> int -> 'a t -> Ident.t -> 'a t
+val add_argument : 'a signature -> int -> Ident.t -> 'a t -> 'a t
 
-val add_module_type : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_module_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_type : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_constructor : 'a type_ -> 'a t -> Ident.t -> 'a t
+val add_constructor : 'a type_ -> Ident.t -> 'a t -> 'a t
 
-val add_field : 'a type_ -> 'a t -> Ident.t -> 'a t
+val add_field : 'a type_ -> Ident.t -> 'a t -> 'a t
 
-val add_extension : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_extension : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_exception : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_exception : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_value : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_value : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_class : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_class : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_class_type : 'a signature -> 'a t -> Ident.t -> 'a t
+val add_class_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_method : 'a class_signature -> 'a t -> string -> 'a t
+val add_method : 'a class_signature -> string -> 'a t -> 'a t
 
-val add_instance_variable : 'a class_signature -> 'a t -> string -> 'a t
+val add_instance_variable : 'a class_signature -> string -> 'a t -> 'a t
 
-val add_label : 'a container -> 'a t -> string -> 'a t
+val add_label : 'a container -> string -> 'a t -> 'a t
 
 
 module Path : sig

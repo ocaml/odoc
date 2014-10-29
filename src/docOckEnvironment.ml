@@ -62,60 +62,60 @@ let empty =
     parents = StringTbl.empty;
     elements = StringTbl.empty; }
 
-let add_module parent env id =
+let add_module parent id env =
   let name = Ident.name id in
   let identifier = Module(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              modules = Ident.add id identifier env.modules }
 
-let add_argument parent arg env id =
+let add_argument parent arg id env =
   let name = Ident.name id in
   let identifier = Argument(parent, arg, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              modules = Ident.add id identifier env.modules }
 
-let add_module_type parent env id =
+let add_module_type parent id env =
   let name = Ident.name id in
   let identifier = ModuleType(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              module_types = Ident.add id identifier env.module_types }
 
-let add_type parent env id =
+let add_type parent id env =
   let name = Ident.name id in
   let identifier = Type(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
              types = Ident.add id identifier env.types }
 
-let add_value parent env id =
+let add_value parent id env =
   let name = Ident.name id in
   let identifier = Value(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              values = Ident.add id identifier env.values }
 
-let add_constructor parent env id =
+let add_constructor parent id env =
   let name = Ident.name id in
   let identifier = Constructor(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              constructors = Ident.add id identifier env.constructors }
 
-let add_field parent env id =
+let add_field parent id env =
   let name = Ident.name id in
   let identifier = Field(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              fields = Ident.add id identifier env.fields }
 
-let add_extension parent env id =
+let add_extension parent id env =
   let name = Ident.name id in
   let identifier = Extension(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              constructors = Ident.add id identifier env.constructors;
              extensions = Ident.add id identifier env.extensions }
 
-let add_exception parent env id =
+let add_exception parent id env =
   let name = Ident.name id in
   let identifier = Exception(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
@@ -123,7 +123,7 @@ let add_exception parent env id =
              extensions = Ident.add id identifier env.extensions;
              exceptions = Ident.add id identifier env.exceptions }
 
-let add_class parent env id =
+let add_class parent id env =
   let name = Ident.name id in
   let identifier = Class(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
@@ -132,7 +132,7 @@ let add_class parent env id =
              class_types = Ident.add id identifier env.class_types;
              classes = Ident.add id identifier env.classes }
 
-let add_class_type parent env id =
+let add_class_type parent id env =
   let name = Ident.name id in
   let identifier = ClassType(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
@@ -140,17 +140,17 @@ let add_class_type parent env id =
              types = Ident.add id identifier env.types;
              class_types = Ident.add id identifier env.class_types }
 
-let add_method parent env name =
+let add_method parent name env =
   let identifier = Method(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              methods = StringTbl.add name identifier env.methods }
 
-let add_instance_variable parent env name =
+let add_instance_variable parent name env =
   let identifier = InstanceVariable(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              instance_variables = StringTbl.add name identifier env.instance_variables }
 
-let add_label parent env name =
+let add_label parent name env =
   let identifier = Label(parent, name) in
   { env with elements = StringTbl.add name identifier env.elements;
              labels = StringTbl.add name identifier env.labels }
