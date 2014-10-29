@@ -276,7 +276,7 @@ and External : sig
     { id: 'a Identifier.value;
       doc: 'a Documentation.t;
       type_: 'a TypeExpr.t;
-      primatives: string list; }
+      primitives: string list; }
 
 end
 
