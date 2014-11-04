@@ -544,11 +544,11 @@ let rec read_with_constraint env parent (_, frag, constr) =
     | Twith_type decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let eq = read_type_equation env decl in
-          TypeDecl(frag, eq)
+          TypeEq(frag, eq)
     | Twith_module(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let eq = read_module_equation env p in
-          ModuleDecl(frag, eq)
+          ModuleEq(frag, eq)
     | Twith_typesubst decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
         let typ =

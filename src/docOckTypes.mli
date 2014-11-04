@@ -124,8 +124,8 @@ end
 and ModuleType : sig
 
   type 'a substitution =
-    | ModuleDecl of Fragment.module_ * 'a Module.Equation.t
-    | TypeDecl of Fragment.type_ * 'a TypeDecl.Equation.t
+    | ModuleEq of Fragment.module_ * 'a Module.Equation.t
+    | TypeEq of Fragment.type_ * 'a TypeDecl.Equation.t
     | ModuleSubst of Fragment.module_ * 'a Path.module_
     | TypeSubst of Fragment.type_ * 'a TypeExpr.t
 
