@@ -17,7 +17,7 @@
 open Assemblage
 
 (* OCamlfind packages *)
-let pkgs = [pkg "xmlm"; pkg "compiler-libs.common";]
+let pkgs = [pkg "compiler-libs.common"]
 
 (* Doc flag *)
 let doc = Flags.( v (`Compile `Byte) ["-doc"]

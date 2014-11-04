@@ -5,7 +5,6 @@ authors: [
 ]
 license: "ISC"
 depends: [
-  "xmlm"
   "assemblage"
 ]
 ocaml-version: [= "4.02.0+doc"]
