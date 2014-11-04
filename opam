@@ -1,0 +1,17 @@
+opam-version: "1"
+maintainer: "lpw25@cl.cam.ac.uk"
+authors: [
+  "Leo White <lpw25@cl.cam.ac.uk>"
+]
+license: "ISC"
+depends: [
+  "xmlm"
+  "menhir"
+  "doc-ock-lib"
+]
+ocaml-version: [= "4.02.0+doc"]
+build: [
+  [make]
+  [make "install"]
+]
+remove: ["ocamlfind" "remove" "doc-ock-xml"]
