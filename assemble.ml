@@ -20,8 +20,11 @@ open Assemblage
 let pkgs = [pkg "compiler-libs.common"]
 
 (* Doc flag *)
-let doc = Flags.( v (`Compile `Byte) ["-doc"]
-                     @@@ v (`Compile `Native) ["-doc"] )
+let doc = Flags.( v (`Compile `Intf) ["-doc"] )
+
+(* No alias dependencies flag *)
+let no_alias_deps = Flags.( v (`Compile `Byte) ["-no-alias-deps"]
+                     @@@ v (`Compile `Native) ["-no-alias-deps"] )
 
 (* Compilation units *)
 let docOckPaths = unit "docOckPaths" (`Path ["src"])
@@ -30,7 +33,7 @@ let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
 let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
 let docOckCmi = unit "docOckCmi" (`Path ["src"])
 let docOckCmti = unit "docOckCmti" (`Path ["src"])
-let docOck = unit "docOck" (`Path ["src"])
+let docOck = unit "docOck" ~flags:no_alias_deps (`Path ["src"])
 
 let units =
   [ docOckPaths;
