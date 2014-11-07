@@ -1083,6 +1083,7 @@ let unit_p base output unit =
     in
     unit_t output;
     identifier_p base output unit.module_.id;
+    unit_digest_p base output unit.digest;
     list unit_import_p base output unit.imports;
     doc_p base output unit.module_.doc;
     list signature_item_p base output items;

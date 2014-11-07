@@ -895,7 +895,8 @@ signature_item:
       { let open DocOckTypes.Signature in
         let open DocOckTypes.Module in
            Module {id; doc; type_} }
-  | MODULE_TYPE id = module_type_identifier doc = doc expr = module_type_expr? CLOSE
+  | MODULE_TYPE id = module_type_identifier doc = doc
+      expr = module_type_expr? CLOSE
       { let open DocOckTypes.Signature in
         let open DocOckTypes.ModuleType in
           ModuleType {id; doc; expr} }
@@ -917,13 +918,13 @@ unit_import:
       { DocOckTypes.Unit.Resolved base }
 
 unit:
-  | UNIT id = module_identifier imports = unit_import* doc = doc
-      items = signature_item* CLOSE
+  | UNIT id = module_identifier digest = unit_digest imports = unit_import*
+      doc = doc items = signature_item* CLOSE
         { let open DocOckTypes.Unit in
           let open DocOckTypes.ModuleType in
           let open DocOckTypes.Module in
           let module_ = {id; doc; type_ = ModuleType (Signature items)} in
-            {module_;imports} }
+            {module_; digest; imports} }
 
 file:
   | DTD unit = unit EOF
