@@ -429,6 +429,7 @@ module Unit : sig
 
   type 'a t =
     { module_: 'a Module.t;
+      digest: Digest.t;
       imports: 'a import list; }
 
 end
