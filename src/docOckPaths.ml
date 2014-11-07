@@ -28,10 +28,12 @@ module Identifier = struct
     | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+    | CoreType : string -> ('a, [< kind > `Type]) t
     | Constructor : 'a type_ * string -> ('a, [< kind > `Constructor]) t
     | Field : 'a type_ * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
+    | CoreException : string -> ('a, [< kind > `Exception]) t
     | Value : 'a signature * string -> ('a, [< kind > `Value]) t
     | Class : 'a signature * string -> ('a, [< kind > `Class]) t
     | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
@@ -98,16 +100,19 @@ module Identifier = struct
     | Argument _ as x -> x
     | ModuleType _ as x -> x
     | Type _ as x -> x
+    | CoreType _ as x -> x
     | Constructor _ as x -> x
     | Field _ as x -> x
     | Extension _ as x -> x
     | Exception _ as x -> x
+    | CoreException _ as x -> x
     | Value _ as x -> x
     | Class _ as x -> x
     | ClassType _ as x -> x
     | Method _ as x -> x
     | InstanceVariable _ as x -> x
     | Label _ as x -> x
+
 
 end
 
@@ -182,7 +187,7 @@ module Path = struct
     let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
 
     let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ as t -> Identifier t
+    | Type _ | CoreType _ as t -> Identifier t
 
     let ident_class (c: 'a Identifier.class_) = Identifier c
 
@@ -204,6 +209,7 @@ module Path = struct
       | Identifier (Argument _) as x -> x
       | Identifier (ModuleType _) as x -> x
       | Identifier (Type _) as x -> x
+      | Identifier (CoreType _) as x -> x
       | Identifier (Class _) as x -> x
       | Identifier (ClassType _) as x -> x
       | Module _ as x -> x
@@ -238,7 +244,7 @@ module Path = struct
     Resolved (Identifier mt)
 
   let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ as t -> Resolved (Identifier t)
+    | Type _ | CoreType _ as t -> Resolved (Identifier t)
 
   let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
 
@@ -261,6 +267,7 @@ module Path = struct
     | Resolved (Identifier (Argument _)) as x -> x
     | Resolved (Identifier (ModuleType _)) as x -> x
     | Resolved (Identifier (Type _)) as x -> x
+    | Resolved (Identifier (CoreType _)) as x -> x
     | Resolved (Identifier (Class _)) as x -> x
     | Resolved (Identifier (ClassType _)) as x -> x
     | Resolved (Module _) as x -> x
@@ -462,7 +469,7 @@ module Reference = struct
     let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
 
     let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ as t -> Identifier t
+    | Type _ | CoreType _ as t -> Identifier t
 
     let ident_datatype (t : 'a Identifier.type_) = Identifier t
 
@@ -519,13 +526,13 @@ module Reference = struct
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
     let parent_of_datatype : 'a datatype -> 'a parent = function
-      | Identifier (Type _) | Type _ as x -> x
+      | Identifier (Type _ |CoreType _) | Type _ as x -> x
 
     let class_type_of_class : 'a class_ -> 'a class_type = function
       | Identifier (Class _) | Class _ as x -> x
 
     let type_of_datatype : 'a datatype -> 'a type_ = function
-      | Identifier (Type _) | Type _ as x -> x
+      | Identifier (Type _ | CoreType _) | Type _ as x -> x
 
     let type_of_class : 'a class_ -> 'a type_ = function
       | Identifier (Class _) | Class _ as x -> x
@@ -534,14 +541,14 @@ module Reference = struct
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
     let extension_of_exception : 'a exception_ -> 'a extension = function
-      | Identifier (Exception _) | Exception _ as x -> x
+      | Identifier (Exception _ | CoreException _) | Exception _ as x -> x
 
     let constructor_of_extension : 'a extension -> 'a constructor = function
-      | Identifier (Extension _ | Exception _)
+      | Identifier (Extension _ | Exception _ | CoreException _)
       | Extension _ | Exception _ as x -> x
 
     let constructor_of_exception : 'a exception_ -> 'a constructor = function
-      | Identifier (Exception _) | Exception _ as x -> x
+      | Identifier (Exception _ | CoreException _) | Exception _ as x -> x
 
     let any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _ ) as x -> x
@@ -549,10 +556,12 @@ module Reference = struct
       | Identifier (Argument _ ) as x -> x
       | Identifier (ModuleType _) as x -> x
       | Identifier (Type _) as x -> x
+      | Identifier (CoreType _) as x -> x
       | Identifier (Constructor _) as x -> x
       | Identifier (Field _) as x -> x
       | Identifier (Extension _) as x -> x
       | Identifier (Exception _) as x -> x
+      | Identifier (CoreException _) as x -> x
       | Identifier (Value _) as x -> x
       | Identifier (Class _) as x -> x
       | Identifier (ClassType _) as x -> x
@@ -649,7 +658,7 @@ module Reference = struct
     Resolved (Identifier mt)
 
   let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ as t -> Resolved (Identifier t)
+    | Type _ | CoreType _ as t -> Resolved (Identifier t)
 
   let ident_datatype (t : 'a Identifier.type_) = Resolved (Identifier t)
 
@@ -713,7 +722,7 @@ module Reference = struct
     | Root _ | Dot _ as x -> x
 
   let parent_of_datatype : 'a datatype -> 'a parent = function
-    | Resolved (Identifier (Type _) | Type _)
+    | Resolved (Identifier (Type _ | CoreType _) | Type _)
     | Root _ | Dot _ as x -> x
 
   let class_type_of_class : 'a class_ -> 'a class_type = function
@@ -721,7 +730,7 @@ module Reference = struct
     | Root _ | Dot _ as x -> x
 
   let type_of_datatype : 'a datatype -> 'a type_ = function
-    | Resolved (Identifier (Type _) | Type _)
+    | Resolved (Identifier (Type _ | CoreType _) | Type _)
     | Root _ | Dot _ as x -> x
 
   let type_of_class : 'a class_ -> 'a type_ = function
@@ -733,16 +742,16 @@ module Reference = struct
     | Root _ | Dot _ as x -> x
 
   let extension_of_exception : 'a exception_ -> 'a extension = function
-    | Resolved (Identifier (Exception _) | Exception _)
+    | Resolved (Identifier (Exception _ | CoreException _) | Exception _)
     | Root _ | Dot _ as x -> x
 
   let constructor_of_extension : 'a extension -> 'a constructor = function
-    | Resolved (Identifier (Extension _ | Exception _)
+    | Resolved (Identifier (Extension _ | Exception _ | CoreException _)
                | Extension _ | Exception _)
     | Root _ | Dot _ as x -> x
 
   let constructor_of_exception : 'a exception_ -> 'a constructor = function
-    | Resolved (Identifier (Exception _) | Exception _)
+    | Resolved (Identifier (Exception _ | CoreException _) | Exception _)
     | Root _ | Dot _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function
@@ -751,10 +760,12 @@ module Reference = struct
     | Resolved (Identifier (Argument _)) as x -> x
     | Resolved (Identifier (ModuleType _)) as x -> x
     | Resolved (Identifier (Type _)) as x -> x
+    | Resolved (Identifier (CoreType _)) as x -> x
     | Resolved (Identifier (Constructor _)) as x -> x
     | Resolved (Identifier (Field _)) as x -> x
     | Resolved (Identifier (Extension _)) as x -> x
     | Resolved (Identifier (Exception _)) as x -> x
+    | Resolved (Identifier (CoreException _)) as x -> x
     | Resolved (Identifier (Value _)) as x -> x
     | Resolved (Identifier (Class _)) as x -> x
     | Resolved (Identifier (ClassType _)) as x -> x

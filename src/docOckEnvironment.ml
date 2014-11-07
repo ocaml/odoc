@@ -155,6 +155,66 @@ let add_label parent name env =
   { env with elements = StringTbl.add name identifier env.elements;
              labels = StringTbl.add name identifier env.labels }
 
+let add_core_type id env =
+  let name = Ident.name id in
+  let identifier = CoreType name in
+  { env with elements = StringTbl.add name identifier env.elements;
+             parents = StringTbl.add name identifier env.parents;
+             types = Ident.add id identifier env.types }
+
+let add_core_exception id env =
+  let name = Ident.name id in
+  let identifier = CoreException name in
+  { env with elements = StringTbl.add name identifier env.elements;
+             constructors = Ident.add id identifier env.constructors;
+             extensions = Ident.add id identifier env.extensions;
+             exceptions = Ident.add id identifier env.exceptions }
+
+let is_core_type = function
+  | "int" -> true
+  | "char" -> true
+  | "string" -> true
+  | "float" -> true
+  | "bool" -> true
+  | "unit" -> true
+  | "exn" -> true
+  | "array" -> true
+  | "list" -> true
+  | "option" -> true
+  | "nativeint" -> true
+  | "int32" -> true
+  | "int64" -> true
+  | "lazy_t" -> true
+  | "bytes" -> true
+  | _ -> false
+
+let core_constructor_type = function
+  | "false" -> Some "bool"
+  | "true" -> Some "bool"
+  | "()" -> Some "unit"
+  | "[]" -> Some "list"
+  | "::" -> Some "list"
+  | "None" -> Some "option"
+  | "Some" -> Some "option"
+  | _ -> None
+
+let is_core_exception = function
+  | "Match_failure" -> true
+  | "Out_of_memory" -> true
+  | "Invalid_argument" -> true
+  | "Failure" -> true
+  | "Not_found" -> true
+  | "Sys_error" -> true
+  | "End_of_file" -> true
+  | "Division_by_zero" -> true
+  | "Stack_overflow" -> true
+  | "Sys_blocked_io" -> true
+  | "Assert_failure" -> true
+  | "Undefined_recursive_module" -> true
+  | _ -> false
+
+let builtin_idents = List.map snd Predef.builtin_idents
+
 let find_module env id =
   Ident.find_same id env.modules
 
@@ -162,7 +222,14 @@ let find_module_type env id =
   Ident.find_same id env.module_types
 
 let find_type env id =
-  Ident.find_same id env.types
+  try
+    Ident.find_same id env.types
+  with Not_found ->
+    if List.mem id builtin_idents then
+      let name = Ident.name id in
+        if is_core_type name then CoreType name
+        else raise Not_found
+    else raise Not_found
 
 let find_class env id =
   Ident.find_same id env.classes
@@ -178,19 +245,38 @@ let lookup_module_type env name =
   Ident.find_name name env.module_types
 
 let lookup_type env name =
-  Ident.find_name name env.types
+  try
+    Ident.find_name name env.types
+  with Not_found ->
+    if is_core_type name then CoreType name
+    else raise Not_found
 
 let lookup_constructor env name =
-  Ident.find_name name env.constructors
+  try
+    Ident.find_name name env.constructors
+  with Not_found ->
+    if is_core_exception name then CoreException name
+    else
+      match core_constructor_type name with
+      | Some typ -> Constructor(CoreType typ, name)
+      | None -> raise Not_found
 
 let lookup_field env name =
   Ident.find_name name env.fields
 
 let lookup_extension env name =
-  Ident.find_name name env.extensions
+  try
+    Ident.find_name name env.extensions
+  with Not_found ->
+    if is_core_exception name then CoreException name
+    else raise Not_found
 
 let lookup_exception env name =
-  Ident.find_name name env.exceptions
+  try
+    Ident.find_name name env.exceptions
+  with Not_found ->
+    if is_core_exception name then CoreException name
+    else raise Not_found
 
 let lookup_value env name =
   Ident.find_name name env.values
@@ -211,10 +297,22 @@ let lookup_label env name =
   StringTbl.find name env.labels
 
 let lookup_parent env name =
-  StringTbl.find name env.parents
+  try
+    StringTbl.find name env.parents
+  with Not_found ->
+    if is_core_type name then CoreType name
+    else raise Not_found
 
 let lookup_element env name =
-  StringTbl.find name env.elements
+  try
+    StringTbl.find name env.elements
+  with Not_found ->
+    if is_core_type name then CoreType name
+    else if is_core_exception name then CoreException name
+    else
+      match core_constructor_type name with
+      | Some typ -> Constructor(CoreType typ, name)
+      | None -> raise Not_found
 
 
 module Path = struct

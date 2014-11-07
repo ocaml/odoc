@@ -33,10 +33,12 @@ module Identifier : sig
     | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+    | CoreType : string -> ('a, [< kind > `Type]) t
     | Constructor : 'a type_ * string -> ('a, [< kind > `Constructor]) t
     | Field : 'a type_ * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
+    | CoreException : string -> ('a, [< kind > `Exception]) t
     | Value : 'a signature * string -> ('a, [< kind > `Value]) t
     | Class : 'a signature * string -> ('a, [< kind > `Class]) t
     | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
