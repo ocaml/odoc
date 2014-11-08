@@ -571,13 +571,14 @@ and read_module_type env parent pos mty =
         let arg =
           match arg with
           | None -> None
-          | Some mty ->
+          | Some arg ->
               let name = Ident.name id in
               let id = Identifier.Argument(parent, pos, name) in
-              let mty = read_module_type env id 1 mty in
-                Some (name, mty)
+              let arg = read_module_type env id 1 arg in
+                Some (name, arg)
         in
-        let res = read_module_type env parent (pos + 1) mty in
+        let env = Env.add_argument parent pos id env in
+        let res = read_module_type env parent (pos + 1) res in
           Functor(arg, res)
     | Tmty_with(body, subs) ->
         let body = read_module_type env parent pos body in
