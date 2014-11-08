@@ -819,34 +819,34 @@ let add_module_declaration parent id md env =
 let rec add_signature_items parent items env =
   match items with
   | Sig_value(id, vd) :: rest ->
-      let env = add_value_description parent id vd env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_value_description parent id vd env
   | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
       add_signature_items parent rest env
   | Sig_type(id, decl, _) :: rest ->
-      let env = add_type_declaration parent id decl env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_type_declaration parent id decl env
   | Sig_typext(id, tyext, (Text_first | Text_next)) :: rest ->
-      let env = add_extension_constructor parent id tyext env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_extension_constructor parent id tyext env
   | Sig_typext(id, ext, Text_exception) :: rest ->
-      let env = add_exception parent id ext env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_exception parent id ext env
   | Sig_module(id, md, _) :: rest ->
-      let env = add_module_declaration parent id md env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_module_declaration parent id md env
   | Sig_modtype(id, mtd) :: rest ->
-      let env = add_module_type_declaration parent id mtd env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_module_type_declaration parent id mtd env
   | Sig_class(id, cl, _) :: Sig_class_type(ty_id, _, _)
       :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
-      let env = add_class_declaration parent id ty_id obj_id cl_id cl env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_class_declaration parent id ty_id obj_id cl_id cl env
   | Sig_class _ :: _ -> assert false
   | Sig_class_type(id, cltyp, _) :: Sig_type(obj_id, _, _)
     :: Sig_type(cl_id, _, _) :: rest ->
-      let env = add_class_type_declaration parent id obj_id cl_id cltyp env in
-        add_signature_items parent rest env
+      let env = add_signature_items parent rest env in
+        add_class_type_declaration parent id obj_id cl_id cltyp env
   | Sig_class_type _ :: _ -> assert false
   | [] -> env
 
