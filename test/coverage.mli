@@ -552,6 +552,11 @@ class ['a] param_class : 'a -> object
   method v : 'a
 end
 
+type my_unit_object = unit param_class
+
 type 'a my_unit_class = unit #param_class as 'a
+
+(* Bug in compiler breaks this example on cmi's *)
+(* class type my_unit_class_type = [unit] param_class *)
 
 (* TODO: classes, class types, ...? *)
