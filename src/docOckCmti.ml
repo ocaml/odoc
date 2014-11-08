@@ -39,7 +39,7 @@ let read_label lbl =
   else if lbl.[0] = '?' then
     Some (Optional (String.sub lbl 1 (String.length lbl - 1)))
   else
-    Some (Label (String.sub lbl 1 (String.length lbl - 1)))
+    Some (Label lbl)
 
 let rec read_core_type env ctyp =
   let open TypeExpr in
