@@ -18,3 +18,7 @@ META
 *.install
 _build
 .merlin
+
+### Tests ###
+test/testCmi
+test/testCmti
