@@ -400,7 +400,13 @@ and read_class_signature env parent cltyp =
 let add_class_type_declaration parent cltd env =
   let container = Identifier.container_of_signature parent in
   let env = add_attributes container cltd.ci_attributes env in
-  let env = Env.add_class_type parent cltd.ci_id_class_type env in
+  let env =
+    Env.add_class_type parent
+      cltd.ci_id_class_type
+      cltd.ci_id_object
+      cltd.ci_id_typesharp
+      env
+  in
     env
 
 let read_class_type_declaration env parent cltd =
@@ -451,7 +457,14 @@ let rec read_class_type env parent cty =
 let add_class_declaration parent cld env =
   let container = Identifier.container_of_signature parent in
   let env = add_attributes container cld.ci_attributes env in
-  let env = Env.add_class parent cld.ci_id_class env in
+  let env =
+    Env.add_class parent
+      cld.ci_id_class
+      cld.ci_id_class_type
+      cld.ci_id_object
+      cld.ci_id_typesharp
+      env
+  in
     env
 
 let read_class_declaration env parent cld =
@@ -521,18 +534,31 @@ let add_signature_item parent item env =
   | Tsig_open _ -> env
   | Tsig_include incl ->
       let items = incl.incl_type in
-        List.fold_right
-          (fun item env ->
-             match item with
-             | Sig_value(id, _) -> Env.add_value parent id env
-             | Sig_type(id, _, _) -> Env.add_type parent id env
-             | Sig_typext(id, _, (Text_first | Text_next)) -> Env.add_extension parent id env
-             | Sig_typext(id, _, Text_exception) -> Env.add_exception parent id env
-             | Sig_module(id, _, _) -> Env.add_module parent id env
-             | Sig_modtype(id, _) -> Env.add_module_type parent id env
-             | Sig_class(id, _, _) -> Env.add_class parent id env
-             | Sig_class_type(id, _, _) -> Env.add_class_type parent id env)
-          items env
+      let rec loop items env =
+        match items with
+        | Sig_value(id, _) :: rest ->
+            Env.add_value parent id (loop rest env)
+        | Sig_type(id, _, _) :: rest ->
+            Env.add_type parent id (loop rest env)
+        | Sig_typext(id, _, (Text_first | Text_next)) :: rest ->
+            Env.add_extension parent id (loop rest env)
+        | Sig_typext(id, _, Text_exception) :: rest ->
+            Env.add_exception parent id (loop rest env)
+        | Sig_module(id, _, _) :: rest ->
+            Env.add_module parent id (loop rest env)
+        | Sig_modtype(id, _) :: rest ->
+            Env.add_module_type parent id (loop rest env)
+        | Sig_class(id, cl, _) :: Sig_class_type(ty_id, _, _)
+          :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
+            Env.add_class parent id ty_id obj_id cl_id (loop rest env)
+        | Sig_class _ :: _ -> assert false
+        | Sig_class_type(id, cltyp, _) :: Sig_type(obj_id, _, _)
+          :: Sig_type(cl_id, _, _) :: rest ->
+            Env.add_class_type parent id obj_id cl_id (loop rest env)
+        | Sig_class_type _ :: _ -> assert false
+        | [] -> env
+      in
+        loop items env
   | Tsig_class cls -> add_class_declarations parent cls env
   | Tsig_class_type cltyps -> add_class_type_declarations parent cltyps env
   | Tsig_attribute attr ->

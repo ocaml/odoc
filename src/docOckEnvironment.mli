@@ -38,9 +38,11 @@ val add_exception : 'a signature -> Ident.t -> 'a t -> 'a t
 
 val add_value : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_class : 'a signature -> Ident.t -> 'a t -> 'a t
+val add_class : 'a signature -> Ident.t -> Ident.t -> Ident.t -> Ident.t ->
+                  'a t -> 'a t
 
-val add_class_type : 'a signature -> Ident.t -> 'a t -> 'a t
+val add_class_type : 'a signature -> Ident.t -> Ident.t -> Ident.t ->
+                       'a t -> 'a t
 
 val add_method : 'a class_signature -> string -> 'a t -> 'a t
 

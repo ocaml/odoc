@@ -123,22 +123,34 @@ let add_exception parent id env =
              extensions = Ident.add id identifier env.extensions;
              exceptions = Ident.add id identifier env.exceptions }
 
-let add_class parent id env =
+let add_class parent id ty_id obj_id cl_id env =
   let name = Ident.name id in
   let identifier = Class(parent, name) in
+  let add_idents tbl =
+    Ident.add id identifier
+      (Ident.add ty_id identifier
+         (Ident.add obj_id identifier
+            (Ident.add cl_id identifier tbl)))
+  in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
-             types = Ident.add id identifier env.types;
-             class_types = Ident.add id identifier env.class_types;
-             classes = Ident.add id identifier env.classes }
+             types = add_idents env.types;
+             class_types = add_idents env.class_types;
+             classes = add_idents env.classes }
 
-let add_class_type parent id env =
+let add_class_type parent id obj_id cl_id env =
   let name = Ident.name id in
+  let cl_id = { cl_id with Ident.name = name } in
   let identifier = ClassType(parent, name) in
+  let add_idents tbl =
+    Ident.add id identifier
+         (Ident.add obj_id identifier
+            (Ident.add cl_id identifier tbl))
+  in
   { env with elements = StringTbl.add name identifier env.elements;
              parents = StringTbl.add name identifier env.parents;
-             types = Ident.add id identifier env.types;
-             class_types = Ident.add id identifier env.class_types }
+             types = add_idents env.types;
+             class_types = add_idents env.class_types }
 
 let add_method parent name env =
   let identifier = Method(parent, name) in

@@ -730,10 +730,10 @@ let rec read_virtual = function
       in
         virtual_method || virtual_instance_variable
 
-let add_class_type_declaration parent id cltd env =
+let add_class_type_declaration parent id obj_id cl_id cltd env =
   let container = Identifier.container_of_signature parent in
   let env = add_attributes container cltd.clty_attributes env in
-  let env = Env.add_class_type parent id env in
+  let env = Env.add_class_type parent id obj_id cl_id env in
     env
 
 let read_class_type_declaration env parent id cltd =
@@ -776,10 +776,10 @@ let rec read_class_type env parent params =
       let cty = read_class_type env parent params cty in
         Arrow(lbl, arg, cty)
 
-let add_class_declaration parent id cld env =
+let add_class_declaration parent id ty_id obj_id cl_id cld env =
   let container = Identifier.container_of_signature parent in
   let env = add_attributes container cld.cty_attributes env in
-  let env = Env.add_class parent id env in
+  let env = Env.add_class parent id ty_id obj_id cl_id env in
     env
 
 let read_class_declaration env parent id cld =
@@ -816,24 +816,39 @@ let add_module_declaration parent id md env =
   let env = Env.add_module parent id env in
     env
 
-let add_signature_item parent item env =
-  match item with
-  | Sig_value(id, vd) ->
-      add_value_description parent id vd env
-  | Sig_type(id, decl, _) ->
-      add_type_declaration parent id decl env
-  | Sig_typext(id, tyext, (Text_first | Text_next)) ->
-      add_extension_constructor parent id tyext env
-  | Sig_typext(id, ext, Text_exception) ->
-      add_exception parent id ext env
-  | Sig_module(id, md, _) ->
-      add_module_declaration parent id md env
-  | Sig_modtype(id, mtd) ->
-      add_module_type_declaration parent id mtd env
-  | Sig_class(id, cl, _) ->
-      add_class_declaration parent id cl env
-  | Sig_class_type(id, cltyp, _) ->
-      add_class_type_declaration parent id cltyp env
+let rec add_signature_items parent items env =
+  match items with
+  | Sig_value(id, vd) :: rest ->
+      let env = add_value_description parent id vd env in
+        add_signature_items parent rest env
+  | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
+      add_signature_items parent rest env
+  | Sig_type(id, decl, _) :: rest ->
+      let env = add_type_declaration parent id decl env in
+        add_signature_items parent rest env
+  | Sig_typext(id, tyext, (Text_first | Text_next)) :: rest ->
+      let env = add_extension_constructor parent id tyext env in
+        add_signature_items parent rest env
+  | Sig_typext(id, ext, Text_exception) :: rest ->
+      let env = add_exception parent id ext env in
+        add_signature_items parent rest env
+  | Sig_module(id, md, _) :: rest ->
+      let env = add_module_declaration parent id md env in
+        add_signature_items parent rest env
+  | Sig_modtype(id, mtd) :: rest ->
+      let env = add_module_type_declaration parent id mtd env in
+        add_signature_items parent rest env
+  | Sig_class(id, cl, _) :: Sig_class_type(ty_id, _, _)
+      :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
+      let env = add_class_declaration parent id ty_id obj_id cl_id cl env in
+        add_signature_items parent rest env
+  | Sig_class _ :: _ -> assert false
+  | Sig_class_type(id, cltyp, _) :: Sig_type(obj_id, _, _)
+    :: Sig_type(cl_id, _, _) :: rest ->
+      let env = add_class_type_declaration parent id obj_id cl_id cltyp env in
+        add_signature_items parent rest env
+  | Sig_class_type _ :: _ -> assert false
+  | [] -> env
 
 let rec read_module_type env parent pos mty =
   let open ModuleType in
@@ -878,17 +893,15 @@ and read_module_declaration env parent id md =
     {id; doc; type_}
 
 and read_signature env parent items =
-  let env =
-    List.fold_right
-      (add_signature_item parent)
-      items env
-  in
+  let env = add_signature_items parent items env in
   let rec loop acc items =
     let open Signature in
     match items with
     | Sig_value(id, v) :: rest ->
         let vd = read_value_description env parent id v in
           loop (vd :: acc) rest
+    | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
+        loop acc rest
     | Sig_type(id, decl, _) :: rest ->
         let decl = read_type_declaration env parent id decl in
           loop (Type decl :: acc) rest
@@ -915,12 +928,15 @@ and read_signature env parent items =
     | Sig_modtype(id, mtd) :: rest ->
         let mtd = read_module_type_declaration env parent id mtd in
           loop (ModuleType mtd :: acc) rest
-    | Sig_class(id, cl, _) :: rest ->
+    | Sig_class(id, cl, _) :: Sig_class_type _
+      :: Sig_type _ :: Sig_type _ :: rest ->
         let cl = read_class_declaration env parent id cl in
           loop (Class cl :: acc) rest
-    | Sig_class_type(id, cltyp, _) :: rest ->
+    | Sig_class _ :: _ -> assert false
+    | Sig_class_type(id, cltyp, _) :: Sig_type _ :: Sig_type _ :: rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
           loop (ClassType cltyp :: acc) rest
+    | Sig_class_type _ :: _ -> assert false
     | [] -> List.rev acc
   in
     loop [] items
