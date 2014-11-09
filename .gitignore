@@ -14,3 +14,7 @@
 
 ### Assemblage ###
 _build
+
+### Tests ###
+test/testCmi
+test/testCmti
