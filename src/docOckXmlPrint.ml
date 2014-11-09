@@ -957,7 +957,7 @@ and module_type_expr_p base output =
           | Functor(arg, expr) ->
               module_argument_p base output arg;
               loop expr
-          | expr -> module_type_expr_p base output mty
+          | mty -> module_type_expr_p base output mty
         in
           functor_t output;
           loop mty;
