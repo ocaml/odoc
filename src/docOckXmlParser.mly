@@ -132,7 +132,7 @@ module_identifier:
       { DocOckPaths.Identifier.Module(sg, data) }
   | pos = Argument sg = signature_identifier data = Data CLOSE
       { match pos with
-        | None -> raise Error
+        | None -> $syntaxerror
         | Some pos -> DocOckPaths.Identifier.Argument(sg, pos, data) }
 
 module_type_identifier:
@@ -913,7 +913,7 @@ unit_digest:
   | DIGEST data = Data CLOSE
       { try
           Digest.from_hex data
-        with Invalid_argument _ -> raise Error }
+        with Invalid_argument _ -> $syntaxerror }
 
 unit_import:
   | IMPORT data = Data digest = unit_digest? CLOSE

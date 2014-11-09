@@ -48,7 +48,7 @@ let test cmti =
   | exception Bad_string (line, column) ->
       prerr_endline
         (cmti ^ ":"
-         ^ (string_of_int line) ^ ":" ^ (string_of_int column)
+         ^ (string_of_int line) ^ "." ^ (string_of_int column)
          ^ ": expected string");
       1
   | Ok intf ->
@@ -58,16 +58,33 @@ let test cmti =
       Buffer.output_buffer stdout buf;
       print_newline ();
       let input = Xmlm.make_input (`String(0, Buffer.contents buf)) in
-      let intf2 = DocOckXmlParse.file parser input in
-      let buf2 = Buffer.create 1024 in
-      let output2 = Xmlm.make_output (`Buffer buf2) in
-      DocOckXmlPrint.file printer output2 intf2;
-      if buf <> buf2 then begin
-        prerr_endline (cmti ^ ": parsing does not match printing");
-        Buffer.output_buffer stderr buf2;
-        prerr_newline ();
-        1
-      end else 0
+      match DocOckXmlParse.file parser input with
+      | DocOckXmlParse.Error(start, (fline, fcolumn), msg) ->
+          let start =
+            match start with
+            | None -> ""
+            | Some (sline, scolumn) ->
+                let sline = string_of_int sline in
+                let scolumn = string_of_int scolumn in
+                  ":" ^ sline ^ "." ^ scolumn
+          in
+          let finish =
+            let fline = string_of_int fline in
+            let fcolumn = string_of_int fcolumn in
+              ":" ^ fline ^ "." ^ fcolumn
+          in
+            prerr_endline (cmti ^ start ^ finish ^ ": " ^ msg);
+            1
+      | DocOckXmlParse.Ok intf2 ->
+          let buf2 = Buffer.create 1024 in
+          let output2 = Xmlm.make_output (`Buffer buf2) in
+          DocOckXmlPrint.file printer output2 intf2;
+          if Buffer.contents buf <> Buffer.contents buf2 then begin
+            prerr_endline (cmti ^ ": parsing does not match printing");
+            Buffer.output_buffer stderr buf2;
+            prerr_newline ();
+            1
+          end else 0
 
 let main () =
   let code = ref 0 in
