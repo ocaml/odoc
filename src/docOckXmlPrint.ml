@@ -440,7 +440,7 @@ and path_p : type a. _ -> _ -> (_, a) Path.t -> _ =
           data output name;
           close output
       | Apply(m, arg) ->
-          dot_t output;
+          apply_t output;
           path_p base output m;
           path_p base output arg;
           close output
@@ -805,7 +805,7 @@ let type_kind_p base output =
         list constructor_p base output constructors;
         close output
     | Record fields ->
-        field_t output;
+        record_t output;
         list field_p base output fields;
         close output
     | Extensible -> closed extensible_t output
