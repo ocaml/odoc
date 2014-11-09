@@ -701,7 +701,7 @@ package_substitution:
       { (frag, expr) }
 
 package:
-  | path = module_type_path substitutions = package_substitution+
+  | path = module_type_path substitutions = package_substitution*
       { DocOckTypes.TypeExpr.Package.{path; substitutions} }
 
 argument_label:
