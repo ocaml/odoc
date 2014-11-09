@@ -379,7 +379,8 @@ let rec identifier_p: type a. _ -> _ -> (_, a) Identifier.t -> _ =
       | Argument(sg, pos, name) ->
           argument_t output (Some pos);
           identifier_p base output sg;
-          data output name
+          data output name;
+          close output
       | Module(sg, name) -> component module_t sg name
       | ModuleType(sg, name) -> component module_type_t sg name
       | Type(sg, name) -> component type_t sg name
@@ -605,7 +606,8 @@ and text_element_p base output elem =
     | Reference(rf, txt) ->
         reference_t output;
         doc_reference_p base output rf;
-        opt text_p base output txt
+        opt text_p base output txt;
+        close output
     | Target(target, s) ->
         target_t output target;
         data output s;
