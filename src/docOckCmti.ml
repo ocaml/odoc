@@ -91,8 +91,8 @@ let rec read_core_type env ctyp =
             | Some names -> Closed names
         in
           Variant {kind; elements}
-    | Ttyp_poly(vars, typ) ->
-        Poly(vars, read_core_type env typ)
+    | Ttyp_poly([], typ) -> read_core_type env typ
+    | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env typ)
     | Ttyp_package {pack_path; pack_fields; _} ->
         let open TypeExpr.Package in
         let path = Env.Path.read_module_type env pack_path in
