@@ -148,6 +148,8 @@ signature_identifier:
 type_identifier:
   | TYPE sg = signature_identifier data = Data CLOSE
       { DocOckPaths.Identifier.Type(sg, data) }
+  | TYPE data = Data CLOSE
+      { DocOckPaths.Identifier.CoreType data }
 
 constructor_identifier:
   | CONSTRUCTOR sg = type_identifier data = Data CLOSE
@@ -164,6 +166,8 @@ extension_identifier:
 exception_identifier:
   | EXCEPTION sg = signature_identifier data = Data CLOSE
       { DocOckPaths.Identifier.Exception(sg, data) }
+  | EXCEPTION data = Data CLOSE
+      { DocOckPaths.Identifier.CoreException data }
 
 value_identifier:
   | VALUE sg = signature_identifier data = Data CLOSE

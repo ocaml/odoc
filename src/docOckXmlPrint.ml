@@ -383,10 +383,12 @@ let rec identifier_p: type a. _ -> _ -> (_, a) Identifier.t -> _ =
       | Module(sg, name) -> component module_t sg name
       | ModuleType(sg, name) -> component module_type_t sg name
       | Type(sg, name) -> component type_t sg name
+      | CoreType name -> simple type_t output name
       | Constructor(sg, name) -> component constructor_t sg name
       | Field(sg, name) -> component field_t sg name
       | Extension(sg, name) -> component extension_t sg name
       | Exception(sg, name) -> component exception_t sg name
+      | CoreException name -> simple exception_t output name
       | Value(sg, name) -> component value_t sg name
       | Class(sg, name) -> component class_t sg name
       | ClassType(sg, name) -> component class_type_t sg name
