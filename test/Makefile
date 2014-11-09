@@ -1,7 +1,7 @@
 
 .PHONY: all coverage-cmi coverage-cmti
 
-OCAMLC ?= ocamlc
+OCAMLC ?= ocamlc -g
 DOC_OCK_XML_BUILD ?= ../_build/lib-doc-ock-xml
 DOC_OCK_FLAGS ?= \
    -I  $(DOC_OCK_XML_BUILD) \
