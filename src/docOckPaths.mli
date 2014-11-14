@@ -244,15 +244,23 @@ module Fragment : sig
 
   type kind = [ `Module | `Type | `Class | `ClassType ]
 
-  type 'a t =
-    | Resolved : 'a Resolved.t -> 'a t
-    | Dot : module_ * string -> [< kind] t
+  type sort = [ `Root | `Branch ]
+
+  type ('a, 'b) raw =
+    | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
+    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
+
+  and signature = ([`Module], [`Root | `Branch]) raw
+
+  and 'a t = ('a, [`Branch]) raw
 
   and module_ = [`Module] t
 
   and type_ = [`Type|`Class|`ClassType] t
 
   and any = kind t
+
+  val module_signature : module_ -> signature
 
   val any : 'a t -> any
 

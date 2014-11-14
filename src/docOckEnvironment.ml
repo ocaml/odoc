@@ -392,13 +392,13 @@ module Fragment = struct
   open DocOckPaths.Fragment
 
   let rec read_module = function
-    | Longident.Lident s -> Resolved (Module(Root, s))
-    | Longident.Ldot(p, s) -> Dot(read_module p, s)
+    | Longident.Lident s -> Dot(Resolved Root, s)
+    | Longident.Ldot(p, s) -> Dot(module_signature (read_module p), s)
     | Longident.Lapply _ -> assert false
 
   let read_type = function
-    | Longident.Lident s -> Resolved (Type(Root, s))
-    | Longident.Ldot(p, s) -> Dot(read_module p, s)
+    | Longident.Lident s -> Dot(Resolved Root, s)
+    | Longident.Ldot(p, s) -> Dot(module_signature (read_module p), s)
     | Longident.Lapply _ -> assert false
 
 end

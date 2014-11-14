@@ -418,15 +418,24 @@ module Fragment = struct
 
   type kind = [ `Module | `Type | `Class | `ClassType ]
 
-  type 'a t =
-    | Resolved : 'a Resolved.t -> 'a t
-    | Dot : module_ * string -> [< kind] t
+  type sort = [ `Root | `Branch ]
+
+  type ('a, 'b) raw =
+    | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
+    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
+
+  and signature = ([`Module], [`Root | `Branch]) raw
+
+  and 'a t = ('a, [`Branch]) raw
 
   and module_ = [`Module] t
 
   and type_ = [`Type|`Class|`ClassType] t
 
   and any = kind t
+
+  let module_signature : module_ -> signature = function
+    | Resolved(Module _) | Dot _ as x -> x
 
   let any : type k. k t -> any = function
     | Resolved (Module _) as x -> x
@@ -438,7 +447,10 @@ module Fragment = struct
   let rec path : type k. 'a Path.module_ -> k t -> ('a, k) Path.t =
    fun root -> function
     | Resolved r -> Resolved.path root r
-    | Dot(m, s) -> Path.Dot(path root m, s)
+    | Dot(Resolved Root, s) -> Path.Dot(root, s)
+    | Dot(Resolved (Module _) as m, s) -> Path.Dot(path root m, s)
+    | Dot(Dot _ as m, s) -> Path.Dot(path root m, s)
+
 
 end
 
