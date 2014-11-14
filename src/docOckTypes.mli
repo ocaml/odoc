@@ -132,7 +132,7 @@ and ModuleType : sig
   type 'a expr =
     | Ident of 'a Path.module_type
     | Signature of 'a Signature.t
-    | Functor of (string * 'a expr) option * 'a expr
+    | Functor of ('a Identifier.module_ * 'a expr) option * 'a expr
     | With of 'a expr * 'a substitution list
     | TypeOf of 'a Module.decl
 
