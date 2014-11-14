@@ -297,6 +297,36 @@ module Path = struct
     | Dot _ as x -> x
     | Apply _ as x -> x
 
+  let module_ p name =
+    match p with
+    | Resolved p -> Resolved (Module(p, name))
+    | p -> Dot(p, name)
+
+  let apply p arg =
+    match p with
+    | Resolved p -> Resolved (Apply(p, arg))
+    | p -> Apply(p, arg)
+
+  let module_type p name =
+    match p with
+    | Resolved p -> Resolved (ModuleType(p, name))
+    | p -> Dot(p, name)
+
+  let type_ p name =
+    match p with
+    | Resolved p -> Resolved (Type(p, name))
+    | p -> Dot(p, name)
+
+  let class_ p name =
+    match p with
+    | Resolved p -> Resolved (Class(p, name))
+    | p -> Dot(p, name)
+
+  let class_type_ p name =
+    match p with
+    | Resolved p -> Resolved (ClassType(p, name))
+    | p -> Dot(p, name)
+
 end
 
 

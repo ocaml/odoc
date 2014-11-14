@@ -189,6 +189,18 @@ module rec Path : sig
 
   val any : ('a, 'b) t -> 'a any
 
+  val module_ : 'a module_ -> string -> 'a module_
+
+  val apply : 'a module_ -> 'a module_ -> 'a module_
+
+  val module_type : 'a module_ -> string -> 'a module_type
+
+  val type_ : 'a module_ -> string -> 'a type_
+
+  val class_ : 'a module_ -> string -> 'a class_
+
+  val class_type_ : 'a module_ -> string -> 'a class_type
+
 end
 
 (** {3 Fragments} *)
