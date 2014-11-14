@@ -28,3 +28,33 @@ type 'a result =
 val read_cmti: 'a -> string -> 'a result
 
 val read_cmi: 'a -> string -> 'a result
+
+type 'a resolver
+
+(** Build a resolver. [equal] and [hash] are used
+    for memoization, they default to [(=)] and [Hashtbl.hash]
+    respectively. *)
+val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+  (string -> 'a option) -> ('a -> 'a Types.Unit.t) -> 'a resolver
+
+val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
+
+type 'a expander
+
+(** Build an expander. [equal] and [hash] are used
+    for memoization, they default to [(=)] and [Hashtbl.hash]
+    respectively. *)
+val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+  ('a -> 'a Types.Unit.t) -> 'a expander
+
+type 'a expansion =
+  | Signature of 'a Types.Signature.t
+  | Functor of ('a Paths.Identifier.module_ *
+                'a Types.ModuleType.expr) option list *
+               'a Types.Signature.t
+
+val expand_module: 'a expander -> 'a Types.Module.decl ->
+  'a expansion option
+
+val expand_module_type: 'a expander -> 'a Types.ModuleType.expr ->
+  'a expansion option

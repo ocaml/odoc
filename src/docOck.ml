@@ -65,3 +65,35 @@ let read_cmi root filename =
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
   | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version_interface
   | Cmi_format.Error (Corrupted_interface _) -> Corrupted_interface
+
+type 'a resolver = unit
+
+let build_resolver ?equal ?hash lookup fetch = ()
+
+let resolve () x = x
+
+type 'a expander = unit
+
+let build_expander ?equal ?hash fetch = ()
+
+type 'a expansion =
+  | Signature of 'a Types.Signature.t
+  | Functor of ('a Paths.Identifier.module_ *
+                'a Types.ModuleType.expr) option list *
+               'a Types.Signature.t
+
+let rec expand_module_type () = function
+  | Types.ModuleType.Ident _ -> None
+  | Types.ModuleType.Signature sg -> Some (Signature sg)
+  | Types.ModuleType.Functor(arg, expr) -> begin
+      match expand_module_type () expr with
+      | None -> None
+      | Some (Signature sg) -> Some(Functor([arg], sg))
+      | Some (Functor(args, sg)) -> Some(Functor(arg :: args, sg))
+    end
+  | Types.ModuleType.With _ -> None
+  | Types.ModuleType.TypeOf decl -> expand_module () decl
+
+and expand_module () = function
+  | Types.Module.Alias _ -> None
+  | Types.Module.ModuleType expr -> expand_module_type () expr
