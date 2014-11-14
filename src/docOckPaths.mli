@@ -95,6 +95,8 @@ module Identifier : sig
 
   val any : ('a, 'b) t -> 'a any
 
+  val name : ('a, 'b) t -> string option
+
 end
 
 (** {3 Paths} *)

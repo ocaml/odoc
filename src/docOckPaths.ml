@@ -113,7 +113,24 @@ module Identifier = struct
     | InstanceVariable _ as x -> x
     | Label _ as x -> x
 
-
+  let name : type k. ('a, k) t -> string option = function
+    | Root _ -> None
+    | Module(_, name) -> Some name
+    | Argument(_, _, name) -> Some name
+    | ModuleType(_, name) -> Some name
+    | Type(_, name) -> Some name
+    | CoreType name -> Some name
+    | Constructor(_, name) -> Some name
+    | Field(_, name) -> Some name
+    | Extension(_, name) -> Some name
+    | Exception(_, name) -> Some name
+    | CoreException name -> Some name
+    | Value(_, name) -> Some name
+    | Class(_, name) -> Some name
+    | ClassType(_, name) -> Some name
+    | Method(_, name) -> Some name
+    | InstanceVariable(_, name) -> Some name
+    | Label(_, name) -> Some name
 end
 
 
