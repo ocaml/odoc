@@ -13,11 +13,11 @@
 *.cmxa
 
 ### Assemblage ###
-Makefile
-META
-*.install
-_build
-.merlin
+/Makefile
+/META
+/*.install
+/_build
+/.merlin
 
 ### Tests ###
 test/testCmi
