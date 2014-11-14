@@ -925,10 +925,7 @@ unit:
   | UNIT id = module_identifier digest = unit_digest imports = unit_import*
       doc = doc items = signature_item* CLOSE
         { let open DocOckTypes.Unit in
-          let open DocOckTypes.ModuleType in
-          let open DocOckTypes.Module in
-          let module_ = {id; doc; type_ = ModuleType (Signature items)} in
-            {module_; digest; imports} }
+            {id; doc; digest; imports; items} }
 
 file:
   | DTD unit = unit EOF

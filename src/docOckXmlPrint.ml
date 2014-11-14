@@ -1078,19 +1078,12 @@ let unit_import_p base output =
 
 let unit_p base output unit =
   let open Unit in
-  let open ModuleType in
-  let open Module in
-    let items =
-      match unit.module_.type_ with
-      | ModuleType (Signature items) -> items
-      | _ -> assert false (* TODO make illegal? *)
-    in
     unit_t output;
-    identifier_p base output unit.module_.id;
+    identifier_p base output unit.id;
     unit_digest_p base output unit.digest;
     list unit_import_p base output unit.imports;
-    doc_p base output unit.module_.doc;
-    list signature_item_p base output items;
+    doc_p base output unit.doc;
+    list signature_item_p base output unit.items;
     close output
 
 let file_p base output unit =
