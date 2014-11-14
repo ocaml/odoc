@@ -287,16 +287,22 @@ signature_resolved_fragment:
   | md = module_resolved_fragment
       { DocOckPaths.Fragment.Resolved.module_signature md }
 
+signature_fragment:
+  | RESOLVED frag = signature_resolved_fragment CLOSE
+      { DocOckPaths.Fragment.Resolved frag }
+  | DOT md = signature_fragment data = Data CLOSE
+      { DocOckPaths.Fragment.Dot(md, data) }
+
 module_fragment:
   | RESOLVED frag = module_resolved_fragment CLOSE
       { DocOckPaths.Fragment.Resolved frag }
-  | DOT md = module_fragment data = Data CLOSE
+  | DOT md = signature_fragment data = Data CLOSE
       { DocOckPaths.Fragment.Dot(md, data) }
 
 type_fragment:
   | RESOLVED frag = type_resolved_fragment CLOSE
       { DocOckPaths.Fragment.Resolved frag }
-  | DOT md = module_fragment data = Data CLOSE
+  | DOT md = signature_fragment data = Data CLOSE
       { DocOckPaths.Fragment.Dot(md, data) }
 
 module_resolved_reference:

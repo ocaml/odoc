@@ -462,7 +462,7 @@ let rec resolved_fragment_p
       | Class(m, name) -> component class_t m name
       | ClassType(m, name) -> component class_type_t m name
 
-let rec fragment_p : type a. _ -> _ -> a Fragment.t -> _ =
+let rec fragment_p : type a b. _ -> _ -> (a, b) Fragment.raw -> _ =
   fun base output frag ->
     let open Fragment in
       match frag with
