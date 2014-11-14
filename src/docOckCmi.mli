@@ -15,7 +15,10 @@
  *)
 
 
-val read_interface: 'a -> Types.signature -> 'a DocOckTypes.Module.t
+val read_interface: 'a -> Types.signature ->
+  'a DocOckPaths.Identifier.module_ *
+  'a DocOckTypes.Documentation.t *
+  'a DocOckTypes.Signature.t
 
 (* Used to resolve `module type of`. Can be removed once we support
    `.cmt` files.*)

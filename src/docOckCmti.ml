@@ -720,5 +720,4 @@ let read_interface root intf =
     | Comment (Documentation doc) :: items -> doc, items
     | _ -> empty, items
   in
-  let type_ = ModuleType (ModuleType.Signature items) in
-    {id; doc; type_}
+    (id, doc, items)

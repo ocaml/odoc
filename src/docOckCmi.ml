@@ -946,5 +946,4 @@ let read_interface root intf =
   let id = Identifier.Root root in
   let doc = empty in
   let items = read_signature Env.empty id intf in
-  let type_ = ModuleType (ModuleType.Signature items) in
-    {id; doc; type_}
+    (id, doc, items)

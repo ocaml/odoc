@@ -33,14 +33,14 @@ let read_cmti root filename =
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
     | Interface intf -> begin
-        let module_ = DocOckCmti.read_interface root intf in
+        let (id, doc, items) = DocOckCmti.read_interface root intf in
         let imports =
           List.filter (fun (name, _) -> name <> cmt_info.cmt_modname) cmt_info.cmt_imports
         in
         let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
           match cmt_info.cmt_interface_digest with
           | Some digest ->
-              Ok {module_; digest; imports}
+              Ok {id; doc; digest; imports; items}
           | None -> Corrupted_interface
       end
     | _ -> Not_an_interface
@@ -57,9 +57,9 @@ let read_cmi root filename =
     let cmi_info = read_cmi filename in
       match cmi_info.cmi_crcs with
       | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-          let module_ = DocOckCmi.read_interface root cmi_info.cmi_sign in
+          let (id, doc, items) = DocOckCmi.read_interface root cmi_info.cmi_sign in
           let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
-            Ok {module_; digest; imports}
+            Ok {id; doc; digest; imports; items}
       | _ -> Corrupted_interface
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface

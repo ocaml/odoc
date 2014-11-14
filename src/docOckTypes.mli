@@ -428,8 +428,10 @@ module Unit : sig
     | Resolved of 'a
 
   type 'a t =
-    { module_: 'a Module.t;
+    { id: 'a Identifier.module_;
+      doc: 'a Documentation.t;
       digest: Digest.t;
-      imports: 'a import list; }
+      imports: 'a import list;
+      items: 'a Signature.t }
 
 end
