@@ -941,9 +941,9 @@ and module_argument_p base output = function
   | None ->
       argument_t output None;
       close output
-  | Some(name, expr) ->
+  | Some(id, expr) ->
       argument_t output None;
-      name_p base output name;
+      identifier_p base output id;
       module_type_expr_p base output expr;
       close output
 

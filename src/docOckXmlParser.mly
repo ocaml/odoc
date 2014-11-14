@@ -840,8 +840,8 @@ substitution:
       { DocOckTypes.ModuleType.TypeSubst(frag, expr) }
 
 module_argument:
-  | Argument name = name expr = module_type_expr CLOSE
-      { Some(name, expr) }
+  | Argument id = module_identifier expr = module_type_expr CLOSE
+      { Some(id, expr) }
   | Argument CLOSE
       { None }
 
