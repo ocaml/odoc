@@ -412,6 +412,30 @@ module Fragment = struct
             let m = Identifier.module_signature (identifier root m) in
               Identifier.ClassType(m, n)
 
+  let rec split_module : module_ -> string * signature = function
+    | Module(Root, name) -> name, Root
+    | Module(Module _ as m, name) ->
+        let base, m = split_module m in
+          base, Module(m, name)
+
+  let split : type k . k t -> string * k t option = function
+    | Module(Root, name) -> name, None
+    | Module(Module _ as m, name) ->
+        let base, m = split_module m in
+          base, Some (Module(m, name))
+    | Type(Root, base) -> base, None
+    | Type(Module _ as m, name) ->
+        let base, m = split_module m in
+          base, Some (Type(m, name))
+    | Class(Root, base) -> base, None
+    | Class(Module _ as m, name) ->
+        let base, m = split_module m in
+          base, Some (Class(m, name))
+    | ClassType(Root, base) -> base, None
+    | ClassType(Module _ as m, name) ->
+        let base, m = split_module m in
+          base, Some (ClassType(m, name))
+
   end
 
   open Resolved
@@ -451,6 +475,28 @@ module Fragment = struct
     | Dot(Resolved (Module _) as m, s) -> Path.Dot(path root m, s)
     | Dot(Dot _ as m, s) -> Path.Dot(path root m, s)
 
+  let rec split_module : module_ -> string * signature = function
+    | Resolved r ->
+        let base, m = Resolved.split_module r in
+          base, Resolved m
+    | Dot((Resolved Root), name) -> name, Resolved Root
+    | Dot(Resolved(Module _) | Dot _ as m, name) ->
+        let base, m = split_module m in
+          base, Dot(m, name)
+
+  let split : type k . k t -> string * k t option = function
+    | Resolved r ->
+        let base, m = Resolved.split r in
+        let m =
+          match m with
+          | None -> None
+          | Some m -> Some (Resolved m)
+        in
+          base, m
+    | Dot((Resolved Root), name) -> name, None
+    | Dot(Resolved(Module _) | Dot _ as m, name) ->
+        let base, m = split_module m in
+          base, Some(Dot(m, name))
 
 end
 

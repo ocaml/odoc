@@ -240,6 +240,8 @@ module Fragment : sig
     val identifier: 'a Identifier.signature -> 'b t ->
                     ('a, 'b) Identifier.t
 
+    val split : 'a t -> string * 'a t option
+
   end
 
   type kind = [ `Module | `Type | `Class | `ClassType ]
@@ -265,6 +267,8 @@ module Fragment : sig
   val any : 'a t -> any
 
   val path: 'a Path.module_ -> 'b t -> ('a, 'b) Path.t
+
+  val split: 'a t -> string * 'a t option
 
 end
 
