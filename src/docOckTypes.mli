@@ -187,10 +187,14 @@ and TypeDecl : sig
 
   end
 
-  type 'a kind =
-    | Variant of 'a Constructor.t list
-    | Record of 'a Field.t list
-    | Extensible
+  module Representation : sig
+
+    type 'a t =
+      | Variant of 'a Constructor.t list
+      | Record of 'a Field.t list
+      | Extensible
+
+  end
 
   type variance =
     | Pos
@@ -202,23 +206,21 @@ and TypeDecl : sig
 
   type param = param_desc * variance option
 
-  type 'a t =
-    { id: 'a Identifier.type_;
-      doc: 'a Documentation.t;
-      params: param list;
-      private_: bool;
-      manifest: 'a TypeExpr.t option;
-      constraints: ('a TypeExpr.t * 'a TypeExpr.t) list;
-      kind: 'a kind option; }
-
   module Equation : sig
 
     type 'a t =
       { params: param list;
         private_: bool;
-        manifest: 'a TypeExpr.t; }
+        manifest: 'a TypeExpr.t option;
+        constraints: ('a TypeExpr.t * 'a TypeExpr.t) list; }
 
   end
+
+  type 'a t =
+    { id: 'a Identifier.type_;
+      doc: 'a Documentation.t;
+      equation: 'a Equation.t;
+      representation: 'a Representation.t option; }
 
 end
 

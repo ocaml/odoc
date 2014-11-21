@@ -490,7 +490,7 @@ let add_type_kind container parent kind env =
   | Type_open -> env
 
 let read_type_kind env container parent =
-  let open TypeDecl in function
+  let open TypeDecl.Representation in function
     | Type_abstract -> None
     | Type_variant cstrs ->
         let cstrs =
@@ -555,7 +555,7 @@ let read_type_declaration env parent id decl =
     mark_type_kind decl.type_kind;
     let manifest = opt_map (read_type_expr env) decl.type_manifest in
     let constraints = read_type_constraints env params in
-    let kind = read_type_kind env container id decl.type_kind in
+    let representation = read_type_kind env container id decl.type_kind in
     let abstr =
       match decl.type_kind with
         Type_abstract ->
@@ -572,7 +572,8 @@ let read_type_declaration env parent id decl =
       List.map2 (read_type_parameter abstr) decl.type_variance params
     in
     let private_ = (decl.type_private = Private) in
-      {id; doc; params; manifest; kind; constraints; private_}
+    let equation = Equation.{params; manifest; constraints; private_} in
+      {id; doc; equation; representation}
 
 let add_extension_constructor parent id ext env =
   let container = Identifier.container_of_signature parent in

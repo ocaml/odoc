@@ -177,7 +177,7 @@ let add_type_kind container parent kind env =
   | Ttype_open -> env
 
 let read_type_kind env container parent =
-  let open TypeDecl in function
+  let open TypeDecl.Representation in function
     | Ttype_abstract -> None
     | Ttype_variant cstrs ->
         let cstrs =
@@ -199,11 +199,8 @@ let add_type_declaration parent decl env =
   let env = Env.add_type parent decl.typ_id env in
     env
 
-let read_type_declaration env parent decl =
-  let open TypeDecl in
-  let id = Identifier.Type(parent, Ident.name decl.typ_id) in
-  let container = Identifier.container_of_signature parent in
-  let doc = read_attributes env container decl.typ_attributes in
+let read_type_equation env decl =
+  let open TypeDecl.Equation in
   let params = List.map (read_type_parameter env) decl.typ_params in
   let private_ = (decl.typ_private = Private) in
   let manifest = opt_map (read_core_type env) decl.typ_manifest in
@@ -214,8 +211,16 @@ let read_type_declaration env parent decl =
           read_core_type env typ2))
       decl.typ_cstrs
   in
-  let kind = read_type_kind env container id decl.typ_kind in
-    {id; doc; params; private_; manifest; constraints; kind}
+    {params; private_; manifest; constraints}
+
+let read_type_declaration env parent decl =
+  let open TypeDecl in
+  let id = Identifier.Type(parent, Ident.name decl.typ_id) in
+  let container = Identifier.container_of_signature parent in
+  let doc = read_attributes env container decl.typ_attributes in
+  let equation = read_type_equation env decl in
+  let representation = read_type_kind env container id decl.typ_kind in
+    {id; doc; equation; representation}
 
 let add_type_declarations parent decls env =
   let container = Identifier.container_of_signature parent in
@@ -239,17 +244,6 @@ let read_type_declarations env parent decls =
       [] decls
   in
     List.rev items
-
-let read_type_equation env decl =
-  let open TypeDecl.Equation in
-  let params = List.map (read_type_parameter env) decl.typ_params in
-  let private_ = (decl.typ_private = Private) in
-  let manifest =
-    match decl.typ_manifest with
-    | None -> assert false
-    | Some typ -> read_core_type env typ
-  in
-    {params; private_; manifest}
 
 let add_extension_constructor parent ext env =
   let container = Identifier.container_of_signature parent in
