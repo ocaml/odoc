@@ -765,13 +765,13 @@ field:
   | FIELD id = field_identifier doc = doc type_ = type_expr CLOSE
       { DocOckTypes.TypeDecl.Field.{id; doc; type_} }
 
-type_kind:
+type_representation:
   | VARIANT constructors = constructor+ CLOSE
-      { DocOckTypes.TypeDecl.Variant constructors }
+      { DocOckTypes.TypeDecl.Representation.Variant constructors }
   | RECORD fields = field+ CLOSE
-      { DocOckTypes.TypeDecl.Record fields }
+      { DocOckTypes.TypeDecl.Representation.Record fields }
   | EXTENSIBLE CLOSE
-      { DocOckTypes.TypeDecl.Extensible }
+      { DocOckTypes.TypeDecl.Representation.Extensible }
 
 variance:
   | POS CLOSE
@@ -790,8 +790,10 @@ type_constraint:
       { (expr1, expr2) }
 
 type_equation:
-  | params = type_parameter* private_ = flag(PRIVATE) manifest = type_expr
-      { DocOckTypes.TypeDecl.Equation.{params; private_; manifest} }
+  | params = type_parameter* private_ = flag(PRIVATE) manifest = type_expr?
+      constraints = type_constraint*
+        { let open DocOckTypes.TypeDecl.Equation in
+            {params; private_; manifest; constraints} }
 
 extension_constructor:
   | CONSTRUCTOR id = extension_identifier doc = doc
@@ -875,12 +877,11 @@ signature_item:
         { let open DocOckTypes.Signature in
           let open DocOckTypes.External in
             External {id; doc; type_; primitives} }
-  | TYPE id = type_identifier doc = doc params = type_parameter*
-      private_ = flag(PRIVATE) manifest = type_expr?
-        constraints = type_constraint* kind = type_kind? CLOSE
-          { let open DocOckTypes.Signature in
-            let open DocOckTypes.TypeDecl in
-              Type {id; doc; params; private_; manifest; constraints; kind} }
+  | TYPE id = type_identifier doc = doc equation = type_equation
+      representation = type_representation? CLOSE
+        { let open DocOckTypes.Signature in
+          let open DocOckTypes.TypeDecl in
+            Type {id; doc; equation; representation} }
   | EXTENSION type_path = type_path doc = doc type_params = type_parameter*
       private_ = flag(PRIVATE) constructors = extension_constructor+ CLOSE
         { let open DocOckTypes.Signature in

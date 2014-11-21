@@ -798,8 +798,8 @@ let field_p base output fld =
     type_expr_p base output fld.type_;
     close output
 
-let type_kind_p base output =
-  let open TypeDecl in function
+let type_representation_p base output =
+  let open TypeDecl.Representation in function
     | Variant constructors ->
         variant_t output;
         list constructor_p base output constructors;
@@ -837,7 +837,8 @@ let type_equation_p base output eq =
   let open TypeDecl.Equation in
     list type_parameter_p base output eq.params;
     flag private_t output eq.private_;
-    type_expr_p base output eq.manifest
+    opt type_expr_p base output eq.manifest;
+    list type_constraint_p base output eq.constraints
 
 let extension_constructor_p base output ext =
   let open Extension.Constructor in
@@ -996,11 +997,8 @@ and signature_item_p base output =
           type_t output;
           identifier_p base output typ.id;
           doc_p base output typ.doc;
-          list type_parameter_p base output typ.params;
-          flag private_t output typ.private_;
-          opt type_expr_p base output typ.manifest;
-          list type_constraint_p base output typ.constraints;
-          opt type_kind_p base output typ.kind;
+          type_equation_p base output typ.equation;
+          opt type_representation_p base output typ.representation;
           close output
     | TypExt typext ->
         let open Extension in
