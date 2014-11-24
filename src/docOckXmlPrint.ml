@@ -937,11 +937,11 @@ and substitution_p base output =
         fragment_p base output frag;
         type_equation_p base output eq;
         close output
-    | TypeSubst(frag, params, expr) ->
+    | TypeSubst(frag, params, p) ->
         type_subst_t output;
         fragment_p base output frag;
         list type_subst_parameter_p base output params;
-        type_expr_p base output expr;
+        path_p base output p;
         close output
 
 and module_argument_p base output = function

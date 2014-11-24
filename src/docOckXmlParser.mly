@@ -849,8 +849,8 @@ substitution:
   | TYPE frag = type_fragment eq = type_equation CLOSE
       { DocOckTypes.ModuleType.TypeEq(frag, eq) }
   | TYPE_SUBST frag = type_fragment
-      params = type_subst_parameter* expr = type_expr CLOSE
-        { DocOckTypes.ModuleType.TypeSubst(frag, params, expr) }
+      params = type_subst_parameter* p = type_path CLOSE
+        { DocOckTypes.ModuleType.TypeSubst(frag, params, p) }
 
 module_argument:
   | Argument id = module_identifier expr = module_type_expr CLOSE
