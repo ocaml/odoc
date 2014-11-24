@@ -827,6 +827,11 @@ let type_parameter_p base output =
         opt variance_p base output v;
         close output
 
+let type_subst_parameter_p base output name =
+  param_t output;
+  data output name;
+  close output
+
 let type_constraint_p base output (expr1, expr2) =
   constraint_t output;
   type_expr_p base output expr1;
@@ -932,9 +937,10 @@ and substitution_p base output =
         fragment_p base output frag;
         type_equation_p base output eq;
         close output
-    | TypeSubst(frag, expr) ->
+    | TypeSubst(frag, params, expr) ->
         type_subst_t output;
         fragment_p base output frag;
+        list type_subst_parameter_p base output params;
         type_expr_p base output expr;
         close output
 

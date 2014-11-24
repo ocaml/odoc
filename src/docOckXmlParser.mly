@@ -785,6 +785,10 @@ type_parameter:
   | PARAM name = Data v = variance? CLOSE
       { (DocOckTypes.TypeDecl.Var name, v) }
 
+type_subst_parameter:
+  | PARAM name = Data CLOSE
+      { name }
+
 type_constraint:
   | CONSTRAINT expr1 = type_expr expr2 = type_expr CLOSE
       { (expr1, expr2) }
@@ -844,8 +848,9 @@ substitution:
       { DocOckTypes.ModuleType.ModuleSubst(frag, p) }
   | TYPE frag = type_fragment eq = type_equation CLOSE
       { DocOckTypes.ModuleType.TypeEq(frag, eq) }
-  | TYPE_SUBST frag = type_fragment expr = type_expr CLOSE
-      { DocOckTypes.ModuleType.TypeSubst(frag, expr) }
+  | TYPE_SUBST frag = type_fragment
+      params = type_subst_parameter* expr = type_expr CLOSE
+        { DocOckTypes.ModuleType.TypeSubst(frag, params, expr) }
 
 module_argument:
   | Argument id = module_identifier expr = module_type_expr CLOSE
