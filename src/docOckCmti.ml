@@ -577,12 +577,13 @@ let rec read_with_constraint env parent (_, frag, constr) =
           | _ -> assert false
         in
         let params = List.map read_param decl.typ_params in
-        let typ =
+        let p =
           match decl.typ_manifest with
-          | None -> assert false
-          | Some typ -> read_core_type env typ
+          | Some {ctyp_desc = Ttyp_constr(p, _, _)} ->
+              Env.Path.read_type env p
+          | _ -> assert false
         in
-          TypeSubst(frag, params, typ)
+          TypeSubst(frag, params, p)
     | Twith_modsubst(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env p in
