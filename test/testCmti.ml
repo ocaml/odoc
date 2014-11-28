@@ -16,6 +16,44 @@
 
 open DocOck
 
+class ident = object
+  method root x = x
+  method reference_value x = x
+  method reference_type x = x
+  method reference_module_type x = x
+  method reference_module x = x
+  method reference_method x = x
+  method reference_label x = x
+  method reference_instance_variable x = x
+  method reference_field x = x
+  method reference_extension x = x
+  method reference_exception x = x
+  method reference_constructor x = x
+  method reference_class_type x = x
+  method reference_class x = x
+  method reference_any x = x
+  method path_type x = x
+  method path_module_type x = x
+  method path_module x = x
+  method path_class_type x = x
+  method identifier_value x = x
+  method identifier_type x = x
+  method identifier_module_type x = x
+  method identifier_module x = x
+  method identifier_method x = x
+  method identifier_label x = x
+  method identifier_instance_variable x = x
+  method identifier_field x = x
+  method identifier_extension x = x
+  method identifier_exception x = x
+  method identifier_constructor x = x
+  method identifier_class_type x = x
+  method identifier_class x = x
+  method fragment_type x = x
+  method fragment_module x = x
+  inherit [string] DocOckMaps.types
+end
+
 let test cmti =
   match read_cmti cmti cmti with
   | Not_an_interface ->
@@ -30,7 +68,14 @@ let test cmti =
   | Not_a_typedtree ->
       prerr_endline (cmti ^ ": not a typedtree");
       1
-  | Ok intf -> 0
+  | Ok intf ->
+      let ident = new ident in
+      let intf' = ident#unit intf in
+        if intf != intf' then begin
+          prerr_endline (cmti ^ ": deep identity map failed");
+          1
+        end else 0
+
 
 let main () =
   let code = ref 0 in
