@@ -148,15 +148,15 @@ end
 and Signature : sig
 
   type 'a item =
-    | Value of 'a Value.t
-    | External of 'a External.t
+    | Module of 'a Module.t
+    | ModuleType of 'a ModuleType.t
     | Type of 'a TypeDecl.t
     | TypExt of 'a Extension.t
     | Exception of 'a Exception.t
+    | Value of 'a Value.t
+    | External of 'a External.t
     | Class of 'a Class.t
     | ClassType of 'a ClassType.t
-    | Module of 'a Module.t
-    | ModuleType of 'a ModuleType.t
     | Include of 'a ModuleType.expr
     | Comment of 'a Documentation.comment
 
@@ -321,8 +321,8 @@ end
 and ClassSignature : sig
 
   type 'a item =
-    | InstanceVariable of 'a InstanceVariable.t
     | Method of 'a Method.t
+    | InstanceVariable of 'a InstanceVariable.t
     | Constraint of 'a TypeExpr.t * 'a TypeExpr.t
     | Inherit of 'a ClassType.expr
     | Comment of 'a Documentation.comment
