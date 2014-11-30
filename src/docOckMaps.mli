@@ -207,7 +207,7 @@ class virtual ['a] signature : object
 
   method virtual type_decl : 'a TypeDecl.t -> 'a TypeDecl.t
 
-  method virtual type_extension : 'a Extension.t -> 'a Extension.t
+  method virtual extension : 'a Extension.t -> 'a Extension.t
 
   method virtual exception_ : 'a Exception.t -> 'a Exception.t
 
