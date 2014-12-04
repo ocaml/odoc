@@ -54,6 +54,8 @@ class ident = object
   inherit [string] DocOckMaps.types
 end
 
+exception Bad_fetch of string
+
 let test cmti =
   match read_cmti cmti cmti with
   | Not_an_interface ->
@@ -74,7 +76,23 @@ let test cmti =
         if intf != intf' then begin
           prerr_endline (cmti ^ ": deep identity map failed");
           1
-        end else 0
+        end else  begin
+          let lookup s =
+            if s = cmti then Some cmti
+            else None
+          in
+          let fetch s =
+            if s = cmti then intf'
+            else raise (Bad_fetch s)
+          in
+          let resolver = build_resolver lookup fetch in
+            try
+              ignore (resolve resolver intf');
+              0
+            with Bad_fetch s ->
+              prerr_endline (cmti ^ ": bad fetch of " ^ s ^ " during resolution");
+              1
+          end
 
 
 let main () =

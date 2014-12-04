@@ -70,11 +70,11 @@ let read_cmi root filename =
   | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version_interface
   | Cmi_format.Error (Corrupted_interface _) -> Corrupted_interface
 
-type 'a resolver = unit
+type 'a resolver = 'a DocOckResolve.resolver
 
-let build_resolver lookup fetch = ()
+let build_resolver = DocOckResolve.build_resolver
 
-let resolve () x = x
+let resolve = DocOckResolve.resolve
 
 type 'a expander = unit
 
