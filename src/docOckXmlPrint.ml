@@ -836,6 +836,7 @@ let field_p base output fld =
     field_t output;
     identifier_p base output fld.id;
     doc_p base output fld.doc;
+    flag mutable_t output fld.mutable_;
     type_expr_p base output fld.type_;
     close output
 

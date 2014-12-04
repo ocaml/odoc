@@ -902,8 +902,9 @@ constructor:
         { TypeDecl.Constructor.{id; doc; args; res} }
 
 field:
-  | FIELD id = field_identifier doc = doc type_ = type_expr CLOSE
-      { TypeDecl.Field.{id; doc; type_} }
+  | FIELD id = field_identifier doc = doc
+      mutable_ = flag(MUTABLE) type_ = type_expr CLOSE
+      { TypeDecl.Field.{id; doc; mutable_; type_} }
 
 type_representation:
   | VARIANT constructors = constructor+ CLOSE
