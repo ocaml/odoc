@@ -1,5 +1,72 @@
+(*
+ * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
 
 %parameter< Root : sig type t end >
+
+%{
+
+let relax_class_path cl =
+  match (cl : ('a, DocOckPaths.Kind.identifier_class) DocOckPaths.Path.Resolved.t) with
+  | DocOckPaths.Path.Resolved.Identifier (DocOckPaths.Identifier.Class _)
+  | DocOckPaths.Path.Resolved.Class _ as cl -> cl
+
+let relax_class_type_path cltyp =
+  match (cltyp : 'a DocOckPaths.Path.Resolved.class_type) with
+  | DocOckPaths.Path.Resolved.Identifier
+      (DocOckPaths.Identifier.Class _
+      | DocOckPaths.Identifier.ClassType _)
+  | DocOckPaths.Path.Resolved.Class _
+  | DocOckPaths.Path.Resolved.ClassType _ as cltyp -> cltyp
+
+let relax_datatype_reference typ =
+  match (typ : 'a DocOckPaths.Reference.Resolved.datatype) with
+  | DocOckPaths.Reference.Resolved.Identifier
+      (DocOckPaths.Identifier.Type _ | DocOckPaths.Identifier.CoreType _)
+  | DocOckPaths.Reference.Resolved.Type _ as typ -> typ
+
+let relax_extension_reference ext =
+  match (ext : 'a DocOckPaths.Reference.Resolved.extension) with
+  | DocOckPaths.Reference.Resolved.Identifier
+      (DocOckPaths.Identifier.Exception _
+      | DocOckPaths.Identifier.CoreException _
+      | DocOckPaths.Identifier.Extension _)
+  | DocOckPaths.Reference.Resolved.Exception _
+  | DocOckPaths.Reference.Resolved.Extension _ as ext -> ext
+
+let relax_exception_reference exn =
+  match (exn : 'a DocOckPaths.Reference.Resolved.exception_) with
+  | DocOckPaths.Reference.Resolved.Identifier
+      (DocOckPaths.Identifier.Exception _
+      | DocOckPaths.Identifier.CoreException _)
+  | DocOckPaths.Reference.Resolved.Exception _ as exn -> exn
+
+let relax_class_reference cl =
+  match (cl : 'a DocOckPaths.Reference.Resolved.class_) with
+  | DocOckPaths.Reference.Resolved.Identifier
+      (DocOckPaths.Identifier.Class _)
+  | DocOckPaths.Reference.Resolved.Class _ as cl -> cl
+
+let relax_class_type_reference cltyp =
+  match (cltyp : 'a DocOckPaths.Reference.Resolved.class_type) with
+  | DocOckPaths.Reference.Resolved.Identifier
+      (DocOckPaths.Identifier.Class _ | DocOckPaths.Identifier.ClassType _)
+  | DocOckPaths.Reference.Resolved.Class _
+  | DocOckPaths.Reference.Resolved.ClassType _ as cltyp -> cltyp
+
+%}
 
 %token ALIAS
 %token ANY
@@ -81,6 +148,8 @@
 %token SPECIAL
 %token STOP
 %token SUBSCRIPT
+%token SUBST
+%token SUBST_ALIAS
 %token SUPERSCRIPT
 %token TAG
 %token TUPLE
@@ -141,9 +210,9 @@ module_type_identifier:
 
 signature_identifier:
   | md = module_identifier
-      { DocOckPaths.Identifier.module_signature md }
+      { DocOckPaths.Identifier.signature_of_module md }
   | mty = module_type_identifier
-      { DocOckPaths.Identifier.module_type_signature mty }
+      { DocOckPaths.Identifier.signature_of_module_type mty }
 
 type_identifier:
   | TYPE sg = signature_identifier data = Data CLOSE
@@ -183,9 +252,9 @@ class_type_identifier:
 
 class_signature_identifier:
   | cl = class_identifier
-      { DocOckPaths.Identifier.class_signature cl }
+      { DocOckPaths.Identifier.class_signature_of_class cl }
   | clty = class_type_identifier
-      { DocOckPaths.Identifier.class_type_signature clty }
+      { DocOckPaths.Identifier.class_signature_of_class_type clty }
 
 method_identifier:
   | METHOD sg = class_signature_identifier data = Data CLOSE
@@ -196,18 +265,52 @@ instance_variable_identifier:
       { DocOckPaths.Identifier.InstanceVariable(sg, data) }
 
 label_identifier:
-  | LABEL sg = container_identifier data = Data CLOSE
+  | LABEL sg = parent_identifier data = Data CLOSE
       { DocOckPaths.Identifier.Label(sg, data) }
 
-container_identifier:
+parent_identifier:
   | sg = signature_identifier
-    { DocOckPaths.Identifier.container_of_signature sg }
+    { DocOckPaths.Identifier.parent_of_signature sg }
   | csig = class_signature_identifier
-    { DocOckPaths.Identifier.container_of_class_signature csig }
+    { DocOckPaths.Identifier.parent_of_class_signature csig }
+  | typ = type_identifier
+    { DocOckPaths.Identifier.parent_of_datatype typ }
+
+element_identifier:
+  | id = module_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = module_type_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = type_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = constructor_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = field_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = extension_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = exception_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = value_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = class_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = class_type_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = method_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = instance_variable_identifier
+    { DocOckPaths.Identifier.any id }
+  | id = label_identifier
+    { DocOckPaths.Identifier.any id }
 
 module_resolved_path:
   | IDENTIFIER id = module_identifier CLOSE
       { DocOckPaths.Path.Resolved.ident_module id }
+  | SUBST sub = module_type_resolved_path p = module_resolved_path CLOSE
+      { DocOckPaths.Path.Resolved.Subst(sub, p) }
+  | SUBST_ALIAS sub = module_resolved_path p = module_resolved_path CLOSE
+      { DocOckPaths.Path.Resolved.SubstAlias(sub, p) }
   | MODULE md = module_resolved_path data = Data CLOSE
       { DocOckPaths.Path.Resolved.Module(md, data) }
   | APPLY md = module_resolved_path arg = module_path CLOSE
@@ -225,7 +328,7 @@ type_resolved_path:
   | TYPE md = module_resolved_path data = Data CLOSE
       { DocOckPaths.Path.Resolved.Type(md, data) }
   | cltyp = class_type_resolved_path
-      { DocOckPaths.Path.Resolved.type_of_class_type cltyp }
+      { relax_class_type_path cltyp }
 
 class_resolved_path:
   | IDENTIFIER id = class_identifier CLOSE
@@ -239,7 +342,7 @@ class_type_resolved_path:
   | CLASS_TYPE md = module_resolved_path data = Data CLOSE
       { DocOckPaths.Path.Resolved.ClassType(md, data) }
   | cl = class_resolved_path
-      { DocOckPaths.Path.Resolved.class_type_of_class cl }
+      { relax_class_path cl }
 
 module_path:
   | RESOLVED path = module_resolved_path CLOSE
@@ -270,6 +373,10 @@ class_type_path:
       { DocOckPaths.Path.Dot(md, data) }
 
 module_resolved_fragment:
+  | SUBST sub = module_type_resolved_path p = module_resolved_fragment CLOSE
+      { DocOckPaths.Fragment.Resolved.Subst(sub, p) }
+  | SUBST_ALIAS sub = module_resolved_path p = module_resolved_fragment CLOSE
+      { DocOckPaths.Fragment.Resolved.SubstAlias(sub, p) }
   | MODULE md = signature_resolved_fragment data = Data CLOSE
       { DocOckPaths.Fragment.Resolved.Module(md, data) }
 
@@ -284,8 +391,12 @@ type_resolved_fragment:
 signature_resolved_fragment:
   | ROOT CLOSE
       { DocOckPaths.Fragment.Resolved.Root }
-  | md = module_resolved_fragment
-      { DocOckPaths.Fragment.Resolved.module_signature md }
+  | SUBST sub = module_type_resolved_path p = signature_resolved_fragment CLOSE
+      { DocOckPaths.Fragment.Resolved.Subst(sub, p) }
+  | SUBST_ALIAS sub = module_resolved_path p = signature_resolved_fragment CLOSE
+      { DocOckPaths.Fragment.Resolved.SubstAlias(sub, p) }
+  | MODULE md = signature_resolved_fragment data = Data CLOSE
+      { DocOckPaths.Fragment.Resolved.Module(md, data) }
 
 signature_fragment:
   | RESOLVED frag = signature_resolved_fragment CLOSE
@@ -319,21 +430,21 @@ module_type_resolved_reference:
 
 signature_resolved_reference:
   | md = module_resolved_reference
-      { DocOckPaths.Reference.Resolved.module_signature md }
+      { DocOckPaths.Reference.Resolved.signature_of_module md }
   | mty = module_type_resolved_reference
-      { DocOckPaths.Reference.Resolved.module_type_signature mty }
+      { DocOckPaths.Reference.Resolved.signature_of_module_type mty }
 
 datatype_resolved_reference:
   | IDENTIFIER id = type_identifier CLOSE
-      { DocOckPaths.Reference.Resolved.ident_datatype id }
+      { DocOckPaths.Reference.Resolved.ident_type id }
   | TYPE sg = signature_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.Type(sg, data) }
 
 type_resolved_reference:
   | typ = datatype_resolved_reference
-      { DocOckPaths.Reference.Resolved.type_of_datatype typ }
+      { relax_datatype_reference typ }
   | cltyp = class_type_resolved_reference
-      { DocOckPaths.Reference.Resolved.type_of_class_type cltyp }
+      { relax_class_type_reference cltyp }
 
 constructor_resolved_reference:
   | IDENTIFIER id = constructor_identifier CLOSE
@@ -341,7 +452,7 @@ constructor_resolved_reference:
   | CONSTRUCTOR sg = datatype_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.Constructor(sg, data) }
   | ext = extension_resolved_reference
-      { DocOckPaths.Reference.Resolved.constructor_of_extension ext }
+      { relax_extension_reference ext }
 
 field_resolved_reference:
   | IDENTIFIER id = field_identifier CLOSE
@@ -349,19 +460,19 @@ field_resolved_reference:
   | FIELD sg = datatype_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.Field(sg, data) }
 
+exception_resolved_reference:
+  | IDENTIFIER id = exception_identifier CLOSE
+      { DocOckPaths.Reference.Resolved.ident_exception id }
+  | EXCEPTION sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Exception(sg, data) }
+
 extension_resolved_reference:
   | IDENTIFIER id = extension_identifier CLOSE
       { DocOckPaths.Reference.Resolved.ident_extension id }
   | EXTENSION sg = signature_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.Extension(sg, data) }
   | exn = exception_resolved_reference
-      { DocOckPaths.Reference.Resolved.extension_of_exception exn}
-
-exception_resolved_reference:
-  | IDENTIFIER id = exception_identifier CLOSE
-      { DocOckPaths.Reference.Resolved.ident_exception id }
-  | EXCEPTION sg = signature_resolved_reference data = Data CLOSE
-      { DocOckPaths.Reference.Resolved.Exception(sg, data) }
+      { relax_exception_reference exn }
 
 value_resolved_reference:
   | IDENTIFIER id = value_identifier CLOSE
@@ -381,7 +492,7 @@ class_type_resolved_reference:
   | CLASS_TYPE sg = signature_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.ClassType(sg, data) }
   | cl = class_resolved_reference
-      { DocOckPaths.Reference.Resolved.class_type_of_class cl }
+      { relax_class_reference cl }
 
 method_resolved_reference:
   | IDENTIFIER id = method_identifier CLOSE
@@ -398,14 +509,8 @@ instance_variable_resolved_reference:
 label_resolved_reference:
   | IDENTIFIER id = label_identifier CLOSE
       { DocOckPaths.Reference.Resolved.ident_label id }
-  | LABEL sg = container_resolved_reference data = Data CLOSE
+  | LABEL sg = parent_resolved_reference data = Data CLOSE
       { DocOckPaths.Reference.Resolved.Label(sg, data) }
-
-container_resolved_reference:
-  | c = signature_resolved_reference
-      { DocOckPaths.Reference.Resolved.container_of_signature c }
-  | c = class_type_resolved_reference
-      { DocOckPaths.Reference.Resolved.container_of_class_signature c }
 
 parent_resolved_reference:
   | sg = signature_resolved_reference
@@ -414,6 +519,36 @@ parent_resolved_reference:
       { DocOckPaths.Reference.Resolved.parent_of_class_signature csig }
   | t = datatype_resolved_reference
       { DocOckPaths.Reference.Resolved.parent_of_datatype t }
+
+element_resolved_reference:
+  | IDENTIFIER id = element_identifier CLOSE
+      { DocOckPaths.Reference.Resolved.Identifier id }
+  | MODULE sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Module(sg, data) }
+  | MODULE_TYPE sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.ModuleType(sg, data) }
+  | TYPE sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Type(sg, data) }
+  | CONSTRUCTOR sg = datatype_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Constructor(sg, data) }
+  | FIELD sg = datatype_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Field(sg, data) }
+  | EXCEPTION sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Exception(sg, data) }
+  | EXTENSION sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Extension(sg, data) }
+  | VALUE sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Value(sg, data) }
+  | CLASS sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Class(sg, data) }
+  | CLASS_TYPE sg = signature_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.ClassType(sg, data) }
+  | METHOD sg = class_type_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Method(sg, data) }
+  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.InstanceVariable(sg, data) }
+  | LABEL sg = parent_resolved_reference data = Data CLOSE
+      { DocOckPaths.Reference.Resolved.Label(sg, data) }
 
 module_reference:
   | RESOLVED rf = module_resolved_reference CLOSE
@@ -528,6 +663,8 @@ parent_reference:
       { DocOckPaths.Reference.Dot(p, data) }
 
 element_reference:
+  | RESOLVED rf = element_resolved_reference CLOSE
+      { DocOckPaths.Reference.Resolved rf }
   | ROOT data = Data CLOSE
       { DocOckPaths.Reference.Root data }
   | DOT p = parent_reference data = Data CLOSE
@@ -860,7 +997,7 @@ module_argument:
 
 module_type_expr:
   | p = module_type_path
-      { DocOckTypes.ModuleType.Ident p }
+      { DocOckTypes.ModuleType.Path p }
   | SIGNATURE sg = signature_item* CLOSE
       { DocOckTypes.ModuleType.Signature sg }
   | FUNCTOR args = module_argument+ expr = module_type_expr CLOSE

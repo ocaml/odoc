@@ -1,3 +1,18 @@
+(*
+ * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
 
 type 'a printer = Xmlm.output -> 'a -> unit
 
@@ -250,6 +265,12 @@ let stop_t output =
 let subscript_t output =
   Xmlm.output output (`El_start (("", "subscript"), []))
 
+let subst_t output =
+  Xmlm.output output (`El_start (("", "subst"), []))
+
+let subst_alias_t output =
+  Xmlm.output output (`El_start (("", "subst_alias"), []))
+
 let superscript_t output =
   Xmlm.output output (`El_start (("", "superscript"), []))
 
@@ -411,6 +432,16 @@ let rec resolved_path_p : type a. _ -> _ -> (_, a) Path.Resolved.t -> _ =
           identifier_t output;
           identifier_p base output id;
           close output
+      | Subst(sub, p) ->
+          subst_t output;
+          resolved_path_p base output sub;
+          resolved_path_p base output p;
+          close output
+      | SubstAlias(sub, p) ->
+          subst_alias_t output;
+          resolved_path_p base output sub;
+          resolved_path_p base output p;
+          close output
       | Apply(m, arg) ->
           apply_t output;
           resolved_path_p base output m;
@@ -446,7 +477,7 @@ and path_p : type a. _ -> _ -> (_, a) Path.t -> _ =
           close output
 
 let rec resolved_fragment_p
-  : type a b. _ -> _ -> (a, b) Fragment.Resolved.raw -> _ =
+  : type a b. _ -> _ -> (_, a, b) Fragment.Resolved.raw -> _ =
   fun base output frag ->
     let component t m name =
       t output;
@@ -457,12 +488,22 @@ let rec resolved_fragment_p
     let open Fragment.Resolved in
       match frag with
       | Root -> closed root_t output
+      | Subst(sub, p) ->
+          subst_t output;
+          resolved_path_p base output sub;
+          resolved_fragment_p base output p;
+          close output
+      | SubstAlias(sub, p) ->
+          subst_alias_t output;
+          resolved_path_p base output sub;
+          resolved_fragment_p base output p;
+          close output
       | Module(m, name) -> component module_t m name
       | Type(m, name) -> component type_t m name
       | Class(m, name) -> component class_t m name
       | ClassType(m, name) -> component class_type_t m name
 
-let rec fragment_p : type a b. _ -> _ -> (a, b) Fragment.raw -> _ =
+let rec fragment_p : type a b. _ -> _ -> (_, a, b) Fragment.raw -> _ =
   fun base output frag ->
     let open Fragment in
       match frag with
@@ -956,7 +997,7 @@ and module_argument_p base output = function
 
 and module_type_expr_p base output =
   let open ModuleType in function
-    | Ident p -> path_p base output p
+    | Path p -> path_p base output p
     | Signature items ->
         signature_t output;
         list signature_item_p base output items;
