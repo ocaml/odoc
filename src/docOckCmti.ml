@@ -592,7 +592,7 @@ let rec read_with_constraint env parent (_, frag, constr) =
 and read_module_type env parent pos mty =
   let open ModuleType in
     match mty.mty_desc with
-    | Tmty_ident(p, _) -> Ident (Env.Path.read_module_type env p)
+    | Tmty_ident(p, _) -> Path (Env.Path.read_module_type env p)
     | Tmty_signature sg -> Signature (read_signature env parent sg)
     | Tmty_functor(id, _, arg, res) ->
         let arg =

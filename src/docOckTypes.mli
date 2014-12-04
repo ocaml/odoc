@@ -130,7 +130,7 @@ and ModuleType : sig
     | TypeSubst of Fragment.type_ * string list * 'a Path.type_
 
   type 'a expr =
-    | Ident of 'a Path.module_type
+    | Path of 'a Path.module_type
     | Signature of 'a Signature.t
     | Functor of ('a Identifier.module_ * 'a expr) option * 'a expr
     | With of 'a expr * 'a substitution list

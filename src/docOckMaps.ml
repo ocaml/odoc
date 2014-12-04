@@ -447,9 +447,9 @@ class virtual ['a] module_type = object (self)
   method module_type_expr expr =
     let open ModuleType in
       match expr with
-      | Ident p ->
+      | Path p ->
           let p' = self#path_module_type p in
-            if p != p' then Ident p'
+            if p != p' then Path p'
             else expr
       | Signature sg ->
           let sg' = self#signature sg in

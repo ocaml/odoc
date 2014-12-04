@@ -83,7 +83,7 @@ type 'a expansion =
                'a Types.Signature.t
 
 let rec expand_module_type () = function
-  | Types.ModuleType.Ident _ -> None
+  | Types.ModuleType.Path _ -> None
   | Types.ModuleType.Signature sg -> Some (Signature sg)
   | Types.ModuleType.Functor(arg, expr) -> begin
       match expand_module_type () expr with

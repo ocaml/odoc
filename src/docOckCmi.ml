@@ -854,7 +854,7 @@ let rec add_signature_items parent items env =
 let rec read_module_type env parent pos mty =
   let open ModuleType in
     match mty with
-    | Mty_ident p -> Ident (Env.Path.read_module_type env p)
+    | Mty_ident p -> Path (Env.Path.read_module_type env p)
     | Mty_signature sg -> Signature (read_signature env parent sg)
     | Mty_functor(id, arg, res) ->
         let arg =
