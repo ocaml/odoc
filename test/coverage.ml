@@ -450,4 +450,96 @@ class ['a] param_class x = object
   method v : 'a = x
 end
 
+
+type my_unit_object = unit param_class
+
 type 'a my_unit_class = unit #param_class as 'a
+
+(* Test resolution of dependently typed modules *)
+module Dep1 = struct
+
+  module type S = sig
+    class c : object
+      method m : int
+    end
+  end
+
+  module X = struct
+    module Y = struct
+      class c = object
+        method m = 4
+      end
+    end
+  end
+
+end
+
+module Dep2 (Arg : sig module type S module X : sig module Y : S end end) =
+    struct
+      module A = Arg.X
+      module B = A.Y
+    end
+
+type dep1 = Dep2(Dep1).B.c;;
+
+module Dep3 = struct type a end
+
+module Dep4 = struct
+  module type T = sig type b end
+  module type S = sig
+    module X : T
+    module Y : sig end
+  end
+  module X = struct type b end
+end
+
+module Dep5 (Arg : sig
+                   module type T
+                   module type S = sig
+                     module X : T
+                     module Y : sig end
+                   end
+                   module X : T
+              end) = struct
+      module Z : Arg.S with module Y = Dep3 = struct
+        module X = Arg.X
+        module Y = Dep3
+      end
+  end
+
+type dep2 = Dep5(Dep4).Z.X.b
+
+type dep3 = Dep5(Dep4).Z.Y.a
+
+module Dep6 = struct
+  module type S = sig type d end
+  module type T = sig
+    module type R = S
+    module Y : R
+  end
+  module X = struct
+    module type R = S
+    module Y = struct type d end
+  end
+end
+
+module Dep7 (Arg : sig
+                   module type S
+                   module type T = sig
+                     module type R = S
+                     module Y : R
+                   end
+                   module X : T
+            end) = struct
+      module M = Arg.X
+    end
+
+type dep4 = Dep7(Dep6).M.Y.d;;
+
+module Dep8 = struct
+  module type T = sig type t end
+end
+
+module Dep9(X : sig module type T end) = X
+
+module type Dep10 = Dep9(Dep8).T with type t = int

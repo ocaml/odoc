@@ -560,3 +560,85 @@ type 'a my_unit_class = unit #param_class as 'a
 (* class type my_unit_class_type = [unit] param_class *)
 
 (* TODO: classes, class types, ...? *)
+
+
+(* Test resolution of dependently typed modules *)
+module Dep1 : sig
+  module type S = sig
+    class c : object
+      method m : int
+    end
+  end
+  module X : sig
+    module Y : S
+  end
+end
+
+module Dep2 :
+  functor (Arg : sig module type S module X : sig module Y : S end end) ->
+    sig
+      module A : sig
+        module Y : Arg.S
+      end
+      module B = A.Y
+    end
+
+type dep1 = Dep2(Dep1).B.c;;
+
+module Dep3 : sig type a end
+
+module Dep4 : sig
+  module type T = sig type b end
+  module type S = sig
+    module X : T
+    module Y : sig end
+  end
+  module X : T
+end
+
+module Dep5 :
+  functor (Arg : sig
+                   module type T
+                   module type S = sig
+                     module X : T
+                     module Y : sig end
+                   end
+                   module X : T
+            end) ->
+    sig
+      module Z : Arg.S with module Y = Dep3
+    end
+
+type dep2 = Dep5(Dep4).Z.X.b
+
+type dep3 = Dep5(Dep4).Z.Y.a
+
+module Dep6 : sig
+  module type S = sig type d end
+  module type T = sig
+    module type R = S
+    module Y : R
+  end
+  module X : T
+end
+
+module Dep7 :
+  functor (Arg : sig
+                   module type S
+                   module type T = sig
+                     module type R = S
+                     module Y : R
+                   end
+                   module X : T
+            end) -> sig
+      module M : Arg.T
+    end
+
+type dep4 = Dep7(Dep6).M.Y.d;;
+
+
+module Dep8 : sig module type T = sig type t end end
+
+module Dep9 : functor (X : sig module type T end) -> sig module type T = X.T end
+
+module type Dep10 = Dep9(Dep8).T with type t = int
