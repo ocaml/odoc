@@ -83,39 +83,6 @@ let read_style = function
   | SK_subscript -> Subscript
   | SK_custom s -> Custom s
 
-let read_element_reference env s : 'a reference =
-  let open DocOckPaths.Identifier in
-  let open DocOckPaths.Reference.Resolved in
-  let open DocOckPaths.Reference in
-  match Env.Reference.read_element env s with
-  | Resolved (Module _ | Identifier (Root _ | Module _ | Argument _)) as x ->
-      Module x
-  | Resolved (ModuleType _ | Identifier (ModuleType _)) as x ->
-      ModuleType x
-  | Resolved (Type _ | Identifier (Type _ | CoreType _)) as x ->
-      Type x
-  | Resolved (Constructor _ | Identifier (Constructor _)) as x ->
-      Constructor x
-  | Resolved(Field _ | Identifier (Field _)) as x ->
-      Field x
-  | Resolved(Extension _ | Identifier (Extension _)) as x ->
-      Extension x
-  | Resolved(Exception _ | Identifier (Exception _ | CoreException _)) as x ->
-      Exception x
-  | Resolved(Value _ | Identifier (Value _)) as x ->
-      Value x
-  | Resolved(Class _ | Identifier (Class _)) as x ->
-      Class x
-  | Resolved(ClassType _ | Identifier (ClassType _)) as x ->
-      ClassType x
-  | Resolved(Method _ | Identifier (Method _)) as x ->
-      Method x
-  | Resolved(InstanceVariable _ | Identifier (InstanceVariable _)) as x ->
-      InstanceVariable x
-  | Resolved(Label _ | Identifier (Label _)) as x ->
-      Section x
-  | x -> Element x
-
 let read_reference env rk s =
   match rk with
   | RK_module ->
@@ -140,7 +107,7 @@ let read_reference env rk s =
       InstanceVariable (Env.Reference.read_instance_variable env s)
   | RK_method ->
       Method (Env.Reference.read_method env s)
-  | RK_element -> read_element_reference env s
+  | RK_element -> Element (Env.Reference.read_element env s)
   | RK_section ->
       Section (Env.Reference.read_label env s)
   | RK_link -> Link s
