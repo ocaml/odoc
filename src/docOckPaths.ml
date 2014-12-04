@@ -14,13 +14,73 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Identifier = struct
+module Kind = struct
 
-    type kind =
+  type any =
     [ `Module | `ModuleType | `Type
     | `Constructor | `Field | `Extension
     | `Exception | `Value | `Class | `ClassType
     | `Method | `InstanceVariable | `Label ]
+
+  type signature = [ `Module | `ModuleType ]
+
+  type class_signature = [ `Class | `ClassType ]
+
+  type datatype = [ `Type ]
+
+  type parent = [ signature | class_signature | datatype ]
+
+  type identifier = any
+
+  type identifier_module = [ `Module ]
+  type identifier_module_type = [ `ModuleType ]
+  type identifier_type =  [ `Type ]
+  type identifier_constructor = [ `Constructor ]
+  type identifier_field = [ `Field ]
+  type identifier_extension = [ `Extension ]
+  type identifier_exception = [ `Exception ]
+  type identifier_value = [ `Value ]
+  type identifier_class = [ `Class ]
+  type identifier_class_type = [ `ClassType ]
+  type identifier_method = [ `Method ]
+  type identifier_instance_variable = [ `InstanceVariable ]
+  type identifier_label = [ `Label ]
+
+  type path = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+
+  type path_module = [ `Module ]
+  type path_module_type = [ `ModuleType ]
+  type path_type = [ `Type | `Class | `ClassType ]
+  type path_class_type = [ `Class | `ClassType ]
+
+  type fragment = [ `Module | `Type | `Class | `ClassType ]
+
+  type fragment_module = [ `Module ]
+  type fragment_type = [ `Type | `Class | `ClassType ]
+
+  type reference = any
+
+  type reference_module = [ `Module ]
+  type reference_module_type = [ `ModuleType ]
+  type reference_type = [ `Type | `Class | `ClassType ]
+  type reference_constructor = [ `Constructor | `Extension | `Exception ]
+  type reference_field = [ `Field ]
+  type reference_extension = [ `Extension | `Exception ]
+  type reference_exception = [ `Exception ]
+  type reference_value = [ `Value ]
+  type reference_class = [ `Class ]
+  type reference_class_type = [ `Class | `ClassType ]
+  type reference_method = [ `Method ]
+  type reference_instance_variable = [ `InstanceVariable ]
+  type reference_label = [ `Label ]
+
+end
+
+open Kind
+
+module Identifier = struct
+
+  type kind = Kind.identifier
 
   type ('a, 'b) t =
     | Root : 'a -> ('a, [< kind > `Module]) t
@@ -29,8 +89,8 @@ module Identifier = struct
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
     | CoreType : string -> ('a, [< kind > `Type]) t
-    | Constructor : 'a type_ * string -> ('a, [< kind > `Constructor]) t
-    | Field : 'a type_ * string -> ('a, [< kind > `Field]) t
+    | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
+    | Field : 'a datatype * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
     | CoreException : string -> ('a, [< kind > `Exception]) t
@@ -42,39 +102,47 @@ module Identifier = struct
                            ('a, [< kind > `InstanceVariable]) t
     | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-  and 'a parent = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
+  and 'a any = ('a, Kind.any) t
+  and 'a signature = ('a, Kind.signature) t
+  and 'a class_signature = ('a, Kind.class_signature) t
+  and 'a datatype = ('a, Kind.datatype) t
+  and 'a parent = ('a, Kind.parent) t
 
-  and 'a signature = ('a, [`Module|`ModuleType]) t
+  type 'a module_ = ('a, identifier_module) t
+  type 'a module_type = ('a, identifier_module_type) t
+  type 'a type_ =  ('a, identifier_type) t
+  type 'a constructor = ('a, identifier_constructor) t
+  type 'a field = ('a, identifier_field) t
+  type 'a extension = ('a, identifier_extension) t
+  type 'a exception_ = ('a, identifier_exception) t
+  type 'a value = ('a, identifier_value) t
+  type 'a class_ = ('a, identifier_class) t
+  type 'a class_type = ('a, identifier_class_type) t
+  type 'a method_ = ('a, identifier_method) t
+  type 'a instance_variable = ('a, identifier_instance_variable) t
+  type 'a label = ('a, identifier_label) t
 
-  and 'a module_ = ('a, [`Module]) t
+  type 'a path_module = ('a, Kind.path_module) t
+  type 'a path_module_type = ('a, Kind.path_module_type) t
+  type 'a path_type =  ('a, Kind.path_type) t
+  type 'a path_class_type = ('a, Kind.path_class_type) t
 
-  and 'a module_type = ('a, [`ModuleType]) t
+  type 'a fragment_module = ('a, Kind.fragment_module) t
+  type 'a fragment_type =  ('a, Kind.fragment_type) t
 
-  and 'a type_ =  ('a, [`Type]) t
-
-  and 'a constructor = ('a, [`Constructor]) t
-
-  and 'a field = ('a, [`Field]) t
-
-  and 'a extension = ('a, [`Extension]) t
-
-  and 'a exception_ = ('a, [`Exception]) t
-
-  and 'a value = ('a, [`Value]) t
-
-  and 'a class_ = ('a, [`Class]) t
-
-  and 'a class_type = ('a, [`ClassType]) t
-
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-  and 'a method_ = ('a, [`Method]) t
-
-  and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-  and 'a label = ('a, [`Label]) t
-
-  and 'a any = ('a, kind) t
+  type 'a reference_module = ('a, Kind.reference_module) t
+  type 'a reference_module_type = ('a, Kind.reference_module_type) t
+  type 'a reference_type =  ('a, Kind.reference_type) t
+  type 'a reference_constructor = ('a, Kind.reference_constructor) t
+  type 'a reference_field = ('a, Kind.reference_field) t
+  type 'a reference_extension = ('a, Kind.reference_extension) t
+  type 'a reference_exception = ('a, Kind.reference_exception) t
+  type 'a reference_value = ('a, Kind.reference_value) t
+  type 'a reference_class = ('a, Kind.reference_class) t
+  type 'a reference_class_type = ('a, Kind.reference_class_type) t
+  type 'a reference_method = ('a, Kind.reference_method) t
+  type 'a reference_instance_variable = ('a, Kind.reference_instance_variable) t
+  type 'a reference_label = ('a, Kind.reference_label) t
 
   let signature_of_module : 'a module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> x
@@ -88,6 +156,8 @@ module Identifier = struct
   let class_signature_of_class_type : 'a class_type -> _ = function
     | ClassType _ as x -> x
 
+  let datatype_of_type : 'a type_ -> 'a datatype = function
+    | x -> x
 
   let parent_of_signature : 'a signature -> 'a parent = function
     | Root _ | Module _ | Argument _ | ModuleType _ as x -> x
@@ -95,7 +165,7 @@ module Identifier = struct
   let parent_of_class_signature : 'a class_signature -> 'a parent =
     function Class _ | ClassType _ as x -> x
 
-  let parent_of_datatype : 'a type_ -> 'a parent =
+  let parent_of_datatype : 'a datatype -> 'a parent =
     function Type _ | CoreType _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function
@@ -146,7 +216,7 @@ module Path = struct
 
     module Resolved : sig
 
-      type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+      type kind = Kind.path
 
       type ('a, 'b) t =
         | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
@@ -157,23 +227,18 @@ module Path = struct
         | Class : 'a module_ * string -> ('a, [< kind > `Class]) t
         | ClassType : 'a module_ * string -> ('a, [< kind > `ClassType]) t
 
-      and 'a module_ = ('a, [`Module]) t
-
-      and 'a module_type = ('a, [`ModuleType]) t
-
-      and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-      and 'a class_ = ('a, [`Class]) t
-
-      and 'a class_type = ('a, [`Class|`ClassType]) t
-
       and 'a any = ('a, kind) t
+
+      and 'a module_ = ('a, path_module) t
+      and 'a module_type = ('a, path_module_type) t
+      and 'a type_ = ('a, path_type) t
+      and 'a class_type = ('a, path_class_type) t
 
     end
 
     module Path : sig
 
-      type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+      type kind = Kind.path
 
       type ('a, 'b) t =
       | Resolved : ('a, 'b) Types.Resolved.t -> ('a, 'b) t
@@ -181,17 +246,12 @@ module Path = struct
       | Dot : 'a module_ * string -> ('a, [< kind]) t
       | Apply : 'a module_ * 'a module_ -> ('a, [< kind >`Module]) t
 
-      and 'a module_ = ('a, [`Module]) t
-
-      and 'a module_type = ('a, [`ModuleType]) t
-
-      and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-      and 'a class_ = ('a, [`Class]) t
-
-      and 'a class_type = ('a, [`Class|`ClassType]) t
-
       and 'a any = ('a, kind) t
+
+      and 'a module_ = ('a, path_module) t
+      and 'a module_type = ('a, path_module_type) t
+      and 'a type_ = ('a, path_type) t
+      and 'a class_type = ('a, path_class_type) t
 
     end
 
@@ -210,19 +270,11 @@ module Path = struct
     let ident_type : 'a Identifier.type_ -> 'a type_ = function
     | Type _ | CoreType _ as t -> Identifier t
 
-    let ident_class (c: 'a Identifier.class_) = Identifier c
+    let ident_class : 'a Identifier.class_ -> 'a class_type = function
+    | Class _ as c -> Identifier c
 
     let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
       | ClassType _ as ct -> Identifier ct
-
-    let class_type_of_class : 'a class_ -> 'a class_type = function
-      | Class _ | Identifier (Class _) as x -> x
-
-    let type_of_class : 'a class_ -> 'a type_ = function
-      | Class _ | Identifier (Class _) as x -> x
-
-    let type_of_class_type : 'a class_type -> 'a type_ = function
-      | Class _ | ClassType _ | Identifier (Class _ | ClassType _) as x -> x
 
     let any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _) as x -> x
@@ -267,20 +319,11 @@ module Path = struct
   let ident_type : 'a Identifier.type_ -> 'a type_ = function
     | Type _ | CoreType _ as t -> Resolved (Identifier t)
 
-  let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
+  let ident_class : 'a Identifier.class_ -> 'a class_type = function
+    | Class _ as c -> Resolved (Identifier c)
 
   let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
     | ClassType _ as ct -> Resolved (Identifier ct)
-
-  let class_type_of_class : 'a class_ -> 'a class_type = function
-    | Resolved (Class _ | Identifier (Class _)) | Dot _ as x -> x
-
-  let type_of_class : 'a class_ -> 'a type_ = function
-    | Resolved (Class _ | Identifier (Class _)) | Dot _ as x -> x
-
-  let type_of_class_type : 'a class_type -> 'a type_ = function
-    | Resolved (Class _ | ClassType _ | Identifier (Class _ | ClassType _))
-    | Dot _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function
     | Resolved (Identifier (Root _)) as x -> x
@@ -339,7 +382,7 @@ module Fragment = struct
 
   module Resolved = struct
 
-    type kind = [ `Module | `Type | `Class | `ClassType ]
+    type kind = Kind.fragment
 
     type sort = [ `Root | `Branch ]
 
@@ -350,15 +393,13 @@ module Fragment = struct
       | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
       | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
 
-    and signature = ([`Module], [`Root | `Branch]) raw
-
     and 'a t = ('a, [`Branch]) raw
 
-    and module_ = [`Module] t
-
-    and type_ = [`Type|`Class|`ClassType] t
-
     and any = kind t
+    and signature = (fragment_module, [`Root | `Branch]) raw
+
+    and module_ = fragment_module t
+    and type_ = fragment_type t
 
     let rec signature_of_module : module_ -> signature = function
       | Module _ as x -> x
@@ -444,7 +485,7 @@ module Fragment = struct
 
   open Resolved
 
-  type kind = [ `Module | `Type | `Class | `ClassType ]
+  type kind = Kind.fragment
 
   type sort = [ `Root | `Branch ]
 
@@ -452,15 +493,13 @@ module Fragment = struct
     | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
     | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
 
-  and signature = ([`Module], [`Root | `Branch]) raw
-
   and 'a t = ('a, [`Branch]) raw
 
-  and module_ = [`Module] t
-
-  and type_ = [`Type|`Class|`ClassType] t
-
   and any = kind t
+  and signature = (fragment_module, [`Root | `Branch]) raw
+
+  and module_ = fragment_module t
+  and type_ = fragment_type t
 
   let signature_of_module : module_ -> signature = function
     | Resolved(Module _) | Dot _ as x -> x
@@ -511,12 +550,9 @@ module Reference = struct
   module Resolved = struct
 
     open Identifier
+    open Kind
 
-    type kind =
-      [ `Module | `ModuleType | `Type
-      | `Constructor | `Field | `Extension
-      | `Exception | `Value | `Class | `ClassType
-      | `Method | `InstanceVariable | `Label ]
+    type kind = Kind.reference
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
@@ -535,41 +571,25 @@ module Reference = struct
                              ('a, [< kind > `InstanceVariable]) t
       | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-    and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-    and 'a module_ = ('a, [`Module]) t
-
-    and 'a module_type = ('a, [`ModuleType]) t
-
-    and 'a signature = ('a, [`Module|`ModuleType]) t
-
-    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-    and 'a datatype = ('a, [`Type]) t
-
-    and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
-
-    and 'a field = ('a, [`Field]) t
-
-    and 'a extension = ('a, [`Extension|`Exception]) t
-
-    and 'a exception_ = ('a, [`Exception]) t
-
-    and 'a value = ('a, [`Value]) t
-
-    and 'a class_ = ('a, [`Class]) t
-
-    and 'a class_type = ('a, [`Class|`ClassType]) t
-
-    and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-    and 'a method_ = ('a, [`Method]) t
-
-    and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-    and 'a label = ('a, [`Label]) t
-
     and 'a any = ('a, kind) t
+    and 'a signature = ('a, Kind.signature) t
+    and 'a class_signature = ('a, Kind.class_signature) t
+    and 'a datatype = ('a, Kind.datatype) t
+    and 'a parent = ('a, Kind.parent) t
+
+    type 'a module_ = ('a, reference_module) t
+    type 'a module_type = ('a, reference_module_type) t
+    type 'a type_ = ('a, reference_type) t
+    type 'a constructor = ('a, reference_constructor) t
+    type 'a field = ('a, reference_field) t
+    type 'a extension = ('a, reference_extension) t
+    type 'a exception_ = ('a, reference_exception) t
+    type 'a value = ('a, reference_value) t
+    type 'a class_ = ('a, reference_class) t
+    type 'a class_type = ('a, reference_class_type) t
+    type 'a method_ = ('a, reference_method) t
+    type 'a instance_variable = ('a, reference_instance_variable) t
+    type 'a label = ('a, reference_label) t
 
     let ident_module (m: 'a Identifier.module_) = Identifier m
 
@@ -627,28 +647,6 @@ module Reference = struct
     let parent_of_datatype : 'a datatype -> _ = function
       | Identifier (Type _ |CoreType _) | Type _ as x -> x
 
-    let class_type_of_class : 'a class_ -> 'a class_type = function
-      | Identifier (Class _) | Class _ as x -> x
-
-    let type_of_datatype : 'a datatype -> 'a type_ = function
-      | Identifier (Type _ | CoreType _) | Type _ as x -> x
-
-    let type_of_class : 'a class_ -> 'a type_ = function
-      | Identifier (Class _) | Class _ as x -> x
-
-    let type_of_class_type : 'a class_type -> 'a type_ = function
-      | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
-
-    let extension_of_exception : 'a exception_ -> 'a extension = function
-      | Identifier (Exception _ | CoreException _) | Exception _ as x -> x
-
-    let constructor_of_extension : 'a extension -> 'a constructor = function
-      | Identifier (Extension _ | Exception _ | CoreException _)
-      | Extension _ | Exception _ as x -> x
-
-    let constructor_of_exception : 'a exception_ -> 'a constructor = function
-      | Identifier (Exception _ | CoreException _) | Exception _ as x -> x
-
     let any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _ ) as x -> x
       | Identifier (Module _) as x -> x
@@ -701,53 +699,34 @@ module Reference = struct
 
   open Identifier
   open Resolved
+  open Kind
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+  type kind = Kind.reference
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
     | Root : string -> ('a, [< kind]) t
     | Dot : 'a parent * string -> ('a, [< kind]) t
 
-  and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-  and 'a module_ = ('a, [`Module]) t
-
-  and 'a module_type = ('a, [`ModuleType]) t
-
-  and 'a signature = ('a, [`Module|`ModuleType]) t
-
-  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-  and 'a datatype = ('a, [`Type]) t
-
-  and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
-
-  and 'a field = ('a, [`Field]) t
-
-  and 'a extension = ('a, [`Extension|`Exception]) t
-
-  and 'a exception_ = ('a, [`Exception]) t
-
-  and 'a value = ('a, [`Value]) t
-
-  and 'a class_ = ('a, [`Class]) t
-
-  and 'a class_type = ('a, [`Class|`ClassType]) t
-
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-  and 'a method_ = ('a, [`Method]) t
-
-  and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-  and 'a label = ('a, [`Label]) t
-
   and 'a any = ('a, kind) t
+  and 'a signature = ('a, Kind.signature) t
+  and 'a class_signature = ('a, Kind.class_signature) t
+  and 'a datatype = ('a, Kind.datatype) t
+  and 'a parent = ('a, Kind.parent) t
+
+  type 'a module_ = ('a, reference_module) t
+  type 'a module_type = ('a, reference_module_type) t
+  type 'a type_ = ('a, reference_type) t
+  type 'a constructor = ('a, reference_constructor) t
+  type 'a field = ('a, reference_field) t
+  type 'a extension = ('a, reference_extension) t
+  type 'a exception_ = ('a, reference_exception) t
+  type 'a value = ('a, reference_value) t
+  type 'a class_ = ('a, reference_class) t
+  type 'a class_type = ('a, reference_class_type) t
+  type 'a method_ = ('a, reference_method) t
+  type 'a instance_variable = ('a, reference_instance_variable) t
+  type 'a label = ('a, reference_label) t
 
   let ident_module (m: 'a Identifier.module_) = Resolved (Identifier m)
 
@@ -811,35 +790,6 @@ module Reference = struct
 
   let parent_of_datatype : 'a datatype -> 'a parent = function
     | Resolved (Identifier (Type _ | CoreType _) | Type _)
-    | Root _ | Dot _ as x -> x
-
-  let class_type_of_class : 'a class_ -> 'a class_type = function
-    | Resolved (Identifier (Class _) | Class _)
-    | Root _ | Dot _ as x -> x
-
-  let type_of_datatype : 'a datatype -> 'a type_ = function
-    | Resolved (Identifier (Type _ | CoreType _) | Type _)
-    | Root _ | Dot _ as x -> x
-
-  let type_of_class : 'a class_ -> 'a type_ = function
-    | Resolved (Identifier (Class _) | Class _)
-    | Root _ | Dot _ as x -> x
-
-  let type_of_class_type : 'a class_type -> 'a type_ = function
-    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
-    | Root _ | Dot _ as x -> x
-
-  let extension_of_exception : 'a exception_ -> 'a extension = function
-    | Resolved (Identifier (Exception _ | CoreException _) | Exception _)
-    | Root _ | Dot _ as x -> x
-
-  let constructor_of_extension : 'a extension -> 'a constructor = function
-    | Resolved (Identifier (Extension _ | Exception _ | CoreException _)
-               | Extension _ | Exception _)
-    | Root _ | Dot _ as x -> x
-
-  let constructor_of_exception : 'a exception_ -> 'a constructor = function
-    | Resolved (Identifier (Exception _ | CoreException _) | Exception _)
     | Root _ | Dot _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function

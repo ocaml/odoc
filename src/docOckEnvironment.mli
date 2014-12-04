@@ -59,8 +59,6 @@ module Path : sig
 
   val read_type : 'a t -> Path.t -> 'a DocOckPaths.Path.type_
 
-  val read_class : 'a t -> Path.t -> 'a DocOckPaths.Path.class_
-
   val read_class_type : 'a t -> Path.t -> 'a DocOckPaths.Path.class_type
 
 end

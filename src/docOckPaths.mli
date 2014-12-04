@@ -16,16 +16,121 @@
 
 (** Paths of documentation *)
 
+(** {3 Kinds } *)
+
+module Kind : sig
+
+  (** {4 General purpose kinds} *)
+
+  (** Any possible referent *)
+  type any =
+    [ `Module | `ModuleType | `Type
+    | `Constructor | `Field | `Extension
+    | `Exception | `Value | `Class | `ClassType
+    | `Method | `InstanceVariable | `Label ]
+
+  (** A referent that can contain signature items *)
+  type signature = [ `Module | `ModuleType ]
+
+  (** A referent that can contain class signature items *)
+  type class_signature = [ `Class | `ClassType ]
+
+  (** A referent that can contain datatype items *)
+  type datatype = [ `Type ]
+
+  (** A referent that can contain other items *)
+  type parent = [ signature | class_signature | datatype ]
+
+  (** {4 Identifier kinds}
+      The kind of an identifier directly corresponds to the kind of its
+      referent. *)
+
+  type identifier = any
+
+  type identifier_module = [ `Module ]
+  type identifier_module_type = [ `ModuleType ]
+  type identifier_type =  [ `Type ]
+  type identifier_constructor = [ `Constructor ]
+  type identifier_field = [ `Field ]
+  type identifier_extension = [ `Extension ]
+  type identifier_exception = [ `Exception ]
+  type identifier_value = [ `Value ]
+  type identifier_class = [ `Class ]
+  type identifier_class_type = [ `ClassType ]
+  type identifier_method = [ `Method ]
+  type identifier_instance_variable = [ `InstanceVariable ]
+  type identifier_label = [ `Label ]
+
+  (** {4 Path kinds}
+      There are four kinds of OCaml path:
+
+        - module
+        - module type
+        - type
+        - class type
+
+      These kinds do not directly correspond to the kind of their
+      referent (e.g. a type path may refer to a class definition). *)
+
+  type path = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+
+  type path_module = [ `Module ]
+  type path_module_type = [ `ModuleType ]
+  type path_type = [ `Type | `Class | `ClassType ]
+  type path_class_type = [ `Class | `ClassType ]
+
+  (** {4 Fragment kinds}
+      There are two kinds of OCaml path fragment:
+
+        - module
+        - type
+
+      These kinds do not directly correspond to the kind of their
+      referent (e.g. a type path fragment may refer to a class
+      definition). *)
+
+  type fragment = [ `Module | `Type | `Class | `ClassType ]
+
+  type fragment_module = [ `Module ]
+  type fragment_type = [ `Type | `Class | `ClassType ]
+
+  (** {4 Reference kinds}
+      There is one reference kind for each kind of referent. However,
+      the kind of a reference does not refer to the kind of its
+      referent, but to the kind with which the reference was annotated.
+
+      This means that reference kinds do not correspond directly to the
+      kind of their referent because we used more relaxed rules when
+      resolving a reference. For example, a reference annotated as being
+      to a constructor can be resolved to the definition of an exception
+      (which can be thought of a sort of constructor). *)
+
+  type reference = any
+
+  type reference_module = [ `Module ]
+  type reference_module_type = [ `ModuleType ]
+  type reference_type = [ `Type | `Class | `ClassType ]
+  type reference_constructor = [ `Constructor | `Extension | `Exception ]
+  type reference_field = [ `Field ]
+  type reference_extension = [ `Extension | `Exception ]
+  type reference_exception = [ `Exception ]
+  type reference_value = [ `Value ]
+  type reference_class = [ `Class ]
+  type reference_class_type = [ `Class | `ClassType ]
+  type reference_method = [ `Method ]
+  type reference_instance_variable = [ `InstanceVariable ]
+  type reference_label = [ `Label ]
+
+end
+
+open Kind
+
 (** {3 Identifiers} **)
 
 (** Identifiers for definitions *)
 module Identifier : sig
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+  type kind = Kind.identifier
 
   type ('a, 'b) t =
     | Root : 'a -> ('a, [< kind > `Module]) t
@@ -34,8 +139,8 @@ module Identifier : sig
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
     | CoreType : string -> ('a, [< kind > `Type]) t
-    | Constructor : 'a type_ * string -> ('a, [< kind > `Constructor]) t
-    | Field : 'a type_ * string -> ('a, [< kind > `Field]) t
+    | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
+    | Field : 'a datatype * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
     | CoreException : string -> ('a, [< kind > `Exception]) t
@@ -47,39 +152,47 @@ module Identifier : sig
                            ('a, [< kind > `InstanceVariable]) t
     | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-  and 'a parent = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
-
-  and 'a signature = ('a, [`Module|`ModuleType]) t
-
-  and 'a module_ = ('a, [`Module]) t
-
-  and 'a module_type = ('a, [`ModuleType]) t
-
-  and 'a type_ =  ('a, [`Type]) t
-
-  and 'a constructor = ('a, [`Constructor]) t
-
-  and 'a field = ('a, [`Field]) t
-
-  and 'a extension = ('a, [`Extension]) t
-
-  and 'a exception_ = ('a, [`Exception]) t
-
-  and 'a value = ('a, [`Value]) t
-
-  and 'a class_ = ('a, [`Class]) t
-
-  and 'a class_type = ('a, [`ClassType]) t
-
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-  and 'a method_ = ('a, [`Method]) t
-
-  and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-  and 'a label = ('a, [`Label]) t
-
   and 'a any = ('a, kind) t
+  and 'a signature = ('a, Kind.signature) t
+  and 'a class_signature = ('a, Kind.class_signature) t
+  and 'a datatype = ('a, Kind.datatype) t
+  and 'a parent = ('a, Kind.parent) t
+
+  type 'a module_ = ('a, identifier_module) t
+  type 'a module_type = ('a, identifier_module_type) t
+  type 'a type_ =  ('a, identifier_type) t
+  type 'a constructor = ('a, identifier_constructor) t
+  type 'a field = ('a, identifier_field) t
+  type 'a extension = ('a, identifier_extension) t
+  type 'a exception_ = ('a, identifier_exception) t
+  type 'a value = ('a, identifier_value) t
+  type 'a class_ = ('a, identifier_class) t
+  type 'a class_type = ('a, identifier_class_type) t
+  type 'a method_ = ('a, identifier_method) t
+  type 'a instance_variable = ('a, identifier_instance_variable) t
+  type 'a label = ('a, identifier_label) t
+
+  type 'a path_module = ('a, Kind.path_module) t
+  type 'a path_module_type = ('a, Kind.path_module_type) t
+  type 'a path_type =  ('a, Kind.path_type) t
+  type 'a path_class_type = ('a, Kind.path_class_type) t
+
+  type 'a fragment_module = ('a, Kind.fragment_module) t
+  type 'a fragment_type =  ('a, Kind.fragment_type) t
+
+  type 'a reference_module = ('a, Kind.reference_module) t
+  type 'a reference_module_type = ('a, Kind.reference_module_type) t
+  type 'a reference_type =  ('a, Kind.reference_type) t
+  type 'a reference_constructor = ('a, Kind.reference_constructor) t
+  type 'a reference_field = ('a, Kind.reference_field) t
+  type 'a reference_extension = ('a, Kind.reference_extension) t
+  type 'a reference_exception = ('a, Kind.reference_exception) t
+  type 'a reference_value = ('a, Kind.reference_value) t
+  type 'a reference_class = ('a, Kind.reference_class) t
+  type 'a reference_class_type = ('a, Kind.reference_class_type) t
+  type 'a reference_method = ('a, Kind.reference_method) t
+  type 'a reference_instance_variable = ('a, Kind.reference_instance_variable) t
+  type 'a reference_label = ('a, Kind.reference_label) t
 
   val signature_of_module : 'a module_ -> 'a signature
 
@@ -89,12 +202,13 @@ module Identifier : sig
 
   val class_signature_of_class_type : 'a class_type -> 'a class_signature
 
+  val datatype_of_type : 'a type_ -> 'a datatype
 
   val parent_of_signature : 'a signature -> 'a parent
 
   val parent_of_class_signature : 'a class_signature -> 'a parent
 
-  val parent_of_datatype : 'a type_ -> 'a parent
+  val parent_of_datatype : 'a datatype -> 'a parent
 
   val any : ('a, 'b) t -> 'a any
 
@@ -109,7 +223,7 @@ module rec Path : sig
 
   module Resolved : sig
 
-    type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+    type kind = Kind.path
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
@@ -120,17 +234,12 @@ module rec Path : sig
       | Class : 'a module_ * string -> ('a, [< kind > `Class]) t
       | ClassType : 'a module_ * string -> ('a, [< kind > `ClassType]) t
 
-    and 'a module_ = ('a, [`Module]) t
-
-    and 'a module_type = ('a, [`ModuleType]) t
-
-    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-    and 'a class_ = ('a, [`Class]) t
-
-    and 'a class_type = ('a, [`Class|`ClassType]) t
-
     and 'a any = ('a, kind) t
+
+    and 'a module_ = ('a, path_module) t
+    and 'a module_type = ('a, path_module_type) t
+    and 'a type_ = ('a, path_type) t
+    and 'a class_type = ('a, path_class_type) t
 
     val ident_module : 'a Identifier.module_ -> 'a module_
 
@@ -138,15 +247,9 @@ module rec Path : sig
 
     val ident_type : 'a Identifier.type_ -> 'a type_
 
-    val ident_class : 'a Identifier.class_ -> 'a class_
+    val ident_class : 'a Identifier.class_ -> 'a class_type
 
     val ident_class_type : 'a Identifier.class_type -> 'a class_type
-
-    val class_type_of_class : 'a class_ -> 'a class_type
-
-    val type_of_class : 'a class_ -> 'a type_
-
-    val type_of_class_type : 'a class_type -> 'a type_
 
     val any : ('a, 'b) t -> 'a any
 
@@ -154,7 +257,7 @@ module rec Path : sig
 
   end
 
-  type kind = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
+  type kind = Kind.path
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
@@ -162,17 +265,12 @@ module rec Path : sig
     | Dot : 'a module_ * string -> ('a, [< kind]) t
     | Apply : 'a module_ * 'a module_ -> ('a, [< kind > `Module]) t
 
-  and 'a module_ = ('a, [`Module]) t
-
-  and 'a module_type = ('a, [`ModuleType]) t
-
-  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-  and 'a class_ = ('a, [`Class]) t
-
-  and 'a class_type = ('a, [`Class|`ClassType]) t
-
   and 'a any = ('a, kind) t
+
+  and 'a module_ = ('a, path_module) t
+  and 'a module_type = ('a, path_module_type) t
+  and 'a type_ = ('a, path_type) t
+  and 'a class_type = ('a, path_class_type) t
 
   val ident_module : 'a Identifier.module_ -> 'a module_
 
@@ -180,15 +278,9 @@ module rec Path : sig
 
   val ident_type : 'a Identifier.type_ -> 'a type_
 
-  val ident_class : 'a Identifier.class_ -> 'a class_
+  val ident_class : 'a Identifier.class_ -> 'a class_type
 
   val ident_class_type : 'a Identifier.class_type -> 'a class_type
-
-  val class_type_of_class : 'a class_ -> 'a class_type
-
-  val type_of_class : 'a class_ -> 'a type_
-
-  val type_of_class_type : 'a class_type -> 'a type_
 
   val any : ('a, 'b) t -> 'a any
 
@@ -200,7 +292,7 @@ module rec Path : sig
 
   val type_ : 'a module_ -> string -> 'a type_
 
-  val class_ : 'a module_ -> string -> 'a class_
+  val class_ : 'a module_ -> string -> 'a class_type
 
   val class_type_ : 'a module_ -> string -> 'a class_type
 
@@ -213,7 +305,7 @@ module Fragment : sig
 
   module Resolved : sig
 
-    type kind = [ `Module | `Type | `Class | `ClassType ]
+    type kind = Kind.fragment
 
     type sort = [ `Root | `Branch ]
 
@@ -224,15 +316,13 @@ module Fragment : sig
       | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
       | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
 
-    and signature = ([`Module], [`Root | `Branch]) raw
-
     and 'a t = ('a, [`Branch]) raw
 
-    and module_ = [`Module] t
-
-    and type_ = [`Type|`Class|`ClassType] t
-
     and any = kind t
+    and signature = (fragment_module, [`Root | `Branch]) raw
+
+    and module_ = fragment_module t
+    and type_ = fragment_type t
 
     val signature_of_module : module_ -> signature
 
@@ -247,7 +337,7 @@ module Fragment : sig
 
   end
 
-  type kind = [ `Module | `Type | `Class | `ClassType ]
+  type kind = Kind.fragment
 
   type sort = [ `Root | `Branch ]
 
@@ -255,15 +345,13 @@ module Fragment : sig
     | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
     | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
 
-  and signature = ([`Module], [`Root | `Branch]) raw
-
   and 'a t = ('a, [`Branch]) raw
 
-  and module_ = [`Module] t
-
-  and type_ = [`Type|`Class|`ClassType] t
-
   and any = kind t
+  and signature = (fragment_module, [`Root | `Branch]) raw
+
+  and module_ = fragment_module t
+  and type_ = fragment_type t
 
   val signature_of_module : module_ -> signature
 
@@ -283,11 +371,7 @@ module Reference : sig
 
   module Resolved : sig
 
-    type kind =
-      [ `Module | `ModuleType | `Type
-      | `Constructor | `Field | `Extension
-      | `Exception | `Value | `Class | `ClassType
-      | `Method | `InstanceVariable | `Label ]
+    type kind = Kind.reference
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
@@ -306,41 +390,25 @@ module Reference : sig
                              ('a, [< kind > `InstanceVariable]) t
       | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-    and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-    and 'a module_ = ('a, [`Module]) t
-
-    and 'a module_type = ('a, [`ModuleType]) t
-
-    and 'a signature = ('a, [`Module|`ModuleType]) t
-
-    and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-    and 'a datatype = ('a, [`Type]) t
-
-    and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
-
-    and 'a field = ('a, [`Field]) t
-
-    and 'a extension = ('a, [`Extension|`Exception]) t
-
-    and 'a exception_ = ('a, [`Exception]) t
-
-    and 'a value = ('a, [`Value]) t
-
-    and 'a class_ = ('a, [`Class]) t
-
-    and 'a class_type = ('a, [`Class|`ClassType]) t
-
-    and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-    and 'a method_ = ('a, [`Method]) t
-
-    and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-    and 'a label = ('a, [`Label]) t
-
     and 'a any = ('a, kind) t
+    and 'a signature = ('a, Kind.signature) t
+    and 'a class_signature = ('a, Kind.class_signature) t
+    and 'a datatype = ('a, Kind.datatype) t
+    and 'a parent = ('a, Kind.parent) t
+
+    type 'a module_ = ('a, reference_module) t
+    type 'a module_type = ('a, reference_module_type) t
+    type 'a type_ = ('a, reference_type) t
+    type 'a constructor = ('a, reference_constructor) t
+    type 'a field = ('a, reference_field) t
+    type 'a extension = ('a, reference_extension) t
+    type 'a exception_ = ('a, reference_exception) t
+    type 'a value = ('a, reference_value) t
+    type 'a class_ = ('a, reference_class) t
+    type 'a class_type = ('a, reference_class_type) t
+    type 'a method_ = ('a, reference_method) t
+    type 'a instance_variable = ('a, reference_instance_variable) t
+    type 'a label = ('a, reference_label) t
 
     val ident_module : 'a Identifier.module_ -> 'a module_
 
@@ -386,73 +454,38 @@ module Reference : sig
 
     val parent_of_datatype : 'a datatype -> 'a parent
 
-    val class_type_of_class : 'a class_ -> 'a class_type
-
-    val type_of_datatype : 'a datatype -> 'a type_
-
-    val type_of_class : 'a class_ -> 'a type_
-
-    val type_of_class_type : 'a class_type -> 'a type_
-
-    val extension_of_exception : 'a exception_ -> 'a extension
-
-    val constructor_of_extension : 'a extension -> 'a constructor
-
-    val constructor_of_exception : 'a exception_ -> 'a constructor
-
     val any : ('a, 'b) t -> 'a any
 
     val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
 
   end
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+  type kind = Kind.reference
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
     | Root : string -> ('a, [< kind]) t
     | Dot : 'a parent * string -> ('a, [< kind]) t
 
-  and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-  and 'a module_ = ('a, [`Module]) t
-
-  and 'a module_type = ('a, [`ModuleType]) t
-
-  and 'a signature = ('a, [`Module|`ModuleType]) t
-
-  and 'a type_ = ('a, [`Type|`Class|`ClassType]) t
-
-  and 'a datatype = ('a, [`Type]) t
-
-  and 'a constructor = ('a, [`Constructor|`Extension|`Exception]) t
-
-  and 'a field = ('a, [`Field]) t
-
-  and 'a extension = ('a, [`Extension|`Exception]) t
-
-  and 'a exception_ = ('a, [`Exception]) t
-
-  and 'a value = ('a, [`Value]) t
-
-  and 'a class_ = ('a, [`Class]) t
-
-  and 'a class_type = ('a, [`Class|`ClassType]) t
-
-  and 'a class_signature = ('a, [`Class|`ClassType]) t
-
-  and 'a method_ = ('a, [`Method]) t
-
-  and 'a instance_variable = ('a, [`InstanceVariable]) t
-
-  and 'a label = ('a, [`Label]) t
-
   and 'a any = ('a, kind) t
+  and 'a signature = ('a, Kind.signature) t
+  and 'a class_signature = ('a, Kind.class_signature) t
+  and 'a datatype = ('a, Kind.datatype) t
+  and 'a parent = ('a, Kind.parent) t
 
+  type 'a module_ = ('a, reference_module) t
+  type 'a module_type = ('a, reference_module_type) t
+  type 'a type_ = ('a, reference_type) t
+  type 'a constructor = ('a, reference_constructor) t
+  type 'a field = ('a, reference_field) t
+  type 'a extension = ('a, reference_extension) t
+  type 'a exception_ = ('a, reference_exception) t
+  type 'a value = ('a, reference_value) t
+  type 'a class_ = ('a, reference_class) t
+  type 'a class_type = ('a, reference_class_type) t
+  type 'a method_ = ('a, reference_method) t
+  type 'a instance_variable = ('a, reference_instance_variable) t
+  type 'a label = ('a, reference_label) t
 
   val ident_module : 'a Identifier.module_ -> 'a module_
 
@@ -496,20 +529,6 @@ module Reference : sig
   val parent_of_class_signature : 'a class_signature -> 'a parent
 
   val parent_of_datatype : 'a datatype -> 'a parent
-
-  val class_type_of_class : 'a class_ -> 'a class_type
-
-  val type_of_datatype : 'a datatype -> 'a type_
-
-  val type_of_class : 'a class_ -> 'a type_
-
-  val type_of_class_type : 'a class_type -> 'a type_
-
-  val extension_of_exception : 'a exception_ -> 'a extension
-
-  val constructor_of_extension : 'a extension -> 'a constructor
-
-  val constructor_of_exception : 'a exception_ -> 'a constructor
 
   val any : ('a, 'b) t -> 'a any
 

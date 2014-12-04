@@ -349,11 +349,6 @@ module Path = struct
       Resolved (Identifier (find_type env id))
     with Not_found -> assert false
 
-  let read_class_ident env id : 'a class_ =
-    try
-      Resolved (Identifier (find_class env id))
-    with Not_found -> assert false
-
   let read_class_type_ident env id : 'a class_type =
     try
       Resolved (Identifier (find_class_type env id))
@@ -366,11 +361,6 @@ module Path = struct
 
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
-    | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
-    | Path.Papply(p, arg)-> assert false
-
-  let read_class env = function
-    | Path.Pident id -> read_class_ident env id
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
     | Path.Papply(p, arg)-> assert false
 
