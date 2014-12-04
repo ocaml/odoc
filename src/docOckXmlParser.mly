@@ -711,15 +711,21 @@ item:
   | ITEM text = text CLOSE
       { text }
 
+%inline string:
+  | (* empty *)
+      { "" }
+  | data = Data
+      { data}
+
 text_element:
   | data = Data
       { Documentation.Raw data }
-  | CODE data = Data CLOSE
-      { Documentation.Code data }
-  | PRECODE data = Data CLOSE
-      { Documentation.PreCode data }
-  | VERBATIM data = Data CLOSE
-      { Documentation.Verbatim data }
+  | CODE str = string CLOSE
+      { Documentation.Code str }
+  | PRECODE str = string CLOSE
+      { Documentation.PreCode str }
+  | VERBATIM str = string CLOSE
+      { Documentation.Verbatim str }
   | BOLD text = text CLOSE
       { Documentation.(Style(Bold, text)) }
   | ITALIC text = text CLOSE
@@ -748,8 +754,8 @@ text_element:
       { Documentation.Title(level, label, text) }
   | REFERENCE rf = reference text = opttext CLOSE
       { Documentation.Reference(rf, text) }
-  | target = Target data = Data CLOSE
-      { Documentation.Target(target, data) }
+  | target = Target str = string CLOSE
+      { Documentation.Target(target, str) }
   | SPECIAL special = special CLOSE
       { Documentation.Special special }
 
