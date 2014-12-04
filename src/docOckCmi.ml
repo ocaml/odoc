@@ -34,6 +34,14 @@ let opt_iter f = function
   | None -> ()
   | Some x -> f x
 
+let parenthesise name =
+  if (String.length name > 0) then
+    match name.[0] with
+    | 'a' .. 'z' | '\223' .. '\246' | '\248' .. '\255' | '_'
+    | 'A' .. 'Z' | '\192' .. '\214' | '\216' .. '\222' -> name
+    | _ -> "(" ^ name ^ ")"
+  else name
+
 let read_label lbl =
   let open TypeExpr in
   let len = String.length lbl in
@@ -440,7 +448,8 @@ let add_value_description parent id vd env =
 
 let read_value_description env parent id vd =
   let open Signature in
-  let id = Identifier.Value(parent, Ident.name id) in
+  let name = parenthesise (Ident.name id) in
+  let id = Identifier.Value(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container vd.val_attributes in
   let type_ = read_type_scheme env vd.val_type in
@@ -459,7 +468,8 @@ let add_constructor_declaration parent cd env =
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
-  let id = Identifier.Constructor(parent, Ident.name cd.cd_id) in
+  let name = parenthesise (Ident.name cd.cd_id) in
+  let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes env container cd.cd_attributes in
   let args = List.map (read_type_expr env) cd.cd_args in
@@ -474,7 +484,8 @@ let add_label_declaration parent ld env =
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
-  let id = Identifier.Field(parent, Ident.name ld.ld_id) in
+  let name = parenthesise (Ident.name ld.ld_id) in
+  let id = Identifier.Field(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes env container ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
@@ -541,14 +552,16 @@ let read_type_constraints env params =
 let add_type_declaration parent id decl env =
   let container = Identifier.parent_of_signature parent in
   let env = add_attributes container decl.type_attributes env in
-  let id' = Identifier.Type(parent, Ident.name id) in
+  let name = parenthesise (Ident.name id) in
+  let id' = Identifier.Type(parent, name) in
   let env = add_type_kind id' decl.type_kind env in
   let env = Env.add_type parent id env in
     env
 
 let read_type_declaration env parent id decl =
   let open TypeDecl in
-  let id = Identifier.Type(parent, Ident.name id) in
+  let name = parenthesise (Ident.name id) in
+  let id = Identifier.Type(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container decl.type_attributes in
   let params = prepare_type_parameters decl.type_params decl.type_manifest in
@@ -588,7 +601,8 @@ let add_extension_constructor parent id ext env =
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
-  let id = Identifier.Extension(parent, Ident.name id) in
+  let name = parenthesise (Ident.name id) in
+  let id = Identifier.Extension(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container ext.ext_attributes in
   let args = List.map (read_type_expr env) ext.ext_args in
@@ -629,7 +643,8 @@ let add_exception parent id ext env =
 
 let read_exception env parent id ext =
   let open Exception in
-  let id = Identifier.Exception(parent, Ident.name id) in
+  let name = parenthesise (Ident.name id) in
+  let id = Identifier.Exception(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container ext.ext_attributes in
     reset_names ();
@@ -645,6 +660,7 @@ let add_method parent (name, _, _) env =
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
+  let name = parenthesise name in
   let id = Identifier.Method(parent, name) in
   let doc = empty in
   let private_ = (Btype.field_kind_repr kind) <> Fpresent in
@@ -657,6 +673,7 @@ let add_instance_variable parent (name, _, _, _) env =
 
 let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
+  let name = parenthesise name in
   let id = Identifier.InstanceVariable(parent, name) in
   let doc = empty in
   let mutable_ = (mutable_ = Mutable) in
@@ -744,7 +761,7 @@ let add_class_type_declaration parent id obj_id cl_id cltd env =
 
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
-  let name = Ident.name id in
+  let name = parenthesise (Ident.name id) in
   let id = Identifier.ClassType(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cltd.clty_attributes in
@@ -790,7 +807,7 @@ let add_class_declaration parent id ty_id obj_id cl_id cld env =
 
 let read_class_declaration env parent id cld =
   let open Class in
-  let name = Ident.name id in
+  let name = parenthesise (Ident.name id) in
   let id = Identifier.Class(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cld.cty_attributes in
@@ -866,7 +883,7 @@ let rec read_module_type env parent pos mty =
           match arg with
           | None -> None
           | Some arg ->
-              let name = Ident.name id in
+              let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
               let arg = read_module_type env id 1 arg in
                 Some (id, arg)
@@ -878,7 +895,7 @@ let rec read_module_type env parent pos mty =
 
 and read_module_type_declaration env parent id mtd =
   let open ModuleType in
-  let name = Ident.name id in
+  let name = parenthesise (Ident.name id) in
   let id = Identifier.ModuleType(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container mtd.mtd_attributes in
@@ -887,7 +904,7 @@ and read_module_type_declaration env parent id mtd =
 
 and read_module_declaration env parent id md =
   let open Module in
-  let name = Ident.name id in
+  let name = parenthesise (Ident.name id) in
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container md.md_attributes in
