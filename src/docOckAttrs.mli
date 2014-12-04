@@ -19,20 +19,20 @@ open DocOckTypes.Documentation
 
 val empty : 'a t
 
-val read_attributes : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+val read_attributes : 'a DocOckEnvironment.t -> 'a Identifier.parent ->
                        Parsetree.attributes -> 'a t
 
-val read_comment : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+val read_comment : 'a DocOckEnvironment.t -> 'a Identifier.parent ->
                    Parsetree.attribute -> 'a comment option
 
-val read_comments : 'a DocOckEnvironment.t -> 'a Identifier.container ->
+val read_comments : 'a DocOckEnvironment.t -> 'a Identifier.parent ->
                     Parsetree.attributes -> 'a comment list
 
 open DocOckEnvironment
 
-val add_attributes : 'a Identifier.container -> Parsetree.attributes -> 'a t -> 'a t
+val add_attributes : 'a Identifier.parent -> Parsetree.attributes -> 'a t -> 'a t
 
-val add_comment : 'a Identifier.container -> Parsetree.attribute -> 'a t -> 'a t
+val add_comment : 'a Identifier.parent -> Parsetree.attribute -> 'a t -> 'a t
 
-val add_comments : 'a Identifier.container -> Parsetree.attributes -> 'a t -> 'a t
+val add_comments : 'a Identifier.parent -> Parsetree.attributes -> 'a t -> 'a t
 

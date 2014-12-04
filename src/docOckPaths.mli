@@ -45,9 +45,9 @@ module Identifier : sig
     | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
     | InstanceVariable : 'a class_signature * string ->
                            ('a, [< kind > `InstanceVariable]) t
-    | Label : 'a container * string -> ('a, [< kind > `Label]) t
+    | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
+  and 'a parent = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
 
   and 'a signature = ('a, [`Module|`ModuleType]) t
 
@@ -89,9 +89,11 @@ module Identifier : sig
 
   val class_type_signature : 'a class_type -> 'a class_signature
 
-  val container_of_signature : 'a signature -> 'a container
+  val parent_of_signature : 'a signature -> 'a parent
 
-  val container_of_class_signature : 'a class_signature -> 'a container
+  val parent_of_class_signature : 'a class_signature -> 'a parent
+
+  val parent_of_datatype : 'a type_ -> 'a parent
 
   val any : ('a, 'b) t -> 'a any
 
@@ -301,11 +303,9 @@ module Reference : sig
       | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
       | InstanceVariable : 'a class_signature * string ->
                              ('a, [< kind > `InstanceVariable]) t
-      | Label : 'a container * string -> ('a, [< kind > `Label]) t
+      | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
     and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-    and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
 
     and 'a module_ = ('a, [`Module]) t
 
@@ -378,10 +378,6 @@ module Reference : sig
 
     val class_type_signature : 'a class_type -> 'a class_signature
 
-    val container_of_signature : 'a signature -> 'a container
-
-    val container_of_class_signature : 'a class_signature -> 'a container
-
     val parent_of_signature : 'a signature -> 'a parent
 
     val parent_of_class_signature : 'a class_signature -> 'a parent
@@ -420,8 +416,6 @@ module Reference : sig
     | Dot : 'a parent * string -> ('a, [< kind]) t
 
   and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
 
   and 'a module_ = ('a, [`Module]) t
 
@@ -494,10 +488,6 @@ module Reference : sig
   val class_signature : 'a class_ -> 'a class_signature
 
   val class_type_signature : 'a class_type -> 'a class_signature
-
-  val container_of_signature : 'a signature -> 'a container
-
-  val container_of_class_signature : 'a class_signature -> 'a container
 
   val parent_of_signature : 'a signature -> 'a parent
 

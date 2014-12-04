@@ -107,7 +107,7 @@ let rec read_core_type env ctyp =
           Package {path; substitutions}
 
 let add_value_description parent vd env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container vd.val_attributes env in
   let env = Env.add_value parent vd.val_id env in
     env
@@ -115,7 +115,7 @@ let add_value_description parent vd env =
 let read_value_description env parent vd =
   let open Signature in
   let id = Identifier.Value(parent, Ident.name vd.val_id) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container vd.val_attributes in
   let type_ = read_core_type env vd.val_desc in
   match vd.val_prim with
@@ -138,64 +138,68 @@ let read_type_parameter env (ctyp, var) =
   in
     (desc, var)
 
-let add_constructor_declaration container parent cd env =
+let add_constructor_declaration parent cd env =
+  let container = Identifier.parent_of_datatype parent in
   let env = add_attributes container cd.cd_attributes env in
   let env = Env.add_constructor parent cd.cd_id env in
     env
 
-let read_constructor_declaration env container parent cd =
+let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let id = Identifier.Constructor(parent, Ident.name cd.cd_id) in
+  let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes env container cd.cd_attributes in
   let args = List.map (read_core_type env) cd.cd_args in
   let res = opt_map (read_core_type env) cd.cd_res in
     {id; doc; args; res}
 
-let add_label_declaration container parent ld env =
+let add_label_declaration parent ld env =
+  let container = Identifier.parent_of_datatype parent in
   let env = add_attributes container ld.ld_attributes env in
   let env = Env.add_field parent ld.ld_id env in
     env
 
-let read_label_declaration env container parent ld =
+let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let id = Identifier.Field(parent, Ident.name ld.ld_id) in
+  let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes env container ld.ld_attributes in
   let type_ = read_core_type env ld.ld_type in
     {id; doc; type_}
 
-let add_type_kind container parent kind env =
+let add_type_kind parent kind env =
   match kind with
   | Ttype_abstract -> env
   | Ttype_variant cstrs ->
       List.fold_right
-        (add_constructor_declaration container parent)
+        (add_constructor_declaration parent)
         cstrs env
   | Ttype_record lbls ->
       List.fold_right
-        (add_label_declaration container parent)
+        (add_label_declaration parent)
         lbls env
   | Ttype_open -> env
 
-let read_type_kind env container parent =
+let read_type_kind env parent =
   let open TypeDecl.Representation in function
     | Ttype_abstract -> None
     | Ttype_variant cstrs ->
         let cstrs =
-          List.map (read_constructor_declaration env container parent) cstrs
+          List.map (read_constructor_declaration env parent) cstrs
         in
           Some (Variant cstrs)
     | Ttype_record lbls ->
         let lbls =
-          List.map (read_label_declaration env container parent) lbls
+          List.map (read_label_declaration env parent) lbls
         in
           Some (Record lbls)
     | Ttype_open -> Some Extensible
 
 let add_type_declaration parent decl env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container decl.typ_attributes env in
   let id = Identifier.Type(parent, Ident.name decl.typ_id) in
-  let env = add_type_kind container id decl.typ_kind env in
+  let env = add_type_kind id decl.typ_kind env in
   let env = Env.add_type parent decl.typ_id env in
     env
 
@@ -216,14 +220,14 @@ let read_type_equation env decl =
 let read_type_declaration env parent decl =
   let open TypeDecl in
   let id = Identifier.Type(parent, Ident.name decl.typ_id) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container decl.typ_attributes in
   let equation = read_type_equation env decl in
-  let representation = read_type_kind env container id decl.typ_kind in
+  let representation = read_type_kind env id decl.typ_kind in
     {id; doc; equation; representation}
 
 let add_type_declarations parent decls env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   List.fold_right
     (fun decl env ->
        let env = add_comments container decl.typ_attributes env in
@@ -232,7 +236,7 @@ let add_type_declarations parent decls env =
       decls env
 
 let read_type_declarations env parent decls =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let items =
     List.fold_left
       (fun acc decl ->
@@ -246,7 +250,7 @@ let read_type_declarations env parent decls =
     List.rev items
 
 let add_extension_constructor parent ext env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container ext.ext_attributes env in
   let env = Env.add_extension parent ext.ext_id env in
     env
@@ -254,7 +258,7 @@ let add_extension_constructor parent ext env =
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let id = Identifier.Extension(parent, Ident.name ext.ext_id) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -264,7 +268,7 @@ let read_extension_constructor env parent ext =
         {id; doc; args; res}
 
 let add_type_extension parent tyext env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container tyext.tyext_attributes env in
   let env =
     List.fold_right (add_extension_constructor parent)
@@ -275,7 +279,7 @@ let add_type_extension parent tyext env =
 let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env tyext.tyext_path in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container tyext.tyext_attributes in
   let type_params = List.map (read_type_parameter env) tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
@@ -285,7 +289,7 @@ let read_type_extension env parent tyext =
     { type_path; doc; type_params; private_; constructors; }
 
 let add_exception parent ext env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container ext.ext_attributes env in
   let env = Env.add_exception parent ext.ext_id env in
     env
@@ -293,7 +297,7 @@ let add_exception parent ext env =
 let read_exception env parent ext =
   let open Exception in
   let id = Identifier.Exception(parent, Ident.name ext.ext_id) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -303,7 +307,7 @@ let read_exception env parent ext =
         {id; doc; args; res}
 
 let add_class_type_field parent ctf env =
-  let container = Identifier.container_of_class_signature parent in
+  let container = Identifier.parent_of_class_signature parent in
   let env = add_attributes container ctf.ctf_attributes env in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
@@ -333,7 +337,7 @@ let add_class_type_field parent ctf env =
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
-  let container = Identifier.container_of_class_signature parent in
+  let container = Identifier.parent_of_class_signature parent in
   let doc = read_attributes env container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
@@ -392,7 +396,7 @@ and read_class_signature env parent cltyp =
     | Tcty_arrow _ -> assert false
 
 let add_class_type_declaration parent cltd env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container cltd.ci_attributes env in
   let env =
     Env.add_class_type parent
@@ -407,7 +411,7 @@ let read_class_type_declaration env parent cltd =
   let open ClassType in
   let name = Ident.name cltd.ci_id_class_type in
   let id = Identifier.ClassType(parent, name) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map (read_type_parameter env) cltd.ci_params in
@@ -415,7 +419,7 @@ let read_class_type_declaration env parent cltd =
     { id; doc; virtual_; params; expr }
 
 let add_class_type_declarations parent cltds env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   List.fold_right
     (fun cltd env ->
        let env = add_comments container cltd.ci_attributes env in
@@ -424,7 +428,7 @@ let add_class_type_declarations parent cltds env =
       cltds env
 
 let read_class_type_declarations env parent cltds =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let items =
     List.fold_left
       (fun acc cltd ->
@@ -449,7 +453,7 @@ let rec read_class_type env parent cty =
         Arrow(lbl, arg, res)
 
 let add_class_declaration parent cld env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container cld.ci_attributes env in
   let env =
     Env.add_class parent
@@ -465,7 +469,7 @@ let read_class_declaration env parent cld =
   let open Class in
   let name = Ident.name cld.ci_id_class in
   let id = Identifier.Class(parent, name) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map (read_type_parameter env) cld.ci_params in
@@ -473,7 +477,7 @@ let read_class_declaration env parent cld =
     { id; doc; virtual_; params; type_ }
 
 let add_class_declarations parent clds env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   List.fold_right
     (fun cld env ->
        let env = add_comments container cld.ci_attributes env in
@@ -482,7 +486,7 @@ let add_class_declarations parent clds env =
       clds env
 
 let read_class_declarations env parent clds =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let items =
     List.fold_left
       (fun acc cld ->
@@ -496,19 +500,19 @@ let read_class_declarations env parent clds =
     List.rev items
 
 let add_module_type_declaration parent mtd env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container mtd.mtd_attributes env in
   let env = Env.add_module_type parent mtd.mtd_id env in
     env
 
 let add_module_declaration parent md env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let env = add_attributes container md.md_attributes env in
   let env = Env.add_module parent md.md_id env in
     env
 
 let add_module_declarations parent mds env =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   List.fold_right
     (fun md env ->
        let env = add_comments container md.md_attributes env in
@@ -556,7 +560,7 @@ let add_signature_item parent item env =
   | Tsig_class cls -> add_class_declarations parent cls env
   | Tsig_class_type cltyps -> add_class_type_declarations parent cltyps env
   | Tsig_attribute attr ->
-      add_comment (Identifier.container_of_signature parent) attr env
+      add_comment (Identifier.parent_of_signature parent) attr env
 
 let rec read_with_constraint env parent (_, frag, constr) =
   let open ModuleType in
@@ -629,7 +633,7 @@ and read_module_type_declaration env parent mtd =
   let open ModuleType in
   let name = Ident.name mtd.mtd_id in
   let id = Identifier.ModuleType(parent, name) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
     {id; doc; expr}
@@ -638,7 +642,7 @@ and read_module_declaration env parent md =
   let open Module in
   let name = Ident.name md.md_id in
   let id = Identifier.Module(parent, name) in
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container md.md_attributes in
   let type_ =
     match md.md_type.mty_desc with
@@ -648,7 +652,7 @@ and read_module_declaration env parent md =
     {id; doc; type_}
 
 and read_module_declarations env parent mds =
-  let container = Identifier.container_of_signature parent in
+  let container = Identifier.parent_of_signature parent in
   let items =
     List.fold_left
       (fun acc md ->
@@ -691,7 +695,7 @@ and read_signature_item env parent item =
   | Tsig_class_type cltyps ->
       read_class_type_declarations env parent cltyps
   | Tsig_attribute attr ->
-      let container = Identifier.container_of_signature parent in
+      let container = Identifier.parent_of_signature parent in
       match read_comment env container attr with
       | None -> []
       | Some doc -> [Comment doc]

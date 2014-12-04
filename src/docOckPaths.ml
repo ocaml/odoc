@@ -40,9 +40,9 @@ module Identifier = struct
     | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
     | InstanceVariable : 'a class_signature * string ->
                            ('a, [< kind > `InstanceVariable]) t
-    | Label : 'a container * string -> ('a, [< kind > `Label]) t
+    | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
+  and 'a parent = ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
 
   and 'a signature = ('a, [`Module|`ModuleType]) t
 
@@ -88,11 +88,15 @@ module Identifier = struct
   let class_type_signature : 'a class_type -> 'a class_signature = function
     | ClassType _ as x -> x
 
-  let container_of_signature : 'a signature -> 'a container = function
+
+  let parent_of_signature : 'a signature -> 'a parent = function
     | Root _ | Module _ | Argument _ | ModuleType _ as x -> x
 
-  let container_of_class_signature : 'a class_signature -> 'a container =
+  let parent_of_class_signature : 'a class_signature -> 'a parent =
     function Class _ | ClassType _ as x -> x
+
+  let parent_of_datatype : 'a type_ -> 'a parent =
+    function Type _ | CoreType _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function
     | Root _ as x -> x
@@ -529,11 +533,9 @@ module Reference = struct
       | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
       | InstanceVariable : 'a class_signature * string ->
                              ('a, [< kind > `InstanceVariable]) t
-      | Label : 'a container * string -> ('a, [< kind > `Label]) t
+      | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
     and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
-
-    and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
 
     and 'a module_ = ('a, [`Module]) t
 
@@ -614,23 +616,15 @@ module Reference = struct
     let class_type_signature : 'a class_type -> 'a class_signature = function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
-    let container_of_signature : 'a signature -> 'a container = function
+    let parent_of_signature : 'a signature -> _ = function
       | Identifier (Root _ | Module _ | Argument _ | ModuleType _)
       | Module _ | ModuleType _ as x -> x
 
-    let container_of_class_signature : 'a class_signature -> 'a container =
+    let parent_of_class_signature : 'a class_signature -> _ =
       function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
-    let parent_of_signature : 'a signature -> 'a parent = function
-      | Identifier (Root _ | Module _ | Argument _ | ModuleType _)
-      | Module _ | ModuleType _ as x -> x
-
-    let parent_of_class_signature : 'a class_signature -> 'a parent =
-      function
-      | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
-
-    let parent_of_datatype : 'a datatype -> 'a parent = function
+    let parent_of_datatype : 'a datatype -> _ = function
       | Identifier (Type _ |CoreType _) | Type _ as x -> x
 
     let class_type_of_class : 'a class_ -> 'a class_type = function
@@ -721,8 +715,6 @@ module Reference = struct
 
   and 'a parent = ('a, [`Module|`ModuleType|`Class|`ClassType|`Type]) t
 
-  and 'a container = ('a, [`Module|`ModuleType|`Class|`ClassType]) t
-
   and 'a module_ = ('a, [`Module]) t
 
   and 'a module_type = ('a, [`ModuleType]) t
@@ -805,15 +797,6 @@ module Reference = struct
     | Root _ | Dot _ as x -> x
 
   let class_type_signature : 'a class_type -> 'a class_signature = function
-    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
-    | Root _ | Dot _ as x -> x
-
-  let container_of_signature : 'a signature -> 'a container = function
-    | Resolved (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
-                | Module _ | ModuleType _)
-    | Root _ | Dot _ as x -> x
-
-  let container_of_class_signature : 'a class_signature -> 'a container = function
     | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
     | Root _ | Dot _ as x -> x
 

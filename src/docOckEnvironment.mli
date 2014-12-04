@@ -48,7 +48,7 @@ val add_method : 'a class_signature -> string -> 'a t -> 'a t
 
 val add_instance_variable : 'a class_signature -> string -> 'a t -> 'a t
 
-val add_label : 'a container -> string -> 'a t -> 'a t
+val add_label : 'a parent -> string -> 'a t -> 'a t
 
 
 module Path : sig
