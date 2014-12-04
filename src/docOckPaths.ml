@@ -76,16 +76,16 @@ module Identifier = struct
 
   and 'a any = ('a, kind) t
 
-  let module_signature : 'a module_ -> 'a signature = function
+  let signature_of_module : 'a module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> x
 
-  let module_type_signature : 'a module_type -> 'a signature  = function
+  let signature_of_module_type : 'a module_type -> _  = function
     | ModuleType _ as x -> x
 
-  let class_signature : 'a class_ -> 'a class_signature = function
+  let class_signature_of_class : 'a class_ -> _ = function
     | Class _ as x -> x
 
-  let class_type_signature : 'a class_type -> 'a class_signature = function
+  let class_signature_of_class_type : 'a class_type -> _ = function
     | ClassType _ as x -> x
 
 
@@ -242,15 +242,15 @@ module Path = struct
 
     let rec identifier : type k. ('a, k) t -> ('a, k) Identifier.t = function
       | Identifier id -> id
-      | Module(m, n) -> Module(module_signature (identifier m), n)
+      | Module(m, n) -> Module(signature_of_module (identifier m), n)
       | Apply(m, _) -> begin
           match identifier m with
           | Root _ | Module _ | Argument _ as x -> x
         end
-      | ModuleType(m, n) -> ModuleType(module_signature (identifier m), n)
-      | Type(m, n) -> Type(module_signature (identifier m), n)
-      | Class(m, n) -> Class(module_signature (identifier m), n)
-      | ClassType(m, n) -> ClassType(module_signature (identifier m), n)
+      | ModuleType(m, n) -> ModuleType(signature_of_module (identifier m), n)
+      | Type(m, n) -> Type(signature_of_module (identifier m), n)
+      | Class(m, n) -> Class(signature_of_module (identifier m), n)
+      | ClassType(m, n) -> ClassType(signature_of_module (identifier m), n)
 
   end
 
@@ -360,7 +360,7 @@ module Fragment = struct
 
     and any = kind t
 
-    let module_signature : module_ -> signature = function
+    let rec signature_of_module : module_ -> signature = function
       | Module _ as x -> x
 
     let any : type k. k t -> any = function
@@ -401,19 +401,19 @@ module Fragment = struct
         fun root -> function
         | Module(Root, n) -> Identifier.Module(root, n)
         | Module(Module _ as m, n) ->
-            let m = Identifier.module_signature (identifier root m) in
+            let m = Identifier.signature_of_module (identifier root m) in
               Identifier.Module(m, n)
         | Type(Root, n) -> Identifier.Type(root, n)
         | Type(Module _ as m, n) ->
-            let m = Identifier.module_signature (identifier root m) in
+            let m = Identifier.signature_of_module (identifier root m) in
               Identifier.Type(m, n)
         | Class(Root, n) -> Identifier.Class(root, n)
         | Class(Module _ as m, n) ->
-            let m = Identifier.module_signature (identifier root m) in
+            let m = Identifier.signature_of_module (identifier root m) in
               Identifier.Class(m, n)
         | ClassType(Root, n) -> Identifier.ClassType(root, n)
         | ClassType(Module _ as m, n) ->
-            let m = Identifier.module_signature (identifier root m) in
+            let m = Identifier.signature_of_module (identifier root m) in
               Identifier.ClassType(m, n)
 
   let rec split_module : module_ -> string * signature = function
@@ -462,7 +462,7 @@ module Fragment = struct
 
   and any = kind t
 
-  let module_signature : module_ -> signature = function
+  let signature_of_module : module_ -> signature = function
     | Resolved(Module _) | Dot _ as x -> x
 
   let any : type k. k t -> any = function
@@ -604,16 +604,16 @@ module Reference = struct
 
     let ident_label (l : 'a Identifier.label) = Identifier l
 
-    let module_signature : 'a module_ -> 'a signature = function
+    let signature_of_module : 'a module_ -> _ = function
       | Identifier (Root _ | Module _ | Argument _) | Module _ as x -> x
 
-    let module_type_signature : 'a module_type -> 'a signature = function
+    let signature_of_module_type : 'a module_type -> _ = function
       | Identifier (ModuleType _) | ModuleType _ as x -> x
 
-    let class_signature : 'a class_ -> 'a class_signature = function
+    let class_signature_of_class : 'a class_ -> _ = function
       | Identifier (Class _) | Class _ as x -> x
 
-    let class_type_signature : 'a class_type -> 'a class_signature = function
+    let class_signature_of_class_type : 'a class_type -> _ = function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
     let parent_of_signature : 'a signature -> _ = function
@@ -784,19 +784,19 @@ module Reference = struct
 
   let ident_label (l : 'a Identifier.label) = Resolved (Identifier l)
 
-  let module_signature : 'a module_ -> 'a signature = function
+  let signature_of_module : 'a module_ -> _ = function
     | Resolved (Identifier (Root _ | Module _ | Argument _) | Module _)
     | Root _ | Dot _ as x -> x
 
-  let module_type_signature : 'a module_type -> 'a signature = function
+  let signature_of_module_type : 'a module_type -> _ = function
     | Resolved (Identifier (ModuleType _) | ModuleType _)
     | Root _ | Dot _ as x -> x
 
-  let class_signature : 'a class_ -> 'a class_signature = function
+  let class_signature_of_class : 'a class_ -> _ = function
     | Resolved (Identifier (Class _) | Class _)
     | Root _ | Dot _ as x -> x
 
-  let class_type_signature : 'a class_type -> 'a class_signature = function
+  let class_signature_of_class_type : 'a class_type -> _ = function
     | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
     | Root _ | Dot _ as x -> x
 

@@ -81,13 +81,14 @@ module Identifier : sig
 
   and 'a any = ('a, kind) t
 
-  val module_signature : 'a module_ -> 'a signature
+  val signature_of_module : 'a module_ -> 'a signature
 
-  val module_type_signature : 'a module_type -> 'a signature
+  val signature_of_module_type : 'a module_type -> 'a signature
 
-  val class_signature : 'a class_ -> 'a class_signature
+  val class_signature_of_class : 'a class_ -> 'a class_signature
 
-  val class_type_signature : 'a class_type -> 'a class_signature
+  val class_signature_of_class_type : 'a class_type -> 'a class_signature
+
 
   val parent_of_signature : 'a signature -> 'a parent
 
@@ -233,7 +234,7 @@ module Fragment : sig
 
     and any = kind t
 
-    val module_signature : module_ -> signature
+    val signature_of_module : module_ -> signature
 
     val any : 'a t -> any
 
@@ -264,7 +265,7 @@ module Fragment : sig
 
   and any = kind t
 
-  val module_signature : module_ -> signature
+  val signature_of_module : module_ -> signature
 
   val any : 'a t -> any
 
@@ -370,13 +371,14 @@ module Reference : sig
 
     val ident_label : 'a Identifier.label -> 'a label
 
-    val module_signature : 'a module_ -> 'a signature
 
-    val module_type_signature : 'a module_type -> 'a signature
+    val signature_of_module : 'a module_ -> 'a signature
 
-    val class_signature : 'a class_ -> 'a class_signature
+    val signature_of_module_type : 'a module_type -> 'a signature
 
-    val class_type_signature : 'a class_type -> 'a class_signature
+    val class_signature_of_class : 'a class_ -> 'a class_signature
+
+    val class_signature_of_class_type : 'a class_type -> 'a class_signature
 
     val parent_of_signature : 'a signature -> 'a parent
 
@@ -481,13 +483,13 @@ module Reference : sig
 
   val ident_label : 'a Identifier.label -> 'a label
 
-  val module_signature : 'a module_ -> 'a signature
+  val signature_of_module : 'a module_ -> 'a signature
 
-  val module_type_signature : 'a module_type -> 'a signature
+  val signature_of_module_type : 'a module_type -> 'a signature
 
-  val class_signature : 'a class_ -> 'a class_signature
+  val class_signature_of_class : 'a class_ -> 'a class_signature
 
-  val class_type_signature : 'a class_type -> 'a class_signature
+  val class_signature_of_class_type : 'a class_type -> 'a class_signature
 
   val parent_of_signature : 'a signature -> 'a parent
 
