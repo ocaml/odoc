@@ -263,18 +263,20 @@ module Path = struct
 
     include Types.Resolved
 
-    let ident_module (m: 'a Identifier.module_) = Identifier m
+    let ident_module : 'a Identifier.module_ -> _ = function
+      | Root _ | Module _ | Argument _ as x -> Identifier x
 
-    let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
+    let ident_module_type : 'a Identifier.module_type -> _ = function
+      | ModuleType _ as x -> Identifier x
 
-    let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ | CoreType _ as t -> Identifier t
+    let ident_type : 'a Identifier.type_ -> _ = function
+      | Type _ | CoreType _ as x -> Identifier x
 
-    let ident_class : 'a Identifier.class_ -> 'a class_type = function
-    | Class _ as c -> Identifier c
+    let ident_class : 'a Identifier.class_ -> _ = function
+      | Class _ as x -> Identifier x
 
-    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
-      | ClassType _ as ct -> Identifier ct
+    let ident_class_type : 'a Identifier.class_type -> _ = function
+      | ClassType _ as x -> Identifier x
 
     let any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _) as x -> x
@@ -311,19 +313,20 @@ module Path = struct
 
   include Types.Path
 
-  let ident_module (m: 'a Identifier.module_) = Resolved (Identifier m)
+  let ident_module : 'a Identifier.module_ -> _ = function
+    | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
 
-  let ident_module_type (mt: 'a Identifier.module_type) =
-    Resolved (Identifier mt)
+  let ident_module_type : 'a Identifier.module_type -> _ = function
+    | ModuleType _ as x -> Resolved (Identifier x)
 
-  let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ | CoreType _ as t -> Resolved (Identifier t)
+  let ident_type : 'a Identifier.type_ -> _ = function
+    | Type _ | CoreType _ as x -> Resolved (Identifier x)
 
-  let ident_class : 'a Identifier.class_ -> 'a class_type = function
-    | Class _ as c -> Resolved (Identifier c)
+  let ident_class : 'a Identifier.class_ -> _ = function
+    | Class _ as x -> Resolved (Identifier x)
 
-  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
-    | ClassType _ as ct -> Resolved (Identifier ct)
+  let ident_class_type : 'a Identifier.class_type -> _ = function
+    | ClassType _ as x -> Resolved (Identifier x)
 
   let any : type k. ('a, k) t -> 'a any = function
     | Resolved (Identifier (Root _)) as x -> x
@@ -591,38 +594,44 @@ module Reference = struct
     type 'a instance_variable = ('a, reference_instance_variable) t
     type 'a label = ('a, reference_label) t
 
-    let ident_module (m: 'a Identifier.module_) = Identifier m
+    let ident_module : 'a Identifier.module_ -> _ = function
+      | Root _ | Module _ | Argument _ as x -> Identifier x
 
-    let ident_module_type (mt: 'a Identifier.module_type) = Identifier mt
+    let ident_module_type : 'a Identifier.module_type -> _ = function
+      | ModuleType _ as x -> Identifier x
 
-    let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ | CoreType _ as t -> Identifier t
+    let ident_type : 'a Identifier.type_ -> _ = function
+      | Type _ | CoreType _ as x -> Identifier x
 
-    let ident_datatype (t : 'a Identifier.type_) = Identifier t
+    let ident_constructor : 'a Identifier.constructor -> _ = function
+      | Constructor _ as x -> Identifier x
 
-    let ident_constructor : 'a Identifier.constructor -> 'a constructor = function
-      | Constructor _ as c -> Identifier c
+    let ident_field : 'a Identifier.field -> _ = function
+      | Field _ as x -> Identifier x
 
-    let ident_extension : 'a Identifier.extension -> 'a extension = function
-      | Extension _ as e -> Identifier e
+    let ident_extension : 'a Identifier.extension -> _ = function
+      | Extension _ as x -> Identifier x
 
-    let ident_exception (e : 'a Identifier.exception_) = Identifier e
+    let ident_exception : 'a Identifier.exception_ -> _ = function
+      | Exception _ | CoreException _ as x -> Identifier x
 
-    let ident_field (f: 'a Identifier.field) = Identifier f
+    let ident_value : 'a Identifier.value -> _ = function
+      | Value _ as x -> Identifier x
 
-    let ident_value (v: 'a Identifier.value) = Identifier v
+    let ident_class : 'a Identifier.class_ -> _ = function
+      | Class _ as x -> Identifier x
 
-    let ident_class (c: 'a Identifier.class_) = Identifier c
+    let ident_class_type : 'a Identifier.class_type -> _ = function
+      | ClassType _ as x -> Identifier x
 
-    let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
-      | ClassType _ as ct -> Identifier ct
+    let ident_method : 'a Identifier.method_ -> _ = function
+      | Method _ as x -> Identifier x
 
-    let ident_method (m : 'a Identifier.method_) = Identifier m
+    let ident_instance_variable : 'a Identifier.instance_variable -> _ =
+      function InstanceVariable _ as x -> Identifier x
 
-    let ident_instance_variable (iv : 'a Identifier.instance_variable) =
-      Identifier iv
-
-    let ident_label (l : 'a Identifier.label) = Identifier l
+    let ident_label : 'a Identifier.label -> _ = function
+      | Label _ as x -> Identifier x
 
     let signature_of_module : 'a module_ -> _ = function
       | Identifier (Root _ | Module _ | Argument _) | Module _ as x -> x
@@ -728,40 +737,44 @@ module Reference = struct
   type 'a instance_variable = ('a, reference_instance_variable) t
   type 'a label = ('a, reference_label) t
 
-  let ident_module (m: 'a Identifier.module_) = Resolved (Identifier m)
+  let ident_module : 'a Identifier.module_ -> _ = function
+    | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
 
-  let ident_module_type (mt: 'a Identifier.module_type) =
-    Resolved (Identifier mt)
+  let ident_module_type : 'a Identifier.module_type -> _ = function
+    | ModuleType _ as x -> Resolved (Identifier x)
 
-  let ident_type : 'a Identifier.type_ -> 'a type_ = function
-    | Type _ | CoreType _ as t -> Resolved (Identifier t)
+  let ident_type : 'a Identifier.type_ -> _ = function
+    | Type _ | CoreType _ as x -> Resolved (Identifier x)
 
-  let ident_datatype (t : 'a Identifier.type_) = Resolved (Identifier t)
+  let ident_constructor : 'a Identifier.constructor -> _ = function
+    | Constructor _ as x -> Resolved (Identifier x)
 
-  let ident_constructor : 'a Identifier.constructor -> 'a constructor =
-    function
-    | Constructor _ as c -> Resolved (Identifier c)
+  let ident_field : 'a Identifier.field -> _ = function
+    | Field _ as x -> Resolved (Identifier x)
 
-  let ident_field (f: 'a Identifier.field) = Resolved (Identifier f)
+  let ident_extension : 'a Identifier.extension -> _ = function
+    | Extension _ as x -> Resolved (Identifier x)
 
-  let ident_extension : 'a Identifier.extension -> 'a extension = function
-    | Extension _ as e -> Resolved (Identifier e)
+  let ident_exception : 'a Identifier.exception_ -> _ = function
+    | Exception _ | CoreException _ as x -> Resolved (Identifier x)
 
-  let ident_exception (e : 'a Identifier.exception_) = Resolved (Identifier e)
+  let ident_value : 'a Identifier.value -> _ = function
+    | Value _ as x -> Resolved (Identifier x)
 
-  let ident_value (v: 'a Identifier.value) = Resolved (Identifier v)
+  let ident_class : 'a Identifier.class_ -> _ = function
+    | Class _ as x -> Resolved (Identifier x)
 
-  let ident_class (c: 'a Identifier.class_) = Resolved (Identifier c)
+  let ident_class_type : 'a Identifier.class_type -> _ = function
+    | ClassType _ as x -> Resolved (Identifier x)
 
-  let ident_class_type : 'a Identifier.class_type -> 'a class_type = function
-    | ClassType _ as ct -> Resolved (Identifier ct)
+  let ident_method : 'a Identifier.method_ -> _ = function
+    | Method _ as x -> Resolved (Identifier x)
 
-  let ident_method (m : 'a Identifier.method_) = Resolved (Identifier m)
+  let ident_instance_variable : 'a Identifier.instance_variable -> _ =
+    function InstanceVariable _ as x -> Resolved (Identifier x)
 
-  let ident_instance_variable (iv : 'a Identifier.instance_variable) =
-    Resolved (Identifier iv)
-
-  let ident_label (l : 'a Identifier.label) = Resolved (Identifier l)
+  let ident_label : 'a Identifier.label -> _ = function
+    | Label _ as x -> Resolved (Identifier x)
 
   let signature_of_module : 'a module_ -> _ = function
     | Resolved (Identifier (Root _ | Module _ | Argument _) | Module _)
@@ -825,5 +838,70 @@ module Reference = struct
     | Resolved (Label _) as x -> x
     | Root _ as x -> x
     | Dot _ as x -> x
+
+  let module_ p name =
+    match p with
+    | Resolved p -> Resolved (Module(p, name))
+    | p -> Dot(parent_of_signature p, name)
+
+  let module_type p name =
+    match p with
+    | Resolved p -> Resolved (ModuleType(p, name))
+    | p -> Dot(parent_of_signature p, name)
+
+  let type_ p name =
+    match p with
+    | Resolved p -> Resolved (Type(p, name))
+    | p -> Dot(parent_of_signature p, name)
+
+  let constructor p arg =
+    match p with
+    | Resolved p -> Resolved (Constructor(p, arg))
+    | p -> Dot(parent_of_datatype p, arg)
+
+  let field p arg =
+    match p with
+    | Resolved p -> Resolved (Field(p, arg))
+    | p -> Dot(parent_of_datatype p, arg)
+
+  let extension p arg =
+    match p with
+    | Resolved p -> Resolved (Extension(p, arg))
+    | p -> Dot(parent_of_signature p, arg)
+
+  let exception_ p arg =
+    match p with
+    | Resolved p -> Resolved (Exception(p, arg))
+    | p -> Dot(parent_of_signature p, arg)
+
+  let value p arg =
+    match p with
+    | Resolved p -> Resolved (Value(p, arg))
+    | p -> Dot(parent_of_signature p, arg)
+
+  let class_ p name =
+    match p with
+    | Resolved p -> Resolved (Class(p, name))
+    | p -> Dot(parent_of_signature p, name)
+
+  let class_type p name =
+    match p with
+    | Resolved p -> Resolved (ClassType(p, name))
+    | p -> Dot(parent_of_signature p, name)
+
+  let method_ p arg =
+    match p with
+    | Resolved p -> Resolved (Method(p, arg))
+    | p -> Dot(parent_of_class_signature p, arg)
+
+  let instance_variable p arg =
+    match p with
+    | Resolved p -> Resolved (InstanceVariable(p, arg))
+    | p -> Dot(parent_of_class_signature p, arg)
+
+  let label p arg =
+    match p with
+    | Resolved p -> Resolved (Label(p, arg))
+    | p -> Dot(p, arg)
 
 end

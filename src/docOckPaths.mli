@@ -241,15 +241,17 @@ module rec Path : sig
     and 'a type_ = ('a, path_type) t
     and 'a class_type = ('a, path_class_type) t
 
-    val ident_module : 'a Identifier.module_ -> 'a module_
+    val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
-    val ident_module_type : 'a Identifier.module_type -> 'a module_type
+    val ident_module_type : 'a Identifier.module_type ->
+          ('a, [< kind > `ModuleType]) t
 
-    val ident_type : 'a Identifier.type_ -> 'a type_
+    val ident_type : 'a Identifier.type_ -> ('a, [< kind > `Type]) t
 
-    val ident_class : 'a Identifier.class_ -> 'a class_type
+    val ident_class : 'a Identifier.class_ -> ('a, [< kind > `Class]) t
 
-    val ident_class_type : 'a Identifier.class_type -> 'a class_type
+    val ident_class_type : 'a Identifier.class_type ->
+          ('a, [< kind > `ClassType]) t
 
     val any : ('a, 'b) t -> 'a any
 
@@ -272,29 +274,31 @@ module rec Path : sig
   and 'a type_ = ('a, path_type) t
   and 'a class_type = ('a, path_class_type) t
 
-  val ident_module : 'a Identifier.module_ -> 'a module_
+  val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
-  val ident_module_type : 'a Identifier.module_type -> 'a module_type
+  val ident_module_type : 'a Identifier.module_type ->
+        ('a, [< kind > `ModuleType]) t
 
-  val ident_type : 'a Identifier.type_ -> 'a type_
+  val ident_type : 'a Identifier.type_ -> ('a, [< kind > `Type]) t
 
-  val ident_class : 'a Identifier.class_ -> 'a class_type
+  val ident_class : 'a Identifier.class_ -> ('a, [< kind > `Class]) t
 
-  val ident_class_type : 'a Identifier.class_type -> 'a class_type
+  val ident_class_type : 'a Identifier.class_type ->
+        ('a, [< kind > `ClassType]) t
 
   val any : ('a, 'b) t -> 'a any
 
-  val module_ : 'a module_ -> string -> 'a module_
+  val module_ : 'a module_ -> string -> ('a, [< kind > `Module]) t
 
-  val apply : 'a module_ -> 'a module_ -> 'a module_
+  val apply : 'a module_ -> 'a module_ -> ('a, [< kind > `Module]) t
 
-  val module_type : 'a module_ -> string -> 'a module_type
+  val module_type : 'a module_ -> string -> ('a, [< kind > `ModuleType]) t
 
-  val type_ : 'a module_ -> string -> 'a type_
+  val type_ : 'a module_ -> string -> ('a, [< kind > `Type]) t
 
-  val class_ : 'a module_ -> string -> 'a class_type
+  val class_ : 'a module_ -> string -> ('a, [< kind > `Class]) t
 
-  val class_type_ : 'a module_ -> string -> 'a class_type
+  val class_type_ : 'a module_ -> string -> ('a, [< kind > `ClassType]) t
 
 end
 
@@ -410,35 +414,37 @@ module Reference : sig
     type 'a instance_variable = ('a, reference_instance_variable) t
     type 'a label = ('a, reference_label) t
 
-    val ident_module : 'a Identifier.module_ -> 'a module_
+    val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
-    val ident_module_type : 'a Identifier.module_type -> 'a module_type
+    val ident_module_type : 'a Identifier.module_type ->
+          ('a, [< kind > `ModuleType]) t
 
-    val ident_type : 'a Identifier.type_ -> 'a type_
+    val ident_type : 'a Identifier.type_ -> ('a, [< kind > `Type])t
 
-    val ident_datatype : 'a Identifier.type_ -> 'a datatype
+    val ident_constructor : 'a Identifier.constructor ->
+          ('a, [< kind > `Constructor])t
 
-    val ident_constructor : 'a Identifier.constructor -> 'a constructor
+    val ident_field : 'a Identifier.field -> ('a, [< kind > `Field])t
 
-    val ident_field : 'a Identifier.field -> 'a field
+    val ident_extension : 'a Identifier.extension ->
+          ('a, [< kind > `Extension])t
 
-    val ident_extension : 'a Identifier.extension -> 'a extension
+    val ident_exception : 'a Identifier.exception_ ->
+          ('a, [< kind > `Exception])t
 
-    val ident_exception : 'a Identifier.exception_ -> 'a exception_
+    val ident_value : 'a Identifier.value -> ('a, [< kind > `Value])t
 
-    val ident_value : 'a Identifier.value -> 'a value
+    val ident_class : 'a Identifier.class_ -> ('a, [< kind > `Class])t
 
-    val ident_class : 'a Identifier.class_ -> 'a class_
+    val ident_class_type : 'a Identifier.class_type ->
+          ('a, [< kind > `ClassType])t
 
-    val ident_class_type : 'a Identifier.class_type -> 'a class_type
-
-    val ident_method : 'a Identifier.method_ -> 'a method_
+    val ident_method : 'a Identifier.method_ -> ('a, [< kind > `Method])t
 
     val ident_instance_variable : 'a Identifier.instance_variable ->
-                                    'a instance_variable
+          ('a, [< kind > `InstanceVariable])t
 
-    val ident_label : 'a Identifier.label -> 'a label
-
+    val ident_label : 'a Identifier.label -> ('a, [< kind > `Label]) t
 
     val signature_of_module : 'a module_ -> 'a signature
 
@@ -487,34 +493,37 @@ module Reference : sig
   type 'a instance_variable = ('a, reference_instance_variable) t
   type 'a label = ('a, reference_label) t
 
-  val ident_module : 'a Identifier.module_ -> 'a module_
+  val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
-  val ident_module_type : 'a Identifier.module_type -> 'a module_type
+  val ident_module_type : 'a Identifier.module_type ->
+        ('a, [< kind > `ModuleType]) t
 
-  val ident_type : 'a Identifier.type_ -> 'a type_
+  val ident_type : 'a Identifier.type_ -> ('a, [< kind > `Type])t
 
-  val ident_datatype : 'a Identifier.type_ -> 'a datatype
+  val ident_constructor : 'a Identifier.constructor ->
+        ('a, [< kind > `Constructor])t
 
-  val ident_constructor : 'a Identifier.constructor -> 'a constructor
+  val ident_field : 'a Identifier.field -> ('a, [< kind > `Field])t
 
-  val ident_field : 'a Identifier.field -> 'a field
+  val ident_extension : 'a Identifier.extension ->
+        ('a, [< kind > `Extension])t
 
-  val ident_extension : 'a Identifier.extension -> 'a extension
+  val ident_exception : 'a Identifier.exception_ ->
+        ('a, [< kind > `Exception])t
 
-  val ident_exception : 'a Identifier.exception_ -> 'a exception_
+  val ident_value : 'a Identifier.value -> ('a, [< kind > `Value])t
 
-  val ident_value : 'a Identifier.value -> 'a value
+  val ident_class : 'a Identifier.class_ -> ('a, [< kind > `Class])t
 
-  val ident_class : 'a Identifier.class_ -> 'a class_
+  val ident_class_type : 'a Identifier.class_type ->
+        ('a, [< kind > `ClassType])t
 
-  val ident_class_type : 'a Identifier.class_type -> 'a class_type
-
-  val ident_method : 'a Identifier.method_ -> 'a method_
+  val ident_method : 'a Identifier.method_ -> ('a, [< kind > `Method])t
 
   val ident_instance_variable : 'a Identifier.instance_variable ->
-                                  'a instance_variable
+        ('a, [< kind > `InstanceVariable])t
 
-  val ident_label : 'a Identifier.label -> 'a label
+  val ident_label : 'a Identifier.label -> ('a, [< kind > `Label]) t
 
   val signature_of_module : 'a module_ -> 'a signature
 
@@ -531,5 +540,37 @@ module Reference : sig
   val parent_of_datatype : 'a datatype -> 'a parent
 
   val any : ('a, 'b) t -> 'a any
+
+  val module_ : 'a signature -> string -> ('a, [< kind > `Module]) t
+
+  val module_type : 'a signature -> string ->
+        ('a, [< kind > `ModuleType]) t
+
+  val type_ : 'a signature -> string -> ('a, [< kind > `Type])t
+
+  val constructor : 'a datatype -> string ->
+        ('a, [< kind > `Constructor])t
+
+  val field : 'a datatype -> string -> ('a, [< kind > `Field])t
+
+  val extension : 'a signature -> string ->
+        ('a, [< kind > `Extension])t
+
+  val exception_ : 'a signature -> string ->
+        ('a, [< kind > `Exception])t
+
+  val value : 'a signature -> string -> ('a, [< kind > `Value])t
+
+  val class_ : 'a signature -> string -> ('a, [< kind > `Class])t
+
+  val class_type : 'a signature -> string ->
+        ('a, [< kind > `ClassType])t
+
+  val method_ : 'a class_signature -> string -> ('a, [< kind > `Method])t
+
+  val instance_variable : 'a class_signature -> string ->
+        ('a, [< kind > `InstanceVariable])t
+
+  val label : 'a parent -> string -> ('a, [< kind > `Label]) t
 
 end
