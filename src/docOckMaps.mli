@@ -164,9 +164,9 @@ class virtual ['a] module_type : object
 
   method virtual path_type : 'a Path.type_ -> 'a Path.type_
 
-  method virtual fragment_module : Fragment.module_ -> Fragment.module_
+  method virtual fragment_module : 'a Fragment.module_ -> 'a Fragment.module_
 
-  method virtual fragment_type : Fragment.type_ -> Fragment.type_
+  method virtual fragment_type : 'a Fragment.type_ -> 'a Fragment.type_
 
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
@@ -435,7 +435,7 @@ class virtual ['a] type_expr : object
 
   method virtual path_class_type : 'a Path.class_type -> 'a Path.class_type
 
-  method virtual fragment_type : Fragment.type_ -> Fragment.type_
+  method virtual fragment_type : 'a Fragment.type_ -> 'a Fragment.type_
 
   method type_expr_variant_kind : TypeExpr.Variant.kind ->
     TypeExpr.Variant.kind

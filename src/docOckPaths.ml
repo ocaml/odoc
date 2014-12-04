@@ -220,6 +220,10 @@ module Path = struct
 
       type ('a, 'b) t =
         | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
+        | Subst : 'a module_type * ('a, 'b) t ->
+                  ('a, [< kind > `Module] as 'b) t
+        | SubstAlias : 'a module_ * ('a, 'b) t ->
+                       ('a, [< kind > `Module] as 'b) t
         | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
         | Apply : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
         | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
@@ -278,7 +282,7 @@ module Path = struct
     let ident_class_type : 'a Identifier.class_type -> _ = function
       | ClassType _ as x -> Identifier x
 
-    let any : type k. ('a, k) t -> 'a any = function
+    let rec any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _) as x -> x
       | Identifier (Module _) as x -> x
       | Identifier (Argument _) as x -> x
@@ -287,6 +291,8 @@ module Path = struct
       | Identifier (CoreType _) as x -> x
       | Identifier (Class _) as x -> x
       | Identifier (ClassType _) as x -> x
+      | Subst(sub, p) -> Subst(sub, any p)
+      | SubstAlias(sub, p) -> SubstAlias(sub, any p)
       | Module _ as x -> x
       | Apply _ as x -> x
       | ModuleType _ as x -> x
@@ -294,17 +300,30 @@ module Path = struct
       | Class _ as x -> x
       | ClassType _ as x -> x
 
+    let rec parent_module_type_identifier : 'a module_type -> 'a Identifier.signature = function
+      | Identifier id -> Identifier.signature_of_module_type id
+      | ModuleType(m, n) -> Module(parent_module_identifier m, n)
+
+    and parent_module_identifier : 'a module_ -> 'a Identifier.signature = function
+      | Identifier id -> Identifier.signature_of_module id
+      | Subst(sub, _) -> parent_module_type_identifier sub
+      | SubstAlias(sub, _) -> parent_module_identifier sub
+      | Module(m, n) -> Module(parent_module_identifier m, n)
+      | Apply(m, _) -> parent_module_identifier m
+
     let rec identifier : type k. ('a, k) t -> ('a, k) Identifier.t = function
       | Identifier id -> id
-      | Module(m, n) -> Module(signature_of_module (identifier m), n)
+      | Subst(_, p) -> identifier p
+      | SubstAlias(_, p) -> identifier p
+      | Module(m, n) -> Module(parent_module_identifier m, n)
       | Apply(m, _) -> begin
           match identifier m with
           | Root _ | Module _ | Argument _ as x -> x
         end
-      | ModuleType(m, n) -> ModuleType(signature_of_module (identifier m), n)
-      | Type(m, n) -> Type(signature_of_module (identifier m), n)
-      | Class(m, n) -> Class(signature_of_module (identifier m), n)
-      | ClassType(m, n) -> ClassType(signature_of_module (identifier m), n)
+      | ModuleType(m, n) -> ModuleType(parent_module_identifier m, n)
+      | Type(m, n) -> Type(parent_module_identifier m, n)
+      | Class(m, n) -> Class(parent_module_identifier m, n)
+      | ClassType(m, n) -> ClassType(parent_module_identifier m, n)
 
   end
 
@@ -343,6 +362,8 @@ module Path = struct
     | Resolved (Type _) as x -> x
     | Resolved (Class _) as x -> x
     | Resolved (ClassType _) as x -> x
+    | Resolved (Subst(sub, p)) -> Resolved (Subst(sub, any p))
+    | Resolved (SubstAlias(sub, p)) -> Resolved (SubstAlias(sub, any p))
     | Root _ as x -> x
     | Dot _ as x -> x
     | Apply _ as x -> x
@@ -389,100 +410,146 @@ module Fragment = struct
 
     type sort = [ `Root | `Branch ]
 
-    type ('a, 'b) raw =
-      | Root : ('a, [< sort > `Root]) raw
-      | Module : signature * string -> ([< kind > `Module], [< sort > `Branch]) raw
-      | Type : signature * string -> ([< kind > `Type], [< sort > `Branch]) raw
-      | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
-      | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
+    type ('a, 'b, 'c) raw =
+      | Root : ('a, 'b, [< sort > `Root]) raw
+      | Subst : 'a Path.Resolved.module_type * ('a, 'b, 'c) raw ->
+                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | SubstAlias : 'a Path.Resolved.module_ * ('a, 'b, 'c) raw ->
+                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | Module : 'a signature * string -> ('a, [< kind > `Module], [< sort > `Branch]) raw
+      | Type : 'a signature * string -> ('a, [< kind > `Type], [< sort > `Branch]) raw
+      | Class : 'a signature * string -> ('a, [< kind > `Class], [< sort > `Branch]) raw
+      | ClassType : 'a signature * string -> ('a, [< kind > `ClassType], [< sort > `Branch]) raw
 
-    and 'a t = ('a, [`Branch]) raw
+    and ('a, 'b) t = ('a, 'b, [`Branch]) raw
 
-    and any = kind t
-    and signature = (fragment_module, [`Root | `Branch]) raw
+    and 'a any = ('a, kind) t
+    and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
-    and module_ = fragment_module t
-    and type_ = fragment_type t
+    type 'a module_ = ('a, fragment_module) t
+    type 'a type_ = ('a, fragment_type) t
 
-    let rec signature_of_module : module_ -> signature = function
+    let rec signature_of_module : 'a module_ -> 'a signature = function
+      | Subst(sub, p) -> Subst(sub, signature_of_module p)
+      | SubstAlias(sub, p) -> SubstAlias(sub, signature_of_module p)
       | Module _ as x -> x
 
-    let any : type k. k t -> any = function
+    let rec any : type k. ('a, k) t -> 'a any = function
+      | Subst(sub, p) -> Subst(sub, any p)
+      | SubstAlias(sub, p) -> SubstAlias(sub, any p)
       | Module _ as x -> x
       | Type _ as x -> x
       | Class _ as x -> x
       | ClassType _ as x -> x
 
+    let rec parent_resolved_path root = function
+      | Root -> root
+      | Subst(sub, p) ->
+          Path.Resolved.Subst(sub, parent_resolved_path root p)
+      | SubstAlias(sub, p) ->
+          Path.Resolved.SubstAlias(sub, parent_resolved_path root p)
+      | Module(m, n) ->
+          Path.Resolved.Module(parent_resolved_path root m, n)
+
+    let rec resolved_path
+        : type k. 'a Path.Resolved.module_ ->
+               ('a, k) t -> ('a, k) Path.Resolved.t =
+      fun root frag ->
+        match frag with
+        | Subst(sub, p) ->
+            Path.Resolved.Subst(sub, resolved_path root p)
+        | SubstAlias(sub, p) ->
+            Path.Resolved.SubstAlias(sub, resolved_path root p)
+        | Module(m, n) ->
+            Path.Resolved.Module(parent_resolved_path root m, n)
+        | Type( m, n) ->
+            Path.Resolved.Type(parent_resolved_path root m, n)
+        | Class( m, n) ->
+            Path.Resolved.Class(parent_resolved_path root m, n)
+        | ClassType( m, n) ->
+            Path.Resolved.ClassType(parent_resolved_path root m, n)
+
+    let rec parent_unresolved_path root = function
+      | Root -> root
+      | Subst(_, p) -> parent_unresolved_path root p
+      | SubstAlias(_, p) -> parent_unresolved_path root p
+      | Module(m, n) -> Path.Dot(parent_unresolved_path root m, n)
+
+    let rec unresolved_path
+        : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
+      fun root -> function
+        | Subst(_, p) -> unresolved_path root p
+        | SubstAlias(_, p) -> unresolved_path root p
+        | Module(m, n) -> Path.Dot(parent_unresolved_path root m, n)
+        | Type( m, n) -> Path.Dot(parent_unresolved_path root m, n)
+        | Class( m, n) -> Path.Dot(parent_unresolved_path root m, n)
+        | ClassType( m, n) -> Path.Dot(parent_unresolved_path root m, n)
+
+    let parent_path root frag =
+      match root with
+      | Path.Resolved root -> Path.Resolved (parent_resolved_path root frag)
+      | _ -> parent_unresolved_path root frag
+
     let path (root : 'a Path.module_) frag =
       match root with
-      | Path.Resolved root ->
-          let rec loop : type k. k t -> ('a, k) Path.Resolved.t = function
-            | Module(Root, n) -> Path.Resolved.Module(root, n)
-            | Module(Module _ as m, n) -> Path.Resolved.Module(loop m, n)
-            | Type(Root, n) -> Path.Resolved.Type(root, n)
-            | Type(Module _ as m, n) -> Path.Resolved.Type(loop m, n)
-            | Class(Root, n) -> Path.Resolved.Class(root, n)
-            | Class(Module _ as m, n) -> Path.Resolved.Class(loop m, n)
-            | ClassType(Root, n) -> Path.Resolved.ClassType(root, n)
-            | ClassType(Module _ as m, n) -> Path.Resolved.ClassType(loop m, n)
-          in
-            Path.Resolved (loop frag)
-      | _ ->
-          let rec loop : type k. k t -> ('a, k) Path.t = function
-            | Module(Root, n) -> Path.Dot(root, n)
-            | Module(Module _ as m, n) -> Path.Dot(loop m, n)
-            | Type(Root, n) -> Path.Dot(root, n)
-            | Type(Module _ as m, n) -> Path.Dot(loop m, n)
-            | Class(Root, n) -> Path.Dot(root, n)
-            | Class(Module _ as m, n) -> Path.Dot(loop m, n)
-            | ClassType(Root, n) -> Path.Dot(root, n)
-            | ClassType(Module _ as m, n) -> Path.Dot(loop m, n)
-          in
-            loop frag
+      | Path.Resolved root -> Path.Resolved (resolved_path root frag)
+      | _ -> unresolved_path root frag
+
+    let rec parent_identifier root = function
+      | Root -> root
+      | Subst(sub, _) -> Path.Resolved.parent_module_type_identifier sub
+      | SubstAlias(sub, _) -> Path.Resolved.parent_module_identifier sub
+      | Module(m, n) -> Identifier.Module(parent_identifier root m, n)
 
     let rec identifier :
-      type k. 'a Identifier.signature -> k t -> ('a, k) Identifier.t =
+      type k. 'a Identifier.signature -> ('a, k) t -> ('a, k) Identifier.t =
         fun root -> function
-        | Module(Root, n) -> Identifier.Module(root, n)
-        | Module(Module _ as m, n) ->
-            let m = Identifier.signature_of_module (identifier root m) in
-              Identifier.Module(m, n)
-        | Type(Root, n) -> Identifier.Type(root, n)
-        | Type(Module _ as m, n) ->
-            let m = Identifier.signature_of_module (identifier root m) in
-              Identifier.Type(m, n)
-        | Class(Root, n) -> Identifier.Class(root, n)
-        | Class(Module _ as m, n) ->
-            let m = Identifier.signature_of_module (identifier root m) in
-              Identifier.Class(m, n)
-        | ClassType(Root, n) -> Identifier.ClassType(root, n)
-        | ClassType(Module _ as m, n) ->
-            let m = Identifier.signature_of_module (identifier root m) in
-              Identifier.ClassType(m, n)
+          | Subst(_, p) -> identifier root p
+          | SubstAlias(_, p) -> identifier root p
+          | Module(m, n) -> Identifier.Module(parent_identifier root m, n)
+          | Type(m, n) -> Identifier.Type(parent_identifier root m, n)
+          | Class(m, n) -> Identifier.Class(parent_identifier root m, n)
+          | ClassType(m, n) ->
+              Identifier.ClassType(parent_identifier root m, n)
 
-  let rec split_module : module_ -> string * signature = function
-    | Module(Root, name) -> name, Root
-    | Module(Module _ as m, name) ->
-        let base, m = split_module m in
-          base, Module(m, name)
+    type ('a, 'b) base_name =
+      | Base : ('a, [< sort > `Root]) base_name
+      | Branch : string * 'a signature -> ('a, [< sort > `Branch]) base_name
 
-  let split : type k . k t -> string * k t option = function
-    | Module(Root, name) -> name, None
-    | Module(Module _ as m, name) ->
-        let base, m = split_module m in
-          base, Some (Module(m, name))
-    | Type(Root, base) -> base, None
-    | Type(Module _ as m, name) ->
-        let base, m = split_module m in
-          base, Some (Type(m, name))
-    | Class(Root, base) -> base, None
-    | Class(Module _ as m, name) ->
-        let base, m = split_module m in
-          base, Some (Class(m, name))
-    | ClassType(Root, base) -> base, None
-    | ClassType(Module _ as m, name) ->
-        let base, m = split_module m in
-          base, Some (ClassType(m, name))
+    let rec split_parent
+            : type s . ('a, fragment_module, s) raw -> ('a, s) base_name =
+      function
+        | Root -> Base
+        | Subst(_, p) -> split_parent p
+        | SubstAlias(_, p) -> split_parent p
+        | Module(m, name) ->
+            match split_parent m with
+            | Base -> Branch(name, Root)
+            | Branch(base, m) -> Branch(base, Module(m, name))
+
+    let rec split : type k . ('a, k) t -> string * ('a, k) t option = function
+      | Subst(_, p) -> split p
+      | SubstAlias(_, p) -> split p
+      | Module(m, name) -> begin
+          match split_parent m with
+          | Base -> name, None
+          | Branch(base, m)-> base, Some (Module(m, name))
+        end
+      | Type(m, name) -> begin
+          match split_parent m with
+          | Base -> name, None
+          | Branch(base, m)-> base, Some (Type(m, name))
+        end
+      | Class(m, name) -> begin
+          match split_parent m with
+          | Base -> name, None
+          | Branch(base, m)-> base, Some (Class(m, name))
+        end
+      | ClassType(m, name) -> begin
+          match split_parent m with
+          | Base -> name, None
+          | Branch(base, m)-> base, Some (ClassType(m, name))
+        end
 
   end
 
@@ -492,45 +559,62 @@ module Fragment = struct
 
   type sort = [ `Root | `Branch ]
 
-  type ('a, 'b) raw =
-    | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
-    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
+  type ('a, 'b, 'c) raw =
+    | Resolved : ('a, 'b, 'c) Resolved.raw -> ('a, 'b, 'c) raw
+    | Dot : 'a signature * string -> ('a, [< kind], [< sort > `Branch]) raw
 
-  and 'a t = ('a, [`Branch]) raw
+  and ('a, 'b) t = ('a, 'b, [`Branch]) raw
 
-  and any = kind t
-  and signature = (fragment_module, [`Root | `Branch]) raw
+  and 'a any = ('a, kind) t
+  and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
-  and module_ = fragment_module t
-  and type_ = fragment_type t
+  type 'a module_ = ('a, fragment_module) t
+  type 'a type_ = ('a, fragment_type) t
 
-  let signature_of_module : module_ -> signature = function
+  let signature_of_module : 'a module_ -> 'a signature = function
+    | Resolved (Subst(sub, p)) ->
+        Resolved (Subst(sub, signature_of_module p))
+    | Resolved (SubstAlias(sub, p)) ->
+        Resolved (SubstAlias(sub, signature_of_module p))
     | Resolved(Module _) | Dot _ as x -> x
 
-  let any : type k. k t -> any = function
+  let any : type k. ('a, k) t -> 'a any = function
+    | Resolved (Subst(sub, p)) -> Resolved (Subst(sub, any p))
+    | Resolved (SubstAlias(sub, p)) -> Resolved (SubstAlias(sub, any p))
     | Resolved (Module _) as x -> x
     | Resolved (Type _) as x -> x
     | Resolved (Class _) as x -> x
     | Resolved (ClassType _) as x -> x
     | Dot _ as x -> x
 
-  let rec path : type k. 'a Path.module_ -> k t -> ('a, k) Path.t =
+  let rec parent_path root = function
+    | Resolved r -> Resolved.parent_path root r
+    | Dot(m, n) -> Path.Dot(parent_path root m, n)
+
+  let rec path : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
    fun root -> function
     | Resolved r -> Resolved.path root r
-    | Dot(Resolved Root, s) -> Path.Dot(root, s)
-    | Dot(Resolved (Module _) as m, s) -> Path.Dot(path root m, s)
-    | Dot(Dot _ as m, s) -> Path.Dot(path root m, s)
+    | Dot(m, s) -> Path.Dot(parent_path root m, s)
 
-  let rec split_module : module_ -> string * signature = function
-    | Resolved r ->
-        let base, m = Resolved.split_module r in
-          base, Resolved m
-    | Dot((Resolved Root), name) -> name, Resolved Root
-    | Dot(Resolved(Module _) | Dot _ as m, name) ->
-        let base, m = split_module m in
-          base, Dot(m, name)
+  type ('a, 'b) base_name =
+    | Base : ('a, [< sort > `Root]) base_name
+    | Branch : string * 'a signature -> ('a, [< sort > `Branch]) base_name
 
-  let split : type k . k t -> string * k t option = function
+  let rec split_parent
+          : type s . ('a, fragment_module, s) raw -> ('a, s) base_name =
+    function
+      | Resolved r -> begin
+          match Resolved.split_parent r with
+          | Base -> Base
+          | Branch(base, m) -> Branch(base, Resolved m)
+        end
+      | Dot(m, name) -> begin
+          match split_parent m with
+          | Base -> Branch(name, Resolved Root)
+          | Branch(base, m) -> Branch(base, Dot(m, name))
+        end
+
+  let split : type k . ('a, k) t -> string * ('a, k) t option = function
     | Resolved r ->
         let base, m = Resolved.split r in
         let m =
@@ -539,10 +623,10 @@ module Fragment = struct
           | Some m -> Some (Resolved m)
         in
           base, m
-    | Dot((Resolved Root), name) -> name, None
-    | Dot(Resolved(Module _) | Dot _ as m, name) ->
-        let base, m = split_module m in
-          base, Some(Dot(m, name))
+    | Dot(m, name) ->
+        match split_parent m with
+        | Base -> name, None
+        | Branch(base, m) -> base, Some(Dot(m, name))
 
 end
 

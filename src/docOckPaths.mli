@@ -227,6 +227,10 @@ module rec Path : sig
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
+      | Subst : 'a module_type * ('a, 'b) t ->
+                ('a, [< kind > `Module] as 'b) t
+      | SubstAlias : 'a module_ * ('a, 'b) t ->
+                ('a, [< kind > `Module] as 'b) t
       | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
       | Apply : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
       | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
@@ -313,31 +317,35 @@ module Fragment : sig
 
     type sort = [ `Root | `Branch ]
 
-    type ('a, 'b) raw =
-      | Root : ('a, [< sort > `Root]) raw
-      | Module : signature * string -> ([< kind > `Module], [< sort > `Branch]) raw
-      | Type : signature * string -> ([< kind > `Type], [< sort > `Branch]) raw
-      | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
-      | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
+    type ('a, 'b, 'c) raw =
+      | Root : ('a, 'b, [< sort > `Root]) raw
+      | Subst : 'a Path.Resolved.module_type * ('a, 'b, 'c) raw ->
+                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | SubstAlias : 'a Path.Resolved.module_ * ('a, 'b, 'c) raw ->
+                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | Module : 'a signature * string -> ('a, [< kind > `Module], [< sort > `Branch]) raw
+      | Type : 'a signature * string -> ('a, [< kind > `Type], [< sort > `Branch]) raw
+      | Class : 'a signature * string -> ('a, [< kind > `Class], [< sort > `Branch]) raw
+      | ClassType : 'a signature * string -> ('a, [< kind > `ClassType], [< sort > `Branch]) raw
 
-    and 'a t = ('a, [`Branch]) raw
+    and ('a, 'b) t = ('a, 'b, [`Branch]) raw
 
-    and any = kind t
-    and signature = (fragment_module, [`Root | `Branch]) raw
+    and 'a any = ('a, kind) t
+    and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
-    and module_ = fragment_module t
-    and type_ = fragment_type t
+    type 'a module_ = ('a, fragment_module) t
+    type 'a type_ = ('a, fragment_type) t
 
-    val signature_of_module : module_ -> signature
+    val signature_of_module : 'a module_ -> 'a signature
 
-    val any : 'a t -> any
+    val any : ('a, 'b) t -> 'a any
 
-    val path: 'a Path.module_ -> 'b t -> ('a, 'b) Path.t
+    val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
-    val identifier: 'a Identifier.signature -> 'b t ->
+    val identifier: 'a Identifier.signature -> ('a, 'b) t ->
                     ('a, 'b) Identifier.t
 
-    val split : 'a t -> string * 'a t option
+    val split : ('a, 'b) t -> string * ('a, 'b) t option
 
   end
 
@@ -345,25 +353,25 @@ module Fragment : sig
 
   type sort = [ `Root | `Branch ]
 
-  type ('a, 'b) raw =
-    | Resolved : ('a, 'b) Resolved.raw -> ('a, 'b) raw
-    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
+  type ('a, 'b, 'c) raw =
+    | Resolved : ('a, 'b, 'c) Resolved.raw -> ('a, 'b, 'c) raw
+    | Dot : 'a signature * string -> ('a, [< kind], [< sort > `Branch]) raw
 
-  and 'a t = ('a, [`Branch]) raw
+  and ('a, 'b) t = ('a, 'b, [`Branch]) raw
 
-  and any = kind t
-  and signature = (fragment_module, [`Root | `Branch]) raw
+  and 'a any = ('a, kind) t
+  and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
-  and module_ = fragment_module t
-  and type_ = fragment_type t
+  type 'a module_ = ('a, fragment_module) t
+  type 'a type_ = ('a, fragment_type) t
 
-  val signature_of_module : module_ -> signature
+  val signature_of_module : 'a module_ -> 'a signature
 
-  val any : 'a t -> any
+  val any : ('a, 'b) t -> 'a any
 
-  val path: 'a Path.module_ -> 'b t -> ('a, 'b) Path.t
+  val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
-  val split: 'a t -> string * 'a t option
+  val split: ('a, 'b) t -> string * ('a, 'b) t option
 
 end
 

@@ -66,9 +66,9 @@ end
 
 module Fragment : sig
 
-  val read_module : Longident.t -> DocOckPaths.Fragment.module_
+  val read_module : Longident.t -> 'a DocOckPaths.Fragment.module_
 
-  val read_type : Longident.t -> DocOckPaths.Fragment.type_
+  val read_type : Longident.t -> 'a DocOckPaths.Fragment.type_
 
 end
 

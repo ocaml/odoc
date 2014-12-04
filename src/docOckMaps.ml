@@ -394,10 +394,10 @@ class virtual ['a] module_type = object (self)
     'a Path.type_ -> 'a Path.type_
 
   method virtual fragment_module :
-    Fragment.module_ -> Fragment.module_
+    'a Fragment.module_ -> 'a Fragment.module_
 
   method virtual fragment_type :
-    Fragment.type_ -> Fragment.type_
+    'a Fragment.type_ -> 'a Fragment.type_
 
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
@@ -1048,7 +1048,7 @@ class virtual ['a] type_expr = object (self)
     'a Path.class_type -> 'a Path.class_type
 
   method virtual fragment_type :
-    Fragment.type_ -> Fragment.type_
+    'a Fragment.type_ -> 'a Fragment.type_
 
   method type_expr_variant_kind kind = kind
 

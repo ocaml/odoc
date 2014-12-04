@@ -124,10 +124,10 @@ end
 and ModuleType : sig
 
   type 'a substitution =
-    | ModuleEq of Fragment.module_ * 'a Module.Equation.t
-    | TypeEq of Fragment.type_ * 'a TypeDecl.Equation.t
-    | ModuleSubst of Fragment.module_ * 'a Path.module_
-    | TypeSubst of Fragment.type_ * string list * 'a Path.type_
+    | ModuleEq of 'a Fragment.module_ * 'a Module.Equation.t
+    | TypeEq of 'a Fragment.type_ * 'a TypeDecl.Equation.t
+    | ModuleSubst of 'a Fragment.module_ * 'a Path.module_
+    | TypeSubst of 'a Fragment.type_ * string list * 'a Path.type_
 
   type 'a expr =
     | Path of 'a Path.module_type
@@ -394,7 +394,7 @@ and TypeExpr : sig
 
   module Package : sig
 
-    type 'a substitution = Fragment.type_ * 'a TypeExpr.t
+    type 'a substitution = 'a Fragment.type_ * 'a TypeExpr.t
 
     type 'a t =
       { path: 'a Path.module_type;
