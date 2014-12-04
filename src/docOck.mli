@@ -35,21 +35,18 @@ val read_cmi: 'a -> string -> 'a result
 
 type 'a resolver
 
-(** Build a resolver. [equal] and [hash] are used
-    for memoization, they default to [(=)] and [Hashtbl.hash]
-    respectively. *)
-val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-  (string -> 'a option) -> ('a -> 'a Types.Unit.t) -> 'a resolver
+(** Build a resolver. Assumes that it is safe to use {!Hashtbl.hash} and
+    structural equality (=) on ['a]. *)
+val build_resolver: (string -> 'a option) -> ('a -> 'a Types.Unit.t) ->
+      'a resolver
 
 val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
 
 type 'a expander
 
-(** Build an expander. [equal] and [hash] are used
-    for memoization, they default to [(=)] and [Hashtbl.hash]
-    respectively. *)
-val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-  ('a -> 'a Types.Unit.t) -> 'a expander
+(** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
+    structural equality (=) on ['a]. *)
+val build_expander: ('a -> 'a Types.Unit.t) -> 'a expander
 
 type 'a expansion =
   | Signature of 'a Types.Signature.t

@@ -72,13 +72,13 @@ let read_cmi root filename =
 
 type 'a resolver = unit
 
-let build_resolver ?equal ?hash lookup fetch = ()
+let build_resolver lookup fetch = ()
 
 let resolve () x = x
 
 type 'a expander = unit
 
-let build_expander ?equal ?hash fetch = ()
+let build_expander fetch = ()
 
 type 'a expansion =
   | Signature of 'a Types.Signature.t
