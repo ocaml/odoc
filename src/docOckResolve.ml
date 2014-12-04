@@ -27,7 +27,35 @@ type 'a parent_module_type_path =
   | Resolved of 'a Path.Resolved.module_type * 'a Sig.t
   | Unresolved of 'a Path.module_type
 
-let rec resolve_parent_module_path tbl p : 'a parent_module_path =
+let rec find_with_path_substs
+        : 'b 'c. ('a Sig.t -> 'b) -> ('a Path.Resolved.module_ -> 'b -> 'c) ->
+                   ('a Path.Resolved.module_ -> 'c) -> 'a t ->
+                     'a Path.Resolved.module_ -> 'a Sig.t -> 'c =
+  fun find resolved unresolved tbl pr parent ->
+    try
+      resolved pr (find parent)
+    with Not_found ->
+      try
+        match Sig.find_parent_subst parent with
+        | Parent.Subst subp -> begin
+            match resolve_parent_module_type_path tbl subp with
+            | Unresolved _ -> unresolved pr
+            | Resolved(subpr, parent) ->
+                find_with_path_substs
+                  find resolved unresolved tbl
+                  (Path.Resolved.Subst(subpr, pr)) parent
+          end
+        | Parent.SubstAlias subp -> begin
+            match resolve_parent_module_path tbl subp with
+            | Unresolved _ -> unresolved pr
+            | Resolved(subpr, parent) ->
+                find_with_path_substs
+                  find resolved unresolved tbl
+                  (Path.Resolved.SubstAlias(subpr, pr)) parent
+          end
+      with Not_found -> unresolved pr
+
+and resolve_parent_module_path tbl p : 'a parent_module_path =
   let open Path.Resolved in
   let open Path in
     match p with
@@ -43,60 +71,30 @@ let rec resolve_parent_module_path tbl p : 'a parent_module_path =
         match resolve_parent_module_path tbl pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
-            let rec loop pr parent : 'a parent_module_path =
-              try
-                let Parent.Module md =
-                  Sig.find_parent_module name parent
-                in
-                  Resolved(Module(pr, name), md)
-              with Not_found ->
-                try
-                  match Sig.find_parent_subst parent with
-                  | Parent.Subst subp -> begin
-                      match resolve_parent_module_type_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (Subst(subpr, pr)) parent
-                    end
-                  | Parent.SubstAlias subp -> begin
-                      match resolve_parent_module_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (SubstAlias(subpr, pr)) parent
-                    end
-                with Not_found -> Unresolved(Dot(Resolved pr, name))
+            let resolved pr (Parent.Module md : 'a Parent.module_) =
+              (Resolved(Module(pr, name), md) : 'a parent_module_path)
             in
-              loop pr parent
+            let unresolved pr =
+              (Unresolved(Dot(Resolved pr, name)) : 'a parent_module_path)
+            in
+              find_with_path_substs
+                (Sig.find_parent_module name)
+                resolved unresolved tbl pr parent
       end
     | Apply(pr, arg) -> begin
         let arg = resolve_module_path tbl arg in
         match resolve_parent_module_path tbl pr with
         | Unresolved pr -> Unresolved(Apply(pr, arg))
         | Resolved(pr, parent) ->
-            let rec loop pr parent : 'a parent_module_path =
-              try
-                let Parent.Module md =
-                  Sig.find_parent_apply (module_path tbl) arg parent
-                in
-                  Resolved(Apply(pr, arg), md)
-              with Not_found ->
-                try
-                  match Sig.find_parent_subst parent with
-                  | Parent.Subst subp -> begin
-                      match resolve_parent_module_type_path tbl subp with
-                      | Unresolved _ -> Unresolved(Apply(Resolved pr, arg))
-                      | Resolved(subpr, parent) ->
-                          loop (Subst(subpr, pr)) parent
-                    end
-                  | Parent.SubstAlias subp -> begin
-                      match resolve_parent_module_path tbl subp with
-                      | Unresolved _ -> Unresolved(Apply(Resolved pr, arg))
-                      | Resolved(subpr, parent) ->
-                          loop (SubstAlias(subpr, pr)) parent
-                    end
-                with Not_found -> Unresolved(Apply(Resolved pr, arg))
+            let resolved pr (Parent.Module md : 'a Parent.module_) =
+              (Resolved(Apply(pr, arg), md) : 'a parent_module_path)
             in
-              loop pr parent
+            let unresolved pr =
+              (Unresolved(Apply(Resolved pr, arg)) : 'a parent_module_path)
+            in
+              find_with_path_substs
+                (Sig.find_parent_apply (module_path tbl) arg)
+                resolved unresolved tbl pr parent
       end
 
 and resolve_parent_module_type_path tbl p : 'a parent_module_type_path =
@@ -108,30 +106,15 @@ and resolve_parent_module_type_path tbl p : 'a parent_module_type_path =
         match resolve_parent_module_path tbl pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
-            let rec loop pr parent : 'a parent_module_type_path =
-              try
-                let Parent.ModuleType md =
-                  Sig.find_parent_module_type name parent
-                in
-                  Resolved(ModuleType(pr, name), md)
-              with Not_found ->
-                try
-                  match Sig.find_parent_subst parent with
-                  | Parent.Subst subp -> begin
-                      match resolve_parent_module_type_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (Subst(subpr, pr)) parent
-                    end
-                  | Parent.SubstAlias subp -> begin
-                      match resolve_parent_module_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (SubstAlias(subpr, pr)) parent
-                    end
-                with Not_found -> Unresolved(Dot(Resolved pr, name))
+            let resolved pr (Parent.ModuleType md : 'a Parent.module_type) =
+              (Resolved(ModuleType(pr, name), md) : 'a parent_module_type_path)
             in
-              loop pr parent
+            let unresolved pr =
+              Unresolved(Dot(Resolved pr, name))
+            in
+              find_with_path_substs
+                (Sig.find_parent_module_type name)
+                resolved unresolved tbl pr parent
       end
 
 and resolve_module_path tbl =
@@ -147,24 +130,30 @@ and resolve_module_path tbl =
       match resolve_parent_module_path tbl p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let Element.Module =
-              Sig.find_module_element name parent
-            in
-              Resolved (Module(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p (Element.Module : Element.signature_module) =
+            Resolved (Module(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_path_substs
+              (Sig.find_module_element name)
+              resolved unresolved tbl p parent
     end
   | Apply(p, arg) -> begin
       let arg = resolve_module_path tbl arg in
         match resolve_parent_module_path tbl p with
         | Unresolved p -> Apply(p, arg)
         | Resolved(p, parent) ->
-            try
-              let Element.Module =
-                Sig.find_apply_element parent
-              in
-                Resolved (Apply(p, arg))
-            with Not_found -> Apply(Resolved p, arg)
+          let resolved p (Element.Module : Element.signature_module) =
+            Resolved (Apply(p, arg))
+          in
+          let unresolved p =
+            Apply(Resolved p, arg)
+          in
+            find_with_path_substs
+              Sig.find_apply_element
+              resolved unresolved tbl p parent
     end
 
 and resolve_module_type_path tbl =
@@ -175,12 +164,15 @@ and resolve_module_type_path tbl =
       match resolve_parent_module_path tbl p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let Element.ModuleType =
-              Sig.find_module_type_element name parent
-            in
-              Resolved (ModuleType(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p (Element.ModuleType : Element.signature_module_type) =
+            Resolved (ModuleType(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_path_substs
+              (Sig.find_module_type_element name)
+              resolved unresolved tbl p parent
     end
 
 and resolve_type_path tbl =
@@ -191,13 +183,17 @@ and resolve_type_path tbl =
       match resolve_parent_module_path tbl p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let elem = Sig.find_type_element name parent in
-              match elem with
-              | Element.Type -> Resolved (Type(p, name))
-              | Element.Class -> Resolved (Class(p, name))
-              | Element.ClassType -> Resolved (ClassType(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p : Element.signature_type -> _ = function
+            | Element.Type -> Resolved (Type(p, name))
+            | Element.Class -> Resolved (Class(p, name))
+            | Element.ClassType -> Resolved (ClassType(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_path_substs
+              (Sig.find_type_element name)
+              resolved unresolved tbl p parent
     end
 
 and resolve_class_type_path tbl =
@@ -208,12 +204,16 @@ and resolve_class_type_path tbl =
       match resolve_parent_module_path tbl p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let elem = Sig.find_class_type_element name parent in
-              match elem with
-              | Element.Class -> Resolved (Class(p, name))
-              | Element.ClassType -> Resolved (ClassType(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p : Element.signature_class_type -> _ = function
+            | Element.Class -> Resolved (Class(p, name))
+            | Element.ClassType -> Resolved (ClassType(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_path_substs
+              (Sig.find_class_type_element name)
+              resolved unresolved tbl p parent
     end
 
 type 'a parent_fragment =
