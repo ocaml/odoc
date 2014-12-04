@@ -19,6 +19,9 @@ coverage-cmti: coverage.cmti testCmti
 coverage.cmi coverage.cmti: coverage.mli
 	$(OCAMLC) -bin-annot -doc -c coverage.mli
 
+coverage.cmt: coverage.ml
+	$(OCAMLC) -bin-annot -doc -c coverage.ml
+
 testCmi: testCmi.ml
 	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
 
