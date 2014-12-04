@@ -19,6 +19,8 @@ open Parsetree
 open Types
 open Typedtree
 
+module OCamlPath = Path
+
 open DocOckPaths
 open DocOckTypes
 open DocOckAttrs
@@ -47,8 +49,16 @@ let rec read_core_type env ctyp =
     | Ttyp_any -> Any
     | Ttyp_var s -> Var s
     | Ttyp_arrow(lbl, arg, res) ->
+        let arg =
+            if Btype.is_optional lbl then
+              match arg.ctyp_desc with
+              | Ttyp_constr(path, _, [arg])
+                  when OCamlPath.same path Predef.path_option ->
+                    read_core_type env arg
+              | _ -> assert false
+            else read_core_type env arg
+        in
         let lbl = read_label lbl in
-        let arg = read_core_type env arg in
         let res = read_core_type env res in
           Arrow(lbl, arg, res)
     | Ttyp_tuple typs ->
