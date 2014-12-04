@@ -642,3 +642,41 @@ module Dep8 : sig module type T = sig type t end end
 module Dep9 : functor (X : sig module type T end) -> sig module type T = X.T end
 
 module type Dep10 = Dep9(Dep8).T with type t = int
+
+module Dep11 : sig
+  module type S = sig
+    class c : object
+      method m : int
+    end
+  end
+end
+
+module Dep12 :
+  functor (Arg : sig module type S end) -> sig
+      module type T = Arg.S
+end
+
+module Dep13 : Dep12(Dep11).T
+
+type dep5 = Dep13.c
+
+(* Test resolution of difficult with examples *)
+
+module type With1 = sig
+  module M : sig
+    module type S
+  end
+  module N : M.S
+end
+
+module With2 : sig
+  module type S = sig type t end
+end
+
+module With3 : With1 with module M = With2
+
+type with1 = With3.N.t
+
+module With4 : With1 with module M := With2
+
+type with2 = With4.N.t

@@ -543,3 +543,52 @@ end
 module Dep9(X : sig module type T end) = X
 
 module type Dep10 = Dep9(Dep8).T with type t = int
+
+module Dep11 = struct
+  module type S = sig
+    class c : object
+      method m : int
+    end
+  end
+end
+
+module Dep12 =
+  functor (Arg : sig module type S end) -> struct
+      module type T = Arg.S
+end
+
+module Dep13 = struct
+  class c = object
+    method m = 4
+  end
+end
+
+type dep5 = Dep13.c
+
+module type With1 = sig
+  module M : sig
+    module type S
+  end
+  module N : M.S
+end
+
+module With2 = struct
+  module type S = sig type t end
+end
+
+module With3 = struct
+  module M = With2
+  module N = struct
+    type t = int
+  end
+end
+
+type with1 = With3.N.t
+
+module With4 = struct
+  module N = struct
+    type t = int
+  end
+end
+
+type with2 = With4.N.t
