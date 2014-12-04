@@ -30,6 +30,7 @@ let no_alias_deps = Flags.( v (`Compile `Byte) ["-no-alias-deps"]
 let docOckPaths = unit "docOckPaths" (`Path ["src"])
 let docOckTypes = unit "docOckTypes" (`Path ["src"])
 let docOckMaps = unit "docOckMaps" (`Path ["src"])
+let docOckPredef = unit "docOckPredef" (`Path ["src"])
 let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
 let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
 let docOckCmi = unit "docOckCmi" (`Path ["src"])
@@ -40,6 +41,7 @@ let units =
   [ docOckPaths;
     docOckTypes;
     docOckMaps;
+    docOckPredef;
     docOckEnvironment;
     docOckAttrs;
     docOckCmi;

@@ -18,6 +18,10 @@ module Paths = DocOckPaths
 
 module Types = DocOckTypes
 
+val core_types : 'a Types.TypeDecl.t list
+
+val core_exceptions : 'a Types.Exception.t list
+
 type 'a result =
   | Ok of 'a Types.Unit.t
   | Not_an_interface
