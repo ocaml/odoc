@@ -183,6 +183,7 @@ and TypeDecl : sig
     type 'a t =
       { id: 'a Identifier.field;
         doc: 'a Documentation.t;
+        mutable_ : bool;
         type_: 'a TypeExpr.t; }
 
   end

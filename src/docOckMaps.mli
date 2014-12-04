@@ -244,6 +244,8 @@ class virtual ['a] type_decl : object
 
   method type_decl_field : 'a TypeDecl.Field.t -> 'a TypeDecl.Field.t
 
+  method type_decl_field_mutable : bool -> bool
+
   method type_decl_representation : 'a TypeDecl.Representation.t ->
     'a TypeDecl.Representation.t
 

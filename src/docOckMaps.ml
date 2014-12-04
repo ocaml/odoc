@@ -608,13 +608,18 @@ class virtual ['a] type_decl = object (self)
 
   method type_decl_field field =
     let open TypeDecl.Field in
-    let {id; doc; type_} = field in
+    let {id; doc; mutable_; type_} = field in
     let id' = self#identifier_field id in
     let doc' = self#documentation doc in
+    let mutable' = self#type_decl_field_mutable mutable_ in
     let type' = self#type_expr type_ in
-      if id != id' || doc != doc' || type_ != type' then
-        {id = id'; doc = doc'; type_ = type'}
+      if id != id' || doc != doc'
+         || mutable_ != mutable' || type_ != type'
+      then
+        {id = id'; doc = doc'; mutable_ = mutable'; type_ = type'}
       else field
+
+  method type_decl_field_mutable mutable_ = mutable_
 
   method type_decl_representation repr =
     let open TypeDecl.Representation in

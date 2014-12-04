@@ -477,8 +477,9 @@ let read_label_declaration env parent ld =
   let id = Identifier.Field(parent, Ident.name ld.ld_id) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes env container ld.ld_attributes in
+  let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_type_expr env ld.ld_type in
-    {id; doc; type_}
+    {id; doc; mutable_; type_}
 
 let add_type_kind parent kind env =
   match kind with
