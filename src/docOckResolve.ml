@@ -220,6 +220,35 @@ type 'a parent_fragment =
   | Resolved of 'a Fragment.Resolved.signature * 'a Sig.t
   | Unresolved of 'a Fragment.signature
 
+let rec find_with_fragment_substs
+        : 'b 'c. ('a Sig.t -> 'b) ->
+                   ('a Fragment.Resolved.signature -> 'b -> 'c) ->
+                     ('a Fragment.Resolved.signature -> 'c) -> 'a t ->
+                       'a Fragment.Resolved.signature -> 'a Sig.t -> 'c =
+  fun find resolved unresolved tbl pr parent ->
+    try
+      resolved pr (find parent)
+    with Not_found ->
+      try
+        match Sig.find_parent_subst parent with
+        | Parent.Subst subp -> begin
+            match resolve_parent_module_type_path tbl subp with
+            | Unresolved _ -> unresolved pr
+            | Resolved(subpr, parent) ->
+                find_with_fragment_substs
+                  find resolved unresolved tbl
+                  (Fragment.Resolved.Subst(subpr, pr)) parent
+          end
+        | Parent.SubstAlias subp -> begin
+            match resolve_parent_module_path tbl subp with
+            | Unresolved _ -> unresolved pr
+            | Resolved(subpr, parent) ->
+                find_with_fragment_substs
+                  find resolved unresolved tbl
+                  (Fragment.Resolved.SubstAlias(subpr, pr)) parent
+          end
+      with Not_found -> unresolved pr
+
 let rec resolve_parent_fragment tbl base p
         : 'a parent_fragment =
   let open Fragment.Resolved in
@@ -231,30 +260,15 @@ let rec resolve_parent_fragment tbl base p
         match resolve_parent_fragment tbl base pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
-            let rec loop pr parent : 'a parent_fragment =
-              try
-                let Parent.Module md =
-                  Sig.find_parent_module name parent
-                in
-                  Resolved(Module(pr, name), md)
-              with Not_found ->
-                try
-                  match Sig.find_parent_subst parent with
-                  | Parent.Subst subp -> begin
-                      match resolve_parent_module_type_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (Subst(subpr, pr)) parent
-                    end
-                  | Parent.SubstAlias subp -> begin
-                      match resolve_parent_module_path tbl subp with
-                      | Unresolved _ -> Unresolved(Dot(Resolved pr, name))
-                      | Resolved(subpr, parent) ->
-                          loop (SubstAlias(subpr, pr)) parent
-                    end
-                with Not_found -> Unresolved(Dot(Resolved pr, name))
+            let resolved pr (Parent.Module md : 'a Parent.module_) =
+              (Resolved(Module(pr, name), md) : 'a parent_fragment)
             in
-              loop pr parent
+            let unresolved pr =
+              (Unresolved(Dot(Resolved pr, name)) : 'a parent_fragment)
+            in
+              find_with_fragment_substs
+                (Sig.find_parent_module name)
+                resolved unresolved tbl pr parent
       end
 
 and resolve_module_fragment tbl base =
@@ -265,12 +279,15 @@ and resolve_module_fragment tbl base =
       match resolve_parent_fragment tbl base p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let Element.Module =
-              Sig.find_module_element name parent
-            in
-              Resolved (Module(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p (Element.Module : Element.signature_module) =
+            Resolved (Module(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_fragment_substs
+              (Sig.find_module_element name)
+              resolved unresolved tbl p parent
     end
 
 and resolve_type_fragment tbl base =
@@ -281,13 +298,17 @@ and resolve_type_fragment tbl base =
       match resolve_parent_fragment tbl base p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          try
-            let elem = Sig.find_type_element name parent in
-              match elem with
-              | Element.Type -> Resolved (Type(p, name))
-              | Element.Class -> Resolved (Class(p, name))
-              | Element.ClassType -> Resolved (ClassType(p, name))
-          with Not_found -> Dot(Resolved p, name)
+          let resolved p : Element.signature_type -> _ = function
+            | Element.Type -> Resolved (Type(p, name))
+            | Element.Class -> Resolved (Class(p, name))
+            | Element.ClassType -> Resolved (ClassType(p, name))
+          in
+          let unresolved p =
+            Dot(Resolved p, name)
+          in
+            find_with_fragment_substs
+              (Sig.find_type_element name)
+              resolved unresolved tbl p parent
     end
 
 type ('a, 'b) parent_reference =
