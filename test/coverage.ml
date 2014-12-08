@@ -592,3 +592,36 @@ module With4 = struct
 end
 
 type with2 = With4.N.t
+
+module With5 = struct
+  module type S = sig type t end
+  module N = struct type t = float end
+end
+
+module With6 = struct
+  module type T = sig
+    module M : sig
+      module type S
+      module N : S
+    end
+  end
+end
+
+module With7 (X : sig module type T end) = X
+
+module type With8 = With7(With6).T with module M = With5 and type M.N.t = With5.N.t
+
+module With9 = struct
+  module type S = sig type t end
+end
+
+module With10 = struct
+  module type T = sig
+    module M : sig
+      module type S
+    end
+    module N : M.S
+  end
+end
+
+module type With11 = With7(With10).T with module M = With9 and type N.t = int

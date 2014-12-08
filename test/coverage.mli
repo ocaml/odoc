@@ -680,3 +680,36 @@ type with1 = With3.N.t
 module With4 : With1 with module M := With2
 
 type with2 = With4.N.t
+
+module With5 : sig
+  module type S = sig type t end
+  module N : S
+end
+
+module With6 : sig
+  module type T = sig
+    module M : sig
+      module type S
+      module N : S
+    end
+  end
+end
+
+module With7 : functor (X : sig module type T end) -> sig module type T = X.T end
+
+module type With8 = With7(With6).T with module M = With5 and type M.N.t = With5.N.t
+
+module With9 : sig
+  module type S = sig type t end
+end
+
+module With10 : sig
+  module type T = sig
+    module M : sig
+      module type S
+    end
+    module N : M.S
+  end
+end
+
+module type With11 = With7(With10).T with module M = With9 and type N.t = int
