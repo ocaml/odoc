@@ -788,7 +788,16 @@ and resolve_element_reference tbl r =
           end
       end
 
-class ['a] resolver tbl = object (self)
+let unwrap opt =
+    match opt with
+    | Some x -> x
+    | None -> assert false
+
+class ['a] resolver lookup fetch = object (self)
+  val lookup = lookup
+  val make = create fetch
+  val tbl = None
+
   inherit ['a] DocOckMaps.types as super
   method root x = x
 
@@ -806,13 +815,14 @@ class ['a] resolver tbl = object (self)
   method identifier_instance_variable x = x
   method identifier_label x = x
 
-  method path_module x = resolve_module_path tbl x
-  method path_module_type x = resolve_module_type_path tbl x
-  method path_type x = resolve_type_path tbl x
-  method path_class_type x = resolve_class_type_path tbl x
+  method path_module x = resolve_module_path (unwrap tbl) x
+  method path_module_type x = resolve_module_type_path (unwrap tbl) x
+  method path_type x = resolve_type_path (unwrap tbl) x
+  method path_class_type x = resolve_class_type_path (unwrap tbl) x
 
   method module_type_expr expr =
     let open ModuleType in
+    let tbl = unwrap tbl in
     let expr = super#module_type_expr expr in
       match expr with
       | With(body, substs) ->
@@ -832,8 +842,10 @@ class ['a] resolver tbl = object (self)
           in
             With(body, substs)
       | _ -> expr
+
   method type_expr_package pkg =
     let open TypeExpr.Package in
+    let tbl = unwrap tbl in
       match resolve_parent_module_type_path tbl pkg.path with
       | Unresolved path ->
           let substitutions =
@@ -855,28 +867,46 @@ class ['a] resolver tbl = object (self)
               pkg.substitutions
           in
             {path; substitutions}
+
   method fragment_type x = x
   method fragment_module x = x
 
-  method reference_module x = resolve_module_reference tbl x
-  method reference_module_type x = resolve_module_type_reference tbl x
-  method reference_type x = resolve_type_reference tbl x
-  method reference_constructor x = resolve_constructor_reference tbl x
-  method reference_field x = resolve_field_reference tbl x
-  method reference_extension x = resolve_extension_reference tbl x
-  method reference_exception x = resolve_exception_reference tbl x
-  method reference_value x = resolve_value_reference tbl x
-  method reference_class x = resolve_class_reference tbl x
-  method reference_class_type x = resolve_class_type_reference tbl x
-  method reference_method x = resolve_method_reference tbl x
-  method reference_instance_variable x = resolve_instance_variable_reference tbl x
-  method reference_label x = resolve_label_reference tbl x
-  method reference_any x = resolve_element_reference tbl x
+  method reference_module x =
+    resolve_module_reference (unwrap tbl) x
+  method reference_module_type x =
+    resolve_module_type_reference (unwrap tbl) x
+  method reference_type x =
+    resolve_type_reference (unwrap tbl) x
+  method reference_constructor x =
+    resolve_constructor_reference (unwrap tbl) x
+  method reference_field x =
+    resolve_field_reference (unwrap tbl) x
+  method reference_extension x =
+    resolve_extension_reference (unwrap tbl) x
+  method reference_exception x =
+    resolve_exception_reference (unwrap tbl) x
+  method reference_value x =
+    resolve_value_reference (unwrap tbl) x
+  method reference_class x =
+    resolve_class_reference (unwrap tbl) x
+  method reference_class_type x =
+    resolve_class_type_reference (unwrap tbl) x
+  method reference_method x =
+    resolve_method_reference (unwrap tbl) x
+  method reference_instance_variable x =
+    resolve_instance_variable_reference (unwrap tbl) x
+  method reference_label x =
+    resolve_label_reference (unwrap tbl) x
+  method reference_any x =
+    resolve_element_reference (unwrap tbl) x
+
+  method resolve u =
+    let this = {< tbl = Some (make (lookup u)) >} in
+      this#unit u
 
 end
 
 let build_resolver lookup fetch =
-  let tbl = create lookup fetch in
-    new resolver tbl
+  new resolver lookup fetch
 
-let resolve r u = r#unit u
+let resolve r u = r#resolve u

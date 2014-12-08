@@ -54,6 +54,7 @@ class ident = object
   inherit [string] DocOckMaps.types
 end
 
+exception Bad_lookup
 exception Bad_fetch of string
 
 let test cmti =
@@ -77,7 +78,8 @@ let test cmti =
           prerr_endline (cmti ^ ": deep identity map failed");
           1
         end else  begin
-          let lookup s =
+          let lookup u s =
+            if u != intf' then raise Bad_lookup;
             if s = cmti then Some cmti
             else None
           in
@@ -89,9 +91,13 @@ let test cmti =
             try
               ignore (resolve resolver intf');
               0
-            with Bad_fetch s ->
-              prerr_endline (cmti ^ ": bad fetch of " ^ s ^ " during resolution");
-              1
+            with
+            | Bad_lookup ->
+                prerr_endline (cmti ^ ": bad lookup during resolution");
+                1
+            | Bad_fetch s ->
+                prerr_endline (cmti ^ ": bad fetch of " ^ s ^ " during resolution");
+                1
           end
 
 

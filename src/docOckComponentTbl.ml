@@ -28,9 +28,9 @@ type 'a t =
     fetch : 'a -> 'a Unit.t;
     tbl : ('a, 'a Sig.t) Hashtbl.t; }
 
-let create lookup fetch =
+let create fetch =
   let tbl = Hashtbl.create 7 in
-    {lookup; fetch; tbl}
+    fun lookup -> {lookup; fetch; tbl}
 
 let datatype decl =
   let open TypeDecl in

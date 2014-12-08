@@ -24,8 +24,10 @@ open DocOckComponents
 type 'a t
 
 (** Create a table of the components of units. Assumes that it is safe
-    to use {!Hashtbl.hash} and structural equality (=) on ['a] *)
-val create: (string -> 'a option) -> ('a -> 'a Unit.t) -> 'a t
+    to use {!Hashtbl.hash} and structural equality (=) on ['a]. Internal
+    caches are created after application of the first argument, allowing
+    tables with different lookups to share their cached components. *)
+val create: ('a -> 'a Unit.t) -> (string -> 'a option) -> 'a t
 
 (** {3 Identifier Lookup} *)
 

@@ -37,8 +37,8 @@ type 'a resolver
 
 (** Build a resolver. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
-val build_resolver: (string -> 'a option) -> ('a -> 'a Types.Unit.t) ->
-      'a resolver
+val build_resolver: ('a Types.Unit.t -> string -> 'a option) ->
+      ('a -> 'a Types.Unit.t) -> 'a resolver
 
 val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
 
