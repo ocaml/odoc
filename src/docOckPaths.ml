@@ -398,6 +398,13 @@ module Path = struct
     | Resolved p -> Resolved (ClassType(p, name))
     | p -> Dot(p, name)
 
+  let type_of_class_type : 'a class_type -> 'a type_ = function
+    | Resolved (Identifier (Class _)) as x -> x
+    | Resolved (Identifier (ClassType _)) as x -> x
+    | Resolved (Class _) as x -> x
+    | Resolved (ClassType _) as x -> x
+    | Dot _ as x -> x
+
 end
 
 
