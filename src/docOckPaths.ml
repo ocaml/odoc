@@ -302,7 +302,7 @@ module Path = struct
 
     let rec parent_module_type_identifier : 'a module_type -> 'a Identifier.signature = function
       | Identifier id -> Identifier.signature_of_module_type id
-      | ModuleType(m, n) -> Module(parent_module_identifier m, n)
+      | ModuleType(m, n) -> ModuleType(parent_module_identifier m, n)
 
     and parent_module_identifier : 'a module_ -> 'a Identifier.signature = function
       | Identifier id -> Identifier.signature_of_module id
