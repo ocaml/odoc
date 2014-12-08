@@ -304,6 +304,8 @@ module rec Path : sig
 
   val class_type_ : 'a module_ -> string -> ('a, [< kind > `ClassType]) t
 
+  val type_of_class_type : 'a class_type -> 'a type_
+
 end
 
 (** {3 Fragments} *)
