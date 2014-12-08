@@ -767,7 +767,7 @@ and resolve_element_reference tbl r =
           end
       end
 
-class ['a] resolver tbl = object
+class ['a] resolver tbl = object (self)
   inherit ['a] DocOckMaps.types as super
   method root x = x
 
@@ -811,6 +811,29 @@ class ['a] resolver tbl = object
           in
             With(body, substs)
       | _ -> expr
+  method type_expr_package pkg =
+    let open TypeExpr.Package in
+      match resolve_parent_module_type_path tbl pkg.path with
+      | Unresolved path ->
+          let substitutions =
+            List.map
+              (fun (frag, eq) ->
+                 let eq = self#type_expr eq in
+                   (frag, eq))
+              pkg.substitutions
+          in
+            {path; substitutions}
+      | Resolved(path, parent) ->
+          let path = Path.Resolved path in
+          let substitutions =
+            List.map
+              (fun (frag, eq) ->
+                 let frag = resolve_type_fragment tbl parent frag in
+                 let eq = self#type_expr eq in
+                   (frag, eq))
+              pkg.substitutions
+          in
+            {path; substitutions}
   method fragment_type x = x
   method fragment_module x = x
 
