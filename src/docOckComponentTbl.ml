@@ -19,13 +19,13 @@ open DocOckTypes
 open DocOckComponents
 
 type 'a t =
-  { lookup : string -> 'a option;
+  { lookup : 'a Unit.t -> string -> 'a option;
     fetch : 'a -> 'a Unit.t;
     tbl : ('a, 'a Sig.t) Hashtbl.t; }
 
-let create fetch =
+let create lookup fetch =
   let tbl = Hashtbl.create 7 in
-    fun lookup -> {lookup; fetch; tbl}
+    {lookup; fetch; tbl}
 
 let datatype decl =
   let open TypeDecl in
@@ -68,25 +68,25 @@ let core_types =
       (fun decl -> (Identifier.name decl.id, datatype decl))
       DocOckPredef.core_types
 
-let rec unit tbl unit =
+let rec unit tbl base =
     try
-      Hashtbl.find tbl.tbl unit
+      Hashtbl.find tbl.tbl base
     with Not_found ->
       let open Unit in
-      let unt = tbl.fetch unit in
+      let unt = tbl.fetch base in
       let t =
         Sig.signature
           (fun items ->
              Sig.add_documentation unt.doc
-               (signature_items tbl items))
+               (signature_items tbl unt items))
           unt.items
       in
-        Hashtbl.add tbl.tbl unit t;
+        Hashtbl.add tbl.tbl base t;
         t
 
 and signature_identifier tbl =
   let open Identifier in function
-  | (Root(r, _) : 'a signature) -> unit tbl r
+  | (Root(base, _) : 'a signature) -> unit tbl base
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
@@ -99,7 +99,7 @@ and signature_identifier tbl =
 
 and module_identifier tbl =
   let open Identifier in function
-  | (Root(r, _) : 'a module_) -> unit tbl r
+  | (Root(base, _) : 'a module_) -> unit tbl base
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
@@ -126,136 +126,136 @@ and class_signature_identifier tbl =
         let parent = signature_identifier tbl id in
           Sig.lookup_class_type name parent
 
-and resolved_module_path tbl =
+and resolved_module_path tbl u =
   let open Path.Resolved in function
   | Identifier (id : 'a Identifier.module_) ->
       module_identifier tbl id
-  | Subst(sub, _) -> resolved_module_type_path tbl sub
-  | SubstAlias(sub, _) -> resolved_module_path tbl sub
+  | Subst(sub, _) -> resolved_module_type_path tbl u sub
+  | SubstAlias(sub, _) -> resolved_module_path tbl u sub
   | Module(p, name) ->
-      let parent = resolved_module_path tbl p in
+      let parent = resolved_module_path tbl u p in
         Sig.lookup_module name parent
   | Apply(p, arg) ->
-      let parent = resolved_module_path tbl p in
-        Sig.lookup_apply (module_path tbl) arg parent
+      let parent = resolved_module_path tbl u p in
+        Sig.lookup_apply (module_path tbl u) arg parent
 
-and resolved_module_type_path tbl =
+and resolved_module_type_path tbl u =
   let open Path.Resolved in function
   | Identifier (id : 'a Identifier.module_type) ->
       module_type_identifier tbl id
   | ModuleType(p, name) ->
-      let parent = resolved_module_path tbl p in
+      let parent = resolved_module_path tbl u p in
         Sig.lookup_module_type name parent
 
-and resolved_class_type_path tbl =
+and resolved_class_type_path tbl u =
   let open Path.Resolved in function
     | Identifier id -> class_signature_identifier tbl id
     | Class(p, name) | ClassType(p, name) ->
-        let parent = resolved_module_path tbl p in
+        let parent = resolved_module_path tbl u p in
           Sig.lookup_class_type name parent
 
-and module_path tbl =
+and module_path tbl u =
   let open Path in function
   | Root s -> begin
-      match tbl.lookup s with
+      match tbl.lookup u s with
       | None -> Sig.unresolved
-      | Some r -> unit tbl r
+      | Some base -> unit tbl base
     end
-  | Resolved r -> resolved_module_path tbl r
+  | Resolved r -> resolved_module_path tbl u r
   | Dot(p, name) ->
-      let parent = module_path tbl p in
+      let parent = module_path tbl u p in
         Sig.lookup_module name parent
   | Apply(p, arg) ->
-      let parent = module_path tbl p in
-        Sig.lookup_apply (module_path tbl) arg parent
+      let parent = module_path tbl u p in
+        Sig.lookup_apply (module_path tbl u) arg parent
 
-and module_type_path tbl =
+and module_type_path tbl u =
   let open Path in function
-  | Resolved r -> resolved_module_type_path tbl r
+  | Resolved r -> resolved_module_type_path tbl u r
   | Dot(p, name) ->
-      let parent = module_path tbl p in
+      let parent = module_path tbl u p in
         Sig.lookup_module_type name parent
 
-and class_signature_path tbl =
+and class_signature_path tbl u =
   let open Path in function
-    | Resolved p -> resolved_class_type_path tbl p
+    | Resolved p -> resolved_class_type_path tbl u p
     | Dot(p, name) ->
-        let parent = module_path tbl p in
+        let parent = module_path tbl u p in
           Sig.lookup_class_type name parent
 
-and class_signature_items tbl =
+and class_signature_items tbl u =
   let open ClassSig in
   let open ClassSignature in function
     | InstanceVariable ivar :: rest ->
         let open InstanceVariable in
-        let csig = class_signature_items tbl rest in
+        let csig = class_signature_items tbl u rest in
         let csig = add_documentation ivar.doc csig in
         let name = Identifier.name ivar.id in
           add_element name Element.InstanceVariable csig
     | Method meth :: rest ->
         let open Method in
-        let csig = class_signature_items tbl rest in
+        let csig = class_signature_items tbl u rest in
         let csig = add_documentation meth.doc csig in
         let name = Identifier.name meth.id in
           add_element name Element.Method csig
     | Constraint _ :: rest ->
-        class_signature_items tbl rest
+        class_signature_items tbl u rest
     | Inherit expr :: rest ->
-        let csig = class_signature_items tbl rest in
-        let expr = class_type_expr tbl expr in
+        let csig = class_signature_items tbl u rest in
+        let expr = class_type_expr tbl u expr in
           inherit_ expr csig
     | Comment comment :: rest ->
         let open Method in
-        let csig = class_signature_items tbl rest in
+        let csig = class_signature_items tbl u rest in
           add_comment comment csig
     | [] -> empty
 
-and class_signature tbl csig =
+and class_signature tbl u csig =
   let open ClassSignature in
-    class_signature_items tbl csig.items
+    class_signature_items tbl u csig.items
 
-and class_type_expr tbl =
+and class_type_expr tbl u =
   let open ClassType in function
-    | Constr(p, _) -> ClassSig.constr (class_signature_path tbl) p
-    | Signature csig -> ClassSig.signature (class_signature tbl) csig
+    | Constr(p, _) -> ClassSig.constr (class_signature_path tbl u) p
+    | Signature csig -> ClassSig.signature (class_signature tbl u) csig
 
-and class_decl tbl =
+and class_decl tbl u =
   let open Class in function
-    | ClassType expr -> class_type_expr tbl expr
-    | Arrow(_, _, decl) -> class_decl tbl decl
+    | ClassType expr -> class_type_expr tbl u expr
+    | Arrow(_, _, decl) -> class_decl tbl u decl
 
-and signature_items tbl =
+and signature_items tbl u =
   let open Sig in
   let open Signature in function
     | Module md :: rest ->
         let open Module in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation md.doc sg in
         let name = Identifier.name md.id in
-        let decl = module_decl tbl md.type_ in
+        let decl = module_decl tbl u md.type_ in
           add_module name decl sg
     | ModuleType mty :: rest ->
         let open ModuleType in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation mty.doc sg in
         let name = Identifier.name mty.id in
         let expr =
           match mty.expr with
           | None -> abstract
-          | Some expr -> module_type_expr tbl expr
+          | Some expr -> module_type_expr tbl u expr
         in
           add_module_type name expr sg
     | Type decl :: rest ->
         let open TypeDecl in
         let open Representation in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation decl.doc sg in
         let name = Identifier.name decl.id in
         let decl = datatype decl in
           add_datatype name decl sg
     | TypExt ext :: rest ->
         let open Extension in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation ext.doc sg in
           List.fold_right
             (fun cstr acc ->
@@ -266,65 +266,65 @@ and signature_items tbl =
             ext.constructors sg
     | Exception exn :: rest ->
         let open Exception in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation exn.doc sg in
         let name = Identifier.name exn.id in
           add_element name Element.Exception sg
     | Value v :: rest ->
         let open Value in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation v.doc sg in
         let name = Identifier.name v.id in
           add_element name Element.Value sg
     | External ev :: rest ->
         let open External in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation ev.doc sg in
         let name = Identifier.name ev.id in
           add_element name Element.Value sg
     | Class cl :: rest ->
         let open Class in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation cl.doc sg in
         let name = Identifier.name cl.id in
-        let expr = class_decl tbl cl.type_ in
+        let expr = class_decl tbl u cl.type_ in
           add_class name expr sg
     | ClassType clty :: rest ->
         let open ClassType in
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
         let sg = add_documentation clty.doc sg in
         let name = Identifier.name clty.id in
-        let expr = class_type_expr tbl clty.expr in
+        let expr = class_type_expr tbl u clty.expr in
           add_class_type name expr sg
     | Include expr :: rest ->
-        let sg = signature_items tbl rest in
-        let expr = module_type_expr tbl expr in
+        let sg = signature_items tbl u rest in
+        let expr = module_type_expr tbl u expr in
           include_ expr sg
     | Comment com :: rest ->
-        let sg = signature_items tbl rest in
+        let sg = signature_items tbl u rest in
           add_comment com sg
     | [] -> empty
 
-and module_type_expr tbl expr =
+and module_type_expr tbl u expr =
   let open Sig in
   let open ModuleType in
     match expr with
-    | Path p -> path (module_type_path tbl) p
-    | Signature sg -> signature (signature_items tbl) sg
+    | Path p -> path (module_type_path tbl u) p
+    | Signature sg -> signature (signature_items tbl u) sg
     | Functor(Some(id, arg), res) ->
-        let res = module_type_expr tbl res in
-        let arg = module_type_expr tbl arg in
+        let res = module_type_expr tbl u res in
+        let arg = module_type_expr tbl u arg in
           functor_ id arg res
     | Functor(None, res) ->
-        let res = module_type_expr tbl res in
+        let res = module_type_expr tbl u res in
           generative res
     | With(body, subs) ->
-        let body = module_type_expr tbl body in
+        let body = module_type_expr tbl u body in
           List.fold_left
             (fun body sub ->
                match sub with
                | ModuleEq(frag, decl) ->
-                   let eq = module_decl tbl decl in
+                   let eq = module_decl tbl u decl in
                      with_module frag eq body
                | TypeEq _ -> body
                | ModuleSubst(frag, _) ->
@@ -332,22 +332,36 @@ and module_type_expr tbl expr =
                | TypeSubst(frag, _, _) ->
                    with_type_subst frag body)
             body subs
-    | TypeOf decl -> module_decl tbl decl
+    | TypeOf decl -> module_decl tbl u decl
 
-and module_decl tbl decl =
+and module_decl tbl u decl =
   let open Sig in
   let open Module in
     match decl with
-    | Alias p -> alias (module_path tbl) p
-    | ModuleType expr -> module_type_expr tbl expr
+    | Alias p -> alias (module_path tbl u) p
+    | ModuleType expr -> module_type_expr tbl u expr
 
-let rec resolved_signature_fragment tbl base =
+(** TODO: One day we will be able to remove the unit component. *)
+type 'a with_ =
+  { unit: 'a Unit.t;
+    base: 'a Sig.t;
+    tbl: 'a t; }
+
+let module_type_expr_with tbl unit expr =
+  let base = module_type_expr tbl unit expr in
+    { unit; base; tbl }
+
+let module_type_path_with tbl unit path =
+  let base = module_type_path tbl unit path in
+    { unit; base; tbl }
+
+let rec resolved_signature_fragment wth =
   let open Fragment.Resolved in function
-  | Root -> base
-  | Subst(sub, _) -> resolved_module_type_path tbl sub
-  | SubstAlias(sub, _) -> resolved_module_path tbl sub
+  | Root -> wth.base
+  | Subst(sub, _) -> resolved_module_type_path wth.tbl wth.unit sub
+  | SubstAlias(sub, _) -> resolved_module_path wth.tbl wth.unit sub
   | Module(p, name) ->
-      let parent = resolved_signature_fragment tbl base p in
+      let parent = resolved_signature_fragment wth p in
         Sig.lookup_module name parent
 
 let rec resolved_signature_reference tbl =
@@ -375,4 +389,4 @@ and resolved_datatype_reference tbl =
         let parent = resolved_signature_reference tbl p in
           Sig.lookup_datatype name parent
 
-let root tbl s = tbl.lookup s
+let base tbl s = tbl.lookup s

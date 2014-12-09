@@ -24,10 +24,8 @@ open DocOckComponents
 type 'a t
 
 (** Create a table of the components of units. Assumes that it is safe
-    to use {!Hashtbl.hash} and structural equality (=) on ['a]. Internal
-    caches are created after application of the first argument, allowing
-    tables with different lookups to share their cached components. *)
-val create: ('a -> 'a Unit.t) -> (string -> 'a option) -> 'a t
+    to use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
+val create: ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) -> 'a t
 
 (** {3 Identifier Lookup} *)
 
@@ -43,26 +41,41 @@ val datatype_identifier : 'a t -> 'a Identifier.type_ -> 'a Datatype.t
 
 (** {3 Path Lookup} *)
 
+(** TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module path *)
-val resolved_module_path : 'a t ->
+val resolved_module_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.module_ -> 'a Sig.t
 
+(** TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module type path *)
-val resolved_module_type_path : 'a t ->
+val resolved_module_type_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.module_type -> 'a Sig.t
 
+(** TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved class type path *)
-val resolved_class_type_path : 'a t ->
+val resolved_class_type_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.class_type -> 'a ClassSig.t
 
-(** Lookup the components of a module path, needed for module applications. *)
-val module_path : 'a t ->
-      'a Path.module_ -> 'a Sig.t
+(** Lookup the components of a module path, needed for module
+    applications. *)
+val module_path : 'a t -> 'a Unit.t -> 'a Path.module_ -> 'a Sig.t
 
 (** {3 Fragment Lookup} *)
 
+(** Table specialised to lookup fragments based on a module expression
+    or path. *)
+type 'a with_
+
+(** Create specialised fragment table for a module type expression *)
+val module_type_expr_with : 'a t -> 'a Unit.t ->
+      'a ModuleType.expr -> 'a with_
+
+(** Create specialised fragment table for a module path *)
+val module_type_path_with : 'a t -> 'a Unit.t ->
+      'a Path.module_type -> 'a with_
+
 (** Lookup the components of a resolved module fragment *)
-val resolved_signature_fragment : 'a t -> 'a Sig.t ->
+val resolved_signature_fragment : 'a with_ ->
       'a Fragment.Resolved.signature -> 'a Sig.t
 
 (** {3 Reference Lookup} *)
@@ -79,12 +92,7 @@ val resolved_class_signature_reference : 'a t ->
 val resolved_datatype_reference : 'a t -> 'a Reference.Resolved.datatype ->
       'a Datatype.t
 
-(** {3 Module type expression lookup} *)
-
-(** Lookup the components of a module type expression *)
-val module_type_expr : 'a t -> 'a ModuleType.expr -> 'a Sig.t
-
 (** {3 Root lookup} *)
 
-(** Lookup the root of a unit name *)
-val root : 'a t -> string -> 'a option
+(** Lookup the base of a unit name *)
+val base : 'a t -> 'a Unit.t -> string -> 'a option
