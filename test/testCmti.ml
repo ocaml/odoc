@@ -31,6 +31,8 @@ let input_string input =
 
 let parser = DocOckXmlParse.build input_string
 
+exception Bad_lookup
+
 exception Bad_fetch of string
 
 let test cmti =
@@ -54,7 +56,8 @@ let test cmti =
          ^ ": expected string");
       1
   | Ok intf ->
-      let lookup s =
+      let lookup u s =
+        if u != intf then raise Bad_lookup;
         if s = cmti then Some cmti
         else None
       in
@@ -98,9 +101,13 @@ let test cmti =
                 prerr_newline ();
                 1
               end else 0
-        with Bad_fetch s ->
-          prerr_endline (cmti ^ ": bad fetch of " ^ s ^ " during resolution");
-          1
+        with
+        | Bad_lookup->
+            prerr_endline (cmti ^ ": bad lookup during resolution");
+            1
+        | Bad_fetch s ->
+            prerr_endline (cmti ^ ": bad fetch of " ^ s ^ " during resolution");
+            1
 
 let main () =
   let code = ref 0 in

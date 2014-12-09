@@ -192,8 +192,8 @@ flag(X):
       { true }
 
 module_identifier:
-  | base = Base
-      { Identifier.Root base }
+  | ROOT base = Base data = Data CLOSE
+      { Identifier.Root(base, data) }
   | MODULE sg = signature_identifier data = Data CLOSE
       { Identifier.Module(sg, data) }
   | pos = Argument sg = signature_identifier data = Data CLOSE

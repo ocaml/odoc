@@ -393,9 +393,12 @@ let rec identifier_p: type a. _ -> _ -> (_, a) Identifier.t -> _ =
       close output
     in
       match id with
-      | Root r ->
+      | Root(r, name) ->
+          root_t output;
           base_t output;
           base output r;
+          close output;
+          data output name;
           close output
       | Argument(sg, pos, name) ->
           argument_t output (Some pos);
