@@ -742,9 +742,9 @@ and read_signature env parent sg =
   in
     List.rev items
 
-let read_interface root intf =
+let read_interface root name intf =
   let open Module in
-  let id = Identifier.Root root in
+  let id = Identifier.Root(root, name) in
   let items = read_signature Env.empty id intf in
   let doc, items =
     let open Signature in

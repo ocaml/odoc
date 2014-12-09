@@ -15,7 +15,7 @@
  *)
 
 
-val read_interface: 'a -> Types.signature ->
+val read_interface: 'a -> string -> Types.signature ->
   'a DocOckPaths.Identifier.module_ *
   'a DocOckTypes.Documentation.t *
   'a DocOckTypes.Signature.t

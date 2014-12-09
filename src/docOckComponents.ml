@@ -17,11 +17,6 @@
 open DocOckPaths
 open DocOckTypes
 
-let ident_name id =
-  match Identifier.name id with
-  | None -> assert false
-  | Some name -> name
-
 (* Sets and maps for components *)
 
 module SSet = Set.Make(String)
@@ -107,7 +102,7 @@ end
 let rec text_element_labels acc =
   let open Documentation in function
   | Title(_, Some id, txt) ->
-      let name = ident_name id in
+      let name = Identifier.name id in
         text_labels (name :: acc) txt
   | Raw _ | Code _ | PreCode _ | Verbatim _
   | Newline | Target _ | Special _ | Reference(_, None) -> acc

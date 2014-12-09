@@ -964,9 +964,9 @@ and read_signature env parent items =
   in
     loop [] items
 
-let read_interface root intf =
+let read_interface root name intf =
   let open Module in
-  let id = Identifier.Root root in
+  let id = Identifier.Root(root, name) in
   let doc = empty in
   let items = read_signature Env.empty id intf in
     (id, doc, items)

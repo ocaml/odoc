@@ -133,7 +133,7 @@ module Identifier : sig
   type kind = Kind.identifier
 
   type ('a, 'b) t =
-    | Root : 'a -> ('a, [< kind > `Module]) t
+    | Root : 'a * string -> ('a, [< kind > `Module]) t
     | Module : 'a signature * string -> ('a, [< kind > `Module]) t
     | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
@@ -212,7 +212,7 @@ module Identifier : sig
 
   val any : ('a, 'b) t -> 'a any
 
-  val name : ('a, 'b) t -> string option
+  val name : ('a, 'b) t -> string
 
 end
 

@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val read_interface: 'a -> Typedtree.signature ->
+val read_interface: 'a -> string -> Typedtree.signature ->
   'a DocOckPaths.Identifier.module_ *
   'a DocOckTypes.Documentation.t *
   'a DocOckTypes.Signature.t

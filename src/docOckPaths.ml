@@ -83,7 +83,7 @@ module Identifier = struct
   type kind = Kind.identifier
 
   type ('a, 'b) t =
-    | Root : 'a -> ('a, [< kind > `Module]) t
+    | Root : 'a * string -> ('a, [< kind > `Module]) t
     | Module : 'a signature * string -> ('a, [< kind > `Module]) t
     | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
@@ -187,24 +187,24 @@ module Identifier = struct
     | InstanceVariable _ as x -> x
     | Label _ as x -> x
 
-  let name : type k. ('a, k) t -> string option = function
-    | Root _ -> None
-    | Module(_, name) -> Some name
-    | Argument(_, _, name) -> Some name
-    | ModuleType(_, name) -> Some name
-    | Type(_, name) -> Some name
-    | CoreType name -> Some name
-    | Constructor(_, name) -> Some name
-    | Field(_, name) -> Some name
-    | Extension(_, name) -> Some name
-    | Exception(_, name) -> Some name
-    | CoreException name -> Some name
-    | Value(_, name) -> Some name
-    | Class(_, name) -> Some name
-    | ClassType(_, name) -> Some name
-    | Method(_, name) -> Some name
-    | InstanceVariable(_, name) -> Some name
-    | Label(_, name) -> Some name
+  let name : type k. ('a, k) t -> string = function
+    | Root(_, name) -> name
+    | Module(_, name) -> name
+    | Argument(_, _, name) -> name
+    | ModuleType(_, name) -> name
+    | Type(_, name) -> name
+    | CoreType name -> name
+    | Constructor(_, name) -> name
+    | Field(_, name) -> name
+    | Extension(_, name) -> name
+    | Exception(_, name) -> name
+    | CoreException name -> name
+    | Value(_, name) -> name
+    | Class(_, name) -> name
+    | ClassType(_, name) -> name
+    | Method(_, name) -> name
+    | InstanceVariable(_, name) -> name
+    | Label(_, name) -> name
 end
 
 

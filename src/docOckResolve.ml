@@ -63,7 +63,7 @@ and resolve_parent_module_path tbl p : 'a parent_module_path =
         match root tbl s with
         | None -> Unresolved p
         | Some r ->
-            let p = Identifier (Identifier.Root r) in
+            let p = Identifier (Identifier.Root(r, s)) in
               Resolved(p, resolved_module_path tbl p)
       end
     | Resolved r -> Resolved(r, resolved_module_path tbl r)
@@ -123,7 +123,7 @@ and resolve_module_path tbl =
   | Root s as p -> begin
       match root tbl s with
       | None -> p
-      | Some r -> Resolved (Identifier (Identifier.Root r))
+      | Some r -> Resolved (Identifier (Identifier.Root(r, s)))
     end
   | Resolved r as p -> p
   | Dot(p, name) -> begin
@@ -372,7 +372,7 @@ let rec resolve_parent_reference :
             match root tbl s with
             | None -> Unresolved r
             | Some root ->
-                let root = Identifier (Identifier.Root root) in
+                let root = Identifier (Identifier.Root(root, s)) in
                   match kind with
                   | PParent ->
                       ResolvedSig(root, resolved_signature_reference tbl root)
@@ -432,7 +432,7 @@ and resolve_module_reference tbl r =
     | Root s -> begin
         match root tbl s with
         | None -> r
-        | Some r -> Resolved (Identifier (Identifier.Root r))
+        | Some r -> Resolved (Identifier (Identifier.Root(r, s)))
       end
     | Resolved _ -> r
     | Dot(r, name) -> begin

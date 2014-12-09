@@ -18,11 +18,6 @@ open DocOckPaths
 open DocOckTypes
 open DocOckComponents
 
-let ident_name id =
-  match Identifier.name id with
-  | None -> assert false
-  | Some name -> name
-
 type 'a t =
   { lookup : string -> 'a option;
     fetch : 'a -> 'a Unit.t;
@@ -39,10 +34,10 @@ let datatype decl =
   | None -> Datatype.abstract
   | Some (Variant constructors) ->
       let open Constructor in
-        let name = ident_name decl.id in
+        let name = Identifier.name decl.id in
         let decl =
           Datatype.variant name
-            (List.map (fun cstr -> ident_name cstr.id) constructors)
+            (List.map (fun cstr -> Identifier.name cstr.id) constructors)
         in
         let decl =
           List.fold_right
@@ -53,10 +48,10 @@ let datatype decl =
           decl
   | Some (Record fields) ->
       let open Field in
-        let name = ident_name decl.id in
+        let name = Identifier.name decl.id in
         let decl =
           Datatype.record name
-            (List.map (fun field -> ident_name field.id) fields)
+            (List.map (fun field -> Identifier.name field.id) fields)
         in
         let decl =
           List.fold_right
@@ -70,7 +65,7 @@ let datatype decl =
 let core_types =
   let open TypeDecl in
     List.map
-      (fun decl -> (ident_name decl.id, datatype decl))
+      (fun decl -> (Identifier.name decl.id, datatype decl))
       DocOckPredef.core_types
 
 let rec unit tbl unit =
@@ -91,7 +86,7 @@ let rec unit tbl unit =
 
 and signature_identifier tbl =
   let open Identifier in function
-  | (Root r : 'a signature) -> unit tbl r
+  | (Root(r, _) : 'a signature) -> unit tbl r
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
@@ -104,7 +99,7 @@ and signature_identifier tbl =
 
 and module_identifier tbl =
   let open Identifier in function
-  | (Root r : 'a module_) -> unit tbl r
+  | (Root(r, _) : 'a module_) -> unit tbl r
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
@@ -195,13 +190,13 @@ and class_signature_items tbl =
         let open InstanceVariable in
         let csig = class_signature_items tbl rest in
         let csig = add_documentation ivar.doc csig in
-        let name = ident_name ivar.id in
+        let name = Identifier.name ivar.id in
           add_element name Element.InstanceVariable csig
     | Method meth :: rest ->
         let open Method in
         let csig = class_signature_items tbl rest in
         let csig = add_documentation meth.doc csig in
-        let name = ident_name meth.id in
+        let name = Identifier.name meth.id in
           add_element name Element.Method csig
     | Constraint _ :: rest ->
         class_signature_items tbl rest
@@ -236,14 +231,14 @@ and signature_items tbl =
         let open Module in
         let sg = signature_items tbl rest in
         let sg = add_documentation md.doc sg in
-        let name = ident_name md.id in
+        let name = Identifier.name md.id in
         let decl = module_decl tbl md.type_ in
           add_module name decl sg
     | ModuleType mty :: rest ->
         let open ModuleType in
         let sg = signature_items tbl rest in
         let sg = add_documentation mty.doc sg in
-        let name = ident_name mty.id in
+        let name = Identifier.name mty.id in
         let expr =
           match mty.expr with
           | None -> abstract
@@ -255,7 +250,7 @@ and signature_items tbl =
         let open Representation in
         let sg = signature_items tbl rest in
         let sg = add_documentation decl.doc sg in
-        let name = ident_name decl.id in
+        let name = Identifier.name decl.id in
         let decl = datatype decl in
           add_datatype name decl sg
     | TypExt ext :: rest ->
@@ -265,7 +260,7 @@ and signature_items tbl =
           List.fold_right
             (fun cstr acc ->
                let open Constructor in
-               let name = ident_name cstr.id in
+               let name = Identifier.name cstr.id in
                let acc = add_documentation cstr.doc acc in
                  add_element name Element.Extension acc)
             ext.constructors sg
@@ -273,32 +268,32 @@ and signature_items tbl =
         let open Exception in
         let sg = signature_items tbl rest in
         let sg = add_documentation exn.doc sg in
-        let name = ident_name exn.id in
+        let name = Identifier.name exn.id in
           add_element name Element.Exception sg
     | Value v :: rest ->
         let open Value in
         let sg = signature_items tbl rest in
         let sg = add_documentation v.doc sg in
-        let name = ident_name v.id in
+        let name = Identifier.name v.id in
           add_element name Element.Value sg
     | External ev :: rest ->
         let open External in
         let sg = signature_items tbl rest in
         let sg = add_documentation ev.doc sg in
-        let name = ident_name ev.id in
+        let name = Identifier.name ev.id in
           add_element name Element.Value sg
     | Class cl :: rest ->
         let open Class in
         let sg = signature_items tbl rest in
         let sg = add_documentation cl.doc sg in
-        let name = ident_name cl.id in
+        let name = Identifier.name cl.id in
         let expr = class_decl tbl cl.type_ in
           add_class name expr sg
     | ClassType clty :: rest ->
         let open ClassType in
         let sg = signature_items tbl rest in
         let sg = add_documentation clty.doc sg in
-        let name = ident_name clty.id in
+        let name = Identifier.name clty.id in
         let expr = class_type_expr tbl clty.expr in
           add_class_type name expr sg
     | Include expr :: rest ->
