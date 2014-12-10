@@ -1221,22 +1221,39 @@ class virtual ['a] unit = object (self)
 
   method unit_import_name name = name
 
-  method unit_digest digest = digest
+  method unit_source source =
+    let open Unit.Source in
+    let {file; build_dir; digest} = source in
+    let file' = self#unit_source_file file in
+    let build_dir' = self#unit_source_build_dir build_dir in
+    let digest' = self#unit_source_digest digest in
+      if file != file' || build_dir != build_dir' || digest != digest' then
+        {file = file'; build_dir = build_dir'; digest = digest'}
+      else source
+
+  method unit_source_file file = file
+
+  method unit_source_build_dir build_dir = build_dir
+
+  method unit_source_digest digest = digest
 
   method unit unit =
     let open Unit in
-    let {id; doc; digest; imports; items} = unit in
+    let {id; doc; digest; imports; source; items} = unit in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let digest' = self#unit_digest digest in
     let imports' = list_map self#unit_import imports in
+    let source' = option_map self#unit_source source in
     let items' = self#signature items in
       if id != id' || doc != doc' || digest != digest'
-         || imports != imports' || items != items'
+         || imports != imports' || source != source' || items != items'
       then
         {id = id'; doc = doc'; digest = digest';
-         imports = imports'; items = items'}
+         imports = imports'; source = source'; items = items'}
       else unit
+
+  method unit_digest digest = digest
 
 end
 

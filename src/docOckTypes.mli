@@ -430,11 +430,21 @@ module Unit : sig
     | Unresolved of string * Digest.t option
     | Resolved of 'a
 
+  module Source : sig
+
+    type 'a t =
+      { file: string;
+        build_dir: string;
+        digest: Digest.t; }
+
+  end
+
   type 'a t =
     { id: 'a Identifier.module_;
       doc: 'a Documentation.t;
       digest: Digest.t;
       imports: 'a import list;
+      source: 'a Source.t option;
       items: 'a Signature.t }
 
 end

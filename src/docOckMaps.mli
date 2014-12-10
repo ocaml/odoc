@@ -490,9 +490,17 @@ class virtual ['a] unit : object
 
   method unit_import_name : string -> string
 
-  method unit_digest : Digest.t -> Digest.t
+  method unit_source : 'a Unit.Source.t -> 'a Unit.Source.t
+
+  method unit_source_file : string -> string
+
+  method unit_source_build_dir : string -> string
+
+  method unit_source_digest : Digest.t -> Digest.t
 
   method unit : 'a Unit.t -> 'a Unit.t
+
+  method unit_digest : Digest.t -> Digest.t
 
 end
 

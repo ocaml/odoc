@@ -43,9 +43,17 @@ let read_cmti root filename =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
         let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
+        let source =
+          match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
+          | Some file, Some digest ->
+              let open Source in
+              let build_dir = cmt_info.cmt_builddir in
+                Some {file; digest; build_dir}
+          | _, _ -> None
+        in
           match cmt_info.cmt_interface_digest with
           | Some digest ->
-              Ok {id; doc; digest; imports; items}
+              Ok {id; doc; digest; imports; source; items}
           | None -> Corrupted_interface
       end
     | _ -> Not_an_interface
@@ -66,7 +74,8 @@ let read_cmi root filename =
             DocOckCmi.read_interface root name cmi_info.cmi_sign
           in
           let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
-            Ok {id; doc; digest; imports; items}
+          let source = None in
+            Ok {id; doc; digest; imports; source; items}
       | _ -> Corrupted_interface
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
