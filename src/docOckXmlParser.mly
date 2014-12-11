@@ -84,6 +84,7 @@ let relax_class_type_reference cltyp =
 %token CONSTRUCTOR
 %token DEPRECATED
 %token DIGEST
+%token DIR
 %token DOC
 %token DOT
 %token ELEMENT
@@ -142,6 +143,7 @@ let relax_class_type_reference cltyp =
 %token SEE
 %token SIGNATURE
 %token SINCE
+%token SOURCE
 %token SPECIAL
 %token STOP
 %token SUBSCRIPT
@@ -1062,23 +1064,36 @@ signature_item:
   | comment = comment
       { Signature.Comment comment }
 
-unit_digest:
+digest:
   | DIGEST data = Data CLOSE
       { try
           Digest.from_hex data
         with Invalid_argument _ -> $syntaxerror }
 
 unit_import:
-  | IMPORT data = Data digest = unit_digest? CLOSE
+  | IMPORT data = Data digest = digest? CLOSE
       { Unit.Unresolved(data, digest) }
   | IMPORT base = Base CLOSE
       { Unit.Resolved base }
 
+source_file:
+  | FILE data = Data CLOSE
+      { data }
+
+source_build_dir:
+  | DIR data = Data CLOSE
+      { data }
+
+source:
+  | SOURCE file = source_file build_dir = source_build_dir digest = digest CLOSE
+      { let open Unit.Source in
+          {file; build_dir; digest} }
+
 unit:
-  | UNIT id = module_identifier digest = unit_digest imports = unit_import*
-      doc = doc items = signature_item* CLOSE
+  | UNIT id = module_identifier digest = digest imports = unit_import*
+      source = source? doc = doc items = signature_item* CLOSE
         { let open Unit in
-            {id; doc; digest; imports; items} }
+            {id; doc; digest; imports; source; items} }
 
 file:
   | DTD unit = unit EOF

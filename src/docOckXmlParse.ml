@@ -61,6 +61,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "constructor" Parser.CONSTRUCTOR;
     Hashtbl.add plain_tags "deprecated" Parser.DEPRECATED;
     Hashtbl.add plain_tags "digest" Parser.DIGEST;
+    Hashtbl.add plain_tags "dir" Parser.DIR;
     Hashtbl.add plain_tags "doc" Parser.DOC;
     Hashtbl.add plain_tags "dot" Parser.DOT;
     Hashtbl.add plain_tags "element" Parser.ELEMENT;
@@ -119,6 +120,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "see" Parser.SEE;
     Hashtbl.add plain_tags "signature" Parser.SIGNATURE;
     Hashtbl.add plain_tags "since" Parser.SINCE;
+    Hashtbl.add plain_tags "source" Parser.SOURCE;
     Hashtbl.add plain_tags "special" Parser.SPECIAL;
     Hashtbl.add plain_tags "stop" Parser.STOP;
     Hashtbl.add plain_tags "subscript" Parser.SUBSCRIPT;

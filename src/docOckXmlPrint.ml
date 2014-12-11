@@ -82,6 +82,9 @@ let deprecated_t output =
 let digest_t output =
   Xmlm.output output (`El_start (("", "digest"), []))
 
+let dir_t output =
+  Xmlm.output output (`El_start (("", "dir"), []))
+
 let doc_t output =
   Xmlm.output output (`El_start (("", "doc"), []))
 
@@ -255,6 +258,9 @@ let signature_t output =
 
 let since_t output =
   Xmlm.output output (`El_start (("", "since"), []))
+
+let source_t output =
+  Xmlm.output output (`El_start (("", "source"), []))
 
 let special_t output =
   Xmlm.output output (`El_start (("", "special"), []))
@@ -1106,7 +1112,7 @@ and signature_item_p base output =
         close output
     | Comment com -> comment_p base output com
 
-let unit_digest_p base output digest =
+let digest_p base output digest =
   digest_t output;
   data output (Digest.to_hex digest);
   close output
@@ -1116,7 +1122,7 @@ let unit_import_p base output =
     | Unresolved(name, digest) ->
         import_t output;
         data output name;
-        opt unit_digest_p base output digest;
+        opt digest_p base output digest;
         close output
     | Resolved r ->
         import_t output;
@@ -1125,12 +1131,31 @@ let unit_import_p base output =
         close output;
         close output
 
+let source_file_p base output file =
+  file_t output;
+  data output file;
+  close output
+
+let source_build_dir_p base output build_dir =
+  dir_t output;
+  data output build_dir;
+  close output
+
+let source_p base output source =
+  let open Unit.Source in
+    source_t output;
+    source_file_p base output source.file;
+    source_build_dir_p base output source.build_dir;
+    digest_p base output source.digest;
+    close output
+
 let unit_p base output unit =
   let open Unit in
     unit_t output;
     identifier_p base output unit.id;
-    unit_digest_p base output unit.digest;
+    digest_p base output unit.digest;
     list unit_import_p base output unit.imports;
+    opt source_p base output unit.source;
     doc_p base output unit.doc;
     list signature_item_p base output unit.items;
     close output
