@@ -143,7 +143,6 @@ let add_class parent id ty_id obj_id cl_id env =
 
 let add_class_type parent id obj_id cl_id env =
   let name = Ident.name id in
-  let cl_id = { cl_id with Ident.name = name } in
   let identifier = ClassType(parent, name) in
   let add_idents tbl =
     Ident.add id identifier
