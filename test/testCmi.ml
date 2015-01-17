@@ -15,98 +15,28 @@
  *)
 
 open DocOck
+open TestCommon
 
-class ident = object
-  method root x = x
-  method reference_value x = x
-  method reference_type x = x
-  method reference_module_type x = x
-  method reference_module x = x
-  method reference_method x = x
-  method reference_label x = x
-  method reference_instance_variable x = x
-  method reference_field x = x
-  method reference_extension x = x
-  method reference_exception x = x
-  method reference_constructor x = x
-  method reference_class_type x = x
-  method reference_class x = x
-  method reference_any x = x
-  method path_type x = x
-  method path_module_type x = x
-  method path_module x = x
-  method path_class_type x = x
-  method identifier_value x = x
-  method identifier_type x = x
-  method identifier_module_type x = x
-  method identifier_module x = x
-  method identifier_method x = x
-  method identifier_label x = x
-  method identifier_instance_variable x = x
-  method identifier_field x = x
-  method identifier_extension x = x
-  method identifier_exception x = x
-  method identifier_constructor x = x
-  method identifier_class_type x = x
-  method identifier_class x = x
-  method fragment_type x = x
-  method fragment_module x = x
-  inherit [string] DocOckMaps.types
-end
-
-exception Bad_lookup
-exception Bad_fetch of string
-
-let test cmi =
-  match read_cmi cmi cmi with
-  | Not_an_interface ->
-      prerr_endline (cmi ^ ": not an interface");
-      1
-  | Wrong_version_interface ->
-      prerr_endline (cmi ^ ": interface has wrong OCaml version");
-      1
-  | Corrupted_interface ->
-      prerr_endline (cmi ^ ": corrupted interface");
-      1
-  | Not_a_typedtree ->
-      prerr_endline (cmi ^ ": not a typedtree");
-      1
-  | Ok intf ->
-      let ident = new ident in
-      let intf' = ident#unit intf in
-        if intf != intf' then begin
-          prerr_endline (cmi ^ ": deep identity map failed");
-          1
-        end else begin
-          let lookup u s =
-            if u != intf' then raise Bad_lookup;
-            if s = cmi then Some cmi
-            else None
-          in
-          let fetch s =
-            if s = cmi then intf'
-            else raise (Bad_fetch s)
-          in
-          let resolver = build_resolver lookup fetch in
-            try
-              ignore (resolve resolver intf');
-              0
-            with
-            | Bad_lookup ->
-                prerr_endline (cmi ^ ": bad lookup during resolution");
-                1
-            | Bad_fetch s ->
-                prerr_endline (cmi ^ ": bad fetch of " ^ s ^ " during resolution");
-                1
-          end
-
+let read_file cmi =
+  let name = module_name cmi in
+    match read_cmi name cmi with
+    | Not_an_interface ->
+        raise (Error(cmi, "not an interface"))
+    | Wrong_version_interface ->
+        raise (Error(cmi, "interface has wrong OCaml version"))
+    | Corrupted_interface ->
+        raise (Error(cmi, "corrupted interface"))
+    | Not_a_typedtree ->
+        raise (Error(cmi, "not a typedtree"))
+    | Ok intf -> intf
 
 let main () =
-  let code = ref 0 in
-  let test cmi =
-    code := !code + (test cmi)
-  in
-    Arg.parse [] test "Test doc-ock on cmi files";
-    exit !code
+  let files = get_files "cmi" in
+    try
+      test read_file (List.rev files);
+      exit 0
+    with Error(file, msg) ->
+      prerr_endline (file ^ ": " ^ msg);
+      exit 1
 
 let () = main ()

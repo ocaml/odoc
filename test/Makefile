@@ -22,11 +22,11 @@ coverage.cmi coverage.cmti: coverage.mli
 coverage.cmt: coverage.ml
 	$(OCAMLC) -bin-annot -doc -c coverage.ml
 
-testCmi: testCmi.ml
-	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
+testCmi: testCommon.ml testCmi.ml
+	$(OCAMLC) $(DOC_OCK_FLAGS) $^ -o $@
 
-testCmti: testCmti.ml
-	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
+testCmti: testCommon.ml testCmti.ml
+	$(OCAMLC) $(DOC_OCK_FLAGS) $^ -o $@
 
 clean:
 	rm -f testCmi
