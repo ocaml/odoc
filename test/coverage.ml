@@ -240,6 +240,23 @@ module type IncludeModuleType = sig
   include EmptySigAlias
 end
 
+module type ToInclude = sig
+  module IncludedA : sig
+    type t
+  end
+  module type IncludedB = sig
+    type s
+  end
+end
+
+module IncludedA = struct
+  type t
+end
+
+module type IncludedB = sig
+  type s
+end
+
 (** {3 Advanced Type Stuff} *)
 
 (** This comment is for [record]. *)
