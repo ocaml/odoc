@@ -23,9 +23,10 @@ open DocOckComponents
 (** The type of tables of components *)
 type 'a t
 
-(** Create a table of the components of units. Assumes that it is safe
-    to use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
-val create: ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) -> 'a t
+(** Create a table of the components of units. Optionally provide
+    equality and hash functons. *)
+val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+ ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) -> 'a t
 
 (** {3 Identifier Lookup} *)
 

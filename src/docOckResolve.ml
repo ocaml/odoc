@@ -794,8 +794,8 @@ let unwrap opt =
     | Some x -> x
     | None -> assert false
 
-class ['a] resolver lookup fetch = object (self)
-  val tbl = create lookup fetch
+class ['a] resolver ?equal ?hash lookup fetch = object (self)
+  val tbl = create ?equal ?hash lookup fetch
   val unit = None
 
   inherit ['a] DocOckMaps.types as super
@@ -905,7 +905,7 @@ class ['a] resolver lookup fetch = object (self)
 
 end
 
-let build_resolver lookup fetch =
-  new resolver lookup fetch
+let build_resolver ?equal ?hash lookup fetch =
+  new resolver ?equal ?hash lookup fetch
 
 let resolve r u = r#resolve u

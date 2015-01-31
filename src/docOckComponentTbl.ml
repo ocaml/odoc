@@ -18,27 +18,102 @@ open DocOckPaths
 open DocOckTypes
 open DocOckComponents
 
+type ('a, 'b) tbl =
+  { fresh: int -> ('a, 'b) tbl;
+    find: 'a -> 'b;
+    add: 'a -> 'b  -> unit; }
+
+let make_tbl (type a) (equal : (a -> a -> bool) option)
+           (hash : (a -> int) option) size =
+  let make create find add =
+    let rec fresh size =
+      let t = create size in
+      let find x = find t x in
+      let add x y = add t x y in
+        {fresh; find; add}
+    in
+      fresh size
+  in
+    match equal, hash with
+    | None, None ->
+        make (Hashtbl.create ?random:None) Hashtbl.find Hashtbl.add
+    | _ ->
+        let equal =
+          match equal with
+          | None -> (=)
+          | Some eq -> eq
+        in
+        let hash =
+          match hash with
+          | None -> Hashtbl.hash
+          | Some h -> h
+        in
+        let module Hash = struct
+          type t = a
+          let equal = equal
+          let hash = hash
+        end in
+        let module Tbl = Hashtbl.Make(Hash) in
+          make Tbl.create Tbl.find Tbl.add
+
 type 'a t =
-  { lookup : 'a Unit.t -> string -> 'a option;
+  { equal : ('a -> 'a -> bool) option;
+    hash : ('a -> int) option;
+    lookup : 'a Unit.t -> string -> 'a option;
     fetch : 'a -> 'a Unit.t;
-    tbl : ('a, 'a Sig.t) Hashtbl.t; }
+    tbl : ('a, 'a Sig.t) tbl; }
 
-let create lookup fetch =
-  let tbl = Hashtbl.create 7 in
-    {lookup; fetch; tbl}
+let create ?equal ?hash lookup fetch =
+  let tbl = make_tbl equal hash 7 in
+    {equal; hash; lookup; fetch; tbl}
 
-type 'a local = ('a Identifier.signature, 'a Sig.t) Hashtbl.t
+type 'a local = ('a Identifier.signature, 'a Sig.t) tbl
 
-let create_local () : 'a local =
-  Hashtbl.create 23
+let rec equal_ident equal id1 id2 =
+  let open Identifier in
+    match (id1 : 'a signature), (id2 : 'a signature) with
+    | Root(r1, s1), Root(r2, s2) ->
+        s1 = s2 && equal r1 r2
+    | Module(id1, s1), Module(id2, s2) ->
+        s1 = s2 && equal_ident equal id1 id2
+    | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
+        n1 = n2 && s1 = s2 && equal_ident equal id1 id2
+    | ModuleType(id1, s1), ModuleType(id2, s2) ->
+        s1 = s2 && equal_ident equal id1 id2
+    | _, _ -> false
+
+let rec hash_ident hash id =
+  let open Identifier in
+    match (id : 'a signature) with
+    | Root(r, s) ->
+        Hashtbl.hash (1, hash r, s)
+    | Module(id, s) ->
+        Hashtbl.hash (2, hash_ident hash id, s)
+    | Argument(id, n, s) ->
+        Hashtbl.hash (3, hash_ident hash id, n, s)
+    | ModuleType(id, s) ->
+        Hashtbl.hash (4, hash_ident hash id, s)
+
+let create_local equal hash =
+  let equal =
+    match equal with
+    | None -> None
+    | Some eq -> Some (equal_ident eq)
+  in
+  let hash =
+    match hash with
+    | None -> None
+    | Some h -> Some (hash_ident h)
+  in
+    make_tbl equal hash 23
 
 let add_local_module_identifier (local : 'a local) id sg =
   let open Identifier in
-    Hashtbl.add local (signature_of_module id) sg
+    local.add (signature_of_module id) sg
 
 let add_local_module_type_identifier (local : 'a local) id sg =
   let open Identifier in
-    Hashtbl.add local (signature_of_module_type id) sg
+    local.add (signature_of_module_type id) sg
 
 let local_module_identifier (local : 'a local option) id =
   let open Identifier in
@@ -46,7 +121,7 @@ let local_module_identifier (local : 'a local option) id =
     | None -> None
     | Some local ->
         try
-          Some (Hashtbl.find local (signature_of_module id))
+          Some (local.find (signature_of_module id))
         with Not_found -> None
 
 let local_module_type_identifier (local : 'a local option) id =
@@ -55,7 +130,7 @@ let local_module_type_identifier (local : 'a local option) id =
     | None -> None
     | Some local ->
         try
-          Some (Hashtbl.find local (signature_of_module_type id))
+          Some (local.find (signature_of_module_type id))
         with Not_found -> None
 
 let datatype decl =
@@ -101,11 +176,11 @@ let core_types =
 
 let rec unit tbl base =
     try
-      Hashtbl.find tbl.tbl base
+      tbl.tbl.find base
     with Not_found ->
       let open Unit in
       let unt = tbl.fetch base in
-      let local = create_local () in
+      let local = create_local tbl.equal tbl.hash in
       let t =
         Sig.signature
           (fun items ->
@@ -113,7 +188,7 @@ let rec unit tbl base =
                (signature_items tbl local unt items))
           unt.items
       in
-        Hashtbl.add tbl.tbl base t;
+        tbl.tbl.add base t;
         t
 
 and signature_identifier tbl =
@@ -354,7 +429,7 @@ and module_type_expr tbl local u expr =
     | Functor(Some(id, arg), res) ->
         let res = module_type_expr tbl local u res in
         let arg = module_type_expr tbl local u arg in
-          functor_ id arg res
+          functor_ tbl.equal tbl.hash id arg res
     | Functor(None, res) ->
         let res = module_type_expr tbl local u res in
           generative res
@@ -396,7 +471,7 @@ type 'a with_ =
     tbl: 'a t; }
 
 let module_type_expr_with tbl unit expr =
-  let local = create_local () in
+  let local = create_local tbl.equal tbl.hash in
   let base = module_type_expr tbl local unit expr in
     { unit; base; tbl }
 

@@ -35,10 +35,10 @@ val read_cmi: 'a -> string -> 'a result
 
 type 'a resolver
 
-(** Build a resolver. Assumes that it is safe to use {!Hashtbl.hash} and
-    structural equality (=) on ['a]. *)
-val build_resolver: ('a Types.Unit.t -> string -> 'a option) ->
-      ('a -> 'a Types.Unit.t) -> 'a resolver
+(** Build a resolver. Optionally provide equality and hash on ['a]. *)
+val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+                    ('a Types.Unit.t -> string -> 'a option) ->
+                    ('a -> 'a Types.Unit.t) -> 'a resolver
 
 val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
 

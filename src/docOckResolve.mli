@@ -21,8 +21,9 @@ type 'a resolver
 
 (** Lazily extract the components of units. Assumes that it is safe to
     use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
-val build_resolver: ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) ->
-      'a resolver
+val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+                    ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) ->
+                    'a resolver
 
 (** Try to resolve all paths and references within a unit. *)
 val resolve : 'a resolver -> 'a Unit.t -> 'a Unit.t
