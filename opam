@@ -7,10 +7,10 @@ license: "ISC"
 depends: [
   "assemblage"
 ]
-ocaml-version: [= "4.02.1+doc"]
 build: [
   ["assemblage" "setup" "--dumpast=false"]
   [make]
   [make "install"]
 ]
 remove: ["ocamlfind" "remove" "doc-ock"]
+available: [ compiler = "4.02.1+doc" ]
