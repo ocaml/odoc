@@ -9,9 +9,9 @@ depends: [
   "menhir"
   "doc-ock-lib"
 ]
-ocaml-version: [= "4.02.1+doc"]
 build: [
   [make]
   [make "install"]
 ]
 remove: ["ocamlfind" "remove" "doc-ock-xml"]
+available: [ compiler = "4.02.1+doc" ]
