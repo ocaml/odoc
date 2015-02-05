@@ -29,9 +29,9 @@ type 'a result =
   | Corrupted_interface
   | Not_a_typedtree
 
-val read_cmti: 'a -> string -> 'a result
+val read_cmti: (string -> Digest.t -> 'a) -> string -> 'a result
 
-val read_cmi: 'a -> string -> 'a result
+val read_cmi: (string -> Digest.t -> 'a) -> string -> 'a result
 
 type 'a resolver
 
