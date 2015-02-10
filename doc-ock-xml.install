@@ -13,7 +13,11 @@ lib: [
   "?_build/lib-doc-ock-xml/docOckXmlPrint.cmi"
   "?_build/lib-doc-ock-xml/docOckXmlPrint.cmti"
   "?_build/lib-doc-ock-xml/docOckXmlPrint.mli"
+  "?_build/lib-doc-ock-xml/docOckXml.cmi"
+  "?_build/lib-doc-ock-xml/docOckXml.mli"
+  "?_build/lib-doc-ock-xml/docOckXml.cmti"
   "?_build/lib-doc-ock-xml/docOckXmlParse.cmx"
   "?_build/lib-doc-ock-xml/docOckXmlParser.cmx"
   "?_build/lib-doc-ock-xml/docOckXmlPrint.cmx"
+  "?_build/lib-doc-ock-xml/docOckXml.cmx"
 ]

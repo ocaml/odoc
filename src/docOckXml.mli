@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ * Copyright (c) 2015 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,10 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a printer
+type tree = tree Xmlm.frag
 
-val build: ('a -> DocOckXml.tree) -> 'a printer
-
-val unit: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
-
-val file: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
+val output_tree : Xmlm.output -> tree -> unit

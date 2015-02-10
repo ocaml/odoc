@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a printer = Xmlm.output -> 'a -> unit
+type 'a printer = 'a -> DocOckXml.tree
 
 let build p = p
 
@@ -1149,7 +1149,11 @@ let source_p base output source =
     digest_p base output source.digest;
     close output
 
-let unit_p base output unit =
+let output_of_xmlize xmlize output root =
+  DocOckXml.output_tree output (xmlize root)
+
+let unit_p xmlize_base output unit =
+  let base = output_of_xmlize xmlize_base in
   let open Unit in
     unit_t output;
     identifier_p base output unit.id;
@@ -1160,9 +1164,9 @@ let unit_p base output unit =
     list signature_item_p base output unit.items;
     close output
 
-let file_p base output unit =
+let file_p xmlize_base output unit =
   dtd output None;
-  unit_p base output unit
+  unit_p xmlize_base output unit
 
 let unit = unit_p
 let file = file_p
