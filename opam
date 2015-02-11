@@ -5,6 +5,7 @@ authors: [
 ]
 license: "ISC"
 depends: [
+  "ocamlfind"
   "xmlm"
   "menhir"
   "doc-ock-lib"
