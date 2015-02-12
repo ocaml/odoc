@@ -83,26 +83,26 @@ $(BUILDIR)/lib-doc-ock-xml/docOckXml.mli: $(ROOTDIR)/src/docOckXml.mli | $(BUILD
 	$(LN) $< $@
 
 $(BUILDIR)/lib-doc-ock-xml/doc-ock-xml.cma:  \
+    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmo \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParser.cmo \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParse.cmo \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlPrint.cmo \
-    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmo \
     | $(BUILDIR)/lib-doc-ock-xml/
 	$(OCAMLC) -a $^ -o $@
 
 $(BUILDIR)/lib-doc-ock-xml/doc-ock-xml.cmxa $(BUILDIR)/lib-doc-ock-xml/doc-ock-xml.a:  \
+    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParser.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParse.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlPrint.cmx \
-    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmx \
     | $(BUILDIR)/lib-doc-ock-xml/
 	$(OCAMLOPT) -a $^ -o $@
 
 $(BUILDIR)/lib-doc-ock-xml/doc-ock-xml.cmxs:  \
+    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParser.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlParse.cmx \
     $(BUILDIR)/lib-doc-ock-xml/docOckXmlPrint.cmx \
-    $(BUILDIR)/lib-doc-ock-xml/docOckXml.cmx \
     | $(BUILDIR)/lib-doc-ock-xml/
 	$(OCAMLOPT) -shared -linkall $^ -o $@
 
