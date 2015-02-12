@@ -18,6 +18,8 @@ type 'a printer
 
 val build: ('a -> DocOckXml.tree) -> 'a printer
 
-val unit: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
+val unit:
+  'a printer -> ('b -> Xmlm.signal -> 'b) -> 'b -> 'a DocOckTypes.Unit.t -> 'b
 
-val file: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
+val file:
+  'a printer -> ('b -> Xmlm.signal -> 'b) -> 'b -> 'a DocOckTypes.Unit.t -> 'b

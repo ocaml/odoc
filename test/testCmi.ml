@@ -18,10 +18,9 @@ open DocOck
 
 exception Bad_string of Xmlm.pos
 
-let output_string output s =
-  Xmlm.output output (`Data s)
+let root_string s = `Data s
 
-let printer = DocOckXmlPrint.build output_string
+let printer = DocOckXmlFold.build root_string
 
 let input_string input =
   let pos = Xmlm.pos input in
@@ -36,7 +35,7 @@ exception Bad_lookup
 exception Bad_fetch of string
 
 let test cmi =
-  match read_cmi cmi cmi with
+  match read_cmi (fun _ _ -> cmi) cmi with
   | Not_an_interface ->
       prerr_endline (cmi ^ ": not an interface");
       1
@@ -70,7 +69,8 @@ let test cmi =
           let intf = resolve resolver intf in
           let buf = Buffer.create 1024 in
           let output = Xmlm.make_output (`Buffer buf) in
-          DocOckXmlPrint.file printer output intf;
+          DocOckXmlFold.file printer
+            (fun () signal -> Xmlm.output output signal) () intf;
           Buffer.output_buffer stdout buf;
           print_newline ();
           let input = Xmlm.make_input (`String(0, Buffer.contents buf)) in
@@ -94,7 +94,8 @@ let test cmi =
           | DocOckXmlParse.Ok intf2 ->
               let buf2 = Buffer.create 1024 in
               let output2 = Xmlm.make_output (`Buffer buf2) in
-              DocOckXmlPrint.file printer output2 intf2;
+              DocOckXmlFold.file printer
+                (fun () signal -> Xmlm.output output2 signal) () intf2;
               if Buffer.contents buf <> Buffer.contents buf2 then begin
                 prerr_endline (cmi ^ ": parsing does not match printing");
                 Buffer.output_buffer stderr buf2;

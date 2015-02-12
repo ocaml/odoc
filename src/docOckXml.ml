@@ -16,4 +16,11 @@
 
 type tree = tree Xmlm.frag
 
-let output_tree = Xmlm.output_tree (fun x -> x)
+let serialize_tree tree =
+  let rec serialize acc = function
+    | `Data s -> (`Data s)::acc
+    | `El (tag, children) ->
+      `El_end :: List.fold_left serialize (`El_start tag :: acc) children
+  in
+  List.rev (serialize [] tree)
+    

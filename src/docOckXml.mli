@@ -16,4 +16,4 @@
 
 type tree = tree Xmlm.frag
 
-val output_tree : Xmlm.output -> tree -> unit
+val serialize_tree : tree -> Xmlm.signal list
