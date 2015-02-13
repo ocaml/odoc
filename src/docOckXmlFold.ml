@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type ('r,'acc) t = ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc
+type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
 let open_attr attrs tag output acc =
   output acc (`El_start (tag, attrs))
@@ -1150,20 +1150,25 @@ let source_p base output acc source =
   let acc = digest_p base output acc source.digest in
   close output acc
 
-let unit_p base output acc unit =
-  let open Unit in
-  let acc = unit_t output acc in
-  let acc = identifier_p base output acc unit.id in
-  let acc = digest_p base output acc unit.digest in
-  let acc = list unit_import_p base output acc unit.imports in
-  let acc = opt source_p base output acc unit.source in
-  let acc = doc_p base output acc unit.doc in
-  let acc = list signature_item_p base output acc unit.items in
-  close output acc
+let unit_p ({ f = base }) = {
+  f = fun output acc unit ->
+    let open Unit in
+    let acc = unit_t output acc in
+    let acc = identifier_p base output acc unit.id in
+    let acc = digest_p base output acc unit.digest in
+    let acc = list unit_import_p base output acc unit.imports in
+    let acc = opt source_p base output acc unit.source in
+    let acc = doc_p base output acc unit.doc in
+    let acc = list signature_item_p base output acc unit.items in
+    close output acc
+}
 
-let file_p xmlize_base output acc unit =
-  let acc = dtd output acc None in
-  unit_p xmlize_base output acc unit
+let file_p base =
+  let unit_f = unit_p base in
+  { f = fun output acc unit ->
+    let acc = dtd output acc None in
+    unit_f.f output acc unit
+  }
 
 let unit = unit_p
 let file = file_p

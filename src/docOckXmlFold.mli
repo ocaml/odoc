@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ * Copyright (c) 2014-2015 Leo White <lpw25@cl.cam.ac.uk>
  * Copyright (c) 2015 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -15,8 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type ('r,'acc) t = ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc
+type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
-val unit: ('r,'acc) t -> ('r DocOckTypes.Unit.t, 'acc) t
+val unit: 'r t -> 'r DocOckTypes.Unit.t t
 
-val file: ('r,'acc) t -> ('r DocOckTypes.Unit.t, 'acc) t
+val file: 'r t -> 'r DocOckTypes.Unit.t t
