@@ -15,9 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a printer = 'a -> DocOckXml.tree
-
-let build p = p
+type ('r,'acc) t = ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc
 
 let open_attr attrs tag output acc =
   output acc (`El_start (tag, attrs))
@@ -1152,11 +1150,7 @@ let source_p base output acc source =
   let acc = digest_p base output acc source.digest in
   close output acc
 
-let output_of_xmlize xmlize output acc root =
-  List.fold_left output acc (DocOckXml.serialize_tree (xmlize root))
-
-let unit_p xmlize_base output acc unit =
-  let base = output_of_xmlize xmlize_base in
+let unit_p base output acc unit =
   let open Unit in
   let acc = unit_t output acc in
   let acc = identifier_p base output acc unit.id in

@@ -18,9 +18,7 @@ open DocOck
 
 exception Bad_string of Xmlm.pos
 
-let root_string s = `Data s
-
-let printer = DocOckXmlFold.build root_string
+let root_fold f a s = f a (`Data s)
 
 let input_string input =
   let pos = Xmlm.pos input in
@@ -69,7 +67,7 @@ let test cmi =
           let intf = resolve resolver intf in
           let buf = Buffer.create 1024 in
           let output = Xmlm.make_output (`Buffer buf) in
-          DocOckXmlFold.file printer
+          DocOckXmlFold.file root_fold
             (fun () signal -> Xmlm.output output signal) () intf;
           Buffer.output_buffer stdout buf;
           print_newline ();
@@ -94,7 +92,7 @@ let test cmi =
           | DocOckXmlParse.Ok intf2 ->
               let buf2 = Buffer.create 1024 in
               let output2 = Xmlm.make_output (`Buffer buf2) in
-              DocOckXmlFold.file printer
+              DocOckXmlFold.file root_fold
                 (fun () signal -> Xmlm.output output2 signal) () intf2;
               if Buffer.contents buf <> Buffer.contents buf2 then begin
                 prerr_endline (cmi ^ ": parsing does not match printing");
