@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ * Copyright (c) 2014-2015 Leo White <lpw25@cl.cam.ac.uk>
+ * Copyright (c) 2015 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,10 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a printer
+type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
-val build: (Xmlm.output -> 'a -> unit) -> 'a printer
+val unit: 'r t -> 'r DocOckTypes.Unit.t t
 
-val unit: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
-
-val file: 'a printer -> Xmlm.output -> 'a DocOckTypes.Unit.t -> unit
+val file: 'r t -> 'r DocOckTypes.Unit.t t
