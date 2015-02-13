@@ -401,7 +401,7 @@ let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
       | Root(r, name) ->
         let acc = root_t output acc in
         let acc = base_t output acc in
-        let acc = base output acc r in
+        let acc = base.f output acc r in
         let acc = close output acc in
         let acc = data output acc name in
         close output acc
@@ -1128,7 +1128,7 @@ let unit_import_p base output acc =
     | Resolved r ->
       let acc = import_t output acc in
       let acc = base_t output acc in
-      let acc = base output acc r in
+      let acc = base.f output acc r in
       let acc = close output acc in
       close output acc
 
@@ -1150,8 +1150,7 @@ let source_p base output acc source =
   let acc = digest_p base output acc source.digest in
   close output acc
 
-let unit_p ({ f = base }) = {
-  f = fun output acc unit ->
+let unit_p base output acc unit =
     let open Unit in
     let acc = unit_t output acc in
     let acc = identifier_p base output acc unit.id in
@@ -1161,14 +1160,10 @@ let unit_p ({ f = base }) = {
     let acc = doc_p base output acc unit.doc in
     let acc = list signature_item_p base output acc unit.items in
     close output acc
-}
 
-let file_p base =
-  let unit_f = unit_p base in
-  { f = fun output acc unit ->
-    let acc = dtd output acc None in
-    unit_f.f output acc unit
-  }
+let file_p base output acc unit =
+  let acc = dtd output acc None in
+    unit_p base output acc unit
 
-let unit = unit_p
-let file = file_p
+let unit base = {f = fun output acc unit -> unit_p base output acc unit}
+let file base = {f = fun output acc unit -> file_p base output acc unit}
