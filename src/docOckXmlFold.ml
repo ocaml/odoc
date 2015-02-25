@@ -17,333 +17,335 @@
 
 type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
+let ns = DocOckXml.ns
+
 let open_attr attrs tag output acc =
   output acc (`El_start (tag, attrs))
 
 (* Terminals *)
 let alias_t output acc =
-  output acc (`El_start (("", "alias"), []))
+  output acc (`El_start ((ns, "alias"), []))
 
 let any_t output acc =
-  output acc (`El_start (("", "any"), []))
+  output acc (`El_start ((ns, "any"), []))
 
 let apply_t output acc =
-  output acc (`El_start (("", "apply"), []))
+  output acc (`El_start ((ns, "apply"), []))
 
 let arguments_t output acc =
-  output acc (`El_start (("", "arguments"), []))
+  output acc (`El_start ((ns, "arguments"), []))
 
 let arrow_t output acc =
-  output acc (`El_start (("", "arrow"), []))
+  output acc (`El_start ((ns, "arrow"), []))
 
 let author_t output acc =
-  output acc (`El_start (("", "author"), []))
+  output acc (`El_start ((ns, "author"), []))
 
 let base_t output acc =
-  output acc (`El_start (("", "base"), []))
+  output acc (`El_start ((ns, "base"), []))
 
 let before_t output acc =
-  output acc (`El_start (("", "before"), []))
+  output acc (`El_start ((ns, "before"), []))
 
 let bold_t output acc =
-  output acc (`El_start (("", "bold"), []))
+  output acc (`El_start ((ns, "bold"), []))
 
 let center_t output acc =
-  output acc (`El_start (("", "center"), []))
+  output acc (`El_start ((ns, "center"), []))
 
 let class_t output acc =
-  output acc (`El_start (("", "class"), []))
+  output acc (`El_start ((ns, "class"), []))
 
 let class_type_t output acc =
-  output acc (`El_start (("", "class_type"), []))
+  output acc (`El_start ((ns, "class_type"), []))
 
 let closed_t output acc =
-  output acc (`El_start (("", "closed"), []))
+  output acc (`El_start ((ns, "closed"), []))
 
 let code_t output acc =
-  output acc (`El_start (("", "code"), []))
+  output acc (`El_start ((ns, "code"), []))
 
 let comment_t output acc =
-  output acc (`El_start (("", "comment"), []))
+  output acc (`El_start ((ns, "comment"), []))
 
 let constant_t output acc =
-  output acc (`El_start (("", "constant"), []))
+  output acc (`El_start ((ns, "constant"), []))
 
 let constraint_t output acc =
-  output acc (`El_start (("", "constraint"), []))
+  output acc (`El_start ((ns, "constraint"), []))
 
 let constructor_t output acc =
-  output acc (`El_start (("", "constructor"), []))
+  output acc (`El_start ((ns, "constructor"), []))
 
 let deprecated_t output acc =
-  output acc (`El_start (("", "deprecated"), []))
+  output acc (`El_start ((ns, "deprecated"), []))
 
 let digest_t output acc =
-  output acc (`El_start (("", "digest"), []))
+  output acc (`El_start ((ns, "digest"), []))
 
 let dir_t output acc =
-  output acc (`El_start (("", "dir"), []))
+  output acc (`El_start ((ns, "dir"), []))
 
 let doc_t output acc =
-  output acc (`El_start (("", "doc"), []))
+  output acc (`El_start ((ns, "doc"), []))
 
 let dot_t output acc =
-  output acc (`El_start (("", "dot"), []))
+  output acc (`El_start ((ns, "dot"), []))
 
 let element_t output acc =
-  output acc (`El_start (("", "element"), []))
+  output acc (`El_start ((ns, "element"), []))
 
 let emphasize_t output acc =
-  output acc (`El_start (("", "emphasize"), []))
+  output acc (`El_start ((ns, "emphasize"), []))
 
 let enum_t output acc =
-  output acc (`El_start (("", "enum"), []))
+  output acc (`El_start ((ns, "enum"), []))
 
 let exception_t output acc =
-  output acc (`El_start (("", "exception"), []))
+  output acc (`El_start ((ns, "exception"), []))
 
 let extensible_t output acc =
-  output acc (`El_start (("", "extensible"), []))
+  output acc (`El_start ((ns, "extensible"), []))
 
 let extension_t output acc =
-  output acc (`El_start (("", "extension"), []))
+  output acc (`El_start ((ns, "extension"), []))
 
 let external_t output acc =
-  output acc (`El_start (("", "external"), []))
+  output acc (`El_start ((ns, "external"), []))
 
 let field_t output acc =
-  output acc (`El_start (("", "field"), []))
+  output acc (`El_start ((ns, "field"), []))
 
 let file_t output acc =
-  output acc (`El_start (("", "file"), []))
+  output acc (`El_start ((ns, "file"), []))
 
 let fixed_t output acc =
-  output acc (`El_start (("", "fixed"), []))
+  output acc (`El_start ((ns, "fixed"), []))
 
 let functor_t output acc =
-  output acc (`El_start (("", "functor"), []))
+  output acc (`El_start ((ns, "functor"), []))
 
 let identifier_t output acc =
-  output acc (`El_start (("", "identifier"), []))
+  output acc (`El_start ((ns, "identifier"), []))
 
 let import_t output acc =
-  output acc (`El_start (("", "import"), []))
+  output acc (`El_start ((ns, "import"), []))
 
 let include_t output acc =
-  output acc (`El_start (("", "include"), []))
+  output acc (`El_start ((ns, "include"), []))
 
 let index_t output acc =
-  output acc (`El_start (("", "index"), []))
+  output acc (`El_start ((ns, "index"), []))
 
 let inherit_t output acc =
-  output acc (`El_start (("", "inherit"), []))
+  output acc (`El_start ((ns, "inherit"), []))
 
 let instance_variable_t output acc =
-  output acc (`El_start (("", "instance_variable"), []))
+  output acc (`El_start ((ns, "instance_variable"), []))
 
 let italic_t output acc =
-  output acc (`El_start (("", "italic"), []))
+  output acc (`El_start ((ns, "italic"), []))
 
 let item_t output acc =
-  output acc (`El_start (("", "item"), []))
+  output acc (`El_start ((ns, "item"), []))
 
 let label_t output acc =
-  output acc (`El_start (("", "label"), []))
+  output acc (`El_start ((ns, "label"), []))
 
 let left_t output acc =
-  output acc (`El_start (("", "left"), []))
+  output acc (`El_start ((ns, "left"), []))
 
 let link_t output acc =
-  output acc (`El_start (("", "link"), []))
+  output acc (`El_start ((ns, "link"), []))
 
 let list_t output acc =
-  output acc (`El_start (("", "list"), []))
+  output acc (`El_start ((ns, "list"), []))
 
 let method_t output acc =
-  output acc (`El_start (("", "method"), []))
+  output acc (`El_start ((ns, "method"), []))
 
 let module_t output acc =
-  output acc (`El_start (("", "module"), []))
+  output acc (`El_start ((ns, "module"), []))
 
 let modules_t output acc =
-  output acc (`El_start (("", "modules"), []))
+  output acc (`El_start ((ns, "modules"), []))
 
 let module_subst_t output acc =
-  output acc (`El_start (("", "module_subst"), []))
+  output acc (`El_start ((ns, "module_subst"), []))
 
 let module_type_t output acc =
-  output acc (`El_start (("", "module_type"), []))
+  output acc (`El_start ((ns, "module_type"), []))
 
 let mutable_t output acc =
-  output acc (`El_start (("", "mutable"), []))
+  output acc (`El_start ((ns, "mutable"), []))
 
 let name_t output acc =
-  output acc (`El_start (("", "name"), []))
+  output acc (`El_start ((ns, "name"), []))
 
 let neg_t output acc =
-  output acc (`El_start (("", "neg"), []))
+  output acc (`El_start ((ns, "neg"), []))
 
 let newline_t output acc =
-  output acc (`El_start (("", "newline"), []))
+  output acc (`El_start ((ns, "newline"), []))
 
 let object_t output acc =
-  output acc (`El_start (("", "object"), []))
+  output acc (`El_start ((ns, "object"), []))
 
 let open_t output acc =
-  output acc (`El_start (("", "open"), []))
+  output acc (`El_start ((ns, "open"), []))
 
 let optional_t output acc =
-  output acc (`El_start (("", "optional"), []))
+  output acc (`El_start ((ns, "optional"), []))
 
 let package_t output acc =
-  output acc (`El_start (("", "package"), []))
+  output acc (`El_start ((ns, "package"), []))
 
 let param_t output acc =
-  output acc (`El_start (("", "param"), []))
+  output acc (`El_start ((ns, "param"), []))
 
 let path_t output acc =
-  output acc (`El_start (("", "path"), []))
+  output acc (`El_start ((ns, "path"), []))
 
 let poly_t output acc =
-  output acc (`El_start (("", "poly"), []))
+  output acc (`El_start ((ns, "poly"), []))
 
 let poly_variant_t output acc =
-  output acc (`El_start (("", "poly_variant"), []))
+  output acc (`El_start ((ns, "poly_variant"), []))
 
 let pos_t output acc =
-  output acc (`El_start (("", "pos"), []))
+  output acc (`El_start ((ns, "pos"), []))
 
 let precode_t output acc =
-  output acc (`El_start (("", "precode"), []))
+  output acc (`El_start ((ns, "precode"), []))
 
 let primitive_t output acc =
-  output acc (`El_start (("", "primitive"), []))
+  output acc (`El_start ((ns, "primitive"), []))
 
 let private_t output acc =
-  output acc (`El_start (("", "private"), []))
+  output acc (`El_start ((ns, "private"), []))
 
 let raise_t output acc =
-  output acc (`El_start (("", "raise"), []))
+  output acc (`El_start ((ns, "raise"), []))
 
 let record_t output acc =
-  output acc (`El_start (("", "record"), []))
+  output acc (`El_start ((ns, "record"), []))
 
 let reference_t output acc =
-  output acc (`El_start (("", "reference"), []))
+  output acc (`El_start ((ns, "reference"), []))
 
 let resolved_t output acc =
-  output acc (`El_start (("", "resolved"), []))
+  output acc (`El_start ((ns, "resolved"), []))
 
 let result_t output acc =
-  output acc (`El_start (("", "result"), []))
+  output acc (`El_start ((ns, "result"), []))
 
 let return_t output acc =
-  output acc (`El_start (("", "return"), []))
+  output acc (`El_start ((ns, "return"), []))
 
 let right_t output acc =
-  output acc (`El_start (("", "right"), []))
+  output acc (`El_start ((ns, "right"), []))
 
 let root_t output acc =
-  output acc (`El_start (("", "root"), []))
+  output acc (`El_start ((ns, "root"), []))
 
 let section_t output acc =
-  output acc (`El_start (("", "section"), []))
+  output acc (`El_start ((ns, "section"), []))
 
 let see_t output acc =
-  output acc (`El_start (("", "see"), []))
+  output acc (`El_start ((ns, "see"), []))
 
 let signature_t output acc =
-  output acc (`El_start (("", "signature"), []))
+  output acc (`El_start ((ns, "signature"), []))
 
 let since_t output acc =
-  output acc (`El_start (("", "since"), []))
+  output acc (`El_start ((ns, "since"), []))
 
 let source_t output acc =
-  output acc (`El_start (("", "source"), []))
+  output acc (`El_start ((ns, "source"), []))
 
 let special_t output acc =
-  output acc (`El_start (("", "special"), []))
+  output acc (`El_start ((ns, "special"), []))
 
 let stop_t output acc =
-  output acc (`El_start (("", "stop"), []))
+  output acc (`El_start ((ns, "stop"), []))
 
 let subscript_t output acc =
-  output acc (`El_start (("", "subscript"), []))
+  output acc (`El_start ((ns, "subscript"), []))
 
 let subst_t output acc =
-  output acc (`El_start (("", "subst"), []))
+  output acc (`El_start ((ns, "subst"), []))
 
 let subst_alias_t output acc =
-  output acc (`El_start (("", "subst_alias"), []))
+  output acc (`El_start ((ns, "subst_alias"), []))
 
 let superscript_t output acc =
-  output acc (`El_start (("", "superscript"), []))
+  output acc (`El_start ((ns, "superscript"), []))
 
 let tag_t output acc =
-  output acc (`El_start (("", "tag"), []))
+  output acc (`El_start ((ns, "tag"), []))
 
 let tuple_t output acc =
-  output acc (`El_start (("", "tuple"), []))
+  output acc (`El_start ((ns, "tuple"), []))
 
 let type_t output acc =
-  output acc (`El_start (("", "type"), []))
+  output acc (`El_start ((ns, "type"), []))
 
 let typeof_t output acc =
-  output acc (`El_start (("", "typeof"), []))
+  output acc (`El_start ((ns, "typeof"), []))
 
 let type_subst_t output acc =
-  output acc (`El_start (("", "type_subst"), []))
+  output acc (`El_start ((ns, "type_subst"), []))
 
 let unit_t output acc =
-  output acc (`El_start (("", "unit"), []))
+  output acc (`El_start ((ns, "unit"), [(Xmlm.ns_xmlns,"xmlns"),DocOckXml.ns]))
 
 let url_t output acc =
-  output acc (`El_start (("", "url"), []))
+  output acc (`El_start ((ns, "url"), []))
 
 let value_t output acc =
-  output acc (`El_start (("", "value"), []))
+  output acc (`El_start ((ns, "value"), []))
 
 let var_t output acc =
-  output acc (`El_start (("", "var"), []))
+  output acc (`El_start ((ns, "var"), []))
 
 let variant_t output acc =
-  output acc (`El_start (("", "variant"), []))
+  output acc (`El_start ((ns, "variant"), []))
 
 let verbatim_t output acc =
-  output acc (`El_start (("", "verbatim"), []))
+  output acc (`El_start ((ns, "verbatim"), []))
 
 let version_t output acc =
-  output acc (`El_start (("", "version"), []))
+  output acc (`El_start ((ns, "version"), []))
 
 let virtual_t output acc =
-  output acc (`El_start (("", "virtual"), []))
+  output acc (`El_start ((ns, "virtual"), []))
 
 let with_t output acc =
-  output acc (`El_start (("", "with"), []))
+  output acc (`El_start ((ns, "with"), []))
 
 (* Terminals with attributes *)
 
 let argument_t output acc = function
   | None ->
-      output acc (`El_start (("", "argument"), []))
+      output acc (`El_start ((ns, "argument"), []))
   | Some pos ->
       let attr = (("", "pos"), string_of_int pos) in
-        output acc (`El_start (("", "argument"), [attr]))
+        output acc (`El_start ((ns, "argument"), [attr]))
 
 let custom_t output acc tag =
   let attr = (("", "tag"), tag) in
-    output acc (`El_start (("", "custom"), [attr]))
+    output acc (`El_start ((ns, "custom"), [attr]))
 
 let target_t output acc = function
   | None ->
-      output acc (`El_start (("", "target"), []))
+      output acc (`El_start ((ns, "target"), []))
   | Some name ->
       let attr = (("", "pos"), name) in
-        output acc (`El_start (("", "target"), [attr]))
+        output acc (`El_start ((ns, "target"), [attr]))
 
 let title_t output acc level =
   let attr = (("", "level"), string_of_int level) in
-    output acc (`El_start (("", "title"), [attr]))
+    output acc (`El_start ((ns, "title"), [attr]))
 
 (* Special terminals *)
 
