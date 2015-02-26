@@ -156,7 +156,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
           | `Dtd _ -> Parser.DTD
           | `Data s -> Parser.Data s
           | `El_start ((namespace, tag), attrs) ->
-              if namespace <> "" then
+              if namespace <> DocOckXml.ns then
                 raise (LexerError(start, finish,
                                   "unknown namespace " ^ namespace))
               else begin

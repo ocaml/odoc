@@ -14,4 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val ns : string
+let ns = "https://opam.ocaml.org/packages/doc-ock-xml/xmlns/unit#"
