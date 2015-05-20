@@ -1,0 +1,12 @@
+opam-version: "1"
+maintainer: "leo@lpw25.net"
+authors: [
+  "Leo White <leo@lpw25.net>"
+]
+license: "ISC"
+build: [
+  [make]
+  [make "install"]
+]
+remove: ["ocamlfind" "remove" "octavius"]
+depends: [ "ocamlfind" ]
