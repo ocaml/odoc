@@ -37,14 +37,17 @@ let test cmti =
   | Not_an_interface ->
       prerr_endline (cmti ^ ": not an interface");
       1
-  | Wrong_version_interface ->
-      prerr_endline (cmti ^ ": interface has wrong OCaml version");
+  | Wrong_version ->
+      prerr_endline (cmti ^ ": wrong OCaml version");
       1
-  | Corrupted_interface ->
-      prerr_endline (cmti ^ ": corrupted interface");
+  | Corrupted ->
+      prerr_endline (cmti ^ ": corrupted");
       1
   | Not_a_typedtree ->
       prerr_endline (cmti ^ ": not a typedtree");
+      1
+  | Not_an_implementation ->
+      prerr_endline (cmti ^ ": not an implementation");
       1
   | exception Bad_string (line, column) ->
       prerr_endline

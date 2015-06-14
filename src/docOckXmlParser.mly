@@ -104,6 +104,7 @@ let relax_class_type_reference cltyp =
 %token INDEX
 %token INHERIT
 %token INSTANCE_VARIABLE
+%token INTERFACE
 %token ITALIC
 %token ITEM
 %token LABEL
@@ -122,6 +123,7 @@ let relax_class_type_reference cltyp =
 %token OBJECT
 %token OPEN
 %token OPTIONAL
+%token PACK
 %token PACKAGE
 %token PARAM
 %token PATH
@@ -1072,9 +1074,9 @@ digest:
 
 unit_import:
   | IMPORT data = Data digest = digest? CLOSE
-      { Unit.Unresolved(data, digest) }
+      { Unit.Import.Unresolved(data, digest) }
   | IMPORT base = Base CLOSE
-      { Unit.Resolved base }
+      { Unit.Import.Resolved base }
 
 source_file:
   | FILE data = Data CLOSE
@@ -1089,11 +1091,22 @@ source:
       { let open Unit.Source in
           {file; build_dir; digest} }
 
+packed_item:
+  | ITEM id = module_identifier path = module_path CLOSE
+      { let open Unit.Packed in
+          {id; path} }
+
+unit_content:
+  | MODULE items = signature_item* CLOSE
+      { Unit.Module items }
+  | PACK items = packed_item* CLOSE
+      { Unit.Pack items }
+
 unit:
-  | UNIT id = module_identifier digest = digest imports = unit_import*
-      source = source? doc = doc items = signature_item* CLOSE
-        { let open Unit in
-            {id; doc; digest; imports; source; items} }
+  | UNIT id = module_identifier doc = doc digest = digest imports = unit_import*
+      source = source? interface = flag(INTERFACE) content = unit_content CLOSE
+          { let open Unit in
+              {id; doc; digest; imports; source; interface; content} }
 
 file:
   | DTD unit = unit EOF

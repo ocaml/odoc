@@ -12,7 +12,7 @@ DOC_OCK_FLAGS ?= \
    $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r doc-ock-lib) \
    $(DOC_OCK_XML_BUILD)/doc-ock-xml.cma
 
-all: coverage-cmi coverage-cmti
+all: coverage-cmi coverage-cmti coverage-cmt
 
 coverage-cmi: coverage.cmi testCmi
 	./testCmi coverage.cmi
@@ -20,8 +20,14 @@ coverage-cmi: coverage.cmi testCmi
 coverage-cmti: coverage.cmti testCmti
 	./testCmti coverage.cmti
 
+coverage-cmt: coverage.cmt testCmt
+	./testCmt coverage.cmt
+
 coverage.cmi coverage.cmti: coverage.mli
 	$(OCAMLC) -bin-annot -doc -c coverage.mli
+
+coverage.cmt: coverage.ml
+	$(OCAMLC) -bin-annot -doc -c coverage.ml
 
 testCmi: testCmi.ml
 	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
@@ -29,9 +35,13 @@ testCmi: testCmi.ml
 testCmti: testCmti.ml
 	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
 
+testCmt: testCmt.ml
+	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@
+
 clean:
 	rm -f testCmi
 	rm -f testCmti
+	rm -f testCmt
 	rm -f *.cmo
 	rm -f *.cmi
 	rm -f *.cmti

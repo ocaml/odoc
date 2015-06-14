@@ -20,7 +20,7 @@ type 'a result =
 
 type 'a parser =
   { file : Xmlm.input -> 'a result;
-    unit :  Xmlm.input -> 'a result }
+    unit :  Xmlm.input -> 'a result; }
 
 exception LexerError of Xmlm.pos * Xmlm.pos * string
 
@@ -81,6 +81,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "index" Parser.INDEX;
     Hashtbl.add plain_tags "inherit" Parser.INHERIT;
     Hashtbl.add plain_tags "instance_variable" Parser.INSTANCE_VARIABLE;
+    Hashtbl.add plain_tags "interface" Parser.INTERFACE;
     Hashtbl.add plain_tags "italic" Parser.ITALIC;
     Hashtbl.add plain_tags "item" Parser.ITEM;
     Hashtbl.add plain_tags "label" Parser.LABEL;
@@ -246,6 +247,6 @@ let build (type base) (input_base : Xmlm.input -> base) =
     in
       {file; unit}
 
-let file parser = parser.file
-
 let unit parser = parser.unit
+
+let file parser = parser.file

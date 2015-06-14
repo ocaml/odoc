@@ -32,37 +32,37 @@ exception Bad_lookup
 
 exception Bad_fetch of string
 
-let test cmi =
-  match read_cmi (fun _ _ -> cmi) cmi with
+let test cmt =
+  match read_cmt (fun _ _ -> cmt) cmt with
   | Not_an_interface ->
-      prerr_endline (cmi ^ ": not an interface");
+      prerr_endline (cmt ^ ": not an interface");
       1
   | Wrong_version ->
-      prerr_endline (cmi ^ ": wrong OCaml version");
+      prerr_endline (cmt ^ ": wrong OCaml version");
       1
   | Corrupted ->
-      prerr_endline (cmi ^ ": corrupted");
+      prerr_endline (cmt ^ ": corrupted");
       1
   | Not_a_typedtree ->
-      prerr_endline (cmi ^ ": not a typedtree");
+      prerr_endline (cmt ^ ": not a typedtree");
       1
   | Not_an_implementation ->
-      prerr_endline (cmi ^ ": not an implementation");
+      prerr_endline (cmt ^ ": not an implementation");
       1
   | exception Bad_string (line, column) ->
       prerr_endline
-        (cmi ^ ":"
+        (cmt ^ ":"
          ^ (string_of_int line) ^ "." ^ (string_of_int column)
          ^ ": expected string");
       1
   | Ok intf ->
       let lookup u s =
         if u != intf then raise Bad_lookup;
-        if s = cmi then Some cmi
+        if s = cmt then Some cmt
         else None
       in
       let fetch s =
-        if s = cmi then intf
+        if s = cmt then intf
         else raise (Bad_fetch s)
       in
       let resolver = build_resolver lookup fetch in
@@ -90,32 +90,32 @@ let test cmi =
                 let fcolumn = string_of_int fcolumn in
                   ":" ^ fline ^ "." ^ fcolumn
               in
-                prerr_endline (cmi ^ start ^ finish ^ ": " ^ msg);
+                prerr_endline (cmt ^ start ^ finish ^ ": " ^ msg);
                 1
           | DocOckXmlParse.Ok intf2 ->
               let buf2 = Buffer.create 1024 in
               let output2 = Xmlm.make_output (`Buffer buf2) in
               fold_file (fun () signal -> Xmlm.output output2 signal) () intf2;
               if Buffer.contents buf <> Buffer.contents buf2 then begin
-                prerr_endline (cmi ^ ": parsing does not match printing");
+                prerr_endline (cmt ^ ": parsing does not match printing");
                 Buffer.output_buffer stderr buf2;
                 prerr_newline ();
                 1
               end else 0
         with
-        | Bad_lookup ->
-            prerr_endline (cmi ^ ": bad lookup during resolution");
+        | Bad_lookup->
+            prerr_endline (cmt ^ ": bad lookup during resolution");
             1
         | Bad_fetch s ->
-            prerr_endline (cmi ^ ": bad fetch of " ^ s ^ " during resolution");
+            prerr_endline (cmt ^ ": bad fetch of " ^ s ^ " during resolution");
             1
 
 let main () =
   let code = ref 0 in
-  let test cmi =
-    code := !code + (test cmi)
+  let test cmt =
+    code := !code + (test cmt)
   in
-    Arg.parse [] test "Test XML parser and printer on cmi files";
+    Arg.parse [] test "Test XML parser and printer on cmt files";
     exit !code
 
 let () = main ()

@@ -143,6 +143,9 @@ let inherit_t output acc =
 let instance_variable_t output acc =
   output acc (`El_start ((ns, "instance_variable"), []))
 
+let interface_t output acc =
+  output acc (`El_start ((ns, "interface"), []))
+
 let italic_t output acc =
   output acc (`El_start ((ns, "italic"), []))
 
@@ -196,6 +199,9 @@ let open_t output acc =
 
 let optional_t output acc =
   output acc (`El_start ((ns, "optional"), []))
+
+let pack_t output acc =
+  output acc (`El_start ((ns, "pack"), []))
 
 let package_t output acc =
   output acc (`El_start ((ns, "package"), []))
@@ -1121,7 +1127,7 @@ let digest_p base output acc digest =
   close output acc
 
 let unit_import_p base output acc =
-  let open Unit in function
+  let open Unit.Import in function
     | Unresolved(name, digest) ->
       let acc = import_t output acc in
       let acc = data output acc name in
@@ -1152,20 +1158,53 @@ let source_p base output acc source =
   let acc = digest_p base output acc source.digest in
   close output acc
 
+let packed_item_p base output acc item =
+  let open Unit.Packed in
+  let acc = item_t output acc in
+  let acc = identifier_p base output acc item.id in
+  let acc = path_p base output acc item.path in
+  close output acc
+
+let unit_content_p base output acc =
+  let open Unit in function
+    | Module items ->
+        let acc = module_t output acc in
+        let acc = list signature_item_p base output acc items in
+        close output acc
+    | Pack items ->
+        let acc = pack_t output acc in
+        let acc = list packed_item_p base output acc items in
+        close output acc
+
 let unit_p base output acc unit =
-    let open Unit in
-    let acc = unit_t output acc in
-    let acc = identifier_p base output acc unit.id in
-    let acc = digest_p base output acc unit.digest in
-    let acc = list unit_import_p base output acc unit.imports in
-    let acc = opt source_p base output acc unit.source in
-    let acc = doc_p base output acc unit.doc in
-    let acc = list signature_item_p base output acc unit.items in
-    close output acc
+  let open Unit in
+  let acc = unit_t output acc in
+  let acc = identifier_p base output acc unit.id in
+  let acc = doc_p base output acc unit.doc in
+  let acc = digest_p base output acc unit.digest in
+  let acc = list unit_import_p base output acc unit.imports in
+  let acc = opt source_p base output acc unit.source in
+  let acc = flag interface_t output acc unit.interface in
+  let acc = unit_content_p base output acc unit.content in
+  close output acc
 
 let file_p base output acc unit =
   let acc = dtd output acc None in
     unit_p base output acc unit
+
+let pack_unit_p base output acc unit =
+  let open Unit.Import in function
+    | Unresolved(name, digest) ->
+      let acc = import_t output acc in
+      let acc = data output acc name in
+      let acc = opt digest_p base output acc digest in
+      close output acc
+    | Resolved r ->
+      let acc = import_t output acc in
+      let acc = base_t output acc in
+      let acc = base.f output acc r in
+      let acc = close output acc in
+      close output acc
 
 let unit base = {f = fun output acc unit -> unit_p base output acc unit}
 let file base = {f = fun output acc unit -> file_p base output acc unit}
