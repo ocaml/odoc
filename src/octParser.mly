@@ -189,8 +189,8 @@ let html_close_to_string t = "</" ^ t ^ ">"
 /* Main symbol */
 
 main:
-| text              { Cinfo(text $1, []) }
-| text tags         { Cinfo(text $1, List.rev $2) }
+| text              { (text $1, []) }
+| text tags         { (text $1, List.rev $2) }
 ;
 
 /* Tags */

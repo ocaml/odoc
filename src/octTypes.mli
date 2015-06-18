@@ -75,6 +75,4 @@ type tag =
   | Custom of string * text (** custom tag *)
 
 (** A special comment *)
-type t =
-    Cinfo of text * tag list
-  | Cstop
+type t = text * tag list

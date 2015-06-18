@@ -152,14 +152,10 @@ let tag i ppf x =
       line i ppf "Custom %s\n" s;
       text i ppf txt
 
-let documentation i ppf x =
-  match x with
-  | Cinfo(txt, tags) ->
-      line i ppf "Cinfo\n";
-      text (i+1) ppf txt;
-      list (i+1) tag ppf tags
-  | Cstop ->
-      line i ppf "Cstop\n"
+let documentation i ppf (txt, tags) =
+  line i ppf "Cinfo\n";
+  text (i+1) ppf txt;
+  list (i+1) tag ppf tags
 
 let pp ppf x =
   documentation 0 ppf x
