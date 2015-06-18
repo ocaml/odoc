@@ -15,4 +15,3 @@ build: [
   [make "install"]
 ]
 remove: ["ocamlfind" "remove" "doc-ock-xml"]
-available: [ compiler = "4.02.1+doc" ]

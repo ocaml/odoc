@@ -55,6 +55,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "class_type" Parser.CLASS_TYPE;
     Hashtbl.add plain_tags "closed" Parser.CLOSED;
     Hashtbl.add plain_tags "code" Parser.CODE;
+    Hashtbl.add plain_tags "column" Parser.COLUMN;
     Hashtbl.add plain_tags "comment" Parser.COMMENT;
     Hashtbl.add plain_tags "constant" Parser.CONSTANT;
     Hashtbl.add plain_tags "constraint" Parser.CONSTRAINT;
@@ -67,12 +68,14 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "element" Parser.ELEMENT;
     Hashtbl.add plain_tags "emphasize" Parser.EMPHASIZE;
     Hashtbl.add plain_tags "enum" Parser.ENUM;
+    Hashtbl.add plain_tags "error" Parser.ERROR;
     Hashtbl.add plain_tags "exception" Parser.EXCEPTION;
     Hashtbl.add plain_tags "extensible" Parser.EXTENSIBLE;
     Hashtbl.add plain_tags "extension" Parser.EXTENSION;
     Hashtbl.add plain_tags "external" Parser.EXTERNAL;
     Hashtbl.add plain_tags "field" Parser.FIELD;
     Hashtbl.add plain_tags "file" Parser.FILE;
+    Hashtbl.add plain_tags "filename" Parser.FILENAME;
     Hashtbl.add plain_tags "fixed" Parser.FIXED;
     Hashtbl.add plain_tags "functor" Parser.FUNCTOR;
     Hashtbl.add plain_tags "identifier" Parser.IDENTIFIER;
@@ -87,7 +90,9 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "label" Parser.LABEL;
     Hashtbl.add plain_tags "left" Parser.LEFT;
     Hashtbl.add plain_tags "link" Parser.LINK;
+    Hashtbl.add plain_tags "line" Parser.LINE;
     Hashtbl.add plain_tags "list" Parser.LIST;
+    Hashtbl.add plain_tags "location" Parser.LOCATION;
     Hashtbl.add plain_tags "method" Parser.METHOD;
     Hashtbl.add plain_tags "module" Parser.MODULE;
     Hashtbl.add plain_tags "modules" Parser.MODULES;
@@ -98,6 +103,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "neg" Parser.NEG;
     Hashtbl.add plain_tags "newline" Parser.NEWLINE;
     Hashtbl.add plain_tags "object" Parser.OBJECT;
+    Hashtbl.add plain_tags "offset" Parser.OFFSET;
     Hashtbl.add plain_tags "open" Parser.OPEN;
     Hashtbl.add plain_tags "optional" Parser.OPTIONAL;
     Hashtbl.add plain_tags "package" Parser.PACKAGE;
@@ -106,6 +112,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "poly" Parser.POLY;
     Hashtbl.add plain_tags "poly_variant" Parser.POLY_VARIANT;
     Hashtbl.add plain_tags "pos" Parser.POS;
+    Hashtbl.add plain_tags "position" Parser.POSITION;
     Hashtbl.add plain_tags "precode" Parser.PRECODE;
     Hashtbl.add plain_tags "primitive" Parser.PRIMITIVE;
     Hashtbl.add plain_tags "private" Parser.PRIVATE;

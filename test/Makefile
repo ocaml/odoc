@@ -24,10 +24,10 @@ coverage-cmt: coverage.cmt testCmt
 	./testCmt coverage.cmt
 
 coverage.cmi coverage.cmti: coverage.mli
-	$(OCAMLC) -bin-annot -doc -c coverage.mli
+	$(OCAMLC) -bin-annot -c coverage.mli
 
 coverage.cmt: coverage.ml
-	$(OCAMLC) -bin-annot -doc -c coverage.ml
+	$(OCAMLC) -bin-annot -c coverage.ml
 
 testCmi: testCmi.ml
 	$(OCAMLC) $(DOC_OCK_FLAGS) $< -o $@

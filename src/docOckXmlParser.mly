@@ -78,6 +78,7 @@ let relax_class_type_reference cltyp =
 %token CLASS_TYPE
 %token CLOSED
 %token CODE
+%token COLUMN
 %token COMMENT
 %token CONSTANT
 %token CONSTRAINT
@@ -90,12 +91,14 @@ let relax_class_type_reference cltyp =
 %token ELEMENT
 %token EMPHASIZE
 %token ENUM
+%token ERROR
 %token EXCEPTION
 %token EXTENSIBLE
 %token EXTENSION
 %token EXTERNAL
 %token FIELD
 %token FILE
+%token FILENAME
 %token FIXED
 %token FUNCTOR
 %token IDENTIFIER
@@ -109,8 +112,10 @@ let relax_class_type_reference cltyp =
 %token ITEM
 %token LABEL
 %token LEFT
+%token LINE
 %token LINK
 %token LIST
+%token LOCATION
 %token METHOD
 %token MODULE
 %token MODULES
@@ -121,6 +126,7 @@ let relax_class_type_reference cltyp =
 %token NEG
 %token NEWLINE
 %token OBJECT
+%token OFFSET
 %token OPEN
 %token OPTIONAL
 %token PACK
@@ -130,6 +136,7 @@ let relax_class_type_reference cltyp =
 %token POLY
 %token POLY_VARIANT
 %token POS
+%token POSITION
 %token PRECODE
 %token PRIMITIVE
 %token PRIVATE
@@ -807,15 +814,55 @@ tag:
   | tags = tag*
       { tags }
 
+int:
+| data = Data
+    { try
+        int_of_string data
+      with Failure _ -> $syntaxerror }
+
+line:
+| LINE line = int CLOSE
+    { line }
+
+column:
+| COLUMN column = int CLOSE
+    { column }
+
+position:
+| POSITION line = line column = column CLOSE
+    { Documentation.Error.Position.{line; column} }
+
+offset:
+| OFFSET start = position finish = position CLOSE
+    { Documentation.Error.Offset.{start; finish} }
+
+filename:
+| FILENAME data = Data CLOSE
+    { data }
+
+location:
+| LOCATION filename = filename
+    start = position finish = position CLOSE
+      { Documentation.Error.Location.{filename; start; finish} }
+
+doc_error:
+| ERROR origin = element_identifier offset = offset
+    location = location? message = Data CLOSE
+      { Documentation.Error.{origin; offset; location; message} }
+
 doc:
 | (* empty *)
     { DocOckAttrs.empty }
 | DOC text = text tags = tags CLOSE
-    { Documentation.{text; tags} }
+    { Documentation.(Ok {text; tags}) }
+| DOC err = doc_error CLOSE
+    { Documentation.Error err }
 
 comment:
   | COMMENT text = text tags = tags CLOSE
-      { Documentation.(Documentation {text; tags}) }
+      { Documentation.(Documentation (Ok {text; tags})) }
+  | COMMENT err = doc_error CLOSE
+      { Documentation.(Documentation (Error err)) }
   | STOP CLOSE
       { Documentation.Stop }
 

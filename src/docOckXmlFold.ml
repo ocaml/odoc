@@ -65,6 +65,9 @@ let closed_t output acc =
 let code_t output acc =
   output acc (`El_start ((ns, "code"), []))
 
+let column_t output acc =
+  output acc (`El_start ((ns, "column"), []))
+
 let comment_t output acc =
   output acc (`El_start ((ns, "comment"), []))
 
@@ -101,6 +104,9 @@ let emphasize_t output acc =
 let enum_t output acc =
   output acc (`El_start ((ns, "enum"), []))
 
+let error_t output acc =
+  output acc (`El_start ((ns, "error"), []))
+
 let exception_t output acc =
   output acc (`El_start ((ns, "exception"), []))
 
@@ -118,6 +124,9 @@ let field_t output acc =
 
 let file_t output acc =
   output acc (`El_start ((ns, "file"), []))
+
+let filename_t output acc =
+  output acc (`El_start ((ns, "filename"), []))
 
 let fixed_t output acc =
   output acc (`El_start ((ns, "fixed"), []))
@@ -158,11 +167,17 @@ let label_t output acc =
 let left_t output acc =
   output acc (`El_start ((ns, "left"), []))
 
+let line_t output acc =
+  output acc (`El_start ((ns, "line"), []))
+
 let link_t output acc =
   output acc (`El_start ((ns, "link"), []))
 
 let list_t output acc =
   output acc (`El_start ((ns, "list"), []))
+
+let location_t output acc =
+  output acc (`El_start ((ns, "location"), []))
 
 let method_t output acc =
   output acc (`El_start ((ns, "method"), []))
@@ -194,6 +209,9 @@ let newline_t output acc =
 let object_t output acc =
   output acc (`El_start ((ns, "object"), []))
 
+let offset_t output acc =
+  output acc (`El_start ((ns, "offset"), []))
+
 let open_t output acc =
   output acc (`El_start ((ns, "open"), []))
 
@@ -220,6 +238,9 @@ let poly_variant_t output acc =
 
 let pos_t output acc =
   output acc (`El_start ((ns, "pos"), []))
+
+let position_t output acc =
+  output acc (`El_start ((ns, "position"), []))
 
 let precode_t output acc =
   output acc (`El_start ((ns, "precode"), []))
@@ -389,6 +410,9 @@ let rec list p base output acc l =
   | x :: xs ->
     let acc = p base output acc x in
     list p base output acc xs
+
+let int t output acc i =
+  simple t output acc (string_of_int i)
 
 (* Non-terminals *)
 
@@ -715,21 +739,60 @@ and tag_p base output acc tg =
 and tags_p base output acc tgs =
   list tag_p base output acc tgs
 
+let position_p base output acc offset =
+  let open Documentation.Error.Position in
+  let acc = position_t output acc in
+  let acc = int line_t output acc offset.line in
+  let acc = int column_t output acc offset.column in
+  close output acc
+
+let offset_p base output acc offset =
+  let open Documentation.Error.Offset in
+  let acc = offset_t output acc in
+  let acc = position_p base output acc offset.start in
+  let acc = position_p base output acc offset.finish in
+  close output acc
+
+let location_p base output acc loc =
+  let open Documentation.Error.Location in
+  let acc = location_t output acc in
+  let acc = simple filename_t output acc loc.filename in
+  let acc = position_p base output acc loc.start in
+  let acc = position_p base output acc loc.finish in
+  close output acc
+
+let doc_error_p base output acc err =
+  let open Documentation.Error in
+  let acc = error_t output acc in
+  let acc = identifier_p base output acc err.origin in
+  let acc = offset_p base output acc err.offset in
+  let acc = opt location_p base output acc err.location in
+  let acc = data output acc err.message in
+  close output acc
+
 let doc_p base output acc =
   let open Documentation in function
-    | {text = []; tags = []} -> acc
-    | {text; tags} ->
+    | Ok {text = []; tags = []} -> acc
+    | Ok {text; tags} ->
       let acc = doc_t output acc in
       let acc = text_p base output acc text in
       let acc = tags_p base output acc tags in
       close output acc
+    | Error err ->
+      let acc = doc_t output acc in
+      let acc = doc_error_p base output acc err in
+      close output acc
 
 let comment_p base output acc =
   let open Documentation in function
-    | Documentation {text; tags} ->
+    | Documentation (Ok {text; tags}) ->
       let acc = comment_t output acc in
       let acc = text_p base output acc text in
       let acc = tags_p base output acc tags in
+      close output acc
+    | Documentation (Error err) ->
+      let acc = comment_t output acc in
+      let acc = doc_error_p base output acc err in
       close output acc
     | Stop -> closed stop_t output acc
 
