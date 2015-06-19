@@ -274,8 +274,11 @@ let tags_labels acc tags = List.fold_left tag_labels acc tags
 
 let documentation_labels acc doc =
   let open Documentation in
-  let acc = tags_labels acc doc.tags in
-    text_labels acc doc.text
+  match doc with
+  | Ok body ->
+      let acc = tags_labels acc body.tags in
+        text_labels acc body.text
+  | Error _ -> acc
 
 let comment_labels acc comment =
   let open Documentation in

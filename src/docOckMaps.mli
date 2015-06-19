@@ -1,9 +1,27 @@
+(*
+ * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
+
 open DocOckPaths
 open DocOckTypes
 
 class virtual ['a] documentation : object
 
   method virtual identifier_label : 'a Identifier.label -> 'a Identifier.label
+
+  method virtual identifier_any : 'a Identifier.any -> 'a Identifier.any
 
   method virtual reference_module : 'a Reference.module_ ->
     'a Reference.module_
@@ -123,6 +141,28 @@ class virtual ['a] documentation : object
 
   method documentation_tags : 'a Documentation.tag list ->
     'a Documentation.tag list
+
+  method documentation_error_position : Documentation.Error.Position.t ->
+    Documentation.Error.Position.t
+
+  method documentation_error_position_column : int -> int
+
+  method documentation_error_position_line : int -> int
+
+  method documentation_error_offset : Documentation.Error.Offset.t ->
+    Documentation.Error.Offset.t
+
+  method documentation_error_location : Documentation.Error.Location.t ->
+    Documentation.Error.Location.t
+
+  method documentation_error_location_filename : string -> string
+
+  method documentation_error : 'a Documentation.Error.t ->
+    'a Documentation.Error.t
+
+  method documentation_error_message : string -> string
+
+  method documentation_body : 'a Documentation.body -> 'a Documentation.body
 
   method documentation : 'a Documentation.t -> 'a Documentation.t
 

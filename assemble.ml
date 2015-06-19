@@ -17,7 +17,7 @@
 open Assemblage
 
 (* OCamlfind packages *)
-let pkgs = [pkg "compiler-libs.common"]
+let pkgs = [pkg "compiler-libs.common"; pkg "octavius"]
 
 (* Doc flag *)
 let doc = Flags.( v (`Compile `Intf) ["-doc"] )
@@ -31,7 +31,9 @@ let docOckPaths = unit "docOckPaths" (`Path ["src"])
 let docOckTypes = unit "docOckTypes" (`Path ["src"])
 let docOckMaps = unit "docOckMaps" (`Path ["src"])
 let docOckPredef = unit "docOckPredef" (`Path ["src"])
-let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
+let docOckNameEnv = unit "docOckNameEnv" (`Path ["src"])
+let docOckIdentEnv = unit "docOckIdentEnv" (`Path ["src"])
+let docOckLookup = unit "docOckLookup" (`Path ["src"])
 let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
 let docOckCmi = unit "docOckCmi" (`Path ["src"])
 let docOckCmti = unit "docOckCmti" (`Path ["src"])
@@ -46,7 +48,9 @@ let units =
     docOckTypes;
     docOckMaps;
     docOckPredef;
-    docOckEnvironment;
+    docOckNameEnv;
+    docOckIdentEnv;
+    docOckLookup;
     docOckAttrs;
     docOckCmi;
     docOckCmti;

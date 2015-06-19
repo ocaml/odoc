@@ -25,7 +25,7 @@ open DocOckPaths
 open DocOckTypes
 open DocOckAttrs
 
-module Env = DocOckEnvironment
+module Env = DocOckIdentEnv
 
 let opt_map f = function
   | None -> None
@@ -45,25 +45,6 @@ let parenthesise name =
 
 let read_core_type env ctyp =
   DocOckCmi.read_type_expr env ctyp.ctyp_type
-
-let rec add_pattern parent pat env =
-  match pat.pat_desc with
-  | Tpat_any -> env
-  | Tpat_var(id, _) -> Env.add_value parent id env
-  | Tpat_alias(_, id, _) -> Env.add_value parent id env
-  | Tpat_constant _ -> env
-  | Tpat_tuple pats ->
-      List.fold_right (add_pattern parent) pats env
-  | Tpat_construct(_, _, pats) ->
-      List.fold_right (add_pattern parent) pats env
-  | Tpat_variant(_, None, _) -> env
-  | Tpat_variant(_, Some pat, _) -> add_pattern parent pat env
-  | Tpat_record(pats, _) ->
-      List.fold_right (fun (_, _, pat) -> add_pattern parent pat) pats env
-  | Tpat_array pats ->
-      List.fold_right (add_pattern parent) pats env
-  | Tpat_or(pat, _, _) -> add_pattern parent pat env
-  | Tpat_lazy pat -> add_pattern parent pat env
 
 let rec read_pattern env parent doc pat =
   let open Signature in
@@ -103,25 +84,11 @@ let rec read_pattern env parent doc pat =
     | Tpat_lazy pat ->
         read_pattern env parent doc pat
 
-let add_value_binding parent vb env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container vb.vb_attributes env in
-    add_pattern parent vb.vb_pat env
-
 let read_value_binding env parent vb =
   let open Signature in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container vb.vb_attributes in
+  let doc = read_attributes container parent vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
-
-let add_value_bindings parent vbs env =
-  let container = Identifier.parent_of_signature parent in
-    List.fold_right
-      (fun vb env ->
-         let env = add_comments container vb.vb_attributes env in
-         let env = add_value_binding parent vb env in
-           env)
-      vbs env
 
 let read_value_bindings env parent vbs =
   let container = Identifier.parent_of_signature parent in
@@ -129,7 +96,7 @@ let read_value_bindings env parent vbs =
     List.fold_left
       (fun acc vb ->
          let open Signature in
-         let comments = read_comments env container vb.vb_attributes in
+         let comments = read_comments container vb.vb_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let vb = read_value_binding env parent vb in
           List.rev_append vb (List.rev_append comments acc))
@@ -141,7 +108,7 @@ let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env tyext.tyext_path in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container tyext.tyext_attributes in
+  let doc = read_attributes container parent tyext.tyext_attributes in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
@@ -169,7 +136,7 @@ let read_type_extension env parent tyext =
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let container = Identifier.parent_of_class_signature parent in
-  let doc = read_attributes env container ctf.ctf_attributes in
+  let doc = read_attributes container parent ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -191,7 +158,7 @@ let rec read_class_type_field env parent ctf =
   | Tctf_inherit cltyp ->
       Some (Inherit (read_class_signature env parent [] cltyp))
   | Tctf_attribute attr ->
-      match read_comment env container attr with
+      match read_comment container attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -204,11 +171,6 @@ and read_class_signature env parent params cltyp =
           Constr(p, params)
     | Tcty_signature csig ->
         let open ClassSignature in
-        let env =
-          List.fold_right
-            (DocOckCmti.add_class_type_field parent)
-            csig.csig_fields env
-        in
         let self =
           DocOckCmi.read_self_type env csig.csig_self.ctyp_type
         in
@@ -243,59 +205,10 @@ let rec read_class_type env parent params cty =
       let res = read_class_type env parent params res in
         Arrow(lbl, arg, res)
 
-let add_class_field parent cf env =
-  let container = Identifier.parent_of_class_signature parent in
-  let env = add_attributes container cf.cf_attributes env in
-  match cf.cf_desc with
-  | Tcf_val({txt = name}, _, _, _, _) ->
-      let env = Env.add_instance_variable parent name env in
-        env
-  | Tcf_method({txt = name}, _, _) ->
-      let env = Env.add_method parent name env in
-        env
-  | Tcf_constraint _ -> env
-  | Tcf_inherit(_, _, _, vars, methods) ->
-      let env =
-        List.fold_right
-          (fun (name, _) env -> Env.add_instance_variable parent name env)
-          vars env
-      in
-      let env =
-        List.fold_right
-          (fun (name, _) env -> Env.add_method parent name env)
-          methods env
-      in
-        env
-  | Tcf_attribute attr -> add_comment container attr env
-  | Tcf_initializer _ -> env
-
-
-let add_class_declaration parent cld env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container cld.ci_attributes env in
-  let env =
-    Env.add_class parent
-      cld.ci_id_class
-      cld.ci_id_class_type
-      cld.ci_id_object
-      cld.ci_id_typesharp
-      env
-  in
-    env
-
-let add_class_declarations parent clds env =
-  let container = Identifier.parent_of_signature parent in
-  List.fold_right
-    (fun cld env ->
-       let env = add_comments container cld.ci_attributes env in
-       let env = add_class_declaration parent cld env in
-         env)
-      clds env
-
 let rec read_class_field env parent cf =
   let open ClassSignature in
   let container = Identifier.parent_of_class_signature parent in
-  let doc = read_attributes env container cf.cf_attributes in
+  let doc = read_attributes container parent cf.cf_attributes in
   match cf.cf_desc with
   | Tcf_val({txt = name}, mutable_, _, kind, _) ->
       let open InstanceVariable in
@@ -328,7 +241,7 @@ let rec read_class_field env parent cf =
       Some (Inherit (read_class_structure env parent [] cl))
   | Tcf_initializer _ -> None
   | Tcf_attribute attr ->
-      match read_comment env container attr with
+      match read_comment container attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -339,11 +252,6 @@ and read_class_structure env parent params cl =
         DocOckCmi.read_class_signature env parent params cl.cl_type
     | Tcl_structure cstr ->
         let open ClassSignature in
-        let env =
-          List.fold_right
-            (add_class_field parent)
-            cstr.cstr_fields env
-        in
         let self = DocOckCmi.read_self_type env cstr.cstr_self.pat_type in
         let constraints =
           DocOckCmi.read_type_constraints env params
@@ -393,7 +301,7 @@ let read_class_declaration env parent cld =
   let name = parenthesise (Ident.name cld.ci_id_class) in
   let id = Identifier.Class(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container cld.ci_attributes in
+  let doc = read_attributes container id cld.ci_attributes in
     DocOckCmi.mark_class_declaration cld.ci_decl;
     let virtual_ = (cld.ci_virt = Virtual) in
     let clparams =
@@ -413,76 +321,13 @@ let read_class_declarations env parent clds =
     List.fold_left
       (fun acc cld ->
          let open Signature in
-         let comments = read_comments env container cld.ci_attributes in
+         let comments = read_comments container cld.ci_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let cld = read_class_declaration env parent cld in
            (Class cld) :: (List.rev_append comments acc))
       [] clds
   in
     List.rev items
-
-let add_module_binding parent mb env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container mb.mb_attributes env in
-  let env = Env.add_module parent mb.mb_id env in
-    env
-
-let add_module_bindings parent mbs env =
-  let container = Identifier.parent_of_signature parent in
-  List.fold_right
-    (fun mb env ->
-       let env = add_comments container mb.mb_attributes env in
-       let env = add_module_binding parent mb env in
-         env)
-      mbs env
-
-let add_structure_item parent item env =
-  match item.str_desc with
-  | Tstr_eval _ -> env
-  | Tstr_value(_, vbs) -> add_value_bindings parent vbs env
-  | Tstr_primitive vd -> DocOckCmti.add_value_description parent vd env
-  | Tstr_type decls -> DocOckCmti.add_type_declarations parent decls env
-  | Tstr_typext tyext -> DocOckCmti.add_type_extension parent tyext env
-  | Tstr_exception ext -> DocOckCmti.add_exception parent ext env
-  | Tstr_module mb -> add_module_binding parent mb env
-  | Tstr_recmodule mbs -> add_module_bindings parent mbs env
-  | Tstr_modtype mtd -> DocOckCmti.add_module_type_declaration parent mtd env
-  | Tstr_open _ -> env
-  | Tstr_include incl ->
-      let items = incl.incl_type in
-      let rec loop items env =
-        match items with
-        | Sig_value(id, _) :: rest ->
-            Env.add_value parent id (loop rest env)
-        | Sig_type(id, _, _) :: rest ->
-            Env.add_type parent id (loop rest env)
-        | Sig_typext(id, _, (Text_first | Text_next)) :: rest ->
-            Env.add_extension parent id (loop rest env)
-        | Sig_typext(id, _, Text_exception) :: rest ->
-            Env.add_exception parent id (loop rest env)
-        | Sig_module(id, _, _) :: rest ->
-            Env.add_module parent id (loop rest env)
-        | Sig_modtype(id, _) :: rest ->
-            Env.add_module_type parent id (loop rest env)
-        | Sig_class(id, cl, _) :: Sig_class_type(ty_id, _, _)
-          :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
-            Env.add_class parent id ty_id obj_id cl_id (loop rest env)
-        | Sig_class _ :: _ -> assert false
-        | Sig_class_type(id, cltyp, _) :: Sig_type(obj_id, _, _)
-          :: Sig_type(cl_id, _, _) :: rest ->
-            Env.add_class_type parent id obj_id cl_id (loop rest env)
-        | Sig_class_type _ :: _ -> assert false
-        | [] -> env
-      in
-        loop items env
-  | Tstr_class cls ->
-      let cls = List.map (fun (cl, _, _) -> cl) cls in
-        add_class_declarations parent cls env
-  | Tstr_class_type cltyps ->
-      let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in
-        DocOckCmti.add_class_type_declarations parent cltyps env
-  | Tstr_attribute attr ->
-      add_comment (Identifier.parent_of_signature parent) attr env
 
 let rec read_module_expr env parent pos mexpr =
   let open ModuleType in
@@ -517,7 +362,7 @@ and read_module_binding env parent mb =
   let name = parenthesise (Ident.name mb.mb_id) in
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container mb.mb_attributes in
+  let doc = read_attributes container id mb.mb_attributes in
   let type_ =
     match mb.mb_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
@@ -531,7 +376,7 @@ and read_module_bindings env parent mbs =
     List.fold_left
       (fun acc mb ->
          let open Signature in
-         let comments = read_comments env container mb.mb_attributes in
+         let comments = read_comments container mb.mb_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let mb = read_module_binding env parent mb in
            (Module mb) :: (List.rev_append comments acc))
@@ -574,16 +419,12 @@ and read_structure_item env parent item =
           DocOckCmti.read_class_type_declarations env parent cltyps
     | Tstr_attribute attr ->
         let container = Identifier.parent_of_signature parent in
-          match read_comment env container attr with
+          match read_comment container attr with
           | None -> []
           | Some doc -> [Comment doc]
 
 and read_structure env parent str =
-  let env =
-    List.fold_right
-      (add_structure_item parent)
-      str.str_items env
-  in
+  let env = Env.add_structure_tree_items parent str env in
   let items =
     List.fold_left
       (fun items item ->

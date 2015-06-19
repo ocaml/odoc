@@ -28,28 +28,20 @@ val add_module_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
 val add_type : 'a signature -> Ident.t -> 'a t -> 'a t
 
-val add_constructor : 'a type_ -> Ident.t -> 'a t -> 'a t
-
-val add_field : 'a type_ -> Ident.t -> 'a t -> 'a t
-
-val add_extension : 'a signature -> Ident.t -> 'a t -> 'a t
-
-val add_exception : 'a signature -> Ident.t -> 'a t -> 'a t
-
-val add_value : 'a signature -> Ident.t -> 'a t -> 'a t
-
 val add_class : 'a signature -> Ident.t -> Ident.t -> Ident.t -> Ident.t ->
                   'a t -> 'a t
 
 val add_class_type : 'a signature -> Ident.t -> Ident.t -> Ident.t ->
-                       'a t -> 'a t
+                     'a t -> 'a t
 
-val add_method : 'a class_signature -> string -> 'a t -> 'a t
+val add_signature_type_items : 'a signature -> Types.signature ->
+                                 'a t -> 'a t
 
-val add_instance_variable : 'a class_signature -> string -> 'a t -> 'a t
+val add_signature_tree_items : 'a signature -> Typedtree.signature ->
+                                 'a t -> 'a t
 
-val add_label : 'a parent -> string -> 'a t -> 'a t
-
+val add_structure_tree_items : 'a signature -> Typedtree.structure ->
+                                 'a t -> 'a t
 
 module Path : sig
 
@@ -69,40 +61,5 @@ module Fragment : sig
   val read_module : Longident.t -> 'a DocOckPaths.Fragment.module_
 
   val read_type : Longident.t -> 'a DocOckPaths.Fragment.type_
-
-end
-
-
-module Reference : sig
-
-  open DocOckPaths
-
-  val read_module : 'a t -> string -> 'a Reference.module_
-
-  val read_module_type : 'a t -> string -> 'a Reference.module_type
-
-  val read_type : 'a t -> string -> 'a Reference.type_
-
-  val read_constructor : 'a t -> string -> 'a Reference.constructor
-
-  val read_field : 'a t -> string -> 'a Reference.field
-
-  val read_extension : 'a t -> string -> 'a Reference.extension
-
-  val read_exception : 'a t -> string -> 'a Reference.exception_
-
-  val read_value : 'a t -> string -> 'a Reference.value
-
-  val read_class : 'a t -> string -> 'a Reference.class_
-
-  val read_class_type : 'a t -> string -> 'a Reference.class_type
-
-  val read_method : 'a t -> string -> 'a Reference.method_
-
-  val read_instance_variable : 'a t -> string -> 'a Reference.instance_variable
-
-  val read_label : 'a t -> string -> 'a Reference.label
-
-  val read_element : 'a t -> string -> 'a Reference.any
 
 end

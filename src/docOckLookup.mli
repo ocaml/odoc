@@ -14,30 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
-open TestCommon
-
-let read_file cmti =
-  match read_cmti (fun name _ -> name) cmti with
-  | Not_an_interface ->
-      raise (Error(cmti, "not an interface"))
-  | Wrong_version ->
-      raise (Error(cmti, "wrong OCaml version"))
-  | Corrupted ->
-      raise (Error(cmti, "corrupted"))
-  | Not_a_typedtree ->
-      raise (Error(cmti, "not a typedtree"))
-  | Not_an_implementation ->
-      raise (Error(cmti, "not an implementation"))
-  | Ok intf -> intf
-
-let main () =
-  let files = get_files "cmti" in
-    try
-      test read_file (List.rev files);
-      exit 0
-    with Error(file, msg) ->
-      prerr_endline (file ^ ": " ^ msg);
-      exit 1
-
-let () = main ()
+val lookup : 'a DocOckTypes.Unit.t -> 'a DocOckTypes.Unit.t

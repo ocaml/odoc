@@ -6,6 +6,7 @@ authors: [
 license: "ISC"
 depends: [
   "assemblage"
+  "octavius"
 ]
 build: [
   ["assemblage" "setup" "--dumpast=false"]
@@ -16,4 +17,4 @@ depends: [
   "ocamlfind"
 ]
 remove: ["ocamlfind" "remove" "doc-ock"]
-available: [ compiler = "4.02.1+doc" ]
+available: [ compiler >= "4.02.2" & compiler <= "4.03" ]

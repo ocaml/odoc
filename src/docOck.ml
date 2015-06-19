@@ -59,7 +59,12 @@ let read_cmti root_fn filename =
           | _, _ -> None
         in
         let content = Module items in
-          Ok {id; doc; digest; imports; source; interface; content}
+        let unit =
+          {id; doc; digest; imports;
+           source; interface; content}
+        in
+        let unit = DocOckLookup.lookup unit in
+          Ok unit
       | None -> Corrupted
     end
     | _ -> Not_an_interface
@@ -144,7 +149,12 @@ let read_cmt root_fn filename =
           | _, _ -> None
         in
         let content = Module items in
-          Ok {id; doc; digest; imports; source; interface; content}
+        let unit =
+          {id; doc; digest; imports;
+           source; interface; content}
+        in
+        let unit = DocOckLookup.lookup unit in
+          Ok unit
     | _ -> Not_an_implementation
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_implementation
@@ -169,7 +179,12 @@ let read_cmi root_fn filename =
           let interface = true in
           let source = None in
           let content = Module items in
-            Ok {id; doc; digest; imports; source; interface; content}
+          let unit =
+            {id; doc; digest; imports;
+             source; interface; content}
+          in
+          let unit = DocOckLookup.lookup unit in
+            Ok unit
       | _ -> Corrupted
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface

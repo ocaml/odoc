@@ -36,6 +36,7 @@ class ident = object
   method identifier_constructor x = x
   method identifier_class_type x = x
   method identifier_class x = x
+  method identifier_any x = x
   method fragment_type x = x
   method fragment_module x = x
   inherit [string] DocOckMaps.types

@@ -23,7 +23,7 @@ val read_interface: 'a -> string -> Types.signature ->
 
 val mark_type_expr : Types.type_expr -> unit
 
-val read_type_expr : 'a DocOckEnvironment.t ->
+val read_type_expr : 'a DocOckIdentEnv.t ->
                      Types.type_expr -> 'a DocOckTypes.TypeExpr.t
 
 val mark_type_extension : Types.type_expr list ->
@@ -35,32 +35,32 @@ val read_type_parameter : bool -> Types.Variance.t ->
 
 val mark_class_declaration : Types.class_declaration -> unit
 
-val read_self_type : 'a DocOckEnvironment.t ->
+val read_self_type : 'a DocOckIdentEnv.t ->
                      Types.type_expr -> 'a DocOckTypes.TypeExpr.t option
 
-val read_type_constraints : 'a DocOckEnvironment.t -> Types.type_expr list ->
+val read_type_constraints : 'a DocOckIdentEnv.t -> Types.type_expr list ->
                             ('a DocOckTypes.TypeExpr.t
                              * 'a DocOckTypes.TypeExpr.t) list
 
-val read_class_signature : 'a DocOckEnvironment.t ->
+val read_class_signature : 'a DocOckIdentEnv.t ->
                            'a DocOckPaths.Identifier.class_signature ->
                            Types.type_expr list -> Types.class_type ->
                            'a DocOckTypes.ClassType.expr
 
-val read_class_type : 'a DocOckEnvironment.t ->
+val read_class_type : 'a DocOckIdentEnv.t ->
                       'a DocOckPaths.Identifier.class_signature ->
                       Types.type_expr list -> Types.class_type ->
                       'a DocOckTypes.Class.decl
 
-val read_module_type : 'a DocOckEnvironment.t ->
+val read_module_type : 'a DocOckIdentEnv.t ->
                        'a DocOckPaths.Identifier.signature -> int ->
                        Types.module_type -> 'a DocOckTypes.ModuleType.expr
 
-val read_extension_constructor : 'a DocOckEnvironment.t ->
+val read_extension_constructor : 'a DocOckIdentEnv.t ->
                        'a DocOckPaths.Identifier.signature ->
                        Ident.t -> Types.extension_constructor ->
                        'a DocOckTypes.Extension.Constructor.t
 
-val read_exception : 'a DocOckEnvironment.t ->
+val read_exception : 'a DocOckIdentEnv.t ->
   'a DocOckPaths.Identifier.signature -> Ident.t ->
   Types.extension_constructor -> 'a DocOckTypes.Exception.t

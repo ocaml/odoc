@@ -29,9 +29,7 @@ let read_file cmt =
       raise (Error(cmt, "not a typedtree"))
   | Not_an_implementation ->
       raise (Error(cmt, "not an implementation"))
-  | Pack _ ->
-      raise (Error(cmt, "pack"))
-  | Unit intf -> intf
+  | Ok intf -> intf
 
 let main () =
   let files = get_files "cmt" in

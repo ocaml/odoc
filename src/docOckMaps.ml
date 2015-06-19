@@ -26,6 +26,9 @@ class virtual ['a] documentation = object (self)
   method virtual identifier_label :
     'a Identifier.label -> 'a Identifier.label
 
+  method virtual identifier_any :
+    'a Identifier.any -> 'a Identifier.any
+
   method virtual reference_module :
     'a Reference.module_ -> 'a Reference.module_
 
@@ -316,13 +319,74 @@ class virtual ['a] documentation = object (self)
   method documentation_tags tags =
     list_map self#documentation_tag tags
 
-  method documentation doc =
+  method documentation_error_position pos =
+    let open Documentation.Error.Position in
+    let {line; column} = pos in
+    let line' = self#documentation_error_position_line line in
+    let column' = self#documentation_error_position_column column in
+      if line != line' || column != column' then
+        {line = line'; column = column'}
+      else pos
+
+  method documentation_error_position_line line = line
+  method documentation_error_position_column column = column
+
+  method documentation_error_offset offset =
+    let open Documentation.Error.Offset in
+    let {start; finish} = offset in
+    let start' = self#documentation_error_position start in
+    let finish' = self#documentation_error_position finish in
+      if start != start' || finish != finish' then
+        {start = start'; finish = finish'}
+      else offset
+
+  method documentation_error_location loc =
+    let open Documentation.Error.Location in
+    let {filename; start; finish} = loc in
+    let filename' = self#documentation_error_location_filename filename in
+    let start' = self#documentation_error_position start in
+    let finish' = self#documentation_error_position finish in
+      if filename != filename' || start != start' || finish != finish' then
+        {filename = filename'; start = start'; finish = finish'}
+      else loc
+
+  method documentation_error_location_filename line = line
+
+  method documentation_error err =
+    let open Documentation.Error in
+    let {origin; offset; location; message} = err in
+    let origin' = self#identifier_any origin in
+    let offset' = self#documentation_error_offset offset in
+    let location' = option_map self#documentation_error_location location in
+    let message' = self#documentation_error_message message in
+    if origin != origin' || offset != offset'
+       || location != location' || message != message'
+    then
+      {origin = origin'; offset = offset';
+       location = location'; message = message' }
+    else err
+
+  method documentation_error_message message = message
+
+  method documentation_body body =
     let open Documentation in
-    let {text; tags} = doc in
+    let {text; tags} = body in
     let text' = self#documentation_text text in
     let tags' = self#documentation_tags tags in
       if text != text' || tags != tags' then {text = text'; tags = tags'}
-      else doc
+      else body
+
+  method documentation doc =
+    let open Documentation in
+    match doc with
+    | Ok body ->
+        let body' = self#documentation_body body in
+          if body != body' then Ok body'
+          else doc
+    | Error err ->
+        let err' = self#documentation_error err in
+          if err != err' then Error err'
+          else doc
 
   method documentation_comment comment =
     let open Documentation in

@@ -24,7 +24,7 @@ open DocOckPaths
 open DocOckTypes
 open DocOckAttrs
 
-module Env = DocOckEnvironment
+module Env = DocOckIdentEnv
 
 let opt_map f = function
   | None -> None
@@ -480,18 +480,12 @@ and read_object env fi nm =
       Class (p, params)
   | _ -> assert false
 
-let add_value_description parent id vd env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container vd.val_attributes env in
-  let env = Env.add_value parent id env in
-    env
-
 let read_value_description env parent id vd =
   let open Signature in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Value(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container vd.val_attributes in
+  let doc = read_attributes container id vd.val_attributes in
     mark_value_description vd;
     let type_ = read_type_expr env vd.val_type in
     match vd.val_kind with
@@ -501,50 +495,25 @@ let read_value_description env parent id vd =
           External {External.id; doc; type_; primitives}
     | _ -> assert false
 
-let add_constructor_declaration parent cd env =
-  let container = Identifier.parent_of_datatype parent in
-  let env = add_attributes container cd.cd_attributes env in
-  let env = Env.add_constructor parent cd.cd_id env in
-    env
-
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let name = parenthesise (Ident.name cd.cd_id) in
   let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
-  let doc = read_attributes env container cd.cd_attributes in
+  let doc = read_attributes container id cd.cd_attributes in
   let args = List.map (read_type_expr env) cd.cd_args in
   let res = opt_map (read_type_expr env) cd.cd_res in
     {id; doc; args; res}
-
-let add_label_declaration parent ld env =
-  let container = Identifier.parent_of_datatype parent in
-  let env = add_attributes container ld.ld_attributes env in
-  let env = Env.add_field parent ld.ld_id env in
-    env
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = parenthesise (Ident.name ld.ld_id) in
   let id = Identifier.Field(parent, name) in
   let container = Identifier.parent_of_datatype parent in
-  let doc = read_attributes env container ld.ld_attributes in
+  let doc = read_attributes container id ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_type_expr env ld.ld_type in
     {id; doc; mutable_; type_}
-
-let add_type_kind parent kind env =
-  match kind with
-  | Type_abstract -> env
-  | Type_variant cstrs ->
-      List.fold_right
-        (add_constructor_declaration parent)
-        cstrs env
-  | Type_record(lbls, _) ->
-      List.fold_right
-        (add_label_declaration parent)
-        lbls env
-  | Type_open -> env
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
@@ -590,21 +559,12 @@ let read_type_constraints env params =
        else acc)
     params []
 
-let add_type_declaration parent id decl env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container decl.type_attributes env in
-  let name = parenthesise (Ident.name id) in
-  let id' = Identifier.Type(parent, name) in
-  let env = add_type_kind id' decl.type_kind env in
-  let env = Env.add_type parent id env in
-    env
-
 let read_type_declaration env parent id decl =
   let open TypeDecl in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Type(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container decl.type_attributes in
+  let doc = read_attributes container id decl.type_attributes in
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
@@ -628,18 +588,12 @@ let read_type_declaration env parent id decl =
   let equation = Equation.{params; manifest; constraints; private_} in
     {id; doc; equation; representation}
 
-let add_extension_constructor parent id ext env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container ext.ext_attributes env in
-  let env = Env.add_extension parent id env in
-    env
-
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Extension(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container ext.ext_attributes in
+  let doc = read_attributes container id ext.ext_attributes in
   let args = List.map (read_type_expr env) ext.ext_args in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
     {id; doc; args; res}
@@ -664,25 +618,16 @@ let read_type_extension env parent id ext rest =
       doc; private_;
       constructors; }
 
-let add_exception parent id ext env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container ext.ext_attributes env in
-  let env = Env.add_exception parent id env in
-    env
-
 let read_exception env parent id ext =
   let open Exception in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Exception(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container ext.ext_attributes in
+  let doc = read_attributes container id ext.ext_attributes in
     mark_exception ext;
     let args = List.map (read_type_expr env) ext.ext_args in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
       {id; doc; args; res}
-
-let add_method parent (name, _, _) env =
-  Env.add_method parent name env
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
@@ -693,9 +638,6 @@ let read_method env parent concrete (name, kind, typ) =
   let virtual_ = not (Concr.mem name concrete) in
   let type_ = read_type_expr env typ in
     ClassSignature.Method {id; doc; private_; virtual_; type_}
-
-let add_instance_variable parent (name, _, _, _) env =
-  Env.add_instance_variable parent name env
 
 let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
@@ -725,6 +667,13 @@ let rec read_class_signature env parent params =
       end
   | Cty_signature csig ->
       let open ClassSignature in
+      let self = read_self_type env csig.csig_self in
+      let constraints = read_type_constraints env params in
+      let constraints =
+        List.map
+          (fun (typ1, typ2) -> Constraint(typ1, typ2))
+          constraints
+      in
       let instance_variables =
         Vars.fold
           (fun name (mutable_, virtual_, typ) acc ->
@@ -736,19 +685,6 @@ let rec read_class_signature env parent params =
       in
       let methods =
         List.filter (fun (name, _, _) -> name <> Btype.dummy_method) methods
-      in
-      let env =
-        List.fold_right
-          (add_instance_variable parent)
-          instance_variables env
-      in
-      let env = List.fold_right (add_method parent) methods env in
-      let self = read_self_type env csig.csig_self in
-      let constraints = read_type_constraints env params in
-      let constraints =
-        List.map
-          (fun (typ1, typ2) -> Constraint(typ1, typ2))
-          constraints
       in
       let instance_variables =
         List.map (read_instance_variable env parent) instance_variables
@@ -780,18 +716,12 @@ let rec read_virtual = function
       in
         virtual_method || virtual_instance_variable
 
-let add_class_type_declaration parent id obj_id cl_id cltd env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container cltd.clty_attributes env in
-  let env = Env.add_class_type parent id obj_id cl_id env in
-    env
-
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.ClassType(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container cltd.clty_attributes in
+  let doc = read_attributes container id cltd.clty_attributes in
     mark_class_type_declaration cltd;
     let params =
       List.map2
@@ -822,18 +752,12 @@ let rec read_class_type env parent params =
       let cty = read_class_type env parent params cty in
         Arrow(lbl, arg, cty)
 
-let add_class_declaration parent id ty_id obj_id cl_id cld env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container cld.cty_attributes env in
-  let env = Env.add_class parent id ty_id obj_id cl_id env in
-    env
-
 let read_class_declaration env parent id cld =
   let open Class in
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Class(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container cld.cty_attributes in
+  let doc = read_attributes container id cld.cty_attributes in
     mark_class_declaration cld;
     let params =
       List.map2
@@ -845,52 +769,6 @@ let read_class_declaration env parent id cld =
     in
     let virtual_ = cld.cty_new = None in
       { id; doc; virtual_; params; type_ }
-
-let add_module_type_declaration parent id mtd env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container mtd.mtd_attributes env in
-  let env = Env.add_module_type parent id env in
-    env
-
-let add_module_declaration parent id md env =
-  let container = Identifier.parent_of_signature parent in
-  let env = add_attributes container md.md_attributes env in
-  let env = Env.add_module parent id env in
-    env
-
-let rec add_signature_items parent items env =
-  match items with
-  | Sig_value(id, vd) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_value_description parent id vd env
-  | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
-      add_signature_items parent rest env
-  | Sig_type(id, decl, _) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_type_declaration parent id decl env
-  | Sig_typext(id, tyext, (Text_first | Text_next)) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_extension_constructor parent id tyext env
-  | Sig_typext(id, ext, Text_exception) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_exception parent id ext env
-  | Sig_module(id, md, _) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_module_declaration parent id md env
-  | Sig_modtype(id, mtd) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_module_type_declaration parent id mtd env
-  | Sig_class(id, cl, _) :: Sig_class_type(ty_id, _, _)
-      :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_class_declaration parent id ty_id obj_id cl_id cl env
-  | Sig_class _ :: _ -> assert false
-  | Sig_class_type(id, cltyp, _) :: Sig_type(obj_id, _, _)
-    :: Sig_type(cl_id, _, _) :: rest ->
-      let env = add_signature_items parent rest env in
-        add_class_type_declaration parent id obj_id cl_id cltyp env
-  | Sig_class_type _ :: _ -> assert false
-  | [] -> env
 
 let rec read_module_type env parent pos mty =
   let open ModuleType in
@@ -917,7 +795,7 @@ and read_module_type_declaration env parent id mtd =
   let name = parenthesise (Ident.name id) in
   let id = Identifier.ModuleType(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container mtd.mtd_attributes in
+  let doc = read_attributes container id mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
     {id; doc; expr}
 
@@ -926,7 +804,7 @@ and read_module_declaration env parent id md =
   let name = parenthesise (Ident.name id) in
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
-  let doc = read_attributes env container md.md_attributes in
+  let doc = read_attributes container id md.md_attributes in
   let type_ =
     match md.md_type with
     | Mty_alias p -> Alias (Env.Path.read_module env p)
@@ -935,7 +813,7 @@ and read_module_declaration env parent id md =
     {id; doc; type_}
 
 and read_signature env parent items =
-  let env = add_signature_items parent items env in
+  let env = Env.add_signature_type_items parent items env in
   let rec loop acc items =
     let open Signature in
     match items with

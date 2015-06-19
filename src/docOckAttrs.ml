@@ -14,63 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Documentation
+open Octavius.Types
 open DocOckTypes.Documentation
-
-module Env = DocOckEnvironment
 
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
-
-let rec add_text_element parent (elem : Documentation.text_element) env =
-  match elem with
-  | Raw _ | Code _ | PreCode _ | Verbatim _
-  | Newline | Special_ref _ | Target _ | Ref(_, _, None) -> env
-  | Style(_, txt) | Ref(_, _, Some txt) -> add_text parent txt env
-  | List l -> List.fold_right (add_text parent) l env
-  | Enum l -> List.fold_right (add_text parent) l env
-  | Title(_, l, txt) ->
-      let env = add_text parent txt env in
-        match l with
-        | None -> env
-        | Some name -> Env.add_label parent name env
-
-and add_text parent txt env =
-  List.fold_right (add_text_element parent) txt env
-
-let add_tag parent (tag: Documentation.tag) env =
-  match tag with
-  | Author _ | Version _ | Since _ -> env
-  | See(_, txt) | Before(_, txt) | Deprecated txt
-  | Param(_, txt) | Raised_exception(_, txt)
-  | Return_value txt | Custom (_, txt) -> add_text parent txt env
-
-let add_attribute parent attr env =
-  let open Parsetree in
-  let open Location in
-  match attr with
-  | ({txt = "doc"}, PDoc(Cinfo(text, tags), _)) ->
-      let env = add_text parent text env in
-      let env = List.fold_right (add_tag parent) tags env in
-        env
-  | _ -> env
-
-let add_attributes parent attrs env =
-  List.fold_right (add_attribute parent) attrs env
-
-let add_comment parent attr env =
-  let open Parsetree in
-  let open Location in
-    match attr with
-    | ({txt = "comment"}, PDoc(Cinfo(text, tags), _)) ->
-        let env = add_text parent text env in
-        let env = List.fold_right (add_tag parent) tags env in
-          env
-    | _ -> env
-
-let add_comments parent attrs env =
-  List.fold_right (add_comment parent) attrs env
 
 let read_style = function
   | SK_bold -> Bold
@@ -83,54 +32,55 @@ let read_style = function
   | SK_subscript -> Subscript
   | SK_custom s -> Custom s
 
-let read_reference env rk s =
+let read_longident s =
+  let open DocOckPaths.Reference in
+  let rec read_parent lid =
+    match lid with
+    | Longident.Lident s -> Root s
+    | Longident.Ldot(lid, s) -> Dot(read_parent lid, s)
+    | Longident.Lapply(_, _) -> assert false
+  in
+  match Longident.parse s with
+  | Longident.Lident s -> Root s
+  | Longident.Ldot(lid, s) -> Dot(read_parent lid, s)
+  | Longident.Lapply(_, _) -> assert false
+
+let read_reference rk s =
   match rk with
-  | RK_module ->
-      Module (Env.Reference.read_module env s)
-  | RK_module_type ->
-      ModuleType (Env.Reference.read_module_type env s)
-  | RK_type ->
-      Type (Env.Reference.read_type env s)
-  | RK_exception ->
-      Exception (Env.Reference.read_exception env s)
-  | RK_recfield ->
-      Field (Env.Reference.read_field env s)
-  | RK_const ->
-      Constructor (Env.Reference.read_constructor env s)
-  | RK_value ->
-      Value (Env.Reference.read_value env s)
-  | RK_class ->
-      Class (Env.Reference.read_class env s)
-  | RK_class_type ->
-      ClassType (Env.Reference.read_class_type env s)
-  | RK_attribute ->
-      InstanceVariable (Env.Reference.read_instance_variable env s)
-  | RK_method ->
-      Method (Env.Reference.read_method env s)
-  | RK_element -> Element (Env.Reference.read_element env s)
-  | RK_section ->
-      Section (Env.Reference.read_label env s)
+  | RK_module -> Module (read_longident s)
+  | RK_module_type -> ModuleType (read_longident s)
+  | RK_type -> Type (read_longident s)
+  | RK_exception -> Exception (read_longident s)
+  | RK_recfield -> Field (read_longident s)
+  | RK_const -> Constructor (read_longident s)
+  | RK_value -> Value (read_longident s)
+  | RK_class -> Class (read_longident s)
+  | RK_class_type -> ClassType (read_longident s)
+  | RK_attribute -> InstanceVariable (read_longident s)
+  | RK_method -> Method (read_longident s)
+  | RK_element -> Element (read_longident s)
+  | RK_section -> Section (read_longident s)
   | RK_link -> Link s
   | RK_custom k -> Custom(k, s)
 
-let read_special_reference env = function
-  | SRK_module_list(mds) ->
-      Modules (List.map (Env.Reference.read_module env) mds)
+let read_special_reference = function
+  | SRK_module_list mds ->
+      Modules (List.map read_longident mds)
   | SRK_index_list -> Index
 
-let rec read_text_element env parent
-  : Documentation.text_element -> 'a text_element =
+let rec read_text_element parent
+  : Octavius.Types.text_element -> 'a text_element =
   function
   | Raw s -> Raw s
   | Code s -> Code s
   | PreCode s -> PreCode s
   | Verbatim s -> Verbatim s
-  | Style(sk, txt) -> Style(read_style sk, read_text env parent txt)
-  | List l -> List (List.map (read_text env parent) l)
-  | Enum l -> Enum (List.map (read_text env parent) l)
+  | Style(sk, txt) -> Style(read_style sk, read_text parent txt)
+  | List l -> List (List.map (read_text parent) l)
+  | Enum l -> Enum (List.map (read_text parent) l)
   | Newline -> Newline
   | Title(i, l, txt) -> begin
-      let txt = read_text env parent txt in
+      let txt = read_text parent txt in
         match l with
         | None -> Title(i, None, txt)
         | Some name ->
@@ -138,11 +88,11 @@ let rec read_text_element env parent
               Title(i, Some id, txt)
     end
   | Ref(rk, s, txt) ->
-      Reference(read_reference env rk s, opt_map (read_text env parent) txt)
-  | Special_ref srk -> Special (read_special_reference env srk)
+      Reference(read_reference rk s, opt_map (read_text parent) txt)
+  | Special_ref srk -> Special (read_special_reference srk)
   | Target (target, code) -> Target (target, code)
 
-and read_text env parent txt = List.map (read_text_element env parent) txt
+and read_text parent txt = List.map (read_text_element parent) txt
 
 let read_see = function
   | See_url s -> Url s
@@ -150,54 +100,162 @@ let read_see = function
   | See_doc s -> Doc s
 
 
-let read_tag env parent : Documentation.tag -> 'a tag = function
+let read_tag parent : Octavius.Types.tag -> 'a tag = function
   | Author s -> Author s
   | Version v -> Version v
-  | See (r, t) -> See (read_see r, read_text env parent t)
+  | See (r, t) -> See (read_see r, read_text parent t)
   | Since s -> Since s
-  | Before (s, t) -> Before (s, read_text env parent t)
-  | Deprecated t -> Deprecated (read_text env parent t)
-  | Param (s, t) -> Param (s, read_text env parent t)
-  | Raised_exception (s, t) -> Raise (s, read_text env parent t)
-  | Return_value t -> Return (read_text env parent t)
-  | Custom (s, t) -> Tag (s, read_text env parent t)
+  | Before (s, t) -> Before (s, read_text parent t)
+  | Deprecated t -> Deprecated (read_text parent t)
+  | Param (s, t) -> Param (s, read_text parent t)
+  | Raised_exception (s, t) -> Raise (s, read_text parent t)
+  | Return_value t -> Return (read_text parent t)
+  | Custom (s, t) -> Tag (s, read_text parent t)
 
-let empty = { text = []; tags = []; }
+let empty_body = { text = []; tags = []; }
 
-open Location
-open Parsetree
+let empty = Ok empty_body
 
-let read_attributes env parent attrs =
-  let rec loop first acc = function
-    | ({txt = "doc"}, PDoc(Cinfo(text, tags), _)) :: rest ->
-        let text = read_text env parent text in
-        let text = if first then text else Newline :: text in
-        let tags = List.map (read_tag env parent) tags in
-        let acc =
-          { text = acc.text @ text;
-            tags = acc.tags @ tags; }
-        in
-          loop false acc rest
-    | _ :: rest -> loop first acc rest
-    | [] -> acc
-  in
-    loop true empty attrs
-
-let read_comment env parent : Parsetree.attribute -> 'a comment option =
-  function
-  | ({txt = "comment"}, PDoc(Cinfo(text, tags), _)) ->
-      let text = read_text env parent text in
-      let tags = List.map (read_tag env parent) tags in
-        Some (Documentation {text; tags})
-  | ({txt = "comment"}, PDoc(Cstop, _)) ->
-      Some Stop
+let read_payload =
+  let open Location in
+  let open Parsetree in function
+  | PStr[{ pstr_desc =
+             Pstr_eval({ pexp_desc =
+                           Pexp_constant(Asttypes.Const_string(str, _));
+                         pexp_loc = loc;
+                       }, _)
+         }] -> Some(str, loc)
   | _ -> None
 
-let read_comments env parent attrs =
+let read_offset err =
+  let open Octavius.Errors in
+  let loc = err.location in
+  let start =
+    { Error.Position.
+        line = loc.start.line;
+        column = loc.start.column; }
+  in
+  let finish =
+    { Error.Position.
+        line = loc.finish.line;
+        column = loc.finish.column; }
+  in
+    { Error.Offset.start; finish; }
+
+let read_position offset pos =
+  let open Lexing in
+  let open Error in
+  let off_line = offset.Position.line in
+  let off_column = offset.Position.column in
+  let line = pos.pos_lnum + off_line - 1 in
+  let column =
+    if off_line = 1 then
+      (pos.pos_cnum - pos.pos_bol) + off_column + 3
+    else off_column
+  in
+  { Position.line; column }
+
+let read_location offset pos =
+  let open Lexing in
+  let open Error in
+  if pos.pos_cnum >= 0 then begin
+    let filename = pos.pos_fname in
+    let start = read_position offset.Offset.start pos in
+    let finish = read_position offset.Offset.finish pos in
+    Some { Location.filename; start; finish }
+  end else None
+
+let read_error origin err pos =
+  let open Error in
+  let origin = DocOckPaths.Identifier.any origin in
+  let offset = read_offset err in
+  let location = read_location offset pos in
+  let message = Octavius.Errors.message err.Octavius.Errors.error in
+    { origin; offset; location; message }
+
+let invalid_attribute_error origin loc =
+  let open Lexing in
+  let open Location in
+  let open Error in
+  let origin = DocOckPaths.Identifier.any origin in
+  let offset =
+    let zero_pos = { Position.line = 0; column = 0 } in
+    { Offset.start = zero_pos; finish = zero_pos }
+  in
+  let location =
+    let start = loc.loc_start in
+    let finish = loc.loc_end in
+    if start.pos_cnum >= 0 && finish.pos_cnum >= 0 then begin
+      let filename = start.pos_fname in
+      let read_pos pos =
+        let line = pos.pos_lnum in
+        let column = pos.pos_cnum - pos.pos_bol in
+          { Position.line; column }
+      in
+      let start = read_pos start in
+      let finish = read_pos finish in
+        Some { Location.filename; start; finish }
+    end else None
+  in
+  let message = "Invalid documentation attribute" in
+    { origin; offset; location; message }
+
+let read_attributes parent id attrs =
+  let rec loop first acc : _ -> 'a t = function
+    | ({Location.txt =
+          ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
+        match read_payload payload with
+        | Some (str, loc) -> begin
+            let loc = loc.Location.loc_start in
+            let lexbuf = Lexing.from_string str in
+            match Octavius.parse lexbuf with
+            | Octavius.Ok (text, tags) ->
+                let text = read_text parent text in
+                let text = if first then text else Newline :: text in
+                let tags = List.map (read_tag parent) tags in
+                let acc =
+                  { text = acc.text @ text;
+                    tags = acc.tags @ tags; }
+                in
+                loop false acc rest
+            | Octavius.Error err -> Error (read_error id err loc)
+          end
+        | None -> Error (invalid_attribute_error id loc)
+      end
+    | _ :: rest -> loop first acc rest
+    | [] -> Ok acc
+  in
+    loop true empty_body attrs
+
+let read_comment parent : Parsetree.attribute -> 'a comment option =
+  function
+  | ({Location.txt =
+        ("text" | "ocaml.text"); loc}, payload) -> begin
+      match read_payload payload with
+      | Some ("/", loc) -> Some Stop
+      | Some (str, loc) ->
+          let lexbuf = Lexing.from_string str in
+          let loc = loc.Location.loc_start in
+          let doc =
+            match Octavius.parse lexbuf with
+            | Octavius.Ok(text, tags) ->
+                let text = read_text parent text in
+                let tags = List.map (read_tag parent) tags in
+                Ok {text; tags}
+            | Octavius.Error err -> Error (read_error parent err loc)
+          in
+          Some (Documentation doc)
+      | None ->
+          let doc = Error (invalid_attribute_error parent loc) in
+            Some (Documentation doc)
+    end
+  | _ -> None
+
+let read_comments parent attrs =
   let coms =
     List.fold_left
       (fun acc attr ->
-         match read_comment env parent attr  with
+         match read_comment parent attr  with
          | None -> acc
          | Some com -> com :: acc)
       [] attrs

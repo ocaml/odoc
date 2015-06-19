@@ -103,7 +103,7 @@ module Kind : sig
       kind of their referent because we used more relaxed rules when
       resolving a reference. For example, a reference annotated as being
       to a constructor can be resolved to the definition of an exception
-      (which can be thought of a sort of constructor). *)
+      (which is a sort of constructor). *)
 
   type reference = any
 

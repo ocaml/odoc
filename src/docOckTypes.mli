@@ -88,9 +88,48 @@ module Documentation : sig
     | Return of 'a text
     | Tag of string * 'a text
 
-  type 'a t =
+  module Error : sig
+
+    module Position : sig
+
+      type t =
+        { line: int;
+          column: int; }
+
+    end
+
+    module Offset : sig
+
+      type t =
+        { start: Position.t;
+          finish: Position.t; }
+
+    end
+
+    module Location : sig
+
+      type t =
+        { filename: string;
+          start: Position.t;
+          finish: Position.t; }
+
+    end
+
+    type 'a t =
+      { origin: 'a Identifier.any; (** TODO remove this *)
+        offset: Offset.t;
+        location: Location.t option;
+        message: string; }
+
+  end
+
+  type 'a body =
     { text: 'a text;
       tags: 'a tag list; }
+
+  type 'a t =
+    | Ok of 'a body
+    | Error of 'a Error.t
 
   type 'a comment =
     | Documentation of 'a t
