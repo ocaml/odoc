@@ -19,3 +19,6 @@ _build
 test/testCmi
 test/testCmti
 test/testCmt
+test/coverage-cmi.out
+test/coverage-cmti.out
+test/coverage-cmt.out

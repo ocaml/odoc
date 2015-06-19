@@ -1,5 +1,5 @@
 
-.PHONY: all coverage-cmi coverage-cmti
+.PHONY: all
 
 OCAMLC ?= ocamlc -g
 DOC_OCK_XML_BUILD ?= ../_build/lib-doc-ock-xml
@@ -12,16 +12,16 @@ DOC_OCK_FLAGS ?= \
    $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r doc-ock) \
    $(DOC_OCK_XML_BUILD)/doc-ock-xml.cma
 
-all: coverage-cmi coverage-cmti coverage-cmt
+all: coverage-cmi.out coverage-cmti.out coverage-cmt.out
 
-coverage-cmi: coverage.cmi testCmi
-	./testCmi coverage.cmi
+coverage-cmi.out: coverage.cmi testCmi
+	./testCmi coverage.cmi > coverage-cmi.out
 
-coverage-cmti: coverage.cmti testCmti
-	./testCmti coverage.cmti
+coverage-cmti.out: coverage.cmti testCmti
+	./testCmti coverage.cmti > coverage-cmti.out
 
-coverage-cmt: coverage.cmt testCmt
-	./testCmt coverage.cmt
+coverage-cmt.out: coverage.cmt testCmt
+	./testCmt coverage.cmt > coverage-cmt.out
 
 coverage.cmi coverage.cmti: coverage.mli
 	$(OCAMLC) -bin-annot -c coverage.mli
@@ -42,6 +42,9 @@ clean:
 	rm -f testCmi
 	rm -f testCmti
 	rm -f testCmt
+	rm -f coverage-cmi.out
+	rm -f coverage-cmti.out
+	rm -f coverage-cmt.out
 	rm -f *.cmo
 	rm -f *.cmi
 	rm -f *.cmti
