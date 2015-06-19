@@ -1,4 +1,4 @@
-doc-ock-lib
+doc-ock
 =============
 
 Extract documentation from OCaml files

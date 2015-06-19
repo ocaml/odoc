@@ -64,4 +64,4 @@ let units =
 let l = lib (*~flags:doc*) ~deps:pkgs "doc-ock" (`Units units)
 
 (* Assemble *)
-let () = assemble (project "doc-ock-lib" [l])
+let () = assemble (project "doc-ock" [l])
