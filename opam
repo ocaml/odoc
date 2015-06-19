@@ -8,7 +8,7 @@ depends: [
   "ocamlfind"
   "xmlm"
   "menhir"
-  "doc-ock-lib"
+  "doc-ock"
 ]
 build: [
   [make]

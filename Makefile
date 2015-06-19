@@ -11,12 +11,12 @@ LN ?= ln -sf
 MKDIR ?= mkdir -p
 
 BYTE_PKGS ?= $(shell ocamlfind query -r -predicates byte -format "-I %d" -r xmlm \
-                 doc-ock-lib \
+                 doc-ock \
                  menhirLib) \
              -I $(BUILDIR)/lib-doc-ock-xml
 
 NATIVE_PKGS ?= $(shell ocamlfind query -r -predicates native -format "-I %d" -r xmlm \
-                   doc-ock-lib \
+                   doc-ock \
                    menhirLib) \
                -I $(BUILDIR)/lib-doc-ock-xml
 

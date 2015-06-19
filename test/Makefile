@@ -5,11 +5,11 @@ OCAMLC ?= ocamlc -g
 DOC_OCK_XML_BUILD ?= ../_build/lib-doc-ock-xml
 DOC_OCK_FLAGS ?= \
    -I  $(DOC_OCK_XML_BUILD) \
-   $(shell ocamlfind query -r -predicates byte -format "-I %d" -r doc-ock-lib) \
+   $(shell ocamlfind query -r -predicates byte -format "-I %d" -r doc-ock) \
    $(shell ocamlfind query -r -predicates byte -format "-I %d" -r xmlm) \
    $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r xmlm) \
    $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r menhirLib) \
-   $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r doc-ock-lib) \
+   $(shell ocamlfind query -r -predicates byte -format "%d/%a" -r doc-ock) \
    $(DOC_OCK_XML_BUILD)/doc-ock-xml.cma
 
 all: coverage-cmi coverage-cmti coverage-cmt
