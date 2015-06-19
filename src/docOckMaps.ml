@@ -1199,6 +1199,9 @@ class virtual ['a] unit = object (self)
   method virtual identifier_module :
     'a Identifier.module_ -> 'a Identifier.module_
 
+  method virtual path_module :
+    'a Path.module_ -> 'a Path.module_
+
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
 
@@ -1206,11 +1209,11 @@ class virtual ['a] unit = object (self)
     'a Signature.t -> 'a Signature.t
 
   method unit_import import =
-    let open Unit in
+    let open Unit.Import in
       match import with
       | Unresolved(name, digest) ->
           let name' = self#unit_import_name name in
-          let digest' = option_map self#unit_digest digest in
+          let digest' = option_map self#unit_import_digest digest in
             if name != name' || digest != digest' then
               Unresolved(name', digest')
             else import
@@ -1220,6 +1223,8 @@ class virtual ['a] unit = object (self)
             else import
 
   method unit_import_name name = name
+
+  method unit_import_digest digest = digest
 
   method unit_source source =
     let open Unit.Source in
@@ -1237,23 +1242,49 @@ class virtual ['a] unit = object (self)
 
   method unit_source_digest digest = digest
 
+  method unit_packed_item item =
+    let open Unit.Packed in
+    let {id; path} = item in
+    let id' = self#identifier_module id in
+    let path' = self#path_module path in
+      if id != id' || path != path' then { id = id'; path = path' }
+      else item
+
+  method unit_packed items =
+    list_map self#unit_packed_item items
+
+  method unit_content content =
+    let open Unit in
+      match content with
+      | Module items ->
+          let items' = self#signature items in
+            if items != items' then Module items'
+            else content
+      | Pack items ->
+          let items' = self#unit_packed items in
+            if items' != items then Pack items'
+            else content
+
   method unit unit =
     let open Unit in
-    let {id; doc; digest; imports; source; items} = unit in
+    let {id; doc; digest; imports; source; interface; content} = unit in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let digest' = self#unit_digest digest in
     let imports' = list_map self#unit_import imports in
     let source' = option_map self#unit_source source in
-    let items' = self#signature items in
-      if id != id' || doc != doc' || digest != digest'
-         || imports != imports' || source != source' || items != items'
+    let interface' = self#unit_interface interface in
+    let content' = self#unit_content content in
+      if id != id' || doc != doc' || digest != digest' || imports != imports'
+         || source != source' || interface != interface' || content != content'
       then
-        {id = id'; doc = doc'; digest = digest';
-         imports = imports'; source = source'; items = items'}
+        {id = id'; doc = doc'; digest = digest'; imports = imports';
+         source = source'; interface = interface'; content = content'}
       else unit
 
   method unit_digest digest = digest
+
+  method unit_interface intf = intf
 
 end
 

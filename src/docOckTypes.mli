@@ -426,9 +426,13 @@ end
 
 module Unit : sig
 
-  type 'a import =
-    | Unresolved of string * Digest.t option
-    | Resolved of 'a
+  module Import : sig
+
+    type 'a t =
+      | Unresolved of string * Digest.t option
+      | Resolved of 'a
+
+  end
 
   module Source : sig
 
@@ -439,12 +443,27 @@ module Unit : sig
 
   end
 
+  module Packed : sig
+
+    type 'a item =
+      { id: 'a Identifier.module_;
+        path: 'a Path.module_; }
+
+    type 'a t = 'a item list
+
+  end
+
+  type 'a content =
+    | Module of 'a Signature.t
+    | Pack of 'a Packed.t
+
   type 'a t =
     { id: 'a Identifier.module_;
       doc: 'a Documentation.t;
       digest: Digest.t;
-      imports: 'a import list;
+      imports: 'a Import.t list;
       source: 'a Source.t option;
-      items: 'a Signature.t }
+      interface: bool;
+      content: 'a content; }
 
 end

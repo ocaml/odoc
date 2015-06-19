@@ -18,17 +18,20 @@ open DocOck
 open TestCommon
 
 let read_file cmi =
-  let name = module_name cmi in
-    match read_cmi name cmi with
-    | Not_an_interface ->
-        raise (Error(cmi, "not an interface"))
-    | Wrong_version_interface ->
-        raise (Error(cmi, "interface has wrong OCaml version"))
-    | Corrupted_interface ->
-        raise (Error(cmi, "corrupted interface"))
-    | Not_a_typedtree ->
-        raise (Error(cmi, "not a typedtree"))
-    | Ok intf -> intf
+  match read_cmi (fun name _ -> name) cmi with
+  | Not_an_interface ->
+      raise (Error(cmi, "not an interface"))
+  | Wrong_version ->
+      raise (Error(cmi, "wrong OCaml version"))
+  | Corrupted ->
+      raise (Error(cmi, "corrupted"))
+  | Not_a_typedtree ->
+      raise (Error(cmi, "not a typedtree"))
+  | Not_an_implementation ->
+      raise (Error(cmi, "not an implementation"))
+  | Pack _ ->
+      raise (Error(cmi, "pack"))
+  | Unit intf -> intf
 
 let main () =
   let files = get_files "cmi" in

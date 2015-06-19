@@ -482,13 +482,18 @@ class virtual ['a] unit : object
   method virtual identifier_module : 'a Identifier.module_ ->
     'a Identifier.module_
 
+  method virtual path_module :
+    'a Path.module_ -> 'a Path.module_
+
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
 
-  method unit_import : 'a Unit.import -> 'a Unit.import
+  method unit_import : 'a Unit.Import.t -> 'a Unit.Import.t
 
   method unit_import_name : string -> string
+
+  method unit_import_digest : Digest.t -> Digest.t
 
   method unit_source : 'a Unit.Source.t -> 'a Unit.Source.t
 
@@ -498,9 +503,17 @@ class virtual ['a] unit : object
 
   method unit_source_digest : Digest.t -> Digest.t
 
+  method unit_packed_item : 'a Unit.Packed.item -> 'a Unit.Packed.item
+
+  method unit_packed : 'a Unit.Packed.t -> 'a Unit.Packed.t
+
+  method unit_content : 'a Unit.content -> 'a Unit.content
+
   method unit : 'a Unit.t -> 'a Unit.t
 
   method unit_digest : Digest.t -> Digest.t
+
+  method unit_interface : bool -> bool
 
 end
 

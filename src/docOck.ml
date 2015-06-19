@@ -25,9 +25,10 @@ let core_exceptions = DocOckPredef.core_exceptions
 type 'a result =
   | Ok of 'a Types.Unit.t
   | Not_an_interface
-  | Wrong_version_interface
-  | Corrupted_interface
+  | Wrong_version
+  | Corrupted
   | Not_a_typedtree
+  | Not_an_implementation
 
 let read_cmti root_fn filename =
   let open Cmi_format in
@@ -45,7 +46,10 @@ let read_cmti root_fn filename =
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
-        let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
+        let imports =
+          List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
+        in
+        let interface = true in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
@@ -54,14 +58,98 @@ let read_cmti root_fn filename =
             Some {file; digest; build_dir}
           | _, _ -> None
         in
-        Ok {id; doc; digest; imports; source; items}
-      | None -> Corrupted_interface
+        let content = Module items in
+          Ok {id; doc; digest; imports; source; interface; content}
+      | None -> Corrupted
     end
     | _ -> Not_an_interface
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version_interface
-  | Cmi_format.Error (Corrupted_interface _) -> Corrupted_interface
+  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
+  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
+  | Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
+
+let read_cmt root_fn filename =
+  let open Cmi_format in
+  let open Cmt_format in
+  let open Types.Unit in
+  try
+    let cmt_info = read_cmt filename in
+    match cmt_info.cmt_annots with
+    | Packed(sg, files) ->
+        let name = cmt_info.cmt_modname in
+        let interface, digest =
+          match cmt_info.cmt_interface_digest with
+          | Some digest -> true, digest
+          | None ->
+            match List.assoc name cmt_info.cmt_imports with
+            | Some digest -> false, digest
+            | None -> assert false
+            | exception Not_found -> assert false
+        in
+        let root = root_fn name digest in
+        let id = DocOckPaths.Identifier.Root(root, name) in
+        let items =
+          List.map
+            (fun file ->
+               let pref = Misc.chop_extensions file in
+                 String.capitalize(Filename.basename pref))
+            files
+        in
+        let items =
+          List.map
+            (fun name ->
+               let open Packed in
+               let id = Paths.Identifier.Root(root, name) in
+               let path = Paths.Path.Root name in
+                 {id; path})
+            items
+        in
+        let imports =
+          List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
+        in
+        let imports =
+          List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
+        in
+        let doc = DocOckAttrs.empty in
+        let source = None in
+        let content = Pack items in
+          Ok {id; doc; digest; imports; source; interface; content}
+    | Implementation impl ->
+        let open Types.Unit in
+        let name = cmt_info.cmt_modname in
+        let interface, digest =
+          match cmt_info.cmt_interface_digest with
+          | Some digest -> true, digest
+          | None ->
+              match List.assoc name cmt_info.cmt_imports with
+              | Some digest -> false, digest
+              | None -> assert false
+              | exception Not_found -> assert false
+        in
+        let root = root_fn name digest in
+        let (id, doc, items) = DocOckCmt.read_implementation root name impl in
+        let imports =
+          List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
+        in
+        let imports =
+          List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
+        in
+        let source =
+          match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
+          | Some file, Some digest ->
+            let open Source in
+            let build_dir = cmt_info.cmt_builddir in
+            Some {file; digest; build_dir}
+          | _, _ -> None
+        in
+        let content = Module items in
+          Ok {id; doc; digest; imports; source; interface; content}
+    | _ -> Not_an_implementation
+  with
+  | Cmi_format.Error (Not_an_interface _) -> Not_an_implementation
+  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
+  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
   | Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
 
 let read_cmi root_fn filename =
@@ -75,14 +163,18 @@ let read_cmi root_fn filename =
           let (id, doc, items) =
             DocOckCmi.read_interface root name cmi_info.cmi_sign
           in
-          let imports = List.map (fun (s, d) -> Unresolved(s, d)) imports in
+          let imports =
+            List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
+          in
+          let interface = true in
           let source = None in
-            Ok {id; doc; digest; imports; source; items}
-      | _ -> Corrupted_interface
+          let content = Module items in
+            Ok {id; doc; digest; imports; source; interface; content}
+      | _ -> Corrupted
   with
   | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version_interface
-  | Cmi_format.Error (Corrupted_interface _) -> Corrupted_interface
+  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
+  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
 
 type 'a resolver = 'a DocOckResolve.resolver
 

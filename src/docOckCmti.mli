@@ -18,3 +18,55 @@ val read_interface: 'a -> string -> Typedtree.signature ->
   'a DocOckPaths.Identifier.module_ *
   'a DocOckTypes.Documentation.t *
   'a DocOckTypes.Signature.t
+
+val add_class_type_field : 'a DocOckPaths.Identifier.class_signature ->
+  Typedtree.class_type_field -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val read_label : string -> DocOckTypes.TypeExpr.label option
+
+val add_type_declarations : 'a DocOckPaths.Identifier.signature ->
+  Typedtree.type_declaration list -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val add_type_extension : 'a DocOckPaths.Identifier.signature ->
+  Typedtree.type_extension -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val add_exception : 'a DocOckPaths.Identifier.signature ->
+  Typedtree.extension_constructor -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val add_module_type_declaration : 'a DocOckPaths.Identifier.signature ->
+  Typedtree.module_type_declaration -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val add_class_type_declarations : 'a DocOckPaths.Identifier.signature ->
+  'b Typedtree.class_infos list -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val add_value_description : 'a DocOckPaths.Identifier.signature ->
+  Typedtree.value_description -> 'a DocOckEnvironment.t ->
+  'a DocOckEnvironment.t
+
+val read_module_type : 'a DocOckEnvironment.t ->
+  'a DocOckPaths.Identifier.signature -> int ->
+  Typedtree.module_type -> 'a DocOckTypes.ModuleType.expr
+
+val read_value_description : 'a DocOckEnvironment.t ->
+  'a DocOckPaths.Identifier.signature ->
+  Typedtree.value_description -> 'a DocOckTypes.Signature.item
+
+val read_type_declarations : 'a DocOckEnvironment.t ->
+  'a DocOckPaths.Identifier.signature ->
+  Typedtree.type_declaration list ->
+  'a DocOckTypes.Signature.item list
+
+val read_module_type_declaration : 'a DocOckEnvironment.t ->
+  'a DocOckPaths.Identifier.signature ->
+  Typedtree.module_type_declaration -> 'a DocOckTypes.ModuleType.t
+
+val read_class_type_declarations : 'a DocOckEnvironment.t ->
+  'a DocOckPaths.Identifier.signature ->
+  Typedtree.class_type Typedtree.class_infos list ->
+  'a DocOckTypes.Signature.item list

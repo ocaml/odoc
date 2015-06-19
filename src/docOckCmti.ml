@@ -393,6 +393,10 @@ let rec read_class_type_field env parent ctf =
       | None -> None
       | Some doc -> Some (Comment doc)
 
+and read_self_type env typ =
+  if typ.ctyp_desc = Ttyp_any then None
+  else Some (read_core_type env typ)
+
 and read_class_signature env parent cltyp =
   let open ClassType in
     match cltyp.cltyp_desc with
@@ -407,10 +411,7 @@ and read_class_signature env parent cltyp =
             (add_class_type_field parent)
             csig.csig_fields env
         in
-        let self =
-          if csig.csig_self.ctyp_desc = Ttyp_any then None
-          else Some (read_core_type env csig.csig_self)
-        in
+        let self = read_self_type env csig.csig_self in
         let items =
           List.fold_left
             (fun rest item ->
@@ -480,7 +481,7 @@ let rec read_class_type env parent cty =
       let res = read_class_type env parent res in
         Arrow(lbl, arg, res)
 
-let add_class_declaration parent cld env =
+let add_class_description parent cld env =
   let container = Identifier.parent_of_signature parent in
   let env = add_attributes container cld.ci_attributes env in
   let env =
@@ -493,7 +494,7 @@ let add_class_declaration parent cld env =
   in
     env
 
-let read_class_declaration env parent cld =
+let read_class_description env parent cld =
   let open Class in
   let name = parenthesise (Ident.name cld.ci_id_class) in
   let id = Identifier.Class(parent, name) in
@@ -504,16 +505,16 @@ let read_class_declaration env parent cld =
   let type_ = read_class_type env id cld.ci_expr in
     { id; doc; virtual_; params; type_ }
 
-let add_class_declarations parent clds env =
+let add_class_descriptions parent clds env =
   let container = Identifier.parent_of_signature parent in
   List.fold_right
     (fun cld env ->
        let env = add_comments container cld.ci_attributes env in
-       let env = add_class_declaration parent cld env in
+       let env = add_class_description parent cld env in
          env)
       clds env
 
-let read_class_declarations env parent clds =
+let read_class_descriptions env parent clds =
   let container = Identifier.parent_of_signature parent in
   let items =
     List.fold_left
@@ -521,7 +522,7 @@ let read_class_declarations env parent clds =
          let open Signature in
          let comments = read_comments env container cld.ci_attributes in
          let comments = List.map (fun com -> Comment com) comments in
-         let cld = read_class_declaration env parent cld in
+         let cld = read_class_description env parent cld in
            (Class cld) :: (List.rev_append comments acc))
       [] clds
   in
@@ -585,7 +586,7 @@ let add_signature_item parent item env =
         | [] -> env
       in
         loop items env
-  | Tsig_class cls -> add_class_declarations parent cls env
+  | Tsig_class cls -> add_class_descriptions parent cls env
   | Tsig_class_type cltyps -> add_class_type_declarations parent cltyps env
   | Tsig_attribute attr ->
       add_comment (Identifier.parent_of_signature parent) attr env
@@ -699,34 +700,34 @@ and read_module_equation env p =
 
 and read_signature_item env parent item =
   let open Signature in
-  match item.sig_desc with
-  | Tsig_value vd ->
-      [read_value_description env parent vd]
-  | Tsig_type decls ->
-      read_type_declarations env parent decls
-  | Tsig_typext tyext ->
-      [TypExt (read_type_extension env parent tyext)]
-  | Tsig_exception ext ->
-      [Exception (read_exception env parent ext)]
-  | Tsig_module md ->
-      [Module (read_module_declaration env parent md)]
-  | Tsig_recmodule mds ->
-      read_module_declarations env parent mds
-  | Tsig_modtype mtd ->
-      [ModuleType (read_module_type_declaration env parent mtd)]
-  | Tsig_open _ -> []
-  | Tsig_include incl ->
-      let mty = read_module_type env parent 0 incl.incl_mod in
-        [Include mty]
-  | Tsig_class cls ->
-      read_class_declarations env parent cls
-  | Tsig_class_type cltyps ->
-      read_class_type_declarations env parent cltyps
-  | Tsig_attribute attr ->
-      let container = Identifier.parent_of_signature parent in
-      match read_comment env container attr with
-      | None -> []
-      | Some doc -> [Comment doc]
+    match item.sig_desc with
+    | Tsig_value vd ->
+        [read_value_description env parent vd]
+    | Tsig_type decls ->
+        read_type_declarations env parent decls
+    | Tsig_typext tyext ->
+        [TypExt (read_type_extension env parent tyext)]
+    | Tsig_exception ext ->
+        [Exception (read_exception env parent ext)]
+    | Tsig_module md ->
+        [Module (read_module_declaration env parent md)]
+    | Tsig_recmodule mds ->
+        read_module_declarations env parent mds
+    | Tsig_modtype mtd ->
+        [ModuleType (read_module_type_declaration env parent mtd)]
+    | Tsig_open _ -> []
+    | Tsig_include incl ->
+        let mty = read_module_type env parent 0 incl.incl_mod in
+          [Include mty]
+    | Tsig_class cls ->
+        read_class_descriptions env parent cls
+    | Tsig_class_type cltyps ->
+        read_class_type_declarations env parent cltyps
+    | Tsig_attribute attr ->
+        let container = Identifier.parent_of_signature parent in
+          match read_comment env container attr with
+          | None -> []
+          | Some doc -> [Comment doc]
 
 and read_signature env parent sg =
   let env =

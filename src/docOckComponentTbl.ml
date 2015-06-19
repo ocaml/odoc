@@ -182,11 +182,19 @@ let rec unit tbl base =
       let unt = tbl.fetch base in
       let local = create_local tbl.equal tbl.hash in
       let t =
-        Sig.signature
-          (fun items ->
-             Sig.add_documentation unt.doc
-               (signature_items tbl local unt items))
-          unt.items
+        match unt.content with
+        | Module items ->
+            Sig.signature
+              (fun items ->
+                 Sig.add_documentation unt.doc
+                   (signature_items tbl local unt items))
+              items
+        | Pack items ->
+            Sig.signature
+              (fun items ->
+                 Sig.add_documentation unt.doc
+                   (packed_items tbl local unt items))
+              items
       in
         tbl.tbl.add base t;
         t
@@ -455,6 +463,18 @@ and module_decl tbl local u decl =
     match decl with
     | Alias p -> alias (module_path tbl (Some local) u) p
     | ModuleType expr -> module_type_expr tbl local u expr
+
+and packed_items tbl local u =
+  let open Sig in
+  let open Unit.Packed in function
+    | {id; path} :: rest ->
+        let open Module in
+        let name = Identifier.name id in
+        let decl = alias (module_path tbl (Some local) u) path in
+        add_local_module_identifier local id decl;
+        let sg = packed_items tbl local u rest in
+          add_module name decl sg
+    | [] -> empty
 
 (* Remove local parameter from exposed versions *)
 

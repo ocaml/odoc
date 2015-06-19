@@ -25,11 +25,14 @@ val core_exceptions : 'a Types.Exception.t list
 type 'a result =
   | Ok of 'a Types.Unit.t
   | Not_an_interface
-  | Wrong_version_interface
-  | Corrupted_interface
+  | Wrong_version
+  | Corrupted
   | Not_a_typedtree
+  | Not_an_implementation
 
 val read_cmti: (string -> Digest.t -> 'a) -> string -> 'a result
+
+val read_cmt: (string -> Digest.t -> 'a) -> string -> 'a result
 
 val read_cmi: (string -> Digest.t -> 'a) -> string -> 'a result
 

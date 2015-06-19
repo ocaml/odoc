@@ -17,24 +17,24 @@
 open DocOck
 open TestCommon
 
-let read_file cmti =
-  match read_cmti (fun name _ -> name) cmti with
+let read_file cmt =
+  match read_cmt (fun name _ -> name) cmt with
   | Not_an_interface ->
-      raise (Error(cmti, "not an interface"))
+      raise (Error(cmt, "not an interface"))
   | Wrong_version ->
-      raise (Error(cmti, "wrong OCaml version"))
+      raise (Error(cmt, "wrong OCaml version"))
   | Corrupted ->
-      raise (Error(cmti, "corrupted"))
+      raise (Error(cmt, "corrupted"))
   | Not_a_typedtree ->
-      raise (Error(cmti, "not a typedtree"))
+      raise (Error(cmt, "not a typedtree"))
   | Not_an_implementation ->
-      raise (Error(cmti, "not an implementation"))
+      raise (Error(cmt, "not an implementation"))
   | Pack _ ->
-      raise (Error(cmti, "pack"))
+      raise (Error(cmt, "pack"))
   | Unit intf -> intf
 
 let main () =
-  let files = get_files "cmti" in
+  let files = get_files "cmt" in
     try
       test read_file (List.rev files);
       exit 0

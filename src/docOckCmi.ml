@@ -207,6 +207,19 @@ let mark_type ty =
   in
   loop [] ty
 
+let reset_context () =
+  reset_names ();
+  reset_aliased ();
+  reset_visited_rows ()
+
+let mark_type_expr t =
+  reset_context ();
+  mark_type t
+
+let mark_value_description vd =
+  reset_context ();
+  mark_type vd.val_type
+
 let mark_type_parameter param =
   add_alias param;
   mark_type param;
@@ -246,9 +259,33 @@ let mark_type_kind = function
       List.iter (fun ld -> mark_type ld.ld_type) lds
   | Type_open -> ()
 
+let mark_type_declaration decl =
+  let params = prepare_type_parameters decl.type_params decl.type_manifest in
+    reset_context ();
+    List.iter mark_type_parameter params;
+    opt_iter mark_type decl.type_manifest;
+    mark_type_kind decl.type_kind;
+    params
+
 let mark_extension_constructor ext =
   List.iter mark_type ext.ext_args;
   opt_iter mark_type ext.ext_ret_type
+
+let mark_type_extension type_params exts =
+  let type_params = prepare_type_parameters type_params None in
+    reset_context ();
+    List.iter mark_type_parameter type_params;
+    List.iter mark_extension_constructor exts;
+    type_params
+
+let mark_type_extension' ext rest =
+  let type_params = ext.ext_type_params in
+  let exts = ext :: (List.map snd rest) in
+    mark_type_extension type_params exts
+
+let mark_exception ext =
+  reset_context ();
+  mark_extension_constructor ext
 
 let rec mark_class_type params = function
   | Cty_constr (p, tyl, cty) ->
@@ -272,6 +309,16 @@ let rec mark_class_type params = function
   | Cty_arrow (_, ty, cty) ->
       mark_type ty;
       mark_class_type params cty
+
+let mark_class_type_declaration cltd =
+  reset_context ();
+  List.iter mark_type_parameter cltd.clty_params;
+  mark_class_type cltd.clty_params cltd.clty_type
+
+let mark_class_declaration cld =
+  reset_context ();
+  List.iter mark_type_parameter cld.cty_params;
+  mark_class_type cld.cty_params cld.cty_type
 
 let rec read_type_expr env typ =
   let open TypeExpr in
@@ -433,13 +480,6 @@ and read_object env fi nm =
       Class (p, params)
   | _ -> assert false
 
-let read_type_scheme env typ =
-  reset_names ();
-  reset_aliased ();
-  reset_visited_rows ();
-  mark_type typ;
-  read_type_expr env typ
-
 let add_value_description parent id vd env =
   let container = Identifier.parent_of_signature parent in
   let env = add_attributes container vd.val_attributes env in
@@ -452,13 +492,14 @@ let read_value_description env parent id vd =
   let id = Identifier.Value(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container vd.val_attributes in
-  let type_ = read_type_scheme env vd.val_type in
-  match vd.val_kind with
-  | Val_reg -> Value {Value.id; doc; type_}
-  | Val_prim desc ->
-      let primitives = Primitive.description_list desc in
-        External {External.id; doc; type_; primitives}
-  | _ -> assert false
+    mark_value_description vd;
+    let type_ = read_type_expr env vd.val_type in
+    match vd.val_kind with
+    | Val_reg -> Value {Value.id; doc; type_}
+    | Val_prim desc ->
+        let primitives = Primitive.description_list desc in
+          External {External.id; doc; type_; primitives}
+    | _ -> assert false
 
 let add_constructor_declaration parent cd env =
   let container = Identifier.parent_of_datatype parent in
@@ -564,34 +605,28 @@ let read_type_declaration env parent id decl =
   let id = Identifier.Type(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container decl.type_attributes in
-  let params = prepare_type_parameters decl.type_params decl.type_manifest in
-    reset_names ();
-    reset_aliased ();
-    reset_visited_rows ();
-    List.iter mark_type_parameter params;
-    opt_iter mark_type decl.type_manifest;
-    mark_type_kind decl.type_kind;
-    let manifest = opt_map (read_type_expr env) decl.type_manifest in
-    let constraints = read_type_constraints env params in
-    let representation = read_type_kind env id decl.type_kind in
-    let abstr =
-      match decl.type_kind with
-        Type_abstract ->
-          decl.type_manifest = None || decl.type_private = Private
-      | Type_record _ ->
-          decl.type_private = Private
-      | Type_variant tll ->
-          decl.type_private = Private ||
-          List.exists (fun cd -> cd.cd_res <> None) tll
-      | Type_open ->
-          decl.type_manifest = None
-    in
-    let params =
-      List.map2 (read_type_parameter abstr) decl.type_variance params
-    in
-    let private_ = (decl.type_private = Private) in
-    let equation = Equation.{params; manifest; constraints; private_} in
-      {id; doc; equation; representation}
+  let params = mark_type_declaration decl in
+  let manifest = opt_map (read_type_expr env) decl.type_manifest in
+  let constraints = read_type_constraints env params in
+  let representation = read_type_kind env id decl.type_kind in
+  let abstr =
+    match decl.type_kind with
+      Type_abstract ->
+        decl.type_manifest = None || decl.type_private = Private
+    | Type_record _ ->
+        decl.type_private = Private
+    | Type_variant tll ->
+        decl.type_private = Private ||
+        List.exists (fun cd -> cd.cd_res <> None) tll
+    | Type_open ->
+        decl.type_manifest = None
+  in
+  let params =
+    List.map2 (read_type_parameter abstr) decl.type_variance params
+  in
+  let private_ = (decl.type_private = Private) in
+  let equation = Equation.{params; manifest; constraints; private_} in
+    {id; doc; equation; representation}
 
 let add_extension_constructor parent id ext env =
   let container = Identifier.parent_of_signature parent in
@@ -613,27 +648,21 @@ let read_type_extension env parent id ext rest =
   let open Extension in
   let type_path = Env.Path.read_type env ext.ext_type_path in
   let doc = empty in
-  let type_params = prepare_type_parameters ext.ext_type_params None in
-    reset_names ();
-    reset_aliased ();
-    reset_visited_rows ();
-    List.iter mark_type_parameter type_params;
-    mark_extension_constructor ext;
-    List.iter (fun (_, ext) -> mark_extension_constructor ext) rest;
-    let first = read_extension_constructor env parent id ext in
-    let rest =
-      List.map
-        (fun (id, ext) -> read_extension_constructor env parent id ext)
-        rest
-    in
-    let constructors = first :: rest in
-    let type_params =
-      List.map (read_type_parameter false Variance.null) type_params
-    in
-    let private_ = (ext.ext_private = Private) in
-      { type_path; type_params;
-        doc; private_;
-        constructors; }
+  let type_params = mark_type_extension' ext rest in
+  let first = read_extension_constructor env parent id ext in
+  let rest =
+    List.map
+      (fun (id, ext) -> read_extension_constructor env parent id ext)
+      rest
+  in
+  let constructors = first :: rest in
+  let type_params =
+    List.map (read_type_parameter false Variance.null) type_params
+  in
+  let private_ = (ext.ext_private = Private) in
+    { type_path; type_params;
+      doc; private_;
+      constructors; }
 
 let add_exception parent id ext env =
   let container = Identifier.parent_of_signature parent in
@@ -647,10 +676,7 @@ let read_exception env parent id ext =
   let id = Identifier.Exception(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container ext.ext_attributes in
-    reset_names ();
-    reset_aliased ();
-    reset_visited_rows ();
-    mark_extension_constructor ext;
+    mark_exception ext;
     let args = List.map (read_type_expr env) ext.ext_args in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
       {id; doc; args; res}
@@ -680,6 +706,11 @@ let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let virtual_ = (virtual_ = Virtual) in
   let type_ = read_type_expr env typ in
     ClassSignature.InstanceVariable {id; doc; mutable_; virtual_; type_}
+
+let read_self_type env sty =
+  let sty = Btype.repr sty in
+    if not (is_aliased sty) then None
+    else Some (TypeExpr.Var (name_of_type (Btype.proxy sty)))
 
 let rec read_class_signature env parent params =
   let open ClassType in function
@@ -712,11 +743,7 @@ let rec read_class_signature env parent params =
           instance_variables env
       in
       let env = List.fold_right (add_method parent) methods env in
-      let sty = Btype.repr csig.csig_self in
-      let self =
-        if not (is_aliased sty) then None
-        else Some (TypeExpr.Var (name_of_type (Btype.proxy sty)))
-      in
+      let self = read_self_type env csig.csig_self in
       let constraints = read_type_constraints env params in
       let constraints =
         List.map
@@ -765,11 +792,7 @@ let read_class_type_declaration env parent id cltd =
   let id = Identifier.ClassType(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cltd.clty_attributes in
-    reset_names ();
-    reset_aliased ();
-    reset_visited_rows ();
-    List.iter mark_type_parameter cltd.clty_params;
-    mark_class_type cltd.clty_params cltd.clty_type;
+    mark_class_type_declaration cltd;
     let params =
       List.map2
         (read_type_parameter false)
@@ -811,11 +834,7 @@ let read_class_declaration env parent id cld =
   let id = Identifier.Class(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes env container cld.cty_attributes in
-    reset_names ();
-    reset_aliased ();
-    reset_visited_rows ();
-    List.iter mark_type_parameter cld.cty_params;
-    mark_class_type cld.cty_params cld.cty_type;
+    mark_class_declaration cld;
     let params =
       List.map2
         (read_type_parameter false)

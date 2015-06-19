@@ -35,6 +35,7 @@ let docOckEnvironment = unit "docOckEnvironment" (`Path ["src"])
 let docOckAttrs = unit "docOckAttrs" (`Path ["src"])
 let docOckCmi = unit "docOckCmi" (`Path ["src"])
 let docOckCmti = unit "docOckCmti" (`Path ["src"])
+let docOckCmt = unit "docOckCmt" (`Path ["src"])
 let docOckComponents = unit "docOckComponents" (`Path ["src"])
 let docOckComponentTbl = unit "docOckComponentTbl" (`Path ["src"])
 let docOckResolve = unit "docOckResolve" (`Path ["src"])
@@ -49,6 +50,7 @@ let units =
     docOckAttrs;
     docOckCmi;
     docOckCmti;
+    docOckCmt;
     docOckComponents;
     docOckComponentTbl;
     docOckResolve;
