@@ -4,7 +4,7 @@ PKG assemblage
 
 PKG xmlm
 PKG menhirLib
-PKG doc-ock-lib
+PKG doc-ock
 
 B _build/lib-doc-ock-xml
 

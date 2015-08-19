@@ -1,5 +1,5 @@
 version  = "version-not-set"
-requires = "doc-ock-lib xmlm menhirLib"
+requires = "doc-ock xmlm menhirLib"
 archive(byte) = "doc-ock-xml.cma"
 archive(byte, plugin) = "doc-ock-xml.cma"
 archive(native) = "doc-ock-xml.cmxa"
