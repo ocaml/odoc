@@ -814,7 +814,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method identifier_method x = x
   method identifier_instance_variable x = x
   method identifier_label x = x
-  method identifier_any x = x
+  method identifier x = x
 
   method path_module x = resolve_module_path tbl (unwrap unit) x
   method path_module_type x = resolve_module_type_path tbl (unwrap unit) x

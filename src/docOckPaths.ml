@@ -205,6 +205,91 @@ module Identifier = struct
     | Method(_, name) -> name
     | InstanceVariable(_, name) -> name
     | Label(_, name) -> name
+
+  let equal ~equal id1 id2 =
+    let rec loop : type k. ('a -> 'a -> bool) ->
+                            ('a, k) t -> ('a, k) t -> bool =
+      fun equal id1 id2 ->
+        match id1, id2 with
+        | Root(r1, s1), Root(r2, s2) ->
+            s1 = s2 && equal r1 r2
+        | Module(id1, s1), Module(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
+            n1 = n2 && s1 = s2 && loop equal id1 id2
+        | ModuleType(id1, s1), ModuleType(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Type(id1, s1), Type(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | CoreType s1, CoreType s2 ->
+            s1 = s2
+        | Constructor(id1, s1), Constructor(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Field(id1, s1), Field(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Extension(id1, s1), Extension(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Exception(id1, s1), Exception(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | CoreException s1, CoreException s2 ->
+            s1 = s2
+        | Value(id1, s1), Value(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Class(id1, s1), Class(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | ClassType(id1, s1), ClassType(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Method(id1, s1), Method(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | InstanceVariable(id1, s1), InstanceVariable(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | Label(id1, s1), Label(id2, s2) ->
+            s1 = s2 && loop equal id1 id2
+        | _, _ -> false
+    in
+      loop equal id1 id2
+
+  let hash ~hash id =
+    let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
+      fun hash id ->
+        match id with
+        | Root(r, s) ->
+            Hashtbl.hash (1, hash r, s)
+        | Module(id, s) ->
+            Hashtbl.hash (2, loop hash id, s)
+        | Argument(id, n, s) ->
+            Hashtbl.hash (3, loop hash id, n, s)
+        | ModuleType(id, s) ->
+            Hashtbl.hash (4, loop hash id, s)
+        | Type(id, s) ->
+            Hashtbl.hash (5, loop hash id, s)
+        | CoreType s ->
+            Hashtbl.hash (6, s)
+        | Constructor(id, s) ->
+            Hashtbl.hash (7, loop hash id, s)
+        | Field(id, s) ->
+            Hashtbl.hash (8, loop hash id, s)
+        | Extension(id, s) ->
+            Hashtbl.hash (9, loop hash id, s)
+        | Exception(id, s) ->
+            Hashtbl.hash (10, loop hash id, s)
+        | CoreException s ->
+            Hashtbl.hash (11, s)
+        | Value(id, s) ->
+            Hashtbl.hash (12, loop hash id, s)
+        | Class(id, s) ->
+            Hashtbl.hash (13, loop hash id, s)
+        | ClassType(id, s) ->
+            Hashtbl.hash (14, loop hash id, s)
+        | Method(id, s) ->
+            Hashtbl.hash (15, loop hash id, s)
+        | InstanceVariable(id, s) ->
+            Hashtbl.hash (16, loop hash id, s)
+        | Label(id, s) ->
+            Hashtbl.hash (17, loop hash id, s)
+    in
+      loop hash id
+
 end
 
 
@@ -260,6 +345,93 @@ module Path = struct
     end
 
   end = Types
+
+  let rec equal_resolved_path : type k. ('a -> 'a -> bool) ->
+                                     ('a, k) Types.Resolved.t ->
+                                       ('a, k) Types.Resolved.t -> bool =
+    fun equal p1 p2 ->
+      let open Types.Resolved in
+        match p1, p2 with
+        | Identifier id1, Identifier id2 ->
+            Identifier.equal ~equal id1 id2
+        | Subst(sub1, p1), Subst(sub2, p2) ->
+            equal_resolved_path equal p1 p2
+            && equal_resolved_path equal sub1 sub2
+        | SubstAlias(sub1, p1), SubstAlias(sub2, p2) ->
+            equal_resolved_path equal p1 p2
+            && equal_resolved_path equal sub1 sub2
+        | Module(p1, s1), Module(p2, s2) ->
+            s1 = s2 && equal_resolved_path equal p1 p2
+        | Apply(p1, arg1), Apply(p2, arg2) ->
+            equal_path equal arg1 arg2
+            && equal_resolved_path equal p1 p2
+        | ModuleType(p1, s1), ModuleType(p2, s2) ->
+            s1 = s2 && equal_resolved_path equal p1 p2
+        | Type(p1, s1), Type(p2, s2) ->
+            s1 = s2 && equal_resolved_path equal p1 p2
+        | Class(p1, s1), Class(p2, s2) ->
+            s1 = s2 && equal_resolved_path equal p1 p2
+        | ClassType(p1, s1), ClassType(p2, s2) ->
+            s1 = s2 && equal_resolved_path equal p1 p2
+        | _, _ -> false
+
+  and equal_path : type k. ('a -> 'a -> bool) ->
+                             ('a, k) Types.Path.t ->
+                               ('a, k) Types.Path.t -> bool =
+    fun equal p1 p2 ->
+      let open Types.Path in
+        match p1, p2 with
+        | Resolved p1, Resolved p2 ->
+            equal_resolved_path equal p1 p2
+        | Root s1, Root s2 ->
+            s1 = s2
+        | Dot(p1, s1), Dot(p2, s2) ->
+            s1 = s2 && equal_path equal p1 p2
+        | Apply(p1, arg1), Apply(p2, arg2) ->
+            equal_path equal arg1 arg2 && equal_path equal p1 p2
+        | _, _ -> false
+
+  let rec hash_resolved_path : type k. ('a -> int) ->
+                                    ('a, k) Types.Resolved.t -> int =
+    fun hash p ->
+      let open Types.Resolved in
+        match p with
+        | Identifier id ->
+            Identifier.hash ~hash id
+        | Subst(sub, p) ->
+            Hashtbl.hash (18, hash_resolved_path hash sub,
+                          hash_resolved_path hash p)
+        | SubstAlias(sub, p) ->
+            Hashtbl.hash (19, hash_resolved_path hash sub,
+                          hash_resolved_path hash p)
+        | Module(p, s) ->
+            Hashtbl.hash (20, hash_resolved_path hash p, s)
+        | Apply(p, arg) ->
+            Hashtbl.hash (21, hash_resolved_path hash p, hash_path hash arg)
+        | ModuleType(p, s) ->
+            Hashtbl.hash (22, hash_resolved_path hash p, s)
+        | Type(p, s) ->
+            Hashtbl.hash (23, hash_resolved_path hash p, s)
+        | Class(p, s) ->
+            Hashtbl.hash (24, hash_resolved_path hash p, s)
+        | ClassType(p, s) ->
+            Hashtbl.hash (25, hash_resolved_path hash p, s)
+
+  and hash_path : type k. ('a -> int) -> ('a, k) Types.Path.t -> int =
+    fun hash p ->
+      let open Types.Path in
+        match p with
+        | Resolved p -> hash_resolved_path hash p
+        | Root s ->
+            Hashtbl.hash (26, s)
+        | Dot(p, s) ->
+            Hashtbl.hash (27, hash_path hash p, s)
+        | Apply(p, arg) ->
+            Hashtbl.hash (28, hash_path hash p, hash_path hash arg)
+
+  let equal ~equal p1 p2 = equal_path equal p1 p2
+
+  let hash ~hash p = hash_path hash p
 
   module Resolved = struct
 
@@ -324,6 +496,10 @@ module Path = struct
       | Type(m, n) -> Type(parent_module_identifier m, n)
       | Class(m, n) -> Class(parent_module_identifier m, n)
       | ClassType(m, n) -> ClassType(parent_module_identifier m, n)
+
+    let equal ~equal p1 p2 = equal_resolved_path equal p1 p2
+
+    let hash ~hash p = hash_resolved_path hash p
 
   end
 
@@ -420,13 +596,17 @@ module Fragment = struct
     type ('a, 'b, 'c) raw =
       | Root : ('a, 'b, [< sort > `Root]) raw
       | Subst : 'a Path.Resolved.module_type * ('a, 'b, 'c) raw ->
-                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+          ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
       | SubstAlias : 'a Path.Resolved.module_ * ('a, 'b, 'c) raw ->
-                ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | Module : 'a signature * string -> ('a, [< kind > `Module], [< sort > `Branch]) raw
-      | Type : 'a signature * string -> ('a, [< kind > `Type], [< sort > `Branch]) raw
-      | Class : 'a signature * string -> ('a, [< kind > `Class], [< sort > `Branch]) raw
-      | ClassType : 'a signature * string -> ('a, [< kind > `ClassType], [< sort > `Branch]) raw
+          ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | Module : 'a signature * string ->
+          ('a, [< kind > `Module], [< sort > `Branch]) raw
+      | Type : 'a signature * string ->
+          ('a, [< kind > `Type], [< sort > `Branch]) raw
+      | Class : 'a signature * string ->
+          ('a, [< kind > `Class], [< sort > `Branch]) raw
+      | ClassType : 'a signature * string ->
+          ('a, [< kind > `ClassType], [< sort > `Branch]) raw
 
     and ('a, 'b) t = ('a, 'b, [`Branch]) raw
 
@@ -558,6 +738,50 @@ module Fragment = struct
           | Branch(base, m)-> base, Some (ClassType(m, name))
         end
 
+    let equal ~equal p1 p2 =
+      let rec loop : type k s. ('a -> 'a -> bool) ->
+                              ('a, k, s) raw -> ('a, k, s) raw -> bool =
+        fun equal p1 p2 ->
+          match p1, p2 with
+          | Root, Root -> true
+          | Subst(sub1, p1), Subst(sub2, p2) ->
+              Path.Resolved.equal ~equal sub1 sub2
+              && loop equal p1 p2
+          | SubstAlias(sub1, p1), SubstAlias(sub2, p2) ->
+              Path.Resolved.equal ~equal sub1 sub2
+              && loop equal p1 p2
+          | Module(p1, s1), Module(p2, s2) ->
+              s1 = s2 && loop equal p1 p2
+          | Type(p1, s1), Type(p2, s2) ->
+              s1 = s2 && loop equal p1 p2
+          | Class(p1, s1), Class(p2, s2) ->
+              s1 = s2 && loop equal p1 p2
+          | ClassType(p1, s1), ClassType(p2, s2) ->
+              s1 = s2 && loop equal p1 p2
+          | _, _ -> false
+      in
+        loop equal p1 p2
+
+    let hash ~hash p =
+      let rec loop : type k s. ('a -> int) -> ('a, k, s) raw -> int =
+        fun hash p ->
+          match p with
+          | Root -> Hashtbl.hash 29
+          | Subst(sub, p) ->
+              Hashtbl.hash (30, Path.Resolved.hash ~hash sub, loop hash p)
+          | SubstAlias(sub, p) ->
+              Hashtbl.hash (31, Path.Resolved.hash ~hash sub, loop hash p)
+          | Module(p, s) ->
+              Hashtbl.hash (32, loop hash p, s)
+          | Type(p, s) ->
+              Hashtbl.hash (33, loop hash p, s)
+          | Class(p, s) ->
+              Hashtbl.hash (34, loop hash p, s)
+          | ClassType(p, s) ->
+              Hashtbl.hash (35, loop hash p, s)
+      in
+        loop hash p
+
   end
 
   open Resolved
@@ -634,6 +858,29 @@ module Fragment = struct
         match split_parent m with
         | Base -> name, None
         | Branch(base, m) -> base, Some(Dot(m, name))
+
+  let equal ~equal p1 p2 =
+    let rec loop : type k s. ('a -> 'a -> bool) ->
+                            ('a, k, s) raw -> ('a, k, s) raw -> bool =
+      fun equal p1 p2 ->
+        match p1, p2 with
+        | Resolved p1, Resolved p2 ->
+            Resolved.equal ~equal p1 p2
+        | Dot(p1, s1), Dot(p2, s2) ->
+            s1 = s2 && loop equal p1 p2
+        | _, _ -> false
+    in
+      loop equal p1 p2
+
+  let hash ~hash p =
+    let rec loop : type k s. ('a -> int) -> ('a, k, s) raw -> int =
+      fun hash p ->
+        match p with
+        | Resolved p -> Resolved.hash ~hash p
+        | Dot(p, s) ->
+            Hashtbl.hash (36, loop hash p, s)
+    in
+      loop hash p
 
 end
 
@@ -794,6 +1041,78 @@ module Reference = struct
        | Method(s, n) -> Method(identifier s, n)
        | InstanceVariable(s, n) -> InstanceVariable(identifier s, n)
        | Label(s, n) -> Label(identifier s, n)
+
+    let equal ~equal r1 r2 =
+      let rec loop : type k. ('a -> 'a -> bool) ->
+                              ('a, k) t -> ('a, k) t -> bool =
+        fun equal id1 id2 ->
+          match id1, id2 with
+          | Identifier id1, Identifier id2 ->
+              Identifier.equal ~equal id1 id2
+          | Module(r1, s1), Module(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | ModuleType(r1, s1), ModuleType(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Type(r1, s1), Type(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Constructor(r1, s1), Constructor(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Field(r1, s1), Field(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Extension(r1, s1), Extension(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Exception(r1, s1), Exception(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Value(r1, s1), Value(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Class(r1, s1), Class(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | ClassType(r1, s1), ClassType(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Method(r1, s1), Method(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | InstanceVariable(r1, s1), InstanceVariable(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | Label(r1, s1), Label(r2, s2) ->
+              s1 = s2 && loop equal r1 r2
+          | _, _ -> false
+      in
+        loop equal r1 r2
+
+    let hash ~hash p =
+      let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
+        fun hash p ->
+          match p with
+          | Identifier id ->
+              Identifier.hash ~hash id
+          | Module(p, s) ->
+              Hashtbl.hash (37, loop hash p, s)
+          | ModuleType(p, s) ->
+              Hashtbl.hash (38, loop hash p, s)
+          | Type(p, s) ->
+              Hashtbl.hash (39, loop hash p, s)
+          | Constructor(p, s) ->
+              Hashtbl.hash (40, loop hash p, s)
+          | Field(p, s) ->
+              Hashtbl.hash (41, loop hash p, s)
+          | Extension(p, s) ->
+              Hashtbl.hash (42, loop hash p, s)
+          | Exception(p, s) ->
+              Hashtbl.hash (43, loop hash p, s)
+          | Value(p, s) ->
+              Hashtbl.hash (44, loop hash p, s)
+          | Class(p, s) ->
+              Hashtbl.hash (45, loop hash p, s)
+          | ClassType(p, s) ->
+              Hashtbl.hash (46, loop hash p, s)
+          | Method(p, s) ->
+              Hashtbl.hash (47, loop hash p, s)
+          | InstanceVariable(p, s) ->
+              Hashtbl.hash (48, loop hash p, s)
+          | Label(p, s) ->
+              Hashtbl.hash (49, loop hash p, s)
+      in
+        loop hash p
 
   end
 
@@ -994,5 +1313,31 @@ module Reference = struct
     match p with
     | Resolved p -> Resolved (Label(p, arg))
     | p -> Dot(p, arg)
+
+
+  let equal ~equal r1 r2 =
+    let rec loop : type k. ('a -> 'a -> bool) ->
+                            ('a, k) t -> ('a, k) t -> bool =
+      fun equal r1 r2 ->
+        match r1, r2 with
+        | Resolved r1, Resolved r2 ->
+            Resolved.equal ~equal r1 r2
+        | Root s1, Root s2 ->
+            s1 = s2
+        | Dot(r1, s1), Dot(r2, s2) ->
+            s1 = s2 && loop equal r1 r2
+        | _, _ -> false
+    in
+      loop equal r1 r2
+
+  let hash ~hash p =
+    let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
+      fun hash p ->
+        match p with
+        | Resolved p -> Resolved.hash ~hash p
+        | Root s -> Hashtbl.hash (50, s)
+        | Dot(p, s) -> Hashtbl.hash (51, loop hash p, s)
+    in
+      loop hash p
 
 end

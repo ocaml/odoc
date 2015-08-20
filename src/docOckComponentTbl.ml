@@ -69,41 +69,16 @@ let create ?equal ?hash lookup fetch =
 
 type 'a local = ('a Identifier.signature, 'a Sig.t) tbl
 
-let rec equal_ident equal id1 id2 =
-  let open Identifier in
-    match (id1 : 'a signature), (id2 : 'a signature) with
-    | Root(r1, s1), Root(r2, s2) ->
-        s1 = s2 && equal r1 r2
-    | Module(id1, s1), Module(id2, s2) ->
-        s1 = s2 && equal_ident equal id1 id2
-    | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
-        n1 = n2 && s1 = s2 && equal_ident equal id1 id2
-    | ModuleType(id1, s1), ModuleType(id2, s2) ->
-        s1 = s2 && equal_ident equal id1 id2
-    | _, _ -> false
-
-let rec hash_ident hash id =
-  let open Identifier in
-    match (id : 'a signature) with
-    | Root(r, s) ->
-        Hashtbl.hash (1, hash r, s)
-    | Module(id, s) ->
-        Hashtbl.hash (2, hash_ident hash id, s)
-    | Argument(id, n, s) ->
-        Hashtbl.hash (3, hash_ident hash id, n, s)
-    | ModuleType(id, s) ->
-        Hashtbl.hash (4, hash_ident hash id, s)
-
 let create_local equal hash =
   let equal =
     match equal with
     | None -> None
-    | Some eq -> Some (equal_ident eq)
+    | Some equal -> Some (Identifier.equal ~equal)
   in
   let hash =
     match hash with
     | None -> None
-    | Some h -> Some (hash_ident h)
+    | Some hash -> Some (Identifier.hash ~hash)
   in
     make_tbl equal hash 23
 

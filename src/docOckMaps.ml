@@ -21,13 +21,656 @@ let rec option_map f o =
         if x != x' then Some x'
         else o
 
+class virtual ['a] identifier = object (self)
+
+  method virtual root : 'a -> 'a
+
+  method identifier : type k . ('a, k) Identifier.t -> ('a, k) Identifier.t =
+    fun id ->
+      let open Identifier in
+        match id with
+        | Root(root, name) ->
+            let root' = self#root root in
+            let name' = self#identifier_root_name name in
+              if root != root' || name != name' then Root(root', name')
+              else id
+        | Module(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_module_name name in
+              if parent != parent' || name != name' then
+                Module(parent', name')
+              else id
+        | Argument(parent, pos, name) ->
+            let parent' = self#identifier_signature parent in
+            let pos' = self#identifier_argument_position pos in
+            let name' = self#identifier_argument_name name in
+              if parent != parent' || pos != pos' || name != name' then
+                Argument(parent', pos', name')
+              else id
+        | ModuleType(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_module_type_name name in
+              if parent != parent' || name != name' then
+                ModuleType(parent', name')
+              else id
+        | Type(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_type_name name in
+              if parent != parent' || name != name' then
+                Type(parent', name')
+              else id
+        | CoreType name ->
+            let name' = self#identifier_core_type_name name in
+              if name != name' then CoreType name'
+              else id
+        | Constructor(parent, name) ->
+            let parent' = self#identifier parent in
+            let name' = self#identifier_constructor_name name in
+              if parent != parent' || name != name' then
+                Constructor(parent', name')
+              else id
+        | Field(parent, name) ->
+            let parent' = self#identifier parent in
+            let name' = self#identifier_field_name name in
+              if parent != parent' || name != name' then
+                Field(parent', name')
+              else id
+        | Extension(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_extension_name name in
+              if parent != parent' || name != name' then
+                Extension(parent', name')
+              else id
+        | Exception(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_exception_name name in
+              if parent != parent' || name != name' then
+                Exception(parent', name')
+              else id
+        | CoreException name ->
+            let name' = self#identifier_core_exception_name name in
+              if name != name' then CoreException name'
+              else id
+        | Value(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_value_name name in
+              if parent != parent' || name != name' then
+                Value(parent', name')
+              else id
+        | Class(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_class_name name in
+              if parent != parent' || name != name' then
+                Class(parent', name')
+              else id
+        | ClassType(parent, name) ->
+            let parent' = self#identifier_signature parent in
+            let name' = self#identifier_class_type_name name in
+              if parent != parent' || name != name' then
+                ClassType(parent', name')
+              else id
+        | Method(parent, name) ->
+            let parent' = self#identifier_class_signature parent in
+            let name' = self#identifier_method_name name in
+              if parent != parent' || name != name' then
+                Method(parent', name')
+              else id
+        | InstanceVariable(parent, name) ->
+            let parent' = self#identifier_class_signature parent in
+            let name' = self#identifier_instance_variable_name name in
+              if parent != parent' || name != name' then
+                InstanceVariable(parent', name')
+              else id
+        | Label(parent, name) ->
+            let parent' =
+              match parent with
+              | (Root _ | Module _ | Argument _ | ModuleType _) as parent ->
+                  parent_of_signature
+                    (self#identifier_signature parent)
+              | (Class _ | ClassType _) as parent ->
+                  parent_of_class_signature
+                    (self#identifier_class_signature parent)
+              | Type _ | CoreType _ as parent ->
+                  parent_of_datatype
+                    (self#identifier_datatype parent)
+            in
+            let name' = self#identifier_label_name name in
+              if parent != parent' || name != name' then
+                Label(parent', name')
+              else id
+
+  method identifier_root_name name = name
+
+  method identifier_module_name name = name
+
+  method identifier_argument_position pos = pos
+
+  method identifier_argument_name name = name
+
+  method identifier_module_type_name name = name
+
+  method identifier_type_name name = name
+
+  method identifier_core_type_name name = name
+
+  method identifier_constructor_name name = name
+
+  method identifier_field_name name = name
+
+  method identifier_extension_name name = name
+
+  method identifier_exception_name name = name
+
+  method identifier_core_exception_name name = name
+
+  method identifier_value_name name = name
+
+  method identifier_class_name name = name
+
+  method identifier_class_type_name name = name
+
+  method identifier_method_name name = name
+
+  method identifier_instance_variable_name name = name
+
+  method identifier_label_name name = name
+
+  method identifier_signature (id : 'a Identifier.signature) =
+    self#identifier id
+
+  method identifier_class_signature (id : 'a Identifier.class_signature) =
+    self#identifier id
+
+  method identifier_datatype (id : 'a Identifier.datatype) =
+    self#identifier id
+
+  method identifier_module (id : 'a Identifier.module_) =
+    self#identifier id
+
+  method identifier_module_type (id : 'a Identifier.module_type) =
+    self#identifier id
+
+  method identifier_type (id : 'a Identifier.type_) =
+    self#identifier id
+
+  method identifier_constructor (id : 'a Identifier.constructor) =
+    self#identifier id
+
+  method identifier_field (id : 'a Identifier.field) =
+    self#identifier id
+
+  method identifier_extension (id : 'a Identifier.extension) =
+    self#identifier id
+
+  method identifier_exception (id : 'a Identifier.exception_) =
+    self#identifier id
+
+  method identifier_value (id : 'a Identifier.value) =
+    self#identifier id
+
+  method identifier_class (id : 'a Identifier.class_) =
+    self#identifier id
+
+  method identifier_class_type (id : 'a Identifier.class_type) =
+    self#identifier id
+
+  method identifier_method (id : 'a Identifier.method_) =
+    self#identifier id
+
+  method identifier_instance_variable (id : 'a Identifier.instance_variable) =
+    self#identifier id
+
+  method identifier_label (id : 'a Identifier.label) =
+    self#identifier id
+
+end
+
+class virtual ['a] path = object (self)
+
+  method virtual identifier : 'k . ('a, 'k) Identifier.t ->
+    ('a, 'k) Identifier.t
+
+  method path_resolved : type k. ('a, k) Path.Resolved.t ->
+                                   ('a, k) Path.Resolved.t =
+    fun p ->
+      let open Path.Resolved in
+        match p with
+        | Identifier id ->
+            let id' = self#identifier id in
+              if id != id' then Identifier id'
+              else p
+        | Subst(sub, orig) ->
+            let sub' = self#path_resolved sub in
+            let orig' = self#path_resolved orig in
+              if sub != sub' || orig != orig' then Subst(sub', orig')
+              else p
+        | SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved sub in
+            let orig' = self#path_resolved orig in
+              if sub != sub' || orig != orig' then SubstAlias(sub', orig')
+              else p
+        | Module(parent, name) ->
+            let parent' = self#path_resolved parent in
+            let name' = self#path_resolved_module_name name in
+              if parent != parent' || name != name' then
+                Module(parent', name')
+              else p
+        | Apply(fn, arg) ->
+            let fn' = self#path_resolved fn in
+            let arg' = self#path arg in
+              if fn != fn' || arg != arg' then Apply(fn', arg')
+              else p
+        | ModuleType(parent, name) ->
+            let parent' = self#path_resolved parent in
+            let name' = self#path_resolved_module_type_name name in
+              if parent != parent' || name != name' then
+                ModuleType(parent', name')
+              else p
+        | Type(parent, name) ->
+            let parent' = self#path_resolved parent in
+            let name' = self#path_resolved_type_name name in
+              if parent != parent' || name != name' then Type(parent', name')
+              else p
+        | Class(parent, name) ->
+            let parent' = self#path_resolved parent in
+            let name' = self#path_resolved_class_name name in
+              if parent != parent' || name != name' then Class(parent', name')
+              else p
+        | ClassType(parent, name) ->
+            let parent' = self#path_resolved parent in
+            let name' = self#path_resolved_class_type_name name in
+              if parent != parent' || name != name' then
+                ClassType(parent', name')
+              else p
+
+  method path_resolved_module_name name = name
+
+  method path_resolved_module_type_name name = name
+
+  method path_resolved_type_name name = name
+
+  method path_resolved_class_name name = name
+
+  method path_resolved_class_type_name name = name
+
+  method path_resolved_module (p : 'a Path.Resolved.module_) =
+    self#path_resolved p
+
+  method path_resolved_module_type (p : 'a Path.Resolved.module_type) =
+    self#path_resolved p
+
+  method path_resolved_type (p : 'a Path.Resolved.type_) =
+    self#path_resolved p
+
+  method path_resolved_class_type (p : 'a Path.Resolved.class_type) =
+    self#path_resolved p
+
+  method path : type k . ('a, k) Path.t -> ('a, k) Path.t =
+    fun p ->
+      let open Path in
+        match p with
+        | Resolved res ->
+            let res' = self#path_resolved res in
+              if res != res' then Resolved res'
+              else p
+        | Root name ->
+            let name' = self#path_root_name name in
+              if name != name' then Root name'
+              else p
+        | Dot(parent, name) ->
+            let parent' = self#path parent in
+            let name' = self#path_dot_name name in
+              if parent != parent' || name != name' then Dot(parent', name')
+              else p
+        | Apply(fn, arg) ->
+            let fn' = self#path fn in
+            let arg' = self#path arg in
+              if fn != fn' || arg != arg' then Apply(fn', arg')
+              else p
+
+  method path_root_name name = name
+
+  method path_dot_name name = name
+
+  method path_module (p : 'a Path.module_) =
+    self#path p
+
+  method path_module_type (p : 'a Path.module_type) =
+    self#path p
+
+  method path_type (p : 'a Path.type_) =
+    self#path p
+
+  method path_class_type (p : 'a Path.class_type) =
+    self#path p
+
+end
+
+class virtual ['a] fragment = object (self)
+
+  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
+                                   ('a, 'k) Path.Resolved.t
+
+  method fragment_resolved : type k s. ('a, k, s) Fragment.Resolved.raw ->
+                                         ('a, k, s) Fragment.Resolved.raw =
+    fun p ->
+      let open Fragment.Resolved in
+        match p with
+        | Root -> p
+        | Subst(sub, orig) ->
+            let sub' = self#path_resolved sub in
+            let orig' = self#fragment_resolved orig in
+              if sub != sub' || orig != orig' then Subst(sub', orig')
+              else p
+        | SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved sub in
+            let orig' = self#fragment_resolved orig in
+              if sub != sub' || orig != orig' then SubstAlias(sub', orig')
+              else p
+        | Module(parent, name) ->
+            let parent' = self#fragment_resolved parent in
+            let name' = self#fragment_resolved_module_name name in
+              if parent != parent' || name != name' then Module(parent', name')
+              else p
+        | Type(parent, name) ->
+            let parent' = self#fragment_resolved parent in
+            let name' = self#fragment_resolved_type_name name in
+              if parent != parent' || name != name' then Type(parent', name')
+              else p
+        | Class(parent, name) ->
+            let parent' = self#fragment_resolved parent in
+            let name' = self#fragment_resolved_class_name name in
+              if parent != parent' || name != name' then Class(parent', name')
+              else p
+        | ClassType(parent, name) ->
+            let parent' = self#fragment_resolved parent in
+            let name' = self#fragment_resolved_class_type_name name in
+              if parent != parent' || name != name' then
+                ClassType(parent', name')
+              else p
+
+  method fragment_resolved_module_name name = name
+
+  method fragment_resolved_type_name name = name
+
+  method fragment_resolved_class_name name = name
+
+  method fragment_resolved_class_type_name name = name
+
+  method fragment_resolved_module (p : 'a Fragment.Resolved.module_) =
+    self#fragment_resolved p
+
+  method fragment_resolved_type (p : 'a Fragment.Resolved.type_) =
+    self#fragment_resolved p
+
+  method fragment : type k s. ('a, k, s) Fragment.raw ->
+                                     ('a, k, s) Fragment.raw =
+    fun p ->
+      let open Fragment in
+        match p with
+        | Resolved res ->
+            let res' = self#fragment_resolved res in
+              if res != res' then Resolved res'
+              else p
+        | Dot(parent, name) ->
+            let parent' = self#fragment parent in
+            let name' = self#fragment_name name in
+              if parent != parent' || name != name' then Dot(parent', name')
+              else p
+
+  method fragment_name name = name
+
+  method fragment_module (p : 'a Fragment.module_) =
+    self#fragment p
+
+  method fragment_type (p : 'a Fragment.type_) =
+    self#fragment p
+
+end
+
+class virtual ['a] reference = object (self)
+
+  method virtual identifier : 'k . ('a, 'k) Identifier.t ->
+    ('a, 'k) Identifier.t
+
+  method reference_resolved : type k. ('a, k) Reference.Resolved.t ->
+                                        ('a, k) Reference.Resolved.t =
+    fun r ->
+      let open Reference.Resolved in
+        match r with
+        | Identifier id ->
+            let id' = self#identifier id in
+              if id != id' then Identifier id'
+              else r
+        | Module(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_module_name name in
+              if parent != parent' || name != name' then
+                Module(parent', name')
+              else r
+        | ModuleType(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_module_type_name name in
+              if parent != parent' || name != name' then
+                ModuleType(parent', name')
+              else r
+        | Type(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_type_name name in
+              if parent != parent' || name != name' then
+                Type(parent', name')
+              else r
+        | Constructor(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_constructor_name name in
+              if parent != parent' || name != name' then
+                Constructor(parent', name')
+              else r
+        | Field(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_field_name name in
+              if parent != parent' || name != name' then
+                Field(parent', name')
+              else r
+        | Extension(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_extension_name name in
+              if parent != parent' || name != name' then
+                Extension(parent', name')
+              else r
+        | Exception(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_exception_name name in
+              if parent != parent' || name != name' then
+                Exception(parent', name')
+              else r
+        | Value(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_value_name name in
+              if parent != parent' || name != name' then
+                Value(parent', name')
+              else r
+        | Class(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_class_name name in
+              if parent != parent' || name != name' then
+                Class(parent', name')
+              else r
+        | ClassType(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_class_type_name name in
+              if parent != parent' || name != name' then
+                ClassType(parent', name')
+              else r
+        | Method(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_method_name name in
+              if parent != parent' || name != name' then
+                Method(parent', name')
+              else r
+        | InstanceVariable(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_instance_variable_name name in
+              if parent != parent' || name != name' then
+                InstanceVariable(parent', name')
+              else r
+        | Label(parent, name) ->
+            let parent' = self#reference_resolved parent in
+            let name' = self#reference_resolved_label_name name in
+              if parent != parent' || name != name' then
+                Label(parent', name')
+              else r
+
+  method reference_resolved_module_name name = name
+
+  method reference_resolved_module_type_name name = name
+
+  method reference_resolved_type_name name = name
+
+  method reference_resolved_class_name name = name
+
+  method reference_resolved_class_type_name name = name
+
+  method reference_resolved_constructor_name name = name
+
+  method reference_resolved_extension_name name = name
+
+  method reference_resolved_exception_name name = name
+
+  method reference_resolved_field_name name = name
+
+  method reference_resolved_value_name name = name
+
+  method reference_resolved_method_name name = name
+
+  method reference_resolved_instance_variable_name name = name
+
+  method reference_resolved_label_name name = name
+
+  method reference_resolved_module (r : 'a Reference.Resolved.module_) =
+    self#reference_resolved r
+
+  method reference_resolved_module_type
+           (r : 'a Reference.Resolved.module_type) =
+    self#reference_resolved r
+
+  method reference_resolved_type (r : 'a Reference.Resolved.type_) =
+    self#reference_resolved r
+
+  method reference_resolved_constructor (r : 'a Reference.Resolved.constructor) =
+    self#reference_resolved r
+
+  method reference_resolved_field (r : 'a Reference.Resolved.field) =
+    self#reference_resolved r
+
+  method reference_resolved_extension (r : 'a Reference.Resolved.extension) =
+    self#reference_resolved r
+
+  method reference_resolved_exception (r : 'a Reference.Resolved.exception_) =
+    self#reference_resolved r
+
+  method reference_resolved_value (r : 'a Reference.Resolved.value) =
+    self#reference_resolved r
+
+  method reference_resolved_class (r : 'a Reference.Resolved.class_) =
+    self#reference_resolved r
+
+  method reference_resolved_class_type (r : 'a Reference.Resolved.class_type) =
+    self#reference_resolved r
+
+  method reference_resolved_method (r : 'a Reference.Resolved.method_) =
+    self#reference_resolved r
+
+  method reference_resolved_instance_variable
+           (r : 'a Reference.Resolved.instance_variable) =
+    self#reference_resolved r
+
+  method reference_resolved_label (r : 'a Reference.Resolved.label) =
+    self#reference_resolved r
+
+  method reference_resolved_any (r : 'a Reference.Resolved.any) =
+    self#reference_resolved r
+
+  method reference : type k . ('a, k) Reference.t -> ('a, k) Reference.t =
+    fun r ->
+      let open Reference in
+        match r with
+        | Resolved res ->
+            let res' = self#reference_resolved res in
+              if res != res' then Resolved res'
+              else r
+        | Root name ->
+            let name' = self#reference_root_name name in
+              if name != name' then Root name'
+              else r
+        | Dot(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_dot_name name in
+              if parent != parent' || name != name' then Dot(parent', name')
+              else r
+
+  method reference_root_name name = name
+
+  method reference_dot_name name = name
+
+  method reference_module (r : 'a Reference.module_) =
+    self#reference r
+
+  method reference_module_type (r : 'a Reference.module_type) =
+    self#reference r
+
+  method reference_type (r : 'a Reference.type_) =
+    self#reference r
+
+  method reference_constructor (r : 'a Reference.constructor) =
+    self#reference r
+
+  method reference_field (r : 'a Reference.field) =
+    self#reference r
+
+  method reference_extension (r : 'a Reference.extension) =
+    self#reference r
+
+  method reference_exception (r : 'a Reference.exception_) =
+    self#reference r
+
+  method reference_value (r : 'a Reference.value) =
+    self#reference r
+
+  method reference_class (r : 'a Reference.class_) =
+    self#reference r
+
+  method reference_class_type (r : 'a Reference.class_type) =
+    self#reference r
+
+  method reference_method (r : 'a Reference.method_) =
+    self#reference r
+
+  method reference_instance_variable (r : 'a Reference.instance_variable) =
+    self#reference r
+
+  method reference_label (r : 'a Reference.label) =
+    self#reference r
+
+  method reference_any (r : 'a Reference.any) =
+    self#reference r
+
+end
+
+class virtual ['a] paths = object
+  inherit ['a] identifier
+  inherit ['a] path
+  inherit ['a] fragment
+  inherit ['a] reference
+end
+
 class virtual ['a] documentation = object (self)
 
   method virtual identifier_label :
     'a Identifier.label -> 'a Identifier.label
 
-  method virtual identifier_any :
-    'a Identifier.any -> 'a Identifier.any
+  method virtual identifier :
+    'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
 
   method virtual reference_module :
     'a Reference.module_ -> 'a Reference.module_
@@ -355,7 +998,7 @@ class virtual ['a] documentation = object (self)
   method documentation_error err =
     let open Documentation.Error in
     let {origin; offset; location; message} = err in
-    let origin' = self#identifier_any origin in
+    let origin' = self#identifier origin in
     let offset' = self#documentation_error_offset offset in
     let location' = option_map self#documentation_error_location location in
     let message' = self#documentation_error_message message in

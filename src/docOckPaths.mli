@@ -214,6 +214,10 @@ module Identifier : sig
 
   val name : ('a, 'b) t -> string
 
+  val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+  val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
 end
 
 (** {3 Paths} *)
@@ -261,6 +265,10 @@ module rec Path : sig
 
     val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
 
+    val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+    val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
   end
 
   type kind = Kind.path
@@ -306,6 +314,10 @@ module rec Path : sig
 
   val type_of_class_type : 'a class_type -> 'a type_
 
+  val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+  val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
 end
 
 (** {3 Fragments} *)
@@ -349,6 +361,10 @@ module Fragment : sig
 
     val split : ('a, 'b) t -> string * ('a, 'b) t option
 
+    val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+    val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
   end
 
   type kind = Kind.fragment
@@ -374,6 +390,10 @@ module Fragment : sig
   val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
   val split: ('a, 'b) t -> string * ('a, 'b) t option
+
+  val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+  val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
 end
 
@@ -473,6 +493,10 @@ module Reference : sig
     val any : ('a, 'b) t -> 'a any
 
     val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
+
+    val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+    val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
   end
 
@@ -582,5 +606,9 @@ module Reference : sig
         ('a, [< kind > `InstanceVariable])t
 
   val label : 'a parent -> string -> ('a, [< kind > `Label]) t
+
+  val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+
+  val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
 end

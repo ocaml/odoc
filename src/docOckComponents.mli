@@ -115,7 +115,7 @@ module rec Sig : sig
 
   val signature : ('b -> 'a signature) -> 'b -> 'a t
 
-  val functor_ : ('a -> 'a -> bool) option -> ('a -> 'b) option ->
+  val functor_ : ('a -> 'a -> bool) option -> ('a -> int) option ->
                  'a Identifier.module_ -> 'a t -> 'a t -> 'a t
 
   val generative : 'a t -> 'a t

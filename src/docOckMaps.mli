@@ -17,11 +17,303 @@
 open DocOckPaths
 open DocOckTypes
 
+class virtual ['a] identifier : object
+
+  method virtual root : 'a -> 'a
+
+  method identifier : 'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
+
+  method identifier_root_name : string -> string
+
+  method identifier_module_name : string -> string
+
+  method identifier_argument_position : int -> int
+
+  method identifier_argument_name : string -> string
+
+  method identifier_module_type_name : string -> string
+
+  method identifier_type_name : string -> string
+
+  method identifier_core_type_name : string -> string
+
+  method identifier_constructor_name : string -> string
+
+  method identifier_field_name : string -> string
+
+  method identifier_extension_name : string -> string
+
+  method identifier_exception_name : string -> string
+
+  method identifier_core_exception_name : string -> string
+
+  method identifier_value_name : string -> string
+
+  method identifier_class_name : string -> string
+
+  method identifier_class_type_name : string -> string
+
+  method identifier_method_name : string -> string
+
+  method identifier_instance_variable_name : string -> string
+
+  method identifier_label_name : string -> string
+
+  method identifier_signature : 'a Identifier.signature ->
+    'a Identifier.signature
+
+  method identifier_class_signature : 'a Identifier.class_signature ->
+    'a Identifier.class_signature
+
+  method identifier_datatype : 'a Identifier.datatype ->
+    'a Identifier.datatype
+
+  method identifier_module : 'a Identifier.module_ ->
+    'a Identifier.module_
+
+  method identifier_module_type : 'a Identifier.module_type ->
+    'a Identifier.module_type
+
+  method identifier_type : 'a Identifier.type_ -> 'a Identifier.type_
+
+  method identifier_constructor : 'a Identifier.constructor ->
+    'a Identifier.constructor
+
+  method identifier_field : 'a Identifier.field -> 'a Identifier.field
+
+  method identifier_extension : 'a Identifier.extension ->
+    'a Identifier.extension
+
+  method identifier_exception : 'a Identifier.exception_ ->
+    'a Identifier.exception_
+
+  method identifier_value : 'a Identifier.value -> 'a Identifier.value
+
+  method identifier_class : 'a Identifier.class_ -> 'a Identifier.class_
+
+  method identifier_class_type : 'a Identifier.class_type ->
+    'a Identifier.class_type
+
+  method identifier_method : 'a Identifier.method_ -> 'a Identifier.method_
+
+  method identifier_instance_variable : 'a Identifier.instance_variable ->
+    'a Identifier.instance_variable
+
+  method identifier_label : 'a Identifier.label -> 'a Identifier.label
+
+end
+
+class virtual ['a] path : object
+
+  method virtual identifier : 'k. ('a, 'k) Identifier.t ->
+    ('a, 'k) Identifier.t
+
+  method path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
+    ('a, 'k) Path.Resolved.t
+
+  method path_resolved_module_name : string -> string
+
+  method path_resolved_module_type_name : string -> string
+
+  method path_resolved_type_name : string -> string
+
+  method path_resolved_class_name : string -> string
+
+  method path_resolved_class_type_name : string -> string
+
+  method path_resolved_module : 'a Path.Resolved.module_ ->
+    'a Path.Resolved.module_
+
+  method path_resolved_module_type : 'a Path.Resolved.module_type ->
+    'a Path.Resolved.module_type
+
+  method path_resolved_type : 'a Path.Resolved.type_ ->
+    'a Path.Resolved.type_
+
+  method path_resolved_class_type : 'a Path.Resolved.class_type ->
+    'a Path.Resolved.class_type
+
+  method path : 'k . ('a, 'k) Path.t -> ('a, 'k) Path.t
+
+  method path_root_name : string -> string
+
+  method path_dot_name : string -> string
+
+  method path_module : 'a Path.module_ -> 'a Path.module_
+
+  method path_module_type : 'a Path.module_type -> 'a Path.module_type
+
+  method path_type : 'a Path.type_ -> 'a Path.type_
+
+  method path_class_type : 'a Path.class_type -> 'a Path.class_type
+
+end
+
+class virtual ['a] fragment : object
+
+  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
+    ('a, 'k) Path.Resolved.t
+
+  method fragment_resolved : 'k 's. ('a, 'k, 's) Fragment.Resolved.raw ->
+    ('a, 'k, 's) Fragment.Resolved.raw
+
+  method fragment_resolved_module_name : string -> string
+
+  method fragment_resolved_type_name : string -> string
+
+  method fragment_resolved_class_name : string -> string
+
+  method fragment_resolved_class_type_name : string -> string
+
+  method fragment_resolved_module : 'a Fragment.Resolved.module_ ->
+    'a Fragment.Resolved.module_
+
+  method fragment_resolved_type : 'a Fragment.Resolved.type_ ->
+    'a Fragment.Resolved.type_
+
+  method fragment : 'k 's. ('a, 'k, 's) Fragment.raw ->
+    ('a, 'k, 's) Fragment.raw
+
+  method fragment_name : string -> string
+
+  method fragment_module : 'a Fragment.module_ -> 'a Fragment.module_
+
+  method fragment_type : 'a Fragment.type_ -> 'a Fragment.type_
+
+end
+
+class virtual ['a] reference : object
+
+  method virtual identifier : 'k. ('a, 'k) Identifier.t ->
+    ('a, 'k) Identifier.t
+
+  method reference_resolved : 'k. ('a, 'k) Reference.Resolved.t ->
+    ('a, 'k) Reference.Resolved.t
+
+  method reference_resolved_module_name : string -> string
+
+  method reference_resolved_module_type_name : string -> string
+
+  method reference_resolved_type_name : string -> string
+
+  method reference_resolved_class_name : string -> string
+
+  method reference_resolved_class_type_name : string -> string
+
+  method reference_resolved_constructor_name : string -> string
+
+  method reference_resolved_extension_name : string -> string
+
+  method reference_resolved_exception_name : string -> string
+
+  method reference_resolved_field_name : string -> string
+
+  method reference_resolved_value_name : string -> string
+
+  method reference_resolved_method_name : string -> string
+
+  method reference_resolved_instance_variable_name : string -> string
+
+  method reference_resolved_label_name : string -> string
+
+  method reference_resolved_module : 'a Reference.Resolved.module_ ->
+    'a Reference.Resolved.module_
+
+  method reference_resolved_module_type : 'a Reference.Resolved.module_type ->
+    'a Reference.Resolved.module_type
+
+  method reference_resolved_type : 'a Reference.Resolved.type_ ->
+    'a Reference.Resolved.type_
+
+  method reference_resolved_constructor : 'a Reference.Resolved.constructor ->
+    'a Reference.Resolved.constructor
+
+  method reference_resolved_field : 'a Reference.Resolved.field ->
+    'a Reference.Resolved.field
+
+  method reference_resolved_extension : 'a Reference.Resolved.extension ->
+    'a Reference.Resolved.extension
+
+  method reference_resolved_exception : 'a Reference.Resolved.exception_ ->
+    'a Reference.Resolved.exception_
+
+  method reference_resolved_value : 'a Reference.Resolved.value ->
+    'a Reference.Resolved.value
+
+  method reference_resolved_class : 'a Reference.Resolved.class_ ->
+    'a Reference.Resolved.class_
+
+  method reference_resolved_class_type : 'a Reference.Resolved.class_type ->
+    'a Reference.Resolved.class_type
+
+  method reference_resolved_method : 'a Reference.Resolved.method_ ->
+    'a Reference.Resolved.method_
+
+  method reference_resolved_instance_variable :
+    'a Reference.Resolved.instance_variable ->
+    'a Reference.Resolved.instance_variable
+
+  method reference_resolved_label : 'a Reference.Resolved.label ->
+    'a Reference.Resolved.label
+
+  method reference_resolved_any : 'a Reference.Resolved.any ->
+    'a Reference.Resolved.any
+
+  method reference : 'k. ('a, 'k) Reference.t -> ('a, 'k) Reference.t
+
+  method reference_root_name : string -> string
+
+  method reference_dot_name : string -> string
+
+  method reference_module : 'a Reference.module_ -> 'a Reference.module_
+
+  method reference_module_type : 'a Reference.module_type ->
+    'a Reference.module_type
+
+  method reference_type : 'a Reference.type_ -> 'a Reference.type_
+
+  method reference_constructor : 'a Reference.constructor ->
+    'a Reference.constructor
+
+  method reference_field : 'a Reference.field -> 'a Reference.field
+
+  method reference_extension : 'a Reference.extension ->
+    'a Reference.extension
+
+  method reference_exception : 'a Reference.exception_ ->
+    'a Reference.exception_
+
+  method reference_value : 'a Reference.value -> 'a Reference.value
+
+  method reference_class : 'a Reference.class_ -> 'a Reference.class_
+
+  method reference_class_type : 'a Reference.class_type ->
+    'a Reference.class_type
+
+  method reference_method : 'a Reference.method_ -> 'a Reference.method_
+
+  method reference_instance_variable : 'a Reference.instance_variable ->
+    'a Reference.instance_variable
+
+  method reference_label : 'a Reference.label -> 'a Reference.label
+
+  method reference_any : 'a Reference.any -> 'a Reference.any
+
+end
+
+class virtual ['a] paths : object
+  inherit ['a] identifier
+  inherit ['a] path
+  inherit ['a] fragment
+  inherit ['a] reference
+end
+
 class virtual ['a] documentation : object
 
   method virtual identifier_label : 'a Identifier.label -> 'a Identifier.label
 
-  method virtual identifier_any : 'a Identifier.any -> 'a Identifier.any
+  method virtual identifier :
+    'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
 
   method virtual reference_module : 'a Reference.module_ ->
     'a Reference.module_
@@ -261,8 +553,7 @@ class virtual ['a] signature : object
 
   method signature_item : 'a Signature.item -> 'a Signature.item
 
-  method signature : 'a Signature.item list ->
-    'a Signature.item list
+  method signature : 'a Signature.t -> 'a Signature.t
 
 end
 

@@ -41,6 +41,7 @@ let docOckCmt = unit "docOckCmt" (`Path ["src"])
 let docOckComponents = unit "docOckComponents" (`Path ["src"])
 let docOckComponentTbl = unit "docOckComponentTbl" (`Path ["src"])
 let docOckResolve = unit "docOckResolve" (`Path ["src"])
+let docOckSubst = unit "docOckSubst" (`Path ["src"])
 let docOck = unit "docOck" ~flags:no_alias_deps (`Path ["src"])
 
 let units =
@@ -58,6 +59,7 @@ let units =
     docOckComponents;
     docOckComponentTbl;
     docOckResolve;
+    docOckSubst;
     docOck ]
 
 (* Library *)

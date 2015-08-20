@@ -136,117 +136,6 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
         let module Tbl = Hashtbl.Make(Hash) in
           make Tbl.create Tbl.find Tbl.add
 
-(* Equality on module paths *)
-
-let rec equal_ident equal id1 id2 =
-  let open Identifier in
-    match (id1 : 'a signature), (id2 : 'a signature) with
-    | Root(r1, s1), Root(r2, s2) ->
-        s1 = s2 && equal r1 r2
-    | Module(id1, s1), Module(id2, s2) ->
-        s1 = s2 && equal_ident equal id1 id2
-    | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
-        n1 = n2 && s1 = s2 && equal_ident equal id1 id2
-    | ModuleType(id1, s1), ModuleType(id2, s2) ->
-        s1 = s2 && equal_ident equal id1 id2
-    | _, _ -> false
-
-let rec equal_resolved_module_path equal p1 p2 =
-  let open Path.Resolved in
-    match (p1 : 'a module_), (p2 : 'a module_) with
-    | Identifier id1, Identifier id2 ->
-        let id1 = Identifier.signature_of_module id1 in
-        let id2 = Identifier.signature_of_module id2 in
-          equal_ident equal id1 id2
-    | Subst(sub1, p1), Subst(sub2, p2) ->
-        equal_resolved_module_path equal p1 p2
-        && equal_resolved_module_type_path equal sub1 sub2
-    | SubstAlias(sub1, p1), SubstAlias(sub2, p2) ->
-        equal_resolved_module_path equal p1 p2
-        && equal_resolved_module_path equal sub1 sub2
-    | Module(p1, s1), Module(p2, s2) ->
-        s1 = s2 && equal_resolved_module_path equal p1 p2
-    | Apply(p1, arg1), Apply(p2, arg2) ->
-        equal_path equal arg1 arg2
-        && equal_resolved_module_path equal p1 p2
-    | _, _ -> false
-
-and equal_resolved_module_type_path equal p1 p2 =
-  let open Path.Resolved in
-    match (p1 : 'a module_type), (p2 : 'a module_type) with
-    | Identifier id1, Identifier id2 ->
-        let id1 = Identifier.signature_of_module_type id1 in
-        let id2 = Identifier.signature_of_module_type id2 in
-          equal_ident equal id1 id2
-    | ModuleType(p1, s1), ModuleType(p2, s2) ->
-        s1 = s2 && equal_resolved_module_path equal p1 p2
-    | _, _ -> false
-
-and equal_path equal p1 p2 =
-  let open Path in
-    match (p1 : 'a module_), (p2 : 'a module_) with
-    | Resolved p1, Resolved p2 ->
-        equal_resolved_module_path equal p1 p2
-    | Root s1, Root s2 ->
-        s1 = s2
-    | Dot(p1, s1), Dot(p2, s2) ->
-        s1 = s2 && equal_path equal p1 p2
-    | Apply(p1, arg1), Apply(p2, arg2) ->
-        equal_path equal arg1 arg2 && equal_path equal p1 p2
-    | _, _ -> false
-
-let rec hash_ident hash id =
-  let open Identifier in
-    match (id : 'a signature) with
-    | Root(r, s) ->
-        Hashtbl.hash (1, hash r, s)
-    | Module(id, s) ->
-        Hashtbl.hash (2, hash_ident hash id, s)
-    | Argument(id, n, s) ->
-        Hashtbl.hash (3, hash_ident hash id, n, s)
-    | ModuleType(id, s) ->
-        Hashtbl.hash (4, hash_ident hash id, s)
-
-let rec hash_resolved_module_path hash p =
-  let open Path.Resolved in
-    match (p : 'a module_) with
-    | Identifier id ->
-        let id = Identifier.signature_of_module id in
-          hash_ident hash id
-    | Subst(sub, p) ->
-        let hsub = hash_resolved_module_type_path hash sub in
-        let hp = hash_resolved_module_path hash p in
-          Hashtbl.hash (5, hsub, hp)
-    | SubstAlias(sub, p) ->
-        let hsub = hash_resolved_module_path hash sub in
-        let hp = hash_resolved_module_path hash p in
-          Hashtbl.hash (6, hsub, hp)
-    | Module(p, s) ->
-        Hashtbl.hash (7, hash_resolved_module_path hash p, s)
-    | Apply(p, arg) ->
-        Hashtbl.hash
-          (8, hash_resolved_module_path hash p, hash_path hash arg)
-
-and hash_resolved_module_type_path hash p =
-  let open Path.Resolved in
-    match (p : 'a module_type) with
-    | Identifier id ->
-        let id = Identifier.signature_of_module_type id in
-          hash_ident hash id
-    | ModuleType(p, s) ->
-        Hashtbl.hash (9, hash_resolved_module_path hash p, s)
-
-and hash_path hash p =
-  let open Path in
-    match (p : 'a module_) with
-    | Resolved p -> hash_resolved_module_path hash p
-    | Root s ->
-        Hashtbl.hash s
-    | Dot(p, s) ->
-        Hashtbl.hash (10, hash_path hash p, s)
-    | Apply(p, arg) ->
-        Hashtbl.hash (11, hash_path hash p, hash_path hash arg)
-
 (* Read labels from documentation *)
 
 let rec text_element_labels acc =
@@ -376,7 +265,7 @@ module rec Sig : sig
 
   val signature : ('b -> 'a signature) -> 'b -> 'a t
 
-  val functor_ : ('a -> 'a -> bool) option -> ('a -> 'b) option ->
+  val functor_ : ('a -> 'a -> bool) option -> ('a -> int) option ->
                  'a Identifier.module_ -> 'a t -> 'a t -> 'a t
 
   val generative : 'a t -> 'a t
@@ -794,12 +683,12 @@ end = struct
     let equal =
       match equal with
       | None -> None
-      | Some eq -> Some (equal_path eq)
+      | Some equal -> Some (Path.equal ~equal)
     in
     let hash =
       match hash with
       | None -> None
-      | Some h -> Some (hash_path h)
+      | Some hash -> Some (Path.hash ~hash)
     in
     let cache = make_tbl equal hash 3 in
       Functor {id; arg; res; cache}
