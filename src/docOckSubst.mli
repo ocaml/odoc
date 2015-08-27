@@ -17,14 +17,64 @@
 open DocOckPaths
 open DocOckTypes
 
-val signature : equal:('a -> 'a -> bool) ->
-  'a Identifier.signature -> 'a Identifier.signature ->
-  'a Signature.t -> 'a Signature.t
+type 'a t
 
-val class_signature : equal:('a -> 'a -> bool) ->
-  'a Identifier.class_signature -> 'a Identifier.class_signature ->
-  'a ClassSignature.t -> 'a ClassSignature.t
+val signature : 'a t -> 'a Signature.t -> 'a Signature.t
 
-val datatype : equal:('a -> 'a -> bool) ->
-  'a Identifier.datatype -> 'a Identifier.datatype ->
-  'a TypeDecl.t -> 'a TypeDecl.t
+val class_signature : 'a t -> 'a ClassSignature.t -> 'a ClassSignature.t
+
+val datatype : 'a t -> 'a TypeDecl.Representation.t ->
+               'a TypeDecl.Representation.t
+
+val module_ : 'a t -> 'a Module.t -> 'a Module.t
+
+val module_type : 'a t -> 'a ModuleType.t -> 'a ModuleType.t
+
+val type_decl : 'a t -> 'a TypeDecl.t -> 'a TypeDecl.t
+
+val constructor : 'a t -> 'a TypeDecl.Constructor.t ->
+                  'a TypeDecl.Constructor.t
+
+val field : 'a t -> 'a TypeDecl.Field.t -> 'a TypeDecl.Field.t
+
+val extension : 'a t -> 'a Extension.t -> 'a Extension.t
+
+val exception_ : 'a t -> 'a Exception.t -> 'a Exception.t
+
+val value : 'a t -> 'a Value.t -> 'a Value.t
+
+val class_ : 'a t -> 'a Class.t -> 'a Class.t
+
+val class_type : 'a t -> 'a ClassType.t -> 'a ClassType.t
+
+val method_ : 'a t -> 'a Method.t -> 'a Method.t
+
+val instance_variable : 'a t -> 'a InstanceVariable.t ->
+                        'a InstanceVariable.t
+
+val comment : 'a t -> 'a Documentation.comment -> 'a Documentation.comment
+
+val identifier_module : 'a t -> 'a Identifier.module_ ->
+                        'a Identifier.module_
+
+val module_type_expr : 'a t -> 'a ModuleType.expr -> 'a ModuleType.expr
+
+val rename_signature : equal:('a -> 'a -> bool) ->
+                       'a Identifier.signature ->
+                       'a Identifier.signature ->
+                       'a t
+
+val rename_class_signature : equal:('a -> 'a -> bool) ->
+                             'a Identifier.class_signature ->
+                             'a Identifier.class_signature ->
+                             'a t
+
+val rename_datatype : equal:('a -> 'a -> bool) ->
+                      'a Identifier.datatype ->
+                      'a Identifier.datatype ->
+                      'a t
+
+val prefix : equal:('a -> 'a -> bool) -> 'a Identifier.module_ -> 'a t
+
+val pack : equal:('a -> 'a -> bool) -> hash:('a -> int) ->
+           ('a Identifier.module_ * 'a Identifier.module_) list -> 'a t

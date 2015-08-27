@@ -202,28 +202,20 @@ let build_resolver = DocOckResolve.build_resolver
 
 let resolve = DocOckResolve.resolve
 
-type 'a expander = unit
+type 'a expander = 'a DocOckExpand.t
 
-let build_expander fetch = ()
+let build_expander = DocOckExpand.build_expander
 
-type 'a expansion =
+type 'a expansion = 'a DocOckExpand.module_expansion =
   | Signature of 'a Types.Signature.t
   | Functor of ('a Paths.Identifier.module_ *
                 'a Types.ModuleType.expr) option list *
                'a Types.Signature.t
 
-let rec expand_module_type () = function
-  | Types.ModuleType.Path _ -> None
-  | Types.ModuleType.Signature sg -> Some (Signature sg)
-  | Types.ModuleType.Functor(arg, expr) -> begin
-      match expand_module_type () expr with
-      | None -> None
-      | Some (Signature sg) -> Some(Functor([arg], sg))
-      | Some (Functor(args, sg)) -> Some(Functor(arg :: args, sg))
-    end
-  | Types.ModuleType.With _ -> None
-  | Types.ModuleType.TypeOf decl -> expand_module () decl
+let expand_module_type = DocOckExpand.expand_module_type
 
-and expand_module () = function
-  | Types.Module.Alias _ -> None
-  | Types.Module.ModuleType expr -> expand_module_type () expr
+let expand_module = DocOckExpand.expand_module
+
+let expand_unit = DocOckExpand.expand_unit
+
+let expand_include = DocOckExpand.expand_include
