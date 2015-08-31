@@ -32,18 +32,28 @@ let read_style = function
   | SK_subscript -> Subscript
   | SK_custom s -> Custom s
 
+exception InvalidReference of string
+
 let read_longident s =
   let open DocOckPaths.Reference in
-  let rec read_parent lid =
-    match lid with
-    | Longident.Lident s -> Root s
-    | Longident.Ldot(lid, s) -> Dot(read_parent lid, s)
-    | Longident.Lapply(_, _) -> assert false
+  let rec loop : 'k. string -> int -> ('a, [< kind] as 'k) t option =
+    fun s pos ->
+      try
+        let idx = String.rindex_from s pos '.' in
+        let name = String.sub s (idx + 1) (pos - idx) in
+        if String.length name = 0 then None
+        else
+          match loop s (idx - 1) with
+          | None -> None
+          | Some parent -> Some (Dot(parent, name))
+      with Not_found ->
+        let name = String.sub s 0 (pos + 1) in
+        if String.length name = 0 then None
+        else Some (Root name)
   in
-  match Longident.parse s with
-  | Longident.Lident s -> Root s
-  | Longident.Ldot(lid, s) -> Dot(read_parent lid, s)
-  | Longident.Lapply(_, _) -> assert false
+    match loop s (String.length s - 1) with
+    | None -> raise (InvalidReference s)
+    | Some r -> r
 
 let read_reference rk s =
   match rk with
@@ -173,32 +183,46 @@ let read_error origin err pos =
   let message = Octavius.Errors.message err.Octavius.Errors.error in
     { origin; offset; location; message }
 
-let invalid_attribute_error origin loc =
+let attribute_location loc =
   let open Lexing in
   let open Location in
+  let open Error in
+  let start = loc.loc_start in
+  let finish = loc.loc_end in
+  if start.pos_cnum >= 0 && finish.pos_cnum >= 0 then begin
+    let filename = start.pos_fname in
+    let read_pos pos =
+      let line = pos.pos_lnum in
+      let column = pos.pos_cnum - pos.pos_bol in
+      { Position.line; column }
+    in
+    let start = read_pos start in
+    let finish = read_pos finish in
+    Some { Location.filename; start; finish }
+  end else None
+
+let invalid_attribute_error origin loc =
   let open Error in
   let origin = DocOckPaths.Identifier.any origin in
   let offset =
     let zero_pos = { Position.line = 0; column = 0 } in
     { Offset.start = zero_pos; finish = zero_pos }
   in
-  let location =
-    let start = loc.loc_start in
-    let finish = loc.loc_end in
-    if start.pos_cnum >= 0 && finish.pos_cnum >= 0 then begin
-      let filename = start.pos_fname in
-      let read_pos pos =
-        let line = pos.pos_lnum in
-        let column = pos.pos_cnum - pos.pos_bol in
-          { Position.line; column }
-      in
-      let start = read_pos start in
-      let finish = read_pos finish in
-        Some { Location.filename; start; finish }
-    end else None
-  in
+  let location = attribute_location loc in
   let message = "Invalid documentation attribute" in
     { origin; offset; location; message }
+
+let invalid_reference_error origin loc s =
+  let open Error in
+  let origin = DocOckPaths.Identifier.any origin in
+  (* TODO get an actual offset *)
+  let dummy = { Position.line = 0; column = 0} in
+  let offset = { Offset.start = dummy; finish = dummy } in
+  (* TODO get an accurate location *)
+  let location = attribute_location loc in
+  let message = "Invalid reference: \"" ^ s ^ "\"" in
+    {origin; offset; location; message}
+
 
 let read_attributes parent id attrs =
   let rec loop first acc : _ -> 'a t = function
@@ -206,19 +230,23 @@ let read_attributes parent id attrs =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
         match read_payload payload with
         | Some (str, loc) -> begin
-            let loc = loc.Location.loc_start in
+            let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
             match Octavius.parse lexbuf with
-            | Octavius.Ok (text, tags) ->
-                let text = read_text parent text in
-                let text = if first then text else Newline :: text in
-                let tags = List.map (read_tag parent) tags in
-                let acc =
-                  { text = acc.text @ text;
-                    tags = acc.tags @ tags; }
-                in
-                loop false acc rest
-            | Octavius.Error err -> Error (read_error id err loc)
+            | Octavius.Ok (text, tags) -> begin
+                try
+                  let text = read_text parent text in
+                  let text = if first then text else Newline :: text in
+                  let tags = List.map (read_tag parent) tags in
+                  let acc =
+                    { text = acc.text @ text;
+                      tags = acc.tags @ tags; }
+                  in
+                  loop false acc rest
+                with InvalidReference s ->
+                  Error (invalid_reference_error id loc s)
+              end
+            | Octavius.Error err -> Error (read_error id err start_pos)
           end
         | None -> Error (invalid_attribute_error id loc)
       end
@@ -235,14 +263,18 @@ let read_comment parent : Parsetree.attribute -> 'a comment option =
       | Some ("/*", loc) -> Some Stop
       | Some (str, loc) ->
           let lexbuf = Lexing.from_string str in
-          let loc = loc.Location.loc_start in
+          let start_pos = loc.Location.loc_start in
           let doc =
             match Octavius.parse lexbuf with
-            | Octavius.Ok(text, tags) ->
-                let text = read_text parent text in
-                let tags = List.map (read_tag parent) tags in
-                Ok {text; tags}
-            | Octavius.Error err -> Error (read_error parent err loc)
+            | Octavius.Ok(text, tags) -> begin
+                try
+                  let text = read_text parent text in
+                  let tags = List.map (read_tag parent) tags in
+                  Ok {text; tags}
+                with InvalidReference s ->
+                  Error (invalid_reference_error parent loc s)
+              end
+            | Octavius.Error err -> Error (read_error parent err start_pos)
           in
           Some (Documentation doc)
       | None ->
