@@ -232,7 +232,7 @@ let read_comment parent : Parsetree.attribute -> 'a comment option =
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
       match read_payload payload with
-      | Some ("/", loc) -> Some Stop
+      | Some ("/*", loc) -> Some Stop
       | Some (str, loc) ->
           let lexbuf = Lexing.from_string str in
           let loc = loc.Location.loc_start in
