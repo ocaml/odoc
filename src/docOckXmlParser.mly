@@ -202,18 +202,24 @@ flag(X):
   | X CLOSE
       { true }
 
+%inline string:
+  | (* empty *)
+      { "" }
+  | data = Data
+      { data}
+
 module_identifier:
-  | ROOT base = Base data = Data CLOSE
+  | ROOT base = Base data = string CLOSE
       { Identifier.Root(base, data) }
-  | MODULE sg = signature_identifier data = Data CLOSE
+  | MODULE sg = signature_identifier data = string CLOSE
       { Identifier.Module(sg, data) }
-  | pos = Argument sg = signature_identifier data = Data CLOSE
+  | pos = Argument sg = signature_identifier data = string CLOSE
       { match pos with
         | None -> $syntaxerror
         | Some pos -> Identifier.Argument(sg, pos, data) }
 
 module_type_identifier:
-  | MODULE_TYPE sg = signature_identifier data = Data CLOSE
+  | MODULE_TYPE sg = signature_identifier data = string CLOSE
       { Identifier.ModuleType(sg, data) }
 
 signature_identifier:
@@ -223,39 +229,39 @@ signature_identifier:
       { Identifier.signature_of_module_type mty }
 
 type_identifier:
-  | TYPE sg = signature_identifier data = Data CLOSE
+  | TYPE sg = signature_identifier data = string CLOSE
       { Identifier.Type(sg, data) }
-  | TYPE data = Data CLOSE
+  | TYPE data = string CLOSE
       { Identifier.CoreType data }
 
 constructor_identifier:
-  | CONSTRUCTOR sg = type_identifier data = Data CLOSE
+  | CONSTRUCTOR sg = type_identifier data = string CLOSE
       { Identifier.Constructor(sg, data) }
 
 field_identifier:
-  | FIELD sg = type_identifier data = Data CLOSE
+  | FIELD sg = type_identifier data = string CLOSE
       { Identifier.Field(sg, data) }
 
 extension_identifier:
-  | EXTENSION sg = signature_identifier data = Data CLOSE
+  | EXTENSION sg = signature_identifier data = string CLOSE
       { Identifier.Extension(sg, data) }
 
 exception_identifier:
-  | EXCEPTION sg = signature_identifier data = Data CLOSE
+  | EXCEPTION sg = signature_identifier data = string CLOSE
       { Identifier.Exception(sg, data) }
-  | EXCEPTION data = Data CLOSE
+  | EXCEPTION data = string CLOSE
       { Identifier.CoreException data }
 
 value_identifier:
-  | VALUE sg = signature_identifier data = Data CLOSE
+  | VALUE sg = signature_identifier data = string CLOSE
       { Identifier.Value(sg, data) }
 
 class_identifier:
-  | CLASS sg = signature_identifier data = Data CLOSE
+  | CLASS sg = signature_identifier data = string CLOSE
       { Identifier.Class(sg, data) }
 
 class_type_identifier:
-  | CLASS_TYPE sg = signature_identifier data = Data CLOSE
+  | CLASS_TYPE sg = signature_identifier data = string CLOSE
       { Identifier.ClassType(sg, data) }
 
 class_signature_identifier:
@@ -265,15 +271,15 @@ class_signature_identifier:
       { Identifier.class_signature_of_class_type clty }
 
 method_identifier:
-  | METHOD sg = class_signature_identifier data = Data CLOSE
+  | METHOD sg = class_signature_identifier data = string CLOSE
       { Identifier.Method(sg, data) }
 
 instance_variable_identifier:
-  | INSTANCE_VARIABLE sg = class_signature_identifier data = Data CLOSE
+  | INSTANCE_VARIABLE sg = class_signature_identifier data = string CLOSE
       { Identifier.InstanceVariable(sg, data) }
 
 label_identifier:
-  | LABEL sg = parent_identifier data = Data CLOSE
+  | LABEL sg = parent_identifier data = string CLOSE
       { Identifier.Label(sg, data) }
 
 parent_identifier:
@@ -319,7 +325,7 @@ module_resolved_path:
       { Path.Resolved.Subst(sub, p) }
   | SUBST_ALIAS sub = module_resolved_path p = module_resolved_path CLOSE
       { Path.Resolved.SubstAlias(sub, p) }
-  | MODULE md = module_resolved_path data = Data CLOSE
+  | MODULE md = module_resolved_path data = string CLOSE
       { Path.Resolved.Module(md, data) }
   | APPLY md = module_resolved_path arg = module_path CLOSE
       { Path.Resolved.Apply(md, arg) }
@@ -327,13 +333,13 @@ module_resolved_path:
 module_type_resolved_path:
   | IDENTIFIER id = module_type_identifier CLOSE
       { Path.Resolved.ident_module_type id }
-  | MODULE_TYPE md = module_resolved_path data = Data CLOSE
+  | MODULE_TYPE md = module_resolved_path data = string CLOSE
       { Path.Resolved.ModuleType(md, data) }
 
 type_resolved_path:
   | IDENTIFIER id = type_identifier CLOSE
       { Path.Resolved.ident_type id }
-  | TYPE md = module_resolved_path data = Data CLOSE
+  | TYPE md = module_resolved_path data = string CLOSE
       { Path.Resolved.Type(md, data) }
   | cltyp = class_type_resolved_path
       { relax_class_type_path cltyp }
@@ -341,13 +347,13 @@ type_resolved_path:
 class_resolved_path:
   | IDENTIFIER id = class_identifier CLOSE
       { Path.Resolved.ident_class id }
-  | CLASS md = module_resolved_path data = Data CLOSE
+  | CLASS md = module_resolved_path data = string CLOSE
       { Path.Resolved.Class(md, data) }
 
 class_type_resolved_path:
   | IDENTIFIER id = class_type_identifier CLOSE
       { Path.Resolved.ident_class_type id }
-  | CLASS_TYPE md = module_resolved_path data = Data CLOSE
+  | CLASS_TYPE md = module_resolved_path data = string CLOSE
       { Path.Resolved.ClassType(md, data) }
   | cl = class_resolved_path
       { relax_class_path cl }
@@ -355,9 +361,9 @@ class_type_resolved_path:
 module_path:
   | RESOLVED path = module_resolved_path CLOSE
       { Path.Resolved path }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Path.Root data }
-  | DOT md = module_path data = Data CLOSE
+  | DOT md = module_path data = string CLOSE
       { Path.Dot(md, data) }
   | APPLY md = module_path arg = module_path CLOSE
       { Path.Apply(md, arg) }
@@ -365,19 +371,19 @@ module_path:
 module_type_path:
   | RESOLVED path = module_type_resolved_path CLOSE
       { Path.Resolved path }
-  | DOT md = module_path data = Data CLOSE
+  | DOT md = module_path data = string CLOSE
       { Path.Dot(md, data) }
 
 type_path:
   | RESOLVED path = type_resolved_path CLOSE
       { Path.Resolved path }
-  | DOT md = module_path data = Data CLOSE
+  | DOT md = module_path data = string CLOSE
       { Path.Dot(md, data) }
 
 class_type_path:
   | RESOLVED path = class_type_resolved_path CLOSE
       { Path.Resolved path }
-  | DOT md = module_path data = Data CLOSE
+  | DOT md = module_path data = string CLOSE
       { Path.Dot(md, data) }
 
 module_resolved_fragment:
@@ -385,15 +391,15 @@ module_resolved_fragment:
       { Fragment.Resolved.Subst(sub, p) }
   | SUBST_ALIAS sub = module_resolved_path p = module_resolved_fragment CLOSE
       { Fragment.Resolved.SubstAlias(sub, p) }
-  | MODULE md = signature_resolved_fragment data = Data CLOSE
+  | MODULE md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.Module(md, data) }
 
 type_resolved_fragment:
-  | TYPE md = signature_resolved_fragment data = Data CLOSE
+  | TYPE md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.Type(md, data) }
-  | CLASS md = signature_resolved_fragment data = Data CLOSE
+  | CLASS md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.Class(md, data) }
-  | CLASS_TYPE md = signature_resolved_fragment data = Data CLOSE
+  | CLASS_TYPE md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.ClassType(md, data) }
 
 signature_resolved_fragment:
@@ -403,37 +409,37 @@ signature_resolved_fragment:
       { Fragment.Resolved.Subst(sub, p) }
   | SUBST_ALIAS sub = module_resolved_path p = signature_resolved_fragment CLOSE
       { Fragment.Resolved.SubstAlias(sub, p) }
-  | MODULE md = signature_resolved_fragment data = Data CLOSE
+  | MODULE md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.Module(md, data) }
 
 signature_fragment:
   | RESOLVED frag = signature_resolved_fragment CLOSE
       { Fragment.Resolved frag }
-  | DOT md = signature_fragment data = Data CLOSE
+  | DOT md = signature_fragment data = string CLOSE
       { Fragment.Dot(md, data) }
 
 module_fragment:
   | RESOLVED frag = module_resolved_fragment CLOSE
       { Fragment.Resolved frag }
-  | DOT md = signature_fragment data = Data CLOSE
+  | DOT md = signature_fragment data = string CLOSE
       { Fragment.Dot(md, data) }
 
 type_fragment:
   | RESOLVED frag = type_resolved_fragment CLOSE
       { Fragment.Resolved frag }
-  | DOT md = signature_fragment data = Data CLOSE
+  | DOT md = signature_fragment data = string CLOSE
       { Fragment.Dot(md, data) }
 
 module_resolved_reference:
   | IDENTIFIER id = module_identifier CLOSE
       { Reference.Resolved.ident_module id }
-  | MODULE sg = signature_resolved_reference data = Data CLOSE
+  | MODULE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Module(sg, data) }
 
 module_type_resolved_reference:
   | IDENTIFIER id = module_type_identifier CLOSE
       { Reference.Resolved.ident_module_type id }
-  | MODULE_TYPE sg = signature_resolved_reference data = Data CLOSE
+  | MODULE_TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.ModuleType(sg, data) }
 
 signature_resolved_reference:
@@ -445,7 +451,7 @@ signature_resolved_reference:
 datatype_resolved_reference:
   | IDENTIFIER id = type_identifier CLOSE
       { Reference.Resolved.ident_type id }
-  | TYPE sg = signature_resolved_reference data = Data CLOSE
+  | TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Type(sg, data) }
 
 type_resolved_reference:
@@ -457,7 +463,7 @@ type_resolved_reference:
 constructor_resolved_reference:
   | IDENTIFIER id = constructor_identifier CLOSE
       { Reference.Resolved.ident_constructor id }
-  | CONSTRUCTOR sg = datatype_resolved_reference data = Data CLOSE
+  | CONSTRUCTOR sg = datatype_resolved_reference data = string CLOSE
       { Reference.Resolved.Constructor(sg, data) }
   | ext = extension_resolved_reference
       { relax_extension_reference ext }
@@ -465,19 +471,19 @@ constructor_resolved_reference:
 field_resolved_reference:
   | IDENTIFIER id = field_identifier CLOSE
       { Reference.Resolved.ident_field id }
-  | FIELD sg = datatype_resolved_reference data = Data CLOSE
+  | FIELD sg = datatype_resolved_reference data = string CLOSE
       { Reference.Resolved.Field(sg, data) }
 
 exception_resolved_reference:
   | IDENTIFIER id = exception_identifier CLOSE
       { Reference.Resolved.ident_exception id }
-  | EXCEPTION sg = signature_resolved_reference data = Data CLOSE
+  | EXCEPTION sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Exception(sg, data) }
 
 extension_resolved_reference:
   | IDENTIFIER id = extension_identifier CLOSE
       { Reference.Resolved.ident_extension id }
-  | EXTENSION sg = signature_resolved_reference data = Data CLOSE
+  | EXTENSION sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Extension(sg, data) }
   | exn = exception_resolved_reference
       { relax_exception_reference exn }
@@ -485,19 +491,19 @@ extension_resolved_reference:
 value_resolved_reference:
   | IDENTIFIER id = value_identifier CLOSE
       { Reference.Resolved.ident_value id }
-  | VALUE sg = signature_resolved_reference data = Data CLOSE
+  | VALUE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Value(sg, data) }
 
 class_resolved_reference:
   | IDENTIFIER id = class_identifier CLOSE
       { Reference.Resolved.ident_class id }
-  | CLASS sg = signature_resolved_reference data = Data CLOSE
+  | CLASS sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Class(sg, data) }
 
 class_type_resolved_reference:
   | IDENTIFIER id = class_type_identifier CLOSE
       { Reference.Resolved.ident_class_type id }
-  | CLASS_TYPE sg = signature_resolved_reference data = Data CLOSE
+  | CLASS_TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.ClassType(sg, data) }
   | cl = class_resolved_reference
       { relax_class_reference cl }
@@ -505,19 +511,19 @@ class_type_resolved_reference:
 method_resolved_reference:
   | IDENTIFIER id = method_identifier CLOSE
       { Reference.Resolved.ident_method id }
-  | METHOD sg = class_type_resolved_reference data = Data CLOSE
+  | METHOD sg = class_type_resolved_reference data = string CLOSE
       { Reference.Resolved.Method(sg, data) }
 
 instance_variable_resolved_reference:
   | IDENTIFIER id = instance_variable_identifier CLOSE
       { Reference.Resolved.ident_instance_variable id }
-  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = Data CLOSE
+  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = string CLOSE
       { Reference.Resolved.InstanceVariable(sg, data) }
 
 label_resolved_reference:
   | IDENTIFIER id = label_identifier CLOSE
       { Reference.Resolved.ident_label id }
-  | LABEL sg = parent_resolved_reference data = Data CLOSE
+  | LABEL sg = parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Label(sg, data) }
 
 parent_resolved_reference:
@@ -531,151 +537,151 @@ parent_resolved_reference:
 element_resolved_reference:
   | IDENTIFIER id = element_identifier CLOSE
       { Reference.Resolved.Identifier id }
-  | MODULE sg = signature_resolved_reference data = Data CLOSE
+  | MODULE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Module(sg, data) }
-  | MODULE_TYPE sg = signature_resolved_reference data = Data CLOSE
+  | MODULE_TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.ModuleType(sg, data) }
-  | TYPE sg = signature_resolved_reference data = Data CLOSE
+  | TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Type(sg, data) }
-  | CONSTRUCTOR sg = datatype_resolved_reference data = Data CLOSE
+  | CONSTRUCTOR sg = datatype_resolved_reference data = string CLOSE
       { Reference.Resolved.Constructor(sg, data) }
-  | FIELD sg = datatype_resolved_reference data = Data CLOSE
+  | FIELD sg = datatype_resolved_reference data = string CLOSE
       { Reference.Resolved.Field(sg, data) }
-  | EXCEPTION sg = signature_resolved_reference data = Data CLOSE
+  | EXCEPTION sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Exception(sg, data) }
-  | EXTENSION sg = signature_resolved_reference data = Data CLOSE
+  | EXTENSION sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Extension(sg, data) }
-  | VALUE sg = signature_resolved_reference data = Data CLOSE
+  | VALUE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Value(sg, data) }
-  | CLASS sg = signature_resolved_reference data = Data CLOSE
+  | CLASS sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Class(sg, data) }
-  | CLASS_TYPE sg = signature_resolved_reference data = Data CLOSE
+  | CLASS_TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.ClassType(sg, data) }
-  | METHOD sg = class_type_resolved_reference data = Data CLOSE
+  | METHOD sg = class_type_resolved_reference data = string CLOSE
       { Reference.Resolved.Method(sg, data) }
-  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = Data CLOSE
+  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = string CLOSE
       { Reference.Resolved.InstanceVariable(sg, data) }
-  | LABEL sg = parent_resolved_reference data = Data CLOSE
+  | LABEL sg = parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Label(sg, data) }
 
 module_reference:
   | RESOLVED rf = module_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 module_type_reference:
   | RESOLVED rf = module_type_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 type_reference:
   | RESOLVED rf = type_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 constructor_reference:
   | RESOLVED rf = constructor_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 field_reference:
   | RESOLVED rf = field_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 extension_reference:
   | RESOLVED rf = extension_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 exception_reference:
   | RESOLVED rf = exception_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 value_reference:
   | RESOLVED rf = value_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 class_reference:
   | RESOLVED rf = class_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 class_type_reference:
   | RESOLVED rf = class_type_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 method_reference:
   | RESOLVED rf = method_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 instance_variable_reference:
   | RESOLVED rf = instance_variable_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 label_reference:
   | RESOLVED rf = label_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 parent_reference:
   | RESOLVED rf = parent_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 element_reference:
   | RESOLVED rf = element_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = Data CLOSE
+  | ROOT data = string CLOSE
       { Reference.Root data }
-  | DOT p = parent_reference data = Data CLOSE
+  | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
 
 reference:
@@ -707,9 +713,9 @@ reference:
       { Documentation.Element rf }
   | SECTION rf = label_reference CLOSE
       { Documentation.Section rf }
-  | LINK data = Data CLOSE
+  | LINK data = string CLOSE
       { Documentation.Link data }
-  | tag = Custom data = Data CLOSE
+  | tag = Custom data = string CLOSE
       { Documentation.Custom(tag, data) }
 
 special:
@@ -721,12 +727,6 @@ special:
 item:
   | ITEM text = text CLOSE
       { text }
-
-%inline string:
-  | (* empty *)
-      { "" }
-  | data = Data
-      { data}
 
 text_element:
   | data = Data
@@ -781,21 +781,21 @@ text_element:
       { elems }
 
 see:
-  | URL data = Data CLOSE
+  | URL data = string CLOSE
       { Documentation.Url data }
-  | FILE data = Data CLOSE
+  | FILE data = string CLOSE
       { Documentation.File data }
-  | DOC data = Data CLOSE
+  | DOC data = string CLOSE
       { Documentation.Doc data }
 
 tag:
-  | AUTHOR data = Data CLOSE
+  | AUTHOR data = string CLOSE
       { Documentation.Author data }
-  | VERSION data = Data CLOSE
+  | VERSION data = string CLOSE
       { Documentation.Version data }
   | SEE see = see text = text CLOSE
       { Documentation.See(see, text) }
-  | SINCE data = Data CLOSE
+  | SINCE data = string CLOSE
       { Documentation.Since data }
   | BEFORE name = name text = text CLOSE
       { Documentation.Before(name, text) }
@@ -837,7 +837,7 @@ offset:
     { Documentation.Error.Offset.{start; finish} }
 
 filename:
-| FILENAME data = Data CLOSE
+| FILENAME data = string CLOSE
     { data }
 
 location:
