@@ -400,36 +400,15 @@ class virtual ['a] documentation : object
 
   method documentation_tag_version : string -> string
 
-  method documentation_tag_see_body : 'a Documentation.text ->
-    'a Documentation.text
-
   method documentation_tag_since : string -> string
 
   method documentation_tag_before : string -> string
 
-  method documentation_tag_before_body : 'a Documentation.text ->
-    'a Documentation.text
-
-  method documentation_tag_deprecated : 'a Documentation.text ->
-    'a Documentation.text
-
   method documentation_tag_param : string -> string
-
-  method documentation_tag_param_body : 'a Documentation.text ->
-    'a Documentation.text
 
   method documentation_tag_raise : string -> string
 
-  method documentation_tag_raise_body : 'a Documentation.text ->
-    'a Documentation.text
-
-  method documentation_tag_return : 'a Documentation.text ->
-    'a Documentation.text
-
   method documentation_tag_name : string -> string
-
-  method documentation_tag_body : 'a Documentation.text ->
-    'a Documentation.text
 
   method documentation_tags : 'a Documentation.tag list ->
     'a Documentation.tag list

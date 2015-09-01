@@ -906,58 +906,51 @@ class virtual ['a] documentation = object (self)
           let version' = self#documentation_tag_version version in
             if version != version' then Version version'
             else tag
-      | See(see, body) ->
+      | See(see, txt) ->
           let see' = self#documentation_see see in
-          let body' = self#documentation_tag_see_body body in
-            if see != see' || body != body' then See(see', body')
+          let txt' = self#documentation_text txt in
+            if see != see' || txt != txt' then See(see', txt')
             else tag
       | Since since ->
           let since' = self#documentation_tag_since since in
             if since != since' then Since since'
             else tag
-      | Before(before, body) ->
+      | Before(before, txt) ->
           let before' = self#documentation_tag_before before in
-          let body' = self#documentation_tag_before_body body in
-            if before != before' || body != body' then Before(before', body')
+          let txt' = self#documentation_text txt in
+            if before != before' || txt != txt' then Before(before', txt')
             else tag
-      | Deprecated deprecated ->
-          let deprecated' = self#documentation_tag_deprecated deprecated in
-            if deprecated != deprecated' then Deprecated deprecated'
+      | Deprecated txt ->
+          let txt' = self#documentation_text txt in
+            if txt != txt' then Deprecated txt'
             else tag
-      | Param(param, body) ->
+      | Param(param, txt) ->
           let param' = self#documentation_tag_param param in
-          let body' = self#documentation_tag_param_body body in
-            if param != param' || body != body' then Param(param', body')
+          let txt' = self#documentation_text txt in
+            if param != param' || txt != txt' then Param(param', txt')
             else tag
-      | Raise(raise, body) ->
+      | Raise(raise, txt) ->
           let raise' = self#documentation_tag_raise raise in
-          let body' = self#documentation_tag_raise_body body in
-            if raise != raise' || body != body' then Raise(raise', body')
+          let txt' = self#documentation_text txt in
+            if raise != raise' || txt != txt' then Raise(raise', txt')
             else tag
-      | Return return ->
-          let return' = self#documentation_tag_return return in
-            if return != return' then Return return'
+      | Return txt ->
+          let txt' = self#documentation_text txt in
+            if txt != txt' then Return txt'
             else tag
-      | Tag(name, body) ->
+      | Tag(name, txt) ->
           let name' = self#documentation_tag_name name in
-          let body' = self#documentation_tag_body body in
-            if name != name' || body != body' then Tag(name', body')
+          let txt' = self#documentation_text txt in
+            if name != name' || txt != txt' then Tag(name', txt')
             else tag
 
   method documentation_tag_author author = author
   method documentation_tag_version version = version
-  method documentation_tag_see_body body = body
   method documentation_tag_since since = since
   method documentation_tag_before before = before
-  method documentation_tag_before_body body = body
-  method documentation_tag_deprecated deprecated = deprecated
   method documentation_tag_param param = param
-  method documentation_tag_param_body body = body
   method documentation_tag_raise raise = raise
-  method documentation_tag_raise_body body = body
-  method documentation_tag_return return = return
   method documentation_tag_name tag = tag
-  method documentation_tag_body body = body
 
   method documentation_tags tags =
     list_map self#documentation_tag tags
