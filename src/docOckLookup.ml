@@ -1,4 +1,5 @@
 
+open DocOckTypes
 open DocOckNameEnv
 
 class ['a] lookup = object (self)
@@ -57,19 +58,53 @@ class ['a] lookup = object (self)
   method reference_any x =
     lookup_element env x
 
-  method super_signature sg = super#signature sg
+  method super_module md = super#module_ md
 
-  method signature sg =
-    let env = add_signature_items sg env in
+  method module_ md =
+    let open Module in
+    let env = add_module_decl_items md.type_ env in
     let this = {< env = env >} in
-      this#super_signature sg
+      this#super_module md
 
-  method super_class_signature sg = super#class_signature sg
+  method super_module_type mty = super#module_type mty
 
-  method class_signature clsig =
-    let env = add_class_signature_items clsig env in
+  method module_type mty =
+    let open ModuleType in
+    let env =
+      match mty.expr with
+      | None -> env
+      | Some expr -> add_module_type_expr_items expr env
+    in
     let this = {< env = env >} in
-      this#super_class_signature clsig
+      this#super_module_type mty
+
+  method super_unit unt = super#unit unt
+
+  method unit unt =
+    let open Unit in
+    let env =
+      match unt.content with
+      | Module items -> add_signature_items items env
+      | Pack _ -> env
+    in
+    let this = {< env = env >} in
+      this#super_unit unt
+
+  method super_class cl = super#class_ cl
+
+  method class_ cl =
+    let open Class in
+    let env = add_class_decl_items cl.type_ env in
+    let this = {< env = env >} in
+      this#super_class cl
+
+  method super_class_type cltyp = super#class_type cltyp
+
+  method class_type cltyp =
+    let open ClassType in
+    let env = add_class_type_expr_items cltyp.expr env in
+    let this = {< env = env >} in
+      this#super_class_type cltyp
 
 end
 

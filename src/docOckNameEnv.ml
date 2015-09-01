@@ -114,12 +114,7 @@ let empty =
     parents = StringTbl.empty;
     elements = StringTbl.empty; }
 
-let opt_fold f o acc =
-  match o with
-  | None -> acc
-  | Some x -> f x acc
-
-let add_label id env =
+let add_label_ident id env =
   let name = Identifier.name id in
   let elements =
     StringTbl.add name (widen_label id) env.elements
@@ -128,6 +123,154 @@ let add_label id env =
     StringTbl.add name id env.labels
   in
     { env with elements; labels }
+
+let add_value_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_value id) env.elements
+  in
+  let values =
+    StringTbl.add name id env.values
+  in
+    { env with elements; values }
+
+let add_external_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_value id) env.elements
+  in
+  let values =
+    StringTbl.add name id env.values
+  in
+    { env with elements; values }
+
+let add_constructor_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_constructor id) env.elements
+  in
+  let constructors =
+    StringTbl.add name (widen_constructor id) env.constructors
+  in
+    { env with elements; constructors }
+
+let add_field_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_field id) env.elements
+  in
+  let fields =
+    StringTbl.add name id env.fields
+  in
+    { env with elements; fields }
+
+let add_type_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_type id) env.elements
+  in
+  let parents =
+    StringTbl.add name (widen_type id) env.parents
+  in
+  let types =
+    StringTbl.add name (widen_type id) env.types
+  in
+    { env with elements; parents; types }
+
+let add_extension_constructor_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_extension id) env.elements
+  in
+  let constructors =
+    StringTbl.add name (widen_extension id) env.constructors
+  in
+  let extensions =
+    StringTbl.add name (widen_extension id) env.extensions
+  in
+    { env with elements; constructors; extensions }
+
+let add_exception_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_exception id) env.elements
+  in
+  let constructors =
+    StringTbl.add name (widen_exception id) env.constructors
+  in
+  let extensions =
+    StringTbl.add name (widen_exception id) env.extensions
+  in
+  let exceptions =
+    StringTbl.add name id env.exceptions
+  in
+    { env with elements; constructors; extensions; exceptions }
+
+let add_class_type_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_class_type id) env.elements
+  in
+  let parents =
+    StringTbl.add name (widen_class_type id) env.parents
+  in
+  let types =
+    StringTbl.add name (widen_class_type id) env.types
+  in
+  let class_types =
+    StringTbl.add name (widen_class_type id) env.class_types
+  in
+    { env with elements; parents; types; class_types }
+
+let add_class_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_class id) env.elements
+  in
+  let parents =
+    StringTbl.add name (widen_class id) env.parents
+  in
+  let types =
+    StringTbl.add name (widen_class id) env.types
+  in
+  let class_types =
+    StringTbl.add name (widen_class id) env.class_types
+  in
+  let classes =
+    StringTbl.add name (widen_class id) env.classes
+  in
+    { env with elements; parents; types; class_types; classes }
+
+let add_module_type_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_module_type id) env.elements
+  in
+  let parents =
+    StringTbl.add name (widen_module_type id) env.parents
+  in
+  let module_types =
+    StringTbl.add name (widen_module_type id) env.module_types
+  in
+    { env with elements; parents; module_types }
+
+let add_module_ident id env =
+  let name = Identifier.name id in
+  let elements =
+    StringTbl.add name (widen_module id) env.elements
+  in
+  let parents =
+    StringTbl.add name (widen_module id) env.parents
+  in
+  let modules =
+    StringTbl.add name (widen_module id) env.modules
+  in
+    { env with elements; parents; modules }
+
+let opt_fold f o acc =
+  match o with
+  | None -> acc
+  | Some x -> f x acc
 
 let rec add_text_element elem env =
   let open Documentation in
@@ -142,7 +285,7 @@ let rec add_text_element elem env =
         let env =
           match l with
           | None -> env
-          | Some id -> add_label id env
+          | Some id -> add_label_ident id env
         in
           env
 
@@ -175,50 +318,22 @@ let add_comment com env =
 let add_value vl env =
   let open Value in
   let env = add_documentation vl.doc env in
-  let name = Identifier.name vl.id in
-  let elements =
-    StringTbl.add name (widen_value vl.id) env.elements
-  in
-  let values =
-    StringTbl.add name vl.id env.values
-  in
-    { env with elements; values }
+    add_value_ident vl.id env
 
 let add_external xt env =
   let open External in
   let env = add_documentation xt.doc env in
-  let name = Identifier.name xt.id in
-  let elements =
-    StringTbl.add name (widen_value xt.id) env.elements
-  in
-  let values =
-    StringTbl.add name xt.id env.values
-  in
-    { env with elements; values }
+    add_external_ident xt.id env
 
 let add_constructor cstr env =
   let open TypeDecl.Constructor in
   let env = add_documentation cstr.doc env in
-  let name = Identifier.name cstr.id in
-  let elements =
-    StringTbl.add name (widen_constructor cstr.id) env.elements
-  in
-  let constructors =
-    StringTbl.add name (widen_constructor cstr.id) env.constructors
-  in
-    { env with elements; constructors }
+    add_constructor_ident cstr.id env
 
 let add_field field env =
   let open TypeDecl.Field in
   let env = add_documentation field.doc env in
-  let name = Identifier.name field.id in
-  let elements =
-    StringTbl.add name (widen_field field.id) env.elements
-  in
-  let fields =
-    StringTbl.add name field.id env.fields
-  in
-    { env with elements; fields }
+    add_field_ident field.id env
 
 let add_representation repr env =
   let open TypeDecl.Representation in
@@ -231,32 +346,12 @@ let add_type_decl decl env =
   let open TypeDecl in
   let env  = add_documentation decl.doc env in
   let env = opt_fold add_representation decl.representation env in
-  let name = Identifier.name decl.id in
-  let elements =
-    StringTbl.add name (widen_type decl.id) env.elements
-  in
-  let parents =
-    StringTbl.add name (widen_type decl.id) env.parents
-  in
-  let types =
-    StringTbl.add name (widen_type decl.id) env.types
-  in
-    { env with elements; parents; types }
+    add_type_ident decl.id env
 
 let add_extension_constructor ext env =
   let open Extension.Constructor in
   let env = add_documentation ext.doc env in
-  let name = Identifier.name ext.id in
-  let elements =
-    StringTbl.add name (widen_extension ext.id) env.elements
-  in
-  let constructors =
-    StringTbl.add name (widen_extension ext.id) env.constructors
-  in
-  let extensions =
-    StringTbl.add name (widen_extension ext.id) env.extensions
-  in
-    { env with elements; constructors; extensions }
+    add_extension_constructor_ident ext.id env
 
 let add_extension tyext env =
   let open Extension in
@@ -270,89 +365,27 @@ let add_extension tyext env =
 let add_exception exn env =
   let open Exception in
   let env = add_documentation exn.doc env in
-  let name = Identifier.name exn.id in
-  let elements =
-    StringTbl.add name (widen_exception exn.id) env.elements
-  in
-  let constructors =
-    StringTbl.add name (widen_exception exn.id) env.constructors
-  in
-  let extensions =
-    StringTbl.add name (widen_exception exn.id) env.extensions
-  in
-  let exceptions =
-    StringTbl.add name exn.id env.exceptions
-  in
-    { env with elements; constructors; extensions; exceptions }
+    add_exception_ident exn.id env
 
 let add_class_type cltyp env =
   let open ClassType in
   let env = add_documentation cltyp.doc env in
-  let name = Identifier.name cltyp.id in
-  let elements =
-    StringTbl.add name (widen_class_type cltyp.id) env.elements
-  in
-  let parents =
-    StringTbl.add name (widen_class_type cltyp.id) env.parents
-  in
-  let types =
-    StringTbl.add name (widen_class_type cltyp.id) env.types
-  in
-  let class_types =
-    StringTbl.add name (widen_class_type cltyp.id) env.class_types
-  in
-    { env with elements; parents; types; class_types }
+    add_class_type_ident cltyp.id env
 
 let add_class cl env =
   let open Class in
   let env = add_documentation cl.doc env in
-  let name = Identifier.name cl.id in
-  let elements =
-    StringTbl.add name (widen_class cl.id) env.elements
-  in
-  let parents =
-    StringTbl.add name (widen_class cl.id) env.parents
-  in
-  let types =
-    StringTbl.add name (widen_class cl.id) env.types
-  in
-  let class_types =
-    StringTbl.add name (widen_class cl.id) env.class_types
-  in
-  let classes =
-    StringTbl.add name (widen_class cl.id) env.classes
-  in
-    { env with elements; parents; types; class_types; classes }
+    add_class_ident cl.id env
 
 let add_module_type mtyp env =
   let open ModuleType in
   let env = add_documentation mtyp.doc env in
-  let name = Identifier.name mtyp.id in
-  let elements =
-    StringTbl.add name (widen_module_type mtyp.id) env.elements
-  in
-  let parents =
-    StringTbl.add name (widen_module_type mtyp.id) env.parents
-  in
-  let module_types =
-    StringTbl.add name (widen_module_type mtyp.id) env.module_types
-  in
-    { env with elements; parents; module_types }
+    add_module_type_ident mtyp.id env
 
 let add_module md env =
   let open Module in
   let env = add_documentation md.doc env in
-  let name = Identifier.name md.id in
-  let elements =
-    StringTbl.add name (widen_module md.id) env.elements
-  in
-  let parents =
-    StringTbl.add name (widen_module md.id) env.parents
-  in
-  let modules =
-    StringTbl.add name (widen_module md.id) env.modules
-  in
-    { env with elements; parents; modules }
+    add_module_ident md.id env
 
 let add_signature_item item env =
   let open Signature in
@@ -371,6 +404,24 @@ let add_signature_item item env =
 
 let add_signature_items sg env =
   List.fold_right add_signature_item sg env
+
+let rec add_module_type_expr_items expr env =
+  let open ModuleType in
+    match expr with
+    | Path _ -> env
+    | Signature sg -> add_signature_items sg env
+    | Functor(None, expr) -> add_module_type_expr_items expr env
+    | Functor(Some(id, _), expr) ->
+      add_module_ident id
+        (add_module_type_expr_items expr env)
+    | With(expr, _) -> add_module_type_expr_items expr env
+    | TypeOf decl -> add_module_decl_items decl env
+
+and add_module_decl_items decl env =
+  let open Module in
+    match decl with
+    | Alias _ -> env
+    | ModuleType expr -> add_module_type_expr_items expr env
 
 let add_method meth env =
   let open Method in
@@ -399,18 +450,30 @@ let add_instance_variable inst env =
 
 let add_class_signature_item item env =
   let open ClassSignature in
-  match item with
-  | Method meth -> add_method meth env
-  | InstanceVariable inst -> add_instance_variable inst env
-  | Constraint _ -> env
-  | Inherit _ -> env
-  | Comment com -> add_comment com env
+    match item with
+    | Method meth -> add_method meth env
+    | InstanceVariable inst -> add_instance_variable inst env
+    | Constraint _ -> env
+    | Inherit _ -> env
+    | Comment com -> add_comment com env
 
 let add_class_signature_items clsig env =
   let open ClassSignature in
     List.fold_right
       add_class_signature_item
       clsig.items env
+
+let add_class_type_expr_items expr env =
+  let open ClassType in
+    match expr with
+    | Constr _ -> env
+    | Signature clsig -> add_class_signature_items clsig env
+
+let rec add_class_decl_items decl env =
+  let open Class in
+    match decl with
+    | ClassType expr -> add_class_type_expr_items expr env
+    | Arrow(_, _, decl) -> add_class_decl_items decl env
 
 open DocOckPaths.Reference.Resolved
 open DocOckPaths.Reference

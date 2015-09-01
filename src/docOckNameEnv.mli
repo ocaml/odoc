@@ -23,7 +23,15 @@ val empty : 'a t
 
 val add_signature_items : 'a Signature.t -> 'a t -> 'a t
 
+val add_module_type_expr_items : 'a ModuleType.expr -> 'a t -> 'a t
+
+val add_module_decl_items : 'a Module.decl -> 'a t -> 'a t
+
 val add_class_signature_items : 'a ClassSignature.t -> 'a t -> 'a t
+
+val add_class_type_expr_items : 'a ClassType.expr -> 'a t -> 'a t
+
+val add_class_decl_items : 'a Class.decl -> 'a t -> 'a t
 
 val lookup_module : 'a t -> 'a Reference.module_ ->
   'a Reference.module_
