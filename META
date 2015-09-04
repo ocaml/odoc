@@ -1,4 +1,4 @@
-version  = "version-not-set"
+version  = "0.3.0"
 requires = "doc-ock xmlm menhirLib"
 archive(byte) = "doc-ock-xml.cma"
 archive(byte, plugin) = "doc-ock-xml.cma"
