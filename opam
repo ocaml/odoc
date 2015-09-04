@@ -9,7 +9,7 @@ depends: [
   "ocamlfind"
   "xmlm"
   "menhir"
-  "doc-ock" {>= 0.3.0}
+  "doc-ock" {>= "0.3.0"}
 ]
 build: [
   [make]
