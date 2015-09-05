@@ -259,6 +259,10 @@ module rec Sig : sig
 
   val include_ : 'a t -> 'a signature -> 'a signature
 
+  val modules : 'a t -> (string * 'a t) list
+
+  val module_types : 'a t -> (string * 'a t) list
+
   val path : ('a Path.module_type -> 'a t) -> 'a Path.module_type -> 'a t
 
   val alias : ('a Path.module_ -> 'a t) -> 'a Path.module_ -> 'a t
@@ -666,6 +670,22 @@ end = struct
           {modules; module_types; class_signatures;
            types; parents; elements}
     | Functor _ | Generative _ | Abstract | Unresolved -> sg
+
+  let rec modules t =
+      match t with
+    | Expr expr -> modules (Lazy.force expr.expansion)
+    | Sig sg ->
+        let sg = Lazy.force sg in
+          SMap.bindings sg.modules
+    | Functor _ | Generative _ | Abstract | Unresolved -> []
+
+  let rec module_types t =
+      match t with
+    | Expr expr -> module_types (Lazy.force expr.expansion)
+    | Sig sg ->
+        let sg = Lazy.force sg in
+          SMap.bindings sg.module_types
+    | Functor _ | Generative _ | Abstract | Unresolved -> []
 
   let path lookup p =
     let term = Path(p, false) in

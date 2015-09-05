@@ -514,8 +514,6 @@ class virtual ['a] signature : object
 
   method virtual module_type : 'a ModuleType.t -> 'a ModuleType.t
 
-  method virtual module_type_expr : 'a ModuleType.expr -> 'a ModuleType.expr
-
   method virtual type_decl : 'a TypeDecl.t -> 'a TypeDecl.t
 
   method virtual extension : 'a Extension.t -> 'a Extension.t
@@ -530,9 +528,23 @@ class virtual ['a] signature : object
 
   method virtual class_type : 'a ClassType.t -> 'a ClassType.t
 
+  method virtual include_ : 'a Include.t -> 'a Include.t
+
   method signature_item : 'a Signature.item -> 'a Signature.item
 
   method signature : 'a Signature.t -> 'a Signature.t
+
+end
+
+class virtual ['a] include_ : object
+
+  method virtual module_type_expr : 'a ModuleType.expr ->
+                                    'a ModuleType.expr
+
+  method virtual identifier_signature : 'a Identifier.signature ->
+                                        'a Identifier.signature
+
+  method include_ : 'a Include.t -> 'a Include.t
 
 end
 
@@ -832,6 +844,7 @@ class virtual ['a] types : object
   inherit ['a] module_
   inherit ['a] module_type
   inherit ['a] signature
+  inherit ['a] include_
   inherit ['a] type_decl
   inherit ['a] extension
   inherit ['a] exception_

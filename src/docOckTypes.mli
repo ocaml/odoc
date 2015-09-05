@@ -196,10 +196,19 @@ and Signature : sig
     | External of 'a External.t
     | Class of 'a Class.t
     | ClassType of 'a ClassType.t
-    | Include of 'a ModuleType.expr
+    | Include of 'a Include.t
     | Comment of 'a Documentation.comment
 
   type 'a t = 'a item list
+
+end
+
+(** {3 Includes} *)
+and Include : sig
+
+  type 'a t =
+    { parent: 'a Identifier.signature;
+      expr: 'a ModuleType.expr }
 
 end
 

@@ -409,8 +409,7 @@ and read_structure_item env parent item =
         [ModuleType (DocOckCmti.read_module_type_declaration env parent mtd)]
     | Tstr_open _ -> []
     | Tstr_include incl ->
-        let mty = read_module_expr env parent 0 incl.incl_mod in
-          [Include mty]
+        [Include (read_include env parent incl)]
     | Tstr_class cls ->
         let cls = List.map (fun (cl, _, _) -> cl) cls in
           read_class_declarations env parent cls
@@ -422,6 +421,11 @@ and read_structure_item env parent item =
           match read_comment container attr with
           | None -> []
           | Some doc -> [Comment doc]
+
+and read_include env parent incl =
+  let open Include in
+  let expr = read_module_expr env parent 0 incl.incl_mod in
+    {parent; expr}
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

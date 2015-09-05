@@ -724,3 +724,13 @@ module With10 : sig
 end
 
 module type With11 = With7(With10).T with module M = With9 and type N.t = int
+
+module type NestedInclude1 = sig
+
+  module type NestedInclude2 = sig type nested_include end
+
+end
+
+include NestedInclude1
+
+include NestedInclude2 with type nested_include = int

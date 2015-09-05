@@ -642,3 +642,15 @@ module With10 = struct
 end
 
 module type With11 = With7(With10).T with module M = With9 and type N.t = int
+
+module type NestedInclude1 = sig
+
+  module type NestedInclude2 = sig type nested_include end
+
+end
+
+module type NestedInclude2 = sig
+  type nested_include
+end
+
+type nested_include = int

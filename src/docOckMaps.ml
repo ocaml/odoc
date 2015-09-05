@@ -1201,9 +1201,6 @@ class virtual ['a] signature = object (self)
   method virtual module_type :
     'a ModuleType.t -> 'a ModuleType.t
 
-  method virtual module_type_expr :
-    'a ModuleType.expr -> 'a ModuleType.expr
-
   method virtual type_decl :
     'a TypeDecl.t -> 'a TypeDecl.t
 
@@ -1224,6 +1221,9 @@ class virtual ['a] signature = object (self)
 
   method virtual class_type :
     'a ClassType.t -> 'a ClassType.t
+
+  method virtual include_:
+    'a Include.t -> 'a Include.t
 
   method signature_item item =
     let open Signature in
@@ -1265,7 +1265,7 @@ class virtual ['a] signature = object (self)
             if mty != mty' then ModuleType mty'
             else item
       | Include incl ->
-          let incl' = self#module_type_expr incl in
+          let incl' = self#include_ incl in
             if incl != incl' then Include incl'
             else item
       | Comment com ->
@@ -1275,6 +1275,25 @@ class virtual ['a] signature = object (self)
 
   method signature sg =
     list_map self#signature_item sg
+
+end
+
+class virtual ['a] include_ = object (self)
+
+  method virtual module_type_expr :
+    'a ModuleType.expr -> 'a ModuleType.expr
+
+  method virtual identifier_signature :
+    'a Identifier.signature -> 'a Identifier.signature
+
+  method include_ incl =
+    let open Include in
+    let {parent; expr} = incl in
+    let parent' = self#identifier_signature parent in
+    let expr' = self#module_type_expr expr in
+      if parent != parent' || expr != expr' then
+        {parent = parent'; expr = expr'}
+      else incl
 
 end
 
@@ -1993,6 +2012,7 @@ class virtual ['a] types = object
   inherit ['a] module_
   inherit ['a] module_type
   inherit ['a] signature
+  inherit ['a] include_
   inherit ['a] type_decl
   inherit ['a] extension
   inherit ['a] exception_

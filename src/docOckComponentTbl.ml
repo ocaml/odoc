@@ -90,6 +90,18 @@ let add_local_module_type_identifier (local : 'a local) id sg =
   let open Identifier in
     local.add (signature_of_module_type id) sg
 
+let add_local_modules (local : 'a local) id mds =
+  let open Identifier in
+    List.iter
+      (fun (name, sg) -> local.add (Module(id, name)) sg)
+      mds
+
+let add_local_module_types (local : 'a local) id mtys =
+  let open Identifier in
+    List.iter
+      (fun (name, sg) -> local.add (ModuleType(id, name)) sg)
+      mtys
+
 let local_module_identifier (local : 'a local option) id =
   let open Identifier in
     match local with
@@ -394,9 +406,12 @@ and signature_items tbl local u =
         let name = Identifier.name clty.id in
         let expr = class_type_expr tbl u clty.expr in
           add_class_type name expr sg
-    | Include expr :: rest ->
+    | Include incl :: rest ->
+        let open Include in
+        let expr = module_type_expr tbl local u incl.expr in
+        add_local_modules local incl.parent (modules expr);
+        add_local_module_types local incl.parent (module_types expr);
         let sg = signature_items tbl local u rest in
-        let expr = module_type_expr tbl local u expr in
           include_ expr sg
     | Comment com :: rest ->
         let sg = signature_items tbl local u rest in

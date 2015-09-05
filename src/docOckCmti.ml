@@ -507,8 +507,7 @@ and read_signature_item env parent item =
         [ModuleType (read_module_type_declaration env parent mtd)]
     | Tsig_open _ -> []
     | Tsig_include incl ->
-        let mty = read_module_type env parent 0 incl.incl_mod in
-          [Include mty]
+        [Include (read_include env parent incl)]
     | Tsig_class cls ->
         read_class_descriptions env parent cls
     | Tsig_class_type cltyps ->
@@ -518,6 +517,11 @@ and read_signature_item env parent item =
           match read_comment container attr with
           | None -> []
           | Some doc -> [Comment doc]
+
+and read_include env parent incl =
+  let open Include in
+  let expr = read_module_type env parent 0 incl.incl_mod in
+    {parent; expr}
 
 and read_signature env parent sg =
   let env =

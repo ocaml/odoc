@@ -109,6 +109,10 @@ module rec Sig : sig
 
   val include_ : 'a t -> 'a signature -> 'a signature
 
+  val modules : 'a t -> (string * 'a t) list
+
+  val module_types : 'a t -> (string * 'a t) list
+
   val path : ('a Path.module_type -> 'a t) -> 'a Path.module_type -> 'a t
 
   val alias : ('a Path.module_ -> 'a t) -> 'a Path.module_ -> 'a t
