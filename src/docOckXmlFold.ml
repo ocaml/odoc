@@ -1178,9 +1178,11 @@ and signature_item_p base output acc =
       let acc = doc_p base output acc mty.doc in
       let acc = opt module_type_expr_p base output acc mty.expr in
       close output acc
-    | Include expr ->
+    | Include incl ->
+      let open Include in
       let acc = include_t output acc in
-      let acc = module_type_expr_p base output acc expr in
+      let acc = identifier_p base output acc incl.parent in
+      let acc = module_type_expr_p base output acc incl.expr in
       close output acc
     | Comment com -> comment_p base output acc com
 
