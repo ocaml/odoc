@@ -512,6 +512,7 @@ module Unit : sig
       imports: 'a Import.t list;
       source: 'a Source.t option;
       interface: bool;
+      hidden: bool;
       content: 'a content; }
 
 end

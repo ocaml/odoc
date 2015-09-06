@@ -837,6 +837,8 @@ class virtual ['a] unit : object
 
   method unit_interface : bool -> bool
 
+  method unit_hidden : bool -> bool
+
 end
 
 class virtual ['a] types : object

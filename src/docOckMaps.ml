@@ -1986,24 +1986,33 @@ class virtual ['a] unit = object (self)
 
   method unit unit =
     let open Unit in
-    let {id; doc; digest; imports; source; interface; content} = unit in
+    let {id; doc; digest; imports;
+         source; interface; hidden; content} = unit
+    in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let digest' = self#unit_digest digest in
     let imports' = list_map self#unit_import imports in
     let source' = option_map self#unit_source source in
     let interface' = self#unit_interface interface in
+    let hidden' = self#unit_hidden hidden in
     let content' = self#unit_content content in
-      if id != id' || doc != doc' || digest != digest' || imports != imports'
-         || source != source' || interface != interface' || content != content'
+      if id != id' || doc != doc' || digest != digest'
+         || imports != imports' || source != source'
+         || interface != interface' || hidden != hidden'
+         || content != content'
       then
-        {id = id'; doc = doc'; digest = digest'; imports = imports';
-         source = source'; interface = interface'; content = content'}
+        {id = id'; doc = doc'; digest = digest';
+         imports = imports'; source = source';
+         interface = interface'; hidden = hidden';
+         content = content'}
       else unit
 
   method unit_digest digest = digest
 
   method unit_interface intf = intf
+
+  method unit_hidden hidden = hidden
 
 end
 
