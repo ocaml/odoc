@@ -78,6 +78,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "filename" Parser.FILENAME;
     Hashtbl.add plain_tags "fixed" Parser.FIXED;
     Hashtbl.add plain_tags "functor" Parser.FUNCTOR;
+    Hashtbl.add plain_tags "hidden" Parser.HIDDEN;
     Hashtbl.add plain_tags "identifier" Parser.IDENTIFIER;
     Hashtbl.add plain_tags "import" Parser.IMPORT;
     Hashtbl.add plain_tags "include" Parser.INCLUDE;

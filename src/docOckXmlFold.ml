@@ -134,6 +134,9 @@ let fixed_t output acc =
 let functor_t output acc =
   output acc (`El_start ((ns, "functor"), []))
 
+let hidden_t output acc =
+  output acc (`El_start ((ns, "hidden"), []))
+
 let identifier_t output acc =
   output acc (`El_start ((ns, "identifier"), []))
 
@@ -1250,6 +1253,7 @@ let unit_p base output acc unit =
   let acc = list unit_import_p base output acc unit.imports in
   let acc = opt source_p base output acc unit.source in
   let acc = flag interface_t output acc unit.interface in
+  let acc = flag hidden_t output acc unit.hidden in
   let acc = unit_content_p base output acc unit.content in
   close output acc
 

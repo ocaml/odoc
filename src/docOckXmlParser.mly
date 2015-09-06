@@ -101,6 +101,7 @@ let relax_class_type_reference cltyp =
 %token FILENAME
 %token FIXED
 %token FUNCTOR
+%token HIDDEN
 %token IDENTIFIER
 %token IMPORT
 %token INCLUDE
@@ -1153,9 +1154,11 @@ unit_content:
 
 unit:
   | UNIT id = module_identifier doc = doc digest = digest imports = unit_import*
-      source = source? interface = flag(INTERFACE) content = unit_content CLOSE
+      source = source? interface = flag(INTERFACE) hidden = flag(HIDDEN)
+      content = unit_content CLOSE
           { let open Unit in
-              {id; doc; digest; imports; source; interface; content} }
+              {id; doc; digest; imports; source;
+               interface; hidden; content} }
 
 file:
   | DTD unit = unit EOF
