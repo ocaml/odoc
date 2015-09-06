@@ -67,6 +67,62 @@ let create ?equal ?hash lookup fetch =
   let tbl = make_tbl equal hash 7 in
     {equal; hash; lookup; fetch; tbl}
 
+let tbl_equal tbl =
+  match tbl.equal with
+  | Some equal -> equal
+  | None -> (=)
+
+let equals_unit (type k) eq unit (id : ('a, k) Identifier.t) =
+  let open Identifier in
+    match id with
+    | Root _ as id ->
+        Identifier.equal ~equal:eq unit.Unit.id id
+    | Module _ as id ->
+        Identifier.equal ~equal:eq unit.Unit.id id
+    | Argument _ as id ->
+        Identifier.equal ~equal:eq unit.Unit.id id
+    | ModuleType _ -> false
+    | Type _ -> false
+    | CoreType _ -> false
+    | Constructor _ -> false
+    | Field _ -> false
+    | Extension _ -> false
+    | Exception _ -> false
+    | CoreException _ -> false
+    | Value _ -> false
+    | Class _ -> false
+    | ClassType _ -> false
+    | Method _ -> false
+    | InstanceVariable _ -> false
+    | Label _ -> false
+
+let rec is_parent_local : type k . _ -> _ -> ('a, k) Identifier.t -> bool =
+  fun eq unit id ->
+    let open Identifier in
+      match id with
+      | Root _  -> false
+      | Module(parent, _) -> is_local eq unit parent
+      | Argument(parent, _, _) -> is_local eq unit parent
+      | ModuleType(parent, _) -> is_local eq unit parent
+      | Type(parent, _) -> is_local eq unit parent
+      | CoreType _ -> false
+      | Constructor(parent, _) -> is_local eq unit parent
+      | Field(parent, _) -> is_local eq unit parent
+      | Extension(parent, _) -> is_local eq unit parent
+      | Exception(parent, _) -> is_local eq unit parent
+      | CoreException _ -> false
+      | Value(parent, _) -> is_local eq unit parent
+      | Class(parent, _) -> is_local eq unit parent
+      | ClassType(parent, _) -> is_local eq unit parent
+      | Method(parent, _) -> is_local eq unit parent
+      | InstanceVariable(parent, _) -> is_local eq unit parent
+      | Label(parent, _) -> is_local eq unit parent
+
+and is_local : type k . _ -> _ -> ('a, k) Identifier.t -> bool =
+  fun eq unit id ->
+    is_parent_local eq unit id
+    || equals_unit eq unit id
+
 type 'a local = ('a Identifier.signature, 'a Sig.t) tbl
 
 let create_local equal hash =
@@ -105,20 +161,20 @@ let add_local_module_types (local : 'a local) id mtys =
 let local_module_identifier (local : 'a local option) id =
   let open Identifier in
     match local with
-    | None -> None
+    | None -> Sig.unresolved
     | Some local ->
         try
-          Some (local.find (signature_of_module id))
-        with Not_found -> None
+          local.find (signature_of_module id)
+        with Not_found -> Sig.unresolved
 
 let local_module_type_identifier (local : 'a local option) id =
   let open Identifier in
     match local with
-    | None -> None
+    | None -> Sig.unresolved
     | Some local ->
         try
-          Some (local.find (signature_of_module_type id))
-        with Not_found -> None
+          local.find (signature_of_module_type id)
+        with Not_found -> Sig.unresolved
 
 let datatype decl =
   let open TypeDecl in
@@ -230,11 +286,9 @@ and class_signature_identifier tbl =
 
 and resolved_module_path tbl local u =
   let open Path.Resolved in function
-  | Identifier (id : 'a Identifier.module_) -> begin
-      match local_module_identifier local id with
-      | Some sg -> sg
-      | None ->  module_identifier tbl id
-    end
+  | Identifier (id : 'a Identifier.module_) ->
+      if is_local (tbl_equal tbl) u id then local_module_identifier local id
+      else module_identifier tbl id
   | Subst(sub, _) -> resolved_module_type_path tbl local u sub
   | SubstAlias(sub, _) -> resolved_module_path tbl local u sub
   | Module(p, name) ->
@@ -246,11 +300,9 @@ and resolved_module_path tbl local u =
 
 and resolved_module_type_path tbl local u =
   let open Path.Resolved in function
-  | Identifier (id : 'a Identifier.module_type) -> begin
-      match local_module_type_identifier local id with
-      | Some sg -> sg
-      | None -> module_type_identifier tbl id
-    end
+  | Identifier (id : 'a Identifier.module_type) ->
+      if is_local (tbl_equal tbl) u id then local_module_type_identifier local id
+      else module_type_identifier tbl id
   | ModuleType(p, name) ->
       let parent = resolved_module_path tbl local u p in
         Sig.lookup_module_type name parent
