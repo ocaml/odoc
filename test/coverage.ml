@@ -654,3 +654,15 @@ module type NestedInclude2 = sig
 end
 
 type nested_include = int
+
+module DoubleInclude1 = struct
+  module DoubleInclude2 = struct
+    type double_include
+  end
+end
+
+module DoubleInclude3 = struct
+  include DoubleInclude1
+end
+
+include DoubleInclude3.DoubleInclude2

@@ -37,6 +37,7 @@ testCmt: testCommon.ml testCmt.ml
 
 clean:
 	rm -f testCmi
+	rm -f testCmt
 	rm -f testCmti
 	rm -f *.cmo
 	rm -f *.cmi

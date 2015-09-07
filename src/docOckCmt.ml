@@ -357,6 +357,11 @@ let rec read_module_expr env parent pos mexpr =
     | Tmod_unpack(_, mty) ->
         DocOckCmi.read_module_type env parent pos mty
 
+and unwrap_module_expr_desc = function
+  | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
+      unwrap_module_expr_desc mexpr.mod_desc
+  | desc -> desc
+
 and read_module_binding env parent mb =
   let open Module in
   let name = parenthesise (Ident.name mb.mb_id) in
@@ -364,7 +369,7 @@ and read_module_binding env parent mb =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id mb.mb_attributes in
   let type_ =
-    match mb.mb_expr.mod_desc with
+    match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env id 1 mb.mb_expr)
   in
@@ -424,7 +429,14 @@ and read_structure_item env parent item =
 
 and read_include env parent incl =
   let open Include in
-  let expr = read_module_expr env parent 0 incl.incl_mod in
+  let expr =
+    match unwrap_module_expr_desc incl.incl_mod.mod_desc with
+    | Tmod_ident _ ->
+        let mty = Mty_signature incl.incl_type in
+          DocOckCmi.read_module_type env parent 0 mty
+    | mexpr ->
+        read_module_expr env parent 0 incl.incl_mod
+  in
     {parent; expr}
 
 and read_structure env parent str =
