@@ -107,6 +107,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "offset" Parser.OFFSET;
     Hashtbl.add plain_tags "open" Parser.OPEN;
     Hashtbl.add plain_tags "optional" Parser.OPTIONAL;
+    Hashtbl.add plain_tags "pack" Parser.PACK;
     Hashtbl.add plain_tags "package" Parser.PACKAGE;
     Hashtbl.add plain_tags "param" Parser.PARAM;
     Hashtbl.add plain_tags "path" Parser.PATH;
