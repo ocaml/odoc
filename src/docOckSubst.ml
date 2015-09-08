@@ -287,19 +287,19 @@ class ['a] pack ~equal ~hash
         | Root _ as id -> begin
             match lookup id with
             | Some (Root _ | Module _ | Argument _ as id) -> id
-            | None -> id
+            | None -> super#identifier id
           end
         | Module _ as id -> begin
             match lookup id with
             | Some (Root _ | Module _ | Argument _ as id) -> id
-            | None -> id
+            | None -> super#identifier id
           end
         | Argument _ as id -> begin
             match lookup id with
             | Some (Root _ | Module _ | Argument _ as id) -> id
             | None -> id
           end
-        | _ -> id
+        | _ -> super#identifier id
 
   inherit ['a] DocOckMaps.types
 
