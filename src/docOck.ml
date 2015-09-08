@@ -95,7 +95,7 @@ let read_cmt root_fn filename =
         in
         let hidden = false in
         let root = root_fn name digest in
-        let id = DocOckPaths.Identifier.Root(root, name) in
+        let id = Paths.Identifier.Root(root, name) in
         let items =
           List.map
             (fun file ->
@@ -107,7 +107,7 @@ let read_cmt root_fn filename =
           List.map
             (fun name ->
                let open Packed in
-               let id = Paths.Identifier.Root(root, name) in
+               let id = Paths.Identifier.Module(id, name) in
                let path = Paths.Path.Root name in
                  {id; path})
             items

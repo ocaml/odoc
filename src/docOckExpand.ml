@@ -200,7 +200,7 @@ and expand_module_resolved_path ({equal = eq} as t) p =
   | SubstAlias(_, p) -> expand_module_resolved_path t p
   | Module(parent, name) ->
       let open Module in
-      let id, ex = expand_module_resolved_path t parent in
+      let id, _, ex = expand_module_resolved_path t parent in
       let md = find_module name ex in
       let sub = DocOckSubst.prefix ~equal:eq id in
       let md' = DocOckSubst.module_ sub md in
@@ -214,7 +214,7 @@ and expand_module_type_resolved_path ({equal = eq} as t)
   | Identifier id -> expand_module_type_identifier t id
   | ModuleType(parent, name) ->
       let open ModuleType in
-      let id, ex = expand_module_resolved_path t parent in
+      let id, _, ex = expand_module_resolved_path t parent in
       let mty = find_module_type name ex in
       let sub = DocOckSubst.prefix ~equal:eq id in
       let mty' = DocOckSubst.module_type sub mty in
@@ -257,7 +257,7 @@ and expand_unit_content ({equal; hash} as t) dest content =
         let open Packed in
         let rec loop ids mds = function
           | [] ->
-            let open Siganture in
+            let open Signature in
             let sg = List.rev_map (fun md -> Module md) mds in
             ids, Some sg
           | item :: rest ->
@@ -273,6 +273,7 @@ and expand_unit_content ({equal; hash} as t) dest content =
                       let type_ = ModuleType (ModuleType.Signature sg) in
                       let md = {id; doc; type_} in
                       loop ((src, item.id) :: ids) (md :: mds) rest
+                end
               | _ -> [], None
         in
         let ids, sg = loop [] [] items in
