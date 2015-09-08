@@ -45,16 +45,6 @@ let subst_expansion sub = function
       let expr' = DocOckSubst.signature sub sg in
         Some (Functor(args', expr'))
 
-let merge_expansions exs =
-  let rec loop acc = function
-    | [] -> Some (List.rev acc)
-    | None :: _ -> None
-    | Some (Functor _) :: _ -> None
-    | Some (Signature items) :: rest ->
-        loop (List.rev_append items acc) rest
-  in
-    loop [] exs
-
 let rec filter_opt = function
   | [] -> []
   | None :: rest -> filter_opt rest
@@ -181,16 +171,17 @@ and expand_module_identifier t (id : 'a Identifier.module_) =
         | None -> None
         | Some sg -> Some (Signature sg)
       in
-        unit.id, ex
+        unit.id, unit.doc, ex
   | Module(parent, name) ->
       let open Module in
       let ex = expand_signature_identifier t parent in
       let md = find_module name ex in
-        md.id, expand_module t md
+        md.id, md.doc, expand_module t md
   | Argument(parent, pos, name) ->
       let ex = expand_signature_identifier t parent in
       let (id, expr) = find_argument pos ex in
-        id, expand_module_type_expr t (signature_of_module id) expr
+      let doc = DocOckAttrs.empty in
+        id, doc, expand_module_type_expr t (signature_of_module id) expr
 
 and expand_module_type_identifier t (id : 'a Identifier.module_type) =
   let open Identifier in
@@ -199,7 +190,7 @@ and expand_module_type_identifier t (id : 'a Identifier.module_type) =
       let open ModuleType in
       let ex = expand_signature_identifier t parent in
       let mty = find_module_type name ex in
-        mty.id, expand_module_type t mty
+        mty.id, mty.doc, expand_module_type t mty
 
 and expand_module_resolved_path ({equal = eq} as t) p =
   let open Path.Resolved in
@@ -213,7 +204,7 @@ and expand_module_resolved_path ({equal = eq} as t) p =
       let md = find_module name ex in
       let sub = DocOckSubst.prefix ~equal:eq id in
       let md' = DocOckSubst.module_ sub md in
-        md'.id, expand_module t md'
+        md'.id, md'.doc, expand_module t md'
   | Apply _ -> raise Not_found (* TODO support functor application *)
 
 and expand_module_type_resolved_path ({equal = eq} as t)
@@ -227,13 +218,13 @@ and expand_module_type_resolved_path ({equal = eq} as t)
       let mty = find_module_type name ex in
       let sub = DocOckSubst.prefix ~equal:eq id in
       let mty' = DocOckSubst.module_type sub mty in
-        mty'.id, expand_module_type t mty'
+        mty'.id, mty'.doc, expand_module_type t mty'
 
 and expand_module_decl ({equal} as t) dest decl =
   let open Module in
     match decl with
     | Alias (Path.Resolved p) -> (* TODO Should have strengthening *)
-        let src, ex = expand_module_resolved_path t p in
+        let src, _, ex = expand_module_resolved_path t p in
         let src = Identifier.signature_of_module src in
         let sub = DocOckSubst.rename_signature ~equal src dest in
         subst_expansion sub ex
@@ -244,7 +235,7 @@ and expand_module_type_expr ({equal} as t) dest expr =
   let open ModuleType in
     match expr with
     | Path (Path.Resolved p) ->
-        let src, ex = expand_module_type_resolved_path t p in
+        let src, _, ex = expand_module_type_resolved_path t p in
         let src = Identifier.signature_of_module_type src in
         let sub = DocOckSubst.rename_signature ~equal src dest in
           subst_expansion sub ex
@@ -259,30 +250,32 @@ and expand_module_type_expr ({equal} as t) dest expr =
     | With _ -> None (* TODO support with substitution *)
     | TypeOf decl -> expand_module_decl t dest decl
 
-and expand_unit_packed_item t item =
-  let open Unit.Packed in
-    match item.path with
-    | Path.Resolved p ->
-        let src, ex = expand_module_resolved_path t p in
-          Some (src, item.id), ex
-    | _ -> None, None
-
 and expand_unit_content ({equal; hash} as t) dest content =
   let open Unit in
     match content with
     | Pack items ->
         let open Packed in
-        let rec loop ids exs = function
-          | [] -> ids, List.rev exs
+        let rec loop ids mds = function
+          | [] ->
+            let open Siganture in
+            let sg = List.rev_map (fun md -> Module md) mds in
+            ids, Some sg
           | item :: rest ->
               match item.path with
-              | Path.Resolved p ->
-                  let src, ex = expand_module_resolved_path t p in
-                  loop ((src, item.id) :: ids) (ex :: exs) rest
-              | _ -> loop ids (None :: exs) rest
+              | Path.Resolved p -> begin
+                  let src, doc, ex = expand_module_resolved_path t p in
+                  match ex with
+                  | None -> [], None
+                  | Some (Functor _) -> [], None (* TODO should be an error *)
+                  | Some (Signature sg) ->
+                      let open Module in
+                      let id = item.id in
+                      let type_ = ModuleType (ModuleType.Signature sg) in
+                      let md = {id; doc; type_} in
+                      loop ((src, item.id) :: ids) (md :: mds) rest
+              | _ -> [], None
         in
-        let ids, exs = loop [] [] items in
-        let sg = merge_expansions exs in
+        let ids, sg = loop [] [] items in
         let sub = DocOckSubst.pack ~equal ~hash ids in
           subst_signature sub sg
     | Module sg -> Some sg
