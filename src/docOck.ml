@@ -103,6 +103,7 @@ let read_cmt root_fn filename =
                  String.capitalize(Filename.basename pref))
             files
         in
+        let items = List.sort String.compare items in
         let items =
           List.map
             (fun name ->
