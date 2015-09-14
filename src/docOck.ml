@@ -207,7 +207,7 @@ type 'a expander = 'a DocOckExpand.t
 
 let build_expander = DocOckExpand.build_expander
 
-type 'a expansion = 'a DocOckExpand.module_expansion =
+type 'a module_expansion = 'a DocOckExpand.module_expansion =
   | Signature of 'a Types.Signature.t
   | Functor of ('a Paths.Identifier.module_ *
                 'a Types.ModuleType.expr) option list *

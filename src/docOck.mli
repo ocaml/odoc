@@ -52,17 +52,17 @@ type 'a expander
 val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
                     ('a -> 'a Types.Unit.t) -> 'a expander
 
-type 'a expansion =
+type 'a module_expansion =
   | Signature of 'a Types.Signature.t
   | Functor of ('a Paths.Identifier.module_ *
                 'a Types.ModuleType.expr) option list *
                'a Types.Signature.t
 
 val expand_module: 'a expander -> 'a Types.Module.t ->
-  'a expansion option
+  'a module_expansion option
 
 val expand_module_type: 'a expander -> 'a Types.ModuleType.t ->
-  'a expansion option
+  'a module_expansion option
 
 val expand_unit : 'a expander -> 'a Types.Unit.t ->
   'a Types.Signature.t option
