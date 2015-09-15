@@ -365,7 +365,7 @@ and ClassType : sig
 
 end
 
-(** {3 Class Signatures *)
+(** {3 Class Signatures} *)
 
 and ClassSignature : sig
 
