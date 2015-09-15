@@ -19,9 +19,11 @@ type 'a parser
 val build : (Xmlm.input -> 'a) -> 'a parser
 
 type 'a result =
-  | Ok of 'a DocOckTypes.Unit.t
+  | Ok of 'a
   | Error of Xmlm.pos option * Xmlm.pos * string
 
-val unit : 'a parser -> Xmlm.input -> 'a result
+val text : 'a parser -> Xmlm.input -> 'a DocOckTypes.Documentation.text result
 
-val file : 'a parser -> Xmlm.input -> 'a result
+val unit : 'a parser -> Xmlm.input -> 'a DocOckTypes.Unit.t result
+
+val file : 'a parser -> Xmlm.input -> 'a DocOckTypes.Unit.t result

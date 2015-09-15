@@ -15,12 +15,13 @@
  *)
 
 type 'a result =
-  | Ok of 'a DocOckTypes.Unit.t
+  | Ok of 'a
   | Error of Xmlm.pos option * Xmlm.pos * string
 
 type 'a parser =
-  { file : Xmlm.input -> 'a result;
-    unit :  Xmlm.input -> 'a result; }
+  { file : Xmlm.input -> 'a DocOckTypes.Unit.t result;
+    unit :  Xmlm.input -> 'a DocOckTypes.Unit.t result;
+    text : Xmlm.input -> 'a DocOckTypes.Documentation.text result; }
 
 exception LexerError of Xmlm.pos * Xmlm.pos * string
 
@@ -138,6 +139,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "subst_alias" Parser.SUBST_ALIAS;
     Hashtbl.add plain_tags "superscript" Parser.SUPERSCRIPT;
     Hashtbl.add plain_tags "tag" Parser.TAG;
+    Hashtbl.add plain_tags "text" Parser.TEXT;
     Hashtbl.add plain_tags "tuple" Parser.TUPLE;
     Hashtbl.add plain_tags "type" Parser.TYPE;
     Hashtbl.add plain_tags "typeof" Parser.TYPEOF;
@@ -234,6 +236,9 @@ let build (type base) (input_base : Xmlm.input -> base) =
     let unitp =
       MenhirLib.Convert.traditional2revised value start finish Parser.unit
     in
+    let textp =
+      MenhirLib.Convert.traditional2revised value start finish Parser.text_entry
+    in
     let file input =
       try
         Ok (filep (lex input))
@@ -254,7 +259,19 @@ let build (type base) (input_base : Xmlm.input -> base) =
             Error(None, pos, "Syntax error")
       | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
     in
-      {file; unit}
+    let text input =
+      try
+        Ok (textp (lex input))
+      with
+      | LexerError(start, finish, msg) -> Error(Some start, finish, msg)
+      | Parser.Error ->
+          let pos = Xmlm.pos input in
+            Error(None, pos, "Syntax error")
+      | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
+    in
+      {file; unit; text}
+
+let text parser = parser.text
 
 let unit parser = parser.unit
 

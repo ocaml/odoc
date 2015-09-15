@@ -161,6 +161,7 @@ let relax_class_type_reference cltyp =
 %token SUBST_ALIAS
 %token SUPERSCRIPT
 %token TAG
+%token TEXT
 %token TUPLE
 %token TYPE
 %token TYPEOF
@@ -188,6 +189,7 @@ let relax_class_type_reference cltyp =
 %token <Root.t> Base
 %token EOF
 
+%start <Root.t DocOckTypes.Documentation.text> text_entry
 %start <Root.t DocOckTypes.Unit.t> unit
 %start <Root.t DocOckTypes.Unit.t> file
 
@@ -1163,3 +1165,7 @@ unit:
 file:
   | DTD unit = unit EOF
       { unit }
+
+text_entry:
+  | TEXT elems = text_element* CLOSE
+      { elems }

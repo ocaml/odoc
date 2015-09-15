@@ -314,6 +314,9 @@ let superscript_t output acc =
 let tag_t output acc =
   output acc (`El_start ((ns, "tag"), []))
 
+let text_t output acc =
+  output acc (`El_start ((ns, "text"), []))
+
 let tuple_t output acc =
   output acc (`El_start ((ns, "tuple"), []))
 
@@ -1261,19 +1264,11 @@ let file_p base output acc unit =
   let acc = dtd output acc None in
     unit_p base output acc unit
 
-let pack_unit_p base output acc unit =
-  let open Unit.Import in function
-    | Unresolved(name, digest) ->
-      let acc = import_t output acc in
-      let acc = data output acc name in
-      let acc = opt digest_p base output acc digest in
-      close output acc
-    | Resolved r ->
-      let acc = import_t output acc in
-      let acc = base_t output acc in
-      let acc = base.f output acc r in
-      let acc = close output acc in
-      close output acc
+let text_entry_p base output acc text =
+  let acc = unit_t output acc in
+  let acc = text_p base output acc text in
+  close output acc
 
+let text base = {f = fun output acc txt -> text_entry_p base output acc txt}
 let unit base = {f = fun output acc unit -> unit_p base output acc unit}
 let file base = {f = fun output acc unit -> file_p base output acc unit}
