@@ -47,6 +47,38 @@ let subst_expansion sub = function
       let expr' = DocOckSubst.module_type_expr sub expr in
         Some (Functor(arg', id', expr'))
 
+let map_module name ex f =
+  let rec loop name items f acc =
+    let open Signature in
+    let open Module in
+      match items with
+      | [] -> raise Not_found
+      | Module md :: rest when Identifier.name md.id = name ->
+        let md' = f md in
+        List.rev_append acc ((Module md') :: rest)
+      | item :: rest -> loop name rest f (item :: acc)
+  in
+    match ex with
+    | None -> raise Not_found
+    | Some (Signature items) -> Some (Signature (loop name items f []))
+    | Some (Functor _) -> raise Not_found
+
+let map_type name ex f =
+  let rec loop name items f acc =
+    let open Signature in
+    let open TypeDecl in
+      match items with
+      | [] -> raise Not_found
+      | Type decl :: rest when Identifier.name decl.id = name ->
+        let decl' = f decl in
+        List.rev_append acc ((Type decl') :: rest)
+      | item :: rest -> loop name rest f (item :: acc)
+  in
+    match ex with
+    | None -> raise Not_found
+    | Some (Signature items) -> Some (Signature (loop name items f []))
+    | Some (Functor _) -> raise Not_found
+
 type 'a t =
   { equal: 'a -> 'a -> bool;
     hash: 'a -> int;
@@ -248,7 +280,16 @@ and expand_module_type_expr ({equal} as t) dest expr =
     | Path _ -> None
     | Signature sg -> Some (Signature sg)
     | Functor(arg, expr) -> Some (Functor(arg, dest, expr))
-    | With _ -> None (* TODO support with substitution *)
+    | With(expr, substs) ->
+        let ex = expand_module_type_expr t dest expr in
+          List.fold_left
+            (fun ex subst ->
+               match subst with
+               | TypeEq(frag, eq) -> refine_type t ex frag eq
+               | ModuleEq(frag, eq) -> refine_module t ex frag eq
+               | TypeSubst _ -> ex (* TODO perform substitution *)
+               | ModuleSubst _ -> ex (* TODO perform substitution *))
+            ex substs
     | TypeOf decl -> expand_module_decl t dest decl
 
 and expand_unit_content ({equal; hash} as t) dest content =
@@ -304,6 +345,63 @@ and expand_unit t unit =
   let id = Identifier.signature_of_module unit.id in
   expand_unit_content t id unit.content
 
+and add_module_with subst md =
+  let open Module in
+  let open ModuleType in
+  let type_ =
+    match md.type_ with
+    | Alias _ as decl ->
+        ModuleType(With(TypeOf decl, [subst]))
+    | ModuleType(With(expr, substs)) ->
+        ModuleType(With(expr, substs @ [subst]))
+    | ModuleType expr ->
+        ModuleType(With(expr, [subst]))
+  in
+    { md with type_ }
+
+and refine_type t ex (frag : 'a Fragment.type_) equation =
+  let open Fragment in
+  match frag with
+  | Dot _ -> None
+  | Resolved frag ->
+    let open Resolved in
+    let name, rest = split frag in
+      match rest with
+      | None -> begin
+          try
+            map_type name ex
+              (fun decl -> TypeDecl.{ decl with equation })
+          with Not_found -> None (* TODO should be an error *)
+        end
+      | Some frag -> begin
+          let subst = ModuleType.TypeEq(Resolved frag, equation) in
+          try
+            map_module name ex (add_module_with subst)
+          with Not_found -> None (* TODO should be an error *)
+        end
+
+and refine_module t ex (frag : 'a Fragment.module_) equation =
+  let open Fragment in
+  match frag with
+  | Dot _ -> None
+  | Resolved frag ->
+    let open Resolved in
+    let name, rest = split frag in
+      match rest with
+      | None -> begin
+          try
+            map_module name ex
+              (fun md -> Module.{ md with type_ = equation})
+              (* TODO Fix this to not produce an alias (needs strengthening)
+                      or fix OCaml to do the correct thing. *)
+          with Not_found -> None (* TODO should be an error *)
+        end
+      | Some frag -> begin
+          let subst = ModuleType.ModuleEq(Resolved frag, equation) in
+          try
+            map_module name ex (add_module_with subst)
+          with Not_found -> None (* TODO should be an error *)
+        end
 
 type 'a module_expansion =
   | Signature of 'a Signature.t
