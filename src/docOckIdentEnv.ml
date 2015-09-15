@@ -236,7 +236,10 @@ module Path = struct
   let read_class_type_ident env id : 'a class_type =
     try
       Resolved (Identifier (find_class_type env id))
-    with Not_found -> assert false
+    with Not_found ->
+      Dot(Root "*", (Ident.name id))
+      (* TODO remove this hack once the fix for PR#6650
+         is in the OCaml release *)
 
   let rec read_module env = function
     | Path.Pident id -> read_module_ident env id
