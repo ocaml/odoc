@@ -57,6 +57,9 @@ val comment : 'a t -> 'a Documentation.comment -> 'a Documentation.comment
 val identifier_module : 'a t -> 'a Identifier.module_ ->
                         'a Identifier.module_
 
+val identifier_signature : 'a t -> 'a Identifier.signature ->
+                        'a Identifier.signature
+
 val module_type_expr : 'a t -> 'a ModuleType.expr -> 'a ModuleType.expr
 
 val rename_signature : equal:('a -> 'a -> bool) ->

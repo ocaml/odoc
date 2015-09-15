@@ -72,6 +72,9 @@ let instance_variable s inst =
 let comment s com =
   s#documentation_comment com
 
+let identifier_signature s id =
+  s#identifier_signature id
+
 (* TODO either expose more maps or expose argument map directly *)
 let identifier_module s id =
   s#identifier_module id
@@ -146,36 +149,6 @@ class ['a] prefix ~equal id = object (self)
   inherit ['a] DocOckMaps.paths as super
 
   method root x = x
-
-(*  method private identifier_path : type k. k is_path_kind ->
-                                        ('a, k) Identifier.t ->
-                                        ('a, k) Path.Resolved.t option =
-      fun wit ->
-      let matches id' = Identifier.equal ~equal id id' in
-      let open Identifier in function
-        | Root _ -> None
-        | Module(parent, name) ->
-            let open Path.Resolved in
-                if matches parent then Some (module_id_path wit id name)
-                else None
-        | Argument _ -> None
-        | ModuleType(parent, name) ->
-            let open Path.Resolved in
-              if matches parent then Some (ModuleType(Identifier id, name))
-              else None
-        | Type(parent, name) ->
-            let open Path.Resolved in
-              if matches parent then Some (Type(Identifier id, name))
-              else None
-        | CoreType _ -> None
-        | Class(parent, name) ->
-            let open Path.Resolved in
-              if matches parent then Some (Class(Identifier id, name))
-              else None
-        | ClassType(parent, name) ->
-            let open Path.Resolved in
-              if matches parent then Some (ClassType(Identifier id, name))
-              else None*)
 
   (* OCaml can't type-check this method yet, so we use magic*)
   method path_resolved : type k. ('a, k) Path.Resolved.t ->

@@ -433,9 +433,9 @@ and read_include env parent incl =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident _ ->
         let mty = Mty_signature incl.incl_type in
-          DocOckCmi.read_module_type env parent 0 mty
+          DocOckCmi.read_module_type env parent 1 mty
     | mexpr ->
-        read_module_expr env parent 0 incl.incl_mod
+        read_module_expr env parent 1 incl.incl_mod
   in
     {parent; expr}
 
