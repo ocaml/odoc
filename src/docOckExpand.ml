@@ -223,22 +223,28 @@ and expand_module_type_resolved_path ({equal = eq} as t)
 and expand_module_decl ({equal} as t) dest decl =
   let open Module in
     match decl with
-    | Alias (Path.Resolved p) -> (* TODO Should have strengthening *)
-        let src, _, ex = expand_module_resolved_path t p in
-        let src = Identifier.signature_of_module src in
-        let sub = DocOckSubst.rename_signature ~equal src dest in
-        subst_expansion sub ex
+    | Alias (Path.Resolved p) -> begin (* TODO Should have strengthening *)
+        match expand_module_resolved_path t p with
+        | src, _, ex ->
+          let src = Identifier.signature_of_module src in
+          let sub = DocOckSubst.rename_signature ~equal src dest in
+          subst_expansion sub ex
+        | exception Not_found -> None (* TODO: Should be an error *)
+      end
     | Alias _ -> None
     | ModuleType expr -> expand_module_type_expr t dest expr
 
 and expand_module_type_expr ({equal} as t) dest expr =
   let open ModuleType in
     match expr with
-    | Path (Path.Resolved p) ->
-        let src, _, ex = expand_module_type_resolved_path t p in
-        let src = Identifier.signature_of_module_type src in
-        let sub = DocOckSubst.rename_signature ~equal src dest in
-          subst_expansion sub ex
+    | Path (Path.Resolved p) -> begin
+        match expand_module_type_resolved_path t p with
+        | src, _, ex ->
+          let src = Identifier.signature_of_module_type src in
+          let sub = DocOckSubst.rename_signature ~equal src dest in
+            subst_expansion sub ex
+        | exception Not_found -> None (* TODO: Should be an error *)
+      end
     | Path _ -> None
     | Signature sg -> Some (Signature sg)
     | Functor(arg, expr) -> begin
@@ -263,16 +269,20 @@ and expand_unit_content ({equal; hash} as t) dest content =
           | item :: rest ->
               match item.path with
               | Path.Resolved p -> begin
-                  let src, doc, ex = expand_module_resolved_path t p in
-                  match ex with
-                  | None -> [], None
-                  | Some (Functor _) -> [], None (* TODO should be an error *)
-                  | Some (Signature sg) ->
-                      let open Module in
-                      let id = item.id in
-                      let type_ = ModuleType (ModuleType.Signature sg) in
-                      let md = {id; doc; type_} in
-                      loop ((src, item.id) :: ids) (md :: mds) rest
+                  match expand_module_resolved_path t p with
+                  | src, doc, ex -> begin
+                    match ex with
+                    | None -> [], None
+                    | Some (Functor _) ->
+                        [], None (* TODO should be an error *)
+                    | Some (Signature sg) ->
+                        let open Module in
+                        let id = item.id in
+                        let type_ = ModuleType (ModuleType.Signature sg) in
+                        let md = {id; doc; type_} in
+                        loop ((src, item.id) :: ids) (md :: mds) rest
+                    end
+                  | exception Not_found -> [], None (* TODO: Should be an error *)
                 end
               | _ -> [], None
         in
