@@ -270,7 +270,7 @@ class ['a] pack ~equal ~hash
         | Argument _ as id -> begin
             match lookup id with
             | Some (Root _ | Module _ | Argument _ as id) -> id
-            | None -> id
+            | None -> super#identifier id
           end
         | _ -> super#identifier id
 
