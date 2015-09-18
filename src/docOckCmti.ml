@@ -521,7 +521,8 @@ and read_signature_item env parent item =
 and read_include env parent incl =
   let open Include in
   let expr = read_module_type env parent 1 incl.incl_mod in
-    {parent; expr}
+  let decl = Module.ModuleType expr in
+    {parent; decl}
 
 and read_signature env parent sg =
   let env =

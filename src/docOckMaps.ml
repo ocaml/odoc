@@ -1280,19 +1280,19 @@ end
 
 class virtual ['a] include_ = object (self)
 
-  method virtual module_type_expr :
-    'a ModuleType.expr -> 'a ModuleType.expr
+  method virtual module_decl :
+    'a Module.decl -> 'a Module.decl
 
   method virtual identifier_signature :
     'a Identifier.signature -> 'a Identifier.signature
 
   method include_ incl =
     let open Include in
-    let {parent; expr} = incl in
+    let {parent; decl} = incl in
     let parent' = self#identifier_signature parent in
-    let expr' = self#module_type_expr expr in
-      if parent != parent' || expr != expr' then
-        {parent = parent'; expr = expr'}
+    let decl' = self#module_decl decl in
+      if parent != parent' || decl != decl' then
+        {parent = parent'; decl = decl'}
       else incl
 
 end

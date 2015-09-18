@@ -290,7 +290,8 @@ and expand_module_type_expr ({equal} as t) dest expr =
                | TypeSubst _ -> ex (* TODO perform substitution *)
                | ModuleSubst _ -> ex (* TODO perform substitution *))
             ex substs
-    | TypeOf decl -> expand_module_decl t dest decl
+    | TypeOf decl ->
+        expand_module_decl t dest decl (* TODO perform weakening *)
 
 and expand_unit_content ({equal; hash} as t) dest content =
   let open Unit in
@@ -427,7 +428,7 @@ let expand_module_type t mty =
 
 let expand_include t incl =
   let open Include in
-  match expand_module_type_expr t incl.parent incl.expr with
+  match expand_module_decl t incl.parent incl.decl with
   | None -> None
   | Some (Signature sg) -> Some sg
   | Some (Functor _) -> None (* TODO: Should be an error *)

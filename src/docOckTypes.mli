@@ -208,7 +208,7 @@ and Include : sig
 
   type 'a t =
     { parent: 'a Identifier.signature;
-      expr: 'a ModuleType.expr }
+      decl: 'a Module.decl; }
 
 end
 

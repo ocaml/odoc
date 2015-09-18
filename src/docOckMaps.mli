@@ -538,8 +538,7 @@ end
 
 class virtual ['a] include_ : object
 
-  method virtual module_type_expr : 'a ModuleType.expr ->
-                                    'a ModuleType.expr
+  method virtual module_decl : 'a Module.decl -> 'a Module.decl
 
   method virtual identifier_signature : 'a Identifier.signature ->
                                         'a Identifier.signature

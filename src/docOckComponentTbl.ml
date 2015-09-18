@@ -460,11 +460,11 @@ and signature_items tbl local u =
           add_class_type name expr sg
     | Include incl :: rest ->
         let open Include in
-        let expr = module_type_expr tbl local u incl.expr in
-        add_local_modules local incl.parent (modules expr);
-        add_local_module_types local incl.parent (module_types expr);
+        let decl = module_decl tbl local u incl.decl in
+        add_local_modules local incl.parent (modules decl);
+        add_local_module_types local incl.parent (module_types decl);
         let sg = signature_items tbl local u rest in
-          include_ expr sg
+          include_ decl sg
     | Comment com :: rest ->
         let sg = signature_items tbl local u rest in
           add_comment com sg
