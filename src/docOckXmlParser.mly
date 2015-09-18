@@ -1111,10 +1111,10 @@ signature_item:
       { let open Signature in
         let open ModuleType in
           ModuleType {id; doc; expr} }
-  | INCLUDE parent = signature_identifier expr = module_type_expr CLOSE
+  | INCLUDE parent = signature_identifier decl = module_decl CLOSE
       { let open Signature in
         let open Include in
-          Include {parent; expr} }
+          Include {parent; decl} }
   | comment = comment
       { Signature.Comment comment }
 

@@ -1188,7 +1188,7 @@ and signature_item_p base output acc =
       let open Include in
       let acc = include_t output acc in
       let acc = identifier_p base output acc incl.parent in
-      let acc = module_type_expr_p base output acc incl.expr in
+      let acc = module_decl_p base output acc incl.decl in
       close output acc
     | Comment com -> comment_p base output acc com
 
