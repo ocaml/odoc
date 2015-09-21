@@ -467,7 +467,7 @@ and verb = parse
     { raise (LexerError(curr_loc lexbuf, Nested_verbatim)) }
 | verb end
     { use_start_loc lexbuf;
-      Verb (get_buffered_string ()) }
+      Verb (get_raw_buffered_string ()) }
 | eof
     { raise (LexerError(get_start_loc (), Unterminated_verbatim)) }
 | newline
@@ -505,7 +505,7 @@ and code = parse
     { match pop_inner_start_loc () with
       | None ->
           use_start_loc lexbuf;
-          Code(get_buffered_string ())
+          Code(get_raw_buffered_string ())
       | Some _ ->
           buffer_lexeme lexbuf;
           code lexbuf }
@@ -527,7 +527,7 @@ and pre_code = parse
     { raise (LexerError(curr_loc lexbuf, Nested_pre_code)) }
 | end_pre_code
     { use_start_loc lexbuf;
-      Pre_Code (get_buffered_string ()) }
+      Pre_Code (get_raw_buffered_string ()) }
 | eof
     { raise (LexerError(get_start_loc (), Unterminated_pre_code)) }
 | newline
@@ -544,7 +544,7 @@ and html_code = parse
     { raise (LexerError(curr_loc lexbuf, Nested_html_code))  }
 | html_end_code
     { use_start_loc lexbuf;
-      Code(get_buffered_string ()) }
+      Code(get_raw_buffered_string ()) }
 | eof
     { raise (LexerError(get_start_loc (), Unterminated_html_code)) }
 | newline
