@@ -226,6 +226,11 @@ let find_module t name ex =
       match items with
       | [] -> raise Not_found
       | Module md :: _ when Identifier.name md.id = name -> md
+      | Include incl :: rest -> begin
+          match expand_include t incl with
+          | None -> inner_loop name rest
+          | Some sg -> inner_loop name (sg @ rest)
+        end
       | _ :: rest -> inner_loop name rest
   in
   let rec loop t name ex =
@@ -256,6 +261,11 @@ let find_module_type t name ex =
       match items with
       | [] -> raise Not_found
       | ModuleType mty :: _ when Identifier.name mty.id = name -> mty
+      | Include incl :: rest -> begin
+          match expand_include t incl with
+          | None -> inner_loop name rest
+          | Some sg -> inner_loop name (sg @ rest)
+        end
       | _ :: rest -> inner_loop name rest
   in
   let rec loop t name ex =
