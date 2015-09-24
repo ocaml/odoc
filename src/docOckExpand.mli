@@ -39,3 +39,6 @@ val expand_unit : 'a t -> 'a Unit.t ->
 
 val expand_include : 'a t -> 'a Include.t ->
                      'a Signature.t option
+
+val expand_argument : 'a t -> ('a Identifier.module_ * 'a ModuleType.expr) ->
+                      'a module_expansion option

@@ -220,6 +220,10 @@ let expand_include t root incl =
   | Some (Signature sg) -> Some sg
   | Some (Functor _) -> None (* TODO: Should be an error *)
 
+let expand_argument t root (id, expr) =
+  let id = Identifier.signature_of_module id in
+  expand_module_type_expr t root id expr
+
 let find_module t root name ex =
   let rec inner_loop name items =
     let open Signature in
@@ -292,9 +296,8 @@ let expand_signature_identifier' t root (id : 'a Identifier.signature) =
         expand_module t root md
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let id, expr = find_argument t root pos ex in
-      let id = signature_of_module id in
-        expand_module_type_expr t root id expr
+      let arg = find_argument t root pos ex in
+        expand_argument t root arg
   | ModuleType(parent, name) ->
       let open ModuleType in
       let ex = t.expand_signature_identifier ~root parent in
@@ -312,9 +315,9 @@ and expand_module_identifier' t root (id : 'a Identifier.module_) =
         md.id, md.doc, expand_module t root md
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let (id, expr) = find_argument t root pos ex in
+      let (id, _) as arg = find_argument t root pos ex in
       let doc = DocOckAttrs.empty in
-        id, doc, expand_module_type_expr t root (signature_of_module id) expr
+        id, doc, expand_argument t root arg
 
 and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
   let open Identifier in
@@ -530,3 +533,7 @@ let expand_unit t unit =
   let open Unit in
   let root = Identifier.module_root unit.id in
   expand_unit t root unit
+
+let expand_argument t ((id, _) as arg) =
+  let root = Identifier.module_root id in
+  force_expansion t root (expand_argument t root arg)

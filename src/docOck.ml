@@ -220,3 +220,5 @@ let expand_module = DocOckExpand.expand_module
 let expand_unit = DocOckExpand.expand_unit
 
 let expand_include = DocOckExpand.expand_include
+
+let expand_argument = DocOckExpand.expand_argument

@@ -69,3 +69,7 @@ val expand_unit : 'a expander -> 'a Types.Unit.t ->
 
 val expand_include : 'a expander -> 'a Types.Include.t ->
   'a Types.Signature.t option
+
+val expand_argument: 'a expander ->
+   'a Paths.Identifier.module_ * 'a Types.ModuleType.expr ->
+   'a module_expansion option
