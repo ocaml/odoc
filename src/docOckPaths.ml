@@ -290,6 +290,20 @@ module Identifier = struct
     in
       loop hash id
 
+  let rec signature_root : 'a signature -> 'a = function
+    | Root(r, _) -> r
+    | Module(id, _) -> signature_root id
+    | Argument(id, _, _) -> signature_root id
+    | ModuleType(id, _) -> signature_root id
+
+  let module_root : 'a module_ -> 'a = function
+    | Root(r, _) -> r
+    | Module(id, _) -> signature_root id
+    | Argument(id, _, _) -> signature_root id
+
+  let module_type_root : 'a module_type -> 'a = function
+    | ModuleType(id, _) -> signature_root id
+
 end
 
 

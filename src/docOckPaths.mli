@@ -218,6 +218,12 @@ module Identifier : sig
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+  val signature_root : 'a signature -> 'a
+
+  val module_root : 'a module_ -> 'a
+
+  val module_type_root : 'a module_type -> 'a
+
 end
 
 (** {3 Paths} *)

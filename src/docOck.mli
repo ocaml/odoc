@@ -50,7 +50,7 @@ type 'a expander
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
 val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                    ('a -> 'a Types.Unit.t) -> 'a expander
+                    (root:'a -> 'a -> 'a Types.Unit.t) -> 'a expander
 
 type 'a module_expansion =
   | Signature of 'a Types.Signature.t

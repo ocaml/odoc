@@ -26,7 +26,7 @@ type 'a module_expansion =
 type 'a t
 
 val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                     ('a -> 'a Unit.t) -> 'a t
+                     (root:'a -> 'a -> 'a Unit.t) -> 'a t
 
 val expand_module : 'a t -> 'a Module.t ->
                     'a module_expansion option
