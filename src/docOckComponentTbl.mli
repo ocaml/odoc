@@ -69,7 +69,7 @@ type 'a with_
 
 (** Create specialised fragment table for a module type expression *)
 val module_type_expr_with : 'a t -> 'a Unit.t ->
-      'a ModuleType.expr -> 'a with_
+      'a Identifier.signature -> 'a ModuleType.expr -> 'a with_
 
 (** Create specialised fragment table for a module path *)
 val module_type_path_with : 'a t -> 'a Unit.t ->

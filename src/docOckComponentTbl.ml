@@ -67,21 +67,72 @@ let create ?equal ?hash lookup fetch =
   let tbl = make_tbl equal hash 7 in
     {equal; hash; lookup; fetch; tbl}
 
-let tbl_equal tbl =
-  match tbl.equal with
-  | Some equal -> equal
-  | None -> (=)
+type 'a local =
+  { t : 'a t;
+    local : ('a Identifier.signature, 'a Sig.t) tbl option;
+    unit : 'a Unit.t;
+    base : 'a Identifier.signature option; }
 
-let equals_unit (type k) eq unit (id : ('a, k) Identifier.t) =
+let create_local t unit base =
+  let equal =
+    match t.equal with
+    | None -> None
+    | Some equal -> Some (Identifier.equal ~equal)
+  in
+  let hash =
+    match t.hash with
+    | None -> None
+    | Some hash -> Some (Identifier.hash ~hash)
+  in
+  let local =
+    match base with
+    | None -> None
+    | Some _ -> Some (make_tbl equal hash 23)
+  in
+    { t; local; unit; base; }
+
+let add_local_module_identifier (local : 'a local) id sg =
+  let open Identifier in
+    match local.local with
+    | None -> ()
+    | Some tbl -> tbl.add (signature_of_module id) sg
+
+let add_local_module_type_identifier (local : 'a local) id sg =
+  let open Identifier in
+    match local.local with
+    | None -> ()
+    | Some tbl -> tbl.add (signature_of_module_type id) sg
+
+let add_local_modules (local : 'a local) id mds =
+  let open Identifier in
+    match local.local with
+    | None -> ()
+    | Some tbl ->
+        List.iter
+          (fun (name, sg) -> tbl.add (Module(id, name)) sg)
+          mds
+
+let add_local_module_types (local : 'a local) id mtys =
+  let open Identifier in
+    match local.local with
+    | None -> ()
+    | Some tbl ->
+        List.iter
+          (fun (name, sg) -> tbl.add (ModuleType(id, name)) sg)
+          mtys
+
+let equals_signature (type k) eq
+      (base : 'a Identifier.signature) (id : ('a, k) Identifier.t) =
   let open Identifier in
     match id with
     | Root _ as id ->
-        Identifier.equal ~equal:eq unit.Unit.id id
+        Identifier.equal ~equal:eq base id
     | Module _ as id ->
-        Identifier.equal ~equal:eq unit.Unit.id id
+        Identifier.equal ~equal:eq base id
     | Argument _ as id ->
-        Identifier.equal ~equal:eq unit.Unit.id id
-    | ModuleType _ -> false
+        Identifier.equal ~equal:eq base id
+    | ModuleType _ as id ->
+        Identifier.equal ~equal:eq base id
     | Type _ -> false
     | CoreType _ -> false
     | Constructor _ -> false
@@ -97,83 +148,59 @@ let equals_unit (type k) eq unit (id : ('a, k) Identifier.t) =
     | Label _ -> false
 
 let rec is_parent_local : type k . _ -> _ -> ('a, k) Identifier.t -> bool =
-  fun eq unit id ->
+  fun eq base id ->
     let open Identifier in
       match id with
       | Root _  -> false
-      | Module(parent, _) -> is_local eq unit parent
-      | Argument(parent, _, _) -> is_local eq unit parent
-      | ModuleType(parent, _) -> is_local eq unit parent
-      | Type(parent, _) -> is_local eq unit parent
+      | Module(parent, _) -> is_local eq base parent
+      | Argument(parent, _, _) -> is_local eq base parent
+      | ModuleType(parent, _) -> is_local eq base parent
+      | Type(parent, _) -> is_local eq base parent
       | CoreType _ -> false
-      | Constructor(parent, _) -> is_local eq unit parent
-      | Field(parent, _) -> is_local eq unit parent
-      | Extension(parent, _) -> is_local eq unit parent
-      | Exception(parent, _) -> is_local eq unit parent
+      | Constructor(parent, _) -> is_local eq base parent
+      | Field(parent, _) -> is_local eq base parent
+      | Extension(parent, _) -> is_local eq base parent
+      | Exception(parent, _) -> is_local eq base parent
       | CoreException _ -> false
-      | Value(parent, _) -> is_local eq unit parent
-      | Class(parent, _) -> is_local eq unit parent
-      | ClassType(parent, _) -> is_local eq unit parent
-      | Method(parent, _) -> is_local eq unit parent
-      | InstanceVariable(parent, _) -> is_local eq unit parent
-      | Label(parent, _) -> is_local eq unit parent
+      | Value(parent, _) -> is_local eq base parent
+      | Class(parent, _) -> is_local eq base parent
+      | ClassType(parent, _) -> is_local eq base parent
+      | Method(parent, _) -> is_local eq base parent
+      | InstanceVariable(parent, _) -> is_local eq base parent
+      | Label(parent, _) -> is_local eq base parent
 
-and is_local : type k . _ -> _ -> ('a, k) Identifier.t -> bool =
-  fun eq unit id ->
-    is_parent_local eq unit id
-    || equals_unit eq unit id
+and is_local : type k ._ -> _ -> ('a, k) Identifier.t -> bool =
+  fun eq base id ->
+    is_parent_local eq base id
+    || equals_signature eq base id
 
-type 'a local = ('a Identifier.signature, 'a Sig.t) tbl
+let is_local local id =
+  match local.base with
+  | None -> false
+  | Some base ->
+    let eq =
+      match local.t.equal with
+      | None -> (=)
+      | Some eq -> eq
+    in
+    is_local eq base id
 
-let create_local equal hash =
-  let equal =
-    match equal with
-    | None -> None
-    | Some equal -> Some (Identifier.equal ~equal)
-  in
-  let hash =
-    match hash with
-    | None -> None
-    | Some hash -> Some (Identifier.hash ~hash)
-  in
-    make_tbl equal hash 23
-
-let add_local_module_identifier (local : 'a local) id sg =
+let local_module_identifier (local : 'a local) id =
   let open Identifier in
-    local.add (signature_of_module id) sg
-
-let add_local_module_type_identifier (local : 'a local) id sg =
-  let open Identifier in
-    local.add (signature_of_module_type id) sg
-
-let add_local_modules (local : 'a local) id mds =
-  let open Identifier in
-    List.iter
-      (fun (name, sg) -> local.add (Module(id, name)) sg)
-      mds
-
-let add_local_module_types (local : 'a local) id mtys =
-  let open Identifier in
-    List.iter
-      (fun (name, sg) -> local.add (ModuleType(id, name)) sg)
-      mtys
-
-let local_module_identifier (local : 'a local option) id =
-  let open Identifier in
-    match local with
+    match local.local with
     | None -> Sig.unresolved
-    | Some local ->
+    | Some tbl ->
         try
-          local.find (signature_of_module id)
+          tbl.find (signature_of_module id)
         with Not_found -> Sig.unresolved
 
-let local_module_type_identifier (local : 'a local option) id =
+let local_module_type_identifier (local : 'a local) id =
   let open Identifier in
-    match local with
+    match local.local with
     | None -> Sig.unresolved
-    | Some local ->
+    | Some tbl ->
         try
-          local.find (signature_of_module_type id)
+          tbl.find (signature_of_module_type id)
         with Not_found -> Sig.unresolved
 
 let datatype decl =
@@ -223,20 +250,21 @@ let rec unit tbl base =
     with Not_found ->
       let open Unit in
       let unt = tbl.fetch base in
-      let local = create_local tbl.equal tbl.hash in
+      let id = Identifier.signature_of_module unt.id in
+      let local = create_local tbl unt (Some id) in
       let t =
         match unt.content with
         | Module items ->
             Sig.signature
               (fun items ->
                  Sig.add_documentation unt.doc
-                   (signature_items tbl local unt items))
+                   (signature_items local items))
               items
         | Pack items ->
             Sig.signature
               (fun items ->
                  Sig.add_documentation unt.doc
-                   (packed_items tbl local unt items))
+                   (packed_items local items))
               items
       in
         tbl.tbl.add base t;
@@ -284,115 +312,115 @@ and class_signature_identifier tbl =
         let parent = signature_identifier tbl id in
           Sig.lookup_class_type name parent
 
-and resolved_module_path tbl local u =
+and resolved_module_path local =
   let open Path.Resolved in function
   | Identifier (id : 'a Identifier.module_) ->
-      if is_local (tbl_equal tbl) u id then local_module_identifier local id
-      else module_identifier tbl id
-  | Subst(sub, _) -> resolved_module_type_path tbl local u sub
-  | SubstAlias(sub, _) -> resolved_module_path tbl local u sub
+      if is_local local id then local_module_identifier local id
+      else module_identifier local.t id
+  | Subst(sub, _) -> resolved_module_type_path local sub
+  | SubstAlias(sub, _) -> resolved_module_path local sub
   | Module(p, name) ->
-      let parent = resolved_module_path tbl local u p in
+      let parent = resolved_module_path local p in
         Sig.lookup_module name parent
   | Apply(p, arg) ->
-      let parent = resolved_module_path tbl local u p in
-        Sig.lookup_apply (module_path tbl local u) arg parent
+      let parent = resolved_module_path local p in
+        Sig.lookup_apply (module_path local) arg parent
 
-and resolved_module_type_path tbl local u =
+and resolved_module_type_path local =
   let open Path.Resolved in function
   | Identifier (id : 'a Identifier.module_type) ->
-      if is_local (tbl_equal tbl) u id then local_module_type_identifier local id
-      else module_type_identifier tbl id
+      if is_local local id then local_module_type_identifier local id
+      else module_type_identifier local.t id
   | ModuleType(p, name) ->
-      let parent = resolved_module_path tbl local u p in
+      let parent = resolved_module_path local p in
         Sig.lookup_module_type name parent
 
-and resolved_class_type_path tbl u =
+and resolved_class_type_path local =
   let open Path.Resolved in function
-    | Identifier id -> class_signature_identifier tbl id
+    | Identifier id -> class_signature_identifier local.t id
     | Class(p, name) | ClassType(p, name) ->
-        let parent = resolved_module_path tbl None u p in
+        let parent = resolved_module_path local p in
           Sig.lookup_class_type name parent
 
-and module_path tbl local u =
+and module_path local =
   let open Path in function
   | Root s -> begin
-      match tbl.lookup u s with
+      match local.t.lookup local.unit s with
       | None -> Sig.unresolved
-      | Some base -> unit tbl base
+      | Some base -> unit local.t base
     end
-  | Resolved r -> resolved_module_path tbl local u r
+  | Resolved r -> resolved_module_path local r
   | Dot(p, name) ->
-      let parent = module_path tbl local u p in
+      let parent = module_path local p in
         Sig.lookup_module name parent
   | Apply(p, arg) ->
-      let parent = module_path tbl local u p in
-        Sig.lookup_apply (module_path tbl local u) arg parent
+      let parent = module_path local p in
+        Sig.lookup_apply (module_path local) arg parent
 
-and module_type_path tbl local u =
+and module_type_path local =
   let open Path in function
-  | Resolved r -> resolved_module_type_path tbl local u r
+  | Resolved r -> resolved_module_type_path local r
   | Dot(p, name) ->
-      let parent = module_path tbl local u p in
+      let parent = module_path local p in
         Sig.lookup_module_type name parent
 
-and class_signature_path tbl u =
+and class_signature_path local =
   let open Path in function
-    | Resolved p -> resolved_class_type_path tbl u p
+    | Resolved p -> resolved_class_type_path local p
     | Dot(p, name) ->
-        let parent = module_path tbl None u p in
+        let parent = module_path local p in
           Sig.lookup_class_type name parent
 
-and class_signature_items tbl u =
+and class_signature_items local =
   let open ClassSig in
   let open ClassSignature in function
     | InstanceVariable ivar :: rest ->
         let open InstanceVariable in
-        let csig = class_signature_items tbl u rest in
+        let csig = class_signature_items local rest in
         let csig = add_documentation ivar.doc csig in
         let name = Identifier.name ivar.id in
           add_element name Element.InstanceVariable csig
     | Method meth :: rest ->
         let open Method in
-        let csig = class_signature_items tbl u rest in
+        let csig = class_signature_items local rest in
         let csig = add_documentation meth.doc csig in
         let name = Identifier.name meth.id in
           add_element name Element.Method csig
     | Constraint _ :: rest ->
-        class_signature_items tbl u rest
+        class_signature_items local rest
     | Inherit expr :: rest ->
-        let csig = class_signature_items tbl u rest in
-        let expr = class_type_expr tbl u expr in
+        let csig = class_signature_items local rest in
+        let expr = class_type_expr local expr in
           inherit_ expr csig
     | Comment comment :: rest ->
         let open Method in
-        let csig = class_signature_items tbl u rest in
+        let csig = class_signature_items local rest in
           add_comment comment csig
     | [] -> empty
 
-and class_signature tbl u csig =
+and class_signature local csig =
   let open ClassSignature in
-    class_signature_items tbl u csig.items
+    class_signature_items local csig.items
 
-and class_type_expr tbl u =
+and class_type_expr local =
   let open ClassType in function
-    | Constr(p, _) -> ClassSig.constr (class_signature_path tbl u) p
-    | Signature csig -> ClassSig.signature (class_signature tbl u) csig
+    | Constr(p, _) -> ClassSig.constr (class_signature_path local) p
+    | Signature csig -> ClassSig.signature (class_signature local) csig
 
-and class_decl tbl u =
+and class_decl local =
   let open Class in function
-    | ClassType expr -> class_type_expr tbl u expr
-    | Arrow(_, _, decl) -> class_decl tbl u decl
+    | ClassType expr -> class_type_expr local expr
+    | Arrow(_, _, decl) -> class_decl local decl
 
-and signature_items tbl local u =
+and signature_items local =
   let open Sig in
   let open Signature in function
     | Module md :: rest ->
         let open Module in
         let name = Identifier.name md.id in
-        let decl = module_decl tbl local u md.type_ in
+        let decl = module_decl local md.type_ in
         add_local_module_identifier local md.id decl;
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation md.doc sg in
           add_module name decl sg
     | ModuleType mty :: rest ->
@@ -401,23 +429,23 @@ and signature_items tbl local u =
         let expr =
           match mty.expr with
           | None -> abstract
-          | Some expr -> module_type_expr tbl local u expr
+          | Some expr -> module_type_expr local expr
         in
         add_local_module_type_identifier local mty.id expr;
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation mty.doc sg in
           add_module_type name expr sg
     | Type decl :: rest ->
         let open TypeDecl in
         let open Representation in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation decl.doc sg in
         let name = Identifier.name decl.id in
         let decl = datatype decl in
           add_datatype name decl sg
     | TypExt ext :: rest ->
         let open Extension in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation ext.doc sg in
           List.fold_right
             (fun cstr acc ->
@@ -428,68 +456,68 @@ and signature_items tbl local u =
             ext.constructors sg
     | Exception exn :: rest ->
         let open Exception in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation exn.doc sg in
         let name = Identifier.name exn.id in
           add_element name Element.Exception sg
     | Value v :: rest ->
         let open Value in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation v.doc sg in
         let name = Identifier.name v.id in
           add_element name Element.Value sg
     | External ev :: rest ->
         let open External in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation ev.doc sg in
         let name = Identifier.name ev.id in
           add_element name Element.Value sg
     | Class cl :: rest ->
         let open Class in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation cl.doc sg in
         let name = Identifier.name cl.id in
-        let expr = class_decl tbl u cl.type_ in
+        let expr = class_decl local cl.type_ in
           add_class name expr sg
     | ClassType clty :: rest ->
         let open ClassType in
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
         let sg = add_documentation clty.doc sg in
         let name = Identifier.name clty.id in
-        let expr = class_type_expr tbl u clty.expr in
+        let expr = class_type_expr local clty.expr in
           add_class_type name expr sg
     | Include incl :: rest ->
         let open Include in
-        let decl = module_decl tbl local u incl.decl in
+        let decl = module_decl local incl.decl in
         add_local_modules local incl.parent (modules decl);
         add_local_module_types local incl.parent (module_types decl);
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
           include_ decl sg
     | Comment com :: rest ->
-        let sg = signature_items tbl local u rest in
+        let sg = signature_items local rest in
           add_comment com sg
     | [] -> empty
 
-and module_type_expr tbl local u expr =
+and module_type_expr local expr =
   let open Sig in
   let open ModuleType in
     match expr with
-    | Path p -> path (module_type_path tbl (Some local) u) p
-    | Signature sg -> signature (signature_items tbl local u) sg
+    | Path p -> path (module_type_path local) p
+    | Signature sg -> signature (signature_items local) sg
     | Functor(Some(id, arg), res) ->
-        let res = module_type_expr tbl local u res in
-        let arg = module_type_expr tbl local u arg in
-          functor_ tbl.equal tbl.hash id arg res
+        let res = module_type_expr local res in
+        let arg = module_type_expr local arg in
+          functor_ local.t.equal local.t.hash id arg res
     | Functor(None, res) ->
-        let res = module_type_expr tbl local u res in
+        let res = module_type_expr local res in
           generative res
     | With(body, subs) ->
-        let body = module_type_expr tbl local u body in
+        let body = module_type_expr local body in
           List.fold_left
             (fun body sub ->
                match sub with
                | ModuleEq(frag, decl) ->
-                   let eq = module_decl tbl local u decl in
+                   let eq = module_decl local decl in
                      with_module frag eq body
                | TypeEq _ -> body
                | ModuleSubst(frag, _) ->
@@ -497,34 +525,44 @@ and module_type_expr tbl local u expr =
                | TypeSubst(frag, _, _) ->
                    with_type_subst frag body)
             body subs
-    | TypeOf decl -> module_decl tbl local u decl
+    | TypeOf decl -> module_decl local decl
 
-and module_decl tbl local u decl =
+and module_decl local decl =
   let open Sig in
   let open Module in
     match decl with
-    | Alias p -> alias (module_path tbl (Some local) u) p
-    | ModuleType expr -> module_type_expr tbl local u expr
+    | Alias p -> alias (module_path local) p
+    | ModuleType expr -> module_type_expr local expr
 
-and packed_items tbl local u =
+and packed_items local =
   let open Sig in
   let open Unit.Packed in function
     | {id; path} :: rest ->
         let open Module in
         let name = Identifier.name id in
-        let decl = alias (module_path tbl (Some local) u) path in
+        let decl = alias (module_path local) path in
         add_local_module_identifier local id decl;
-        let sg = packed_items tbl local u rest in
+        let sg = packed_items local rest in
           add_module name decl sg
     | [] -> empty
 
 (* Remove local parameter from exposed versions *)
 
-let resolved_module_path tbl u p = resolved_module_path tbl None u p
+let resolved_module_path tbl u p =
+  let local = create_local tbl u None in
+    resolved_module_path local p
 
-let resolved_module_type_path tbl u p = resolved_module_type_path tbl None u p
+let resolved_module_type_path tbl u p =
+  let local = create_local tbl u None in
+    resolved_module_type_path local p
 
-let module_path tbl u p = module_path tbl None u p
+let resolved_class_type_path tbl u p =
+  let local = create_local tbl u None in
+    resolved_class_type_path local p
+
+let module_path tbl u p =
+  let local = create_local tbl u None in
+    module_path local p
 
 (** TODO: One day we will be able to remove the unit component. *)
 type 'a with_ =
@@ -532,13 +570,14 @@ type 'a with_ =
     base: 'a Sig.t;
     tbl: 'a t; }
 
-let module_type_expr_with tbl unit expr =
-  let local = create_local tbl.equal tbl.hash in
-  let base = module_type_expr tbl local unit expr in
+let module_type_expr_with tbl unit id expr =
+  let local = create_local tbl unit (Some id) in
+  let base = module_type_expr local expr in
     { unit; base; tbl }
 
 let module_type_path_with tbl unit path =
-  let base = module_type_path tbl None unit path in
+  let local = create_local tbl unit None in
+  let base = module_type_path local path in
     { unit; base; tbl }
 
 let rec resolved_signature_fragment wth =

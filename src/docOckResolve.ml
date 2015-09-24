@@ -822,13 +822,61 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method path_type x = resolve_type_path tbl (unwrap unit) x
   method path_class_type x = resolve_class_type_path tbl (unwrap unit) x
 
-  method module_type_expr expr =
+  method module_ md =
+    let open Module in
+    let {id; doc; type_} = md in
+    let id' = self#identifier_module id in
+    let doc' = self#documentation doc in
+    let sig_id = Identifier.signature_of_module id' in
+    let type' = self#module_decl_with_id sig_id type_ in
+      if id != id' || doc != doc' || type_ != type' then
+        {id = id'; doc = doc'; type_ = type'}
+      else md
+
+  method module_type mty =
+    let open ModuleType in
+    let {id; doc; expr} = mty in
+    let id' = self#identifier_module_type id in
+    let doc' = self#documentation doc in
+    let expr' =
+      match expr with
+      | None -> expr
+      | Some body ->
+          let sig_id = Identifier.signature_of_module_type id' in
+          let body' = self#module_type_expr_with_id sig_id body in
+          if body != body' then Some body'
+          else expr
+    in
+      if id != id' || doc != doc' || expr != expr' then
+        {id = id'; doc = doc'; expr = expr'}
+      else mty
+
+  method include_ incl =
+    let open Include in
+    let {parent; decl} = incl in
+    let parent' = self#identifier_signature parent in
+    let decl' = self#module_decl_with_id parent decl in
+      if parent != parent' || decl != decl' then
+        {parent = parent'; decl = decl'}
+      else incl
+
+  method module_type_functor_arg arg =
+    match arg with
+    | None -> arg
+    | Some(id, expr) ->
+        let id' = self#identifier_module id in
+        let sig_id = Identifier.signature_of_module id' in
+        let expr' = self#module_type_expr_with_id sig_id expr in
+          if id != id' || expr != expr' then Some(id', expr')
+          else arg
+
+  method private module_type_expr_with_id id expr =
     let open ModuleType in
     let unit = unwrap unit in
       match expr with
       | With(body, substs) ->
-          let body = super#module_type_expr body in
-          let base = module_type_expr_with tbl unit body in
+          let body = self#module_type_expr_with_id id body in
+          let base = module_type_expr_with tbl unit id body in
           let substs =
             List.map
               (function
@@ -852,7 +900,25 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
               substs
           in
             With(body, substs)
-      | _ -> super#module_type_expr expr
+      | Functor(arg, res) ->
+          let arg' = self#module_type_functor_arg arg in
+          let res' = self#module_type_expr_with_id id res in
+            if res != res' || arg != arg' then Functor(arg', res')
+            else expr
+      | TypeOf decl ->
+          let decl' = self#module_decl_with_id id decl in
+            if decl != decl' then TypeOf decl'
+            else expr
+      | Path _ | Signature _ -> self#module_type_expr expr
+
+  method private module_decl_with_id id decl =
+    let open Module in
+      match decl with
+      | ModuleType expr ->
+          let expr' = self#module_type_expr_with_id id expr in
+            if expr != expr' then ModuleType expr'
+            else decl
+      | Alias _ -> self#module_decl decl
 
   method type_expr_package pkg =
     let open TypeExpr.Package in
