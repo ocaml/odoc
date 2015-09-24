@@ -21,7 +21,7 @@ type 'a partial_expansion =
   | Signature of 'a Signature.t
   | Functor of ('a Identifier.module_ *
                 'a ModuleType.expr) option *
-               'a Identifier.signature *
+               'a Identifier.signature * int *
                'a ModuleType.expr
 
 let subst_signature sub = function
@@ -41,11 +41,13 @@ let subst_expansion sub = function
   | Some (Signature sg) ->
       let sg' = DocOckSubst.signature sub sg in
         Some (Signature sg')
-  | Some (Functor(arg, id, expr)) ->
+  | Some (Functor(arg, id, offset, expr)) ->
       let arg' = subst_arg sub arg in
-      let id' = DocOckSubst.identifier_signature sub id in
+      let id', offset' =
+        DocOckSubst.offset_identifier_signature sub (id, offset)
+      in
       let expr' = DocOckSubst.module_type_expr sub expr in
-        Some (Functor(arg', id', expr'))
+        Some (Functor(arg', id', offset', expr'))
 
 let map_module name ex f =
   let rec loop name items f acc =
@@ -159,36 +161,36 @@ type 'a t =
                                       'a Path.Resolved.module_type ->
                                       'a intermediate_module_type_expansion; }
 
-let rec expand_module_decl ({equal} as t) root dest decl =
+let rec expand_module_decl ({equal} as t) root dest offset decl =
   let open Module in
     match decl with
     | Alias (Path.Resolved p) -> begin (* TODO Should have strengthening *)
         match t.expand_module_resolved_path ~root p with
         | src, _, ex ->
           let src = Identifier.signature_of_module src in
-          let sub = DocOckSubst.rename_signature ~equal src dest in
+          let sub = DocOckSubst.rename_signature ~equal src dest offset in
           subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
     | Alias _ -> None
-    | ModuleType expr -> expand_module_type_expr t root dest expr
+    | ModuleType expr -> expand_module_type_expr t root dest offset expr
 
-and expand_module_type_expr ({equal} as t) root dest expr =
+and expand_module_type_expr ({equal} as t) root dest offset expr =
   let open ModuleType in
     match expr with
     | Path (Path.Resolved p) -> begin
         match t.expand_module_type_resolved_path ~root p with
         | src, _, ex ->
           let src = Identifier.signature_of_module_type src in
-          let sub = DocOckSubst.rename_signature ~equal src dest in
+          let sub = DocOckSubst.rename_signature ~equal src dest offset in
             subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
     | Path _ -> None
     | Signature sg -> Some (Signature sg)
-    | Functor(arg, expr) -> Some (Functor(arg, dest, expr))
+    | Functor(arg, expr) -> Some (Functor(arg, dest, (offset + 1), expr))
     | With(expr, substs) ->
-        let ex = expand_module_type_expr t root dest expr in
+        let ex = expand_module_type_expr t root dest offset expr in
           List.fold_left
             (fun ex subst ->
                match subst with
@@ -198,31 +200,31 @@ and expand_module_type_expr ({equal} as t) root dest expr =
                | ModuleSubst _ -> ex (* TODO perform substitution *))
             ex substs
     | TypeOf decl ->
-        expand_module_decl t root dest decl (* TODO perform weakening *)
+        expand_module_decl t root dest offset decl (* TODO perform weakening *)
 
 let expand_module t root md =
   let open Module in
   let id = Identifier.signature_of_module md.id in
-  expand_module_decl t root id md.type_
+  expand_module_decl t root id 0 md.type_
 
 let expand_module_type t root mty =
   let open ModuleType in
   match mty.expr with
   | Some expr ->
       let id = Identifier.signature_of_module_type mty.id in
-        expand_module_type_expr t root id expr
+        expand_module_type_expr t root id 0 expr
   | None -> None
 
 let expand_include t root incl =
   let open Include in
-  match expand_module_decl t root incl.parent incl.decl with
+  match expand_module_decl t root incl.parent 0 incl.decl with
   | None -> None
   | Some (Signature sg) -> Some sg
   | Some (Functor _) -> None (* TODO: Should be an error *)
 
 let expand_argument t root (id, expr) =
   let id = Identifier.signature_of_module id in
-  expand_module_type_expr t root id expr
+  expand_module_type_expr t root id 0 expr
 
 let find_module t root name ex =
   let rec inner_loop name items =
@@ -242,8 +244,8 @@ let find_module t root name ex =
     match ex with
     | None -> raise Not_found
     | Some (Signature items) -> inner_loop name items
-    | Some (Functor(_, dest, expr)) ->
-        loop t root name (expand_module_type_expr t root dest expr)
+    | Some (Functor(_, dest, offset, expr)) ->
+        loop t root name (expand_module_type_expr t root dest offset expr)
   in
     loop t root name ex
 
@@ -252,10 +254,10 @@ let find_argument t root pos ex =
     match ex with
     | None -> raise Not_found
     | Some (Signature _) -> raise Not_found
-    | Some (Functor(None, _, _)) when pos = 1 -> raise Not_found
-    | Some (Functor(Some arg, _, _)) when pos = 1 -> arg
-    | Some (Functor(_, dest, expr)) ->
-        loop t root (pos - 1) (expand_module_type_expr t root dest expr)
+    | Some (Functor(None, _, _, _)) when pos = 1 -> raise Not_found
+    | Some (Functor(Some arg, _, _, _)) when pos = 1 -> arg
+    | Some (Functor(_, dest, offset, expr)) ->
+        loop t root (pos - 1) (expand_module_type_expr t root dest offset expr)
   in
     loop t root pos ex
 
@@ -277,8 +279,8 @@ let find_module_type t root name ex =
     match ex with
     | None -> raise Not_found
     | Some (Signature items) -> inner_loop name items
-    | Some (Functor(_, dest, expr)) ->
-        loop t root name (expand_module_type_expr t root dest expr)
+    | Some (Functor(_, dest, offset, expr)) ->
+        loop t root name (expand_module_type_expr t root dest offset expr)
   in
     loop t root name ex
 
@@ -508,11 +510,12 @@ let rec force_expansion t root (ex : 'a partial_expansion option) =
   match ex with
   | None -> None
   | Some (Signature sg) -> Some (Signature sg)
-  | Some (Functor(arg, dest, expr)) ->
-      match force_expansion t root (expand_module_type_expr t root dest expr) with
-      | None -> None
-      | Some (Signature sg) -> Some(Functor([arg], sg))
-      | Some (Functor(args, sg)) -> Some(Functor(arg :: args, sg))
+  | Some (Functor(arg, dest, offset, expr)) ->
+      let ex = expand_module_type_expr t root dest offset expr in
+        match force_expansion t root ex with
+        | None -> None
+        | Some (Signature sg) -> Some(Functor([arg], sg))
+        | Some (Functor(args, sg)) -> Some(Functor(arg :: args, sg))
 
 let expand_module t md =
   let open Module in

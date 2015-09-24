@@ -60,12 +60,15 @@ val identifier_module : 'a t -> 'a Identifier.module_ ->
 val identifier_signature : 'a t -> 'a Identifier.signature ->
                         'a Identifier.signature
 
+val offset_identifier_signature : 'a t -> 'a Identifier.signature * int ->
+                                  'a Identifier.signature * int
+
 val module_type_expr : 'a t -> 'a ModuleType.expr -> 'a ModuleType.expr
 
 val rename_signature : equal:('a -> 'a -> bool) ->
                        'a Identifier.signature ->
                        'a Identifier.signature ->
-                       'a t
+                       int -> 'a t
 
 val rename_class_signature : equal:('a -> 'a -> bool) ->
                              'a Identifier.class_signature ->

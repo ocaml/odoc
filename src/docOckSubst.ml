@@ -21,6 +21,8 @@ open DocOckTypes
 class type ['a] t = object
   method root : 'a -> 'a
   inherit ['a] DocOckMaps.paths
+  method offset_identifier_signature :
+    'a Identifier.signature * int -> 'a Identifier.signature * int
   inherit ['a] DocOckMaps.types
 end
 
@@ -75,6 +77,9 @@ let comment s com =
 let identifier_signature s id =
   s#identifier_signature id
 
+let offset_identifier_signature s idoff =
+  s#offset_identifier_signature idoff
+
 (* TODO either expose more maps or expose argument map directly *)
 let identifier_module s id =
   s#identifier_module id
@@ -83,7 +88,7 @@ let module_type_expr s expr =
   s#module_type_expr expr
 
 class ['a] rename_signature ~equal (x : 'a Identifier.signature)
-        (y : 'a Identifier.signature) = object
+        (y : 'a Identifier.signature) offset : ['a] t = object
 
   inherit ['a] DocOckMaps.paths as super
 
@@ -93,16 +98,29 @@ class ['a] rename_signature ~equal (x : 'a Identifier.signature)
     if Identifier.equal ~equal id x then y
     else super#identifier_signature id
 
+  method identifier (type k) (id : ('a, k) Identifier.t)
+         : ('a, k) Identifier.t =
+    match id with
+    | Identifier.Argument(parent, pos, name) ->
+        if Identifier.equal ~equal parent x then
+          Identifier.Argument(y, pos + offset, name)
+        else super#identifier id
+    | id -> super#identifier id
+
+  method offset_identifier_signature (id, offset') =
+    if Identifier.equal ~equal id x then (y, offset + offset')
+    else (super#identifier_signature id, offset')
+
   inherit ['a] DocOckMaps.types
 
 end
 
-let rename_signature ~equal x y =
-  new rename_signature ~equal x y
+let rename_signature ~equal x y offset =
+  new rename_signature ~equal x y offset
 
 class ['a] rename_class_signature ~equal
            (x : 'a Identifier.class_signature)
-           (y : 'a Identifier.class_signature) = object
+           (y : 'a Identifier.class_signature) : ['a] t = object (self)
 
   inherit ['a] DocOckMaps.paths as super
 
@@ -114,13 +132,16 @@ class ['a] rename_class_signature ~equal
 
   inherit ['a] DocOckMaps.types
 
+  method offset_identifier_signature (id, offset) =
+    (self#identifier_signature id, offset)
+
 end
 
 let rename_class_signature ~equal x y =
   new rename_class_signature ~equal x y
 
 class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
-        (y : 'a Identifier.datatype) = object
+        (y : 'a Identifier.datatype) : ['a] t = object (self)
 
   inherit ['a] DocOckMaps.paths as super
 
@@ -131,6 +152,9 @@ class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
     else super#identifier_datatype id
 
   inherit ['a] DocOckMaps.types
+
+  method offset_identifier_signature (id, offset) =
+    (self#identifier_signature id, offset)
 
 end
 
@@ -144,7 +168,7 @@ type 'a is_path_kind = Witness : [< Path.kind] is_path_kind
   let open Path.Resolved in
     (Module(Identifier id, name))*)
 
-class ['a] prefix ~equal id = object (self)
+class ['a] prefix ~equal id : ['a] t = object (self)
 
   inherit ['a] DocOckMaps.paths as super
 
@@ -222,6 +246,9 @@ class ['a] prefix ~equal id = object (self)
 
   inherit ['a] DocOckMaps.types
 
+  method offset_identifier_signature (id, offset) =
+    (self#identifier_signature id, offset)
+
 end
 
 let prefix ~equal id =
@@ -245,7 +272,7 @@ let make_lookup (type a) ~equal ~hash
 
 class ['a] pack ~equal ~hash
            (items : ('a Identifier.module_
-                     * 'a Identifier.module_) list) = object
+                     * 'a Identifier.module_) list) : ['a] t = object (self)
 
   val lookup = make_lookup ~equal ~hash items
 
@@ -275,6 +302,9 @@ class ['a] pack ~equal ~hash
         | _ -> super#identifier id
 
   inherit ['a] DocOckMaps.types
+
+  method offset_identifier_signature (id, offset) =
+    (self#identifier_signature id, offset)
 
 end
 
