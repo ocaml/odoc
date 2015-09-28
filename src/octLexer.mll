@@ -636,6 +636,7 @@ let _ =
       ("param", fun lexbuf -> Param (identifier lexbuf));
       ("raise", fun lexbuf -> Raise (identifier lexbuf));
       ("return", fun _ -> RETURN);
+      ("inline", fun _ -> INLINE);
       ("see", fun lexbuf -> See (see lexbuf));
       ("since", fun lexbuf -> Since (version lexbuf));
       ("before", fun lexbuf -> Before (version lexbuf));

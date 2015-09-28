@@ -131,6 +131,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token DEPRECATED
 %token <string> Raise
 %token RETURN
+%token INLINE
 %token <string> Custom
 
 %token BEGIN
@@ -217,6 +218,7 @@ text_tag:
 | Param text             { Param($1, (text $2)) }
 | Raise text             { Raised_exception($1, (text $2)) }
 | RETURN text            { Return_value (text $2) }
+| INLINE whitespace      { Inline }
 | Custom text            { Custom($1, (text $2)) }
 ;
 

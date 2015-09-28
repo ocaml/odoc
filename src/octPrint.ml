@@ -148,6 +148,8 @@ let tag i ppf x =
   | Return_value txt ->
       line i ppf "Return_value\n";
       text i ppf txt
+  | Inline ->
+      line i ppf "Inline\n"
   | Custom(s, txt) ->
       line i ppf "Custom %s\n" s;
       text i ppf txt

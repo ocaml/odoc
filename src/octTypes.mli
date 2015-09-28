@@ -72,6 +72,7 @@ type tag =
   | Param of string * text (** \@param tag *)
   | Raised_exception of string * text (** \@raise tag *)
   | Return_value of text (** \@return tag *)
+  | Inline (** \@inline tag *)
   | Custom of string * text (** custom tag *)
 
 (** A special comment *)
