@@ -152,6 +152,9 @@ let index_t output acc =
 let inherit_t output acc =
   output acc (`El_start ((ns, "inherit"), []))
 
+let inline_t output acc =
+  output acc (`El_start ((ns, "inline"), []))
+
 let instance_variable_t output acc =
   output acc (`El_start ((ns, "instance_variable"), []))
 
@@ -715,12 +718,12 @@ and see output acc =
 
 and tag_p base output acc tg =
   let open Documentation in
-  let block t txt =
+  let block t output acc txt =
     let acc = t output acc in
     let acc = text_p base output acc txt in
     close output acc
   in
-  let named_block t n txt =
+  let named_block t output acc n txt =
     let acc = t output acc in
     let acc = name_p base output acc n in
     let acc = text_p base output acc txt in
@@ -735,12 +738,13 @@ and tag_p base output acc tg =
       let acc = text_p base output acc txt in
       close output acc
     | Since s -> simple since_t output acc s
-    | Before(name, txt) -> named_block before_t name txt
-    | Deprecated txt -> block deprecated_t txt
-    | Param(name, txt) -> named_block param_t name txt
-    | Raise(name, txt) -> named_block raise_t name txt
-    | Return txt -> block return_t txt
-    | Tag(name, txt) -> named_block tag_t name txt
+    | Before(name, txt) -> named_block before_t output acc name txt
+    | Deprecated txt -> block deprecated_t output acc txt
+    | Param(name, txt) -> named_block param_t output acc name txt
+    | Raise(name, txt) -> named_block raise_t output acc name txt
+    | Inline -> closed inline_t output acc
+    | Return txt -> block return_t output acc txt
+    | Tag(name, txt) -> named_block tag_t output acc name txt
 
 and tags_p base output acc tgs =
   list tag_p base output acc tgs
@@ -1188,6 +1192,7 @@ and signature_item_p base output acc =
       let open Include in
       let acc = include_t output acc in
       let acc = identifier_p base output acc incl.parent in
+      let acc = doc_p base output acc incl.doc in
       let acc = module_decl_p base output acc incl.decl in
       close output acc
     | Comment com -> comment_p base output acc com

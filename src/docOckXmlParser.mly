@@ -107,6 +107,7 @@ let relax_class_type_reference cltyp =
 %token INCLUDE
 %token INDEX
 %token INHERIT
+%token INLINE
 %token INSTANCE_VARIABLE
 %token INTERFACE
 %token ITALIC
@@ -810,6 +811,8 @@ tag:
       { Documentation.Raise(name, text) }
   | RETURN text = text CLOSE
       { Documentation.Return text }
+  | INLINE CLOSE
+      { Documentation.Inline }
   | TAG name = name text = text CLOSE
       { Documentation.Tag(name, text) }
 
@@ -1111,10 +1114,10 @@ signature_item:
       { let open Signature in
         let open ModuleType in
           ModuleType {id; doc; expr} }
-  | INCLUDE parent = signature_identifier decl = module_decl CLOSE
+  | INCLUDE parent = signature_identifier doc = doc decl = module_decl CLOSE
       { let open Signature in
         let open Include in
-          Include {parent; decl} }
+          Include {parent; doc; decl} }
   | comment = comment
       { Signature.Comment comment }
 

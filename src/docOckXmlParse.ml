@@ -85,6 +85,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "include" Parser.INCLUDE;
     Hashtbl.add plain_tags "index" Parser.INDEX;
     Hashtbl.add plain_tags "inherit" Parser.INHERIT;
+    Hashtbl.add plain_tags "inline" Parser.INLINE;
     Hashtbl.add plain_tags "instance_variable" Parser.INSTANCE_VARIABLE;
     Hashtbl.add plain_tags "interface" Parser.INTERFACE;
     Hashtbl.add plain_tags "italic" Parser.ITALIC;
