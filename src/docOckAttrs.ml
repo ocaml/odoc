@@ -120,6 +120,7 @@ let read_tag parent : Octavius.Types.tag -> 'a tag = function
   | Param (s, t) -> Param (s, read_text parent t)
   | Raised_exception (s, t) -> Raise (s, read_text parent t)
   | Return_value t -> Return (read_text parent t)
+  | Inline -> Inline
   | Custom (s, t) -> Tag (s, read_text parent t)
 
 let empty_body = { text = []; tags = []; }

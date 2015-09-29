@@ -934,6 +934,7 @@ class virtual ['a] documentation = object (self)
           let txt' = self#documentation_text txt in
             if raise != raise' || txt != txt' then Raise(raise', txt')
             else tag
+      | Inline -> tag
       | Return txt ->
           let txt' = self#documentation_text txt in
             if txt != txt' then Return txt'
@@ -1286,13 +1287,17 @@ class virtual ['a] include_ = object (self)
   method virtual identifier_signature :
     'a Identifier.signature -> 'a Identifier.signature
 
+  method virtual documentation :
+    'a Documentation.t -> 'a Documentation.t
+
   method include_ incl =
     let open Include in
-    let {parent; decl} = incl in
+    let {parent; doc; decl} = incl in
     let parent' = self#identifier_signature parent in
+    let doc' = self#documentation doc in
     let decl' = self#module_decl decl in
-      if parent != parent' || decl != decl' then
-        {parent = parent'; decl = decl'}
+      if parent != parent' || doc != doc' || decl != decl' then
+        {parent = parent'; doc = doc'; decl = decl'}
       else incl
 
 end

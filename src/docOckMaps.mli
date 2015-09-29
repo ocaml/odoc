@@ -543,6 +543,8 @@ class virtual ['a] include_ : object
   method virtual identifier_signature : 'a Identifier.signature ->
                                         'a Identifier.signature
 
+  method virtual documentation : 'a Documentation.t -> 'a Documentation.t
+
   method include_ : 'a Include.t -> 'a Include.t
 
 end

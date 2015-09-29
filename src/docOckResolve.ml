@@ -853,11 +853,12 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
 
   method include_ incl =
     let open Include in
-    let {parent; decl} = incl in
+    let {parent; doc; decl} = incl in
     let parent' = self#identifier_signature parent in
+    let doc' = self#documentation doc in
     let decl' = self#module_decl_with_id parent decl in
-      if parent != parent' || decl != decl' then
-        {parent = parent'; decl = decl'}
+      if parent != parent' || doc != doc' || decl != decl' then
+        {parent = parent'; doc = doc'; decl = decl'}
       else incl
 
   method module_type_functor_arg arg =

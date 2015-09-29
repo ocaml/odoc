@@ -86,6 +86,7 @@ module Documentation : sig
     | Param of string * 'a text
     | Raise of string * 'a text
     | Return of 'a text
+    | Inline
     | Tag of string * 'a text
 
   module Error : sig
@@ -208,6 +209,7 @@ and Include : sig
 
   type 'a t =
     { parent: 'a Identifier.signature;
+      doc: 'a Documentation.t;
       decl: 'a Module.decl; }
 
 end

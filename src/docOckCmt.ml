@@ -429,13 +429,15 @@ and read_structure_item env parent item =
 
 and read_include env parent incl =
   let open Include in
+  let container = Identifier.parent_of_signature parent in
+  let doc = read_attributes container parent incl.incl_attributes in
   let decl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent 1 incl.incl_mod)
   in
-    {parent; decl}
+    {parent; doc; decl}
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

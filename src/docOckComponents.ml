@@ -154,7 +154,7 @@ and text_labels acc txt = List.fold_left text_element_labels acc txt
 
 let tag_labels acc =
   let open Documentation in function
-  | Author _ | Version _ | Since _ -> acc
+  | Author _ | Version _ | Since _ | Inline -> acc
   | See(_, txt) | Before(_, txt) | Deprecated txt
   | Param(_, txt) | Raise(_, txt) | Return txt | Tag(_, txt) ->
       text_labels acc txt

@@ -492,6 +492,7 @@ and signature_items local =
         add_local_modules local incl.parent (modules decl);
         add_local_module_types local incl.parent (module_types decl);
         let sg = signature_items local rest in
+        let sg = add_documentation incl.doc sg in
           include_ decl sg
     | Comment com :: rest ->
         let sg = signature_items local rest in

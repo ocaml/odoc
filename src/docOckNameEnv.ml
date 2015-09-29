@@ -295,7 +295,7 @@ and add_text txt env =
 let add_tag tag env =
   let open Documentation in
     match tag with
-    | Author _ | Version _ | Since _ -> env
+    | Author _ | Version _ | Since _ | Inline -> env
     | See(_, txt) | Before(_, txt) | Deprecated txt
     | Param(_, txt) | Raise(_, txt)
     | Return txt | Tag(_, txt) -> add_text txt env
@@ -387,6 +387,10 @@ let add_module md env =
   let env = add_documentation md.doc env in
     add_module_ident md.id env
 
+let add_include incl env =
+  let open Include in
+    add_documentation incl.doc env
+
 let add_signature_item item env =
   let open Signature in
   match item with
@@ -399,7 +403,7 @@ let add_signature_item item env =
   | External ext -> add_external ext env
   | Class cl -> add_class cl env
   | ClassType cltyp -> add_class_type cltyp env
-  | Include _ -> env
+  | Include incl -> add_include incl env
   | Comment com -> add_comment com env
 
 let add_signature_items sg env =
