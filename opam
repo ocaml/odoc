@@ -6,7 +6,6 @@ authors: [
 license: "ISC"
 version: "0.3.0"
 depends: [
-  "assemblage"
   "octavius"
   "ocamlfind"
 ]
