@@ -373,7 +373,7 @@ and read_module_binding env parent mb =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env id 1 mb.mb_expr)
   in
-    {id; doc; type_}
+    {id; doc; type_; expansion = None}
 
 and read_module_bindings env parent mbs =
   let container = Identifier.parent_of_signature parent in
@@ -437,7 +437,7 @@ and read_include env parent incl =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent 1 incl.incl_mod)
   in
-    {parent; doc; decl}
+    {parent; doc; decl; expansion = None}
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

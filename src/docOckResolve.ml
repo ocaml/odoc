@@ -847,7 +847,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     let sig_id = Identifier.signature_of_module id' in
     let type' = self#module_decl_with_id sig_id type_ in
       if id != id' || doc != doc' || type_ != type' then
-        {id = id'; doc = doc'; type_ = type'}
+        {id = id'; doc = doc'; type_ = type'; expansion = None}
       else md
 
   method module_type mty =
@@ -865,7 +865,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
           else expr
     in
       if id != id' || doc != doc' || expr != expr' then
-        {id = id'; doc = doc'; expr = expr'}
+        {id = id'; doc = doc'; expr = expr'; expansion = None}
       else mty
 
   method include_ incl =
@@ -875,7 +875,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     let doc' = self#documentation doc in
     let decl' = self#module_decl_with_id parent decl in
       if parent != parent' || doc != doc' || decl != decl' then
-        {parent = parent'; doc = doc'; decl = decl'}
+        {parent = parent'; doc = doc'; decl = decl'; expansion = None}
       else incl
 
   method module_type_functor_arg arg =

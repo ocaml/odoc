@@ -381,7 +381,7 @@ and expand_unit ({equal; hash} as t) root unit =
                         let open Module in
                         let id = item.id in
                         let type_ = ModuleType (ModuleType.Signature sg) in
-                        let md = {id; doc; type_} in
+                        let md = {id; doc; type_; expansion = Some sg} in
                         loop ((src, item.id) :: ids) (md :: mds) rest
                     end
                   | exception Not_found -> [], None (* TODO: Should be an error *)

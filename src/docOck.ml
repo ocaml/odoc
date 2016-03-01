@@ -67,7 +67,7 @@ let read_cmti root_fn filename =
         let content = Module items in
         let unit =
           {id; doc; digest; imports; source;
-           interface; hidden; content}
+           interface; hidden; content; expansion = None}
         in
         let unit = DocOckLookup.lookup unit in
           Ok unit
@@ -128,7 +128,7 @@ let read_cmt root_fn filename =
         let source = None in
         let content = Pack items in
           Ok {id; doc; digest; imports;
-              source; interface; hidden; content}
+              source; interface; hidden; content; expansion = None}
     | Implementation impl ->
         let open Types.Unit in
         let name = cmt_info.cmt_modname in
@@ -161,7 +161,7 @@ let read_cmt root_fn filename =
         let content = Module items in
         let unit =
           {id; doc; digest; imports;
-           source; interface; hidden; content}
+           source; interface; hidden; content; expansion = None}
         in
         let unit = DocOckLookup.lookup unit in
           Ok unit
@@ -192,7 +192,7 @@ let read_cmi root_fn filename =
           let content = Module items in
           let unit =
             {id; doc; digest; imports;
-             source; interface; hidden; content}
+             source; interface; hidden; content; expansion = None}
           in
           let unit = DocOckLookup.lookup unit in
             Ok unit

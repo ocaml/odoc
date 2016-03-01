@@ -1069,7 +1069,7 @@ class virtual ['a] module_ = object (self)
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
       if id != id' || doc != doc' || type_ != type' then
-        {id = id'; doc = doc'; type_ = type'}
+        {id = id'; doc = doc'; type_ = type'; expansion = None}
       else md
 
   method module_equation eq =
@@ -1182,12 +1182,12 @@ class virtual ['a] module_type = object (self)
 
   method module_type mty =
     let open ModuleType in
-    let {id; doc; expr} = mty in
+    let {id; doc; expr; expansion} = mty in
     let id' = self#identifier_module_type id in
     let doc' = self#documentation doc in
     let expr' = option_map self#module_type_expr expr in
       if id != id' || doc != doc' || expr != expr' then
-        {id = id'; doc = doc'; expr = expr'}
+        {id = id'; doc = doc'; expr = expr'; expansion}
       else mty
 end
 
@@ -1292,12 +1292,12 @@ class virtual ['a] include_ = object (self)
 
   method include_ incl =
     let open Include in
-    let {parent; doc; decl} = incl in
+    let {parent; doc; decl; expansion} = incl in
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl decl in
       if parent != parent' || doc != doc' || decl != decl' then
-        {parent = parent'; doc = doc'; decl = decl'}
+        {parent = parent'; doc = doc'; decl = decl'; expansion}
       else incl
 
 end
@@ -1992,7 +1992,7 @@ class virtual ['a] unit = object (self)
   method unit unit =
     let open Unit in
     let {id; doc; digest; imports;
-         source; interface; hidden; content} = unit
+         source; interface; hidden; content; expansion} = unit
     in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
@@ -2010,7 +2010,7 @@ class virtual ['a] unit = object (self)
         {id = id'; doc = doc'; digest = digest';
          imports = imports'; source = source';
          interface = interface'; hidden = hidden';
-         content = content'}
+         content = content'; expansion}
       else unit
 
   method unit_digest digest = digest

@@ -149,7 +149,9 @@ module rec Module : sig
   type 'a t =
     { id: 'a Identifier.module_;
       doc: 'a Documentation.t;
-      type_: 'a decl; }
+      type_: 'a decl;
+      expansion: 'a Signature.t option;
+    }
 
   module Equation : sig
 
@@ -179,7 +181,9 @@ and ModuleType : sig
   type 'a t =
     { id: 'a Identifier.module_type;
       doc: 'a Documentation.t;
-      expr: 'a expr option; }
+      expr: 'a expr option;
+      expansion: 'a Signature.t option;
+    }
 
 end
 
@@ -210,7 +214,8 @@ and Include : sig
   type 'a t =
     { parent: 'a Identifier.signature;
       doc: 'a Documentation.t;
-      decl: 'a Module.decl; }
+      decl: 'a Module.decl;
+      expansion: 'a Signature.t option; }
 
 end
 
@@ -515,6 +520,7 @@ module Unit : sig
       source: 'a Source.t option;
       interface: bool;
       hidden: bool;
-      content: 'a content; }
+      content: 'a content;
+      expansion: 'a Signature.t option; }
 
 end

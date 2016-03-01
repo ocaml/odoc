@@ -455,7 +455,7 @@ and read_module_type_declaration env parent mtd =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
-    {id; doc; expr}
+    {id; doc; expr; expansion = None}
 
 and read_module_declaration env parent md =
   let open Module in
@@ -468,7 +468,7 @@ and read_module_declaration env parent md =
     | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
-    {id; doc; type_}
+    {id; doc; type_; expansion = None}
 
 and read_module_declarations env parent mds =
   let container = Identifier.parent_of_signature parent in
@@ -524,7 +524,7 @@ and read_include env parent incl =
   let doc = read_attributes container parent incl.incl_attributes in
   let expr = read_module_type env parent 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
-    {parent; doc; decl}
+    {parent; doc; decl; expansion = None}
 
 and read_signature env parent sg =
   let env =
