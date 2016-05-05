@@ -23,10 +23,15 @@ open DocOckComponents
 (** The type of tables of components *)
 type 'a t
 
+type 'a lookup_result =
+  | Forward_reference
+  | Found of 'a
+  | Not_found
+
 (** Create a table of the components of units. Optionally provide
     equality and hash functons. *)
 val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
- ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) -> 'a t
+ ('a Unit.t -> string -> 'a lookup_result) -> ('a -> 'a Unit.t) -> 'a t
 
 (** {3 Identifier Lookup} *)
 
@@ -96,4 +101,4 @@ val resolved_datatype_reference : 'a t -> 'a Reference.Resolved.datatype ->
 (** {3 Root lookup} *)
 
 (** Lookup the base of a unit name *)
-val base : 'a t -> 'a Unit.t -> string -> 'a option
+val base : 'a t -> 'a Unit.t -> string -> 'a lookup_result

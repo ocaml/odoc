@@ -19,6 +19,11 @@ open DocOckTypes
 open DocOckComponents
 open DocOckComponentTbl
 
+type 'a lookup_result = 'a DocOckComponentTbl.lookup_result =
+  | Forward_reference
+  | Found of 'a
+  | Not_found
+
 type 'a parent_module_path =
   | Resolved of 'a Path.Resolved.module_ * 'a Sig.t
   | Unresolved of 'a Path.module_
@@ -61,8 +66,11 @@ and resolve_parent_module_path tbl u p : 'a parent_module_path =
     match p with
     | Root s -> begin
         match base tbl u s with
-        | None -> Unresolved p
-        | Some r ->
+        | Not_found -> Unresolved p
+        | Forward_reference ->
+            (* TODO: fail? *)
+            Unresolved p
+        | Found r ->
             let p = Identifier (Identifier.Root(r, s)) in
               Resolved(p, resolved_module_path tbl u p)
       end
@@ -122,8 +130,11 @@ and resolve_module_path tbl u =
   let open Path in function
   | Root s as p -> begin
       match base tbl u s with
-      | None -> p
-      | Some r -> Resolved (Identifier (Identifier.Root(r, s)))
+      | Not_found -> p
+      | Forward_reference ->
+          (* TODO: fail? *)
+          p
+      | Found r -> Resolved (Identifier (Identifier.Root(r, s)))
     end
   | Resolved r as p -> p
   | Dot(p, name) -> begin
@@ -371,8 +382,11 @@ let rec resolve_parent_reference :
         match r with
         | Root s -> begin
             match base tbl u s with
-            | None -> Unresolved r
-            | Some base ->
+            | Not_found -> Unresolved r
+            | Forward_reference ->
+                (* TODO: fail? *)
+                Unresolved r
+            | Found base ->
                 let root = Identifier (Identifier.Root(base, s)) in
                   match kind with
                   | PParent ->
@@ -432,8 +446,11 @@ and resolve_module_reference tbl u r =
     match r with
     | Root s -> begin
         match base tbl u s with
-        | None -> r
-        | Some base -> Resolved (Identifier (Identifier.Root(base, s)))
+        | Not_found -> r
+        | Forward_reference ->
+            (* TODO: fail? *)
+            r
+        | Found base -> Resolved (Identifier (Identifier.Root(base, s)))
       end
     | Resolved _ -> r
     | Dot(r, name) -> begin

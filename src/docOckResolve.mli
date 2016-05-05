@@ -19,10 +19,15 @@ open DocOckTypes
 
 type 'a resolver
 
+type 'a lookup_result =
+  | Forward_reference
+  | Found of 'a
+  | Not_found
+
 (** Lazily extract the components of units. Assumes that it is safe to
     use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
 val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                    ('a Unit.t -> string -> 'a option) -> ('a -> 'a Unit.t) ->
+                    ('a Unit.t -> string -> 'a lookup_result) -> ('a -> 'a Unit.t) ->
                     'a resolver
 
 (** Try to resolve all paths and references within a unit. *)

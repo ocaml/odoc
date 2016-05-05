@@ -18,6 +18,11 @@ module Paths = DocOckPaths
 
 module Types = DocOckTypes
 
+type 'a lookup_result = 'a DocOckResolve.lookup_result =
+  | Forward_reference
+  | Found of 'a
+  | Not_found
+
 let core_types = DocOckPredef.core_types
 
 let core_exceptions = DocOckPredef.core_exceptions

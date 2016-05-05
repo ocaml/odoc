@@ -56,10 +56,15 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
         let module Tbl = Hashtbl.Make(Hash) in
           make Tbl.create Tbl.find Tbl.add
 
+type 'a lookup_result =
+  | Forward_reference
+  | Found of 'a
+  | Not_found
+
 type 'a t =
   { equal : ('a -> 'a -> bool) option;
     hash : ('a -> int) option;
-    lookup : 'a Unit.t -> string -> 'a option;
+    lookup : 'a Unit.t -> string -> 'a lookup_result;
     fetch : 'a -> 'a Unit.t;
     tbl : ('a, 'a Sig.t) tbl; }
 
@@ -346,8 +351,9 @@ and module_path local =
   let open Path in function
   | Root s -> begin
       match local.t.lookup local.unit s with
-      | None -> Sig.unresolved
-      | Some base -> unit local.t base
+      | Not_found -> Sig.unresolved
+      | Found base -> unit local.t base
+      | Forward_reference -> Sig.abstract
     end
   | Resolved r -> resolved_module_path local r
   | Dot(p, name) ->
