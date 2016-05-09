@@ -93,6 +93,7 @@ let relax_class_type_reference cltyp =
 %token ENUM
 %token ERROR
 %token EXCEPTION
+%token EXPANSION
 %token EXTENSIBLE
 %token EXTENSION
 %token EXTERNAL
@@ -1070,6 +1071,17 @@ module_type_expr:
   | TYPEOF md = module_decl CLOSE
       { ModuleType.TypeOf md }
 
+expansion_opt:
+  | EXPANSION CLOSE { None }
+  | EXPANSION SIGNATURE sg = signature_item* CLOSE CLOSE { Some sg }
+
+/* todo: functors... */
+module_expansion_opt:
+  | opt = expansion_opt
+      { match opt with None -> None | Some sg -> Some (Module.Signature sg) }
+  | EXPANSION FUNCTOR args = module_argument* SIGNATURE sg = signature_item* CLOSE CLOSE CLOSE
+      { Some (Module.Functor (args, sg)) }
+
 signature_item:
   | VALUE id = value_identifier doc = doc type_ = type_expr CLOSE
       { let open Signature in
@@ -1105,19 +1117,21 @@ signature_item:
         { let open Signature in
           let open ClassType in
             ClassType {id; doc; virtual_; params; expr} }
-  | MODULE id = module_identifier doc = doc type_ = module_decl CLOSE
+  | MODULE id = module_identifier doc = doc type_ = module_decl
+      expansion = module_expansion_opt CLOSE
       { let open Signature in
         let open Module in
-           Module {id; doc; type_} }
+         Module {id; doc; type_; expansion} }
   | MODULE_TYPE id = module_type_identifier doc = doc
-      expr = module_type_expr? CLOSE
+      expr = module_type_expr?  expansion = module_expansion_opt CLOSE
       { let open Signature in
         let open ModuleType in
-          ModuleType {id; doc; expr} }
-  | INCLUDE parent = signature_identifier doc = doc decl = module_decl CLOSE
+          ModuleType {id; doc; expr; expansion} }
+  | INCLUDE parent = signature_identifier doc = doc decl = module_decl
+      expansion = expansion_opt CLOSE
       { let open Signature in
         let open Include in
-          Include {parent; doc; decl} }
+          Include {parent; doc; decl; expansion} }
   | comment = comment
       { Signature.Comment comment }
 
@@ -1160,9 +1174,9 @@ unit_content:
 unit:
   | UNIT id = module_identifier doc = doc digest = digest imports = unit_import*
       source = source? interface = flag(INTERFACE) hidden = flag(HIDDEN)
-      content = unit_content CLOSE
+      content = unit_content expansion = expansion_opt CLOSE
           { let open Unit in
-              {id; doc; digest; imports; source;
+              {id; doc; digest; imports; source; expansion ;
                interface; hidden; content} }
 
 file:

@@ -1112,6 +1112,37 @@ and module_type_expr_p base output acc =
       let acc = module_decl_p base output acc md in
       close output acc
 
+and expansion_p base output acc sig_opt =
+  let acc = output acc (`El_start ((ns, "expansion"), [])) in
+  let acc =
+    match sig_opt with
+    | None -> acc
+    | Some sg ->
+        let acc = signature_t output acc in
+        let acc = List.fold_left (signature_item_p base output) acc sg in
+          close output acc
+  in
+  close output acc
+
+and module_expansion_p base output acc expansion_opt =
+  let acc = output acc (`El_start ((ns, "expansion"), [])) in
+  let acc =
+    match expansion_opt with
+    | None -> acc
+    | Some (Module.Signature sg) ->
+        let acc = signature_t output acc in
+        let acc = List.fold_left (signature_item_p base output) acc sg in
+          close output acc
+    | Some (Module.Functor (args, sg)) ->
+        let acc = functor_t output acc in
+        let acc = List.fold_left (module_argument_p base output) acc args in
+        let acc = signature_t output acc in
+        let acc = List.fold_left (signature_item_p base output) acc sg in
+        let acc = close output acc in
+          close output acc
+  in
+  close output acc
+
 and signature_item_p base output acc =
   let open Signature in function
     | Value v ->
@@ -1180,6 +1211,7 @@ and signature_item_p base output acc =
       let acc = identifier_p base output acc md.id in
       let acc = doc_p base output acc md.doc in
       let acc = module_decl_p base output acc md.type_ in
+      let acc = module_expansion_p base output acc md.expansion in
       close output acc
     | ModuleType mty ->
       let open ModuleType in
@@ -1187,6 +1219,7 @@ and signature_item_p base output acc =
       let acc = identifier_p base output acc mty.id in
       let acc = doc_p base output acc mty.doc in
       let acc = opt module_type_expr_p base output acc mty.expr in
+      let acc = module_expansion_p base output acc mty.expansion in
       close output acc
     | Include incl ->
       let open Include in
@@ -1194,6 +1227,7 @@ and signature_item_p base output acc =
       let acc = identifier_p base output acc incl.parent in
       let acc = doc_p base output acc incl.doc in
       let acc = module_decl_p base output acc incl.decl in
+      let acc = expansion_p base output acc incl.expansion in
       close output acc
     | Comment com -> comment_p base output acc com
 
@@ -1263,6 +1297,7 @@ let unit_p base output acc unit =
   let acc = flag interface_t output acc unit.interface in
   let acc = flag hidden_t output acc unit.hidden in
   let acc = unit_content_p base output acc unit.content in
+  let acc = expansion_p base output acc unit.expansion in
   close output acc
 
 let file_p base output acc unit =

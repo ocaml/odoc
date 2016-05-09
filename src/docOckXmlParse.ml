@@ -71,6 +71,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "enum" Parser.ENUM;
     Hashtbl.add plain_tags "error" Parser.ERROR;
     Hashtbl.add plain_tags "exception" Parser.EXCEPTION;
+    Hashtbl.add plain_tags "expansion" Parser.EXPANSION;
     Hashtbl.add plain_tags "extensible" Parser.EXTENSIBLE;
     Hashtbl.add plain_tags "extension" Parser.EXTENSION;
     Hashtbl.add plain_tags "external" Parser.EXTERNAL;
