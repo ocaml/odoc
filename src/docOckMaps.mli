@@ -453,6 +453,9 @@ class virtual ['a] module_ : object
 
   method virtual module_type_expr : 'a ModuleType.expr -> 'a ModuleType.expr
 
+  method virtual module_expansion : 'a Module.expansion option ->
+    'a Module.expansion option
+
   method module_decl : 'a Module.decl -> 'a Module.decl
 
   method module_ : 'a Module.t -> 'a Module.t
@@ -491,6 +494,9 @@ class virtual ['a] module_type : object
     'a TypeDecl.Equation.t
 
   method virtual type_decl_param_name : string -> string
+
+  method virtual module_expansion : 'a Module.expansion option ->
+    'a Module.expansion option
 
   method module_type_substitution : 'a ModuleType.substitution ->
     'a ModuleType.substitution
@@ -544,6 +550,9 @@ class virtual ['a] include_ : object
                                         'a Identifier.signature
 
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
+
+  method virtual include_expansion : 'a Signature.t option ->
+    'a Signature.t option
 
   method include_ : 'a Include.t -> 'a Include.t
 

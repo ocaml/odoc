@@ -839,6 +839,12 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method path_type x = resolve_type_path tbl (unwrap unit) x
   method path_class_type x = resolve_class_type_path tbl (unwrap unit) x
 
+  method include_expansion x =
+    assert false (* never called. *)
+
+  method module_expansion x =
+    assert false (* never called. *)
+
   method module_ md =
     let open Module in
     let {id; doc; type_} = md in

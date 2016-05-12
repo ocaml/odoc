@@ -1050,6 +1050,9 @@ class virtual ['a] module_ = object (self)
   method virtual module_type_expr :
     'a ModuleType.expr -> 'a ModuleType.expr
 
+  method virtual module_expansion :
+    'a Module.expansion option -> 'a Module.expansion option
+
   method module_decl decl =
     let open Module in
       match decl with
@@ -1064,12 +1067,13 @@ class virtual ['a] module_ = object (self)
 
   method module_ md =
     let open Module in
-    let {id; doc; type_} = md in
+    let {id; doc; type_; expansion} = md in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
-      if id != id' || doc != doc' || type_ != type' then
-        {id = id'; doc = doc'; type_ = type'; expansion = None}
+    let expansion' = self#module_expansion expansion in
+      if id != id' || doc != doc' || type_ != type' || expansion' != expansion then
+        {id = id'; doc = doc'; type_ = type'; expansion = expansion' }
       else md
 
   method module_equation eq =
@@ -1117,6 +1121,9 @@ class virtual ['a] module_type = object (self)
 
   method virtual type_decl_param_name :
     string -> string
+
+  method virtual module_expansion :
+    'a Module.expansion option -> 'a Module.expansion option
 
   method module_type_substitution subst =
     let open ModuleType in
@@ -1186,8 +1193,9 @@ class virtual ['a] module_type = object (self)
     let id' = self#identifier_module_type id in
     let doc' = self#documentation doc in
     let expr' = option_map self#module_type_expr expr in
-      if id != id' || doc != doc' || expr != expr' then
-        {id = id'; doc = doc'; expr = expr'; expansion}
+    let expansion' = self#module_expansion expansion in
+      if id != id' || doc != doc' || expr != expr' || expansion != expansion' then
+        {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
       else mty
 end
 
@@ -1290,14 +1298,18 @@ class virtual ['a] include_ = object (self)
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
 
+  method virtual include_expansion :
+    'a Signature.t option -> 'a Signature.t option
+
   method include_ incl =
     let open Include in
     let {parent; doc; decl; expansion} = incl in
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl decl in
-      if parent != parent' || doc != doc' || decl != decl' then
-        {parent = parent'; doc = doc'; decl = decl'; expansion}
+    let expansion' = self#include_expansion expansion in
+      if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
+        {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl
 
 end

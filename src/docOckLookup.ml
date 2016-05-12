@@ -30,6 +30,9 @@ class ['a] lookup = object (self)
   method fragment_type x = x
   method fragment_module x = x
 
+  method module_expansion x = x
+  method include_expansion x = x
+
   method reference_module x =
     lookup_module env x
   method reference_module_type x =

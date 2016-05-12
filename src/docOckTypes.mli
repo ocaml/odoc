@@ -142,6 +142,10 @@ end
 
 module rec Module : sig
 
+  type 'a expansion =
+    | Signature of 'a Signature.t
+    | Functor of ('a Identifier.module_ * 'a ModuleType.expr) option list * 'a Signature.t
+
   type 'a decl =
     | Alias of 'a Path.module_
     | ModuleType of 'a ModuleType.expr
@@ -150,7 +154,7 @@ module rec Module : sig
     { id: 'a Identifier.module_;
       doc: 'a Documentation.t;
       type_: 'a decl;
-      expansion: 'a Signature.t option;
+      expansion: 'a expansion option;
     }
 
   module Equation : sig
@@ -182,7 +186,7 @@ and ModuleType : sig
     { id: 'a Identifier.module_type;
       doc: 'a Documentation.t;
       expr: 'a expr option;
-      expansion: 'a Signature.t option;
+      expansion: 'a Module.expansion option;
     }
 
 end

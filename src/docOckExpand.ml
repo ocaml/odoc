@@ -145,7 +145,7 @@ type 'a intermediate_module_expansion =
 type 'a intermediate_module_type_expansion =
   'a Identifier.module_type * 'a Documentation.t * 'a partial_expansion option
 
-type 'a t =
+type 'a expander =
   { equal: 'a -> 'a -> bool;
     hash: 'a -> int;
     expand_root: root:'a -> 'a -> 'a intermediate_module_expansion;
@@ -381,7 +381,7 @@ and expand_unit ({equal; hash} as t) root unit =
                         let open Module in
                         let id = item.id in
                         let type_ = ModuleType (ModuleType.Signature sg) in
-                        let md = {id; doc; type_; expansion = Some sg} in
+                        let md = {id; doc; type_; expansion = Some (Signature sg)} in
                         loop ((src, item.id) :: ids) (md :: mds) rest
                     end
                   | exception Not_found -> [], None (* TODO: Should be an error *)
@@ -394,7 +394,7 @@ and expand_unit ({equal; hash} as t) root unit =
     | Module sg -> Some sg
 
 
-let build_expander (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
+let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
   let equal =
     match equal with
     | None -> (=)
@@ -500,43 +500,158 @@ let build_expander (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
   in
     t
 
-type 'a module_expansion =
-  | Signature of 'a Signature.t
-  | Functor of ('a Identifier.module_ *
-                'a ModuleType.expr) option list *
-               'a Signature.t
-
 let rec force_expansion t root (ex : 'a partial_expansion option) =
   match ex with
   | None -> None
-  | Some (Signature sg) -> Some (Signature sg)
+  | Some (Signature sg) -> Some (Module.Signature sg)
   | Some (Functor(arg, dest, offset, expr)) ->
       let ex = expand_module_type_expr t root dest offset expr in
         match force_expansion t root ex with
         | None -> None
-        | Some (Signature sg) -> Some(Functor([arg], sg))
-        | Some (Functor(args, sg)) -> Some(Functor(arg :: args, sg))
+        | Some (Module.Signature sg) -> Some(Module.Functor([arg], sg))
+        | Some (Module.Functor(args, sg)) ->
+            Some(Module.Functor(arg :: args, sg))
 
 let expand_module t md =
   let open Module in
-  let root = Identifier.module_root md.id in
-  force_expansion t root (expand_module t root md)
+    match md.expansion with
+    | Some _ -> md
+    | None ->
+        let root = Identifier.module_root md.id in
+        let expansion = force_expansion t root (expand_module t root md) in
+          { md with expansion }
 
 let expand_module_type t mty =
   let open ModuleType in
-  let root = Identifier.module_type_root mty.id in
-  force_expansion t root (expand_module_type t root mty)
+    match mty.expansion with
+    | Some _ -> mty
+    | None ->
+        let root = Identifier.module_type_root mty.id in
+        let expansion = force_expansion t root (expand_module_type t root mty) in
+          { mty with expansion }
 
 let expand_include t incl =
   let open Include in
-  let root = Identifier.signature_root incl.parent in
-  expand_include t root incl
+    match incl.expansion with
+    | Some _ -> incl
+    | None ->
+        let root = Identifier.signature_root incl.parent in
+        let expansion = expand_include t root incl in
+          { incl with expansion }
 
 let expand_unit t unit =
   let open Unit in
-  let root = Identifier.module_root unit.id in
-  expand_unit t root unit
+    match unit.expansion with
+    | Some _ -> unit
+    | None ->
+        let root = Identifier.module_root unit.id in
+        let expansion = expand_unit t root unit in
+          { unit with expansion }
 
 let expand_argument t ((id, _) as arg) =
   let root = Identifier.module_root id in
   force_expansion t root (expand_argument t root arg)
+
+class ['a] t ?equal ?hash fetch = object (self)
+  val t = create ?equal ?hash fetch
+  val unit = None
+
+  inherit ['a] DocOckMaps.types as super
+  method root x = x
+
+  (* Define virtual methods. *)
+  method identifier_module x = x
+  method identifier_module_type x = x
+  method identifier_type x = x
+  method identifier_constructor x = x
+  method identifier_field x = x
+  method identifier_extension x = x
+  method identifier_exception x = x
+  method identifier_value x = x
+  method identifier_class x = x
+  method identifier_class_type x = x
+  method identifier_method x = x
+  method identifier_instance_variable x = x
+  method identifier_label x = x
+  method identifier_signature x = x
+  method identifier x = x
+
+  (* CR trefis: Is that ok? Probably. *)
+  method path_module x = x
+  method path_module_type x = x
+  method path_type x = x
+  method path_class_type x = x
+  method fragment_type x = x
+  method fragment_module x = x
+
+  method module_ md =
+    let md' = expand_module t md in
+      super#module_ md'
+
+  method module_type mty =
+    let mty' = expand_module_type t mty in
+      super#module_type mty'
+
+  method include_ incl =
+    let incl' = expand_include t incl in
+    super#include_ incl'
+
+  method module_expansion x =
+    match x with
+    | None -> None
+    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
+    | Some (Module.Functor (args, sg)) ->
+        let args' =
+          (* FIXME: use self#module_type_functor_arg? *)
+          List.map (function
+            | None -> None
+            | Some (mod_id, mty) ->
+                Some (self#identifier_module mod_id, self#module_type_expr mty)
+          ) args
+        in
+        Some (Module.Functor (args', self#signature sg))
+
+  method include_expansion x =
+    match x with
+    | None -> None
+    | Some sg -> Some (self#signature sg)
+
+  (* CR trefis: TODO *)
+      (*
+  method module_type_functor_arg arg =
+    match arg with
+    | None -> arg
+    | Some(id, expr) ->
+        let id' = self#identifier_module id in
+        let sig_id = Identifier.signature_of_module id' in
+        let expr' = self#module_type_expr_with_id sig_id expr in
+          if id != id' || expr != expr' then Some(id', expr')
+          else arg
+         *)
+
+
+  (* CR trefis: TODO *)
+  method reference_module x = x
+  method reference_module_type x = x
+  method reference_type x = x
+  method reference_constructor x = x
+  method reference_field x = x
+  method reference_extension x = x
+  method reference_exception x = x
+  method reference_value x = x
+  method reference_class x = x
+  method reference_class_type x = x
+  method reference_method x = x
+  method reference_instance_variable x = x
+  method reference_label x = x
+  method reference_any x = x
+
+  method expand unit =
+    let this = {< unit = Some unit >} in
+      this#unit unit
+end
+
+let build_expander ?equal ?hash fetch =
+  new t ?equal ?hash fetch
+
+let expand e u = e#expand u

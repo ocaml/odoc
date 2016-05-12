@@ -17,29 +17,9 @@
 open DocOckPaths
 open DocOckTypes
 
-type 'a module_expansion =
-  | Signature of 'a Signature.t
-  | Functor of ('a Identifier.module_ *
-                'a ModuleType.expr) option list *
-               'a Signature.t
-
 type 'a t
 
 val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
                      (root:'a -> 'a -> 'a Unit.t) -> 'a t
 
-val expand_module : 'a t -> 'a Module.t ->
-                    'a module_expansion option
-
-val expand_module_type : 'a t -> 'a ModuleType.t ->
-                         'a module_expansion option
-
-val expand_unit : 'a t -> 'a Unit.t ->
-                  'a Signature.t option
-
-val expand_include : 'a t -> 'a Include.t ->
-                     'a Signature.t option
-
-val expand_argument : 'a t ->
-  ('a Identifier.module_ * 'a ModuleType.expr) ->
-  'a module_expansion option
+val expand : 'a t -> 'a Unit.t -> 'a Unit.t
