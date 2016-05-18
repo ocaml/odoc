@@ -16,6 +16,12 @@
 
 (** Paths of documentation *)
 
+type sexp =
+  | List of sexp list
+  | Atom of string
+
+val string_of_sexp : sexp -> string
+
 (** {3 Kinds } *)
 
 module Kind : sig
@@ -158,6 +164,8 @@ module Identifier : sig
   and 'a datatype = ('a, Kind.datatype) t
   and 'a parent = ('a, Kind.parent) t
 
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
   type 'a module_ = ('a, identifier_module) t
   type 'a module_type = ('a, identifier_module_type) t
   type 'a type_ =  ('a, identifier_type) t
@@ -255,6 +263,8 @@ module rec Path : sig
     and 'a type_ = ('a, path_type) t
     and 'a class_type = ('a, path_class_type) t
 
+    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
     val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
     val ident_module_type : 'a Identifier.module_type ->
@@ -291,6 +301,8 @@ module rec Path : sig
   and 'a module_type = ('a, path_module_type) t
   and 'a type_ = ('a, path_type) t
   and 'a class_type = ('a, path_class_type) t
+
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
   val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
