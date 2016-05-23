@@ -840,25 +840,38 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method path_class_type x = resolve_class_type_path tbl (unwrap unit) x
 
   method include_expansion x =
-    assert false (* never called. *)
+    match x with
+    | None -> x
+    | Some sg ->
+        let sg' = self#signature sg in
+          if sg != sg' then Some sg' else x
 
   method module_expansion x =
-    assert false (* never called. *)
+    match x with
+    | None -> x
+    | Some (Module.Signature sg) ->
+        let sg' = self#signature sg in
+          if sg != sg' then Some (Module.Signature sg') else x
+    | Some (Module.Functor (args, sg)) ->
+        let args' = List.map self#module_type_functor_arg args in
+        let sg' = self#signature sg in
+          Some (Module.Functor (args', sg'))
 
   method module_ md =
     let open Module in
-    let {id; doc; type_} = md in
+    let {id; doc; type_; expansion} = md in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let sig_id = Identifier.signature_of_module id' in
     let type' = self#module_decl_with_id sig_id type_ in
-      if id != id' || doc != doc' || type_ != type' then
-        {id = id'; doc = doc'; type_ = type'; expansion = None}
+    let expansion' = self#module_expansion expansion in
+      if id != id' || doc != doc' || type_ != type' || expansion != expansion' then
+        {id = id'; doc = doc'; type_ = type'; expansion = expansion'}
       else md
 
   method module_type mty =
     let open ModuleType in
-    let {id; doc; expr} = mty in
+    let {id; doc; expr; expansion} = mty in
     let id' = self#identifier_module_type id in
     let doc' = self#documentation doc in
     let expr' =
@@ -870,18 +883,20 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
           if body != body' then Some body'
           else expr
     in
-      if id != id' || doc != doc' || expr != expr' then
-        {id = id'; doc = doc'; expr = expr'; expansion = None}
+    let expansion' = self#module_expansion expansion in
+      if id != id' || doc != doc' || expr != expr' || expansion != expansion' then
+        {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
       else mty
 
   method include_ incl =
     let open Include in
-    let {parent; doc; decl} = incl in
+    let {parent; doc; decl; expansion} = incl in
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl_with_id parent decl in
-      if parent != parent' || doc != doc' || decl != decl' then
-        {parent = parent'; doc = doc'; decl = decl'; expansion = None}
+    let expansion' = self#include_expansion expansion in
+      if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
+        {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl
 
   method module_type_functor_arg arg =
