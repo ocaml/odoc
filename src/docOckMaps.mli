@@ -504,8 +504,7 @@ class virtual ['a] module_type : object
   method module_type_expr : 'a ModuleType.expr -> 'a ModuleType.expr
 
   method module_type_functor_arg :
-    ('a Identifier.module_ * 'a ModuleType.expr) option ->
-    ('a Identifier.module_ * 'a ModuleType.expr) option
+    'a FunctorArgument.t option -> 'a FunctorArgument.t option
 
   method module_type : 'a ModuleType.t -> 'a ModuleType.t
 
@@ -820,6 +819,8 @@ class virtual ['a] unit : object
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
+
+  method expansion : 'a Signature.t option -> 'a Signature.t option
 
   method unit_import : 'a Unit.Import.t -> 'a Unit.Import.t
 

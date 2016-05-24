@@ -511,7 +511,7 @@ and module_type_expr local expr =
     match expr with
     | Path p -> path (module_type_path local) p
     | Signature sg -> signature (signature_items local) sg
-    | Functor(Some(id, arg), res) ->
+    | Functor(Some(id, arg, _), res) ->
         let res = module_type_expr local res in
         let arg = module_type_expr local arg in
           functor_ local.t.equal local.t.hash id arg res

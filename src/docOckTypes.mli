@@ -144,7 +144,7 @@ module rec Module : sig
 
   type 'a expansion =
     | Signature of 'a Signature.t
-    | Functor of ('a Identifier.module_ * 'a ModuleType.expr) option list * 'a Signature.t
+    | Functor of 'a FunctorArgument.t option list * 'a Signature.t
 
   type 'a decl =
     | Alias of 'a Path.module_
@@ -165,6 +165,12 @@ module rec Module : sig
 
 end
 
+and FunctorArgument : sig
+  (* TODO: record *)
+  type 'a t =
+    ('a Identifier.module_ * 'a ModuleType.expr * 'a Module.expansion option)
+end
+
 (** {3 Modules Types} *)
 
 and ModuleType : sig
@@ -178,7 +184,7 @@ and ModuleType : sig
   type 'a expr =
     | Path of 'a Path.module_type
     | Signature of 'a Signature.t
-    | Functor of ('a Identifier.module_ * 'a expr) option * 'a expr
+    | Functor of 'a FunctorArgument.t option * 'a expr
     | With of 'a expr * 'a substitution list
     | TypeOf of 'a Module.decl
 

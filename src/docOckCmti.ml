@@ -425,7 +425,7 @@ and read_module_type env parent pos mty =
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
               let arg = read_module_type env id 1 arg in
-                Some (id, arg)
+                Some (id, arg, None)
         in
         let env = Env.add_argument parent pos id env in
         let res = read_module_type env parent (pos + 1) res in

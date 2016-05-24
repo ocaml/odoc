@@ -19,8 +19,7 @@ open DocOckTypes
 
 type 'a partial_expansion =
   | Signature of 'a Signature.t
-  | Functor of ('a Identifier.module_ *
-                'a ModuleType.expr) option *
+  | Functor of 'a FunctorArgument.t option *
                'a Identifier.signature * int *
                'a ModuleType.expr
 
@@ -31,10 +30,11 @@ let subst_signature sub = function
 let subst_arg sub arg =
   match arg with
   | None -> None
-  | Some (id, expr) ->
+  | Some (id, expr, expansion) ->
       let id' = DocOckSubst.identifier_module sub id in
       let expr' = DocOckSubst.module_type_expr sub expr in
-        Some (id', expr')
+      let expansion' = DocOckSubst.module_expansion sub expansion in
+        Some (id', expr', expansion')
 
 let subst_expansion sub = function
   | None -> None
@@ -222,9 +222,16 @@ let expand_include t root incl =
   | Some (Signature sg) -> Some sg
   | Some (Functor _) -> None (* TODO: Should be an error *)
 
-let expand_argument t root (id, expr) =
-  let id = Identifier.signature_of_module id in
-  expand_module_type_expr t root id 0 expr
+let expand_argument_ t root (id, expr, expansion) =
+  match expansion with
+  | None ->
+      let id = Identifier.signature_of_module id in
+      expand_module_type_expr t root id 0 expr
+  | Some (Module.Signature sg) -> Some (Signature sg)
+  | Some (Module.Functor _) ->
+      (* CR trefis: This is for cases where the module argument is itself a functor.
+         It *should* be handled, but latter. *)
+      None
 
 let find_module t root name ex =
   let rec inner_loop name items =
@@ -299,7 +306,7 @@ let expand_signature_identifier' t root (id : 'a Identifier.signature) =
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
       let arg = find_argument t root pos ex in
-        expand_argument t root arg
+        expand_argument_ t root arg
   | ModuleType(parent, name) ->
       let open ModuleType in
       let ex = t.expand_signature_identifier ~root parent in
@@ -317,9 +324,9 @@ and expand_module_identifier' t root (id : 'a Identifier.module_) =
         md.id, md.doc, expand_module t root md
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let (id, _) as arg = find_argument t root pos ex in
+      let (id, _, _) as arg = find_argument t root pos ex in
       let doc = DocOckAttrs.empty in
-        id, doc, expand_argument t root arg
+        id, doc, expand_argument_ t root arg
 
 and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
   let open Identifier in
@@ -505,12 +512,24 @@ let rec force_expansion t root (ex : 'a partial_expansion option) =
   | None -> None
   | Some (Signature sg) -> Some (Module.Signature sg)
   | Some (Functor(arg, dest, offset, expr)) ->
+      let arg = expand_argument t arg in
       let ex = expand_module_type_expr t root dest offset expr in
         match force_expansion t root ex with
         | None -> None
         | Some (Module.Signature sg) -> Some(Module.Functor([arg], sg))
         | Some (Module.Functor(args, sg)) ->
             Some(Module.Functor(arg :: args, sg))
+
+and expand_argument t arg_opt =
+  match arg_opt with
+  | None -> arg_opt
+  | Some (id, expr, expansion as arg) ->
+      match expansion with
+      | Some _ -> arg_opt
+      | None ->
+          let root = Identifier.module_root id in
+          let expansion = force_expansion t root (expand_argument_ t root arg) in
+            Some (id, expr, expansion)
 
 let expand_module t md =
   let open Module in
@@ -547,10 +566,6 @@ let expand_unit t unit =
         let root = Identifier.module_root unit.id in
         let expansion = expand_unit t root unit in
           { unit with expansion }
-
-let expand_argument t ((id, _) as arg) =
-  let root = Identifier.module_root id in
-  force_expansion t root (expand_argument t root arg)
 
 class ['a] t ?equal ?hash fetch = object (self)
   val t = create ?equal ?hash fetch
@@ -601,14 +616,7 @@ class ['a] t ?equal ?hash fetch = object (self)
     | None -> None
     | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
     | Some (Module.Functor (args, sg)) ->
-        let args' =
-          (* FIXME: use self#module_type_functor_arg? *)
-          List.map (function
-            | None -> None
-            | Some (mod_id, mty) ->
-                Some (self#identifier_module mod_id, self#module_type_expr mty)
-          ) args
-        in
+        let args' = List.map self#module_type_functor_arg args in
         Some (Module.Functor (args', self#signature sg))
 
   method include_expansion x =
@@ -616,18 +624,9 @@ class ['a] t ?equal ?hash fetch = object (self)
     | None -> None
     | Some sg -> Some (self#signature sg)
 
-  (* CR trefis: TODO *)
-      (*
   method module_type_functor_arg arg =
-    match arg with
-    | None -> arg
-    | Some(id, expr) ->
-        let id' = self#identifier_module id in
-        let sig_id = Identifier.signature_of_module id' in
-        let expr' = self#module_type_expr_with_id sig_id expr in
-          if id != id' || expr != expr' then Some(id', expr')
-          else arg
-         *)
+    let arg = expand_argument t arg in
+      super#module_type_functor_arg arg
 
 
   (* CR trefis: TODO *)

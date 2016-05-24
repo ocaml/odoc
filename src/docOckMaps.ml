@@ -1181,10 +1181,12 @@ class virtual ['a] module_type = object (self)
   method module_type_functor_arg arg =
     match arg with
     | None -> arg
-    | Some(id, expr) ->
+    | Some(id, expr, expansion) ->
         let id' = self#identifier_module id in
         let expr' = self#module_type_expr expr in
-          if id != id' || expr != expr' then Some(id', expr')
+        let expansion' = self#module_expansion expansion in
+          if id != id' || expr != expr' || expansion != expansion' then
+            Some(id', expr', expansion')
           else arg
 
   method module_type mty =
@@ -1989,6 +1991,13 @@ class virtual ['a] unit = object (self)
   method unit_packed items =
     list_map self#unit_packed_item items
 
+  method expansion x =
+    match x with
+    | None -> None
+    | Some sg ->
+        let sg' = self#signature sg in
+          if sg != sg' then x else Some sg'
+
   method unit_content content =
     let open Unit in
       match content with
@@ -2014,15 +2023,16 @@ class virtual ['a] unit = object (self)
     let interface' = self#unit_interface interface in
     let hidden' = self#unit_hidden hidden in
     let content' = self#unit_content content in
+    let expansion' = self#expansion expansion in
       if id != id' || doc != doc' || digest != digest'
          || imports != imports' || source != source'
          || interface != interface' || hidden != hidden'
-         || content != content'
+         || content != content' || expansion != expansion'
       then
         {id = id'; doc = doc'; digest = digest';
          imports = imports'; source = source';
          interface = interface'; hidden = hidden';
-         content = content'; expansion}
+         content = content'; expansion = expansion'}
       else unit
 
   method unit_digest digest = digest
