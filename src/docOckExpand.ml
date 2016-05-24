@@ -213,7 +213,7 @@ let expand_module_type t root mty =
   | Some expr ->
       let id = Identifier.signature_of_module_type mty.id in
         expand_module_type_expr t root id 0 expr
-  | None -> None
+  | None -> Some (Signature [])
 
 let expand_include t root incl =
   let open Include in
