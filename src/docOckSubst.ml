@@ -125,9 +125,12 @@ class ['a] rename_signature ~equal (x : 'a Identifier.signature)
         let args' =
           List.map (function
             | None -> None
-            | Some (id, mty, expansion) ->
-                Some (self#identifier id, self#module_type_expr mty,
-                     self#module_expansion expansion)
+            | Some {FunctorArgument. id; expr = mty; expansion} ->
+                Some { FunctorArgument.
+                  id = self#identifier id;
+                  expr = self#module_type_expr mty;
+                  expansion = self#module_expansion expansion
+                }
           ) args
         in
           Some (Module.Functor (args', self#signature sg))
@@ -173,9 +176,12 @@ class ['a] rename_class_signature ~equal
         let args' =
           List.map (function
             | None -> None
-            | Some (id, mty, expansion) ->
-                Some (self#identifier id, self#module_type_expr mty,
-                     self#module_expansion expansion)
+            | Some {FunctorArgument. id; expr = mty; expansion} ->
+                Some { FunctorArgument.
+                  id = self#identifier id;
+                  expr = self#module_type_expr mty;
+                  expansion = self#module_expansion expansion
+                }
           ) args
         in
           Some (Module.Functor (args', self#signature sg))
@@ -214,9 +220,12 @@ class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
         let args' =
           List.map (function
             | None -> None
-            | Some (id, mty, expansion) ->
-                Some (self#identifier id, self#module_type_expr mty,
-                     self#module_expansion expansion)
+            | Some {FunctorArgument. id; expr = mty; expansion} ->
+                Some { FunctorArgument.
+                  id = self#identifier id;
+                  expr = self#module_type_expr mty;
+                  expansion = self#module_expansion expansion
+                }
           ) args
         in
           Some (Module.Functor (args', self#signature sg))
@@ -327,9 +336,12 @@ class ['a] prefix ~equal id : ['a] t = object (self)
         let args' =
           List.map (function
             | None -> None
-            | Some (id, mty, expansion) ->
-                Some (self#identifier id, self#module_type_expr mty,
-                     self#module_expansion expansion)
+            | Some {FunctorArgument. id; expr = mty; expansion} ->
+                Some { FunctorArgument.
+                  id = self#identifier id;
+                  expr = self#module_type_expr mty;
+                  expansion = self#module_expansion expansion
+                }
           ) args
         in
           Some (Module.Functor (args', self#signature sg))
@@ -404,9 +416,12 @@ class ['a] pack ~equal ~hash
         let args' =
           List.map (function
             | None -> None
-            | Some (id, mty, expansion) ->
-                Some (self#identifier id, self#module_type_expr mty,
-                     self#module_expansion expansion)
+            | Some {FunctorArgument. id; expr = mty; expansion} ->
+                Some { FunctorArgument.
+                  id = self#identifier id;
+                  expr = self#module_type_expr mty;
+                  expansion = self#module_expansion expansion
+                }
           ) args
         in
           Some (Module.Functor (args', self#signature sg))

@@ -900,15 +900,16 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
       else incl
 
   method module_type_functor_arg arg =
+    let open FunctorArgument in
     match arg with
     | None -> arg
-    | Some(id, expr, expansion) ->
+    | Some{ id; expr; expansion } ->
         let id' = self#identifier_module id in
         let sig_id = Identifier.signature_of_module id' in
         let expr' = self#module_type_expr_with_id sig_id expr in
         let expansion' = self#module_expansion expansion in
           if id != id' || expr != expr' || expansion != expansion' then
-            Some(id', expr', expansion')
+            Some {id = id'; expr = expr'; expansion = expansion'}
           else arg
 
   method private module_type_expr_with_id id expr =

@@ -30,11 +30,11 @@ let subst_signature sub = function
 let subst_arg sub arg =
   match arg with
   | None -> None
-  | Some (id, expr, expansion) ->
+  | Some {FunctorArgument. id; expr; expansion} ->
       let id' = DocOckSubst.identifier_module sub id in
       let expr' = DocOckSubst.module_type_expr sub expr in
       let expansion' = DocOckSubst.module_expansion sub expansion in
-        Some (id', expr', expansion')
+        Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
 
 let subst_expansion sub = function
   | None -> None
@@ -222,7 +222,7 @@ let expand_include t root incl =
   | Some (Signature sg) -> Some sg
   | Some (Functor _) -> None (* TODO: Should be an error *)
 
-let expand_argument_ t root (id, expr, expansion) =
+let expand_argument_ t root {FunctorArgument. id; expr; expansion} =
   match expansion with
   | None ->
       let id = Identifier.signature_of_module id in
@@ -324,7 +324,7 @@ and expand_module_identifier' t root (id : 'a Identifier.module_) =
         md.id, md.doc, expand_module t root md
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let (id, _, _) as arg = find_argument t root pos ex in
+      let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
       let doc = DocOckAttrs.empty in
         id, doc, expand_argument_ t root arg
 
@@ -523,13 +523,13 @@ let rec force_expansion t root (ex : 'a partial_expansion option) =
 and expand_argument t arg_opt =
   match arg_opt with
   | None -> arg_opt
-  | Some (id, expr, expansion as arg) ->
+  | Some ({FunctorArgument. id; expr; expansion} as arg) ->
       match expansion with
       | Some _ -> arg_opt
       | None ->
           let root = Identifier.module_root id in
           let expansion = force_expansion t root (expand_argument_ t root arg) in
-            Some (id, expr, expansion)
+            Some {FunctorArgument. id; expr; expansion}
 
 let expand_module t md =
   let open Module in

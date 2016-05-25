@@ -166,9 +166,11 @@ module rec Module : sig
 end
 
 and FunctorArgument : sig
-  (* TODO: record *)
-  type 'a t =
-    ('a Identifier.module_ * 'a ModuleType.expr * 'a Module.expansion option)
+  type 'a t = {
+    id : 'a Identifier.module_;
+    expr : 'a ModuleType.expr;
+    expansion: 'a Module.expansion option;
+  }
 end
 
 (** {3 Modules Types} *)

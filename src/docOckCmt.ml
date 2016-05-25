@@ -343,7 +343,7 @@ let rec read_module_expr env parent pos mexpr =
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
               let arg = DocOckCmti.read_module_type env id 1 arg in
-                Some (id, arg, None)
+                Some { FunctorArgument. id; expr = arg; expansion = None }
         in
         let env = Env.add_argument parent pos id env in
         let res = read_module_expr env parent (pos + 1) res in

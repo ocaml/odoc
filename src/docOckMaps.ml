@@ -1181,12 +1181,12 @@ class virtual ['a] module_type = object (self)
   method module_type_functor_arg arg =
     match arg with
     | None -> arg
-    | Some(id, expr, expansion) ->
+    | Some { FunctorArgument. id; expr; expansion } ->
         let id' = self#identifier_module id in
         let expr' = self#module_type_expr expr in
         let expansion' = self#module_expansion expansion in
           if id != id' || expr != expr' || expansion != expansion' then
-            Some(id', expr', expansion')
+            Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
           else arg
 
   method module_type mty =
