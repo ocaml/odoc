@@ -365,6 +365,8 @@ module Fragment : sig
     and 'a any = ('a, kind) t
     and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
+    val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
+
     type 'a module_ = ('a, fragment_module) t
     type 'a type_ = ('a, fragment_type) t
 
@@ -397,6 +399,8 @@ module Fragment : sig
 
   and 'a any = ('a, kind) t
   and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
+
+  val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
 
   type 'a module_ = ('a, fragment_module) t
   type 'a type_ = ('a, fragment_type) t

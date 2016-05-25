@@ -24,6 +24,8 @@ let rec string_of_sexp = function
       let s = List.map string_of_sexp lst in
       Printf.sprintf "(%s)" (String.concat " " s)
 
+let atom s = Atom (Printf.sprintf "%S" s)
+
 module Kind = struct
 
   type any =
@@ -120,7 +122,6 @@ module Identifier = struct
 
   let rec sexp_of_t : type a b. (a -> sexp) -> (a,b) t -> sexp =
     fun sexp_of_a t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
       let int i = Atom (string_of_int i) in
       match t with
       | Root (a, s) -> List [ Atom "Root"; List [sexp_of_a a; atom s] ]
@@ -711,6 +712,48 @@ module Fragment = struct
     and 'a any = ('a, kind) t
     and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
+    let rec sexp_of_t :
+      type a c. ('b -> sexp) -> ('b, a, c) raw -> sexp =
+      fun sexp_of_a raw ->
+        match raw with
+        | Root -> Atom "Root"
+        | Subst (path, raw) ->
+            List [
+              Atom "Subst";
+              List [ Path.Resolved.sexp_of_t sexp_of_a path
+                  ; sexp_of_t sexp_of_a raw ]
+            ]
+        | SubstAlias (path, raw) ->
+            List [
+              Atom "SubstAlias";
+              List [ Path.Resolved.sexp_of_t sexp_of_a path
+                  ; sexp_of_t sexp_of_a raw ]
+            ]
+        | Module (raw, s) ->
+            List [
+              Atom "Module";
+              List [ sexp_of_t sexp_of_a raw
+                  ; atom s ]
+            ]
+        | Type (raw, s) ->
+            List [
+              Atom "Type";
+              List [ sexp_of_t sexp_of_a raw
+                  ; atom s ]
+            ]
+        | Class (raw, s) ->
+            List [
+              Atom "Class";
+              List [ sexp_of_t sexp_of_a raw
+                  ; atom s ]
+            ]
+        | ClassType (raw, s) ->
+            List [
+              Atom "ClassType";
+              List [ sexp_of_t sexp_of_a raw
+                  ; atom s ]
+            ]
+
     type 'a module_ = ('a, fragment_module) t
     type 'a type_ = ('a, fragment_type) t
 
@@ -896,6 +939,21 @@ module Fragment = struct
 
   and 'a any = ('a, kind) t
   and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
+
+  let rec sexp_of_t :
+    type a c. ('b -> sexp) -> ('b, a, c) raw -> sexp =
+    fun sexp_of_a raw ->
+      match raw with
+      | Resolved r ->
+          List [
+            Atom "Resolved";
+            Resolved.sexp_of_t sexp_of_a r;
+          ]
+      | Dot (raw, s) ->
+          List [
+            Atom "Dot";
+            List [ sexp_of_t sexp_of_a raw ; atom s ];
+          ]
 
   type 'a module_ = ('a, fragment_module) t
   type 'a type_ = ('a, fragment_type) t
