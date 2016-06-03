@@ -666,3 +666,12 @@ module DoubleInclude3 = struct
 end
 
 include DoubleInclude3.DoubleInclude2
+
+module IncludeInclude1 = struct
+  module type IncludeInclude2 = sig
+    type include_include
+  end
+end
+
+include IncludeInclude1
+type include_include

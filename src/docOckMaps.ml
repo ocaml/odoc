@@ -1050,8 +1050,23 @@ class virtual ['a] module_ = object (self)
   method virtual module_type_expr :
     'a ModuleType.expr -> 'a ModuleType.expr
 
-  method virtual module_expansion :
-    'a Module.expansion option -> 'a Module.expansion option
+  method virtual signature : 'a Signature.t -> 'a Signature.t
+
+  method virtual module_type_functor_arg :
+    'a FunctorArgument.t option -> 'a FunctorArgument.t option
+
+  method module_expansion expn =
+    let open Module in
+    match expn with
+    | Signature sg ->
+        let sg' = self#signature sg in
+        if sg != sg' then Signature sg'
+        else expn
+    | Functor (args, sg) ->
+        let args' = list_map self#module_type_functor_arg args in
+        let sg' = self#signature sg in
+        if args != args' || sg != sg' then Functor(args', sg')
+        else expn
 
   method module_decl decl =
     let open Module in
@@ -1071,7 +1086,7 @@ class virtual ['a] module_ = object (self)
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
-    let expansion' = self#module_expansion expansion in
+    let expansion' = option_map self#module_expansion expansion in
       if id != id' || doc != doc' || type_ != type' || expansion' != expansion then
         {id = id'; doc = doc'; type_ = type'; expansion = expansion' }
       else md
@@ -1123,7 +1138,7 @@ class virtual ['a] module_type = object (self)
     string -> string
 
   method virtual module_expansion :
-    'a Module.expansion option -> 'a Module.expansion option
+    'a Module.expansion -> 'a Module.expansion
 
   method module_type_substitution subst =
     let open ModuleType in
@@ -1184,7 +1199,7 @@ class virtual ['a] module_type = object (self)
     | Some { FunctorArgument. id; expr; expansion } ->
         let id' = self#identifier_module id in
         let expr' = self#module_type_expr expr in
-        let expansion' = self#module_expansion expansion in
+        let expansion' = option_map self#module_expansion expansion in
           if id != id' || expr != expr' || expansion != expansion' then
             Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
           else arg
@@ -1195,7 +1210,7 @@ class virtual ['a] module_type = object (self)
     let id' = self#identifier_module_type id in
     let doc' = self#documentation doc in
     let expr' = option_map self#module_type_expr expr in
-    let expansion' = self#module_expansion expansion in
+    let expansion' = option_map self#module_expansion expansion in
       if id != id' || doc != doc' || expr != expr' || expansion != expansion' then
         {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
       else mty
@@ -1300,8 +1315,9 @@ class virtual ['a] include_ = object (self)
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
 
-  method virtual include_expansion :
-    'a Signature.t option -> 'a Signature.t option
+  method virtual signature : 'a Signature.t -> 'a Signature.t
+
+  method include_expansion expn = self#signature expn
 
   method include_ incl =
     let open Include in
@@ -1309,7 +1325,7 @@ class virtual ['a] include_ = object (self)
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl decl in
-    let expansion' = self#include_expansion expansion in
+    let expansion' = option_map self#include_expansion expansion in
       if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
         {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl

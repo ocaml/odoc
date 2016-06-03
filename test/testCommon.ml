@@ -34,8 +34,8 @@ let lookup files =
     fun file source name ->
       if (Identifier.name source.Unit.id) <> (module_name file) then
         raise (Error(file, "bad lookup during resolution"));
-      if List.mem name names then Some name
-      else None
+      if List.mem name names then Found name
+      else Not_found
 
 let fetch intfs =
   let intfs =
@@ -50,7 +50,11 @@ let fetch intfs =
 
 let resolve_file lookup fetch file intf =
   let resolver = build_resolver (lookup file) (fetch file) in
-  ignore (resolve resolver intf)
+  resolve resolver intf
+
+let expand_file fetch file intf =
+  let expander = build_expander (fun ~root:_ name -> fetch file name) in
+  expand expander intf
 
 let test read files =
   let intfs =
@@ -59,7 +63,13 @@ let test read files =
   List.iter (fun (file, intf) -> check_identity_map file intf) intfs;
   let lookup = lookup files in
   let fetch = fetch intfs in
-  List.iter (fun (file, intf) -> resolve_file lookup fetch file intf) intfs
+  let intfs' =
+    List.map
+      (fun (file, intf) -> file, resolve_file lookup fetch file intf)
+      intfs
+  in
+  ignore
+    (List.map (fun (file, intf) -> file, expand_file fetch file intf) intfs')
 
 let get_files kind =
   let files = ref [] in

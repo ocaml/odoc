@@ -23,8 +23,6 @@ class type ['a] t = object
   inherit ['a] DocOckMaps.paths
   method offset_identifier_signature :
     'a Identifier.signature * int -> 'a Identifier.signature * int
-  method module_expansion : 'a Module.expansion option -> 'a Module.expansion option
-  method include_expansion : 'a Signature.t option -> 'a Signature.t option
   inherit ['a] DocOckMaps.types
 end
 
@@ -112,29 +110,6 @@ class ['a] rename_signature ~equal (x : 'a Identifier.signature)
         else super#identifier id
     | id -> super#identifier id
 
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' =
-          List.map (function
-            | None -> None
-            | Some {FunctorArgument. id; expr = mty; expansion} ->
-                Some { FunctorArgument.
-                  id = self#identifier id;
-                  expr = self#module_type_expr mty;
-                  expansion = self#module_expansion expansion
-                }
-          ) args
-        in
-          Some (Module.Functor (args', self#signature sg))
-
   method offset_identifier_signature (id, offset') =
     if Identifier.equal ~equal id x then (y, offset + offset')
     else (super#identifier_signature id, offset')
@@ -163,29 +138,6 @@ class ['a] rename_class_signature ~equal
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
 
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' =
-          List.map (function
-            | None -> None
-            | Some {FunctorArgument. id; expr = mty; expansion} ->
-                Some { FunctorArgument.
-                  id = self#identifier id;
-                  expr = self#module_type_expr mty;
-                  expansion = self#module_expansion expansion
-                }
-          ) args
-        in
-          Some (Module.Functor (args', self#signature sg))
-
 end
 
 let rename_class_signature ~equal x y =
@@ -206,29 +158,6 @@ class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
-
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' =
-          List.map (function
-            | None -> None
-            | Some {FunctorArgument. id; expr = mty; expansion} ->
-                Some { FunctorArgument.
-                  id = self#identifier id;
-                  expr = self#module_type_expr mty;
-                  expansion = self#module_expansion expansion
-                }
-          ) args
-        in
-          Some (Module.Functor (args', self#signature sg))
 
 end
 
@@ -323,29 +252,6 @@ class ['a] prefix ~equal id : ['a] t = object (self)
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
 
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' =
-          List.map (function
-            | None -> None
-            | Some {FunctorArgument. id; expr = mty; expansion} ->
-                Some { FunctorArgument.
-                  id = self#identifier id;
-                  expr = self#module_type_expr mty;
-                  expansion = self#module_expansion expansion
-                }
-          ) args
-        in
-          Some (Module.Functor (args', self#signature sg))
-
 end
 
 let prefix ~equal id =
@@ -402,29 +308,6 @@ class ['a] pack ~equal ~hash
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
-
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' =
-          List.map (function
-            | None -> None
-            | Some {FunctorArgument. id; expr = mty; expansion} ->
-                Some { FunctorArgument.
-                  id = self#identifier id;
-                  expr = self#module_type_expr mty;
-                  expansion = self#module_expansion expansion
-                }
-          ) args
-        in
-          Some (Module.Functor (args', self#signature sg))
 
 end
 

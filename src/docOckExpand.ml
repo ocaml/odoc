@@ -33,7 +33,9 @@ let subst_arg sub arg =
   | Some {FunctorArgument. id; expr; expansion} ->
       let id' = DocOckSubst.identifier_module sub id in
       let expr' = DocOckSubst.module_type_expr sub expr in
-      let expansion' = DocOckSubst.module_expansion sub expansion in
+      let expansion' =
+        DocOckMaps.option_map (DocOckSubst.module_expansion sub) expansion
+      in
         Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
 
 let subst_expansion sub = function
@@ -610,19 +612,6 @@ class ['a] t ?equal ?hash fetch = object (self)
   method include_ incl =
     let incl' = expand_include t incl in
     super#include_ incl'
-
-  method module_expansion x =
-    match x with
-    | None -> None
-    | Some (Module.Signature sg) -> Some (Module.Signature (self#signature sg))
-    | Some (Module.Functor (args, sg)) ->
-        let args' = List.map self#module_type_functor_arg args in
-        Some (Module.Functor (args', self#signature sg))
-
-  method include_expansion x =
-    match x with
-    | None -> None
-    | Some sg -> Some (self#signature sg)
 
   method module_type_functor_arg arg =
     let arg = expand_argument t arg in

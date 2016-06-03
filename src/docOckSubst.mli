@@ -65,7 +65,7 @@ val offset_identifier_signature : 'a t -> 'a Identifier.signature * int ->
 
 val module_type_expr : 'a t -> 'a ModuleType.expr -> 'a ModuleType.expr
 
-val module_expansion : 'a t -> 'a Module.expansion option -> 'a Module.expansion option
+val module_expansion : 'a t -> 'a Module.expansion -> 'a Module.expansion
 
 val rename_signature : equal:('a -> 'a -> bool) ->
                        'a Identifier.signature ->

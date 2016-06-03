@@ -17,6 +17,10 @@
 open DocOckPaths
 open DocOckTypes
 
+val option_map : ('a -> 'a) -> 'a option -> 'a option
+
+val list_map : ('a -> 'a) -> 'a list -> 'a list
+
 class virtual ['a] identifier : object
 
   method virtual root : 'a -> 'a
@@ -453,8 +457,12 @@ class virtual ['a] module_ : object
 
   method virtual module_type_expr : 'a ModuleType.expr -> 'a ModuleType.expr
 
-  method virtual module_expansion : 'a Module.expansion option ->
-    'a Module.expansion option
+  method virtual signature : 'a Signature.t -> 'a Signature.t
+
+  method virtual module_type_functor_arg :
+    'a FunctorArgument.t option -> 'a FunctorArgument.t option
+
+  method module_expansion : 'a Module.expansion -> 'a Module.expansion
 
   method module_decl : 'a Module.decl -> 'a Module.decl
 
@@ -495,8 +503,7 @@ class virtual ['a] module_type : object
 
   method virtual type_decl_param_name : string -> string
 
-  method virtual module_expansion : 'a Module.expansion option ->
-    'a Module.expansion option
+  method virtual module_expansion : 'a Module.expansion -> 'a Module.expansion
 
   method module_type_substitution : 'a ModuleType.substitution ->
     'a ModuleType.substitution
@@ -550,8 +557,9 @@ class virtual ['a] include_ : object
 
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
-  method virtual include_expansion : 'a Signature.t option ->
-    'a Signature.t option
+  method virtual signature : 'a Signature.t -> 'a Signature.t
+
+  method include_expansion : 'a Signature.t -> 'a Signature.t
 
   method include_ : 'a Include.t -> 'a Include.t
 

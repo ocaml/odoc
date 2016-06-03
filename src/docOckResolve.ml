@@ -839,24 +839,6 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method path_type x = resolve_type_path tbl (unwrap unit) x
   method path_class_type x = resolve_class_type_path tbl (unwrap unit) x
 
-  method include_expansion x =
-    match x with
-    | None -> x
-    | Some sg ->
-        let sg' = self#signature sg in
-          if sg != sg' then Some sg' else x
-
-  method module_expansion x =
-    match x with
-    | None -> x
-    | Some (Module.Signature sg) ->
-        let sg' = self#signature sg in
-          if sg != sg' then Some (Module.Signature sg') else x
-    | Some (Module.Functor (args, sg)) ->
-        let args' = List.map self#module_type_functor_arg args in
-        let sg' = self#signature sg in
-          Some (Module.Functor (args', sg'))
-
   method module_ md =
     let open Module in
     let {id; doc; type_; expansion} = md in
@@ -864,7 +846,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     let doc' = self#documentation doc in
     let sig_id = Identifier.signature_of_module id' in
     let type' = self#module_decl_with_id sig_id type_ in
-    let expansion' = self#module_expansion expansion in
+    let expansion' = DocOckMaps.option_map self#module_expansion expansion in
       if id != id' || doc != doc' || type_ != type' || expansion != expansion' then
         {id = id'; doc = doc'; type_ = type'; expansion = expansion'}
       else md
@@ -883,7 +865,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
           if body != body' then Some body'
           else expr
     in
-    let expansion' = self#module_expansion expansion in
+    let expansion' = DocOckMaps.option_map self#module_expansion expansion in
       if id != id' || doc != doc' || expr != expr' || expansion != expansion' then
         {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
       else mty
@@ -894,7 +876,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl_with_id parent decl in
-    let expansion' = self#include_expansion expansion in
+    let expansion' = DocOckMaps.option_map self#include_expansion expansion in
       if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
         {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl
@@ -907,7 +889,9 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
         let id' = self#identifier_module id in
         let sig_id = Identifier.signature_of_module id' in
         let expr' = self#module_type_expr_with_id sig_id expr in
-        let expansion' = self#module_expansion expansion in
+        let expansion' =
+          DocOckMaps.option_map self#module_expansion expansion
+        in
           if id != id' || expr != expr' || expansion != expansion' then
             Some {id = id'; expr = expr'; expansion = expansion'}
           else arg
