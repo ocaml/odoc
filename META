@@ -1,0 +1,7 @@
+version = "0.1"
+requires = "xmlm,tyxml doc-ock"
+archive(byte) = "doc-ock-html.cma"
+archive(byte, plugin) = "doc-ock-html.cma"
+archive(native) = "doc-ock-html.cmxa"
+archive(native, plugin) = "doc-ock-html.cmxs"
+exist_if = "doc-ock-html.cma"

@@ -1,0 +1,275 @@
+open Html5.M
+
+type t = {
+  name : string;
+  content : [ `Html ] elt;
+  children : t list
+}
+
+let path = Stack.create ()
+
+let stack_to_list s =
+  let acc = ref [] in
+  Stack.iter (fun x -> acc := x :: !acc) s;
+  !acc
+
+let enter ?kind name = Stack.push (name, kind) path
+let leave () = ignore @@ Stack.pop path
+
+let stack_elt_to_path_fragment = function
+  | (name, Some `Mod) -> name ^ ".mod"
+  | (name, Some `Mty) -> name ^ ".modt"
+  | (name, Some `Arg) -> name ^ ".moda"
+  | (name, None) -> name
+
+type 'a page_creator =
+  ([< Html5_types.div_content_fun ] as 'a) elt ->
+  path:string list ->
+  [ `Html ] elt
+
+let default_page_creator content ~path =
+  let title_string =
+    Printf.sprintf "%s (%s)" (List.hd @@ List.rev path)
+      (String.concat ~sep:"." path)
+  in
+  let header =
+    let css_url =
+      let rec aux acc = function
+        | 0 -> acc
+        | n -> aux ("../" ^ acc) (n - 1)
+      in
+      aux "odoc.css" (List.length path)
+    in
+    head (title (pcdata title_string)) [
+      link ~rel:[`Stylesheet] ~href:css_url ()
+    ]
+  in
+  html header (body [div ~a:[ a_class ["odoc-doc"] ] [content]])
+
+let page_creator : _ page_creator ref = ref default_page_creator
+
+let set_page_creator f = page_creator := f
+
+let make (content, children) =
+  assert (not (Stack.is_empty path));
+  let name    = stack_elt_to_path_fragment (Stack.top path) in
+  let path    = List.map ~f:fst (stack_to_list path) in
+  let content = !page_creator content ~path in
+  { name; content; children }
+
+let traverse ~f t =
+  let rec aux parents node =
+    f ~parents node.name node.content;
+    List.iter node.children ~f:(aux (node.name :: parents))
+  in
+  aux [] t
+
+module Relative_link = struct
+  open DocOck.Paths
+
+  module Id : sig
+    exception Not_linkable
+    exception Can't_stop_before
+
+    val href : get_package:('a -> string) -> stop_before:bool ->
+      ('a, _) Identifier.t -> string
+  end = struct
+    open Identifier
+
+    exception Not_linkable
+
+    let rec str_list_path (type x) (get_package : x -> string) (id : (x, _) t) =
+      let rec str_list_path : type a. string list -> (_, a) t -> string list =
+        fun acc id ->
+          match id with
+          | Root (abstr, str) -> get_package abstr :: str :: acc
+          | Module (id, str) -> str_list_path ((str ^ ".mod") :: acc) id
+          | Argument (id, i, str) ->
+            let str = Printf.sprintf "%s.%d.moda" str i in
+            str_list_path (str :: acc) id
+          | ModuleType (id, str) -> str_list_path ((str ^ ".modt") :: acc) id
+          | Type (id, str) -> str_list_path ("#" :: (str ^ ".typ") :: acc) id
+          | CoreType str -> raise Not_linkable
+          | _ ->
+            (* CR trefis: FIXME *)
+            raise Not_linkable
+      in
+      str_list_path [] id
+
+    let rec drop_shared_prefix l1 l2 =
+      match l1, l2 with
+      | l1 :: l1s, l2 :: l2s when l1 = l2 ->
+        drop_shared_prefix l1s l2s
+      | _, _ -> l1, l2
+
+    exception Can't_stop_before
+
+    let href ~get_package ~stop_before id =
+      let target =
+        match str_list_path get_package id with
+        | [] -> assert false
+        | [ _ ] when stop_before -> raise Can't_stop_before
+        | lst when stop_before ->
+          begin match List.rev lst with
+          | [] -> assert false
+          | x :: xs -> List.rev (x :: "#" :: xs)
+          end
+        | lst -> lst
+      in
+      let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
+      let current_from_common_ancestor, target_from_common_ancestor =
+        drop_shared_prefix current_loc target
+      in
+      let relative_target =
+        List.map current_from_common_ancestor ~f:(fun _ -> "..")
+        @ target_from_common_ancestor
+      in
+      String.concat ~sep:"/" relative_target
+  end
+
+  module Of_path = struct
+    let rec render_resolved : type a. (_, a) Path.Resolved.t -> string =
+      let open Path.Resolved in
+      function
+      | Identifier id -> Identifier.name id
+      | Subst (_, p) -> render_resolved p
+      | SubstAlias (_, p) -> render_resolved p
+      | Module (p, s) -> render_resolved p ^ "." ^ s
+      | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
+      | ModuleType (p, s) -> render_resolved p ^ "." ^ s
+      | Type (p, s) -> render_resolved p ^ "." ^ s
+      | Class (p, s) -> render_resolved p ^ "." ^ s
+      | ClassType (p, s) -> render_resolved p ^ "." ^ s
+
+    and render_path : type a. (_, a) Path.t -> string =
+      let open Path in
+      function
+      | Root root -> root
+      | Dot (prefix, suffix) -> render_path prefix ^ "." ^ suffix
+      | Apply (p1, p2) -> render_path p1 ^ "(" ^ render_path p2 ^ ")"
+      | Resolved rp -> render_resolved rp
+
+    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
+      ('b, a) Path.t -> _ =
+      fun ~get_package ~stop_before path ->
+        let open Path in
+        match path with
+        | Root root -> [ pcdata root ]
+        | Dot (prefix, suffix) ->
+          let link = to_html ~get_package ~stop_before:true prefix in
+          link @ [ pcdata ("." ^ suffix) ]
+        | Apply (p1, p2) ->
+          let link1 = to_html ~get_package ~stop_before p1 in
+          let link2 = to_html ~get_package ~stop_before p2 in
+          link1 @ pcdata "(":: link2 @ [ pcdata ")" ]
+        | Resolved rp ->
+          let id = Path.Resolved.identifier rp in
+          let txt = render_resolved rp in
+          begin match Id.href ~get_package ~stop_before id with
+          | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
+          | exception Id.Not_linkable -> [ pcdata txt ]
+          | exception exn ->
+            Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
+            [ pcdata txt ]
+          end
+  end
+
+  module Of_fragment = struct
+    let dot prefix suffix =
+      match prefix with
+      | "" -> suffix
+      | _  -> prefix ^ "." ^ suffix
+
+    let rec render_raw : type a. (_, _) Identifier.t -> (_, a, _) Fragment.raw -> string =
+      fun id fragment ->
+        let open Fragment in
+        match fragment with
+        | Resolved rr -> render_resolved id rr
+        | Dot (prefix, suffix) -> dot (render_raw id prefix) suffix
+
+    and render_resolved : type a. (_, _) Identifier.t -> (_, a, _) Fragment.Resolved.raw -> string =
+      fun id fragment ->
+        let open Fragment.Resolved in
+        match fragment with
+        | Root -> ""
+        | Subst (_, rr) -> render_resolved id rr
+        | SubstAlias (_, rr) -> render_resolved id rr
+        | Module (rr, s) -> dot (render_resolved id rr) s
+        | Type (rr, s) -> dot (render_resolved id rr) s
+        | Class (rr, s) -> dot (render_resolved id rr) s
+        | ClassType (rr, s) -> dot (render_resolved id rr) s
+
+    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
+      _ Identifier.signature -> ('b, a, _) Fragment.raw -> _ =
+      fun ~get_package ~stop_before id fragment ->
+        let open Fragment in
+        match fragment with
+        | Resolved Resolved.Root ->
+          begin match Id.href ~get_package ~stop_before:true id with
+          | href ->
+            [ a ~a:[ a_href href ] [ pcdata (Identifier.name id) ] ]
+          | exception Id.Not_linkable -> [ pcdata (Identifier.name id) ]
+          | exception exn ->
+            Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
+            [ pcdata (Identifier.name id) ]
+          end
+        | Resolved rr ->
+          let id = Resolved.identifier id (Obj.magic rr : (_, a) Resolved.t) in
+          let txt = render_resolved id rr in
+          begin match Id.href ~get_package ~stop_before id with
+          | href ->
+            [ a ~a:[ a_href href ] [ pcdata txt ] ]
+          | exception Id.Not_linkable -> [ pcdata txt ]
+          | exception exn ->
+            Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
+            [ pcdata txt ]
+          end
+        | Dot (prefix, suffix) ->
+          let link = to_html ~get_package ~stop_before:true id prefix in
+          link @ [ pcdata ("." ^ suffix) ]
+  end
+
+  module Of_ref = struct
+    (* CR trefis: TODO! *)
+
+    let rec render_resolved : type a. (_, a) Reference.Resolved.t -> string =
+      fun r ->
+        let open Reference.Resolved in
+        match r with
+        | Identifier id -> Identifier.name id
+        | Module (r, s) -> render_resolved r ^ "." ^ s
+        | ModuleType (r, s) -> render_resolved r ^ "." ^ s
+        | Type (r, s) -> render_resolved r ^ "." ^ s
+        | Constructor (r, s) -> render_resolved r ^ "." ^ s
+        | Field (r, s) -> render_resolved r ^ "." ^ s
+        | Extension (r, s) -> render_resolved r ^ "." ^ s
+        | Exception (r, s) -> render_resolved r ^ "." ^ s
+        | Value (r, s) -> render_resolved r ^ "." ^ s
+        | Class (r, s) -> render_resolved r ^ "." ^ s
+        | ClassType (r, s) -> render_resolved r ^ "." ^ s
+        | Method (r, s) ->
+          (* CR trefis: do we really want to print anything more than [s] here?  *)
+          render_resolved r ^ "." ^ s
+        | InstanceVariable (r, s) ->
+          (* CR trefis: the following makes no sense to me... *)
+          render_resolved r ^ "." ^ s
+        | Label (r, s) -> render_resolved r ^ ":" ^ s
+
+    let rec to_html : type a. (_, a) Reference.t -> _ =
+      fun ref ->
+        let open Reference in
+        match ref with
+        | Root s -> [ pcdata s ]
+        | Dot (parent, s) -> to_html parent @ [ pcdata ("." ^ s) ]
+        | Resolved r -> [ pcdata (render_resolved r) ]
+  end
+
+  let of_path ~get_package p =
+    Of_path.to_html ~get_package ~stop_before:false p
+
+  let of_fragment ~get_package ~base frag =
+    Of_fragment.to_html ~get_package ~stop_before:false base frag
+
+  let of_reference ref =
+    Of_ref.to_html ref
+end
