@@ -1052,8 +1052,9 @@ substitution:
         { ModuleType.TypeSubst(frag, params, p) }
 
 module_argument:
-  | Argument id = module_identifier expr = module_type_expr CLOSE
-      { Some(id, expr) }
+  | Argument id = module_identifier expr = module_type_expr
+      expansion = module_expansion_opt CLOSE
+      { Some{FunctorArgument. id; expr; expansion} }
   | Argument CLOSE
       { None }
 
@@ -1075,12 +1076,15 @@ expansion_opt:
   | EXPANSION CLOSE { None }
   | EXPANSION SIGNATURE sg = signature_item* CLOSE CLOSE { Some sg }
 
-/* todo: functors... */
 module_expansion_opt:
   | opt = expansion_opt
       { match opt with None -> None | Some sg -> Some (Module.Signature sg) }
   | EXPANSION FUNCTOR args = module_argument* SIGNATURE sg = signature_item* CLOSE CLOSE CLOSE
       { Some (Module.Functor (args, sg)) }
+
+include_expansion:
+  | EXPANSION resolved = flag(RESOLVED) SIGNATURE content = signature_item* CLOSE CLOSE
+      { { Include.resolved; content; } }
 
 signature_item:
   | VALUE id = value_identifier doc = doc type_ = type_expr CLOSE
@@ -1128,7 +1132,7 @@ signature_item:
         let open ModuleType in
           ModuleType {id; doc; expr; expansion} }
   | INCLUDE parent = signature_identifier doc = doc decl = module_decl
-      expansion = expansion_opt CLOSE
+      expansion = include_expansion CLOSE
       { let open Signature in
         let open Include in
           Include {parent; doc; decl; expansion} }

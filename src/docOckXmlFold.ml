@@ -110,6 +110,9 @@ let error_t output acc =
 let exception_t output acc =
   output acc (`El_start ((ns, "exception"), []))
 
+let expansion_t output acc =
+  output acc (`El_start ((ns, "expansion"), []))
+
 let extensible_t output acc =
   output acc (`El_start ((ns, "extensible"), []))
 
@@ -1079,10 +1082,11 @@ and module_argument_p base output acc = function
   | None ->
     let acc = argument_t output acc None in
     close output acc
-  | Some(id, expr) ->
+  | Some {FunctorArgument. id; expr; expansion} ->
     let acc = argument_t output acc None in
     let acc = identifier_p base output acc id in
     let acc = module_type_expr_p base output acc expr in
+    let acc = module_expansion_p base output acc expansion in
     close output acc
 
 and module_type_expr_p base output acc =
@@ -1113,7 +1117,7 @@ and module_type_expr_p base output acc =
       close output acc
 
 and expansion_p base output acc sig_opt =
-  let acc = output acc (`El_start ((ns, "expansion"), [])) in
+  let acc = expansion_t output acc in
   let acc =
     match sig_opt with
     | None -> acc
@@ -1125,7 +1129,7 @@ and expansion_p base output acc sig_opt =
   close output acc
 
 and module_expansion_p base output acc expansion_opt =
-  let acc = output acc (`El_start ((ns, "expansion"), [])) in
+  let acc = expansion_t output acc in
   let acc =
     match expansion_opt with
     | None -> acc
@@ -1142,6 +1146,16 @@ and module_expansion_p base output acc expansion_opt =
           close output acc
   in
   close output acc
+
+and include_expansion_p base output acc expansion =
+  let open Include in
+  let { resolved; content } = expansion in
+  let acc = expansion_t output acc in
+  let acc = flag resolved_t output acc resolved in
+  let acc = signature_t output acc in
+  let acc = List.fold_left (signature_item_p base output) acc content in
+  let acc = close output acc in
+    close output acc
 
 and signature_item_p base output acc =
   let open Signature in function
@@ -1227,7 +1241,7 @@ and signature_item_p base output acc =
       let acc = identifier_p base output acc incl.parent in
       let acc = doc_p base output acc incl.doc in
       let acc = module_decl_p base output acc incl.decl in
-      let acc = expansion_p base output acc incl.expansion in
+      let acc = include_expansion_p base output acc incl.expansion in
       close output acc
     | Comment com -> comment_p base output acc com
 
