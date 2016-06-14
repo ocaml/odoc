@@ -437,7 +437,9 @@ and read_include env parent incl =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent 1 incl.incl_mod)
   in
-    {parent; doc; decl; expansion = None}
+  let content = DocOckCmi.read_signature env parent incl.incl_type in
+  let expansion = { content; resolved = false } in
+    {parent; doc; decl; expansion}
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

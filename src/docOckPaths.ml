@@ -762,6 +762,16 @@ module Fragment = struct
       | SubstAlias(sub, p) -> SubstAlias(sub, signature_of_module p)
       | Module _ as x -> x
 
+    let rec any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw =
+      function
+      | Root as x -> x
+      | Subst (sub,p) -> Subst(sub, any_sort p)
+      | SubstAlias (sub,p) -> SubstAlias (sub, any_sort p)
+      | Module (_,_) as x -> x
+      | Type (_,_) as x -> x
+      | Class (_,_) as x -> x
+      | ClassType (_,_) as x -> x
+
     let rec any : type k. ('a, k) t -> 'a any = function
       | Subst(sub, p) -> Subst(sub, any p)
       | SubstAlias(sub, p) -> SubstAlias(sub, any p)
@@ -964,6 +974,10 @@ module Fragment = struct
     | Resolved (SubstAlias(sub, p)) ->
         Resolved (SubstAlias(sub, signature_of_module p))
     | Resolved(Module _) | Dot _ as x -> x
+
+  let any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw = function
+    | Resolved r -> Resolved (any_sort r)
+    | Dot _ as x -> x
 
   let any : type k. ('a, k) t -> 'a any = function
     | Resolved (Subst(sub, p)) -> Resolved (Subst(sub, any p))

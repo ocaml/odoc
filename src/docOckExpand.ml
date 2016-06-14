@@ -219,10 +219,13 @@ let expand_module_type t root mty =
 
 let expand_include t root incl =
   let open Include in
-  match expand_module_decl t root incl.parent 0 incl.decl with
-  | None -> None
-  | Some (Signature sg) -> Some sg
-  | Some (Functor _) -> None (* TODO: Should be an error *)
+    if incl.expansion.resolved then Some incl.expansion.content
+    else begin
+      match expand_module_decl t root incl.parent 0 incl.decl with
+      | None -> Some incl.expansion.content
+      | Some (Signature sg) -> Some sg
+      | Some (Functor _) -> None (* TODO: Should be an error *)
+    end
 
 let expand_argument_ t root {FunctorArgument. id; expr; expansion} =
   match expansion with
@@ -369,38 +372,41 @@ and expand_module_type_resolved_path' ({equal = eq} as t) root
 
 and expand_unit ({equal; hash} as t) root unit =
   let open Unit in
-    match unit.content with
-    | Pack items ->
-        let open Packed in
-        let rec loop ids mds = function
-          | [] ->
-            let open Signature in
-            let sg = List.rev_map (fun md -> Module md) mds in
-            ids, Some sg
-          | item :: rest ->
-              match item.path with
-              | Path.Resolved p -> begin
-                  match t.expand_module_resolved_path ~root p with
-                  | src, doc, ex -> begin
-                    match ex with
-                    | None -> [], None
-                    | Some (Functor _) ->
-                        [], None (* TODO should be an error *)
-                    | Some (Signature sg) ->
-                        let open Module in
-                        let id = item.id in
-                        let type_ = ModuleType (ModuleType.Signature sg) in
-                        let md = {id; doc; type_; expansion = Some (Signature sg)} in
-                        loop ((src, item.id) :: ids) (md :: mds) rest
-                    end
-                  | exception Not_found -> [], None (* TODO: Should be an error *)
-                end
-              | _ -> [], None
-        in
-        let ids, sg = loop [] [] items in
-        let sub = DocOckSubst.pack ~equal ~hash ids in
-          subst_signature sub sg
-    | Module sg -> Some sg
+    match unit.expansion with
+    | Some ex -> Some ex
+    | None ->
+      match unit.content with
+      | Pack items ->
+          let open Packed in
+          let rec loop ids mds = function
+            | [] ->
+              let open Signature in
+              let sg = List.rev_map (fun md -> Module md) mds in
+              ids, Some sg
+            | item :: rest ->
+                match item.path with
+                | Path.Resolved p -> begin
+                    match t.expand_module_resolved_path ~root p with
+                    | src, doc, ex -> begin
+                      match ex with
+                      | None -> [], None
+                      | Some (Functor _) ->
+                          [], None (* TODO should be an error *)
+                      | Some (Signature sg) ->
+                          let open Module in
+                          let id = item.id in
+                          let type_ = ModuleType (ModuleType.Signature sg) in
+                          let md = {id; doc; type_; expansion = Some (Signature sg)} in
+                          loop ((src, item.id) :: ids) (md :: mds) rest
+                      end
+                    | exception Not_found -> [], None (* TODO: Should be an error *)
+                  end
+                | _ -> [], None
+          in
+          let ids, sg = loop [] [] items in
+          let sub = DocOckSubst.pack ~equal ~hash ids in
+            subst_signature sub sg
+      | Module sg -> Some sg
 
 
 let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
@@ -553,13 +559,17 @@ let expand_module_type t mty =
 
 let expand_include t incl =
   let open Include in
-    match incl.expansion with
-    | Some _ -> incl
-    | None ->
-        let root = Identifier.signature_root incl.parent in
-        let expansion = expand_include t root incl in
-          { incl with expansion }
+    if incl.expansion.resolved then incl
+    else begin
+      let root = Identifier.signature_root incl.parent in
+        match expand_include t root incl with
+        | None -> incl
+        | Some content ->
+            let expansion = {content;resolved=true} in
+              { incl with expansion }
+    end
 
+(*
 let expand_unit t unit =
   let open Unit in
     match unit.expansion with
@@ -568,6 +578,7 @@ let expand_unit t unit =
         let root = Identifier.module_root unit.id in
         let expansion = expand_unit t root unit in
           { unit with expansion }
+*)
 
 class ['a] t ?equal ?hash fetch = object (self)
   val t = create ?equal ?hash fetch

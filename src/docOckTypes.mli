@@ -222,12 +222,16 @@ end
 
 (** {3 Includes} *)
 and Include : sig
+  type 'a expansion = {
+    resolved: bool;
+    content: 'a Signature.t;
+  }
 
   type 'a t =
     { parent: 'a Identifier.signature;
       doc: 'a Documentation.t;
       decl: 'a Module.decl;
-      expansion: 'a Signature.t option; }
+      expansion: 'a expansion; }
 
 end
 

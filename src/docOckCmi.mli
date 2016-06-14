@@ -56,6 +56,10 @@ val read_module_type : 'a DocOckIdentEnv.t ->
                        'a DocOckPaths.Identifier.signature -> int ->
                        Types.module_type -> 'a DocOckTypes.ModuleType.expr
 
+val read_signature : 'a DocOckIdentEnv.t ->
+                     'a DocOckPaths.Identifier.signature ->
+                     Types.signature -> 'a DocOckTypes.Signature.t
+
 val read_extension_constructor : 'a DocOckIdentEnv.t ->
                        'a DocOckPaths.Identifier.signature ->
                        Ident.t -> Types.extension_constructor ->

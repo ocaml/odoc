@@ -1317,7 +1317,17 @@ class virtual ['a] include_ = object (self)
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
 
-  method include_expansion expn = self#signature expn
+  method include_expansion_resolved resolved =
+    resolved
+
+  method include_expansion expn =
+    let open Include in
+    let {resolved; content} = expn in
+    let resolved' = self#include_expansion_resolved resolved in
+    let content' = self#signature content in
+      if content != content' || resolved != resolved' then
+        {resolved = resolved'; content = content'}
+      else expn
 
   method include_ incl =
     let open Include in
@@ -1325,7 +1335,7 @@ class virtual ['a] include_ = object (self)
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl decl in
-    let expansion' = option_map self#include_expansion expansion in
+    let expansion' = self#include_expansion expansion in
       if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
         {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl

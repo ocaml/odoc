@@ -559,7 +559,9 @@ class virtual ['a] include_ : object
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
 
-  method include_expansion : 'a Signature.t -> 'a Signature.t
+  method include_expansion_resolved : bool -> bool
+
+  method include_expansion : 'a Include.expansion -> 'a Include.expansion
 
   method include_ : 'a Include.t -> 'a Include.t
 

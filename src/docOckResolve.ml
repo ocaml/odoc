@@ -876,7 +876,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     let parent' = self#identifier_signature parent in
     let doc' = self#documentation doc in
     let decl' = self#module_decl_with_id parent decl in
-    let expansion' = DocOckMaps.option_map self#include_expansion expansion in
+    let expansion' = self#include_expansion expansion in
       if parent != parent' || doc != doc' || decl != decl' || expansion != expansion' then
         {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl

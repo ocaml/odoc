@@ -373,6 +373,7 @@ module Fragment : sig
     val signature_of_module : 'a module_ -> 'a signature
 
     val any : ('a, 'b) t -> 'a any
+    val any_sort : ('a, 'b, 'c) raw -> ('a, 'b, sort) raw
 
     val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
@@ -406,6 +407,8 @@ module Fragment : sig
   type 'a type_ = ('a, fragment_type) t
 
   val signature_of_module : 'a module_ -> 'a signature
+
+  val any_sort : ('a, 'b, 'c) raw -> ('a, 'b, sort) raw
 
   val any : ('a, 'b) t -> 'a any
 

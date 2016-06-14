@@ -524,7 +524,9 @@ and read_include env parent incl =
   let doc = read_attributes container parent incl.incl_attributes in
   let expr = read_module_type env parent 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
-    {parent; doc; decl; expansion = None}
+  let content = DocOckCmi.read_signature env parent incl.incl_type in
+  let expansion = { content; resolved = false} in
+    {parent; doc; decl; expansion}
 
 and read_signature env parent sg =
   let env =
