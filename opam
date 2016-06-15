@@ -6,10 +6,16 @@ maintainer:   "trefis@janestreet.com"
 license:      "ISC"
 
 build: [
-  [make "-j" jobs]
+  [make]
   [make "install"]
 ]
 
 remove: ["ocamlfind" "remove" "doc-ock-html"]
+
+depends: [
+  "doc-ock"
+  "tyxml"
+  "xmlm"
+]
 
 available: [ compiler >= "4.02.3" ]
