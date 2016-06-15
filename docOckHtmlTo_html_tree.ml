@@ -237,9 +237,7 @@ and module_ ~get_package (t : _ Types.Module.t) =
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, expansion, subtree =
     match t.expansion with
-    | None ->
-      Printf.eprintf "No expansion for module %S\n%!" modname;
-      pcdata modname, None, []
+    | None -> pcdata modname, None, []
     | Some expansion ->
       Html_tree.enter ~kind:(`Mod) modname;
       let expansion, subpages as node = module_expansion ~get_package expansion in
