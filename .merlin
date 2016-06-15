@@ -1,0 +1,7 @@
+S bin
+B bin
+
+S lib
+B lib
+
+FLG -w -40 -open StdLabels
