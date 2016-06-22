@@ -1,7 +1,0 @@
-version  = "version-not-set"
-requires = ""
-archive(byte) = "octavius.cma"
-archive(byte, plugin) = "octavius.cma"
-archive(native) = "octavius.cmxa"
-archive(native, plugin) = "octavius.cmxs"
-exist_if = "octavius.cma"
