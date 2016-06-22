@@ -1,7 +1,0 @@
-version  = "c6da7b"
-requires = "compiler-libs.common octavius"
-archive(byte) = "doc-ock.cma"
-archive(byte, plugin) = "doc-ock.cma"
-archive(native) = "doc-ock.cmxa"
-archive(native, plugin) = "doc-ock.cmxs"
-exist_if = "doc-ock.cma"

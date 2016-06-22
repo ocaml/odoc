@@ -1,21 +1,8 @@
-
-### OCaml ###
-*.annot
-*.cmo
-*.cma
-*.cmi
-*.cmt
-*.cmti
-*.a
-*.o
-*.cmx
-*.cmxs
-*.cmxa
-
-### Assemblage ###
-/_build
-
-### Tests ###
-test/testCmi
-test/testCmti
-test/testCmt
+_build
+tmp
+*~
+\.\#*
+\#*#
+*.native
+*.byte
+*.install
