@@ -14,6 +14,6 @@ let () =
   Ok [ Pkg.mllib "src/doc-ock-xml.mllib";
        Pkg.test ~run:false ~auto:false ~exts:(Exts.exts [".cmi"; ".cmo"])
          "test/coverage";
-(*       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmi") "test/testCmi"; *)
-(*       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmti") "test/testCmti"; *)
-(*       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmt") "test/testCmt"; *) ]
+       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmi") "test/testCmi";
+       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmti") "test/testCmti";
+       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmt") "test/testCmt"; ]

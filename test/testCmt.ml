@@ -58,8 +58,8 @@ let test cmt =
   | Ok intf ->
       let lookup u s =
         if u != intf then raise Bad_lookup;
-        if s = cmt then Some cmt
-        else None
+        if s = cmt then Found cmt
+        else Not_found
       in
       let fetch s =
         if s = cmt then intf
