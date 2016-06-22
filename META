@@ -1,7 +1,0 @@
-version  = "0.3.0"
-requires = "doc-ock xmlm menhirLib"
-archive(byte) = "doc-ock-xml.cma"
-archive(byte, plugin) = "doc-ock-xml.cma"
-archive(native) = "doc-ock-xml.cmxa"
-archive(native, plugin) = "doc-ock-xml.cmxs"
-exist_if = "doc-ock-xml.cma"
