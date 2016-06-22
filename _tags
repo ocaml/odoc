@@ -1,0 +1,7 @@
+true : bin_annot, safe_string
+true : package(doc-ock), package(xmlm), package(tyxml)
+true : open(StdLabels)
+true : warn(-40)
+
+<src> : include
+<src/docOckHtml.*> : no_alias_deps

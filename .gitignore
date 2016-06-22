@@ -1,4 +1,8 @@
-.*.un~
-*.cm*
-*.a
-*.o
+_build
+tmp
+*~
+\.\#*
+\#*#
+*.native
+*.byte
+*.install

@@ -1,4 +1,4 @@
 PKG doc-ock tyxml xmlm
 FLG -w -40
 FLG -open StdLabels
-FLG -open DocOckHtml
+S src

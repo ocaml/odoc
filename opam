@@ -1,21 +1,22 @@
 opam-version: "1.2"
+maintainer: "Thomas Refis <trefis@janestreet.com>"
+author: "Thomas Refis <trefis@janestreet.com>"
+homepage:  "https://github.com/ocaml-doc/doc-ock-html"
+doc: "https://ocaml-doc.github.com/doc-ock-html/"
+license: "ISC"
+dev-repo: "http://github.com/ocaml-doc/doc-ock-html.git"
+bug-reports: "https://github.com/ocaml-doc/doc-ock-html/issues"
+tags: ["doc" "html" "ocaml" "org:ocaml-doc"]
 
-name:         "doc-ock-html"
-version:      "0.1"
-maintainer:   "trefis@janestreet.com"
-license:      "ISC"
-
-build: [
-  [make]
-  [make "install"]
-]
-
-remove: ["ocamlfind" "remove" "doc-ock-html"]
-
+available: [ ocaml-version >= "4.02.3" ]
 depends: [
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+  "topkg" {build & >= "0.7.5"}
   "doc-ock"
-  "tyxml"
-  "xmlm"
-]
+  "tyxml" {<= "3.6.0" }
+  "xmlm" ]
 
-available: [ compiler >= "4.02.3" ]
+build: [[
+  "ocaml" "pkg/pkg.ml" "build"
+          "--pinned" "%{pinned}%" ]]
