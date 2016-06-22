@@ -32,7 +32,7 @@ exception Bad_lookup
 
 exception Bad_fetch of string
 
-let test cmt =
+let test silent cmt =
   match read_cmt (fun _ _ -> cmt) cmt with
   | Not_an_interface ->
       prerr_endline (cmt ^ ": not an interface");
@@ -72,8 +72,10 @@ let test cmt =
           let output = Xmlm.make_output (`Buffer buf) in
           let fold_file = (DocOckXmlFold.file root_fold).DocOckXmlFold.f in
           fold_file (fun () signal -> Xmlm.output output signal) () intf;
-          Buffer.output_buffer stdout buf;
-          print_newline ();
+          if not silent then begin
+            Buffer.output_buffer stdout buf;
+            print_newline ();
+          end;
           let input = Xmlm.make_input (`String(0, Buffer.contents buf)) in
           match DocOckXmlParse.file parser input with
           | DocOckXmlParse.Error(start, (fline, fcolumn), msg) ->
@@ -111,11 +113,13 @@ let test cmt =
             1
 
 let main () =
-  let code = ref 0 in
-  let test cmt =
-    code := !code + (test cmt)
-  in
-    Arg.parse [] test "Test XML parser and printer on cmt files";
-    exit !code
+  let silent = ref false in
+  let cmts = ref [] in
+  let add_cmt cmt = cmts := cmt :: !cmts in
+  let args = ["-s", Arg.Set silent, "Do not output the XML" ] in
+  Arg.parse args add_cmt "Test XML parser and printer on cmt files";
+  exit @@
+  List.fold_left (fun acc cmt -> acc + test !silent cmt) 0 (List.rev !cmts)
+
 
 let () = main ()
