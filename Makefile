@@ -1,6 +1,10 @@
+# This makefile is used for dev convenience. It is removed
+# by the distribution process.
+
+.PHONY: all clean
+
 all:
-	$(MAKE) -C lib
-	$(MAKE) -C bin
+	topkg build
 
 test: all
 	$(MAKE) -C test
@@ -15,8 +19,5 @@ coverage: all
 	$(MAKE) -C test coverage
 
 clean:
-	-@$(MAKE) -C lib clean
-	-@$(MAKE) -C bin clean
+	topkg clean
 	-@$(MAKE) -C test clean
-
-.PHONY: all clean

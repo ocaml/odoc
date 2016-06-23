@@ -14,10 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
+val for_compile_step :
+  output:OdocFs.Directory.t -> OdocFs.File.t -> OdocFs.File.t list
 
-val for_compile_step : output:Fs.Directory.t -> Fs.File.t -> Fs.File.t list
+val unit :
+  env:OdocEnv.builder -> output:OdocFs.Directory.t ->
+  OdocFs.File.t -> OdocFs.File.t list
 
-val unit : env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> Fs.File.t list
-
-val index : output:Fs.Directory.t -> Fs.File.t list -> Fs.File.t list
+val index :
+  output:OdocFs.Directory.t -> OdocFs.File.t list -> OdocFs.File.t list

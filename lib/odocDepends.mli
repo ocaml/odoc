@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
-
 module Compile : sig
   type t
 
@@ -35,7 +33,7 @@ module Link : sig
 end
 *)
 
-val for_compile_step : Fs.File.t -> Compile.t list
+val for_compile_step : OdocFs.File.t -> Compile.t list
 (** Takes a .cm{i,t,ti} file and returns the list of its dependencies. *)
 
-val for_link_step : Fs.File.t -> string list
+val for_link_step : OdocFs.File.t -> string list

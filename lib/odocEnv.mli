@@ -14,21 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
-
 type t
 type builder
 
-val create : ?important_digests:bool -> directories:(Fs.Directory.t list) -> builder
+val create :
+  ?important_digests:bool -> directories:(OdocFs.Directory.t list) -> builder
 (** Do stuff based on a {!Fs.Directory.t} *)
 
-val build : builder -> Unit.t -> t
+val build : builder -> OdocUnit.t -> t
 (** bllblblbl *)
 
-val resolver : t -> Root.t DocOck.resolver
+val resolver : t -> OdocRoot.t DocOck.resolver
 (** Get a resolver from an env *)
 
-val expander : t -> Root.t DocOck.expander
+val expander : t -> OdocRoot.t DocOck.expander
 (** Get an expander from an env *)
 
 (* val forward_resolver : t -> Root.t DocOck.forward_resolver *)

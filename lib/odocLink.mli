@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
+module Env = OdocEnv
 
-module Env = Env
-
-val unit : env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
+val unit :
+  env:OdocEnv.builder -> output:OdocFs.Directory.t -> OdocFs.File.t -> unit

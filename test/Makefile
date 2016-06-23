@@ -2,7 +2,7 @@
 # SHARED VARIABLES AND RULES #
 ##############################
 
-ODOC = ../bin/odoc.byte
+ODOC = ../_build/bin/main.native
 
 COMP_FLAGS = --pkg=$(PKG) -I $(DIR) -o $(DIR)
 
@@ -24,7 +24,7 @@ clean: clean_odoc clean_coverage
 # TESTING ON ODOC ITSELF #
 ##########################
 
-LIB  = ../lib
+LIB  = ../_build/lib
 
 UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocLink
 

@@ -1,0 +1,7 @@
+description = "OCaml API doc documentation generation"
+version = "%%VERSION%%"
+requires = "xmlm doc-ock doc-ock-xml doc-ock-html unix compiler-libs.common"
+archive(byte) = "odoc.cma"
+archive(native) = "odoc.cmxa"
+plugin(byte) = "odoc.cma"
+plugin(native) = "odoc.cmxs"

@@ -14,6 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
-
-val index : output:Fs.Directory.t -> Fs.File.t list -> unit
+val index : output:OdocFs.Directory.t -> OdocFs.File.t list -> unit

@@ -14,13 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Odoc
+val cmti :
+  env:OdocEnv.builder -> output:OdocFs.Directory.t ->
+  package:OdocRoot.Package.t -> OdocFs.File.t -> unit
 
-val cmti : env:Env.builder -> output:Fs.Directory.t -> package:Root.Package.t
-  -> Fs.File.t -> unit
+val cmt :
+  env:OdocEnv.builder -> output:OdocFs.Directory.t ->
+  package:OdocRoot.Package.t -> OdocFs.File.t -> unit
 
-val cmt : env:Env.builder -> output:Fs.Directory.t -> package:Root.Package.t
-  -> Fs.File.t -> unit
-
-val cmi : env:Env.builder -> output:Fs.Directory.t -> package:Root.Package.t
-  -> Fs.File.t -> unit
+val cmi :
+  env:OdocEnv.builder -> output:OdocFs.Directory.t ->
+  package:OdocRoot.Package.t -> OdocFs.File.t -> unit

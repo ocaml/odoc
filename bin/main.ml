@@ -198,7 +198,7 @@ let () =
             (fun () ->
                prerr_endline "Available subcommands: compile, html, deps")
           $ const ()),
-    Term.info "odoc"
+    Term.info ~version:"%%VERSION%%" "odoc"
   in
   let subcommands =
     [ Compile.(cmd, info)

@@ -15,14 +15,13 @@
  *)
 
 open DocOck
-open Odoc
 
-type t = Root.t Types.Unit.t
+type t = OdocRoot.t Types.Unit.t
 
-val save : Fs.File.t -> t -> unit
-val save_xml : Fs.File.t -> t -> unit
+val save : OdocFs.File.t -> t -> unit
+val save_xml : OdocFs.File.t -> t -> unit
 
-val load : Fs.File.t -> t
-val load_xml : Fs.File.t -> t
+val load : OdocFs.File.t -> t
+val load_xml : OdocFs.File.t -> t
 
-val root : t -> Root.t
+val root : t -> OdocRoot.t

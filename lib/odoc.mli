@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
+ * Copyright (c) 2014 Leo White <leo@lpw25.net>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,33 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type file
+module Fs = OdocFs
 
-type directory
+module Root = OdocRoot
 
-module Directory : sig
+module Env = OdocEnv
 
-  type t = directory
+module Compile = OdocCompile
 
-  val create : parent:t -> name:string -> t
-  (** [create ~parent ~name] assumes [parent] exists.
-      If [parent/name] doesn't exist, it will create it.
+module Link = OdocLink
 
-      @raises [Invalid_arg _] if [parent/name] exists but is not a directory. *)
+module Index = OdocIndex
 
-  val of_string : string -> t
-  val to_string : t -> string
+module Depends = OdocDepends
 
-  val ls : t -> file list
+module Targets = OdocTargets
 
-end
-
-module File : sig
-
-  type t = file
-
-  val create : directory:Directory.t -> name:string -> t
-
-  val of_string : string -> t
-  val to_string : t -> string
-end
+module Unit = OdocUnit
