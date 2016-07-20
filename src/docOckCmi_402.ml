@@ -495,25 +495,24 @@ let read_value_description env parent id vd =
           External {External.id; doc; type_; primitives}
     | _ -> assert false
 
+let read_label_declaration env parent ld =
+  let open TypeDecl.Field in
+  let name = parenthesise (Ident.name ld.ld_id) in
+  let id = Identifier.Field(parent, name) in
+  let doc = read_attributes parent id ld.ld_attributes in
+  let mutable_ = (ld.ld_mutable = Mutable) in
+  let type_ = read_type_expr env ld.ld_type in
+    {id; doc; mutable_; type_}
+
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let name = parenthesise (Ident.name cd.cd_id) in
   let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes container id cd.cd_attributes in
-  let args = List.map (read_type_expr env) cd.cd_args in
+  let args = Tuple (List.map (read_type_expr env) cd.cd_args) in
   let res = opt_map (read_type_expr env) cd.cd_res in
     {id; doc; args; res}
-
-let read_label_declaration env parent ld =
-  let open TypeDecl.Field in
-  let name = parenthesise (Ident.name ld.ld_id) in
-  let id = Identifier.Field(parent, name) in
-  let container = Identifier.parent_of_datatype parent in
-  let doc = read_attributes container id ld.ld_attributes in
-  let mutable_ = (ld.ld_mutable = Mutable) in
-  let type_ = read_type_expr env ld.ld_type in
-    {id; doc; mutable_; type_}
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
@@ -525,7 +524,9 @@ let read_type_kind env parent =
           Some (Variant cstrs)
     | Type_record(lbls, _) ->
         let lbls =
-          List.map (read_label_declaration env parent) lbls
+          List.map
+            (read_label_declaration env (Identifier.parent_of_datatype parent))
+            lbls
         in
           Some (Record lbls)
     | Type_open ->  Some Extensible
@@ -594,7 +595,7 @@ let read_extension_constructor env parent id ext =
   let id = Identifier.Extension(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id ext.ext_attributes in
-  let args = List.map (read_type_expr env) ext.ext_args in
+  let args = TypeDecl.Constructor.Tuple (List.map (read_type_expr env) ext.ext_args) in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
     {id; doc; args; res}
 
@@ -625,7 +626,7 @@ let read_exception env parent id ext =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id ext.ext_attributes in
     mark_exception ext;
-    let args = List.map (read_type_expr env) ext.ext_args in
+    let args = TypeDecl.Constructor.Tuple (List.map (read_type_expr env) ext.ext_args) in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
       {id; doc; args; res}
 

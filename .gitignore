@@ -6,3 +6,10 @@ tmp
 *.native
 *.byte
 *.install
+src/docOckCmi.ml
+src/docOckCmi.mli
+src/docOckCmt.ml
+src/docOckCmti.ml
+src/docOckCmti.mli
+src/docOckPayload.ml
+src/docOckIdentEnv.ml

@@ -146,7 +146,7 @@ module Identifier : sig
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
     | CoreType : string -> ('a, [< kind > `Type]) t
     | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-    | Field : 'a datatype * string -> ('a, [< kind > `Field]) t
+    | Field : 'a parent * string -> ('a, [< kind > `Field]) t
     | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
     | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
     | CoreException : string -> ('a, [< kind > `Exception]) t
@@ -438,7 +438,7 @@ module Reference : sig
       | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
       | Type : 'a signature * string -> ('a, [< kind > `Type]) t
       | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-      | Field : 'a datatype * string -> ('a, [< kind > `Field]) t
+      | Field : 'a parent * string -> ('a, [< kind > `Field]) t
       | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
       | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
       | Value : 'a signature * string -> ('a, [< kind > `Value]) t
@@ -610,7 +610,7 @@ module Reference : sig
   val constructor : 'a datatype -> string ->
         ('a, [< kind > `Constructor])t
 
-  val field : 'a datatype -> string -> ('a, [< kind > `Field])t
+  val field : 'a parent -> string -> ('a, [< kind > `Field])t
 
   val extension : 'a signature -> string ->
         ('a, [< kind > `Extension])t

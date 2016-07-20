@@ -1359,12 +1359,24 @@ class virtual ['a] type_decl = object (self)
   method virtual type_expr :
     'a TypeExpr.t -> 'a TypeExpr.t
 
+  method type_decl_constructor_argument arg =
+    let open TypeDecl.Constructor in
+    match arg with
+    | Tuple args ->
+        let args' = list_map self#type_expr args in
+          if args != args' then Tuple args'
+          else arg
+    | Record fields ->
+          let fields' = list_map self#type_decl_field fields in
+            if fields != fields' then Record fields'
+            else arg
+
   method type_decl_constructor cstr =
     let open TypeDecl.Constructor in
     let {id; doc; args; res} = cstr in
     let id' = self#identifier_constructor id in
     let doc' = self#documentation doc in
-    let args' = list_map self#type_expr args in
+    let args' = self#type_decl_constructor_argument args in
     let res' = option_map self#type_expr res in
       if id != id' || doc != doc' || args != args' || res != res' then
         {id = id'; doc = doc'; args = args'; res = res'}
@@ -1476,6 +1488,9 @@ class virtual ['a] extension = object (self)
   method virtual type_decl_private :
     bool -> bool
 
+  method virtual type_decl_constructor_argument :
+    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
+
   method virtual type_expr :
     'a TypeExpr.t -> 'a TypeExpr.t
 
@@ -1484,7 +1499,7 @@ class virtual ['a] extension = object (self)
     let {id; doc; args; res} = cstr in
     let id' = self#identifier_extension id in
     let doc' = self#documentation doc in
-    let args' = list_map self#type_expr args in
+    let args' = self#type_decl_constructor_argument args in
     let res' = option_map self#type_expr res in
       if id != id' || doc != doc' || args != args' || res != res' then
         {id = id'; doc = doc'; args = args'; res = res'}
@@ -1518,12 +1533,15 @@ class virtual ['a] exception_ = object (self)
   method virtual type_expr :
     'a TypeExpr.t -> 'a TypeExpr.t
 
+  method virtual type_decl_constructor_argument :
+    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
+
   method exception_ exn =
     let open Exception in
     let {id; doc; args; res} = exn in
     let id' = self#identifier_exception id in
     let doc' = self#documentation doc in
-    let args' = list_map self#type_expr args in
+    let args' = self#type_decl_constructor_argument args in
     let res' = option_map self#type_expr res in
       if id != id' || doc != doc' || args != args' || res != res' then
         {id = id'; doc = doc'; args = args'; res = res'}

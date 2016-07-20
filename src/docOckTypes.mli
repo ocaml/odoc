@@ -239,16 +239,6 @@ end
 
 and TypeDecl : sig
 
-  module Constructor : sig
-
-    type 'a t =
-      { id: 'a Identifier.constructor;
-        doc: 'a Documentation.t;
-        args: 'a TypeExpr.t list;
-        res: 'a TypeExpr.t option; }
-
-  end
-
   module Field : sig
 
     type 'a t =
@@ -258,6 +248,20 @@ and TypeDecl : sig
         type_: 'a TypeExpr.t; }
 
   end
+
+  module Constructor : sig
+    type 'a argument =
+      | Tuple  of 'a TypeExpr.t list
+      | Record of 'a Field.t list
+
+    type 'a t =
+      { id: 'a Identifier.constructor;
+        doc: 'a Documentation.t;
+        args: 'a argument;
+        res: 'a TypeExpr.t option; }
+
+  end
+
 
   module Representation : sig
 
@@ -305,7 +309,7 @@ and Extension : sig
     type 'a t =
       { id: 'a Identifier.extension;
         doc: 'a Documentation.t;
-        args: 'a TypeExpr.t list;
+        args: 'a TypeDecl.Constructor.argument;
         res: 'a TypeExpr.t option; }
 
   end
@@ -325,7 +329,7 @@ and Exception : sig
   type 'a t =
     { id: 'a Identifier.exception_;
       doc: 'a Documentation.t;
-      args: 'a TypeExpr.t list;
+      args: 'a TypeDecl.Constructor.argument;
       res: 'a TypeExpr.t option; }
 
 end

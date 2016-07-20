@@ -583,6 +583,9 @@ class virtual ['a] type_decl : object
   method type_decl_constructor : 'a TypeDecl.Constructor.t ->
     'a TypeDecl.Constructor.t
 
+  method type_decl_constructor_argument : 'a TypeDecl.Constructor.argument ->
+    'a TypeDecl.Constructor.argument
+
   method type_decl_field : 'a TypeDecl.Field.t -> 'a TypeDecl.Field.t
 
   method type_decl_field_mutable : bool -> bool
@@ -623,6 +626,9 @@ class virtual ['a] extension : object
 
   method virtual type_decl_private : bool -> bool
 
+  method virtual type_decl_constructor_argument :
+    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
+
   method virtual type_expr : 'a TypeExpr.t -> 'a TypeExpr.t
 
   method extension_constructor : 'a Extension.Constructor.t ->
@@ -640,6 +646,9 @@ class virtual ['a] exception_ : object
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 
   method virtual type_expr : 'a TypeExpr.t -> 'a TypeExpr.t
+
+  method virtual type_decl_constructor_argument :
+    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
 
   method exception_ : 'a Exception.t -> 'a Exception.t
 

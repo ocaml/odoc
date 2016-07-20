@@ -563,7 +563,7 @@ and resolve_field_reference tbl u r =
               let Element.Field _ =
                 Datatype.find_field_element name parent
               in
-                Resolved (Field(r, name))
+                Resolved (Field(Reference.Resolved.parent_of_datatype r, name))
             with Not_found ->
               let r = Resolved.parent_of_datatype r in
                 Dot(Resolved r, name)
@@ -786,7 +786,8 @@ and resolve_element_reference tbl u r =
             try
               match Datatype.find_element name parent with
               | Element.Constructor _ -> Resolved (Constructor(r , name))
-              | Element.Field _ -> Resolved (Field(r , name))
+              | Element.Field _ ->
+                  Resolved (Field(Reference.Resolved.parent_of_datatype r , name))
               | Element.Label _ ->
                   Resolved (Label(Resolved.parent_of_datatype r, name))
             with Not_found ->

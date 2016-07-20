@@ -200,7 +200,7 @@ let false_decl =
   let open TypeDecl.Constructor in
   let open Documentation in
   let doc = Ok empty_doc in
-  let args = [] in
+  let args = Tuple [] in
   let res = None in
     {id = false_identifier; doc; args; res}
 
@@ -208,7 +208,7 @@ let true_decl =
   let open TypeDecl.Constructor in
   let open Documentation in
   let doc = Ok empty_doc in
-  let args = [] in
+  let args = Tuple [] in
   let res = None in
     {id = true_identifier; doc; args; res}
 
@@ -216,7 +216,7 @@ let void_decl =
   let open TypeDecl.Constructor in
   let open Documentation in
   let doc = Ok empty_doc in
-  let args = [] in
+  let args = Tuple [] in
   let res = None in
     {id = void_identifier; doc; args; res}
 
@@ -224,7 +224,7 @@ let nil_decl =
   let open TypeDecl.Constructor in
   let open Documentation in
   let doc = Ok empty_doc in
-  let args = [] in
+  let args = Tuple [] in
   let res = None in
     {id = nil_identifier; doc; args; res}
 
@@ -234,7 +234,7 @@ let cons_decl =
   let doc = Ok empty_doc in
   let head = TypeExpr.Var "'a" in
   let tail = TypeExpr.(Constr(list_path, [head])) in
-  let args = [head; tail] in
+  let args = Tuple [head; tail] in
   let res = None in
     {id = cons_identifier; doc; args; res}
 
@@ -242,7 +242,7 @@ let none_decl =
   let open TypeDecl.Constructor in
   let open Documentation in
   let doc = Ok empty_doc in
-  let args = [] in
+  let args = Tuple [] in
   let res = None in
     {id = none_identifier; doc; args; res}
 
@@ -251,7 +251,7 @@ let some_decl =
   let open Documentation in
   let doc = Ok empty_doc in
   let var = TypeExpr.Var "'a" in
-  let args = [var] in
+  let args = Tuple [var] in
   let res = None in
     {id = some_identifier; doc; args; res}
 
@@ -454,7 +454,9 @@ let match_failure_decl =
   let doc = Ok {empty_doc with text} in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
-  let args = [TypeExpr.Tuple[string_expr; int_expr; int_expr]] in
+  let args =
+    TypeDecl.Constructor.Tuple [TypeExpr.Tuple[string_expr; int_expr; int_expr]]
+  in
   let res = None in
     {id; doc; args; res}
 
@@ -471,7 +473,9 @@ let assert_failure_decl =
   let doc = Ok {empty_doc with text} in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
-  let args = [TypeExpr.Tuple[string_expr; int_expr; int_expr]] in
+  let args =
+    TypeDecl.Constructor.Tuple [TypeExpr.Tuple[string_expr; int_expr; int_expr]]
+  in
   let res = None in
     {id; doc; args; res}
 
@@ -484,7 +488,7 @@ let invalid_argument_decl =
           arguments do not make sense."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [TypeExpr.Constr(string_path, [])] in
+  let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
@@ -497,7 +501,7 @@ let failure_decl =
           undefined on the given arguments."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [TypeExpr.Constr(string_path, [])] in
+  let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
@@ -510,7 +514,7 @@ let not_found_decl =
           could not be found."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -523,7 +527,7 @@ let out_of_memory_decl =
           insufficient memory to complete the computation."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -540,7 +544,7 @@ let stack_overflow_decl =
           the OCaml manual.)"]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -553,7 +557,7 @@ let sys_error_decl =
           operating system error."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [TypeExpr.Constr(string_path, [])] in
+  let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
@@ -566,7 +570,7 @@ let end_of_file_decl =
           file has been reached."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -579,7 +583,7 @@ let division_by_zero_decl =
           when their second argument is zero."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -593,7 +597,7 @@ let sys_blocked_io_decl =
      Raw " raised when no I/O is possible on a non-blocking I/O channel."]
   in
   let doc = Ok {empty_doc with text} in
-  let args = [] in
+  let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
@@ -611,7 +615,9 @@ let undefined_recursive_module_decl =
   let doc = Ok {empty_doc with text} in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
-  let args = [TypeExpr.Tuple[string_expr; int_expr; int_expr]] in
+  let args =
+    TypeDecl.Constructor.Tuple [TypeExpr.Tuple[string_expr; int_expr; int_expr]]
+  in
   let res = None in
     {id; doc; args; res}
 

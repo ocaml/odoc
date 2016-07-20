@@ -127,17 +127,6 @@ let empty_body = { text = []; tags = []; }
 
 let empty = Ok empty_body
 
-let read_payload =
-  let open Location in
-  let open Parsetree in function
-  | PStr[{ pstr_desc =
-             Pstr_eval({ pexp_desc =
-                           Pexp_constant(Asttypes.Const_string(str, _));
-                         pexp_loc = loc;
-                       }, _)
-         }] -> Some(str, loc)
-  | _ -> None
-
 let read_offset err =
   let open Octavius.Errors in
   let loc = err.location in
@@ -229,7 +218,7 @@ let read_attributes parent id attrs =
   let rec loop first acc : _ -> 'a t = function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
-        match read_payload payload with
+        match DocOckPayload.read payload with
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
@@ -260,7 +249,7 @@ let read_comment parent : Parsetree.attribute -> 'a comment option =
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
-      match read_payload payload with
+      match DocOckPayload.read payload with
       | Some ("/*", loc) -> Some Stop
       | Some (str, loc) ->
           let lexbuf = Lexing.from_string str in

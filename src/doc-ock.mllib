@@ -4,6 +4,7 @@ DocOckPredef
 DocOckNameEnv
 DocOckIdentEnv
 DocOckLookup
+DocOckPayload
 DocOckAttrs
 DocOckCmi
 DocOckCmti

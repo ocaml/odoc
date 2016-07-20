@@ -43,13 +43,7 @@ let parenthesise name =
     | _ -> "(" ^ name ^ ")"
   else name
 
-let read_label lbl =
-  let open TypeExpr in
-  if String.length lbl = 0 then None
-  else if lbl.[0] = '?' then
-    Some (Optional (String.sub lbl 1 (String.length lbl - 1)))
-  else
-    Some (Label lbl)
+let read_label = DocOckCmi.read_label
 
 let rec read_core_type env ctyp =
   let open TypeExpr in
@@ -151,38 +145,41 @@ let read_type_parameter env (ctyp, var) =
   in
     (desc, var)
 
+let read_label_declaration env parent ld =
+  let open TypeDecl.Field in
+  let name = parenthesise (Ident.name ld.ld_id) in
+  let id = Identifier.Field(parent, name) in
+  let doc = read_attributes parent id ld.ld_attributes in
+  let mutable_ = (ld.ld_mutable = Mutable) in
+  let type_ = read_core_type env ld.ld_type in
+    {id; doc; mutable_; type_}
+
+let read_constructor_declaration_arguments env parent arg =
+  let open TypeDecl.Constructor in
+    match arg with
+    | Cstr_tuple args -> Tuple (List.map (read_core_type env) args)
+    | Cstr_record lds ->
+        Record (List.map (read_label_declaration env parent) lds)
+
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let name = parenthesise (Ident.name cd.cd_id) in
   let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes container id cd.cd_attributes in
-  let args = List.map (read_core_type env) cd.cd_args in
+  let args = read_constructor_declaration_arguments env container cd.cd_args in
   let res = opt_map (read_core_type env) cd.cd_res in
     {id; doc; args; res}
-
-let read_label_declaration env parent ld =
-  let open TypeDecl.Field in
-  let name = parenthesise (Ident.name ld.ld_id) in
-  let id = Identifier.Field(parent, name) in
-  let container = Identifier.parent_of_datatype parent in
-  let doc = read_attributes container id ld.ld_attributes in
-  let mutable_ = (ld.ld_mutable = Mutable) in
-  let type_ = read_core_type env ld.ld_type in
-    {id; doc; mutable_; type_}
 
 let read_type_kind env parent =
   let open TypeDecl.Representation in function
     | Ttype_abstract -> None
     | Ttype_variant cstrs ->
-        let cstrs =
-          List.map (read_constructor_declaration env parent) cstrs
-        in
+        let cstrs = List.map (read_constructor_declaration env parent) cstrs in
           Some (Variant cstrs)
     | Ttype_record lbls ->
-        let lbls =
-          List.map (read_label_declaration env parent) lbls
-        in
+        let parent = Identifier.parent_of_datatype parent in
+        let lbls = List.map (read_label_declaration env parent) lbls in
           Some (Record lbls)
     | Ttype_open -> Some Extensible
 
@@ -233,7 +230,7 @@ let read_extension_constructor env parent ext =
   match ext.ext_kind with
   | Text_rebind _ -> assert false
   | Text_decl(args, res) ->
-      let args = List.map (read_core_type env) args in
+      let args = read_constructor_declaration_arguments env container args in
       let res = opt_map (read_core_type env) res in
         {id; doc; args; res}
 
@@ -258,7 +255,7 @@ let read_exception env parent ext =
   match ext.ext_kind with
   | Text_rebind _ -> assert false
   | Text_decl(args, res) ->
-      let args = List.map (read_core_type env) args in
+      let args = read_constructor_declaration_arguments env container args in
       let res = opt_map (read_core_type env) res in
         {id; doc; args; res}
 
@@ -493,7 +490,7 @@ and read_signature_item env parent item =
     match item.sig_desc with
     | Tsig_value vd ->
         [read_value_description env parent vd]
-    | Tsig_type decls ->
+    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec flag. *)
         read_type_declarations env parent decls
     | Tsig_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
