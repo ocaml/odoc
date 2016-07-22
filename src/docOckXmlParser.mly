@@ -244,7 +244,7 @@ constructor_identifier:
       { Identifier.Constructor(sg, data) }
 
 field_identifier:
-  | FIELD sg = type_identifier data = string CLOSE
+  | FIELD sg = parent_identifier data = string CLOSE
       { Identifier.Field(sg, data) }
 
 extension_identifier:
@@ -476,7 +476,7 @@ constructor_resolved_reference:
 field_resolved_reference:
   | IDENTIFIER id = field_identifier CLOSE
       { Reference.Resolved.ident_field id }
-  | FIELD sg = datatype_resolved_reference data = string CLOSE
+  | FIELD sg = parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Field(sg, data) }
 
 exception_resolved_reference:
@@ -550,7 +550,7 @@ element_resolved_reference:
       { Reference.Resolved.Type(sg, data) }
   | CONSTRUCTOR sg = datatype_resolved_reference data = string CLOSE
       { Reference.Resolved.Constructor(sg, data) }
-  | FIELD sg = datatype_resolved_reference data = string CLOSE
+  | FIELD sg = parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Field(sg, data) }
   | EXCEPTION sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Exception(sg, data) }
@@ -944,9 +944,11 @@ external_primitive:
 
 constructor_arguments:
   | (* empty *)
-      { [] }
+      { TypeDecl.Constructor.Tuple [] }
   | ARGUMENTS types = type_expr* CLOSE
-      { types }
+      { TypeDecl.Constructor.Tuple types }
+  | RECORD fields = field+ CLOSE
+      { TypeDecl.Constructor.Record fields }
 
 constructor_result:
   | (* empty *)

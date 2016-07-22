@@ -900,11 +900,26 @@ and type_expr_p base output acc =
 
 let external_primitive_p base output acc s = simple primitive_t output acc s
 
-let constructor_arguments_p base output acc = function
-  | [] -> acc
-  | types ->
+let field_p base output acc fld =
+  let open TypeDecl.Field in
+  let acc = field_t output acc in
+  let acc = identifier_p base output acc fld.id in
+  let acc = doc_p base output acc fld.doc in
+  let acc = flag mutable_t output acc fld.mutable_ in
+  let acc = type_expr_p base output acc fld.type_ in
+  close output acc
+
+let constructor_arguments_p base output acc args =
+  let open TypeDecl.Constructor in
+  match args with
+  | Tuple [] -> acc
+  | Tuple types ->
     let acc = arguments_t output acc in
     let acc = list type_expr_p base output acc types in
+    close output acc
+  | Record fields ->
+    let acc = record_t output acc in
+    let acc = list field_p base output acc fields in
     close output acc
 
 let constructor_result_p base output acc = function
@@ -921,15 +936,6 @@ let constructor_p base output acc cstr =
   let acc = doc_p base output acc cstr.doc in
   let acc = constructor_arguments_p base output acc cstr.args in
   let acc = constructor_result_p base output acc cstr.res in
-  close output acc
-
-let field_p base output acc fld =
-  let open TypeDecl.Field in
-  let acc = field_t output acc in
-  let acc = identifier_p base output acc fld.id in
-  let acc = doc_p base output acc fld.doc in
-  let acc = flag mutable_t output acc fld.mutable_ in
-  let acc = type_expr_p base output acc fld.type_ in
   close output acc
 
 let type_representation_p base output acc =
