@@ -403,16 +403,21 @@ and substitution ~get_package (base : _ Identifier.signature) = function
     params ::
     Html_tree.Relative_link.of_path ~get_package typ_path
 
-and constructor : type a. get_package:('b -> string) -> ('b, a) Identifier.t -> _ Types.TypeExpr.t list
-  -> 'b Types.TypeExpr.t option -> _ = fun ~get_package id args _ret_type ->
+and constructor : type a. get_package:('b -> string) -> dot_typ:_ ->
+  ('b, a) Identifier.t -> _ Types.TypeDecl.Constructor.argument ->
+  'b Types.TypeExpr.t option -> _ =
+  fun ~get_package ~dot_typ id args _ret_type ->
     let name = Identifier.name id in
     (* CR trefis: handle GADT style constructors properly. *)
     let args =
       match args with
-      | [] -> []
-      | lst ->
+      | Tuple [] -> []
+      | Tuple lst ->
         pcdata " of " ::
         list_concat_map lst ~sep:(pcdata " * ") ~f:(type_expr ~get_package)
+      | Record fields ->
+        pcdata " of " ::
+        record ~get_package dot_typ fields
     in
     pcdata name :: args
 
@@ -458,7 +463,7 @@ and variant ~get_package dot_typ cstrs =
     let name = Identifier.name id in
     let dot_cons = Printf.sprintf "%s/%s.cons" dot_typ name in
     Markup.anchor_region_div ~id:dot_cons
-      (pcdata "| " :: constructor ~get_package id args res)
+      (pcdata "| " :: constructor ~get_package ~dot_typ id args res)
   in
   let rows =
     List.map cstrs ~f:(fun cstr ->
@@ -551,10 +556,12 @@ and extension ~get_package (t : _ Types.Extension.t) =
 
 and extension_constructor ~get_package (t : _ Types.Extension.Constructor.t) =
   (* CR trefis: doc? *)
-  constructor ~get_package t.id t.args t.res
+  let dot_ext = Printf.sprintf "%s.ext" (Identifier.name t.id) in
+  constructor ~get_package ~dot_typ:dot_ext t.id t.args t.res
 
 and exn ~get_package (t : _ Types.Exception.t) =
-  let cstr = constructor ~get_package t.id t.args t.res in
+  let dot_exn = Printf.sprintf "%s.exn" (Identifier.name t.id) in
+  let cstr = constructor ~get_package ~dot_typ:dot_exn t.id t.args t.res in
   let doc = documentation t.doc in
   let exn = Markup.def_div (Markup.keyword "exn " :: cstr) in
   div ~a:[ a_class ["exn"] ] [ exn; doc ]
