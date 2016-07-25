@@ -65,6 +65,7 @@ let int32_identifier = CoreType "int32"
 let int64_identifier = CoreType "int64"
 let nativeint_identifier = CoreType "nativeint"
 let lazy_t_identifier = CoreType "lazy_t"
+let extension_constructor_identifier = CoreType "extension_constructor"
 
 
 let false_identifier = Constructor(bool_identifier, "false")
@@ -105,6 +106,7 @@ let core_type_identifier = function
   | "int64" -> Some int64_identifier
   | "nativeint" -> Some nativeint_identifier
   | "lazy_t" -> Some lazy_t_identifier
+  | "extension_constructor" -> Some extension_constructor_identifier
   | _ -> None
 
 let core_exception_identifier = function
@@ -153,6 +155,8 @@ let int32_path = Resolved (Identifier int32_identifier)
 let int64_path = Resolved (Identifier int64_identifier)
 let nativeint_path = Resolved (Identifier nativeint_identifier)
 let lazy_t_path = Resolved (Identifier lazy_t_identifier)
+let extension_constructor_path =
+  Resolved (Identifier extension_constructor_identifier)
 
 open Reference.Resolved
 open Reference
@@ -173,6 +177,8 @@ let int32_reference = Resolved (Identifier int32_identifier)
 let int64_reference = Resolved (Identifier int64_identifier)
 let nativeint_reference = Resolved (Identifier nativeint_identifier)
 let lazy_t_reference = Resolved (Identifier lazy_t_identifier)
+let extension_constructor_reference =
+  Resolved (Identifier extension_constructor_identifier)
 
 let false_reference = Resolved (Identifier false_identifier)
 let true_reference = Resolved (Identifier true_identifier)
@@ -440,6 +446,19 @@ let lazy_t_decl =
   let representation = None in
     {id; doc; equation; representation}
 
+let extension_constructor_decl =
+  let open TypeDecl in
+  let open Documentation in
+  let id = extension_constructor_identifier in
+  let text =
+    [Raw "cf. ";
+     Reference(Module(Root("Obj")), None);
+     Raw " module. It should not be used directly."]
+  in
+  let doc = Ok {empty_doc with text} in
+  let equation = covariant_equation in
+  let representation = None in
+    {id; doc; equation; representation}
 
 let match_failure_decl =
   let open Exception in

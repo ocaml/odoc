@@ -35,6 +35,7 @@ val int32_identifier : 'a Identifier.type_
 val int64_identifier : 'a Identifier.type_
 val nativeint_identifier : 'a Identifier.type_
 val lazy_t_identifier : 'a Identifier.type_
+val extension_constructor_identifier : 'a Identifier.type_
 
 val false_identifier :'a Identifier.constructor
 val true_identifier :'a Identifier.constructor
@@ -82,6 +83,7 @@ val int32_path : 'a Path.type_
 val int64_path : 'a Path.type_
 val nativeint_path : 'a Path.type_
 val lazy_t_path : 'a Path.type_
+val extension_constructor_path : 'a Path.type_
 
 (** {3 References} *)
 
@@ -101,6 +103,7 @@ val int32_reference : 'a Reference.type_
 val int64_reference : 'a Reference.type_
 val nativeint_reference : 'a Reference.type_
 val lazy_t_reference : 'a Reference.type_
+val extension_constructor_reference : 'a Reference.type_
 
 val false_reference : 'a Reference.constructor
 val true_reference : 'a Reference.constructor
@@ -140,6 +143,7 @@ val int32_decl : 'a TypeDecl.t
 val int64_decl : 'a TypeDecl.t
 val nativeint_decl : 'a TypeDecl.t
 val lazy_t_decl : 'a TypeDecl.t
+val extension_constructor_decl : 'a TypeDecl.t
 
 val match_failure_decl : 'a Exception.t
 val assert_failure_decl : 'a Exception.t
