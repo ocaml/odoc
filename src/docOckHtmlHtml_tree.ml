@@ -161,6 +161,7 @@ module Relative_link = struct
       let open Path in
       function
       | Root root -> root
+      | Forward root -> root
       | Dot (prefix, suffix) -> render_path prefix ^ "." ^ suffix
       | Apply (p1, p2) -> render_path p1 ^ "(" ^ render_path p2 ^ ")"
       | Resolved rp -> render_resolved rp
@@ -171,6 +172,7 @@ module Relative_link = struct
         let open Path in
         match path with
         | Root root -> [ pcdata root ]
+        | Forward root -> [ pcdata root ] (* FIXME *)
         | Dot (prefix, suffix) ->
           let link = to_html ~get_package ~stop_before:true prefix in
           link @ [ pcdata ("." ^ suffix) ]
