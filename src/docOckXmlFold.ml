@@ -284,6 +284,9 @@ let right_t output acc =
 let root_t output acc =
   output acc (`El_start ((ns, "root"), []))
 
+let forward_t output acc =
+  output acc (`El_start ((ns, "forward"), []))
+
 let section_t output acc =
   output acc (`El_start ((ns, "section"), []))
 
@@ -515,6 +518,10 @@ and path_p : type a. _ -> _ -> _ -> (_, a) Path.t -> _ =
         close output acc
       | Root name ->
         let acc = root_t output acc in
+        let acc = data output acc name in
+        close output acc
+      | Forward name ->
+        let acc = forward_t output acc in
         let acc = data output acc name in
         close output acc
       | Dot(m, name) ->

@@ -101,6 +101,7 @@ let relax_class_type_reference cltyp =
 %token FILE
 %token FILENAME
 %token FIXED
+%token FORWARD
 %token FUNCTOR
 %token HIDDEN
 %token IDENTIFIER
@@ -368,6 +369,8 @@ module_path:
       { Path.Resolved path }
   | ROOT data = string CLOSE
       { Path.Root data }
+  | FORWARD data = string CLOSE
+      { Path.Forward data }
   | DOT md = module_path data = string CLOSE
       { Path.Dot(md, data) }
   | APPLY md = module_path arg = module_path CLOSE
