@@ -394,6 +394,7 @@ module Path = struct
       type ('a, 'b) t =
       | Resolved : ('a, 'b) Types.Resolved.t -> ('a, 'b) t
       | Root : string -> ('a, [< kind >`Module]) t
+      | Forward : string -> ('a, [< kind >`Module]) t
       | Dot : 'a module_ * string -> ('a, [< kind]) t
       | Apply : 'a module_ * 'a module_ -> ('a, [< kind >`Module]) t
 
@@ -485,6 +486,8 @@ module Path = struct
         match p with
         | Resolved p -> hash_resolved_path hash p
         | Root s ->
+            Hashtbl.hash (26, s)
+        | Forward s ->
             Hashtbl.hash (26, s)
         | Dot(p, s) ->
             Hashtbl.hash (27, hash_path hash p, s)
@@ -601,6 +604,7 @@ module Path = struct
       match t with
       | Resolved r -> List [ Atom "Resolved"; Resolved.sexp_of_t sexp_of_a r ]
       | Root s -> List [ Atom "Root"; atom s ]
+      | Forward s -> List [ Atom "Forward"; atom s ]
       | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s]]
       | Apply (m1, m2) ->
           List [ Atom "Apply" ; List [ sexp_of_t sexp_of_a m1
@@ -640,6 +644,7 @@ module Path = struct
     | Resolved (Subst(sub, p)) -> Resolved (Subst(sub, any p))
     | Resolved (SubstAlias(sub, p)) -> Resolved (SubstAlias(sub, any p))
     | Root _ as x -> x
+    | Forward _ as x -> x
     | Dot _ as x -> x
     | Apply _ as x -> x
 

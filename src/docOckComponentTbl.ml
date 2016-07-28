@@ -355,6 +355,12 @@ and module_path local =
       | Found base -> unit local.t base
       | Forward_reference -> Sig.abstract
     end
+  | Forward s -> begin (* FIXME? *)
+      match local.t.lookup local.unit s with
+      | Not_found -> Sig.unresolved
+      | Found base -> unit local.t base
+      | Forward_reference -> Sig.abstract
+    end
   | Resolved r -> resolved_module_path local r
   | Dot(p, name) ->
       let parent = module_path local p in

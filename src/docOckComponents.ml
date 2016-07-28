@@ -928,6 +928,7 @@ end = struct
     let open Path in function
     | Resolved r -> reduce_resolved_module_path in_arg id path r
     | Root _ -> None
+    | Forward _ -> None
     | Dot(p, name) -> begin
         match reduce_module_path in_arg id path p with
         | Some p -> Some (Dot(p, name))
@@ -1033,6 +1034,7 @@ end = struct
     let open Path in function
     | Resolved r -> subst_resolved_module_path id lookup path r
     | Root _ -> None
+    | Forward _ -> None
     | Dot(p, name) -> begin
         match subst_module_path id lookup path p with
         | Some (p, t) ->

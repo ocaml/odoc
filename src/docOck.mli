@@ -55,6 +55,7 @@ type 'a expander
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
 val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+                    (string -> 'a lookup_result) ->
                     (root:'a -> 'a -> 'a Types.Unit.t) -> 'a expander
 
 val expand: 'a expander -> 'a Types.Unit.t -> 'a Types.Unit.t

@@ -151,6 +151,7 @@ type 'a expander =
   { equal: 'a -> 'a -> bool;
     hash: 'a -> int;
     expand_root: root:'a -> 'a -> 'a intermediate_module_expansion;
+    expand_forward_ref : root:'a -> string -> 'a intermediate_module_expansion;
     expand_module_identifier: root:'a -> 'a Identifier.module_ ->
                               'a intermediate_module_expansion;
     expand_module_type_identifier: root:'a -> 'a Identifier.module_type ->
@@ -158,6 +159,8 @@ type 'a expander =
     expand_signature_identifier: root:'a -> 'a Identifier.signature ->
                                  'a partial_expansion option;
     expand_module_resolved_path: root:'a -> 'a Path.Resolved.module_ ->
+                                 'a intermediate_module_expansion;
+    expand_module_path: root:'a -> 'a Path.module_ ->
                                  'a intermediate_module_expansion;
     expand_module_type_resolved_path: root:'a ->
                                       'a Path.Resolved.module_type ->
@@ -174,7 +177,14 @@ let rec expand_module_decl ({equal} as t) root dest offset decl =
           subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
-    | Alias _ -> None
+    | Alias p -> begin
+        match t.expand_module_path ~root p with
+        | src, _, ex ->
+          let src = Identifier.signature_of_module src in
+          let sub = DocOckSubst.rename_signature ~equal src dest offset in
+          subst_expansion sub ex
+        | exception Not_found -> None (* TODO: Should be an error *)
+      end
     | ModuleType expr -> expand_module_type_expr t root dest offset expr
 
 and expand_module_type_expr ({equal} as t) root dest offset expr =
@@ -357,6 +367,19 @@ and expand_module_resolved_path' ({equal = eq} as t) root p =
         md'.id, md'.doc, expand_module t root md'
   | Apply _ -> raise Not_found (* TODO support functor application *)
 
+and expand_module_path' ({equal = eq} as t) root p =
+  let open Path in
+  match p with
+  | Forward s -> t.expand_forward_ref ~root s
+  | Dot(parent, name) ->
+      let open Module in
+      let id, _, ex = t.expand_module_path ~root parent in
+      let md = find_module t root name ex in
+      let sub = DocOckSubst.prefix ~equal:eq id in
+      let md' = DocOckSubst.module_ sub md in
+        md'.id, md'.doc, expand_module t root md'
+  | Root _ | Apply _ | Resolved _ -> raise Not_found (* TODO: assert false? *)
+
 and expand_module_type_resolved_path' ({equal = eq} as t) root
                                      (p : 'a Path.Resolved.module_type) =
   let open Path.Resolved in
@@ -409,7 +432,9 @@ and expand_unit ({equal; hash} as t) root unit =
       | Module sg -> Some sg
 
 
-let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
+let create (type a) ?equal ?hash
+      (lookup : string -> a DocOckComponentTbl.lookup_result)
+      (fetch : root:a -> a -> a Unit.t) =
   let equal =
     match equal with
     | None -> (=)
@@ -438,16 +463,25 @@ let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
   let expand_module_identifier_tbl = IdentifierTbl.create 13 in
   let expand_module_type_identifier_tbl = IdentifierTbl.create 13 in
   let expand_signature_identifier_tbl = IdentifierTbl.create 13 in
-  let module PathHash = struct
+  let module RPathHash = struct
     type t = a * a Path.Resolved.any
     let equal (root1, p1) (root2, p2) =
       equal root1 root2 && Path.Resolved.equal ~equal p1 p2
     let hash (root, p) =
       Hashtbl.hash (hash root, Path.Resolved.hash ~hash)
   end in
+  let module RPathTbl = Hashtbl.Make(RPathHash) in
+  let module PathHash = struct
+    type t = a * a Path.any
+    let equal (root1, p1) (root2, p2) =
+      equal root1 root2 && Path.equal ~equal p1 p2
+    let hash (root, p) =
+      Hashtbl.hash (hash root, Path.hash ~hash)
+  end in
   let module PathTbl = Hashtbl.Make(PathHash) in
-  let expand_module_resolved_path_tbl = PathTbl.create 13 in
-  let expand_module_type_resolved_path_tbl = PathTbl.create 13 in
+  let expand_module_resolved_path_tbl = RPathTbl.create 13 in
+  let expand_module_path_tbl = PathTbl.create 13 in
+  let expand_module_type_resolved_path_tbl = RPathTbl.create 13 in
   let rec expand_root ~root root' =
     let key = (root, root') in
     try
@@ -464,6 +498,10 @@ let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
       let res = (unit.id, unit.doc, ex) in
       RootTbl.add expand_root_tbl key res;
       res
+  and expand_forward_ref ~root str =
+    match lookup str with
+    | DocOckComponentTbl.Found a -> expand_root ~root a
+    | _ -> raise Not_found
   and expand_module_identifier ~root id =
     let key = (root, Identifier.any id) in
     try
@@ -491,22 +529,30 @@ let create (type a) ?equal ?hash (fetch : root:a -> a -> a Unit.t) =
   and expand_module_resolved_path ~root p =
     let key = (root, Path.Resolved.any p) in
     try
-      PathTbl.find expand_module_resolved_path_tbl key
+      RPathTbl.find expand_module_resolved_path_tbl key
     with Not_found ->
       let res = expand_module_resolved_path' t root p in
-      PathTbl.add expand_module_resolved_path_tbl key res;
+      RPathTbl.add expand_module_resolved_path_tbl key res;
+      res
+  and expand_module_path ~root p =
+    let key = (root, Path.any p) in
+    try
+      PathTbl.find expand_module_path_tbl key
+    with Not_found ->
+      let res = expand_module_path' t root p in
+      PathTbl.add expand_module_path_tbl key res;
       res
   and expand_module_type_resolved_path ~root p =
     let key = (root, Path.Resolved.any p) in
     try
-      PathTbl.find expand_module_type_resolved_path_tbl key
+      RPathTbl.find expand_module_type_resolved_path_tbl key
     with Not_found ->
       let res = expand_module_type_resolved_path' t root p in
-      PathTbl.add expand_module_type_resolved_path_tbl key res;
+      RPathTbl.add expand_module_type_resolved_path_tbl key res;
       res
   and t =
     { equal; hash;
-      expand_root;
+      expand_root; expand_forward_ref; expand_module_path;
       expand_module_identifier;
       expand_module_type_identifier;
       expand_signature_identifier;
@@ -580,8 +626,8 @@ let expand_unit t unit =
           { unit with expansion }
 *)
 
-class ['a] t ?equal ?hash fetch = object (self)
-  val t = create ?equal ?hash fetch
+class ['a] t ?equal ?hash lookup fetch = object (self)
+  val t = create ?equal ?hash lookup fetch
   val unit = None
 
   inherit ['a] DocOckMaps.types as super
@@ -650,7 +696,7 @@ class ['a] t ?equal ?hash fetch = object (self)
       this#unit unit
 end
 
-let build_expander ?equal ?hash fetch =
-  new t ?equal ?hash fetch
+let build_expander ?equal ?hash lookup fetch =
+  new t ?equal ?hash lookup fetch
 
 let expand e u = e#expand u

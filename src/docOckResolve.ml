@@ -19,11 +19,6 @@ open DocOckTypes
 open DocOckComponents
 open DocOckComponentTbl
 
-type 'a lookup_result = 'a DocOckComponentTbl.lookup_result =
-  | Forward_reference
-  | Found of 'a
-  | Not_found
-
 type 'a parent_module_path =
   | Resolved of 'a Path.Resolved.module_ * 'a Sig.t
   | Unresolved of 'a Path.module_
@@ -68,7 +63,17 @@ and resolve_parent_module_path tbl u p : 'a parent_module_path =
         match base tbl u s with
         | Not_found -> Unresolved p
         | Forward_reference ->
-            (* TODO: fail? *)
+            (* We can't have a forward ref as parent. *)
+            Unresolved p
+        | Found r ->
+            let p = Identifier (Identifier.Root(r, s)) in
+              Resolved(p, resolved_module_path tbl u p)
+      end
+    | Forward s -> begin
+        match base tbl u s with
+        | Not_found -> Unresolved p
+        | Forward_reference ->
+            (* We can't have a forward ref as parent. *)
             Unresolved p
         | Found r ->
             let p = Identifier (Identifier.Root(r, s)) in
@@ -131,9 +136,13 @@ and resolve_module_path tbl u =
   | Root s as p -> begin
       match base tbl u s with
       | Not_found -> p
-      | Forward_reference ->
-          (* TODO: fail? *)
-          p
+      | Forward_reference -> Forward s
+      | Found r -> Resolved (Identifier (Identifier.Root(r, s)))
+    end
+  | Forward s as p -> begin
+      match base tbl u s with
+      | Not_found -> p
+      | Forward_reference -> Forward s
       | Found r -> Resolved (Identifier (Identifier.Root(r, s)))
     end
   | Resolved r as p -> p
@@ -447,9 +456,7 @@ and resolve_module_reference tbl u r =
     | Root s -> begin
         match base tbl u s with
         | Not_found -> r
-        | Forward_reference ->
-            (* TODO: fail? *)
-            r
+        | Forward_reference -> r (* TODO *)
         | Found base -> Resolved (Identifier (Identifier.Root(base, s)))
       end
     | Resolved _ -> r

@@ -292,6 +292,7 @@ module rec Path : sig
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
     | Root : string -> ('a, [< kind > `Module]) t
+    | Forward : string -> ('a, [< kind > `Module]) t
     | Dot : 'a module_ * string -> ('a, [< kind]) t
     | Apply : 'a module_ * 'a module_ -> ('a, [< kind > `Module]) t
 

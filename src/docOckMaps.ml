@@ -317,6 +317,10 @@ class virtual ['a] path = object (self)
             let name' = self#path_root_name name in
               if name != name' then Root name'
               else p
+        | Forward name ->
+            let name' = self#path_root_name name in
+              if name != name' then Root name'
+              else p
         | Dot(parent, name) ->
             let parent' = self#path parent in
             let name' = self#path_dot_name name in
