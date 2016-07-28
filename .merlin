@@ -3,4 +3,5 @@ B _build/**
 S bin
 S lib
 
+PKG doc-ock
 FLG -w -40 -open StdLabels

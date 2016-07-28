@@ -116,7 +116,7 @@ let create ?(important_digests=true) ~directories : builder = fun unit ->
   let expander =
     (* CR trefis: what is the ~root param good for? *)
     let fetch ~root:_ root = fetch root in
-    DocOck.build_expander fetch
+    DocOck.build_expander (lookup ()) fetch
   in
   { unit_of_root; expander; resolver }
 
