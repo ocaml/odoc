@@ -23,6 +23,8 @@ open Html5.M
 module Html_tree = DocOckHtmlHtml_tree
 module Markup = DocOckHtmlMarkup
 
+let a_href = Html_tree.Relative_link.to_sub_element
+
 let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
 
 module Html_parser = struct
@@ -216,7 +218,7 @@ and functor_argument ~get_package arg =
       let subtree = Html_tree.make node in
       Html_tree.leave ();
       Markup.def_div (
-        a ~a:[ a_href (link_name ^ ".moda") ] [pcdata name] ::
+        a ~a:[ a_href ~kind:`Arg link_name ] [pcdata name] ::
         pcdata " : " ::
         mty ~get_package (Identifier.signature_of_module arg.id) arg.expr
       ), [subtree]
@@ -263,7 +265,7 @@ and module_ ~get_package (t : _ Types.Module.t) =
       let expansion, subpages as node = module_expansion ~get_package expansion in
       let subtree = Html_tree.make node in
       Html_tree.leave ();
-      a ~a:[ a_href (modname ^ ".mod") ] [pcdata modname], Some expansion, [subtree]
+      a ~a:[ a_href ~kind:`Mod modname ] [pcdata modname], Some expansion, [subtree]
   in
   let md_def_content = Markup.keyword "module " :: modname :: md in
   let md_def =
@@ -318,7 +320,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
       let expansion, subpages as node = module_expansion ~get_package expansion in
       let subtree = Html_tree.make node in
       Html_tree.leave ();
-      a ~a:[ a_href (modname ^ ".modt") ] [pcdata modname], [subtree]
+      a ~a:[ a_href ~kind:`Mty modname ] [pcdata modname], [subtree]
   in
   let mty =
     match t.expr with
@@ -356,7 +358,7 @@ and mty ~get_package (base : _ Identifier.signature) = function
           ~stop_before:(arg.expansion = None) arg.id
       with
       | exception _ -> to_print
-      | href -> a ~a:[ a_href href ] [ to_print ]
+      | href -> a ~a:[ Html5.M.a_href href ] [ to_print ]
     in
     Markup.keyword "functor" ::
     pcdata " (" :: name :: pcdata " : " ::

@@ -16,6 +16,8 @@
 
 open Html5.M
 
+type kind = [ `Arg | `Mod | `Mty ]
+
 type t = {
   name : string;
   content : [ `Html ] elt;
@@ -83,6 +85,8 @@ let traverse ~f t =
 module Relative_link = struct
   open DocOck.Paths
 
+  let semantic_uris = ref false
+
   module Id : sig
     exception Not_linkable
     exception Can't_stop_before
@@ -104,7 +108,12 @@ module Relative_link = struct
             let str = Printf.sprintf "%s.%d.moda" str i in
             str_list_path (str :: acc) id
           | ModuleType (id, str) -> str_list_path ((str ^ ".modt") :: acc) id
-          | Type (id, str) -> str_list_path ("#" :: (str ^ ".typ") :: acc) id
+          | Type (id, str) ->
+            let anchored =
+              (if !semantic_uris then "#" else "index.html#")
+              :: (str ^ ".typ") :: acc
+            in
+            str_list_path anchored id
           | CoreType str -> raise Not_linkable
           | _ ->
             (* CR trefis: FIXME *)
@@ -128,9 +137,13 @@ module Relative_link = struct
         | lst when stop_before ->
           begin match List.rev lst with
           | [] -> assert false
-          | x :: xs -> List.rev (x :: "#" :: xs)
+          | x :: xs ->
+            List.rev
+              (x :: (if !semantic_uris then "#" else "index.html#") :: xs)
           end
-        | lst -> lst
+        | lst ->
+          if !semantic_uris || List.mem "index.html#" ~set:lst then lst
+          else lst @ ["index.html"]
       in
       let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
       let current_from_common_ancestor, target_from_common_ancestor =
@@ -290,4 +303,13 @@ module Relative_link = struct
 
   let of_reference ref =
     Of_ref.to_html ref
+
+  let to_sub_element ~kind name =
+    let ext =
+      match kind with
+      | `Mod -> ".mod"
+      | `Mty -> ".modt"
+      | `Arg -> ".moda"
+    in
+    a_href (name ^ ext ^ (if !semantic_uris then "" else "/index.html"))
 end

@@ -28,10 +28,12 @@ val traverse
   -> t
   -> unit
 
+type kind = [ `Arg | `Mod | `Mty ]
+
 (** These two functions are used to track the depth while building the tree,
     which is needed to produce correct links. *)
 
-val enter : ?kind:[ `Arg | `Mod | `Mty ] -> string -> unit
+val enter : ?kind:kind -> string -> unit
 
 val leave : unit -> unit
 
@@ -50,6 +52,9 @@ val make : [< Html5_types.div_content_fun ] elt * t list -> t
     If [set_page_creator] was not called, a default creator is used. *)
 
 module Relative_link : sig
+  val semantic_uris : bool ref
+  (** Whether to generate pretty/semantics links or not. *)
+
   module Id : sig
     val href : get_package:('a -> string) -> stop_before:bool ->
       ('a, _) Identifier.t -> string
@@ -64,4 +69,6 @@ module Relative_link : sig
 
   val of_reference : ('a, _) Reference.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
+
+  val to_sub_element : kind:kind -> string -> [> `Href ] attrib
 end
