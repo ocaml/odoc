@@ -81,7 +81,8 @@ let create ?(important_digests=true) ~directories : builder = fun unit ->
             match find_odoc_file ~directories target_name ?digest:digest_opt with
             | None -> Not_found
             | Some (root, unit) ->
-              Root.Table.add unit_of_root root unit;
+              if not (Root.Table.mem unit_of_root root) then
+                Root.Table.add unit_of_root root unit;
               Found root
           end
         | DocOckTypes.Unit.Import.Resolved root
@@ -91,7 +92,8 @@ let create ?(important_digests=true) ~directories : builder = fun unit ->
           with
           | None -> Not_found
           | Some (root, unit) ->
-            Root.Table.add unit_of_root root unit;
+            if not (Root.Table.mem unit_of_root root) then
+              Root.Table.add unit_of_root root unit;
             Found root
           end
         | _ ->
