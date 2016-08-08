@@ -152,12 +152,13 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   in
   Html_tree.enter package;
   Html_tree.enter (Identifier.name t.id);
-  let html_and_subtree =
+  let header_doc = documentation t.doc in
+  let html, subtree =
     match t.content with
     | Module sign -> signature ~get_package sign
     | Pack packed -> pack ~get_package packed, []
   in
-  Html_tree.make html_and_subtree
+  Html_tree.make (div [ header_doc; html ], subtree)
 
 and pack ~get_package (t : _ Types.Unit.Packed.t) =
   div @@ List.map t ~f:(fun x ->
