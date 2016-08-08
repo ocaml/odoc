@@ -67,7 +67,8 @@ module Link : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
-  let link directories output_dir odoc_file =
+  let link semantic_uris directories output_dir odoc_file =
+    DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     let env = Env.create ~important_digests:false ~directories in
     let odoc_file = Fs.File.of_string odoc_file in
     Link.unit ~env ~output:output_dir odoc_file
@@ -77,7 +78,11 @@ end = struct
       let doc = "Input file" in
       Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
     in
-    Term.(const link $ env $ dst $ input)
+    let semantic_uris =
+      let doc = "Generate pretty (semantic) links" in
+      Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
+    in
+    Term.(const link $ semantic_uris $ env $ dst $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
