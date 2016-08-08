@@ -688,12 +688,18 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
 
 and include_ ~get_package (t : _ Types.Include.t) =
   let doc = documentation t.doc in
-  let incl, tree =
-    let incl =
-      Markup.keyword "include " ::
-      module_decl' ~get_package t.parent t.decl
-    in
-    let html, tree = signature ~get_package t.expansion.content in
-    details (Markup.def_summary @@ html_dot_magic incl) [html], tree
+  let included_html, tree = signature ~get_package t.expansion.content in
+  let should_be_inlined =
+    match t.doc with
+    | Ok { tags ; _ } -> List.mem Types.Documentation.Inline ~set:tags
+    | _ -> false
+  in
+  let incl =
+    if should_be_inlined then included_html else
+      let incl =
+        Markup.keyword "include " ::
+        module_decl' ~get_package t.parent t.decl
+      in
+      details (Markup.def_summary @@ html_dot_magic incl) [included_html]
   in
   div ~a:[ a_class ["include"] ] [incl; doc], tree
