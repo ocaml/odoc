@@ -16,6 +16,7 @@ depends: [
   "doc-ock"
   "doc-ock-html"
   "doc-ock-xml"
+  "tyxml" {>= "4.0.0" }
   "xmlm"
   "cmdliner" ]
 

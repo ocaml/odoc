@@ -43,7 +43,8 @@ let unit ~env ~output:root_dir input =
       let file = Fs.File.create ~directory ~name:"index.html" in
       open_out (Fs.File.to_string file)
     in
-    Html5.P.print ~output:(output_string oc) content;
+    let fmt = Format.formatter_of_out_channel oc in
+    Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
     close_out oc
   )
   with exn ->
