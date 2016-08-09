@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Html5.M
+open Tyxml.Html
 
 let keyword keyword = span ~a:[ a_class ["keyword"] ] [ pcdata keyword ]
 

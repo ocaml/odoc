@@ -14,7 +14,7 @@ depends: [
   "ocamlbuild" {build}
   "topkg" {build & >= "0.7.5"}
   "doc-ock"
-  "tyxml" {<= "3.6.0" }
+  "tyxml" {>= "4.0.0" }
   "xmlm" ]
 
 build: [[

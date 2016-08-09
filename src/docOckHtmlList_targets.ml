@@ -18,7 +18,7 @@ open DocOck
 open Types
 open Paths
 
-open Html5.M
+open Tyxml.Html
 
 let functor_arg_pos { Types.FunctorArgument.id ; _ } =
   match id with

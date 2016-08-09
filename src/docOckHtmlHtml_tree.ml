@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Html5.M
+open Tyxml.Html
 
 type kind = [ `Arg | `Mod | `Mty ]
 
@@ -41,7 +41,7 @@ let stack_elt_to_path_fragment = function
   | (name, None) -> name
 
 type 'a page_creator =
-  ([< Html5_types.div_content_fun ] as 'a) elt ->
+  ([< Html_types.div_content_fun ] as 'a) elt ->
   path:string list ->
   [ `Html ] elt
 

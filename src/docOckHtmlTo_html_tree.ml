@@ -18,7 +18,7 @@ open DocOck
 open Types
 open Paths
 
-open Html5.M
+open Tyxml.Html
 
 module Html_tree = DocOckHtmlHtml_tree
 module Markup = DocOckHtmlMarkup
@@ -358,7 +358,7 @@ and mty ~get_package (base : _ Identifier.signature) = function
           ~stop_before:(arg.expansion = None) arg.id
       with
       | exception _ -> to_print
-      | href -> a ~a:[ Html5.M.a_href href ] [ to_print ]
+      | href -> a ~a:[ Tyxml.Html.a_href href ] [ to_print ]
     in
     Markup.keyword "functor" ::
     pcdata " (" :: name :: pcdata " : " ::
