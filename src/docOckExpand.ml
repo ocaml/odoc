@@ -166,22 +166,31 @@ type 'a expander =
                                       'a Path.Resolved.module_type ->
                                       'a intermediate_module_type_expansion; }
 
+let add_doc_to_expansion_opt doc :
+  'a partial_expansion option -> 'a partial_expansion option = function
+  | Some (Signature sg) ->
+      let doc = Signature.Comment (Documentation.Documentation doc) in
+      Some (Signature (doc :: sg))
+  | otherwise -> otherwise (* FIXME: handle functors? *)
+
 let rec expand_module_decl ({equal} as t) root dest offset decl =
   let open Module in
     match decl with
     | Alias (Path.Resolved p) -> begin (* TODO Should have strengthening *)
         match t.expand_module_resolved_path ~root p with
-        | src, _, ex ->
+        | src, doc, ex ->
           let src = Identifier.signature_of_module src in
           let sub = DocOckSubst.rename_signature ~equal src dest offset in
+          let ex  = add_doc_to_expansion_opt doc ex in
           subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
     | Alias p -> begin
         match t.expand_module_path ~root p with
-        | src, _, ex ->
+        | src, doc, ex ->
           let src = Identifier.signature_of_module src in
           let sub = DocOckSubst.rename_signature ~equal src dest offset in
+          let ex = add_doc_to_expansion_opt doc ex in
           subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
