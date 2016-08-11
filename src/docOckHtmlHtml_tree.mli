@@ -40,13 +40,14 @@ val leave : unit -> unit
 (** {1 Page creator} *)
 
 type 'a page_creator =
-  ([< Html_types.div_content_fun ] as 'a) elt ->
+  Html_types.div_content_fun elt ->
+  kind:kind ->
   path:string list ->
   [ `Html ] elt
 
 val set_page_creator : _ page_creator -> unit
 
-val make : [< Html_types.div_content_fun ] elt * t list -> t
+val make : Html_types.div_content_fun elt * t list -> t
 (** [make (body, children)] calls "the page creator" to turn [body] into an
     [[ `Html ] elt].
     If [set_page_creator] was not called, a default creator is used. *)
