@@ -58,7 +58,8 @@ let default_page_creator content ~kind ~path =
       aux "odoc.css" (List.length path)
     in
     head (title (pcdata title_string)) [
-      link ~rel:[`Stylesheet] ~href:css_url ()
+      link ~rel:[`Stylesheet] ~href:css_url () ;
+      meta ~a:[ a_charset "utf-8" ] () ;
     ]
   in
   let has_parent = List.length path > 1 in
