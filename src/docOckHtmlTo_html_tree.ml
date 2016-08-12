@@ -574,9 +574,14 @@ and te_variant ~get_package (t : _ Types.TypeExpr.Variant.t) =
     list_concat_map t.elements ~sep:(pcdata " | ") ~f:(function
       | Types.TypeExpr.Variant.Type te -> type_expr ~get_package te
       | Constructor (name, _bool, args) ->
-        let a = list_concat_map args ~sep:(pcdata " * ") ~f:(type_expr
-                                                               ~get_package) in
-        pcdata ("`" ^ name ^ " of ") :: a
+        let constr = "`" ^ name in
+        match args with
+        | [] -> [ pcdata constr ]
+        | _ ->
+          let args =
+            list_concat_map args ~sep:(pcdata " * ") ~f:(type_expr ~get_package)
+          in
+          pcdata (constr ^ " of ") :: args
     )
   in
   match t.kind with
