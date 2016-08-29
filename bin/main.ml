@@ -74,7 +74,7 @@ module Css = struct
       "css"
 end
 
-module Link : sig
+module Html : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
@@ -83,7 +83,7 @@ end = struct
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     let env = Env.create ~important_digests:false ~directories in
     let odoc_file = Fs.File.of_string odoc_file in
-    Link.unit ~env ~output:output_dir odoc_file
+    Html.unit ~env ~output:output_dir odoc_file
 
   let cmd =
     let input =
@@ -124,7 +124,7 @@ module Depends = struct
             to compile this one."
   end
 
-  module Link = struct
+  module Html = struct
     let list_dependencies input_file =
       let deps = Depends.for_link_step (Fs.File.of_string input_file) in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" deps)
@@ -165,7 +165,7 @@ module Targets = struct
       Term.info "compile-targets" ~doc:"TODO: Fill in."
   end
 
-  module Link = struct
+  module Html = struct
     let list_targets directories output_dir odoc_file =
       let env = Env.create ~important_digests:false ~directories in
       let odoc_file = Fs.File.of_string odoc_file in
@@ -219,12 +219,12 @@ let () =
   in
   let subcommands =
     [ Compile.(cmd, info)
-    ; Link.(cmd, info)
+    ; Html.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
-    ; Depends.Link.(cmd, info)
+    ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)
-    ; Targets.Link.(cmd, info)
+    ; Targets.Html.(cmd, info)
     ; To_xml.(cmd, info) ]
   in
   match Term.eval_choice ~err:Format.err_formatter default subcommands with

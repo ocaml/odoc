@@ -22,7 +22,7 @@ module Compile : sig
 end
 
 (*
-module Link : sig
+module Html : sig
 
   type t
 

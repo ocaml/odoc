@@ -26,7 +26,7 @@ clean: clean_odoc clean_coverage
 
 LIB  = ../_build/lib
 
-UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocLink
+UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocHtml
 
 HTML_FILES = $(UNITS:=.html)
 ODOC_FILES = $(UNITS:=.odoc)
@@ -62,8 +62,8 @@ odocEnv.odoc: odoc.odoc odocFs.odoc odocRoot.odoc odocUnit.odoc
 odocCompile.odoc: odoc.odoc odocEnv.odoc odocFs.odoc odocRoot.odoc
 	$(ODOC) compile $(COMP_FLAGS) $(LIB)/odocCompile.cmti
 
-odocLink.odoc: odoc.odoc odocFs.odoc odocEnv.odoc
-	$(ODOC) compile $(COMP_FLAGS) $(LIB)/odocLink.cmti
+odocHtml.odoc: odoc.odoc odocFs.odoc odocEnv.odoc
+	$(ODOC) compile $(COMP_FLAGS) $(LIB)/odocHtml.cmti
 
 clean_odoc: DIR = ./odoc
 clean_odoc:

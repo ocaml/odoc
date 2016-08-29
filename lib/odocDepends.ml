@@ -29,7 +29,7 @@ module Compile = struct
 end
 
 (*
-module Link = struct
+module Html = struct
   type t = Fs.File.t
   let unit t = t
   let package t = t

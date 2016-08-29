@@ -24,7 +24,7 @@ module Env = OdocEnv
 
 module Compile = OdocCompile
 
-module Link = OdocLink
+module Html = OdocHtml
 
 module Index = OdocIndex
 

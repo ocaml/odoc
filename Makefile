@@ -13,7 +13,7 @@ silent_test: all
 	$(MAKE) -C test compile 2> /dev/null
 	$(MAKE) -C test odoc.html
 	echo "================================================================="
-	$(MAKE) -C test odocLink.html
+	$(MAKE) -C test odocHtml.html
 
 coverage: all
 	$(MAKE) -C test coverage

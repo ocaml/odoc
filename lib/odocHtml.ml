@@ -30,7 +30,6 @@ let unit ~env ~output:root_dir input =
   in
   let get_package root = Root.Package.to_string (Root.package root) in
   let pages = To_html_tree.unit ~get_package odoctree in
-  try
   Html_tree.traverse pages ~f:(fun ~parents name content ->
     let directory =
       let parent =
@@ -47,6 +46,3 @@ let unit ~env ~output:root_dir input =
     Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
     close_out oc
   )
-  with exn ->
-    Printf.printf "UNCAUGHT ERROR: %s\n%!" (Printexc.to_string exn);
-    exit (-1)

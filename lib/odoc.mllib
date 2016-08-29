@@ -4,7 +4,7 @@ OdocDepends
 OdocEnv
 OdocFs
 OdocIndex
-OdocLink
+OdocHtml
 OdocRoot
 OdocTargets
 OdocUnit
