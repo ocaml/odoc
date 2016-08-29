@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Css = OdocCss
+
 module Fs = OdocFs
 
 module Root = OdocRoot

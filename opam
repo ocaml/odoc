@@ -22,4 +22,5 @@ depends: [
 
 build: [[
   "ocaml" "pkg/pkg.ml" "build"
-          "--pinned" "%{pinned}%" ]]
+          "--pinned" "%{pinned}%"
+          "--etc-dir" "%{odoc:etc}%"]]

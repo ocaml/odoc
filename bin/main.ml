@@ -63,10 +63,22 @@ end = struct
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
 end
 
+module Css = struct
+  let copy_default_css output_dir =
+    Css.copy_default_css ~etc_dir:Odoc_etc.dir ~output_dir
+
+  let cmd = Term.(const copy_default_css $ dst)
+
+  let info =
+    Term.info ~doc:"Copies the default odoc.css to the specified directory"
+      "css"
+end
+
 module Link : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
+
   let link semantic_uris directories output_dir odoc_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     let env = Env.create ~important_digests:false ~directories in
@@ -208,6 +220,7 @@ let () =
   let subcommands =
     [ Compile.(cmd, info)
     ; Link.(cmd, info)
+    ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Link.(cmd, info)
     ; Targets.Compile.(cmd, info)
