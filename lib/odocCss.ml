@@ -1,7 +1,6 @@
 module Fs = OdocFs
 
 let copy_file ~src ~dst =
-  let () = Printf.printf "cp %S %S\n%!" src dst in
   let buf = Bytes.create 65536 in
   let ic = open_in src in
   let oc = open_out dst in

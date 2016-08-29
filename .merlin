@@ -1,7 +1,10 @@
 PKG cmdliner xmlm doc-ock doc-ock-xml doc-ock-html unix compiler-libs.common
-B _build/**
+
 S bin
+B _build/bin
+
 S lib
+B _build/lib
 
 PKG doc-ock
 FLG -w -40 -open StdLabels
