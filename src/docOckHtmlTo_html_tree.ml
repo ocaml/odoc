@@ -166,27 +166,22 @@ and module_ ~get_package (t : _ Types.Module.t) =
     | None -> pcdata modname, None, []
     | Some expansion ->
       Html_tree.enter ~kind:(`Mod) modname;
-      let expansion, subpages as node = module_expansion ~get_package expansion in
-      let subtree = Html_tree.make node in
+      let expansion, subpages = module_expansion ~get_package expansion in
+      let expansion =
+        let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
+        let md_def_content = Markup.keyword "module " :: pcdata modname :: md in
+        div ~a:[ a_class ["mod"] ]
+          [Markup.def_div md_def_content; doc; hr (); expansion]
+      in
+      let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
       a ~a:[ a_href ~kind:`Mod modname ] [pcdata modname], Some expansion, [subtree]
   in
   let md_def_content = Markup.keyword "module " :: modname :: md in
-  let md_def =
-    ignore expansion;
-    Markup.def_div md_def_content
-    (* CR-someday trefis: not sure we want the following, it's noisy and ugly...
-       but sometimes useful...
-       Some CSS expert might make the result look more pleasant? *)
-    (*
-    match expansion with
-    | None -> Markup.def_div md_def_content
-    | Some html -> details (Markup.def_summary @@ html_dot_magic md_def_content) [html]
-    *)
-  in
+  let md_def = Markup.def_div md_def_content in
   let region =
     Markup.anchor_region_div ~id:dot_mod
-      [div ~a:[ a_class ["mod"] ] [ md_def; doc ]]
+      [div ~a:[ a_class ["mod"] ] [ md_def; Documentation.first_to_html t.doc ]]
   in
   region, subtree
 
