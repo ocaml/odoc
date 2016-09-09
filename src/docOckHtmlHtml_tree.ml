@@ -306,13 +306,23 @@ module Relative_link = struct
           render_resolved r ^ "." ^ s
         | Label (r, s) -> render_resolved r ^ ":" ^ s
 
-    let rec to_html : type a. (_, a) Reference.t -> _ =
-      fun ref ->
+    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
+      (_, a) Reference.t -> _ =
+      fun ~get_package ~stop_before ref ->
         let open Reference in
         match ref with
         | Root s -> [ pcdata s ]
-        | Dot (parent, s) -> to_html parent @ [ pcdata ("." ^ s) ]
-        | Resolved r -> [ pcdata (render_resolved r) ]
+        | Dot (parent, s) -> to_html ~get_package ~stop_before:true parent @ [ pcdata ("." ^ s) ]
+        | Resolved r ->
+          let id = Reference.Resolved.identifier r in
+          let txt = render_resolved r in
+          begin match Id.href ~get_package ~stop_before id with
+          | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
+          | exception Id.Not_linkable -> [ pcdata txt ]
+          | exception exn ->
+            Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
+            [ pcdata txt ]
+          end
   end
 
   let of_path ~get_package p =
@@ -321,8 +331,8 @@ module Relative_link = struct
   let of_fragment ~get_package ~base frag =
     Of_fragment.to_html ~get_package ~stop_before:false base frag
 
-  let of_reference ref =
-    Of_ref.to_html ref
+  let of_reference ~get_package ref =
+    Of_ref.to_html ~get_package ~stop_before:false ref
 
   let to_sub_element ~kind name =
     let ext =

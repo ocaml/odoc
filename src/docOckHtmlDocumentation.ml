@@ -34,31 +34,31 @@ let apply_style (style : Documentation.style) elt =
   | Subscript   -> span ~a:[ a_class ["sub"] ] elt
   | Custom str  -> span ~a:[ a_style str ] elt
 
-let ref_to_link (ref : _ Documentation.reference) =
+let ref_to_link ~get_package (ref : _ Documentation.reference) =
   (* It is wonderful that although each these [r] is a [Reference.t] the phantom
      type parameters are not the same so we can't merge the branches. *)
   match ref with
-  | Module r           -> Html_tree.Relative_link.of_reference r
-  | ModuleType r       -> Html_tree.Relative_link.of_reference r
-  | Type r             -> Html_tree.Relative_link.of_reference r
-  | Constructor r      -> Html_tree.Relative_link.of_reference r
-  | Field r            -> Html_tree.Relative_link.of_reference r
-  | Extension r        -> Html_tree.Relative_link.of_reference r
-  | Exception r        -> Html_tree.Relative_link.of_reference r
-  | Value r            -> Html_tree.Relative_link.of_reference r
-  | Class r            -> Html_tree.Relative_link.of_reference r
-  | ClassType r        -> Html_tree.Relative_link.of_reference r
-  | Method r           -> Html_tree.Relative_link.of_reference r
-  | InstanceVariable r -> Html_tree.Relative_link.of_reference r
-  | Element r          -> Html_tree.Relative_link.of_reference r
-  | Section r          -> Html_tree.Relative_link.of_reference r
-  | Link _
+  | Module r           -> Html_tree.Relative_link.of_reference ~get_package r
+  | ModuleType r       -> Html_tree.Relative_link.of_reference ~get_package r
+  | Type r             -> Html_tree.Relative_link.of_reference ~get_package r
+  | Constructor r      -> Html_tree.Relative_link.of_reference ~get_package r
+  | Field r            -> Html_tree.Relative_link.of_reference ~get_package r
+  | Extension r        -> Html_tree.Relative_link.of_reference ~get_package r
+  | Exception r        -> Html_tree.Relative_link.of_reference ~get_package r
+  | Value r            -> Html_tree.Relative_link.of_reference ~get_package r
+  | Class r            -> Html_tree.Relative_link.of_reference ~get_package r
+  | ClassType r        -> Html_tree.Relative_link.of_reference ~get_package r
+  | Method r           -> Html_tree.Relative_link.of_reference ~get_package r
+  | InstanceVariable r -> Html_tree.Relative_link.of_reference ~get_package r
+  | Element r          -> Html_tree.Relative_link.of_reference ~get_package r
+  | Section r          -> Html_tree.Relative_link.of_reference ~get_package r
+  | Link s -> [ pcdata s ] (* TODO: should be a link. *)
   | Custom (_,_)
     -> [ pcdata "[documentation.handle_ref TODO]" ]
 
 
-let rec handle_text text =
-  let mk_item txt = li (handle_text txt) in
+let rec handle_text ~get_package text =
+  let mk_item txt = li (handle_text ~get_package txt) in
   List.concat @@ List.map text ~f:(function
     | Documentation.Raw str -> [ pcdata str ]
     | Code str -> [ code [ pcdata str ] ]
@@ -66,7 +66,8 @@ let rec handle_text text =
     | Verbatim str ->
       (* CR trefis: I don't think this is quite right. *)
       [ pre [ pcdata str ] ]
-    | Style (style, txt) -> [ apply_style style (html_dot_magic @@ handle_text txt) ]
+    | Style (style, txt) ->
+      [ apply_style style (html_dot_magic @@ handle_text ~get_package txt) ]
     | List elts -> [ul (List.map elts ~f:mk_item)]
     | Enum elts -> [ol (List.map elts ~f:mk_item)]
     | Newline -> [br ()]
@@ -86,8 +87,8 @@ let rec handle_text text =
         | None -> header_fun ~a:[]
         | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:[ a_id lbl ]
       in
-      [ header_fun (html_dot_magic @@ handle_text txt) ]
-    | Reference (r,_) -> ref_to_link r
+      [ header_fun (html_dot_magic @@ handle_text ~get_package txt) ]
+    | Reference (r,_) -> ref_to_link ~get_package r
     | Target (Some "html", str) ->
       let html = Html_parser.of_string str in
       [html]
@@ -98,16 +99,16 @@ let rec handle_text text =
     | Special _ -> [pcdata "TODO"]
   )
 
-let first_to_html (t : _ Documentation.t) =
+let first_to_html ~get_package (t : _ Documentation.t) =
   match t with
   | Ok { text = first :: _ ; _ } ->
-    div ~a:[ a_class ["doc"] ] (handle_text [first])
+    div ~a:[ a_class ["doc"] ] (handle_text ~get_package [first])
   | _ -> p []
 
-let to_html (t : _ Documentation.t) =
+let to_html ~get_package (t : _ Documentation.t) =
   match t with
   | Error _ -> p []
-  | Ok body -> div ~a:[ a_class ["doc"] ] (handle_text body.text)
+  | Ok body -> div ~a:[ a_class ["doc"] ] (handle_text ~get_package body.text)
 
 let has_doc (t : _ Types.Documentation.t) =
   match t with

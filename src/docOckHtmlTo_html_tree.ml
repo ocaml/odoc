@@ -58,7 +58,7 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   in
   Html_tree.enter package;
   Html_tree.enter (Identifier.name t.id);
-  let header_doc = Documentation.to_html t.doc in
+  let header_doc = Documentation.to_html ~get_package t.doc in
   let html, subtree =
     match t.content with
     | Module sign -> signature ~get_package sign
@@ -95,7 +95,7 @@ and signature ~get_package (t : _ Types.Signature.t) =
       | Class c -> class_ ~get_package c, []
       | ClassType cty -> class_type ~get_package cty, []
       | Include incl -> include_ ~get_package incl
-      | Comment (Documentation doc) -> Documentation.to_html doc, []
+      | Comment (Documentation doc) -> Documentation.to_html ~get_package doc, []
       | Comment Stop -> pcdata "", []
     )
   in
@@ -159,7 +159,7 @@ and module_expansion ~get_package (t : _ Types.Module.expansion) =
 and module_ ~get_package (t : _ Types.Module.t) =
   let modname = Identifier.name t.id in
   let dot_mod = "/" ^ modname ^ ".mod" in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, expansion, subtree =
     match t.expansion with
@@ -181,7 +181,8 @@ and module_ ~get_package (t : _ Types.Module.t) =
   let md_def = Markup.def_div md_def_content in
   let region =
     Markup.anchor_region_div ~id:dot_mod
-      [div ~a:[ a_class ["mod"] ] [ md_def; Documentation.first_to_html t.doc ]]
+      [div ~a:[ a_class ["mod"] ]
+         [ md_def; Documentation.first_to_html ~get_package t.doc ]]
   in
   region, subtree
 
@@ -210,7 +211,7 @@ and module_decl' ~get_package (base : _ Identifier.signature) = function
 and module_type ~get_package (t : _ Types.ModuleType.t) =
   let modname = Identifier.name t.id in
   let dot_modt = "/" ^ modname ^ ".modt" in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let modname, subtree =
     match t.expansion with
     | None -> pcdata modname, []
@@ -371,7 +372,7 @@ and variant ~get_package dot_typ cstrs =
     List.map cstrs ~f:(fun cstr ->
       let open Types.TypeDecl.Constructor in
       let lhs = constructor cstr.id cstr.args cstr.res in
-      let rhs = Documentation.to_html cstr.doc in
+      let rhs = Documentation.to_html ~get_package cstr.doc in
       tr ~a:[ a_class ["cons"] ] (
         td [ lhs ] ::
         if not (Documentation.has_doc cstr.doc) then [] else [
@@ -397,7 +398,7 @@ and record ~get_package dot_typ fields =
     List.map fields ~f:(fun fld ->
       let open Types.TypeDecl.Field in
       let lhs = field fld.mutable_ fld.id in
-      let rhs = Documentation.to_html fld.doc in
+      let rhs = Documentation.to_html ~get_package fld.doc in
       tr ~a:[ a_class ["fld"] ] (
         td [ lhs ] ::
         td [ pcdata " : " ] ::
@@ -429,7 +430,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
       | Variant cstrs -> [variant ~get_package dot_typ cstrs]
       | Record fields -> record ~get_package dot_typ fields
   in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let tdecl_def =
     Markup.def_div (
       Markup.keyword "type " ::
@@ -444,7 +445,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
     [ div ~a:[ a_class ["typ"] ] [ tdecl_def; doc ] ]
 
 and extension ~get_package (t : _ Types.Extension.t) =
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let extension =
     Markup.def_div (
       Markup.keyword "type " ::
@@ -464,7 +465,7 @@ and extension_constructor ~get_package (t : _ Types.Extension.Constructor.t) =
 and exn ~get_package (t : _ Types.Exception.t) =
   let dot_exn = Printf.sprintf "%s.exn" (Identifier.name t.id) in
   let cstr = constructor ~get_package ~dot_typ:dot_exn t.id t.args t.res in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let exn = Markup.def_div (Markup.keyword "exn " :: cstr) in
   div ~a:[ a_class ["exn"] ] [ exn; doc ]
 
@@ -541,7 +542,7 @@ and type_expr ~get_package (t : _ Types.TypeExpr.t) =
 and value ~get_package (t : _ Types.Value.t) =
   let name = Identifier.name t.id in
   let dot_val = "/" ^ name ^ ".val" in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let value =
     Markup.def_div (
       Markup.keyword "val " ::
@@ -555,7 +556,7 @@ and value ~get_package (t : _ Types.Value.t) =
 
 and external_ ~get_package (t : _ Types.External.t) =
   let name = Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let external_ =
     Markup.def_div (
       Markup.keyword "external " ::
@@ -570,7 +571,7 @@ and external_ ~get_package (t : _ Types.External.t) =
 
 and class_ ~get_package (t : _ Types.Class.t) =
   let name = Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let class_ =
     Markup.def_div [
       Markup.keyword "class ";
@@ -582,7 +583,7 @@ and class_ ~get_package (t : _ Types.Class.t) =
 
 and class_type ~get_package (t : _ Types.ClassType.t) =
   let name = Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let ctyp =
     Markup.def_div [
       Markup.keyword "class type ";
@@ -593,7 +594,7 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
   div ~a:[ a_class ["classtype"] ] [ ctyp; doc ]
 
 and include_ ~get_package (t : _ Types.Include.t) =
-  let doc = Documentation.to_html t.doc in
+  let doc = Documentation.to_html ~get_package t.doc in
   let included_html, tree = signature ~get_package t.expansion.content in
   let should_be_inlined =
     match t.doc with

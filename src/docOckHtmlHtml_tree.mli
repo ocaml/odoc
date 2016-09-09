@@ -68,7 +68,7 @@ module Relative_link : sig
     -> ('a, _, Fragment.sort) Fragment.raw
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
-  val of_reference : ('a, _) Reference.t
+  val of_reference : get_package:('a -> string) -> ('a, _) Reference.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
   val to_sub_element : kind:kind -> string -> [> `Href ] attrib
