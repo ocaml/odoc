@@ -20,27 +20,13 @@ open Paths
 
 open Tyxml.Html
 
+module Documentation = DocOckHtmlDocumentation
 module Html_tree = DocOckHtmlHtml_tree
 module Markup = DocOckHtmlMarkup
 
 let a_href = Html_tree.Relative_link.to_sub_element
 
 let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
-
-module Html_parser = struct
-  let mk_attr ((_, local), value) = Xml.string_attrib local value
-
-  let of_string str =
-    let source = `String (0, str) in
-    let input  = Xmlm.make_input source in
-    Xmlm.input_tree input ~data:Xml.pcdata ~el:(fun ((_, name), attrs) subs ->
-      let attrs = List.map attrs ~f:mk_attr in
-      match subs with
-      | [] -> Xml.leaf ~a:attrs name
-      | _  -> Xml.node ~a:attrs name subs
-    )
-    |> tot
-end
 
 let rec list_concat_map ?sep ~f = function
   | [] -> []
@@ -64,88 +50,6 @@ let string_of_label = function
   | TypeExpr.Label s -> s
   | Optional s -> "?" ^ s
 
-let apply_style (style : Types.Documentation.style option) txt =
-  match style with
-  | None -> span txt
-  | Some Bold  -> b txt
-  | Some Italic  -> i txt
-  | Some Emphasize  -> em txt
-  | Some Center  -> span ~a:[ a_style "text-align:center"] txt
-  | Some Left  -> span ~a:[ a_style "text-align:left"] txt
-  | Some Right  -> span ~a:[ a_style "text-align:right"] txt
-  | Some Superscript  -> sup txt
-  | Some Subscript  -> sub txt
-  | Some Custom str -> span ~a:[ a_style str ] txt
-
-let documentation (t : _ Types.Documentation.t) =
-  (* It is wonderful that although each these [r] is a [Reference.t] the phantom
-     type parameters are not the same so we can't merge the branches. *)
-  let handle_ref (ref : _ Documentation.reference) =
-    match ref with
-    | Module r           -> Html_tree.Relative_link.of_reference r
-    | ModuleType r       -> Html_tree.Relative_link.of_reference r
-    | Type r             -> Html_tree.Relative_link.of_reference r
-    | Constructor r      -> Html_tree.Relative_link.of_reference r
-    | Field r            -> Html_tree.Relative_link.of_reference r
-    | Extension r        -> Html_tree.Relative_link.of_reference r
-    | Exception r        -> Html_tree.Relative_link.of_reference r
-    | Value r            -> Html_tree.Relative_link.of_reference r
-    | Class r            -> Html_tree.Relative_link.of_reference r
-    | ClassType r        -> Html_tree.Relative_link.of_reference r
-    | Method r           -> Html_tree.Relative_link.of_reference r
-    | InstanceVariable r -> Html_tree.Relative_link.of_reference r
-    | Element r          -> Html_tree.Relative_link.of_reference r
-    | Section r          -> Html_tree.Relative_link.of_reference r
-    | Link _
-    | Custom (_,_)
-      -> [ pcdata "[documentation.handle_ref TODO]" ]
-  in
-  (* CR trefis: the following is disgusting and doesn't work if we nest styles.
-     Just use CSS and forget about b/i/em/... *)
-  let rec handle_text ?style text =
-    let mk_item txt = li (handle_text txt) in
-    List.concat @@ List.map text ~f:(function
-      | Types.Documentation.Raw str ->
-        [ apply_style style [ pcdata str ] ]
-      | Code str -> [ code [ pcdata str ] ]
-      | PreCode str -> [ pre [ pcdata str ] ]
-      | Verbatim str ->
-        (* CR trefis: I don't think this is quite right. *)
-        [ pre [ pcdata str ] ]
-      | Style (style, txt) -> handle_text ~style txt
-      | List elts -> [ul (List.map elts ~f:mk_item)]
-      | Enum elts -> [ol (List.map elts ~f:mk_item)]
-      | Newline -> [br ()]
-      | Title (lvl, _label, txt) ->
-        (* CR trefis: don't ignore the label. *)
-        begin match lvl with
-        | 1 -> [ h1 (html_dot_magic @@ handle_text txt) ]
-        | 2 -> [ h2 (html_dot_magic @@ handle_text txt) ]
-        | 3 -> [ h3 (html_dot_magic @@ handle_text txt) ]
-        | 4 -> [ h4 (html_dot_magic @@ handle_text txt) ]
-        | 5 -> [ h5 (html_dot_magic @@ handle_text txt) ]
-        | _ -> [ h6 (html_dot_magic @@ handle_text txt) ]
-        end
-      | Reference (r,_) -> handle_ref r
-      | Target (Some "html", str) ->
-        let html = Html_parser.of_string str in
-        [html]
-      | Target (_, str) ->
-        (* CR trefis: I treated this as verbatim but the manual says it should
-           be ignored. So maybe don't generate anything here? *)
-        [ pre [ pcdata str ] ]
-      | Special _ -> [pcdata "TODO"]
-    )
-  in
-  match t with
-  | Error _ -> p []
-  | Ok body -> div ~a:[ a_class ["doc"] ] (handle_text body.text)
-
-let has_doc (t : _ Types.Documentation.t) =
-  match t with
-  | Ok body -> body.text <> []
-  | Error _ -> false
-
 let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   let package =
     match t.id with
@@ -154,7 +58,7 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   in
   Html_tree.enter package;
   Html_tree.enter (Identifier.name t.id);
-  let header_doc = documentation t.doc in
+  let header_doc = Documentation.to_html t.doc in
   let html, subtree =
     match t.content with
     | Module sign -> signature ~get_package sign
@@ -191,7 +95,7 @@ and signature ~get_package (t : _ Types.Signature.t) =
       | Class c -> class_ ~get_package c, []
       | ClassType cty -> class_type ~get_package cty, []
       | Include incl -> include_ ~get_package incl
-      | Comment (Documentation doc) -> documentation doc, []
+      | Comment (Documentation doc) -> Documentation.to_html doc, []
       | Comment Stop -> pcdata "", []
     )
   in
@@ -255,7 +159,7 @@ and module_expansion ~get_package (t : _ Types.Module.expansion) =
 and module_ ~get_package (t : _ Types.Module.t) =
   let modname = Identifier.name t.id in
   let dot_mod = "/" ^ modname ^ ".mod" in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, expansion, subtree =
     match t.expansion with
@@ -311,7 +215,7 @@ and module_decl' ~get_package (base : _ Identifier.signature) = function
 and module_type ~get_package (t : _ Types.ModuleType.t) =
   let modname = Identifier.name t.id in
   let dot_modt = "/" ^ modname ^ ".modt" in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let modname, subtree =
     match t.expansion with
     | None -> pcdata modname, []
@@ -472,10 +376,10 @@ and variant ~get_package dot_typ cstrs =
     List.map cstrs ~f:(fun cstr ->
       let open Types.TypeDecl.Constructor in
       let lhs = constructor cstr.id cstr.args cstr.res in
-      let rhs = documentation cstr.doc in
+      let rhs = Documentation.to_html cstr.doc in
       tr ~a:[ a_class ["cons"] ] (
         td [ lhs ] ::
-        if not (has_doc cstr.doc) then [] else [
+        if not (Documentation.has_doc cstr.doc) then [] else [
           td [pcdata "(*"];
           td [ rhs ];
           td [pcdata "*)"];
@@ -498,12 +402,12 @@ and record ~get_package dot_typ fields =
     List.map fields ~f:(fun fld ->
       let open Types.TypeDecl.Field in
       let lhs = field fld.mutable_ fld.id in
-      let rhs = documentation fld.doc in
+      let rhs = Documentation.to_html fld.doc in
       tr ~a:[ a_class ["fld"] ] (
         td [ lhs ] ::
         td [ pcdata " : " ] ::
         td (type_expr ~get_package fld.type_ @ [pcdata ";"]) ::
-        if not (has_doc fld.doc) then [] else [
+        if not (Documentation.has_doc fld.doc) then [] else [
           td [pcdata "(*"];
           td [ rhs ];
           td [pcdata "*)"];
@@ -530,7 +434,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
       | Variant cstrs -> [variant ~get_package dot_typ cstrs]
       | Record fields -> record ~get_package dot_typ fields
   in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let tdecl_def =
     Markup.def_div (
       Markup.keyword "type " ::
@@ -545,7 +449,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
     [ div ~a:[ a_class ["typ"] ] [ tdecl_def; doc ] ]
 
 and extension ~get_package (t : _ Types.Extension.t) =
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let extension =
     Markup.def_div (
       Markup.keyword "type " ::
@@ -565,7 +469,7 @@ and extension_constructor ~get_package (t : _ Types.Extension.Constructor.t) =
 and exn ~get_package (t : _ Types.Exception.t) =
   let dot_exn = Printf.sprintf "%s.exn" (Identifier.name t.id) in
   let cstr = constructor ~get_package ~dot_typ:dot_exn t.id t.args t.res in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let exn = Markup.def_div (Markup.keyword "exn " :: cstr) in
   div ~a:[ a_class ["exn"] ] [ exn; doc ]
 
@@ -642,7 +546,7 @@ and type_expr ~get_package (t : _ Types.TypeExpr.t) =
 and value ~get_package (t : _ Types.Value.t) =
   let name = Identifier.name t.id in
   let dot_val = "/" ^ name ^ ".val" in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let value =
     Markup.def_div (
       Markup.keyword "val " ::
@@ -656,7 +560,7 @@ and value ~get_package (t : _ Types.Value.t) =
 
 and external_ ~get_package (t : _ Types.External.t) =
   let name = Identifier.name t.id in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let external_ =
     Markup.def_div (
       Markup.keyword "external " ::
@@ -671,7 +575,7 @@ and external_ ~get_package (t : _ Types.External.t) =
 
 and class_ ~get_package (t : _ Types.Class.t) =
   let name = Identifier.name t.id in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let class_ =
     Markup.def_div [
       Markup.keyword "class ";
@@ -683,7 +587,7 @@ and class_ ~get_package (t : _ Types.Class.t) =
 
 and class_type ~get_package (t : _ Types.ClassType.t) =
   let name = Identifier.name t.id in
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let ctyp =
     Markup.def_div [
       Markup.keyword "class type ";
@@ -694,7 +598,7 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
   div ~a:[ a_class ["classtype"] ] [ ctyp; doc ]
 
 and include_ ~get_package (t : _ Types.Include.t) =
-  let doc = documentation t.doc in
+  let doc = Documentation.to_html t.doc in
   let included_html, tree = signature ~get_package t.expansion.content in
   let should_be_inlined =
     match t.doc with
