@@ -31,7 +31,7 @@ UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocHtml
 HTML_FILES = $(UNITS:=.html)
 ODOC_FILES = $(UNITS:=.odoc)
 
-compile: DIR = ./odoc
+compile: DIR = .
 compile: PKG = odoc
 compile: $(ODOC_FILES)
 
@@ -79,7 +79,7 @@ coverage: PKG = coverage
 coverage: coverage.html
 	@cp odoc.css $(DIR)
 
-coverage.odoc: DIR = ./coverage
+coverage.odoc: DIR = .
 coverage.odoc: coverage.cmti
 	$(ODOC) compile $(COMP_FLAGS) $(DIR)/coverage.cmti
 

@@ -38,10 +38,11 @@ end = struct
     let env = Env.create ~important_digests:(not resolve_fwd_refs) ~directories in
     let file = Fs.File.of_string filename in
     let package = Root.Package.create package_name in
+    let output = Fs.Directory.create ~parent:output_dir ~name:package_name in
     if Filename.check_suffix filename "cmti" then
-      Compile.cmti ~env ~output:output_dir ~package file
+      Compile.cmti ~env ~output ~package file
     else
-      Compile.cmt ~env ~output:output_dir ~package file
+      Compile.cmt ~env ~output ~package file
 
   let cmd =
     let input =
