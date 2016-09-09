@@ -153,6 +153,15 @@ body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
 
 .odoc-doc sub { top: 0.5ex; }
 
+.odoc-doc .sup
+ { font-size: 0.625rem;
+   vertical-align: top; position:relative; top: -0.5ex }
+
+
+.odoc-doc .sub
+ { font-size: 0.625rem;
+   vertical-align: top; position:relative; top: 0.5ex }
+
 /* Lists */
 
 .odoc-doc ul, .odoc-doc ol { margin-top: 0.625rem; }
