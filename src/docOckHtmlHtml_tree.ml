@@ -52,7 +52,7 @@ let default_page_creator content ~kind ~path =
   let header =
     let css_url =
       let rec aux acc = function
-        | 0 -> acc
+        | 1 -> acc
         | n -> aux ("../" ^ acc) (n - 1)
       in
       aux "odoc.css" (List.length path)
