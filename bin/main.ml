@@ -34,17 +34,24 @@ module Compile : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
-  let compile directories resolve_fwd_refs output_dir package_name filename =
+  let compile directories resolve_fwd_refs output package_name filename =
     let env = Env.create ~important_digests:(not resolve_fwd_refs) ~directories in
     let file = Fs.File.of_string filename in
     let package = Root.Package.create package_name in
-    let output = Fs.Directory.create ~parent:output_dir ~name:package_name in
+    let output_dir =
+      let cwd = Fs.Directory.of_string (Sys.getcwd ()) in
+      Fs.Directory.create ~parent:cwd ~name:package_name
+    in
     if Filename.check_suffix filename "cmti" then
-      Compile.cmti ~env ~output ~package file
+      Compile.cmti ~env ~output_dir ~package ?output file
     else
-      Compile.cmt ~env ~output ~package file
+      Compile.cmt ~env ~output_dir ~package ?output file
 
   let cmd =
+    let dst_file =
+      let doc = "Output file name" in
+      Arg.(value & opt (some string) None @@ info ~docs ~docv:"FILE" ~doc ["o"])
+    in
     let input =
       let doc = "Input file (either .cmti or .cmt)" in
       Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file" [])
@@ -58,7 +65,7 @@ end = struct
       let doc = "Try resolving forward references" in
       Arg.(value & flag @@ info ~doc ["r";"resolve-fwd-refs"])
     in
-    Term.(const compile $ env $ resolve_fwd_refs $ dst $ pkg $ input)
+    Term.(const compile $ env $ resolve_fwd_refs $ dst_file $ pkg $ input)
 
   let info =
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"

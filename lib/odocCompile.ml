@@ -21,17 +21,20 @@ module Env = OdocEnv
 module Root = OdocRoot
 module Unit = OdocUnit
 
-let output_name input_name =
-  let name = Filename.basename input_name in
-  let extless =
-    try Filename.chop_extension name
-    with Invalid_argument _  -> name
-  in
-  extless ^ ".odoc"
+let output_name ?output input_name =
+  match output with
+  | Some file -> file
+  | None ->
+    let name = Filename.basename input_name in
+    let extless =
+      try Filename.chop_extension name
+      with Invalid_argument _  -> name
+    in
+    extless ^ ".odoc"
 
-let it's_all_the_same ~env ~output input reader =
+let it's_all_the_same ~env ~output_dir ?output input reader =
   let input_name  = Fs.File.to_string input in
-  let output_name = output_name input_name in
+  let output_name = output_name ?output input_name in
   let result = reader input_name in
   match result with
   | Not_an_interface  -> failwith "Not_an_interface"
@@ -41,7 +44,7 @@ let it's_all_the_same ~env ~output input reader =
   | Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
     let env = Env.build env unit in
-    let output = Fs.File.create ~directory:output ~name:output_name in
+    let output = Fs.File.create ~directory:output_dir ~name:output_name in
     resolve (Env.resolver env) unit
     |> expand (Env.expander env)
     |> Unit.save output
@@ -51,11 +54,14 @@ let root_of_unit ~package unit_name digest =
   Root.create ~package ~unit ~digest
 
 
-let cmti ~env ~output ~package input =
-  it's_all_the_same ~env ~output input (read_cmti @@ root_of_unit ~package)
+let cmti ~env ~package ~output_dir ?output input =
+  it's_all_the_same ~env ~output_dir ?output input
+    (read_cmti @@ root_of_unit ~package)
 
-let cmt ~env ~output ~package input =
-  it's_all_the_same ~env ~output input (read_cmt @@ root_of_unit ~package)
+let cmt ~env ~package ~output_dir ?output input =
+  it's_all_the_same ~env ~output_dir ?output input
+    (read_cmt @@ root_of_unit ~package)
 
-let cmi ~env ~output ~package input =
-  it's_all_the_same ~env ~output input (read_cmi @@ root_of_unit ~package)
+let cmi ~env ~package ~output_dir ?output input =
+  it's_all_the_same ~env ~output_dir ?output input
+    (read_cmi @@ root_of_unit ~package)

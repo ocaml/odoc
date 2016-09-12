@@ -4,7 +4,7 @@
 
 ODOC = ../_build/bin/main.native
 
-COMP_FLAGS = --pkg=$(PKG) -I $(DIR) -o $(DIR)
+COMP_FLAGS = --pkg=$(PKG) -I $(PKG)
 
 %.html: %.odoc
 	$(ODOC) html -I $(DIR) -o $(DIR) $(DIR)/$<
@@ -31,7 +31,6 @@ UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocHtml
 HTML_FILES = $(UNITS:=.html)
 ODOC_FILES = $(UNITS:=.odoc)
 
-compile: DIR = .
 compile: PKG = odoc
 compile: $(ODOC_FILES)
 
