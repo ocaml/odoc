@@ -99,10 +99,19 @@ let rec handle_text ~get_package text =
     | Special _ -> [pcdata "TODO"]
   )
 
+let rec list_keep_while ~pred = function
+  | x :: xs when pred x -> x :: list_keep_while ~pred xs
+  | _ -> []
+
 let first_to_html ~get_package (t : _ Documentation.t) =
   match t with
-  | Ok { text = first :: _ ; _ } ->
-    div ~a:[ a_class ["doc"] ] (handle_text ~get_package [first])
+  | Ok { text; _ } ->
+    let pred = function
+      | Documentation.Newline -> false
+      | _ -> true
+    in
+    div ~a:[ a_class ["doc"] ]
+      (handle_text ~get_package (list_keep_while ~pred text))
   | _ -> p []
 
 let to_html ~get_package (t : _ Documentation.t) =
