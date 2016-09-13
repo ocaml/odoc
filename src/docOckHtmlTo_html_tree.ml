@@ -570,6 +570,7 @@ and value ~get_package (t : _ Types.Value.t) =
 
 and external_ ~get_package (t : _ Types.External.t) =
   let name = Identifier.name t.id in
+  let dot_val = "/" ^ name ^ ".val" in
   let doc = Documentation.to_html ~get_package t.doc in
   let external_ =
     Markup.def_div (
@@ -581,7 +582,8 @@ and external_ ~get_package (t : _ Types.External.t) =
       List.map t.primitives ~f:(fun p -> pcdata ("\"" ^ p ^ "\""))
     )
   in
-  div ~a:[ a_class ["external"] ] [ external_; doc ]
+  Markup.anchor_region_div ~id:dot_val
+    [ div ~a:[ a_class ["external"] ] [ external_; doc ] ]
 
 and class_ ~get_package (t : _ Types.Class.t) =
   let name = Identifier.name t.id in
@@ -621,6 +623,8 @@ and include_ ~get_package (t : _ Types.Include.t) =
         Markup.keyword "include " ::
         module_decl' ~get_package t.parent t.decl
       in
+      (* TODO: I'd like to add an anchor here, but I don't know what id to give
+         it... *)
       details (Markup.def_summary @@ html_dot_magic incl) [included_html]
   in
   div ~a:[ a_class ["include"] ] [incl; doc], tree
