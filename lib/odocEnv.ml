@@ -71,7 +71,16 @@ let create ?(important_digests=true) ~directories : builder = fun unit ->
   let unit_of_root = Root.Table.create 27 in
   let lookup _ target_name : Root.t DocOck.lookup_result =
     let rec aux = function
-      | [] -> DocOck.Not_found
+      | [] ->
+        if important_digests then DocOck.Not_found
+        else begin
+          match find_odoc_file ~directories target_name with
+          | None -> Not_found
+          | Some (root, unit) ->
+            if not (Root.Table.mem unit_of_root root) then
+              Root.Table.add unit_of_root root unit;
+            Found root
+        end
       | import :: imports ->
         match import with
         | DocOckTypes.Unit.Import.Unresolved (name, digest_opt) when name = target_name ->
