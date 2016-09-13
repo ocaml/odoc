@@ -239,7 +239,10 @@ body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
 .odoc-doc .exn,
 .odoc-doc .cls,
 .odoc-doc .clst,
-.odoc-doc .include {}
+
+.odoc-doc .include {
+    margin-top: 1.25rem;
+}
 
 .odoc-doc .module_index { margin-top: 1em; margin-bottom: 1em; }
 
