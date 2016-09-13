@@ -503,7 +503,8 @@ and te_object ~get_package (t : _ Types.TypeExpr.Object.t) =
 and format_type_path ~get_package ~delim params path =
   match params with
   | [] -> path
-  | [param] -> type_expr ~get_package param @ pcdata " " :: path
+  | [param] ->
+    type_expr ~needs_parentheses:true ~get_package param @ pcdata " " :: path
   | params  ->
     let params = list_concat_map params ~sep:(pcdata ", ") ~f:(type_expr
                                                                  ~get_package) in
@@ -511,19 +512,32 @@ and format_type_path ~get_package ~delim params path =
     | `parens   -> pcdata "(" :: params @ pcdata ") " :: path
     | `brackets -> pcdata "[" :: params @ pcdata "] " :: path
 
-and type_expr ~get_package (t : _ Types.TypeExpr.t) =
+and type_expr ?(needs_parentheses=false) ~get_package (t : _ Types.TypeExpr.t) =
   match t with
   | Var s -> [pcdata ("'" ^ s)]
   | Any  -> [pcdata "_"]
   | Alias (te, alias) ->
-    type_expr ~get_package te @ Markup.keyword " as " :: [ pcdata alias ]
+    type_expr ~needs_parentheses:true ~get_package te @
+    Markup.keyword " as " :: [ pcdata alias ]
   | Arrow (None, src, dst) ->
-    type_expr ~get_package src @ pcdata " -> " :: type_expr ~get_package dst
+    let res =
+      type_expr ~needs_parentheses:true ~get_package src @
+      pcdata " -> " :: type_expr ~get_package dst
+    in
+    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Arrow (Some lbl, src, dst) ->
-    pcdata (string_of_label lbl ^ ":") :: type_expr ~get_package src @
-    pcdata " -> " :: type_expr ~get_package dst
-  | Tuple lst -> list_concat_map lst ~sep:(pcdata " * ") ~f:(type_expr
-                                                               ~get_package)
+    let res =
+      pcdata (string_of_label lbl ^ ":") ::
+      type_expr ~needs_parentheses:true ~get_package src @
+      pcdata " -> " :: type_expr ~get_package dst
+    in
+    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
+  | Tuple lst ->
+    let res =
+      list_concat_map lst ~sep:(pcdata " * ")
+        ~f:(type_expr ~needs_parentheses:true ~get_package)
+    in
+    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Constr (path, args) ->
     let link = Html_tree.Relative_link.of_path ~get_package path in
     format_type_path ~get_package ~delim:(`parens) args link
