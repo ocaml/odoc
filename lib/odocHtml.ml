@@ -29,12 +29,15 @@ let unit ~env ~output:root_dir input =
     |> DocOck.expand (Env.expander env)
   in
   let get_package root = Root.Package.to_string (Root.package root) in
+  let pkg_dir =
+    Fs.Directory.create ~parent:root_dir ~name:(get_package (Unit.root unit))
+  in
   let pages = To_html_tree.unit ~get_package odoctree in
   Html_tree.traverse pages ~f:(fun ~parents name content ->
     let directory =
       let parent =
         List.fold_right ~f:(fun name parent -> Fs.Directory.create ~parent ~name)
-          parents ~init:root_dir
+          parents ~init:pkg_dir
       in
       Fs.Directory.create ~parent ~name
     in
