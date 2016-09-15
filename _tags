@@ -3,13 +3,15 @@ true : bin_annot, safe_string
 <bin> : include
 <bin/**> : open(StdLabels)
 <bin/**> : package(xmlm), package(doc-ock), package(doc-ock-xml), \
-           package(doc-ock-html), package(cmdliner), package(unix)
+           package(doc-ock-html), package(cmdliner), package(unix), \
+           package(fpath)
 
 
 <lib> : include
 <lib/**> : open(StdLabels), warn(-40)
 <lib/**> : package(xmlm), package(doc-ock), package(doc-ock-xml), \
-           package(doc-ock-html), package(unix), package(compiler-libs.common)
+           package(doc-ock-html), package(unix), package(fpath), \
+           package(compiler-libs.common), package(result)
 
 <lib/odoc.*> : no_alias_deps
 

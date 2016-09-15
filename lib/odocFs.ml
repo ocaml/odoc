@@ -14,34 +14,55 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type directory = string
-type file = string
-
-let (^/) = Printf.sprintf "%s/%s"
-
-module Directory = struct
-  type t = directory
-
-  let create ~parent ~name =
-    let path = parent ^/ name in
-    begin if not (Sys.file_exists path) then
-      Unix.mkdir path 0o755
-    else if not (Sys.is_directory path) then
-      invalid_arg "not a directory"
-    end;
-    path
-
-  let of_string s = s
-  let to_string t = t
-
-  let ls t = Sys.readdir t |> Array.to_list |> List.map ~f:((^/) t)
-end
+type directory = Fpath.t
+type file = Fpath.t
 
 module File = struct
   type t = file
 
-  let create ~directory ~name = directory ^/ name
+  let create ~directory ~name =
+    match Fpath.of_string name with
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.create: " ^ e)
+    | Ok psuf -> Fpath.(normalize @@ directory // psuf)
 
-  let of_string s = s
-  let to_string t = t
+  let to_string = Fpath.to_string
+  let of_string s =
+    match Fpath.of_string s with
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
+    | Ok p -> p
+
+end
+
+module Directory = struct
+  type t = directory
+
+  let make_path p name =
+    match Fpath.of_string name with
+    | Error _ as e -> e
+    | Ok psuf -> Ok (Fpath.(normalize @@ to_dir_path @@ p // psuf))
+
+  let create ~parent:p ~name =
+    match make_path p name with
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.create: " ^ e)
+    | Ok path ->
+      let pstr = Fpath.to_string path in
+      begin if not (Sys.file_exists pstr) then
+        Unix.mkdir pstr 0o755
+      else if not (Sys.is_directory pstr) then
+        invalid_arg "Odoc.Fs.Directory.create: not a directory"
+      end;
+      path
+
+  let to_string = Fpath.to_string
+  let of_string s =
+    match Fpath.of_string s with
+    | Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
+    | Ok p -> Fpath.to_dir_path p
+
+  let ls t =
+    let elts = Sys.readdir (to_string t) |> Array.to_list in
+    List.fold_left elts ~init:[] ~f:(fun acc elt ->
+      let file = File.create ~directory:t ~name:elt in
+      if Fpath.is_file_path file then file :: acc else acc
+    )
 end

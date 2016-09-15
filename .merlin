@@ -1,4 +1,6 @@
-PKG cmdliner xmlm doc-ock doc-ock-xml doc-ock-html unix compiler-libs.common
+PKG doc-ock doc-ock-xml doc-ock-html
+PKG compiler-libs.common unix
+PKG cmdliner fpath result xmlm
 
 S bin
 B _build/bin
@@ -6,5 +8,4 @@ B _build/bin
 S lib
 B _build/lib
 
-PKG doc-ock
 FLG -w -40 -open StdLabels
