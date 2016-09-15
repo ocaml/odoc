@@ -197,14 +197,21 @@ end
 
 module To_xml = struct
   let to_xml odoc_file =
-    let output =
-      Filename.chop_extension odoc_file
-      |> (fun file -> file ^ ".xml")
-      |> Fs.File.of_string
-    in
-    let odoc_file = Fs.File.of_string odoc_file in
-    Unit.load odoc_file
-    |> Unit.save_xml output
+    match Filename.check_suffix odoc_file ".odoc" with
+    | false ->
+      (* TODO: don't rely on the extension to check that it indeed is an odoc
+         file. *)
+      Printf.eprintf "to_xml: expected a .odoc file\n%!";
+      exit 1
+    | true ->
+      let output =
+        Filename.chop_extension odoc_file
+        |> (fun file -> file ^ ".xml")
+        |> Fs.File.of_string
+      in
+      let odoc_file = Fs.File.of_string odoc_file in
+      Unit.load odoc_file
+      |> Unit.save_xml output
 
   let cmd =
     let input =
