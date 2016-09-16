@@ -26,7 +26,7 @@ module Compile = OdocCompile
 
 module Html = OdocHtml
 
-module Index = OdocIndex
+module Listing = OdocListing
 
 module Depends = OdocDepends
 

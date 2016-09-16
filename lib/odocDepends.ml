@@ -49,7 +49,7 @@ let for_compile_step file =
    At some point we will want to walk the odoctree and list the root of every
    unresolved path.
    Later. *)
-let for_link_step input =
+let for_html_step input =
   let odoctree = Unit.load input in
   let open DocOck.Types in
   List.map (function

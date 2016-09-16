@@ -14,4 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-let index ~output:_ _ = ()
+val for_package :
+  root_dir:OdocFs.Directory.t -> pkg_name:string -> string list -> unit
+
+val global :  root_dir:OdocFs.Directory.t -> string list -> unit

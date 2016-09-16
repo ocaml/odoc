@@ -3,7 +3,7 @@ OdocCompile
 OdocDepends
 OdocEnv
 OdocFs
-OdocIndex
+OdocListing
 OdocHtml
 OdocRoot
 OdocTargets

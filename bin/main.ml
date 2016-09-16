@@ -87,7 +87,7 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let link semantic_uris directories output_dir odoc_file =
+  let html semantic_uris directories output_dir odoc_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     let env = Env.create ~important_digests:false ~directories in
     let odoc_file = Fs.File.of_string odoc_file in
@@ -102,7 +102,7 @@ end = struct
       let doc = "Generate pretty (semantic) links" in
       Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
     in
-    Term.(const link $ semantic_uris $ env $ dst $ input)
+    Term.(const html $ semantic_uris $ env $ dst $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -134,7 +134,7 @@ module Depends = struct
 
   module Html = struct
     let list_dependencies input_file =
-      let deps = Depends.for_link_step (Fs.File.of_string input_file) in
+      let deps = Depends.for_html_step (Fs.File.of_string input_file) in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" deps)
 
     let cmd =
@@ -145,7 +145,7 @@ module Depends = struct
       Term.(const list_dependencies $ input)
 
   let info =
-    Term.info "link-deps"
+    Term.info "html-deps"
       ~doc:"List units (with their digest) which needs to be compiled in order \
             to compile this one."
   end
@@ -224,6 +224,33 @@ module To_xml = struct
     Term.info ~doc:"Takes a .odoc file and output a.xml version" "to_xml"
 end
 
+module Listing = struct
+  let listing root_dir pkg_name lst =
+    match pkg_name with
+    | None -> OdocListing.global ~root_dir lst
+    | Some pkg_name -> OdocListing.for_package ~root_dir ~pkg_name lst
+
+  let cmd =
+    let root_dir =
+      let doc = "Directory where the various packages html doc is placed" in
+      Arg.(required & opt (some odoc_dir) None @@
+           info ~docs ~docv:"DIR" ~doc ["root-dir"])
+    in
+    let pkg_name =
+      let doc = "Package name" in
+      Arg.(value & opt (some string) None @@
+           info ~docs ~docv:"NAME" ~doc ["package"; "pkg"])
+    in
+    let lst =
+      let doc = "Items of the listing" in
+      Arg.(value & pos_all string [] @@ info ~docs ~docv:"item" ~doc [])
+    in
+    Term.(const listing $ root_dir $ pkg_name $ lst)
+
+  let info =
+    Term.info ~doc:"Generates a \"listing\" page" "listing"
+end
+
 let () =
   let default =
     Term.(const
@@ -236,6 +263,7 @@ let () =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
     ; Css.(cmd, info)
+    ; Listing.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)

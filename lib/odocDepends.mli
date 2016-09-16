@@ -36,4 +36,4 @@ end
 val for_compile_step : OdocFs.File.t -> Compile.t list
 (** Takes a .cm{i,t,ti} file and returns the list of its dependencies. *)
 
-val for_link_step : OdocFs.File.t -> string list
+val for_html_step : OdocFs.File.t -> string list
