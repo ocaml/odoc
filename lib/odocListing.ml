@@ -41,8 +41,9 @@ let mk_html_list lst =
   )
 
 let for_package ~root_dir ~pkg_name units =
-  let pkg_dir = OdocFs.Directory.create ~parent:root_dir ~name:pkg_name in
+  let pkg_dir = OdocFs.Directory.reach_from ~dir:root_dir pkg_name in
   let output  = OdocFs.File.create ~directory:pkg_dir ~name:"index.html" in (* TODO: allow different names *)
+  OdocFs.Directory.mkdir_p pkg_dir;
   let oc = open_out (OdocFs.File.to_string output) in
   let fmt = Format.formatter_of_out_channel oc in
   let content = mk_html_list units in
@@ -52,6 +53,7 @@ let for_package ~root_dir ~pkg_name units =
 
 let global ~root_dir packages =
   let output  = OdocFs.File.create ~directory:root_dir ~name:"index.html" in (* TODO: allow different names *)
+  OdocFs.Directory.mkdir_p root_dir;
   let oc = open_out (OdocFs.File.to_string output) in
   let fmt = Format.formatter_of_out_channel oc in
   let c = mk_html_list packages in

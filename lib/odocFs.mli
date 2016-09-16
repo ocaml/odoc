@@ -22,11 +22,12 @@ module Directory : sig
 
   type t = directory
 
-  val create : parent:t -> name:string -> t
-  (** [create ~parent ~name] assumes [parent] exists.
-      If [parent/name] doesn't exist, it will create it.
+  val dirname : t -> t
 
-      @raises [Invalid_arg _] if [parent/name] exists but is not a directory. *)
+  val reach_from : dir:t -> string -> t
+  (** @raises [Invalid_arg _] if [parent/name] exists but is not a directory. *)
+
+  val mkdir_p : t -> unit
 
   val of_string : string -> t
   val to_string : t -> string
@@ -40,6 +41,8 @@ module File : sig
   type t = file
 
   val create : directory:Directory.t -> name:string -> t
+
+  val dirname : t -> Directory.t
 
   val of_string : string -> t
   val to_string : t -> string

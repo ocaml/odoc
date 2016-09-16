@@ -23,6 +23,7 @@ type t = Root.t Types.Unit.t
 
 let save_xml file unit =
   let xml_folder = DocOckXmlFold.file Root.Xml.fold in
+  Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out (Fs.File.to_string file) in
   let output = Xmlm.make_output ~nl:true ~indent:(Some 2) (`Channel oc) in
   xml_folder.DocOckXmlFold.f (fun () -> Xmlm.output output) () unit;
@@ -42,6 +43,7 @@ let load_xml file =
     failwith msg
 
 let save file unit =
+  Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out (Fs.File.to_string file) in
   Marshal.to_channel oc unit [];
   close_out oc

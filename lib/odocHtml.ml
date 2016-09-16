@@ -30,18 +30,20 @@ let unit ~env ~output:root_dir input =
   in
   let get_package root = Root.Package.to_string (Root.package root) in
   let pkg_dir =
-    Fs.Directory.create ~parent:root_dir ~name:(get_package (Unit.root unit))
+    let pkg_name = get_package (Unit.root unit) in
+    Fs.Directory.reach_from ~dir:root_dir pkg_name
   in
   let pages = To_html_tree.unit ~get_package odoctree in
   Html_tree.traverse pages ~f:(fun ~parents name content ->
     let directory =
-      let parent =
-        List.fold_right ~f:(fun name parent -> Fs.Directory.create ~parent ~name)
+      let dir =
+        List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
           parents ~init:pkg_dir
       in
-      Fs.Directory.create ~parent ~name
+      Fs.Directory.reach_from ~dir name
     in
     let oc =
+      Fs.Directory.mkdir_p directory;
       let file = Fs.File.create ~directory ~name:"index.html" in
       open_out (Fs.File.to_string file)
     in
