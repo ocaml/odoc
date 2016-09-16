@@ -40,59 +40,60 @@ let stack_elt_to_path_fragment = function
   | (name, Some `Arg) -> name ^ ".moda"
   | (name, None) -> name
 
-type 'a page_creator =
-  Html_types.div_content_fun elt ->
-  kind:kind ->
-  path:string list ->
-  [ `Html ] elt
+class page_creator ?kind ~path content = object(self)
+  val name = List.hd @@ List.rev path
+  val has_parent = List.length path > 1
 
-let default_page_creator content ~kind ~path =
-  let name = List.hd @@ List.rev path in
-  let title_string = Printf.sprintf "%s (%s)" name (String.concat ~sep:"." path) in
-  let header =
-    let css_url =
-      let rec aux acc = function
-        | 1 -> acc
-        | n -> aux ("../" ^ acc) (n - 1)
-      in
-      aux "odoc.css" (List.length path)
+  method title_string =
+    Printf.sprintf "%s (%s)" name (String.concat ~sep:"." path)
+
+  method css_url =
+    let rec aux acc = function
+      | 0 -> acc
+      | n -> aux ("../" ^ acc) (n - 1)
     in
-    head (title (pcdata title_string)) [
-      link ~rel:[`Stylesheet] ~href:css_url () ;
+    aux "odoc.css" (List.length path)
+
+  method header : Html_types.head elt =
+    head (title (pcdata self#title_string)) [
+      link ~rel:[`Stylesheet] ~href:self#css_url () ;
       meta ~a:[ a_charset "utf-8" ] () ;
     ]
-  in
-  let has_parent = List.length path > 1 in
-  let heading =
+
+  method heading : Html_types.h1_content_fun elt list =
     DocOckHtmlMarkup.keyword (
       match kind with
-      | `Mod -> "Module "
-      | `Arg -> "Parameter "
-      | `Mty -> "Module Type "
+      | None -> ""
+      | Some `Mod -> "Module "
+      | Some `Arg -> "Parameter "
+      | Some `Mty -> "Module Type "
     ) ::
     if not has_parent then
       [ pcdata name ]
     else [
-      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (name, Some kind)) ]
+      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (name, kind)) ]
         [ pcdata name ]
     ]
-  in
-  let content =
+
+  method content : Html_types.div_content_fun elt list =
     (if has_parent then [ a ~a:[ a_href ".." ] [ pcdata "Up" ] ] else [])
-    @ [ div ~a:[ a_class [ "intro" ] ] [ h1 heading ] ; content ]
-  in
-  html header (body [div ~a:[ a_class ["odoc-doc"] ] content])
+    @ [ div ~a:[ a_class [ "intro" ] ] [ h1 self#heading ] ; content ]
 
-let page_creator : _ page_creator ref = ref default_page_creator
+  method html : [ `Html ] elt =
+    html self#header (body [div ~a:[ a_class ["odoc-doc"] ] self#content])
+end
 
-let set_page_creator f = page_creator := f
+let page_creator_maker = ref (new page_creator)
+
+let set_page_creator f = page_creator_maker := f
 
 let make (content, children) =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = match snd (Stack.top path) with None -> `Mod | Some x -> x in
   let path    = List.map ~f:fst (stack_to_list path) in
-  let content = !page_creator content ~kind ~path in
+  let creator = !page_creator_maker content ~kind ~path in
+  let content = creator#html in
   { name; content; children }
 
 let traverse ~f t =
