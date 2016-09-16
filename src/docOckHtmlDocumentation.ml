@@ -103,6 +103,27 @@ let rec list_keep_while ~pred = function
   | x :: xs when pred x -> x :: list_keep_while ~pred xs
   | _ -> []
 
+let prerr_error (err : _ Documentation.Error.t) =
+  let print_pos oc { Documentation.Error.Position. line; column } =
+    Printf.fprintf oc "line %d, col %d" line column
+  in
+  let print_loc =
+    match err.location with
+    | None ->
+      begin fun oc () ->
+        Printf.fprintf oc "%s, offset: %a to %a" (* Good luck with that. *)
+          (Paths.Identifier.name err.origin)
+          print_pos err.offset.Documentation.Error.Offset.start
+          print_pos err.offset.Documentation.Error.Offset.finish
+      end
+    | Some { Documentation.Error.Location. filename; start; finish } ->
+      begin fun oc () ->
+        Printf.fprintf oc "%s, %a to %a" filename print_pos start
+          print_pos finish
+      end
+  in
+  Printf.eprintf "Error %a: %s\n%!" print_loc () err.message
+
 let first_to_html ~get_package (t : _ Documentation.t) =
   match t with
   | Ok { text; _ } ->
@@ -112,15 +133,15 @@ let first_to_html ~get_package (t : _ Documentation.t) =
     in
     div ~a:[ a_class ["doc"] ]
       (handle_text ~get_package (list_keep_while ~pred text))
-  | _ -> p []
+  | Error e -> prerr_error e; p []
 
 let to_html ~get_package (t : _ Documentation.t) =
   match t with
-  | Error _ -> p []
+  | Error e -> prerr_error e; p []
   | Ok body -> div ~a:[ a_class ["doc"] ] (handle_text ~get_package body.text)
 
 let has_doc (t : _ Types.Documentation.t) =
   match t with
   | Ok body -> body.text <> []
-  | Error _ -> false
+  | Error e -> prerr_error e; false
 
