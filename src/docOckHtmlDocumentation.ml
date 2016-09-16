@@ -34,7 +34,7 @@ let apply_style (style : Documentation.style) elt =
   | Subscript   -> span ~a:[ a_class ["sub"] ] elt
   | Custom str  -> span ~a:[ a_style str ] elt
 
-let ref_to_link ~get_package (ref : _ Documentation.reference) =
+let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
   (* It is wonderful that although each these [r] is a [Reference.t] the phantom
      type parameters are not the same so we can't merge the branches. *)
   match ref with
@@ -52,7 +52,13 @@ let ref_to_link ~get_package (ref : _ Documentation.reference) =
   | InstanceVariable r -> Html_tree.Relative_link.of_reference ~get_package r
   | Element r          -> Html_tree.Relative_link.of_reference ~get_package r
   | Section r          -> Html_tree.Relative_link.of_reference ~get_package r
-  | Link s -> [ pcdata s ] (* TODO: should be a link. *)
+  | Link s ->
+    let text =
+      match text with
+      | Some l -> l
+      | None -> [ pcdata s ]
+    in
+    [ a ~a:[ a_href s ] text ]
   | Custom (_,_)
     -> [ pcdata "[documentation.handle_ref TODO]" ]
 
@@ -88,7 +94,13 @@ let rec handle_text ~get_package text =
         | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:[ a_id lbl ]
       in
       [ header_fun (html_dot_magic @@ handle_text ~get_package txt) ]
-    | Reference (r,_) -> ref_to_link ~get_package r
+    | Reference (r,text) ->
+      let text =
+        match text with
+        | None -> None
+        | Some text -> Some (html_dot_magic @@ handle_text ~get_package text)
+      in
+      ref_to_link ~get_package ?text r
     | Target (Some "html", str) ->
       let html = Html_parser.of_string str in
       [html]
