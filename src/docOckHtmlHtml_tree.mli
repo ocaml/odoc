@@ -42,8 +42,9 @@ val leave : unit -> unit
 class page_creator :
   ?kind:kind -> path:string list -> Html_types.div_content_fun elt ->
   object
-    val name : string
     val has_parent : bool
+
+    method name : string
 
     method title_string : string
 

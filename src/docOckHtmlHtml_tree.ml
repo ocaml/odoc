@@ -41,11 +41,12 @@ let stack_elt_to_path_fragment = function
   | (name, None) -> name
 
 class page_creator ?kind ~path content = object(self)
-  val name = List.hd @@ List.rev path
   val has_parent = List.length path > 1
 
+  method name = List.hd @@ List.rev path
+
   method title_string =
-    Printf.sprintf "%s (%s)" name (String.concat ~sep:"." path)
+    Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
 
   method css_url =
     let rec aux acc = function
@@ -69,10 +70,10 @@ class page_creator ?kind ~path content = object(self)
       | Some `Mty -> "Module Type "
     ) ::
     if not has_parent then
-      [ pcdata name ]
+      [ pcdata self#name ]
     else [
-      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (name, kind)) ]
-        [ pcdata name ]
+      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (self#name, kind)) ]
+        [ pcdata self#name ]
     ]
 
   method content : Html_types.div_content_fun elt list =
