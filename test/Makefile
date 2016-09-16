@@ -6,8 +6,10 @@ ODOC = ../_build/bin/main.native
 
 COMP_FLAGS = --pkg=$(PKG) -I $(PKG)
 
+HTML_OUTPUT_DIR = ./html
+
 %.html: %.odoc
-	$(ODOC) html -I $(DIR) -o $(DIR) $(DIR)/$<
+	$(ODOC) html -I $(DIR) -o $(HTML_OUTPUT_DIR) $(DIR)/$<
 
 ################################
 # DEFAULT VALUE FOR OUTPUT DIR #
@@ -17,8 +19,11 @@ PKG = odoc
 DIR = ./odoc
 
 all: compile link coverage
+	ls $(HTML_OUTPUT_DIR) | xargs $(ODOC) listing --root-dir $(HTML_OUTPUT_DIR)
 
 clean: clean_odoc clean_coverage
+	-@rm -R $(HTML_OUTPUT_DIR)
+	-@mkdir $(HTML_OUTPUT_DIR)
 
 ##########################
 # TESTING ON ODOC ITSELF #
@@ -26,7 +31,7 @@ clean: clean_odoc clean_coverage
 
 LIB  = ../_build/lib
 
-UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocHtml
+UNITS = odoc odocFs odocRoot odocUnit odocEnv odocCompile odocHtml odocListing
 
 HTML_FILES = $(UNITS:=.html)
 ODOC_FILES = $(UNITS:=.odoc)
@@ -36,7 +41,8 @@ compile: $(ODOC_FILES)
 
 do-link: DIR = ./odoc
 do-link: $(HTML_FILES)
-	@cp odoc.css $(DIR)
+	ls $(HTML_OUTPUT_DIR)/$(PKG) | xargs $(ODOC) listing --root-dir $(HTML_OUTPUT_DIR) --pkg $(PKG)
+	@cp odoc.css $(HTML_OUTPUT_DIR)
 
 do-link: DIR = ./odoc
 link:
@@ -64,6 +70,9 @@ odocCompile.odoc: odoc.odoc odocEnv.odoc odocFs.odoc odocRoot.odoc
 odocHtml.odoc: odoc.odoc odocFs.odoc odocEnv.odoc
 	$(ODOC) compile $(COMP_FLAGS) $(LIB)/odocHtml.cmti
 
+odocListing.odoc: odocFs.odoc
+	$(ODOC) compile $(COMP_FLAGS) $(LIB)/odocListing.cmti
+
 clean_odoc: DIR = ./odoc
 clean_odoc:
 	-@rm -R $(DIR)
@@ -76,9 +85,10 @@ clean_odoc:
 coverage: DIR = ./coverage
 coverage: PKG = coverage
 coverage: coverage.html
-	@cp odoc.css $(DIR)
+	ls $(HTML_OUTPUT_DIR)/$(PKG) | xargs $(ODOC) listing --root-dir $(HTML_OUTPUT_DIR) --pkg $(PKG)
+	@cp odoc.css $(HTML_OUTPUT_DIR)
 
-coverage.odoc: DIR = .
+coverage.odoc: DIR = ./coverage
 coverage.odoc: coverage.cmti
 	$(ODOC) compile $(COMP_FLAGS) $(DIR)/coverage.cmti
 
@@ -88,10 +98,8 @@ coverage.cmti:
 
 clean_coverage: DIR = ./coverage
 clean_coverage:
-	-@rm $(DIR)/odoc.css
 	-@rm $(DIR)/coverage.odoc
 	-@rm $(DIR)/coverage.cm*
-	-@rm -R $(DIR)/Coverage
 
 ################################
 ################################

@@ -539,7 +539,7 @@ end
 type ExtMod.t += ZzzTop
 (** It's got the rock *)
 
-type ExtMod.t += ZzzTop of unit
+type ExtMod.t += ZzzTop2 of unit
 (** and it packs a unit. *)
 
 (** Rotate keys on my mark... *)
