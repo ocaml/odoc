@@ -64,7 +64,7 @@ class page_creator ?kind ~path content = object(self)
   method heading : Html_types.h1_content_fun elt list =
     DocOckHtmlMarkup.keyword (
       match kind with
-      | None -> ""
+      | None
       | Some `Mod -> "Module "
       | Some `Arg -> "Parameter "
       | Some `Mty -> "Module Type "
@@ -91,9 +91,9 @@ let set_page_creator f = page_creator_maker := f
 let make (content, children) =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
-  let kind    = match snd (Stack.top path) with None -> `Mod | Some x -> x in
+  let kind    = snd (Stack.top path) in
   let path    = List.map ~f:fst (stack_to_list path) in
-  let creator = !page_creator_maker content ~kind ~path in
+  let creator = !page_creator_maker content ?kind ~path in
   let content = creator#html in
   { name; content; children }
 
