@@ -35,7 +35,10 @@ class listing_page_creator ~name ~global content =
   end
 
 let mk_html_list lst =
-  ul @@ List.map lst ~f:(fun s -> li [ a ~a:[ a_href s ] [ pcdata s ] ])
+  div @@ List.map lst ~f:(fun item ->
+    Markup.anchor_region_div ~id:("/" ^ item)
+      [ a ~a:[ a_href item ] [ pcdata item ] ]
+  )
 
 let for_package ~root_dir ~pkg_name units =
   let pkg_dir = OdocFs.Directory.create ~parent:root_dir ~name:pkg_name in
