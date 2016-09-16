@@ -35,10 +35,10 @@ let enter ?kind name = Stack.push (name, kind) path
 let leave () = ignore @@ Stack.pop path
 
 let stack_elt_to_path_fragment = function
-  | (name, Some `Mod) -> name ^ ".mod"
+  | (name, None)
+  | (name, Some `Mod) -> name
   | (name, Some `Mty) -> name ^ ".modt"
   | (name, Some `Arg) -> name ^ ".moda"
-  | (name, None) -> name
 
 class page_creator ?kind ~path content = object(self)
   val has_parent = List.length path > 1
@@ -125,7 +125,7 @@ module Relative_link = struct
         fun acc id ->
           match id with
           | Root (abstr, str) -> get_package abstr :: str :: acc
-          | Module (id, str) -> str_list_path ((str ^ ".mod") :: acc) id
+          | Module (id, str) -> str_list_path (str :: acc) id
           | Argument (id, i, str) ->
             let str = Printf.sprintf "%s.%d.moda" str i in
             str_list_path (str :: acc) id
@@ -339,7 +339,7 @@ module Relative_link = struct
   let to_sub_element ~kind name =
     let ext =
       match kind with
-      | `Mod -> ".mod"
+      | `Mod -> ""
       | `Mty -> ".modt"
       | `Arg -> ".moda"
     in

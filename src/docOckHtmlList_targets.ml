@@ -82,7 +82,7 @@ and module_ ~prefix (t : _ Types.Module.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
-    let page = Printf.sprintf "%s/%s.mod" prefix (Identifier.name t.id) in
+    let page = Printf.sprintf "%s/%s" prefix (Identifier.name t.id) in
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 

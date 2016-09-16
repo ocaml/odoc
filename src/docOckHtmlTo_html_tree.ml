@@ -69,7 +69,7 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
 and pack ~get_package (t : _ Types.Unit.Packed.t) =
   div @@ List.map t ~f:(fun x ->
     let modname = Identifier.name x.Unit.Packed.id in
-    let dot_mod = "/" ^ modname ^ ".mod" in
+    let dot_mod = "/" ^ modname in
     let md_def =
       Markup.def_div (
         Markup.keyword "module " ::
@@ -158,7 +158,7 @@ and module_expansion ~get_package (t : _ Types.Module.expansion) =
 
 and module_ ~get_package (t : _ Types.Module.t) =
   let modname = Identifier.name t.id in
-  let dot_mod = "/" ^ modname ^ ".mod" in
+  let dot_mod = "/" ^ modname in
   let doc = Documentation.to_html ~get_package t.doc in
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, expansion, subtree =
