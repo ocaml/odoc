@@ -225,12 +225,17 @@ module To_xml = struct
 end
 
 module Listing = struct
-  let listing root_dir pkg_name lst =
+  let listing semantic_uris root_dir pkg_name lst =
+    DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     match pkg_name with
     | None -> OdocListing.global ~root_dir lst
     | Some pkg_name -> OdocListing.for_package ~root_dir ~pkg_name lst
 
   let cmd =
+    let semantic_uris =
+      let doc = "Generate pretty (semantic) links" in
+      Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
+    in
     let root_dir =
       let doc = "Directory where the various packages html doc is placed" in
       Arg.(required & opt (some odoc_dir) None @@
@@ -245,7 +250,7 @@ module Listing = struct
       let doc = "Items of the listing" in
       Arg.(value & pos_all string [] @@ info ~docs ~docv:"item" ~doc [])
     in
-    Term.(const listing $ root_dir $ pkg_name $ lst)
+    Term.(const listing $ semantic_uris $ root_dir $ pkg_name $ lst)
 
   let info =
     Term.info ~doc:"Generates a \"listing\" page" "listing"

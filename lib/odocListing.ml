@@ -30,7 +30,11 @@ class listing_page_creator ~name ~global content =
         Markup.keyword "Packages"
       ] else [
         Markup.keyword "Package " ;
-        a ~a:[ a_href ("../#/" ^ name)] [ pcdata name ]
+        let href =
+          let h = "../#/" ^ name in
+          if !Html_tree.Relative_link.semantic_uris then h else h ^ "/index.html"
+        in
+        a ~a:[ a_href href] [ pcdata name ]
       ]
   end
 
