@@ -40,70 +40,6 @@ let stack_elt_to_path_fragment = function
   | (name, Some `Mty) -> name ^ ".modt"
   | (name, Some `Arg) -> name ^ ".moda"
 
-class page_creator ?kind ~path content = object(self)
-  val has_parent = List.length path > 1
-
-  method name = List.hd @@ List.rev path
-
-  method title_string =
-    Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
-
-  method css_url =
-    let rec aux acc = function
-      | 0 -> acc
-      | n -> aux ("../" ^ acc) (n - 1)
-    in
-    aux "odoc.css" (List.length path)
-
-  method header : Html_types.head elt =
-    head (title (pcdata self#title_string)) [
-      link ~rel:[`Stylesheet] ~href:self#css_url () ;
-      meta ~a:[ a_charset "utf-8" ] () ;
-    ]
-
-  method heading : Html_types.h1_content_fun elt list =
-    DocOckHtmlMarkup.keyword (
-      match kind with
-      | None
-      | Some `Mod -> "Module "
-      | Some `Arg -> "Parameter "
-      | Some `Mty -> "Module Type "
-    ) ::
-    if not has_parent then
-      [ pcdata self#name ]
-    else [
-      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (self#name, kind)) ]
-        [ pcdata self#name ]
-    ]
-
-  method content : Html_types.div_content_fun elt list =
-    (if has_parent then [ a ~a:[ a_href ".." ] [ pcdata "Up" ] ] else [])
-    @ [ div ~a:[ a_class [ "intro" ] ] [ h1 self#heading ] ; content ]
-
-  method html : [ `Html ] elt =
-    html self#header (body [div ~a:[ a_class ["odoc-doc"] ] self#content])
-end
-
-let page_creator_maker = ref (new page_creator)
-
-let set_page_creator f = page_creator_maker := f
-
-let make (content, children) =
-  assert (not (Stack.is_empty path));
-  let name    = stack_elt_to_path_fragment (Stack.top path) in
-  let kind    = snd (Stack.top path) in
-  let path    = List.map ~f:fst (stack_to_list path) in
-  let creator = !page_creator_maker content ?kind ~path in
-  let content = creator#html in
-  { name; content; children }
-
-let traverse ~f t =
-  let rec aux parents node =
-    f ~parents node.name node.content;
-    List.iter node.children ~f:(aux (node.name :: parents))
-  in
-  aux [] t
-
 module Relative_link = struct
   open DocOck.Paths
 
@@ -345,3 +281,69 @@ module Relative_link = struct
     in
     a_href (name ^ ext ^ (if !semantic_uris then "" else "/index.html"))
 end
+
+class page_creator ?kind ~path content = object(self)
+  val has_parent = List.length path > 1
+
+  method name = List.hd @@ List.rev path
+
+  method title_string =
+    Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
+
+  method css_url =
+    let rec aux acc = function
+      | 0 -> acc
+      | n -> aux ("../" ^ acc) (n - 1)
+    in
+    aux "odoc.css" (List.length path)
+
+  method header : Html_types.head elt =
+    head (title (pcdata self#title_string)) [
+      link ~rel:[`Stylesheet] ~href:self#css_url () ;
+      meta ~a:[ a_charset "utf-8" ] () ;
+    ]
+
+  method heading : Html_types.h1_content_fun elt list =
+    DocOckHtmlMarkup.keyword (
+      match kind with
+      | None
+      | Some `Mod -> "Module "
+      | Some `Arg -> "Parameter "
+      | Some `Mty -> "Module Type "
+    ) ::
+    if not has_parent then
+      [ pcdata self#name ]
+    else [
+      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (self#name, kind)) ]
+        [ pcdata self#name ]
+    ]
+
+  method content : Html_types.div_content_fun elt list =
+    let href =
+      if !Relative_link.semantic_uris then ".." else "../index.html" in
+    (if has_parent then [ a ~a:[ a_href href ] [ pcdata "Up" ] ] else [])
+    @ [ div ~a:[ a_class [ "intro" ] ] [ h1 self#heading ] ; content ]
+
+  method html : [ `Html ] elt =
+    html self#header (body [div ~a:[ a_class ["odoc-doc"] ] self#content])
+end
+
+let page_creator_maker = ref (new page_creator)
+
+let set_page_creator f = page_creator_maker := f
+
+let make (content, children) =
+  assert (not (Stack.is_empty path));
+  let name    = stack_elt_to_path_fragment (Stack.top path) in
+  let kind    = snd (Stack.top path) in
+  let path    = List.map ~f:fst (stack_to_list path) in
+  let creator = !page_creator_maker content ?kind ~path in
+  let content = creator#html in
+  { name; content; children }
+
+let traverse ~f t =
+  let rec aux parents node =
+    f ~parents node.name node.content;
+    List.iter node.children ~f:(aux (node.name :: parents))
+  in
+  aux [] t
