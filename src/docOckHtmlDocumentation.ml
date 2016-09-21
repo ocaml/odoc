@@ -30,8 +30,8 @@ let apply_style (style : Documentation.style) elt =
   | Center      -> span ~a:[ a_style "text-align:center"] elt
   | Left        -> span ~a:[ a_style "text-align:left"] elt
   | Right       -> span ~a:[ a_style "text-align:right"] elt
-  | Superscript -> span ~a:[ a_class ["sup"] ] elt
-  | Subscript   -> span ~a:[ a_class ["sub"] ] elt
+  | Superscript -> sup elt
+  | Subscript   -> sub elt
   | Custom str  -> span ~a:[ a_style str ] elt
 
 let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
