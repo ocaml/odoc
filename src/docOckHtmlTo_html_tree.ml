@@ -466,8 +466,9 @@ and exn ~get_package (t : _ Types.Exception.t) =
   let dot_exn = Printf.sprintf "%s.exn" (Identifier.name t.id) in
   let cstr = constructor ~get_package ~dot_typ:dot_exn t.id t.args t.res in
   let doc = Documentation.to_html ~get_package t.doc in
-  let exn = Markup.def_div (Markup.keyword "exn " :: cstr) in
-  div ~a:[ a_class ["exn"] ] [ exn; doc ]
+  let exn = Markup.def_div (Markup.keyword "exception " :: cstr) in
+  Markup.anchor_region_div ~id:dot_exn
+    [ div ~a:[ a_class ["exn"] ] [ exn; doc ] ]
 
 and te_variant ~get_package (t : _ Types.TypeExpr.Variant.t) =
   let elements =
