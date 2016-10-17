@@ -143,14 +143,13 @@ let first_to_html ~get_package (t : _ Documentation.t) =
       | Documentation.Newline -> false
       | _ -> true
     in
-    div ~a:[ a_class ["doc"] ]
-      (handle_text ~get_package (list_keep_while ~pred text))
-  | Error e -> prerr_error e; p []
+    handle_text ~get_package (list_keep_while ~pred text)
+  | Error e -> prerr_error e; []
 
 let to_html ~get_package (t : _ Documentation.t) =
   match t with
-  | Error e -> prerr_error e; p []
-  | Ok body -> div ~a:[ a_class ["doc"] ] (handle_text ~get_package body.text)
+  | Error e -> prerr_error e; []
+  | Ok body -> handle_text ~get_package body.text
 
 let has_doc (t : _ Types.Documentation.t) =
   match t with

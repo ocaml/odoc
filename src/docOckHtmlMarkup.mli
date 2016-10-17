@@ -18,8 +18,13 @@ open Tyxml.Html
 
 val keyword : string -> [> Html_types.span ] elt
 
+module Type : sig
+  val path: [< Html_types.span_content_fun ] elt list -> [> Html_types.span ] elt
+  val var : string -> [> Html_types.span ] elt
+end
+
 val def_div :
-  [< Html_types.div_content_fun ] elt list -> [> Html_types.div ] elt
+  [< Html_types.code_content_fun ] elt list -> [> Html_types.div ] elt
 
 val def_summary :
   [< Html_types.span_content_fun ] elt list -> [> Html_types.summary ] elt
@@ -28,3 +33,17 @@ val anchor_region_div :
   id:string ->
   [< Html_types.div_content_fun > `A ] elt list ->
   [> Html_types.div ] elt
+
+val make_def
+   : kind:string
+  -> id:string
+  -> code:[< Html_types.code_content_fun ] elt list
+  -> doc:[< Html_types.div_content_fun ] elt list
+  -> [> Html_types.div ] elt
+
+val make_spec
+   : kind:string
+  -> id:string
+  -> ?doc:[< Html_types.div_content_fun ] elt list
+  -> [< Html_types.div_content_fun ] elt list
+  -> [> Html_types.div ] elt
