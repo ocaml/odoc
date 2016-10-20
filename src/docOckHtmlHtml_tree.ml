@@ -325,7 +325,7 @@ class page_creator ?kind ~path content = object(self)
     @ [ div ~a:[ a_class [ "intro" ] ] [ h1 self#heading ] ; content ]
 
   method html : [ `Html ] elt =
-    html self#header (body [div ~a:[ a_class ["odoc-doc"] ] self#content])
+    html self#header (body self#content)
 end
 
 let page_creator_maker = ref (new page_creator)
