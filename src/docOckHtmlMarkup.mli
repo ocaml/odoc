@@ -29,11 +29,6 @@ val def_div :
 val def_summary :
   [< Html_types.span_content_fun ] elt list -> [> Html_types.summary ] elt
 
-val anchor_region_div :
-  id:string ->
-  [< Html_types.div_content_fun > `A ] elt list ->
-  [> Html_types.div ] elt
-
 val make_def
    : kind:string
   -> id:string
