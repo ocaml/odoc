@@ -26,7 +26,7 @@ let apply_style (style : Documentation.style) elt =
   match style with
   | Bold        -> span ~a:[ a_style "font-weight: bold" ] elt
   | Italic      -> span ~a:[ a_style "font-style: italic" ] elt
-  | Emphasize   -> span ~a:[ a_style "font-style: italic" ] elt
+  | Emphasize   -> em elt
   | Center      -> span ~a:[ a_style "text-align:center"] elt
   | Left        -> span ~a:[ a_style "text-align:left"] elt
   | Right       -> span ~a:[ a_style "text-align:right"] elt
