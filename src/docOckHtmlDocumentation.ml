@@ -24,15 +24,15 @@ end
 
 let apply_style (style : Documentation.style) elt =
   match style with
-  | Bold        -> span ~a:[ a_style "font-weight: bold" ] elt
-  | Italic      -> span ~a:[ a_style "font-style: italic" ] elt
+  | Bold        -> b elt
+  | Italic      -> i elt
   | Emphasize   -> em elt
-  | Center      -> span ~a:[ a_style "text-align:center"] elt
-  | Left        -> span ~a:[ a_style "text-align:left"] elt
-  | Right       -> span ~a:[ a_style "text-align:right"] elt
+  | Center      -> div ~a:[ a_class ["center"]] elt
+  | Left        -> div ~a:[ a_class ["left"]] elt
+  | Right       -> div ~a:[ a_class ["right"]] elt
   | Superscript -> sup elt
   | Subscript   -> sub elt
-  | Custom str  -> span ~a:[ a_style str ] elt
+  | Custom str  -> span ~a:[ a_class [str] ] elt
 
 let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
   (* It is wonderful that although each these [r] is a [Reference.t] the phantom
