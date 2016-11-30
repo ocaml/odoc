@@ -307,16 +307,11 @@ class page_creator ?kind ~path content = object(self)
     DocOckHtmlMarkup.keyword (
       match kind with
       | None
-      | Some `Mod -> "Module "
-      | Some `Arg -> "Parameter "
-      | Some `Mty -> "Module Type "
-    ) ::
-    if not has_parent then
-      [ pcdata self#name ]
-    else [
-      a ~a:[ a_href ("../#/" ^ stack_elt_to_path_fragment (self#name, kind)) ]
-        [ pcdata self#name ]
-    ]
+      | Some `Mod -> "Module"
+      | Some `Arg -> "Parameter"
+      | Some `Mty -> "Module type"
+    ) :: pcdata " " ::
+    [DocOckHtmlMarkup.module_path (List.tl path)]
 
   method content : Html_types.div_content_fun elt list =
     let href =
