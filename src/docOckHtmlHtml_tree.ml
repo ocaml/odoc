@@ -301,6 +301,8 @@ class page_creator ?kind ~path content = object(self)
     head (title (pcdata self#title_string)) [
       link ~rel:[`Stylesheet] ~href:self#css_url () ;
       meta ~a:[ a_charset "utf-8" ] () ;
+      meta ~a:[ a_name "viewport";
+                a_content "width=device-width,initial-scale=1.0"; ] ();
     ]
 
   method heading : Html_types.h1_content_fun elt list =
