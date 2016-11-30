@@ -199,7 +199,7 @@ and module_
           | _ -> div ~a:[ a_class ["doc"] ] doc
         in
         div ~a:[ a_class ["mod"] ]
-          [Markup.def_div md_def_content; doc; hr (); expansion]
+          [Markup.def_div md_def_content; doc; expansion]
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
