@@ -65,7 +65,7 @@ let choose_target_version conf =
 let () =
   let build = Pkg.build ~pre:choose_target_version () in
   Pkg.describe "doc-ock" ~build @@ fun c ->
-  Ok [ Pkg.lib ~exts:(Exts.ext ".cmi") "src/docOckTypes";
+  Ok [ Pkg.lib ~exts:Exts.interface "src/docOckTypes";
        Pkg.mllib "src/doc-ock.mllib";
        Pkg.test ~run:false ~auto:false ~exts:(Exts.exts [".cmi"; ".cmo"])
          "test/coverage";
