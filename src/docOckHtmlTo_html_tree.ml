@@ -199,7 +199,7 @@ and module_
           | _ -> div ~a:[ a_class ["doc"] ] doc
         in
         div ~a:[ a_class ["mod"] ]
-          [Markup.def_div md_def_content; doc; hr (); expansion]
+          [Markup.def_div md_def_content; doc; expansion]
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
@@ -696,6 +696,7 @@ and include_ ~get_package (t : _ Types.Include.t) =
       in
       (* TODO: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      details (Markup.def_summary @@ html_dot_magic incl) [included_html]
+      details ~a:[a_open ()]
+        (Markup.def_summary @@ html_dot_magic incl) [included_html]
   in
   div ~a:[ a_class ["include"] ] [incl; div ~a:[ a_class ["doc"] ] doc], tree

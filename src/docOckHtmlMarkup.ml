@@ -17,6 +17,8 @@
 open Tyxml.Html
 
 let keyword keyword = span ~a:[ a_class ["keyword"] ] [ pcdata keyword ]
+let module_path ids =
+  span ~a:[ a_class ["module-path"] ] [pcdata (String.concat "." ids)]
 
 module Type = struct
   let path p = span ~a:[ a_class ["type-id"] ] p
