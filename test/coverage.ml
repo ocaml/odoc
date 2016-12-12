@@ -423,10 +423,10 @@ module ExtMod = struct
   type t += Leisureforce
 end
 
-type ExtMod.t += ZzzTop
+type ExtMod.t += Extension
 (** It's got the rock *)
 
-type ExtMod.t += ZzzTop of unit
+type ExtMod.t += Extension2 of unit
 (** and it packs a unit. *)
 
 (** Rotate keys on my mark... *)

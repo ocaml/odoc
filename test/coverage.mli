@@ -525,11 +525,9 @@ module ExtMod : sig
   type t += Leisureforce
 end
 
-type ExtMod.t += ZzzTop
-(** It's got the rock *)
+type ExtMod.t += Extension
 
-type ExtMod.t += ZzzTop of unit
-(** and it packs a unit. *)
+type ExtMod.t += Extension2 of unit
 
 (** Rotate keys on my mark... *)
 external launch_missiles : unit -> unit = "tetris"
