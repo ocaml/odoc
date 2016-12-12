@@ -252,8 +252,6 @@ rule main = parse
     { reset_string_buffer ();
       set_start_loc lexbuf;
       verb lexbuf }
-| verb end
-    { raise (LexerError(curr_loc lexbuf, Unmatched_verbatim)) }
 | begin target target_format
     { reset_string_buffer ();
       set_start_loc lexbuf;
