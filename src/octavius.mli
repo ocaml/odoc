@@ -18,7 +18,7 @@ module Types = OctTypes
 
 module Errors = OctErrors
 
-type ('a, 'b) result =
+type nonrec ('a, 'b) result = ('a, 'b) result =
   | Ok of 'a
   | Error of 'b
 

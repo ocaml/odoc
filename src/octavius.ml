@@ -20,7 +20,7 @@ module Errors = OctErrors
 
 open OctCommon
 
-type ('a, 'b) result =
+type nonrec ('a, 'b) result = ('a, 'b) result =
   | Ok of 'a
   | Error of 'b
 
