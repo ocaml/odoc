@@ -13,7 +13,7 @@ depends: [
   "cppo" {build}
   "ocamlfind" {build}
   "ocamlbuild" {build}
-  "topkg" {build & >= "0.7.5"}
+  "topkg" {build & >= "0.8.0"}
   "octavius" ]
 
 build: [[
