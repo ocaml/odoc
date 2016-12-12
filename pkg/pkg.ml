@@ -6,4 +6,5 @@ open Topkg
 let () =
   Pkg.describe "octavius" @@ fun c ->
   Ok [ Pkg.lib ~exts:(Exts.ext ".cmi") "src/octTypes";
-       Pkg.mllib "src/octavius.mllib"; ]
+       Pkg.mllib "src/octavius.mllib";
+       Pkg.test ~run:false "test/main"]
