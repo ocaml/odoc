@@ -23,8 +23,12 @@ type location =
     finish: position; }
 
 type parser_error =
-  Unclosed of location * string * string
-| Expecting of string
+  | Unclosed of
+      { opening_loc: location;
+        opening: string;
+        items: string;
+        closing: string; }
+  | Expecting of string
 
 type lexer_error =
   Unmatched_verbatim

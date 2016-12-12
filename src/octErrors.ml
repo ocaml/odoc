@@ -23,8 +23,12 @@ type location =
     finish: position; }
 
 type parser_error =
-  Unclosed of location * string * string
-| Expecting of string
+  | Unclosed of
+      { opening_loc: location;
+        opening: string;
+        items: string;
+        closing: string; }
+  | Expecting of string
 
 type lexer_error =
   Unmatched_verbatim
@@ -105,8 +109,9 @@ let lexer_message = function
       "expected version string"
 
 let parser_message = function
-  | Unclosed(opening_loc, opening, closing) ->
-      "'" ^ closing ^ "' expected"
+  | Unclosed { opening_loc = _; opening; items; closing } ->
+      "'" ^ opening ^ "' not closed, expected "
+      ^ items ^ " or '" ^ closing ^ "'"
   | Expecting nonterm ->
       nonterm ^ " expected"
 

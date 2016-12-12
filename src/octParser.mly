@@ -88,8 +88,13 @@ let inner til =
 
 (* Error messages *)
 
-let unclosed opening_name opening_num closing_name closing_num =
-  let error = Unclosed(rhs_loc opening_num, opening_name, closing_name) in
+let unclosed opening_name opening_num items closing_name closing_num =
+  let error =
+    let opening_loc = rhs_loc opening_num in
+    let opening = opening_name in
+    let closing = closing_name in
+    Unclosed { opening_loc; opening; items; closing }
+  in
   let loc = rhs_loc closing_num in
     raise (ParserError(loc, error))
 
@@ -183,7 +188,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 
 %nonassoc Shift_error
 %right error
-%nonassoc Reduce_eror
+%nonassoc Reduce_error
 
 %%
 
@@ -367,21 +372,21 @@ text_element:
     { let n, l = $1 in
         Title (n, l, (inner $2)) }
 | Title text error
-    { unclosed (title_to_string $1) 1 "}" 3 }
+    { unclosed (title_to_string $1) 1 "text" "}" 3 }
 | Style text END
     { Style($1, (inner $2)) }
 | Style text error
-    { unclosed (style_to_string $1) 1 "}" 3 }
+    { unclosed (style_to_string $1) 1 "text" "}" 3 }
 | LIST whitespace list whitespace END
     { List (List.rev $3) }
 | LIST whitespace list error
-    { unclosed "{ul" 1 "}" 4 }
+    { unclosed "{ul" 1 "list item" "}" 4 }
 | LIST whitespace error
     { expecting 3 "list item" }
 | ENUM whitespace list whitespace END
     { Enum (List.rev $3) }
 | ENUM whitespace list error
-    { unclosed "{ol" 1 "}" 4 }
+    { unclosed "{ol" 1 "list item" "}" 4 }
 | ENUM whitespace error
     { expecting 3 "enumerated list item" }
 | Ref
@@ -391,7 +396,7 @@ text_element:
     { let k, n = $2 in
         Ref (k, n, Some (inner $3)) }
 | BEGIN Ref text error
-    { unclosed "{" 1 "}" 3 }
+    { unclosed "{" 1 "text" "}" 3 }
 | Special_Ref
     { Special_ref $1 }
 | Code
@@ -414,7 +419,7 @@ list:
 
 item:
   Item text END       { inner $2 }
-| Item text error     { unclosed (item_to_string $1) 1 "}" 3 }
+| Item text error     { unclosed (item_to_string $1) 1 "text" "}" 3 }
 ;
 
 /* HTML-sytle text elements */
@@ -426,37 +431,45 @@ html_text_element:
       Title(n, None, (inner $2)) }
 | HTML_Title text error
     { let tag, _ = $1 in
-      unclosed (html_open_to_string tag) 1 (html_close_to_string tag) 3 }
+      unclosed (html_open_to_string tag) 1
+        "text" (html_close_to_string tag) 3 }
 | HTML_Bold text HTML_END_BOLD
     { Style(SK_bold, (inner $2)) }
 | HTML_Bold text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 | HTML_Italic text HTML_END_ITALIC
     { Style(SK_italic, (inner $2)) }
 | HTML_Italic text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 | HTML_Center text HTML_END_CENTER
     { Style(SK_center, (inner $2)) }
 | HTML_Center text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 | HTML_Left text HTML_END_LEFT
     { Style(SK_left, (inner $2)) }
 | HTML_Left text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 | HTML_Right text HTML_END_RIGHT
     { Style(SK_right, (inner $2)) }
 | HTML_Right text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 | HTML_List whitespace html_list whitespace HTML_END_LIST
     { List (List.rev $3) }
 | HTML_List whitespace html_list error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 4 }
+    { unclosed (html_open_to_string $1) 1
+         "HTML list item" (html_close_to_string $1) 4 }
 | HTML_List whitespace error
     { expecting 2 "HTML list item" }
 | HTML_Enum whitespace html_list whitespace HTML_END_ENUM
     { Enum (List.rev $3) }
 | HTML_Enum whitespace html_list error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 4 }
+    { unclosed (html_open_to_string $1) 1
+        "HTML list item" (html_close_to_string $1) 4 }
 | HTML_Enum whitespace error
     { expecting 3 "HTML list item" }
 ;
@@ -472,7 +485,8 @@ html_item:
   HTML_Item text HTML_END_ITEM
     { inner $2 }
 | HTML_Item text error
-    { unclosed (html_open_to_string $1) 1 (html_close_to_string $1) 3 }
+    { unclosed (html_open_to_string $1) 1
+        "text" (html_close_to_string $1) 3 }
 ;
 
 %%
