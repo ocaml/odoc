@@ -22,18 +22,6 @@ module Html_parser = struct
     |> tot
 end
 
-let apply_style (style : Documentation.style) elt =
-  match style with
-  | Bold        -> b elt
-  | Italic      -> i elt
-  | Emphasize   -> em elt
-  | Center      -> div ~a:[ a_class ["center"]] elt
-  | Left        -> div ~a:[ a_class ["left"]] elt
-  | Right       -> div ~a:[ a_class ["right"]] elt
-  | Superscript -> sup elt
-  | Subscript   -> sub elt
-  | Custom str  -> span ~a:[ a_class [str] ] elt
-
 let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
   (* It is wonderful that although each these [r] is a [Reference.t] the phantom
      type parameters are not the same so we can't merge the branches. *)
@@ -62,53 +50,267 @@ let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
   | Custom (_,_)
     -> [ pcdata "[documentation.handle_ref TODO]" ]
 
+type kind =
+  | Phrasing : Html_types.phrasing elt list -> kind
+  | Phrasing_without_interactive :
+      Html_types.phrasing_without_interactive elt list -> kind
+  | Flow5 : Html_types.flow5 elt list -> kind
+  | Flow5_without_interactive :
+      Html_types.flow5_without_interactive elt list -> kind
+  | Newline : Html_types.phrasing_without_interactive elt list -> kind
 
-let rec handle_text ~get_package text =
-  let mk_item txt = li (handle_text ~get_package txt) in
-  List.concat @@ List.map text ~f:(function
-    | Documentation.Raw str -> [ pcdata str ]
-    | Code str -> [ code [ pcdata str ] ]
-    | PreCode str -> [ pre [ pcdata str ] ]
-    | Verbatim str ->
-      (* CR trefis: I don't think this is quite right. *)
-      [ pre [ pcdata str ] ]
-    | Style (style, txt) ->
-      [ apply_style style (html_dot_magic @@ handle_text ~get_package txt) ]
-    | List elts -> [ul (List.map elts ~f:mk_item)]
-    | Enum elts -> [ol (List.map elts ~f:mk_item)]
-    | Newline -> [br ()]
-    | Title (lvl, _label, txt) ->
-      (* CR trefis: don't ignore the label. *)
-      let header_fun =
-        match lvl with
-        | 1 -> h1
-        | 2 -> h2
-        | 3 -> h3
-        | 4 -> h4
-        | 5 -> h5
-        | _ -> h6
-      in
-      let header_fun =
-        match _label with
-        | None -> header_fun ~a:[]
-        | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:[ a_id lbl ]
-      in
-      [ header_fun (html_dot_magic @@ handle_text ~get_package txt) ]
-    | Reference (r,text) ->
-      let text =
-        match text with
-        | None -> None
-        | Some text -> Some (html_dot_magic @@ handle_text ~get_package text)
-      in
-      ref_to_link ~get_package ?text r
-    | Target (Some "html", str) ->
-      let html = Html_parser.of_string str in
-      [html]
-    | Target (_, str) ->
-      (* CR trefis: I treated this as verbatim but the manual says it should
-          be ignored. So maybe don't generate anything here? *)
-      [ pre [ pcdata str ] ]
-    | Special _ -> [pcdata "TODO"]
+let to_phrasing : kind -> Html_types.phrasing elt list = function
+  | Phrasing_without_interactive l -> (l :> Html_types.phrasing elt list)
+  | Phrasing l -> l
+  | Newline [] -> []
+  | Newline l -> invalid_arg "to_phrasing"
+  | Flow5 l -> invalid_arg "to_phrasing"
+  | Flow5_without_interactive l -> invalid_arg "to_phrasing"
+
+let to_flow5 : kind -> Html_types.flow5 elt list = function
+  | Phrasing l -> (l :> Html_types.flow5 elt list)
+  | Phrasing_without_interactive l -> (l :> Html_types.flow5 elt list)
+  | Newline [] -> []
+  | Newline _ -> invalid_arg "to_flow5"
+  | Flow5 l -> l
+  | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
+
+let to_flow5_without_interactive
+  : kind -> Html_types.flow5_without_interactive elt list =
+  function
+  | Phrasing_without_interactive l ->
+    (l :> Html_types.flow5_without_interactive elt list)
+  | Flow5_without_interactive l -> l
+  | Newline [] -> []
+  | Newline l -> invalid_arg "to_flow5_without_interactive"
+  | Flow5 l -> invalid_arg "to_flow5_without_interactive"
+  | Phrasing l -> invalid_arg "to_flow5_without_interactive"
+
+let is_interactive = function
+  | Phrasing _ -> true
+  | Flow5 _ -> true
+  | _ -> false
+
+let is_phrasing = function
+  | Flow5 _ -> false
+  | Flow5_without_interactive _ -> false
+  | _ -> true
+
+let rec aggregate ~get_package lst =
+  collapse (List.concat @@ List.map lst ~f:(format ~get_package))
+
+and collapse : kind list -> kind list = function
+  | [] -> []
+  | (Phrasing p1) :: (Phrasing p2) :: rest ->
+    collapse (Phrasing (p1 @ p2) :: rest)
+  | (Phrasing_without_interactive p1) :: (Phrasing p2) :: rest ->
+    let p1 = (p1 :> Html_types.phrasing elt list) in
+    collapse (Phrasing (p1 @ p2) :: rest)
+  | (Phrasing p1) :: (Phrasing_without_interactive p2) :: rest ->
+    let p2 = (p2 :> Html_types.phrasing elt list) in
+    collapse (Phrasing (p1 @ p2) :: rest)
+  | (Phrasing_without_interactive p1) :: (Phrasing_without_interactive p2)
+    :: rest ->
+    collapse (Phrasing_without_interactive (p1 @ p2) :: rest)
+  | Newline _ :: Newline _ :: rest ->
+    collapse (Newline [] :: rest)
+  | Flow5 f1 :: Flow5 f2 :: rest ->
+    collapse (Flow5 (f1 @ f2) :: rest)
+  | (Flow5_without_interactive f1) :: (Flow5 f2) :: rest ->
+    let f1 = (f1 :> Html_types.flow5 elt list) in
+    collapse (Flow5 (f1 @ f2) :: rest)
+  | (Flow5 f1) :: (Flow5_without_interactive f2) :: rest ->
+    let f2 = (f2 :> Html_types.flow5 elt list) in
+    collapse (Flow5 (f1 @ f2) :: rest)
+  | (Flow5_without_interactive f1) :: (Flow5_without_interactive f2)
+    :: rest ->
+    collapse (Flow5_without_interactive (f1 @ f2) :: rest)
+  | other :: rest ->
+    other :: collapse rest
+
+and format ~get_package : _ Documentation.text_element -> kind list = function
+  | Raw      s ->
+    [ Phrasing_without_interactive [ pcdata s ] ]
+  | Code     s ->
+    [ Phrasing_without_interactive [ code ~a:[ a_class ["code"] ] [ pcdata s ] ] ]
+  | Verbatim v ->
+    [ Flow5_without_interactive [ pre [ pcdata v ] ] ]
+  | PreCode  p ->
+    [ Flow5_without_interactive [ pre [ code ~a:[ a_class ["code"] ] [ pcdata p ] ] ] ]
+  | Style (style, txt) -> apply_style ~get_package ~style txt
+  | List subs  ->
+    let subs = List.map subs ~f:(aggregate ~get_package) in
+    if List.exists subs ~f:(List.exists ~f:is_interactive) then
+      [ Flow5 [ul (
+          List.map subs ~f:(fun agg ->
+            li (List.concat @@ List.map agg ~f:to_flow5)
+          )
+        )]
+      ]
+    else
+      [ Flow5_without_interactive [ul (
+          List.map subs ~f:(fun agg ->
+            li (List.concat @@ List.map agg ~f:to_flow5_without_interactive)
+          )
+        )]
+      ]
+  | Enum subs ->
+    let subs = List.map subs ~f:(aggregate ~get_package) in
+    if List.exists subs ~f:(List.exists ~f:is_interactive) then
+      [ Flow5 [ol (
+          List.map subs ~f:(fun agg ->
+            li (List.concat @@ List.map agg ~f:to_flow5)
+          )
+        )]
+      ]
+    else
+      [ Flow5_without_interactive [ol (
+          List.map subs ~f:(fun agg ->
+            li (List.concat @@ List.map agg ~f:to_flow5_without_interactive)
+          )
+        )]
+      ]
+  | Newline -> [ Newline [] ]
+  | Title (lvl, label, txt) -> make_title ~get_package ~lvl ~label txt
+  | Reference (r,text) ->
+    begin match text with
+    | None -> [ Phrasing (ref_to_link ~get_package r) ]
+    | Some text ->
+      List.map (aggregate ~get_package text) ~f:(function
+        | Newline l -> Newline l
+        | Flow5_without_interactive text ->
+          Flow5 (ref_to_link ~get_package ~text r)
+        | Phrasing_without_interactive text ->
+          Phrasing (ref_to_link ~get_package ~text r)
+        | _ ->
+          (* TODO: better error handling *)
+          failwith "It is disallowed to nest references."
+      )
+    end
+  | Target (Some "html", str) ->
+    [ Flow5 [Unsafe.data str] ]
+  | Target (_, str) ->
+    [ Flow5_without_interactive [ pre [pcdata str] ] ]
+  | Special _ ->
+    [ Phrasing_without_interactive [ pcdata "<TODO: report to odoc devs>" ] ]
+
+and make_title ~get_package ~lvl ~label txt =
+  let header_fun =
+    match lvl with
+    | 1 -> h1
+    | 2 -> h2
+    | 3 -> h3
+    | 4 -> h4
+    | 5 -> h5
+    | _ -> h6
+  in
+  let header_fun =
+    match label with
+    | None -> header_fun ~a:[]
+    | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:[ a_id lbl ]
+  in
+  let txt = aggregate ~get_package txt in
+  let result, should_error =
+    (* Best effort, titleize the first part of the subtree if we can. *)
+    match txt with
+    | [] -> [ Flow5_without_interactive [header_fun []] ], false
+    | Phrasing content :: tail ->
+      Flow5 [header_fun content] :: tail, tail <> []
+    | Phrasing_without_interactive content :: tail ->
+      Flow5_without_interactive
+        [header_fun (content :> Html_types.phrasing elt list)]
+      :: tail, tail <> []
+    | _ ->
+      txt, false
+  in
+  if should_error then (
+    Printf.eprintf
+      "ERROR: only \"simple\" single line content allowed inside {%d }\n%!" lvl
+  );
+  result
+
+and apply_style ~get_package ~style txt =
+  let aggregated = aggregate ~get_package txt in
+  let assert_phrasing for_message =
+    if not (List.for_all aggregated ~f:is_phrasing) then
+      Printf.eprintf "ERROR: only \"simple\" content allowed inside %s\n%!"
+        for_message
+  in
+  match style with
+  | Bold ->
+    assert_phrasing "{b }";
+    List.map aggregated ~f:(function
+      | Phrasing p -> Phrasing [b p]
+      | Phrasing_without_interactive p -> Phrasing_without_interactive [b p]
+      | anything_else -> anything_else
+    )
+  | Italic ->
+    assert_phrasing "{i }";
+    List.map aggregated ~f:(function
+      | Phrasing p -> Phrasing [i p]
+      | Phrasing_without_interactive p -> Phrasing_without_interactive [i p]
+      | anything_else -> anything_else
+    )
+  | Emphasize ->
+    assert_phrasing "{e }";
+    List.map aggregated ~f:(function
+      | Phrasing p -> Phrasing [em p]
+      | Phrasing_without_interactive p -> Phrasing_without_interactive [em p]
+      | anything_else -> anything_else
+    )
+  | Center ->
+    if List.for_all aggregated ~f:is_phrasing then
+      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+      [ Flow5 [ p ~a:[ a_class ["center"] ] lst ] ]
+    else
+      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      [ Flow5 [ div ~a:[ a_class ["center"] ] lst ] ]
+  | Left ->
+    if List.for_all aggregated ~f:is_phrasing then
+      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+      [ Flow5 [ p ~a:[ a_class ["left"] ] lst ] ]
+    else
+      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      [ Flow5 [ div ~a:[ a_class ["left"] ] lst ] ]
+  | Right ->
+    if List.for_all aggregated ~f:is_phrasing then
+      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+      [ Flow5 [ p ~a:[ a_class ["right"] ] lst ] ]
+    else
+      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      [ Flow5 [ div ~a:[ a_class ["right"] ] lst ] ]
+  | Superscript ->
+    assert_phrasing "{^ }";
+    List.map aggregated ~f:(function
+      | Phrasing p -> Phrasing [sup p]
+      | Phrasing_without_interactive p -> Phrasing_without_interactive [sup p]
+      | anything_else -> anything_else
+    )
+  | Subscript ->
+    assert_phrasing "{_ }";
+    List.map aggregated ~f:(function
+      | Phrasing p -> Phrasing [sup p]
+      | Phrasing_without_interactive p -> Phrasing_without_interactive [sub p]
+      | anything_else -> anything_else
+    )
+  | Custom str  ->
+    List.map aggregated ~f:(function
+      | Newline l -> Newline l
+      | Phrasing l -> Phrasing [span ~a:[ a_class [str] ] l]
+      | Phrasing_without_interactive l ->
+        Phrasing_without_interactive [span ~a:[ a_class [str] ] l]
+      | Flow5 l -> Flow5 [div ~a:[ a_class [str] ] l]
+      | Flow5_without_interactive l ->
+        Flow5_without_interactive [div ~a:[ a_class [str] ] l]
+    )
+
+let handle_text ~get_package txt =
+  List.concat @@ List.map (aggregate ~get_package txt) ~f:(function
+    | Phrasing l -> [p l]
+    | Phrasing_without_interactive l -> [p l]
+    | Flow5 l -> l
+    | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
+    | Newline _ -> []
   )
 
 let rec list_keep_while ~pred = function
@@ -155,4 +357,3 @@ let has_doc (t : _ Types.Documentation.t) =
   match t with
   | Ok body -> body.text <> []
   | Error e -> prerr_error e; false
-
