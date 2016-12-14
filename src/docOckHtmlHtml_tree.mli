@@ -74,6 +74,8 @@ module Relative_link : sig
   (** Whether to generate pretty/semantics links or not. *)
 
   module Id : sig
+    exception Not_linkable
+
     val href : get_package:('a -> string) -> stop_before:bool ->
       ('a, _) Identifier.t -> string
   end
@@ -83,9 +85,6 @@ module Relative_link : sig
 
   val of_fragment : get_package:('a -> string) -> base:'a Identifier.signature
     -> ('a, _, Fragment.sort) Fragment.raw
-    -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
-
-  val of_reference : get_package:('a -> string) -> ('a, _) Reference.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
   val to_sub_element : kind:kind -> string -> [> `Href ] attrib

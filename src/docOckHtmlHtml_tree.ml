@@ -218,59 +218,11 @@ module Relative_link = struct
           link @ [ pcdata ("." ^ suffix) ]
   end
 
-  module Of_ref = struct
-    (* CR trefis: TODO! *)
-
-    let rec render_resolved : type a. (_, a) Reference.Resolved.t -> string =
-      fun r ->
-        let open Reference.Resolved in
-        match r with
-        | Identifier id -> Identifier.name id
-        | Module (r, s) -> render_resolved r ^ "." ^ s
-        | ModuleType (r, s) -> render_resolved r ^ "." ^ s
-        | Type (r, s) -> render_resolved r ^ "." ^ s
-        | Constructor (r, s) -> render_resolved r ^ "." ^ s
-        | Field (r, s) -> render_resolved r ^ "." ^ s
-        | Extension (r, s) -> render_resolved r ^ "." ^ s
-        | Exception (r, s) -> render_resolved r ^ "." ^ s
-        | Value (r, s) -> render_resolved r ^ "." ^ s
-        | Class (r, s) -> render_resolved r ^ "." ^ s
-        | ClassType (r, s) -> render_resolved r ^ "." ^ s
-        | Method (r, s) ->
-          (* CR trefis: do we really want to print anything more than [s] here?  *)
-          render_resolved r ^ "." ^ s
-        | InstanceVariable (r, s) ->
-          (* CR trefis: the following makes no sense to me... *)
-          render_resolved r ^ "." ^ s
-        | Label (r, s) -> render_resolved r ^ ":" ^ s
-
-    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
-      (_, a) Reference.t -> _ =
-      fun ~get_package ~stop_before ref ->
-        let open Reference in
-        match ref with
-        | Root s -> [ pcdata s ]
-        | Dot (parent, s) -> to_html ~get_package ~stop_before:true parent @ [ pcdata ("." ^ s) ]
-        | Resolved r ->
-          let id = Reference.Resolved.identifier r in
-          let txt = render_resolved r in
-          begin match Id.href ~get_package ~stop_before id with
-          | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
-          | exception Id.Not_linkable -> [ pcdata txt ]
-          | exception exn ->
-            Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ pcdata txt ]
-          end
-  end
-
   let of_path ~get_package p =
     Of_path.to_html ~get_package ~stop_before:false p
 
   let of_fragment ~get_package ~base frag =
     Of_fragment.to_html ~get_package ~stop_before:false base frag
-
-  let of_reference ~get_package ref =
-    Of_ref.to_html ~get_package ~stop_before:false ref
 
   let to_sub_element ~kind name =
     let ext =

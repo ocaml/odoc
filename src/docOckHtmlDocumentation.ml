@@ -22,34 +22,6 @@ module Html_parser = struct
     |> tot
 end
 
-let ref_to_link ~get_package ?text (ref : _ Documentation.reference) =
-  (* It is wonderful that although each these [r] is a [Reference.t] the phantom
-     type parameters are not the same so we can't merge the branches. *)
-  match ref with
-  | Module r           -> Html_tree.Relative_link.of_reference ~get_package r
-  | ModuleType r       -> Html_tree.Relative_link.of_reference ~get_package r
-  | Type r             -> Html_tree.Relative_link.of_reference ~get_package r
-  | Constructor r      -> Html_tree.Relative_link.of_reference ~get_package r
-  | Field r            -> Html_tree.Relative_link.of_reference ~get_package r
-  | Extension r        -> Html_tree.Relative_link.of_reference ~get_package r
-  | Exception r        -> Html_tree.Relative_link.of_reference ~get_package r
-  | Value r            -> Html_tree.Relative_link.of_reference ~get_package r
-  | Class r            -> Html_tree.Relative_link.of_reference ~get_package r
-  | ClassType r        -> Html_tree.Relative_link.of_reference ~get_package r
-  | Method r           -> Html_tree.Relative_link.of_reference ~get_package r
-  | InstanceVariable r -> Html_tree.Relative_link.of_reference ~get_package r
-  | Element r          -> Html_tree.Relative_link.of_reference ~get_package r
-  | Section r          -> Html_tree.Relative_link.of_reference ~get_package r
-  | Link s ->
-    let text =
-      match text with
-      | Some l -> l
-      | None -> [ pcdata s ]
-    in
-    [ a ~a:[ a_href s ] text ]
-  | Custom (_,_)
-    -> [ pcdata "[documentation.handle_ref TODO]" ]
-
 type kind =
   | Phrasing : Html_types.phrasing elt list -> kind
   | Phrasing_without_interactive :
@@ -96,10 +68,7 @@ let is_phrasing = function
   | Flow5_without_interactive _ -> false
   | _ -> true
 
-let rec aggregate ~get_package lst =
-  collapse (List.concat @@ List.map lst ~f:(format ~get_package))
-
-and collapse : kind list -> kind list = function
+let rec collapse = function
   | [] -> []
   | (Phrasing p1) :: (Phrasing p2) :: rest ->
     collapse (Phrasing (p1 @ p2) :: rest)
@@ -127,6 +96,128 @@ and collapse : kind list -> kind list = function
     collapse (Flow5_without_interactive (f1 @ f2) :: rest)
   | other :: rest ->
     other :: collapse rest
+
+module Reference = struct
+  module Id = Html_tree.Relative_link.Id
+
+  open DocOck.Paths
+
+  let rec render_resolved : type a. (_, a) Reference.Resolved.t -> string =
+    fun r ->
+      let open Reference.Resolved in
+      match r with
+      | Identifier id -> Identifier.name id
+      | Module (r, s) -> render_resolved r ^ "." ^ s
+      | ModuleType (r, s) -> render_resolved r ^ "." ^ s
+      | Type (r, s) -> render_resolved r ^ "." ^ s
+      | Constructor (r, s) -> render_resolved r ^ "." ^ s
+      | Field (r, s) -> render_resolved r ^ "." ^ s
+      | Extension (r, s) -> render_resolved r ^ "." ^ s
+      | Exception (r, s) -> render_resolved r ^ "." ^ s
+      | Value (r, s) -> render_resolved r ^ "." ^ s
+      | Class (r, s) -> render_resolved r ^ "." ^ s
+      | ClassType (r, s) -> render_resolved r ^ "." ^ s
+      | Method (r, s) ->
+        (* CR trefis: do we really want to print anything more than [s] here?  *)
+        render_resolved r ^ "." ^ s
+      | InstanceVariable (r, s) ->
+        (* CR trefis: the following makes no sense to me... *)
+        render_resolved r ^ "." ^ s
+      | Label (r, s) -> render_resolved r ^ ":" ^ s
+
+  (*
+    let rec to_html : type a. get_package:('b -> string) ->
+      ?text:Html_types.flow5_without_interactive elt list -> stop_before:bool ->
+      (_, a) Reference.t -> Html_types.flow5 elt list =
+  *)
+  let rec to_html : type a. get_package:('b -> string) -> ?text:kind -> stop_before:bool
+    -> (_, a) Reference.t -> kind =
+    fun ~get_package ?text ~stop_before ref ->
+      let open Reference in
+      match ref with
+      (* FIXME: Use [text] when available even when the reference is not
+         resolved.
+         Seems easy to do for [Root _] but nontrivial for [Dot (_, _)] what if
+         some prefix of the path is resolved, do we want to link there even
+         though it might be confusing? *)
+      | Root s -> Phrasing_without_interactive [ pcdata s ]
+      | Dot (parent, s) ->
+        let tail = [ pcdata ("." ^ s) ] in
+        begin match to_html ~get_package ~stop_before:true parent with
+        | Phrasing content -> Phrasing (content @ tail)
+        | Phrasing_without_interactive content ->
+          Phrasing_without_interactive (content @ tail)
+        | Flow5 content -> Flow5 (content @ tail)
+        | Flow5_without_interactive content ->
+          Flow5_without_interactive (content @ tail)
+        | Newline _ -> Phrasing_without_interactive tail
+        end
+      | Resolved r ->
+        let id = Reference.Resolved.identifier r in
+        let txt =
+          match text with
+          | None -> Phrasing_without_interactive [ pcdata (render_resolved r) ]
+          | Some s -> s
+        in
+        begin match Id.href ~get_package ~stop_before id with
+        | exception Id.Not_linkable -> txt
+        | exception exn ->
+          (* FIXME: better error message *)
+          Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
+          txt
+        | href ->
+          match txt with
+          | Phrasing_without_interactive content ->
+            Phrasing [ a ~a:[ a_href href ] content ]
+          | Flow5_without_interactive content ->
+            Flow5 [ a ~a:[ a_href href ] content ]
+          | Newline _ -> Newline []
+          | _ ->
+            Printf.eprintf "It is disallowed to nest references.\n%!";
+            txt
+        end
+
+  let link ~get_package ?text (ref : _ Documentation.reference) =
+    (* It is wonderful that although each these [r] is a [Reference.t] the phantom
+       type parameters are not the same so we can't merge the branches. *)
+    match ref with
+    | Module r           -> to_html ~get_package ~stop_before:false ?text r
+    | ModuleType r       -> to_html ~get_package ~stop_before:false ?text r
+    | Type r             -> to_html ~get_package ~stop_before:false ?text r
+    | Constructor r      -> to_html ~get_package ~stop_before:false ?text r
+    | Field r            -> to_html ~get_package ~stop_before:false ?text r
+    | Extension r        -> to_html ~get_package ~stop_before:false ?text r
+    | Exception r        -> to_html ~get_package ~stop_before:false ?text r
+    | Value r            -> to_html ~get_package ~stop_before:false ?text r
+    | Class r            -> to_html ~get_package ~stop_before:false ?text r
+    | ClassType r        -> to_html ~get_package ~stop_before:false ?text r
+    | Method r           -> to_html ~get_package ~stop_before:false ?text r
+    | InstanceVariable r -> to_html ~get_package ~stop_before:false ?text r
+    | Element r          -> to_html ~get_package ~stop_before:false ?text r
+    | Section r          -> to_html ~get_package ~stop_before:false ?text r
+    | Link s ->
+      let text =
+        match text with
+        | Some l -> l
+        | None -> Phrasing_without_interactive [ pcdata s ]
+      in
+      begin match text with
+      | Phrasing_without_interactive content ->
+        Phrasing [ a ~a:[ a_href s ] content ]
+      | Flow5_without_interactive content ->
+        Flow5 [ a ~a:[ a_href s ] content ]
+      | Newline _ -> Newline []
+      | _ ->
+        Printf.eprintf "It is disallowed to nest references.\n%!";
+        text
+      end
+    | Custom (_,_)
+      -> Phrasing_without_interactive [ pcdata "[documentation.handle_ref TODO]" ]
+end
+
+
+let rec aggregate ~get_package lst =
+  collapse (List.concat @@ List.map lst ~f:(format ~get_package))
 
 and format ~get_package : _ Documentation.text_element -> kind list = function
   | Raw      s ->
@@ -174,18 +265,10 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
   | Title (lvl, label, txt) -> make_title ~get_package ~lvl ~label txt
   | Reference (r,text) ->
     begin match text with
-    | None -> [ Phrasing (ref_to_link ~get_package r) ]
+    | None -> [ Reference.link ~get_package r ]
     | Some text ->
-      List.map (aggregate ~get_package text) ~f:(function
-        | Newline l -> Newline l
-        | Flow5_without_interactive text ->
-          Flow5 (ref_to_link ~get_package ~text r)
-        | Phrasing_without_interactive text ->
-          Phrasing (ref_to_link ~get_package ~text r)
-        | _ ->
-          (* TODO: better error handling *)
-          failwith "It is disallowed to nest references."
-      )
+      List.map (aggregate ~get_package text)
+        ~f:(fun text -> Reference.link ~get_package ~text r)
     end
   | Target (Some "html", str) ->
     [ Flow5 [Unsafe.data str] ]
