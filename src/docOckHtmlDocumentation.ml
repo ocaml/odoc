@@ -278,19 +278,22 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
     [ Phrasing_without_interactive [ pcdata "<TODO: report to odoc devs>" ] ]
 
 and make_title ~get_package ~lvl ~label txt =
-  let header_fun =
+  let header_fun, attrs =
     match lvl with
-    | 1 -> h1
-    | 2 -> h2
-    | 3 -> h3
-    | 4 -> h4
-    | 5 -> h5
-    | _ -> h6
+    | 1 -> h2, []
+    | 2 -> h3, []
+    | 3 -> h4, []
+    | 4 -> h5, []
+    | 5 -> h6, []
+    | n ->
+      (fun ?a (x : Html_types.phrasing elt list) ->
+         div ?a (x :> Html_types.flow5 elt list)),
+      [ a_class [Printf.sprintf "h%d" (n + 1)] ]
   in
   let header_fun =
     match label with
-    | None -> header_fun ~a:[]
-    | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:[ a_id lbl ]
+    | None -> header_fun ~a:attrs
+    | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:(a_id lbl :: attrs)
   in
   let txt = aggregate ~get_package txt in
   let result, should_error =
