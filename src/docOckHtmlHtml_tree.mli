@@ -40,7 +40,7 @@ val leave : unit -> unit
 (** {1 Page creator} *)
 
 class page_creator :
-  ?kind:kind -> path:string list -> Html_types.div_content_fun elt ->
+  ?kind:kind -> path:string list -> Html_types.div_content_fun elt list ->
   object
     val has_parent : bool
 
@@ -60,11 +60,11 @@ class page_creator :
   end
 
 val set_page_creator
-  : (?kind:kind -> path:string list -> Html_types.div_content_fun elt
+  : (?kind:kind -> path:string list -> Html_types.div_content_fun elt list
      -> page_creator)
   -> unit
 
-val make : Html_types.div_content_fun elt * t list -> t
+val make : Html_types.div_content_fun elt list * t list -> t
 (** [make (body, children)] calls "the page creator" to turn [body] into an
     [[ `Html ] elt].
     If [set_page_creator] was not called, a default creator is used. *)

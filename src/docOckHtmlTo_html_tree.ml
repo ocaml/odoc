@@ -67,13 +67,13 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
     | Module sign -> signature ~get_package sign
     | Pack packed -> pack ~get_package packed, []
   in
-  Html_tree.make (div [ div ~a:[ a_class ["doc"] ] header_doc; html ], subtree)
+  Html_tree.make (div ~a:[ a_class ["doc"] ] header_doc :: html, subtree)
 
 and pack
-   : 'row. get_package:('a -> string) -> 'a Types.Unit.Packed.t
-  -> ([> Html_types.div ] as 'row) elt
+   : get_package:('a -> string) -> 'a Types.Unit.Packed.t
+  -> Html_types.div_content_fun elt list
 = fun ~get_package t ->
-  div @@ List.map t ~f:(fun x ->
+  List.map t ~f:(fun x ->
     let modname = Identifier.name x.Unit.Packed.id in
     let dot_mod = "/" ^ modname in
     let md_def =
@@ -86,8 +86,8 @@ and pack
   )
 
 and signature
-   : 'row. get_package:('a -> string) -> 'a Types.Signature.t
-  -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
+   : get_package:('a -> string) -> 'a Types.Signature.t
+  -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun ~get_package t ->
   let html_and_subtrees =
     let recording_doc = ref true in
@@ -116,7 +116,7 @@ and signature
     )
   in
   let html, subtrees = List.split html_and_subtrees in
-  div html, List.concat subtrees
+  html, List.concat subtrees
 
 and functor_argument
    : 'row. get_package:('a -> string) -> 'a Types.FunctorArgument.t
@@ -137,7 +137,7 @@ and functor_argument
       ), []
     | Some expansion ->
       Html_tree.enter ~kind:(`Arg) link_name;
-      let expansion, subpages as node = module_expansion ~get_package expansion in
+      let node = module_expansion ~get_package expansion in
       let subtree = Html_tree.make node in
       Html_tree.leave ();
       (
@@ -150,8 +150,8 @@ and functor_argument
   region, subtree
 
 and module_expansion
-   : 'row. get_package:('a -> string) -> 'a Types.Module.expansion
-  -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
+   : get_package:('a -> string) -> 'a Types.Module.expansion
+  -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun ~get_package t ->
   match t with
   | Signature sg -> signature ~get_package sg
@@ -167,12 +167,10 @@ and module_expansion
       )
     in
     let html =
-      div [
-        h3 ~a:[ a_class ["heading"] ] [ pcdata "Parameters" ];
-        div params;
-        h3 ~a:[ a_class ["heading"] ] [ pcdata "Signature" ];
-        sig_html
-      ]
+      h3 ~a:[ a_class ["heading"] ] [ pcdata "Parameters" ] ::
+      div params ::
+      h3 ~a:[ a_class ["heading"] ] [ pcdata "Signature" ] ::
+      sig_html
     in
     html, params_subpages @ subpages
 
@@ -198,8 +196,8 @@ and module_
           | [] -> p []
           | _ -> div ~a:[ a_class ["doc"] ] doc
         in
-        div ~a:[ a_class ["mod"] ]
-          [Markup.def_div md_def_content; doc; expansion]
+        div ~a:[ a_class ["mod"] ] [Markup.def_div md_def_content; doc] ::
+        expansion
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
@@ -247,7 +245,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
     | None -> pcdata modname, []
     | Some expansion ->
       Html_tree.enter ~kind:(`Mty) modname;
-      let expansion, subpages as node = module_expansion ~get_package expansion in
+      let node = module_expansion ~get_package expansion in
       let subtree = Html_tree.make node in
       Html_tree.leave ();
       a ~a:[ a_href ~kind:`Mty modname ] [pcdata modname], [subtree]
@@ -689,14 +687,17 @@ and include_ ~get_package (t : _ Types.Include.t) =
     | _ -> false
   in
   let incl =
-    if should_be_inlined then included_html else
+    if should_be_inlined then
+      included_html
+    else
       let incl =
         Markup.keyword "include " ::
         module_decl' ~get_package t.parent t.decl
       in
       (* TODO: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      details ~a:[a_open ()]
-        (Markup.def_summary @@ html_dot_magic incl) [included_html]
+      [ details ~a:[a_open ()]
+          (Markup.def_summary @@ html_dot_magic incl) included_html
+      ]
   in
-  div ~a:[ a_class ["include"] ] [incl; div ~a:[ a_class ["doc"] ] doc], tree
+  div ~a:[ a_class ["include"] ] (incl @ [ div ~a:[ a_class ["doc"] ] doc]), tree

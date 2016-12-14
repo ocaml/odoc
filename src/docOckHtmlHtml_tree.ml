@@ -268,10 +268,12 @@ class page_creator ?kind ~path content = object(self)
     [DocOckHtmlMarkup.module_path (List.tl path)]
 
   method content : Html_types.div_content_fun elt list =
-    let href =
-      if !Relative_link.semantic_uris then ".." else "../index.html" in
-    (if has_parent then [ a ~a:[ a_href href ] [ pcdata "Up" ] ] else [])
-    @ [ div ~a:[ a_class [ "intro" ] ] [ h1 self#heading ] ; content ]
+    let href = if !Relative_link.semantic_uris then ".." else "../index.html" in
+    let article = header [ h1 self#heading ] :: content in
+    if not has_parent then
+      article
+    else
+      nav [ a ~a:[ a_href href ] [ pcdata "Up" ] ] :: article
 
   method html : [ `Html ] elt =
     html self#header (body self#content)
