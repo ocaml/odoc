@@ -67,7 +67,7 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
     | Module sign -> signature ~get_package sign
     | Pack packed -> pack ~get_package packed, []
   in
-  Html_tree.make (div ~a:[ a_class ["doc"] ] header_doc :: html, subtree)
+  Html_tree.make (header_doc @ html, subtree)
 
 and pack
    : get_package:('a -> string) -> 'a Types.Unit.Packed.t
