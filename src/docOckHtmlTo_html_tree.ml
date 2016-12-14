@@ -697,7 +697,7 @@ and include_ ~get_package (t : _ Types.Include.t) =
       (* TODO: I'd like to add an anchor here, but I don't know what id to give
          it... *)
       [ details ~a:[a_open ()]
-          (Markup.def_summary @@ html_dot_magic incl) included_html
+          (Markup.def_summary incl) included_html
       ]
   in
-  div ~a:[ a_class ["include"] ] (incl @ [ div ~a:[ a_class ["doc"] ] doc]), tree
+  div ~a:[ a_class ["spec"; "include"] ] (incl @ [ div ~a:[ a_class ["doc"] ] doc]), tree
