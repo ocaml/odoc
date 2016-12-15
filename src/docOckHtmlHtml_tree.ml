@@ -15,6 +15,7 @@
  *)
 
 open Tyxml.Html
+module Url = DocOckHtmlUrl
 
 type kind = [ `Arg | `Mod | `Mty ]
 
@@ -34,11 +35,12 @@ let stack_to_list s =
 let enter ?kind name = Stack.push (name, kind) path
 let leave () = ignore @@ Stack.pop path
 
+(* FIXME: reuse [Url.kind] *)
 let stack_elt_to_path_fragment = function
   | (name, None)
   | (name, Some `Mod) -> name
-  | (name, Some `Mty) -> name ^ ".modt"
-  | (name, Some `Arg) -> name ^ ".moda"
+  | (name, Some `Mty) -> "module-type-" ^ name
+  | (name, Some `Arg) -> "argument-" ^ name
 
 module Relative_link = struct
   open DocOck.Paths
@@ -56,29 +58,6 @@ module Relative_link = struct
 
     exception Not_linkable
 
-    let rec str_list_path (type x) (get_package : x -> string) (id : (x, _) t) =
-      let rec str_list_path : type a. string list -> (_, a) t -> string list =
-        fun acc id ->
-          match id with
-          | Root (abstr, str) -> get_package abstr :: str :: acc
-          | Module (id, str) -> str_list_path (str :: acc) id
-          | Argument (id, i, str) ->
-            let str = Printf.sprintf "%s.%d.moda" str i in
-            str_list_path (str :: acc) id
-          | ModuleType (id, str) -> str_list_path ((str ^ ".modt") :: acc) id
-          | Type (id, str) ->
-            let anchored =
-              (if !semantic_uris then "#" else "index.html#")
-              :: (str ^ ".typ") :: acc
-            in
-            str_list_path anchored id
-          | CoreType str -> raise Not_linkable
-          | _ ->
-            (* CR trefis: FIXME *)
-            raise Not_linkable
-      in
-      str_list_path [] id
-
     let rec drop_shared_prefix l1 l2 =
       match l1, l2 with
       | l1 :: l1s, l2 :: l2s when l1 = l2 ->
@@ -88,30 +67,29 @@ module Relative_link = struct
     exception Can't_stop_before
 
     let href ~get_package ~stop_before id =
-      let target =
-        match str_list_path get_package id with
-        | [] -> assert false
-        | [ _ ] when stop_before -> raise Can't_stop_before
-        | lst when stop_before ->
-          begin match List.rev lst with
-          | [] -> assert false
-          | x :: xs ->
-            List.rev
-              (x :: (if !semantic_uris then "#" else "index.html#") :: xs)
-          end
-        | lst ->
-          if !semantic_uris || List.mem "index.html#" ~set:lst then lst
-          else lst @ ["index.html"]
-      in
-      let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
-      let current_from_common_ancestor, target_from_common_ancestor =
-        drop_shared_prefix current_loc target
-      in
-      let relative_target =
-        List.map current_from_common_ancestor ~f:(fun _ -> "..")
-        @ target_from_common_ancestor
-      in
-      String.concat ~sep:"/" relative_target
+      match Url.from_identifier ~get_package ~stop_before id with
+      | Ok { Url. page; anchor } ->
+        let target = List.rev (if !semantic_uris then page else "index.html" :: page) in
+        let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
+        let current_from_common_ancestor, target_from_common_ancestor =
+          drop_shared_prefix current_loc target
+        in
+        let relative_target =
+          List.map current_from_common_ancestor ~f:(fun _ -> "..")
+          @ target_from_common_ancestor
+        in
+        let page = String.concat ~sep:"/" relative_target in
+        begin match anchor with
+        | "" -> page
+        | anchor -> page ^ "#" ^ anchor
+        end
+      | Error e ->
+        (* TODO: handle errors better, perhaps by returning a [result] *)
+        match e with
+        | Not_linkable _ -> raise Not_linkable
+        | otherwise ->
+          Printf.eprintf "%s\n%!" (Url.Error.to_string otherwise);
+          exit 1
   end
 
   module Of_path = struct
@@ -225,13 +203,14 @@ module Relative_link = struct
     Of_fragment.to_html ~get_package ~stop_before:false base frag
 
   let to_sub_element ~kind name =
-    let ext =
+    (* FIXME: Reuse [Url]. *)
+    let prefix =
       match kind with
       | `Mod -> ""
-      | `Mty -> ".modt"
-      | `Arg -> ".moda"
+      | `Mty -> "module-type-"
+      | `Arg -> "argument-"
     in
-    a_href (name ^ ext ^ (if !semantic_uris then "" else "/index.html"))
+    a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
 
 class page_creator ?kind ~path content = object(self)

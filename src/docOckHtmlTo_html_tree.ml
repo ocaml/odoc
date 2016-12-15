@@ -23,6 +23,7 @@ open Tyxml.Html
 module Documentation = DocOckHtmlDocumentation
 module Html_tree = DocOckHtmlHtml_tree
 module Markup = DocOckHtmlMarkup
+module Url = DocOckHtmlUrl
 
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
@@ -75,14 +76,13 @@ and pack
 = fun ~get_package t ->
   List.map t ~f:(fun x ->
     let modname = Identifier.name x.Unit.Packed.id in
-    let dot_mod = "/" ^ modname in
     let md_def =
       Markup.keyword "module " ::
       pcdata modname ::
       pcdata " = " ::
       Html_tree.Relative_link.of_path ~get_package x.path
     in
-    Markup.make_def ~kind:"mod" ~id:dot_mod ~code:md_def ~doc:[]
+    Markup.make_def ~get_package ~id:x.Unit.Packed.id ~code:md_def ~doc:[]
   )
 
 and signature
@@ -125,8 +125,7 @@ and functor_argument
   let open Types.FunctorArgument in
   let name = Identifier.name arg.id in
   let nb = functor_arg_pos arg in
-  let link_name = Printf.sprintf "%s.%d" name nb in
-  let dot_a = Printf.sprintf "/%s.moda" link_name in
+  let link_name = Printf.sprintf "%d-%s" nb name in
   let def_div, subtree =
     match arg.expansion with
     | None ->
@@ -146,7 +145,9 @@ and functor_argument
         mty ~get_package (Identifier.signature_of_module arg.id) arg.expr
       ), [subtree]
   in
-  let region = Markup.make_def ~kind:"moda" ~id:dot_a ~code:def_div ~doc:[] in
+  let region =
+    Markup.make_def ~get_package ~id:arg.id ~code:def_div ~doc:[]
+  in
   region, subtree
 
 and module_expansion
@@ -179,7 +180,6 @@ and module_
   -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun ~get_package t ->
   let modname = Identifier.name t.id in
-  let dot_mod = "/" ^ modname in
   let doc = Documentation.to_html ~get_package t.doc in
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, subtree =
@@ -205,7 +205,7 @@ and module_
   in
   let md_def_content = Markup.keyword "module " :: modname :: md in
   let region =
-    Markup.make_def ~id:dot_mod ~kind:"mod" ~code:md_def_content
+    Markup.make_def ~get_package ~id:t.id ~code:md_def_content
       ~doc:(Documentation.first_to_html ~get_package t.doc)
   in
   [ region ], subtree
@@ -238,7 +238,6 @@ and module_decl'
 
 and module_type ~get_package (t : _ Types.ModuleType.t) =
   let modname = Identifier.name t.id in
-  let dot_modt = "/" ^ modname ^ ".modt" in
   let doc = Documentation.to_html ~get_package t.doc in
   let modname, subtree =
     match t.expansion with
@@ -267,7 +266,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
       mty
     )
   in
-  [ Markup.make_def ~kind:"modt" ~id:dot_modt ~code:mty_def ~doc ], subtree
+  [ Markup.make_def ~get_package ~id:t.id ~code:mty_def ~doc ], subtree
 
 and mty
   : 'inner_row 'outer_row. get_package:('a -> string)
@@ -342,14 +341,14 @@ and substitution
     Html_tree.Relative_link.of_path ~get_package typ_path
 
 and constructor
-   : 'b. get_package:('a -> string) -> dot_typ:string
+   : 'b. get_package:('a -> string)
   -> ('a, 'b) Identifier.t -> 'a Types.TypeDecl.Constructor.argument
   -> 'a Types.TypeExpr.t option
   -> [> `Code | `PCDATA | `Table ] elt list
-= fun ~get_package ~dot_typ id args _ret_type ->
+= fun ~get_package id args _ret_type ->
     let name = Identifier.name id in
-    let cstr = span ~a:[ a_class [ "constructor" ] ] [ pcdata name ] in
-    (* CR trefis: handle GADT style constructors properly. *)
+    let cstr = span ~a:[ a_class [ Url.kind_of_id_exn ~get_package id ] ] [ pcdata name ] in
+    (* TODO: handle GADT style constructors properly. *)
     match args with
     | Tuple [] -> [code [cstr]]
     | Tuple lst ->
@@ -362,7 +361,7 @@ and constructor
       ]
     | Record fields ->
       code [ cstr; Markup.keyword " of " ] ::
-      record ~get_package dot_typ fields
+      record ~get_package fields
 
 and format_params
    : 'row. Types.TypeDecl.param list
@@ -412,13 +411,11 @@ and format_manifest
     in
     manifest, false
 
-and variant ~get_package dot_typ cstrs : [> Html_types.table ] elt =
+and variant ~get_package cstrs : [> Html_types.table ] elt =
   let constructor id args res =
-    let name = Identifier.name id in
-    let dot_cons = Printf.sprintf "%s/%s.cons" dot_typ name in
-    Markup.make_spec ~kind:"cons" ~id:dot_cons
+    Markup.make_spec ~get_package ~id
       (code [ Markup.keyword "| " ] ::
-       constructor ~get_package ~dot_typ id args res)
+       constructor ~get_package id args res)
   in
   let rows =
     List.map cstrs ~f:(fun cstr ->
@@ -437,11 +434,10 @@ and variant ~get_package dot_typ cstrs : [> Html_types.table ] elt =
   in
   table rows
 
-and record ~get_package dot_typ fields =
+and record ~get_package fields =
   let field mutable_ id =
     let name = Identifier.name id in
-    let dot_fld = Printf.sprintf "%s/%s.fld" dot_typ name in
-    Markup.make_def ~kind:"fld" ~id:dot_fld ~doc:[] ~code:[
+    Markup.make_def ~get_package ~id ~doc:[] ~code:[
       (if mutable_ then Markup.keyword "mutable " else pcdata "");
       pcdata name
     ]
@@ -451,7 +447,7 @@ and record ~get_package dot_typ fields =
       let open Types.TypeDecl.Field in
       let lhs = field fld.mutable_ fld.id in
       let rhs = Documentation.to_html ~get_package fld.doc in
-      tr ~a:[ a_class ["fld"] ] (
+      tr ~a:[ a_class ["field"] ] (
         td [ lhs ] ::
         td [ pcdata " : " ] ::
         td (type_expr ~get_package fld.type_ @ [pcdata ";"]) ::
@@ -467,7 +463,6 @@ and record ~get_package dot_typ fields =
 
 and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   let tyname = Identifier.name t.id in
-  let dot_typ = "/" ^ tyname ^ ".typ" in
   let params = format_params t.equation.params in
   let constraints = format_constraints ~get_package t.equation.constraints in
   let manifest, need_private = format_manifest ~get_package t.equation in
@@ -481,8 +476,8 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
       ] ::
       match repr with
       | Extensible -> [code [Markup.keyword  ".."]]
-      | Variant cstrs -> [variant ~get_package dot_typ cstrs]
-      | Record fields -> record ~get_package dot_typ fields
+      | Variant cstrs -> [variant ~get_package cstrs]
+      | Record fields -> record ~get_package fields
   in
   let doc = Documentation.to_html ~get_package t.doc in
   let tdecl_def =
@@ -495,7 +490,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
     representation @
     constraints
   in
-  Markup.make_spec ~kind:"type" ~id:dot_typ ~doc tdecl_def
+  Markup.make_spec ~get_package ~id:t.id ~doc tdecl_def
 
 and extension ~get_package (t : _ Types.Extension.t) =
   let doc = Documentation.to_html ~get_package t.doc in
@@ -508,24 +503,23 @@ and extension ~get_package (t : _ Types.Extension.t) =
     list_concat_map t.constructors ~sep:(code [Markup.keyword " | "])
       ~f:(extension_constructor ~get_package)
   in
+  (* FIXME: really want to use the kind "extension" here? *)
   (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
      have an anchor either). *)
-  div ~a:[ a_class ["spec"; "ext"] ] [
-    div ~a:[ a_class ["def"; "ext"] ] extension;
+  div ~a:[ a_class ["spec"; "extension"] ] [
+    div ~a:[ a_class ["def"; "extension"] ] extension;
     div ~a:[ a_class ["doc"] ] doc;
   ]
 
 and extension_constructor ~get_package (t : _ Types.Extension.Constructor.t) =
-  (* CR trefis: doc? *)
-  let dot_ext = Printf.sprintf "%s.ext" (Identifier.name t.id) in
-  constructor ~get_package ~dot_typ:dot_ext t.id t.args t.res
+  (* TODO doc *)
+  constructor ~get_package t.id t.args t.res
 
 and exn ~get_package (t : _ Types.Exception.t) =
-  let dot_exn = Printf.sprintf "%s.exn" (Identifier.name t.id) in
-  let cstr = constructor ~get_package ~dot_typ:dot_exn t.id t.args t.res in
+  let cstr = constructor ~get_package t.id t.args t.res in
   let doc = Documentation.to_html ~get_package t.doc in
   let exn = code [ Markup.keyword "exception " ] :: cstr in
-  Markup.make_spec ~kind:"exn" ~id:dot_exn ~doc exn
+  Markup.make_spec ~get_package ~id:t.id ~doc exn
 
 and te_variant
    : 'inner 'outer. get_package:('a -> string) -> 'a Types.TypeExpr.Variant.t
@@ -628,7 +622,6 @@ and type_expr
 
 and value ~get_package (t : _ Types.Value.t) =
   let name = Identifier.name t.id in
-  let dot_val = "/" ^ name ^ ".val" in
   let doc = Documentation.to_html ~get_package t.doc in
   let value =
     Markup.keyword "val " ::
@@ -636,11 +629,10 @@ and value ~get_package (t : _ Types.Value.t) =
     pcdata " : " ::
     type_expr ~get_package t.type_
   in
-  Markup.make_def ~kind:"val" ~id:dot_val ~doc ~code:value
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:value
 
 and external_ ~get_package (t : _ Types.External.t) =
   let name = Identifier.name t.id in
-  let dot_val = "/" ^ name ^ ".val" in
   let doc = Documentation.to_html ~get_package t.doc in
   let external_ =
     Markup.keyword "external " ::
@@ -650,11 +642,10 @@ and external_ ~get_package (t : _ Types.External.t) =
     pcdata " = " ::
     List.map t.primitives ~f:(fun p -> pcdata ("\"" ^ p ^ "\" "))
   in
-  Markup.make_def ~kind:"val" ~id:dot_val ~doc ~code:external_
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:external_
 
 and class_ ~get_package (t : _ Types.Class.t) =
   let name = Identifier.name t.id in
-  let dot_cl = "/" ^ name ^ ".cl" in
   let doc = Documentation.to_html ~get_package t.doc in
   let class_ =
     [
@@ -663,11 +654,10 @@ and class_ ~get_package (t : _ Types.Class.t) =
       (* TODO: complete. *)
     ]
   in
-  Markup.make_def ~kind:"class" ~id:dot_cl ~doc ~code:class_
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:class_
 
 and class_type ~get_package (t : _ Types.ClassType.t) =
   let name = Identifier.name t.id in
-  let dot_clt = "/" ^ name ^ ".clt" in
   let doc = Documentation.to_html ~get_package t.doc in
   let ctyp =
     [
@@ -676,7 +666,7 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
       (* TODO: complete. *)
     ]
   in
-  Markup.make_def ~kind:"classtype" ~id:dot_clt ~doc ~code:ctyp
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:ctyp
 
 and include_ ~get_package (t : _ Types.Include.t) =
   let doc = Documentation.to_html ~get_package t.doc in

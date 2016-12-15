@@ -31,15 +31,15 @@ val def_summary :
   [< Html_types.span_content_fun ] elt list -> [> Html_types.summary ] elt
 
 val make_def
-   : kind:string
-  -> id:string
+   : get_package:('a -> string)
+  -> id:('a, _) DocOck.Paths.Identifier.t
   -> code:[< Html_types.code_content_fun ] elt list
   -> doc:[< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt
 
 val make_spec
-   : kind:string
-  -> id:string
+   : get_package:('a -> string)
+  -> id:('a, _) DocOck.Paths.Identifier.t
   -> ?doc:[< Html_types.div_content_fun ] elt list
   -> [< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt

@@ -15,6 +15,7 @@
  *)
 
 open Tyxml.Html
+module Url = DocOckHtmlUrl
 
 let keyword keyword = span ~a:[ a_class ["keyword"] ] [ pcdata keyword ]
 let module_path ids =
@@ -29,18 +30,24 @@ let def_div lst = div ~a:[ a_class ["def" ] ] [ code lst ]
 
 let def_summary lst = summary [ span ~a:[ a_class ["def"] ] lst ]
 
-let make_def ~kind ~id ~code:def ~doc =
-  div ~a:[ a_class ["spec"; kind] ; a_id id ] [
-    a ~a:[ a_href ("#" ^ id); a_class ["anchor"] ] [];
-    div ~a:[ a_class ["def"; kind] ] [ code def ];
-    div ~a:[ a_class ["doc"] ] doc;
-  ]
+let make_def ~get_package ~id ~code:def ~doc =
+  match Url.from_identifier ~get_package ~stop_before:true id with
+  | Error e -> failwith (Url.Error.to_string e)
+  | Ok { anchor; kind; _ } ->
+    div ~a:[ a_class ["spec"; kind] ; a_id anchor ] [
+      a ~a:[ a_href ("#" ^ anchor); a_class ["anchor"] ] [];
+      div ~a:[ a_class ["def"; kind] ] [ code def ];
+      div ~a:[ a_class ["doc"] ] doc;
+    ]
 
-let make_spec ~kind ~id ?doc code =
-  div ~a:[ a_class ["spec"; kind] ; a_id id ] (
-    a ~a:[ a_href ("#" ^ id); a_class ["anchor"] ] [] ::
-    div ~a:[ a_class ["def"; kind] ] code ::
-    (match doc with
-     | None -> []
-     | Some doc -> [div ~a:[ a_class ["doc"] ] doc])
-  )
+let make_spec ~get_package ~id ?doc code =
+  match Url.from_identifier ~get_package ~stop_before:true id with
+  | Error e -> failwith (Url.Error.to_string e)
+  | Ok { anchor; kind; _ } ->
+    div ~a:[ a_class ["spec"; kind] ; a_id anchor ] (
+      a ~a:[ a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
+      div ~a:[ a_class ["def"; kind] ] code ::
+      (match doc with
+       | None -> []
+       | Some doc -> [div ~a:[ a_class ["doc"] ] doc])
+    )
