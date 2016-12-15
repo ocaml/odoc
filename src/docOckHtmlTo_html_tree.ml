@@ -94,29 +94,29 @@ and signature
     List.map t ~f:(function
       | Types.Signature.Module md -> module_ ~get_package md
       | ModuleType mty -> module_type ~get_package mty
-      | Type td -> type_decl ~get_package td, []
-      | TypExt te -> extension ~get_package te, []
-      | Exception e -> exn ~get_package e, []
-      | Value v -> value ~get_package v, []
-      | External e -> external_ ~get_package e, []
-      | Class c -> class_ ~get_package c, []
-      | ClassType cty -> class_type ~get_package cty, []
+      | Type td -> [ type_decl ~get_package td ], []
+      | TypExt te -> [ extension ~get_package te ], []
+      | Exception e -> [ exn ~get_package e ], []
+      | Value v -> [ value ~get_package v ], []
+      | External e -> [ external_ ~get_package e ], []
+      | Class c -> [ class_ ~get_package c ], []
+      | ClassType cty -> [ class_type ~get_package cty ], []
       | Include incl -> include_ ~get_package incl
       | Comment (Documentation doc) ->
         let doc =
           if !recording_doc then
-            div ~a:[a_class ["doc"]] (Documentation.to_html ~get_package doc)
+            Documentation.to_html ~get_package doc
           else
-            pcdata ""
+            []
         in
         doc, []
       | Comment Stop ->
         recording_doc := not !recording_doc;
-        pcdata "", []
+        [], []
     )
   in
   let html, subtrees = List.split html_and_subtrees in
-  html, List.concat subtrees
+  List.concat html, List.concat subtrees
 
 and functor_argument
    : 'row. get_package:('a -> string) -> 'a Types.FunctorArgument.t
@@ -176,7 +176,7 @@ and module_expansion
 
 and module_
    : 'row. get_package:('a -> string) -> 'a Types.Module.t
-  -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
+  -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun ~get_package t ->
   let modname = Identifier.name t.id in
   let dot_mod = "/" ^ modname in
@@ -208,7 +208,7 @@ and module_
     Markup.make_def ~id:dot_mod ~kind:"mod" ~code:md_def_content
       ~doc:(Documentation.first_to_html ~get_package t.doc)
   in
-  region, subtree
+  [ region ], subtree
 
 and module_decl ~get_package (base : _ Identifier.signature) md =
   begin match md with
@@ -267,7 +267,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
       mty
     )
   in
-  Markup.make_def ~kind:"modt" ~id:dot_modt ~code:mty_def ~doc, subtree
+  [ Markup.make_def ~kind:"modt" ~id:dot_modt ~code:mty_def ~doc ], subtree
 
 and mty
   : 'inner_row 'outer_row. get_package:('a -> string)
@@ -700,4 +700,6 @@ and include_ ~get_package (t : _ Types.Include.t) =
           (Markup.def_summary incl) included_html
       ]
   in
-  div ~a:[ a_class ["spec"; "include"] ] (incl @ [ div ~a:[ a_class ["doc"] ] doc]), tree
+  [ div ~a:[ a_class ["spec"; "include"] ]
+      (incl @ [ div ~a:[ a_class ["doc"] ] doc])
+  ], tree
