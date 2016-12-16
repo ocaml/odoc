@@ -39,7 +39,7 @@ class listing_page_creator ~name ~global content =
   end
 
 let mk_html_list lst =
-  div @@ List.map lst ~f:(fun item ->
+  List.map lst ~f:(fun item ->
     div ~a:[ a_id ("/" ^ item) ] [ a ~a:[ a_href item ] [ pcdata item ] ]
   )
 
