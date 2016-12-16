@@ -56,7 +56,9 @@ let map_module name ex f =
     let open Signature in
     let open Module in
       match items with
-      | [] -> raise Not_found
+      | [] ->
+        List.rev acc
+        (* raise Not_found *)
       | Module md :: rest when Identifier.name md.id = name ->
         let md' = f md in
         List.rev_append acc ((Module md') :: rest)
@@ -72,7 +74,9 @@ let map_type name ex f =
     let open Signature in
     let open TypeDecl in
       match items with
-      | [] -> raise Not_found
+      | [] ->
+        List.rev acc
+        (* raise Not_found *)
       | Type decl :: rest when Identifier.name decl.id = name ->
         let decl' = f decl in
         List.rev_append acc ((Type decl') :: rest)
