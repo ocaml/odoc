@@ -21,6 +21,10 @@ module File = struct
   type t = file
 
   let dirname = Fpath.parent
+  let basename = Fpath.base
+
+  let set_ext e p = Fpath.set_ext e p
+  let has_ext e p = Fpath.has_ext e p
 
   let create ~directory ~name =
     match Fpath.of_string name with

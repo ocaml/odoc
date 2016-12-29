@@ -43,6 +43,10 @@ module File : sig
   val create : directory:Directory.t -> name:string -> t
 
   val dirname : t -> Directory.t
+  val basename : t -> t
+
+  val set_ext : string -> t -> t
+  val has_ext : string -> t -> bool
 
   val of_string : string -> t
   val to_string : t -> string
