@@ -1,10 +1,11 @@
-Odoc
+# Keep sorted for test suite
+OdocFs
+OdocRoot
+OdocUnit
+OdocEnv
 OdocCompile
 OdocDepends
-OdocEnv
-OdocFs
-OdocListing
 OdocHtml
-OdocRoot
+OdocListing
 OdocTargets
-OdocUnit
+Odoc

@@ -19,4 +19,5 @@ let () =
   Pkg.describe "odoc" ~build @@ fun c ->
   Ok [ Pkg.etc "etc/odoc.css";
        Pkg.mllib "lib/odoc.mllib";
-       Pkg.bin "bin/main" ~dst:"odoc" ]
+       Pkg.bin "bin/main" ~dst:"odoc";
+       Pkg.test "test/odoc_odoc"; ]

@@ -6,15 +6,12 @@
 all:
 	topkg build
 
-test: all
-	$(MAKE) -C test
+test:
+	topkg build
+	topkg test
 
-silent_test: all
-	$(MAKE) -C test compile 2> /dev/null
-	$(MAKE) -C test odoc.html
-	echo "================================================================="
-	$(MAKE) -C test odocHtml.html
+doc:
+	topkg doc
 
 clean:
 	topkg clean
-	-@$(MAKE) -C test clean
