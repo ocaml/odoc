@@ -50,7 +50,7 @@ let odoc_html_mod m =
 
 let odoc_css () =
   Log.info (fun msg -> msg "Writing CSS");
-  OS.Cmd.run Cmd.(odoc % "css" % "-o" % dst_dir)
+  OS.Cmd.run Cmd.(odoc % "css" % "-o" % build_dir)
 
 let odoc_odoc ~browse =
   begin
