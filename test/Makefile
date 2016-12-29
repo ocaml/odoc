@@ -18,7 +18,7 @@ HTML_OUTPUT_DIR = ./html
 PKG = odoc
 DIR = ./odoc
 
-all: compile link coverage
+all: compile link
 	ls $(HTML_OUTPUT_DIR) | xargs $(ODOC) listing --root-dir $(HTML_OUTPUT_DIR)
 
 clean: clean_odoc clean_coverage
@@ -78,30 +78,4 @@ clean_odoc:
 	-@rm -R $(DIR)
 	-@mkdir $(DIR)
 
-#################################
-# TEST ON DOC-OCK COVERAGE FILE #
-#################################
-
-coverage: DIR = ./coverage
-coverage: PKG = coverage
-coverage: coverage.html
-	ls $(HTML_OUTPUT_DIR)/$(PKG) | xargs $(ODOC) listing --root-dir $(HTML_OUTPUT_DIR) --pkg $(PKG)
-	@cp odoc.css $(HTML_OUTPUT_DIR)
-
-coverage.odoc: DIR = ./coverage
-coverage.odoc: coverage.cmti
-	$(ODOC) compile $(COMP_FLAGS) $(DIR)/coverage.cmti
-
-coverage.cmti: DIR = ./coverage
-coverage.cmti:
-	ocamlc -bin-annot $(DIR)/coverage.mli
-
-clean_coverage: DIR = ./coverage
-clean_coverage:
-	-@rm $(DIR)/coverage.odoc
-	-@rm $(DIR)/coverage.cm*
-
-################################
-################################
-
-.PHONY: all clean clean_odoc clean_coverage compile link coverage
+.PHONY: all clean clean_odoc clean_coverage compile link

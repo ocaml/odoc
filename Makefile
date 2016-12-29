@@ -15,9 +15,6 @@ silent_test: all
 	echo "================================================================="
 	$(MAKE) -C test odocHtml.html
 
-coverage: all
-	$(MAKE) -C test coverage
-
 clean:
 	topkg clean
 	-@$(MAKE) -C test clean
