@@ -1,218 +1,151 @@
 @charset "UTF-8";
-/*
- * Copyright (c) 2015 Daniel C. Bünzli
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+/* Copyright (c) 2016 Daniel C. Bünzli. All rights reserved.
+   Distributed under the ISC license, see terms at the end of the file.
+   %%NAME%% %%VERSION%% */
 
-/* These things apply to the page and should be removed if you
-   are embedding odoc. */
+/* Reset a few things. */
 
-/* Tone done contrast a bit. */
-body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
-
-/* Mobile adjustements */
-@media only screen and (max-device-width: 480px) { html { margin:1.25rem 1ex;}}
-
-
-/* odoc container CSS reset */
-
-.odoc-doc *
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,
+small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,
+fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,
+menu,nav,output,ruby,section,summary,time,mark,audio,video
 { margin:0; padding:0; border: 0; /* outline: 0; */
-  font-size:100%; font-family:inherit; font-weight:inherit;
-  background: inherit; color:inherit; }
+  font-size:100%; font: inherit; line-height:inherit; vertical-align:baseline;
+  text-align: inherit; color: inherit; background: transparent; }
 
-.odoc-doc, .odoc-doc *, .odoc-doc *:before, .odoc-doc *:after
-{ -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box; }
+table { border-collapse: collapse; border-spacing: 0; }
 
-/* odoc container sizing and base properties */
+*,  *:before,  *:after { box-sizing: border-box; }
 
-.odoc-doc
+body
 { font-family: Helvetica, "DejaVu Sans", Arial, sans-serif;
   font-weight: normal;
   font-size: 0.875rem;
-  -webkit-text-size-adjust: none;
-  -moz-text-size-adjust: none;
   line-height:1.25rem;
   text-align: left;
-  height:100%;
   min-width: 40ex;
   max-width: 78ex;
-  margin-top: 1.25rem;
-  margin-left: 2.5rem;
-  margin-right: 2.5rem; }
+  padding: 1.25rem;
+  margin-left: 3.75rem;
+  color: #222; background: #FAFAFA; }
 
-@media only screen and (max-device-width: 480px) /* Mobile adjustement */
-{ .odoc-doc { width:100%; min-width: 100%; max-width:none; margin:0ex;} }
+/* Basic markup elements */
 
-/* odoc todo and error messages */
+b, strong { font-weight: bold; }
+em { font-style: italic; }
 
-.odoc-doc .error { color: #CC0000; font-weight:bold; }
-.odoc-doc .todo { color: #008000; font-weight:bold; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+sup, sub { font-size : 0.75rem; line-height: 0; margin-left: 0.3ex; }
 
-/* Code and preformatted text rendering */
+p, div { margin-top: 1.25rem; }
 
-.odoc-doc .def,
-.odoc-doc code,
-.odoc-doc pre
- { font-family: Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
-                monospace;
-   font-weight: normal;
-   font-size: 0.75rem;
-   overflow: auto; }
+ul, ol
+{ margin-top: 0.625rem; margin-bottom: 0.625rem; list-style-position: outside }
 
-.odoc-doc pre
-{ margin-top: 0.625rem;
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-  margin-left:-0.25rem;
-  margin-right:-0.25rem;
-  padding-bottom: 0.3125rem;
-  padding-top:0.3125rem;
-  line-height:1.1rem;
-  background:#F4F4F4; }
+ul { list-style-type: square }
+ul > li { margin-left: 1.375rem; }
+ol > li { margin-left: 1.7rem; }
 
-/* Headers and sections */
+/* Links and anchors */
 
-.odoc-doc h1 code { font-size: 1rem }
-.odoc-doc h1
+a { text-decoration:none; color:#2C5CBD; }
+a:hover { box-shadow:0 1px 0 0 #2C5CBD; }
+*:target { background-color: #FFFFCC; } /* Anchor highlight */
+
+.spec { position: relative } /* For positioning the anchor */
+:hover > a.anchor { visibility: visible; }
+
+a.anchor:before { content: "#" }
+a.anchor:hover {  box-shadow: none; text-decoration: underline }
+a.anchor
+ { visibility: hidden; position: absolute; top: 0px; left: -3ex;
+   padding-right: 1ex; padding-left: 1ex; /* To remain selectable */
+   color: #AAAAAA; }
+
+
+/* Module member specification */
+
+div.def { margin-top: 0rem; }
+div.def + div.doc { margin-left: 1ex; margin-top: 0.15625rem }
+div.doc > *:first-child { margin-top: 0rem; }
+
+/* Section and document divisions.
+
+   Many of the modules of the stdlib start at h6, we make it look like
+   h1 and the .h7 div (sic) like h2. */
+
+h1, h2, h3, h4, h5, h6, .h7
+{ font-weight: bold; padding-top: 0.625rem; margin-top: 1.25rem; }
+
+h1, h2, h6
 { font-size: 1.25rem;
   line-height: 2.4375rem; /* 2.5rem - border width */
-  font-weight: bold;
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
   border-top: solid;
   border-width: 1px;
   border-color: #DDDDDD; }
 
-.odoc-doc .outro
-{ font-size: 1.25rem;
-  line-height: 2.5rem;
-  margin-top: 0.625rem;
-  padding-top: 0.625rem; }
+h1 + *, h2 + *, h6 + * { margin-top: 0.625rem; }
 
-.odoc-doc h2 code { font-size:0.96rem; font-weight: bold; }
-.odoc-doc h2 { font-size:1.125rem; font-weight: bold; }
+h3 { font-size: 1.125rem; }
+h4 { margin-top: 0.625rem; }
 
-.odoc-doc h3 { font-weight: bold; }
-.odoc-doc h4, .odoc-doc h5, .odoc-doc h6 { font-style: italic; }
+h2 + h3,
+h6 + h7
+{ margin-top: 0.625rem; padding-top: 0rem; }
 
-/* Paragraph and region spacing */
+/* Preformatted and code */
 
-.odoc-doc p { margin-top: 0.625rem; }
-.odoc-doc .def + .doc *:first-child { margin-top: 0.25rem; }
-.odoc-doc .region { margin-top: 1.25rem; }
-.odoc-doc .doc + .region { margin-top:0.625rem; }
+tt, code, pre
+ { font-family: Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
+                monospace;
+   font-weight: normal;
+   font-size: 0.75rem; }
 
-.odoc-doc .def + .doc { margin-left:1ex; }
-
-.odoc-doc .region {
-  padding-left: 0.25rem;
+pre
+{ padding-left: 0.25rem;
   padding-right: 0.25rem;
-  margin-left:-0.25rem;
-  margin-right:-0.25rem; }
+  margin-left: -0.25rem;
+  margin-right: -0.25rem;
+  margin-top: 1.25rem;
+/*  margin-bottom: 0.625rem; */
+  padding-bottom: 0.3125rem;
+  padding-top: 0.3125rem;
+  line-height: 1.1875rem;
+  background: #F1F1F1; }
 
-.odoc-doc td > .region { margin-top: 0; }
+h1 tt, h1 code, h2 tt, h2 code, h6 tt, h6 code { font-size: 1.125rem }
+h3 tt, h3 code { font-size: 1rem }
+
+/* Code lexemes */
+
+.keyword { font-weight: bold; }
 
 /* Inline module */
 
-.odoc-doc .region .module > .doc,
-.odoc-doc .region .module > .sig
+.spec .module > .doc,
+.spec .module > .sig
 { padding-left: 3ex;
   border-left: solid;
   border-width: thin;
   border-color: #F0F0F0; }
 
-/* Text alignement */
+/* Text alignement, this should be forbidden. */
 
-.odoc-doc .doc-left { text-align: left; }
-.odoc-doc .doc-right { text-align: right; }
-.odoc-doc .doc-center { text-align: center; }
-
-/* Text formatting. */
-
-.odoc-doc b { font-weight: bold; }
-.odoc-doc strong { font-weight: bold; }
-.odoc-doc em { font-style: italic; }
-
-.odoc-doc sub, .odoc-doc sup
- { font-size: 0.625rem;
-   vertical-align: baseline; position:relative; top: -0.5ex }
-
-.odoc-doc sub { top: 0.5ex; }
-
-.odoc-doc .sup
- { font-size: 0.625rem;
-   vertical-align: top; position:relative; top: -0.5ex }
-
-
-.odoc-doc .sub
- { font-size: 0.625rem;
-   vertical-align: top; position:relative; top: 0.5ex }
-
-/* Lists */
-
-.odoc-doc ul, .odoc-doc ol { margin-top: 0.625rem; }
-
-.odoc-doc ul
-{ text-indent: -1em; padding-left: 1em; list-style: square inside; }
-
-.odoc-doc ol
-{ text-indent: -1em; padding-left: 1em; list-style: decimal inside; }
-
-/* Anchors */
-
-.odoc-doc a { text-decoration:none; color:#2C5CBD; }
-.odoc-doc a:hover { text-decoration: underline; }
-
-/* Fragment handles */
-
-.odoc-doc a.anchor:before { content: "#" }
-.odoc-doc a.anchor:hover { text-decoration: underline; color:#2C5CBD;}
-.odoc-doc :hover > a.anchor, .odoc-doc a.anchor:hover { visibility: visible; }
-
-.odoc-doc .region { position: relative } /* needed for absolute of a.anchor */
-.odoc-doc a.anchor
-{ visibility: hidden;
-  position: absolute;
-  top: 0px;
-  left: -2.2ex;
-  padding-left: 1ex; padding-right: 1ex;
-  color: #AAAAAA; }
-
-/* Fragment highlighting */
-
-.odoc-doc .region:target { background-color: #FFFFCC; }
-.odoc-doc .region:target a.anchor { background-color: transparent; }
+.doc-left { text-align: left; }
+.doc-right { text-align: right; }
+.doc-center { text-align: center; }
 
 /* Random other things to review. */
 
-.odoc-doc .tag .label { font-weight: bold; }
+td > .spec { margin-top: 0; }
+.error { color: #CC0000; font-weight:bold; }
 
-.odoc-doc .package-index ul ul { margin-left: 2ex; }
+.tag .label { font-weight: bold; }
 
-.odoc-doc .comment {
-    border: 1px solid #CCCCCC;
-    border-right: 0;
-    border-bottom: 0;
-    margin: 1em 0;
-    padding: 1em;
-    margin-left: -1em;
-}
-
-.odoc-doc .heading {
+.heading {
     margin-top: 0.625rem;
     border-top: solid;
     border-width: 1px;
@@ -221,59 +154,56 @@ body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
     font-weight: normal;
     font-style: italic;
 }
-.odoc-doc .heading + .sig {
+.heading + .sig {
     margin-top: -1.25rem;
 }
-.odoc-doc .heading + .parameters {
+.heading + .parameters {
     margin-top: -1.25rem;
 }
 
-.odoc-doc .keyword { font-weight: bold;}
-.odoc-doc .tag.deprecated { color: orange; }
-.odoc-doc .tag.deprecated .label { color: red; }
-.odoc-doc .mod,
-.odoc-doc .modt,
-.odoc-doc .typ,
-.odoc-doc .val,
-.odoc-doc .ext,
-.odoc-doc .exn,
-.odoc-doc .cls,
-.odoc-doc .clst,
 
-.odoc-doc .include {
-    margin-top: 1.25rem;
-}
+.tag.deprecated { color: orange; }
+.tag.deprecated .label { color: red; }
+.mod,
+.modt,
+.typ,
+.val,
+.ext,
+.exn,
+.cls,
+.clst,
+.include {}
 
-.odoc-doc .module_index { margin-top: 1em; margin-bottom: 1em; }
+.module_index { margin-top: 1em; margin-bottom: 1em; }
 
 /* Field/constructor indentation */
-.odoc-doc .cons > td,
-.odoc-doc .field > td {
+.cons > td,
+.field > td {
     vertical-align: top;
     padding: 0;
 }
 
-.odoc-doc div.cons,
-.odoc-doc .cons > td,
-.odoc-doc .field td:nth-child(1),
-.odoc-doc .field td:nth-child(n+4) {
+div.cons,
+.cons > td,
+.field td:nth-child(1),
+.field td:nth-child(n+4) {
     padding-left: 1.5em;
 }
 
 /* Field/constructor type nowrap */
-.odoc-doc .cons td:nth-child(1),
-.odoc-doc .field td:nth-child(2) {
+.cons td:nth-child(1),
+.field td:nth-child(2) {
     white-space: nowrap;
 }
 
 /* Field/constructor comment syntax alignment */
-.odoc-doc .cons td:nth-child(4),
-.odoc-doc .field td:nth-child(6) {
+.cons td:nth-child(4),
+.field td:nth-child(6) {
     vertical-align: bottom;
 }
 
 /* Border for expanded includes */
-.odoc-doc .include>details[open] {
+.include>details[open] {
     box-shadow: 0 0 0.1rem 0.2rem #FFFFFF;
     border-radius: 1rem;
     border-left: 0.2rem solid #A3A3A3;
@@ -282,7 +212,7 @@ body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
     padding-bottom: 0.5rem;
 }
 
-.odoc-doc .mod>details[open] {
+.mod>details[open] {
     box-shadow: 0 0 0.1rem 0.2rem #FFFFFF;
     border-radius: 1rem;
     border-left: 0.2rem solid #A3A3A3;
@@ -290,3 +220,32 @@ body { background: #FDFDFD /* url(line-height-20.gif) */; color: #252525; }
     padding-left: 1.3rem;
     padding-bottom: 0.5rem;
 }
+
+/* Mobile adjustements. */
+
+@media only screen and (max-width: 78ex)
+{ body { margin: auto; } }
+
+/* Print adjustements. */
+
+@media print
+{
+  body { color: black; background: white; }
+  .navbar { visibility: hidden; }
+}
+
+/*---------------------------------------------------------------------------
+   Copyright (c) 2016 Daniel C. Bünzli
+
+   Permission to use, copy, modify, and/or distribute this software for any
+   purpose with or without fee is hereby granted, provided that the above
+   copyright notice and this permission notice appear in all copies.
+
+   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+   WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+   MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+   ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+   ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  ---------------------------------------------------------------------------*/
