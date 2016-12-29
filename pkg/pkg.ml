@@ -67,8 +67,9 @@ let () =
   Pkg.describe "doc-ock" ~build @@ fun c ->
   Ok [ Pkg.lib ~exts:Exts.interface "src/docOckTypes";
        Pkg.mllib "src/doc-ock.mllib";
+       Pkg.lib ~exts:Exts.interface "test/ocamlary";
        Pkg.test ~run:false ~auto:false ~exts:(Exts.exts [".cmi"; ".cmo"])
-         "test/coverage";
-       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmi") "test/testCmi";
-       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmti") "test/testCmti";
-       Pkg.test ~args:(Cmd.v "_build/test/coverage.cmt") "test/testCmt"; ]
+         "test/ocamlary";
+       Pkg.test ~args:(Cmd.v "_build/test/ocamlary.cmi") "test/testCmi";
+       Pkg.test ~args:(Cmd.v "_build/test/ocamlary.cmti") "test/testCmti";
+       Pkg.test ~args:(Cmd.v "_build/test/ocamlary.cmt") "test/testCmt"; ]

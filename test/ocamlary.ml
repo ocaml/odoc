@@ -1,116 +1,49 @@
-(** This is an {i interface} with {b all} of the {e module system} features.
-    {C This text is centered. }
-    {L This text is left-aligned. }
-    {R This text is right-aligned. }
-    This documentation demonstrates:
-- comment formatting
-- unassociated comments
-- documentation sections
-- module system documentation including {ol
- {- submodules}
- {- module aliases}
- {- module types}
- {- module type aliases}
- {- modules with signatures}
- {- modules with aliased signatures}
-}
+(*
+ * Copyright (c) 2014 David Sheets <sheets@alum.mit.edu>
+ *                    Leo White <lpw25@cl.cam.ac.uk>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
 
-A numbered list:
-+ 3
-+ 2
-+ 1
+(** An interface with all of the module system features *)
 
-    David Sheets is the author.
-    @author David Sheets
-*)
-
-(**
-    You may find more information about this HTML documentation renderer
-    at {{:https://github.com/dsheets/ocamlary} github.com/dsheets/ocamlary }.
-*)
-
-(**
-   This is some verbatim text: {v verbatim v}
-*)
-
-(**
-    This is some verbatim text: {v [][df[]]}} v}
-*)
-
-(**
-    Here is some raw LaTeX: {% $e^{i\pi} = -1$ %}
-*)
-
-(**
-    Here is an index table of [Empty] modules: {!modules:Empty EmptyAlias}
-*)
-
-(**
-    Here is a table of links to indexes: {!indexlist}
-*)
-
-(**
-    Here is some superscript: x{^2}
-*)
-
-(**
-    Here is some subscript: x{_0}
-*)
-
-(**
-    Here are some escaped brackets: \{ \[ \@ \] \}
-*)
-
-(** An unassociated comment *)
-(******************************************************************************)
-
-(** {0 Level 0 } *)
-(** {1 Level 1 } *)
-(** {2 Level 2 } *)
-(** {3 Level 3 } *)
-(** {4 Level 4 } *)
-(** {5 Level 5 } *)
-(** {6 Level 6 } *)
-(** {7 Level 7 } *)
-(** {8 Level 8 } *)
-(** {9 Level 9 } *)
-
-(** {3 Basic module stuff} *)
-
-(** A plain, empty module *)
-module Empty : sig end
-(** This module has a signature without any members. *)
-
-(** An ambiguous, misnamed module type *)
 module type Empty = sig type t end
 
 (** An ambiguous, misnamed module type *)
 module type MissingComment = sig type t end
 
-(** {9000:s9000 Level 9000 } *)
+(** A plain, empty module. *)
+module Empty = struct end
 
-(** A plain module alias of [Empty] *)
+(** A plain module alias. *)
 module EmptyAlias = Empty
 
-(** {3:emptySig EmptySig} *)
-
-(** A plain, empty module signature *)
+(** A plain, empty module signature. *)
 module type EmptySig = sig end
 
-(** A plain, empty module signature alias of {[EmptySig]} (preformatted). *)
+(** A plain, empty module signature alias. *)
 module type EmptySigAlias = EmptySig
 
-(** A plain module of a signature of {!EmptySig} (reference) *)
-module ModuleWithSignature : EmptySig
+(** A plain module of a signature. *)
+module ModuleWithSignature = struct end
 
-(** A plain module with an alias signature
-    @deprecated I don't like this element any more.
-*)
-module ModuleWithSignatureAlias : EmptySigAlias
+(** A plain module with an alias signature. *)
+module ModuleWithSignatureAlias = struct end
 
-module One : sig type one end
+(** has type "one" *)
+module One = struct type one end
 
-(** There's a signature in a module in this signature. *)
+(** There's a module in this signature. *)
 module type SigForMod = sig
   module Inner : sig
     module type Empty = sig end
@@ -119,7 +52,7 @@ end
 
 module type SuperSig = sig
   module type SubSigA = sig
-    (** {3:subSig A Labeled Section Header Inside of a Signature} *)
+    (** {3:SubSig A Labeled Section Header Inside of a Signature *)
 
     type t
 
@@ -128,7 +61,7 @@ module type SuperSig = sig
     end
   end
   module type SubSigB = sig
-    (** {3:subSig Another Labeled Section Header Inside of a Signature} *)
+    (** {3:SubSig Another Labeled Section Header Inside of a Signature *)
 
     type t
   end
@@ -139,19 +72,10 @@ module type SuperSig = sig
   module type SuperSig = sig end
 end
 
-(** For a good time, see
-    {!SuperSig.SubSigA.subSig} or {!SuperSig.SubSigB.subSig} or
-    {!SuperSig.EmptySig}. Section {!s9000} is also
-    interesting. {!EmptySig} is a general reference but
-    {!section:emptySig} is the section and {!modtype:EmptySig} is the
-    module signature. *)
-
 (** {!Buffer.t} *)
-module Buffer : sig
-  val f : Buffer.t -> unit
+module Buffer = struct
+  let f _ = ()
 end
-
-(** Some text before exception title. {3 Basic exception stuff} After exception title. *)
 
 (** Unary exception constructor *)
 exception Kaboom of unit
@@ -162,47 +86,44 @@ exception Kablam of unit * unit
 (** Unary exception constructor over binary tuple *)
 exception Kapow  of (unit * unit)
 
-(** {!EmptySig} is general but {!modtype:EmptySig} is a module and
+(** {!EmptySig} is general but {!module:EmptySig} is a module and
     {!exception:EmptySig} is this exception. *)
 exception EmptySig
 
 (** {!exception:EmptySigAlias} is this exception. *)
 exception EmptySigAlias
 
-(** {3 Basic type and value stuff with advanced doc comments } *)
-
 (** {!a_function} is general but {!type:a_function} is this type and
     {!val:a_function} is the value below. *)
 type ('a,'b) a_function = 'a -> 'b
 
 (**
-   This is [a_function] with param and return type.
    @param x the [x] coordinate
    @return the [y] coordinate
 *)
-val a_function : x:int -> int
+let a_function ~x = x
 
-val fun_fun_fun : ((int, int) a_function, (unit, unit) a_function) a_function
+let fun_fun_fun int_fun = (fun () -> ())
 
-val fun_maybe : ?yes:unit -> unit -> int
+let fun_maybe ?yes () = 0
 
 (** @raise Not_found That's all it does *)
-val not_found : unit -> unit
+let not_found () = raise Not_found
 
-(** @see <http://ocaml.org/> The OCaml Web site *)
-val ocaml_org : string
+(** @see < http://ocaml.org/ > The OCaml Web site *)
+let ocaml_org = "http://ocaml.org/"
 
 (** @see 'some_file' The file called [some_file] *)
-val some_file : string
+let some_file = "some_file"
 
 (** @see "some_doc" The document called [some_doc] *)
-val some_doc : string
+let some_doc = "some_doc"
 
 (**
    This value was introduced in the Mesozoic era.
    @since mesozoic
 *)
-val since_mesozoic : unit
+let since_mesozoic = ()
 
 (**
    This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
@@ -210,68 +131,47 @@ val since_mesozoic : unit
    @before 1.1.0 before 1.1.0
    @version 1.2.0
 *)
-val changing : unit
+let changing = ()
 
 (** This value has a custom tag [foo].
     @foo the body of the custom [foo] tag
 *)
-val with_foo : unit
+let with_foo = ()
 
 (** {3 Some Operators } *)
 
-val ( ~- ) : unit
-
-val ( ! ) : unit
-
-val ( @ ) : unit
-
-val ( $ ) : unit
-
-val ( % ) : unit
-
-val ( ^ ) : unit
-
-val ( & ) : unit
-
-val ( * ) : unit
-
-val ( - ) : unit
-
-val ( + ) : unit
-
-val ( < ) : unit
-
-val ( > ) : unit
-
-val ( -? ) : unit
-
-val ( / ) : unit
-
-val ( -| ) : unit
-
-val ( := ) : unit
-
-val ( = ) : unit
-
-(**/**)
-(** I'm hidden *)
-(**/**)
+let ( ~- ) = ()
+let ( ! )  = ()
+let ( @ )  = ()
+let ( $ )  = ()
+let ( % )  = ()
+let ( ^ )  = ()
+let ( & )  = ()
+let ( * )  = ()
+let ( - )  = ()
+let ( + )  = ()
+let ( < )  = ()
+let ( > )  = ()
+let ( -? ) = ()
+let ( / )  = ()
+let ( -| ) = ()
+let ( := ) = ()
+let ( = )  = ()
 
 (** {3 Advanced Module Stuff} *)
 
 (** This comment is for [CollectionModule]. *)
-module CollectionModule : sig
+module CollectionModule = struct
   (** This comment is for [collection]. *)
   type collection
   type element
 
   (** This comment is for [InnerModuleA]. *)
-  module InnerModuleA : sig
+  module InnerModuleA = struct
     (** This comment is for [t]. *)
     type t = collection
-
     (** This comment is for [InnerModuleA']. *)
-    module InnerModuleA' : sig
+    module InnerModuleA' = struct
       (** This comment is for [t]. *)
       type t = (unit,unit) a_function
     end
@@ -282,7 +182,6 @@ module CollectionModule : sig
       type t = InnerModuleA'.t
     end
   end
-
   (** This comment is for [InnerModuleTypeA]. *)
   module type InnerModuleTypeA = InnerModuleA.InnerModuleTypeA'
 end
@@ -290,9 +189,30 @@ end
 (** module type of *)
 module type COLLECTION = module type of CollectionModule
 
-module Recollection :
-  functor (C : COLLECTION) ->
-    COLLECTION with type collection = C.element list and type element = C.collection
+module Recollection(C : COLLECTION) :
+  COLLECTION with type collection = C.element list and type element = C.collection = struct
+  type collection = C.element list
+  type element = C.collection
+
+  (** This comment is for [InnerModuleA]. *)
+  module InnerModuleA = struct
+    (** This comment is for [t]. *)
+    type t = collection
+    (** This comment is for [InnerModuleA']. *)
+    module InnerModuleA' = struct
+      (** This comment is for [t]. *)
+      type t = (unit,unit) a_function
+    end
+
+    (** This comment is for [InnerModuleTypeA']. *)
+    module type InnerModuleTypeA' = sig
+      (** This comment is for [t]. *)
+      type t = InnerModuleA'.t
+    end
+  end
+  (** This comment is for [InnerModuleTypeA]. *)
+  module type InnerModuleTypeA = InnerModuleA.InnerModuleTypeA'
+end
 
 module type MMM = sig module C : COLLECTION end
 
@@ -317,17 +237,16 @@ module type C = sig
   include B with type t := t and module Q := Q
 end
 
-(* TODO: figure out why this doesn't work
-
+(*
 (** This comment is for [Functor]. *)
-module Functor(EmptyAlias : EmptySigAlias) : sig
+module Functor(EmptyAlias : EmptySigAlias) = struct
   (** This comment is for [FunctorInner]. *)
   module FunctorInner = EmptyAlias
 end
 *)
 
 (** This comment is for [FunctorTypeOf]. *)
-module FunctorTypeOf(Collection : module type of CollectionModule) : sig
+module FunctorTypeOf(Collection : module type of CollectionModule) = struct
   (** This comment is for [t]. *)
   type t = Collection.collection
 end
@@ -347,7 +266,13 @@ module type ToInclude = sig
   end
 end
 
-include ToInclude
+module IncludedA = struct
+  type t
+end
+
+module type IncludedB = sig
+  type s
+end
 
 (** {3 Advanced Type Stuff} *)
 
@@ -389,14 +314,14 @@ type (_,_) full_gadt =
 | Tag : (unit,unit) full_gadt
 | First : 'a -> ('a,unit) full_gadt
 | Second : 'a -> (unit,'a) full_gadt
-| Exist : 'b -> (unit, unit) full_gadt (** *)
+| Exist : 'b -> (unit, unit) full_gadt
 (** Wow! It was a GADT! *)
 
 (** This comment is for [partial_gadt]. *)
 type 'a partial_gadt =
 | AscribeTag : 'a partial_gadt
 | OfTag of 'a partial_gadt
-| ExistGadtTag : ('a -> 'b) -> 'a partial_gadt (** *)
+| ExistGadtTag : ('a -> 'b) -> 'a partial_gadt
 (** Wow! It was a mixed GADT! *)
 
 (** This comment is for [alias]. *)
@@ -483,19 +408,16 @@ type 'a partial_gadt_alias = 'a partial_gadt =
 | OfTag of 'a partial_gadt_alias
 | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt_alias
 
-(** This comment is for {!Exn_arrow}. *)
+(** This comment is for {!exn_arrow}. *)
 exception Exn_arrow : unit -> exn
 
-(** This comment is for {!mutual_constr_a} then {!mutual_constr_b}. *)
+(** This comment is for {!mutual_constr_a} and {!mutual_constr_b}. *)
 type mutual_constr_a =
 | A
 | B_ish of mutual_constr_b
-(** This comment is between {!mutual_constr_a} and {!mutual_constr_b}. *)
 and mutual_constr_b =
 | B
 | A_ish of mutual_constr_a
-(** This comment must be here for the next to associate correctly. *)
-(** This comment is for {!mutual_constr_b} then {!mutual_constr_a}. *)
 
 type rec_obj = < f : int; g : unit -> unit; h : rec_obj >
 
@@ -528,9 +450,8 @@ type 'b poly_ext += Foo of 'b | Bar of 'b * 'b
 (** 'b poly_ext *)
 
 type 'c poly_ext += Quux of 'c
-(** 'c poly_ext *)
 
-module ExtMod : sig
+module ExtMod = struct
   type t = ..
 
   type t += Leisureforce
@@ -548,113 +469,116 @@ external launch_missiles : unit -> unit = "tetris"
 (** A brown paper package tied up with string*)
 type my_mod = (module COLLECTION)
 
-class empty_class : object end
+class empty_class = object val x = 0 end
 
-class one_method_class : object
-  method go : unit
+class one_method_class = object
+  method go = ()
 end
 
-class two_method_class : object
-  method one : one_method_class
-  method undo : unit
+class two_method_class = object
+  method one = new one_method_class
+  method undo = ()
 end
 
-class ['a] param_class : 'a -> object
-  method v : 'a
+class ['a] param_class x = object
+  method v : 'a = x
 end
+
 
 type my_unit_object = unit param_class
 
 type 'a my_unit_class = unit #param_class as 'a
 
-(* Bug in compiler breaks this example on cmi's *)
-(* class type my_unit_class_type = [unit] param_class *)
-
-(* TODO: classes, class types, ...? *)
-
-
 (* Test resolution of dependently typed modules *)
-module Dep1 : sig
+module Dep1 = struct
+
   module type S = sig
     class c : object
       method m : int
     end
   end
-  module X : sig
-    module Y : S
+
+  module X = struct
+    module Y = struct
+      class c = object
+        method m = 4
+      end
+    end
   end
+
 end
 
-module Dep2 :
-  functor (Arg : sig module type S module X : sig module Y : S end end) ->
-    sig
-      module A : sig
-        module Y : Arg.S
-      end
+module Dep2 (Arg : sig module type S module X : sig module Y : S end end) =
+    struct
+      module A = Arg.X
       module B = A.Y
     end
 
 type dep1 = Dep2(Dep1).B.c;;
 
-module Dep3 : sig type a end
+module Dep3 = struct type a end
 
-module Dep4 : sig
+module Dep4 = struct
   module type T = sig type b end
   module type S = sig
     module X : T
     module Y : sig end
   end
-  module X : T
+  module X = struct type b end
 end
 
-module Dep5 :
-  functor (Arg : sig
+module Dep5 (Arg : sig
                    module type T
                    module type S = sig
                      module X : T
                      module Y : sig end
                    end
                    module X : T
-            end) ->
-    sig
-      module Z : Arg.S with module Y = Dep3
-    end
+              end) = struct
+      module Z : Arg.S with module Y = Dep3 = struct
+        module X = Arg.X
+        module Y = Dep3
+      end
+  end
 
 type dep2 = Dep5(Dep4).Z.X.b
 
 type dep3 = Dep5(Dep4).Z.Y.a
 
-module Dep6 : sig
+module Dep6 = struct
   module type S = sig type d end
   module type T = sig
     module type R = S
     module Y : R
   end
-  module X : T
+  module X = struct
+    module type R = S
+    module Y = struct type d end
+  end
 end
 
-module Dep7 :
-  functor (Arg : sig
+module Dep7 (Arg : sig
                    module type S
                    module type T = sig
                      module type R = S
                      module Y : R
                    end
                    module X : T
-            end) -> sig
-      module M : Arg.T
+            end) = struct
+      module M = Arg.X
     end
 
 type dep4 = Dep7(Dep6).M.Y.d;;
 
+module Dep8 = struct
+  module type T = sig type t end
+end
 
-module Dep8 : sig module type T = sig type t end end
-
-module Dep9 : functor (X : sig module type T end) -> sig module type T = X.T end
+module Dep9(X : sig module type T end) = X
 
 module type Dep10 = Dep9(Dep8).T with type t = int
 
-module Dep11 : sig
+module Dep11 = struct
   module type S = sig
     class c : object
       method m : int
@@ -662,16 +586,18 @@ module Dep11 : sig
   end
 end
 
-module Dep12 :
-  functor (Arg : sig module type S end) -> sig
+module Dep12 =
+  functor (Arg : sig module type S end) -> struct
       module type T = Arg.S
 end
 
-module Dep13 : Dep12(Dep11).T
+module Dep13 = struct
+  class c = object
+    method m = 4
+  end
+end
 
 type dep5 = Dep13.c
-
-(* Test resolution of difficult with examples *)
 
 module type With1 = sig
   module M : sig
@@ -680,24 +606,33 @@ module type With1 = sig
   module N : M.S
 end
 
-module With2 : sig
+module With2 = struct
   module type S = sig type t end
 end
 
-module With3 : With1 with module M = With2
+module With3 = struct
+  module M = With2
+  module N = struct
+    type t = int
+  end
+end
 
 type with1 = With3.N.t
 
-module With4 : With1 with module M := With2
+module With4 = struct
+  module N = struct
+    type t = int
+  end
+end
 
 type with2 = With4.N.t
 
-module With5 : sig
+module With5 = struct
   module type S = sig type t end
-  module N : S
+  module N = struct type t = float end
 end
 
-module With6 : sig
+module With6 = struct
   module type T = sig
     module M : sig
       module type S
@@ -706,15 +641,15 @@ module With6 : sig
   end
 end
 
-module With7 : functor (X : sig module type T end) -> sig module type T = X.T end
+module With7 (X : sig module type T end) = X
 
 module type With8 = With7(With6).T with module M = With5 and type M.N.t = With5.N.t
 
-module With9 : sig
+module With9 = struct
   module type S = sig type t end
 end
 
-module With10 : sig
+module With10 = struct
   module type T = sig
     module M : sig
       module type S
@@ -731,27 +666,29 @@ module type NestedInclude1 = sig
 
 end
 
-include NestedInclude1
+module type NestedInclude2 = sig
+  type nested_include
+end
 
-include NestedInclude2 with type nested_include = int
+type nested_include = int
 
-module DoubleInclude1 : sig
-  module DoubleInclude2 : sig
+module DoubleInclude1 = struct
+  module DoubleInclude2 = struct
     type double_include
   end
 end
 
-module DoubleInclude3 : sig
-  include module type of DoubleInclude1
+module DoubleInclude3 = struct
+  include DoubleInclude1
 end
 
-include module type of DoubleInclude3.DoubleInclude2
+include DoubleInclude3.DoubleInclude2
 
-module IncludeInclude1 : sig
+module IncludeInclude1 = struct
   module type IncludeInclude2 = sig
     type include_include
   end
 end
 
-include module type of IncludeInclude1
-include IncludeInclude2
+include IncludeInclude1
+type include_include
