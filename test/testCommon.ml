@@ -19,7 +19,7 @@ let module_name file =
         String.sub base 0 pos
     with Not_found -> base
   in
-  let name = String.capitalize prefix in
+  let name = String.capitalize_ascii prefix in
     name
 
 let check_identity_map file intf =
@@ -53,7 +53,9 @@ let resolve_file lookup fetch file intf =
   resolve resolver intf
 
 let expand_file fetch file intf =
-  let expander = build_expander (fun ~root:_ name -> fetch file name) in
+  let expander =
+    build_expander (fun _ -> Not_found) (fun ~root:_ name -> fetch file name)
+  in
   expand expander intf
 
 let test read files =
