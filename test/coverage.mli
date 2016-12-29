@@ -536,7 +536,7 @@ module ExtMod : sig
   type t += Leisureforce
 end
 
-type ExtMod.t += ZzzTop
+type ExtMod.t += ZzzTop0
 (** It's got the rock *)
 
 type ExtMod.t += ZzzTop of unit
@@ -755,4 +755,3 @@ end
 
 include module type of IncludeInclude1
 include IncludeInclude2
-
