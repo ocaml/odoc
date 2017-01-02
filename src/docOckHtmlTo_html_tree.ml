@@ -189,15 +189,9 @@ and module_
       Html_tree.enter ~kind:(`Mod) modname;
       let expansion, subpages = module_expansion ~get_package expansion in
       let expansion =
-        let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
-        let md_def_content = Markup.keyword "module " :: pcdata modname :: md in
-        let doc =
-          match doc with
-          | [] -> p []
-          | _ -> div ~a:[ a_class ["doc"] ] doc
-        in
-        div ~a:[ a_class ["mod"] ] [Markup.def_div md_def_content; doc] ::
-        expansion
+        match doc with
+        | [] -> expansion
+        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
@@ -239,16 +233,6 @@ and module_decl'
 and module_type ~get_package (t : _ Types.ModuleType.t) =
   let modname = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
-  let modname, subtree =
-    match t.expansion with
-    | None -> pcdata modname, []
-    | Some expansion ->
-      Html_tree.enter ~kind:(`Mty) modname;
-      let node = module_expansion ~get_package expansion in
-      let subtree = Html_tree.make node in
-      Html_tree.leave ();
-      a ~a:[ a_href ~kind:`Mty modname ] [pcdata modname], [subtree]
-  in
   let mty =
     match t.expr with
     | None -> []
@@ -259,6 +243,21 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
       end ::
       mty ~get_package (Identifier.signature_of_module_type t.id) expr
   in
+  let modname, subtree =
+    match t.expansion with
+    | None -> pcdata modname, []
+    | Some expansion ->
+      Html_tree.enter ~kind:(`Mty) modname;
+      let expansion, subpages = module_expansion ~get_package expansion in
+      let expansion =
+        match doc with
+        | [] -> expansion
+        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+      in
+      let subtree = Html_tree.make (expansion, subpages) in
+      Html_tree.leave ();
+      a ~a:[ a_href ~kind:`Mty modname ] [pcdata modname], [subtree]
+  in
   let mty_def =
     (
       Markup.keyword "module type " ::
@@ -266,7 +265,11 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
       mty
     )
   in
-  [ Markup.make_def ~get_package ~id:t.id ~code:mty_def ~doc ], subtree
+  let region =
+    Markup.make_def ~get_package ~id:t.id ~code:mty_def
+      ~doc:(Documentation.first_to_html ~get_package t.doc)
+  in
+  [ region ], subtree
 
 and mty
   : 'inner_row 'outer_row. get_package:('a -> string)
