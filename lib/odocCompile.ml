@@ -22,17 +22,23 @@ module Root = OdocRoot
 module Unit = OdocUnit
 
 let it's_all_the_same ~env ~output input reader =
-  match reader (Fs.File.to_string input) with
+  let fn = Fs.File.to_string input in
+  match reader fn with
   | Not_an_interface  -> failwith "Not_an_interface"
   | Wrong_version  -> failwith "Wrong_version"
   | Corrupted  -> failwith "Corrupted"
   | Not_a_typedtree  -> failwith "Not_a_typedtree"
   | Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
-      let env = Env.build env unit in
-      resolve (Env.resolver env) unit
-      |> expand (Env.expander env)
-      |> Unit.save output
+    if not unit.Types.Unit.interface then (
+      Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
+        (if not (Filename.check_suffix fn "cmt") then "" (* ? *)
+         else Printf.sprintf " Using %S while you should use the .cmti file" fn)
+    );
+    let env = Env.build env unit in
+    resolve (Env.resolver env) unit
+    |> expand (Env.expander env)
+    |> Unit.save output
 
 let root_of_unit ~package unit_name digest =
   let unit = Root.Unit.create unit_name in
