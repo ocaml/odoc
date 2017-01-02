@@ -390,14 +390,75 @@ and apply_style ~get_package ~style txt =
         Flow5_without_interactive [div ~a:[ a_class [str] ] l]
     )
 
-let handle_text ~get_package txt =
-  List.concat @@ List.map (aggregate ~get_package txt) ~f:(function
+let paragraphise lst =
+  List.concat @@ List.map lst ~f:(function
     | Phrasing l -> [p l]
     | Phrasing_without_interactive l -> [p l]
     | Flow5 l -> l
     | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
     | Newline _ -> []
   )
+
+let handle_text ~get_package txt =
+  paragraphise (aggregate ~get_package txt)
+
+let handle_tags ~get_package tags =
+  let raw =
+    List.map tags ~f:(
+      let open Documentation in
+      (* TODO: better everything. *)
+      function
+      | Author  s -> [ b [pcdata "Author"] ; pcdata ": "; pcdata s ]
+      | Version s -> [ b [pcdata "Version"]; pcdata ": "; pcdata s ]
+      | See (see, txt) ->
+        let prefix = [ b [pcdata "See"]; pcdata " " ] in
+        let see =
+          match see with
+          | Url s -> a ~a:[ a_href s ] [ pcdata s ]
+          | File s -> pcdata s
+          | Doc s -> pcdata s
+        in
+        let aggregated = aggregate ~get_package txt in
+        paragraphise (collapse (Phrasing (prefix @ [see]) :: aggregated))
+      | Since s -> [ b [pcdata "Since"]; pcdata ": "; pcdata s ]
+      | Before (s, txt) ->
+        let prefix = [ b [pcdata "Before"]; pcdata " "; pcdata s; pcdata "." ] in
+        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
+        paragraphise aggregated
+      | Deprecated txt -> handle_text ~get_package txt
+      | Param (name, txt) ->
+        let p =
+          [ b [pcdata "Parameter"]; pcdata " "
+          ; Markup.module_path [name] (* Meh. *)
+          ; pcdata ": "
+          ]
+        in
+        let aggregated = collapse (Phrasing p :: aggregate ~get_package txt) in
+        paragraphise aggregated
+      | Raise (name, txt) ->
+        let p =
+          [ b [pcdata "Raises"]; pcdata " "
+          ; Markup.module_path [name] (* Meh. *)
+          ; pcdata ": "
+          ]
+        in
+        let aggregated = collapse (Phrasing p :: aggregate ~get_package txt) in
+        paragraphise aggregated
+      | Return txt ->
+        let prefix = [ b [pcdata "Returns"]; pcdata " " ] in
+        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
+        paragraphise aggregated
+      | Tag (s, txt) ->
+        let prefix = [ b [pcdata "@"; pcdata s]; pcdata " " ] in
+        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
+        paragraphise aggregated
+      | Inline -> []
+    )
+  in
+  let cleaned = List.filter (function [] -> false | _ -> true) raw in
+  match cleaned with
+  | [] -> []
+  | lst -> [ ul (List.map lst ~f:li) ]
 
 let rec list_keep_while ~pred = function
   | x :: xs when pred x -> x :: list_keep_while ~pred xs
@@ -437,7 +498,10 @@ let first_to_html ~get_package (t : _ Documentation.t) =
 let to_html ~get_package (t : _ Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
-  | Ok body -> handle_text ~get_package body.text
+  | Ok body ->
+    let doc = handle_text ~get_package body.text in
+    let tags = handle_tags ~get_package body.tags in
+    doc @ tags
 
 let has_doc (t : _ Types.Documentation.t) =
   match t with
