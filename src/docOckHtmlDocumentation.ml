@@ -515,15 +515,29 @@ let first_to_html ~get_package (t : _ Documentation.t) =
     handle_text ~get_package (list_keep_while ~pred text)
   | Error e -> prerr_error e; []
 
-let to_html ~get_package (t : _ Documentation.t) =
+let to_html ?wrap ~get_package (t : _ Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
   | Ok body ->
-    let doc = handle_text ~get_package body.text in
-    let tags = handle_tags ~get_package body.tags in
-    doc @ tags
+    match wrap with
+    | None ->
+      let doc = handle_text ~get_package body.text in
+      let tags = handle_tags ~get_package body.tags in
+      doc @ tags
+    | Some () ->
+      let open Documentation in
+      let open_ = "(** " in
+      let close = " *)" in
+      match body.text, body.tags with
+      | [], [] -> []
+      | _, [] -> handle_text ~get_package (Raw open_ :: body.text @ [Raw close])
+      | [], _ -> p [pcdata open_] :: handle_tags ~get_package body.tags @ [p [pcdata close]]
+      | _, _ ->
+        handle_text ~get_package (Raw open_ :: body.text) @
+        handle_tags ~get_package body.tags @
+        [p [pcdata close]]
 
 let has_doc (t : _ Types.Documentation.t) =
   match t with
-  | Ok body -> body.text <> []
+  | Ok body -> body.text <> [] || body.tags <> []
   | Error e -> prerr_error e; false

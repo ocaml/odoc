@@ -438,31 +438,38 @@ and variant ~get_package cstrs : [> Html_types.table ] elt =
   table rows
 
 and record ~get_package fields =
-  let field mutable_ id =
-    let name = Identifier.name id in
-    Markup.make_def ~get_package ~id ~doc:[] ~code:[
-      (if mutable_ then Markup.keyword "mutable " else pcdata "");
-      pcdata name
-    ]
+  let field mutable_ id typ =
+    match Url.from_identifier ~get_package ~stop_before:true id with
+    | Error e -> failwith (Url.Error.to_string e)
+    | Ok { anchor; kind; _ } ->
+      let name = Identifier.name id in
+      td ~a:[ a_class ["def"; kind ]; a_id anchor ]
+        [ a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] []
+        ; code (
+            (if mutable_ then Markup.keyword "mutable " else pcdata "")
+            :: (pcdata name)
+            :: (pcdata " : ")
+            :: (type_expr ~get_package typ)
+            @  [pcdata ";"]
+          )
+        ]
   in
   let rows =
     List.map fields ~f:(fun fld ->
       let open Types.TypeDecl.Field in
-      let lhs = field fld.mutable_ fld.id in
-      let rhs = Documentation.to_html ~get_package fld.doc in
-      tr ~a:[ a_class ["field"] ] (
-        td [ lhs ] ::
-        td [ code [pcdata " : "] ] ::
-        td [ code (type_expr ~get_package fld.type_ @ [pcdata ";"]) ] ::
+      let lhs = field fld.mutable_ fld.id fld.type_ in
+      let rhs = Documentation.to_html ~wrap:() ~get_package fld.doc in
+      tr (
+        lhs ::
         if not (Documentation.has_doc fld.doc) then [] else [
-          td [pcdata "(*"];
-          td [ div ~a:[ a_class ["doc" ]] rhs ];
-          td [pcdata "*)"];
+          td ~a:[ a_class ["doc"] ] rhs
         ]
       )
     )
   in
-  [code [pcdata "{"]; table rows; code [pcdata "}"]]
+  [ code [pcdata "{"]
+  ; table ~a:[ a_class ["record"] ] rows
+  ; code [pcdata "}"]]
 
 and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   let tyname = Identifier.name t.id in
