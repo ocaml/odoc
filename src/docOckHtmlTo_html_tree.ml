@@ -416,21 +416,24 @@ and format_manifest
 
 and variant ~get_package cstrs : [> Html_types.table ] elt =
   let constructor id args res =
-    Markup.make_spec ~get_package ~id
-      (code [ Markup.keyword "| " ] ::
-       constructor ~get_package id args res)
+    match Url.from_identifier ~get_package ~stop_before:true id with
+    | Error e -> failwith (Url.Error.to_string e)
+    | Ok { anchor; kind; _ } ->
+      td ~a:[ a_class ["def"; kind ]; a_id anchor ] (
+        a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
+        code [Markup.keyword "| " ] ::
+        constructor ~get_package id args res
+      )
   in
   let rows =
     List.map cstrs ~f:(fun cstr ->
       let open Types.TypeDecl.Constructor in
       let lhs = constructor cstr.id cstr.args cstr.res in
-      let rhs = Documentation.to_html ~get_package cstr.doc in
-      tr ~a:[ a_class ["cons"] ] (
-        td [ lhs ] ::
+      let rhs = Documentation.to_html ~wrap:() ~get_package cstr.doc in
+      tr (
+        lhs ::
         if not (Documentation.has_doc cstr.doc) then [] else [
-          td [pcdata "(*"];
-          td [ div ~a:[ a_class ["doc"] ] rhs ];
-          td [pcdata "*)"];
+          td ~a:[ a_class ["doc"] ] rhs
         ]
       )
     )
