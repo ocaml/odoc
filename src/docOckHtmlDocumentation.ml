@@ -125,32 +125,52 @@ module Reference = struct
         render_resolved r ^ "." ^ s
       | Label (r, s) -> render_resolved r ^ ":" ^ s
 
-  (*
-    let rec to_html : type a. get_package:('b -> string) ->
-      ?text:Html_types.flow5_without_interactive elt list -> stop_before:bool ->
-      (_, a) Reference.t -> Html_types.flow5 elt list =
-  *)
+  let rec ref_to_string : type a. (_, a) Reference.t -> string = function
+    | Reference.Root s -> s
+    | Reference.Dot (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Resolved r -> render_resolved r
+
   let rec to_html : type a. get_package:('b -> string) -> ?text:kind -> stop_before:bool
     -> (_, a) Reference.t -> kind =
     fun ~get_package ?text ~stop_before ref ->
+      let span txt =
+        let span x =
+          span x ~a:[ a_class ["xref-unresolved"]
+                    ; a_title (Printf.sprintf "unresolved %S"
+                                 (ref_to_string ref))
+                    ]
+        in
+        match txt with
+        | Phrasing l -> Phrasing [span l]
+        | Phrasing_without_interactive l ->
+          Phrasing_without_interactive [span l]
+        | otherwise ->
+          (* [span] only accepts phrasing content. *)
+          Printf.eprintf
+            "Unresolved reference %S could not be spaned as the text is too \
+             rich\n%!" (ref_to_string ref);
+          otherwise
+      in
       let open Reference in
       match ref with
-      (* FIXME: Use [text] when available even when the reference is not
-         resolved.
-         Seems easy to do for [Root _] but nontrivial for [Dot (_, _)] what if
-         some prefix of the path is resolved, do we want to link there even
-         though it might be confusing? *)
-      | Root s -> Phrasing_without_interactive [ pcdata s ]
+      | Root s ->
+        begin match text with
+        | None -> Phrasing_without_interactive [ pcdata s ]
+        | Some s -> span s
+        end
       | Dot (parent, s) ->
-        let tail = [ pcdata ("." ^ s) ] in
-        begin match to_html ~get_package ~stop_before:true parent with
-        | Phrasing content -> Phrasing (content @ tail)
-        | Phrasing_without_interactive content ->
-          Phrasing_without_interactive (content @ tail)
-        | Flow5 content -> Flow5 (content @ tail)
-        | Flow5_without_interactive content ->
-          Flow5_without_interactive (content @ tail)
-        | Newline _ -> Phrasing_without_interactive tail
+        begin match text with
+        | Some s -> span s
+        | None ->
+          let tail = [ pcdata ("." ^ s) ] in
+          match to_html ~get_package ~stop_before:true parent with
+          | Phrasing content -> Phrasing (content @ tail)
+          | Phrasing_without_interactive content ->
+            Phrasing_without_interactive (content @ tail)
+          | Flow5 content -> Flow5 (content @ tail)
+          | Flow5_without_interactive content ->
+            Flow5_without_interactive (content @ tail)
+          | Newline _ -> Phrasing_without_interactive tail
         end
       | Resolved r ->
         let id = Reference.Resolved.identifier r in
