@@ -35,20 +35,15 @@ module Compile : sig
   val info: Term.info
 end = struct
 
-  let output_file output package_name input = match output with
-  | Some file -> Fs.File.of_string file
-  | None ->
-      let odoc = Fs.File.(to_string (set_ext ".odoc" (basename input))) in
-      let cwd = Fs.Directory.of_string (Sys.getcwd ()) in
-      let dir = Fs.Directory.reach_from ~dir:cwd package_name in
-      Fs.File.create ~directory:dir ~name:odoc
-
   let compile directories resolve_fwd_refs output package_name input =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
     let input = Fs.File.of_string input in
-    let output = output_file output package_name input in
+    let output = match output with
+    | Some file -> Fs.File.of_string file
+    | None -> Fs.File.(set_ext ".odoc" input)
+    in
     let package = Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     match Fs.File.has_ext ".cmti" input with
@@ -57,11 +52,10 @@ end = struct
 
   let cmd =
     let dst_file =
-      let doc = "Output file path. If absent outputs to
-                 $(i,PKG)/$(i,BASE).odoc where $(i,BASE) is the basename
-                 of the input file and $(i,PKG) the package specified via
-                 $(b,--pkg). Non-existing intermediate directories are
-                 created."
+      let doc = "Output file path. Non-existing intermediate directories are
+                 created. If absent outputs a $(i,BASE).odoc file in the same
+                 directory as as the input file where $(i,BASE) is the basename
+                 of the input file."
       in
       Arg.(value & opt (some string) None @@ info ~docs ~docv:"PATH" ~doc ["o"])
     in
