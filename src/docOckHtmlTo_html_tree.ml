@@ -452,8 +452,8 @@ and record ~get_package fields =
       let rhs = Documentation.to_html ~get_package fld.doc in
       tr ~a:[ a_class ["field"] ] (
         td [ lhs ] ::
-        td [ pcdata " : " ] ::
-        td (type_expr ~get_package fld.type_ @ [pcdata ";"]) ::
+        td [ code [pcdata " : "] ] ::
+        td [ code (type_expr ~get_package fld.type_ @ [pcdata ";"]) ] ::
         if not (Documentation.has_doc fld.doc) then [] else [
           td [pcdata "(*"];
           td [ div ~a:[ a_class ["doc" ]] rhs ];
@@ -462,7 +462,7 @@ and record ~get_package fields =
       )
     )
   in
-  [pcdata "{"; table rows; pcdata "}"]
+  [code [pcdata "{"]; table rows; code [pcdata "}"]]
 
 and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   let tyname = Identifier.name t.id in
@@ -491,7 +491,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
       manifest
     ) ::
     representation @
-    constraints
+    [code constraints]
   in
   Markup.make_spec ~get_package ~id:t.id ~doc tdecl_def
 
@@ -684,13 +684,15 @@ and include_ ~get_package (t : _ Types.Include.t) =
       included_html
     else
       let incl =
-        Markup.keyword "include " ::
-        module_decl' ~get_package t.parent t.decl
+        code (
+          Markup.keyword "include " ::
+          module_decl' ~get_package t.parent t.decl
+        )
       in
       (* TODO: I'd like to add an anchor here, but I don't know what id to give
          it... *)
       [ details ~a:[a_open ()]
-          (Markup.def_summary incl) included_html
+          (Markup.def_summary [incl]) included_html
       ]
   in
   [ div ~a:[ a_class ["spec"; "include"] ]
