@@ -180,13 +180,13 @@ and module_
   -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun ~get_package t ->
   let modname = Identifier.name t.id in
-  let doc = Documentation.to_html ~get_package t.doc in
   let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
   let modname, subtree =
     match t.expansion with
     | None -> pcdata modname, []
     | Some expansion ->
       Html_tree.enter ~kind:(`Mod) modname;
+      let doc = Documentation.to_html ~get_package t.doc in
       let expansion, subpages = module_expansion ~get_package expansion in
       let expansion =
         match doc with
@@ -232,7 +232,6 @@ and module_decl'
 
 and module_type ~get_package (t : _ Types.ModuleType.t) =
   let modname = Identifier.name t.id in
-  let doc = Documentation.to_html ~get_package t.doc in
   let mty =
     match t.expr with
     | None -> []
@@ -248,6 +247,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
     | None -> pcdata modname, []
     | Some expansion ->
       Html_tree.enter ~kind:(`Mty) modname;
+      let doc = Documentation.to_html ~get_package t.doc in
       let expansion, subpages = module_expansion ~get_package expansion in
       let expansion =
         match doc with
