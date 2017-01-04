@@ -726,8 +726,12 @@ reference:
   | tag = Custom data = string CLOSE
       { Documentation.Custom(tag, data) }
 
+documented_module:
+  | rf = module_reference doc = text
+      { (rf, doc) }
+
 special:
-  | MODULES modules = module_reference* CLOSE
+  | MODULES modules = documented_module* CLOSE
       { Documentation.Modules modules }
   | INDEX CLOSE
       { Documentation.Index }

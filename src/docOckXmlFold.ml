@@ -650,14 +650,6 @@ let doc_reference_p base output acc rf =
       let acc = data output acc s in
       close output acc
 
-let special_p base output acc =
-  let open Documentation in function
-    | Modules mds ->
-      let acc = modules_t output acc in
-      let acc = list reference_p base output acc mds in
-      close output acc
-    | Index -> closed index_t output acc
-
 let rec item_p base output acc txt =
   let acc = item_t output acc in
   let acc = text_p base output acc txt in
@@ -719,6 +711,19 @@ and text_element_p base output acc elem =
 
 and text_p base output acc txt =
   list text_element_p base output acc txt
+
+and special_p base output acc =
+  let open Documentation in function
+    | Modules mds ->
+      let acc = modules_t output acc in
+      let acc = list documented_module_p base output acc mds in
+      close output acc
+    | Index -> closed index_t output acc
+
+and documented_module_p base output acc (md, txt) =
+  let acc = reference_p base output acc md in
+  text_p base output acc txt
+
 
 and see output acc =
   let open Documentation in function
