@@ -75,7 +75,7 @@ let read_reference rk s =
 
 let read_special_reference = function
   | SRK_module_list mds ->
-      Modules (List.map read_longident mds)
+      Modules (List.map (fun lid -> read_longident lid, []) mds)
   | SRK_index_list -> Index
 
 let rec read_text_element parent

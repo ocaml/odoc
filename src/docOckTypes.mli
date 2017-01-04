@@ -51,10 +51,6 @@ module Documentation : sig
     | Link of string
     | Custom of string * string
 
-  type 'a special =
-    Modules of 'a Reference.module_ list
-  | Index
-
   type see =
     | Url of string
     | File of string
@@ -88,6 +84,11 @@ module Documentation : sig
     | Return of 'a text
     | Inline
     | Tag of string * 'a text
+
+  and 'a special =
+    | Modules of ('a Reference.module_ * 'a text) list
+    | Index
+
 
   module Error : sig
 

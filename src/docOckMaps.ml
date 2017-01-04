@@ -808,9 +808,16 @@ class virtual ['a] documentation = object (self)
     let open Documentation in
       match sr with
       | Modules rfs ->
-          let rfs' = list_map self#reference_module rfs in
-            if rfs != rfs' then Modules rfs'
-            else sr
+        let rfs' =
+          list_map (fun (rf, txt as pair) ->
+            let rf' = self#reference_module rf in
+            let txt' = self#documentation_text txt in
+            if rf != rf' || txt != txt' then (rf', txt')
+            else pair
+          ) rfs
+        in
+        if rfs != rfs' then Modules rfs'
+        else sr
       | Index -> sr
 
   method documentation_see see =
