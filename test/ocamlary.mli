@@ -778,8 +778,13 @@ include module type of IncludeInclude1
 include IncludeInclude2
 
 
-(** Floating, trying the {v {!modules: ...} v} command.
+(** {1 Trying the \{!modules: ...\} command.}
+
     With ocamldoc, toplevel units will be linked and documented, while
     submodules will behave as simple references.
-    {!modules: Dep1.X DocOckTypes Ocamlary.IncludeInclude1}
+
+    With odoc, everything should be resolved (and linked) but only toplevel
+    units will be documented.
+
+    {!modules: Dep1.X DocOckTypes Ocamlary.IncludeInclude1 Ocamlary}
 *)

@@ -470,6 +470,8 @@ module Reference : sig
     type 'a instance_variable = ('a, reference_instance_variable) t
     type 'a label = ('a, reference_label) t
 
+    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
     val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
     val ident_module_type : 'a Identifier.module_type ->
@@ -552,6 +554,8 @@ module Reference : sig
   type 'a method_ = ('a, reference_method) t
   type 'a instance_variable = ('a, reference_instance_variable) t
   type 'a label = ('a, reference_label) t
+
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
   val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 

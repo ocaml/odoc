@@ -168,7 +168,8 @@ type 'a expander =
                                  'a intermediate_module_expansion;
     expand_module_type_resolved_path: root:'a ->
                                       'a Path.Resolved.module_type ->
-                                      'a intermediate_module_type_expansion; }
+      'a intermediate_module_type_expansion;
+    fetch_unit_from_ref: 'a Reference.module_ -> 'a Unit.t option; }
 
 let add_doc_to_expansion_opt doc :
   'a partial_expansion option -> 'a partial_expansion option = function
@@ -511,6 +512,18 @@ let create (type a) ?equal ?hash
       let res = (unit.id, unit.doc, ex) in
       RootTbl.add expand_root_tbl key res;
       res
+  and fetch_unit_from_ref ref =
+    let open Reference in
+    match ref with
+    | Resolved (Resolved.Identifier (Identifier.Root (_, unit_name))) ->
+      begin match lookup unit_name with
+      | DocOckComponentTbl.Found root ->
+        let unit = fetch ~root root in
+        Some unit
+      | _ -> None
+      end
+    | _ ->
+      None
   and expand_forward_ref ~root str =
     match lookup str with
     | DocOckComponentTbl.Found a -> expand_root ~root a
@@ -570,7 +583,8 @@ let create (type a) ?equal ?hash
       expand_module_type_identifier;
       expand_signature_identifier;
       expand_module_resolved_path;
-      expand_module_type_resolved_path; }
+      expand_module_type_resolved_path;
+      fetch_unit_from_ref; }
   in
     t
 
@@ -687,6 +701,27 @@ class ['a] t ?equal ?hash lookup fetch = object (self)
     let arg = expand_argument t arg in
       super#module_type_functor_arg arg
 
+  method documentation_special_modules (rf, txt as pair) =
+    let rf' = self#reference_module rf in
+    let txt' =
+      match txt with
+      | _ :: _ -> txt
+      | [] ->
+        match t.fetch_unit_from_ref rf' with
+        | None -> txt
+        | Some u ->
+          let open Documentation in
+          match u.Unit.doc with
+          | Ok { text; _ } ->
+            begin match text with
+            | [] -> txt
+            | _ -> text
+            end
+          | _ -> txt
+    in
+    let txt' = self#documentation_text txt' in
+    if rf != rf' || txt != txt' then (rf', txt')
+    else pair
 
   (* CR trefis: TODO *)
   method reference_module x = x

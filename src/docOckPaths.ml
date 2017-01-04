@@ -1107,6 +1107,39 @@ module Reference = struct
     type 'a instance_variable = ('a, reference_instance_variable) t
     type 'a label = ('a, reference_label) t
 
+    let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
+      fun sexp_of_a t ->
+        let atom s = Atom (Printf.sprintf "%S" s) in
+        match t with
+        | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
+                                                       sexp_of_a id ]
+        | Module (sg, s) ->
+          List [ Atom "Module"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | ModuleType (sg, s) ->
+          List [ Atom "ModuleType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Type (sg, s) ->
+          List [ Atom "Type"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Constructor (cs, s) ->
+          List [ Atom "Constructor"; List [sexp_of_t sexp_of_a cs; atom s] ]
+        | Field (f, s) ->
+          List [ Atom "Field"; List [sexp_of_t sexp_of_a f; atom s] ]
+        | Extension (sg, s) ->
+          List [ Atom "Extension"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Exception (sg, s) ->
+          List [ Atom "Exception"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Value (sg, s) ->
+          List [ Atom "Value"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Class (sg, s) ->
+          List [ Atom "Class"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | ClassType (sg, s) ->
+          List [ Atom "ClassType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Method (sg, s) ->
+          List [ Atom "Method"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | InstanceVariable (sg, s) ->
+          List [ Atom "InstanceVariable"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        | Label (sg, s) ->
+          List [ Atom "Label"; List [sexp_of_t sexp_of_a sg; atom s] ]
+
     let ident_module : 'a Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
 
@@ -1321,6 +1354,14 @@ module Reference = struct
   type 'a method_ = ('a, reference_method) t
   type 'a instance_variable = ('a, reference_instance_variable) t
   type 'a label = ('a, reference_label) t
+
+  let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
+    fun sexp_of_a t ->
+      let atom s = Atom (Printf.sprintf "%S" s) in
+      match t with
+      | Resolved r -> List [ Atom "Resolved"; Resolved.sexp_of_t sexp_of_a r ]
+      | Root s -> List [ Atom "Root"; atom s ]
+      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s]]
 
   let ident_module : 'a Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)

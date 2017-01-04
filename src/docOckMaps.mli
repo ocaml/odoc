@@ -371,6 +371,10 @@ class virtual ['a] documentation : object
   method documentation_special : 'a Documentation.special ->
     'a Documentation.special
 
+  method documentation_special_modules :
+    'a Reference.module_ * 'a Documentation.text ->
+    'a Reference.module_ * 'a Documentation.text
+
   method documentation_see : Documentation.see -> Documentation.see
 
   method documentation_see_url : string -> string

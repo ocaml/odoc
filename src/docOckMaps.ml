@@ -804,18 +804,17 @@ class virtual ['a] documentation = object (self)
   method documentation_reference_custom custom = custom
   method documentation_reference_custom_body body = body
 
+  method documentation_special_modules (rf, txt as pair) =
+    let rf' = self#reference_module rf in
+    let txt' = self#documentation_text txt in
+    if rf != rf' || txt != txt' then (rf', txt')
+    else pair
+
   method documentation_special sr =
     let open Documentation in
       match sr with
       | Modules rfs ->
-        let rfs' =
-          list_map (fun (rf, txt as pair) ->
-            let rf' = self#reference_module rf in
-            let txt' = self#documentation_text txt in
-            if rf != rf' || txt != txt' then (rf', txt')
-            else pair
-          ) rfs
-        in
+        let rfs' = list_map self#documentation_special_modules rfs in
         if rfs != rfs' then Modules rfs'
         else sr
       | Index -> sr
