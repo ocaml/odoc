@@ -424,14 +424,22 @@ let handle_text ~get_package txt =
 
 let handle_tags ~get_package tags =
   let raw =
+    let make_tag ?class_ txt =
+      let class_ =
+        match class_ with
+        | None -> String.uncapitalize txt
+        | Some s -> s
+      in
+      span ~a:[ a_class [ "at-tag"; class_ ] ] [pcdata txt]
+    in
     List.map tags ~f:(
       let open Documentation in
       (* TODO: better everything. *)
       function
-      | Author  s -> [ b [pcdata "Author"] ; pcdata ": "; pcdata s ]
-      | Version s -> [ b [pcdata "Version"]; pcdata ": "; pcdata s ]
+      | Author  s -> [ make_tag "Author" ; pcdata ": "; pcdata s ]
+      | Version s -> [ make_tag "Version" ; pcdata ": "; pcdata s ]
       | See (see, txt) ->
-        let prefix = [ b [pcdata "See"]; pcdata " " ] in
+        let prefix = [ make_tag "See"; pcdata " " ] in
         let see =
           match see with
           | Url s -> a ~a:[ a_href s ] [ pcdata s ]
@@ -440,15 +448,19 @@ let handle_tags ~get_package tags =
         in
         let aggregated = aggregate ~get_package txt in
         paragraphise (collapse (Phrasing (prefix @ [see]) :: aggregated))
-      | Since s -> [ b [pcdata "Since"]; pcdata ": "; pcdata s ]
+      | Since s -> [ make_tag "Since" ; pcdata ": "; pcdata s ]
       | Before (s, txt) ->
-        let prefix = [ b [pcdata "Before"]; pcdata " "; pcdata s; pcdata "." ] in
+        let prefix = [ make_tag "Before" ; pcdata " "; pcdata s; pcdata "." ] in
         let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
         paragraphise aggregated
-      | Deprecated txt -> handle_text ~get_package txt
+      | Deprecated txt ->
+        let prefix = [ make_tag "Deprecated" ; pcdata " " ] in
+        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
+        paragraphise aggregated
       | Param (name, txt) ->
         let p =
-          [ b [pcdata "Parameter"]; pcdata " "
+          [ make_tag "Parameter"
+          ; pcdata " "
           ; Markup.module_path [name] (* Meh. *)
           ; pcdata ": "
           ]
@@ -457,7 +469,8 @@ let handle_tags ~get_package tags =
         paragraphise aggregated
       | Raise (name, txt) ->
         let p =
-          [ b [pcdata "Raises"]; pcdata " "
+          [ make_tag ~class_:"raise" "Raises"
+          ; pcdata " "
           ; Markup.module_path [name] (* Meh. *)
           ; pcdata ": "
           ]
@@ -465,11 +478,11 @@ let handle_tags ~get_package tags =
         let aggregated = collapse (Phrasing p :: aggregate ~get_package txt) in
         paragraphise aggregated
       | Return txt ->
-        let prefix = [ b [pcdata "Returns"]; pcdata " " ] in
+        let prefix = [ make_tag ~class_:"return" "Returns" ; pcdata " " ] in
         let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
         paragraphise aggregated
       | Tag (s, txt) ->
-        let prefix = [ b [pcdata "@"; pcdata s]; pcdata " " ] in
+        let prefix = [ make_tag ~class_:s ("@" ^ s) ; pcdata " " ] in
         let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
         paragraphise aggregated
       | Inline -> []
@@ -478,7 +491,7 @@ let handle_tags ~get_package tags =
   let cleaned = List.filter (function [] -> false | _ -> true) raw in
   match cleaned with
   | [] -> []
-  | lst -> [ ul (List.map lst ~f:li) ]
+  | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:li) ]
 
 let rec list_keep_while ~pred = function
   | x :: xs when pred x -> x :: list_keep_while ~pred xs
