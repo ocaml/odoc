@@ -86,6 +86,7 @@ class ['a] lookup = object (self)
 
   method unit unt =
     let open Unit in
+    let env = add_unit unt env in
     let env =
       match unt.content with
       | Module items -> add_signature_items items env

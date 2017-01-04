@@ -733,12 +733,15 @@ module With9 : sig
 end
 
 module With10 : sig
+
+
   module type T = sig
     module M : sig
       module type S
     end
     module N : M.S
   end
+  (** {!With10.T} is a submodule type. *)
 end
 
 module type With11 = With7(With10).T with module M = With9 and type N.t = int
