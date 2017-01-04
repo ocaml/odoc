@@ -16,12 +16,12 @@
 
 val cmti :
   env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output_dir:OdocFs.Directory.t -> ?output:string -> OdocFs.File.t -> unit
+  output:OdocFs.File.t -> OdocFs.File.t -> unit
 
 val cmt :
   env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output_dir:OdocFs.Directory.t -> ?output:string -> OdocFs.File.t -> unit
+  output:OdocFs.File.t -> OdocFs.File.t -> unit
 
 val cmi :
   env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output_dir:OdocFs.Directory.t -> ?output:string -> OdocFs.File.t -> unit
+  output:OdocFs.File.t -> OdocFs.File.t -> unit

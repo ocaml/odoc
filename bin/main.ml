@@ -34,27 +34,34 @@ module Compile : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
-  let compile directories resolve_fwd_refs output package_name filename =
-    let env = Env.create ~important_digests:(not resolve_fwd_refs) ~directories in
-    let file = Fs.File.of_string filename in
-    let package = Root.Package.create package_name in
-    let output_dir =
-      let cwd = Fs.Directory.of_string (Sys.getcwd ()) in
-      Fs.Directory.reach_from ~dir:cwd package_name
+
+  let compile directories resolve_fwd_refs output package_name input =
+    let env =
+      Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
-    if Filename.check_suffix filename "cmti" then
-      Compile.cmti ~env ~output_dir ~package ?output file
-    else
-      Compile.cmt ~env ~output_dir ~package ?output file
+    let input = Fs.File.of_string input in
+    let output = match output with
+    | Some file -> Fs.File.of_string file
+    | None -> Fs.File.(set_ext ".odoc" input)
+    in
+    let package = Root.Package.create package_name in
+    Fs.Directory.mkdir_p (Fs.File.dirname output);
+    match Fs.File.has_ext ".cmti" input with
+    | true -> Compile.cmti ~env ~package ~output input
+    | false -> Compile.cmt ~env ~package ~output input
 
   let cmd =
     let dst_file =
-      let doc = "Output file name" in
-      Arg.(value & opt (some string) None @@ info ~docs ~docv:"FILE" ~doc ["o"])
+      let doc = "Output file path. Non-existing intermediate directories are
+                 created. If absent outputs a $(i,BASE).odoc file in the same
+                 directory as as the input file where $(i,BASE) is the basename
+                 of the input file."
+      in
+      Arg.(value & opt (some string) None @@ info ~docs ~docv:"PATH" ~doc ["o"])
     in
     let input =
       let doc = "Input file (either .cmti or .cmt)" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file" [])
+      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"FILE" [])
     in
     let pkg =
       let doc = "Package the input is part of" in
