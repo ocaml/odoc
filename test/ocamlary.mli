@@ -773,3 +773,10 @@ end
 
 include module type of IncludeInclude1
 include IncludeInclude2
+
+
+(** Floating, trying the {v {!modules: ...} v} command.
+    With ocamldoc, toplevel units will be linked and documented, while
+    submodules will behave as simple references.
+    {!modules: Dep1.X DocOckTypes Ocamlary.IncludeInclude1}
+*)
