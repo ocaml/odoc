@@ -46,9 +46,16 @@ end = struct
     in
     let package = Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    match Fs.File.has_ext ".cmti" input with
-    | true -> Compile.cmti ~env ~package ~output input
-    | false -> Compile.cmt ~env ~package ~output input
+    if Fs.File.has_ext ".cmti" input then
+      Compile.cmti ~env ~package ~output input
+    else if Fs.File.has_ext ".cmt" input then
+      Compile.cmt ~env ~package ~output input
+    else if Fs.File.has_ext ".cmi" input then
+      Compile.cmi ~env ~package ~output input
+    else (
+      Printf.eprintf "Unknown extension, expected one of : cmti, cmt, cmi.\n%!";
+      exit 2
+    )
 
   let cmd =
     let dst_file =
