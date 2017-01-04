@@ -7,6 +7,10 @@ module Markup = DocOckHtmlMarkup
 
 let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
 
+let rec list_keep_while ~pred = function
+  | x :: xs when pred x -> x :: list_keep_while ~pred xs
+  | _ -> []
+
 module Html_parser = struct
   let mk_attr ((_, local), value) = Xml.string_attrib local value
 
@@ -294,8 +298,31 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
     [ Flow5 [Unsafe.data str] ]
   | Target (_, str) ->
     [ Flow5_without_interactive [ pre [pcdata str] ] ]
-  | Special _ ->
-    [ Phrasing_without_interactive [ pcdata "<TODO: report to odoc devs>" ] ]
+  | Special (Documentation.Modules refs) ->
+    let table =
+      table ~a:[ a_class ["modules"] ] (
+        List.map refs ~f:(fun (ref, txt) ->
+          let link = Reference.to_html ~get_package ~stop_before:false ref in
+          let doc =
+            let pred = function
+              | Documentation.Newline -> false
+              | _ -> true
+            in
+            aggregate ~get_package (list_keep_while ~pred txt)
+            |> List.map ~f:to_flow5
+            |> List.concat
+          in
+          tr [
+            td ~a:[ a_class ["module"] ] (to_flow5 link);
+            td ~a:[ a_class ["doc"] ] doc;
+          ]
+        )
+      )
+    in
+    [ Flow5 [ table ] ]
+  | Special (Documentation.Index) ->
+    Printf.eprintf "Warning: {!indexlist} is not yet supported by odoc.\n%!";
+    []
 
 and make_title ~get_package ~lvl ~label txt =
   let header_fun, attrs =
@@ -492,10 +519,6 @@ let handle_tags ~get_package tags =
   match cleaned with
   | [] -> []
   | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:li) ]
-
-let rec list_keep_while ~pred = function
-  | x :: xs when pred x -> x :: list_keep_while ~pred xs
-  | _ -> []
 
 let prerr_error (err : _ Documentation.Error.t) =
   let print_pos oc { Documentation.Error.Position. line; column } =
