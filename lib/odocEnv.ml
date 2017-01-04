@@ -108,7 +108,14 @@ let create ?(important_digests=true) ~directories : builder = fun unit ->
         | _ ->
           aux imports
     in
-    aux unit.DocOckTypes.Unit.imports
+    match aux unit.DocOckTypes.Unit.imports with
+    | DocOck.Not_found ->
+      let current_root = Unit.root unit in
+      if target_name = Root.Unit.to_string (Root.unit current_root) then
+        Found current_root
+      else
+        DocOck.Not_found
+    | x -> x
   in
   let fetch root : Unit.t =
     try Root.Table.find unit_of_root root
