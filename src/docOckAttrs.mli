@@ -22,6 +22,14 @@ val empty : 'a t
 val read_attributes : 'a Identifier.parent -> ('a, 'k) Identifier.t ->
                         Parsetree.attributes -> 'a t
 
+val read_string : 'a Identifier.parent -> Location.t -> string -> 'a comment
+(** The parent identifier is used to define labels in the given string (i.e.
+    for things like [{1:some_section Some title}]) and the location is used for
+    error messages.
+
+    This function is meant to be used to read arbitrary files containing text in
+    the ocamldoc syntax. *)
+
 val read_comment : 'a Identifier.parent ->
                      Parsetree.attribute -> 'a comment option
 

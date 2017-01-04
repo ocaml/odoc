@@ -245,28 +245,30 @@ let read_attributes parent id attrs =
   in
     loop true empty_body attrs
 
+let read_string parent loc str : 'a comment =
+  let lexbuf = Lexing.from_string str in
+  let start_pos = loc.Location.loc_start in
+  let doc =
+    match Octavius.parse lexbuf with
+    | Octavius.Ok(text, tags) -> begin
+        try
+          let text = read_text parent text in
+          let tags = List.map (read_tag parent) tags in
+          Ok {text; tags}
+        with InvalidReference s ->
+          Error (invalid_reference_error parent loc s)
+      end
+    | Octavius.Error err -> Error (read_error parent err start_pos)
+  in
+  Documentation doc
+
 let read_comment parent : Parsetree.attribute -> 'a comment option =
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
       match DocOckPayload.read payload with
       | Some ("/*", loc) -> Some Stop
-      | Some (str, loc) ->
-          let lexbuf = Lexing.from_string str in
-          let start_pos = loc.Location.loc_start in
-          let doc =
-            match Octavius.parse lexbuf with
-            | Octavius.Ok(text, tags) -> begin
-                try
-                  let text = read_text parent text in
-                  let tags = List.map (read_tag parent) tags in
-                  Ok {text; tags}
-                with InvalidReference s ->
-                  Error (invalid_reference_error parent loc s)
-              end
-            | Octavius.Error err -> Error (read_error parent err start_pos)
-          in
-          Some (Documentation doc)
+      | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
           let doc = Error (invalid_attribute_error parent loc) in
             Some (Documentation doc)
