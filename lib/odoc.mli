@@ -26,8 +26,6 @@ module Compile = OdocCompile
 
 module Html = OdocHtml
 
-module Listing = OdocListing
-
 module Depends = OdocDepends
 
 module Targets = OdocTargets

@@ -6,6 +6,5 @@ OdocEnv
 OdocCompile
 OdocDepends
 OdocHtml
-OdocListing
 OdocTargets
 Odoc
