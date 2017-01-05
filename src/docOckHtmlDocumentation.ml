@@ -304,13 +304,9 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
         List.map refs ~f:(fun (ref, txt) ->
           let link = Reference.to_html ~get_package ~stop_before:false ref in
           let doc =
-            let pred = function
-              | Documentation.Newline -> false
-              | _ -> true
-            in
-            aggregate ~get_package (list_keep_while ~pred txt)
-            |> List.map ~f:to_flow5
-            |> List.concat
+            match aggregate ~get_package txt with
+            | [] -> []
+            | x :: _ -> to_flow5 x
           in
           tr [
             td ~a:[ a_class ["module"] ] (to_flow5 link);
@@ -544,11 +540,10 @@ let prerr_error (err : _ Documentation.Error.t) =
 let first_to_html ~get_package (t : _ Documentation.t) =
   match t with
   | Ok { text; _ } ->
-    let pred = function
-      | Documentation.Newline -> false
-      | _ -> true
-    in
-    handle_text ~get_package (list_keep_while ~pred text)
+    begin match handle_text ~get_package text with
+    | [] -> []
+    | x :: _ -> [x]
+    end
   | Error e -> prerr_error e; []
 
 let to_html ?wrap ~get_package (t : _ Documentation.t) =
