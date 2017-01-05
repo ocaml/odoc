@@ -213,52 +213,67 @@ module Relative_link = struct
     a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
 
-class page_creator ?kind ~path content = object(self)
-  val has_parent = List.length path > 1
-
-  method name = List.hd @@ List.rev path
-
-  method title_string =
-    Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
-
-  method css_url =
-    let rec aux acc = function
-      | 0 -> acc
-      | n -> aux ("../" ^ acc) (n - 1)
-    in
-    aux "odoc.css" (List.length path)
-
-  method header : Html_types.head elt =
-    head (title (pcdata self#title_string)) [
-      link ~rel:[`Stylesheet] ~href:self#css_url () ;
-      meta ~a:[ a_charset "utf-8" ] () ;
-      meta ~a:[ a_name "viewport";
-                a_content "width=device-width,initial-scale=1.0"; ] ();
-      meta ~a:[ a_name "generator";
-                a_content "odoc %%VERSION%%" ] ();
-    ]
-
-  method heading : Html_types.h1_content_fun elt list =
-    DocOckHtmlMarkup.keyword (
-      match kind with
-      | None
-      | Some `Mod -> "Module"
-      | Some `Arg -> "Parameter"
-      | Some `Mty -> "Module type"
-    ) :: pcdata " " ::
-    [DocOckHtmlMarkup.module_path (List.tl path)]
-
-  method content : Html_types.div_content_fun elt list =
-    let href = if !Relative_link.semantic_uris then ".." else "../index.html" in
-    let article = header [ h1 self#heading ] :: content in
-    if not has_parent then
-      article
+class page_creator ?kind ~path content =
+  let rec add_dotdot ~n acc =
+    if n = 0 then
+      acc
     else
-      nav [ a ~a:[ a_href href ] [ pcdata "Up" ] ] :: article
+      add_dotdot ~n:(n - 1) ("../" ^ acc)
+  in
+  object(self)
+    val has_parent = List.length path > 1
 
-  method html : [ `Html ] elt =
-    html self#header (body self#content)
-end
+    method name = List.hd @@ List.rev path
+
+    method title_string =
+      Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
+
+    method css_url =
+      add_dotdot "odoc.css" ~n:(List.length path)
+
+    method header : Html_types.head elt =
+      head (title (pcdata self#title_string)) [
+        link ~rel:[`Stylesheet] ~href:self#css_url () ;
+        meta ~a:[ a_charset "utf-8" ] () ;
+        meta ~a:[ a_name "viewport";
+                  a_content "width=device-width,initial-scale=1.0"; ] ();
+        meta ~a:[ a_name "generator";
+                  a_content "odoc %%VERSION%%" ] ();
+      ]
+
+    method heading : Html_types.h1_content_fun elt list =
+      DocOckHtmlMarkup.keyword (
+        match kind with
+        | None
+        | Some `Mod -> "Module"
+        | Some `Arg -> "Parameter"
+        | Some `Mty -> "Module type"
+      ) :: pcdata " " ::
+      [DocOckHtmlMarkup.module_path (List.tl path)]
+
+    method content : Html_types.div_content_fun elt list =
+      let up_href =
+        if !Relative_link.semantic_uris then ".." else "../index.html"
+      in
+      let pkg_href =
+        add_dotdot ~n:(List.length path - 1)
+          (if !Relative_link.semantic_uris then "" else "index.html")
+      in
+      let article = header [ h1 self#heading ] :: content in
+      if not has_parent then
+        article
+      else
+        nav
+          [ a ~a:[ a_href up_href ] [ pcdata "Up" ]
+          ; pcdata " "
+          ; a ~a:[ a_href pkg_href; a_class ["package"] ]
+              [ pcdata "package "; span [ pcdata (List.hd path) ] ]
+          ]
+        :: article
+
+    method html : [ `Html ] elt =
+      html self#header (body self#content)
+  end
 
 let page_creator_maker = ref (new page_creator)
 
