@@ -41,3 +41,12 @@ val kind_of_id_exn
   : get_package:('pkg -> string)
   -> ('pkg, _) Identifier.t
   -> string
+
+module Module_listing_anchor : sig
+  type t = {
+    kind : string;
+    name : string;
+  }
+
+  val from_reference : _ Reference.module_ -> t
+end

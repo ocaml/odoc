@@ -170,3 +170,43 @@ let kind_of_id_exn ~get_package id =
   match from_identifier ~get_package ~stop_before:true id with
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
+
+module Module_listing_anchor = struct
+  module Reference = DocOck.Paths.Reference
+  open Reference
+
+  type t = {
+    kind : string;
+    name : string;
+  }
+
+  let fail () = failwith "Only modules allowed inside {!modules: ...}"
+
+  let rec from_reference : type a. (_, a) Reference.t -> t = function
+    | Reference.Root name -> { kind = "unresolved"; name }
+    | Reference.Dot (parent, suffix) ->
+      let { name; _ } = from_reference parent in
+      { kind = "unresolved"; name = Printf.sprintf "%s.%s" name suffix }
+    | Reference.Resolved r ->
+      from_resolved r
+
+  and from_resolved : type a. (_, a) Reference.Resolved.t -> t =
+    let open Reference.Resolved in
+    function
+    | Identifier id ->
+      let name = Identifier.name id in
+      let kind =
+        match from_identifier ~get_package:(fun _ -> "") ~stop_before:false id with
+        | Ok { kind; _ } -> kind
+        | Error _ -> fail ()
+      in
+      { name; kind }
+    | Module (parent, s) ->
+      let { name; _ } = from_resolved parent in
+      { kind = "module"; name = Printf.sprintf "%s.%s" name s }
+    | ModuleType (parent, s) ->
+      let { name; _ } = from_resolved parent in
+      { kind = "module-type"; name = Printf.sprintf "%s.%s" name s }
+    | _ ->
+      fail ()
+end

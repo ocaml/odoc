@@ -300,25 +300,36 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
     [ Flow5_without_interactive [ pre [pcdata str] ] ]
   | Special (Documentation.Modules refs) ->
     let table =
-      table ~a:[ a_class ["modules"] ] (
-        List.map refs ~f:(fun (ref, txt) ->
-          let link = Reference.to_html ~get_package ~stop_before:false ref in
-          let doc =
-            match aggregate ~get_package txt with
-            | [] -> []
-            | x :: _ -> to_flow5 x
-          in
-          tr [
-            td ~a:[ a_class ["module"] ] (to_flow5 link);
-            td ~a:[ a_class ["doc"] ] doc;
-          ]
-        )
-      )
+      table ~a:[ a_class ["modules"] ]
+        (List.map refs ~f:(module_index_entry ~get_package))
     in
     [ Flow5 [ table ] ]
   | Special (Documentation.Index) ->
     Printf.eprintf "Warning: {!indexlist} is not yet supported by odoc.\n%!";
     []
+
+and module_index_entry ~get_package (reference, preamble) =
+  let link = Reference.to_html ~get_package ~stop_before:false reference in
+  let doc =
+    match aggregate ~get_package preamble with
+    | [] -> []
+    | p :: _ -> to_flow5 p
+  in
+  let id, kind =
+    let open DocOckHtmlUrl.Module_listing_anchor in
+    match from_reference reference with
+    | {kind; name} -> Printf.sprintf "listing-%s-%s" kind name, kind
+    | exception (Failure s) ->
+      Printf.eprintf "ERROR: %s\n%!" s;
+      "", ""
+  in
+  tr ~a:[ a_id id; a_class ["anchored"] ]
+    [ td ~a:[ a_class [kind] ] (
+        a ~a:[ a_href ("#" ^ id); a_class ["anchor"] ] [] ::
+        to_flow5 link
+      )
+    ; td ~a:[ a_class ["doc"] ] doc
+    ]
 
 and make_title ~get_package ~lvl ~label txt =
   let header_fun, attrs =
