@@ -53,7 +53,7 @@ let unit ~env ~output:root_dir input =
     close_out oc
   )
 
-let from_mld ~output:root_dir ~pkg input =
+let from_mld ~env ~output:root_dir ~pkg input =
   let root_name = Fs.File.(to_string @@ basename input) in
   let root =
     let package = Root.Package.create pkg in
@@ -79,7 +79,27 @@ let from_mld ~output:root_dir ~pkg input =
     let html =
       match DocOckAttrs.read_string parent location str with
       | Stop -> []
-      | Documentation t -> Documentation.to_html ~get_package t
+      | Documentation t ->
+        let unit =
+          DocOck.Types.Unit.{
+            id = parent;
+            doc = t;
+            digest = Root.digest root;
+            imports = []; (* Hm. *)
+            source = None;
+            interface = true;
+            hidden = false;
+            content = Module [];
+            expansion = None;
+          }
+        in
+        let env = Env.build env unit in
+        let odoctree =
+          DocOck.resolve (Env.resolver env) unit
+          |> DocOck.expand (Env.expander env)
+        in
+        Html_tree.enter root_name;
+        Documentation.to_html ~get_package odoctree.DocOck.Types.Unit.doc
     in
     begin match Html_tree.make (html, []) with
     | { Html_tree. content; children = []; _ } ->

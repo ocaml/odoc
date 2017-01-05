@@ -103,14 +103,14 @@ end = struct
 
   let html semantic_uris directories output_dir intro_for input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
+    let env = Env.create ~important_digests:false ~directories in
     match intro_for with
     | None ->
-      let env = Env.create ~important_digests:false ~directories in
       let odoc_file = Fs.File.of_string input_file in
       Html.unit ~env ~output:output_dir odoc_file
     | Some pkg_name ->
       let mld_file = Fs.File.of_string input_file in
-      Html.from_mld ~output:output_dir ~pkg:pkg_name mld_file
+      Html.from_mld ~env ~output:output_dir ~pkg:pkg_name mld_file
 
   let cmd =
     let input =
