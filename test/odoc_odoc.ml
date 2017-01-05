@@ -51,7 +51,14 @@ let odoc_html_mod m =
 let odoc_html_index mods =
   Log.info (fun msg -> msg "Writing package index.html (dst_dir %S)" dst_dir);
   let mod_list = String.concat " " mods in
-  let page = Printf.sprintf "{!modules: %s}\n" mod_list in
+  let page =
+    Printf.sprintf
+      "{%%html: \
+       <nav>No up link</nav>\n\
+       <header><h1 id=\"pkg\">Package odoc</h1></header>%%}\n\
+       {!modules: %s}\n"
+      mod_list
+  in
   OS.File.tmp ()
   >>= fun tmp_file ->
   OS.File.write tmp_file page

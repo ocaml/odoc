@@ -53,16 +53,15 @@ let unit ~env ~output:root_dir input =
     close_out oc
   )
 
-class from_mld_page_creator ~name content =
+class from_mld_page_creator ~name page_content =
   object
-    inherit Html_tree.page_creator ~path:[name] content
+    inherit Html_tree.page_creator ~path:[name] page_content
 
     val! has_parent = true
 
     method! title_string = name
 
-    method! heading =
-      [ Tyxml.Html.pcdata (Printf.sprintf "Package %s" name) ]
+    method! content = page_content
   end
 
 let from_mld ~env ~output:root_dir ~pkg input =
