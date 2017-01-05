@@ -53,6 +53,18 @@ let unit ~env ~output:root_dir input =
     close_out oc
   )
 
+class from_mld_page_creator ~name content =
+  object
+    inherit Html_tree.page_creator ~path:[name] content
+
+    val! has_parent = true
+
+    method! title_string = name
+
+    method! heading =
+      [ Tyxml.Html.pcdata (Printf.sprintf "Package %s" name) ]
+  end
+
 let from_mld ~env ~output:root_dir ~pkg input =
   let root_name = Fs.File.(to_string @@ basename input) in
   let root =
@@ -80,6 +92,7 @@ let from_mld ~env ~output:root_dir ~pkg input =
       match DocOckAttrs.read_string parent location str with
       | Stop -> []
       | Documentation t ->
+        (* This is a mess. *)
         let unit =
           DocOck.Types.Unit.{
             id = parent;
@@ -98,23 +111,19 @@ let from_mld ~env ~output:root_dir ~pkg input =
           DocOck.resolve (Env.resolver env) unit
           |> DocOck.expand (Env.expander env)
         in
-        Html_tree.enter root_name;
+        Html_tree.enter pkg;
         Documentation.to_html ~get_package odoctree.DocOck.Types.Unit.doc
     in
-    begin match Html_tree.make (html, []) with
-    | { Html_tree. content; children = []; _ } ->
-      let directory = Fs.Directory.reach_from ~dir:root_dir pkg in
-      let oc =
-        Fs.Directory.mkdir_p directory;
-        let file = Fs.File.create ~directory ~name:"index.html" in
-        open_out (Fs.File.to_string file)
-      in
-      let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
-      close_out oc
-    | _ ->
-      assert false
-    end
+    let pager = new from_mld_page_creator ~name:pkg html in
+    let directory = Fs.Directory.reach_from ~dir:root_dir pkg in
+    let oc =
+      Fs.Directory.mkdir_p directory;
+      let file = Fs.File.create ~directory ~name:"index.html" in
+      open_out (Fs.File.to_string file)
+    in
+    let fmt = Format.formatter_of_out_channel oc in
+    Format.fprintf fmt "%a" (Tyxml.Html.pp ()) pager#html;
+    close_out oc
   | Error (`Msg s) ->
     Printf.eprintf "ERROR: %s\n%!" s;
     exit 1

@@ -48,6 +48,19 @@ let odoc_html_mod m =
   OS.Cmd.run @@
   Cmd.(odoc % "html" % "-I" % dst_dir % "-o" % build_dir % odocf)
 
+let odoc_html_index mods =
+  Log.info (fun msg -> msg "Writing package index.html (dst_dir %S)" dst_dir);
+  let mod_list = String.concat " " mods in
+  let page = Printf.sprintf "{!modules: %s}\n" mod_list in
+  OS.File.tmp ()
+  >>= fun tmp_file ->
+  OS.File.write tmp_file page
+  >>= fun () ->
+  OS.Cmd.run Cmd.(odoc % "html" % "-I" % dst_dir % "-o" % build_dir
+                  % "--intro-for" % "odoc" % tmp_file)
+  >>= fun () ->
+  OS.File.delete tmp_file
+
 let odoc_css () =
   Log.info (fun msg -> msg "Writing CSS");
   OS.Cmd.run Cmd.(odoc % "css" % "-o" % build_dir)
@@ -58,6 +71,7 @@ let odoc_odoc ~browse =
     >>= fun () -> sorted_lib_modules ()
     >>= fun mods -> iter_mods odoc_compile_mod mods
     >>= fun () -> iter_mods odoc_html_mod mods
+    >>= fun () -> odoc_html_index mods
     >>= fun () -> odoc_css ()
     >>= fun () ->
     Log.app (fun m -> m "Generated odoc docs in %s" dst_dir);

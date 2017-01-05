@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** Produces .odoc files out of .cm{i,t,ti} files. *)
+
 val cmti :
   env:OdocEnv.builder -> package:OdocRoot.Package.t ->
   output:OdocFs.File.t -> OdocFs.File.t -> unit

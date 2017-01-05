@@ -14,7 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** Produces .html files from a .odoc or .mld file. *)
+
+(**/**)
+
 module Env = OdocEnv
+
+(**/**)
 
 val unit :
   env:OdocEnv.builder -> output:OdocFs.Directory.t -> OdocFs.File.t -> unit
