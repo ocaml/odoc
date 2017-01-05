@@ -347,7 +347,10 @@ and make_title ~get_package ~lvl ~label txt =
   let header_fun =
     match label with
     | None -> header_fun ~a:attrs
-    | Some (Paths.Identifier.Label (_, lbl)) -> header_fun ~a:(a_id lbl :: attrs)
+    | Some (Paths.Identifier.Label (_, lbl)) ->
+        fun txt ->
+          header_fun ~a:(a_id lbl :: a_class ["anchored"] :: attrs)
+            ((a ~a:[ a_href ("#" ^ lbl); a_class ["anchor"] ] []) :: txt)
   in
   let txt = aggregate ~get_package txt in
   let result, should_error =
