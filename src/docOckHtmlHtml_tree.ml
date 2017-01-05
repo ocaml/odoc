@@ -265,9 +265,10 @@ class page_creator ?kind ~path content =
       else
         nav
           [ a ~a:[ a_href up_href ] [ pcdata "Up" ]
-          ; pcdata " "
-          ; a ~a:[ a_href pkg_href; a_class ["package"] ]
-              [ pcdata "package "; span [ pcdata (List.hd path) ] ]
+          ; pcdata " "; entity "mdash"; pcdata " "
+          ; span ~a:[ a_class ["package"]]
+              [ pcdata "package ";
+                a ~a:[ a_href pkg_href] [ pcdata (List.hd path) ]]
           ]
         :: article
 
