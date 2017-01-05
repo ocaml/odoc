@@ -791,4 +791,8 @@ include IncludeInclude2
     units will be documented.
 
     {!modules: Dep1.X DocOckTypes Ocamlary.IncludeInclude1 Ocamlary}
+
+    {3 Weirder usages involving module types}
+
+    {!modules: IncludeInclude1.IncludeInclude2 Dep4.T A.Q}
 *)
