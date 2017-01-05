@@ -64,7 +64,7 @@ let odoc_html_index mods =
   OS.File.write tmp_file page
   >>= fun () ->
   OS.Cmd.run Cmd.(odoc % "html" % "-I" % dst_dir % "-o" % build_dir
-                  % "--intro-for" % "odoc" % tmp_file)
+                  % "--index-for" % "odoc" % tmp_file)
   >>= fun () ->
   OS.File.delete tmp_file
 
