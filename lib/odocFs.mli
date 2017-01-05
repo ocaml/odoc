@@ -50,4 +50,6 @@ module File : sig
 
   val of_string : string -> t
   val to_string : t -> string
+
+  val read : t -> (string, [> Rresult.R.msg ]) result
 end

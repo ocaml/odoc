@@ -18,3 +18,5 @@ module Env = OdocEnv
 
 val unit :
   env:OdocEnv.builder -> output:OdocFs.Directory.t -> OdocFs.File.t -> unit
+
+val from_mld : output:OdocFs.Directory.t -> pkg:string -> OdocFs.File.t -> unit

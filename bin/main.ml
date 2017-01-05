@@ -101,22 +101,36 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris directories output_dir odoc_file =
+  let html semantic_uris directories output_dir intro_for input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
-    let env = Env.create ~important_digests:false ~directories in
-    let odoc_file = Fs.File.of_string odoc_file in
-    Html.unit ~env ~output:output_dir odoc_file
+    match intro_for with
+    | None ->
+      let env = Env.create ~important_digests:false ~directories in
+      let odoc_file = Fs.File.of_string input_file in
+      Html.unit ~env ~output:output_dir odoc_file
+    | Some pkg_name ->
+      let mld_file = Fs.File.of_string input_file in
+      Html.from_mld ~output:output_dir ~pkg:pkg_name mld_file
 
   let cmd =
     let input =
       let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
+      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.{odoc,mld}" [])
     in
     let semantic_uris =
       let doc = "Generate pretty (semantic) links" in
       Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
     in
-    Term.(const html $ semantic_uris $ env $ dst $ input)
+    let intro_for =
+      let doc = "When this argument is given, then the input file is a .mld
+                 file, i.e. a file in the ocamldoc syntax. The output will be a
+                 \"index.html\" file in the output directory.
+                 PKG is repeated here so that references inside the input file\
+                 can be linked correctly"
+      in
+      Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["intro-for"])
+    in
+    Term.(const html $ semantic_uris $ env $ dst $ intro_for $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"

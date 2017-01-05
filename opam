@@ -17,6 +17,7 @@ depends: [
   "doc-ock-html"
   "doc-ock-xml"
   "tyxml" {>= "4.0.0" }
+  "bos"
   "fpath"
   "result"
   "xmlm"

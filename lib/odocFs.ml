@@ -37,6 +37,7 @@ module File = struct
     | Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
     | Ok p -> p
 
+  let read = Bos.OS.File.read
 end
 
 module Directory = struct

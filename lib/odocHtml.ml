@@ -21,6 +21,8 @@ module Unit = OdocUnit
 module Root = OdocRoot
 module Fs = OdocFs
 
+let get_package root = Root.Package.to_string (Root.package root)
+
 let unit ~env ~output:root_dir input =
   let unit = Unit.load input in
   let env = Env.build env unit in
@@ -28,7 +30,6 @@ let unit ~env ~output:root_dir input =
     DocOck.resolve (Env.resolver env) unit
     |> DocOck.expand (Env.expander env)
   in
-  let get_package root = Root.Package.to_string (Root.package root) in
   let pkg_dir =
     let pkg_name = get_package (Unit.root unit) in
     Fs.Directory.reach_from ~dir:root_dir pkg_name
@@ -51,3 +52,49 @@ let unit ~env ~output:root_dir input =
     Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
     close_out oc
   )
+
+let from_mld ~output:root_dir ~pkg input =
+  let root_name = Fs.File.(to_string @@ basename input) in
+  let root =
+    let package = Root.Package.create pkg in
+    let unit = Root.Unit.create root_name in
+    let digest = Digest.file (Fs.File.to_string input) in
+    Root.create ~package ~unit ~digest
+  in
+  let parent = DocOck.Paths.Identifier.Root (root, root_name) in
+  let location =
+    let pos =
+      Lexing.{
+        pos_fname = Fs.File.to_string input;
+        pos_lnum = 0;
+        pos_cnum = 0;
+        pos_bol = 0
+      }
+    in
+    Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
+  in
+  (* let ic = open_in (Fs.File.to_string input) in *)
+  match Fs.File.read input with
+  | Ok str ->
+    let html =
+      match DocOckAttrs.read_string parent location str with
+      | Stop -> []
+      | Documentation t -> Documentation.to_html ~get_package t
+    in
+    begin match Html_tree.make (html, []) with
+    | { Html_tree. content; children = []; _ } ->
+      let directory = Fs.Directory.reach_from ~dir:root_dir pkg in
+      let oc =
+        Fs.Directory.mkdir_p directory;
+        let file = Fs.File.create ~directory ~name:"index.html" in
+        open_out (Fs.File.to_string file)
+      in
+      let fmt = Format.formatter_of_out_channel oc in
+      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      close_out oc
+    | _ ->
+      assert false
+    end
+  | Error (`Msg s) ->
+    Printf.eprintf "ERROR: %s\n%!" s;
+    exit 1
