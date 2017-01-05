@@ -330,6 +330,10 @@ module type B = sig
   module Q : COLLECTION
 end
 
+(** This module type includes two signatures.
+   {ul
+   {- it includes {!A}}
+   {- it includes {!B} with some substitution}} *)
 module type C = sig
   include A
   include B with type t := t and module Q := Q
