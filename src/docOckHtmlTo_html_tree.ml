@@ -348,23 +348,39 @@ and constructor
   -> ('a, 'b) Identifier.t -> 'a Types.TypeDecl.Constructor.argument
   -> 'a Types.TypeExpr.t option
   -> [> `Code | `PCDATA | `Table ] elt list
-= fun ~get_package id args _ret_type ->
+= fun ~get_package id args ret_type ->
     let name = Identifier.name id in
     let cstr = span ~a:[ a_class [ Url.kind_of_id_exn ~get_package id ] ] [ pcdata name ] in
-    (* TODO: handle GADT style constructors properly. *)
+    let is_gadt, ret_type =
+      match ret_type with
+      | None -> false, []
+      | Some te ->
+        let constant =
+          match args with
+          | Tuple [] -> true
+          | _ -> false
+        in
+        let ret_type =
+          Markup.keyword (if constant then " : " else " -> ") ::
+          type_expr ~get_package te
+        in
+        true, ret_type
+    in
     match args with
-    | Tuple [] -> [code [cstr]]
+    | Tuple [] -> [ code (cstr :: ret_type) ]
     | Tuple lst ->
       [ code (
           cstr ::
-          Markup.keyword " of " ::
+          Markup.keyword (if is_gadt then " : " else " of ") ::
           list_concat_map lst ~sep:(Markup.keyword " * ")
-            ~f:(type_expr ~get_package)
+            ~f:(type_expr ~needs_parentheses:is_gadt ~get_package)
+          @ ret_type
         )
       ]
     | Record fields ->
-      code [ cstr; Markup.keyword " of " ] ::
-      record ~get_package fields
+      code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
+      :: record ~get_package fields
+      @ [ code ret_type ]
 
 and format_params
    : 'row. Types.TypeDecl.param list
