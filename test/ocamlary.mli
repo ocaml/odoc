@@ -411,7 +411,7 @@ type (_,_) full_gadt =
 | Tag : (unit,unit) full_gadt
 | First : 'a -> ('a,unit) full_gadt
 | Second : 'a -> (unit,'a) full_gadt
-| Exist : 'b -> (unit, unit) full_gadt (** *)
+| Exist : 'a * 'b -> ('b, unit) full_gadt (** *)
 (** Wow! It was a GADT! *)
 
 (** This comment is for [partial_gadt]. *)
@@ -420,6 +420,12 @@ type 'a partial_gadt =
 | OfTag of 'a partial_gadt
 | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt (** *)
 (** Wow! It was a mixed GADT! *)
+
+(** This comment is for [record_arg_gadt]. *)
+type _ record_arg_gadt =
+  | With_rec : { foo : int } -> unit record_arg_gadt
+  | With_poly_rec : { bar : 'a. 'a -> 'a } -> ('a -> 'a) record_arg_gadt (** *)
+(** Wow! It was a GADT with record arguments *)
 
 (** This comment is for [alias]. *)
 type alias = variant
@@ -497,7 +503,7 @@ type ('a,'b) full_gadt_alias = ('a,'b) full_gadt =
 | Tag : (unit,unit) full_gadt_alias
 | First : 'a -> ('a,unit) full_gadt_alias
 | Second : 'a -> (unit,'a) full_gadt_alias
-| Exist : 'b -> (unit, unit) full_gadt_alias
+| Exist : 'a * 'b -> ('b, unit) full_gadt_alias
 
 (** This comment is for [partial_gadt_alias]. *)
 type 'a partial_gadt_alias = 'a partial_gadt =
