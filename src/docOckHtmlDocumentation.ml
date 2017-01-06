@@ -239,6 +239,23 @@ module Reference = struct
       -> Phrasing_without_interactive [ pcdata "[documentation.handle_ref TODO]" ]
 end
 
+let paragraphise lst =
+  List.concat @@ List.map lst ~f:(function
+    | Phrasing l -> [p l]
+    | Phrasing_without_interactive l -> [p l]
+    | Flow5 l -> l
+    | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
+    | Newline _ -> []
+  )
+
+let paragraphise_without_interactive lst =
+  List.concat @@ List.map lst ~f:(function
+    | Phrasing_without_interactive l -> [p l]
+    | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
+    | Newline _ -> []
+    | Phrasing l -> invalid_arg "paragraphise_without_interactive"
+    | Flow5 l -> invalid_arg "paragraphise_without_interactive"
+  )
 
 let rec aggregate ~get_package lst =
   collapse (List.concat @@ List.map lst ~f:(format ~get_package))
@@ -256,32 +273,22 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
   | List subs  ->
     let subs = List.map subs ~f:(aggregate ~get_package) in
     if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ul (
-          List.map subs ~f:(fun agg ->
-            li (List.concat @@ List.map agg ~f:to_flow5)
-          )
-        )]
-      ]
+      [ Flow5 [ul (List.map subs ~f:(fun agg -> li (paragraphise agg)))] ]
     else
       [ Flow5_without_interactive [ul (
           List.map subs ~f:(fun agg ->
-            li (List.concat @@ List.map agg ~f:to_flow5_without_interactive)
+            li (paragraphise_without_interactive agg)
           )
         )]
       ]
   | Enum subs ->
     let subs = List.map subs ~f:(aggregate ~get_package) in
     if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ol (
-          List.map subs ~f:(fun agg ->
-            li (List.concat @@ List.map agg ~f:to_flow5)
-          )
-        )]
-      ]
+      [ Flow5 [ol (List.map subs ~f:(fun agg -> li (paragraphise agg)))] ]
     else
       [ Flow5_without_interactive [ol (
           List.map subs ~f:(fun agg ->
-            li (List.concat @@ List.map agg ~f:to_flow5_without_interactive)
+            li (paragraphise_without_interactive agg)
           )
         )]
       ]
@@ -446,15 +453,6 @@ and apply_style ~get_package ~style txt =
       | Flow5_without_interactive l ->
         Flow5_without_interactive [div ~a:[ a_class [str] ] l]
     )
-
-let paragraphise lst =
-  List.concat @@ List.map lst ~f:(function
-    | Phrasing l -> [p l]
-    | Phrasing_without_interactive l -> [p l]
-    | Flow5 l -> l
-    | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
-    | Newline _ -> []
-  )
 
 let handle_text ~get_package txt =
   paragraphise (aggregate ~get_package txt)
