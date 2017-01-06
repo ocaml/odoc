@@ -446,23 +446,26 @@ and record ~get_package fields =
     | Error e -> failwith (Url.Error.to_string e)
     | Ok { anchor; kind; _ } ->
       let name = Identifier.name id in
-      td ~a:[ a_class ["def"; kind ]; a_id anchor ]
-        [ a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] []
-        ; code (
-            (if mutable_ then Markup.keyword "mutable " else pcdata "")
-            :: (pcdata name)
-            :: (pcdata " : ")
-            :: (type_expr ~get_package typ)
-            @  [pcdata ";"]
-          )
-        ]
+      let cell =
+        td ~a:[ a_class ["def"; kind ] ]
+          [ a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] []
+          ; code (
+              (if mutable_ then Markup.keyword "mutable " else pcdata "")
+              :: (pcdata name)
+              :: (pcdata " : ")
+              :: (type_expr ~get_package typ)
+              @  [pcdata ";"]
+            )
+          ]
+      in
+      anchor, cell
   in
   let rows =
     List.map fields ~f:(fun fld ->
       let open Types.TypeDecl.Field in
-      let lhs = field fld.mutable_ fld.id fld.type_ in
+      let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
       let rhs = Documentation.to_html ~wrap:() ~get_package fld.doc in
-      tr (
+      tr ~a:[ a_id anchor; a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc fld.doc) then [] else [
           td ~a:[ a_class ["doc"] ] rhs
