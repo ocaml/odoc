@@ -36,12 +36,16 @@ let opt_iter f = function
   | Some x -> f x
 
 let parenthesise name =
-  if (String.length name > 0) then
-    match name.[0] with
-    | 'a' .. 'z' | '\223' .. '\246' | '\248' .. '\255' | '_'
-    | 'A' .. 'Z' | '\192' .. '\214' | '\216' .. '\222' -> name
-    | _ -> "(" ^ name ^ ")"
-  else name
+  match name with
+  | "asr" | "land" | "lnot" | "lor" | "lsl" | "lsr"
+  | "lxor" | "mod" -> "(" ^ name ^ ")"
+  | _ ->
+    if (String.length name > 0) then
+      match name.[0] with
+      | 'a' .. 'z' | '\223' .. '\246' | '\248' .. '\255' | '_'
+      | 'A' .. 'Z' | '\192' .. '\214' | '\216' .. '\222' -> name
+      | _ -> "(" ^ name ^ ")"
+    else name
 
 let read_core_type env ctyp =
   DocOckCmi.read_type_expr env ctyp.ctyp_type

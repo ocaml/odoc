@@ -271,6 +271,8 @@ val ( := ) : unit
 
 val ( = ) : unit
 
+val ( land ) : unit
+
 (**/**)
 (** I'm hidden *)
 (**/**)

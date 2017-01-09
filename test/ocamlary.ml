@@ -158,6 +158,8 @@ let ( -| ) = ()
 let ( := ) = ()
 let ( = )  = ()
 
+let (land) = ()
+
 (** {3 Advanced Module Stuff} *)
 
 (** This comment is for [CollectionModule]. *)
