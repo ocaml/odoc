@@ -257,12 +257,24 @@ let paragraphise_without_interactive lst =
     | Flow5 l -> invalid_arg "paragraphise_without_interactive"
   )
 
+let whitespace_only s =
+  let rec aux i =
+    if i < 0 then
+      true
+    else
+      match String.get s i with
+      | '\n' | ' ' | '\t' -> aux (i - 1)
+      | _ -> false
+  in
+  aux (String.length s - 1)
+
 let rec aggregate ~get_package lst =
   collapse (List.concat @@ List.map lst ~f:(format ~get_package))
 
 and format ~get_package : _ Documentation.text_element -> kind list = function
   | Raw      s ->
-    [ Phrasing_without_interactive [ pcdata s ] ]
+    if whitespace_only s then []
+    else [ Phrasing_without_interactive [ pcdata s ] ]
   | Code     s ->
     [ Phrasing_without_interactive [ code ~a:[ a_class ["code"] ] [ pcdata s ] ] ]
   | Verbatim v ->
