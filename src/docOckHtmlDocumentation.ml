@@ -257,6 +257,14 @@ let paragraphise_without_interactive lst =
     | Flow5 l -> invalid_arg "paragraphise_without_interactive"
   )
 
+let make_li_without_interactive = function
+  | [ x ] -> li (to_flow5_without_interactive x)
+  | lst -> li (paragraphise_without_interactive lst)
+
+let make_li = function
+  | [ x ] -> li (to_flow5 x)
+  | lst -> li (paragraphise lst)
+
 let whitespace_only s =
   let rec aux i =
     if i < 0 then
@@ -285,25 +293,17 @@ and format ~get_package : _ Documentation.text_element -> kind list = function
   | List subs  ->
     let subs = List.map subs ~f:(aggregate ~get_package) in
     if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ul (List.map subs ~f:(fun agg -> li (paragraphise agg)))] ]
+      [ Flow5 [ul (List.map subs ~f:make_li)] ]
     else
-      [ Flow5_without_interactive [ul (
-          List.map subs ~f:(fun agg ->
-            li (paragraphise_without_interactive agg)
-          )
-        )]
-      ]
+      [ Flow5_without_interactive
+          [ul (List.map subs ~f:make_li_without_interactive)] ]
   | Enum subs ->
     let subs = List.map subs ~f:(aggregate ~get_package) in
     if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ol (List.map subs ~f:(fun agg -> li (paragraphise agg)))] ]
+      [ Flow5 [ol (List.map subs ~f:make_li)] ]
     else
-      [ Flow5_without_interactive [ol (
-          List.map subs ~f:(fun agg ->
-            li (paragraphise_without_interactive agg)
-          )
-        )]
-      ]
+      [ Flow5_without_interactive
+          [ol (List.map subs ~f:make_li_without_interactive)] ]
   | Newline -> [ Newline [] ]
   | Title (lvl, label, txt) -> make_title ~get_package ~lvl ~label txt
   | Reference (r,text) ->
@@ -483,8 +483,10 @@ let handle_tags ~get_package tags =
       let open Documentation in
       (* TODO: better everything. *)
       function
-      | Author  s -> [ make_tag "Author" ; pcdata ": "; pcdata s ]
-      | Version s -> [ make_tag "Version" ; pcdata ": "; pcdata s ]
+      | Author  s ->
+        [ Phrasing [ make_tag "Author" ; pcdata ": "; pcdata s ] ]
+      | Version s ->
+        [ Phrasing [ make_tag "Version" ; pcdata ": "; pcdata s ] ]
       | See (see, txt) ->
         let prefix = [ make_tag "See"; pcdata " " ] in
         let see =
@@ -494,16 +496,15 @@ let handle_tags ~get_package tags =
           | Doc s -> pcdata s
         in
         let aggregated = aggregate ~get_package txt in
-        paragraphise (collapse (Phrasing (prefix @ [see]) :: aggregated))
-      | Since s -> [ make_tag "Since" ; pcdata ": "; pcdata s ]
+        collapse (Phrasing (prefix @ [see]) :: aggregated)
+      | Since s ->
+        [ Phrasing [ make_tag "Since" ; pcdata ": "; pcdata s ] ]
       | Before (s, txt) ->
         let prefix = [ make_tag "Before" ; pcdata " "; pcdata s; pcdata "." ] in
-        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing prefix :: aggregate ~get_package txt)
       | Deprecated txt ->
         let prefix = [ make_tag "Deprecated" ; pcdata " " ] in
-        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing prefix :: aggregate ~get_package txt)
       | Param (name, txt) ->
         let p =
           [ make_tag "Parameter"
@@ -512,8 +513,7 @@ let handle_tags ~get_package tags =
           ; pcdata ": "
           ]
         in
-        let aggregated = collapse (Phrasing p :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing p :: aggregate ~get_package txt)
       | Raise (name, txt) ->
         let p =
           [ make_tag ~class_:"raise" "Raises"
@@ -522,23 +522,20 @@ let handle_tags ~get_package tags =
           ; pcdata ": "
           ]
         in
-        let aggregated = collapse (Phrasing p :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing p :: aggregate ~get_package txt)
       | Return txt ->
         let prefix = [ make_tag ~class_:"return" "Returns" ; pcdata " " ] in
-        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing prefix :: aggregate ~get_package txt)
       | Tag (s, txt) ->
         let prefix = [ make_tag ~class_:s ("@" ^ s) ; pcdata " " ] in
-        let aggregated = collapse (Phrasing prefix :: aggregate ~get_package txt) in
-        paragraphise aggregated
+        collapse (Phrasing prefix :: aggregate ~get_package txt)
       | Inline -> []
     )
   in
   let cleaned = List.filter (function [] -> false | _ -> true) raw in
   match cleaned with
   | [] -> []
-  | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:li) ]
+  | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:make_li) ]
 
 let prerr_error (err : _ Documentation.Error.t) =
   let print_pos oc { Documentation.Error.Position. line; column } =
