@@ -93,28 +93,6 @@ module Relative_link = struct
   end
 
   module Of_path = struct
-    let rec render_resolved : type a. (_, a) Path.Resolved.t -> string =
-      let open Path.Resolved in
-      function
-      | Identifier id -> Identifier.name id
-      | Subst (_, p) -> render_resolved p
-      | SubstAlias (_, p) -> render_resolved p
-      | Module (p, s) -> render_resolved p ^ "." ^ s
-      | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
-      | ModuleType (p, s) -> render_resolved p ^ "." ^ s
-      | Type (p, s) -> render_resolved p ^ "." ^ s
-      | Class (p, s) -> render_resolved p ^ "." ^ s
-      | ClassType (p, s) -> render_resolved p ^ "." ^ s
-
-    and render_path : type a. (_, a) Path.t -> string =
-      let open Path in
-      function
-      | Root root -> root
-      | Forward root -> root
-      | Dot (prefix, suffix) -> render_path prefix ^ "." ^ suffix
-      | Apply (p1, p2) -> render_path p1 ^ "(" ^ render_path p2 ^ ")"
-      | Resolved rp -> render_resolved rp
-
     let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
       ('b, a) Path.t -> _ =
       fun ~get_package ~stop_before path ->
@@ -131,7 +109,7 @@ module Relative_link = struct
           link1 @ pcdata "(":: link2 @ [ pcdata ")" ]
         | Resolved rp ->
           let id = Path.Resolved.identifier rp in
-          let txt = render_resolved rp in
+          let txt = Url.render_path path in
           begin match Id.href ~get_package ~stop_before id with
           | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
           | exception Id.Not_linkable -> [ pcdata txt ]

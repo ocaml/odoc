@@ -416,9 +416,10 @@ and format_constraints
 
 and format_manifest
   : 'inner_row 'outer_row. get_package:('a -> string)
+  -> ?compact_variants:bool
   -> 'a Types.TypeDecl.Equation.t
   -> ('inner_row, 'outer_row) text elt list * bool
-= fun ~get_package (equation : _ Types.TypeDecl.Equation.t) ->
+= fun ~get_package ?(compact_variants=true) equation ->
   let private_ = equation.private_ in
   match equation.manifest with
   | None -> [], private_
@@ -429,6 +430,59 @@ and format_manifest
       type_expr ~get_package t
     in
     manifest, false
+
+and polymorphic_variant ~get_package ~type_ident (t : _ Types.TypeExpr.Variant.t) =
+  let row item =
+    let kind_approx, cstr =
+      match item with
+      | Types.TypeExpr.Variant.Type te ->
+        "unknown", [code (type_expr ~get_package te)]
+      | Constructor (name, _bool, args) ->
+        let cstr = "`" ^ name in
+        "constructor",
+        match args with
+        | [] -> [code [ pcdata cstr ]]
+        | _ ->
+          [ code (
+              pcdata cstr ::
+              Markup.keyword " of " ::
+              list_concat_map args ~sep:(Markup.keyword " * ")
+                ~f:(type_expr ~get_package)
+            )
+          ]
+    in
+    try
+      let { Url.Anchor. name = anchor; kind } =
+        Url.Anchor.Polymorphic_variant_decl.from_element
+          ~get_package ~type_ident item
+      in
+      tr ~a:[ a_id anchor; a_class ["anchored"] ] [
+        td ~a:[ a_class ["def"; kind] ] (
+          a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
+          code [Markup.keyword "| " ] ::
+          cstr
+        );
+        (* TODO: retrieve doc comments. *)
+      ]
+    with Failure s ->
+      Printf.eprintf "ERROR: %s\n%!" s;
+      tr [
+        td ~a:[ a_class ["def"; kind_approx] ] (
+          code [Markup.keyword "| " ] ::
+          cstr
+        );
+        (* TODO: retrieve doc comments. *)
+      ]
+  in
+  let table = table ~a:[a_class ["variant"]] (List.map t.elements ~f:row) in
+  match t.kind with
+  | Fixed -> code [pcdata "[ "] :: table :: [code [pcdata " ]"]]
+  | Open -> code [pcdata "[> "] :: table :: [code [pcdata " ]"]]
+  | Closed [] -> code [pcdata "[< "] :: table :: [code [pcdata " ]"]]
+  | Closed lst ->
+    let constrs = String.concat " " lst in
+    code [pcdata "[< "] :: table :: [code [pcdata (" " ^ constrs ^ " ]")]]
+
 
 and variant ~get_package cstrs : [> Html_types.table ] elt =
   let constructor id args res =
@@ -457,7 +511,7 @@ and variant ~get_package cstrs : [> Html_types.table ] elt =
       )
     )
   in
-  table rows
+  table ~a:[ a_class ["variant"] ] rows
 
 and record ~get_package fields =
   let field mutable_ id typ =
@@ -500,7 +554,19 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   let tyname = Identifier.name t.id in
   let params = format_params t.equation.params in
   let constraints = format_constraints ~get_package t.equation.constraints in
-  let manifest, need_private = format_manifest ~get_package t.equation in
+  let manifest, need_private =
+    match t.equation.manifest with
+    | Some (Types.TypeExpr.Variant variant) ->
+      let manifest =
+        Markup.keyword " = " ::
+        (if t.equation.private_ then Markup.keyword "private " else pcdata "") ::
+        polymorphic_variant ~get_package ~type_ident:t.id variant
+      in
+      manifest, false
+    | _ ->
+      let manifest, need_private = format_manifest ~get_package t.equation in
+      [code manifest], need_private
+  in
   let representation =
     match t.representation with
     | None -> []
@@ -516,12 +582,12 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   in
   let doc = Documentation.to_html ~get_package t.doc in
   let tdecl_def =
-    code (
-      Markup.keyword "type " ::
-      params ::
-      pcdata tyname ::
-      manifest
-    ) ::
+    code [
+      Markup.keyword "type ";
+      params;
+      pcdata tyname;
+    ] ::
+    manifest @
     representation @
     [code constraints]
   in

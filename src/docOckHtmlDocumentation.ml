@@ -4,6 +4,7 @@ open Tyxml.Html
 
 module Html_tree = DocOckHtmlHtml_tree
 module Markup = DocOckHtmlMarkup
+module Url = DocOckHtmlUrl
 
 let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
 
@@ -335,8 +336,8 @@ and module_index_entry ~get_package (reference, preamble) =
     | p :: _ -> to_flow5 p
   in
   let id, kind =
-    let open DocOckHtmlUrl.Module_listing_anchor in
-    match from_reference reference with
+    let open Url.Anchor in
+    match Module_listing.from_reference reference with
     | {kind; name} -> Printf.sprintf "listing-%s-%s" kind name, kind
     | exception (Failure s) ->
       Printf.eprintf "ERROR: %s\n%!" s;

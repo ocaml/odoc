@@ -42,11 +42,23 @@ val kind_of_id_exn
   -> ('pkg, _) Identifier.t
   -> string
 
-module Module_listing_anchor : sig
+val render_path : (_, _) Path.t -> string
+
+module Anchor : sig
   type t = {
     kind : string;
     name : string;
   }
 
-  val from_reference : _ Reference.module_ -> t
+  module Polymorphic_variant_decl : sig
+    val from_element
+      : get_package:('pkg -> string)
+      -> type_ident:('pkg, _) Identifier.t
+      -> 'pkg DocOck.Types.TypeExpr.Variant.element
+      -> t
+  end
+
+  module Module_listing : sig
+    val from_reference : _ Reference.module_ -> t
+  end
 end

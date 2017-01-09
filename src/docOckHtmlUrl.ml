@@ -1,4 +1,4 @@
-module Identifier = DocOck.Paths.Identifier
+open DocOck.Paths
 open Identifier
 
 type t = {
@@ -171,42 +171,87 @@ let kind_of_id_exn ~get_package id =
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
 
-module Module_listing_anchor = struct
-  module Reference = DocOck.Paths.Reference
-  open Reference
+let render_path : type a. (_, a) Path.t -> string =
+  let rec render_resolved : type a. (_, a) Path.Resolved.t -> string =
+    let open Path.Resolved in
+    function
+    | Identifier id -> Identifier.name id
+    | Subst (_, p) -> render_resolved p
+    | SubstAlias (_, p) -> render_resolved p
+    | Module (p, s) -> render_resolved p ^ "." ^ s
+    | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
+    | ModuleType (p, s) -> render_resolved p ^ "." ^ s
+    | Type (p, s) -> render_resolved p ^ "." ^ s
+    | Class (p, s) -> render_resolved p ^ "." ^ s
+    | ClassType (p, s) -> render_resolved p ^ "." ^ s
+  and render_path : type a. (_, a) Path.t -> string =
+    let open Path in
+    function
+    | Root root -> root
+    | Forward root -> root
+    | Dot (prefix, suffix) -> render_path prefix ^ "." ^ suffix
+    | Apply (p1, p2) -> render_path p1 ^ "(" ^ render_path p2 ^ ")"
+    | Resolved rp -> render_resolved rp
+  in
+  render_path
 
+module Anchor = struct
   type t = {
     kind : string;
     name : string;
   }
 
-  let fail () = failwith "Only modules allowed inside {!modules: ...}"
+  module Polymorphic_variant_decl = struct
+    let name_of_type_constr te =
+      match te with
+      | DocOckTypes.TypeExpr.Constr (path, _) -> render_path path
+      | _ ->
+        invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
-  let rec from_reference : type a. (_, a) Reference.t -> t = function
-    | Reference.Root name -> { kind = "xref-unresolved"; name }
-    | Reference.Dot (parent, suffix) ->
-      let { name; _ } = from_reference parent in
-      { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
-    | Reference.Resolved r ->
-      from_resolved r
+    let from_element ~get_package ~type_ident elt =
+      match from_identifier ~get_package ~stop_before:true type_ident with
+      | Error e -> failwith (Error.to_string e)
+      | Ok { anchor; _ } ->
+        match elt with
+        | DocOckTypes.TypeExpr.Variant.Type te ->
+          { kind = "type"
+          ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
+        | Constructor (name, _, _) ->
+          { kind = "constructor"
+          ; name = Printf.sprintf "%s.%s" anchor name }
+  end
 
-  and from_resolved : type a. (_, a) Reference.Resolved.t -> t =
-    let open Reference.Resolved in
-    function
-    | Identifier id ->
-      let name = Identifier.name id in
-      let kind =
-        match from_identifier ~get_package:(fun _ -> "") ~stop_before:false id with
-        | Ok { kind; _ } -> kind
-        | Error _ -> fail ()
-      in
-      { name; kind }
-    | Module (parent, s) ->
-      let { name; _ } = from_resolved parent in
-      { kind = "module"; name = Printf.sprintf "%s.%s" name s }
-    | ModuleType (parent, s) ->
-      let { name; _ } = from_resolved parent in
-      { kind = "module-type"; name = Printf.sprintf "%s.%s" name s }
-    | _ ->
-      fail ()
+  module Module_listing = struct
+    module Reference = DocOck.Paths.Reference
+
+    let fail () = failwith "Only modules allowed inside {!modules: ...}"
+
+    let rec from_reference : type a. (_, a) Reference.t -> t = function
+      | Reference.Root name -> { kind = "xref-unresolved"; name }
+      | Reference.Dot (parent, suffix) ->
+        let { name; _ } = from_reference parent in
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
+      | Reference.Resolved r ->
+        from_resolved r
+
+    and from_resolved : type a. (_, a) Reference.Resolved.t -> t =
+      let open Reference.Resolved in
+      function
+      | Identifier id ->
+        let name = Identifier.name id in
+        let kind =
+          match from_identifier ~get_package:(fun _ -> "") ~stop_before:false id with
+          | Ok { kind; _ } -> kind
+          | Error _ -> fail ()
+        in
+        { name; kind }
+      | Module (parent, s) ->
+        let { name; _ } = from_resolved parent in
+        { kind = "module"; name = Printf.sprintf "%s.%s" name s }
+      | ModuleType (parent, s) ->
+        let { name; _ } = from_resolved parent in
+        { kind = "module-type"; name = Printf.sprintf "%s.%s" name s }
+      | _ ->
+        fail ()
+  end
 end
