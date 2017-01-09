@@ -435,18 +435,21 @@ and variant ~get_package cstrs : [> Html_types.table ] elt =
     match Url.from_identifier ~get_package ~stop_before:true id with
     | Error e -> failwith (Url.Error.to_string e)
     | Ok { anchor; kind; _ } ->
-      td ~a:[ a_class ["def"; kind ]; a_id anchor ] (
-        a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
-        code [Markup.keyword "| " ] ::
-        constructor ~get_package id args res
-      )
+      let cell =
+        td ~a:[ a_class ["def"; kind ] ] (
+          a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
+          code [Markup.keyword "| " ] ::
+          constructor ~get_package id args res
+        )
+      in
+      anchor, cell
   in
   let rows =
     List.map cstrs ~f:(fun cstr ->
       let open Types.TypeDecl.Constructor in
-      let lhs = constructor cstr.id cstr.args cstr.res in
+      let anchor, lhs = constructor cstr.id cstr.args cstr.res in
       let rhs = Documentation.to_html ~wrap:() ~get_package cstr.doc in
-      tr (
+      tr ~a:[ a_id anchor; a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc cstr.doc) then [] else [
           td ~a:[ a_class ["doc"] ] rhs
