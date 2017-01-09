@@ -183,10 +183,10 @@ module Module_listing_anchor = struct
   let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
   let rec from_reference : type a. (_, a) Reference.t -> t = function
-    | Reference.Root name -> { kind = "unresolved"; name }
+    | Reference.Root name -> { kind = "xref-unresolved"; name }
     | Reference.Dot (parent, suffix) ->
       let { name; _ } = from_reference parent in
-      { kind = "unresolved"; name = Printf.sprintf "%s.%s" name suffix }
+      { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
     | Reference.Resolved r ->
       from_resolved r
 
