@@ -89,3 +89,9 @@ module Relative_link : sig
 
   val to_sub_element : kind:kind -> string -> [> `Href ] attrib
 end
+
+(* TODO: move to a centralized [State] module or something. Along with
+   Relative_link.semantic_uris. *)
+val open_details : bool ref
+(** Whether [<details>] tags should be opened by default or not.
+    Default is [true]. *)

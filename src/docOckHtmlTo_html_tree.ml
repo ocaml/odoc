@@ -787,9 +787,9 @@ and include_ ~get_package (t : _ Types.Include.t) =
           module_decl' ~get_package t.parent t.decl
         )
       in
-      (* TODO: I'd like to add an anchor here, but I don't know what id to give
+      (* FIXME: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      [ details ~a:[a_open ()]
+      [ details ~a:(if !Html_tree.open_details then [a_open ()] else [])
           (Markup.def_summary [incl]) included_html
       ]
   in

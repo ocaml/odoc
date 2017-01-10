@@ -61,7 +61,8 @@ and functor_argument ~prefix arg =
   | Some expansion ->
     let name = Identifier.name arg.id in
     let nb = functor_arg_pos arg in
-    let page = Printf.sprintf "%s/%s.%d.moda" prefix name nb in
+    (* FIXME: reuse [Url] somehow. *)
+    let page = Printf.sprintf "%s/argument-%d-%s" prefix nb name in
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 
@@ -90,7 +91,8 @@ and module_type ~prefix (t : _ Types.ModuleType.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
-    let page = Printf.sprintf "%s/%s.modt" prefix (Identifier.name t.id) in
+    (* FIXME: reuse [Url] somehow. *)
+    let page = Printf.sprintf "%s/module-type-%s" prefix (Identifier.name t.id) in
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 

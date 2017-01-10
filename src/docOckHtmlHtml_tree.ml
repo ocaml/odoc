@@ -273,3 +273,5 @@ let traverse ~f t =
     List.iter node.children ~f:(aux (node.name :: parents))
   in
   aux [] t
+
+let open_details = ref true
