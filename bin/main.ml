@@ -101,8 +101,9 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris directories output_dir index_for input_file =
+  let html semantic_uris closed_details directories output_dir index_for input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
+    DocOckHtml.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     match index_for with
     | None ->
@@ -121,6 +122,12 @@ end = struct
       let doc = "Generate pretty (semantic) links" in
       Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
     in
+    let closed_details =
+      let doc = "If this flag is passed <details> tags (used for includes) will \
+                 be closed by default."
+      in
+      Arg.(value & flag (info ~doc ["closed-details"]))
+    in
     let index_for =
       let doc = "When this argument is given, then the input file is a .mld
                  file, i.e. a file in the ocamldoc syntax. The output will be a
@@ -130,7 +137,7 @@ end = struct
       in
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
-    Term.(const html $ semantic_uris $ env $ dst $ index_for $ input)
+    Term.(const html $ semantic_uris $ closed_details $ env $ dst $ index_for $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
