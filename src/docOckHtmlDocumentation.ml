@@ -527,6 +527,8 @@ let handle_tags ~get_package tags =
       | Return txt ->
         let prefix = [ make_tag ~class_:"return" "Returns" ; pcdata " " ] in
         collapse (Phrasing prefix :: aggregate ~get_package txt)
+      | Tag ("open", _) (* TODO: Make these proper tags. *)
+      | Tag ("close", _) -> []
       | Tag (s, txt) ->
         let prefix = [ make_tag ~class_:s ("@" ^ s) ; pcdata " " ] in
         collapse (Phrasing prefix :: aggregate ~get_package txt)

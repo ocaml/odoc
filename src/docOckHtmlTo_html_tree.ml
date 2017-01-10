@@ -772,10 +772,24 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
 and include_ ~get_package (t : _ Types.Include.t) =
   let doc = Documentation.to_html ~get_package t.doc in
   let included_html, tree = signature ~get_package t.expansion.content in
-  let should_be_inlined =
+  let should_be_inlined, should_be_open =
     match t.doc with
-    | Ok { tags ; _ } -> List.mem Types.Documentation.Inline ~set:tags
-    | _ -> false
+    | Ok { tags ; _ } ->
+      let should_be_open =
+        let forced_open =
+          List.exists tags ~f:(function
+            | Types.Documentation.Tag ("open", _) -> true
+            | _ -> false
+          )
+        in
+        if forced_open then true else
+          !Html_tree.open_details && List.for_all tags ~f:(function
+            | Types.Documentation.Tag ("closed", _) -> false
+            | _ -> true
+          )
+      in
+      List.mem Types.Documentation.Inline ~set:tags, should_be_open
+    | _ -> false, !Html_tree.open_details
   in
   let incl =
     if should_be_inlined then
@@ -789,7 +803,7 @@ and include_ ~get_package (t : _ Types.Include.t) =
       in
       (* FIXME: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      [ details ~a:(if !Html_tree.open_details then [a_open ()] else [])
+      [ details ~a:(if should_be_open then [a_open ()] else [])
           (Markup.def_summary [incl]) included_html
       ]
   in
