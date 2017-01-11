@@ -250,6 +250,7 @@ module rec Path : sig
       | SubstAlias : 'a module_ * ('a, 'b) t ->
                 ('a, [< kind > `Module] as 'b) t
       | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
+      | Canonical : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
       | Apply : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
       | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
       | Type : 'a module_ * string -> ('a, [< kind > `Type]) t
@@ -285,6 +286,7 @@ module rec Path : sig
 
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+    val rebase : 'a Identifier.signature -> ('a, 'b) t -> ('a, 'b) t
   end
 
   type kind = Kind.path
@@ -427,7 +429,7 @@ end
 (** {3 References} *)
 
 (** References to definitions *)
-module Reference : sig
+module rec Reference : sig
 
   module Resolved : sig
 
@@ -436,6 +438,7 @@ module Reference : sig
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
       | Module : 'a signature * string -> ('a, [< kind > `Module]) t
+      | Canonical : 'a module_ * 'a Reference.module_ -> ('a, [< kind > `Module]) t
       | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
       | Type : 'a signature * string -> ('a, [< kind > `Type]) t
       | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
@@ -455,8 +458,8 @@ module Reference : sig
     and 'a class_signature = ('a, Kind.class_signature) t
     and 'a datatype = ('a, Kind.datatype) t
     and 'a parent = ('a, Kind.parent) t
+    and 'a module_ = ('a, reference_module) t
 
-    type 'a module_ = ('a, reference_module) t
     type 'a module_type = ('a, reference_module_type) t
     type 'a type_ = ('a, reference_type) t
     type 'a constructor = ('a, reference_constructor) t
@@ -526,6 +529,7 @@ module Reference : sig
 
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+    val rebase : 'a Identifier.signature -> ('a, 'b) t -> ('a, 'b) t
   end
 
   type kind = Kind.reference
@@ -641,4 +645,5 @@ module Reference : sig
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+  val t_of_path : 'a Path.module_ -> 'a module_
 end

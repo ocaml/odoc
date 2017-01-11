@@ -55,6 +55,27 @@ let read_longident s =
     | None -> raise (InvalidReference s)
     | Some r -> r
 
+let read_path_longident s =
+  let open DocOckPaths.Path in
+  let rec loop : 'k. string -> int -> ('a, [< kind > `Module ] as 'k) t option =
+    fun s pos ->
+      try
+        let idx = String.rindex_from s pos '.' in
+        let name = String.sub s (idx + 1) (pos - idx) in
+        if String.length name = 0 then None
+        else
+          match loop s (idx - 1) with
+          | None -> None
+          | Some parent -> Some (Dot(parent, name))
+      with Not_found ->
+        let name = String.sub s 0 (pos + 1) in
+        if String.length name = 0 then None
+        else Some (Root name)
+  in
+    match loop s (String.length s - 1) with
+    | None -> raise (InvalidReference s)
+    | Some r -> r
+
 let read_reference rk s =
   match rk with
   | RK_module -> Module (read_longident s)
@@ -122,6 +143,7 @@ let read_tag parent : Octavius.Types.tag -> 'a tag = function
   | Return_value t -> Return (read_text parent t)
   | Inline -> Inline
   | Custom (s, t) -> Tag (s, read_text parent t)
+  | Canonical p -> Canonical (read_path_longident p)
 
 let empty_body = { text = []; tags = []; }
 

@@ -44,31 +44,31 @@ module rec Sig : sig
 
   (** {3 Elements} *)
 
-  val find_module_element : string -> 'a t -> Element.signature_module
+  val find_module_element : string -> 'a t -> 'a Element.signature_module
 
-  val find_apply_element : 'a t -> Element.signature_module
+  val find_apply_element : 'a t -> 'a Element.signature_module
 
-  val find_module_type_element : string -> 'a t -> Element.signature_module_type
+  val find_module_type_element : string -> 'a t -> 'a Element.signature_module_type
 
-  val find_type_element : string -> 'a t -> Element.signature_type
+  val find_type_element : string -> 'a t -> 'a Element.signature_type
 
-  val find_constructor_element : string -> 'a t -> Element.signature_constructor
+  val find_constructor_element : string -> 'a t -> 'a Element.signature_constructor
 
-  val find_field_element : string -> 'a t -> Element.signature_field
+  val find_field_element : string -> 'a t -> 'a Element.signature_field
 
-  val find_extension_element : string -> 'a t -> Element.signature_extension
+  val find_extension_element : string -> 'a t -> 'a Element.signature_extension
 
-  val find_exception_element : string -> 'a t -> Element.signature_exception
+  val find_exception_element : string -> 'a t -> 'a Element.signature_exception
 
-  val find_value_element : string -> 'a t -> Element.signature_value
+  val find_value_element : string -> 'a t -> 'a Element.signature_value
 
-  val find_class_element : string -> 'a t -> Element.signature_class
+  val find_class_element : string -> 'a t -> 'a Element.signature_class
 
-  val find_class_type_element : string -> 'a t -> Element.signature_class_type
+  val find_class_type_element : string -> 'a t -> 'a Element.signature_class_type
 
-  val find_label_element : string -> 'a t -> Element.signature_label
+  val find_label_element : string -> 'a t -> 'a Element.signature_label
 
-  val find_element : string -> 'a t -> Element.signature
+  val find_element : string -> 'a t -> 'a Element.signature
 
   (** {3 Lookup} *)
 
@@ -101,7 +101,7 @@ module rec Sig : sig
 
   val add_class_type : string -> 'a ClassSig.t -> 'a signature -> 'a signature
 
-  val add_element : string -> Element.signature -> 'a signature -> 'a signature
+  val add_element : string -> 'a Element.signature -> 'a signature -> 'a signature
 
   val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
 
@@ -134,6 +134,11 @@ module rec Sig : sig
 
   val with_type_subst : 'a Fragment.type_ -> 'a t -> 'a t
 
+  (** {3 Aliases handling} *)
+
+  val set_canonical_path : 'a t -> 'a Path.module_ option -> 'a t
+
+  val find_canonical_path : 'a t -> 'a Path.module_ option
 end
 
 and Datatype : sig
@@ -142,13 +147,13 @@ and Datatype : sig
 
   (** {3 Elements} *)
 
-  val find_constructor_element : string -> 'a t -> Element.datatype_constructor
+  val find_constructor_element : string -> 'a t -> 'a Element.datatype_constructor
 
-  val find_field_element : string -> 'a t -> Element.datatype_field
+  val find_field_element : string -> 'a t -> 'a Element.datatype_field
 
-  val find_label_element : string -> 'a t -> Element.datatype_label
+  val find_label_element : string -> 'a t -> 'a Element.datatype_label
 
-  val find_element : string -> 'a t -> Element.datatype
+  val find_element : string -> 'a t -> 'a Element.datatype
 
   (** {3 Constructors} *)
 
@@ -172,14 +177,14 @@ and ClassSig : sig
 
   (** {3 Elements} *)
 
-  val find_method_element : string -> 'a t -> Element.class_signature_method
+  val find_method_element : string -> 'a t -> 'a Element.class_signature_method
 
   val find_instance_variable_element : string -> 'a t ->
-        Element.class_signature_instance_variable
+        'a Element.class_signature_instance_variable
 
-  val find_label_element : string -> 'a t -> Element.class_signature_label
+  val find_label_element : string -> 'a t -> 'a Element.class_signature_label
 
-  val find_element : string -> 'a t -> Element.class_signature
+  val find_element : string -> 'a t -> 'a Element.class_signature
 
   (** {3 Constructors} *)
 
@@ -187,7 +192,7 @@ and ClassSig : sig
 
   val empty : 'a signature
 
-  val add_element : string -> Element.class_signature ->
+  val add_element : string -> 'a Element.class_signature ->
     'a signature -> 'a signature
 
   val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
@@ -244,62 +249,62 @@ and Element : sig
     | `Exception | `Value | `Class | `ClassType
     | `Method | `InstanceVariable | `Label ]
 
-  type 'a t =
-    | Module : [< kind > `Module] t
-    | ModuleType : [< kind > `ModuleType] t
-    | Type : [< kind > `Type] t
-    | Constructor : string -> [< kind > `Constructor] t
-    | Field : string -> [< kind > `Field] t
-    | Extension : [< kind > `Extension] t
-    | Exception : [< kind > `Exception] t
-    | Value : [< kind > `Value] t
-    | Class : [< kind > `Class] t
-    | ClassType : [< kind > `ClassType] t
-    | Method : [< kind > `Method] t
-    | InstanceVariable : [< kind > `InstanceVariable] t
-    | Label : string option -> [< kind > `Label] t
+  type ('a, 'b) t =
+    | Module : {canonical_path : 'a Path.module_ option} -> ('a, [< kind > `Module]) t
+    | ModuleType : ('a, [< kind > `ModuleType]) t
+    | Type : ('a, [< kind > `Type]) t
+    | Constructor : string -> ('a, [< kind > `Constructor]) t
+    | Field : string -> ('a, [< kind > `Field]) t
+    | Extension : ('a, [< kind > `Extension]) t
+    | Exception : ('a, [< kind > `Exception]) t
+    | Value : ('a, [< kind > `Value]) t
+    | Class : ('a, [< kind > `Class]) t
+    | ClassType : ('a, [< kind > `ClassType]) t
+    | Method : ('a, [< kind > `Method]) t
+    | InstanceVariable : ('a, [< kind > `InstanceVariable]) t
+    | Label : string option -> ('a, [< kind > `Label]) t
 
-  type signature_module = [`Module] t
+  type 'a signature_module = ('a, [`Module]) t
 
-  type signature_module_type = [`ModuleType] t
+  type 'a signature_module_type = ('a, [`ModuleType]) t
 
-  type signature_type = [`Type | `Class | `ClassType] t
+  type 'a signature_type = ('a, [`Type | `Class | `ClassType]) t
 
-  type signature_constructor = [`Constructor | `Extension | `Exception] t
+  type 'a signature_constructor = ('a, [`Constructor | `Extension | `Exception]) t
 
-  type signature_field = [`Field] t
+  type 'a signature_field = ('a, [`Field]) t
 
-  type signature_extension = [`Extension | `Exception] t
+  type 'a signature_extension = ('a, [`Extension | `Exception]) t
 
-  type signature_exception = [`Exception] t
+  type 'a signature_exception = ('a, [`Exception]) t
 
-  type signature_value = [`Value] t
+  type 'a signature_value = ('a, [`Value]) t
 
-  type signature_class = [`Class] t
+  type 'a signature_class = ('a, [`Class]) t
 
-  type signature_class_type = [`Class | `ClassType] t
+  type 'a signature_class_type = ('a, [`Class | `ClassType]) t
 
-  type signature_label = [`Label] t
+  type 'a signature_label = ('a, [`Label]) t
 
-  type signature =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType | `Label ] t
+  type 'a signature =
+    ('a, [ `Module | `ModuleType | `Type
+         | `Constructor | `Field | `Extension
+         | `Exception | `Value | `Class | `ClassType | `Label ]) t
 
-  type datatype_constructor = [`Constructor] t
+  type 'a datatype_constructor = ('a, [`Constructor]) t
 
-  type datatype_field = [`Field] t
+  type 'a datatype_field = ('a, [`Field]) t
 
-  type datatype_label = [`Label] t
+  type 'a datatype_label = ('a, [`Label]) t
 
-  type datatype = [ `Constructor | `Field | `Label] t
+  type 'a datatype = ('a, [ `Constructor | `Field | `Label]) t
 
-  type class_signature_method = [`Method] t
+  type 'a class_signature_method = ('a, [`Method]) t
 
-  type class_signature_instance_variable = [`InstanceVariable] t
+  type 'a class_signature_instance_variable = ('a, [`InstanceVariable]) t
 
-  type class_signature_label = [`Label] t
+  type 'a class_signature_label = ('a, [`Label]) t
 
-  type class_signature = [ `Method | `InstanceVariable | `Label ] t
+  type 'a class_signature = ('a, [ `Method | `InstanceVariable | `Label ]) t
 
 end

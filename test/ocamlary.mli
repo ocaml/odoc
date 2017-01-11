@@ -804,3 +804,45 @@ include IncludeInclude2
 
     {!modules: IncludeInclude1.IncludeInclude2 Dep4.T A.Q}
 *)
+
+(** {1 Playing with \@canonical paths} *)
+
+module CanonicalTest : sig
+  module Base__List : sig
+    type 'a t
+
+    val id : 'a t -> 'a t
+  end
+
+  module Base__ : sig
+    (** @canonical Ocamlary.CanonicalTest.Base.List *)
+    module List = Base__List
+  end
+
+  module Base : sig
+    module List = Base__.List
+  end
+
+  module Base__Tests : sig
+    module C : module type of Base__.List
+
+    open Base__
+
+    module L = List
+
+    val foo : int L.t -> float L.t
+
+    val bar : 'a List.t -> 'a List.t
+    (** This is just {!List.id}, or rather {!L.id} *)
+
+    val baz : 'a Base__.List.t -> unit
+    (** Just seeing if {!Base__.List.t} ([Base__.List.t]) gets rewriten to
+        {!Base.List.t} ([Base.List.t]) *)
+  end
+
+  module List_modif : module type of Base.List with type 'c t = 'c Base__.List.t
+end
+
+val test : 'a CanonicalTest.Base__.List.t -> unit
+(** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.L.id}.
+    But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)

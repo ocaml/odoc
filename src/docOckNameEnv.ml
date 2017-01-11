@@ -295,7 +295,7 @@ and add_text txt env =
 let add_tag tag env =
   let open Documentation in
     match tag with
-    | Author _ | Version _ | Since _ | Inline -> env
+    | Author _ | Version _ | Since _ | Inline | Canonical _ -> env
     | See(_, txt) | Before(_, txt) | Deprecated txt
     | Param(_, txt) | Raise(_, txt)
     | Return txt | Tag(_, txt) -> add_text txt env

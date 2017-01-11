@@ -465,12 +465,23 @@ and read_module_declaration env parent md =
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id md.md_attributes in
+  let canonical_path =
+    let open Documentation in
+    match doc with
+    | Ok { tags; _ } ->
+      begin match List.find (function Canonical _ -> true | _ -> false) tags with
+      | exception Not_found -> None
+      | Canonical p -> Some p
+      | _ -> None
+      end
+    | _ -> None
+  in
   let type_ =
     match md.md_type.mty_desc with
     | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
-    {id; doc; type_; expansion = None}
+    {id; doc; type_; expansion = None; canonical_path}
 
 and read_module_declarations env parent mds =
   let container = Identifier.parent_of_signature parent in

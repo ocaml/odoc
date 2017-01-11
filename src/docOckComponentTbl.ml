@@ -327,6 +327,7 @@ and resolved_module_path local =
   | Module(p, name) ->
       let parent = resolved_module_path local p in
         Sig.lookup_module name parent
+  | Canonical (p, _) -> resolved_module_path local p
   | Apply(p, arg) ->
       let parent = resolved_module_path local p in
         Sig.lookup_apply (module_path local) arg parent
@@ -431,6 +432,7 @@ and signature_items local =
         let open Module in
         let name = Identifier.name md.id in
         let decl = module_decl local md.type_ in
+        let decl = Sig.set_canonical_path decl md.canonical_path in
         add_local_module_identifier local md.id decl;
         let sg = signature_items local rest in
         let sg = add_documentation md.doc sg in
@@ -610,6 +612,8 @@ let rec resolved_signature_reference tbl =
   | Module(p, name) ->
       let parent = resolved_signature_reference tbl p in
         Sig.lookup_module name parent
+  | Canonical (p, _) ->
+    resolved_signature_reference tbl (Reference.Resolved.signature_of_module p)
   | ModuleType(p, name) ->
       let parent = resolved_signature_reference tbl p in
         Sig.lookup_module_type name parent

@@ -154,7 +154,7 @@ and text_labels acc txt = List.fold_left text_element_labels acc txt
 
 let tag_labels acc =
   let open Documentation in function
-  | Author _ | Version _ | Since _ | Inline -> acc
+  | Author _ | Version _ | Since _ | Inline | Canonical _ -> acc
   | See(_, txt) | Before(_, txt) | Deprecated txt
   | Param(_, txt) | Raise(_, txt) | Return txt | Tag(_, txt) ->
       text_labels acc txt
@@ -179,6 +179,10 @@ module rec Sig : sig
 
   type 'a t
 
+  val set_canonical_path : 'a t -> 'a Path.module_ option -> 'a t
+
+  val find_canonical_path : 'a t -> 'a Path.module_ option
+
   val find_parent_module : string -> 'a t -> 'a Parent.module_
 
   val find_parent_apply : ('a Path.module_ -> 'a t) -> 'a Path.module_ ->
@@ -198,31 +202,31 @@ module rec Sig : sig
 
   val find_parent : string -> 'a t -> 'a Parent.any
 
-  val find_module_element : string -> 'a t -> Element.signature_module
+  val find_module_element : string -> 'a t -> 'a Element.signature_module
 
-  val find_apply_element : 'a t -> Element.signature_module
+  val find_apply_element : 'a t -> 'a Element.signature_module
 
-  val find_module_type_element : string -> 'a t -> Element.signature_module_type
+  val find_module_type_element : string -> 'a t -> 'a Element.signature_module_type
 
-  val find_type_element : string -> 'a t -> Element.signature_type
+  val find_type_element : string -> 'a t -> 'a Element.signature_type
 
-  val find_constructor_element : string -> 'a t -> Element.signature_constructor
+  val find_constructor_element : string -> 'a t -> 'a Element.signature_constructor
 
-  val find_field_element : string -> 'a t -> Element.signature_field
+  val find_field_element : string -> 'a t -> 'a Element.signature_field
 
-  val find_extension_element : string -> 'a t -> Element.signature_extension
+  val find_extension_element : string -> 'a t -> 'a Element.signature_extension
 
-  val find_exception_element : string -> 'a t -> Element.signature_exception
+  val find_exception_element : string -> 'a t -> 'a Element.signature_exception
 
-  val find_value_element : string -> 'a t -> Element.signature_value
+  val find_value_element : string -> 'a t -> 'a Element.signature_value
 
-  val find_class_element : string -> 'a t -> Element.signature_class
+  val find_class_element : string -> 'a t -> 'a Element.signature_class
 
-  val find_class_type_element : string -> 'a t -> Element.signature_class_type
+  val find_class_type_element : string -> 'a t -> 'a Element.signature_class_type
 
-  val find_label_element : string -> 'a t -> Element.signature_label
+  val find_label_element : string -> 'a t -> 'a Element.signature_label
 
-  val find_element : string -> 'a t -> Element.signature
+  val find_element : string -> 'a t -> 'a Element.signature
 
   val lookup_module : string -> 'a t -> 'a t
 
@@ -251,7 +255,7 @@ module rec Sig : sig
 
   val add_class_type : string -> 'a ClassSig.t -> 'a signature -> 'a signature
 
-  val add_element : string -> Element.signature -> 'a signature -> 'a signature
+  val add_element : string -> 'a Element.signature -> 'a signature -> 'a signature
 
   val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
 
@@ -307,11 +311,11 @@ end = struct
     { modules: 'a t SMap.t;
       module_types: 'a t SMap.t;
       class_signatures: 'a ClassSig.t SMap.t;
-      types: Element.signature_type SMap.t;
+      types: 'a Element.signature_type SMap.t;
       parents: 'a Parent.any LMap.t;
-      elements: Element.signature LMap.t; }
+      elements: 'a Element.signature LMap.t; }
 
-  and 'a t =
+  and 'a body =
     | Expr of 'a expr
     | Sig of 'a signature Lazy.t
     | Functor of 'a functor_
@@ -319,7 +323,24 @@ end = struct
     | Abstract
     | Unresolved
 
-  let rec lift_find f x = function
+  and 'a t =
+    { canonical : 'a Path.module_ option;
+      body : 'a body }
+
+  let set_canonical_path t canonical =
+    begin match canonical with
+    | Some p ->
+      Printf.eprintf "DocOck.Components.Sig.set_canonical_path: Some %s\n%!"
+        (string_of_sexp @@ Path.sexp_of_t (fun _ -> Atom "") p)
+    | _ -> ()
+    end;
+    { t with canonical }
+  let find_canonical_path t = t.canonical
+
+  let t_of_body body = { canonical = None; body }
+
+  let rec lift_find f x t =
+    match t.body with
     | Expr expr -> begin
         match expr.term with
         | Path(_, true) | Alias(_, true) -> raise Not_found
@@ -387,7 +408,8 @@ end = struct
     in
       lift_find find name t
 
-  let rec find_parent_subst = function
+  let rec find_parent_subst t =
+    match t.body with
     | Expr expr -> begin
         match expr.term with
         | Path(p, true) -> Parent.Subst p
@@ -406,19 +428,20 @@ end = struct
 
   let find_module_element name t =
     let find name sg =
-      if SMap.mem name sg.modules then Element.Module
-      else raise Not_found
+      let t = SMap.find name sg.modules in
+      Element.Module { canonical_path = t.canonical }
     in
       lift_find find name t
 
-  let rec find_apply_element = function
+  let rec find_apply_element t =
+    match t.body with
     | Expr expr -> begin
         match expr.term with
         | Path(_, true) | Alias(_, true) -> raise Not_found
         | _ -> find_apply_element (Lazy.force expr.expansion)
       end
     | Sig sg -> raise Not_found
-    | Functor fn -> Element.Module
+    | Functor fn -> Element.Module { canonical_path = None }
     | Generative t -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
@@ -518,43 +541,47 @@ end = struct
     let find name sg = LMap.find_name name sg.elements in
       lift_find find name t
 
-  let rec lookup_module name = function
+  let rec lookup_module name t =
+    match t.body with
     | Expr expr -> lookup_module name (Lazy.force expr.expansion)
     | Sig sg -> begin
         try
           SMap.find name (Lazy.force sg).modules
-        with Not_found -> Unresolved
+        with Not_found -> t_of_body Unresolved
       end
     | Functor fn -> lookup_module name fn.res
     | Generative t -> lookup_module name t
-    | Abstract -> Unresolved
-    | Unresolved -> Unresolved
+    | Abstract -> t_of_body Unresolved
+    | Unresolved -> t_of_body Unresolved
 
-  let rec lookup_argument pos = function
+  let rec lookup_argument pos t =
+    match t.body with
     | Expr expr -> lookup_argument pos (Lazy.force expr.expansion)
-    | Sig sg -> Unresolved
+    | Sig sg -> t_of_body Unresolved
     | Functor fn ->
         if pos = 1 then fn.arg
         else lookup_argument (pos - 1) fn.res
     | Generative t ->
-        if pos = 1 then Unresolved
+        if pos = 1 then t_of_body Unresolved
         else lookup_argument (pos - 1) t
-    | Abstract -> Unresolved
-    | Unresolved -> Unresolved
+    | Abstract -> t_of_body Unresolved
+    | Unresolved -> t_of_body Unresolved
 
-  let rec lookup_module_type name = function
+  let rec lookup_module_type name t =
+    match t.body with
     | Expr expr -> lookup_module_type name (Lazy.force expr.expansion)
     | Sig sg -> begin
         try
           SMap.find name (Lazy.force sg).module_types
-        with Not_found -> Unresolved
+        with Not_found -> t_of_body Unresolved
       end
     | Functor fn -> lookup_module_type name fn.res
     | Generative t -> lookup_module_type name t
-    | Abstract -> Unresolved
-    | Unresolved -> Unresolved
+    | Abstract -> t_of_body Unresolved
+    | Unresolved -> t_of_body Unresolved
 
-  let rec lookup_class_type name = function
+  let rec lookup_class_type name t =
+    match t.body with
     | Expr expr -> lookup_class_type name (Lazy.force expr.expansion)
     | Sig sg -> begin
         try
@@ -566,7 +593,8 @@ end = struct
     | Abstract -> ClassSig.unresolved
     | Unresolved -> ClassSig.unresolved
 
-  let rec lookup_datatype name = function
+  let rec lookup_datatype name t =
+    match t.body with
     | Expr expr -> lookup_datatype name (Lazy.force expr.expansion)
     | Sig sg -> begin
           try
@@ -593,7 +621,9 @@ end = struct
   let add_module name md sg =
     let modules = SMap.add name md sg.modules in
     let parents = LMap.add name (Parent.Module md) sg.parents in
-    let elements = LMap.add name Element.Module sg.elements in
+    let elements =
+      LMap.add name (Element.Module {canonical_path = md.canonical}) sg.elements
+    in
       {sg with modules; parents; elements}
 
   let add_module_type name mty sg =
@@ -606,7 +636,7 @@ end = struct
     let types = SMap.add name Element.Type sg.types in
     let parents = LMap.add name (Parent.Datatype decl) sg.parents in
     let elements =
-      let add_element name (elem : Element.datatype) acc =
+      let add_element name (elem : 'a Element.datatype) acc =
         let open Element in
         let (Constructor _ | Field _ | Label _ as elem) = elem in
           LMap.add name elem acc
@@ -645,7 +675,7 @@ end = struct
       List.fold_left add_label sg labels
 
   let rec include_ t sg =
-      match t with
+    match t.body with
     | Expr expr -> include_ (Lazy.force expr.expansion) sg
     | Sig incl ->
         let incl = Lazy.force incl in
@@ -672,7 +702,7 @@ end = struct
     | Functor _ | Generative _ | Abstract | Unresolved -> sg
 
   let rec modules t =
-      match t with
+    match t.body with
     | Expr expr -> modules (Lazy.force expr.expansion)
     | Sig sg ->
         let sg = Lazy.force sg in
@@ -680,7 +710,7 @@ end = struct
     | Functor _ | Generative _ | Abstract | Unresolved -> []
 
   let rec module_types t =
-      match t with
+    match t.body with
     | Expr expr -> module_types (Lazy.force expr.expansion)
     | Sig sg ->
         let sg = Lazy.force sg in
@@ -690,14 +720,14 @@ end = struct
   let path lookup p =
     let term = Path(p, false) in
     let expansion = lazy (lookup p) in
-      Expr {term; expansion}
+      t_of_body (Expr {term; expansion})
 
   let alias lookup p =
     let term = Alias(p, false) in
     let expansion = lazy (lookup p) in
-      Expr {term; expansion}
+      t_of_body (Expr {term; expansion})
 
-  let signature f x = Sig (lazy (f x))
+  let signature f x = t_of_body (Sig (lazy (f x)))
 
   let functor_ equal hash id arg res =
     let equal =
@@ -711,13 +741,14 @@ end = struct
       | Some hash -> Some (Path.hash ~hash)
     in
     let cache = make_tbl equal hash 3 in
-      Functor {id; arg; res; cache}
+      t_of_body (Functor {id; arg; res; cache})
 
-  let generative t = Generative t
+  let generative t = t_of_body (Generative t)
 
-  let abstract = Abstract
+  (* Can't use [t_of_body] because of value restriction. *)
+  let abstract = { canonical = None; body = Abstract }
 
-  let unresolved = Unresolved
+  let unresolved = { canonical = None; body = Unresolved }
 
   let replace_module name t sg =
     let modules = SMap.map_item name (fun _ -> t) sg.modules in
@@ -750,7 +781,10 @@ end = struct
           | _ -> false)
         sg.parents
     in
-    let elements = LMap.filter_item name ((<>) Element.Module) sg.elements in
+    let elements =
+      LMap.filter_item name
+        (function Element.Module _ -> false | _ -> true) sg.elements
+    in
       {sg with modules; parents; elements}
 
   let remove_datatype name sg =
@@ -765,13 +799,14 @@ end = struct
     let elements = LMap.filter_item name ((<>) Element.Type) sg.elements in
       {sg with types; parents; elements}
 
-  let rec with_module frag eq = function
+  let rec with_module frag eq t =
+    match t.body with
     | Expr expr ->
         let term = WithModule(expr, frag, eq) in
         let expansion =
           lazy (with_module frag eq (Lazy.force expr.expansion))
         in
-          Expr {term; expansion}
+          t_of_body (Expr {term; expansion})
     | Sig sg ->
         let sg =
           lazy
@@ -781,16 +816,17 @@ end = struct
                 | None -> replace_module name eq sg
                 | Some frag -> map_module name (with_module frag eq) sg )
         in
-          Sig sg
-    | Functor _ | Generative _ | Abstract | Unresolved as t -> t
+          t_of_body (Sig sg)
+    | Functor _ | Generative _ | Abstract | Unresolved -> t
 
-  let rec with_module_subst frag = function
+  let rec with_module_subst frag t =
+    match t.body with
     | Expr expr ->
         let term = WithModuleSubst(expr, frag) in
         let expansion =
           lazy (with_module_subst frag (Lazy.force expr.expansion))
         in
-          Expr {term; expansion}
+          t_of_body (Expr {term; expansion})
     | Sig sg ->
         let sg =
           lazy
@@ -800,16 +836,17 @@ end = struct
                 | None -> remove_module name sg
                 | Some frag -> map_module name (with_module_subst frag) sg )
         in
-          Sig sg
-    | Functor _ | Generative _ | Abstract | Unresolved as t -> t
+          t_of_body (Sig sg)
+    | Functor _ | Generative _ | Abstract | Unresolved -> t
 
-  let rec with_type_subst frag = function
+  let rec with_type_subst frag t =
+    match t.body with
     | Expr expr ->
         let term = WithTypeSubst(expr, frag) in
         let expansion =
           lazy (with_type_subst frag (Lazy.force expr.expansion))
         in
-          Expr {term; expansion}
+          t_of_body (Expr {term; expansion})
     | Sig sg ->
         let sg =
           lazy
@@ -819,19 +856,19 @@ end = struct
                 | None -> remove_datatype name sg
                 | Some frag -> map_module name (with_type_subst frag) sg )
         in
-          Sig sg
-    | Functor _ | Generative _ | Abstract | Unresolved as t -> t
+          t_of_body (Sig sg)
+    | Functor _ | Generative _ | Abstract | Unresolved -> t
 
-  let module_type_substitution path expansion body =
-    match body with
+  let module_type_substitution path expansion t =
+    match t.body with
     | Abstract ->
         let term = Path(path, true) in
-          Expr {term; expansion}
-    | _ -> body
+          t_of_body (Expr {term; expansion})
+    | _ -> t
 
-  let rec module_substitution path expansion body =
-    match body with
-    | Expr _ -> body
+  let rec module_substitution path expansion t =
+    match t.body with
+    | Expr _ -> t
     | Sig sg ->
         let sg =
           lazy
@@ -858,18 +895,18 @@ end = struct
               in
                 {sg with modules; module_types} )
         in
-          Sig sg
+          t_of_body (Sig sg)
     | Functor fn ->
         let res = module_substitution path expansion fn.res in
         let cache = fn.cache.fresh 3 in
-          Functor {fn with res; cache}
+          t_of_body (Functor {fn with res; cache})
     | Generative body ->
         let body = module_substitution path expansion body in
-          Generative body
+          t_of_body (Generative body)
     | Abstract ->
         let term = Alias(path, true) in
-          Expr {term; expansion}
-    | Unresolved -> body
+          t_of_body (Expr {term; expansion})
+    | Unresolved -> t
 
   let rec reduce_signature_ident id path =
     let open Identifier in function
@@ -905,6 +942,8 @@ end = struct
         | Some p -> Some (Path.module_ p name)
         | None -> None
       end
+    | Canonical (p, _) ->
+        reduce_resolved_module_path in_arg id path p
     | Apply(p, arg) -> begin
         let rp = reduce_resolved_module_path in_arg id path p in
         let rarg = reduce_module_path true id path arg in
@@ -1009,6 +1048,7 @@ end = struct
               Some (p, t)
         | None -> None
       end
+    | Canonical (p, _) -> subst_resolved_module_path id lookup path p
     | Apply(p, arg) -> begin
         match subst_resolved_module_path id lookup path p with
         | Some (p, t) ->
@@ -1131,8 +1171,9 @@ end = struct
         in
           {term; expansion}
 
-  and subst id lookup path = function
-    | Expr expr -> Expr (subst_expr id lookup path expr)
+  and subst id lookup path t =
+    match t.body with
+    | Expr expr -> t_of_body (Expr (subst_expr id lookup path expr))
     | Sig sg ->
         let sg =
           lazy
@@ -1145,19 +1186,20 @@ end = struct
               in
                 {sg with modules; module_types} )
         in
-          Sig sg
+          t_of_body (Sig sg)
     | Functor fn ->
         let arg = subst id lookup path fn.arg in
         let res = subst id lookup path fn.res in
         let cache = fn.cache.fresh 3 in
-          Functor {id = fn.id; arg; res; cache}
-    | Generative t -> Generative (subst id lookup path t)
-    | Abstract -> Abstract
-    | Unresolved -> Unresolved
+          t_of_body (Functor {id = fn.id; arg; res; cache})
+    | Generative t -> t_of_body (Generative (subst id lookup path t))
+    | Abstract -> t_of_body Abstract
+    | Unresolved -> t_of_body Unresolved
 
-  and lookup_apply lookup arg = function
+  and lookup_apply lookup arg t =
+    match t.body with
     | Expr expr -> lookup_apply lookup arg (Lazy.force expr.expansion)
-    | Sig sg -> Unresolved
+    | Sig sg -> t_of_body Unresolved
     | Functor fn -> begin
         try
           fn.cache.find arg
@@ -1166,11 +1208,12 @@ end = struct
             fn.cache.add arg res;
             res
       end
-    | Generative t -> Unresolved
-    | Abstract -> Unresolved
-    | Unresolved -> Unresolved
+    | Generative t -> t_of_body Unresolved
+    | Abstract -> t_of_body Unresolved
+    | Unresolved -> t_of_body Unresolved
 
-  let rec find_parent_apply lookup arg = function
+  let rec find_parent_apply lookup arg t =
+    match t.body with
     | Expr expr -> begin
         match expr.term with
         | Path(_, true) | Alias(_, true) -> raise Not_found
@@ -1195,13 +1238,13 @@ and Datatype : sig
 
   type +'a t
 
-  val find_constructor_element : string -> 'a t -> Element.datatype_constructor
+  val find_constructor_element : string -> 'a t -> 'a Element.datatype_constructor
 
-  val find_field_element : string -> 'a t -> Element.datatype_field
+  val find_field_element : string -> 'a t -> 'a Element.datatype_field
 
-  val find_label_element : string -> 'a t -> Element.datatype_label
+  val find_label_element : string -> 'a t -> 'a Element.datatype_label
 
-  val find_element : string -> 'a t -> Element.datatype
+  val find_element : string -> 'a t -> 'a Element.datatype
 
   val add_documentation : 'a Documentation.t -> 'a t -> 'a t
 
@@ -1215,7 +1258,7 @@ and Datatype : sig
 
   val unresolved : 'a t
 
-  val elements : 'a t -> [ `Constructor | `Field | `Label] Element.t LMap.t
+  val elements : 'a t -> ('a, [ `Constructor | `Field | `Label]) Element.t LMap.t
 
 end = struct
 
@@ -1338,20 +1381,20 @@ and ClassSig : sig
 
   type 'a t
 
-  val find_method_element : string -> 'a t -> Element.class_signature_method
+  val find_method_element : string -> 'a t -> 'a Element.class_signature_method
 
   val find_instance_variable_element : string -> 'a t ->
-        Element.class_signature_instance_variable
+        'a Element.class_signature_instance_variable
 
-  val find_label_element : string -> 'a t -> Element.class_signature_label
+  val find_label_element : string -> 'a t -> 'a Element.class_signature_label
 
-  val find_element : string -> 'a t -> Element.class_signature
+  val find_element : string -> 'a t -> 'a Element.class_signature
 
   type 'a signature
 
   val empty : 'a signature
 
-  val add_element : string -> Element.class_signature ->
+  val add_element : string -> 'a Element.class_signature ->
     'a signature -> 'a signature
 
   val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
@@ -1368,7 +1411,7 @@ and ClassSig : sig
 
 end = struct
 
-  type 'a signature = Element.class_signature LMap.t
+  type 'a signature = 'a Element.class_signature LMap.t
 
   type 'a desc =
     | Sig of 'a signature
@@ -1485,62 +1528,62 @@ and Element : sig
     | `Exception | `Value | `Class | `ClassType
     | `Method | `InstanceVariable | `Label ]
 
-  type 'a t =
-    | Module : [< kind > `Module] t
-    | ModuleType : [< kind > `ModuleType] t
-    | Type : [< kind > `Type] t
-    | Constructor : string -> [< kind > `Constructor] t
-    | Field : string -> [< kind > `Field] t
-    | Extension : [< kind > `Extension] t
-    | Exception : [< kind > `Exception] t
-    | Value : [< kind > `Value] t
-    | Class : [< kind > `Class] t
-    | ClassType : [< kind > `ClassType] t
-    | Method : [< kind > `Method] t
-    | InstanceVariable : [< kind > `InstanceVariable] t
-    | Label : string option -> [< kind > `Label] t
+  type ('a, 'b) t =
+    | Module : {canonical_path : 'a Path.module_ option} -> ('a, [< kind > `Module]) t
+    | ModuleType : ('a, [< kind > `ModuleType]) t
+    | Type : ('a, [< kind > `Type]) t
+    | Constructor : string -> ('a, [< kind > `Constructor]) t
+    | Field : string -> ('a, [< kind > `Field]) t
+    | Extension : ('a, [< kind > `Extension]) t
+    | Exception : ('a, [< kind > `Exception]) t
+    | Value : ('a, [< kind > `Value]) t
+    | Class : ('a, [< kind > `Class]) t
+    | ClassType : ('a, [< kind > `ClassType]) t
+    | Method : ('a, [< kind > `Method]) t
+    | InstanceVariable : ('a, [< kind > `InstanceVariable]) t
+    | Label : string option -> ('a, [< kind > `Label]) t
 
-  type signature_module = [`Module] t
+  type 'a signature_module = ('a, [`Module]) t
 
-  type signature_module_type = [`ModuleType] t
+  type 'a signature_module_type = ('a, [`ModuleType]) t
 
-  type signature_type = [`Type | `Class | `ClassType] t
+  type 'a signature_type = ('a, [`Type | `Class | `ClassType]) t
 
-  type signature_constructor = [`Constructor | `Extension | `Exception] t
+  type 'a signature_constructor = ('a, [`Constructor | `Extension | `Exception]) t
 
-  type signature_field = [`Field] t
+  type 'a signature_field = ('a, [`Field]) t
 
-  type signature_extension = [`Extension | `Exception] t
+  type 'a signature_extension = ('a, [`Extension | `Exception]) t
 
-  type signature_exception = [`Exception] t
+  type 'a signature_exception = ('a, [`Exception]) t
 
-  type signature_value = [`Value] t
+  type 'a signature_value = ('a, [`Value]) t
 
-  type signature_class = [`Class] t
+  type 'a signature_class = ('a, [`Class]) t
 
-  type signature_class_type = [`Class | `ClassType] t
+  type 'a signature_class_type = ('a, [`Class | `ClassType]) t
 
-  type signature_label = [`Label] t
+  type 'a signature_label = ('a, [`Label]) t
 
-  type datatype_constructor = [`Constructor] t
+  type 'a datatype_constructor = ('a, [`Constructor]) t
 
-  type datatype_field = [`Field] t
+  type 'a datatype_field = ('a, [`Field]) t
 
-  type datatype_label = [`Label] t
+  type 'a datatype_label = ('a, [`Label]) t
 
-  type class_signature_method = [`Method] t
+  type 'a class_signature_method = ('a, [`Method]) t
 
-  type class_signature_instance_variable = [`InstanceVariable] t
+  type 'a class_signature_instance_variable = ('a, [`InstanceVariable]) t
 
-  type class_signature_label = [`Label] t
+  type 'a class_signature_label = ('a, [`Label]) t
 
-  type signature =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType | `Label ] t
+  type 'a signature =
+    ('a, [ `Module | `ModuleType | `Type
+         | `Constructor | `Field | `Extension
+         | `Exception | `Value | `Class | `ClassType | `Label ]) t
 
-  type class_signature = [ `Method | `InstanceVariable | `Label ] t
+  type 'a class_signature = ('a, [ `Method | `InstanceVariable | `Label ]) t
 
-  type datatype = [ `Constructor | `Field | `Label ] t
+  type 'a datatype = ('a, [ `Constructor | `Field | `Label ]) t
 
 end = Element

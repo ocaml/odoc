@@ -17,7 +17,7 @@
 open DocOckPaths
 open DocOckTypes
 open DocOckComponents
-open DocOckComponentTbl
+module CTbl = DocOckComponentTbl
 
 type 'a parent_module_path =
   | Resolved of 'a Path.Resolved.module_ * 'a Sig.t
@@ -29,94 +29,106 @@ type 'a parent_module_type_path =
 
 let rec find_with_path_substs
         : 'b 'c. ('a Sig.t -> 'b) -> ('a Path.Resolved.module_ -> 'b -> 'c) ->
-                   ('a Path.Resolved.module_ -> 'c) -> 'a t -> 'a Unit.t ->
+                   ('a Path.Resolved.module_ -> 'c) -> _ -> 'a CTbl.t -> 'a Unit.t ->
                      'a Path.Resolved.module_ -> 'a Sig.t -> 'c =
-  fun find resolved unresolved tbl u pr parent ->
+  fun find resolved unresolved ident tbl u pr parent ->
     try
       resolved pr (find parent)
     with Not_found ->
       try
         match Sig.find_parent_subst parent with
         | Parent.Subst subp -> begin
-            match resolve_parent_module_type_path tbl u subp with
+            match resolve_parent_module_type_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
                 find_with_path_substs
-                  find resolved unresolved tbl u
+                  find resolved unresolved ident tbl u
                   (Path.Resolved.Subst(subpr, pr)) parent
           end
         | Parent.SubstAlias subp -> begin
-            match resolve_parent_module_path tbl u subp with
+            match resolve_parent_module_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
                 find_with_path_substs
-                  find resolved unresolved tbl u
+                  find resolved unresolved ident tbl u
                   (Path.Resolved.SubstAlias(subpr, pr)) parent
           end
       with Not_found -> unresolved pr
 
-and resolve_parent_module_path tbl u p : 'a parent_module_path =
+and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
   let open Path.Resolved in
   let open Path in
     match p with
     | Root s -> begin
-        match base tbl u s with
-        | Not_found -> Unresolved p
-        | Forward_reference ->
+        match CTbl.base tbl u s with
+        | CTbl.Not_found -> Unresolved p
+        | CTbl.Forward_reference ->
             (* We can't have a forward ref as parent. *)
             Unresolved p
-        | Found r ->
+        | CTbl.Found r ->
             let p = Identifier (Identifier.Root(r, s)) in
-              Resolved(p, resolved_module_path tbl u p)
+              Resolved(p, CTbl.resolved_module_path tbl u p)
       end
     | Forward s -> begin
-        match base tbl u s with
-        | Not_found -> Unresolved p
-        | Forward_reference ->
+        match CTbl.base tbl u s with
+        | CTbl.Not_found -> Unresolved p
+        | CTbl.Forward_reference ->
             (* We can't have a forward ref as parent. *)
             Unresolved p
-        | Found r ->
+        | CTbl.Found r ->
             let p = Identifier (Identifier.Root(r, s)) in
-              Resolved(p, resolved_module_path tbl u p)
+              Resolved(p, CTbl.resolved_module_path tbl u p)
       end
-    | Resolved r -> Resolved(r, resolved_module_path tbl u r)
+    | Resolved r -> Resolved(r, CTbl.resolved_module_path tbl u r)
     | Dot(pr, name) -> begin
-        match resolve_parent_module_path tbl u pr with
+        match resolve_parent_module_path ident tbl u pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
             let resolved pr (Parent.Module md : 'a Parent.module_) =
-              (Resolved(Module(pr, name), md) : 'a parent_module_path)
+              let pr = Module (pr, name) in
+              let pr =
+                match Sig.find_canonical_path md with
+                | None -> pr
+                | Some p -> Canonical(pr, p)
+              in
+              (Resolved(pr, md) : 'a parent_module_path)
             in
             let unresolved pr =
               (Unresolved(Dot(Resolved pr, name)) : 'a parent_module_path)
             in
               find_with_path_substs
                 (Sig.find_parent_module name)
-                resolved unresolved tbl u pr parent
+                resolved unresolved ident tbl u pr parent
       end
     | Apply(pr, arg) -> begin
-        let arg = resolve_module_path tbl u arg in
-        match resolve_parent_module_path tbl u pr with
+        let arg = resolve_module_path ident tbl u arg in
+        match resolve_parent_module_path ident tbl u pr with
         | Unresolved pr -> Unresolved(Apply(pr, arg))
         | Resolved(pr, parent) ->
             let resolved pr (Parent.Module md : 'a Parent.module_) =
-              (Resolved(Apply(pr, arg), md) : 'a parent_module_path)
+              let pr = Resolved.Apply(pr, arg) in
+              let pr =
+                match Sig.find_canonical_path md with
+                | None -> pr
+                | Some p -> Canonical(pr, p)
+              in
+              (Resolved(pr, md) : 'a parent_module_path)
             in
             let unresolved pr =
               (Unresolved(Apply(Resolved pr, arg)) : 'a parent_module_path)
             in
               find_with_path_substs
-                (Sig.find_parent_apply (module_path tbl u) arg)
-                resolved unresolved tbl u pr parent
+                (Sig.find_parent_apply (CTbl.module_path tbl u) arg)
+                resolved unresolved ident tbl u pr parent
       end
 
-and resolve_parent_module_type_path tbl u p : 'a parent_module_type_path =
+and resolve_parent_module_type_path ident tbl u p : 'a parent_module_type_path =
   let open Path.Resolved in
   let open Path in
     match p with
-    | Resolved r -> Resolved(r, resolved_module_type_path tbl u r)
+    | Resolved r -> Resolved(r, CTbl.resolved_module_type_path tbl u r)
     | Dot(pr, name) -> begin
-        match resolve_parent_module_path tbl u pr with
+        match resolve_parent_module_path ident tbl u pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
             let resolved pr (Parent.ModuleType md : 'a Parent.module_type) =
@@ -127,64 +139,137 @@ and resolve_parent_module_type_path tbl u p : 'a parent_module_type_path =
             in
               find_with_path_substs
                 (Sig.find_parent_module_type name)
-                resolved unresolved tbl u pr parent
+                resolved unresolved ident tbl u pr parent
       end
 
-and resolve_module_path tbl u =
+and resolve_module_path ident tbl u =
   let open Path.Resolved in
   let open Path in function
   | Root s as p -> begin
-      match base tbl u s with
-      | Not_found -> p
-      | Forward_reference -> Forward s
-      | Found r -> Resolved (Identifier (Identifier.Root(r, s)))
+      match CTbl.base tbl u s with
+      | CTbl.Not_found -> p
+      | CTbl.Forward_reference -> Forward s
+      | CTbl.Found r -> Resolved (Identifier (Identifier.Root(r, s)))
     end
   | Forward s as p -> begin
-      match base tbl u s with
-      | Not_found -> p
-      | Forward_reference -> Forward s
-      | Found r -> Resolved (Identifier (Identifier.Root(r, s)))
+      match CTbl.base tbl u s with
+      | CTbl.Not_found -> p
+      | CTbl.Forward_reference -> Forward s
+      | CTbl.Found r -> Resolved (Identifier (Identifier.Root(r, s)))
     end
-  | Resolved r as p -> p
+  | Resolved r as p ->
+    let r' = resolve_resolved_module_path ident tbl u r in
+    if r != r' then Resolved r' else p
   | Dot(p, name) -> begin
-      match resolve_parent_module_path tbl u p with
+      match resolve_parent_module_path ident tbl u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p (Element.Module : Element.signature_module) =
-            Resolved (Module(p, name))
+          let resolved p (Element.Module {canonical_path}: _ Element.signature_module) =
+            let pr = Resolved.Module(p, name) in
+            let pr =
+              match canonical_path with
+              | None -> pr
+              | Some p -> Canonical(pr, p)
+            in
+            Resolved pr
           in
           let unresolved p =
             Dot(Resolved p, name)
           in
             find_with_path_substs
               (Sig.find_module_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
   | Apply(p, arg) -> begin
-      let arg = resolve_module_path tbl u arg in
-        match resolve_parent_module_path tbl u p with
+      let arg = resolve_module_path ident tbl u arg in
+        match resolve_parent_module_path ident tbl u p with
         | Unresolved p -> Apply(p, arg)
         | Resolved(p, parent) ->
-          let resolved p (Element.Module : Element.signature_module) =
-            Resolved (Apply(p, arg))
+          let resolved p (Element.Module {canonical_path}: _ Element.signature_module) =
+            let pr = Resolved.Apply (p, arg) in
+            let pr =
+              match canonical_path with
+              | None -> pr
+              | Some p -> Canonical(pr, p)
+            in
+            Resolved pr
           in
           let unresolved p =
             Apply(Resolved p, arg)
           in
             find_with_path_substs
               Sig.find_apply_element
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
-and resolve_module_type_path tbl u =
+and resolve_resolved_module_path :
+  type a. _ -> _ -> _ -> (_, a) Path.Resolved.t -> (_, a) Path.Resolved.t =
+  fun ident tbl u p ->
+  let open Path.Resolved in
+  match p with
+  | Identifier _ -> p
+  | Subst(sub, orig) ->
+    let sub' = resolve_resolved_module_path ident tbl u sub in
+    let orig' = resolve_resolved_module_path ident tbl u orig in
+    if sub != sub' || orig != orig' then Subst(sub', orig')
+    else p
+  | SubstAlias(sub, orig) ->
+    let sub'  = resolve_resolved_module_path ident tbl u sub in
+    let orig' = resolve_resolved_module_path ident tbl u orig in
+    if sub != sub' || orig != orig' then SubstAlias(sub', orig')
+    else p
+  | Module(parent, name) ->
+    let parent' = resolve_resolved_module_path ident tbl u parent in
+    if parent != parent' then
+      Module(parent', name)
+    else p
+  | Canonical(orig, cano) ->
+    let orig' = resolve_resolved_module_path ident tbl u orig in
+    let cano' = resolve_module_path ident tbl u cano in
+    if orig != orig' || cano != cano' then (
+      let cano' =
+        match cano' with
+        | Path.Resolved rp ->
+            let rp' = Path.Resolved.rebase ident rp in
+            if rp != rp' then Path.Resolved rp' else cano'
+        | _ -> cano'
+      in
+      Canonical(orig', cano')
+    ) else p
+  | Apply(fn, arg) ->
+    let fn' = resolve_resolved_module_path ident tbl u fn in
+    if fn != fn' then Apply(fn', arg)
+    else p
+  | ModuleType(parent, name) ->
+    let parent' = resolve_resolved_module_path ident tbl u parent in
+    if parent != parent' then
+      ModuleType(parent', name)
+    else p
+  | Type(parent, name) ->
+    let parent' = resolve_resolved_module_path ident tbl u parent in
+    if parent != parent' then Type(parent', name)
+    else p
+  | Class(parent, name) ->
+    let parent' = resolve_resolved_module_path ident tbl u parent in
+    if parent != parent' then Class(parent', name)
+    else p
+  | ClassType(parent, name) ->
+    let parent' = resolve_resolved_module_path ident tbl u parent in
+    if parent != parent' then
+      ClassType(parent', name)
+    else p
+
+and resolve_module_type_path ident tbl u =
   let open Path.Resolved in
   let open Path in function
-  | (Resolved r : 'a Path.module_type) as p -> p
+  | (Resolved r : 'a Path.module_type) as p ->
+    let r' = resolve_resolved_module_path ident tbl u r in
+    if r != r' then Resolved r' else p
   | Dot(p, name) -> begin
-      match resolve_parent_module_path tbl u p with
+      match resolve_parent_module_path ident tbl u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p (Element.ModuleType : Element.signature_module_type) =
+          let resolved p (Element.ModuleType : _ Element.signature_module_type) =
             Resolved (ModuleType(p, name))
           in
           let unresolved p =
@@ -192,18 +277,20 @@ and resolve_module_type_path tbl u =
           in
             find_with_path_substs
               (Sig.find_module_type_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
-and resolve_type_path tbl u =
+and resolve_type_path ident tbl u =
   let open Path.Resolved in
   let open Path in function
-  | (Resolved r : 'a Path.type_) as p -> p
+  | (Resolved r : 'a Path.type_) as p ->
+    let r' = resolve_resolved_module_path ident tbl u r in
+    if r != r' then Resolved r' else p
   | Dot(p, name) -> begin
-      match resolve_parent_module_path tbl u p with
+      match resolve_parent_module_path ident tbl u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p : Element.signature_type -> _ = function
+          let resolved p : _ Element.signature_type -> _ = function
             | Element.Type -> Resolved (Type(p, name))
             | Element.Class -> Resolved (Class(p, name))
             | Element.ClassType -> Resolved (ClassType(p, name))
@@ -213,18 +300,20 @@ and resolve_type_path tbl u =
           in
             find_with_path_substs
               (Sig.find_type_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
-and resolve_class_type_path tbl u =
+and resolve_class_type_path ident tbl u =
   let open Path.Resolved in
   let open Path in function
-  | (Resolved r : 'a Path.class_type) as p -> p
+  | (Resolved r : 'a Path.class_type) as p ->
+    let r' = resolve_resolved_module_path ident tbl u r in
+    if r != r' then Resolved r' else p
   | Dot(p, name) -> begin
-      match resolve_parent_module_path tbl u p with
+      match resolve_parent_module_path ident tbl u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p : Element.signature_class_type -> _ = function
+          let resolved p : _ Element.signature_class_type -> _ = function
             | Element.Class -> Resolved (Class(p, name))
             | Element.ClassType -> Resolved (ClassType(p, name))
           in
@@ -233,7 +322,7 @@ and resolve_class_type_path tbl u =
           in
             find_with_path_substs
               (Sig.find_class_type_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
 type 'a parent_fragment =
@@ -244,41 +333,41 @@ let rec find_with_fragment_substs
         : 'b 'c. ('a Sig.t -> 'b) ->
                    ('a Fragment.Resolved.signature -> 'b -> 'c) ->
                      ('a Fragment.Resolved.signature -> 'c) ->
-                       'a t -> 'a Unit.t ->
+                       _ -> 'a CTbl.t -> 'a Unit.t ->
                          'a Fragment.Resolved.signature -> 'a Sig.t -> 'c =
-  fun find resolved unresolved tbl u pr parent ->
+  fun find resolved unresolved ident tbl u pr parent ->
     try
       resolved pr (find parent)
     with Not_found ->
       try
         match Sig.find_parent_subst parent with
         | Parent.Subst subp -> begin
-            match resolve_parent_module_type_path tbl u subp with
+            match resolve_parent_module_type_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
                 find_with_fragment_substs
-                  find resolved unresolved tbl u
+                  find resolved unresolved ident tbl u
                   (Fragment.Resolved.Subst(subpr, pr)) parent
           end
         | Parent.SubstAlias subp -> begin
-            match resolve_parent_module_path tbl u subp with
+            match resolve_parent_module_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
                 find_with_fragment_substs
-                  find resolved unresolved tbl u
+                  find resolved unresolved ident tbl u
                   (Fragment.Resolved.SubstAlias(subpr, pr)) parent
           end
       with Not_found -> unresolved pr
 
-let rec resolve_parent_fragment tbl base u p
+let rec resolve_parent_fragment ident tbl base u p
         : 'a parent_fragment =
   let open Fragment.Resolved in
   let open Fragment in
     match p with
     | (Resolved r : 'a signature) ->
-          Resolved(r, resolved_signature_fragment base r)
+          Resolved(r, CTbl.resolved_signature_fragment base r)
     | Dot(pr, name) -> begin
-        match resolve_parent_fragment tbl base u pr with
+        match resolve_parent_fragment ident tbl base u pr with
         | Unresolved pr -> Unresolved(Dot(pr, name))
         | Resolved(pr, parent) ->
             let resolved pr (Parent.Module md : 'a Parent.module_) =
@@ -289,18 +378,19 @@ let rec resolve_parent_fragment tbl base u p
             in
               find_with_fragment_substs
                 (Sig.find_parent_module name)
-                resolved unresolved tbl u pr parent
+                resolved unresolved ident tbl u pr parent
       end
 
-and resolve_module_fragment tbl base u =
+and resolve_module_fragment ident tbl base u =
   let open Fragment.Resolved in
   let open Fragment in function
   | Resolved r as p -> p
   | Dot(p, name) -> begin
-      match resolve_parent_fragment tbl base u p with
+      match resolve_parent_fragment ident tbl base u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p (Element.Module : Element.signature_module) =
+          let resolved p (Element.Module _ : _ Element.signature_module) =
+            (* Handle canonical path here? *)
             Resolved (Module(p, name))
           in
           let unresolved p =
@@ -308,18 +398,18 @@ and resolve_module_fragment tbl base u =
           in
             find_with_fragment_substs
               (Sig.find_module_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
-and resolve_type_fragment tbl base u =
+and resolve_type_fragment ident tbl base u =
   let open Fragment.Resolved in
   let open Fragment in function
   | (Resolved r : 'a Fragment.type_) as p -> p
   | Dot(p, name) -> begin
-      match resolve_parent_fragment tbl base u p with
+      match resolve_parent_fragment ident tbl base u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p : Element.signature_type -> _ = function
+          let resolved p : _ Element.signature_type -> _ = function
             | Element.Type -> Resolved (Type(p, name))
             | Element.Class -> Resolved (Class(p, name))
             | Element.ClassType -> Resolved (ClassType(p, name))
@@ -329,7 +419,7 @@ and resolve_type_fragment tbl base u =
           in
             find_with_fragment_substs
               (Sig.find_type_element name)
-              resolved unresolved tbl u p parent
+              resolved unresolved ident tbl u p parent
     end
 
 type ('a, 'b) parent_reference =
@@ -354,7 +444,14 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
     match kind with
     | PParent -> begin
         match Sig.find_parent name parent with
-        | Parent.Module md -> ResolvedSig(Module(r, name), md)
+        | Parent.Module md ->
+          let pr = Module (r, name) in
+          let pr =
+            match Sig.find_canonical_path md with
+            | None -> pr
+            | Some p -> Canonical(pr, Reference.t_of_path p)
+          in
+          ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
         | Parent.Datatype t -> ResolvedDatatype(Type(r, name), t)
         | Parent.Class cls -> ResolvedClassSig(Class(r, name), cls)
@@ -362,7 +459,14 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
       end
     | PSig -> begin
         match Sig.find_parent_signature name parent with
-        | Parent.Module md -> ResolvedSig(Module(r, name), md)
+        | Parent.Module md ->
+          let pr = Module (r, name) in
+          let pr =
+            match Sig.find_canonical_path md with
+            | None -> pr
+            | Some p -> Canonical(pr, Reference.t_of_path p)
+          in
+          ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
       end
     | PDatatype -> begin
@@ -376,13 +480,20 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
       end
     | PSigOrType -> begin
         match Sig.find_parent_sig_or_type name parent with
-        | Parent.Module md -> ResolvedSig(Module(r, name), md)
+        | Parent.Module md ->
+          let pr = Module (r, name) in
+          let pr =
+            match Sig.find_canonical_path md with
+            | None -> pr
+            | Some p -> Canonical(pr, Reference.t_of_path p)
+          in
+          ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
         | Parent.Datatype t -> ResolvedDatatype(Type(r, name), t)
       end
 
 let rec resolve_parent_reference :
-  type k . k parent_kind -> 'a t -> 'a Unit.t ->
+  type k . k parent_kind -> 'a CTbl.t -> 'a Unit.t ->
        'a Reference.parent -> ('a, k) parent_reference =
     fun kind tbl u r ->
       let open Identifier in
@@ -390,32 +501,32 @@ let rec resolve_parent_reference :
       let open Reference in
         match r with
         | Root s -> begin
-            match base tbl u s with
-            | Not_found -> Unresolved r
-            | Forward_reference ->
+            match CTbl.base tbl u s with
+            | CTbl.Not_found -> Unresolved r
+            | CTbl.Forward_reference ->
                 (* TODO: fail? *)
                 Unresolved r
-            | Found base ->
+            | CTbl.Found base ->
                 let root = Identifier (Identifier.Root(base, s)) in
                   match kind with
                   | PParent ->
-                      ResolvedSig(root, resolved_signature_reference tbl root)
+                      ResolvedSig(root, CTbl.resolved_signature_reference tbl root)
                   | PSig ->
-                      ResolvedSig(root, resolved_signature_reference tbl root)
+                      ResolvedSig(root, CTbl.resolved_signature_reference tbl root)
                   | PSigOrType ->
-                      ResolvedSig(root, resolved_signature_reference tbl root)
+                      ResolvedSig(root, CTbl.resolved_signature_reference tbl root)
                   | _ -> Unresolved r
           end
         | Resolved
             (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
-             | Module _ | ModuleType _ as rr) -> begin
+             | Module _ | Canonical _ | ModuleType _ as rr) -> begin
             match kind with
             | PParent ->
-                ResolvedSig(rr, resolved_signature_reference tbl rr)
+                ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
             | PSig ->
-                ResolvedSig(rr, resolved_signature_reference tbl rr)
+                ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
             | PSigOrType ->
-                ResolvedSig(rr, resolved_signature_reference tbl rr)
+                ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
             | _ -> Unresolved r
           end
         | Resolved
@@ -423,19 +534,19 @@ let rec resolve_parent_reference :
             | Class _ | ClassType _ as rr) -> begin
             match kind with
             | PParent ->
-                ResolvedClassSig(rr, resolved_class_signature_reference tbl rr)
+                ResolvedClassSig(rr, CTbl.resolved_class_signature_reference tbl rr)
             | PClassSig ->
-                ResolvedClassSig(rr, resolved_class_signature_reference tbl rr)
+                ResolvedClassSig(rr, CTbl.resolved_class_signature_reference tbl rr)
             | _ -> Unresolved r
           end
         | Resolved (Identifier (Type _ | CoreType _) | Type _ as rr) -> begin
             match kind with
             | PParent ->
-                ResolvedDatatype(rr, resolved_datatype_reference tbl rr)
+                ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
             | PDatatype ->
-                ResolvedDatatype(rr, resolved_datatype_reference tbl rr)
+                ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
             | PSigOrType ->
-                ResolvedDatatype(rr, resolved_datatype_reference tbl rr)
+                ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
             | _ -> Unresolved r
           end
         | Dot(r, name) -> begin
@@ -449,37 +560,132 @@ let rec resolve_parent_reference :
                     Unresolved(Dot(Resolved r, name))
           end
 
-and resolve_module_reference tbl u r =
+and resolve_resolved_reference :
+  type k. _ -> _ -> _ -> ('a, k) Reference.Resolved.t -> ('a, k) Reference.Resolved.t =
+  fun ident tbl u r ->
+    let open Reference.Resolved in
+        match r with
+        | Identifier _ -> r
+        | Module(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Module(parent', name)
+          else r
+        | Canonical(orig, cano) ->
+          let orig' = resolve_resolved_reference ident tbl u orig in
+          let cano' = resolve_module_reference ident tbl u cano in
+          if orig != orig' || cano != cano' then
+            let cano' =
+              match cano' with
+              | Reference.Resolved rp ->
+                  let rp' = Reference.Resolved.rebase ident rp in
+                  if rp != rp' then Reference.Resolved rp' else cano'
+              | _ -> cano'
+            in
+            Canonical(orig', cano')
+          else r
+        | ModuleType(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            ModuleType(parent', name)
+          else r
+        | Type(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Type(parent', name)
+          else r
+        | Constructor(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Constructor(parent', name)
+          else r
+        | Field(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Field(parent', name)
+          else r
+        | Extension(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Extension(parent', name)
+          else r
+        | Exception(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Exception(parent', name)
+          else r
+        | Value(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Value(parent', name)
+          else r
+        | Class(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Class(parent', name)
+          else r
+        | ClassType(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            ClassType(parent', name)
+          else r
+        | Method(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Method(parent', name)
+          else r
+        | InstanceVariable(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            InstanceVariable(parent', name)
+          else r
+        | Label(parent, name) ->
+          let parent' = resolve_resolved_reference ident tbl u parent in
+          if parent != parent' then
+            Label(parent', name)
+          else r
+
+and resolve_module_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root s -> begin
-        match base tbl u s with
-        | Not_found -> r
-        | Forward_reference -> r (* TODO *)
-        | Found base -> Resolved (Identifier (Identifier.Root(base, s)))
+        match CTbl.base tbl u s with
+        | CTbl.Not_found -> r
+        | CTbl.Forward_reference -> r (* TODO *)
+        | CTbl.Found base -> Resolved (Identifier (Identifier.Root(base, s)))
       end
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
         | ResolvedSig(r, parent) ->
             try
-              let Element.Module =
+              let Element.Module {canonical_path} =
                 Sig.find_module_element name parent
               in
-                Resolved (Module(r, name))
+              let rr = Module(r, name) in
+              let rr =
+                match canonical_path with
+                | None -> rr
+                | Some p -> Canonical(rr, Reference.t_of_path p)
+              in
+              Resolved rr
             with Not_found ->
               let r = Resolved.parent_of_signature r in
                 Dot(Resolved r, name)
       end
 
-and resolve_module_type_reference tbl u r =
+and resolve_module_type_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -494,12 +700,14 @@ and resolve_module_type_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_type_reference tbl u r =
+and resolve_type_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -514,12 +722,14 @@ and resolve_type_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_constructor_reference tbl u r =
+and resolve_constructor_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSigOrType tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -546,12 +756,14 @@ and resolve_constructor_reference tbl u r =
           end
       end
 
-and resolve_field_reference tbl u r =
+and resolve_field_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSigOrType tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -577,12 +789,14 @@ and resolve_field_reference tbl u r =
           end
       end
 
-and resolve_extension_reference tbl u r =
+and resolve_extension_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr as r ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -596,12 +810,14 @@ and resolve_extension_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_exception_reference tbl u r =
+and resolve_exception_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -616,12 +832,14 @@ and resolve_exception_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_value_reference tbl u r =
+and resolve_value_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -636,12 +854,14 @@ and resolve_value_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_class_reference tbl u r =
+and resolve_class_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -656,12 +876,14 @@ and resolve_class_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_class_type_reference tbl u r =
+and resolve_class_type_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -675,12 +897,14 @@ and resolve_class_type_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_method_reference tbl u r =
+and resolve_method_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PClassSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -695,12 +919,14 @@ and resolve_method_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_instance_variable_reference tbl u r =
+and resolve_instance_variable_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PClassSig tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -715,12 +941,14 @@ and resolve_instance_variable_reference tbl u r =
                 Dot(Resolved r, name)
       end
 
-and resolve_label_reference tbl u r =
+and resolve_label_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PParent tbl u r with
         | Unresolved r -> Dot(r, name)
@@ -757,19 +985,28 @@ and resolve_label_reference tbl u r =
           end
       end
 
-and resolve_element_reference tbl u r =
+and resolve_element_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
     | Root _ -> r
-    | Resolved _ -> r
+    | Resolved rr ->
+      let rr' = resolve_resolved_reference ident tbl u rr in
+      if rr != rr' then Resolved rr' else r
     | Dot(r, name) -> begin
         match resolve_parent_reference PParent tbl u r with
         | Unresolved r -> Dot(r, name)
         | ResolvedSig(r, parent) -> begin
             try
               match Sig.find_element name parent with
-              | Element.Module -> Resolved (Module(r, name))
+              | Element.Module {canonical_path} ->
+                let rr = Module(r, name) in
+                let rr =
+                  match canonical_path with
+                  | None -> rr
+                  | Some p -> Canonical(rr, Reference.t_of_path p)
+                in
+                Resolved rr
               | Element.ModuleType -> Resolved (ModuleType(r, name))
               | Element.Type -> Resolved (Type(r, name))
               | Element.Constructor type_name ->
@@ -820,8 +1057,9 @@ let unwrap opt =
     | None -> assert false
 
 class ['a] resolver ?equal ?hash lookup fetch = object (self)
-  val tbl = create ?equal ?hash lookup fetch
+  val tbl = CTbl.create ?equal ?hash lookup fetch
   val unit = None
+  val where_am_i = None
 
   inherit ['a] DocOckMaps.types as super
   method root x = x
@@ -842,33 +1080,38 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method identifier_signature x = x
   method identifier x = x
 
-  method path_module x = resolve_module_path tbl (unwrap unit) x
-  method path_module_type x = resolve_module_type_path tbl (unwrap unit) x
-  method path_type x = resolve_type_path tbl (unwrap unit) x
-  method path_class_type x = resolve_class_type_path tbl (unwrap unit) x
+  method path_module x = resolve_module_path (unwrap where_am_i) tbl (unwrap unit) x
+  method path_module_type x = resolve_module_type_path (unwrap where_am_i) tbl (unwrap unit) x
+  method path_type x = resolve_type_path (unwrap where_am_i) tbl (unwrap unit) x
+  method path_class_type x = resolve_class_type_path (unwrap where_am_i) tbl (unwrap unit) x
 
   method module_ md =
     let open Module in
-    let {id; doc; type_; expansion} = md in
+    let {id; doc; type_; expansion; canonical_path} = md in
     let id' = self#identifier_module id in
-    let doc' = self#documentation doc in
     let sig_id = Identifier.signature_of_module id' in
+    let self = {< where_am_i = Some sig_id >} in
+    let doc' = self#documentation doc in
     let type' = self#module_decl_with_id sig_id type_ in
     let expansion' = DocOckMaps.option_map self#module_expansion expansion in
-      if id != id' || doc != doc' || type_ != type' || expansion != expansion' then
-        {id = id'; doc = doc'; type_ = type'; expansion = expansion'}
+    let canonical_path' = DocOckMaps.option_map self#path_module canonical_path in
+      if id != id' || doc != doc' || type_ != type' || expansion != expansion'
+         || canonical_path != canonical_path' then
+        {id = id'; doc = doc'; type_ = type'; expansion = expansion'
+        ; canonical_path = canonical_path'}
       else md
 
   method module_type mty =
     let open ModuleType in
     let {id; doc; expr; expansion} = mty in
     let id' = self#identifier_module_type id in
+    let sig_id = Identifier.signature_of_module_type id' in
+    let self = {< where_am_i = Some sig_id >} in
     let doc' = self#documentation doc in
     let expr' =
       match expr with
       | None -> expr
       | Some body ->
-          let sig_id = Identifier.signature_of_module_type id' in
           let body' = self#module_type_expr_with_id sig_id body in
           if body != body' then Some body'
           else expr
@@ -910,24 +1153,24 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
       match expr with
       | With(body, substs) ->
           let body = self#module_type_expr_with_id id body in
-          let base = module_type_expr_with tbl unit id body in
+          let base = CTbl.module_type_expr_with tbl unit id body in
           let substs =
             List.map
               (function
                 | ModuleEq(frag, eq) ->
-                    let frag = resolve_module_fragment tbl base unit frag in
+                    let frag = resolve_module_fragment (unwrap where_am_i) tbl base unit frag in
                     let eq = self#module_equation eq in
                       ModuleEq(frag, eq)
                 | TypeEq(frag, eq) ->
-                    let frag = resolve_type_fragment tbl base unit frag in
+                    let frag = resolve_type_fragment (unwrap where_am_i) tbl base unit frag in
                     let eq = self#type_decl_equation eq in
                       TypeEq(frag, eq)
                 | ModuleSubst(frag, p) ->
-                    let frag = resolve_module_fragment tbl base unit frag in
+                    let frag = resolve_module_fragment (unwrap where_am_i) tbl base unit frag in
                     let p = self#path_module p in
                       ModuleSubst(frag, p)
                 | TypeSubst(frag, params, p) ->
-                    let frag = resolve_type_fragment tbl base unit frag in
+                    let frag = resolve_type_fragment (unwrap where_am_i) tbl base unit frag in
                     let params = List.map self#type_decl_param_name params in
                     let p = self#path_type p in
                       TypeSubst(frag, params, p))
@@ -957,12 +1200,12 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method type_expr_package pkg =
     let open TypeExpr.Package in
     let unit = unwrap unit in
-    let path = resolve_module_type_path tbl unit pkg.path in
-    let base = module_type_path_with tbl unit path in
+    let path = resolve_module_type_path (unwrap where_am_i) tbl unit pkg.path in
+    let base = CTbl.module_type_path_with tbl unit path in
     let substitutions =
       List.map
         (fun (frag, eq) ->
-           let frag = resolve_type_fragment tbl base unit frag in
+           let frag = resolve_type_fragment (unwrap where_am_i) tbl base unit frag in
            let eq = self#type_expr eq in
              (frag, eq))
         pkg.substitutions
@@ -973,36 +1216,39 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method fragment_module x = x
 
   method reference_module x =
-    resolve_module_reference tbl (unwrap unit) x
+    resolve_module_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_module_type x =
-    resolve_module_type_reference tbl (unwrap unit) x
+    resolve_module_type_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_type x =
-    resolve_type_reference tbl (unwrap unit) x
+    resolve_type_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_constructor x =
-    resolve_constructor_reference tbl (unwrap unit) x
+    resolve_constructor_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_field x =
-    resolve_field_reference tbl (unwrap unit) x
+    resolve_field_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_extension x =
-    resolve_extension_reference tbl (unwrap unit) x
+    resolve_extension_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_exception x =
-    resolve_exception_reference tbl (unwrap unit) x
+    resolve_exception_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_value x =
-    resolve_value_reference tbl (unwrap unit) x
+    resolve_value_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_class x =
-    resolve_class_reference tbl (unwrap unit) x
+    resolve_class_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_class_type x =
-    resolve_class_type_reference tbl (unwrap unit) x
+    resolve_class_type_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_method x =
-    resolve_method_reference tbl (unwrap unit) x
+    resolve_method_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_instance_variable x =
-    resolve_instance_variable_reference tbl (unwrap unit) x
+    resolve_instance_variable_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_label x =
-    resolve_label_reference tbl (unwrap unit) x
+    resolve_label_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_any x =
-    resolve_element_reference tbl (unwrap unit) x
+    resolve_element_reference (unwrap where_am_i) tbl (unwrap unit) x
 
   method resolve unit =
-    let this = {< unit = Some unit >} in
+    let this =
+      {< unit = Some unit;
+         where_am_i = Some (Identifier.signature_of_module unit.Unit.id) >}
+    in
       this#unit unit
 
 end

@@ -319,6 +319,8 @@ class virtual ['a] documentation : object
   method virtual identifier :
     'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
 
+  method virtual path_module : 'a Path.module_ -> 'a Path.module_
+
   method virtual reference_module : 'a Reference.module_ ->
     'a Reference.module_
 

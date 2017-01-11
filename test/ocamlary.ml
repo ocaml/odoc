@@ -700,3 +700,51 @@ end
 
 include IncludeInclude1
 type include_include
+
+module Caml_list = List
+
+module CanonicalTest = struct
+  module Base__List = struct
+    type 'a t = 'a list
+
+    let id x = x
+  end
+
+  module Base__ = struct
+    (** @canonical Ocamlary.CanonicalTest.Base.List *)
+    module List = Base__List
+  end
+
+  module Base = struct
+    module List = Base__.List
+  end
+
+  module Base__Tests = struct
+    module C = struct
+      include Base__.List
+    end
+
+    open Base__
+
+    module L = List
+
+    let foo (l : int L.t) : float L.t =
+      Caml_list.map float_of_int l
+
+    (** This is just {!List.id}, or rather {!L.id} *)
+    let bar (l : 'a List.t) : 'a List.t =
+      L.id l
+
+    (** Just seeing if {!Base__.List.t} ([Base__.List.t]) gets rewriten to
+        {!Base.List.t} ([Base.List.t]) *)
+    let baz (_ : 'a Base__.List.t) = ()
+  end
+
+  module List_modif = struct
+    include Base.List
+  end
+end
+
+let test _ = ()
+(** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.D.id}.
+    But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)

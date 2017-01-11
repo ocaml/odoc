@@ -90,6 +90,30 @@ end
 
 open Kind
 
+module Reversed = struct
+  type elt =
+    | Root of string
+    | Module of string
+    | ModuleType of string
+    | Argument of int * string
+
+  type t = elt list
+
+  let sexp_of_elt = function
+    | Root s -> List [Atom "Root"; Atom s]
+    | Module s -> List [Atom "Module"; Atom s]
+    | ModuleType s -> List [Atom "ModuleType"; Atom s]
+    | Argument (i, s) -> List [Atom "Argument"; Atom (string_of_int i); Atom s]
+
+  let sexp_of_t l = List (List.map sexp_of_elt l)
+
+  let rec remove_prefix prefix ~of_ =
+    match prefix, of_ with
+    | x1 :: xs1, x2 :: xs2 when x1 = x2 ->
+      remove_prefix xs1 ~of_:xs2
+    | _, _ -> of_
+end
+
 module Identifier = struct
 
   type kind = Kind.identifier
@@ -352,6 +376,15 @@ module Identifier = struct
   let module_type_root : 'a module_type -> 'a = function
     | ModuleType(id, _) -> signature_root id
 
+
+  let to_reversed i =
+    let rec loop acc : 'a signature -> Reversed.t = function
+      | Root (_, s) -> Reversed.Root s :: acc
+      | Module (i, s) -> loop (Reversed.Module s :: acc) i
+      | ModuleType (i, s) -> loop (Reversed.ModuleType s :: acc) i
+      | Argument (i, d, s) -> loop (Reversed.Argument (d, s) :: acc) i
+    in
+    loop [] i
 end
 
 
@@ -372,6 +405,7 @@ module Path = struct
         | SubstAlias : 'a module_ * ('a, 'b) t ->
                        ('a, [< kind > `Module] as 'b) t
         | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
+        | Canonical : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
         | Apply : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
         | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
         | Type : 'a module_ * string -> ('a, [< kind > `Type]) t
@@ -469,16 +503,18 @@ module Path = struct
                           hash_resolved_path hash p)
         | Module(p, s) ->
             Hashtbl.hash (20, hash_resolved_path hash p, s)
+        | Canonical(p, canonical) ->
+          Hashtbl.hash (21, hash_resolved_path hash p, hash_path hash canonical)
         | Apply(p, arg) ->
-            Hashtbl.hash (21, hash_resolved_path hash p, hash_path hash arg)
+            Hashtbl.hash (22, hash_resolved_path hash p, hash_path hash arg)
         | ModuleType(p, s) ->
-            Hashtbl.hash (22, hash_resolved_path hash p, s)
-        | Type(p, s) ->
             Hashtbl.hash (23, hash_resolved_path hash p, s)
-        | Class(p, s) ->
+        | Type(p, s) ->
             Hashtbl.hash (24, hash_resolved_path hash p, s)
-        | ClassType(p, s) ->
+        | Class(p, s) ->
             Hashtbl.hash (25, hash_resolved_path hash p, s)
+        | ClassType(p, s) ->
+            Hashtbl.hash (26, hash_resolved_path hash p, s)
 
   and hash_path : type k. ('a -> int) -> ('a, k) Types.Path.t -> int =
     fun hash p ->
@@ -486,17 +522,60 @@ module Path = struct
         match p with
         | Resolved p -> hash_resolved_path hash p
         | Root s ->
-            Hashtbl.hash (26, s)
+            Hashtbl.hash (27, s)
         | Forward s ->
-            Hashtbl.hash (26, s)
+            Hashtbl.hash (28, s)
         | Dot(p, s) ->
-            Hashtbl.hash (27, hash_path hash p, s)
+            Hashtbl.hash (29, hash_path hash p, s)
         | Apply(p, arg) ->
-            Hashtbl.hash (28, hash_path hash p, hash_path hash arg)
+            Hashtbl.hash (30, hash_path hash p, hash_path hash arg)
 
   let equal ~equal p1 p2 = equal_path equal p1 p2
 
   let hash ~hash p = hash_path hash p
+
+  let rec sexp_of_path : type a b. (a -> sexp) -> (a, b) Types.Path.t -> sexp =
+    fun sexp_of_a t ->
+      let atom s = Atom (Printf.sprintf "%S" s) in
+      let open Types.Path in
+      match t with
+      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved_path sexp_of_a r ]
+      | Root s -> List [ Atom "Root"; atom s ]
+      | Forward s -> List [ Atom "Forward"; atom s ]
+      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_path sexp_of_a md; atom s]]
+      | Apply (m1, m2) ->
+        List [ Atom "Apply" ; List [ sexp_of_path sexp_of_a m1
+                                   ; sexp_of_path sexp_of_a m2 ]]
+
+  and sexp_of_resolved_path : type a b. (a -> sexp) -> (a, b) Types.Resolved.t -> sexp =
+    fun sexp_of_a t ->
+      let atom s = Atom (Printf.sprintf "%S" s) in
+      let open Types.Resolved in
+      match t with
+      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
+                                                     sexp_of_a id ]
+      | Subst (sg, t) ->
+        List [ Atom "Subst"; List [ sexp_of_resolved_path sexp_of_a sg
+                                  ; sexp_of_resolved_path sexp_of_a t ]]
+      | SubstAlias (sg, t) ->
+        List [ Atom "SubstAlias"; List [ sexp_of_resolved_path sexp_of_a sg
+                                       ; sexp_of_resolved_path sexp_of_a t ]]
+      | Module (md, s) ->
+        List [ Atom "Module"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+      | Canonical (md, p) ->
+        List [ Atom "Canonical"; List [ sexp_of_resolved_path sexp_of_a md
+                                      ; sexp_of_path sexp_of_a p ]]
+      | Apply (md, arg) ->
+        List [ Atom "Apply"; List [ sexp_of_resolved_path sexp_of_a md
+                                  ; sexp_of_path sexp_of_a arg ]]
+      | ModuleType (md, s) ->
+        List [ Atom "ModuleType"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+      | Type (md, s) ->
+        List [ Atom "Type"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+      | Class (md, s) ->
+        List [ Atom "Class"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+      | ClassType (md, s) ->
+        List [ Atom "ClassType"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
 
   module Resolved = struct
 
@@ -506,28 +585,7 @@ module Path = struct
 
     let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
       fun sexp_of_a t ->
-        let atom s = Atom (Printf.sprintf "%S" s) in
-        match t with
-        | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
-                                                       sexp_of_a id ]
-        | Subst (sg, t) ->
-            List [ Atom "Subst"; List [ sexp_of_t sexp_of_a sg
-                                      ; sexp_of_t sexp_of_a t ]]
-        | SubstAlias (sg, t) ->
-            List [ Atom "SubstAlias"; List [ sexp_of_t sexp_of_a sg
-                                           ; sexp_of_t sexp_of_a t ]]
-        | Module (md, s) ->
-            List [ Atom "Module"; List [ sexp_of_t sexp_of_a md ; atom s ]]
-        | Apply (md, _) ->
-            List [ Atom "Apply"; List [ sexp_of_t sexp_of_a md ; Atom "<gave up>" ]]
-        | ModuleType (md, s) ->
-            List [ Atom "ModuleType"; List [ sexp_of_t sexp_of_a md ; atom s ]]
-        | Type (md, s) ->
-            List [ Atom "Type"; List [ sexp_of_t sexp_of_a md ; atom s ]]
-        | Class (md, s) ->
-            List [ Atom "Class"; List [ sexp_of_t sexp_of_a md ; atom s ]]
-        | ClassType (md, s) ->
-            List [ Atom "ClassType"; List [ sexp_of_t sexp_of_a md ; atom s ]]
+        sexp_of_resolved_path sexp_of_a t
 
     let ident_module : 'a Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
@@ -556,6 +614,7 @@ module Path = struct
       | Subst(sub, p) -> Subst(sub, any p)
       | SubstAlias(sub, p) -> SubstAlias(sub, any p)
       | Module _ as x -> x
+      | Canonical _ as x -> x
       | Apply _ as x -> x
       | ModuleType _ as x -> x
       | Type _ as x -> x
@@ -571,6 +630,8 @@ module Path = struct
       | Subst(sub, _) -> parent_module_type_identifier sub
       | SubstAlias(sub, _) -> parent_module_identifier sub
       | Module(m, n) -> Module(parent_module_identifier m, n)
+      | Canonical(_, Types.Path.Resolved p) -> parent_module_identifier p
+      | Canonical(p, _) -> parent_module_identifier p
       | Apply(m, _) -> parent_module_identifier m
 
     let rec identifier : type k. ('a, k) t -> ('a, k) Identifier.t = function
@@ -578,6 +639,18 @@ module Path = struct
       | Subst(_, p) -> identifier p
       | SubstAlias(_, p) -> identifier p
       | Module(m, n) -> Module(parent_module_identifier m, n)
+      | Canonical(_, Types.Path.Resolved p) -> begin
+          Printf.eprintf "DocOck.Path.Resolved.identifier: resolved canonical path!\n%!";
+          match identifier p with
+          | Root _ | Module _ | Argument _ as x -> x
+        end
+      | Canonical(p, _) -> begin
+          Printf.eprintf
+            "DocOck.Path.Resolved.identifier: unresolved canonical path, returning id \
+             for initial path.\n%!";
+          match identifier p with
+          | Root _ | Module _ | Argument _ as x -> x
+        end
       | Apply(m, _) -> begin
           match identifier m with
           | Root _ | Module _ | Argument _ as x -> x
@@ -591,6 +664,124 @@ module Path = struct
 
     let hash ~hash p = hash_resolved_path hash p
 
+    type ('a, 'b) rebase_result =
+      | Stop of ('a, 'b) t
+      | Continue of ('a, 'b) Identifier.t * Reversed.t
+
+    let rec rebase_module_path : Reversed.t -> 'a module_ -> ('a, Kind.path_module) rebase_result =
+      fun new_base t ->
+        let x_ _ = Atom "" in
+        match t with
+        | Identifier id ->
+          let rev = Identifier.(to_reversed @@ signature_of_module id) in
+          let new_base = Reversed.remove_prefix rev ~of_:new_base in
+          Printf.eprintf "rebase_module_path: Identifier -> Continue (%s, %s)\n%!"
+            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+            (string_of_sexp @@ Reversed.sexp_of_t new_base)
+            ;
+          Continue (id, new_base)
+        | Module (m, s) ->
+          begin match rebase_module_path new_base m with
+          | Stop m' -> if m == m' then Stop t else Stop (Module (m', s))
+          | Continue (id, new_base) ->
+            let id = Identifier.Module(Identifier.signature_of_module id, s) in
+            match new_base with
+            | Reversed.Module s' :: rest when s = s' ->
+          Printf.eprintf "rebase_module_path: Module -> Continue (%s, %s)\n%!"
+            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+            (string_of_sexp @@ Reversed.sexp_of_t rest);
+              Continue (id, rest)
+            | _ ->
+                Printf.eprintf "rebase_module_path: Module -> Stop (Module(%s, %S))\n%!"
+            (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
+                Stop (Identifier id)
+          end
+        | Canonical (rp, Types.Path.Resolved p) ->
+          (* We only care about printing at this point, so let's drop the lhs. *)
+          rebase_module_path new_base p
+        | Canonical (rp, p) ->
+          begin match rebase_module_path new_base rp with
+          | Stop rp' -> Stop (Canonical (rp', p))
+          | _ ->
+            (* We might come back at some point with a resolved rhs? So we don't want to
+               drop it. *)
+            Stop t
+          end
+        | Apply _ -> Stop t
+        (* TODO: rewrite which side? *)
+        | Subst _ -> Stop t
+        | SubstAlias _ -> Stop t
+
+    let rec rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
+      fun new_base t ->
+        match t with
+        | Identifier _ -> t
+        | Subst _ -> t (* TODO: rewrite which side? *)
+        | SubstAlias _ -> t (* TODO: rewrite which side? *)
+        | Module (mp, s) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) ->
+            Identifier Identifier.(Module (signature_of_module id, s))
+          | Stop mp' -> Module (mp', s)
+          end
+        | Canonical (p, Types.Path.Resolved rp) ->
+          begin match rebase_module_path new_base rp with
+          | Continue (id, _) -> ident_module id
+          | Stop rp ->
+            (* Easier to reexport a canonical than get the type for rp right... *)
+            Canonical (p, Types.Path.Resolved rp)
+          end
+        | Canonical (rp, p) ->
+          begin match rebase_module_path new_base rp with
+          | Stop rp' -> Canonical (rp', p)
+          | _ ->
+            (* We might come back at some point with a resolved rhs? So we don't want to
+               drop it. *)
+            t
+          end
+        | Apply (mp, arg) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) -> Apply (Identifier id, arg)
+          | Stop mp' -> Apply (mp', arg)
+          end
+        | ModuleType (mp, s) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) ->
+            Identifier Identifier.(ModuleType (signature_of_module id, s))
+          | Stop mp' -> ModuleType (mp', s)
+          end
+        | Type (mp, s) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) ->
+            Identifier Identifier.(Type (signature_of_module id, s))
+          | Stop mp' -> Type (mp', s)
+          end
+        | Class (mp, s) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) ->
+            Identifier Identifier.(Class (signature_of_module id, s))
+          | Stop mp' -> Class (mp', s)
+          end
+        | ClassType (mp, s) ->
+          begin match rebase_module_path new_base mp with
+          | Continue (id, _) ->
+            Identifier Identifier.(ClassType (signature_of_module id, s))
+          | Stop mp' -> ClassType (mp', s)
+          end
+
+    let rebase id t =
+      let rev = Identifier.to_reversed id in
+      Printf.eprintf
+      "==============================\n\
+      REBASING:\n\
+      NEW_BASE: %s\n\
+      PATH: %s\n\n%!"
+      (string_of_sexp @@ Reversed.sexp_of_t rev)
+      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") t);
+      let res = rebase rev t in
+      Printf.eprintf "\nRES: %s\n=============================\n\n%!"
+      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") res);
+      res
   end
 
   open Identifier
@@ -598,18 +789,9 @@ module Path = struct
 
   include Types.Path
 
-  let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
+  let sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
     fun sexp_of_a t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      match t with
-      | Resolved r -> List [ Atom "Resolved"; Resolved.sexp_of_t sexp_of_a r ]
-      | Root s -> List [ Atom "Root"; atom s ]
-      | Forward s -> List [ Atom "Forward"; atom s ]
-      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s]]
-      | Apply (m1, m2) ->
-          List [ Atom "Apply" ; List [ sexp_of_t sexp_of_a m1
-                                     ; sexp_of_t sexp_of_a m2 ]]
-
+      sexp_of_path sexp_of_a t
 
   let ident_module : 'a Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
@@ -636,6 +818,7 @@ module Path = struct
     | Resolved (Identifier (Class _)) as x -> x
     | Resolved (Identifier (ClassType _)) as x -> x
     | Resolved (Module _) as x -> x
+    | Resolved (Canonical _) as x -> x
     | Resolved (Apply _) as x -> x
     | Resolved (ModuleType _) as x -> x
     | Resolved (Type _) as x -> x
@@ -922,19 +1105,19 @@ module Fragment = struct
       let rec loop : type k s. ('a -> int) -> ('a, k, s) raw -> int =
         fun hash p ->
           match p with
-          | Root -> Hashtbl.hash 29
+          | Root -> Hashtbl.hash 31
           | Subst(sub, p) ->
-              Hashtbl.hash (30, Path.Resolved.hash ~hash sub, loop hash p)
+              Hashtbl.hash (32, Path.Resolved.hash ~hash sub, loop hash p)
           | SubstAlias(sub, p) ->
-              Hashtbl.hash (31, Path.Resolved.hash ~hash sub, loop hash p)
+              Hashtbl.hash (33, Path.Resolved.hash ~hash sub, loop hash p)
           | Module(p, s) ->
-              Hashtbl.hash (32, loop hash p, s)
-          | Type(p, s) ->
-              Hashtbl.hash (33, loop hash p, s)
-          | Class(p, s) ->
               Hashtbl.hash (34, loop hash p, s)
-          | ClassType(p, s) ->
+          | Type(p, s) ->
               Hashtbl.hash (35, loop hash p, s)
+          | Class(p, s) ->
+              Hashtbl.hash (36, loop hash p, s)
+          | ClassType(p, s) ->
+              Hashtbl.hash (37, loop hash p, s)
       in
         loop hash p
 
@@ -1053,7 +1236,7 @@ module Fragment = struct
         match p with
         | Resolved p -> Resolved.hash ~hash p
         | Dot(p, s) ->
-            Hashtbl.hash (36, loop hash p, s)
+            Hashtbl.hash (38, loop hash p, s)
     in
       loop hash p
 
@@ -1062,83 +1245,177 @@ end
 
 
 module Reference = struct
+  module rec Types : sig
+    module Resolved : sig
+      open Kind
+
+      type kind = Kind.reference
+
+      type ('a, 'b) t =
+        | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
+        | Module : 'a signature * string -> ('a, [< kind > `Module]) t
+        | Canonical : 'a module_ * 'a Types.Reference.module_ -> ('a, [< kind > `Module]) t
+        | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
+        | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+        | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
+        | Field : 'a parent * string -> ('a, [< kind > `Field]) t
+        | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
+        | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
+        | Value : 'a signature * string -> ('a, [< kind > `Value]) t
+        | Class : 'a signature * string -> ('a, [< kind > `Class]) t
+        | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
+        | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
+        | InstanceVariable : 'a class_signature * string ->
+          ('a, [< kind > `InstanceVariable]) t
+        | Label : 'a parent * string -> ('a, [< kind > `Label]) t
+
+      and 'a any = ('a, kind) t
+      and 'a signature = ('a, Kind.signature) t
+      and 'a class_signature = ('a, Kind.class_signature) t
+      and 'a datatype = ('a, Kind.datatype) t
+      and 'a parent = ('a, Kind.parent) t
+      and 'a module_ = ('a, reference_module) t
+
+      type 'a module_type = ('a, reference_module_type) t
+      type 'a type_ = ('a, reference_type) t
+      type 'a constructor = ('a, reference_constructor) t
+      type 'a field = ('a, reference_field) t
+      type 'a extension = ('a, reference_extension) t
+      type 'a exception_ = ('a, reference_exception) t
+      type 'a value = ('a, reference_value) t
+      type 'a class_ = ('a, reference_class) t
+      type 'a class_type = ('a, reference_class_type) t
+      type 'a method_ = ('a, reference_method) t
+      type 'a instance_variable = ('a, reference_instance_variable) t
+      type 'a label = ('a, reference_label) t
+    end
+
+    module Reference : sig
+      type kind = Kind.reference
+
+      type ('a, 'b) t =
+        | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
+        | Root : string -> ('a, [< kind]) t
+        | Dot : 'a parent * string -> ('a, [< kind]) t
+
+      and 'a any = ('a, kind) t
+      and 'a signature = ('a, Kind.signature) t
+      and 'a class_signature = ('a, Kind.class_signature) t
+      and 'a datatype = ('a, Kind.datatype) t
+      and 'a parent = ('a, Kind.parent) t
+
+      type 'a module_ = ('a, reference_module) t
+      type 'a module_type = ('a, reference_module_type) t
+      type 'a type_ = ('a, reference_type) t
+      type 'a constructor = ('a, reference_constructor) t
+      type 'a field = ('a, reference_field) t
+      type 'a extension = ('a, reference_extension) t
+      type 'a exception_ = ('a, reference_exception) t
+      type 'a value = ('a, reference_value) t
+      type 'a class_ = ('a, reference_class) t
+      type 'a class_type = ('a, reference_class_type) t
+      type 'a method_ = ('a, reference_method) t
+      type 'a instance_variable = ('a, reference_instance_variable) t
+      type 'a label = ('a, reference_label) t
+    end
+  end = Types
+
+  let rec sexp_of_resolved : type a b. (a -> sexp) -> (a, b) Types.Resolved.t -> sexp =
+    fun sexp_of_a t ->
+      let atom s = Atom (Printf.sprintf "%S" s) in
+      let open Types.Resolved in
+      match t with
+      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
+                                                     sexp_of_a id ]
+      | Module (sg, s) ->
+        List [ Atom "Module"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Canonical (t, rf) ->
+        List [ Atom "Canonical"; List [ sexp_of_resolved sexp_of_a t
+                                      ; sexp_of_t sexp_of_a rf ] ]
+      | ModuleType (sg, s) ->
+        List [ Atom "ModuleType"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Type (sg, s) ->
+        List [ Atom "Type"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Constructor (cs, s) ->
+        List [ Atom "Constructor"; List [sexp_of_resolved sexp_of_a cs; atom s] ]
+      | Field (f, s) ->
+        List [ Atom "Field"; List [sexp_of_resolved sexp_of_a f; atom s] ]
+      | Extension (sg, s) ->
+        List [ Atom "Extension"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Exception (sg, s) ->
+        List [ Atom "Exception"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Value (sg, s) ->
+        List [ Atom "Value"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Class (sg, s) ->
+        List [ Atom "Class"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | ClassType (sg, s) ->
+        List [ Atom "ClassType"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Method (sg, s) ->
+        List [ Atom "Method"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | InstanceVariable (sg, s) ->
+        List [ Atom "InstanceVariable"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+      | Label (sg, s) ->
+        List [ Atom "Label"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+
+  and sexp_of_t : type a b. (a -> sexp) -> (a, b) Types.Reference.t -> sexp =
+    fun sexp_of_a t ->
+      let atom s = Atom (Printf.sprintf "%S" s) in
+      let open Types.Reference in
+      match t with
+      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved sexp_of_a r ]
+      | Root s -> List [ Atom "Root"; atom s ]
+      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s]]
+
+  let rec hash_resolved : type k. ('a -> int) -> ('a, k) Types.Resolved.t -> int =
+    fun hash p ->
+      let open Types.Resolved in
+      match p with
+      | Identifier id ->
+        Identifier.hash ~hash id
+      | Module(p, s) ->
+        Hashtbl.hash (39, hash_resolved hash p, s)
+      | Canonical (rp, p) ->
+        Hashtbl.hash (40, hash_resolved hash rp, hash_reference hash p)
+      | ModuleType(p, s) ->
+        Hashtbl.hash (41, hash_resolved hash p, s)
+      | Type(p, s) ->
+        Hashtbl.hash (42, hash_resolved hash p, s)
+      | Constructor(p, s) ->
+        Hashtbl.hash (43, hash_resolved hash p, s)
+      | Field(p, s) ->
+        Hashtbl.hash (44, hash_resolved hash p, s)
+      | Extension(p, s) ->
+        Hashtbl.hash (45, hash_resolved hash p, s)
+      | Exception(p, s) ->
+        Hashtbl.hash (46, hash_resolved hash p, s)
+      | Value(p, s) ->
+        Hashtbl.hash (47, hash_resolved hash p, s)
+      | Class(p, s) ->
+        Hashtbl.hash (48, hash_resolved hash p, s)
+      | ClassType(p, s) ->
+        Hashtbl.hash (49, hash_resolved hash p, s)
+      | Method(p, s) ->
+        Hashtbl.hash (50, hash_resolved hash p, s)
+      | InstanceVariable(p, s) ->
+        Hashtbl.hash (51, hash_resolved hash p, s)
+      | Label(p, s) ->
+        Hashtbl.hash (52, hash_resolved hash p, s)
+
+  and hash_reference : type k. ('a -> int) -> ('a, k) Types.Reference.t -> int =
+    fun hash p ->
+      let open Types.Reference in
+      match p with
+      | Resolved p -> hash_resolved hash p
+      | Root s -> Hashtbl.hash (53, s)
+      | Dot(p, s) -> Hashtbl.hash (54, hash_reference hash p, s)
 
   module Resolved = struct
-
     open Identifier
     open Kind
 
-    type kind = Kind.reference
+    include Types.Resolved
 
-    type ('a, 'b) t =
-      | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
-      | Module : 'a signature * string -> ('a, [< kind > `Module]) t
-      | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
-      | Type : 'a signature * string -> ('a, [< kind > `Type]) t
-      | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-      | Field : 'a parent * string -> ('a, [< kind > `Field]) t
-      | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
-      | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
-      | Value : 'a signature * string -> ('a, [< kind > `Value]) t
-      | Class : 'a signature * string -> ('a, [< kind > `Class]) t
-      | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
-      | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
-      | InstanceVariable : 'a class_signature * string ->
-                             ('a, [< kind > `InstanceVariable]) t
-      | Label : 'a parent * string -> ('a, [< kind > `Label]) t
-
-    and 'a any = ('a, kind) t
-    and 'a signature = ('a, Kind.signature) t
-    and 'a class_signature = ('a, Kind.class_signature) t
-    and 'a datatype = ('a, Kind.datatype) t
-    and 'a parent = ('a, Kind.parent) t
-
-    type 'a module_ = ('a, reference_module) t
-    type 'a module_type = ('a, reference_module_type) t
-    type 'a type_ = ('a, reference_type) t
-    type 'a constructor = ('a, reference_constructor) t
-    type 'a field = ('a, reference_field) t
-    type 'a extension = ('a, reference_extension) t
-    type 'a exception_ = ('a, reference_exception) t
-    type 'a value = ('a, reference_value) t
-    type 'a class_ = ('a, reference_class) t
-    type 'a class_type = ('a, reference_class_type) t
-    type 'a method_ = ('a, reference_method) t
-    type 'a instance_variable = ('a, reference_instance_variable) t
-    type 'a label = ('a, reference_label) t
-
-    let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
-      fun sexp_of_a t ->
-        let atom s = Atom (Printf.sprintf "%S" s) in
-        match t with
-        | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
-                                                       sexp_of_a id ]
-        | Module (sg, s) ->
-          List [ Atom "Module"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | ModuleType (sg, s) ->
-          List [ Atom "ModuleType"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Type (sg, s) ->
-          List [ Atom "Type"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Constructor (cs, s) ->
-          List [ Atom "Constructor"; List [sexp_of_t sexp_of_a cs; atom s] ]
-        | Field (f, s) ->
-          List [ Atom "Field"; List [sexp_of_t sexp_of_a f; atom s] ]
-        | Extension (sg, s) ->
-          List [ Atom "Extension"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Exception (sg, s) ->
-          List [ Atom "Exception"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Value (sg, s) ->
-          List [ Atom "Value"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Class (sg, s) ->
-          List [ Atom "Class"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | ClassType (sg, s) ->
-          List [ Atom "ClassType"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Method (sg, s) ->
-          List [ Atom "Method"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | InstanceVariable (sg, s) ->
-          List [ Atom "InstanceVariable"; List [sexp_of_t sexp_of_a sg; atom s] ]
-        | Label (sg, s) ->
-          List [ Atom "Label"; List [sexp_of_t sexp_of_a sg; atom s] ]
+    let sexp_of_t sexp_of_a t = sexp_of_resolved sexp_of_a t
 
     let ident_module : 'a Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
@@ -1180,7 +1457,9 @@ module Reference = struct
       | Label _ as x -> Identifier x
 
     let signature_of_module : 'a module_ -> _ = function
-      | Identifier (Root _ | Module _ | Argument _) | Module _ as x -> x
+      | Identifier (Root _ | Module _ | Argument _)
+      | Module _
+      | Canonical _ as x -> x
 
     let signature_of_module_type : 'a module_type -> _ = function
       | Identifier (ModuleType _) | ModuleType _ as x -> x
@@ -1193,7 +1472,7 @@ module Reference = struct
 
     let parent_of_signature : 'a signature -> _ = function
       | Identifier (Root _ | Module _ | Argument _ | ModuleType _)
-      | Module _ | ModuleType _ as x -> x
+      | Module _ | ModuleType _ | Canonical _ as x -> x
 
     let parent_of_class_signature : 'a class_signature -> _ =
       function
@@ -1221,6 +1500,7 @@ module Reference = struct
       | Identifier (InstanceVariable _) as x -> x
       | Identifier (Label _) as x -> x
       | Module _ as x -> x
+      | Canonical _ as x -> x
       | ModuleType _ as x -> x
       | Type _ as x -> x
       | Constructor _ as x -> x
@@ -1237,6 +1517,18 @@ module Reference = struct
     let rec identifier: type k. ('a, k) t -> ('a, k) Identifier.t = function
        | Identifier id -> id
        | Module(s, n) -> Module(identifier s, n)
+       | Canonical(_, Types.Reference.Resolved p) -> begin
+           Printf.eprintf "DocOck.Reference.Resolved.identifier: resolved canonical path!\n%!";
+           match identifier p with
+           | Root _ | Module _ | Argument _ as x -> x
+         end
+       | Canonical(p, _) -> begin
+           Printf.eprintf
+             "DocOck.Reference.Resolved.identifier: unresolved canonical path, returning id \
+              for initial path.\n%!";
+           match identifier p with
+           | Root _ | Module _ | Argument _ as x -> x
+         end
        | ModuleType(s, n) -> ModuleType(identifier s, n)
        | Type(s, n) -> Type(identifier s, n)
        | Constructor(s, n) -> Constructor(identifier s, n)
@@ -1287,81 +1579,186 @@ module Reference = struct
       in
         loop equal r1 r2
 
-    let hash ~hash p =
-      let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
-        fun hash p ->
-          match p with
-          | Identifier id ->
-              Identifier.hash ~hash id
-          | Module(p, s) ->
-              Hashtbl.hash (37, loop hash p, s)
-          | ModuleType(p, s) ->
-              Hashtbl.hash (38, loop hash p, s)
-          | Type(p, s) ->
-              Hashtbl.hash (39, loop hash p, s)
-          | Constructor(p, s) ->
-              Hashtbl.hash (40, loop hash p, s)
-          | Field(p, s) ->
-              Hashtbl.hash (41, loop hash p, s)
-          | Extension(p, s) ->
-              Hashtbl.hash (42, loop hash p, s)
-          | Exception(p, s) ->
-              Hashtbl.hash (43, loop hash p, s)
-          | Value(p, s) ->
-              Hashtbl.hash (44, loop hash p, s)
-          | Class(p, s) ->
-              Hashtbl.hash (45, loop hash p, s)
-          | ClassType(p, s) ->
-              Hashtbl.hash (46, loop hash p, s)
-          | Method(p, s) ->
-              Hashtbl.hash (47, loop hash p, s)
-          | InstanceVariable(p, s) ->
-              Hashtbl.hash (48, loop hash p, s)
-          | Label(p, s) ->
-              Hashtbl.hash (49, loop hash p, s)
-      in
-        loop hash p
+    let hash ~hash p = hash_resolved hash p
 
+    type ('a, 'b) rebase_result =
+      | Stop of ('a, 'b) t
+      | Continue of ('a, 'b) Identifier.t * Reversed.t
+
+    let x_ _ = Atom ""
+
+    let rec rebase_module_reference :
+      Reversed.t -> 'a module_ -> ('a, Kind.reference_module) rebase_result =
+      fun new_base t ->
+        match t with
+        | Identifier id ->
+          let rev = Identifier.(to_reversed @@ signature_of_module id) in
+          let new_base = Reversed.remove_prefix rev ~of_:new_base in
+          Printf.eprintf "rebase_module_reference: Identifier -> Continue (%s, %s)\n%!"
+            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+            (string_of_sexp @@ Reversed.sexp_of_t new_base)
+            ;
+          Continue (id, new_base)
+        | Module (m, s) ->
+          begin match rebase_signature_reference new_base m with
+          | Stop m' -> if m == m' then Stop t else Stop (Module (m', s))
+          | Continue (id, new_base) ->
+            let id = Identifier.Module(id, s) in
+            match new_base with
+            | Reversed.Module s' :: rest when s = s' ->
+              Printf.eprintf "rebase_module_reference: Module -> Continue (%s, %s)\n%!"
+                (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+                (string_of_sexp @@ Reversed.sexp_of_t rest);
+              Continue (id, rest)
+            | _ ->
+              Printf.eprintf "rebase_module_reference: Module -> Stop (ModuleType(%s, %S))\n%!"
+                (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
+              Stop (Identifier id)
+          end
+        | Canonical (rp, Types.Reference.Resolved p) ->
+          (* We only care about printing at this point, so let's drop the lhs. *)
+          rebase_module_reference new_base (signature_of_module p)
+        | Canonical (rp, p) ->
+          begin match rebase_module_reference new_base (signature_of_module rp) with
+          | Stop rp' -> Stop (Canonical (rp', p))
+          | _ ->
+            (* We might come back at some point with a resolved rhs? So we don't want to
+               drop it. *)
+            Stop t
+          end
+
+    and rebase_signature_reference :
+      Reversed.t -> 'a signature -> ('a, Kind.signature) rebase_result =
+      fun new_base t ->
+        match t with
+        | Identifier id ->
+          let rev = Identifier.(to_reversed id) in
+          let new_base = Reversed.remove_prefix rev ~of_:new_base in
+          Printf.eprintf "rebase_module_reference: Identifier -> Continue (%s, %s)\n%!"
+            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+            (string_of_sexp @@ Reversed.sexp_of_t new_base)
+            ;
+          Continue (id, new_base)
+        | ModuleType (m, s) ->
+          begin match rebase_signature_reference new_base m with
+          | Stop m' -> if m == m' then Stop t else Stop (Module (m', s))
+          | Continue (id, new_base) ->
+            let id = Identifier.ModuleType(id, s) in
+            match new_base with
+            | Reversed.ModuleType s' :: rest when s = s' ->
+              Printf.eprintf "rebase_module_reference: ModuleType -> Continue (%s, %s)\n%!"
+                (string_of_sexp @@ Identifier.sexp_of_t x_ id)
+                (string_of_sexp @@ Reversed.sexp_of_t rest);
+              Continue (id, rest)
+            | _ ->
+              Printf.eprintf "rebase_module_reference: ModuleType -> Stop (ModuleType(%s, %S))\n%!"
+                (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
+              Stop (Identifier id)
+          end
+        | Module _ | Canonical _ as x ->
+          match rebase_module_reference new_base x with
+          | Stop rp -> Stop (signature_of_module rp)
+          | Continue (id, rev) ->
+            Continue (Identifier.signature_of_module id, rev)
+
+    let rec rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
+      fun new_base t ->
+        match t with
+        | Identifier _ -> t
+        | Module (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Module(id, s))
+          | Stop mp' -> Module (mp', s)
+          end
+        | Canonical (p, Types.Reference.Resolved rp) ->
+          begin match rebase_module_reference new_base (signature_of_module rp) with
+          | Continue (id, _) -> ident_module id
+          | Stop rp ->
+            (* Easier to reexport a canonical than get the type for rp right... *)
+            Canonical (p, Types.Reference.Resolved rp)
+          end
+        | Canonical (rp, p) ->
+          begin match rebase_module_reference new_base rp with
+          | Stop rp' -> Canonical (rp', p)
+          | _ ->
+            (* We might come back at some point with a resolved rhs? So we don't want to
+               drop it. *)
+            t
+          end
+        | ModuleType (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.ModuleType (id, s))
+          | Stop mp' -> ModuleType (mp', s)
+          end
+        | Type (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Type (id, s))
+          | Stop mp' -> Type (mp', s)
+          end
+        | Constructor (parent, s) ->
+          Constructor(rebase new_base parent, s)
+        | Field (parent, s) ->
+          Field(rebase new_base parent, s)
+        | Extension (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Extension (id, s))
+          | Stop mp' -> Extension (mp', s)
+          end
+        | Exception (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Exception (id, s))
+          | Stop mp' -> Exception (mp', s)
+          end
+        | Value (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Value (id, s))
+          | Stop mp' -> Value (mp', s)
+          end
+        | Class (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.Class (id, s))
+          | Stop mp' -> Class (mp', s)
+          end
+        | ClassType (mp, s) ->
+          begin match rebase_signature_reference new_base mp with
+          | Continue (id, _) ->
+            Identifier (Identifier.ClassType (id, s))
+          | Stop mp' -> ClassType (mp', s)
+          end
+        | Method (mp, s) ->
+            Method (rebase new_base mp, s)
+        | InstanceVariable (mp, s) ->
+            InstanceVariable (rebase new_base mp, s)
+        | Label (mp, s) ->
+            Label (rebase new_base mp, s)
+
+    let rebase id t =
+      let rev = Identifier.to_reversed id in
+      Printf.eprintf
+      "==============================\n\
+      REBASING:\n\
+      NEW_BASE: %s\n\
+      PATH: %s\n\n%!"
+      (string_of_sexp @@ Reversed.sexp_of_t rev)
+      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") t);
+      let res = rebase rev t in
+      Printf.eprintf "\nRES: %s\n=============================\n\n%!"
+      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") res);
+      res
   end
 
   open Identifier
   open Resolved
   open Kind
 
-  type kind = Kind.reference
-
-  type ('a, 'b) t =
-    | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
-    | Root : string -> ('a, [< kind]) t
-    | Dot : 'a parent * string -> ('a, [< kind]) t
-
-  and 'a any = ('a, kind) t
-  and 'a signature = ('a, Kind.signature) t
-  and 'a class_signature = ('a, Kind.class_signature) t
-  and 'a datatype = ('a, Kind.datatype) t
-  and 'a parent = ('a, Kind.parent) t
-
-  type 'a module_ = ('a, reference_module) t
-  type 'a module_type = ('a, reference_module_type) t
-  type 'a type_ = ('a, reference_type) t
-  type 'a constructor = ('a, reference_constructor) t
-  type 'a field = ('a, reference_field) t
-  type 'a extension = ('a, reference_extension) t
-  type 'a exception_ = ('a, reference_exception) t
-  type 'a value = ('a, reference_value) t
-  type 'a class_ = ('a, reference_class) t
-  type 'a class_type = ('a, reference_class_type) t
-  type 'a method_ = ('a, reference_method) t
-  type 'a instance_variable = ('a, reference_instance_variable) t
-  type 'a label = ('a, reference_label) t
-
-  let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
-    fun sexp_of_a t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      match t with
-      | Resolved r -> List [ Atom "Resolved"; Resolved.sexp_of_t sexp_of_a r ]
-      | Root s -> List [ Atom "Root"; atom s ]
-      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s]]
+  include Types.Reference
 
   let ident_module : 'a Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
@@ -1403,7 +1800,8 @@ module Reference = struct
     | Label _ as x -> Resolved (Identifier x)
 
   let signature_of_module : 'a module_ -> _ = function
-    | Resolved (Identifier (Root _ | Module _ | Argument _) | Module _)
+    | Resolved (Identifier (Root _ | Module _ | Argument _)
+               | Module _ | Canonical _)
     | Root _ | Dot _ as x -> x
 
   let signature_of_module_type : 'a module_type -> _ = function
@@ -1420,7 +1818,7 @@ module Reference = struct
 
   let parent_of_signature : 'a signature -> 'a parent = function
     | Resolved (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
-                | Module _ | ModuleType _)
+                | Module _ | ModuleType _ | Canonical _)
     | Root _ | Dot _ as x -> x
 
   let parent_of_class_signature : 'a class_signature -> 'a parent = function
@@ -1450,6 +1848,7 @@ module Reference = struct
     | Resolved (Identifier (InstanceVariable _)) as x -> x
     | Resolved (Identifier (Label _)) as x -> x
     | Resolved (Module _) as x -> x
+    | Resolved (Canonical _) as x -> x
     | Resolved (ModuleType _) as x -> x
     | Resolved (Type _) as x -> x
     | Resolved (Constructor _) as x -> x
@@ -1546,14 +1945,28 @@ module Reference = struct
     in
       loop equal r1 r2
 
-  let hash ~hash p =
-    let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
-      fun hash p ->
-        match p with
-        | Resolved p -> Resolved.hash ~hash p
-        | Root s -> Hashtbl.hash (50, s)
-        | Dot(p, s) -> Hashtbl.hash (51, loop hash p, s)
-    in
-      loop hash p
+  let hash ~hash p = hash_reference hash p
 
+  (* Only called on "canonical" paths. *)
+  let rec resolved_of_resolved_path : 'a Path.Resolved.module_ -> 'a Resolved.module_ =
+    let open Path.Resolved in
+    function
+    | Identifier i -> Identifier i
+    | Subst _ -> invalid_arg "Reference.resolved_of_resolved_path: Subst"
+    | SubstAlias _ -> invalid_arg "Reference.resolved_of_resolved_path: SubstAlias"
+    | Module (parent, name) ->
+      Module(Resolved.signature_of_module (resolved_of_resolved_path parent), name)
+    | Canonical(orig, cano) ->
+      Canonical(resolved_of_resolved_path orig, t_of_path cano)
+    | Apply _ -> invalid_arg "Reference.resolved_of_resolved_path: Apply"
+
+  and t_of_path : 'a Path.module_ -> 'a module_ =
+    let open Path in
+    function
+    | Resolved rp -> Resolved (resolved_of_resolved_path rp)
+    | Root s -> Root s
+    | Forward _ -> invalid_arg "Reference.t_of_path: Forward"
+    | Dot (p, s) ->
+      Dot(signature_of_module (t_of_path p), s)
+    | Apply _ -> invalid_arg "Reference.t_of_path: Apply"
 end

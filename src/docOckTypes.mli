@@ -84,6 +84,7 @@ module Documentation : sig
     | Return of 'a text
     | Inline
     | Tag of string * 'a text
+    | Canonical of 'a Path.module_
 
   and 'a special =
     | Modules of ('a Reference.module_ * 'a text) list
@@ -155,6 +156,7 @@ module rec Module : sig
     { id: 'a Identifier.module_;
       doc: 'a Documentation.t;
       type_: 'a decl;
+      canonical_path : 'a Path.module_ option;
       expansion: 'a expansion option;
     }
 

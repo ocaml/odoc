@@ -366,20 +366,24 @@ and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
       let mty = find_module_type t root name ex in
         mty.id, mty.doc, expand_module_type t root mty
 
-and expand_module_resolved_path' ({equal = eq} as t) root p =
-  let open Path.Resolved in
-  match p with
-  | Identifier id -> t.expand_module_identifier ~root id
-  | Subst(_, p) -> t.expand_module_resolved_path ~root p
-  | SubstAlias(_, p) -> t.expand_module_resolved_path ~root p
-  | Module(parent, name) ->
+and expand_module_resolved_path' t root p =
+  let rec aux ({equal = eq} as t) root p =
+    let open Path.Resolved in
+    match p with
+    | Identifier id -> t.expand_module_identifier ~root id
+    | Subst(_, p) -> t.expand_module_resolved_path ~root p
+    | SubstAlias(_, p) -> t.expand_module_resolved_path ~root p
+    | Module(parent, name) ->
       let open Module in
       let id, _, ex = t.expand_module_resolved_path ~root parent in
       let md = find_module t root name ex in
       let sub = DocOckSubst.prefix ~equal:eq id in
       let md' = DocOckSubst.module_ sub md in
-        md'.id, md'.doc, expand_module t root md'
-  | Apply _ -> raise Not_found (* TODO support functor application *)
+      md'.id, md'.doc, expand_module t root md'
+    | Canonical (p, _) -> aux t root p
+    | Apply _ -> raise Not_found (* TODO support functor application *)
+  in
+  aux t root p
 
 and expand_module_path' ({equal = eq} as t) root p =
   let open Path in
@@ -433,7 +437,9 @@ and expand_unit ({equal; hash} as t) root unit =
                           let open Module in
                           let id = item.id in
                           let type_ = ModuleType (ModuleType.Signature sg) in
-                          let md = {id; doc; type_; expansion = Some (Signature sg)} in
+                          let canonical_path = None in
+                          let md = {id; doc; type_; canonical_path;
+                                    expansion = Some (Signature sg)} in
                           loop ((src, item.id) :: ids) (md :: mds) rest
                       end
                     | exception Not_found -> [], None (* TODO: Should be an error *)

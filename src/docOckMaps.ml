@@ -255,6 +255,11 @@ class virtual ['a] path = object (self)
               if parent != parent' || name != name' then
                 Module(parent', name')
               else p
+        | Canonical(orig, cano) ->
+            let orig' = self#path_resolved orig in
+            let cano' = self#path cano in
+              if orig != orig' || cano != cano' then Canonical(orig', cano')
+              else p
         | Apply(fn, arg) ->
             let fn' = self#path_resolved fn in
             let arg' = self#path arg in
@@ -451,6 +456,12 @@ class virtual ['a] reference = object (self)
             let name' = self#reference_resolved_module_name name in
               if parent != parent' || name != name' then
                 Module(parent', name')
+              else r
+        | Canonical(orig, cano) ->
+            let orig' = self#reference_resolved orig in
+            let cano' = self#reference cano in
+              if orig != orig' || cano != cano' then
+                Canonical(orig', cano')
               else r
         | ModuleType(parent, name) ->
             let parent' = self#reference_resolved parent in
@@ -675,6 +686,9 @@ class virtual ['a] documentation = object (self)
 
   method virtual identifier :
     'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
+
+  method virtual path_module :
+    'a Path.module_ -> 'a Path.module_
 
   method virtual reference_module :
     'a Reference.module_ -> 'a Reference.module_
@@ -954,6 +968,10 @@ class virtual ['a] documentation = object (self)
           let txt' = self#documentation_text txt in
             if name != name' || txt != txt' then Tag(name', txt')
             else tag
+      | Canonical path ->
+          let path' = self#path_module path in
+            if path != path' then Canonical path'
+            else tag
 
   method documentation_tag_author author = author
   method documentation_tag_version version = version
@@ -1092,13 +1110,16 @@ class virtual ['a] module_ = object (self)
 
   method module_ md =
     let open Module in
-    let {id; doc; type_; expansion} = md in
+    let {id; doc; type_; expansion; canonical_path} = md in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
     let expansion' = option_map self#module_expansion expansion in
-      if id != id' || doc != doc' || type_ != type' || expansion' != expansion then
-        {id = id'; doc = doc'; type_ = type'; expansion = expansion' }
+    let canonical_path' = option_map self#path_module canonical_path in
+      if id != id' || doc != doc' || type_ != type'
+         || expansion != expansion' || canonical_path != canonical_path' then
+        {id = id'; doc = doc'; type_ = type'; expansion = expansion'
+        ; canonical_path = canonical_path'}
       else md
 
   method module_equation eq =
