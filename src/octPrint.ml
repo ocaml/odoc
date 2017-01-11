@@ -169,6 +169,8 @@ let tag i ppf x =
   | Custom(s, txt) ->
       line i ppf "Custom %s\n" s;
       text i ppf txt
+  | Canonical s ->
+      line i ppf "Canonical %s" s
 
 let documentation i ppf (txt, tags) =
   line i ppf "Cinfo\n";

@@ -638,6 +638,7 @@ let _ =
       ("see", fun lexbuf -> See (see lexbuf));
       ("since", fun lexbuf -> Since (version lexbuf));
       ("before", fun lexbuf -> Before (version lexbuf));
-      ("version", fun lexbuf -> Version (version lexbuf)); ]
+      ("version", fun lexbuf -> Version (version lexbuf));
+      ("canonical", fun lexbuf -> Canonical (identifier lexbuf)); ]
 
 }

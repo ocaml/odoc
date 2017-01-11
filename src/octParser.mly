@@ -138,6 +138,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token RETURN
 %token INLINE
 %token <string> Custom
+%token <string> Canonical
 
 %token BEGIN
 %token END
@@ -213,6 +214,7 @@ tags:
 simple_tag:
 | Version           { Version $1 }
 | Since             { Since $1 }
+| Canonical         { Canonical $1 }
 ;
 
 text_tag:

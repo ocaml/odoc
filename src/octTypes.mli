@@ -90,6 +90,7 @@ type tag =
   | Return_value of text (** \@return tag *)
   | Inline (** \@inline tag *)
   | Custom of string * text (** custom tag *)
+  | Canonical of string (** \@canonical tag *)
 
 (** A special comment *)
 type t = text * tag list
