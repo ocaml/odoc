@@ -50,6 +50,9 @@ let before_t output acc =
 let bold_t output acc =
   output acc (`El_start ((ns, "bold"), []))
 
+let canonical_t output acc =
+  output acc (`El_start ((ns, "canonical"), []))
+
 let center_t output acc =
   output acc (`El_start ((ns, "center"), []))
 
@@ -503,6 +506,11 @@ let rec resolved_path_p : type a. _ -> _ -> _ -> (_, a) Path.Resolved.t -> _ =
         let acc = path_p base output acc arg in
         close output acc
       | Module(m, name) -> component module_t m name
+      | Canonical (rp, p) ->
+        let acc = canonical_t output acc in
+        let acc = resolved_path_p base output acc rp in
+        let acc = path_p base output acc p in
+        close output acc
       | ModuleType(m, name) -> component module_type_t m name
       | Type(m, name) -> component type_t m name
       | Class(m, name) -> component class_t m name
@@ -534,6 +542,16 @@ and path_p : type a. _ -> _ -> _ -> (_, a) Path.t -> _ =
         let acc = path_p base output acc m in
         let acc = path_p base output acc arg in
         close output acc
+
+let canonical_path_p : type a. _ -> _ -> _ -> (_, a) Path.t option -> _ =
+  fun base output acc p_opt ->
+    let acc = canonical_t output acc in
+    let acc =
+      match p_opt with
+      | None -> acc
+      | Some p -> path_p base output acc p
+    in
+    close output acc
 
 let rec resolved_fragment_p
   : type a b. _ -> _ -> _ -> (_, a, b) Fragment.Resolved.raw -> _ =
@@ -592,6 +610,11 @@ let rec resolved_reference_p
         let acc = identifier_p base output acc id in
         close output acc
       | Module(sg, name) -> component module_t sg name
+      | Canonical (rr, r) ->
+        let acc = canonical_t output acc in
+        let acc = resolved_reference_p base output acc rr in
+        let acc = reference_p base output acc r in
+        close output acc
       | ModuleType(sg, name) -> component module_type_t sg name
       | Type(sg, name) -> component type_t sg name
       | Constructor(sg, name) -> component constructor_t sg name
@@ -760,6 +783,10 @@ and tag_p base output acc tg =
     | Inline -> closed inline_t output acc
     | Return txt -> block return_t output acc txt
     | Tag(name, txt) -> named_block tag_t output acc name txt
+    | Canonical p ->
+      let acc = canonical_t output acc in
+      let acc = path_p base output acc p in
+      close output acc
 
 and tags_p base output acc tgs =
   list tag_p base output acc tgs
@@ -1244,6 +1271,7 @@ and signature_item_p base output acc =
       let acc = doc_p base output acc md.doc in
       let acc = module_decl_p base output acc md.type_ in
       let acc = module_expansion_p base output acc md.expansion in
+      let acc = canonical_path_p base output acc md.canonical_path in
       close output acc
     | ModuleType mty ->
       let open ModuleType in

@@ -73,6 +73,7 @@ let relax_class_type_reference cltyp =
 %token AUTHOR
 %token BEFORE
 %token BOLD
+%token CANONICAL
 %token CENTER
 %token CLASS
 %token CLASS_TYPE
@@ -333,6 +334,8 @@ module_resolved_path:
       { Path.Resolved.SubstAlias(sub, p) }
   | MODULE md = module_resolved_path data = string CLOSE
       { Path.Resolved.Module(md, data) }
+  | CANONICAL rp = module_resolved_path p = module_path CLOSE
+      { Path.Resolved.Canonical (rp, p) }
   | APPLY md = module_resolved_path arg = module_path CLOSE
       { Path.Resolved.Apply(md, arg) }
 
@@ -375,6 +378,12 @@ module_path:
       { Path.Dot(md, data) }
   | APPLY md = module_path arg = module_path CLOSE
       { Path.Apply(md, arg) }
+
+canonical_path:
+  | (* empty *)
+      { None }
+  | CANONICAL p = module_path CLOSE
+      { Some p }
 
 module_type_path:
   | RESOLVED path = module_type_resolved_path CLOSE
@@ -443,6 +452,8 @@ module_resolved_reference:
       { Reference.Resolved.ident_module id }
   | MODULE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Module(sg, data) }
+  | CANONICAL rp = module_resolved_reference p = module_reference CLOSE
+      { Reference.Resolved.Canonical (rp, p) }
 
 module_type_resolved_reference:
   | IDENTIFIER id = module_type_identifier CLOSE
@@ -1131,10 +1142,10 @@ signature_item:
           let open ClassType in
             ClassType {id; doc; virtual_; params; expr} }
   | MODULE id = module_identifier doc = doc type_ = module_decl
-      expansion = module_expansion_opt CLOSE
+      expansion = module_expansion_opt canonical_path = canonical_path CLOSE
       { let open Signature in
         let open Module in
-         Module {id; doc; type_; expansion} }
+          Module {id; doc; type_; expansion; canonical_path} }
   | MODULE_TYPE id = module_type_identifier doc = doc
       expr = module_type_expr?  expansion = module_expansion_opt CLOSE
       { let open Signature in
