@@ -113,6 +113,13 @@ module Reference = struct
       match r with
       | Identifier id -> Identifier.name id
       | Module (r, s) -> render_resolved r ^ "." ^ s
+      | Canonical (_, Reference.Resolved r) ->
+        Printf.eprintf "DocOckHtml.Documentation.Reference.render_resolved: resolved canonical\n%!";
+        render_resolved r
+      | Canonical (p, p') ->
+        Printf.eprintf "DocOckHtml.Documentation.Reference.render_resolved: unresolved canonical %s\n%!"
+          (string_of_sexp @@ Reference.sexp_of_t (fun _ -> Atom "") p');
+        render_resolved p
       | ModuleType (r, s) -> render_resolved r ^ "." ^ s
       | Type (r, s) -> render_resolved r ^ "." ^ s
       | Constructor (r, s) -> render_resolved r ^ "." ^ s
@@ -533,6 +540,7 @@ let handle_tags ~get_package tags =
         let prefix = [ make_tag ~class_:s ("@" ^ s) ; pcdata " " ] in
         collapse (Phrasing prefix :: aggregate ~get_package txt)
       | Inline -> []
+      | Canonical _ -> [] (* TODO: display? *)
     )
   in
   let cleaned = List.filter (function [] -> false | _ -> true) raw in
