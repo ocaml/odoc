@@ -79,6 +79,9 @@ A numbered list:
     Here are some escaped brackets: \{ \[ \@ \] \}
 *)
 
+(** Here is some {e emphasis} [followed by code]. *)
+
+
 (** An unassociated comment *)
 (******************************************************************************)
 
