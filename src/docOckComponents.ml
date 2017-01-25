@@ -327,14 +327,7 @@ end = struct
     { canonical : 'a Path.module_ option;
       body : 'a body }
 
-  let set_canonical_path t canonical =
-    begin match canonical with
-    | Some p ->
-      Printf.eprintf "DocOck.Components.Sig.set_canonical_path: Some %s\n%!"
-        (string_of_sexp @@ Path.sexp_of_t (fun _ -> Atom "") p)
-    | _ -> ()
-    end;
-    { t with canonical }
+  let set_canonical_path t canonical = { t with canonical }
   let find_canonical_path t = t.canonical
 
   let t_of_body body = { canonical = None; body }

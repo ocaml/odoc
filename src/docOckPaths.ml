@@ -640,14 +640,10 @@ module Path = struct
       | SubstAlias(_, p) -> identifier p
       | Module(m, n) -> Module(parent_module_identifier m, n)
       | Canonical(_, Types.Path.Resolved p) -> begin
-          Printf.eprintf "DocOck.Path.Resolved.identifier: resolved canonical path!\n%!";
           match identifier p with
           | Root _ | Module _ | Argument _ as x -> x
         end
       | Canonical(p, _) -> begin
-          Printf.eprintf
-            "DocOck.Path.Resolved.identifier: unresolved canonical path, returning id \
-             for initial path.\n%!";
           match identifier p with
           | Root _ | Module _ | Argument _ as x -> x
         end
@@ -675,10 +671,6 @@ module Path = struct
         | Identifier id ->
           let rev = Identifier.(to_reversed @@ signature_of_module id) in
           let new_base = Reversed.remove_prefix rev ~of_:new_base in
-          Printf.eprintf "rebase_module_path: Identifier -> Continue (%s, %s)\n%!"
-            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-            (string_of_sexp @@ Reversed.sexp_of_t new_base)
-            ;
           Continue (id, new_base)
         | Module (m, s) ->
           begin match rebase_module_path new_base m with
@@ -687,13 +679,8 @@ module Path = struct
             let id = Identifier.Module(Identifier.signature_of_module id, s) in
             match new_base with
             | Reversed.Module s' :: rest when s = s' ->
-          Printf.eprintf "rebase_module_path: Module -> Continue (%s, %s)\n%!"
-            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-            (string_of_sexp @@ Reversed.sexp_of_t rest);
               Continue (id, rest)
             | _ ->
-                Printf.eprintf "rebase_module_path: Module -> Stop (Module(%s, %S))\n%!"
-            (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
                 Stop (Identifier id)
           end
         | Canonical (rp, Types.Path.Resolved p) ->
@@ -771,17 +758,7 @@ module Path = struct
 
     let rebase id t =
       let rev = Identifier.to_reversed id in
-      Printf.eprintf
-      "==============================\n\
-      REBASING:\n\
-      NEW_BASE: %s\n\
-      PATH: %s\n\n%!"
-      (string_of_sexp @@ Reversed.sexp_of_t rev)
-      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") t);
-      let res = rebase rev t in
-      Printf.eprintf "\nRES: %s\n=============================\n\n%!"
-      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") res);
-      res
+      rebase rev t
   end
 
   open Identifier
@@ -1518,14 +1495,10 @@ module Reference = struct
        | Identifier id -> id
        | Module(s, n) -> Module(identifier s, n)
        | Canonical(_, Types.Reference.Resolved p) -> begin
-           Printf.eprintf "DocOck.Reference.Resolved.identifier: resolved canonical path!\n%!";
            match identifier p with
            | Root _ | Module _ | Argument _ as x -> x
          end
        | Canonical(p, _) -> begin
-           Printf.eprintf
-             "DocOck.Reference.Resolved.identifier: unresolved canonical path, returning id \
-              for initial path.\n%!";
            match identifier p with
            | Root _ | Module _ | Argument _ as x -> x
          end
@@ -1594,10 +1567,6 @@ module Reference = struct
         | Identifier id ->
           let rev = Identifier.(to_reversed @@ signature_of_module id) in
           let new_base = Reversed.remove_prefix rev ~of_:new_base in
-          Printf.eprintf "rebase_module_reference: Identifier -> Continue (%s, %s)\n%!"
-            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-            (string_of_sexp @@ Reversed.sexp_of_t new_base)
-            ;
           Continue (id, new_base)
         | Module (m, s) ->
           begin match rebase_signature_reference new_base m with
@@ -1606,13 +1575,8 @@ module Reference = struct
             let id = Identifier.Module(id, s) in
             match new_base with
             | Reversed.Module s' :: rest when s = s' ->
-              Printf.eprintf "rebase_module_reference: Module -> Continue (%s, %s)\n%!"
-                (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-                (string_of_sexp @@ Reversed.sexp_of_t rest);
               Continue (id, rest)
             | _ ->
-              Printf.eprintf "rebase_module_reference: Module -> Stop (ModuleType(%s, %S))\n%!"
-                (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
               Stop (Identifier id)
           end
         | Canonical (rp, Types.Reference.Resolved p) ->
@@ -1634,10 +1598,6 @@ module Reference = struct
         | Identifier id ->
           let rev = Identifier.(to_reversed id) in
           let new_base = Reversed.remove_prefix rev ~of_:new_base in
-          Printf.eprintf "rebase_module_reference: Identifier -> Continue (%s, %s)\n%!"
-            (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-            (string_of_sexp @@ Reversed.sexp_of_t new_base)
-            ;
           Continue (id, new_base)
         | ModuleType (m, s) ->
           begin match rebase_signature_reference new_base m with
@@ -1646,13 +1606,8 @@ module Reference = struct
             let id = Identifier.ModuleType(id, s) in
             match new_base with
             | Reversed.ModuleType s' :: rest when s = s' ->
-              Printf.eprintf "rebase_module_reference: ModuleType -> Continue (%s, %s)\n%!"
-                (string_of_sexp @@ Identifier.sexp_of_t x_ id)
-                (string_of_sexp @@ Reversed.sexp_of_t rest);
               Continue (id, rest)
             | _ ->
-              Printf.eprintf "rebase_module_reference: ModuleType -> Stop (ModuleType(%s, %S))\n%!"
-                (string_of_sexp @@ Identifier.sexp_of_t x_ id) s;
               Stop (Identifier id)
           end
         | Module _ | Canonical _ as x ->
@@ -1741,17 +1696,7 @@ module Reference = struct
 
     let rebase id t =
       let rev = Identifier.to_reversed id in
-      Printf.eprintf
-      "==============================\n\
-      REBASING:\n\
-      NEW_BASE: %s\n\
-      PATH: %s\n\n%!"
-      (string_of_sexp @@ Reversed.sexp_of_t rev)
-      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") t);
-      let res = rebase rev t in
-      Printf.eprintf "\nRES: %s\n=============================\n\n%!"
-      (string_of_sexp @@ sexp_of_t (fun _ -> Atom "") res);
-      res
+      rebase rev t
   end
 
   open Identifier
