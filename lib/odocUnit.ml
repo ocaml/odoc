@@ -60,8 +60,8 @@ let load =
     match Hashtbl.find units file with
     | unit -> unit
     | exception Not_found ->
-      let ic = open_in file in
       try
+        let ic = open_in file in
         let m = really_input_string ic (String.length magic) in
         if m <> magic then (
           Printf.eprintf "%s: invalid magic number %S, expected %S\n%!"
@@ -73,13 +73,11 @@ let load =
           Hashtbl.add units file res;
           res
         )
-      with
-      | Failure s ->
-        Printf.eprintf "Error while unmarshalling %S: %s\n%!" file s;
-        exit 2
-      | exn ->
+      with exn ->
         Printf.eprintf "Error while unmarshalling %S: %s\n%!" file
-          (Printexc.to_string exn);
+          (match exn with
+           | Failure s -> s
+           | _ -> Printexc.to_string exn);
         exit 2
 
 let root (t : t) =
