@@ -42,9 +42,12 @@ let load_xml file =
                 (Fs.File.to_string file) line col error_msg in
     failwith msg
 
+let magic = "odoc-%%VERSION%%"
+
 let save file unit =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out (Fs.File.to_string file) in
+  output_string oc magic;
   Marshal.to_channel oc unit [];
   close_out oc
 
@@ -58,15 +61,26 @@ let load =
     | unit -> unit
     | exception Not_found ->
       let ic = open_in file in
-      match Marshal.from_channel ic with
-      | exception (Failure s) ->
-        close_in ic;
+      try
+        let m = really_input_string ic (String.length magic) in
+        if m <> magic then (
+          Printf.eprintf "%s: invalid magic number %S, expected %S\n%!"
+            file m magic;
+          exit 1
+        ) else (
+          let res = Marshal.from_channel ic in
+          close_in ic;
+          Hashtbl.add units file res;
+          res
+        )
+      with
+      | Failure s ->
         Printf.eprintf "Error while unmarshalling %S: %s\n%!" file s;
-        exit 1
-      | res ->
-        close_in ic;
-        Hashtbl.add units file res;
-        res
+        exit 2
+      | exn ->
+        Printf.eprintf "Error while unmarshalling %S: %s\n%!" file
+          (Printexc.to_string exn);
+        exit 2
 
 let root (t : t) =
   match t.Types.Unit.id with
