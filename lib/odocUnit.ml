@@ -58,10 +58,15 @@ let load =
     | unit -> unit
     | exception Not_found ->
       let ic = open_in file in
-      let res = Marshal.from_channel ic in
-      close_in ic;
-      Hashtbl.add units file res;
-      res
+      match Marshal.from_channel ic with
+      | exception (Failure s) ->
+        close_in ic;
+        Printf.eprintf "Error while unmarshalling %S: %s\n%!" file s;
+        exit 1
+      | res ->
+        close_in ic;
+        Hashtbl.add units file res;
+        res
 
 let root (t : t) =
   match t.Types.Unit.id with
