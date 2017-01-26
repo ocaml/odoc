@@ -54,6 +54,8 @@ val instance_variable : 'a t -> 'a InstanceVariable.t ->
 
 val comment : 'a t -> 'a Documentation.comment -> 'a Documentation.comment
 
+val documentation : 'a t -> 'a Documentation.t -> 'a Documentation.t
+
 val identifier_module : 'a t -> 'a Identifier.module_ ->
                         'a Identifier.module_
 

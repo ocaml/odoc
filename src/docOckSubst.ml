@@ -74,6 +74,9 @@ let instance_variable s inst =
 let comment s com =
   s#documentation_comment com
 
+let documentation s doc =
+  s#documentation doc
+
 let identifier_signature s id =
   s#identifier_signature id
 
