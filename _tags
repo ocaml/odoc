@@ -11,7 +11,8 @@ true : bin_annot, safe_string
 <lib/**> : open(StdLabels), warn(-40)
 <lib/**> : package(xmlm), package(doc-ock), package(doc-ock-xml), \
            package(doc-ock-html), package(unix), package(fpath), \
-           package(bos), package(compiler-libs.common), package(result)
+           package(bos), package(compiler-libs.common), package(result), \
+           package(tyxml)
 
 <lib/odoc.*> : no_alias_deps
 
