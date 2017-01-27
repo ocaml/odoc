@@ -174,7 +174,7 @@ type 'a is_path_kind = Witness : [< Path.kind] is_path_kind
   let open Path.Resolved in
     (Module(Identifier id, name))*)
 
-class ['a] prefix ~equal id : ['a] t = object (self)
+class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
 
   inherit ['a] DocOckMaps.paths as super
 
@@ -188,63 +188,74 @@ class ['a] prefix ~equal id : ['a] t = object (self)
         Identifier.equal ~equal (Identifier.signature_of_module id) id'
       in
       let open Path.Resolved in
+      let replacement =
+        match canonical with
+        | None -> Identifier id
+        | Some(path, _) -> Canonical(Identifier id, path)
+      in
         match p with
         | Identifier (Identifier.Module(parent, name)) ->
-            if matches parent then Obj.magic (Module(Identifier id, name))
+            if matches parent then Obj.magic (Module(replacement, name))
             else super#path_resolved p
         | Identifier (Identifier.ModuleType(parent, name)) ->
-            if matches parent then Obj.magic (ModuleType(Identifier id, name))
+            if matches parent then Obj.magic (ModuleType(replacement, name))
             else super#path_resolved p
         | Identifier (Identifier.Type(parent, name)) ->
-            if matches parent then Obj.magic (Type(Identifier id, name))
+            if matches parent then Obj.magic (Type(replacement, name))
             else super#path_resolved p
         | Identifier (Identifier.Class(parent, name)) ->
-            if matches parent then Obj.magic (Class(Identifier id, name))
+            if matches parent then Obj.magic (Class(replacement, name))
             else super#path_resolved p
         | Identifier (Identifier.ClassType(parent, name)) ->
-            if matches parent then Obj.magic (ClassType(Identifier id, name))
+            if matches parent then Obj.magic (ClassType(replacement, name))
             else super#path_resolved p
         | _ -> super#path_resolved p
 
   method reference_resolved : type k. ('a, k) Reference.Resolved.t ->
                               ('a, k) Reference.Resolved.t =
     fun r ->
-      let id = Identifier.signature_of_module id in
+      let sid = Identifier.signature_of_module id in
       let matches id' =
-        Identifier.equal ~equal id id'
+        Identifier.equal ~equal sid id'
       in
       let open Reference.Resolved in
+      let replacement =
+        match canonical with
+        | None -> Identifier id
+        | Some(_, reference) -> Canonical(Identifier id, reference)
+      in
+      let sreplacement = signature_of_module replacement in
+      let preplacement = parent_of_signature sreplacement in
       match r with
       | Identifier (Identifier.Module(parent, name)) ->
-          if matches parent then Module(Identifier id, name)
+          if matches parent then Module(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.ModuleType(parent, name)) ->
-          if matches parent then ModuleType(Identifier id, name)
+          if matches parent then ModuleType(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Type(parent, name)) ->
-          if matches parent then Type(Identifier id, name)
+          if matches parent then Type(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Extension(parent, name)) ->
-          if matches parent then Extension(Identifier id, name)
+          if matches parent then Extension(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Exception(parent, name)) ->
-          if matches parent then Exception(Identifier id, name)
+          if matches parent then Exception(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Value(parent, name)) ->
-          if matches parent then Value(Identifier id, name)
+          if matches parent then Value(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Class(parent, name)) ->
-          if matches parent then Class(Identifier id, name)
+          if matches parent then Class(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.ClassType(parent, name)) ->
-          if matches parent then ClassType(Identifier id, name)
+          if matches parent then ClassType(sreplacement, name)
           else super#reference_resolved r
       | Identifier (Identifier.Label(parent, name)) -> begin
           match parent with
           | Identifier.Root _ | Identifier.Argument _
           | Identifier.Module _ | Identifier.ModuleType _ as parent ->
-              let id = Identifier.parent_of_signature id in
-                if matches parent then Label(Identifier id, name)
+                if matches parent then Label(preplacement, name)
                 else super#reference_resolved r
           | _ -> super#reference_resolved r
         end
@@ -257,8 +268,8 @@ class ['a] prefix ~equal id : ['a] t = object (self)
 
 end
 
-let prefix ~equal id =
-  new prefix ~equal id
+let prefix ~equal ~canonical id =
+  new prefix ~equal ~canonical id
 
 let make_lookup (type a) ~equal ~hash
                 (items : (a Identifier.module_ * a Identifier.module_) list) =

@@ -87,9 +87,9 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
             let resolved pr (Parent.Module md : 'a Parent.module_) =
               let pr = Module (pr, name) in
               let pr =
-                match Sig.find_canonical_path md with
+                match Sig.get_canonical md with
                 | None -> pr
-                | Some p -> Canonical(pr, p)
+                | Some (p, _) -> Canonical(pr, p)
               in
               (Resolved(pr, md) : 'a parent_module_path)
             in
@@ -108,9 +108,9 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
             let resolved pr (Parent.Module md : 'a Parent.module_) =
               let pr = Resolved.Apply(pr, arg) in
               let pr =
-                match Sig.find_canonical_path md with
+                match Sig.get_canonical md with
                 | None -> pr
-                | Some p -> Canonical(pr, p)
+                | Some (p, _) -> Canonical(pr, p)
               in
               (Resolved(pr, md) : 'a parent_module_path)
             in
@@ -164,12 +164,13 @@ and resolve_module_path ident tbl u =
       match resolve_parent_module_path ident tbl u p with
       | Unresolved p -> Dot(p, name)
       | Resolved(p, parent) ->
-          let resolved p (Element.Module {canonical_path}: _ Element.signature_module) =
+          let resolved p (elem : _ Element.signature_module) =
+            let Element.Module {canonical} = elem in
             let pr = Resolved.Module(p, name) in
             let pr =
-              match canonical_path with
+              match canonical with
               | None -> pr
-              | Some p -> Canonical(pr, p)
+              | Some (p, _) -> Canonical(pr, p)
             in
             Resolved pr
           in
@@ -185,12 +186,13 @@ and resolve_module_path ident tbl u =
         match resolve_parent_module_path ident tbl u p with
         | Unresolved p -> Apply(p, arg)
         | Resolved(p, parent) ->
-          let resolved p (Element.Module {canonical_path}: _ Element.signature_module) =
+          let resolved p (elem : _ Element.signature_module) =
+            let Element.Module {canonical} = elem in
             let pr = Resolved.Apply (p, arg) in
             let pr =
-              match canonical_path with
+              match canonical with
               | None -> pr
-              | Some p -> Canonical(pr, p)
+              | Some (p, _) -> Canonical(pr, p)
             in
             Resolved pr
           in
@@ -447,9 +449,9 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
         | Parent.Module md ->
           let pr = Module (r, name) in
           let pr =
-            match Sig.find_canonical_path md with
+            match Sig.get_canonical md with
             | None -> pr
-            | Some p -> Canonical(pr, Reference.t_of_path p)
+            | Some (_, r) -> Canonical(pr, r)
           in
           ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
@@ -462,9 +464,9 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
         | Parent.Module md ->
           let pr = Module (r, name) in
           let pr =
-            match Sig.find_canonical_path md with
+            match Sig.get_canonical md with
             | None -> pr
-            | Some p -> Canonical(pr, Reference.t_of_path p)
+            | Some (_, r) -> Canonical(pr, r)
           in
           ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
@@ -483,9 +485,9 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
         | Parent.Module md ->
           let pr = Module (r, name) in
           let pr =
-            match Sig.find_canonical_path md with
+            match Sig.get_canonical md with
             | None -> pr
-            | Some p -> Canonical(pr, Reference.t_of_path p)
+            | Some (_, r) -> Canonical(pr, r)
           in
           ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
@@ -663,14 +665,14 @@ and resolve_module_reference ident tbl u r =
         | Unresolved r -> Dot(r, name)
         | ResolvedSig(r, parent) ->
             try
-              let Element.Module {canonical_path} =
+              let Element.Module {canonical} =
                 Sig.find_module_element name parent
               in
               let rr = Module(r, name) in
               let rr =
-                match canonical_path with
+                match canonical with
                 | None -> rr
-                | Some p -> Canonical(rr, Reference.t_of_path p)
+                | Some (_, r) -> Canonical(rr, r)
               in
               Resolved rr
             with Not_found ->
@@ -999,12 +1001,12 @@ and resolve_element_reference ident tbl u r =
         | ResolvedSig(r, parent) -> begin
             try
               match Sig.find_element name parent with
-              | Element.Module {canonical_path} ->
+              | Element.Module {canonical} ->
                 let rr = Module(r, name) in
                 let rr =
-                  match canonical_path with
+                  match canonical with
                   | None -> rr
-                  | Some p -> Canonical(rr, Reference.t_of_path p)
+                  | Some (_, r) -> Canonical(rr, r)
                 in
                 Resolved rr
               | Element.ModuleType -> Resolved (ModuleType(r, name))
@@ -1087,18 +1089,22 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
 
   method module_ md =
     let open Module in
-    let {id; doc; type_; expansion; canonical_path} = md in
+    let {id; doc; type_; expansion; canonical} = md in
     let id' = self#identifier_module id in
     let sig_id = Identifier.signature_of_module id' in
     let self = {< where_am_i = Some sig_id >} in
     let doc' = self#documentation doc in
     let type' = self#module_decl_with_id sig_id type_ in
     let expansion' = DocOckMaps.option_map self#module_expansion expansion in
-    let canonical_path' = DocOckMaps.option_map self#path_module canonical_path in
-      if id != id' || doc != doc' || type_ != type' || expansion != expansion'
-         || canonical_path != canonical_path' then
-        {id = id'; doc = doc'; type_ = type'; expansion = expansion'
-        ; canonical_path = canonical_path'}
+    let canonical' =
+      DocOckMaps.option_map
+        (DocOckMaps.pair_map self#path_module self#reference_module)
+        canonical
+    in
+      if id != id' || doc != doc' || type_ != type'
+         || expansion != expansion' || canonical != canonical' then
+        {id = id'; doc = doc'; type_ = type';
+         expansion = expansion'; canonical = canonical'}
       else md
 
   method module_type mty =

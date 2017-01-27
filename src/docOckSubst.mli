@@ -84,7 +84,10 @@ val rename_datatype : equal:('a -> 'a -> bool) ->
                       'a Identifier.datatype ->
                       'a t
 
-val prefix : equal:('a -> 'a -> bool) -> 'a Identifier.module_ -> 'a t
+val prefix : equal:('a -> 'a -> bool) ->
+             canonical:('a Path.module_ * 'a Reference.module_) option ->
+             'a Identifier.module_ ->
+             'a t
 
 val pack : equal:('a -> 'a -> bool) -> hash:('a -> int) ->
            ('a Identifier.module_ * 'a Identifier.module_) list -> 'a t

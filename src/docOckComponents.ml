@@ -179,9 +179,9 @@ module rec Sig : sig
 
   type 'a t
 
-  val set_canonical_path : 'a t -> 'a Path.module_ option -> 'a t
+  val set_canonical : 'a t -> ('a Path.module_ * 'a Reference.module_) option -> 'a t
 
-  val find_canonical_path : 'a t -> 'a Path.module_ option
+  val get_canonical : 'a t -> ('a Path.module_ * 'a Reference.module_) option
 
   val find_parent_module : string -> 'a t -> 'a Parent.module_
 
@@ -324,13 +324,24 @@ end = struct
     | Unresolved
 
   and 'a t =
-    { canonical : 'a Path.module_ option;
+    { canonical : ('a Path.module_ * 'a Reference.module_) option;
       body : 'a body }
 
-  let set_canonical_path t canonical = { t with canonical }
-  let find_canonical_path t = t.canonical
+  let set_canonical t canonical = { t with canonical }
 
-  let t_of_body body = { canonical = None; body }
+  let get_canonical t = t.canonical
+
+  let mkExpr ex = { canonical = None; body = Expr ex }
+
+  let mkSig sg = { canonical = None; body = Sig sg }
+
+  let mkFunctor fn = { canonical = None; body = Functor fn }
+
+  let generative t = { canonical = None; body = Generative t }
+
+  let abstract = { canonical = None; body = Abstract }
+
+  let unresolved = { canonical = None; body = Unresolved }
 
   let rec lift_find f x t =
     match t.body with
@@ -422,7 +433,7 @@ end = struct
   let find_module_element name t =
     let find name sg =
       let t = SMap.find name sg.modules in
-      Element.Module { canonical_path = t.canonical }
+      Element.Module { canonical = t.canonical }
     in
       lift_find find name t
 
@@ -434,7 +445,7 @@ end = struct
         | _ -> find_apply_element (Lazy.force expr.expansion)
       end
     | Sig sg -> raise Not_found
-    | Functor fn -> Element.Module { canonical_path = None }
+    | Functor fn -> Element.Module { canonical = None }
     | Generative t -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
@@ -540,25 +551,25 @@ end = struct
     | Sig sg -> begin
         try
           SMap.find name (Lazy.force sg).modules
-        with Not_found -> t_of_body Unresolved
+        with Not_found -> unresolved
       end
     | Functor fn -> lookup_module name fn.res
     | Generative t -> lookup_module name t
-    | Abstract -> t_of_body Unresolved
-    | Unresolved -> t_of_body Unresolved
+    | Abstract -> unresolved
+    | Unresolved -> unresolved
 
   let rec lookup_argument pos t =
     match t.body with
     | Expr expr -> lookup_argument pos (Lazy.force expr.expansion)
-    | Sig sg -> t_of_body Unresolved
+    | Sig sg -> unresolved
     | Functor fn ->
         if pos = 1 then fn.arg
         else lookup_argument (pos - 1) fn.res
     | Generative t ->
-        if pos = 1 then t_of_body Unresolved
+        if pos = 1 then unresolved
         else lookup_argument (pos - 1) t
-    | Abstract -> t_of_body Unresolved
-    | Unresolved -> t_of_body Unresolved
+    | Abstract -> unresolved
+    | Unresolved -> unresolved
 
   let rec lookup_module_type name t =
     match t.body with
@@ -566,12 +577,12 @@ end = struct
     | Sig sg -> begin
         try
           SMap.find name (Lazy.force sg).module_types
-        with Not_found -> t_of_body Unresolved
+        with Not_found -> unresolved
       end
     | Functor fn -> lookup_module_type name fn.res
     | Generative t -> lookup_module_type name t
-    | Abstract -> t_of_body Unresolved
-    | Unresolved -> t_of_body Unresolved
+    | Abstract -> unresolved
+    | Unresolved -> unresolved
 
   let rec lookup_class_type name t =
     match t.body with
@@ -615,7 +626,7 @@ end = struct
     let modules = SMap.add name md sg.modules in
     let parents = LMap.add name (Parent.Module md) sg.parents in
     let elements =
-      LMap.add name (Element.Module {canonical_path = md.canonical}) sg.elements
+      LMap.add name (Element.Module { canonical = md.canonical }) sg.elements
     in
       {sg with modules; parents; elements}
 
@@ -713,14 +724,14 @@ end = struct
   let path lookup p =
     let term = Path(p, false) in
     let expansion = lazy (lookup p) in
-      t_of_body (Expr {term; expansion})
+      mkExpr {term; expansion}
 
   let alias lookup p =
     let term = Alias(p, false) in
     let expansion = lazy (lookup p) in
-      t_of_body (Expr {term; expansion})
+      mkExpr {term; expansion}
 
-  let signature f x = t_of_body (Sig (lazy (f x)))
+  let signature f x = mkSig (lazy (f x))
 
   let functor_ equal hash id arg res =
     let equal =
@@ -734,14 +745,7 @@ end = struct
       | Some hash -> Some (Path.hash ~hash)
     in
     let cache = make_tbl equal hash 3 in
-      t_of_body (Functor {id; arg; res; cache})
-
-  let generative t = t_of_body (Generative t)
-
-  (* Can't use [t_of_body] because of value restriction. *)
-  let abstract = { canonical = None; body = Abstract }
-
-  let unresolved = { canonical = None; body = Unresolved }
+      mkFunctor {id; arg; res; cache}
 
   let replace_module name t sg =
     let modules = SMap.map_item name (fun _ -> t) sg.modules in
@@ -799,7 +803,7 @@ end = struct
         let expansion =
           lazy (with_module frag eq (Lazy.force expr.expansion))
         in
-          t_of_body (Expr {term; expansion})
+          mkExpr {term; expansion}
     | Sig sg ->
         let sg =
           lazy
@@ -809,7 +813,7 @@ end = struct
                 | None -> replace_module name eq sg
                 | Some frag -> map_module name (with_module frag eq) sg )
         in
-          t_of_body (Sig sg)
+          mkSig sg
     | Functor _ | Generative _ | Abstract | Unresolved -> t
 
   let rec with_module_subst frag t =
@@ -819,7 +823,7 @@ end = struct
         let expansion =
           lazy (with_module_subst frag (Lazy.force expr.expansion))
         in
-          t_of_body (Expr {term; expansion})
+          mkExpr {term; expansion}
     | Sig sg ->
         let sg =
           lazy
@@ -829,7 +833,7 @@ end = struct
                 | None -> remove_module name sg
                 | Some frag -> map_module name (with_module_subst frag) sg )
         in
-          t_of_body (Sig sg)
+          mkSig sg
     | Functor _ | Generative _ | Abstract | Unresolved -> t
 
   let rec with_type_subst frag t =
@@ -839,7 +843,7 @@ end = struct
         let expansion =
           lazy (with_type_subst frag (Lazy.force expr.expansion))
         in
-          t_of_body (Expr {term; expansion})
+          mkExpr {term; expansion}
     | Sig sg ->
         let sg =
           lazy
@@ -849,14 +853,14 @@ end = struct
                 | None -> remove_datatype name sg
                 | Some frag -> map_module name (with_type_subst frag) sg )
         in
-          t_of_body (Sig sg)
+          mkSig sg
     | Functor _ | Generative _ | Abstract | Unresolved -> t
 
   let module_type_substitution path expansion t =
     match t.body with
     | Abstract ->
         let term = Path(path, true) in
-          t_of_body (Expr {term; expansion})
+          mkExpr {term; expansion}
     | _ -> t
 
   let rec module_substitution path expansion t =
@@ -888,17 +892,17 @@ end = struct
               in
                 {sg with modules; module_types} )
         in
-          t_of_body (Sig sg)
+          mkSig sg
     | Functor fn ->
         let res = module_substitution path expansion fn.res in
         let cache = fn.cache.fresh 3 in
-          t_of_body (Functor {fn with res; cache})
+          mkFunctor {fn with res; cache}
     | Generative body ->
         let body = module_substitution path expansion body in
-          t_of_body (Generative body)
+          generative body
     | Abstract ->
         let term = Alias(path, true) in
-          t_of_body (Expr {term; expansion})
+          mkExpr {term; expansion}
     | Unresolved -> t
 
   let rec reduce_signature_ident id path =
@@ -1166,7 +1170,7 @@ end = struct
 
   and subst id lookup path t =
     match t.body with
-    | Expr expr -> t_of_body (Expr (subst_expr id lookup path expr))
+    | Expr expr -> mkExpr (subst_expr id lookup path expr)
     | Sig sg ->
         let sg =
           lazy
@@ -1179,20 +1183,20 @@ end = struct
               in
                 {sg with modules; module_types} )
         in
-          t_of_body (Sig sg)
+          mkSig sg
     | Functor fn ->
         let arg = subst id lookup path fn.arg in
         let res = subst id lookup path fn.res in
         let cache = fn.cache.fresh 3 in
-          t_of_body (Functor {id = fn.id; arg; res; cache})
-    | Generative t -> t_of_body (Generative (subst id lookup path t))
-    | Abstract -> t_of_body Abstract
-    | Unresolved -> t_of_body Unresolved
+          mkFunctor {id = fn.id; arg; res; cache}
+    | Generative t -> generative (subst id lookup path t)
+    | Abstract -> abstract
+    | Unresolved -> unresolved
 
   and lookup_apply lookup arg t =
     match t.body with
     | Expr expr -> lookup_apply lookup arg (Lazy.force expr.expansion)
-    | Sig sg -> t_of_body Unresolved
+    | Sig sg -> unresolved
     | Functor fn -> begin
         try
           fn.cache.find arg
@@ -1201,9 +1205,9 @@ end = struct
             fn.cache.add arg res;
             res
       end
-    | Generative t -> t_of_body Unresolved
-    | Abstract -> t_of_body Unresolved
-    | Unresolved -> t_of_body Unresolved
+    | Generative t -> unresolved
+    | Abstract -> unresolved
+    | Unresolved -> unresolved
 
   let rec find_parent_apply lookup arg t =
     match t.body with
@@ -1522,7 +1526,9 @@ and Element : sig
     | `Method | `InstanceVariable | `Label ]
 
   type ('a, 'b) t =
-    | Module : {canonical_path : 'a Path.module_ option} -> ('a, [< kind > `Module]) t
+    | Module :
+        { canonical : ('a Path.module_ * 'a Reference.module_) option } ->
+        ('a, [< kind > `Module]) t
     | ModuleType : ('a, [< kind > `ModuleType]) t
     | Type : ('a, [< kind > `Type]) t
     | Constructor : string -> ('a, [< kind > `Constructor]) t

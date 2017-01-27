@@ -21,6 +21,13 @@ let rec option_map f o =
         if x != x' then Some x'
         else o
 
+let pair_map f g p =
+  let (a, b) = p in
+  let a' = f a in
+  let b' = g b in
+    if a != a' || b != b' then (a', b')
+    else p
+
 class virtual ['a] identifier = object (self)
 
   method virtual root : 'a -> 'a
@@ -968,9 +975,11 @@ class virtual ['a] documentation = object (self)
           let txt' = self#documentation_text txt in
             if name != name' || txt != txt' then Tag(name', txt')
             else tag
-      | Canonical path ->
+      | Canonical(path, reference) ->
           let path' = self#path_module path in
-            if path != path' then Canonical path'
+          let reference' = self#reference_module reference in
+            if path != path' || reference != reference' then
+              Canonical (path', reference')
             else tag
 
   method documentation_tag_author author = author
@@ -1072,6 +1081,9 @@ class virtual ['a] module_ = object (self)
   method virtual path_module :
     'a Path.module_ -> 'a Path.module_
 
+  method virtual reference_module :
+    'a Reference.module_ -> 'a Reference.module_
+
   method virtual documentation :
     'a Documentation.t -> 'a Documentation.t
 
@@ -1110,16 +1122,18 @@ class virtual ['a] module_ = object (self)
 
   method module_ md =
     let open Module in
-    let {id; doc; type_; expansion; canonical_path} = md in
+    let {id; doc; type_; expansion; canonical} = md in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
     let expansion' = option_map self#module_expansion expansion in
-    let canonical_path' = option_map self#path_module canonical_path in
+    let canonical' =
+      option_map (pair_map self#path_module self#reference_module) canonical
+    in
       if id != id' || doc != doc' || type_ != type'
-         || expansion != expansion' || canonical_path != canonical_path' then
-        {id = id'; doc = doc'; type_ = type'; expansion = expansion'
-        ; canonical_path = canonical_path'}
+         || expansion != expansion' || canonical != canonical' then
+        {id = id'; doc = doc'; type_ = type';
+         expansion = expansion'; canonical = canonical'}
       else md
 
   method module_equation eq =

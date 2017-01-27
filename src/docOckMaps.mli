@@ -21,6 +21,8 @@ val option_map : ('a -> 'a) -> 'a option -> 'a option
 
 val list_map : ('a -> 'a) -> 'a list -> 'a list
 
+val pair_map : ('a -> 'a) -> ('b -> 'b) -> ('a * 'b) -> ('a * 'b)
+
 class virtual ['a] identifier : object
 
   method virtual root : 'a -> 'a
@@ -458,6 +460,8 @@ class virtual ['a] module_ : object
     'a Identifier.module_
 
   method virtual path_module : 'a Path.module_ -> 'a Path.module_
+
+  method virtual reference_module : 'a Reference.module_ -> 'a Reference.module_
 
   method virtual documentation : 'a Documentation.t -> 'a Documentation.t
 

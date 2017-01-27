@@ -143,7 +143,7 @@ let read_tag parent : Octavius.Types.tag -> 'a tag = function
   | Return_value t -> Return (read_text parent t)
   | Inline -> Inline
   | Custom (s, t) -> Tag (s, read_text parent t)
-  | Canonical p -> Canonical (read_path_longident p)
+  | Canonical p -> Canonical (read_path_longident p, read_longident p)
 
 let empty_body = { text = []; tags = []; }
 

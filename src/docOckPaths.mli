@@ -250,6 +250,7 @@ module rec Path : sig
       | SubstAlias : 'a module_ * ('a, 'b) t ->
                 ('a, [< kind > `Module] as 'b) t
       | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
+        (* TODO: The canonical path should be a reference not a path *)
       | Canonical : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
       | Apply : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
       | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
@@ -645,5 +646,4 @@ module rec Reference : sig
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
-  val t_of_path : 'a Path.module_ -> 'a module_
 end

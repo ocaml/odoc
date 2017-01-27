@@ -666,7 +666,6 @@ module Path = struct
 
     let rec rebase_module_path : Reversed.t -> 'a module_ -> ('a, Kind.path_module) rebase_result =
       fun new_base t ->
-        let x_ _ = Atom "" in
         match t with
         | Identifier id ->
           let rev = Identifier.(to_reversed @@ signature_of_module id) in
@@ -1895,26 +1894,4 @@ module Reference = struct
 
   let hash ~hash p = hash_reference hash p
 
-  (* Only called on "canonical" paths. *)
-  let rec resolved_of_resolved_path : 'a Path.Resolved.module_ -> 'a Resolved.module_ =
-    let open Path.Resolved in
-    function
-    | Identifier i -> Identifier i
-    | Subst _ -> invalid_arg "Reference.resolved_of_resolved_path: Subst"
-    | SubstAlias _ -> invalid_arg "Reference.resolved_of_resolved_path: SubstAlias"
-    | Module (parent, name) ->
-      Module(Resolved.signature_of_module (resolved_of_resolved_path parent), name)
-    | Canonical(orig, cano) ->
-      Canonical(resolved_of_resolved_path orig, t_of_path cano)
-    | Apply _ -> invalid_arg "Reference.resolved_of_resolved_path: Apply"
-
-  and t_of_path : 'a Path.module_ -> 'a module_ =
-    let open Path in
-    function
-    | Resolved rp -> Resolved (resolved_of_resolved_path rp)
-    | Root s -> Root s
-    | Forward _ -> invalid_arg "Reference.t_of_path: Forward"
-    | Dot (p, s) ->
-      Dot(signature_of_module (t_of_path p), s)
-    | Apply _ -> invalid_arg "Reference.t_of_path: Apply"
 end

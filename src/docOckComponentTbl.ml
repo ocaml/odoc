@@ -432,7 +432,7 @@ and signature_items local =
         let open Module in
         let name = Identifier.name md.id in
         let decl = module_decl local md.type_ in
-        let decl = Sig.set_canonical_path decl md.canonical_path in
+        let decl = set_canonical decl md.canonical in
         add_local_module_identifier local md.id decl;
         let sg = signature_items local rest in
         let sg = add_documentation md.doc sg in

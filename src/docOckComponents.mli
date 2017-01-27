@@ -136,9 +136,12 @@ module rec Sig : sig
 
   (** {3 Aliases handling} *)
 
-  val set_canonical_path : 'a t -> 'a Path.module_ option -> 'a t
+  val set_canonical :
+    'a t -> ('a Path.module_ * 'a Reference.module_) option -> 'a t
 
-  val find_canonical_path : 'a t -> 'a Path.module_ option
+  val get_canonical :
+    'a t -> ('a Path.module_ * 'a Reference.module_) option
+
 end
 
 and Datatype : sig
@@ -250,7 +253,9 @@ and Element : sig
     | `Method | `InstanceVariable | `Label ]
 
   type ('a, 'b) t =
-    | Module : {canonical_path : 'a Path.module_ option} -> ('a, [< kind > `Module]) t
+    | Module :
+        { canonical : ('a Path.module_ * 'a Reference.module_) option } ->
+      ('a, [< kind > `Module]) t
     | ModuleType : ('a, [< kind > `ModuleType]) t
     | Type : ('a, [< kind > `Type]) t
     | Constructor : string -> ('a, [< kind > `Constructor]) t

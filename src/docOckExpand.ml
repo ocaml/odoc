@@ -147,6 +147,7 @@ let refine_module ex (frag : 'a Fragment.module_) equation =
 
 type 'a intermediate_module_expansion =
   'a Identifier.module_ * 'a Documentation.t
+  * ('a Path.module_ * 'a Reference.module_) option
   * 'a partial_expansion option * 'a DocOckSubst.t list
 
 type 'a intermediate_module_type_expansion =
@@ -184,7 +185,7 @@ let rec expand_module_decl ({equal} as t) root dest offset decl =
     match decl with
     | Alias (Path.Resolved p) -> begin (* TODO Should have strengthening *)
         match t.expand_module_resolved_path ~root p with
-        | src, doc, ex, subs ->
+        | src, doc, _, ex, subs ->
           let ex = add_doc_to_expansion_opt doc ex in
           let ex =
             List.fold_left
@@ -198,7 +199,7 @@ let rec expand_module_decl ({equal} as t) root dest offset decl =
       end
     | Alias p -> begin
         match t.expand_module_path ~root p with
-        | src, doc, ex, subs ->
+        | src, doc, _, ex, subs ->
           let ex = add_doc_to_expansion_opt doc ex in
           let ex =
             List.fold_left
@@ -346,7 +347,7 @@ let expand_signature_identifier' t root (id : 'a Identifier.signature) =
   match id with
   | Root(root', name) ->
       let open Unit in
-      let _, _, ex, subs = t.expand_root ~root root' in
+      let _, _, _, ex, subs = t.expand_root ~root root' in
       let ex =
         List.fold_left
           (fun acc sub -> subst_expansion sub acc)
@@ -376,12 +377,12 @@ and expand_module_identifier' t root (id : 'a Identifier.module_) =
       let open Module in
       let ex = t.expand_signature_identifier ~root parent in
       let md = find_module t root name ex in
-        md.id, md.doc, expand_module t root md, []
+        md.id, md.doc, md.canonical, expand_module t root md, []
   | Argument(parent, pos, name) ->
       let ex = t.expand_signature_identifier ~root parent in
       let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
       let doc = DocOckAttrs.empty in
-        id, doc, expand_argument_ t root arg, []
+        id, doc, None, expand_argument_ t root arg, []
 
 and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
   let open Identifier in
@@ -400,10 +401,12 @@ and expand_module_resolved_path' ({equal = eq} as t) root p =
   | SubstAlias(_, p) -> t.expand_module_resolved_path ~root p
   | Module(parent, name) ->
     let open Module in
-    let id, _, ex, subs = t.expand_module_resolved_path ~root parent in
+    let id, _, canonical, ex, subs =
+      t.expand_module_resolved_path ~root parent
+    in
     let md = find_module t root name ex in
-    let sub = DocOckSubst.prefix ~equal:eq id in
-    md.id, md.doc, expand_module t root md, sub :: subs
+    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    md.id, md.doc, md.canonical, expand_module t root md, sub :: subs
   | Canonical (p, _) -> t.expand_module_resolved_path ~root p
   | Apply _ -> raise Not_found (* TODO support functor application *)
 
@@ -413,10 +416,12 @@ and expand_module_path' ({equal = eq} as t) root p =
   | Forward s -> t.expand_forward_ref ~root s
   | Dot(parent, name) ->
       let open Module in
-      let id, _, ex, subs = t.expand_module_path ~root parent in
+      let id, _, canonical, ex, subs =
+        t.expand_module_path ~root parent
+      in
       let md = find_module t root name ex in
-      let sub = DocOckSubst.prefix ~equal:eq id in
-        md.id, md.doc, expand_module t root md, sub :: subs
+      let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+        md.id, md.doc, md.canonical, expand_module t root md, sub :: subs
   | Root _ | Apply _ | Resolved _ -> raise Not_found (* TODO: assert false? *)
 
 and expand_module_type_resolved_path' ({equal = eq} as t) root
@@ -426,9 +431,11 @@ and expand_module_type_resolved_path' ({equal = eq} as t) root
   | Identifier id -> t.expand_module_type_identifier ~root id
   | ModuleType(parent, name) ->
       let open ModuleType in
-      let id, _, ex, subs = t.expand_module_resolved_path ~root parent in
+      let id, _, canonical, ex, subs =
+        t.expand_module_resolved_path ~root parent
+      in
       let mty = find_module_type t root name ex in
-      let sub = DocOckSubst.prefix ~equal:eq id in
+      let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
         mty.id, mty.doc, expand_module_type t root mty, sub :: subs
 
 and expand_unit ({equal; hash} as t) root unit =
@@ -448,7 +455,7 @@ and expand_unit ({equal; hash} as t) root unit =
                 match item.path with
                 | Path.Resolved p -> begin
                     match t.expand_module_resolved_path ~root p with
-                    | src, doc, ex, subs -> begin
+                    | src, doc, _, ex, subs -> begin
                       match ex with
                       | None -> [], None
                       | Some (Functor _) ->
@@ -469,8 +476,8 @@ and expand_unit ({equal; hash} as t) root unit =
                           let open Module in
                           let id = item.id in
                           let type_ = ModuleType (ModuleType.Signature sg) in
-                          let canonical_path = None in
-                          let md = {id; doc; type_; canonical_path;
+                          let canonical = None in
+                          let md = {id; doc; type_; canonical;
                                     expansion = Some (Signature sg)} in
                           loop ((src, item.id) :: ids) (md :: mds) rest
                       end
@@ -547,7 +554,7 @@ let create (type a) ?equal ?hash
         | None -> None
         | Some sg -> Some (Signature sg)
       in
-      let res = (unit.id, unit.doc, ex, []) in
+      let res = (unit.id, unit.doc, None, ex, []) in
       RootTbl.add expand_root_tbl key res;
       res
   and fetch_unit_from_ref ref =
