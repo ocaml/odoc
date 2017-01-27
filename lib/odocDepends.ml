@@ -102,6 +102,8 @@ class ['a] find_roots set = object(self)
       super#path_resolved x
 end
 
+(* FIXME: return not just a unit name, but the name of the package it is in as well.
+   Is this info in the imports list? Probably not. *)
 let for_html_step input =
   let odoctree = Unit.load input in
   let deps = Hash_set.create () in

@@ -24,6 +24,8 @@ val create :
 val build : builder -> OdocUnit.t -> t
 (** bllblblbl *)
 
+val update_root_unit : t -> OdocUnit.t -> unit
+
 val resolver : t -> OdocRoot.t DocOck.resolver
 (** Get a resolver from an env *)
 

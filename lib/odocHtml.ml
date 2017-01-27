@@ -27,8 +27,10 @@ let unit ~env ~output:root_dir input =
   let unit = Unit.load input in
   let env = Env.build env unit in
   let odoctree =
-    DocOck.resolve (Env.resolver env) unit
-    |> DocOck.expand (Env.expander env)
+    let resolved = DocOck.resolve (Env.resolver env) unit in
+    Env.update_root_unit env resolved;
+    DocOck.expand (Env.expander env) resolved
+    |> DocOck.resolve (Env.resolver env) (* Yes, again. *)
   in
   let pkg_dir =
     let pkg_name = get_package (Unit.root unit) in

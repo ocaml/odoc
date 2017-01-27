@@ -36,9 +36,13 @@ let it's_all_the_same ~env ~output input reader =
          else Printf.sprintf " Using %S while you should use the .cmti file" fn)
     );
     let env = Env.build env unit in
-    resolve (Env.resolver env) unit
-    |> expand (Env.expander env)
-    |> Unit.save output
+    let resolved = resolve (Env.resolver env) unit in
+    (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
+       defined, elements. We'd rather it got back the resolved bit.
+       Note that this is shitty and once rewritten expand should not fetch the unit it is
+       working on. *)
+    Env.update_root_unit env resolved;
+    Unit.save output (expand (Env.expander env) resolved)
 
 let root_of_unit ~package unit_name digest =
   let unit = Root.Unit.create unit_name in

@@ -147,5 +147,9 @@ let build builder unit =
   add_root_unit t unit;
   t
 
+let update_root_unit t unit =
+  let root = root_of_unit unit in
+  Root.Table.replace t.unit_of_root root unit
+
 let resolver t = t.resolver
 let expander t = t.expander
