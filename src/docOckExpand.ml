@@ -257,14 +257,19 @@ let expand_module_type t root mty =
         expand_module_type_expr t root id 0 expr
   | None -> Some (Signature [])
 
+type 'a include_expansion_result =
+  | Failed of 'a Signature.t
+  | Expanded of 'a Signature.t
+  | To_functor
+
 let expand_include t root incl =
   let open Include in
-    if incl.expansion.resolved then Some incl.expansion.content
+    if incl.expansion.resolved then Expanded incl.expansion.content
     else begin
       match expand_module_decl t root incl.parent 0 incl.decl with
-      | None -> Some incl.expansion.content
-      | Some (Signature sg) -> Some sg
-      | Some (Functor _) -> None (* TODO: Should be an error *)
+      | None -> Failed incl.expansion.content
+      | Some (Signature sg) -> Expanded sg
+      | Some (Functor _) -> To_functor (* TODO: Should be an error *)
     end
 
 let expand_argument_ t root {FunctorArgument. id; expr; expansion} =
@@ -287,8 +292,8 @@ let find_module t root name ex =
       | Module md :: _ when Identifier.name md.id = name -> md
       | Include incl :: rest -> begin
           match expand_include t root incl with
-          | None -> inner_loop name rest
-          | Some sg -> inner_loop name (sg @ rest)
+          | To_functor -> inner_loop name rest
+          | Failed sg | Expanded sg -> inner_loop name (sg @ rest)
         end
       | _ :: rest -> inner_loop name rest
   in
@@ -322,8 +327,8 @@ let find_module_type t root name ex =
       | ModuleType mty :: _ when Identifier.name mty.id = name -> mty
       | Include incl :: rest -> begin
           match expand_include t root incl with
-          | None -> inner_loop name rest
-          | Some sg -> inner_loop name (sg @ rest)
+          | To_functor -> inner_loop name rest
+          | Failed sg | Expanded sg -> inner_loop name (sg @ rest)
         end
       | _ :: rest -> inner_loop name rest
   in
@@ -669,10 +674,10 @@ let expand_include t incl =
     else begin
       let root = Identifier.signature_root incl.parent in
         match expand_include t root incl with
-        | None -> incl
-        | Some content ->
+        | Expanded content ->
             let expansion = {content;resolved=true} in
               { incl with expansion }
+        | _ -> incl
     end
 
 (*
