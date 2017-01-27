@@ -179,13 +179,8 @@ let render_path : type a. (_, a) Path.t -> string =
     | Subst (_, p) -> render_resolved p
     | SubstAlias (_, p) -> render_resolved p
     | Module (p, s) -> render_resolved p ^ "." ^ s
-    | Canonical (_, Path.Resolved p) ->
-      Printf.eprintf "DocOckHtml.Url.render_path: resolved canonical\n%!";
-      render_resolved p
-    | Canonical (p, p') ->
-      Printf.eprintf "DocOckHtml.Url.render_path: unresolved canonical %s\n%!"
-        (string_of_sexp @@ Path.sexp_of_t (fun _ -> Atom "") p');
-      render_resolved p
+    | Canonical (_, Path.Resolved p) -> render_resolved p
+    | Canonical (p, p') -> render_resolved p
     | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
     | ModuleType (p, s) -> render_resolved p ^ "." ^ s
     | Type (p, s) -> render_resolved p ^ "." ^ s
