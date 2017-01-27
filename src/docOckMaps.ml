@@ -2066,13 +2066,6 @@ class virtual ['a] unit = object (self)
   method unit_packed items =
     list_map self#unit_packed_item items
 
-  method expansion x =
-    match x with
-    | None -> None
-    | Some sg ->
-        let sg' = self#signature sg in
-          if sg != sg' then x else Some sg'
-
   method unit_content content =
     let open Unit in
       match content with
@@ -2098,7 +2091,7 @@ class virtual ['a] unit = object (self)
     let interface' = self#unit_interface interface in
     let hidden' = self#unit_hidden hidden in
     let content' = self#unit_content content in
-    let expansion' = self#expansion expansion in
+    let expansion' = option_map self#signature expansion in
       if id != id' || doc != doc' || digest != digest'
          || imports != imports' || source != source'
          || interface != interface' || hidden != hidden'

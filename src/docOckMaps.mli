@@ -845,8 +845,6 @@ class virtual ['a] unit : object
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
 
-  method expansion : 'a Signature.t option -> 'a Signature.t option
-
   method unit_import : 'a Unit.Import.t -> 'a Unit.Import.t
 
   method unit_import_name : string -> string
