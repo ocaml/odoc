@@ -379,11 +379,11 @@ module_path:
   | APPLY md = module_path arg = module_path CLOSE
       { Path.Apply(md, arg) }
 
-canonical_path:
+canonical:
   | (* empty *)
       { None }
-  | CANONICAL p = module_path CLOSE
-      { Some p }
+  | CANONICAL p = module_path r = module_reference CLOSE
+      { Some (p, r) }
 
 module_type_path:
   | RESOLVED path = module_type_resolved_path CLOSE
@@ -1142,10 +1142,10 @@ signature_item:
           let open ClassType in
             ClassType {id; doc; virtual_; params; expr} }
   | MODULE id = module_identifier doc = doc type_ = module_decl
-      expansion = module_expansion_opt canonical_path = canonical_path CLOSE
+      expansion = module_expansion_opt canonical = canonical CLOSE
       { let open Signature in
         let open Module in
-          Module {id; doc; type_; expansion; canonical_path} }
+          Module {id; doc; type_; expansion; canonical} }
   | MODULE_TYPE id = module_type_identifier doc = doc
       expr = module_type_expr?  expansion = module_expansion_opt CLOSE
       { let open Signature in

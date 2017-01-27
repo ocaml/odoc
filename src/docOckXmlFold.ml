@@ -543,16 +543,6 @@ and path_p : type a. _ -> _ -> _ -> (_, a) Path.t -> _ =
         let acc = path_p base output acc arg in
         close output acc
 
-let canonical_path_p : type a. _ -> _ -> _ -> (_, a) Path.t option -> _ =
-  fun base output acc p_opt ->
-    let acc = canonical_t output acc in
-    let acc =
-      match p_opt with
-      | None -> acc
-      | Some p -> path_p base output acc p
-    in
-    close output acc
-
 let rec resolved_fragment_p
   : type a b. _ -> _ -> _ -> (_, a, b) Fragment.Resolved.raw -> _ =
   fun base output acc frag ->
@@ -642,6 +632,18 @@ and reference_p : type a. _ -> _ -> _ -> (_, a) Reference.t -> _ =
         let acc = reference_p base output acc m in
         let acc = data output acc name in
         close output acc
+
+let canonical_p : type a. _ -> _ -> _ -> ((_, a) Path.t * (_, a) Reference.t) option -> _ =
+  fun base output acc p_opt ->
+    let acc = canonical_t output acc in
+    let acc =
+      match p_opt with
+      | None -> acc
+      | Some (p, r) ->
+        let acc = path_p base output acc p in
+        reference_p base output acc r
+    in
+    close output acc
 
 open DocOckTypes
 
@@ -783,9 +785,10 @@ and tag_p base output acc tg =
     | Inline -> closed inline_t output acc
     | Return txt -> block return_t output acc txt
     | Tag(name, txt) -> named_block tag_t output acc name txt
-    | Canonical p ->
+    | Canonical (p, r) ->
       let acc = canonical_t output acc in
       let acc = path_p base output acc p in
+      let acc = reference_p base output acc r in
       close output acc
 
 and tags_p base output acc tgs =
@@ -1271,7 +1274,7 @@ and signature_item_p base output acc =
       let acc = doc_p base output acc md.doc in
       let acc = module_decl_p base output acc md.type_ in
       let acc = module_expansion_p base output acc md.expansion in
-      let acc = canonical_path_p base output acc md.canonical_path in
+      let acc = canonical_p base output acc md.canonical in
       close output acc
     | ModuleType mty ->
       let open ModuleType in
