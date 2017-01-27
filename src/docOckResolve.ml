@@ -991,7 +991,12 @@ and resolve_element_reference ident tbl u r =
   let open Reference.Resolved in
   let open Reference in
     match r with
-    | Root _ -> r
+    | Root s -> begin
+        match CTbl.base tbl u s with
+        | CTbl.Not_found -> r
+        | CTbl.Forward_reference -> r (* TODO *)
+        | CTbl.Found base -> Resolved (Identifier (Identifier.Root(base, s)))
+      end
     | Resolved rr ->
       let rr' = resolve_resolved_reference ident tbl u rr in
       if rr != rr' then Resolved rr' else r
