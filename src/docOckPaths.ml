@@ -670,8 +670,11 @@ module Path = struct
         match t with
         | Identifier id ->
           let rev = Identifier.(to_reversed @@ signature_of_module id) in
-          let new_base = Reversed.remove_prefix rev ~of_:new_base in
-          Continue (id, new_base)
+          let new_base' = Reversed.remove_prefix rev ~of_:new_base in
+          if new_base == new_base' then
+            Stop t
+          else
+            Continue (id, new_base)
         | Module (m, s) ->
           begin match rebase_module_path new_base m with
           | Stop m' -> if m == m' then Stop t else Stop (Module (m', s))
