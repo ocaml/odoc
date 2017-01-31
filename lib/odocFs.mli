@@ -36,6 +36,7 @@ module Directory : sig
 
   val ls : t -> file list
 
+  module Table : Hashtbl.S with type key = t
 end
 
 module File : sig

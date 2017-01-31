@@ -45,8 +45,8 @@ let root_of_unit unit =
 let find_odoc_file ~directories ?digest name =
   let rec aux is_the_one = function
     | [] -> None
-    | dir :: dirs ->
-      let files = Fs.Directory.ls dir in
+    | (_, files) :: dirs ->
+      let files = Lazy.force files in
       match find_map ~f:is_the_one files with
       | None -> aux is_the_one dirs
       | res  -> res
@@ -69,6 +69,11 @@ type builder = Unit.t -> t
 
 let create ?(important_digests=true) ~directories : builder = fun unit ->
   let unit_of_root = Root.Table.create 27 in
+  let directories =
+    List.map directories ~f:(fun dir ->
+      dir, Lazy.from_fun (fun () -> Fs.Directory.ls dir)
+    )
+  in
   let lookup _ target_name : Root.t DocOck.lookup_result =
     let rec aux = function
       | [] ->

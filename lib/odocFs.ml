@@ -84,4 +84,10 @@ module Directory = struct
       let file = File.create ~directory:t ~name:elt in
       if Fpath.is_file_path file then file :: acc else acc
     )
+
+  module Table = Hashtbl.Make(struct
+      type nonrec t = t
+      let equal = Fpath.equal
+      let hash = Hashtbl.hash
+    end)
 end
