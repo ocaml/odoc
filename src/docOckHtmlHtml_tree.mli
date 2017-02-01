@@ -28,7 +28,7 @@ val traverse
   -> t
   -> unit
 
-type kind = [ `Arg | `Mod | `Mty ]
+type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]
 
 (** These two functions are used to track the depth while building the tree,
     which is needed to produce correct links. *)

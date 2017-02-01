@@ -17,7 +17,7 @@
 open Tyxml.Html
 module Url = DocOckHtmlUrl
 
-type kind = [ `Arg | `Mod | `Mty ]
+type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]
 
 type t = {
   name : string;
@@ -41,6 +41,8 @@ let stack_elt_to_path_fragment = function
   | (name, Some `Mod) -> name
   | (name, Some `Mty) -> "module-type-" ^ name
   | (name, Some `Arg) -> "argument-" ^ name
+  | (name, Some `Class) -> "class-" ^ name
+  | (name, Some `Cty) -> "class-type-" ^ name
 
 module Relative_link = struct
   open DocOck.Paths
@@ -184,9 +186,11 @@ module Relative_link = struct
     (* FIXME: Reuse [Url]. *)
     let prefix =
       match kind with
-      | `Mod -> ""
-      | `Mty -> "module-type-"
-      | `Arg -> "argument-"
+      | `Mod   -> ""
+      | `Mty   -> "module-type-"
+      | `Arg   -> "argument-"
+      | `Class -> "class-"
+      | `Cty   -> "class-type-"
     in
     a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
@@ -226,6 +230,8 @@ class page_creator ?kind ~path content =
         | Some `Mod -> "Module"
         | Some `Arg -> "Parameter"
         | Some `Mty -> "Module type"
+        | Some `Cty -> "Class type"
+        | Some `Class -> "Class"
       ) :: pcdata " " ::
       [DocOckHtmlMarkup.module_path (List.tl path)]
 

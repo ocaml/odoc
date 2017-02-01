@@ -99,8 +99,8 @@ and signature
       | Exception e -> [ exn ~get_package e ], []
       | Value v -> [ value ~get_package v ], []
       | External e -> [ external_ ~get_package e ], []
-      | Class c -> [ class_ ~get_package c ], []
-      | ClassType cty -> [ class_type ~get_package cty ], []
+      | Class c -> class_ ~get_package c
+      | ClassType cty -> class_type ~get_package cty
       | Include incl -> include_ ~get_package incl
       | Comment (Documentation doc) ->
         let doc =
@@ -383,9 +383,9 @@ and constructor
       @ [ code ret_type ]
 
 and format_params
-   : 'row. Types.TypeDecl.param list
+   : 'row. ?delim:[`parens | `brackets] -> Types.TypeDecl.param list
   -> ([> `PCDATA ] as 'row) elt
-= fun params ->
+= fun ?(delim=`parens) params ->
   let format_param (desc, variance_opt) =
     let param_desc = match desc with | Types.TypeDecl.Any -> "_" | Var s -> "'" ^ s in
     match variance_opt with
@@ -399,7 +399,9 @@ and format_params
     | [x] -> format_param x ^ " "
     | lst ->
       let params = String.concat ", " (List.map lst ~f:format_param) in
-      "(" ^ params ^ ") "
+      (match delim with `parens -> "(" | `brackets -> "[")
+      ^ params ^
+      (match delim with `parens -> ") " | `brackets -> "] ")
   )
 
 and format_constraints
@@ -745,29 +747,152 @@ and external_ ~get_package (t : _ Types.External.t) =
   in
   Markup.make_def ~get_package ~id:t.id ~doc ~code:external_
 
-and class_ ~get_package (t : _ Types.Class.t) =
+and class_signature ~get_package (t : _ Types.ClassSignature.t) =
+  (* FIXME: use [t.self] *)
+  let recording_doc = ref true in
+  List.concat @@ List.map t.items ~f:(function
+    | Types.ClassSignature.Method m -> [ method_ ~get_package m ]
+    | InstanceVariable v -> [ instance_variable ~get_package v ]
+    | Constraint (ty1, ty2) -> format_constraints ~get_package [ty1, ty2]
+    | Inherit (Signature _) -> assert false (* Bold. *)
+    | Inherit cte -> class_type_expr ~get_package cte
+    | Comment (Documentation doc) ->
+      if !recording_doc then
+        Documentation.to_html ~get_package doc
+      else
+        []
+    | Comment Stop ->
+      recording_doc := not !recording_doc;
+      []
+  )
+
+and method_ ~get_package (t : _ Types.Method.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
-  let class_ =
-    [
-      Markup.keyword "class ";
-      pcdata name;
-      (* TODO: complete. *)
-    ]
+  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let private_ = if t.private_ then Markup.keyword "private " else pcdata "" in
+  let method_ =
+    Markup.keyword "method " ::
+    private_ ::
+    virtual_ ::
+    pcdata name ::
+    pcdata " : " ::
+    type_expr ~get_package t.type_
   in
-  Markup.make_def ~get_package ~id:t.id ~doc ~code:class_
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:method_
+
+and instance_variable ~get_package (t : _ Types.InstanceVariable.t) =
+  let name = Identifier.name t.id in
+  let doc = Documentation.to_html ~get_package t.doc in
+  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let mutable_ = if t.mutable_ then Markup.keyword "mutable " else pcdata "" in
+  let val_ =
+    Markup.keyword "val " ::
+    mutable_ ::
+    virtual_ ::
+    pcdata name ::
+    pcdata " : " ::
+    type_expr ~get_package t.type_
+  in
+  Markup.make_def ~get_package ~id:t.id ~doc ~code:val_
+
+and class_type_expr
+   : 'inner_row 'outer_row. get_package:('a -> string)
+  -> 'a Types.ClassType.expr
+  -> ('inner_row, 'outer_row) text elt list
+   = fun ~get_package (cte : _ Types.ClassType.expr) ->
+     match cte with
+     | Constr (path, args) ->
+       let link = Html_tree.Relative_link.of_path ~get_package path in
+       format_type_path ~get_package ~delim:(`brackets) args link
+     | Signature _ ->
+       [ Markup.keyword "object" ; pcdata " ... " ; Markup.keyword "end" ]
+
+and class_decl
+   : 'inner_row 'outer_row. get_package:('a -> string)
+  -> 'a Types.Class.decl
+  -> ('inner_row, 'outer_row) text elt list
+  = fun ~get_package (cd : _ Types.Class.decl) ->
+    match cd with
+    | ClassType expr -> class_type_expr ~get_package expr
+    (* TODO: factorize the following with [type_expr] *)
+    | Arrow (None, src, dst) ->
+      type_expr ~needs_parentheses:true ~get_package src @
+      Markup.keyword " -> " :: class_decl ~get_package dst
+    | Arrow (Some lbl, src, dst) ->
+      pcdata (string_of_label lbl ^ ":") ::
+      type_expr ~needs_parentheses:true ~get_package src @
+      Markup.keyword " -> " :: class_decl ~get_package dst
+
+and class_ ~get_package (t : _ Types.Class.t) =
+  let name = Identifier.name t.id in
+  let params = format_params ~delim:(`brackets) t.params in
+  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let cd = class_decl ~get_package t.type_ in
+  let cname, subtree =
+    match t.expansion with
+    | None -> pcdata name, []
+    | Some csig ->
+      Html_tree.enter ~kind:(`Class) name;
+      let doc = Documentation.to_html ~get_package t.doc in
+      let expansion = class_signature ~get_package csig in
+      let expansion =
+        match doc with
+        | [] -> expansion
+        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+      in
+      let subtree = Html_tree.make (expansion, []) in
+      Html_tree.leave ();
+      a ~a:[ a_href ~kind:`Class name ] [pcdata name], [subtree]
+  in
+  let class_def_content =
+    Markup.keyword "class " ::
+    virtual_ ::
+    params ::
+    cname ::
+    pcdata " : " ::
+    cd
+  in
+  let region =
+    Markup.make_def ~get_package ~id:t.id ~code:class_def_content
+      ~doc:(Documentation.first_to_html ~get_package t.doc)
+  in
+  [ region ], subtree
 
 and class_type ~get_package (t : _ Types.ClassType.t) =
   let name = Identifier.name t.id in
-  let doc = Documentation.to_html ~get_package t.doc in
-  let ctyp =
-    [
-      Markup.keyword "class type ";
-      pcdata name;
-      (* TODO: complete. *)
-    ]
+  let params = format_params ~delim:(`brackets) t.params in
+  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let expr = class_type_expr ~get_package t.expr in
+  let cname, subtree =
+    match t.expansion with
+    | None -> pcdata name, []
+    | Some csig ->
+      Html_tree.enter ~kind:(`Class) name;
+      let doc = Documentation.to_html ~get_package t.doc in
+      let expansion = class_signature ~get_package csig in
+      let expansion =
+        match doc with
+        | [] -> expansion
+        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+      in
+      let subtree = Html_tree.make (expansion, []) in
+      Html_tree.leave ();
+      a ~a:[ a_href ~kind:`Class name ] [pcdata name], [subtree]
   in
-  Markup.make_def ~get_package ~id:t.id ~doc ~code:ctyp
+  let ctyp =
+    Markup.keyword "class type " ::
+    virtual_ ::
+    params ::
+    cname ::
+    pcdata " = " ::
+    expr
+  in
+  let region =
+    Markup.make_def ~get_package ~id:t.id ~code:ctyp
+      ~doc:(Documentation.first_to_html ~get_package t.doc)
+  in
+  [ region ], subtree
 
 and include_ ~get_package (t : _ Types.Include.t) =
   let doc = Documentation.to_html ~get_package t.doc in
