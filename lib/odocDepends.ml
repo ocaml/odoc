@@ -70,55 +70,19 @@ end
 
 module Path = DocOck.Paths.Path
 
-let rec get_root set p =
-  match p with
-  | Path.Forward s -> Hash_set.add set s
-  | Path.Root s -> Hash_set.add set s
-  | Path.Dot (p, _) -> get_root set p
-  | Path.Apply (p, _) -> get_root set p
-  | Path.Resolved r ->
-    (* Not sure if we should not go on here. If [p] is resolved then its root is
-       probably imported. Then again, the path might simply have been imported
-       from another file during expansion. *)
-    ()
-
-class ['a] find_roots set = object(self)
-  inherit ['a] DocOckMaps.identifier
-  inherit ['a] DocOckMaps.reference
-  inherit ['a] DocOckMaps.path as super
-  inherit ['a] DocOckMaps.fragment
-  inherit ['a] DocOckMaps.types
-
-  method root x = x
-
-
-  method! path_resolved :
-    type k. ('a, k) Path.Resolved.t -> ('a, k) Path.Resolved.t =
-    fun x ->
-      begin match x with
-      | Path.Resolved.Canonical (_, p) -> get_root set p
-      | _ -> ()
-      end;
-      super#path_resolved x
-end
-
 (* FIXME: return not just a unit name, but the name of the package it is in as well.
    Is this info in the imports list? Probably not. *)
 let for_html_step input =
   let odoctree = Unit.load input in
   let deps = Hash_set.create () in
-  let open DocOck.Types in
-  List.iter odoctree.Unit.imports ~f:(fun import ->
+  List.iter odoctree.DocOckTypes.Unit.imports ~f:(fun import ->
     let import_name =
       match import with
-      | Unit.Import.Resolved root ->
-        (* TODO: return the digest as well so we stay consistent. *)
-        Root.Unit.to_string (Root.unit root)
-      | Unit.Import.Unresolved (unit_name, digest_opt) ->
-        unit_name
+      | DocOckTypes.Unit.Import.Resolved root ->
+        Root.(Package.to_string @@ package root)
+      | DocOckTypes.Unit.Import.Unresolved _ ->
+        Root.Package.to_string @@ Root.package @@ Unit.root odoctree
     in
     Hash_set.add deps import_name
   );
-  let find_roots = new find_roots deps in
-  let _ = find_roots#unit odoctree in
   Hash_set.elements deps
