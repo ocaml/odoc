@@ -1665,6 +1665,9 @@ class virtual ['a] class_ = object (self)
   method virtual type_expr :
     'a TypeExpr.t -> 'a TypeExpr.t
 
+  method virtual class_signature :
+    'a ClassSignature.t -> 'a ClassSignature.t
+
   method class_decl decl =
     let open Class in
       match decl with
@@ -1682,17 +1685,18 @@ class virtual ['a] class_ = object (self)
 
   method class_ cls =
     let open Class in
-    let {id; doc; virtual_; params; type_} = cls in
+    let {id; doc; virtual_; params; type_; expansion} = cls in
     let id' = self#identifier_class id in
     let doc' = self#documentation doc in
     let virtual' = self#class_virtual virtual_ in
     let params' = list_map self#type_decl_param params in
     let type' = self#class_decl type_ in
+    let expansion' = option_map self#class_signature expansion in
       if id != id' || doc != doc' || virtual_ != virtual'
-         || params != params' || type_ != type'
+         || params != params' || type_ != type' || expansion != expansion'
       then
         {id = id'; doc = doc'; virtual_ = virtual';
-         params = params'; type_ = type'}
+         params = params'; type_ = type'; expansion = expansion'}
       else cls
 
   method class_virtual virt = virt
@@ -1734,17 +1738,18 @@ class virtual ['a] class_type = object (self)
 
   method class_type clty =
     let open ClassType in
-    let {id; doc; virtual_; params; expr} = clty in
+    let {id; doc; virtual_; params; expr; expansion} = clty in
     let id' = self#identifier_class_type id in
     let doc' = self#documentation doc in
     let virtual' = self#class_type_virtual virtual_ in
     let params' = list_map self#type_decl_param params in
     let expr' = self#class_type_expr expr in
+    let expansion' = option_map self#class_signature expansion in
       if id != id' || doc != doc' || virtual_ != virtual'
-         || params != params' || expr != expr'
+         || params != params' || expr != expr' || expansion != expansion'
       then
         {id = id'; doc = doc'; virtual_ = virtual';
-         params = params'; expr = expr'}
+         params = params'; expr = expr'; expansion = expansion'}
       else clty
 
   method class_type_virtual virt = virt

@@ -703,6 +703,8 @@ class virtual ['a] class_ : object
 
   method virtual type_expr : 'a TypeExpr.t -> 'a TypeExpr.t
 
+  method virtual class_signature : 'a ClassSignature.t -> 'a ClassSignature.t
+
   method class_decl : 'a Class.decl -> 'a Class.decl
 
   method class_ : 'a Class.t -> 'a Class.t

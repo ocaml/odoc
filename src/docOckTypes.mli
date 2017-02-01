@@ -374,7 +374,8 @@ and Class : sig
       doc: 'a Documentation.t;
       virtual_: bool;
       params: TypeDecl.param list;
-      type_: 'a decl; }
+      type_: 'a decl;
+      expansion: 'a ClassSignature.t option; }
 
 end
 
@@ -391,7 +392,8 @@ and ClassType : sig
       doc: 'a Documentation.t;
       virtual_: bool;
       params: TypeDecl.param list;
-      expr: 'a expr; }
+      expr: 'a expr;
+      expansion: 'a ClassSignature.t option; }
 
 end
 

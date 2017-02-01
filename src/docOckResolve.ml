@@ -1255,6 +1255,15 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method reference_any x =
     resolve_element_reference (unwrap where_am_i) tbl (unwrap unit) x
 
+  method unit_import import =
+    let open Unit.Import in
+      match import with
+      | Resolved _ -> import
+      | Unresolved(name, _) ->
+        match lookup (unwrap unit) name with
+        | Found root -> Resolved root
+        | _ -> import
+
   method resolve unit =
     let this =
       {< unit = Some unit;

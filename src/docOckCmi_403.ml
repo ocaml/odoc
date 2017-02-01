@@ -758,7 +758,7 @@ let read_class_type_declaration env parent id cltd =
       read_class_signature env id cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
-      { id; doc; virtual_; params; expr }
+    { id; doc; virtual_; params; expr; expansion = None }
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -794,7 +794,7 @@ let read_class_declaration env parent id cld =
       read_class_type env id cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
-      { id; doc; virtual_; params; type_ }
+    { id; doc; virtual_; params; type_; expansion = None }
 
 let rec read_module_type env parent pos mty =
   let open ModuleType in

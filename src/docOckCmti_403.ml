@@ -322,7 +322,7 @@ let read_class_type_declaration env parent cltd =
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map (read_type_parameter env) cltd.ci_params in
   let expr = read_class_signature env id cltd.ci_expr in
-    { id; doc; virtual_; params; expr }
+  { id; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
   let container = Identifier.parent_of_signature parent in
@@ -358,7 +358,7 @@ let read_class_description env parent cld =
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map (read_type_parameter env) cld.ci_params in
   let type_ = read_class_type env id cld.ci_expr in
-    { id; doc; virtual_; params; type_ }
+  { id; doc; virtual_; params; type_; expansion = None }
 
 let read_class_descriptions env parent clds =
   let container = Identifier.parent_of_signature parent in

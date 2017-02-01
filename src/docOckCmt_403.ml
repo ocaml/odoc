@@ -317,7 +317,7 @@ let read_class_declaration env parent cld =
         clparams
     in
     let type_ = read_class_expr env id clparams cld.ci_expr in
-      { id; doc; virtual_; params; type_ }
+      { id; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
   let container = Identifier.parent_of_signature parent in
