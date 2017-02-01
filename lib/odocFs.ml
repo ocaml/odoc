@@ -38,12 +38,19 @@ module File = struct
     | Ok p -> p
 
   let read = Bos.OS.File.read
+
+  module Table = Hashtbl.Make(struct
+      type nonrec t = t
+      let equal = Fpath.equal
+      let hash = Hashtbl.hash
+    end)
 end
 
 module Directory = struct
   type t = directory
 
   let dirname = Fpath.parent
+  let basename = Fpath.base
 
   let make_path p name =
     match Fpath.of_string name with

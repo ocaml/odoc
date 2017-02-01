@@ -25,6 +25,7 @@ module Directory : sig
   type t = directory
 
   val dirname : t -> t
+  val basename : t -> t
 
   val reach_from : dir:t -> string -> t
   (** @raises [Invalid_arg _] if [parent/name] exists but is not a directory. *)
@@ -55,4 +56,6 @@ module File : sig
   val to_string : t -> string
 
   val read : t -> (string, [> Rresult.R.msg ]) result
+
+  module Table : Hashtbl.S with type key = t
 end

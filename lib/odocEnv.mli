@@ -19,12 +19,14 @@ type builder
 
 val create :
   ?important_digests:bool -> directories:(OdocFs.Directory.t list) -> builder
-(** Do stuff based on a {!Fs.Directory.t} *)
+(** Prepare the environment for a given list of
+    {{!Fs.Directory.t} include directories}
+
+    @param important_digests indicate whether digests should be compared when
+    doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
 
 val build : builder -> OdocUnit.t -> t
-(** bllblblbl *)
-
-val update_root_unit : t -> OdocUnit.t -> unit
+(** Initialize the environment for the given unit. *)
 
 val resolver : t -> OdocRoot.t DocOck.resolver
 (** Get a resolver from an env *)

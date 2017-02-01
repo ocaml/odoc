@@ -25,12 +25,13 @@ let get_package root = Root.Package.to_string (Root.package root)
 
 let unit ~env ~output:root_dir input =
   let unit = Unit.load input in
-  let env = Env.build env unit in
   let odoctree =
-    let resolved = DocOck.resolve (Env.resolver env) unit in
-    Env.update_root_unit env resolved;
-    DocOck.expand (Env.expander env) resolved
-    |> DocOck.resolve (Env.resolver env) (* Yes, again. *)
+    (* See comment in compile for explanation regarding the env duplication. *)
+    let resolve_env = Env.build env unit in
+    let resolved = DocOck.resolve (Env.resolver resolve_env) unit in
+    let expand_env = Env.build env resolved in
+    DocOck.expand (Env.expander expand_env) resolved
+    |> DocOck.resolve (Env.resolver expand_env) (* Yes, again. *)
   in
   let pkg_dir =
     let pkg_name = get_package (Unit.root unit) in
