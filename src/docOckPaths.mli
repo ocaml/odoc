@@ -232,6 +232,7 @@ module Identifier : sig
 
   val module_type_root : 'a module_type -> 'a
 
+  val class_signature_root : 'a class_signature -> 'a
 end
 
 (** {3 Paths} *)

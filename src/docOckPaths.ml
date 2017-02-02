@@ -376,6 +376,9 @@ module Identifier = struct
   let module_type_root : 'a module_type -> 'a = function
     | ModuleType(id, _) -> signature_root id
 
+  let class_signature_root : 'a class_signature -> 'a = function
+    | Class(id, _)
+    | ClassType(id, _) -> signature_root id
 
   let to_reversed i =
     let rec loop acc : 'a signature -> Reversed.t = function

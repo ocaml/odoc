@@ -51,6 +51,10 @@ let subst_expansion sub = function
       let expr' = DocOckSubst.module_type_expr sub expr in
         Some (Functor(arg', id', offset', expr'))
 
+let subst_class_expansion sub = function
+  | None -> None
+  | Some sg -> Some (DocOckSubst.class_signature sub sg)
+
 let map_module name ex f =
   let rec loop name items f acc =
     let open Signature in
@@ -154,6 +158,10 @@ type 'a intermediate_module_type_expansion =
   'a Identifier.module_type * 'a Documentation.t
   * 'a partial_expansion option * 'a DocOckSubst.t list
 
+type 'a intermediate_class_type_expansion =
+  'a Identifier.class_type * 'a Documentation.t
+  * 'a ClassSignature.t option * 'a DocOckSubst.t list
+
 type 'a expander =
   { equal: 'a -> 'a -> bool;
     hash: 'a -> int;
@@ -163,6 +171,8 @@ type 'a expander =
                               'a intermediate_module_expansion;
     expand_module_type_identifier: root:'a -> 'a Identifier.module_type ->
                                    'a intermediate_module_type_expansion;
+    expand_class_signature_identifier: root:'a -> 'a Identifier.class_signature ->
+      'a intermediate_class_type_expansion;
     expand_signature_identifier: root:'a -> 'a Identifier.signature ->
                                  'a partial_expansion option;
     expand_module_resolved_path: root:'a -> 'a Path.Resolved.module_ ->
@@ -172,13 +182,64 @@ type 'a expander =
     expand_module_type_resolved_path: root:'a ->
                                       'a Path.Resolved.module_type ->
       'a intermediate_module_type_expansion;
+    expand_class_type_path: root:'a -> 'a Path.class_type ->
+      'a intermediate_class_type_expansion;
+    expand_class_type_resolved_path: root:'a -> 'a Path.Resolved.class_type ->
+      'a intermediate_class_type_expansion;
     fetch_unit_from_ref: 'a Reference.module_ -> 'a Unit.t option; }
+
+let add_doc_to_class_expansion_opt doc =
+  let open ClassSignature in
+  function
+  | Some ({ items; _ } as sg) ->
+      let doc = Comment (Documentation.Documentation doc) in
+      Some { sg with items = doc :: items }
+  | otherwise -> otherwise
 
 let add_doc_to_expansion_opt doc = function
   | Some (Signature sg) ->
       let doc = Signature.Comment (Documentation.Documentation doc) in
       Some (Signature (doc :: sg))
-  | otherwise -> otherwise (* FIXME: handle functors? *)
+  | otherwise -> otherwise
+
+let rec expand_class_decl ({equal} as t) root dest decl =
+  let open Class in
+  match decl with
+  | Arrow (_, _, decl) -> expand_class_decl t root dest decl
+  | ClassType expr -> expand_class_type_expr t root dest expr
+
+and expand_class_type_expr ({equal} as t) root dest expr =
+  let open ClassType in
+  match expr with
+  | Constr (Path.Resolved p, _) -> begin
+      match t.expand_class_type_resolved_path ~root p with
+      | src, doc, ex, subs ->
+        let ex = add_doc_to_class_expansion_opt doc ex in
+        let ex =
+          List.fold_left
+            (fun acc sub -> subst_class_expansion sub acc)
+            ex subs
+        in
+        let src = Identifier.class_signature_of_class_type src in
+        let sub = DocOckSubst.rename_class_signature ~equal src dest in
+        subst_class_expansion sub ex
+      | exception Not_found -> None
+    end
+  | Constr (p, _) -> begin
+      match t.expand_class_type_path ~root p with
+      | src, doc, ex, subs ->
+        let ex = add_doc_to_class_expansion_opt doc ex in
+        let ex =
+          List.fold_left
+            (fun acc sub -> subst_class_expansion sub acc)
+            ex subs
+        in
+        let src = Identifier.class_signature_of_class_type src in
+        let sub = DocOckSubst.rename_class_signature ~equal src dest in
+        subst_class_expansion sub ex
+      | exception Not_found -> None
+    end
+  | Signature csig -> Some csig
 
 let rec expand_module_decl ({equal} as t) root dest offset decl =
   let open Module in
@@ -250,6 +311,16 @@ let expand_module t root md =
   let id = Identifier.signature_of_module md.id in
   expand_module_decl t root id 0 md.type_
 
+let expand_class t root c =
+  let open Class in
+  let id = Identifier.class_signature_of_class c.id in
+  expand_class_decl t root id c.type_
+
+let expand_class_type t root c =
+  let open ClassType in
+  let id = Identifier.class_signature_of_class_type c.id in
+  expand_class_type_expr t root id c.expr
+
 let expand_module_type t root mty =
   let open ModuleType in
   match mty.expr with
@@ -291,6 +362,29 @@ let find_module t root name ex =
       match items with
       | [] -> raise Not_found
       | Module md :: _ when Identifier.name md.id = name -> md
+      | Include incl :: rest -> begin
+          match expand_include t root incl with
+          | To_functor -> inner_loop name rest
+          | Failed sg | Expanded sg -> inner_loop name (sg @ rest)
+        end
+      | _ :: rest -> inner_loop name rest
+  in
+  let rec loop t root name ex =
+    match ex with
+    | None -> raise Not_found
+    | Some (Signature items) -> inner_loop name items
+    | Some (Functor(_, dest, offset, expr)) ->
+        loop t root name (expand_module_type_expr t root dest offset expr)
+  in
+    loop t root name ex
+
+let find_class_type t root name ex =
+  let rec inner_loop name items =
+    let open Signature in
+    let open ClassType in
+      match items with
+      | [] -> raise Not_found
+      | ClassType cd :: _ when Identifier.name cd.id = name -> cd
       | Include incl :: rest -> begin
           match expand_include t root incl with
           | To_functor -> inner_loop name rest
@@ -393,6 +487,16 @@ and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
       let mty = find_module_type t root name ex in
         mty.id, mty.doc, expand_module_type t root mty, []
 
+and expand_class_signature_identifier' t root (id : 'a Identifier.class_signature) =
+  let open Identifier in
+  match id with
+  | Class(parent, name)
+  | ClassType(parent, name) ->
+    let open ClassType in
+    let ex = t.expand_signature_identifier ~root parent in
+    let ct = find_class_type t root name ex in
+    ct.id, ct.doc, expand_class_type t root ct, []
+
 and expand_module_resolved_path' ({equal = eq} as t) root p =
   let open Path.Resolved in
   match p with
@@ -423,6 +527,42 @@ and expand_module_path' ({equal = eq} as t) root p =
       let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
         md.id, md.doc, md.canonical, expand_module t root md, sub :: subs
   | Root _ | Apply _ | Resolved _ -> raise Not_found (* TODO: assert false? *)
+
+and expand_class_type_path' ({equal = eq } as t) root
+      (p : 'a Path.class_type) =
+  let open Path in
+  match p with
+  | Resolved _ -> raise Not_found (* TODO: assert false? *)
+  | Dot(parent, name) ->
+    let open ClassType in
+    let id, _, canonical, ex, subs =
+      t.expand_module_path ~root parent
+    in
+    let c = find_class_type t root name ex in
+    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    c.id, c.doc, expand_class_type t root c, sub :: subs
+
+and expand_class_type_resolved_path' ({equal = eq} as t) root
+      (p : 'a Path.Resolved.class_type) =
+  let open Path.Resolved in
+  match p with
+  | Identifier id -> t.expand_class_signature_identifier ~root id
+  | Class(parent, name) ->
+    let open ClassType in
+    let id, _, canonical, ex, subs =
+      t.expand_module_resolved_path ~root parent
+    in
+    let c = find_class_type t root name ex in
+    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    c.id, c.doc, expand_class_type t root c, sub :: subs
+  | ClassType(parent, name) ->
+    let open ClassType in
+    let id, _, canonical, ex, subs =
+      t.expand_module_resolved_path ~root parent
+    in
+    let c = find_class_type t root name ex in
+    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    c.id, c.doc, expand_class_type t root c, sub :: subs
 
 and expand_module_type_resolved_path' ({equal = eq} as t) root
                                      (p : 'a Path.Resolved.module_type) =
@@ -522,6 +662,7 @@ let create (type a) ?equal ?hash
   let expand_module_identifier_tbl = IdentifierTbl.create 13 in
   let expand_module_type_identifier_tbl = IdentifierTbl.create 13 in
   let expand_signature_identifier_tbl = IdentifierTbl.create 13 in
+  let expand_class_signature_identifier_tbl = IdentifierTbl.create 13 in
   let module RPathHash = struct
     type t = a * a Path.Resolved.any
     let equal (root1, p1) (root2, p2) =
@@ -541,6 +682,8 @@ let create (type a) ?equal ?hash
   let expand_module_resolved_path_tbl = RPathTbl.create 13 in
   let expand_module_path_tbl = PathTbl.create 13 in
   let expand_module_type_resolved_path_tbl = RPathTbl.create 13 in
+  let expand_class_type_path_tbl = PathTbl.create 13 in
+  let expand_class_type_resolved_path_tbl = RPathTbl.create 13 in
   let rec expand_root ~root root' =
     let key = (root, root') in
     try
@@ -597,6 +740,14 @@ let create (type a) ?equal ?hash
       let res = expand_signature_identifier' t root id in
       IdentifierTbl.add expand_signature_identifier_tbl key res;
       res
+  and expand_class_signature_identifier ~root id =
+    let key = (root, Identifier.any id) in
+    try
+      IdentifierTbl.find expand_class_signature_identifier_tbl key
+    with Not_found ->
+      let res = expand_class_signature_identifier' t root id in
+      IdentifierTbl.add expand_class_signature_identifier_tbl key res;
+      res
   and expand_module_resolved_path ~root p =
     let key = (root, Path.Resolved.any p) in
     try
@@ -621,14 +772,33 @@ let create (type a) ?equal ?hash
       let res = expand_module_type_resolved_path' t root p in
       RPathTbl.add expand_module_type_resolved_path_tbl key res;
       res
+  and expand_class_type_path ~root p =
+    let key = (root, Path.any p) in
+    try
+      PathTbl.find expand_class_type_path_tbl key
+    with Not_found ->
+      let res = expand_class_type_path' t root p in
+      PathTbl.add expand_class_type_path_tbl key res;
+      res
+  and expand_class_type_resolved_path ~root p =
+    let key = (root, Path.Resolved.any p) in
+    try
+      RPathTbl.find expand_class_type_resolved_path_tbl key
+    with Not_found ->
+      let res = expand_class_type_resolved_path' t root p in
+      RPathTbl.add expand_class_type_resolved_path_tbl key res;
+      res
   and t =
     { equal; hash;
       expand_root; expand_forward_ref; expand_module_path;
       expand_module_identifier;
       expand_module_type_identifier;
       expand_signature_identifier;
+      expand_class_signature_identifier;
       expand_module_resolved_path;
       expand_module_type_resolved_path;
+      expand_class_type_path;
+      expand_class_type_resolved_path;
       fetch_unit_from_ref; }
   in
     t
@@ -687,6 +857,23 @@ let expand_include t incl =
         | _ -> incl
     end
 
+let expand_class t c =
+  let open Class in
+  match c.expansion with
+  | Some _ -> c
+  | None ->
+    let root = Identifier.(class_signature_root @@ class_signature_of_class c.id) in
+    let expansion = expand_class t root c in
+    { c with expansion }
+
+let expand_class_type t c =
+  let open ClassType in
+  match c.expansion with
+  | Some _ -> c
+  | None ->
+    let root = Identifier.(class_signature_root @@ class_signature_of_class_type c.id) in
+    let expansion = expand_class_type t root c in
+    { c with expansion }
 (*
 let expand_unit t unit =
   let open Unit in
@@ -745,6 +932,14 @@ class ['a] t ?equal ?hash lookup fetch = object (self)
   method module_type_functor_arg arg =
     let arg = expand_argument t arg in
       super#module_type_functor_arg arg
+
+  method class_ c =
+    let c' = expand_class t c in
+    super#class_ c'
+
+  method class_type c =
+    let c' = expand_class_type t c in
+    super#class_type c'
 
   method documentation_special_modules (rf, txt as pair) =
     let rf' = self#reference_module rf in
