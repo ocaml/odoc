@@ -1046,6 +1046,19 @@ let rec class_decl_p base output acc =
       let acc = class_decl_p base output acc res in
       close output acc
 
+and class_type_expansion_p base output acc expansion_opt =
+  let acc = expansion_t output acc in
+  let acc =
+    match expansion_opt with
+    | None -> acc
+    | Some sg ->
+      let open ClassSignature in
+      let acc = signature_t output acc in
+      let acc = opt type_expr_p base output acc sg.self in
+      list class_signature_item_p base output acc sg.items
+  in
+  close output acc
+
 and class_type_expr_p base output acc =
   let open ClassType in function
     | Constr(p, params) ->
@@ -1257,6 +1270,7 @@ and signature_item_p base output acc =
       let acc = list type_parameter_p base output acc cls.params in
       let acc = flag virtual_t output acc cls.virtual_ in
       let acc = class_decl_p base output acc cls.type_ in
+      let acc = class_type_expansion_p base output acc cls.expansion in
       close output acc
     | ClassType clty ->
       let open ClassType in
@@ -1266,6 +1280,7 @@ and signature_item_p base output acc =
       let acc = list type_parameter_p base output acc clty.params in
       let acc = flag virtual_t output acc clty.virtual_ in
       let acc = class_type_expr_p base output acc clty.expr in
+      let acc = class_type_expansion_p base output acc clty.expansion in
       close output acc
     | Module md ->
       let open Module in

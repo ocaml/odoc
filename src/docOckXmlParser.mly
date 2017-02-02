@@ -1029,12 +1029,19 @@ class_decl:
   | ARROW lbl = argument_label? arg = type_expr res = class_decl CLOSE
       { Class.Arrow(lbl, arg, res) }
 
+class_type_expansion_opt:
+  | EXPANSION CLOSE { None }
+  | EXPANSION cts = class_type_signature CLOSE { Some cts }
+
+class_type_signature:
+  | SIGNATURE self = type_expr? items = class_signature_item* CLOSE
+      { ClassSignature.{self; items} }
+
 class_type_expr:
   | PATH p = class_type_path params = type_expr* CLOSE
       { ClassType.Constr(p, params) }
-  | SIGNATURE self = type_expr? items = class_signature_item* CLOSE
-      { let sg = ClassSignature.{self; items} in
-          ClassType.Signature sg }
+  | sg = class_type_signature
+      { ClassType.Signature sg }
 
 class_signature_item:
   | INSTANCE_VARIABLE id = instance_variable_identifier doc = doc
@@ -1132,15 +1139,17 @@ signature_item:
           let open Exception in
             Exception {id; doc; args; res} }
   | CLASS id = class_identifier doc = doc params = type_parameter*
-      virtual_ = flag(VIRTUAL) type_ = class_decl CLOSE
+      virtual_ = flag(VIRTUAL) type_ = class_decl
+      expansion = class_type_expansion_opt CLOSE
         { let open Signature in
           let open Class in
-            Class {id; doc; virtual_; params; type_} }
+            Class {id; doc; virtual_; params; type_; expansion} }
   | CLASS_TYPE id = class_type_identifier doc = doc params = type_parameter*
-      virtual_ = flag(VIRTUAL) expr = class_type_expr CLOSE
+      virtual_ = flag(VIRTUAL) expr = class_type_expr
+      expansion = class_type_expansion_opt CLOSE
         { let open Signature in
           let open ClassType in
-            ClassType {id; doc; virtual_; params; expr} }
+            ClassType {id; doc; virtual_; params; expr; expansion} }
   | MODULE id = module_identifier doc = doc type_ = module_decl
       expansion = module_expansion_opt canonical = canonical CLOSE
       { let open Signature in
