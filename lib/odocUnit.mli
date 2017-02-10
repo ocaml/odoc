@@ -24,4 +24,6 @@ val save_xml : OdocFs.File.t -> t -> unit
 val load : OdocFs.File.t -> t
 val load_xml : OdocFs.File.t -> t
 
+val read_root : OdocFs.File.t -> OdocRoot.t
+
 val root : t -> OdocRoot.t

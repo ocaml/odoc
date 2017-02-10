@@ -21,6 +21,11 @@ module Fs = OdocFs
 
 type t = Root.t Types.Unit.t
 
+let root (t : Root.t Types.Unit.t) =
+  match t.Types.Unit.id with
+  | Paths.Identifier.Root (root, _) -> root
+  | _ -> assert false
+
 let save_xml file unit =
   let xml_folder = DocOckXmlFold.file Root.Xml.fold in
   Fs.Directory.mkdir_p (Fs.File.dirname file);
@@ -44,11 +49,12 @@ let load_xml file =
 
 let magic = "odoc-%%VERSION%%"
 
-let save file unit =
+let save file t =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out (Fs.File.to_string file) in
   output_string oc magic;
-  Marshal.to_channel oc unit [];
+  Marshal.to_channel oc (root t) [];
+  Marshal.to_channel oc t [];
   close_out oc
 
 let units = Hashtbl.create 23 (* because. *)
@@ -68,6 +74,7 @@ let load =
             file m magic;
           exit 1
         ) else (
+          let _root = Marshal.from_channel ic in
           let res = Marshal.from_channel ic in
           close_in ic;
           Hashtbl.add units file res;
@@ -80,7 +87,16 @@ let load =
            | _ -> Printexc.to_string exn);
         exit 2
 
-let root (t : t) =
-  match t.Types.Unit.id with
-  | Paths.Identifier.Root (root, _) -> root
-  | _ -> assert false
+let read_root file =
+  let file = Fs.File.to_string file in
+  let ic = open_in file in
+  let m = really_input_string ic (String.length magic) in
+  if m <> magic then (
+    Printf.eprintf "%s: invalid magic number %S, expected %S\n%!"
+      file m magic;
+    exit 1
+  ) else (
+    let root = Marshal.from_channel ic in
+    close_in ic;
+    root
+  )
