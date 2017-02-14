@@ -827,14 +827,28 @@ and expand_argument t arg_opt =
           let expansion = force_expansion t root (expand_argument_ t root arg) in
             Some {FunctorArgument. id; expr; expansion}
 
-let expand_module t md =
+(** We will always expand modules which are not aliases. For aliases we at the
+    moment do not expand them unless they are the canonical path of the module
+    they alias *)
+let should_expand t id decl =
+  let open Path in
+  match decl with
+  | Module.Alias (Resolved (Resolved.Canonical (_, Resolved p))) ->
+    Resolved.equal_identifier t.equal id p
+  | Module.Alias _ -> false
+  | _ -> true
+
+let expand_module ({equal} as t) md =
   let open Module in
     match md.expansion with
     | Some _ -> md
     | None ->
+      if should_expand t md.id md.type_ then
         let root = Identifier.module_root md.id in
         let expansion = force_expansion t root (expand_module t root md) in
-          { md with expansion }
+        { md with expansion }
+      else
+        md
 
 let expand_module_type t mty =
   let open ModuleType in

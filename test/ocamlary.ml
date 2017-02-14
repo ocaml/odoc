@@ -52,7 +52,7 @@ end
 
 module type SuperSig = sig
   module type SubSigA = sig
-    (** {3:SubSig A Labeled Section Header Inside of a Signature *)
+    (** {3:SubSig A Labeled Section Header Inside of a Signature} *)
 
     type t
 
@@ -61,7 +61,7 @@ module type SuperSig = sig
     end
   end
   module type SubSigB = sig
-    (** {3:SubSig Another Labeled Section Header Inside of a Signature *)
+    (** {3:SubSig Another Labeled Section Header Inside of a Signature} *)
 
     type t
   end
@@ -748,3 +748,66 @@ end
 let test _ = ()
 (** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.D.id}.
     But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)
+
+(** {1 Aliases again} *)
+
+module Aliases = struct
+  (** Let's imitate jst's layout. *)
+
+  module Foo__A = struct
+    type t
+
+    let id t = t
+  end
+
+  module Foo__B = struct
+    type t
+
+    let id t = t
+  end
+
+  module Foo__C = struct
+    type t
+
+    let id t = t
+  end
+
+  module Foo__D = struct
+    type t
+
+    let id t = t
+  end
+
+  module Foo__ = struct
+
+    (** @canonical Ocamlary.Aliases.Foo.A *)
+    module A = Foo__A
+
+    (** @canonical Ocamlary.Aliases.Foo.B *)
+    module B = Foo__B
+
+    (** @canonical Ocamlary.Aliases.Foo.C *)
+    module C = Foo__C
+
+    (** @canonical Ocamlary.Aliases.Foo.D *)
+    module D = Foo__D
+
+  end
+
+  module Foo = struct
+    open Foo__
+
+    module A = A
+    module B = B
+    module C = C
+    module D = D
+  end
+
+  (** {3 include of Foo}
+
+      Just for giggle, let's see what happens when we include {!Foo}. *)
+
+  include Foo (** @inline *)
+
+  (** And also, let's refer to {!A.t} and {!Foo.B.id} *)
+end

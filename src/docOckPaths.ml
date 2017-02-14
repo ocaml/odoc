@@ -764,6 +764,29 @@ module Path = struct
     let rebase id t =
       let rev = Identifier.to_reversed id in
       rebase rev t
+
+    let rec signature_of_module : 'a module_ -> ('a, Kind.signature) t = function
+      | Identifier (Root _) as x -> x
+      | Identifier (Module _) as x -> x
+      | Identifier (Argument _) as x -> x
+      | Module _ as x -> x
+      | Canonical _ as x -> x
+      | Apply _ as x -> x
+      | Subst(sub, p) -> Subst(sub, signature_of_module p)
+      | SubstAlias(sub, p) -> SubstAlias(sub, signature_of_module p)
+
+    let rec equal_identifier :
+      type k. equal:('a -> 'a -> bool) -> ('a, k) Identifier.t -> ('a, k) t -> bool =
+      fun ~equal id p ->
+        match id, p with
+        | _, Identifier id' -> Identifier.equal ~equal id id'
+        | Module (id, s1), Module (p, s2) when s1 = s2 ->
+          equal_identifier ~equal id (signature_of_module p)
+        | ModuleType (id, s1), ModuleType (p, s2) when s1 = s2 ->
+          equal_identifier ~equal id (signature_of_module p)
+        | _, _ ->
+          false
+
   end
 
   open Identifier

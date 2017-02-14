@@ -849,3 +849,66 @@ end
 val test : 'a CanonicalTest.Base__.List.t -> unit
 (** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.L.id}.
     But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)
+
+(** {1 Aliases again} *)
+
+module Aliases : sig
+  (** Let's imitate jst's layout. *)
+
+  module Foo__A : sig
+    type t
+
+    val id : t -> t
+  end
+
+  module Foo__B : sig
+    type t
+
+    val id : t -> t
+  end
+
+  module Foo__C : sig
+    type t
+
+    val id : t -> t
+  end
+
+  module Foo__D : sig
+    type t
+
+    val id : t -> t
+  end
+
+  module Foo__ : sig
+
+    (** @canonical Ocamlary.Aliases.Foo.A *)
+    module A = Foo__A
+
+    (** @canonical Ocamlary.Aliases.Foo.B *)
+    module B = Foo__B
+
+    (** @canonical Ocamlary.Aliases.Foo.C *)
+    module C = Foo__C
+
+    (** @canonical Ocamlary.Aliases.Foo.D *)
+    module D = Foo__D
+
+  end
+
+  module Foo : sig
+    open Foo__
+
+    module A = A
+    module B = B
+    module C = C
+    module D = D
+  end
+
+  (** {3 include of Foo}
+
+      Just for giggle, let's see what happens when we include {!Foo}. *)
+
+  include module type of Foo (** @inline *)
+
+  (** And also, let's refer to {!A.t} and {!Foo.B.id} *)
+end

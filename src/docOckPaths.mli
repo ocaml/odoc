@@ -289,6 +289,9 @@ module rec Path : sig
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
     val rebase : 'a Identifier.signature -> ('a, 'b) t -> ('a, 'b) t
+
+    val equal_identifier : equal:('a -> 'a -> bool) -> ('a, 'b) Identifier.t ->
+      ('a, 'b) t -> bool
   end
 
   type kind = Kind.path
