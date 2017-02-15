@@ -388,7 +388,12 @@ and read_module_binding env parent mb =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env id 1 mb.mb_expr)
   in
-    {id; doc; type_; expansion = None; canonical}
+  let hidden =
+    match canonical with
+    | Some _ -> true
+    | None -> contains_double_underscore (Ident.name mb.mb_id)
+  in
+    {id; doc; type_; expansion = None; canonical; hidden; display_type = None}
 
 and read_module_bindings env parent mbs =
   let container = Identifier.parent_of_signature parent in

@@ -55,7 +55,7 @@ let read_cmti root_fn filename =
           List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
         in
         let interface = true in
-        let hidden = false in
+        let hidden = Paths.contains_double_underscore name in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
@@ -98,14 +98,14 @@ let read_cmt root_fn filename =
             | None -> assert false
             | exception Not_found -> assert false
         in
-        let hidden = false in
+        let hidden = Paths.contains_double_underscore name in
         let root = root_fn name digest in
         let id = Paths.Identifier.Root(root, name) in
         let items =
           List.map
             (fun file ->
                let pref = Misc.chop_extensions file in
-                 String.capitalize(Filename.basename pref))
+                 String.capitalize_ascii (Filename.basename pref))
             files
         in
         let items = List.sort String.compare items in
@@ -187,7 +187,7 @@ let read_cmi root_fn filename =
             List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
           in
           let interface = true in
-          let hidden = false in
+          let hidden = Paths.contains_double_underscore name in
           let source = None in
           let content = Module items in
           let unit =

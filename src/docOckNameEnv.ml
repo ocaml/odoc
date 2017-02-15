@@ -392,11 +392,12 @@ let add_unit unit env =
   let env = add_documentation unit.doc env in
     add_module_ident unit.id env
 
-let add_include incl env =
+let rec add_include incl env =
   let open Include in
-    add_documentation incl.doc env
+  let env = add_documentation incl.doc env in
+  add_signature_items incl.expansion.content env
 
-let add_signature_item item env =
+and add_signature_item item env =
   let open Signature in
   match item with
   | Module md -> add_module md env
@@ -411,7 +412,7 @@ let add_signature_item item env =
   | Include incl -> add_include incl env
   | Comment com -> add_comment com env
 
-let add_signature_items sg env =
+and add_signature_items sg env =
   List.fold_right add_signature_item sg env
 
 let rec add_module_type_expr_items expr env =

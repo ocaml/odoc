@@ -503,6 +503,7 @@ and expand_module_resolved_path' ({equal = eq} as t) root p =
   | Identifier id -> t.expand_module_identifier ~root id
   | Subst(_, p) -> t.expand_module_resolved_path ~root p
   | SubstAlias(_, p) -> t.expand_module_resolved_path ~root p
+  | Hidden p -> t.expand_module_resolved_path ~root p
   | Module(parent, name) ->
     let open Module in
     let id, _, canonical, ex, subs =
@@ -618,7 +619,8 @@ and expand_unit ({equal; hash} as t) root unit =
                           let type_ = ModuleType (ModuleType.Signature sg) in
                           let canonical = None in
                           let md = {id; doc; type_; canonical;
-                                    expansion = Some (Signature sg)} in
+                                    expansion = Some (Signature sg);
+                                    display_type = None; hidden = false} in
                           loop ((src, item.id) :: ids) (md :: mds) rest
                       end
                     | exception Not_found -> [], None (* TODO: Should be an error *)
@@ -827,14 +829,13 @@ and expand_argument t arg_opt =
           let expansion = force_expansion t root (expand_argument_ t root arg) in
             Some {FunctorArgument. id; expr; expansion}
 
-(** We will always expand modules which are not aliases. For aliases we at the
-    moment do not expand them unless they are the canonical path of the module
-    they alias *)
+(** We will always expand modules which are not aliases. For aliases we only
+    expand when the thing they point to should be hidden. *)
 let should_expand t id decl =
   let open Path in
   match decl with
-  | Module.Alias (Resolved (Resolved.Canonical (_, Resolved p))) ->
-    Resolved.equal_identifier t.equal id p
+  | Module.Alias (Resolved ( Resolved.Canonical (Resolved.Hidden _, _)
+                           | Resolved.Hidden _)) -> true
   | Module.Alias _ -> false
   | _ -> true
 

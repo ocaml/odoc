@@ -14,13 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Paths of documentation *)
+(**/**)
 
 type sexp =
   | List of sexp list
   | Atom of string
 
 val string_of_sexp : sexp -> string
+
+val contains_double_underscore : string -> bool
+(* not the best place for this but. *)
+
+(**/**)
+
+(** Paths of documentation *)
 
 (** {3 Kinds } *)
 
@@ -246,10 +253,9 @@ module rec Path : sig
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
-      | Subst : 'a module_type * ('a, 'b) t ->
-                ('a, [< kind > `Module] as 'b) t
-      | SubstAlias : 'a module_ * ('a, 'b) t ->
-                ('a, [< kind > `Module] as 'b) t
+      | Subst : 'a module_type * 'a module_ -> ('a, [< kind > `Module]) t
+      | SubstAlias : 'a module_ * 'a module_ -> ('a, [< kind > `Module]) t
+      | Hidden : 'a module_ -> ('a, [< kind > `Module ]) t
       | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
         (* TODO: The canonical path should be a reference not a path *)
       | Canonical : 'a module_ * 'a Path.module_ -> ('a, [< kind > `Module]) t
@@ -359,9 +365,9 @@ module Fragment : sig
 
     type ('a, 'b, 'c) raw =
       | Root : ('a, 'b, [< sort > `Root]) raw
-      | Subst : 'a Path.Resolved.module_type * ('a, 'b, 'c) raw ->
+      | Subst : 'a Path.Resolved.module_type * 'a module_ ->
                 ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | SubstAlias : 'a Path.Resolved.module_ * ('a, 'b, 'c) raw ->
+      | SubstAlias : 'a Path.Resolved.module_ * 'a module_ ->
                 ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
       | Module : 'a signature * string -> ('a, [< kind > `Module], [< sort > `Branch]) raw
       | Type : 'a signature * string -> ('a, [< kind > `Type], [< sort > `Branch]) raw
@@ -372,10 +378,10 @@ module Fragment : sig
 
     and 'a any = ('a, kind) t
     and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
+    and 'a module_ = ('a, fragment_module) t
 
     val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
 
-    type 'a module_ = ('a, fragment_module) t
     type 'a type_ = ('a, fragment_type) t
 
     val signature_of_module : 'a module_ -> 'a signature
@@ -442,6 +448,7 @@ module rec Reference : sig
 
     type ('a, 'b) t =
       | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
+      | SubstAlias : 'a Path.Resolved.module_ * 'a module_ -> ('a, [< kind > `Module ]) t
       | Module : 'a signature * string -> ('a, [< kind > `Module]) t
       | Canonical : 'a module_ * 'a Reference.module_ -> ('a, [< kind > `Module]) t
       | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t

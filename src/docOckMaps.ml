@@ -256,6 +256,10 @@ class virtual ['a] path = object (self)
             let orig' = self#path_resolved orig in
               if sub != sub' || orig != orig' then SubstAlias(sub', orig')
               else p
+        | Hidden hp ->
+            let hp' = self#path_resolved hp in
+              if hp != hp' then Hidden hp'
+              else p
         | Module(parent, name) ->
             let parent' = self#path_resolved parent in
             let name' = self#path_resolved_module_name name in
@@ -449,6 +453,9 @@ class virtual ['a] reference = object (self)
   method virtual identifier : 'k . ('a, 'k) Identifier.t ->
     ('a, 'k) Identifier.t
 
+  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
+    ('a, 'k) Path.Resolved.t
+
   method reference_resolved : type k. ('a, k) Reference.Resolved.t ->
                                         ('a, k) Reference.Resolved.t =
     fun r ->
@@ -457,6 +464,12 @@ class virtual ['a] reference = object (self)
         | Identifier id ->
             let id' = self#identifier id in
               if id != id' then Identifier id'
+              else r
+        | SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved sub in
+            let orig' = self#reference_resolved orig in
+              if sub != sub' || orig != orig' then
+                SubstAlias(sub', orig')
               else r
         | Module(parent, name) ->
             let parent' = self#reference_resolved parent in
@@ -1095,6 +1108,8 @@ class virtual ['a] module_ = object (self)
   method virtual module_type_functor_arg :
     'a FunctorArgument.t option -> 'a FunctorArgument.t option
 
+  method module_hidden h = h
+
   method module_expansion expn =
     let open Module in
     match expn with
@@ -1122,7 +1137,7 @@ class virtual ['a] module_ = object (self)
 
   method module_ md =
     let open Module in
-    let {id; doc; type_; expansion; canonical} = md in
+    let {id; doc; type_; expansion; canonical; hidden; display_type} = md in
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let type' = self#module_decl type_ in
@@ -1130,10 +1145,14 @@ class virtual ['a] module_ = object (self)
     let canonical' =
       option_map (pair_map self#path_module self#reference_module) canonical
     in
+    let hidden' = self#module_hidden hidden in
+    let display_type' = option_map self#module_decl display_type in
       if id != id' || doc != doc' || type_ != type'
-         || expansion != expansion' || canonical != canonical' then
-        {id = id'; doc = doc'; type_ = type';
-         expansion = expansion'; canonical = canonical'}
+         || expansion != expansion' || canonical != canonical'
+         || hidden != hidden' || display_type != display_type'
+      then
+        {id = id'; doc = doc'; type_ = type'; expansion = expansion';
+         canonical = canonical'; hidden = hidden'; display_type = display_type'}
       else md
 
   method module_equation eq =

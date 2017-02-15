@@ -86,17 +86,20 @@ val resolved_signature_fragment : 'a with_ ->
 
 (** {3 Reference Lookup} *)
 
+(** TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved signature reference *)
-val resolved_signature_reference : 'a t ->
+val resolved_signature_reference : 'a t -> 'a Unit.t ->
       'a Reference.Resolved.signature -> 'a Sig.t
 
+(** TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved class signature reference *)
-val resolved_class_signature_reference : 'a t ->
+val resolved_class_signature_reference : 'a t -> 'a Unit.t ->
       'a Reference.Resolved.class_signature -> 'a ClassSig.t
 
+(** TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved datatype reference *)
-val resolved_datatype_reference : 'a t -> 'a Reference.Resolved.datatype ->
-      'a Datatype.t
+val resolved_datatype_reference : 'a t -> 'a Unit.t ->
+  'a Reference.Resolved.datatype -> 'a Datatype.t
 
 (** {3 Root lookup} *)
 

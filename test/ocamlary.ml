@@ -778,6 +778,12 @@ module Aliases = struct
     let id t = t
   end
 
+  module Foo__E = struct
+    type t
+
+    let id t = t
+  end
+
   module Foo__ = struct
 
     (** @canonical Ocamlary.Aliases.Foo.A *)
@@ -792,6 +798,7 @@ module Aliases = struct
     (** @canonical Ocamlary.Aliases.Foo.D *)
     module D = Foo__D
 
+    module E = Foo__E
   end
 
   module Foo = struct
@@ -801,13 +808,31 @@ module Aliases = struct
     module B = B
     module C = C
     module D = D
+
+    module E = E
   end
+
+  module A' = Foo.A
+
+  type tata = Foo.A.t
+  type tbtb = Foo__.B.t
+  type tete = Foo__.E.t
+  type tata' = A'.t
+  type tete2 = Foo.E.t
+
+  module Bar = struct
+    module E = Foo.E
+  end
+
+  type bare = Bar.E.t
 
   (** {3 include of Foo}
 
       Just for giggle, let's see what happens when we include {!Foo}. *)
 
   include Foo (** @inline *)
+
+  type testa = A.t
 
   (** And also, let's refer to {!A.t} and {!Foo.B.id} *)
 end

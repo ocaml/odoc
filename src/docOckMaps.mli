@@ -193,6 +193,9 @@ class virtual ['a] reference : object
   method virtual identifier : 'k. ('a, 'k) Identifier.t ->
     ('a, 'k) Identifier.t
 
+  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
+    ('a, 'k) Path.Resolved.t
+
   method reference_resolved : 'k. ('a, 'k) Reference.Resolved.t ->
     ('a, 'k) Reference.Resolved.t
 
@@ -480,6 +483,7 @@ class virtual ['a] module_ : object
 
   method module_equation : 'a Module.decl -> 'a Module.decl
 
+  method module_hidden : bool -> bool
 end
 
 class virtual ['a] module_type : object

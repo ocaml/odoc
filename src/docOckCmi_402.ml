@@ -826,7 +826,12 @@ and read_module_declaration env parent id md =
     | Mty_alias p -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
-    {id; doc; type_; expansion = None; canonical}
+  let hidden =
+    match canonical with
+    | Some _ -> true
+    | None -> contains_double_underscore (Ident.name ident)
+  in
+    {id; doc; type_; expansion = None; canonical; hidden; display_type = None}
 
 and read_signature env parent items =
   let env = Env.add_signature_type_items parent items env in

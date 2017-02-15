@@ -825,9 +825,9 @@ and read_module_type_declaration env parent id mtd =
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
     {id; doc; expr; expansion = None}
 
-and read_module_declaration env parent id md =
+and read_module_declaration env parent ident md =
   let open Module in
-  let name = parenthesise (Ident.name id) in
+  let name = parenthesise (Ident.name ident) in
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id md.md_attributes in
@@ -847,7 +847,12 @@ and read_module_declaration env parent id md =
     | Mty_alias p -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
-  {id; doc; type_; expansion = None; canonical}
+  let hidden =
+    match canonical with
+    | Some _ -> true
+    | None -> contains_double_underscore (Ident.name ident)
+  in
+    {id; doc; type_; expansion = None; canonical; hidden; display_type = None}
 
 and read_signature env parent items =
   let env = Env.add_signature_type_items parent items env in

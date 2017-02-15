@@ -157,6 +157,8 @@ module rec Module : sig
       doc: 'a Documentation.t;
       type_: 'a decl;
       canonical : ('a Path.module_ * 'a Reference.module_) option;
+      hidden : bool;
+      display_type : 'a decl option;
       expansion: 'a expansion option;
     }
 

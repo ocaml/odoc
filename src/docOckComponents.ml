@@ -183,6 +183,10 @@ module rec Sig : sig
 
   val get_canonical : 'a t -> ('a Path.module_ * 'a Reference.module_) option
 
+  val set_hidden : 'a t -> bool -> 'a t
+
+  val get_hidden : 'a t -> bool
+
   val find_parent_module : string -> 'a t -> 'a Parent.module_
 
   val find_parent_apply : ('a Path.module_ -> 'a t) -> 'a Path.module_ ->
@@ -325,29 +329,41 @@ end = struct
 
   and 'a t =
     { canonical : ('a Path.module_ * 'a Reference.module_) option;
+      hidden : bool;
       body : 'a body }
 
   let set_canonical t canonical = { t with canonical }
 
+  let set_hidden t hidden = { t with hidden }
+
   let get_canonical t = t.canonical
 
-  let mkExpr ex = { canonical = None; body = Expr ex }
+  let get_hidden t = t.hidden
 
-  let mkSig sg = { canonical = None; body = Sig sg }
+  let mkExpr ex = { canonical = None; body = Expr ex; hidden = false }
 
-  let mkFunctor fn = { canonical = None; body = Functor fn }
+  let mkSig sg = { canonical = None; body = Sig sg; hidden = false }
 
-  let generative t = { canonical = None; body = Generative t }
+  let mkFunctor fn = { canonical = None; body = Functor fn; hidden = false }
 
-  let abstract = { canonical = None; body = Abstract }
+  let generative t = { canonical = None; body = Generative t; hidden = false }
 
-  let unresolved = { canonical = None; body = Unresolved }
+  let abstract = { canonical = None; body = Abstract; hidden = false }
+
+  let unresolved = { canonical = None; body = Unresolved; hidden = false }
 
   let rec lift_find f x t =
     match t.body with
     | Expr expr -> begin
         match expr.term with
-        | Path(_, true) | Alias(_, true) -> raise Not_found
+        | Path(_, true)
+        | Alias(_, true) -> raise Not_found
+        | Alias(_, false) -> begin
+            let t = Lazy.force expr.expansion in
+            match t.hidden with
+            | false -> raise Not_found
+            | true -> lift_find f x t
+          end
         | _ -> lift_find f x (Lazy.force expr.expansion)
       end
     | Sig sg -> f x (Lazy.force sg)
@@ -418,6 +434,12 @@ end = struct
         match expr.term with
         | Path(p, true) -> Parent.Subst p
         | Alias(p, true) -> Parent.SubstAlias p
+        | Alias(p, false) -> begin
+            let t' = Lazy.force expr.expansion in
+            match t'.hidden with
+            | false -> Parent.SubstAlias p
+            | true -> find_parent_subst t'
+          end
         | _ -> find_parent_subst (Lazy.force expr.expansion)
       end
     | Sig sg -> raise Not_found
@@ -433,7 +455,10 @@ end = struct
   let find_module_element name t =
     let find name sg =
       let t = SMap.find name sg.modules in
-      Element.Module { canonical = t.canonical }
+      Element.Module {
+        canonical = t.canonical;
+        hidden = t.hidden;
+      }
     in
       lift_find find name t
 
@@ -442,10 +467,16 @@ end = struct
     | Expr expr -> begin
         match expr.term with
         | Path(_, true) | Alias(_, true) -> raise Not_found
+        | Alias(_, false) -> begin
+            let t = Lazy.force expr.expansion in
+            match t.hidden with
+            | false -> raise Not_found
+            | true -> find_apply_element t
+          end
         | _ -> find_apply_element (Lazy.force expr.expansion)
       end
     | Sig sg -> raise Not_found
-    | Functor fn -> Element.Module { canonical = None }
+    | Functor fn -> Element.Module { canonical = None; hidden = false }
     | Generative t -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
@@ -626,7 +657,8 @@ end = struct
     let modules = SMap.add name md sg.modules in
     let parents = LMap.add name (Parent.Module md) sg.parents in
     let elements =
-      LMap.add name (Element.Module { canonical = md.canonical }) sg.elements
+      let md = Element.Module { canonical=md.canonical; hidden=md.hidden } in
+      LMap.add name md sg.elements
     in
       {sg with modules; parents; elements}
 
@@ -934,6 +966,8 @@ end = struct
         reduce_resolved_module_path in_arg id path p
     | SubstAlias(_, p) ->
         reduce_resolved_module_path in_arg id path p
+    | Hidden p ->
+        reduce_resolved_module_path in_arg id path p
     | Module(p, name) -> begin
         match reduce_resolved_module_path in_arg id path p with
         | Some p -> Some (Path.module_ p name)
@@ -1036,7 +1070,8 @@ end = struct
     let open Path.Resolved in function
     | Identifier id' -> subst_module_ident id lookup path id'
     | Subst(_, p) -> subst_resolved_module_path id lookup path p
-    | SubstAlias(sub, p) -> subst_resolved_module_path id lookup path sub
+    | SubstAlias(sub, _) -> subst_resolved_module_path id lookup path sub
+    | Hidden p -> subst_resolved_module_path id lookup path p
     | Module(p, name) -> begin
         match subst_resolved_module_path id lookup path p with
         | Some (p, t) ->
@@ -1214,6 +1249,12 @@ end = struct
     | Expr expr -> begin
         match expr.term with
         | Path(_, true) | Alias(_, true) -> raise Not_found
+        | Alias(_, false) -> begin
+            let t = Lazy.force expr.expansion in
+            match t.hidden with
+            | false -> raise Not_found
+            | true -> find_parent_apply lookup arg t
+          end
         | _ -> find_parent_apply lookup arg (Lazy.force expr.expansion)
       end
     | Sig sg -> raise Not_found
@@ -1527,7 +1568,8 @@ and Element : sig
 
   type ('a, 'b) t =
     | Module :
-        { canonical : ('a Path.module_ * 'a Reference.module_) option } ->
+        { canonical : ('a Path.module_ * 'a Reference.module_) option
+        ; hidden : bool } ->
         ('a, [< kind > `Module]) t
     | ModuleType : ('a, [< kind > `ModuleType]) t
     | Type : ('a, [< kind > `Type]) t

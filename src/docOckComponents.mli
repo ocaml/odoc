@@ -142,6 +142,12 @@ module rec Sig : sig
   val get_canonical :
     'a t -> ('a Path.module_ * 'a Reference.module_) option
 
+  (** {3 Hidding} *)
+
+  val set_hidden : 'a t -> bool -> 'a t
+
+  val get_hidden : 'a t -> bool
+
 end
 
 and Datatype : sig
@@ -254,8 +260,8 @@ and Element : sig
 
   type ('a, 'b) t =
     | Module :
-        { canonical : ('a Path.module_ * 'a Reference.module_) option } ->
-      ('a, [< kind > `Module]) t
+        { canonical : ('a Path.module_ * 'a Reference.module_) option
+        ; hidden : bool } -> ('a, [< kind > `Module]) t
     | ModuleType : ('a, [< kind > `ModuleType]) t
     | Type : ('a, [< kind > `Type]) t
     | Constructor : string -> ('a, [< kind > `Constructor]) t

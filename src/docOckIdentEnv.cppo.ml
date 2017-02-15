@@ -16,15 +16,16 @@
 
 open DocOckPredef
 
-open DocOckPaths.Identifier
+module Id = DocOckPaths.Identifier
+module Rp = DocOckPaths.Path.Resolved
 
-type 'a type_ident = ('a, [`Type|`Class|`ClassType]) t
+type 'a type_ident = ('a, [`Type|`Class|`ClassType]) Id.t
 
-type 'a class_type_ident = ('a, [`Class|`ClassType]) t
+type 'a class_type_ident = ('a, [`Class|`ClassType]) Id.t
 
 type 'a t =
-  { modules : 'a module_ Ident.tbl;
-    module_types : 'a module_type Ident.tbl;
+  { modules : 'a Rp.module_ Ident.tbl;
+    module_types : 'a Id.module_type Ident.tbl;
     types : 'a type_ident Ident.tbl;
     class_types : 'a class_type_ident Ident.tbl; }
 
@@ -36,33 +37,37 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
+let should_be_hidden = DocOckPaths.contains_double_underscore
+
 let add_module parent id env =
   let name = Ident.name id in
-  let identifier = Module(parent, name) in
-  let modules = Ident.add id identifier env.modules in
+  let ident = Rp.Identifier (Id.Module(parent, name)) in
+  let module_ = if should_be_hidden name then Rp.Hidden ident else ident in
+  let modules = Ident.add id module_ env.modules in
     { env with modules }
 
 let add_argument parent arg id env =
   let name = Ident.name id in
-  let identifier = Argument(parent, arg, name) in
-  let modules = Ident.add id identifier env.modules in
+  let ident = Rp.Identifier (Id.Argument(parent, arg, name)) in
+  let module_ = if should_be_hidden name then Rp.Hidden ident else ident in
+  let modules = Ident.add id module_ env.modules in
     { env with modules }
 
 let add_module_type parent id env =
   let name = Ident.name id in
-  let identifier = ModuleType(parent, name) in
+  let identifier = Id.ModuleType(parent, name) in
   let module_types = Ident.add id identifier env.module_types in
     { env with module_types }
 
 let add_type parent id env =
   let name = Ident.name id in
-  let identifier = Type(parent, name) in
+  let identifier = Id.Type(parent, name) in
   let types = Ident.add id identifier env.types in
     { env with types }
 
 let add_class parent id ty_id obj_id cl_id env =
   let name = Ident.name id in
-  let identifier = Class(parent, name) in
+  let identifier = Id.Class(parent, name) in
   let add_idents tbl =
     Ident.add id identifier
       (Ident.add ty_id identifier
@@ -75,7 +80,7 @@ let add_class parent id ty_id obj_id cl_id env =
 
 let add_class_type parent id obj_id cl_id env =
   let name = Ident.name id in
-  let identifier = ClassType(parent, name) in
+  let identifier = Id.ClassType(parent, name) in
   let add_idents tbl =
     Ident.add id identifier
          (Ident.add obj_id identifier
@@ -233,8 +238,7 @@ module Path = struct
   let read_module_ident env id =
     if Ident.persistent id then Root (Ident.name id)
     else
-      try
-        Resolved (Identifier  (find_module env id))
+      try Resolved (find_module env id)
       with Not_found -> assert false
 
   let read_module_type_ident env id =

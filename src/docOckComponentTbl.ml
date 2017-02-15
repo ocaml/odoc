@@ -272,6 +272,7 @@ let rec unit tbl base =
                    (packed_items local items))
               items
       in
+      let t = Sig.set_hidden t unt.hidden in
         tbl.tbl.add base t;
         t
 
@@ -324,6 +325,7 @@ and resolved_module_path local =
       else module_identifier local.t id
   | Subst(sub, _) -> resolved_module_type_path local sub
   | SubstAlias(sub, _) -> resolved_module_path local sub
+  | Hidden p -> resolved_module_path local p
   | Module(p, name) ->
       let parent = resolved_module_path local p in
         Sig.lookup_module name parent
@@ -433,6 +435,7 @@ and signature_items local =
         let name = Identifier.name md.id in
         let decl = module_decl local md.type_ in
         let decl = set_canonical decl md.canonical in
+        let decl = set_hidden decl md.hidden in
         add_local_module_identifier local md.id decl;
         let sg = signature_items local rest in
         let sg = add_documentation md.doc sg in
@@ -605,31 +608,33 @@ let rec resolved_signature_fragment wth =
       let parent = resolved_signature_fragment wth p in
         Sig.lookup_module name parent
 
-let rec resolved_signature_reference tbl =
+let rec resolved_signature_reference tbl unit =
   let open Reference.Resolved in function
   | Identifier (id : 'a Identifier.signature) ->
       signature_identifier tbl id
+  | SubstAlias(sub, _) ->
+      resolved_module_path tbl unit sub
   | Module(p, name) ->
-      let parent = resolved_signature_reference tbl p in
+      let parent = resolved_signature_reference tbl unit p in
         Sig.lookup_module name parent
   | Canonical (p, _) ->
-    resolved_signature_reference tbl (Reference.Resolved.signature_of_module p)
+    resolved_signature_reference tbl unit (signature_of_module p)
   | ModuleType(p, name) ->
-      let parent = resolved_signature_reference tbl p in
+      let parent = resolved_signature_reference tbl unit p in
         Sig.lookup_module_type name parent
 
-and resolved_class_signature_reference tbl =
+and resolved_class_signature_reference tbl unit =
   let open Reference.Resolved in function
     | Identifier id -> class_signature_identifier tbl id
     | Class(p, name) | ClassType(p, name) ->
-        let parent = resolved_signature_reference tbl p in
+        let parent = resolved_signature_reference tbl unit p in
           Sig.lookup_class_type name parent
 
-and resolved_datatype_reference tbl =
+and resolved_datatype_reference tbl unit =
   let open Reference.Resolved in function
     | Identifier id -> datatype_identifier tbl id
     | Type(p, name) ->
-        let parent = resolved_signature_reference tbl p in
+        let parent = resolved_signature_reference tbl unit p in
           Sig.lookup_datatype name parent
 
 let base tbl s = tbl.lookup s
