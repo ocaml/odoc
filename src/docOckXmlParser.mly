@@ -422,9 +422,9 @@ type_resolved_fragment:
 signature_resolved_fragment:
   | ROOT CLOSE
       { Fragment.Resolved.Root }
-  | SUBST sub = module_type_resolved_path p = signature_resolved_fragment CLOSE
+  | SUBST sub = module_type_resolved_path p = module_resolved_fragment CLOSE
       { Fragment.Resolved.Subst(sub, p) }
-  | SUBST_ALIAS sub = module_resolved_path p = signature_resolved_fragment CLOSE
+  | SUBST_ALIAS sub = module_resolved_path p = module_resolved_fragment CLOSE
       { Fragment.Resolved.SubstAlias(sub, p) }
   | MODULE md = signature_resolved_fragment data = string CLOSE
       { Fragment.Resolved.Module(md, data) }
@@ -452,6 +452,8 @@ module_resolved_reference:
       { Reference.Resolved.ident_module id }
   | MODULE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Module(sg, data) }
+  | SUBST_ALIAS sub = module_resolved_path md = module_resolved_reference CLOSE
+      { Reference.Resolved.SubstAlias(sub, md) }
   | CANONICAL rp = module_resolved_reference p = module_reference CLOSE
       { Reference.Resolved.Canonical (rp, p) }
 
@@ -1151,10 +1153,11 @@ signature_item:
           let open ClassType in
             ClassType {id; doc; virtual_; params; expr; expansion} }
   | MODULE id = module_identifier doc = doc type_ = module_decl
-      expansion = module_expansion_opt canonical = canonical CLOSE
+      expansion = module_expansion_opt canonical = canonical
+      hidden = flag(HIDDEN) display_type = option(module_decl) CLOSE
       { let open Signature in
         let open Module in
-          Module {id; doc; type_; expansion; canonical} }
+          Module {id; doc; type_; expansion; canonical; hidden; display_type} }
   | MODULE_TYPE id = module_type_identifier doc = doc
       expr = module_type_expr?  expansion = module_expansion_opt CLOSE
       { let open Signature in

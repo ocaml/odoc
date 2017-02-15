@@ -500,6 +500,10 @@ let rec resolved_path_p : type a. _ -> _ -> _ -> (_, a) Path.Resolved.t -> _ =
         let acc = resolved_path_p base output acc sub in
         let acc = resolved_path_p base output acc p in
         close output acc
+      | Hidden p ->
+        let acc = hidden_t output acc in
+        let acc = resolved_path_p base output acc p in
+        close output acc
       | Apply(m, arg) ->
         let acc = apply_t output acc in
         let acc = resolved_path_p base output acc m in
@@ -598,6 +602,11 @@ let rec resolved_reference_p
       | Identifier id ->
         let acc = identifier_t output acc in
         let acc = identifier_p base output acc id in
+        close output acc
+      | SubstAlias(sub, p) ->
+        let acc = subst_alias_t output acc in
+        let acc = resolved_path_p base output acc sub in
+        let acc = resolved_reference_p base output acc p in
         close output acc
       | Module(sg, name) -> component module_t sg name
       | Canonical (rr, r) ->
@@ -1290,6 +1299,12 @@ and signature_item_p base output acc =
       let acc = module_decl_p base output acc md.type_ in
       let acc = module_expansion_p base output acc md.expansion in
       let acc = canonical_p base output acc md.canonical in
+      let acc = flag hidden_t output acc md.hidden in
+      let acc =
+        match md.display_type with
+        | None -> acc
+        | Some type_ -> module_decl_p base output acc type_
+      in
       close output acc
     | ModuleType mty ->
       let open ModuleType in
