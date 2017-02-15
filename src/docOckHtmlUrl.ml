@@ -178,6 +178,7 @@ let render_path : type a. (_, a) Path.t -> string =
     | Identifier id -> Identifier.name id
     | Subst (_, p) -> render_resolved p
     | SubstAlias (_, p) -> render_resolved p
+    | Hidden p -> render_resolved p
     | Module (p, s) -> render_resolved p ^ "." ^ s
     | Canonical (_, Path.Resolved p) -> render_resolved p
     | Canonical (p, p') -> render_resolved p

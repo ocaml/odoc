@@ -139,8 +139,8 @@ module Relative_link = struct
         let open Fragment.Resolved in
         match fragment with
         | Root -> ""
-        | Subst (_, rr) -> render_resolved id rr
-        | SubstAlias (_, rr) -> render_resolved id rr
+        | Subst (_, rr) -> render_resolved id (any_sort rr)
+        | SubstAlias (_, rr) -> render_resolved id (any_sort rr)
         | Module (rr, s) -> dot (render_resolved id rr) s
         | Type (rr, s) -> dot (render_resolved id rr) s
         | Class (rr, s) -> dot (render_resolved id rr) s

@@ -112,6 +112,7 @@ module Reference = struct
       let open Reference.Resolved in
       match r with
       | Identifier id -> Identifier.name id
+      | SubstAlias(_, r) -> render_resolved r
       | Module (r, s) -> render_resolved r ^ "." ^ s
       | Canonical (_, Reference.Resolved r) -> render_resolved r
       | Canonical (p, p') -> render_resolved p
