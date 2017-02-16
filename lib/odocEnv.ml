@@ -75,9 +75,12 @@ module Accessible_paths = struct
       root
 
   let file_of_root t root =
-    (* If we have a root, we called lookup before, so the root *is* in the
-       table. *)
-    Root.Table.find t.root_map root
+    let open Root in
+    try Table.find t.root_map root
+    with Not_found ->
+      let r = find_root ~digest:(digest root) t ~name:(unit root).Unit.name in
+      assert (equal root r);
+      Table.find t.root_map r
 end
 
 
