@@ -80,7 +80,7 @@ and pack
       Markup.keyword "module " ::
       pcdata modname ::
       pcdata " = " ::
-      Html_tree.Relative_link.of_path ~get_package x.path
+      Html_tree.Relative_link.of_path ~stop_before:false ~get_package x.path
     in
     Markup.make_def ~get_package ~id:x.Unit.Packed.id ~code:md_def ~doc:[]
   )
@@ -227,7 +227,7 @@ and module_decl'
   -> 'a Identifier.signature -> 'a Types.Module.decl
   -> ('inner_row, 'outer_row) text elt list
 = fun ~get_package base -> function
-  | Alias mod_path -> Html_tree.Relative_link.of_path ~get_package mod_path
+  | Alias mod_path -> Html_tree.Relative_link.of_path ~stop_before:true ~get_package mod_path
   | ModuleType mt -> mty ~get_package (extract_path_from_mt ~default:base mt) mt
 
 and module_type ~get_package (t : _ Types.ModuleType.t) =
@@ -276,7 +276,7 @@ and mty
   -> 'a Identifier.signature -> 'a Types.ModuleType.expr
   -> ('inner_row, 'outer_row) text elt list
 = fun ~get_package (base : _ Identifier.signature) -> function
-  | Path mty_path -> Html_tree.Relative_link.of_path ~get_package mty_path
+  | Path mty_path -> Html_tree.Relative_link.of_path ~stop_before:true ~get_package mty_path
   | Signature _ ->
     [ Markup.keyword "sig" ; pcdata " ... " ; Markup.keyword "end" ]
   | Functor (None, expr) ->
@@ -327,7 +327,7 @@ and substitution
     Markup.keyword "module " ::
     Html_tree.Relative_link.of_fragment ~get_package ~base (Fragment.signature_of_module frag_mod) @
     pcdata " := " ::
-    Html_tree.Relative_link.of_path ~get_package mod_path
+    Html_tree.Relative_link.of_path ~stop_before:true ~get_package mod_path
   | TypeSubst (frag_typ, vars, typ_path) ->
     let params =
       pcdata begin match vars with
@@ -341,7 +341,7 @@ and substitution
     Html_tree.Relative_link.of_fragment ~get_package ~base (Fragment.any_sort frag_typ) @
     pcdata " := " ::
     params ::
-    Html_tree.Relative_link.of_path ~get_package typ_path
+    Html_tree.Relative_link.of_path ~stop_before:false ~get_package typ_path
 
 and constructor
    : 'b. get_package:('a -> string)
@@ -600,7 +600,7 @@ and extension ~get_package (t : _ Types.Extension.t) =
   let extension =
     code (
       Markup.keyword "type " ::
-      Html_tree.Relative_link.of_path ~get_package t.type_path @
+      Html_tree.Relative_link.of_path ~stop_before:false ~get_package t.type_path @
       [ Markup.keyword " += " ]
     ) ::
     list_concat_map t.constructors ~sep:(code [Markup.keyword " | "])
@@ -709,19 +709,19 @@ and type_expr
     in
     if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Constr (path, args) ->
-    let link = Html_tree.Relative_link.of_path ~get_package path in
+    let link = Html_tree.Relative_link.of_path ~stop_before:false ~get_package path in
     format_type_path ~get_package ~delim:(`parens) args link
   | Variant v -> te_variant ~get_package v
   | Object o -> te_object ~get_package o
   | Class (path, args) ->
     format_type_path ~get_package ~delim:(`brackets) args
-      (Html_tree.Relative_link.of_path ~get_package path)
+      (Html_tree.Relative_link.of_path ~stop_before:false ~get_package path)
   | Poly (polyvars, t) ->
     pcdata (String.concat " " polyvars ^ ". ") :: type_expr ~get_package t
   | Package pkg ->
     (* CR trefis: TODO substitutions *)
     pcdata "(" :: Markup.keyword "module " ::
-    Html_tree.Relative_link.of_path ~get_package pkg.path @ [pcdata ")"]
+    Html_tree.Relative_link.of_path ~stop_before:false ~get_package pkg.path @ [pcdata ")"]
 
 and value ~get_package (t : _ Types.Value.t) =
   let name = Identifier.name t.id in
@@ -803,7 +803,7 @@ and class_type_expr
    = fun ~get_package (cte : _ Types.ClassType.expr) ->
      match cte with
      | Constr (path, args) ->
-       let link = Html_tree.Relative_link.of_path ~get_package path in
+       let link = Html_tree.Relative_link.of_path ~stop_before:false ~get_package path in
        format_type_path ~get_package ~delim:(`brackets) args link
      | Signature _ ->
        [ Markup.keyword "object" ; pcdata " ... " ; Markup.keyword "end" ]

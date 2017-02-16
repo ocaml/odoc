@@ -176,8 +176,8 @@ module Relative_link = struct
           link @ [ pcdata ("." ^ suffix) ]
   end
 
-  let of_path ~get_package p =
-    Of_path.to_html ~get_package ~stop_before:false p
+  let of_path ~get_package ~stop_before p =
+    Of_path.to_html ~get_package ~stop_before p
 
   let of_fragment ~get_package ~base frag =
     Of_fragment.to_html ~get_package ~stop_before:false base frag

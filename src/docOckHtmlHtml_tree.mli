@@ -80,7 +80,7 @@ module Relative_link : sig
       ('a, _) Identifier.t -> string
   end
 
-  val of_path : get_package:('a -> string) -> ('a, _) Path.t
+  val of_path : get_package:('a -> string) -> stop_before:bool -> ('a, _) Path.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
   val of_fragment : get_package:('a -> string) -> base:'a Identifier.signature
