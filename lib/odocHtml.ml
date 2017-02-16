@@ -71,7 +71,7 @@ let from_mld ~env ~output:root_dir ~pkg input =
   let root_name = Fs.File.(to_string @@ basename input) in
   let root =
     let package = Root.Package.create pkg in
-    let unit = Root.Unit.create root_name in
+    let unit = Root.Unit.create ~force_hidden:false root_name in
     let digest = Digest.file (Fs.File.to_string input) in
     Root.create ~package ~unit ~digest
   in

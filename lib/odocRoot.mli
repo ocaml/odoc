@@ -25,11 +25,12 @@ end
 
 module Unit : sig
 
-  type t
+  type t = private {
+    name : string;
+    hidden : bool;
+  }
 
-  val create : string -> t
-
-  val to_string : t -> string
+  val create : force_hidden:bool -> string -> t
 end
 
 module Digest = Digest

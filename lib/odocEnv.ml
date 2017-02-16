@@ -18,6 +18,8 @@ module Unit = OdocUnit
 module Root = OdocRoot
 module Fs = OdocFs
 
+open DocOck
+
 let failwithf fmt = Printf.ksprintf failwith fmt
 
 type t = {
@@ -90,7 +92,7 @@ let create ?(important_digests=true) ~directories : builder =
           if important_digests then DocOck.Not_found
           else begin
             match Accessible_paths.find_root ap ~name:target_name with
-            | root -> Found root
+            | root -> Found {root; hidden = (Root.unit root).Root.Unit.hidden}
             | exception Not_found -> Not_found
           end
         | import :: imports ->
@@ -100,22 +102,22 @@ let create ?(important_digests=true) ~directories : builder =
             | None when important_digests -> Forward_reference
             | _ ->
               match Accessible_paths.find_root ap ~name:target_name ?digest with
-              | root -> Found root
+              | root -> Found {root; hidden = (Root.unit root).Root.Unit.hidden}
               | exception Not_found -> Not_found
             end
-          | DocOckTypes.Unit.Import.Resolved root
-            when Root.Unit.to_string (Root.unit root) = target_name ->
-            Found root
+          | Types.Unit.Import.Resolved root
+            when (Root.unit root).Root.Unit.name = target_name ->
+            Found {root; hidden = (Root.unit root).Root.Unit.hidden}
           | _ ->
             aux imports
       in
-      match aux unit.DocOckTypes.Unit.imports with
-      | DocOck.Not_found ->
+      match aux unit.Types.Unit.imports with
+      | Not_found ->
         let current_root = Unit.root unit in
-        if target_name = Root.Unit.to_string (Root.unit current_root) then
-          Found current_root
+        if target_name = (Root.unit current_root).Root.Unit.name then
+          Found { root = current_root; hidden = unit.Types.Unit.hidden}
         else
-          DocOck.Not_found
+          Not_found
       | x -> x
     in
     let fetch root : Root.t DocOckTypes.Unit.t =

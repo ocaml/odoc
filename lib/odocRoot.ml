@@ -23,9 +23,11 @@ module Package = struct
 end
 
 module Unit = struct
-  type t = string
-  let create s = s
-  let to_string s = s
+  type t = { name : string; hidden : bool }
+
+  let create ~force_hidden name =
+    let hidden = force_hidden || DocOck.Paths.contains_double_underscore name in
+    { name; hidden }
 end
 
 module T = struct
@@ -43,7 +45,7 @@ end
 
 include T
 
-let to_string t = t.package ^ "::" ^ t.unit
+let to_string t = t.package ^ "::" ^ t.unit.name
 
 let create ~package ~unit ~digest = { package; unit; digest }
 
@@ -77,7 +79,8 @@ module Xml = struct
     | `El_end -> ()
     | _ -> assert false
     end;
-    create ~package:!package ~unit:!unit ~digest:!digest
+    create ~package:!package ~unit:(Unit.create ~force_hidden:false !unit)
+      ~digest:!digest
 
   let fold =
     let make_tag name = (("", name), []) in
@@ -89,7 +92,7 @@ module Xml = struct
       |> flipped (`Data root.package)
       |> flipped `El_end
       |> flipped (`El_start (make_tag "unit"))
-      |> flipped (`Data root.unit)
+      |> flipped (`Data root.unit.name)
       |> flipped `El_end
       |> flipped (`El_start (make_tag "digest"))
       |> flipped (`Data (Digest.to_hex root.digest))

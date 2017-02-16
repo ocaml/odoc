@@ -46,7 +46,8 @@ let it's_all_the_same ~env ~output input reader =
     Unit.save output (expand (Env.expander expand_env) resolved)
 
 let root_of_unit ~package unit_name digest =
-  let unit = Root.Unit.create unit_name in
+  (* TODO: have a cmdline flag to force hiddeness. *)
+  let unit = Root.Unit.create ~force_hidden:false unit_name in
   Root.create ~package ~unit ~digest
 
 let cmti ~env ~package ~output input =
