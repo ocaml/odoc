@@ -837,9 +837,7 @@ and expand_argument t arg_opt =
 let should_expand t id decl =
   let open Path in
   match decl with
-  | Module.Alias (Resolved ( Resolved.Canonical (Resolved.Hidden _, _)
-                           | Resolved.Hidden _)) -> true
-  | Module.Alias _ -> false
+  | Module.Alias p -> Path.is_hidden p
   | _ -> true
 
 let expand_module ({equal} as t) md =

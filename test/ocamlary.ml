@@ -820,11 +820,15 @@ module Aliases = struct
   type tata' = A'.t
   type tete2 = Foo.E.t
 
-  module Bar = struct
+  module Std = struct
+    module A = Foo.A
+    module B = Foo.B
+    module C = Foo.C
+    module D = Foo.D
     module E = Foo.E
   end
 
-  type bare = Bar.E.t
+  type stde = Std.E.t
 
   (** {3 include of Foo}
 
@@ -835,4 +839,23 @@ module Aliases = struct
   type testa = A.t
 
   (** And also, let's refer to {!A.t} and {!Foo.B.id} *)
+
+  module P1 = struct
+    (** @canonical Ocamlary.Aliases.P2.Z *)
+    module Y = struct
+      type t
+
+      let id x = x
+    end
+  end
+
+  module P2 = struct
+    module Z = P1.Y
+  end
+
+  module X1 = P1.Y
+  module X2 = P2.Z
+
+  type p1 = X1.t
+  type p2 = X2.t
 end

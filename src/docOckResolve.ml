@@ -254,7 +254,14 @@ and resolve_resolved_module_path :
             if rp != rp' then Path.Resolved rp' else cano'
         | _ -> cano'
       in
-      Canonical(orig', cano')
+      let c = Canonical(orig', cano') in
+      match cano' with
+      | Path.Resolved (Identifier id)
+          (* FIXME: propagate equality function if given *)
+        when Identifier.equal ~equal:(=) ident
+               (Identifier.signature_of_module id) ->
+        Hidden c
+      | _ -> c
     ) else p
   | Apply(fn, arg) ->
     let fn' = resolve_resolved_module_path ident tbl u fn in
