@@ -254,8 +254,10 @@ let rec expand_module_decl ({equal} as t) root dest offset decl =
               ex subs
           in
           let src = Identifier.signature_of_module src in
-          let sub = DocOckSubst.rename_signature ~equal src dest offset in
-          subst_expansion sub ex
+          let sub1 = DocOckSubst.rename_signature ~equal src dest offset in
+          let ex = subst_expansion sub1 ex in
+          let sub2 = DocOckSubst.strengthen p in
+          subst_expansion sub2 ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
     | Alias p -> begin

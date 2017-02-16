@@ -298,6 +298,8 @@ module rec Path : sig
 
     val equal_identifier : equal:('a -> 'a -> bool) -> ('a, 'b) Identifier.t ->
       ('a, 'b) t -> bool
+
+    val is_hidden : ('a, 'b) t -> bool
   end
 
   type kind = Kind.path
@@ -350,6 +352,7 @@ module rec Path : sig
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+  val is_hidden : ('a, 'b) t -> bool
 end
 
 (** {3 Fragments} *)

@@ -271,6 +271,57 @@ end
 let prefix ~equal ~canonical id =
   new prefix ~equal ~canonical id
 
+class ['a] strengthen path : ['a] t = object (self)
+
+  inherit ['a] DocOckMaps.types
+
+  method root x = x
+
+  method documentation_comment x = x
+
+  method module_ md =
+    if Path.Resolved.is_hidden path then md
+    else begin
+      let open Module in
+      match md.type_ with
+      | Alias p when not (Path.is_hidden p) -> md
+      | _ ->
+          let name = Identifier.name md.id in
+          let path = Path.Resolved(Path.Resolved.Module(path, name)) in
+          let type_ = Alias path in
+          let expansion = None in
+          { md with type_; expansion }
+    end
+
+  method module_type x = x
+
+  method type_decl x = x
+
+  method extension x = x
+
+  method exception_ x = x
+
+  method value x = x
+
+  method external_ x = x
+
+  method class_ x = x
+
+  method class_type x = x
+
+  method include_ x = x
+
+  inherit ['a] DocOckMaps.paths
+
+  method offset_identifier_signature x = x
+
+  method module_type_expr x = x
+
+end
+
+let strengthen path =
+  new strengthen path
+
 let make_lookup (type a) ~equal ~hash
                 (items : (a Identifier.module_ * a Identifier.module_) list) =
   let module Hash = struct

@@ -710,6 +710,34 @@ end = struct
     let add_label sg label = add_element label (Element.Label None) sg in
       List.fold_left add_label sg labels
 
+  let strengthen_submodule path expansion name t =
+    match t.body with
+    | Unresolved -> t
+    | Expr { term = Alias(p, b); _ } when b || not (Path.is_hidden p) -> t
+    | _ ->
+        let path = Path.module_ path name in
+        let term = Alias(path, false) in
+        let expansion = lazy (lookup_module name (Lazy.force expansion)) in
+        { t with body = Expr {term; expansion} }
+
+  let rec strengthen_module path expansion t =
+    if Path.is_hidden path then t else
+    match t.body with
+    | Expr { term; expansion = ex } -> begin
+        let ex' = lazy (strengthen_module path expansion (Lazy.force ex)) in
+        { t with body = Expr { term; expansion = ex' } }
+      end
+    | Sig sg ->
+      let sg =
+        lazy (
+          let sg = Lazy.force sg in
+          let modules = SMap.mapi (strengthen_submodule path expansion) sg.modules in
+          { sg with modules }
+        )
+      in
+      { t with body = Sig sg }
+    | Functor _ | Generative _ | Abstract | Unresolved -> t
+
   let rec include_ t sg =
     match t.body with
     | Expr expr -> include_ (Lazy.force expr.expansion) sg
@@ -760,7 +788,12 @@ end = struct
 
   let alias lookup p =
     let term = Alias(p, false) in
-    let expansion = lazy (lookup p) in
+    let expansion =
+      lazy (
+        let ex = lookup p in
+        strengthen_module p (Lazy.from_val ex) ex
+      )
+    in
       mkExpr {term; expansion}
 
   let signature f x = mkSig (lazy (f x))

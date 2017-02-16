@@ -817,6 +817,20 @@ module Path = struct
         | _, _ ->
           false
 
+    let rec is_hidden : type k. ('a, k) t -> bool = function
+      | Identifier _ -> false
+      | Hidden _ -> true
+      | Subst(p1, p2) -> is_hidden p1 || is_hidden p2
+      | SubstAlias(p1, p2) -> is_hidden p1 || is_hidden p2
+      | Module (p, _) -> is_hidden p
+      | Canonical (p, _) ->
+        (* [p] should just be [Hidden]. *)
+        is_hidden p
+      | Apply (p, _) -> is_hidden p
+      | ModuleType (p, _) -> is_hidden p
+      | Type (p, _) -> is_hidden p
+      | Class (p, _) -> is_hidden p
+      | ClassType (p, _) -> is_hidden p
   end
 
   open Identifier
@@ -904,6 +918,12 @@ module Path = struct
     | Resolved (ClassType _) as x -> x
     | Dot _ as x -> x
 
+  let rec is_hidden : type k. ('a, k) t -> bool = function
+    | Resolved r -> Resolved.is_hidden r
+    | Root _ -> false
+    | Forward _ -> false
+    | Dot(p, _) -> is_hidden p
+    | Apply(p1, p2) -> is_hidden p1 || is_hidden p2
 end
 
 

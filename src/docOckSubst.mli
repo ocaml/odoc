@@ -89,5 +89,7 @@ val prefix : equal:('a -> 'a -> bool) ->
              'a Identifier.module_ ->
              'a t
 
+val strengthen : 'a Path.Resolved.module_ -> 'a t
+
 val pack : equal:('a -> 'a -> bool) -> hash:('a -> int) ->
            ('a Identifier.module_ * 'a Identifier.module_) list -> 'a t
