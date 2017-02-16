@@ -693,11 +693,12 @@ module Path = struct
           if new_base == new_base' then
             Stop t
           else
-            Continue (id, new_base)
+            Continue (id, new_base')
+        | Subst (_, p)
+        | SubstAlias (_, p)
         | Hidden p -> begin
             match rebase_module_path new_base p with
-            | Stop p' ->
-              if p == p' then Stop t else Stop p' (* FIXME? *)
+            | Stop p' when p == p' -> Stop t
             | otherwise -> otherwise
           end
         | Module (m, s) ->
@@ -724,8 +725,6 @@ module Path = struct
           end
         | Apply _ -> Stop t
         (* TODO: rewrite which side? *)
-        | Subst _ -> Stop t
-        | SubstAlias _ -> Stop t
 
     let rec rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
       fun new_base t ->
