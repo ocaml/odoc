@@ -65,9 +65,9 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
         | CTbl.Forward_reference ->
             (* We can't have a forward ref as parent. *)
             Unresolved p
-        | CTbl.Found r ->
-          (* TODO: Handle hidden units. *)
-            let p = Identifier (Identifier.Root(r, s)) in
+        | CTbl.Found { root ; hidden } ->
+            let p = Identifier (Identifier.Root(root, s)) in
+            let p = if hidden then Hidden p else p in
               Resolved(p, CTbl.resolved_module_path tbl u p)
       end
     | Forward s -> begin
@@ -76,9 +76,9 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
         | CTbl.Forward_reference ->
             (* We can't have a forward ref as parent. *)
             Unresolved p
-        | CTbl.Found r ->
-          (* TODO: Handle hidden units. *)
-            let p = Identifier (Identifier.Root(r, s)) in
+        | CTbl.Found { root ; hidden } ->
+            let p = Identifier (Identifier.Root(root, s)) in
+            let p = if hidden then Hidden p else p in
               Resolved(p, CTbl.resolved_module_path tbl u p)
       end
     | Resolved r -> Resolved(r, CTbl.resolved_module_path tbl u r)
@@ -157,13 +157,17 @@ and resolve_module_path ident tbl u =
       match CTbl.base tbl u s with
       | CTbl.Not_found -> p
       | CTbl.Forward_reference -> Forward s
-      | CTbl.Found r -> Resolved (Identifier (Identifier.Root(r, s)))
+      | CTbl.Found { root ; hidden } ->
+        let p = Identifier (Identifier.Root(root, s)) in
+        Resolved (if hidden then Hidden p else p)
     end
   | Forward s as p -> begin
       match CTbl.base tbl u s with
       | CTbl.Not_found -> p
       | CTbl.Forward_reference -> Forward s
-      | CTbl.Found r -> Resolved (Identifier (Identifier.Root(r, s)))
+      | CTbl.Found { root ; hidden } ->
+        let p = Identifier (Identifier.Root(root, s)) in
+        Resolved (if hidden then Hidden p else p)
     end
   | Resolved r as p ->
     let r' = resolve_resolved_module_path ident tbl u r in
@@ -556,8 +560,8 @@ let rec resolve_parent_reference :
             | CTbl.Forward_reference ->
                 (* TODO: fail? *)
                 Unresolved r
-            | CTbl.Found base ->
-                let root = Identifier (Identifier.Root(base, s)) in
+            | CTbl.Found {root;_} ->
+                let root = Identifier (Identifier.Root(root, s)) in
                   match kind with
                   | PParent ->
                       ResolvedSig(root, CTbl.resolved_signature_reference tbl u root)
@@ -710,7 +714,7 @@ and resolve_module_reference ident tbl u r =
         match CTbl.base tbl u s with
         | CTbl.Not_found -> r
         | CTbl.Forward_reference -> r (* TODO *)
-        | CTbl.Found base -> Resolved (Identifier (Identifier.Root(base, s)))
+        | CTbl.Found {root; _} -> Resolved (Identifier (Identifier.Root(root, s)))
       end
     | Resolved rr as r ->
       let rr' = resolve_resolved_reference ident tbl u rr in
@@ -1077,7 +1081,7 @@ and resolve_element_reference ident tbl u r =
         match CTbl.base tbl u s with
         | CTbl.Not_found -> r
         | CTbl.Forward_reference -> r (* TODO *)
-        | CTbl.Found base -> Resolved (Identifier (Identifier.Root(base, s)))
+        | CTbl.Found {root;_} -> Resolved (Identifier (Identifier.Root(root, s)))
       end
     | Resolved rr ->
       let rr' = resolve_resolved_reference ident tbl u rr in
@@ -1353,7 +1357,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
       | Resolved _ -> import
       | Unresolved(name, _) ->
         match lookup (unwrap unit) name with
-        | CTbl.Found root -> Resolved root
+        | CTbl.Found {root; _} -> Resolved root
         | _ -> import
 
   method resolve unit =

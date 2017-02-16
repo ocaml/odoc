@@ -58,7 +58,7 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 
 type 'a lookup_result =
   | Forward_reference
-  | Found of 'a
+  | Found of { root : 'a; hidden : bool }
   | Not_found
 
 type 'a t =
@@ -355,13 +355,13 @@ and module_path local =
   | Root s -> begin
       match local.t.lookup local.unit s with
       | Not_found -> Sig.unresolved
-      | Found base -> unit local.t base
+      | Found {root;_} -> unit local.t root
       | Forward_reference -> Sig.abstract
     end
   | Forward s -> begin (* FIXME? *)
       match local.t.lookup local.unit s with
       | Not_found -> Sig.unresolved
-      | Found base -> unit local.t base
+      | Found {root; _} -> unit local.t root
       | Forward_reference -> Sig.abstract
     end
   | Resolved r -> resolved_module_path local r

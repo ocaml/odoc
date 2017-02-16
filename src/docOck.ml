@@ -20,7 +20,7 @@ module Types = DocOckTypes
 
 type 'a lookup_result = 'a DocOckComponentTbl.lookup_result =
   | Forward_reference
-  | Found of 'a
+  | Found of { root : 'a; hidden : bool }
   | Not_found
 
 let core_types = DocOckPredef.core_types

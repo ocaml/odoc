@@ -705,11 +705,12 @@ let create (type a) ?equal ?hash
       RootTbl.add expand_root_tbl key res;
       res
   and fetch_unit_from_ref ref =
+    (* FIXME: this function is not really necessary is it? *)
     let open Reference in
     match ref with
     | Resolved (Resolved.Identifier (Identifier.Root (_, unit_name))) ->
       begin match lookup unit_name with
-      | DocOckComponentTbl.Found root ->
+      | DocOckComponentTbl.Found { root; _ } ->
         let unit = fetch ~root root in
         Some unit
       | _ -> None
@@ -718,7 +719,7 @@ let create (type a) ?equal ?hash
       None
   and expand_forward_ref ~root str =
     match lookup str with
-    | DocOckComponentTbl.Found a -> expand_root ~root a
+    | DocOckComponentTbl.Found { root = a; } -> expand_root ~root a
     | _ -> raise Not_found
   and expand_module_identifier ~root id =
     let key = (root, Identifier.any id) in

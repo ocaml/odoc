@@ -25,7 +25,7 @@ type 'a t
 
 type 'a lookup_result =
   | Forward_reference
-  | Found of 'a
+  | Found of { root : 'a; hidden : bool }
   | Not_found
 
 (** Create a table of the components of units. Optionally provide

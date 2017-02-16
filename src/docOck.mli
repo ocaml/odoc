@@ -40,7 +40,7 @@ type 'a resolver
 
 type 'a lookup_result =
   | Forward_reference
-  | Found of 'a
+  | Found of { root : 'a; hidden : bool }
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)

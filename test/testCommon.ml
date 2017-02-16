@@ -19,8 +19,11 @@ let module_name file =
         String.sub base 0 pos
     with Not_found -> base
   in
-  let name = String.capitalize_ascii prefix in
-    name
+    String.capitalize_ascii prefix
+
+let to_root file =
+  let name = module_name file in
+  name, Paths.contains_double_underscore name
 
 let check_identity_map file intf =
   let ident = new ident in
@@ -30,12 +33,13 @@ let check_identity_map file intf =
     else ()
 
 let lookup files =
-  let names = List.map module_name files in
+  let names = List.map to_root files in
     fun file source name ->
       if (Identifier.name source.Unit.id) <> (module_name file) then
         raise (Error(file, "bad lookup during resolution"));
-      if List.mem name names then Found name
-      else Not_found
+      match List.assoc name names with
+      | hidden -> Found { root = name; hidden }
+      | exception Not_found -> Not_found
 
 let fetch intfs =
   let intfs =
