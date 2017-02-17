@@ -427,7 +427,12 @@ and read_module_type env parent pos mty =
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
               let arg = read_module_type env id 1 arg in
-                Some { FunctorArgument. id; expr = arg; expansion = None }
+              let expansion =
+                match arg with
+                | Signature _ -> Some Module.AlreadyASig
+                | _ -> None
+              in
+                Some { FunctorArgument. id; expr = arg; expansion }
         in
         let env = Env.add_argument parent pos id env in
         let res = read_module_type env parent (pos + 1) res in
@@ -457,7 +462,12 @@ and read_module_type_declaration env parent mtd =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
-    {id; doc; expr; expansion = None}
+  let expansion =
+    match expr with
+    | Some (Signature _) -> Some Module.AlreadyASig
+    | _ -> None
+  in
+    {id; doc; expr; expansion}
 
 and read_module_declaration env parent md =
   let open Module in
@@ -486,7 +496,12 @@ and read_module_declaration env parent md =
     | Some _ -> true
     | None -> contains_double_underscore (Ident.name md.md_id)
   in
-    {id; doc; type_; expansion = None; canonical; hidden; display_type = None}
+  let expansion =
+    match type_ with
+    | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
+    | _ -> None
+  in
+    {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
 and read_module_declarations env parent mds =
   let container = Identifier.parent_of_signature parent in

@@ -145,6 +145,7 @@ end
 module rec Module : sig
 
   type 'a expansion =
+    | AlreadyASig
     | Signature of 'a Signature.t
     | Functor of 'a FunctorArgument.t option list * 'a Signature.t
 

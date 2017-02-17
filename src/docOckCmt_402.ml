@@ -347,7 +347,12 @@ let rec read_module_expr env parent pos mexpr =
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
               let arg = DocOckCmti.read_module_type env id 1 arg in
-                Some { FunctorArgument. id; expr = arg; expansion = None }
+              let expansion =
+                match arg with
+                | Signature _ -> Some Module.AlreadyASig
+                | _ -> None
+              in
+                Some { FunctorArgument. id; expr = arg; expansion }
         in
         let env = Env.add_argument parent pos id env in
         let res = read_module_expr env parent (pos + 1) res in
@@ -393,7 +398,12 @@ and read_module_binding env parent mb =
     | Some _ -> true
     | None -> contains_double_underscore (Ident.name mb.mb_id)
   in
-    {id; doc; type_; expansion = None; canonical; hidden; display_type = None}
+  let expansion =
+    match type_ with
+    | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
+    | _ -> None
+  in
+    {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
 and read_module_bindings env parent mbs =
   let container = Identifier.parent_of_signature parent in

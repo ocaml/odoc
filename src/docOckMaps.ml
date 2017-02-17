@@ -1113,6 +1113,7 @@ class virtual ['a] module_ = object (self)
   method module_expansion expn =
     let open Module in
     match expn with
+    | AlreadyASig -> AlreadyASig
     | Signature sg ->
         let sg' = self#signature sg in
         if sg != sg' then Signature sg'

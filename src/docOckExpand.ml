@@ -103,7 +103,7 @@ let add_module_with subst md =
     | ModuleType expr ->
         ModuleType(With(expr, [subst]))
   in
-    { md with type_ }
+    { md with type_; expansion = None }
 
 let refine_type ex (frag : 'a Fragment.type_) equation =
   let open Fragment in
@@ -137,7 +137,8 @@ let refine_module ex (frag : 'a Fragment.module_) equation =
       | None -> begin
           try
             map_module name ex
-              (fun md -> Module.{ md with type_ = equation})
+              (fun md -> Module.{ md with type_ = equation
+                                        ; expansion = None })
               (* TODO Fix this to not produce an alias (needs strengthening)
                       or fix OCaml to do the correct thing. *)
           with Not_found -> None (* TODO should be an error *)
@@ -351,9 +352,14 @@ let expand_argument_ t root {FunctorArgument. id; expr; expansion} =
   | None ->
       let id = Identifier.signature_of_module id in
       expand_module_type_expr t root id 0 expr
+  | Some Module.AlreadyASig -> begin
+      match expr with
+      | ModuleType.Signature sg -> Some (Signature sg)
+      | _ -> assert false
+    end
   | Some (Module.Signature sg) -> Some (Signature sg)
   | Some (Module.Functor _) ->
-      (* CR trefis: This is for cases where the module argument is itself a functor.
+      (* TODO: This is for cases where the module argument is itself a functor.
          It *should* be handled, but latter. *)
       None
 
@@ -817,6 +823,9 @@ let rec force_expansion t root (ex : 'a partial_expansion option) =
       let ex = expand_module_type_expr t root dest offset expr in
         match force_expansion t root ex with
         | None -> None
+        | Some Module.AlreadyASig ->
+          (* we are never returning it, so we cannot receive it. *)
+          assert false
         | Some (Module.Signature sg) -> Some(Module.Functor([arg], sg))
         | Some (Module.Functor(args, sg)) ->
             Some(Module.Functor(arg :: args, sg))
