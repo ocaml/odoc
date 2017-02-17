@@ -55,6 +55,35 @@ let rec find_with_path_substs
           end
       with Not_found -> unresolved pr
 
+and resolve_canonical_path :
+  type k. _ -> _ -> _ -> ('a, k) Path.Resolved.t -> ('a, k) Path.Resolved.t =
+  fun ident tbl u p ->
+    let open Path.Resolved in
+    let open Path in
+    match p with
+    | Canonical(orig, cano) ->
+      let orig' = resolve_resolved_module_path ident tbl u orig in
+      let cano' = resolve_module_path ident tbl u cano in
+      if orig == orig' && cano == cano' then p
+      else (
+        let cano' =
+          match cano' with
+          | Resolved rp ->
+            let rp' = rebase ident rp in
+            if rp != rp' then Resolved rp' else cano'
+          | _ -> cano'
+        in
+        let c = Canonical(orig, cano') in
+        match cano' with
+        | Path.Resolved (Identifier id)
+          (* FIXME: propagate equality function if given *)
+          when Identifier.equal ~equal:(=) ident
+                 (Identifier.signature_of_module id) ->
+          Hidden c
+        | _ -> c
+      )
+    | _ -> p
+
 and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
   let open Path.Resolved in
   let open Path in
@@ -94,7 +123,7 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
                 | None -> pr
                 | Some (p, _) ->
                   assert (Sig.get_hidden md);
-                  Canonical(pr, p)
+                  resolve_canonical_path ident tbl u (Canonical(pr, p))
               in
               (Resolved(pr, md) : 'a parent_module_path)
             in
@@ -118,7 +147,7 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
                 | None -> pr
                 | Some (p, _) ->
                   assert (Sig.get_hidden md);
-                  Canonical(pr, p)
+                  resolve_canonical_path ident tbl u (Canonical(pr, p))
               in
               (Resolved(pr, md) : 'a parent_module_path)
             in
@@ -244,25 +273,7 @@ and resolve_resolved_module_path :
       Module(parent', name)
     else p
   | Canonical(orig, cano) ->
-    let orig' = resolve_resolved_module_path ident tbl u orig in
-    let cano' = resolve_module_path ident tbl u cano in
-    if orig != orig' || cano != cano' then (
-      let cano' =
-        match cano' with
-        | Path.Resolved rp ->
-            let rp' = Path.Resolved.rebase ident rp in
-            if rp != rp' then Path.Resolved rp' else cano'
-        | _ -> cano'
-      in
-      let c = Canonical(orig', cano') in
-      match cano' with
-      | Path.Resolved (Identifier id)
-          (* FIXME: propagate equality function if given *)
-        when Identifier.equal ~equal:(=) ident
-               (Identifier.signature_of_module id) ->
-        Hidden c
-      | _ -> c
-    ) else p
+    resolve_canonical_path ident tbl u p
   | Apply(fn, arg) ->
     let fn' = resolve_resolved_module_path ident tbl u fn in
     if fn != fn' then Apply(fn', arg)
