@@ -92,7 +92,8 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
     | Constructor (parent, name) ->
       from_identifier ~get_package ~stop_before:false parent
       >>= begin function
-      | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
+      (* FIXME: update doc-ock. *)
+(*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
       | { page; anchor } ->
         let kind = "constructor" in
         Ok { page; anchor = anchor ^ "." ^ name; kind }
@@ -100,7 +101,8 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
     | Field (parent, name) ->
       from_identifier ~get_package ~stop_before:false parent
       >>= begin function
-      | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
+      (* FIXME: update doc-ock. *)
+(*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
       | { page; anchor } ->
         let kind = "field" in
         Ok { page; anchor = anchor ^ "." ^ name; kind }
