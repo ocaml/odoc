@@ -594,11 +594,11 @@ module Path = struct
     let open Types.Resolved in
     function
     | Identifier _ -> false
+    | Canonical (_, _) -> false
     | Hidden _ -> true
     | Subst(p1, p2) -> is_resolved_hidden p1 || is_resolved_hidden p2
     | SubstAlias(p1, p2) -> is_resolved_hidden p1 || is_resolved_hidden p2
     | Module (p, _) -> is_resolved_hidden p
-    | Canonical (_, p) -> is_path_hidden p
     | Apply (p, _) -> is_resolved_hidden p
     | ModuleType (p, _) -> is_resolved_hidden p
     | Type (p, _) -> is_resolved_hidden p

@@ -142,7 +142,6 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
                 match Sig.get_canonical md with
                 | None -> pr
                 | Some (p, _) ->
-                  assert (Sig.get_hidden md);
                   resolve_canonical_path ident tbl u (Canonical(pr, p))
               in
               (Resolved(pr, md) : 'a parent_module_path)
@@ -166,7 +165,6 @@ and resolve_parent_module_path ident tbl u p : 'a parent_module_path =
                 match Sig.get_canonical md with
                 | None -> pr
                 | Some (p, _) ->
-                  assert (Sig.get_hidden md);
                   resolve_canonical_path ident tbl u (Canonical(pr, p))
               in
               (Resolved(pr, md) : 'a parent_module_path)
