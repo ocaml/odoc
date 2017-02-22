@@ -41,17 +41,37 @@ let rec find_with_path_substs
             match resolve_parent_module_type_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
+              let pr' =
+                let open Path.Resolved in
+                match pr with
+                | Canonical (p1, Path.Resolved p2) ->
+                  Path.Resolved.Subst(subpr, pr)
+                | Canonical (p1, p2) ->
+                  Path.Resolved.Canonical(Subst(subpr, p1), p2)
+                | _ ->
+                  Path.Resolved.Subst(subpr, pr)
+              in
                 find_with_path_substs
                   find resolved unresolved ident tbl u
-                  (Path.Resolved.Subst(subpr, pr)) parent
+                  pr' parent
           end
         | Parent.SubstAlias subp -> begin
             match resolve_parent_module_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
+              let pr' =
+                let open Path.Resolved in
+                match pr with
+                | Canonical (p1, Path.Resolved p2) ->
+                  SubstAlias(subpr, pr)
+                | Canonical (p1, p2) ->
+                  Canonical(SubstAlias(subpr, p1), p2)
+                | _ ->
+                  SubstAlias(subpr, pr)
+              in
                 find_with_path_substs
                   find resolved unresolved ident tbl u
-                  (Path.Resolved.SubstAlias(subpr, pr)) parent
+                  pr' parent
           end
       with Not_found -> unresolved pr
 
