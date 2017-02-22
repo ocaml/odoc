@@ -141,7 +141,7 @@ let read_cmt root_fn filename =
               | None -> assert false
               | exception Not_found -> assert false
         in
-        let hidden = false in
+        let hidden = Paths.contains_double_underscore name in
         let root = root_fn name digest in
         let (id, doc, items) = DocOckCmt.read_implementation root name impl in
         let imports =

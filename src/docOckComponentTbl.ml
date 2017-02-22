@@ -354,15 +354,23 @@ and module_path local =
   let open Path in function
   | Root s -> begin
       match local.t.lookup local.unit s with
-      | Not_found -> Sig.unresolved
+      | Not_found ->
+        let sg = Sig.unresolved in
+        Sig.set_hidden sg (contains_double_underscore s)
       | Found {root;_} -> unit local.t root
-      | Forward_reference -> Sig.abstract
+      | Forward_reference ->
+        let sg = Sig.abstract in
+        Sig.set_hidden sg (contains_double_underscore s)
     end
   | Forward s -> begin (* FIXME? *)
       match local.t.lookup local.unit s with
-      | Not_found -> Sig.unresolved
+      | Not_found ->
+        let sg = Sig.unresolved in
+        Sig.set_hidden sg (contains_double_underscore s)
       | Found {root; _} -> unit local.t root
-      | Forward_reference -> Sig.abstract
+      | Forward_reference ->
+        let sg = Sig.abstract in
+        Sig.set_hidden sg (contains_double_underscore s)
     end
   | Resolved r -> resolved_module_path local r
   | Dot(p, name) ->
