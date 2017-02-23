@@ -52,10 +52,14 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       end >>| fun pkg_name ->
       let page = [ pkg_name ] in
       let kind = "module" in
+      (* FIXME: for the moment we ignore [stop_before] for compilation units. At
+         some point we want to change that. *)
+      (*
       if stop_before then
         { page; anchor = unit_name; kind }
       else
-        { page = unit_name :: page; anchor = ""; kind }
+      *)
+      { page = unit_name :: page; anchor = ""; kind }
     | Module (parent, mod_name) ->
       from_identifier_no_anchor ~get_package parent
       >>| fun parent ->
