@@ -26,6 +26,9 @@ let open_attr attrs tag output acc =
 let alias_t output acc =
   output acc (`El_start ((ns, "alias"), []))
 
+let already_a_sig_t output acc =
+  output acc (`El_start ((ns, "already_a_sig"), []))
+
 let any_t output acc =
   output acc (`El_start ((ns, "any"), []))
 
@@ -1203,6 +1206,8 @@ and module_expansion_p base output acc expansion_opt =
   let acc =
     match expansion_opt with
     | None -> acc
+    | Some (Module.AlreadyASig) ->
+        closed already_a_sig_t output acc
     | Some (Module.Signature sg) ->
         let acc = signature_t output acc in
         let acc = List.fold_left (signature_item_p base output) acc sg in
