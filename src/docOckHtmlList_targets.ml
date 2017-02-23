@@ -68,6 +68,7 @@ and functor_argument ~prefix arg =
 
 and module_expansion ~prefix (t : _ Types.Module.expansion) =
   match t with
+  | AlreadyASig -> [] (* FIXME. *)
   | Signature sg -> signature ~prefix sg
   | Functor (args, sg) ->
     let subpages = signature ~prefix sg in

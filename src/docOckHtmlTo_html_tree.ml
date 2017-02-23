@@ -135,6 +135,15 @@ and functor_argument
         mty ~get_package (Identifier.signature_of_module arg.id) arg.expr
       ), []
     | Some expansion ->
+      let expansion =
+        match expansion with
+        | AlreadyASig ->
+          begin match arg.expr with
+          | Signature sg -> Module.Signature sg
+          | _ -> assert false
+          end
+        | e -> e
+      in
       Html_tree.enter ~kind:(`Arg) link_name;
       let node = module_expansion ~get_package expansion in
       let subtree = Html_tree.make node in
@@ -155,6 +164,7 @@ and module_expansion
   -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun ~get_package t ->
   match t with
+  | AlreadyASig -> assert false
   | Signature sg -> signature ~get_package sg
   | Functor (args, sg) ->
     let sig_html, subpages = signature ~get_package sg in
@@ -185,6 +195,15 @@ and module_
     match t.expansion with
     | None -> pcdata modname, []
     | Some expansion ->
+      let expansion =
+        match expansion with
+        | AlreadyASig ->
+          begin match t.type_ with
+          | ModuleType (ModuleType.Signature sg) -> Module.Signature sg
+          | _ -> assert false
+          end
+        | e -> e
+      in
       Html_tree.enter ~kind:(`Mod) modname;
       let doc = Documentation.to_html ~get_package t.doc in
       let expansion, subpages = module_expansion ~get_package expansion in
@@ -246,6 +265,15 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
     match t.expansion with
     | None -> pcdata modname, []
     | Some expansion ->
+      let expansion =
+        match expansion with
+        | AlreadyASig ->
+          begin match t.expr with
+          | Some (Signature sg) -> Module.Signature sg
+          | _ -> assert false
+          end
+        | e -> e
+      in
       Html_tree.enter ~kind:(`Mty) modname;
       let doc = Documentation.to_html ~get_package t.doc in
       let expansion, subpages = module_expansion ~get_package expansion in
