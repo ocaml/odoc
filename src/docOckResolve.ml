@@ -641,7 +641,7 @@ let rec resolve_parent_reference :
           end
         | Dot(pr, name) -> begin
             match resolve_parent_reference PSig ident tbl u pr with
-            | Unresolved _ -> Unresolved(Dot(r, name))
+            | Unresolved _ -> Unresolved r
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
