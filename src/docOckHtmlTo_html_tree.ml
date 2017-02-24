@@ -783,7 +783,9 @@ and class_signature ~get_package (t : _ Types.ClassSignature.t) =
     | InstanceVariable v -> [ instance_variable ~get_package v ]
     | Constraint (ty1, ty2) -> format_constraints ~get_package [ty1, ty2]
     | Inherit (Signature _) -> assert false (* Bold. *)
-    | Inherit cte -> class_type_expr ~get_package cte
+    | Inherit cte ->
+      Markup.keyword "inherit " ::
+      class_type_expr ~get_package cte
     | Comment (Documentation doc) ->
       if !recording_doc then
         Documentation.to_html ~get_package doc
