@@ -64,7 +64,8 @@ let choose_target_version conf =
 
 let () =
   let build = Pkg.build ~pre:choose_target_version () in
-  Pkg.describe "doc-ock" ~build @@ fun c ->
+  let opams = [ Pkg.opam_file ~lint_deps_excluding:(Some [ "cppo" ]) "opam" ] in
+  Pkg.describe "doc-ock" ~opams ~build @@ fun c ->
   Ok [ Pkg.lib ~exts:Exts.interface "src/docOckTypes";
        Pkg.mllib "src/doc-ock.mllib";
        Pkg.lib ~exts:Exts.interface "test/ocamlary";
