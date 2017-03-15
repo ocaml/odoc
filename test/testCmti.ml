@@ -58,7 +58,7 @@ let test silent cmti =
   | Ok intf ->
       let lookup u s =
         if u != intf then raise Bad_lookup;
-        if s = cmti then Found cmti
+        if s = cmti then Found { root = cmti; hidden = false }
         else Not_found
       in
       let fetch s =
