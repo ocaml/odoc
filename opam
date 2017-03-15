@@ -1,6 +1,5 @@
 opam-version: "1.2"
 name: "octavius"
-version: "0.1.0"
 maintainer: "leo@lpw25.net"
 authors: [ "Leo White <leo@lpw25.net>" ]
 homepage: "https://github.com/ocaml-doc/octavius"
