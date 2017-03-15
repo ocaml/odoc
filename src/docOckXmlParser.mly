@@ -66,6 +66,7 @@ let relax_class_type_reference cltyp =
 %}
 
 %token ALIAS
+%token ALREADY_A_SIG
 %token ANY
 %token APPLY
 %token ARGUMENTS
@@ -1108,6 +1109,7 @@ expansion_opt:
 module_expansion_opt:
   | opt = expansion_opt
       { match opt with None -> None | Some sg -> Some (Module.Signature sg) }
+  | EXPANSION ALREADY_A_SIG CLOSE { Some Module.AlreadyASig }
   | EXPANSION FUNCTOR args = module_argument* SIGNATURE sg = signature_item* CLOSE CLOSE CLOSE
       { Some (Module.Functor (args, sg)) }
 
