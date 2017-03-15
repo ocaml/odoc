@@ -25,6 +25,13 @@ let env =
   in
   Arg.(value & opt_all odoc_dir [] @@ info ~docs ~docv:"DIR" ~doc ["I"])
 
+let hidden =
+  let doc =
+    "Mark the unit as hidden. \
+     (Useful for files included in module packs)."
+  in
+  Arg.(value & flag @@ info ~docs ~doc ["hidden"])
+
 let dst =
   let doc = "Output dir" (* TODO: improve *) in
   Arg.(required & opt (some odoc_dir) None @@
@@ -35,7 +42,7 @@ module Compile : sig
   val info: Term.info
 end = struct
 
-  let compile directories resolve_fwd_refs output package_name input =
+  let compile _hidden directories resolve_fwd_refs output package_name input =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
@@ -79,7 +86,7 @@ end = struct
       let doc = "Try resolving forward references" in
       Arg.(value & flag @@ info ~doc ["r";"resolve-fwd-refs"])
     in
-    Term.(const compile $ env $ resolve_fwd_refs $ dst_file $ pkg $ input)
+    Term.(const compile $ hidden $ env $ resolve_fwd_refs $ dst_file $ pkg $ input)
 
   let info =
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
@@ -101,7 +108,8 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details directories output_dir index_for input_file =
+  let html semantic_uris closed_details hidden directories output_dir index_for
+        input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     DocOckHtml.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
@@ -137,7 +145,8 @@ end = struct
       in
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
-    Term.(const html $ semantic_uris $ closed_details $ env $ dst $ index_for $ input)
+    Term.(const html $ semantic_uris $ closed_details $ hidden $ env $ dst $
+          index_for $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
