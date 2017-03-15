@@ -1,2 +1,4 @@
-vX.X.X
+v1.0.0
 -------
+
+Initial release.
