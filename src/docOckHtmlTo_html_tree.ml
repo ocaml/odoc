@@ -190,7 +190,12 @@ and module_
   -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun ~get_package t ->
   let modname = Identifier.name t.id in
-  let md = module_decl ~get_package (Identifier.signature_of_module t.id) t.type_ in
+  let md =
+    module_decl ~get_package (Identifier.signature_of_module t.id)
+      (match t.display_type with
+       | None -> t.type_
+       | Some t -> t)
+  in
   let modname, subtree =
     match t.expansion with
     | None -> pcdata modname, []
