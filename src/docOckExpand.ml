@@ -849,6 +849,36 @@ let should_expand t id decl =
   | Module.Alias p -> Path.is_hidden p
   | _ -> true
 
+let is_canonical_tag doc =
+  let open Documentation in
+  match doc with
+  | Ok { text = []; tags = [Canonical (_, _)] } -> true
+  | _ -> false
+
+(** For module aliases where the binding site doesn't have any doc comment
+    attached, then we fetch the doc for the thing it aliases. *)
+let expand_mod_alias_doc md =
+  let open Module in
+  match md.type_ with
+  | ModuleType _  -> md
+  | Alias p ->
+    match md.doc with
+    | Documentation.Error _
+    | Documentation.Ok { text = _ :: _ ; _ }
+    | Documentation.Ok { tags = _ :: _ ; _ } -> md
+    | Documentation.Ok _ ->
+      match md.expansion with
+      | Some (
+          Signature (
+            Comment (Documentation c) ::
+            Comment (Documentation doc) ::
+            expansion
+          )
+        ) when is_canonical_tag c ->
+        { md with doc; expansion = Some (Signature expansion) }
+      | _ ->
+        md
+
 let expand_module ({equal} as t) md =
   let open Module in
     match md.expansion with
@@ -857,7 +887,7 @@ let expand_module ({equal} as t) md =
       if should_expand t md.id md.type_ then
         let root = Identifier.module_root md.id in
         let expansion = force_expansion t root (expand_module t root md) in
-        { md with expansion }
+        expand_mod_alias_doc { md with expansion }
       else
         md
 
