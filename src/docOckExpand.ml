@@ -879,6 +879,35 @@ let expand_mod_alias_doc md =
       | _ ->
         md
 
+(** Set display type for aliases to hidden things. *)
+let set_display_type md =
+  let open Module in
+  match md.display_type with
+  | Some _ -> md
+  | None ->
+    match md.type_ with
+    | Alias p ->
+      let open Path in
+      let open Path.Resolved in
+      begin match p with
+      | Resolved (Hidden _) ->
+        let display_type : _ Module.decl option =
+          match md.expansion with
+          | Some AlreadyASig -> assert false (* [md.type_] is [Alias] *)
+          | Some (Signature sg) -> Some (ModuleType (ModuleType.Signature sg))
+          | Some (Functor (args, sg)) ->
+            let expr =
+              List.fold_right (fun arg acc -> ModuleType.Functor (arg, acc))
+                args (ModuleType.Signature sg)
+            in
+            Some (ModuleType expr)
+          | None -> None
+        in
+        { md with display_type }
+      | _ -> md
+      end
+    | _ -> md
+
 let expand_module ({equal} as t) md =
   let open Module in
     match md.expansion with
@@ -887,7 +916,7 @@ let expand_module ({equal} as t) md =
       if should_expand t md.id md.type_ then
         let root = Identifier.module_root md.id in
         let expansion = force_expansion t root (expand_module t root md) in
-        expand_mod_alias_doc { md with expansion }
+        set_display_type (expand_mod_alias_doc { md with expansion })
       else
         md
 
