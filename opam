@@ -8,7 +8,7 @@ dev-repo: "http://github.com/ocaml-doc/doc-ock.git"
 bug-reports: "https://github.com/ocaml-doc/doc-ock/issues"
 tags: ["doc" "ocaml" "org:ocaml-doc"]
 
-available: [ ocaml-version >= "4.03.0" & ocaml-version < "4.04" ]
+available: [ ocaml-version >= "4.03.0" & ocaml-version < "4.05" ]
 depends: [
   "cppo" {build}
   "ocamlfind" {build}

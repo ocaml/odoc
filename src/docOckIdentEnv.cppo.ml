@@ -144,13 +144,24 @@ let add_signature_tree_item parent item env =
           (fun cld env ->
              add_class parent cld.ci_id_class
                cld.ci_id_class_type cld.ci_id_object
-               cld.ci_id_typesharp env)
+#if OCAML_VERSION < (4, 04)
+               cld.ci_id_typesharp
+#else
+               cld.ci_id_typehash
+#endif
+               env)
           cls env
     | Tsig_class_type cltyps ->
         List.fold_right
           (fun clty env ->
              add_class_type parent clty.ci_id_class_type
-               clty.ci_id_object clty.ci_id_typesharp env)
+               clty.ci_id_object
+#if OCAML_VERSION < (4, 04)
+               clty.ci_id_typesharp
+#else
+               clty.ci_id_typehash
+#endif
+               env)
           cltyps env
     | Tsig_value _ | Tsig_typext _
     | Tsig_exception _ | Tsig_open _
@@ -192,13 +203,24 @@ let add_structure_tree_item parent item env =
 #endif
              add_class parent cld.ci_id_class
                cld.ci_id_class_type cld.ci_id_object
-               cld.ci_id_typesharp env)
+#if OCAML_VERSION < (4, 04)
+               cld.ci_id_typesharp
+#else
+               cld.ci_id_typehash
+#endif
+               env)
           cls env
     | Tstr_class_type cltyps ->
         List.fold_right
           (fun (_, _, clty) env ->
              add_class_type parent clty.ci_id_class_type
-               clty.ci_id_object clty.ci_id_typesharp env)
+               clty.ci_id_object
+#if OCAML_VERSION < (4, 04)
+               clty.ci_id_typesharp
+#else
+               clty.ci_id_typehash
+#endif
+               env)
           cltyps env
     | Tstr_eval _ | Tstr_value _
     | Tstr_primitive _ | Tstr_typext _
