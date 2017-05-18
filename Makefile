@@ -4,14 +4,12 @@
 .PHONY: all clean
 
 all:
-	topkg build
-
-test:
-	topkg build
-	topkg test
+	jbuilder build
 
 doc:
-	topkg doc
+	@echo "waiting for jbuilder support (cf. pull #74)"
+	@# jbuilder odoc
+
 
 clean:
-	topkg clean
+	rm -R _build

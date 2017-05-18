@@ -9,11 +9,12 @@ dev-repo: "http://github.com/ocaml-doc/odoc.git"
 bug-reports: "https://github.com/ocaml-doc/odoc/issues"
 tags: ["doc" "html" "ocaml" "org:ocaml-doc"]
 
-available: [ ocaml-version >= "4.02.3" ]
+available: [ ocaml-version >= "4.03.0" ]
+
+
 depends: [
   "ocamlfind" {build}
-  "ocamlbuild" {build}
-  "topkg" {build & >= "0.7.5"}
+  "jbuilder" {build}
   "doc-ock"
   "doc-ock-html"
   "doc-ock-xml"
@@ -24,7 +25,8 @@ depends: [
   "xmlm"
   "cmdliner" ]
 
-build: [[
-  "ocaml" "pkg/pkg.ml" "build"
-          "--pinned" "%{pinned}%"
-          "--etc-dir" "%{odoc:etc}%"]]
+build: [
+  ["jbuilder" "subst"] {pinned}
+  ["echo" "let dir = \"%{odoc:etc}%\"" ">" "bin/odoc_etc.ml"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]

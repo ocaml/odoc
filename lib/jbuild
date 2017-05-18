@@ -1,0 +1,17 @@
+(jbuild_version 1)
+
+(library
+ ((name odoc)
+  (public_name odoc)
+  (flags (:standard -open StdLabels))
+  (libraries (xmlm
+              doc-ock
+              doc-ock-xml
+              doc-ock-html
+              unix
+              fpath
+              bos
+              compiler-libs.common
+              result ; FIXME: is this still needed?
+              tyxml
+              ))))
