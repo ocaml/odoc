@@ -220,7 +220,7 @@ class page_creator ?kind ~path content =
         meta ~a:[ a_name "viewport";
                   a_content "width=device-width,initial-scale=1.0"; ] ();
         meta ~a:[ a_name "generator";
-                  a_content "doc-ock-html %%VERSION%%" ] ();
+                  a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
       ]
 
     method heading : Html_types.h1_content_fun elt list =

@@ -5,18 +5,18 @@ homepage:  "https://github.com/ocaml-doc/doc-ock-html"
 doc: "https://ocaml-doc.github.com/doc-ock-html/"
 license: "ISC"
 dev-repo: "http://github.com/ocaml-doc/doc-ock-html.git"
-bug-reports: "https://github.com/ocaml-doc/doc-ock-html/issues"
+bug-reports: "https://github.com/ocaml-doc/odoc/issues"
 tags: ["doc" "html" "ocaml" "org:ocaml-doc"]
 
-available: [ ocaml-version >= "4.02.3" ]
+available: [ ocaml-version >= "4.03.0" ]
 depends: [
   "ocamlfind" {build}
-  "ocamlbuild" {build}
-  "topkg" {build & >= "0.7.5"}
+  "jbuilder" {build}
   "doc-ock"
   "tyxml" {>= "4.0.0" }
   "xmlm" ]
 
-build: [[
-  "ocaml" "pkg/pkg.ml" "build"
-          "--pinned" "%{pinned}%" ]]
+build: [
+  ["jbuilder" "subst"] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]

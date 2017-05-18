@@ -1,7 +1,0 @@
-description = "From doc-ock to HTML"
-version = "%%VERSION%%"
-requires = "xmlm tyxml doc-ock"
-archive(byte) = "doc-ock-html.cma"
-archive(native) = "doc-ock-html.cmxa"
-plugin(byte) = "doc-ock-html.cma"
-plugin(native) = "doc-ock-html.cmxs"
