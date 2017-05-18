@@ -19,9 +19,6 @@ type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
 let ns = DocOckXml.ns
 
-let open_attr attrs tag output acc =
-  output acc (`El_start (tag, attrs))
-
 (* Terminals *)
 let alias_t output acc =
   output acc (`El_start ((ns, "alias"), []))
@@ -329,9 +326,6 @@ let superscript_t output acc =
 let tag_t output acc =
   output acc (`El_start ((ns, "tag"), []))
 
-let text_t output acc =
-  output acc (`El_start ((ns, "text"), []))
-
 let tuple_t output acc =
   output acc (`El_start ((ns, "tuple"), []))
 
@@ -437,9 +431,9 @@ let int t output acc i =
 
 (* Non-terminals *)
 
-let name_p base output acc n = simple name_t output acc n
+let name_p _ output acc n = simple name_t output acc n
 
-open DocOckPaths
+open DocOck.Paths
 
 let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
   fun base output acc id ->
@@ -657,7 +651,7 @@ let canonical_p : type a. _ -> _ -> _ -> ((_, a) Path.t * (_, a) Reference.t) op
     in
     close output acc
 
-open DocOckTypes
+open DocOck.Types
 
 let doc_reference_p base output acc rf =
   let open Documentation in
@@ -806,33 +800,33 @@ and tag_p base output acc tg =
 and tags_p base output acc tgs =
   list tag_p base output acc tgs
 
-let position_p base output acc offset =
+let position_p output acc offset =
   let open Documentation.Error.Position in
   let acc = position_t output acc in
   let acc = int line_t output acc offset.line in
   let acc = int column_t output acc offset.column in
   close output acc
 
-let offset_p base output acc offset =
+let offset_p output acc offset =
   let open Documentation.Error.Offset in
   let acc = offset_t output acc in
-  let acc = position_p base output acc offset.start in
-  let acc = position_p base output acc offset.finish in
+  let acc = position_p output acc offset.start in
+  let acc = position_p output acc offset.finish in
   close output acc
 
-let location_p base output acc loc =
+let location_p _base output acc loc =
   let open Documentation.Error.Location in
   let acc = location_t output acc in
   let acc = simple filename_t output acc loc.filename in
-  let acc = position_p base output acc loc.start in
-  let acc = position_p base output acc loc.finish in
+  let acc = position_p output acc loc.start in
+  let acc = position_p output acc loc.finish in
   close output acc
 
 let doc_error_p base output acc err =
   let open Documentation.Error in
   let acc = error_t output acc in
   let acc = identifier_p base output acc err.origin in
-  let acc = offset_p base output acc err.offset in
+  let acc = offset_p output acc err.offset in
   let acc = opt location_p base output acc err.location in
   let acc = data output acc err.message in
   close output acc
@@ -894,7 +888,7 @@ and package_substitution_p base output acc (frag, expr) =
   let acc = fragment_p base output acc frag in
   type_expr_p base output acc expr
 
-and argument_label_p base output acc =
+and argument_label_p _base output acc =
   let open TypeExpr in function
     | Label s -> simple label_t output acc s
     | Optional s -> simple optional_t output acc s
@@ -952,7 +946,7 @@ and type_expr_p base output acc =
       let acc = list package_substitution_p base output acc pkg.substitutions in
       close output acc
 
-let external_primitive_p base output acc s = simple primitive_t output acc s
+let external_primitive_p _base output acc s = simple primitive_t output acc s
 
 let field_p base output acc fld =
   let open TypeDecl.Field in
@@ -1004,7 +998,7 @@ let type_representation_p base output acc =
       close output acc
     | Extensible -> closed extensible_t output acc
 
-let variance_p base output acc =
+let variance_p _base output acc =
   let open TypeDecl in function
     | Pos -> closed pos_t output acc
     | Neg -> closed neg_t output acc
@@ -1021,7 +1015,7 @@ let type_parameter_p base output acc =
       let acc = opt variance_p base output acc v in
       close output acc
 
-let type_subst_parameter_p base output acc name =
+let type_subst_parameter_p _base output acc name =
   let acc = param_t output acc in
   let acc = data output acc name in
   close output acc
@@ -1329,7 +1323,7 @@ and signature_item_p base output acc =
       close output acc
     | Comment com -> comment_p base output acc com
 
-let digest_p base output acc digest =
+let digest_p _base output acc digest =
   let acc = digest_t output acc in
   let acc = data output acc (Digest.to_hex digest) in
   close output acc
@@ -1348,12 +1342,12 @@ let unit_import_p base output acc =
       let acc = close output acc in
       close output acc
 
-let source_file_p base output acc file =
+let source_file_p output acc file =
   let acc = file_t output acc in
   let acc = data output acc file in
   close output acc
 
-let source_build_dir_p base output acc build_dir =
+let source_build_dir_p output acc build_dir =
   let acc = dir_t output acc in
   let acc = data output acc build_dir in
   close output acc
@@ -1361,8 +1355,8 @@ let source_build_dir_p base output acc build_dir =
 let source_p base output acc source =
   let open Unit.Source in
   let acc = source_t output acc in
-  let acc = source_file_p base output acc source.file in
-  let acc = source_build_dir_p base output acc source.build_dir in
+  let acc = source_file_p output acc source.file in
+  let acc = source_build_dir_p output acc source.build_dir in
   let acc = digest_p base output acc source.digest in
   close output acc
 

@@ -1,0 +1,32 @@
+(jbuild_version 1)
+
+(library
+ ((name coverage)
+  (modules (coverage))))
+
+(executables
+ ((names (testCmi testCmti testCmt))
+  (modules (testCmi testCmti testCmt))
+  (libraries (doc-ock doc-ock-xml))))
+
+(rule
+ ((targets (coverage-cmi.out))
+  (deps    (coverage.cmi))
+  (action  (with-stdout-to ${@}
+            (run ${exe:testCmi.exe} ${<})))))
+
+(rule
+ ((targets (coverage-cmti.out))
+  (deps    (coverage.cmti))
+  (action  (with-stdout-to ${@}
+            (run ${exe:testCmti.exe} ${<})))))
+
+(rule
+ ((targets (coverage-cmt.out))
+  (deps    (coverage.cmt))
+  (action  (with-stdout-to ${@}
+            (run ${exe:testCmt.exe} ${<})))))
+
+(alias
+ ((name runtest)
+  (deps (coverage-cmi.out coverage-cmti.out coverage-cmt.out))))

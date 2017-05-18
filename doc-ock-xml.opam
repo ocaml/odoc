@@ -12,12 +12,12 @@ tags: ["doc" "xml" "ocaml" "org:ocaml-doc"]
 
 depends: [
   "ocamlfind" {build}
-  "ocamlbuild" {build}
-  "topkg" {build & >= "0.7.5"}
+  "jbuilder" {build}
   "xmlm"
   "menhir"
   "doc-ock" ]
 
-build: [[
-  "ocaml" "pkg/pkg.ml" "build"
-          "--pinned" "%{pinned}%" ]]
+build: [
+  ["jbuilder" "subst"] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]

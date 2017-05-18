@@ -19,9 +19,9 @@ type 'a result =
   | Error of Xmlm.pos option * Xmlm.pos * string
 
 type 'a parser =
-  { file : Xmlm.input -> 'a DocOckTypes.Unit.t result;
-    unit :  Xmlm.input -> 'a DocOckTypes.Unit.t result;
-    text : Xmlm.input -> 'a DocOckTypes.Documentation.text result; }
+  { file : Xmlm.input -> 'a DocOck.Types.Unit.t result;
+    unit :  Xmlm.input -> 'a DocOck.Types.Unit.t result;
+    text : Xmlm.input -> 'a DocOck.Types.Documentation.text result; }
 
 exception LexerError of Xmlm.pos * Xmlm.pos * string
 

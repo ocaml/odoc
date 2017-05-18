@@ -1,7 +1,0 @@
-description = "XML printer and parser for Doc-Ock"
-version  = "%%VERSION%%"
-requires = "doc-ock xmlm menhirLib"
-archive(byte) = "doc-ock-xml.cma"
-archive(native) = "doc-ock-xml.cmxa"
-plugin(byte) = "doc-ock-xml.cma"
-plugin(native) = "doc-ock-xml.cmxs"

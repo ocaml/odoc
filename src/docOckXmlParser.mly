@@ -18,8 +18,8 @@
 
 %{
 
-open DocOckPaths
-open DocOckTypes
+open DocOck.Paths
+open DocOck.Types
 
 let relax_class_path cl =
   match (cl : ('a, Kind.identifier_class) Path.Resolved.t) with
@@ -194,9 +194,9 @@ let relax_class_type_reference cltyp =
 %token <Root.t> Base
 %token EOF
 
-%start <Root.t DocOckTypes.Documentation.text> text_entry
-%start <Root.t DocOckTypes.Unit.t> unit
-%start <Root.t DocOckTypes.Unit.t> file
+%start <Root.t DocOck.Types.Documentation.text> text_entry
+%start <Root.t DocOck.Types.Unit.t> unit
+%start <Root.t DocOck.Types.Unit.t> file
 
 %%
 
@@ -880,7 +880,7 @@ doc_error:
 
 doc:
 | (* empty *)
-    { DocOckAttrs.empty }
+    { DocOck.Attrs.empty }
 | DOC text = text tags = tags CLOSE
     { Documentation.(Ok {text; tags}) }
 | DOC err = doc_error CLOSE

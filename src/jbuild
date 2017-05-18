@@ -1,0 +1,10 @@
+(jbuild_version 1)
+
+(menhir
+ ((modules (docOckXmlParser))))
+
+(library
+ ((name docOckXml)
+  (public_name doc-ock-xml)
+  (wrapped false) ; TODO
+  (libraries (doc-ock xmlm menhirLib))))

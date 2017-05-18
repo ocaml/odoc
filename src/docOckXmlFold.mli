@@ -17,8 +17,8 @@
 
 type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
-val text: 'r t -> 'r DocOckTypes.Documentation.text t
+val text: 'r t -> 'r DocOck.Types.Documentation.text t
 
-val unit: 'r t -> 'r DocOckTypes.Unit.t t
+val unit: 'r t -> 'r DocOck.Types.Unit.t t
 
-val file: 'r t -> 'r DocOckTypes.Unit.t t
+val file: 'r t -> 'r DocOck.Types.Unit.t t

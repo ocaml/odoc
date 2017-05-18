@@ -1,6 +1,0 @@
-PKG xmlm
-PKG menhirLib
-PKG doc-ock
-
-B _build/src
-S src

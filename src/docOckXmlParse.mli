@@ -22,8 +22,8 @@ type 'a result =
   | Ok of 'a
   | Error of Xmlm.pos option * Xmlm.pos * string
 
-val text : 'a parser -> Xmlm.input -> 'a DocOckTypes.Documentation.text result
+val text : 'a parser -> Xmlm.input -> 'a DocOck.Types.Documentation.text result
 
-val unit : 'a parser -> Xmlm.input -> 'a DocOckTypes.Unit.t result
+val unit : 'a parser -> Xmlm.input -> 'a DocOck.Types.Unit.t result
 
-val file : 'a parser -> Xmlm.input -> 'a DocOckTypes.Unit.t result
+val file : 'a parser -> Xmlm.input -> 'a DocOck.Types.Unit.t result
