@@ -14,12 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val for_compile_step :
-  output:OdocFs.Directory.t -> OdocFs.File.t -> OdocFs.File.t list
+module Compile : sig
+  type t
 
-val unit :
-  env:OdocEnv.builder -> output:OdocFs.Directory.t ->
-  OdocFs.File.t -> OdocFs.File.t list
+  val name : t -> string
+  val digest : t -> Digest.t
+end
 
-val index :
-  output:OdocFs.Directory.t -> OdocFs.File.t list -> OdocFs.File.t list
+(*
+module Html : sig
+
+  type t
+
+  val unit : t -> string
+
+  val package : t -> string
+
+end
+*)
+
+val for_compile_step : Fs.File.t -> Compile.t list
+(** Takes a .cm{i,t,ti} file and returns the list of its dependencies. *)
+
+val for_html_step : Fs.File.t -> string list

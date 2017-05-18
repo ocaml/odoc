@@ -14,20 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Css = OdocCss
+type t
+type builder
 
-module Fs = OdocFs
+val create :
+  ?important_digests:bool -> directories:(Fs.Directory.t list) -> builder
+(** Prepare the environment for a given list of
+    {{!Fs.Directory.t} include directories}
 
-module Root = OdocRoot
+    @param important_digests indicate whether digests should be compared when
+    doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
 
-module Env = OdocEnv
+val build : builder -> Unit.t -> t
+(** Initialize the environment for the given unit. *)
 
-module Compile = OdocCompile
+val resolver : t -> Root.t DocOck.resolver
+(** Get a resolver from an env *)
 
-module Html = OdocHtml
+val expander : t -> Root.t DocOck.expander
+(** Get an expander from an env *)
 
-module Depends = OdocDepends
-
-module Targets = OdocTargets
-
-module Unit = OdocUnit
+(* val forward_resolver : t -> Root.t DocOck.forward_resolver *)

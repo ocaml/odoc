@@ -14,10 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Fs = OdocFs
-module Unit = OdocUnit
-module Root = OdocRoot
-
 module Compile = struct
   type t = {
     unit_name : string;
@@ -75,12 +71,12 @@ module Path = DocOck.Paths.Path
 let for_html_step input =
   let odoctree = Unit.load input in
   let deps = Hash_set.create () in
-  List.iter odoctree.DocOckTypes.Unit.imports ~f:(fun import ->
+  List.iter odoctree.DocOck.Types.Unit.imports ~f:(fun import ->
     let import_name =
       match import with
-      | DocOckTypes.Unit.Import.Resolved root ->
+      | DocOck.Types.Unit.Import.Resolved root ->
         Root.(Package.to_string @@ package root)
-      | DocOckTypes.Unit.Import.Unresolved _ ->
+      | DocOck.Types.Unit.Import.Unresolved _ ->
         Root.Package.to_string @@ Root.package @@ Unit.root odoctree
     in
     Hash_set.add deps import_name

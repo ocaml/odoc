@@ -14,20 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Css = OdocCss
+open DocOck
 
-module Fs = OdocFs
+type t = Root.t Types.Unit.t
 
-module Root = OdocRoot
+val save : Fs.File.t -> t -> unit
+val save_xml : Fs.File.t -> t -> unit
 
-module Env = OdocEnv
+val load : Fs.File.t -> t
+val load_xml : Fs.File.t -> t
 
-module Compile = OdocCompile
+val read_root : Fs.File.t -> Root.t
 
-module Html = OdocHtml
-
-module Depends = OdocDepends
-
-module Targets = OdocTargets
-
-module Unit = OdocUnit
+val root : t -> Root.t

@@ -61,7 +61,7 @@ module Xml = struct
     let package = ref "" in
     let unit = ref "" in
     let digest = ref "" in
-    let rec get_elt () =
+    let get_elt () =
       match Xmlm.input i, Xmlm.input i, Xmlm.input i with
       | `El_start ((_, name), _), `Data value, `El_end ->
         begin match name with

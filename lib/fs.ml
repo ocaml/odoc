@@ -67,7 +67,7 @@ module Directory = struct
       path
 
   let mkdir_p dir =
-    let rec mkdir d =
+    let mkdir d =
       try Unix.mkdir (Fpath.to_string d) 0o755 with
       | Unix.Unix_error (Unix.EEXIST, _, _) -> ()
       | exn -> raise exn

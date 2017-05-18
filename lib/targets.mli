@@ -14,16 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
+val for_compile_step :
+  output:Fs.Directory.t -> Fs.File.t -> Fs.File.t list
 
-type t = OdocRoot.t Types.Unit.t
+val unit :
+  env:Env.builder -> output:Fs.Directory.t ->
+  Fs.File.t -> Fs.File.t list
 
-val save : OdocFs.File.t -> t -> unit
-val save_xml : OdocFs.File.t -> t -> unit
-
-val load : OdocFs.File.t -> t
-val load_xml : OdocFs.File.t -> t
-
-val read_root : OdocFs.File.t -> OdocRoot.t
-
-val root : t -> OdocRoot.t
+val index :
+  output:Fs.Directory.t -> Fs.File.t list -> Fs.File.t list

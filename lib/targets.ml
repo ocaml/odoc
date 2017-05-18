@@ -16,11 +16,6 @@
 
 open DocOckHtml
 
-module Fs = OdocFs
-module Unit = OdocUnit
-module Env = OdocEnv
-module Root = OdocRoot
-
 let for_compile_step ~output input =
   let name =
     Fs.File.to_string input
@@ -30,7 +25,7 @@ let for_compile_step ~output input =
   in
   [Fs.File.create ~directory:output ~name]
 
-let unit ~env ~output:root_dir input =
+let unit ~env ~output:_root_dir input =
   let unit = Unit.load input in
   let env = Env.build env unit in
   let odoctree = DocOck.resolve (Env.resolver env) unit in

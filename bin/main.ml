@@ -108,7 +108,7 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details hidden directories output_dir index_for
+  let html semantic_uris closed_details _hidden directories output_dir index_for
         input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     DocOckHtml.Html_tree.open_details := not closed_details;
@@ -156,7 +156,7 @@ module Depends = struct
   module Compile = struct
     let list_dependencies input_file =
       let deps = Depends.for_compile_step (Fs.File.of_string input_file) in
-      List.iter (fun t ->
+      List.iter ~f:(fun t ->
         Printf.printf "%s %s\n"
           (Depends.Compile.name t)
           (Digest.to_hex @@ Depends.Compile.digest t)
@@ -203,7 +203,7 @@ module Targets = struct
         Targets.for_compile_step ~output:output_dir input
         |> List.map ~f:Fs.File.to_string
       in
-      List.iter (Printf.printf "%s\n") targets;
+      List.iter ~f:(Printf.printf "%s\n") targets;
       flush stdout
 
     let cmd =

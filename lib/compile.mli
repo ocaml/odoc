@@ -17,13 +17,13 @@
 (** Produces .odoc files out of .cm{i,t,ti} files. *)
 
 val cmti :
-  env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output:OdocFs.File.t -> OdocFs.File.t -> unit
+  env:Env.builder -> package:Root.Package.t ->
+  output:Fs.File.t -> Fs.File.t -> unit
 
 val cmt :
-  env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output:OdocFs.File.t -> OdocFs.File.t -> unit
+  env:Env.builder -> package:Root.Package.t ->
+  output:Fs.File.t -> Fs.File.t -> unit
 
 val cmi :
-  env:OdocEnv.builder -> package:OdocRoot.Package.t ->
-  output:OdocFs.File.t -> OdocFs.File.t -> unit
+  env:Env.builder -> package:Root.Package.t ->
+  output:Fs.File.t -> Fs.File.t -> unit

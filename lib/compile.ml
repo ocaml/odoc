@@ -16,11 +16,6 @@
 
 open DocOck
 
-module Fs = OdocFs
-module Env = OdocEnv
-module Root = OdocRoot
-module Unit = OdocUnit
-
 let it's_all_the_same ~env ~output input reader =
   let fn = Fs.File.to_string input in
   match reader fn with

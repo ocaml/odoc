@@ -14,13 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Unit = OdocUnit
-module Root = OdocRoot
-module Fs = OdocFs
-
 open DocOck
-
-let failwithf fmt = Printf.ksprintf failwith fmt
 
 type t = {
   expander    : Root.t DocOck.expander ;
@@ -100,7 +94,7 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | import :: imports ->
           match import with
-          | DocOckTypes.Unit.Import.Unresolved (name, digest) when name = target_name ->
+          | DocOck.Types.Unit.Import.Unresolved (name, digest) when name = target_name ->
             begin match digest with
             | None when important_digests -> Forward_reference
             | _ ->
@@ -123,7 +117,7 @@ let create ?(important_digests=true) ~directories : builder =
           Not_found
       | x -> x
     in
-    let fetch root : Root.t DocOckTypes.Unit.t =
+    let fetch root : Root.t DocOck.Types.Unit.t =
       let current_root = Unit.root unit in
       if Root.equal root current_root then
         unit

@@ -16,11 +16,6 @@
 
 open DocOckHtml
 
-module Env = OdocEnv
-module Unit = OdocUnit
-module Root = OdocRoot
-module Fs = OdocFs
-
 let get_package root = Root.Package.to_string (Root.package root)
 
 let unit ~env ~output:root_dir input =
@@ -91,7 +86,7 @@ let from_mld ~env ~output:root_dir ~pkg input =
   match Fs.File.read input with
   | Ok str ->
     let html =
-      match DocOckAttrs.read_string parent location str with
+      match DocOck.Attrs.read_string parent location str with
       | Stop -> []
       | Documentation t ->
         (* This is a mess. *)

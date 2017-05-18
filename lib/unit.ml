@@ -16,9 +16,6 @@
 
 open DocOck
 
-module Root = OdocRoot
-module Fs = OdocFs
-
 type t = Root.t Types.Unit.t
 
 let root (t : Root.t Types.Unit.t) =
@@ -56,8 +53,6 @@ let save file t =
   Marshal.to_channel oc (root t) [];
   Marshal.to_channel oc t [];
   close_out oc
-
-let units = Hashtbl.create 23 (* because. *)
 
 let load =
   let units = Hashtbl.create 23 (* because. *) in

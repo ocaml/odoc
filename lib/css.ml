@@ -1,5 +1,3 @@
-module Fs = OdocFs
-
 let copy_file ~src ~dst =
   let buf = Bytes.create 65536 in
   let ic = open_in src in

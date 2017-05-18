@@ -14,24 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type t
-type builder
+(** Produces .html files from a .odoc or .mld file. *)
 
-val create :
-  ?important_digests:bool -> directories:(OdocFs.Directory.t list) -> builder
-(** Prepare the environment for a given list of
-    {{!Fs.Directory.t} include directories}
+val unit :
+  env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
 
-    @param important_digests indicate whether digests should be compared when
-    doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
-
-val build : builder -> OdocUnit.t -> t
-(** Initialize the environment for the given unit. *)
-
-val resolver : t -> OdocRoot.t DocOck.resolver
-(** Get a resolver from an env *)
-
-val expander : t -> OdocRoot.t DocOck.expander
-(** Get an expander from an env *)
-
-(* val forward_resolver : t -> Root.t DocOck.forward_resolver *)
+val from_mld :
+  env:Env.builder -> output:Fs.Directory.t -> pkg:string ->
+  Fs.File.t -> unit
