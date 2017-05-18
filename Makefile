@@ -1,17 +1,15 @@
 # This makefile is used for dev convenience. It is removed
 # by the distribution process.
 
-.PHONY: lib test doc clean
+.PHONY: build doc clean
 
-lib:
-	topkg build
-
-test:
-	topkg build
-	topkg test
+build:
+	jbuilder build -j16
 
 doc:
-	topkg doc
+	@echo "waiting for jbuilder odoc support"
+	@#topkg doc
 
 clean:
-	topkg clean
+	-rm -R _build
+	-rm octavius.install

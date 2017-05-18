@@ -1,7 +1,0 @@
-description = "ocamldoc comment syntax parser"
-version  = "%%VERSION%%"
-requires = ""
-archive(byte) = "octavius.cma"
-archive(native) = "octavius.cmxa"
-plugin(byte) = "octavius.cma"
-plugin(native) = "octavius.cmxs"
