@@ -15,22 +15,14 @@
  *)
 
 open DocOck
-open Types
 open Paths
 
 open Tyxml.Html
-
-module Documentation = DocOckHtmlDocumentation
-module Html_tree = DocOckHtmlHtml_tree
-module Markup = DocOckHtmlMarkup
-module Url = DocOckHtmlUrl
 
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
 
 let a_href = Html_tree.Relative_link.to_sub_element
-
-let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
 
 let rec list_concat_map ?sep ~f = function
   | [] -> []
@@ -51,7 +43,7 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
 
 
 let string_of_label = function
-  | TypeExpr.Label s -> s
+  | Types.TypeExpr.Label s -> s
   | Optional s -> "?" ^ s
 
 let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
@@ -74,6 +66,7 @@ and pack
    : get_package:('a -> string) -> 'a Types.Unit.Packed.t
   -> Html_types.div_content_fun elt list
 = fun ~get_package t ->
+  let open Types in
   List.map t ~f:(fun x ->
     let modname = Identifier.name x.Unit.Packed.id in
     let md_def =
@@ -139,7 +132,7 @@ and functor_argument
         match expansion with
         | AlreadyASig ->
           begin match arg.expr with
-          | Signature sg -> Module.Signature sg
+          | Signature sg -> Types.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -204,7 +197,8 @@ and module_
         match expansion with
         | AlreadyASig ->
           begin match t.type_ with
-          | ModuleType (ModuleType.Signature sg) -> Module.Signature sg
+          | ModuleType (Types.ModuleType.Signature sg) ->
+            Types.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -236,14 +230,14 @@ and module_decl ~get_package (base : _ Identifier.signature) md =
   module_decl' ~get_package base md
 
 and extract_path_from_mt ~(default: 'a Identifier.signature) =
-  let open ModuleType in
+  let open Types.ModuleType in
   function
   | Path (Path.Resolved r) ->
     Identifier.signature_of_module_type (Path.Resolved.identifier r)
   | With (mt, _) -> extract_path_from_mt ~default mt
-  | TypeOf (Module.Alias (Path.Resolved r)) ->
+  | TypeOf (Types.Module.Alias (Path.Resolved r)) ->
     Identifier.signature_of_module (Path.Resolved.identifier r)
-  | TypeOf (Module.ModuleType mt) -> extract_path_from_mt ~default mt
+  | TypeOf (Types.Module.ModuleType mt) -> extract_path_from_mt ~default mt
   | _ -> default
 
 and module_decl'
@@ -274,7 +268,7 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
         match expansion with
         | AlreadyASig ->
           begin match t.expr with
-          | Some (Signature sg) -> Module.Signature sg
+          | Some (Signature sg) -> Types.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -317,7 +311,7 @@ and mty
     mty ~get_package base expr
   | Functor (Some arg, expr) ->
     let name =
-      let open FunctorArgument in
+      let open Types.FunctorArgument in
       let to_print = pcdata @@ Identifier.name arg.id in
       match
         Html_tree.Relative_link.Id.href ~get_package
@@ -431,7 +425,7 @@ and format_params
     | [] -> ""
     | [x] -> format_param x ^ " "
     | lst ->
-      let params = String.concat ", " (List.map lst ~f:format_param) in
+      let params = String.concat ~sep:", " (List.map lst ~f:format_param) in
       (match delim with `parens -> "(" | `brackets -> "[")
       ^ params ^
       (match delim with `parens -> ") " | `brackets -> "] ")
@@ -455,6 +449,7 @@ and format_manifest
   -> 'a Types.TypeDecl.Equation.t
   -> ('inner_row, 'outer_row) text elt list * bool
 = fun ~get_package ?(compact_variants=true) equation ->
+  let _ = compact_variants in (* TODO *)
   let private_ = equation.private_ in
   match equation.manifest with
   | None -> [], private_
@@ -515,7 +510,7 @@ and polymorphic_variant ~get_package ~type_ident (t : _ Types.TypeExpr.Variant.t
   | Open -> code [pcdata "[> "] :: table :: [code [pcdata " ]"]]
   | Closed [] -> code [pcdata "[< "] :: table :: [code [pcdata " ]"]]
   | Closed lst ->
-    let constrs = String.concat " " lst in
+    let constrs = String.concat ~sep:" " lst in
     code [pcdata "[< "] :: table :: [code [pcdata (" " ^ constrs ^ " ]")]]
 
 
@@ -680,7 +675,7 @@ and te_variant
   | Open -> pcdata "[> " :: elements @ [pcdata " ]"]
   | Closed [] -> pcdata "[< " :: elements @ [pcdata " ]"]
   | Closed lst ->
-    let constrs = String.concat " " lst in
+    let constrs = String.concat ~sep:" " lst in
     pcdata "[< " :: elements @ [pcdata (" " ^ constrs ^ " ]")]
 
 and te_object
@@ -750,7 +745,7 @@ and type_expr
     format_type_path ~get_package ~delim:(`brackets) args
       (Html_tree.Relative_link.of_path ~stop_before:false ~get_package path)
   | Poly (polyvars, t) ->
-    pcdata (String.concat " " polyvars ^ ". ") :: type_expr ~get_package t
+    pcdata (String.concat ~sep:" " polyvars ^ ". ") :: type_expr ~get_package t
   | Package pkg ->
     (* CR trefis: TODO substitutions *)
     pcdata "(" :: Markup.keyword "module " ::

@@ -15,11 +15,10 @@
  *)
 
 open Tyxml.Html
-module Url = DocOckHtmlUrl
 
 let keyword keyword = span ~a:[ a_class ["keyword"] ] [ pcdata keyword ]
 let module_path ids =
-  span ~a:[ a_class ["module-path"] ] [pcdata (String.concat "." ids)]
+  span ~a:[ a_class ["module-path"] ] [pcdata (String.concat ~sep:"." ids)]
 
 module Type = struct
   let path p = span ~a:[ a_class ["type-id"] ] p

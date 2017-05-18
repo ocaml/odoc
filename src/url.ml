@@ -10,7 +10,7 @@ type t = {
   kind : string;
 }
 
-let to_string { page; anchor } =
+let to_string { page; anchor; _ } =
   String.concat ~sep:"/" (List.rev page) ^ "#" ^ anchor
 
 module Error = struct
@@ -98,7 +98,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
-      | { page; anchor } ->
+      | { page; anchor; _ } ->
         let kind = "constructor" in
         Ok { page; anchor = anchor ^ "." ^ name; kind }
       end
@@ -107,7 +107,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
-      | { page; anchor } ->
+      | { page; anchor; _ } ->
         let kind = "field" in
         Ok { page; anchor = anchor ^ "." ^ name; kind }
       end
@@ -142,7 +142,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       from_identifier ~get_package ~stop_before:false parent
       >>= begin function
       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
-      | { page; anchor } ->
+      | { page; anchor; _ } ->
         let kind = "method" in
         Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
       end
@@ -150,7 +150,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       from_identifier ~get_package ~stop_before:false parent
       >>= begin function
       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
-      | { page; anchor } ->
+      | { page; anchor; _ } ->
         let kind = "val" in
         Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
       end
@@ -164,7 +164,7 @@ and from_identifier_no_anchor : type a. get_package:('x -> string) ->
   fun ~get_package id ->
     from_identifier ~get_package ~stop_before:false id
     >>= function
-    | { page; anchor = "" } -> Ok page
+    | { page; anchor = ""; _ } -> Ok page
     | otherwise -> Error (Unexpected_anchor otherwise)
 
 let anchor_of_id_exn ~get_package id =
@@ -187,7 +187,7 @@ let render_path : type a. (_, a) Path.t -> string =
     | Hidden p -> render_resolved p
     | Module (p, s) -> render_resolved p ^ "." ^ s
     | Canonical (_, Path.Resolved p) -> render_resolved p
-    | Canonical (p, p') -> render_resolved p
+    | Canonical (p, _) -> render_resolved p
     | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
     | ModuleType (p, s) -> render_resolved p ^ "." ^ s
     | Type (p, s) -> render_resolved p ^ "." ^ s
@@ -213,7 +213,7 @@ module Anchor = struct
   module Polymorphic_variant_decl = struct
     let name_of_type_constr te =
       match te with
-      | DocOckTypes.TypeExpr.Constr (path, _) -> render_path path
+      | DocOck.Types.TypeExpr.Constr (path, _) -> render_path path
       | _ ->
         invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
@@ -222,7 +222,7 @@ module Anchor = struct
       | Error e -> failwith (Error.to_string e)
       | Ok { anchor; _ } ->
         match elt with
-        | DocOckTypes.TypeExpr.Variant.Type te ->
+        | DocOck.Types.TypeExpr.Variant.Type te ->
           { kind = "type"
           ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
         | Constructor (name, _, _) ->

@@ -15,10 +15,7 @@
  *)
 
 open DocOck
-open Types
 open Paths
-
-open Tyxml.Html
 
 let functor_arg_pos { Types.FunctorArgument.id ; _ } =
   match id with
@@ -32,7 +29,7 @@ let rec unit ~package (t : _ Types.Unit.t) : string list =
   let rest =
     match t.content with
     | Module sign -> signature ~prefix:name sign
-    | Pack   pack -> []
+    | Pack _ -> []
   in
   name :: rest
 
@@ -41,15 +38,15 @@ and signature ~prefix (t : _ Types.Signature.t) =
     List.map t ~f:(function
       | Types.Signature.Module md -> module_ ~prefix md
       | ModuleType mty -> module_type ~prefix mty
-      | Type td -> []
-      | TypExt te -> []
-      | Exception e -> []
-      | Value v -> []
-      | External e -> []
-      | Class c -> []
-      | ClassType cty -> []
+      | Type _ -> []
+      | TypExt _ -> []
+      | Exception _ -> []
+      | Value _ -> []
+      | External _ -> []
+      | Class _ -> []
+      | ClassType _ -> []
       | Include incl -> include_ ~prefix incl
-      | Comment (Documentation doc) -> []
+      | Comment (Documentation _) -> []
       | Comment Stop -> []
     )
   )

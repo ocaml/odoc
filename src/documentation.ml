@@ -2,16 +2,8 @@ open DocOck
 open Types
 open Tyxml.Html
 
-module Html_tree = DocOckHtmlHtml_tree
-module Markup = DocOckHtmlMarkup
-module Url = DocOckHtmlUrl
-
-let html_dot_magic = List.map ~f:(fun x -> tot @@ toelt x)
-
-let rec list_keep_while ~pred = function
-  | x :: xs when pred x -> x :: list_keep_while ~pred xs
-  | _ -> []
-
+(* Why is this unused all of the sudden? *)
+(*
 module Html_parser = struct
   let mk_attr ((_, local), value) = Xml.string_attrib local value
 
@@ -26,6 +18,7 @@ module Html_parser = struct
     )
     |> tot
 end
+*)
 
 type kind =
   | Phrasing : Html_types.phrasing elt list -> kind
@@ -40,9 +33,9 @@ let to_phrasing : kind -> Html_types.phrasing elt list = function
   | Phrasing_without_interactive l -> (l :> Html_types.phrasing elt list)
   | Phrasing l -> l
   | Newline [] -> []
-  | Newline l -> invalid_arg "to_phrasing"
-  | Flow5 l -> invalid_arg "to_phrasing"
-  | Flow5_without_interactive l -> invalid_arg "to_phrasing"
+  | Newline _ -> invalid_arg "to_phrasing"
+  | Flow5 _ -> invalid_arg "to_phrasing"
+  | Flow5_without_interactive _ -> invalid_arg "to_phrasing"
 
 let to_flow5 : kind -> Html_types.flow5 elt list = function
   | Phrasing l -> (l :> Html_types.flow5 elt list)
@@ -59,9 +52,9 @@ let to_flow5_without_interactive
     (l :> Html_types.flow5_without_interactive elt list)
   | Flow5_without_interactive l -> l
   | Newline [] -> []
-  | Newline l -> invalid_arg "to_flow5_without_interactive"
-  | Flow5 l -> invalid_arg "to_flow5_without_interactive"
-  | Phrasing l -> invalid_arg "to_flow5_without_interactive"
+  | Newline _ -> invalid_arg "to_flow5_without_interactive"
+  | Flow5 _ -> invalid_arg "to_flow5_without_interactive"
+  | Phrasing _ -> invalid_arg "to_flow5_without_interactive"
 
 let is_interactive = function
   | Phrasing _ -> true
@@ -115,7 +108,7 @@ module Reference = struct
       | SubstAlias(_, r) -> render_resolved r
       | Module (r, s) -> render_resolved r ^ "." ^ s
       | Canonical (_, Reference.Resolved r) -> render_resolved r
-      | Canonical (p, p') -> render_resolved p
+      | Canonical (p, _) -> render_resolved p
       | ModuleType (r, s) -> render_resolved r ^ "." ^ s
       | Type (r, s) -> render_resolved r ^ "." ^ s
       | Constructor (r, s) -> render_resolved r ^ "." ^ s
@@ -257,8 +250,8 @@ let paragraphise_without_interactive lst =
     | Phrasing_without_interactive l -> [p l]
     | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
     | Newline _ -> []
-    | Phrasing l -> invalid_arg "paragraphise_without_interactive"
-    | Flow5 l -> invalid_arg "paragraphise_without_interactive"
+    | Phrasing _ -> invalid_arg "paragraphise_without_interactive"
+    | Flow5 _ -> invalid_arg "paragraphise_without_interactive"
   )
 
 let make_li_without_interactive = function
@@ -539,7 +532,7 @@ let handle_tags ~get_package tags =
       | Canonical _ -> [] (* TODO: display? *)
     )
   in
-  let cleaned = List.filter (function [] -> false | _ -> true) raw in
+  let cleaned = List.filter ~f:(function [] -> false | _ -> true) raw in
   match cleaned with
   | [] -> []
   | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:make_li) ]

@@ -15,4 +15,4 @@
  *)
 
 val unit :
-  get_package:('a -> string) -> 'a DocOckTypes.Unit.t -> DocOckHtmlHtml_tree.t
+  get_package:('a -> string) -> 'a DocOck.Types.Unit.t -> Html_tree.t

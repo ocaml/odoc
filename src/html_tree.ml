@@ -15,7 +15,6 @@
  *)
 
 open Tyxml.Html
-module Url = DocOckHtmlUrl
 
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]
 
@@ -56,8 +55,6 @@ module Relative_link = struct
     val href : get_package:('a -> string) -> stop_before:bool ->
       ('a, _) Identifier.t -> string
   end = struct
-    open Identifier
-
     exception Not_linkable
 
     let rec drop_shared_prefix l1 l2 =
@@ -70,7 +67,7 @@ module Relative_link = struct
 
     let href ~get_package ~stop_before id =
       match Url.from_identifier ~get_package ~stop_before id with
-      | Ok { Url. page; anchor } ->
+      | Ok { Url. page; anchor; _ } ->
         let target = List.rev (if !semantic_uris then page else "index.html" :: page) in
         let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
         let current_from_common_ancestor, target_from_common_ancestor =
@@ -127,12 +124,12 @@ module Relative_link = struct
       | "" -> suffix
       | _  -> prefix ^ "." ^ suffix
 
-    let rec render_raw : type a. (_, _) Identifier.t -> (_, a, _) Fragment.raw -> string =
+    let rec _render_raw : type a. (_, _) Identifier.t -> (_, a, _) Fragment.raw -> string =
       fun id fragment ->
         let open Fragment in
         match fragment with
         | Resolved rr -> render_resolved id rr
-        | Dot (prefix, suffix) -> dot (render_raw id prefix) suffix
+        | Dot (prefix, suffix) -> dot (_render_raw id prefix) suffix
 
     and render_resolved : type a. (_, _) Identifier.t -> (_, a, _) Fragment.Resolved.raw -> string =
       fun id fragment ->
@@ -224,7 +221,7 @@ class page_creator ?kind ~path content =
       ]
 
     method heading : Html_types.h1_content_fun elt list =
-      DocOckHtmlMarkup.keyword (
+      Markup.keyword (
         match kind with
         | None
         | Some `Mod -> "Module"
@@ -233,7 +230,7 @@ class page_creator ?kind ~path content =
         | Some `Cty -> "Class type"
         | Some `Class -> "Class"
       ) :: pcdata " " ::
-      [DocOckHtmlMarkup.module_path (List.tl path)]
+      [Markup.module_path (List.tl path)]
 
     method content : Html_types.div_content_fun elt list =
       let up_href =
