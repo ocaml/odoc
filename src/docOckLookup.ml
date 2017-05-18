@@ -2,7 +2,7 @@
 open DocOckTypes
 open DocOckNameEnv
 
-class ['a] lookup = object (self)
+class ['a] lookup = object
   val env = empty
 
   inherit ['a] DocOckMaps.types as super
@@ -29,9 +29,6 @@ class ['a] lookup = object (self)
   method identifier x = x
   method fragment_type x = x
   method fragment_module x = x
-
-  method module_expansion x = x
-  method include_expansion x = x
 
   method reference_module x =
     lookup_module env x
@@ -64,7 +61,7 @@ class ['a] lookup = object (self)
 
   method super_module md = super#module_ md
 
-  method module_ md =
+  method! module_ md =
     let open Module in
     let env = add_module_decl_items md.type_ env in
     let this = {< env = env >} in
@@ -72,7 +69,7 @@ class ['a] lookup = object (self)
 
   method super_module_type mty = super#module_type mty
 
-  method module_type mty =
+  method! module_type mty =
     let open ModuleType in
     let env =
       match mty.expr with
@@ -84,7 +81,7 @@ class ['a] lookup = object (self)
 
   method super_unit unt = super#unit unt
 
-  method unit unt =
+  method! unit unt =
     let open Unit in
     let env = add_unit unt env in
     let env =
@@ -97,7 +94,7 @@ class ['a] lookup = object (self)
 
   method super_class cl = super#class_ cl
 
-  method class_ cl =
+  method! class_ cl =
     let open Class in
     let env = add_class_decl_items cl.type_ env in
     let this = {< env = env >} in
@@ -105,7 +102,7 @@ class ['a] lookup = object (self)
 
   method super_class_type cltyp = super#class_type cltyp
 
-  method class_type cltyp =
+  method! class_type cltyp =
     let open ClassType in
     let env = add_class_type_expr_items cltyp.expr env in
     let this = {< env = env >} in

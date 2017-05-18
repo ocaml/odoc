@@ -94,17 +94,17 @@ let module_expansion s expr =
   s#module_expansion expr
 
 class ['a] rename_signature ~equal (x : 'a Identifier.signature)
-        (y : 'a Identifier.signature) offset : ['a] t = object(self)
+        (y : 'a Identifier.signature) offset : ['a] t = object
 
   inherit ['a] DocOckMaps.paths as super
 
   method root x = x
 
-  method identifier_signature id =
+  method! identifier_signature id =
     if Identifier.equal ~equal id x then y
     else super#identifier_signature id
 
-  method identifier (type k) (id : ('a, k) Identifier.t)
+  method! identifier (type k) (id : ('a, k) Identifier.t)
          : ('a, k) Identifier.t =
     match id with
     | Identifier.Argument(parent, pos, name) ->
@@ -132,7 +132,7 @@ class ['a] rename_class_signature ~equal
 
   method root x = x
 
-  method identifier_class_signature id =
+  method! identifier_class_signature id =
     if Identifier.equal ~equal id x then y
     else super#identifier_class_signature id
 
@@ -153,7 +153,7 @@ class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
 
   method root x = x
 
-  method identifier_datatype id =
+  method! identifier_datatype id =
     if Identifier.equal ~equal id x then y
     else super#identifier_datatype id
 
@@ -167,8 +167,6 @@ end
 let rename_datatype ~equal x y =
   new rename_datatype ~equal x y
 
-type 'a is_path_kind = Witness : [< Path.kind] is_path_kind
-
 (*let module_id_path (type k) (Witness : k is_path_kind)
                    (id : ('a, k) Identifier.t) name =
   let open Path.Resolved in
@@ -181,7 +179,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
   method root x = x
 
   (* OCaml can't type-check this method yet, so we use magic*)
-  method path_resolved : type k. ('a, k) Path.Resolved.t ->
+  method! path_resolved : type k. ('a, k) Path.Resolved.t ->
                               ('a, k) Path.Resolved.t =
     fun p ->
       let matches id' =
@@ -211,7 +209,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
             else super#path_resolved p
         | _ -> super#path_resolved p
 
-  method reference_resolved : type k. ('a, k) Reference.Resolved.t ->
+  method! reference_resolved : type k. ('a, k) Reference.Resolved.t ->
                               ('a, k) Reference.Resolved.t =
     fun r ->
       let sid = Identifier.signature_of_module id in
@@ -271,15 +269,15 @@ end
 let prefix ~equal ~canonical id =
   new prefix ~equal ~canonical id
 
-class ['a] strengthen path : ['a] t = object (self)
+class ['a] strengthen path : ['a] t = object
 
   inherit ['a] DocOckMaps.types
 
   method root x = x
 
-  method documentation_comment x = x
+  method! documentation_comment x = x
 
-  method module_ md =
+  method! module_ md =
     if Path.Resolved.is_hidden path then md
     else begin
       let open Module in
@@ -293,29 +291,29 @@ class ['a] strengthen path : ['a] t = object (self)
           { md with type_; expansion }
     end
 
-  method module_type x = x
+  method! module_type x = x
 
-  method type_decl x = x
+  method! type_decl x = x
 
-  method extension x = x
+  method! extension x = x
 
-  method exception_ x = x
+  method! exception_ x = x
 
-  method value x = x
+  method! value x = x
 
-  method external_ x = x
+  method! external_ x = x
 
-  method class_ x = x
+  method! class_ x = x
 
-  method class_type x = x
+  method! class_type x = x
 
-  method include_ x = x
+  method! include_ x = x
 
   inherit ['a] DocOckMaps.paths
 
   method offset_identifier_signature x = x
 
-  method module_type_expr x = x
+  method! module_type_expr x = x
 
 end
 
@@ -333,7 +331,6 @@ let make_lookup (type a) ~equal ~hash
   let tbl = Tbl.create 13 in
   List.iter (fun (id1, id2) -> Tbl.add tbl id1 id2) items;
     fun id ->
-      let open Identifier in
         match Tbl.find tbl id with
         | id -> Some id
         | exception Not_found -> None
@@ -348,7 +345,7 @@ class ['a] pack ~equal ~hash
 
   inherit ['a] DocOckMaps.paths as super
 
-  method identifier : type k. ('a, k) Identifier.t -> ('a, k) Identifier.t =
+  method! identifier : type k. ('a, k) Identifier.t -> ('a, k) Identifier.t =
     fun id ->
       let open Identifier in
         match id with

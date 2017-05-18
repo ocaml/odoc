@@ -289,7 +289,7 @@ let read_comment parent : Parsetree.attribute -> 'a comment option =
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
       match DocOckPayload.read payload with
-      | Some ("/*", loc) -> Some Stop
+      | Some ("/*", _loc) -> Some Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
           let doc = Error (invalid_attribute_error parent loc) in

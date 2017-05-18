@@ -15,8 +15,6 @@
  *)
 
 open Asttypes
-open Parsetree
-open Types
 open Typedtree
 
 module OCamlPath = Path
@@ -30,10 +28,6 @@ module Env = DocOckIdentEnv
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
-
-let opt_iter f = function
-  | None -> ()
-  | Some x -> f x
 
 let parenthesise name =
   match name with
@@ -125,7 +119,7 @@ let read_value_description env parent vd =
   | [] -> Value {Value.id; doc; type_}
   | primitives -> External {External.id; doc; type_; primitives}
 
-let read_type_parameter env (ctyp, var) =
+let read_type_parameter (ctyp, var) =
   let open TypeDecl in
   let desc =
     match ctyp.ctyp_desc with
@@ -181,7 +175,7 @@ let read_type_kind env parent =
 
 let read_type_equation env decl =
   let open TypeDecl.Equation in
-  let params = List.map (read_type_parameter env) decl.typ_params in
+  let params = List.map read_type_parameter decl.typ_params in
   let private_ = (decl.typ_private = Private) in
   let manifest = opt_map (read_core_type env) decl.typ_manifest in
   let constraints =
@@ -235,7 +229,7 @@ let read_type_extension env parent tyext =
   let type_path = Env.Path.read_type env tyext.tyext_path in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container parent tyext.tyext_attributes in
-  let type_params = List.map (read_type_parameter env) tyext.tyext_params in
+  let type_params = List.map read_type_parameter tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
     List.map (read_extension_constructor env parent) tyext.tyext_constructors
@@ -320,7 +314,7 @@ let read_class_type_declaration env parent cltd =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
-  let params = List.map (read_type_parameter env) cltd.ci_params in
+  let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env id cltd.ci_expr in
   { id; doc; virtual_; params; expr; expansion = None }
 
@@ -356,7 +350,7 @@ let read_class_description env parent cld =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
-  let params = List.map (read_type_parameter env) cld.ci_params in
+  let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env id cld.ci_expr in
   { id; doc; virtual_; params; type_; expansion = None }
 
@@ -374,7 +368,7 @@ let read_class_descriptions env parent clds =
   in
     List.rev items
 
-let rec read_with_constraint env parent (_, frag, constr) =
+let rec read_with_constraint env (_, frag, constr) =
   let open ModuleType in
     match constr with
     | Twith_type decl ->
@@ -395,7 +389,7 @@ let rec read_with_constraint env parent (_, frag, constr) =
         let params = List.map read_param decl.typ_params in
         let p =
           match decl.typ_manifest with
-          | Some {ctyp_desc = Ttyp_constr(p, _, _)} ->
+          | Some {ctyp_desc = Ttyp_constr(p, _, _); _} ->
               Env.Path.read_type env p
           | _ -> assert false
         in
@@ -430,7 +424,7 @@ and read_module_type env parent pos mty =
           Functor(arg, res)
     | Tmty_with(body, subs) ->
         let body = read_module_type env parent pos body in
-        let subs = List.map (read_with_constraint env parent) subs in
+        let subs = List.map (read_with_constraint env) subs in
           With(body, subs)
     | Tmty_typeof mexpr ->
         let decl =
@@ -565,7 +559,6 @@ and read_signature env parent sg =
     List.rev items
 
 let read_interface root name intf =
-  let open Module in
   let id = Identifier.Root(root, name) in
   let items = read_signature Env.empty id intf in
   let doc, items =

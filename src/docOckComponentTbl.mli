@@ -47,17 +47,17 @@ val datatype_identifier : 'a t -> 'a Identifier.type_ -> 'a Datatype.t
 
 (** {3 Path Lookup} *)
 
-(** TODO: One day we will be able to remove the unit argument. *)
+(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module path *)
 val resolved_module_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.module_ -> 'a Sig.t
 
-(** TODO: One day we will be able to remove the unit argument. *)
+(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module type path *)
 val resolved_module_type_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.module_type -> 'a Sig.t
 
-(** TODO: One day we will be able to remove the unit argument. *)
+(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved class type path *)
 val resolved_class_type_path : 'a t -> 'a Unit.t ->
       'a Path.Resolved.class_type -> 'a ClassSig.t
@@ -86,17 +86,17 @@ val resolved_signature_fragment : 'a with_ ->
 
 (** {3 Reference Lookup} *)
 
-(** TODO: The unit argument can disappear when resolved paths are fixed. *)
+(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved signature reference *)
 val resolved_signature_reference : 'a t -> 'a Unit.t ->
       'a Reference.Resolved.signature -> 'a Sig.t
 
-(** TODO: The unit argument can disappear when resolved paths are fixed. *)
+(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved class signature reference *)
 val resolved_class_signature_reference : 'a t -> 'a Unit.t ->
       'a Reference.Resolved.class_signature -> 'a ClassSig.t
 
-(** TODO: The unit argument can disappear when resolved paths are fixed. *)
+(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved datatype reference *)
 val resolved_datatype_reference : 'a t -> 'a Unit.t ->
   'a Reference.Resolved.datatype -> 'a Datatype.t

@@ -103,9 +103,9 @@ type ('a,'b) a_function = 'a -> 'b
 *)
 let a_function ~x = x
 
-let fun_fun_fun int_fun = (fun () -> ())
+let fun_fun_fun _int_fun = (fun () -> ())
 
-let fun_maybe ?yes () = 0
+let fun_maybe ?yes:_ () = 0
 
 (** @raise Not_found That's all it does *)
 let not_found () = raise Not_found
@@ -172,6 +172,7 @@ module CollectionModule = struct
   module InnerModuleA = struct
     (** This comment is for [t]. *)
     type t = collection
+
     (** This comment is for [InnerModuleA']. *)
     module InnerModuleA' = struct
       (** This comment is for [t]. *)
@@ -184,6 +185,7 @@ module CollectionModule = struct
       type t = InnerModuleA'.t
     end
   end
+
   (** This comment is for [InnerModuleTypeA]. *)
   module type InnerModuleTypeA = InnerModuleA.InnerModuleTypeA'
 end
@@ -200,6 +202,7 @@ module Recollection(C : COLLECTION) :
   module InnerModuleA = struct
     (** This comment is for [t]. *)
     type t = collection
+
     (** This comment is for [InnerModuleA']. *)
     module InnerModuleA' = struct
       (** This comment is for [t]. *)
@@ -212,6 +215,7 @@ module Recollection(C : COLLECTION) :
       type t = InnerModuleA'.t
     end
   end
+
   (** This comment is for [InnerModuleTypeA]. *)
   module type InnerModuleTypeA = InnerModuleA.InnerModuleTypeA'
 end

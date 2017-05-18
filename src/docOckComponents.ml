@@ -53,9 +53,11 @@ module LMap = struct
     with Not_found ->
       SMap.add name [item] map
 
+  (*
   let find name pred map =
     let items = SMap.find name map in
       List.find pred items
+  *)
 
   let find_name name map =
     let items = SMap.find name map in
@@ -442,7 +444,7 @@ end = struct
           end
         | _ -> find_parent_subst (Lazy.force expr.expansion)
       end
-    | Sig sg -> raise Not_found
+    | Sig _ -> raise Not_found
     | Functor fn -> find_parent_subst fn.res
     | Generative t -> find_parent_subst t
     | Abstract -> raise Not_found
@@ -475,9 +477,9 @@ end = struct
           end
         | _ -> find_apply_element (Lazy.force expr.expansion)
       end
-    | Sig sg -> raise Not_found
-    | Functor fn -> Element.Module { canonical = None; hidden = false }
-    | Generative t -> raise Not_found
+    | Sig _ -> raise Not_found
+    | Functor _ -> Element.Module { canonical = None; hidden = false }
+    | Generative _ -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
 
@@ -592,7 +594,7 @@ end = struct
   let rec lookup_argument pos t =
     match t.body with
     | Expr expr -> lookup_argument pos (Lazy.force expr.expansion)
-    | Sig sg -> unresolved
+    | Sig _ -> unresolved
     | Functor fn ->
         if pos = 1 then fn.arg
         else lookup_argument (pos - 1) fn.res
@@ -1264,7 +1266,7 @@ end = struct
   and lookup_apply lookup arg t =
     match t.body with
     | Expr expr -> lookup_apply lookup arg (Lazy.force expr.expansion)
-    | Sig sg -> unresolved
+    | Sig _ -> unresolved
     | Functor fn -> begin
         try
           fn.cache.find arg
@@ -1273,7 +1275,7 @@ end = struct
             fn.cache.add arg res;
             res
       end
-    | Generative t -> unresolved
+    | Generative _ -> unresolved
     | Abstract -> unresolved
     | Unresolved -> unresolved
 
@@ -1290,7 +1292,7 @@ end = struct
           end
         | _ -> find_parent_apply lookup arg (Lazy.force expr.expansion)
       end
-    | Sig sg -> raise Not_found
+    | Sig _ -> raise Not_found
     | Functor fn -> begin
         try
           Parent.Module (fn.cache.find arg)
@@ -1299,7 +1301,7 @@ end = struct
             fn.cache.add arg res;
             Parent.Module res
       end
-    | Generative t -> raise Not_found
+    | Generative _ -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
 
@@ -1394,7 +1396,6 @@ end = struct
   let abstract = Unresolved
 
   let variant type_name constructors =
-    let open TypeDecl.Constructor in
     let constructors =
         List.fold_right SSet.add constructors SSet.empty
     in
@@ -1403,7 +1404,6 @@ end = struct
       Variant variant
 
   let record type_name fields =
-    let open TypeDecl.Field in
     let fields =
         List.fold_right SSet.add fields SSet.empty
     in

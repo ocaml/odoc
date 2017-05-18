@@ -275,17 +275,17 @@ module Path = struct
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
-    | Path.Papply(p, arg)-> assert false
+    | Path.Papply(_, _)-> assert false
 
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
-    | Path.Papply(p, arg)-> assert false
+    | Path.Papply(_, _)-> assert false
 
   let read_type env = function
     | Path.Pident id -> read_type_ident env id
     | Path.Pdot(p, s, _) -> Dot(read_module env p, s)
-    | Path.Papply(p, arg)-> assert false
+    | Path.Papply(_, _)-> assert false
 
 end
 

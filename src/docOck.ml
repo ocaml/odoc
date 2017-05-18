@@ -91,7 +91,7 @@ let read_cmt root_fn filename =
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
-    | Packed(sg, files) ->
+    | Packed(_, files) ->
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with

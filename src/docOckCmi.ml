@@ -15,7 +15,6 @@
  *)
 
 open Asttypes
-open Parsetree
 open Types
 
 module OCamlPath = Path
@@ -78,7 +77,7 @@ let rec next_name () =
     if List.mem name !reserved_names then next_name ()
     else name
 
-let rec fresh_name base =
+let fresh_name base =
   let current_name = ref base in
   let i = ref 0 in
   while List.exists (fun (_, name') -> !current_name = name') !used_names do
@@ -165,7 +164,7 @@ let mark_type ty =
           loop visited ty1;
           loop visited ty2
       | Ttuple tyl -> List.iter (loop visited) tyl
-      | Tconstr(p, tyl, _) ->
+      | Tconstr(_, tyl, _) ->
           List.iter (loop visited) tyl
       | Tvariant row ->
           if is_row_visited px then add_alias px else
@@ -173,7 +172,7 @@ let mark_type ty =
             let row = Btype.row_repr row in
             if not (Btype.static_row row) then visit_row px;
             match row.row_name with
-            | Some(p, tyl) when namable_row row ->
+            | Some(_, tyl) when namable_row row ->
                 List.iter (loop visited) tyl
             | _ ->
                 Btype.iter_row (loop visited) row
@@ -242,7 +241,7 @@ let prepare_type_parameters params manifest =
     | Some ty ->
         let vars = Ctype.free_variables ty in
           List.iter
-            (function {desc = Tvar (Some "_")} as ty ->
+            (function {desc = Tvar (Some "_"); _} as ty ->
               if List.memq ty vars then ty.desc <- Tvar None
                     | _ -> ())
             params
@@ -295,7 +294,7 @@ let mark_exception ext =
   mark_extension_constructor ext
 
 let rec mark_class_type params = function
-  | Cty_constr (p, tyl, cty) ->
+  | Cty_constr (_, tyl, cty) ->
       let sty = Ctype.self_type cty in
       if is_row_visited (Btype.proxy sty)
       || List.exists aliasable params
@@ -397,7 +396,7 @@ let rec read_type_expr env typ =
       | Some name -> Alias(typ, name)
   end
 
-and read_row env px row =
+and read_row env _px row =
   let open TypeExpr in
   let open TypeExpr.Variant in
   let row = Btype.row_repr row in
@@ -497,9 +496,9 @@ let read_value_description env parent id vd =
     let type_ = read_type_expr env vd.val_type in
     match vd.val_kind with
     | Val_reg -> Value {Value.id; doc; type_}
-    | Val_prim desc ->
+    | Val_prim _desc ->
         (* FIXME. *)
-        (* let primitives = Primitive.description_list desc in *)
+        (* let primitives = Primitive.description_list _desc in *)
         let primitives = [] in
           External {External.id; doc; type_; primitives}
     | _ -> assert false
@@ -675,14 +674,14 @@ let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let type_ = read_type_expr env typ in
     ClassSignature.InstanceVariable {id; doc; mutable_; virtual_; type_}
 
-let read_self_type env sty =
+let read_self_type sty =
   let sty = Btype.repr sty in
     if not (is_aliased sty) then None
     else Some (TypeExpr.Var (name_of_type (Btype.proxy sty)))
 
 let rec read_class_signature env parent params =
   let open ClassType in function
-  | Cty_constr(p, tyl, cty) ->
+  | Cty_constr(p, _, cty) ->
       if is_row_visited (Btype.proxy (Ctype.self_type cty))
       || List.exists aliasable params
       then read_class_signature env parent params cty
@@ -693,7 +692,7 @@ let rec read_class_signature env parent params =
       end
   | Cty_signature csig ->
       let open ClassSignature in
-      let self = read_self_type env csig.csig_self in
+      let self = read_self_type csig.csig_self in
       let constraints = read_type_constraints env params in
       let constraints =
         List.map
@@ -923,7 +922,6 @@ and read_signature env parent items =
     loop [] items
 
 let read_interface root name intf =
-  let open Module in
   let id = Identifier.Root(root, name) in
   let doc = empty in
   let items = read_signature Env.empty id intf in

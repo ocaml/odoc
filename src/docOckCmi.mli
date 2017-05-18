@@ -36,8 +36,7 @@ val read_type_parameter : bool -> Types.Variance.t ->
 
 val mark_class_declaration : Types.class_declaration -> unit
 
-val read_self_type : 'a DocOckIdentEnv.t ->
-                     Types.type_expr -> 'a DocOckTypes.TypeExpr.t option
+val read_self_type : Types.type_expr -> 'a DocOckTypes.TypeExpr.t option
 
 val read_type_constraints : 'a DocOckIdentEnv.t -> Types.type_expr list ->
                             ('a DocOckTypes.TypeExpr.t

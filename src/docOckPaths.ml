@@ -115,6 +115,7 @@ module Reversed = struct
     | Argument (i, s) -> List [Atom "Argument"; Atom (string_of_int i); Atom s]
 
   let sexp_of_t l = List (List.map sexp_of_elt l)
+  let _ = sexp_of_t
 
   let rec remove_prefix prefix ~of_ =
     match prefix, of_ with
@@ -620,7 +621,7 @@ module Path = struct
 
     include Types.Resolved
 
-    let rec sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
+    let sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
       fun sexp_of_a t ->
         sexp_of_resolved_path sexp_of_a t
 
@@ -639,7 +640,7 @@ module Path = struct
     let ident_class_type : 'a Identifier.class_type -> _ = function
       | ClassType _ as x -> Identifier x
 
-    let rec any : type k. ('a, k) t -> 'a any = function
+    let any : type k. ('a, k) t -> 'a any = function
       | Identifier (Root _) as x -> x
       | Identifier (Module _) as x -> x
       | Identifier (Argument _) as x -> x
@@ -736,7 +737,7 @@ module Path = struct
             | _ ->
                 Stop (Identifier id)
           end
-        | Canonical (rp, Types.Path.Resolved p) ->
+        | Canonical (_, Types.Path.Resolved p) ->
           (* We only care about printing at this point, so let's drop the lhs. *)
           rebase_module_path new_base p
         | Canonical (rp, p) ->
@@ -750,7 +751,7 @@ module Path = struct
         | Apply _ -> Stop t
         (* TODO: rewrite which side? *)
 
-    let rec rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
+    let rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
       fun new_base t ->
         match t with
         | Identifier _ -> t
@@ -817,7 +818,7 @@ module Path = struct
       let rev = Identifier.to_reversed id in
       rebase rev t
 
-    let rec signature_of_module : 'a module_ -> ('a, Kind.signature) t = function
+    let signature_of_module : 'a module_ -> ('a, Kind.signature) t = function
       | Identifier (Root _) as x -> x
       | Identifier (Module _) as x -> x
       | Identifier (Argument _) as x -> x
@@ -1007,10 +1008,10 @@ module Fragment = struct
 
     type 'a type_ = ('a, fragment_type) t
 
-    let rec signature_of_module : 'a module_ -> 'a signature = function
+    let signature_of_module : 'a module_ -> 'a signature = function
       | Subst _ | SubstAlias _ | Module _ as x -> x
 
-    let rec any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw =
+    let any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw =
       function
       | Root as x -> x
       | Subst _ as x -> x
@@ -1028,7 +1029,7 @@ module Fragment = struct
       function
       | Module _ | Subst _ | SubstAlias _ as x -> x
 
-    let rec any : type k. ('a, k) t -> 'a any = function
+    let any : type k. ('a, k) t -> 'a any = function
       | Subst _ as x -> x
       | SubstAlias _ as x -> x
       | Module _ as x -> x
@@ -1244,7 +1245,7 @@ module Fragment = struct
     | Resolved r -> Resolved.parent_path root r
     | Dot(m, n) -> Path.Dot(parent_path root m, n)
 
-  let rec path : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
+  let path : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
    fun root -> function
     | Resolved r -> Resolved.path root r
     | Dot(m, s) -> Path.Dot(parent_path root m, s)
@@ -1311,8 +1312,6 @@ end
 module Reference = struct
   module rec Types : sig
     module Resolved : sig
-      open Kind
-
       type kind = Kind.reference
 
       type ('a, 'b) t =
@@ -1481,7 +1480,6 @@ module Reference = struct
 
   module Resolved = struct
     open Identifier
-    open Kind
 
     include Types.Resolved
 
@@ -1697,8 +1695,6 @@ module Reference = struct
       | Stop of ('a, 'b) t
       | Continue of ('a, 'b) Identifier.t * Reversed.t
 
-    let x_ _ = Atom ""
-
     let rec rebase_module_reference :
       Reversed.t -> 'a module_ -> ('a, Kind.reference_module) rebase_result =
       fun new_base t ->
@@ -1719,7 +1715,7 @@ module Reference = struct
             | _ ->
               Stop (Identifier id)
           end
-        | Canonical (rp, Types.Reference.Resolved p) ->
+        | Canonical (_, Types.Reference.Resolved p) ->
           (* We only care about printing at this point, so let's drop the lhs. *)
           rebase_module_reference new_base (signature_of_module p)
         | Canonical (rp, p) ->
@@ -1844,7 +1840,6 @@ module Reference = struct
 
   open Identifier
   open Resolved
-  open Kind
 
   include Types.Reference
 

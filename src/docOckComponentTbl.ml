@@ -282,7 +282,7 @@ and signature_identifier tbl =
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
-  | Argument(id, pos, name) ->
+  | Argument(id, pos, _) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_argument pos parent
   | ModuleType(id, name) ->
@@ -295,7 +295,7 @@ and module_identifier tbl =
   | Module(id, name) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_module name parent
-  | Argument(id, pos, name) ->
+  | Argument(id, pos, _) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_argument pos parent
 
@@ -416,7 +416,6 @@ and class_signature_items local =
         let expr = class_type_expr local expr in
           inherit_ expr csig
     | Comment comment :: rest ->
-        let open Method in
         let csig = class_signature_items local rest in
           add_comment comment csig
     | [] -> empty
@@ -462,7 +461,6 @@ and signature_items local =
           add_module_type name expr sg
     | Type decl :: rest ->
         let open TypeDecl in
-        let open Representation in
         let sg = signature_items local rest in
         let sg = add_documentation decl.doc sg in
         let name = Identifier.name decl.id in
@@ -565,7 +563,6 @@ and packed_items local =
   let open Sig in
   let open Unit.Packed in function
     | {id; path} :: rest ->
-        let open Module in
         let name = Identifier.name id in
         let decl = alias (module_path local) path in
         add_local_module_identifier local id decl;

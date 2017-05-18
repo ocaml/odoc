@@ -13,7 +13,7 @@ let rec list_map f l =
             if r != r' then x' :: r'
             else l
 
-let rec option_map f o =
+let option_map f o =
   match o with
   | None -> o
   | Some x ->

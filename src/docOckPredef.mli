@@ -25,7 +25,6 @@ val char_identifier : 'a Identifier.type_
 val bytes_identifier : 'a Identifier.type_
 val string_identifier : 'a Identifier.type_
 val float_identifier : 'a Identifier.type_
-val bool_identifier : 'a Identifier.type_
 val unit_identifier : 'a Identifier.type_
 val exn_identifier : 'a Identifier.type_
 val array_identifier : 'a Identifier.type_
@@ -73,7 +72,6 @@ val char_path : 'a Path.type_
 val bytes_path : 'a Path.type_
 val string_path : 'a Path.type_
 val float_path : 'a Path.type_
-val bool_path : 'a Path.type_
 val unit_path : 'a Path.type_
 val exn_path : 'a Path.type_
 val array_path : 'a Path.type_
@@ -93,7 +91,6 @@ val char_reference : 'a Reference.type_
 val bytes_reference : 'a Reference.type_
 val string_reference : 'a Reference.type_
 val float_reference : 'a Reference.type_
-val bool_reference : 'a Reference.type_
 val unit_reference : 'a Reference.type_
 val exn_reference : 'a Reference.type_
 val array_reference : 'a Reference.type_

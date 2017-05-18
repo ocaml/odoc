@@ -15,7 +15,6 @@
  *)
 
 open Asttypes
-open Parsetree
 open Types
 open Typedtree
 
@@ -26,14 +25,6 @@ open DocOckTypes
 open DocOckAttrs
 
 module Env = DocOckIdentEnv
-
-let opt_map f = function
-  | None -> None
-  | Some x -> Some (f x)
-
-let opt_iter f = function
-  | None -> ()
-  | Some x -> f x
 
 let parenthesise name =
   match name with
@@ -89,7 +80,6 @@ let rec read_pattern env parent doc pat =
         read_pattern env parent doc pat
 
 let read_value_binding env parent vb =
-  let open Signature in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container parent vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
@@ -158,7 +148,7 @@ let rec read_class_type_field env parent ctf =
       let virtual_ = (virtual_ = Virtual) in
       let type_ = read_core_type env typ in
         Some (Method {id; doc; private_; virtual_; type_})
-  | Tctf_constraint(typ1, typ2) -> None
+  | Tctf_constraint(_, _) -> None
   | Tctf_inherit cltyp ->
       Some (Inherit (read_class_signature env parent [] cltyp))
   | Tctf_attribute attr ->
@@ -176,7 +166,7 @@ and read_class_signature env parent params cltyp =
     | Tcty_signature csig ->
         let open ClassSignature in
         let self =
-          DocOckCmi.read_self_type env csig.csig_self.ctyp_type
+          DocOckCmi.read_self_type csig.csig_self.ctyp_type
         in
         let constraints =
           DocOckCmi.read_type_constraints env params
@@ -214,7 +204,7 @@ let rec read_class_field env parent cf =
   let container = Identifier.parent_of_class_signature parent in
   let doc = read_attributes container parent cf.cf_attributes in
   match cf.cf_desc with
-  | Tcf_val({txt = name}, mutable_, _, kind, _) ->
+  | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
       let name = parenthesise name in
       let id = Identifier.InstanceVariable(parent, name) in
@@ -227,7 +217,7 @@ let rec read_class_field env parent cf =
             false, DocOckCmi.read_type_expr env expr.exp_type
       in
         Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
-  | Tcf_method({txt = name}, private_, kind) ->
+  | Tcf_method({txt = name; _}, private_, kind) ->
       let open Method in
       let name = parenthesise name in
       let id = Identifier.Method(parent, name) in
@@ -240,7 +230,7 @@ let rec read_class_field env parent cf =
             false, DocOckCmi.read_type_expr env expr.exp_type
       in
         Some (Method {id; doc; private_; virtual_; type_})
-  | Tcf_constraint(typ1, typ2) -> None
+  | Tcf_constraint(_, _) -> None
   | Tcf_inherit(_, cl, _, _, _) ->
       Some (Inherit (read_class_structure env parent [] cl))
   | Tcf_initializer _ -> None
@@ -256,7 +246,7 @@ and read_class_structure env parent params cl =
         DocOckCmi.read_class_signature env parent params cl.cl_type
     | Tcl_structure cstr ->
         let open ClassSignature in
-        let self = DocOckCmi.read_self_type env cstr.cstr_self.pat_type in
+        let self = DocOckCmi.read_self_type cstr.cstr_self.pat_type in
         let constraints =
           DocOckCmi.read_type_constraints env params
         in
@@ -482,7 +472,6 @@ and read_structure env parent str =
     List.rev items
 
 let read_implementation root name impl =
-  let open Module in
   let id = Identifier.Root(root, name) in
   let items = read_structure Env.empty id impl in
   let doc, items =

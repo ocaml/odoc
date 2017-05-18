@@ -44,7 +44,7 @@ let rec find_with_path_substs
               let pr' =
                 let open Path.Resolved in
                 match pr with
-                | Canonical (p1, Path.Resolved p2) ->
+                | Canonical (_, Path.Resolved _) ->
                   Path.Resolved.Subst(subpr, pr)
                 | Canonical (p1, p2) ->
                   Path.Resolved.Canonical(Subst(subpr, p1), p2)
@@ -62,7 +62,7 @@ let rec find_with_path_substs
               let pr' =
                 let open Path.Resolved in
                 match pr with
-                | Canonical (p1, Path.Resolved p2) ->
+                | Canonical (_, Path.Resolved _) ->
                   SubstAlias(subpr, pr)
                 | Canonical (p1, p2) ->
                   Canonical(SubstAlias(subpr, p1), p2)
@@ -290,7 +290,7 @@ and resolve_resolved_module_path :
     if parent != parent' then
       Module(parent', name)
     else p
-  | Canonical(orig, cano) ->
+  | Canonical(_, _) ->
     resolve_canonical_path ident tbl u p
   | Apply(fn, arg) ->
     let fn' = resolve_resolved_module_path ident tbl u fn in
@@ -445,7 +445,7 @@ let rec resolve_parent_fragment ident tbl base u p
 and resolve_module_fragment ident tbl base u =
   let open Fragment.Resolved in
   let open Fragment in function
-  | Resolved r as p -> p
+  | Resolved _ as p -> p
   | Dot(p, name) -> begin
       match resolve_parent_fragment ident tbl base u p with
       | Unresolved p -> Dot(p, name)
@@ -465,7 +465,7 @@ and resolve_module_fragment ident tbl base u =
 and resolve_type_fragment ident tbl base u =
   let open Fragment.Resolved in
   let open Fragment in function
-  | (Resolved r : 'a Fragment.type_) as p -> p
+  | (Resolved _ : 'a Fragment.type_) as p -> p
   | Dot(p, name) -> begin
       match resolve_parent_fragment ident tbl base u p with
       | Unresolved p -> Dot(p, name)
@@ -495,7 +495,7 @@ type ('a, 'b) parent_reference =
 type 'a parent_kind =
   | PParent : Kind.parent parent_kind
   | PSig : Kind.signature parent_kind
-  | PDatatype : Kind.datatype parent_kind
+(*   | PDatatype : Kind.datatype parent_kind *)
   | PClassSig : Kind.class_signature parent_kind
   | PSigOrType : [Kind.signature | Kind.datatype] parent_kind
 
@@ -530,10 +530,12 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
           ResolvedSig(pr, md)
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
       end
+(*
     | PDatatype -> begin
         match Sig.find_parent_datatype name parent with
         | Parent.Datatype t -> ResolvedDatatype(Type(r, name), t)
       end
+*)
     | PClassSig -> begin
         match Sig.find_parent_class_signature name parent with
         | Parent.Class cls -> ResolvedClassSig(Class(r, name), cls)
@@ -552,8 +554,6 @@ let find_parent_reference (type k) (kind : k parent_kind) r name parent
         | Parent.ModuleType md -> ResolvedSig(ModuleType(r, name), md)
         | Parent.Datatype t -> ResolvedDatatype(Type(r, name), t)
       end
-
-let ppp _ = Atom ""
 
 let rec find_with_reference_substs
    : 'b 'c. ('a Sig.t -> 'b)
@@ -633,8 +633,10 @@ let rec resolve_parent_reference :
             match kind with
             | PParent ->
                 ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl u rr)
+(*
             | PDatatype ->
                 ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl u rr)
+*)
             | PSigOrType ->
                 ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl u rr)
             | _ -> Unresolved r
@@ -1193,7 +1195,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   val unit = None
   val where_am_i = None
 
-  inherit ['a] DocOckMaps.types as super
+  inherit ['a] DocOckMaps.types
   method root x = x
 
   method identifier_module x = x
@@ -1217,7 +1219,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method path_type x = resolve_type_path (unwrap where_am_i) tbl (unwrap unit) x
   method path_class_type x = resolve_class_type_path (unwrap where_am_i) tbl (unwrap unit) x
 
-  method module_ md =
+  method! module_ md =
     let open Module in
     let {id; doc; type_; expansion; canonical;display_type;hidden} = md in
     let id' = self#identifier_module id in
@@ -1244,7 +1246,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
          display_type = display_type'; hidden = hidden'}
       else md
 
-  method module_type mty =
+  method! module_type mty =
     let open ModuleType in
     let {id; doc; expr; expansion} = mty in
     let id' = self#identifier_module_type id in
@@ -1264,7 +1266,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
         {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
       else mty
 
-  method include_ incl =
+  method! include_ incl =
     let open Include in
     let {parent; doc; decl; expansion} = incl in
     let parent' = self#identifier_signature parent in
@@ -1275,7 +1277,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
         {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
       else incl
 
-  method module_type_functor_arg arg =
+  method! module_type_functor_arg arg =
     let open FunctorArgument in
     match arg with
     | None -> arg
@@ -1290,7 +1292,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
             Some {id = id'; expr = expr'; expansion = expansion'}
           else arg
 
-  method private module_type_expr_with_id id expr =
+  method module_type_expr_with_id id expr =
     let open ModuleType in
     let unit = unwrap unit in
       match expr with
@@ -1331,7 +1333,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
             else expr
       | Path _ | Signature _ -> self#module_type_expr expr
 
-  method private module_decl_with_id id decl =
+  method module_decl_with_id id decl =
     let open Module in
       match decl with
       | ModuleType expr ->
@@ -1340,7 +1342,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
             else decl
       | Alias _ -> self#module_decl decl
 
-  method type_expr_package pkg =
+  method! type_expr_package pkg =
     let open TypeExpr.Package in
     let unit = unwrap unit in
     let path = resolve_module_type_path (unwrap where_am_i) tbl unit pkg.path in
@@ -1387,7 +1389,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   method reference_any x =
     resolve_element_reference (unwrap where_am_i) tbl (unwrap unit) x
 
-  method unit_import import =
+  method! unit_import import =
     let open Unit.Import in
       match import with
       | Resolved _ -> import
