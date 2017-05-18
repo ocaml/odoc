@@ -1,21 +1,23 @@
 opam-version: "1.2"
 maintainer: "lpw25@cl.cam.ac.uk"
-authors: [ "Leo White <lpw25@cl.cam.ac.uk>" ]
+authors: [ "Leo White <lpw25@cl.cam.ac.uk>"
+           "Thomas Refis <trefis@janestreet.com>" ]
 homepage: "https://github.com/ocaml-doc/doc-ock"
 doc: "https://ocaml-doc.github.com/doc-ock/"
 license: "ISC"
 dev-repo: "http://github.com/ocaml-doc/doc-ock.git"
-bug-reports: "https://github.com/ocaml-doc/doc-ock/issues"
+bug-reports: "https://github.com/ocaml-doc/odoc/issues"
 tags: ["doc" "ocaml" "org:ocaml-doc"]
 
 available: [ ocaml-version >= "4.03.0" & ocaml-version < "4.05" ]
 depends: [
   "cppo" {build}
   "ocamlfind" {build}
-  "ocamlbuild" {build}
-  "topkg" {build & >= "0.8.0"}
-  "octavius" ]
+  "jbuilder" {build}
+  "octavius"
+]
 
-build: [[
-  "ocaml" "pkg/pkg.ml" "build"
-          "--pinned" "%{pinned}%" ]]
+build: [
+  ["jbuilder" "subst"] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]

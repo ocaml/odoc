@@ -1,7 +1,0 @@
-description = "Extract documentation from OCaml files"
-version  = "%%VERSION%%"
-requires = "compiler-libs.common octavius"
-archive(byte) = "doc-ock.cma"
-archive(native) = "doc-ock.cmxa"
-plugin(byte) = "doc-ock.cma"
-plugin(native) = "doc-ock.cmxs"

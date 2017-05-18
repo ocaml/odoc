@@ -1,12 +1,12 @@
 
-open DocOckPaths
-open DocOckTypes
 open DocOck
+open Paths
+open Types
 
 class ident = object
   method root x = x
-  inherit [string] DocOckMaps.paths
-  inherit [string] DocOckMaps.types
+  inherit [string] Maps.paths
+  inherit [string] Maps.types
 end
 
 exception Error of string * string

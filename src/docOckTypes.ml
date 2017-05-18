@@ -20,7 +20,7 @@ open DocOckPaths
 
 (** {3 Documentation} *)
 
-module Documentation : sig
+module rec Documentation : sig
 
   type style =
     | Bold
@@ -138,7 +138,7 @@ module Documentation : sig
     | Documentation of 'a t
     | Stop
 
-end
+end = Documentation
 
 (** {3 Modules} *)
 
@@ -169,7 +169,7 @@ module rec Module : sig
 
   end
 
-end
+end = Module
 
 and FunctorArgument : sig
   type 'a t = {
@@ -177,7 +177,7 @@ and FunctorArgument : sig
     expr : 'a ModuleType.expr;
     expansion: 'a Module.expansion option;
   }
-end
+end = FunctorArgument
 
 (** {3 Modules Types} *)
 
@@ -203,7 +203,7 @@ and ModuleType : sig
       expansion: 'a Module.expansion option;
     }
 
-end
+end = ModuleType
 
 (** {3 Signatures} *)
 
@@ -224,7 +224,7 @@ and Signature : sig
 
   type 'a t = 'a item list
 
-end
+end = Signature
 
 (** {3 Includes} *)
 and Include : sig
@@ -239,7 +239,7 @@ and Include : sig
       decl: 'a Module.decl;
       expansion: 'a expansion; }
 
-end
+end = Include
 
 (** {3 Type Declarations} *)
 
@@ -304,7 +304,7 @@ and TypeDecl : sig
       equation: 'a Equation.t;
       representation: 'a Representation.t option; }
 
-end
+end = TypeDecl
 
 (** {3 Type extensions} *)
 
@@ -327,7 +327,7 @@ and Extension : sig
       private_: bool;
       constructors: 'a Constructor.t list; }
 
-end
+end = Extension
 
 (** {3 Exception} *)
 and Exception : sig
@@ -338,7 +338,7 @@ and Exception : sig
       args: 'a TypeDecl.Constructor.argument;
       res: 'a TypeExpr.t option; }
 
-end
+end = Exception
 
 
 (** {3 Values} *)
@@ -350,7 +350,7 @@ and Value : sig
       doc: 'a Documentation.t;
       type_: 'a TypeExpr.t; }
 
-end
+end = Value
 
 (** {3 External values} *)
 
@@ -362,7 +362,7 @@ and External : sig
       type_: 'a TypeExpr.t;
       primitives: string list; }
 
-end
+end = External
 
 (** {3 Classes} *)
 
@@ -380,7 +380,7 @@ and Class : sig
       type_: 'a decl;
       expansion: 'a ClassSignature.t option; }
 
-end
+end = Class
 
 (** {3 Class Types} *)
 
@@ -398,7 +398,7 @@ and ClassType : sig
       expr: 'a expr;
       expansion: 'a ClassSignature.t option; }
 
-end
+end = ClassType
 
 (** {3 Class Signatures} *)
 
@@ -415,7 +415,7 @@ and ClassSignature : sig
     { self: 'a TypeExpr.t option;
       items: 'a item list; }
 
-end
+end = ClassSignature
 
 (** {3 Methods} *)
 
@@ -428,7 +428,7 @@ and Method : sig
       virtual_: bool;
       type_: 'a TypeExpr.t; }
 
-end
+end = Method
 
 (** {3 Instance variables} *)
 
@@ -441,7 +441,7 @@ and InstanceVariable : sig
       virtual_: bool;
       type_: 'a TypeExpr.t; }
 
-end
+end = InstanceVariable
 
 (** {3 Type expressions} *)
 
@@ -503,11 +503,11 @@ and TypeExpr : sig
     | Poly of string list * 'a t
     | Package of 'a TypeExpr.Package.t
 
-end
+end = TypeExpr
 
 (** {3 Compilation units} *)
 
-module Unit : sig
+module rec Unit : sig
 
   module Import : sig
 
@@ -551,4 +551,4 @@ module Unit : sig
       content: 'a content;
       expansion: 'a Signature.t option; }
 
-end
+end = Unit

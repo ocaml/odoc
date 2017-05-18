@@ -120,12 +120,7 @@ let rec add_signature_type_items parent items env =
 let add_signature_tree_item parent item env =
   let open Typedtree in
     match item.sig_desc with
-#if OCAML_VERSION < (4, 03)
-    | Tsig_type decls ->
-        let _rec_flag = true in
-#else
     | Tsig_type (_rec_flag, decls) -> (* TODO: remember rec_flag *)
-#endif
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id env)
           decls env
@@ -144,7 +139,7 @@ let add_signature_tree_item parent item env =
           (fun cld env ->
              add_class parent cld.ci_id_class
                cld.ci_id_class_type cld.ci_id_object
-#if OCAML_VERSION < (4, 04)
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
                cld.ci_id_typesharp
 #else
                cld.ci_id_typehash
@@ -156,7 +151,7 @@ let add_signature_tree_item parent item env =
           (fun clty env ->
              add_class_type parent clty.ci_id_class_type
                clty.ci_id_object
-#if OCAML_VERSION < (4, 04)
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
                clty.ci_id_typesharp
 #else
                clty.ci_id_typehash
@@ -176,12 +171,7 @@ let add_signature_tree_items parent sg env =
 let add_structure_tree_item parent item env =
   let open Typedtree in
     match item.str_desc with
-#if OCAML_VERSION < (4, 03)
-    | Tstr_type decls ->
-        let _rec_flag = true in
-#else
     | Tstr_type (_rec_flag, decls) -> (* TODO: remember rec_flag *)
-#endif
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id env)
           decls env
@@ -196,14 +186,10 @@ let add_structure_tree_item parent item env =
         add_signature_type_items parent incl.incl_type env
     | Tstr_class cls ->
         List.fold_right
-#if OCAML_VERSION < (4, 03)
-          (fun (cld, _, _) env ->
-#else
           (fun (cld, _) env ->
-#endif
              add_class parent cld.ci_id_class
                cld.ci_id_class_type cld.ci_id_object
-#if OCAML_VERSION < (4, 04)
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
                cld.ci_id_typesharp
 #else
                cld.ci_id_typehash
@@ -215,7 +201,7 @@ let add_structure_tree_item parent item env =
           (fun (_, _, clty) env ->
              add_class_type parent clty.ci_id_class_type
                clty.ci_id_object
-#if OCAML_VERSION < (4, 04)
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
                clty.ci_id_typesharp
 #else
                clty.ci_id_typehash

@@ -48,11 +48,10 @@ let parenthesise name =
 
 let read_label lbl =
   let open TypeExpr in
-  let len = String.length lbl in
-  if len = 0 then None
-  else if lbl.[0] = '?' then
-    Some (Optional (String.sub lbl 1 (len - 1)))
-  else Some (Label lbl)
+  match lbl with
+  | Asttypes.Nolabel -> None
+  | Asttypes.Labelled s -> Some (Label s)
+  | Asttypes.Optional s -> Some (Optional s)
 
 (* Handle type variable names *)
 
@@ -251,12 +250,16 @@ let prepare_type_parameters params manifest =
   end;
   params
 
+let mark_constructor_args = function
+  | Cstr_tuple args -> List.iter mark_type args
+  | Cstr_record lds -> List.iter (fun ld -> mark_type ld.ld_type) lds
+
 let mark_type_kind = function
   | Type_abstract -> ()
   | Type_variant cds ->
       List.iter
         (fun cd ->
-           List.iter mark_type cd.cd_args;
+           mark_constructor_args cd.cd_args;
            opt_iter mark_type cd.cd_res)
         cds
   | Type_record(lds, _) ->
@@ -272,7 +275,7 @@ let mark_type_declaration decl =
     params
 
 let mark_extension_constructor ext =
-  List.iter mark_type ext.ext_args;
+  mark_constructor_args ext.ext_args;
   opt_iter mark_type ext.ext_ret_type
 
 let mark_type_extension type_params exts =
@@ -495,7 +498,9 @@ let read_value_description env parent id vd =
     match vd.val_kind with
     | Val_reg -> Value {Value.id; doc; type_}
     | Val_prim desc ->
-        let primitives = Primitive.description_list desc in
+        (* FIXME. *)
+        (* let primitives = Primitive.description_list desc in *)
+        let primitives = [] in
           External {External.id; doc; type_; primitives}
     | _ -> assert false
 
@@ -508,13 +513,23 @@ let read_label_declaration env parent ld =
   let type_ = read_type_expr env ld.ld_type in
     {id; doc; mutable_; type_}
 
+let read_constructor_declaration_arguments env parent arg =
+  let open TypeDecl.Constructor in
+    match arg with
+    | Cstr_tuple args -> Tuple (List.map (read_type_expr env) args)
+    | Cstr_record lds ->
+        Record (List.map (read_label_declaration env parent) lds)
+
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let name = parenthesise (Ident.name cd.cd_id) in
   let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc = read_attributes container id cd.cd_attributes in
-  let args = Tuple (List.map (read_type_expr env) cd.cd_args) in
+  let args =
+    read_constructor_declaration_arguments env
+      (Identifier.parent_of_datatype parent) cd.cd_args
+  in
   let res = opt_map (read_type_expr env) cd.cd_res in
     {id; doc; args; res}
 
@@ -599,7 +614,10 @@ let read_extension_constructor env parent id ext =
   let id = Identifier.Extension(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id ext.ext_attributes in
-  let args = TypeDecl.Constructor.Tuple (List.map (read_type_expr env) ext.ext_args) in
+  let args =
+    read_constructor_declaration_arguments env
+      (Identifier.parent_of_signature parent) ext.ext_args
+  in
   let res = opt_map (read_type_expr env) ext.ext_ret_type in
     {id; doc; args; res}
 
@@ -630,7 +648,10 @@ let read_exception env parent id ext =
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id ext.ext_attributes in
     mark_exception ext;
-    let args = TypeDecl.Constructor.Tuple (List.map (read_type_expr env) ext.ext_args) in
+    let args =
+      read_constructor_declaration_arguments env
+        (Identifier.parent_of_signature parent) ext.ext_args
+    in
     let res = opt_map (read_type_expr env) ext.ext_ret_type in
       {id; doc; args; res}
 
@@ -737,7 +758,7 @@ let read_class_type_declaration env parent id cltd =
       read_class_signature env id cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
-      { id; doc; virtual_; params; expr; expansion = None }
+    { id; doc; virtual_; params; expr; expansion = None }
 
 let rec read_class_type env parent params =
   let open Class in function
@@ -773,7 +794,7 @@ let read_class_declaration env parent id cld =
       read_class_type env id cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
-      { id; doc; virtual_; params; type_; expansion = None }
+    { id; doc; virtual_; params; type_; expansion = None }
 
 let rec read_module_type env parent pos mty =
   let open ModuleType in
@@ -814,9 +835,9 @@ and read_module_type_declaration env parent id mtd =
   in
     {id; doc; expr; expansion}
 
-and read_module_declaration env parent id md =
+and read_module_declaration env parent ident md =
   let open Module in
-  let name = parenthesise (Ident.name id) in
+  let name = parenthesise (Ident.name ident) in
   let id = Identifier.Module(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc = read_attributes container id md.md_attributes in
@@ -833,7 +854,11 @@ and read_module_declaration env parent id md =
   in
   let type_ =
     match md.md_type with
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
     | Mty_alias p -> Alias (Env.Path.read_module env p)
+#else
+    | Mty_alias (_, p) -> Alias (Env.Path.read_module env p)
+#endif
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
   let hidden =

@@ -4,14 +4,15 @@
 .PHONY: lib test doc clean
 
 lib:
-	topkg build
+	jbuilder build -p doc-ock
 
 test:
-	topkg build
+	jbuilder runtest
 	topkg test
 
 doc:
-	topkg doc
+	@echo "waiting for jbuilder support (cf. pull #74)"
+	@# jbuilder odoc
 
 clean:
-	topkg clean
+	rm -R _build

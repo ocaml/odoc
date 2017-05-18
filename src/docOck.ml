@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+module Attrs = DocOckAttrs
+
+module Maps = DocOckMaps
+
 module Paths = DocOckPaths
 
 module Types = DocOckTypes

@@ -15,12 +15,12 @@
  *)
 
 let read =
-  let open Location in
   let open Parsetree in function
   | PStr[{ pstr_desc =
              Pstr_eval({ pexp_desc =
                            Pexp_constant( Parsetree.Pconst_string(str, _));
                          pexp_loc = loc;
+                         _
                        }, _)
-         }] -> Some(str, loc)
+         ; _ }] -> Some(str, loc)
   | _ -> None
