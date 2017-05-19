@@ -124,24 +124,24 @@ module Relative_link = struct
       | "" -> suffix
       | _  -> prefix ^ "." ^ suffix
 
-    let rec _render_raw : type a. (_, _) Identifier.t -> (_, a, _) Fragment.raw -> string =
-      fun id fragment ->
+    let rec render_raw : type a. (_, a, _) Fragment.raw -> string =
+      fun fragment ->
         let open Fragment in
         match fragment with
-        | Resolved rr -> render_resolved id rr
-        | Dot (prefix, suffix) -> dot (_render_raw id prefix) suffix
+        | Resolved rr -> render_resolved rr
+        | Dot (prefix, suffix) -> dot (render_raw prefix) suffix
 
-    and render_resolved : type a. (_, _) Identifier.t -> (_, a, _) Fragment.Resolved.raw -> string =
-      fun id fragment ->
+    and render_resolved : type a. (_, a, _) Fragment.Resolved.raw -> string =
+      fun fragment ->
         let open Fragment.Resolved in
         match fragment with
         | Root -> ""
-        | Subst (_, rr) -> render_resolved id (any_sort rr)
-        | SubstAlias (_, rr) -> render_resolved id (any_sort rr)
-        | Module (rr, s) -> dot (render_resolved id rr) s
-        | Type (rr, s) -> dot (render_resolved id rr) s
-        | Class (rr, s) -> dot (render_resolved id rr) s
-        | ClassType (rr, s) -> dot (render_resolved id rr) s
+        | Subst (_, rr) -> render_resolved (any_sort rr)
+        | SubstAlias (_, rr) -> render_resolved (any_sort rr)
+        | Module (rr, s) -> dot (render_resolved rr) s
+        | Type (rr, s) -> dot (render_resolved rr) s
+        | Class (rr, s) -> dot (render_resolved rr) s
+        | ClassType (rr, s) -> dot (render_resolved rr) s
 
     let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
       _ Identifier.signature -> ('b, a, _) Fragment.raw -> _ =
@@ -159,7 +159,7 @@ module Relative_link = struct
           end
         | Resolved rr ->
           let id = Resolved.identifier id (Obj.magic rr : (_, a) Resolved.t) in
-          let txt = render_resolved id rr in
+          let txt = render_resolved rr in
           begin match Id.href ~get_package ~stop_before id with
           | href ->
             [ a ~a:[ a_href href ] [ pcdata txt ] ]
@@ -191,6 +191,8 @@ module Relative_link = struct
     in
     a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
+
+let render_fragment = Relative_link.Of_fragment.render_raw
 
 class page_creator ?kind ~path content =
   let rec add_dotdot ~n acc =

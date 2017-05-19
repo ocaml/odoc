@@ -90,6 +90,8 @@ module Relative_link : sig
   val to_sub_element : kind:kind -> string -> [> `Href ] attrib
 end
 
+val render_fragment : (_, _, Fragment.sort) Fragment.raw -> string
+
 (* TODO: move to a centralized [State] module or something. Along with
    Relative_link.semantic_uris. *)
 val open_details : bool ref

@@ -747,9 +747,34 @@ and type_expr
   | Poly (polyvars, t) ->
     pcdata (String.concat ~sep:" " polyvars ^ ". ") :: type_expr ~get_package t
   | Package pkg ->
-    (* CR trefis: TODO substitutions *)
     pcdata "(" :: Markup.keyword "module " ::
-    Html_tree.Relative_link.of_path ~stop_before:false ~get_package pkg.path @ [pcdata ")"]
+    Html_tree.Relative_link.of_path ~stop_before:false ~get_package pkg.path @
+    begin match pkg.substitutions with
+    | [] -> []
+    | lst ->
+      pcdata " " :: Markup.keyword "with" :: pcdata " " ::
+      list_concat_map ~sep:(Markup.keyword " and ") lst
+        ~f:(package_subst ~get_package pkg.path)
+    end
+    @ [pcdata ")"]
+
+and package_subst
+   : 'inner 'outer. get_package:('a -> string)
+   -> 'a Path.module_type -> 'a Fragment.type_ * 'a Types.TypeExpr.t
+   -> ('inner, 'outer) text elt list
+   = fun ~get_package pkg_path (frag_typ, te) ->
+  Markup.keyword "type " ::
+  (match pkg_path with
+   | Path.Resolved rp ->
+     let base =
+       Identifier.signature_of_module_type (Path.Resolved.identifier rp)
+     in
+     Html_tree.Relative_link.of_fragment ~get_package ~base
+       (Fragment.any_sort frag_typ)
+   | _ ->
+     [ pcdata (Html_tree.render_fragment (Fragment.any_sort frag_typ)) ]) @
+  pcdata " " :: Markup.keyword "=" :: pcdata " " ::
+  type_expr ~get_package te
 
 and value ~get_package (t : _ Types.Value.t) =
   let name = Identifier.name t.id in
