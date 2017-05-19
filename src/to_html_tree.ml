@@ -990,5 +990,5 @@ and include_ ~get_package (t : _ Types.Include.t) =
       ]
   in
   [ div ~a:[ a_class ["spec"; "include"] ]
-      (incl @ [ div ~a:[ a_class ["doc"] ] doc])
+      (div ~a:[ a_class ["doc"] ] doc :: incl)
   ], tree
