@@ -388,7 +388,9 @@ and constructor
           | _ -> false
         in
         let ret_type =
-          Markup.keyword (if constant then " : " else " -> ") ::
+          pcdata " " ::
+          (if constant then Markup.keyword ":" else Markup.arrow) ::
+          pcdata " " ::
           type_expr ~get_package te
         in
         true, ret_type
@@ -720,14 +722,14 @@ and type_expr
   | Arrow (None, src, dst) ->
     let res =
       type_expr ~needs_parentheses:true ~get_package src @
-      Markup.keyword " -> " :: type_expr ~get_package dst
+      pcdata " " :: Markup.arrow :: pcdata " " :: type_expr ~get_package dst
     in
     if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Arrow (Some lbl, src, dst) ->
     let res =
       pcdata (string_of_label lbl ^ ":") ::
       type_expr ~needs_parentheses:true ~get_package src @
-      Markup.keyword " -> " :: type_expr ~get_package dst
+      pcdata " " :: Markup.arrow :: pcdata " " :: type_expr ~get_package dst
     in
     if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Tuple lst ->
@@ -873,11 +875,11 @@ and class_decl
     (* TODO: factorize the following with [type_expr] *)
     | Arrow (None, src, dst) ->
       type_expr ~needs_parentheses:true ~get_package src @
-      Markup.keyword " -> " :: class_decl ~get_package dst
+      pcdata " " :: Markup.arrow :: pcdata " " :: class_decl ~get_package dst
     | Arrow (Some lbl, src, dst) ->
       pcdata (string_of_label lbl ^ ":") ::
       type_expr ~needs_parentheses:true ~get_package src @
-      Markup.keyword " -> " :: class_decl ~get_package dst
+      pcdata " " :: Markup.arrow :: pcdata " " :: class_decl ~get_package dst
 
 and class_ ~get_package (t : _ Types.Class.t) =
   let name = Identifier.name t.id in

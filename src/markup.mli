@@ -43,3 +43,6 @@ val make_spec
   -> ?doc:[< Html_types.div_content_fun ] elt list
   -> [< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt
+
+val arrow : [> Html_types.span ] elt
+(** "->" with a non breaking hyphen, styled as a keyword. *)

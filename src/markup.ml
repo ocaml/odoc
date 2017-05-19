@@ -50,3 +50,5 @@ let make_spec ~get_package ~id ?doc code =
        | None -> []
        | Some doc -> [div ~a:[ a_class ["doc"] ] doc])
     )
+
+let arrow = span ~a:[ a_class ["keyword" ] ] [ entity "#8209"; entity "gt" ]
