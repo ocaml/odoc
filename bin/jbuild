@@ -6,9 +6,8 @@
 ; content) before calling jbuilder.
 (rule
   ((targets (odoc_etc.ml))
-   (deps    ())
-   (action  (with-stdout-to ${@}
-                (echo "let dir = \"etc\"")))))
+   (deps    (set-etc))
+   (action  (run ${OCAML} ${<} ${@} etc))))
 
 (executable
  ((name main)
