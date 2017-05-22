@@ -925,7 +925,7 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
     match t.expansion with
     | None -> pcdata name, []
     | Some csig ->
-      Html_tree.enter ~kind:(`Class) name;
+      Html_tree.enter ~kind:(`Cty) name;
       let doc = Documentation.to_html ~get_package t.doc in
       let expansion = class_signature ~get_package csig in
       let expansion =
