@@ -1,0 +1,4 @@
+(* -*- tuareg -*- *)
+let () =
+  let oc = open_out Sys.argv.(1) in
+  Printf.fprintf oc "let dir = %S\n%!" Sys.argv.(2)
