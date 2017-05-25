@@ -21,19 +21,10 @@ module Compile : sig
   val digest : t -> Digest.t
 end
 
-(*
-module Html : sig
-
-  type t
-
-  val unit : t -> string
-
-  val package : t -> string
-
-end
-*)
-
 val for_compile_step : Fs.File.t -> Compile.t list
 (** Takes a .cm{i,t,ti} file and returns the list of its dependencies. *)
 
-val for_html_step : Fs.File.t -> string list
+val for_html_step : Fs.Directory.t -> Root.Package.t list
+(** Takes the directory where the .odoc files of a given package are stored and
+    returns the list of packages that need to be in odoc's load path to process
+    html from these .odoc files. *)

@@ -24,14 +24,6 @@ module Compile = struct
   let digest t = t.digest
 end
 
-(*
-module Html = struct
-  type t = Fs.File.t
-  let unit t = t
-  let package t = t
-end
-   *)
-
 let for_compile_step file =
   let input = Fs.File.to_string file in
   let cmi_infos = Cmi_format.read_cmi input in
@@ -41,44 +33,43 @@ let for_compile_step file =
   ) ~init:[] cmi_infos.Cmi_format.cmi_crcs
 
 
-(* TODO: for the moment this won't handle forward references properly (in documentation or
-   just using -no-alias-deps). At some point we will want to walk the odoctree and list
-   the root of every unresolved path (or reference rather?).
-   Later. *)
-
 module Hash_set : sig
   type t
 
   val create : unit -> t
 
-  val add : t -> string -> unit
+  val add : t -> Root.Package.t -> unit
 
-  val elements : t -> string list
+  val elements : t -> Root.Package.t list
 end = struct
-  type t = (string, unit) Hashtbl.t
+  module T = Root.Package.Table
 
-  let add t elt = if Hashtbl.mem t elt then () else Hashtbl.add t elt ()
+  type t = unit T.t
 
-  let create () = Hashtbl.create 42
+  let add t elt = if T.mem t elt then () else T.add t elt ()
 
-  let elements t = Hashtbl.fold (fun s () acc -> s :: acc) t []
+  let create () = T.create 42
+
+  let elements t = T.fold (fun s () acc -> s :: acc) t []
 end
 
-module Path = DocOck.Paths.Path
+open DocOck
 
-(* FIXME: return not just a unit name, but the name of the package it is in as well.
-   Is this info in the imports list? Probably not. *)
-let for_html_step input =
+let deps_of_unit ~deps input =
   let odoctree = Unit.load input in
-  let deps = Hash_set.create () in
   List.iter odoctree.DocOck.Types.Unit.imports ~f:(fun import ->
     let import_name =
       match import with
-      | DocOck.Types.Unit.Import.Resolved root ->
-        Root.(Package.to_string @@ package root)
-      | DocOck.Types.Unit.Import.Unresolved _ ->
-        Root.Package.to_string @@ Root.package @@ Unit.root odoctree
+      | Types.Unit.Import.Resolved root -> Root.package root
+      | Types.Unit.Import.Unresolved _  -> Root.package (Unit.root odoctree)
     in
     Hash_set.add deps import_name
+  )
+
+let for_html_step pkg_dir =
+  let deps = Hash_set.create () in
+  List.iter (Fs.Directory.ls pkg_dir) ~f:(fun file ->
+    if Fs.File.has_ext "odoc" file then
+      deps_of_unit ~deps file
   );
   Hash_set.elements deps

@@ -178,20 +178,21 @@ module Depends = struct
 
   module Html = struct
     let list_dependencies input_file =
-      let deps = Depends.for_html_step (Fs.File.of_string input_file) in
+      let deps = Depends.for_html_step (Fs.Directory.of_string input_file) in
+      let deps = List.map deps ~f:Root.Package.to_string in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" deps)
 
     let cmd =
       let input =
-        let doc = "Input file" in
-        Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
+        let doc = "Input directory" in
+        Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"PKG_DIR" [])
       in
       Term.(const list_dependencies $ input)
 
   let info =
     Term.info "html-deps"
-      ~doc:"List units (with their digest) which needs to be compiled in order \
-            to compile this one."
+      ~doc:"lists the packages which need to be in odoc's load path to process \
+            html from the .odoc files in the given directory"
   end
 end
 

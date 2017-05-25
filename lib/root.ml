@@ -20,6 +20,12 @@ module Package = struct
   type t = string
   let create s = s
   let to_string s = s
+
+  module Table = Hashtbl.Make(struct
+    type nonrec t = t
+    let equal : t -> t -> bool = (=)
+    let hash : t -> int = Hashtbl.hash
+  end)
 end
 
 module Unit = struct
