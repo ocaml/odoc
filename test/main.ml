@@ -1,14 +1,29 @@
 
-let process lexbuf =
+let process file lexbuf =
   match Octavius.parse lexbuf with
   | Octavius.Ok t ->
     Format.printf "%a@." Octavius.print t
   | Octavius.Error { error; location } ->
     let msg = Octavius.Errors.message error in
-    Format.printf "Error(%i.%i-%i.%i): %s@."
-      location.start.line location.start.column
-      location.finish.line location.finish.column
-      msg
+    let loc =
+      let { Octavius.Errors. start ; finish } = location in
+      let open Lexing in
+      let loc_start = {
+        pos_fname = file;
+        pos_bol = 0;
+        pos_lnum = start.line;
+        pos_cnum = start.column;
+      } in
+      let loc_end = {
+        pos_fname = file;
+        pos_bol = 0;
+        pos_lnum = finish.line;
+        pos_cnum = finish.column;
+      } in
+      { Location. loc_start; loc_end; loc_ghost=false }
+    in
+    Location.(report_error Format.err_formatter (error ~loc msg));
+    Format.fprintf Format.err_formatter "\n%!"
 
 let () =
   if Array.length Sys.argv <> 2 then begin
@@ -22,5 +37,5 @@ let () =
   end;
   let ic = open_in file in
   let lexbuf = Lexing.from_channel ic in
-  process lexbuf;
+  process file lexbuf;
   close_in ic

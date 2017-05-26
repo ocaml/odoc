@@ -3,4 +3,4 @@
 (executable
  ((name main)
   (public_name octavius)
-  (libraries (octavius))))
+  (libraries (octavius compiler-libs.common))))
