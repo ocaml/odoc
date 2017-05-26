@@ -246,7 +246,7 @@ class page_creator ?kind ~path content =
       if not has_parent then
         article
       else
-        nav
+        nav ~a:[ a_id "top" ]
           [ a ~a:[ a_href up_href ] [ pcdata "Up" ]
           ; pcdata " "; entity "mdash"; pcdata " "
           ; span ~a:[ a_class ["package"]]
