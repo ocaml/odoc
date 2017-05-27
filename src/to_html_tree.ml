@@ -84,28 +84,31 @@ and signature
 = fun ~get_package t ->
   let html_and_subtrees =
     let recording_doc = ref true in
-    List.map t ~f:(function
-      | Types.Signature.Module md -> module_ ~get_package md
-      | ModuleType mty -> module_type ~get_package mty
-      | Type td -> [ type_decl ~get_package td ], []
-      | TypExt te -> [ extension ~get_package te ], []
-      | Exception e -> [ exn ~get_package e ], []
-      | Value v -> [ value ~get_package v ], []
-      | External e -> [ external_ ~get_package e ], []
-      | Class c -> class_ ~get_package c
-      | ClassType cty -> class_type ~get_package cty
-      | Include incl -> include_ ~get_package incl
-      | Comment (Documentation doc) ->
-        let doc =
-          if !recording_doc then
-            Documentation.to_html ~get_package doc
-          else
-            []
-        in
-        doc, []
-      | Comment Stop ->
-        recording_doc := not !recording_doc;
+    List.map t ~f:(fun item ->
+      if not !recording_doc then (
+        begin match item with
+        | Types.Signature.Comment Stop -> recording_doc := not !recording_doc
+        | _ -> ()
+        end;
         [], []
+      ) else (
+        match item with
+        | Types.Signature.Module md -> module_ ~get_package md
+        | ModuleType mty -> module_type ~get_package mty
+        | Type td -> [ type_decl ~get_package td ], []
+        | TypExt te -> [ extension ~get_package te ], []
+        | Exception e -> [ exn ~get_package e ], []
+        | Value v -> [ value ~get_package v ], []
+        | External e -> [ external_ ~get_package e ], []
+        | Class c -> class_ ~get_package c
+        | ClassType cty -> class_type ~get_package cty
+        | Include incl -> include_ ~get_package incl
+        | Comment (Documentation doc) ->
+          Documentation.to_html ~get_package doc, []
+        | Comment Stop ->
+          recording_doc := not !recording_doc;
+          [], []
+      )
     )
   in
   let html, subtrees = List.split html_and_subtrees in
