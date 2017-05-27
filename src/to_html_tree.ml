@@ -41,11 +41,6 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
     let id = string_of_sexp @@ Identifier.sexp_of_t (fun _ -> Atom "") id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-
-let string_of_label = function
-  | Types.TypeExpr.Label s -> s
-  | Optional s -> "?" ^ s
-
 let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   let package =
     match t.id with
@@ -730,7 +725,7 @@ and type_expr
     if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
   | Arrow (Some lbl, src, dst) ->
     let res =
-      pcdata (string_of_label lbl ^ ":") ::
+      Markup.label lbl @ pcdata ":" ::
       type_expr ~needs_parentheses:true ~get_package src @
       pcdata " " :: Markup.arrow :: pcdata " " :: type_expr ~get_package dst
     in
@@ -880,7 +875,7 @@ and class_decl
       type_expr ~needs_parentheses:true ~get_package src @
       pcdata " " :: Markup.arrow :: pcdata " " :: class_decl ~get_package dst
     | Arrow (Some lbl, src, dst) ->
-      pcdata (string_of_label lbl ^ ":") ::
+      Markup.label lbl @ pcdata ":" ::
       type_expr ~needs_parentheses:true ~get_package src @
       pcdata " " :: Markup.arrow :: pcdata " " :: class_decl ~get_package dst
 

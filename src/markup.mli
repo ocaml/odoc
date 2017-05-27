@@ -46,3 +46,7 @@ val make_spec
 
 val arrow : [> Html_types.span ] elt
 (** "->" with a non breaking hyphen, styled as a keyword. *)
+
+val label : DocOck.Types.TypeExpr.label -> [> `PCDATA ] elt list
+(** For optional arguments adds a word joiner between the question mark and the
+    label. *)

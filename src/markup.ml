@@ -52,3 +52,7 @@ let make_spec ~get_package ~id ?doc code =
     )
 
 let arrow = span ~a:[ a_class ["keyword" ] ] [ entity "#8209"; entity "gt" ]
+
+let label = function
+  | DocOck.Types.TypeExpr.Label s -> [ pcdata s ]
+  | Optional s -> [ pcdata "?"; entity "#8288"; pcdata s ]
