@@ -1200,26 +1200,22 @@ let splice_section_title tbl unit elt =
       | _ -> None
   in
   let find_section_title :
-    'a Resolved.any -> 'a Documentation.text option =
+    'a Resolved.label -> 'a Documentation.text option =
     function
     | Resolved.Identifier Identifier.Label (parent, str) ->
       let parent_ref = Resolved.Identifier parent in
       title_of_parent str parent_ref
     | Resolved.Label (parent_ref, str) ->
       title_of_parent str parent_ref
-    | _ -> None
   in
   let open Documentation in
   match elt with
   | Reference (r, None) ->
     begin match r with
-    | Element (Resolved rr) ->
-      begin match find_section_title rr with
-      | None -> elt
-      | txt -> Reference (r, txt)
-      end
+    | Element Resolved (Resolved.Label _
+                       |Resolved.Identifier (Identifier.Label _) as rr)
     | Section (Resolved rr) ->
-      begin match find_section_title (Resolved.any rr) with
+      begin match find_section_title rr with
       | None -> elt
       | txt -> Reference (r, txt)
       end
