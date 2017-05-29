@@ -20,36 +20,38 @@ let get_package root = Root.Package.to_string (Root.package root)
 
 let unit ~env ~output:root_dir input =
   let unit = Unit.load input in
-  let odoctree =
-    (* See comment in compile for explanation regarding the env duplication. *)
-    let resolve_env = Env.build env unit in
-    let resolved = DocOck.resolve (Env.resolver resolve_env) unit in
-    let expand_env = Env.build env resolved in
-    DocOck.expand (Env.expander expand_env) resolved
-    |> DocOck.resolve (Env.resolver expand_env) (* Yes, again. *)
-  in
-  let pkg_dir =
-    let pkg_name = get_package (Unit.root unit) in
-    Fs.Directory.reach_from ~dir:root_dir pkg_name
-  in
-  let pages = To_html_tree.unit ~get_package odoctree in
-  Html_tree.traverse pages ~f:(fun ~parents name content ->
-    let directory =
-      let dir =
-        List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
-          parents ~init:pkg_dir
+  let root = Unit.root unit in
+  if not (Root.unit root).hidden then
+    let odoctree =
+      (* See comment in compile for explanation regarding the env duplication. *)
+      let resolve_env = Env.build env unit in
+      let resolved = DocOck.resolve (Env.resolver resolve_env) unit in
+      let expand_env = Env.build env resolved in
+      DocOck.expand (Env.expander expand_env) resolved
+      |> DocOck.resolve (Env.resolver expand_env) (* Yes, again. *)
+    in
+    let pkg_dir =
+      let pkg_name = get_package root in
+      Fs.Directory.reach_from ~dir:root_dir pkg_name
+    in
+    let pages = To_html_tree.unit ~get_package odoctree in
+    Html_tree.traverse pages ~f:(fun ~parents name content ->
+      let directory =
+        let dir =
+          List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
+            parents ~init:pkg_dir
+        in
+        Fs.Directory.reach_from ~dir name
       in
-      Fs.Directory.reach_from ~dir name
-    in
-    let oc =
-      Fs.Directory.mkdir_p directory;
-      let file = Fs.File.create ~directory ~name:"index.html" in
-      open_out (Fs.File.to_string file)
-    in
-    let fmt = Format.formatter_of_out_channel oc in
-    Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
-    close_out oc
-  )
+      let oc =
+        Fs.Directory.mkdir_p directory;
+        let file = Fs.File.create ~directory ~name:"index.html" in
+        open_out (Fs.File.to_string file)
+      in
+      let fmt = Format.formatter_of_out_channel oc in
+      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      close_out oc
+    )
 
 class from_mld_page_creator ~name page_content =
   object

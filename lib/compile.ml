@@ -40,16 +40,18 @@ let it's_all_the_same ~env ~output input reader =
     let expand_env = Env.build env resolved in
     Unit.save output (expand (Env.expander expand_env) resolved)
 
-let root_of_unit ~package unit_name digest =
-  (* TODO: have a cmdline flag to force hiddeness. *)
-  let unit = Root.Unit.create ~force_hidden:false unit_name in
+let root_of_unit ~package ~hidden unit_name digest =
+  let unit = Root.Unit.create ~force_hidden:hidden unit_name in
   Root.create ~package ~unit ~digest
 
-let cmti ~env ~package ~output input =
-  it's_all_the_same ~env ~output input (read_cmti @@ root_of_unit ~package)
+let cmti ~env ~package ~hidden ~output input =
+  it's_all_the_same ~env ~output input
+    (read_cmti @@ root_of_unit ~package ~hidden)
 
-let cmt ~env ~package ~output input =
-  it's_all_the_same ~env ~output input (read_cmt @@ root_of_unit ~package)
+let cmt ~env ~package ~hidden ~output input =
+  it's_all_the_same ~env ~output input
+    (read_cmt @@ root_of_unit ~package ~hidden)
 
-let cmi ~env ~package ~output input =
-  it's_all_the_same ~env ~output input (read_cmi @@ root_of_unit ~package)
+let cmi ~env ~package ~hidden ~output input =
+  it's_all_the_same ~env ~output input
+    (read_cmi @@ root_of_unit ~package ~hidden)

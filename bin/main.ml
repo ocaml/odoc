@@ -42,7 +42,7 @@ module Compile : sig
   val info: Term.info
 end = struct
 
-  let compile _hidden directories resolve_fwd_refs output package_name input =
+  let compile hidden directories resolve_fwd_refs output package_name input =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
@@ -54,11 +54,11 @@ end = struct
     let package = Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
-      Compile.cmti ~env ~package ~output input
+      Compile.cmti ~env ~package ~hidden ~output input
     else if Fs.File.has_ext ".cmt" input then
-      Compile.cmt ~env ~package ~output input
+      Compile.cmt ~env ~package ~hidden ~output input
     else if Fs.File.has_ext ".cmi" input then
-      Compile.cmi ~env ~package ~output input
+      Compile.cmi ~env ~package ~hidden ~output input
     else (
       Printf.eprintf "Unknown extension, expected one of : cmti, cmt, cmi.\n%!";
       exit 2
