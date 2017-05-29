@@ -21,8 +21,6 @@ module Package : sig
   val create : string -> t
 
   val to_string : t -> string
-
-  module Table : Hashtbl.S with type key = t
 end
 
 module Unit : sig

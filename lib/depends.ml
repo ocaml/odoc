@@ -38,19 +38,17 @@ module Hash_set : sig
 
   val create : unit -> t
 
-  val add : t -> Root.Package.t -> unit
+  val add : t -> Root.t -> unit
 
-  val elements : t -> Root.Package.t list
+  val elements : t -> Root.t list
 end = struct
-  module T = Root.Package.Table
+  type t = unit Root.Table.t
 
-  type t = unit T.t
+  let add t elt = if Root.Table.mem t elt then () else Root.Table.add t elt ()
 
-  let add t elt = if T.mem t elt then () else T.add t elt ()
+  let create () = Root.Table.create 42
 
-  let create () = T.create 42
-
-  let elements t = T.fold (fun s () acc -> s :: acc) t []
+  let elements t = Root.Table.fold (fun s () acc -> s :: acc) t []
 end
 
 open DocOck
@@ -58,12 +56,9 @@ open DocOck
 let deps_of_unit ~deps input =
   let odoctree = Unit.load input in
   List.iter odoctree.DocOck.Types.Unit.imports ~f:(fun import ->
-    let import_name =
-      match import with
-      | Types.Unit.Import.Resolved root -> Root.package root
-      | Types.Unit.Import.Unresolved _  -> Root.package (Unit.root odoctree)
-    in
-    Hash_set.add deps import_name
+    match import with
+    | Types.Unit.Import.Resolved root -> Hash_set.add deps root
+    | Types.Unit.Import.Unresolved _  -> ()
   )
 
 let for_html_step pkg_dir =

@@ -178,9 +178,14 @@ module Depends = struct
 
   module Html = struct
     let list_dependencies input_file =
-      let deps = Depends.for_html_step (Fs.Directory.of_string input_file) in
-      let deps = List.map deps ~f:Root.Package.to_string in
-      Printf.printf "%s\n%!" (String.concat ~sep:"\n" deps)
+      List.iter (Depends.for_html_step (Fs.Directory.of_string input_file))
+        ~f:(fun root ->
+          let open Root in
+          Printf.printf "%s %s %s\n"
+            (Package.to_string (package root))
+            (unit root).Unit.name
+            (Digest.to_hex (digest root))
+        )
 
     let cmd =
       let input =
