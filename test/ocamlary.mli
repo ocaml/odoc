@@ -793,7 +793,7 @@ include module type of IncludeInclude1
 include IncludeInclude2
 
 
-(** {1 Trying the \{!modules: ...\} command.}
+(** {1:indexmodules Trying the \{!modules: ...\} command.}
 
     With ocamldoc, toplevel units will be linked and documented, while
     submodules will behave as simple references.
@@ -850,7 +850,7 @@ val test : 'a CanonicalTest.Base__.List.t -> unit
 (** Some ref to {!CanonicalTest.Base__Tests.C.t} and {!CanonicalTest.Base__Tests.L.id}.
     But also to {!CanonicalTest.Base__.List} and {!CanonicalTest.Base__.List.t} *)
 
-(** {1 Aliases again} *)
+(** {1:aliases Aliases again} *)
 
 module Aliases : sig
   (** Let's imitate jst's layout. *)
@@ -932,7 +932,7 @@ module Aliases : sig
 
   type stde = Std.E.t
 
-  (** {3 include of Foo}
+  (** {3:incl include of Foo}
 
       Just for giggle, let's see what happens when we include {!Foo}. *)
 
@@ -961,3 +961,23 @@ module Aliases : sig
   type p1 = X1.t
   type p2 = X2.t
 end
+
+(** {1 Section title splicing}
+
+    I can refer to
+    - [{!section:indexmodules}] : {!section:indexmodules}
+    - [{!aliases}] : {!aliases}
+
+    But also to things in submodules:
+    - [{!section:SuperSig.SubSigA.subSig}] : {!section:SuperSig.SubSigA.subSig}
+    - [{!Aliases.incl}] : {!Aliases.incl}
+
+    And just to make sure we do not mess up:
+    - [{{!section:indexmodules}A}] : {{!section:indexmodules}A}
+    - [{{!aliases}B}] : {{!aliases}B}
+    - [{{!section:SuperSig.SubSigA.subSig}C}] :
+    {{!section:SuperSig.SubSigA.subSig}C}
+    - [{{!Aliases.incl}D}] : {{!Aliases.incl}D}
+*)
+
+

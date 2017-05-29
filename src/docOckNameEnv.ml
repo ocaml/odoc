@@ -95,7 +95,9 @@ type 'a t =
     instance_variables : 'a instance_variable StringTbl.t;
     labels : 'a label StringTbl.t;
     parents : 'a parent_ident StringTbl.t;
-    elements : 'a any StringTbl.t; }
+    elements : 'a any StringTbl.t;
+    titles : 'a Documentation.text StringTbl.t; (* Hack *)
+  }
 
 let empty =
   { modules = StringTbl.empty;
@@ -112,7 +114,9 @@ let empty =
     instance_variables = StringTbl.empty;
     labels = StringTbl.empty;
     parents = StringTbl.empty;
-    elements = StringTbl.empty; }
+    elements = StringTbl.empty;
+    titles = StringTbl.empty;
+  }
 
 let add_label_ident id env =
   let name = Identifier.name id in
@@ -272,6 +276,13 @@ let opt_fold f o acc =
   | None -> acc
   | Some x -> f x acc
 
+let add_label_ident_title id txt env =
+  let name = Identifier.name id in
+  let titles =
+    StringTbl.add name txt env.titles
+  in
+    { env with titles }
+
 let rec add_text_element elem env =
   let open Documentation in
     match elem with
@@ -285,7 +296,9 @@ let rec add_text_element elem env =
         let env =
           match l with
           | None -> env
-          | Some id -> add_label_ident id env
+          | Some id ->
+            let env = add_label_ident id env in
+            add_label_ident_title id txt env
         in
           env
 
@@ -679,3 +692,13 @@ let lookup_element env = function
   | Resolved _ as r -> r
   | Root s -> lookup_element_ident env s
   | Dot(r, s) -> Dot(lookup_parent env r, s)
+
+let lookup_section_title env lbl =
+  match lbl with
+  | Identifier id ->
+    let lbl = Identifier.name id in
+    begin match StringTbl.find lbl env.titles with
+    | txt -> Some txt
+    | exception Not_found -> None
+    end
+  | _ -> None

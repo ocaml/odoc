@@ -1185,6 +1185,48 @@ and resolve_element_reference ident tbl u r =
           end
       end
 
+let splice_section_title tbl unit elt =
+  let open Reference in
+  let title_of_parent :
+    string -> 'a Resolved.parent -> 'a Documentation.text option =
+    let open Resolved in
+    let open Identifier in
+    fun name parent_ref ->
+      match parent_ref with
+      | (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
+        | SubstAlias _ | Module _ | Canonical _ | ModuleType _ as rr) ->
+          Some (Sig.find_section_title name
+                  (CTbl.resolved_signature_reference tbl unit rr))
+      | _ -> None
+  in
+  let find_section_title :
+    'a Resolved.any -> 'a Documentation.text option =
+    function
+    | Resolved.Identifier Identifier.Label (parent, str) ->
+      let parent_ref = Resolved.Identifier parent in
+      title_of_parent str parent_ref
+    | Resolved.Label (parent_ref, str) ->
+      title_of_parent str parent_ref
+    | _ -> None
+  in
+  let open Documentation in
+  match elt with
+  | Reference (r, None) ->
+    begin match r with
+    | Element (Resolved rr) ->
+      begin match find_section_title rr with
+      | None -> elt
+      | txt -> Reference (r, txt)
+      end
+    | Section (Resolved rr) ->
+      begin match find_section_title (Resolved.any rr) with
+      | None -> elt
+      | txt -> Reference (r, txt)
+      end
+    | _ -> elt
+    end
+  | otherwise -> otherwise
+
 let unwrap opt =
     match opt with
     | Some x -> x
@@ -1195,7 +1237,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
   val unit = None
   val where_am_i = None
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] DocOckMaps.types as super
   method root x = x
 
   method identifier_module x = x
@@ -1388,6 +1430,10 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
     resolve_label_reference (unwrap where_am_i) tbl (unwrap unit) x
   method reference_any x =
     resolve_element_reference (unwrap where_am_i) tbl (unwrap unit) x
+
+  method! documentation_text_element elt =
+    let elt = super#documentation_text_element elt in
+    splice_section_title tbl (unwrap unit) elt
 
   method! unit_import import =
     let open Unit.Import in

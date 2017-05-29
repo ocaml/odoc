@@ -144,7 +144,7 @@ let rec text_element_labels acc =
   let open Documentation in function
   | Title(_, Some id, txt) ->
       let name = Identifier.name id in
-        text_labels (name :: acc) txt
+        text_labels ((name, txt) :: acc) txt
   | Raw _ | Code _ | PreCode _ | Verbatim _
   | Newline | Target _ | Special _ | Reference(_, None) -> acc
   | Style(_, txt) | Title(_, None, txt) | Reference(_, Some txt) ->
@@ -234,6 +234,8 @@ module rec Sig : sig
 
   val find_element : string -> 'a t -> 'a Element.signature
 
+  val find_section_title : string -> 'a t -> 'a Documentation.text
+
   val lookup_module : string -> 'a t -> 'a t
 
   val lookup_argument : int -> 'a t -> 'a t
@@ -319,7 +321,8 @@ end = struct
       class_signatures: 'a ClassSig.t SMap.t;
       types: 'a Element.signature_type SMap.t;
       parents: 'a Parent.any LMap.t;
-      elements: 'a Element.signature LMap.t; }
+      elements: 'a Element.signature LMap.t;
+      section_titles: 'a Documentation.text SMap.t; }
 
   and 'a body =
     | Expr of 'a expr
@@ -574,6 +577,10 @@ end = struct
     in
       lift_find find name t
 
+  let find_section_title name t =
+    let find name sg = SMap.find name sg.section_titles in
+      lift_find find name t
+
   let find_element name t =
     let find name sg = LMap.find_name name sg.elements in
       lift_find find name t
@@ -653,7 +660,8 @@ end = struct
       class_signatures = SMap.empty;
       types = SMap.empty;
       parents = SMap.empty;
-      elements = SMap.empty; }
+      elements = SMap.empty;
+      section_titles = SMap.empty; }
 
   let add_module name md sg =
     let modules = SMap.add name md sg.modules in
@@ -704,12 +712,20 @@ end = struct
 
   let add_documentation doc sg =
     let labels = documentation_labels [] doc in
-    let add_label sg label = add_element label (Element.Label None) sg in
+    let add_label sg (label, txt) =
+      let sg = add_element label (Element.Label None) sg in
+      let section_titles = SMap.add label txt sg.section_titles in
+      {sg with section_titles}
+    in
       List.fold_left add_label sg labels
 
   let add_comment comment sg =
     let labels = comment_labels [] comment in
-    let add_label sg label = add_element label (Element.Label None) sg in
+    let add_label sg (label, txt) =
+      let sg = add_element label (Element.Label None) sg in
+      let section_titles = SMap.add label txt sg.section_titles in
+      {sg with section_titles}
+    in
       List.fold_left add_label sg labels
 
   let strengthen_submodule path expansion name t =
@@ -763,8 +779,11 @@ end = struct
         let elements =
           LMap.fold LMap.add incl.elements sg.elements
         in
+        let section_titles =
+          LMap.fold LMap.add incl.section_titles sg.section_titles
+        in
           {modules; module_types; class_signatures;
-           types; parents; elements}
+           types; parents; elements; section_titles}
     | Functor _ | Generative _ | Abstract | Unresolved -> sg
 
   let rec modules t =
@@ -1385,11 +1404,15 @@ end = struct
   let add_documentation doc = function
     | Variant v ->
         let lbls = documentation_labels [] doc in
-        let labels = List.fold_right SSet.add lbls v.labels in
+        let labels =
+          List.fold_right (fun (lbl, _) map -> SSet.add lbl map) lbls v.labels
+        in
           Variant {v with labels}
     | Record r ->
         let lbls = documentation_labels [] doc in
-        let labels = List.fold_right SSet.add lbls r.labels in
+        let labels =
+          List.fold_right (fun (lbl, _) map -> SSet.add lbl map) lbls r.labels
+        in
           Record {r with labels}
     | Unresolved -> Unresolved
 
@@ -1538,12 +1561,12 @@ end = struct
 
   let add_documentation doc csig =
     let labels = documentation_labels [] doc in
-    let add_label csig label = add_element label (Element.Label None) csig in
+    let add_label csig (label, _) = add_element label (Element.Label None) csig in
       List.fold_left add_label csig labels
 
   let add_comment comment sg =
     let labels = comment_labels [] comment in
-    let add_label sg label = add_element label (Element.Label None) sg in
+    let add_label sg (label, _) = add_element label (Element.Label None) sg in
       List.fold_left add_label sg labels
 
   let inherit_ t csig =

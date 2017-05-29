@@ -70,6 +70,8 @@ module rec Sig : sig
 
   val find_element : string -> 'a t -> 'a Element.signature
 
+  val find_section_title : string -> 'a t -> 'a Documentation.text
+
   (** {3 Lookup} *)
 
   val lookup_module : string -> 'a t -> 'a t

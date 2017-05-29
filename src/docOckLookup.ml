@@ -108,6 +108,25 @@ class ['a] lookup = object
     let this = {< env = env >} in
       this#super_class_type cltyp
 
+  method! documentation_text_element elt =
+    let elt = super#documentation_text_element elt in
+    let open Documentation in
+    match elt with
+    | Reference (r, None) ->
+      let open DocOckPaths.Reference in
+      let open Resolved in
+      begin match r with
+      | Section Resolved rr
+      | Element Resolved (Identifier (DocOckPaths.Identifier.Label _)
+                         | Label _ as rr) ->
+        begin match lookup_section_title env rr with
+        | None -> elt
+        | txt -> Documentation.Reference (r, txt)
+        end
+      | _ -> elt
+      end
+    | otherwise -> otherwise
+
 end
 
 let lookup x =

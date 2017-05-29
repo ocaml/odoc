@@ -76,3 +76,6 @@ val lookup_label : 'a t -> 'a Reference.label ->
 
 val lookup_element : 'a t -> 'a Reference.any ->
   'a Reference.any
+
+val lookup_section_title : 'a t -> 'a Reference.Resolved.label ->
+  'a Documentation.text option
