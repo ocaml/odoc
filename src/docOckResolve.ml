@@ -27,6 +27,33 @@ type 'a parent_module_type_path =
   | Resolved of 'a Path.Resolved.module_type * 'a Sig.t
   | Unresolved of 'a Path.module_type
 
+let rec add_subst_alias :
+  'a Path.Resolved.module_ ->
+  subp:'a Path.Resolved.module_ ->
+  'a Path.Resolved.module_ = fun orig ~subp ->
+  let open Path.Resolved in
+  if equal ~equal:(=) (* FIXME *) orig subp then orig else
+  match orig with
+  | Canonical (_, Path.Resolved rp) ->
+    add_subst_alias rp ~subp
+  | Canonical (rp, p) ->
+    let rp' = add_subst_alias rp ~subp in
+    if rp == rp' then orig else Canonical (rp', p)
+  | Module (p1, s1) -> begin
+      match subp with
+      | Module (subp, s2) when s1 = s2 ->
+        let p1' = add_subst_alias p1 ~subp in
+        if p1 == p1' then orig else Module (p1', s1)
+      | _ ->
+        SubstAlias(subp, orig)
+    end
+  | SubstAlias (subst, printing) ->
+    if equal ~equal:(=) (* FIXME *) subst subp then orig else
+      SubstAlias (subp, printing)
+  (* Not trying to be smart in these cases, let's just subst... *)
+  | _ ->
+    SubstAlias(subp, orig)
+
 let rec find_with_path_substs
         : 'b 'c. ('a Sig.t -> 'b) -> ('a Path.Resolved.module_ -> 'b -> 'c) ->
                    ('a Path.Resolved.module_ -> 'c) -> _ -> 'a CTbl.t -> 'a Unit.t ->
@@ -59,19 +86,10 @@ let rec find_with_path_substs
             match resolve_parent_module_path ident tbl u subp with
             | Unresolved _ -> unresolved pr
             | Resolved(subpr, parent) ->
-              let pr' =
-                let open Path.Resolved in
-                match pr with
-                | Canonical (_, Path.Resolved _) ->
-                  SubstAlias(subpr, pr)
-                | Canonical (p1, p2) ->
-                  Canonical(SubstAlias(subpr, p1), p2)
-                | _ ->
-                  SubstAlias(subpr, pr)
-              in
-                find_with_path_substs
-                  find resolved unresolved ident tbl u
-                  pr' parent
+              let pr' = add_subst_alias pr ~subp:subpr in
+              find_with_path_substs
+                find resolved unresolved ident tbl u
+                pr' parent
           end
       with Not_found -> unresolved pr
 
@@ -1436,7 +1454,7 @@ class ['a] resolver ?equal ?hash lookup fetch = object (self)
       match import with
       | Resolved _ -> import
       | Unresolved(name, _) ->
-        match lookup (unwrap unit) name with
+        match CTbl.base tbl (unwrap unit) name with
         | CTbl.Found {root; _} -> Resolved root
         | _ -> import
 
