@@ -1,3 +1,13 @@
+v1.1.1
+------
+
+- minimize substs in paths.
+  i.e. instead of having (Foo.Bar.Baz.t)/(Toto.Tata.Baz.t) we now have
+  ((Foo.Bar)/(Toto.Tata)).Baz.t
+
+- remember sections titles to be able to splice them when referencing sections.
+  (ocaml-doc/odoc#37)
+
 v1.1.0
 -------
 
