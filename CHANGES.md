@@ -1,3 +1,16 @@
+v1.1.1
+-------
+
+- add word-joiners between the question mark and the identifier of optional
+  labels
+  cf. ocaml-doc/odoc#19
+
+- fix handling of stop comments
+
+- put id on nav
+  cf. ocaml-doc/odoc#80
+
+
 v1.1.0
 -------
 
