@@ -235,9 +235,21 @@ let invalid_reference_error origin loc s =
   let message = "Invalid reference: \"" ^ s ^ "\"" in
     {origin; offset; location; message}
 
+let several_deprecated_error origin loc =
+  let open Error in
+  let origin = DocOckPaths.Identifier.any origin in
+  (* TODO get an actual offset *)
+  let dummy = { Position.line = 0; column = 0} in
+  let offset = { Offset.start = dummy; finish = dummy } in
+  (* TODO get an accurate location *)
+  let location = attribute_location loc in
+  let message = "Several deprecation tags are attached to this item" in
+    {origin; offset; location; message}
+
 
 let read_attributes parent id attrs =
-  let rec loop first acc : _ -> 'a t = function
+  let ocaml_deprecated = ref None in
+  let rec loop first nb_deprecated acc : _ -> 'a t = function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
         match DocOckPayload.read payload with
@@ -250,11 +262,20 @@ let read_attributes parent id attrs =
                   let text = read_text parent text in
                   let text = if first then text else Newline :: text in
                   let tags = List.map (read_tag parent) tags in
-                  let acc =
-                    { text = acc.text @ text;
-                      tags = acc.tags @ tags; }
+                  let nb_deprecated =
+                    List.fold_right (function
+                      | Deprecated _ -> (+) 1
+                      | _ -> fun x -> x
+                    ) tags nb_deprecated
                   in
-                  loop false acc rest
+                  if nb_deprecated > 1 then
+                    Error (several_deprecated_error id loc)
+                  else
+                    let acc =
+                      { text = acc.text @ text;
+                        tags = acc.tags @ tags; }
+                    in
+                    loop false nb_deprecated acc rest
                 with InvalidReference s ->
                   Error (invalid_reference_error id loc s)
               end
@@ -262,10 +283,27 @@ let read_attributes parent id attrs =
           end
         | None -> Error (invalid_attribute_error id loc)
       end
-    | _ :: rest -> loop first acc rest
-    | [] -> Ok acc
+    | ({Location.txt =
+          ("deprecated" | "ocaml.deprecated"); _}, payload) :: rest -> begin
+        match DocOckPayload.read payload with
+        | Some (str, _) ->
+          (* Not parsing with octavius here, we take the string verbatim. *)
+          let deprecated_tag = Deprecated [Raw str] in
+          ocaml_deprecated := Some deprecated_tag;
+          loop first nb_deprecated acc rest
+        | None ->
+          (* The compiler just ignores deprecated attributes whose payload is
+             not a string, we do the same. *)
+          loop first nb_deprecated acc rest
+      end
+    | _ :: rest -> loop first nb_deprecated acc rest
+    | [] -> begin
+        match nb_deprecated, !ocaml_deprecated with
+        | 0, Some tag -> Ok { acc with tags = acc.tags @ [tag] }
+        | _, _ -> Ok acc
+      end
   in
-    loop true empty_body attrs
+    loop true 0 empty_body attrs
 
 let read_string parent loc str : 'a comment =
   let lexbuf = Lexing.from_string str in
