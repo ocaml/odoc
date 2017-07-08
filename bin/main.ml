@@ -278,7 +278,7 @@ let () =
   let default =
     Term.(const
             (fun () ->
-               prerr_endline "Available subcommands: compile, html, deps")
+               prerr_endline "Available subcommands: compile, html, compile-deps, html-deps, css, to_xml compile-targets, html-targets")
           $ const ()),
     Term.info ~version:"%%VERSION%%" "odoc"
   in
