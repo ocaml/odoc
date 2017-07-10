@@ -271,7 +271,7 @@ module To_xml = struct
     Term.(const to_xml $ input)
 
   let info =
-    Term.info ~doc:"Takes a .odoc file and output a.xml version" "to_xml"
+    Term.info ~doc:"Takes a .odoc file and output a.xml version" "to-xml"
 end
 
 let () =
