@@ -275,13 +275,6 @@ module To_xml = struct
 end
 
 let () =
-  let default =
-    Term.(const
-            (fun () ->
-               prerr_endline "Available subcommands: compile, html, deps")
-          $ const ()),
-    Term.info ~version:"%%VERSION%%" "odoc"
-  in
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
@@ -291,6 +284,18 @@ let () =
     ; Targets.Compile.(cmd, info)
     ; Targets.Html.(cmd, info)
     ; To_xml.(cmd, info) ]
+  in
+  let default =
+    let print_default () =
+      let available_subcommands =
+        List.map subcommands ~f:(fun (_, info) -> Term.name info)
+      in
+      Printf.printf "Available subcommands: %s\n\
+                     See --help for more information.\n%!"
+        (String.concat ~sep:", " available_subcommands)
+    in
+    Term.(const print_default $ const ()),
+    Term.info ~version:"%%VERSION%%" "odoc"
   in
   match Term.eval_choice ~err:Format.err_formatter default subcommands with
   | `Error _ ->
