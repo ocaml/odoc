@@ -1,3 +1,4 @@
+open StdLabels
 open DocOck.Paths
 open Identifier
 

@@ -1,3 +1,5 @@
+module List = ListLabels
+
 open DocOck
 open Types
 open Tyxml.Html
@@ -471,7 +473,7 @@ let handle_tags ~get_package tags =
     let make_tag ?class_ txt =
       let class_ =
         match class_ with
-        | None -> String.uncapitalize txt
+        | None -> String.uncapitalize_ascii txt
         | Some s -> s
       in
       span ~a:[ a_class [ "at-tag"; class_ ] ] [pcdata txt]

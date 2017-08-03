@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open StdLabels
 open Tyxml.Html
 
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]

@@ -3,5 +3,4 @@
 (library
  ((name docOckHtml)
   (public_name doc-ock-html)
-  (libraries (doc-ock xmlm tyxml))
-  (flags (:standard -open StdLabels))))
+  (libraries (doc-ock xmlm tyxml))))
