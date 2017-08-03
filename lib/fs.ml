@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open StdLabels
+
 type directory = Fpath.t
 type file = Fpath.t
 

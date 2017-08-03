@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open StdLabels
+
 module Compile = struct
   type t = {
     unit_name : string;

@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open StdLabels
 open DocOckHtml
 
 let get_package root = Root.Package.to_string (Root.package root)

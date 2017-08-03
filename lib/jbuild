@@ -3,7 +3,6 @@
 (library
  ((name odoc)
   (public_name odoc)
-  (flags (:standard -open StdLabels))
   (libraries (xmlm
               doc-ock
               doc-ock-xml

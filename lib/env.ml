@@ -35,7 +35,7 @@ module Accessible_paths = struct
 
   let find_file_by_name t name =
     let uname = name ^ ".odoc" in
-    let lname = String.uncapitalize name ^ ".odoc" in
+    let lname = String.uncapitalize_ascii name ^ ".odoc" in
     let rec loop = function
       | [] -> raise Not_found
       | directory :: dirs ->
