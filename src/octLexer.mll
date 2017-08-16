@@ -592,6 +592,12 @@ and module_list = parse
 | safe+ | _
     { buffer_lexeme lexbuf; module_list lexbuf }
 
+and read_ref = parse
+| "-" { MINUS }
+| "." { DOT }
+| [^ '-' '.']+ { Ref_part (Lexing.lexeme lexbuf) }
+| eof { EOF }
+
 {
 
 (* Initialize style hash table *)

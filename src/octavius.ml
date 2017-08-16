@@ -34,5 +34,15 @@ let parse lexbuf =
     | LexerError(location, err) ->
         Error {Errors.error = Lexer err; location}
 
+let parse_ref lexbuf =
+  let open OctErrors in
+    try
+      Ok (OctParser.reference_parts OctLexer.read_ref lexbuf)
+    with
+    | ParserError(location, err) ->
+        Error {Errors.error = Parser err; location}
+    | LexerError(location, err) ->
+        Error {Errors.error = Lexer err; location}
+
 let print fmt t =
   OctPrint.pp fmt t

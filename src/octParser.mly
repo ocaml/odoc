@@ -184,8 +184,14 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token BLANK
 %token <string> Char
 
+%token DOT
+%token <string> Ref_part
+
 %start main
 %type <OctTypes.t> main
+
+%start reference_parts
+%type <(string option * string) list> reference_parts
 
 %nonassoc Shift_error
 %right error
@@ -198,6 +204,17 @@ let html_close_to_string t = "</" ^ t ^ ">"
 main:
 | text              { (text $1, []) }
 | text tags         { (text $1, List.rev $2) }
+;
+
+/* Entry point for reference parsing */
+reference_parts:
+| reference_part { [$1] }
+| reference_parts DOT reference_part { $3 :: $1 }
+;
+
+reference_part:
+| Ref_part { (None, $1) }
+| Ref_part MINUS Ref_part { (Some $1, $3) }
 ;
 
 /* Tags */

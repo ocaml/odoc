@@ -15,3 +15,5 @@
  *)
 
 val main : Lexing.lexbuf -> OctParser.token
+
+val read_ref : Lexing.lexbuf -> OctParser.token

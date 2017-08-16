@@ -24,4 +24,6 @@ type nonrec ('a, 'b) result = ('a, 'b) result =
 
 val parse : Lexing.lexbuf -> (Types.t, Errors.t) result
 
+val parse_ref : Lexing.lexbuf -> ((string option * string) list, Errors.t) result
+
 val print : Format.formatter -> Types.t -> unit
