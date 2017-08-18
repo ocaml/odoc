@@ -392,7 +392,7 @@ let int32_decl =
   let id = int32_identifier in
   let text =
     [Raw "The type of signed 32-bit integers. See the ";
-     Reference(Module(Root("Int32")), None);
+     Reference(Element(Root("Int32", TModule)), None);
      Raw " module."]
   in
   let doc = Ok {empty_doc with text} in
@@ -406,7 +406,7 @@ let int64_decl =
   let id = int64_identifier in
   let text =
     [Raw "The type of signed 64-bit integers. See the ";
-     Reference(Module(Root("Int64")), None);
+     Reference(Element(Root("Int64", TModule)), None);
      Raw " module."]
   in
   let doc = Ok {empty_doc with text} in
@@ -421,7 +421,7 @@ let nativeint_decl =
   let text =
     [Raw "The type of signed, platform-native integers (32 bits on \
           32-bit processors, 64 bits on 64-bit processors). See the ";
-     Reference(Module(Root("Nativeint")), None);
+     Reference(Element(Root("Nativeint", TModule)), None);
      Raw " module."]
   in
   let doc = Ok {empty_doc with text} in
@@ -435,7 +435,7 @@ let lazy_t_decl =
   let id = lazy_t_identifier in
   let text =
     [Raw "This type is used to implement the ";
-     Reference(Module(Root("Lazy")), None);
+     Reference(Element(Root("Lazy", TModule)), None);
      Raw " module. It should not be used directly."]
   in
   let doc = Ok {empty_doc with text} in
@@ -449,7 +449,7 @@ let extension_constructor_decl =
   let id = extension_constructor_identifier in
   let text =
     [Raw "cf. ";
-     Reference(Module(Root("Obj")), None);
+     Reference(Element(Root("Obj", TModule)), None);
      Raw " module. It should not be used directly."]
   in
   let doc = Ok {empty_doc with text} in
@@ -609,7 +609,7 @@ let sys_blocked_io_decl =
   let id = sys_blocked_io_identifier in
   let text =
     [Raw "A special case of ";
-     Reference(Exception sys_error_reference, None);
+     Reference(Element sys_error_reference, None);
      Raw " raised when no I/O is possible on a non-blocking I/O channel."]
   in
   let doc = Ok {empty_doc with text} in

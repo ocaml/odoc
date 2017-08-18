@@ -634,19 +634,110 @@ class virtual ['a] reference = object (self)
             let res' = self#reference_resolved res in
               if res != res' then Resolved res'
               else r
-        | Root name ->
+        | Root (name, kind) ->
             let name' = self#reference_root_name name in
-              if name != name' then Root name'
+              if name != name' then Root (name', kind)
               else r
         | Dot(parent, name) ->
             let parent' = self#reference parent in
             let name' = self#reference_dot_name name in
               if parent != parent' || name != name' then Dot(parent', name')
               else r
+        | Module(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_module_name name in
+              if parent != parent' || name != name' then Module(parent', name')
+              else r
+        | ModuleType(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_module_type_name name in
+              if parent != parent' || name != name' then ModuleType(parent', name')
+              else r
+        | Type(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_type_name name in
+              if parent != parent' || name != name' then Type(parent', name')
+              else r
+        | Constructor(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_constructor_name name in
+              if parent != parent' || name != name' then Constructor(parent', name')
+              else r
+        | Extension(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_extension_name name in
+              if parent != parent' || name != name' then Extension(parent', name')
+              else r
+        | Exception(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_exception_name name in
+              if parent != parent' || name != name' then Exception(parent', name')
+              else r
+        | Field(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_field_name name in
+              if parent != parent' || name != name' then Field(parent', name')
+              else r
+        | Value(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_value_name name in
+              if parent != parent' || name != name' then Value(parent', name')
+              else r
+        | Class(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_class_name name in
+              if parent != parent' || name != name' then Class(parent', name')
+              else r
+        | ClassType(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_class_type_name name in
+              if parent != parent' || name != name' then ClassType(parent', name')
+              else r
+        | Method(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_method_name name in
+              if parent != parent' || name != name' then Method(parent', name')
+              else r
+        | InstanceVariable(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_instance_variable_name name in
+              if parent != parent' || name != name' then InstanceVariable(parent', name')
+              else r
+        | Label(parent, name) ->
+            let parent' = self#reference parent in
+            let name' = self#reference_label_name name in
+              if parent != parent' || name != name' then Label(parent', name')
+              else r
 
   method reference_root_name name = name
 
   method reference_dot_name name = name
+
+  method reference_module_name name = name
+
+  method reference_module_type_name name = name
+
+  method reference_type_name name = name
+
+  method reference_constructor_name name = name
+
+  method reference_field_name name = name
+
+  method reference_extension_name name = name
+
+  method reference_exception_name name = name
+
+  method reference_value_name name = name
+
+  method reference_class_name name = name
+
+  method reference_class_type_name name = name
+
+  method reference_method_name name = name
+
+  method reference_instance_variable_name name = name
+
+  method reference_label_name name = name
 
   method reference_module (r : 'a Reference.module_) =
     self#reference r
@@ -768,61 +859,9 @@ class virtual ['a] documentation = object (self)
   method documentation_reference drf =
     let open Documentation in
       match drf with
-      | Module rf ->
-          let rf' = self#reference_module rf in
-            if rf != rf' then Module rf'
-            else drf
-      | ModuleType rf ->
-          let rf' = self#reference_module_type rf in
-            if rf != rf' then ModuleType rf'
-            else drf
-      | Type rf ->
-          let rf' = self#reference_type rf in
-            if rf != rf' then Type rf'
-            else drf
-      | Constructor rf ->
-          let rf' = self#reference_constructor rf in
-            if rf != rf' then Constructor rf'
-            else drf
-      | Field rf ->
-          let rf' = self#reference_field rf in
-            if rf != rf' then Field rf'
-            else drf
-      | Extension rf ->
-          let rf' = self#reference_extension rf in
-            if rf != rf' then Extension rf'
-            else drf
-      | Exception rf ->
-          let rf' = self#reference_exception rf in
-            if rf != rf' then Exception rf'
-            else drf
-      | Value rf ->
-          let rf' = self#reference_value rf in
-            if rf != rf' then Value rf'
-            else drf
-      | Class rf ->
-          let rf' = self#reference_class rf in
-            if rf != rf' then Class rf'
-            else drf
-      | ClassType rf ->
-          let rf' = self#reference_class_type rf in
-            if rf != rf' then ClassType rf'
-            else drf
-      | Method rf ->
-          let rf' = self#reference_method rf in
-            if rf != rf' then Method rf'
-            else drf
-      | InstanceVariable rf ->
-          let rf' = self#reference_instance_variable rf in
-            if rf != rf' then InstanceVariable rf'
-            else drf
       | Element rf ->
           let rf' = self#reference_any rf in
             if rf != rf' then Element rf'
-            else drf
-      | Section rf ->
-          let rf' = self#reference_label rf in
-            if rf != rf' then Section rf'
             else drf
       | Link link ->
           let link' = self#documentation_reference_link link in

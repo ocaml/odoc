@@ -116,7 +116,6 @@ class ['a] lookup = object
       let open DocOckPaths.Reference in
       let open Resolved in
       begin match r with
-      | Section Resolved rr
       | Element Resolved (Identifier (DocOckPaths.Identifier.Label _)
                          | Label _ as rr) ->
         begin match lookup_section_title env rr with

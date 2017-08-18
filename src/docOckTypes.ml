@@ -34,20 +34,7 @@ module rec Documentation : sig
     | Custom of string
 
   type 'a reference =
-    | Module of 'a Reference.module_
-    | ModuleType of 'a Reference.module_type
-    | Type of 'a Reference.type_
-    | Constructor of 'a Reference.constructor
-    | Field of 'a Reference.field
-    | Extension of 'a Reference.extension
-    | Exception of 'a Reference.exception_
-    | Value of 'a Reference.value
-    | Class of 'a Reference.class_
-    | ClassType of 'a Reference.class_type
-    | Method of 'a Reference.method_
-    | InstanceVariable of 'a Reference.instance_variable
     | Element of 'a Reference.any
-    | Section of 'a Reference.label
     | Link of string
     | Custom of string * string
 

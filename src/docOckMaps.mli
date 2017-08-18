@@ -274,6 +274,32 @@ class virtual ['a] reference : object
 
   method reference_dot_name : string -> string
 
+  method reference_module_name : string -> string
+
+  method reference_module_type_name : string -> string
+
+  method reference_type_name : string -> string
+
+  method reference_constructor_name : string -> string
+
+  method reference_field_name : string -> string
+
+  method reference_extension_name : string -> string
+
+  method reference_exception_name : string -> string
+
+  method reference_value_name : string -> string
+
+  method reference_class_name : string -> string
+
+  method reference_class_type_name : string -> string
+
+  method reference_method_name : string -> string
+
+  method reference_instance_variable_name : string -> string
+
+  method reference_label_name : string -> string
+
   method reference_module : 'a Reference.module_ -> 'a Reference.module_
 
   method reference_module_type : 'a Reference.module_type ->

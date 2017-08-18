@@ -863,3 +863,27 @@ module Aliases = struct
   type p1 = X1.t
   type p2 = X2.t
 end
+
+(** {1 New reference syntax} *)
+
+module type M = sig
+  type t
+end
+
+module M = struct
+  type t
+end
+
+(** Here goes:
+    - [{!M.t}] : {!M.t}
+    - [{!module-M.t}] : {!module-M.t}
+    - [{!module-type-M.t}] : {!module-type-M.t} *)
+
+module Only_a_module = struct
+  type t
+end
+
+(** Some here should fail:
+    - [{!Only_a_module.t}] : {!Only_a_module.t}
+    - [{!module-Only_a_module.t}] : {!module-Only_a_module.t}
+    - [{!module-type-Only_a_module.t}] : {!module-type-Only_a_module.t} *)

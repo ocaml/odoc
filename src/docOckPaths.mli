@@ -549,10 +549,40 @@ module rec Reference : sig
 
   type kind = Kind.reference
 
+  type _ tag =
+    | TUnknown : [< kind ] tag
+    | TModule : [< kind > `Module ] tag
+    | TModuleType : [< kind > `ModuleType ] tag
+    | TType : [< kind > `Type ] tag
+    | TConstructor : [< kind > `Constructor ] tag
+    | TField : [< kind > `Field ] tag
+    | TExtension : [< kind > `Extension ] tag
+    | TException : [< kind > `Exception ] tag
+    | TValue : [< kind > `Value ] tag
+    | TClass : [< kind > `Class ] tag
+    | TClassType : [< kind > `ClassType ] tag
+    | TMethod : [< kind > `Method ] tag
+    | TInstanceVariable : [< kind > `InstanceVariable ] tag
+    | TLabel : [< kind > `Label ] tag
+
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
-    | Root : string -> ('a, [< kind]) t
-    | Dot : 'a parent * string -> ('a, [< kind]) t
+    | Root : string * 'b tag -> ('a, 'b) t
+    | Dot : 'a parent * string -> ('a, [< kind ] as 'b) t
+    | Module : 'a signature * string -> ('a, [< kind > `Module]) t
+    | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
+    | Type : 'a signature * string -> ('a, [< kind > `Type]) t
+    | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
+    | Field : 'a parent * string -> ('a, [< kind > `Field]) t
+    | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
+    | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
+    | Value : 'a signature * string -> ('a, [< kind > `Value]) t
+    | Class : 'a signature * string -> ('a, [< kind > `Class]) t
+    | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
+    | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
+    | InstanceVariable : 'a class_signature * string ->
+      ('a, [< kind > `InstanceVariable]) t
+    | Label : 'a parent * string -> ('a, [< kind > `Label]) t
 
   and 'a any = ('a, kind) t
   and 'a signature = ('a, Kind.signature) t
