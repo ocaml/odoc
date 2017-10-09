@@ -12,4 +12,4 @@ doc:
 
 
 clean:
-	rm -R _build
+	jbuilder clean
