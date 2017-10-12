@@ -62,7 +62,7 @@ let remove_opening_blanks s =
         String.sub s (i + 1) (length - (i + 1))
     | '\013' ->
         let j = i + 1 in
-          if j >= length && s.[j] = '\010' then
+          if j < length && s.[j] = '\010' then
             String.sub s (j + 1) (length - (j + 1))
           else
             String.sub s j (length - j)
