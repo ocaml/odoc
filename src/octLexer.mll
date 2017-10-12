@@ -465,7 +465,7 @@ and verb = parse
     { raise (LexerError(curr_loc lexbuf, Nested_verbatim)) }
 | verb end
     { use_start_loc lexbuf;
-      Verb (get_raw_buffered_string ()) }
+      Verb (get_buffered_string ()) }
 | eof
     { raise (LexerError(get_start_loc (), Unterminated_verbatim)) }
 | newline
@@ -525,7 +525,7 @@ and pre_code = parse
     { raise (LexerError(curr_loc lexbuf, Nested_pre_code)) }
 | end_pre_code
     { use_start_loc lexbuf;
-      Pre_Code (get_raw_buffered_string ()) }
+      Pre_Code (get_buffered_string ()) }
 | eof
     { raise (LexerError(get_start_loc (), Unterminated_pre_code)) }
 | newline
