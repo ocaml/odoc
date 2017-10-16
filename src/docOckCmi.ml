@@ -496,10 +496,15 @@ let read_value_description env parent id vd =
     let type_ = read_type_expr env vd.val_type in
     match vd.val_kind with
     | Val_reg -> Value {Value.id; doc; type_}
-    | Val_prim _desc ->
-        (* FIXME. *)
-        (* let primitives = Primitive.description_list _desc in *)
-        let primitives = [] in
+    | Val_prim desc ->
+        let primitives =
+          let open Primitive in
+          desc.prim_name :: (
+            match desc.prim_native_name with
+            | "" -> []
+            | name -> [ name ]
+          )
+        in
           External {External.id; doc; type_; primitives}
     | _ -> assert false
 
