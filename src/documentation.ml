@@ -129,17 +129,31 @@ module Reference = struct
       | Label (r, s) -> render_resolved r ^ ":" ^ s
 
   let rec ref_to_string : type a. (_, a) Reference.t -> string = function
-    | Reference.Root s -> s
+    | Reference.Root (s, _) -> s
     | Reference.Dot (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Module (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.ModuleType (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Type (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Constructor (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Field (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Extension (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Exception (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Value (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Class (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.ClassType (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Method (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.InstanceVariable (parent, s) -> ref_to_string parent ^ "." ^ s
+    | Reference.Label (parent, s) -> ref_to_string parent ^ "." ^ s
     | Reference.Resolved r -> render_resolved r
+
 
   let rec to_html : type a. get_package:('b -> string) -> ?text:kind -> stop_before:bool
     -> (_, a) Reference.t -> kind =
     fun ~get_package ?text ~stop_before ref ->
-      let span txt =
+      let span' txt =
         let span x =
           span x ~a:[ a_class ["xref-unresolved"]
-                    ; a_title (Printf.sprintf "unresolved %S"
+                    ; a_title (Printf.sprintf "unresolved reference to %S"
                                  (ref_to_string ref))
                     ]
         in
@@ -156,25 +170,39 @@ module Reference = struct
       in
       let open Reference in
       match ref with
-      | Root s ->
+      | Root (s, _) ->
         begin match text with
         | None -> Phrasing_without_interactive [ pcdata s ]
-        | Some s -> span s
+        | Some s -> span' s
         end
       | Dot (parent, s) ->
-        begin match text with
-        | Some s -> span s
-        | None ->
-          let tail = [ pcdata ("." ^ s) ] in
-          match to_html ~get_package ~stop_before:true parent with
-          | Phrasing content -> Phrasing (content @ tail)
-          | Phrasing_without_interactive content ->
-            Phrasing_without_interactive (content @ tail)
-          | Flow5 content -> Flow5 (content @ tail)
-          | Flow5_without_interactive content ->
-            Flow5_without_interactive (content @ tail)
-          | Newline _ -> Phrasing_without_interactive tail
-        end
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Module (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | ModuleType (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Type (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Constructor (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Field (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Extension (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Exception (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Value (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Class (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | ClassType (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Method (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | InstanceVariable (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
+      | Label (parent, s) ->
+        unresolved_parts_to_html ~get_package ?text span' parent s
       | Resolved r ->
         let id = Reference.Resolved.identifier r in
         let txt =
@@ -200,24 +228,30 @@ module Reference = struct
             txt
         end
 
+  and unresolved_parts_to_html :
+    type a. get_package:('b -> string) -> ?text:kind -> (kind -> kind) ->
+      (_, a) Reference.t -> string -> kind =
+    fun ~get_package ?text span' parent s ->
+      match text with
+      | Some s -> span' s
+      | None ->
+        let tail = [ pcdata ("." ^ s) ] in
+        span' (
+          match to_html ~get_package ~stop_before:true parent with
+          | Phrasing content -> Phrasing (content @ tail)
+          | Phrasing_without_interactive content ->
+            Phrasing_without_interactive (content @ tail)
+          | Flow5 content -> Flow5 (content @ tail)
+          | Flow5_without_interactive content ->
+            Flow5_without_interactive (content @ tail)
+          | Newline _ -> Phrasing_without_interactive tail
+        )
+
   let link ~get_package ?text (ref : _ Documentation.reference) =
     (* It is wonderful that although each these [r] is a [Reference.t] the phantom
        type parameters are not the same so we can't merge the branches. *)
     match ref with
-    | Module r           -> to_html ~get_package ~stop_before:false ?text r
-    | ModuleType r       -> to_html ~get_package ~stop_before:false ?text r
-    | Type r             -> to_html ~get_package ~stop_before:false ?text r
-    | Constructor r      -> to_html ~get_package ~stop_before:false ?text r
-    | Field r            -> to_html ~get_package ~stop_before:false ?text r
-    | Extension r        -> to_html ~get_package ~stop_before:false ?text r
-    | Exception r        -> to_html ~get_package ~stop_before:false ?text r
-    | Value r            -> to_html ~get_package ~stop_before:false ?text r
-    | Class r            -> to_html ~get_package ~stop_before:false ?text r
-    | ClassType r        -> to_html ~get_package ~stop_before:false ?text r
-    | Method r           -> to_html ~get_package ~stop_before:false ?text r
-    | InstanceVariable r -> to_html ~get_package ~stop_before:false ?text r
     | Element r          -> to_html ~get_package ~stop_before:false ?text r
-    | Section r          -> to_html ~get_package ~stop_before:false ?text r
     | Link s ->
       let text =
         match text with

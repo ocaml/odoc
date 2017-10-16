@@ -234,15 +234,24 @@ module Anchor = struct
   module Module_listing = struct
     module Reference = DocOck.Paths.Reference
 
+    (* TODO: better error message. *)
     let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
     let rec from_reference : type a. (_, a) Reference.t -> t = function
-      | Reference.Root name -> { kind = "xref-unresolved"; name }
+      | Reference.Root (name, _) -> { kind = "xref-unresolved"; name }
       | Reference.Dot (parent, suffix) ->
+        let { name; _ } = from_reference parent in
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
+      | Reference.Module (parent, suffix) ->
+        let { name; _ } = from_reference parent in
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
+      | Reference.ModuleType (parent, suffix) ->
         let { name; _ } = from_reference parent in
         { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
       | Reference.Resolved r ->
         from_resolved r
+      | _ ->
+        fail ()
 
     and from_resolved : type a. (_, a) Reference.Resolved.t -> t =
       let open Reference.Resolved in
