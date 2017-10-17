@@ -32,36 +32,10 @@ let relax_class_type_path cltyp =
   | Path.Resolved.Class _
   | Path.Resolved.ClassType _ as cltyp -> cltyp
 
-let relax_datatype_reference typ =
-  match (typ : 'a Reference.Resolved.datatype) with
-  | Reference.Resolved.Identifier (Identifier.Type _ | Identifier.CoreType _)
-  | Reference.Resolved.Type _ as typ -> typ
-
-let relax_extension_reference ext =
-  match (ext : 'a Reference.Resolved.extension) with
-  | Reference.Resolved.Identifier
-      (Identifier.Exception _ | Identifier.CoreException _
-      | Identifier.Extension _)
-  | Reference.Resolved.Exception _
-  | Reference.Resolved.Extension _ as ext -> ext
-
-let relax_exception_reference exn =
-  match (exn : 'a Reference.Resolved.exception_) with
-  | Reference.Resolved.Identifier
-      (Identifier.Exception _ | Identifier.CoreException _)
-  | Reference.Resolved.Exception _ as exn -> exn
-
 let relax_class_reference cl =
   match (cl : 'a Reference.Resolved.class_) with
   | Reference.Resolved.Identifier (Identifier.Class _)
   | Reference.Resolved.Class _ as cl -> cl
-
-let relax_class_type_reference cltyp =
-  match (cltyp : 'a Reference.Resolved.class_type) with
-  | Reference.Resolved.Identifier
-      (Identifier.Class _ | Identifier.ClassType _)
-  | Reference.Resolved.Class _
-  | Reference.Resolved.ClassType _ as cltyp -> cltyp
 
 %}
 
@@ -154,7 +128,6 @@ let relax_class_type_reference cltyp =
 %token RETURN
 %token RIGHT
 %token ROOT
-%token SECTION
 %token SEE
 %token SIGNATURE
 %token SINCE
@@ -172,6 +145,7 @@ let relax_class_type_reference cltyp =
 %token TYPEOF
 %token TYPE_SUBST
 %token UNIT
+%token UNKNOWN
 %token URL
 %token VALUE
 %token VAR
@@ -476,46 +450,6 @@ datatype_resolved_reference:
   | TYPE sg = signature_resolved_reference data = string CLOSE
       { Reference.Resolved.Type(sg, data) }
 
-type_resolved_reference:
-  | typ = datatype_resolved_reference
-      { relax_datatype_reference typ }
-  | cltyp = class_type_resolved_reference
-      { relax_class_type_reference cltyp }
-
-constructor_resolved_reference:
-  | IDENTIFIER id = constructor_identifier CLOSE
-      { Reference.Resolved.ident_constructor id }
-  | CONSTRUCTOR sg = datatype_resolved_reference data = string CLOSE
-      { Reference.Resolved.Constructor(sg, data) }
-  | ext = extension_resolved_reference
-      { relax_extension_reference ext }
-
-field_resolved_reference:
-  | IDENTIFIER id = field_identifier CLOSE
-      { Reference.Resolved.ident_field id }
-  | FIELD sg = parent_resolved_reference data = string CLOSE
-      { Reference.Resolved.Field(sg, data) }
-
-exception_resolved_reference:
-  | IDENTIFIER id = exception_identifier CLOSE
-      { Reference.Resolved.ident_exception id }
-  | EXCEPTION sg = signature_resolved_reference data = string CLOSE
-      { Reference.Resolved.Exception(sg, data) }
-
-extension_resolved_reference:
-  | IDENTIFIER id = extension_identifier CLOSE
-      { Reference.Resolved.ident_extension id }
-  | EXTENSION sg = signature_resolved_reference data = string CLOSE
-      { Reference.Resolved.Extension(sg, data) }
-  | exn = exception_resolved_reference
-      { relax_exception_reference exn }
-
-value_resolved_reference:
-  | IDENTIFIER id = value_identifier CLOSE
-      { Reference.Resolved.ident_value id }
-  | VALUE sg = signature_resolved_reference data = string CLOSE
-      { Reference.Resolved.Value(sg, data) }
-
 class_resolved_reference:
   | IDENTIFIER id = class_identifier CLOSE
       { Reference.Resolved.ident_class id }
@@ -529,24 +463,6 @@ class_type_resolved_reference:
       { Reference.Resolved.ClassType(sg, data) }
   | cl = class_resolved_reference
       { relax_class_reference cl }
-
-method_resolved_reference:
-  | IDENTIFIER id = method_identifier CLOSE
-      { Reference.Resolved.ident_method id }
-  | METHOD sg = class_type_resolved_reference data = string CLOSE
-      { Reference.Resolved.Method(sg, data) }
-
-instance_variable_resolved_reference:
-  | IDENTIFIER id = instance_variable_identifier CLOSE
-      { Reference.Resolved.ident_instance_variable id }
-  | INSTANCE_VARIABLE sg = class_type_resolved_reference data = string CLOSE
-      { Reference.Resolved.InstanceVariable(sg, data) }
-
-label_resolved_reference:
-  | IDENTIFIER id = label_identifier CLOSE
-      { Reference.Resolved.ident_label id }
-  | LABEL sg = parent_resolved_reference data = string CLOSE
-      { Reference.Resolved.Label(sg, data) }
 
 parent_resolved_reference:
   | sg = signature_resolved_reference
@@ -586,155 +502,140 @@ element_resolved_reference:
   | LABEL sg = parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Label(sg, data) }
 
-module_reference:
-  | RESOLVED rf = module_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-module_type_reference:
-  | RESOLVED rf = module_type_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-type_reference:
-  | RESOLVED rf = type_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-constructor_reference:
-  | RESOLVED rf = constructor_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-field_reference:
-  | RESOLVED rf = field_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-extension_reference:
-  | RESOLVED rf = extension_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-exception_reference:
-  | RESOLVED rf = exception_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-value_reference:
-  | RESOLVED rf = value_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-class_reference:
-  | RESOLVED rf = class_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-class_type_reference:
-  | RESOLVED rf = class_type_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-method_reference:
-  | RESOLVED rf = method_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-instance_variable_reference:
-  | RESOLVED rf = instance_variable_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
-
-label_reference:
-  | RESOLVED rf = label_resolved_reference CLOSE
-      { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
-  | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
+reference_tag:
+  | TAG UNKNOWN CLOSE { Reference.TUnknown }
+  | TAG MODULE CLOSE { Reference.TModule }
+  | TAG MODULE_TYPE CLOSE { Reference.TModuleType }
+  | TAG TYPE CLOSE { Reference.TType }
+  | TAG CONSTRUCTOR CLOSE { Reference.TConstructor }
+  | TAG EXTENSION CLOSE { Reference.TExtension }
+  | TAG EXCEPTION CLOSE { Reference.TException }
+  | TAG FIELD CLOSE { Reference.TField }
+  | TAG VALUE CLOSE { Reference.TValue }
+  | TAG CLASS CLOSE { Reference.TClass }
+  | TAG CLASS_TYPE CLOSE { Reference.TClassType }
+  | TAG METHOD CLOSE { Reference.TMethod }
+  | TAG INSTANCE_VARIABLE CLOSE { Reference.TInstanceVariable }
+  | TAG LABEL CLOSE { Reference.TLabel }
 
 parent_reference:
   | RESOLVED rf = parent_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TModule as tag -> Reference.Root (data, tag)
+        | Reference.TModuleType as tag -> Reference.Root (data, tag)
+        | Reference.TType as tag -> Reference.Root (data, tag)
+        | Reference.TClass as tag -> Reference.Root (data, tag)
+        | Reference.TClassType as tag -> Reference.Root (data, tag)
+ 	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
+  | MODULE p = signature_reference data = string CLOSE
+      { Reference.Module(p, data) }
+  | MODULE_TYPE p = signature_reference data = string CLOSE
+      { Reference.ModuleType(p, data) }
+  | TYPE p = signature_reference data = string CLOSE
+      { Reference.Type(p, data) }
+  | CLASS p = signature_reference data = string CLOSE
+      { Reference.Class(p, data) }
+  | CLASS_TYPE p = signature_reference data = string CLOSE
+      { Reference.ClassType(p, data) }
+
+signature_reference:
+  | RESOLVED rf = signature_resolved_reference CLOSE
+      { Reference.Resolved rf }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TModule as tag -> Reference.Root (data, tag)
+        | Reference.TModuleType as tag -> Reference.Root (data, tag)
+	| _ -> assert false }
+  | DOT p = parent_reference data = string CLOSE
+      { Reference.Dot(p, data) }
+  | MODULE p = signature_reference data = string CLOSE
+      { Reference.Module(p, data) }
+  | MODULE_TYPE p = signature_reference data = string CLOSE
+      { Reference.ModuleType(p, data) }
+
+module_reference:
+  | RESOLVED rf = module_resolved_reference CLOSE
+      { Reference.Resolved rf }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TModule as tag -> Reference.Root (data, tag)
+	| _ -> assert false }
+  | DOT p = parent_reference data = string CLOSE
+      { Reference.Dot(p, data) }
+
+datatype_reference:
+  | RESOLVED rf = datatype_resolved_reference CLOSE
+      { Reference.Resolved rf }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TType as tag -> Reference.Root (data, tag)
+	| _ -> assert false }
+  | DOT p = parent_reference data = string CLOSE
+      { Reference.Dot(p, data) }
+  | TYPE p = signature_reference data = string CLOSE
+      { Reference.Type(p, data) }
+
+class_signature_reference:
+  | RESOLVED rf = class_type_resolved_reference CLOSE
+      { Reference.Resolved rf }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TClass as tag -> Reference.Root (data, tag)
+        | Reference.TClassType as tag -> Reference.Root (data, tag)
+	| _ -> assert false }
+  | DOT p = parent_reference data = string CLOSE
+      { Reference.Dot(p, data) }
+  | CLASS p = signature_reference data = string CLOSE
+      { Reference.Class(p, data) }
+  | CLASS_TYPE p = signature_reference data = string CLOSE
+      { Reference.ClassType(p, data) }
 
 element_reference:
   | RESOLVED rf = element_resolved_reference CLOSE
       { Reference.Resolved rf }
-  | ROOT data = string CLOSE
-      { Reference.Root data }
+  | ROOT data = string tag = reference_tag CLOSE
+      { Reference.Root (data, (Obj.magic tag : Reference.kind Reference.tag)) }
   | DOT p = parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
+  | MODULE p = signature_reference data = string CLOSE
+      { Reference.Module(p, data) }
+  | MODULE_TYPE p = signature_reference data = string CLOSE
+      { Reference.ModuleType(p, data) }
+  | TYPE p = signature_reference data = string CLOSE
+      { Reference.Type(p, data) }
+  | CONSTRUCTOR p = datatype_reference data = string CLOSE
+      { Reference.Constructor(p, data) }
+  | FIELD p = parent_reference data = string CLOSE
+      { Reference.Field(p, data) }
+  | EXTENSION p = signature_reference data = string CLOSE
+      { Reference.Extension(p, data) }
+  | EXCEPTION p = signature_reference data = string CLOSE
+      { Reference.Exception(p, data) }
+  | VALUE p = signature_reference data = string CLOSE
+      { Reference.Value(p, data) }
+  | CLASS p = signature_reference data = string CLOSE
+      { Reference.Class(p, data) }
+  | CLASS_TYPE p = signature_reference data = string CLOSE
+      { Reference.ClassType(p, data) }
+  | METHOD p = class_signature_reference data = string CLOSE
+      { Reference.Method(p, data) }
+  | INSTANCE_VARIABLE p = class_signature_reference data = string CLOSE
+      { Reference.InstanceVariable(p, data) }
+  | LABEL p = parent_reference data = string CLOSE
+      { Reference.Label(p, data) }
 
 reference:
-  | MODULE rf = module_reference CLOSE
-      { Documentation.Module rf }
-  | MODULE_TYPE rf = module_type_reference CLOSE
-      { Documentation.ModuleType rf }
-  | TYPE rf = type_reference CLOSE
-      { Documentation.Type rf }
-  | CONSTRUCTOR rf = constructor_reference CLOSE
-      { Documentation.Constructor rf }
-  | FIELD rf = field_reference CLOSE
-      { Documentation.Field rf }
-  | EXTENSION rf = extension_reference CLOSE
-      { Documentation.Extension rf }
-  | EXCEPTION rf = exception_reference CLOSE
-      { Documentation.Exception rf }
-  | VALUE rf = value_reference CLOSE
-      { Documentation.Value rf }
-  | CLASS rf = class_reference CLOSE
-      { Documentation.Class rf }
-  | CLASS_TYPE rf = class_type_reference CLOSE
-      { Documentation.ClassType rf }
-  | METHOD rf = method_reference CLOSE
-      { Documentation.Method rf }
-  | INSTANCE_VARIABLE rf = instance_variable_reference CLOSE
-      { Documentation.InstanceVariable rf }
   | ELEMENT rf = element_reference CLOSE
       { Documentation.Element rf }
-  | SECTION rf = label_reference CLOSE
-      { Documentation.Section rf }
   | LINK data = string CLOSE
       { Documentation.Link data }
   | tag = Custom data = string CLOSE

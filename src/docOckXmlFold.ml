@@ -290,9 +290,6 @@ let root_t output acc =
 let forward_t output acc =
   output acc (`El_start ((ns, "forward"), []))
 
-let section_t output acc =
-  output acc (`El_start ((ns, "section"), []))
-
 let see_t output acc =
   output acc (`El_start ((ns, "see"), []))
 
@@ -585,6 +582,26 @@ let rec fragment_p : type a b. _ -> _ -> _ -> (_, a, b) Fragment.raw -> _ =
         let acc = data output acc name in
         close output acc
 
+let ref_tag_p (type a) output acc (tag : a Reference.tag) =
+  let tag =
+    match tag with
+    | Reference.TUnknown -> "unknown"
+    | Reference.TModule -> "module"
+    | Reference.TModuleType -> "module_type"
+    | Reference.TType -> "type"
+    | Reference.TConstructor -> "constructor"
+    | Reference.TExtension -> "extension"
+    | Reference.TException -> "exception"
+    | Reference.TField -> "field"
+    | Reference.TValue -> "value"
+    | Reference.TClass -> "class"
+    | Reference.TClassType -> "class_type"
+    | Reference.TMethod -> "method"
+    | Reference.TInstanceVariable -> "instance_variable"
+    | Reference.TLabel -> "label"
+  in
+  simple tag_t output acc tag
+
 let rec resolved_reference_p
   : type a. _ -> _ -> _ -> (_, a) Reference.Resolved.t -> _ =
   fun base output acc rf ->
@@ -632,8 +649,78 @@ and reference_p : type a. _ -> _ -> _ -> (_, a) Reference.t -> _ =
         let acc = resolved_t output acc in
         let acc = resolved_reference_p base output acc rf in
         close output acc
-      | Root name -> simple root_t output acc name
+          (* FIXME. *)
+      | Root (name, tag) ->
+        let acc = root_t output acc in
+        let acc = data output acc name in
+        let acc = ref_tag_p output acc tag in
+        close output acc
       | Dot(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Module(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | ModuleType(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Type(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Constructor(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Exception(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Extension(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Field(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Class(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | ClassType(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Value(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Method(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | InstanceVariable(m, name) ->
+        let acc = dot_t output acc in
+        let acc = reference_p base output acc m in
+        let acc = data output acc name in
+        close output acc
+      | Label(m, name) ->
         let acc = dot_t output acc in
         let acc = reference_p base output acc m in
         let acc = data output acc name in
@@ -661,20 +748,7 @@ let doc_reference_p base output acc rf =
     close output acc
   in
     match rf with
-    | Module rf -> reference module_t rf
-    | ModuleType rf -> reference module_type_t rf
-    | Type rf -> reference type_t rf
-    | Constructor rf -> reference constructor_t rf
-    | Field rf -> reference field_t rf
-    | Extension rf -> reference extension_t rf
-    | Exception rf -> reference exception_t rf
-    | Value rf -> reference value_t rf
-    | Class rf -> reference class_t rf
-    | ClassType rf -> reference class_type_t rf
-    | Method rf -> reference method_t rf
-    | InstanceVariable rf -> reference instance_variable_t rf
     | Element rf -> reference element_t rf
-    | Section rf -> reference section_t rf
     | Link s -> simple link_t output acc s
     | Custom(tag, s) ->
       let acc = custom_t output acc tag in

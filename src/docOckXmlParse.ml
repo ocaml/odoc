@@ -130,7 +130,6 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "return" Parser.RETURN;
     Hashtbl.add plain_tags "right" Parser.RIGHT;
     Hashtbl.add plain_tags "root" Parser.ROOT;
-    Hashtbl.add plain_tags "section" Parser.SECTION;
     Hashtbl.add plain_tags "see" Parser.SEE;
     Hashtbl.add plain_tags "signature" Parser.SIGNATURE;
     Hashtbl.add plain_tags "since" Parser.SINCE;
@@ -148,6 +147,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "typeof" Parser.TYPEOF;
     Hashtbl.add plain_tags "type_subst" Parser.TYPE_SUBST;
     Hashtbl.add plain_tags "unit" Parser.UNIT;
+    Hashtbl.add plain_tags "unknown" Parser.UNKNOWN;
     Hashtbl.add plain_tags "url" Parser.URL;
     Hashtbl.add plain_tags "value" Parser.VALUE;
     Hashtbl.add plain_tags "var" Parser.VAR;
