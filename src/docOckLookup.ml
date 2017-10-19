@@ -18,6 +18,7 @@ class ['a] lookup = object
   method identifier_module x = x
   method identifier_method x = x
   method identifier_label x = x
+  method identifier_page x = x
   method identifier_instance_variable x = x
   method identifier_field x = x
   method identifier_extension x = x

@@ -22,7 +22,7 @@ module Paths = DocOckPaths
 
 module Types = DocOckTypes
 
-type 'a lookup_result = 'a DocOckComponentTbl.lookup_result =
+type 'a lookup_result = 'a DocOckComponentTbl.lookup_unit_result =
   | Forward_reference
   | Found of { root : 'a; hidden : bool }
   | Not_found
@@ -211,6 +211,8 @@ type 'a resolver = 'a DocOckResolve.resolver
 let build_resolver = DocOckResolve.build_resolver
 
 let resolve = DocOckResolve.resolve
+
+let resolve_page = DocOckResolve.resolve_page
 
 type 'a expander = 'a DocOckExpand.t
 

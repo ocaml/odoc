@@ -539,3 +539,10 @@ module rec Unit : sig
       expansion: 'a Signature.t option; }
 
 end = Unit
+
+module rec Page : sig
+  type 'a t =
+    { name: 'a Identifier.page;
+      content: 'a Documentation.t;
+      digest: Digest.t; }
+end = Page

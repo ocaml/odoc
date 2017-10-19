@@ -224,6 +224,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
       in
       let sreplacement = signature_of_module replacement in
       let preplacement = parent_of_signature sreplacement in
+      let lreplacement = label_parent_of_parent preplacement in
       match r with
       | Identifier (Identifier.Module(parent, name)) ->
           if matches parent then Module(sreplacement, name)
@@ -253,7 +254,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
           match parent with
           | Identifier.Root _ | Identifier.Argument _
           | Identifier.Module _ | Identifier.ModuleType _ as parent ->
-                if matches parent then Label(preplacement, name)
+                if matches parent then Label(lreplacement, name)
                 else super#reference_resolved r
           | _ -> super#reference_resolved r
         end

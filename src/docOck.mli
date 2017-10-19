@@ -48,11 +48,14 @@ type 'a lookup_result =
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
-val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                    ('a Types.Unit.t -> string -> 'a lookup_result) ->
-                    ('a -> 'a Types.Unit.t) -> 'a resolver
+val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
+  -> (string -> 'a lookup_result) -> ('a -> 'a Types.Unit.t)
+  -> (string -> 'a option) -> ('a -> 'a Types.Page.t)
+  -> 'a resolver
 
 val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
+
+val resolve_page : 'a resolver -> 'a Types.Page.t -> 'a Types.Page.t
 
 type 'a expander
 

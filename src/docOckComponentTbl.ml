@@ -56,7 +56,7 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
         let module Tbl = Hashtbl.Make(Hash) in
           make Tbl.create Tbl.find Tbl.add
 
-type 'a lookup_result =
+type 'a lookup_unit_result =
   | Forward_reference
   | Found of { root : 'a; hidden : bool }
   | Not_found
@@ -64,21 +64,24 @@ type 'a lookup_result =
 type 'a t =
   { equal : ('a -> 'a -> bool) option;
     hash : ('a -> int) option;
-    lookup : 'a Unit.t -> string -> 'a lookup_result;
-    fetch : 'a -> 'a Unit.t;
-    tbl : ('a, 'a Sig.t) tbl; }
+    lookup_unit : string -> 'a lookup_unit_result;
+    lookup_page : string -> 'a option;
+    fetch_unit : 'a -> 'a Unit.t;
+    fetch_page : 'a -> 'a DocOckTypes.Page.t;
+    tbl : ('a, 'a Sig.t) tbl;
+    page_tbl: ('a, 'a Page.t) tbl; }
 
-let create ?equal ?hash lookup fetch =
+let create ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
   let tbl = make_tbl equal hash 7 in
-    {equal; hash; lookup; fetch; tbl}
+  let page_tbl = make_tbl equal hash 7 in
+  {equal; hash; lookup_unit; fetch_unit; lookup_page; fetch_page; tbl; page_tbl}
 
 type 'a local =
   { t : 'a t;
     local : ('a Identifier.signature, 'a Sig.t) tbl option;
-    unit : 'a Unit.t;
     base : 'a Identifier.signature option; }
 
-let create_local t unit base =
+let create_local t base =
   let equal =
     match t.equal with
     | None -> None
@@ -94,7 +97,7 @@ let create_local t unit base =
     | None -> None
     | Some _ -> Some (make_tbl equal hash 23)
   in
-    { t; local; unit; base; }
+    { t; local; base; }
 
 let add_local_module_identifier (local : 'a local) id sg =
   let open Identifier in
@@ -138,6 +141,7 @@ let equals_signature (type k) eq
         Identifier.equal ~equal:eq base id
     | ModuleType _ as id ->
         Identifier.equal ~equal:eq base id
+    | Page _ -> false
     | Type _ -> false
     | CoreType _ -> false
     | Constructor _ -> false
@@ -157,6 +161,7 @@ let rec is_parent_local : type k . _ -> _ -> ('a, k) Identifier.t -> bool =
     let open Identifier in
       match id with
       | Root _  -> false
+      | Page _ -> false
       | Module(parent, _) -> is_local eq base parent
       | Argument(parent, _, _) -> is_local eq base parent
       | ModuleType(parent, _) -> is_local eq base parent
@@ -249,14 +254,27 @@ let core_types =
       (fun decl -> (Identifier.name decl.id, datatype decl))
       DocOckPredef.core_types
 
+let page tbl base =
+  try
+    tbl.page_tbl.find base
+  with Not_found ->
+    let page = tbl.fetch_page base in
+    let t = Page.of_doc page.DocOckTypes.Page.content in
+    tbl.page_tbl.add base t;
+    t
+
+let page_identifier tbl : 'a Identifier.page -> _ =
+  let open Identifier in function
+  | Page(base, _) -> page tbl base
+
 let rec unit tbl base =
     try
       tbl.tbl.find base
     with Not_found ->
       let open Unit in
-      let unt = tbl.fetch base in
+      let unt = tbl.fetch_unit base in
       let id = Identifier.signature_of_module unt.id in
-      let local = create_local tbl unt (Some id) in
+      let local = create_local tbl (Some id) in
       let t =
         match unt.content with
         | Module items ->
@@ -353,7 +371,7 @@ and resolved_class_type_path local =
 and module_path local =
   let open Path in function
   | Root s -> begin
-      match local.t.lookup local.unit s with
+      match local.t.lookup_unit s with
       | Not_found ->
         let sg = Sig.unresolved in
         Sig.set_hidden sg (contains_double_underscore s)
@@ -363,7 +381,7 @@ and module_path local =
         Sig.set_hidden sg (contains_double_underscore s)
     end
   | Forward s -> begin (* FIXME? *)
-      match local.t.lookup local.unit s with
+      match local.t.lookup_unit s with
       | Not_found ->
         let sg = Sig.unresolved in
         Sig.set_hidden sg (contains_double_underscore s)
@@ -572,74 +590,78 @@ and packed_items local =
 
 (* Remove local parameter from exposed versions *)
 
-let resolved_module_path tbl u p =
-  let local = create_local tbl u None in
+let resolved_module_path tbl p =
+  let local = create_local tbl None in
     resolved_module_path local p
 
-let resolved_module_type_path tbl u p =
-  let local = create_local tbl u None in
+let resolved_module_type_path tbl p =
+  let local = create_local tbl None in
     resolved_module_type_path local p
 
-let resolved_class_type_path tbl u p =
-  let local = create_local tbl u None in
+let resolved_class_type_path tbl p =
+  let local = create_local tbl None in
     resolved_class_type_path local p
 
-let module_path tbl u p =
-  let local = create_local tbl u None in
+let module_path tbl p =
+  let local = create_local tbl None in
     module_path local p
 
-(** TODO: One day we will be able to remove the unit component. *)
 type 'a with_ =
-  { unit: 'a Unit.t;
-    base: 'a Sig.t;
+  { base: 'a Sig.t;
     tbl: 'a t; }
 
-let module_type_expr_with tbl unit id expr =
-  let local = create_local tbl unit (Some id) in
+let module_type_expr_with tbl id expr =
+  let local = create_local tbl (Some id) in
   let base = module_type_expr local expr in
-    { unit; base; tbl }
+    { base; tbl }
 
-let module_type_path_with tbl unit path =
-  let local = create_local tbl unit None in
+let module_type_path_with tbl path =
+  let local = create_local tbl None in
   let base = module_type_path local path in
-    { unit; base; tbl }
+    { base; tbl }
 
 let rec resolved_signature_fragment wth =
   let open Fragment.Resolved in function
   | Root -> wth.base
-  | Subst(sub, _) -> resolved_module_type_path wth.tbl wth.unit sub
-  | SubstAlias(sub, _) -> resolved_module_path wth.tbl wth.unit sub
+  | Subst(sub, _) -> resolved_module_type_path wth.tbl sub
+  | SubstAlias(sub, _) -> resolved_module_path wth.tbl sub
   | Module(p, name) ->
       let parent = resolved_signature_fragment wth p in
         Sig.lookup_module name parent
 
-let rec resolved_signature_reference tbl unit =
+let rec resolved_signature_reference tbl =
   let open Reference.Resolved in function
   | Identifier (id : 'a Identifier.signature) ->
       signature_identifier tbl id
   | SubstAlias(sub, _) ->
-      resolved_module_path tbl unit sub
+      resolved_module_path tbl sub
   | Module(p, name) ->
-      let parent = resolved_signature_reference tbl unit p in
+      let parent = resolved_signature_reference tbl p in
         Sig.lookup_module name parent
   | Canonical (p, _) ->
-    resolved_signature_reference tbl unit (signature_of_module p)
+    resolved_signature_reference tbl (signature_of_module p)
   | ModuleType(p, name) ->
-      let parent = resolved_signature_reference tbl unit p in
+      let parent = resolved_signature_reference tbl p in
         Sig.lookup_module_type name parent
 
-and resolved_class_signature_reference tbl unit =
+and resolved_class_signature_reference tbl =
   let open Reference.Resolved in function
     | Identifier id -> class_signature_identifier tbl id
     | Class(p, name) | ClassType(p, name) ->
-        let parent = resolved_signature_reference tbl unit p in
+        let parent = resolved_signature_reference tbl p in
           Sig.lookup_class_type name parent
 
-and resolved_datatype_reference tbl unit =
+and resolved_datatype_reference tbl =
   let open Reference.Resolved in function
     | Identifier id -> datatype_identifier tbl id
     | Type(p, name) ->
-        let parent = resolved_signature_reference tbl unit p in
+        let parent = resolved_signature_reference tbl p in
           Sig.lookup_datatype name parent
 
-let base tbl s = tbl.lookup s
+and resolved_page_reference tbl : 'a Reference.Resolved.page -> _ =
+  let open Reference.Resolved in function
+    | Identifier id -> page_identifier tbl id
+
+let base tbl s = tbl.lookup_unit s
+
+let page_base tbl s = tbl.lookup_page s

@@ -40,7 +40,7 @@ module Kind : sig
     [ `Module | `ModuleType | `Type
     | `Constructor | `Field | `Extension
     | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
+    | `Method | `InstanceVariable | `Label | `Page ]
 
   (** A referent that can contain signature items *)
   type signature = [ `Module | `ModuleType ]
@@ -51,8 +51,13 @@ module Kind : sig
   (** A referent that can contain datatype items *)
   type datatype = [ `Type ]
 
+  (** A referent that can contain page items *)
+  type page = [ `Page ]
+
   (** A referent that can contain other items *)
   type parent = [ signature | class_signature | datatype ]
+
+  type label_parent = [ parent | page ]
 
   (** {4 Identifier kinds}
       The kind of an identifier directly corresponds to the kind of its
@@ -73,6 +78,7 @@ module Kind : sig
   type identifier_method = [ `Method ]
   type identifier_instance_variable = [ `InstanceVariable ]
   type identifier_label = [ `Label ]
+  type identifier_page = [ `Page ]
 
   (** {4 Path kinds}
       There are four kinds of OCaml path:
@@ -133,6 +139,7 @@ module Kind : sig
   type reference_method = [ `Method ]
   type reference_instance_variable = [ `InstanceVariable ]
   type reference_label = [ `Label ]
+  type reference_page = [ `Page ]
 
 end
 
@@ -147,6 +154,7 @@ module Identifier : sig
 
   type ('a, 'b) t =
     | Root : 'a * string -> ('a, [< kind > `Module]) t
+    | Page : 'a * string -> ('a, [< kind > `Page]) t
     | Module : 'a signature * string -> ('a, [< kind > `Module]) t
     | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
@@ -163,13 +171,14 @@ module Identifier : sig
     | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
     | InstanceVariable : 'a class_signature * string ->
                            ('a, [< kind > `InstanceVariable]) t
-    | Label : 'a parent * string -> ('a, [< kind > `Label]) t
+    | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
 
   and 'a any = ('a, kind) t
   and 'a signature = ('a, Kind.signature) t
   and 'a class_signature = ('a, Kind.class_signature) t
   and 'a datatype = ('a, Kind.datatype) t
   and 'a parent = ('a, Kind.parent) t
+  and 'a label_parent = ('a, Kind.label_parent) t
 
   val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
@@ -186,6 +195,7 @@ module Identifier : sig
   type 'a method_ = ('a, identifier_method) t
   type 'a instance_variable = ('a, identifier_instance_variable) t
   type 'a label = ('a, identifier_label) t
+  type 'a page = ('a, identifier_page) t
 
   type 'a path_module = ('a, Kind.path_module) t
   type 'a path_module_type = ('a, Kind.path_module_type) t
@@ -208,6 +218,7 @@ module Identifier : sig
   type 'a reference_method = ('a, Kind.reference_method) t
   type 'a reference_instance_variable = ('a, Kind.reference_instance_variable) t
   type 'a reference_label = ('a, Kind.reference_label) t
+  type 'a reference_page = ('a, Kind.reference_page) t
 
   val signature_of_module : 'a module_ -> 'a signature
 
@@ -224,6 +235,10 @@ module Identifier : sig
   val parent_of_class_signature : 'a class_signature -> 'a parent
 
   val parent_of_datatype : 'a datatype -> 'a parent
+
+  val label_parent_of_parent : 'a parent -> 'a label_parent
+
+  val label_parent_of_page : 'a page -> 'a label_parent
 
   val any : ('a, 'b) t -> 'a any
 
@@ -466,7 +481,7 @@ module rec Reference : sig
       | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
       | InstanceVariable : 'a class_signature * string ->
                              ('a, [< kind > `InstanceVariable]) t
-      | Label : 'a parent * string -> ('a, [< kind > `Label]) t
+      | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
 
     and 'a any = ('a, kind) t
     and 'a signature = ('a, Kind.signature) t
@@ -474,6 +489,7 @@ module rec Reference : sig
     and 'a datatype = ('a, Kind.datatype) t
     and 'a parent = ('a, Kind.parent) t
     and 'a module_ = ('a, reference_module) t
+    and 'a label_parent = ('a, Kind.label_parent) t
 
     type 'a module_type = ('a, reference_module_type) t
     type 'a type_ = ('a, reference_type) t
@@ -487,6 +503,7 @@ module rec Reference : sig
     type 'a method_ = ('a, reference_method) t
     type 'a instance_variable = ('a, reference_instance_variable) t
     type 'a label = ('a, reference_label) t
+    type 'a page = ('a, reference_page) t
 
     val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
@@ -522,6 +539,8 @@ module rec Reference : sig
 
     val ident_label : 'a Identifier.label -> ('a, [< kind > `Label]) t
 
+    val ident_page : 'a Identifier.page -> ('a, [< kind > `Page]) t
+
     val signature_of_module : 'a module_ -> 'a signature
 
     val signature_of_module_type : 'a module_type -> 'a signature
@@ -535,6 +554,10 @@ module rec Reference : sig
     val parent_of_class_signature : 'a class_signature -> 'a parent
 
     val parent_of_datatype : 'a datatype -> 'a parent
+
+    val label_parent_of_parent : 'a parent -> 'a label_parent
+
+    val label_parent_of_page : 'a page -> 'a label_parent
 
     val any : ('a, 'b) t -> 'a any
 
@@ -564,11 +587,12 @@ module rec Reference : sig
     | TMethod : [< kind > `Method ] tag
     | TInstanceVariable : [< kind > `InstanceVariable ] tag
     | TLabel : [< kind > `Label ] tag
+    | TPage : [< kind > `Page ] tag
 
   type ('a, 'b) t =
     | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
     | Root : string * 'b tag -> ('a, 'b) t
-    | Dot : 'a parent * string -> ('a, [< kind ] as 'b) t
+    | Dot : 'a label_parent * string -> ('a, [< kind ] as 'b) t
     | Module : 'a signature * string -> ('a, [< kind > `Module]) t
     | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
     | Type : 'a signature * string -> ('a, [< kind > `Type]) t
@@ -582,13 +606,14 @@ module rec Reference : sig
     | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
     | InstanceVariable : 'a class_signature * string ->
       ('a, [< kind > `InstanceVariable]) t
-    | Label : 'a parent * string -> ('a, [< kind > `Label]) t
+    | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
 
   and 'a any = ('a, kind) t
   and 'a signature = ('a, Kind.signature) t
   and 'a class_signature = ('a, Kind.class_signature) t
   and 'a datatype = ('a, Kind.datatype) t
   and 'a parent = ('a, Kind.parent) t
+  and 'a label_parent = ('a, [ Kind.parent | Kind.page ]) t
 
   type 'a module_ = ('a, reference_module) t
   type 'a module_type = ('a, reference_module_type) t
@@ -603,6 +628,7 @@ module rec Reference : sig
   type 'a method_ = ('a, reference_method) t
   type 'a instance_variable = ('a, reference_instance_variable) t
   type 'a label = ('a, reference_label) t
+  type 'a page = ('a, reference_page) t
 
   val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
@@ -652,6 +678,8 @@ module rec Reference : sig
 
   val parent_of_datatype : 'a datatype -> 'a parent
 
+  val label_parent_of_parent : 'a parent -> 'a label_parent
+
   val any : ('a, 'b) t -> 'a any
 
   val module_ : 'a signature -> string -> ('a, [< kind > `Module]) t
@@ -684,7 +712,7 @@ module rec Reference : sig
   val instance_variable : 'a class_signature -> string ->
         ('a, [< kind > `InstanceVariable])t
 
-  val label : 'a parent -> string -> ('a, [< kind > `Label]) t
+  val label : 'a label_parent -> string -> ('a, [< kind > `Label]) t
 
   val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 

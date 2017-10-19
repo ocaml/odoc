@@ -41,6 +41,11 @@ class virtual ['a] identifier = object (self)
             let name' = self#identifier_root_name name in
               if root != root' || name != name' then Root(root', name')
               else id
+        | Page(root, name) ->
+            let root' = self#root root in
+            let name' = self#identifier_page_name name in
+              if root != root' || name != name' then Page(root', name')
+              else id
         | Module(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_module_name name in
@@ -132,14 +137,20 @@ class virtual ['a] identifier = object (self)
             let parent' =
               match parent with
               | (Root _ | Module _ | Argument _ | ModuleType _) as parent ->
-                  parent_of_signature
-                    (self#identifier_signature parent)
+                label_parent_of_parent
+                  (parent_of_signature
+                     (self#identifier_signature parent))
               | (Class _ | ClassType _) as parent ->
-                  parent_of_class_signature
-                    (self#identifier_class_signature parent)
+                label_parent_of_parent
+                  (parent_of_class_signature
+                     (self#identifier_class_signature parent))
               | Type _ | CoreType _ as parent ->
-                  parent_of_datatype
-                    (self#identifier_datatype parent)
+                label_parent_of_parent
+                  (parent_of_datatype
+                    (self#identifier_datatype parent))
+              | Page _ as parent ->
+                label_parent_of_page
+                  (self#identifier_page parent)
             in
             let name' = self#identifier_label_name name in
               if parent != parent' || name != name' then
@@ -147,6 +158,8 @@ class virtual ['a] identifier = object (self)
               else id
 
   method identifier_root_name name = name
+
+  method identifier_page_name name = name
 
   method identifier_module_name name = name
 
@@ -181,6 +194,9 @@ class virtual ['a] identifier = object (self)
   method identifier_instance_variable_name name = name
 
   method identifier_label_name name = name
+
+  method identifier_page (id : 'a Identifier.page) =
+    self#identifier id
 
   method identifier_signature (id : 'a Identifier.signature) =
     self#identifier id
@@ -2189,6 +2205,29 @@ class virtual ['a] unit = object (self)
 
 end
 
+class virtual ['a] page = object (self)
+
+  method virtual identifier_page :
+    'a Identifier.page -> 'a Identifier.page
+
+  method virtual documentation :
+    'a Documentation.t -> 'a Documentation.t
+
+  method page page =
+    let open Page in
+    let {name; content; digest} = page in
+    let name' = self#identifier_page name in
+    let content' = self#documentation content in
+    let digest' = self#page_digest digest in
+    if name != name' || content != content' || digest != digest' then
+      {name = name'; content = content'; digest = digest'}
+    else
+      page
+
+  method page_digest digest = digest
+
+end
+
 class virtual ['a] types = object
   inherit ['a] documentation
   inherit ['a] module_
@@ -2207,4 +2246,5 @@ class virtual ['a] types = object
   inherit ['a] instance_variable
   inherit ['a] type_expr
   inherit ['a] unit
+  inherit ['a] page
 end

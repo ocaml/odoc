@@ -666,7 +666,52 @@ let rec lookup_parent env : 'a Reference.parent -> 'a Reference.parent =
     lookup_class_type_ident env s
     |> class_signature_of_class_type
     |> parent_of_class_signature
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
+  | Module(r, s) -> Module(lookup_signature env r, s)
+  | ModuleType(r, s) -> ModuleType(lookup_signature env r, s)
+  | Type(r, s) -> Type(lookup_signature env r, s)
+  | Class(r, s) -> Class(lookup_signature env r, s)
+  | ClassType(r, s) -> ClassType(lookup_signature env r, s)
+
+and lookup_label_parent env :
+  'a Reference.label_parent -> 'a Reference.label_parent =
+  function
+  | Resolved _ as r -> r
+  | Root (s, TUnknown) -> label_parent_of_parent (lookup_parent_ident env s)
+  | Root (_, TPage) as r -> r (* there are no local pages. *)
+  | Root (s, TModule) ->
+    lookup_module_ident env s
+    |> signature_of_module
+    |> parent_of_signature
+    |> label_parent_of_parent
+  | Root (s,TModuleType) ->
+    lookup_module_type_ident env s
+    |> signature_of_module_type
+    |> parent_of_signature
+    |> label_parent_of_parent
+  | Root (s,TType) as r ->
+    begin match lookup_type_ident env s with
+    | Type _ | Class _ | ClassType _ | Dot _ ->
+      (* can't go from Root to any of these. *)
+      assert false
+    | Root _ -> r
+    | Resolved (Identifier (CoreType _ | Type _) | Type _) as resolved ->
+      parent_of_datatype resolved
+    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _) as r
+      -> parent_of_class_signature r
+    end
+    |> label_parent_of_parent
+  | Root (s,TClass) ->
+    lookup_class_ident env s
+    |> class_signature_of_class
+    |> parent_of_class_signature
+    |> label_parent_of_parent
+  | Root (s,TClassType) ->
+    lookup_class_type_ident env s
+    |> class_signature_of_class_type
+    |> parent_of_class_signature
+    |> label_parent_of_parent
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Module(r, s) -> Module(lookup_signature env r, s)
   | ModuleType(r, s) -> ModuleType(lookup_signature env r, s)
   | Type(r, s) -> Type(lookup_signature env r, s)
@@ -680,26 +725,26 @@ and lookup_signature env :
   | Root (s, TModule)     -> signature_of_module (lookup_module_ident env s)
   | Root (s, TModuleType) ->
     signature_of_module_type (lookup_module_type_ident env s)
-  | Dot (p, s) -> Dot (lookup_parent env p, s)
+  | Dot (p, s) -> Dot (lookup_label_parent env p, s)
   | Module (p,s) -> Module (lookup_signature env p, s)
   | ModuleType (p,s) -> ModuleType(lookup_signature env p, s)
 
 let lookup_module env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_module_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Module(p, s) -> Module(lookup_signature env p, s)
 
 let lookup_module_type env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_module_type_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | ModuleType(p, s) -> ModuleType(lookup_signature env p, s)
 
 let lookup_type env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_type_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Type(r, s) -> Type(lookup_signature env r, s)
   | Class(r, s) -> Class(lookup_signature env r, s)
   | ClassType(r, s) -> ClassType(lookup_signature env r, s)
@@ -717,13 +762,13 @@ let lookup_datatype env : 'a Reference.datatype -> 'a Reference.datatype = funct
       | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _) ->
         r
     end
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Type(r, s) -> Type(lookup_signature env r, s)
 
 let lookup_constructor env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_constructor_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Constructor(r, s) -> Constructor(lookup_datatype env r, s)
   | Extension(r, s) -> Extension(lookup_signature env r, s)
   | Exception(r, s) -> Exception(lookup_signature env r, s)
@@ -731,62 +776,63 @@ let lookup_constructor env = function
 let lookup_field env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_field_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Field(r, s) -> Field(lookup_parent env r, s)
 
 let lookup_extension env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_extension_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Extension(r, s) -> Extension(lookup_signature env r, s)
   | Exception(r, s) -> Exception(lookup_signature env r, s)
 
 let lookup_exception env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_exception_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Exception(r, s) -> Exception(lookup_signature env r, s)
 
 let lookup_value env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_value_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Value(r, s) -> Value(lookup_signature env r, s)
 
 let lookup_class env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_class_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Class(r, s) -> Class(lookup_signature env r, s)
 
 let lookup_class_type env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_class_type_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Class(r, s) -> Class(lookup_signature env r, s)
   | ClassType(r, s) -> ClassType(lookup_signature env r, s)
 
 let lookup_method env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_method_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Method(r, s) -> Method(lookup_class_type env r, s)
 
 let lookup_instance_variable env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_instance_variable_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | InstanceVariable(r, s) -> InstanceVariable(lookup_class_type env r, s)
 
 let lookup_label env = function
   | Resolved _ as r -> r
   | Root (s, _) -> lookup_label_ident env s
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
-  | Label(r, s) -> Label(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
+  | Label(r, s) -> Label(lookup_label_parent env r, s)
 
 let lookup_element env = function
   | Resolved _ as r -> r
   | Root (s, TUnknown) -> Reference.any (lookup_element_ident env s)
+  | Root (_, TPage) as r -> r (* there are no local pages. *)
   | Root (s, TModule) -> Reference.any (lookup_module_ident env s)
   | Root (s, TModuleType) -> Reference.any (lookup_module_type_ident env s)
   | Root (s, TType) -> Reference.any (lookup_type_ident env s)
@@ -800,7 +846,7 @@ let lookup_element env = function
   | Root (s, TMethod) -> Reference.any (lookup_method_ident env s)
   | Root (s, TInstanceVariable) -> Reference.any (lookup_instance_variable_ident env s)
   | Root (s, TLabel) -> Reference.any (lookup_label_ident env s)
-  | Dot(r, s) -> Dot(lookup_parent env r, s)
+  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
   | Module _ as r -> Reference.any @@ lookup_module env r
   | ModuleType _ as r -> Reference.any @@ lookup_module_type env r
   | Type _ as r -> Reference.any @@ lookup_type env r

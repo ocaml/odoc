@@ -52,6 +52,7 @@ let read_qualifier :
   | Some "method" -> TMethod
   | Some "instance-variable" -> TInstanceVariable
   | Some ("section" | "label") -> TLabel
+  | Some ("page") -> TPage
   | Some s -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
 
 let read_longident s =
@@ -87,7 +88,7 @@ let read_longident s =
           | TUnknown -> begin
               match loop_parent s (idx - 1) with
               | None -> None
-              | Some parent -> Some (Dot(parent, name))
+              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
             end
           | TType -> begin
               match loop_signature s (idx - 1) with
@@ -117,7 +118,7 @@ let read_longident s =
           | TUnknown -> begin
               match loop_parent s (idx - 1) with
               | None -> None
-              | Some parent -> Some (Dot(parent, name))
+              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
             end
           | TModule -> begin
               match loop_signature s (idx - 1) with
@@ -153,7 +154,60 @@ let read_longident s =
           | TUnknown -> begin
               match loop_parent s (idx - 1) with
               | None -> None
+              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
+            end
+          | TClass -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (Class(parent, name))
+            end
+          | TClassType -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (ClassType(parent, name))
+            end
+          | _ -> None
+  and loop_label_parent : string -> int -> 'a label_parent option =
+    fun s pos ->
+      match String.rindex_from s pos '.' with
+      | exception Not_found ->
+        let maybe_qualified = String.sub s 0 (pos + 1) in
+        if String.length maybe_qualified = 0 then
+          None
+        else
+          let (kind, name) = split_qualifier maybe_qualified in
+          begin match read_qualifier kind with
+          | TUnknown | TModule | TModuleType
+          | TType | TClass | TClassType | TPage as tag ->
+            Some (Root(name, tag))
+          | _ -> None
+          end
+      | idx ->
+        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
+        if String.length maybe_qualified = 0 then
+          None
+        else
+          let (qualifier, name) = split_qualifier maybe_qualified in
+          match read_qualifier qualifier with
+          | TUnknown -> begin
+              match loop_label_parent s (idx - 1) with
+              | None -> None
               | Some parent -> Some (Dot(parent, name))
+            end
+          | TModule -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (Module(parent, name))
+            end
+          | TModuleType -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (ModuleType(parent, name))
+            end
+          | TType -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (Type(parent, name))
             end
           | TClass -> begin
               match loop_signature s (idx - 1) with
@@ -191,7 +245,7 @@ let read_longident s =
           | TUnknown -> begin
               match loop_parent s (idx - 1) with
               | None -> None
-              | Some parent -> Some (Dot(parent, name))
+              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
             end
           | TModule -> begin
               match loop_signature s (idx - 1) with
@@ -202,6 +256,11 @@ let read_longident s =
               match loop_signature s (idx - 1) with
               | None -> None
               | Some parent -> Some (ModuleType(parent, name))
+            end
+          | TType -> begin
+              match loop_signature s (idx - 1) with
+              | None -> None
+              | Some parent -> Some (Type(parent, name))
             end
           | TClass -> begin
               match loop_signature s (idx - 1) with
@@ -233,7 +292,7 @@ let read_longident s =
           let (qualifier, name) = split_qualifier maybe_qualified in
           match read_qualifier qualifier with
           | TUnknown -> begin
-              match loop_parent s (idx - 1) with
+              match loop_label_parent s (idx - 1) with
               | None -> None
               | Some parent -> Some (Dot(parent, name))
             end
@@ -298,10 +357,11 @@ let read_longident s =
               | Some parent -> Some (InstanceVariable(parent, name))
             end
           | TLabel -> begin
-              match loop_parent s (idx - 1) with
+              match loop_label_parent s (idx - 1) with
               | None -> None
               | Some parent -> Some (Label(parent, name))
             end
+          | TPage -> None
   in
     match loop s (String.length s - 1) with
     | None -> raise (InvalidReference s)
@@ -341,14 +401,13 @@ let read_mod_longident lid : _ DocOckPaths.Reference.module_ =
       raise (Expected_reference_to_a_module_but_got lid)
 
 let read_reference rk s =
-  let open DocOckPaths.Reference in
+(*   let open DocOckPaths.Reference in *)
   let parsed_ref = lazy (read_longident s) in
   match rk, parsed_ref with
   | RK_link, _ -> Link s
   | RK_custom k, _ -> Custom(k, s)
   | RK_element, lazy ref -> Element ref
-  | RK_module, lazy (Root (_, TModule)
-                    |Module(_,_) as ref) -> Element ref
+  | RK_module, lazy ref -> Element ref
   | RK_module_type, lazy ref -> Element ref
   | RK_type, lazy ref -> Element ref
   | RK_exception, lazy ref -> Element ref
@@ -360,10 +419,12 @@ let read_reference rk s =
   | RK_attribute, lazy ref -> Element ref
   | RK_method, lazy ref -> Element ref
   | RK_section, lazy ref -> Element ref
+                              (*
   | _, _ ->
       (* FIXME: propagate location *)
       (* FIXME: better error message *)
       raise (InvalidReference "Conflicting kinds")
+                                 *)
 
 let read_special_reference = function
   | SRK_module_list mds ->

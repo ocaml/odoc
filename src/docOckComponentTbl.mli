@@ -16,14 +16,14 @@
 
 open DocOckPaths
 open DocOckTypes
-open DocOckComponents
 
 (** {3 Tables} *)
 
 (** The type of tables of components *)
 type 'a t
 
-type 'a lookup_result =
+(* FIXME: use different types for unit and page lookups. *)
+type 'a lookup_unit_result =
   | Forward_reference
   | Found of { root : 'a; hidden : bool }
   | Not_found
@@ -31,7 +31,11 @@ type 'a lookup_result =
 (** Create a table of the components of units. Optionally provide
     equality and hash functons. *)
 val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
- ('a Unit.t -> string -> 'a lookup_result) -> ('a -> 'a Unit.t) -> 'a t
+  (string -> 'a lookup_unit_result) -> ('a -> 'a Unit.t) ->
+  (string -> 'a option) -> ('a -> 'a Page.t) ->
+  'a t
+
+open DocOckComponents
 
 (** {3 Identifier Lookup} *)
 
@@ -47,24 +51,19 @@ val datatype_identifier : 'a t -> 'a Identifier.type_ -> 'a Datatype.t
 
 (** {3 Path Lookup} *)
 
-(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module path *)
-val resolved_module_path : 'a t -> 'a Unit.t ->
-      'a Path.Resolved.module_ -> 'a Sig.t
+val resolved_module_path : 'a t -> 'a Path.Resolved.module_ -> 'a Sig.t
 
-(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved module type path *)
-val resolved_module_type_path : 'a t -> 'a Unit.t ->
-      'a Path.Resolved.module_type -> 'a Sig.t
+val resolved_module_type_path : 'a t -> 'a Path.Resolved.module_type -> 'a Sig.t
 
-(* TODO: One day we will be able to remove the unit argument. *)
 (** Lookup the components of a resolved class type path *)
-val resolved_class_type_path : 'a t -> 'a Unit.t ->
+val resolved_class_type_path : 'a t ->
       'a Path.Resolved.class_type -> 'a ClassSig.t
 
 (** Lookup the components of a module path, needed for module
     applications. *)
-val module_path : 'a t -> 'a Unit.t -> 'a Path.module_ -> 'a Sig.t
+val module_path : 'a t -> 'a Path.module_ -> 'a Sig.t
 
 (** {3 Fragment Lookup} *)
 
@@ -73,11 +72,11 @@ val module_path : 'a t -> 'a Unit.t -> 'a Path.module_ -> 'a Sig.t
 type 'a with_
 
 (** Create specialised fragment table for a module type expression *)
-val module_type_expr_with : 'a t -> 'a Unit.t ->
+val module_type_expr_with : 'a t ->
       'a Identifier.signature -> 'a ModuleType.expr -> 'a with_
 
 (** Create specialised fragment table for a module path *)
-val module_type_path_with : 'a t -> 'a Unit.t ->
+val module_type_path_with : 'a t ->
       'a Path.module_type -> 'a with_
 
 (** Lookup the components of a resolved module fragment *)
@@ -86,22 +85,24 @@ val resolved_signature_fragment : 'a with_ ->
 
 (** {3 Reference Lookup} *)
 
-(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved signature reference *)
-val resolved_signature_reference : 'a t -> 'a Unit.t ->
+val resolved_signature_reference : 'a t ->
       'a Reference.Resolved.signature -> 'a Sig.t
 
-(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved class signature reference *)
-val resolved_class_signature_reference : 'a t -> 'a Unit.t ->
+val resolved_class_signature_reference : 'a t ->
       'a Reference.Resolved.class_signature -> 'a ClassSig.t
 
-(* TODO: The unit argument can disappear when resolved paths are fixed. *)
 (** Lookup the components of a resolved datatype reference *)
-val resolved_datatype_reference : 'a t -> 'a Unit.t ->
+val resolved_datatype_reference : 'a t ->
   'a Reference.Resolved.datatype -> 'a Datatype.t
+
+val resolved_page_reference : 'a t -> 'a Reference.Resolved.page -> 'a Page.t
 
 (** {3 Root lookup} *)
 
 (** Lookup the base of a unit name *)
-val base : 'a t -> 'a Unit.t -> string -> 'a lookup_result
+val base : 'a t -> string -> 'a lookup_unit_result
+
+(** Lookup the base of a page name *)
+val page_base : 'a t -> string -> 'a option

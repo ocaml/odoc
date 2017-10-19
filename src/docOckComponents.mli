@@ -252,6 +252,21 @@ and Parent : sig
 
 end
 
+and Page : sig
+
+  type 'a t
+
+  (** {3 Elements} *)
+
+  val find_label_element : string -> 'a t -> 'a Element.page_label
+
+  val find_section_title : string -> 'a t -> 'a Documentation.text
+
+  (** {3 Constructor} *)
+
+  val of_doc : 'a Documentation.t -> 'a t
+end
+
 and Element : sig
 
   type kind =
@@ -320,4 +335,5 @@ and Element : sig
 
   type 'a class_signature = ('a, [ `Method | `InstanceVariable | `Label ]) t
 
+  type 'a page_label = ('a, [`Label]) t
 end

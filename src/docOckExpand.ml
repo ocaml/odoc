@@ -639,7 +639,7 @@ and expand_unit ({equal; hash;_} as t) root unit =
 
 
 let create (type a) ?equal ?hash
-      (lookup : string -> a DocOckComponentTbl.lookup_result)
+      (lookup : string -> a DocOckComponentTbl.lookup_unit_result)
       (fetch : root:a -> a -> a Unit.t) =
   let equal =
     match equal with
@@ -986,10 +986,10 @@ class ['a] t ?equal ?hash lookup fetch = object (self)
   method identifier_method x = x
   method identifier_instance_variable x = x
   method identifier_label x = x
+  method identifier_page x = x
   method identifier_signature x = x
   method identifier x = x
 
-  (* CR trefis: Is that ok? Probably. *)
   method path_module x = x
   method path_module_type x = x
   method path_type x = x

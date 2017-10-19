@@ -1583,6 +1583,41 @@ end = struct
 
 end
 
+and Page : sig
+
+  type 'a t
+
+  val find_label_element : string -> 'a t -> 'a Element.page_label
+
+  val find_section_title : string -> 'a t -> 'a Documentation.text
+
+  val of_doc : 'a Documentation.t -> 'a t
+
+end = struct
+
+  type 'a t = {
+    labels : 'a Element.page_label LMap.t;
+    section_titles : 'a Documentation.text SMap.t;
+  }
+
+  let find_label_element name t =
+    LMap.find_name name t.labels
+
+  let find_section_title name t =
+    SMap.find name t.section_titles
+
+  let of_doc doc =
+    let labels = documentation_labels [] doc in
+    let add_label t (label, txt) =
+      let labels = LMap.add label (Element.Label None) t.labels in
+      let section_titles = SMap.add label txt t.section_titles in
+      {labels; section_titles}
+    in
+    List.fold_left add_label
+      { labels = LMap.empty; section_titles = SMap.empty } labels
+
+end
+
 and Parent : sig
 
   type kind = Kind.parent
@@ -1683,4 +1718,5 @@ and Element : sig
 
   type 'a datatype = ('a, [ `Constructor | `Field | `Label ]) t
 
+  type 'a page_label = ('a, [`Label]) t
 end = Element

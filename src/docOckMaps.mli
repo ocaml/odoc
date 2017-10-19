@@ -31,6 +31,8 @@ class virtual ['a] identifier : object
 
   method identifier_root_name : string -> string
 
+  method identifier_page_name : string -> string
+
   method identifier_module_name : string -> string
 
   method identifier_argument_position : int -> int
@@ -64,6 +66,8 @@ class virtual ['a] identifier : object
   method identifier_instance_variable_name : string -> string
 
   method identifier_label_name : string -> string
+
+  method identifier_page : 'a Identifier.page -> 'a Identifier.page
 
   method identifier_signature : 'a Identifier.signature ->
     'a Identifier.signature
@@ -911,6 +915,20 @@ class virtual ['a] unit : object
 
 end
 
+class virtual ['a] page : object
+
+  method virtual identifier_page :
+    'a Identifier.page -> 'a Identifier.page
+
+  method virtual documentation :
+    'a Documentation.t -> 'a Documentation.t
+
+  method page : 'a Page.t -> 'a Page.t
+
+  method page_digest : Digest.t -> Digest.t
+
+end
+
 class virtual ['a] types : object
   inherit ['a] documentation
   inherit ['a] module_
@@ -929,4 +947,5 @@ class virtual ['a] types : object
   inherit ['a] instance_variable
   inherit ['a] type_expr
   inherit ['a] unit
+  inherit ['a] page
 end

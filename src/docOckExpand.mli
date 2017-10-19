@@ -19,7 +19,7 @@ open DocOckTypes
 type 'a t
 
 val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                     (string -> 'a DocOckComponentTbl.lookup_result) ->
+                     (string -> 'a DocOckComponentTbl.lookup_unit_result) ->
                      (root:'a -> 'a -> 'a Unit.t) -> 'a t
 
 val expand : 'a t -> 'a Unit.t -> 'a Unit.t
