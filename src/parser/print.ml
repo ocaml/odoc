@@ -14,12 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Output
-open Format
+
+
+let fprintf = Format.fprintf
+
+
 
 let fmt_style_kind f x =
   match x with
-  | SK_bold -> fprintf f "SK_bold"
+  | Output.SK_bold -> fprintf f "SK_bold"
   | SK_italic -> fprintf f "SK_italic"
   | SK_emphasize -> fprintf f "SK_emphasize"
   | SK_center -> fprintf f "SK_center"
@@ -31,7 +34,7 @@ let fmt_style_kind f x =
 
 let fmt_ref_kind f x =
   match x with
-  | RK_element -> fprintf f "RK_element"
+  | Output.RK_element -> fprintf f "RK_element"
   | RK_module -> fprintf f "RK_module"
   | RK_module_type -> fprintf f "RK_module_type"
   | RK_class -> fprintf f "RK_class"
@@ -49,7 +52,7 @@ let fmt_ref_kind f x =
 
 let fmt_see_ref f x =
   match x with
-  | See_url s -> fprintf f "See_url %s" s
+  | Output.See_url s -> fprintf f "See_url %s" s
   | See_file s -> fprintf f "See_file %s" s
   | See_doc s -> fprintf f "See_doc %s" s
 
@@ -78,7 +81,7 @@ let special_ref_kind i ppf x =
   line i ppf "special_ref_kind\n";
   let i = i+1 in
   match x with
-  | SRK_module_list sl ->
+  | Output.SRK_module_list sl ->
       line i ppf "SRK_module_list\n";
       list i string ppf sl
   | SRK_index_list -> line i ppf "SRK_index_list\n"
@@ -87,7 +90,7 @@ let rec text_element i ppf x =
   line i ppf "text_element\n";
   let i = i+1 in
   match x with
-  | Raw s ->
+  | Output.Raw s ->
       line i ppf "Raw\n";
       string i ppf s
   | Code s ->
@@ -134,7 +137,7 @@ let tag i ppf x =
   line i ppf "tag\n";
   let i = i+1 in
   match x with
-    Author s ->
+  | Output.Author s ->
       line i ppf "Author\n";
       string i ppf s
   | Version s ->

@@ -1,6 +1,6 @@
 %{
 open Common
-open Output
+open! Output
 open Error
 
 (* Convert lexing position into error position *)
@@ -30,7 +30,7 @@ let splus = "+"
 (* Accumulators for text elements *)
 
 type text_item =
-    Blank
+  | Blank
   | Newline
   | Blank_line
   | String of string

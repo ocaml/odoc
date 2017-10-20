@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-exception ParserError of Error.location * Error.parser_error
 
+
+exception ParserError of Error.location * Error.parser_error
 exception LexerError of Error.location * Error.lexer_error

@@ -2,7 +2,7 @@
 (** The lexer for string to build text structures. *)
 open Common
 open Output
-open Generated_parser
+open! Generated_parser
 open Error
 open Lexing
 

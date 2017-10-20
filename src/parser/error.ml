@@ -14,20 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type position =
-  { line: int;
-    column: int; }
 
-type location =
-  { start: position;
-    finish: position; }
+
+type position = {
+  line : int;
+  column : int;
+}
+
+type location = {
+  start: position;
+  finish: position;
+}
 
 type parser_error =
-  | Unclosed of
-      { opening_loc: location;
-        opening: string;
-        items: string;
-        closing: string; }
+  | Unclosed of {
+      opening_loc: location;
+      opening: string;
+      items: string;
+      closing: string;
+    }
   | Expecting of string
 
 type lexer_error =
@@ -57,60 +62,61 @@ type error =
   | Lexer of lexer_error
   | Parser of parser_error
 
-type t =
-  { error: error;
-    location: location; }
+type t = {
+  error: error;
+  location: location;
+}
 
 let lexer_message = function
   | Unmatched_target ->
-      "unmatched '%%}'"
+    "unmatched '%%}'"
   | Unmatched_code ->
-      "unmatched ']'"
+    "unmatched ']'"
   | Unmatched_pre_code ->
-      "unmatched ']}'"
+    "unmatched ']}'"
   | Unmatched_html_code ->
-      "unmatched '</code>'"
+    "unmatched '</code>'"
   | Unterminated_verbatim ->
-      "unterminated '{v'"
+    "unterminated '{v'"
   | Unterminated_target ->
-      "unterminated '{%%'"
+    "unterminated '{%%'"
   | Unterminated_code ->
-      "unterminated '['"
+    "unterminated '['"
   | Unterminated_pre_code ->
-      "unterminated '{['"
+    "unterminated '{['"
   | Unterminated_ref ->
-      "unterminated '{!'"
+    "unterminated '{!'"
   | Unterminated_html_code ->
-      "unterminated '<code>'"
+    "unterminated '<code>'"
   | Nested_verbatim ->
-      "nested '{v'"
+    "nested '{v'"
   | Nested_target ->
-      "nested '{%%'"
+    "nested '{%%'"
   | Nested_pre_code ->
-      "nested '{['"
+    "nested '{['"
   | Nested_html_code ->
-      "nested '<code>'"
+    "nested '<code>'"
   | Expected_see ->
-      "expected < url >, 'filename' or \"document\""
+    "expected < url >, 'filename' or \"document\""
   | Unterminated_see_url ->
-      "unterminated url"
+    "unterminated url"
   | Unterminated_see_file ->
-      "unterminated filename"
+    "unterminated filename"
   | Unterminated_see_doc ->
-      "unterminated document name"
+    "unterminated document name"
   | Expected_ident ->
-      "expected identifier"
+    "expected identifier"
   | Expected_string ->
-      "expected string"
+    "expected string"
   | Expected_version ->
-      "expected version string"
+    "expected version string"
 
 let parser_message = function
-  | Unclosed { opening_loc = _; opening; items; closing } ->
-      "'" ^ opening ^ "' not closed, expected "
+  | Unclosed {opening_loc = _; opening; items; closing} ->
+    "'" ^ opening ^ "' not closed, expected "
       ^ items ^ " or '" ^ closing ^ "'"
   | Expecting nonterm ->
-      nonterm ^ " expected"
+    nonterm ^ " expected"
 
 let message = function
   | Lexer x -> lexer_message x

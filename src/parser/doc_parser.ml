@@ -14,11 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Output = Output
 
-module Error = Error
-
-open Common
 
 type nonrec ('a, 'b) result = ('a, 'b) result =
   | Ok of 'a
@@ -26,23 +22,28 @@ type nonrec ('a, 'b) result = ('a, 'b) result =
 
 let parse lexbuf =
   let open Error in
-    try
-      Ok (Generated_parser.main Lexer.main lexbuf)
-    with
-    | ParserError(location, err) ->
-        Error {Error.error = Parser err; location}
-    | LexerError(location, err) ->
-        Error {Error.error = Lexer err; location}
+  try
+    Ok (Generated_parser.main Lexer.main lexbuf)
+  with
+  | Common.ParserError(location, err) ->
+    Error {Error.error = Parser err; location}
+  | Common.LexerError(location, err) ->
+    Error {Error.error = Lexer err; location}
 
 let parse_ref lexbuf =
   let open Error in
-    try
-      Ok (Generated_parser.reference_parts Lexer.read_ref lexbuf)
-    with
-    | ParserError(location, err) ->
-        Error {Error.error = Parser err; location}
-    | LexerError(location, err) ->
-        Error {Error.error = Lexer err; location}
+  try
+    Ok (Generated_parser.reference_parts Lexer.read_ref lexbuf)
+  with
+  | Common.ParserError(location, err) ->
+    Error {Error.error = Parser err; location}
+  | Common.LexerError(location, err) ->
+    Error {Error.error = Lexer err; location}
 
 let print fmt t =
   Print.pp fmt t
+
+
+
+module Output = Output
+module Error = Error

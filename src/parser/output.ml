@@ -30,7 +30,7 @@ type style_kind =
 
 (** The differents kinds of element references. *)
 type ref_kind =
-    RK_element
+  | RK_element
   | RK_module
   | RK_module_type
   | RK_class
@@ -48,7 +48,7 @@ type ref_kind =
 
 (* The different kinds of special reference *)
 type special_ref_kind =
-    SRK_module_list of string list
+  | SRK_module_list of string list
   | SRK_index_list
 
 and text_element =
@@ -66,20 +66,21 @@ and text_element =
     (** A reference to an element. Complete name and kind. An optional
         text can be given to display this text instead of the element name.*)
   | Special_ref of special_ref_kind (** Special kinds of reference *)
-  | Target of string option * string (** (target, code) : to specify code for a specific target format *)
+  | Target of string option * string
+    (** (target, code) : to specify code for a specific target format *)
 
 (** [text] is a list of text_elements. The order matters. *)
 and text = text_element list
 
 (** The different forms of references in \@see tags. *)
 type see_ref =
-    See_url of string
+  | See_url of string
   | See_file of string
   | See_doc of string
 
 (** Tags *)
 type tag =
-    Author of string (** \@author tag *)
+  | Author of string (** \@author tag *)
   | Version of string (** \@version tag *)
   | See of see_ref * text (** \@see tag *)
   | Since of string (** \@since tag *)
