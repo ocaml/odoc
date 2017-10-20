@@ -16,5 +16,5 @@
 
 
 
-exception ParserError of Error.location * Error.parser_error
-exception LexerError of Error.location * Error.lexer_error
+exception ParserError of Error.location_span * Error.parser_error
+exception LexerError of Error.location_span * Error.lexer_error

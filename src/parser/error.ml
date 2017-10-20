@@ -21,14 +21,14 @@ type position = {
   column : int;
 }
 
-type location = {
+type location_span = {
   start: position;
   finish: position;
 }
 
 type parser_error =
   | Unclosed of {
-      opening_loc: location;
+      opening_loc: location_span;
       opening: string;
       items: string;
       closing: string;
@@ -64,7 +64,7 @@ type error =
 
 type t = {
   error: error;
-  location: location;
+  location: location_span;
 }
 
 let lexer_message = function
