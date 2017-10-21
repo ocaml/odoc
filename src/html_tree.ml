@@ -68,8 +68,15 @@ module Relative_link = struct
 
     let href ~get_package ~stop_before id =
       match Url.from_identifier ~get_package ~stop_before id with
-      | Ok { Url. page; anchor; _ } ->
-        let target = List.rev (if !semantic_uris then page else "index.html" :: page) in
+      | Ok { Url. page; anchor; kind } ->
+        let target =
+          List.rev (
+            if !semantic_uris || kind = "page" then
+              page
+            else
+              "index.html" :: page
+          )
+        in
         let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
         let current_from_common_ancestor, target_from_common_ancestor =
           drop_shared_prefix current_loc target

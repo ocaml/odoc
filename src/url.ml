@@ -61,6 +61,13 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       else
       *)
       { page = unit_name :: page; anchor = ""; kind }
+    | Page (abstr, page_name) ->
+      begin try Ok (get_package abstr)
+      with exn -> Error (Uncaught_exn (Printexc.to_string exn))
+      end >>| fun pkg_name ->
+      let page = [ page_name ^ ".html"; pkg_name ] in
+      let kind = "page" in
+      { page; anchor = ""; kind }
     | Module (parent, mod_name) ->
       from_identifier_no_anchor ~get_package parent
       >>| fun parent ->
@@ -156,9 +163,14 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
       end
     | Label (parent, anchor) ->
-      from_identifier_no_anchor ~get_package parent
-      >>| fun page ->
-      { page; anchor; kind = "" }
+      from_identifier ~get_package ~stop_before:false parent
+      >>= function
+      | { page; anchor = ""; kind } ->
+        (* Really ad-hoc and shitty, but it works. *)
+        if kind = "page" then Ok { page; anchor; kind }
+        else Ok {page; anchor; kind = "" }
+      | otherwise ->
+        Error (Unexpected_anchor otherwise)
 
 and from_identifier_no_anchor : type a. get_package:('x -> string) ->
   ('x, a) Identifier.t -> (string list, Error.t) result =
