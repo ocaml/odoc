@@ -14,11 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Produces .html files from a .odoc or .mld file. *)
+(** Produces .html files from a .odoc file. *)
 
-val unit :
+val from_odoc :
   env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
-
-val from_mld :
-  env:Env.builder -> output:Fs.Directory.t -> pkg:string ->
-  Fs.File.t -> unit

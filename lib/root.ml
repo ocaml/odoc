@@ -28,18 +28,30 @@ module Package = struct
   end)
 end
 
-module Unit = struct
-  type t = { name : string; hidden : bool }
+module Odoc_file = struct
+  type t =
+    | Page of string
+    | Unit of { name : string; hidden : bool }
 
-  let create ~force_hidden name =
+  let create_unit ~force_hidden name =
     let hidden = force_hidden || DocOck.Paths.contains_double_underscore name in
-    { name; hidden }
+    Unit { name; hidden }
+
+  let create_page name = Page name
+
+  let name = function
+    | Page name
+    | Unit { name; _ } -> name
+
+  let kind = function
+    | Page _ -> "page"
+    | Unit _ -> "unit"
 end
 
 module T = struct
   type t = {
     package : Package.t;
-    unit    : Unit.t;
+    file    : Odoc_file.t;
     digest  : Digest.t;
   }
 
@@ -51,11 +63,11 @@ end
 
 include T
 
-let to_string t = t.package ^ "::" ^ t.unit.name
+let to_string t = Printf.sprintf "%s::%s" t.package (Odoc_file.name t.file)
 
-let create ~package ~unit ~digest = { package; unit; digest }
+let create ~package ~file ~digest = { package; file; digest }
 
-let unit t = t.unit
+let file t = t.file
 let package t = t.package
 
 module Xml = struct
@@ -65,14 +77,15 @@ module Xml = struct
     | _ -> assert false
     end;
     let package = ref "" in
-    let unit = ref "" in
+    let file = ref (Odoc_file.Page "") in
     let digest = ref "" in
     let get_elt () =
       match Xmlm.input i, Xmlm.input i, Xmlm.input i with
       | `El_start ((_, name), _), `Data value, `El_end ->
         begin match name with
         | "package" -> package := value
-        | "unit" -> unit := value
+        | "unit" -> file := Odoc_file.create_unit ~force_hidden:false value
+        | "page" -> file := Odoc_file.create_page value
         | "digest" -> digest := (Digest.from_hex value)
         | _ -> assert false
         end
@@ -85,8 +98,7 @@ module Xml = struct
     | `El_end -> ()
     | _ -> assert false
     end;
-    create ~package:!package ~unit:(Unit.create ~force_hidden:false !unit)
-      ~digest:!digest
+    create ~package:!package ~file:!file ~digest:!digest
 
   let fold =
     let make_tag name = (("", name), []) in
@@ -97,8 +109,8 @@ module Xml = struct
       |> flipped (`El_start (make_tag "package"))
       |> flipped (`Data root.package)
       |> flipped `El_end
-      |> flipped (`El_start (make_tag "unit"))
-      |> flipped (`Data root.unit.name)
+      |> flipped (`El_start (make_tag (Odoc_file.kind root.file)))
+      |> flipped (`Data (Odoc_file.name root.file))
       |> flipped `El_end
       |> flipped (`El_start (make_tag "digest"))
       |> flipped (`Data (Digest.to_hex root.digest))
@@ -109,3 +121,26 @@ module Xml = struct
 end
 
 module Table = Hashtbl.Make(T)
+
+let magic = "odoc-%%VERSION%%"
+
+let load file ic =
+  let m = really_input_string ic (String.length magic) in
+  if m = magic then
+    Marshal.from_channel ic
+  else (
+    Printf.eprintf "%s: invalid magic number %S, expected %S\n%!"
+      file m magic;
+    exit 1
+  )
+
+let save oc t =
+  output_string oc magic;
+  Marshal.to_channel oc t []
+
+let read file =
+  let file = Fs.File.to_string file in
+  let ic = open_in file in
+  let root = load file ic in
+  close_in ic;
+  root

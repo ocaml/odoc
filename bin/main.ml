@@ -47,9 +47,20 @@ end = struct
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
     let input = Fs.File.of_string input in
-    let output = match output with
-    | Some file -> Fs.File.of_string file
-    | None -> Fs.File.(set_ext ".odoc" input)
+    let output =
+      match output with
+      | Some file ->
+        let output = Fs.File.of_string file in
+        if
+          Fs.File.has_ext ".mld" input &&
+          not (Astring.String.is_prefix ~affix:"page-" (Filename.basename file))
+        then (
+          Printf.eprintf "ERROR: the name of the .odoc file produced from a \
+                          .mld must start with 'page-'\n%!";
+          exit 1
+        );
+        output
+      | None -> Fs.File.(set_ext ".odoc" input)
     in
     let package = Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
@@ -59,6 +70,8 @@ end = struct
       Compile.cmt ~env ~package ~hidden ~output input
     else if Fs.File.has_ext ".cmi" input then
       Compile.cmi ~env ~package ~hidden ~output input
+    else if Fs.File.has_ext ".mld" input then
+      Compile.mld ~env ~package ~output input
     else (
       Printf.eprintf "Unknown extension, expected one of : cmti, cmt, cmi.\n%!";
       exit 2
@@ -108,23 +121,18 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details _hidden directories output_dir index_for
+  let html semantic_uris closed_details _hidden directories output_dir
         input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     DocOckHtml.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
-    match index_for with
-    | None ->
-      let odoc_file = Fs.File.of_string input_file in
-      Html.unit ~env ~output:output_dir odoc_file
-    | Some pkg_name ->
-      let mld_file = Fs.File.of_string input_file in
-      Html.from_mld ~env ~output:output_dir ~pkg:pkg_name mld_file
+    let odoc_file = Fs.File.of_string input_file in
+    Html.from_odoc ~env ~output:output_dir odoc_file
 
   let cmd =
     let input =
       let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.{odoc,mld}" [])
+      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
     in
     let semantic_uris =
       let doc = "Generate pretty (semantic) links" in
@@ -136,17 +144,8 @@ end = struct
       in
       Arg.(value & flag (info ~doc ["closed-details"]))
     in
-    let index_for =
-      let doc = "When this argument is given, then the input file is a .mld
-                 file, i.e. a file in the ocamldoc syntax. The output will be a
-                 \"index.html\" file in the output directory.
-                 PKG is repeated here so that references inside the input file\
-                 can be linked correctly"
-      in
-      Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
-    in
     Term.(const html $ semantic_uris $ closed_details $ hidden $ env $ dst $
-          index_for $ input)
+          input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -183,7 +182,7 @@ module Depends = struct
           let open Root in
           Printf.printf "%s %s %s\n"
             (Package.to_string (package root))
-            (unit root).Unit.name
+            (Odoc_file.name (file root))
             (Digest.to_hex (digest root))
         )
 
@@ -260,8 +259,14 @@ module To_xml = struct
         |> Fs.File.of_string
       in
       let odoc_file = Fs.File.of_string odoc_file in
-      Unit.load odoc_file
-      |> Unit.save_xml output
+      let root = Root.read odoc_file in
+      match Root.file root with
+      | Unit _ ->
+        Unit.load odoc_file
+        |> Unit.save_xml output
+      | Page _ ->
+        Page.load odoc_file
+        |> Page.save_xml output
 
   let cmd =
     let input =

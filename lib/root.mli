@@ -23,14 +23,16 @@ module Package : sig
   val to_string : t -> string
 end
 
-module Unit : sig
+module Odoc_file : sig
 
-  type t = private {
-    name : string;
-    hidden : bool;
-  }
+  type t = private
+    | Page of string
+    | Unit of { name : string; hidden : bool }
 
-  val create : force_hidden:bool -> string -> t
+  val create_unit : force_hidden:bool -> string -> t
+  val create_page : string -> t
+
+  val name : t -> string
 end
 
 module Digest = Digest
@@ -40,11 +42,11 @@ type t
 val equal : t -> t -> bool
 val hash  : t -> int
 
-val create : package:Package.t -> unit:Unit.t -> digest:Digest.t -> t
+val create : package:Package.t -> file:Odoc_file.t -> digest:Digest.t -> t
 
 val digest : t -> Digest.t
 val package: t -> Package.t
-val unit   : t -> Unit.t
+val file   : t -> Odoc_file.t
 
 val to_string : t -> string
 
@@ -57,3 +59,7 @@ module Xml : sig
 end
 
 module Table : Hashtbl.S with type key = t
+
+val load : string -> in_channel -> t
+val read : Fs.File.t -> t
+val save : out_channel -> t -> unit

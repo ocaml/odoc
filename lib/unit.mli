@@ -24,6 +24,4 @@ val save_xml : Fs.File.t -> t -> unit
 val load : Fs.File.t -> t
 val load_xml : Fs.File.t -> t
 
-val read_root : Fs.File.t -> Root.t
-
 val root : t -> Root.t

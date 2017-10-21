@@ -14,20 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Produces .odoc files out of .cm{i,t,ti} or .mld files. *)
+open DocOck
 
-val cmti :
-  env:Env.builder -> package:Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+type t = Root.t Types.Page.t
 
-val cmt :
-  env:Env.builder -> package:Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+val save : Fs.File.t -> t -> unit
+val save_xml : Fs.File.t -> t -> unit
 
-val cmi :
-  env:Env.builder -> package:Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+val load : Fs.File.t -> t
+val load_xml : Fs.File.t -> t
 
-val mld :
-  env:Env.builder -> package:Root.Package.t ->
-  output:Fs.File.t -> Fs.File.t -> unit
+val root : t -> Root.t

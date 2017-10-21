@@ -30,19 +30,19 @@ let it's_all_the_same ~env ~output input reader =
         (if not (Filename.check_suffix fn "cmt") then "" (* ? *)
          else Printf.sprintf " Using %S while you should use the .cmti file" fn)
     );
-    let resolve_env = Env.build env unit in
+    let resolve_env = Env.build env (`Unit unit) in
     let resolved = resolve (Env.resolver resolve_env) unit in
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
        Note that this is shitty and once rewritten expand should not fetch the unit it is
        working on. *)
-    let expand_env = Env.build env resolved in
+    let expand_env = Env.build env (`Unit resolved) in
     Unit.save output (expand (Env.expander expand_env) resolved)
 
 let root_of_unit ~package ~hidden unit_name digest =
-  let unit = Root.Unit.create ~force_hidden:hidden unit_name in
-  Root.create ~package ~unit ~digest
+  let file = Root.Odoc_file.create_unit ~force_hidden:hidden unit_name in
+  Root.create ~package ~file ~digest
 
 let cmti ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
@@ -55,3 +55,45 @@ let cmt ~env ~package ~hidden ~output input =
 let cmi ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
     (read_cmi @@ root_of_unit ~package ~hidden)
+
+let mld ~env ~package ~output input =
+  let root_name =
+    let page_dash_root =
+      Filename.remove_extension (Fs.File.(to_string @@ basename output))
+    in
+    String.sub page_dash_root (String.length "page-")
+      (String.length page_dash_root - String.length "page-")
+  in
+  let digest = Digest.file (Fs.File.to_string input) in
+  let root =
+    let file = Root.Odoc_file.create_page root_name in
+    Root.create ~package ~file ~digest
+  in
+  let name = DocOck.Paths.Identifier.Page (root, root_name) in
+  let location =
+    let pos =
+      Lexing.{
+        pos_fname = Fs.File.to_string input;
+        pos_lnum = 0;
+        pos_cnum = 0;
+        pos_bol = 0
+      }
+    in
+    Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
+  in
+  match Fs.File.read input with
+  | Error (`Msg s) ->
+    Printf.eprintf "ERROR: %s\n%!" s;
+    exit 1
+  | Ok str ->
+    let content =
+      match DocOck.Attrs.read_string name location str with
+      | Stop -> DocOck.Types.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
+      | Documentation content -> content
+    in
+    (* This is a mess. *)
+    let page = DocOck.Types.Page.{ name; content; digest } in
+    let env = Env.build env (`Page page) in
+    let resolved = DocOck.resolve_page (Env.resolver env) page in
+    (* TODO? expand *)
+    Page.save output resolved

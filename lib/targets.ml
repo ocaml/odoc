@@ -28,7 +28,7 @@ let for_compile_step ~output input =
 
 let unit ~env ~output:_root_dir input =
   let unit = Unit.load input in
-  let env = Env.build env unit in
+  let env = Env.build env (`Unit unit) in
   let odoctree = DocOck.resolve (Env.resolver env) unit in
   let odoctree = DocOck.expand (Env.expander env) odoctree in
   let root = Unit.root odoctree in

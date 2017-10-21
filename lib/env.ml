@@ -24,13 +24,13 @@ type t = {
 module Accessible_paths = struct
   type t = {
     root_map : Fs.File.t Root.Table.t;
-    unit_map : (string, Root.t) Hashtbl.t;
+    file_map : (string, Root.t) Hashtbl.t;
     directories : Fs.Directory.t list;
   }
 
   let create ~directories =
     { root_map = Root.Table.create 42
-    ; unit_map = Hashtbl.create 42
+    ; file_map = Hashtbl.create 42
     ; directories }
 
   let find_file_by_name t name =
@@ -51,20 +51,20 @@ module Accessible_paths = struct
     in
     loop t.directories
 
-  let find_root ?digest t ~name =
-    match Hashtbl.find t.unit_map name with
+  let find_root ?digest t ~filename =
+    match Hashtbl.find t.file_map filename with
     | root -> root
     | exception Not_found ->
-      let path = find_file_by_name t name in
-      let root = Unit.read_root path in
+      let path = find_file_by_name t filename in
+      let root = Root.read path in
       begin match digest with
       | Some d when Digest.compare d (Root.digest root) <> 0 ->
         Printf.eprintf
-          "WARNING: digest of %s doesn't match the one excepted for unit %s\n%!"
-          (Fs.File.to_string path) name
+          "WARNING: digest of %s doesn't match the one excepted for file %s\n%!"
+          (Fs.File.to_string path) filename
       | _ -> ()
       end;
-      Hashtbl.add t.unit_map name root;
+      Hashtbl.add t.file_map filename root;
       Root.Table.add t.root_map root path;
       root
 
@@ -72,66 +72,115 @@ module Accessible_paths = struct
     let open Root in
     try Table.find t.root_map root
     with Not_found ->
-      let r = find_root ~digest:(digest root) t ~name:(unit root).Unit.name in
+      let r =
+        match file root with
+        | Page page_name ->
+          let filename = "page-" ^ page_name in
+          find_root ~digest:(digest root) t ~filename
+        | Unit { name; _ } ->
+          find_root ~digest:(digest root) t ~filename:name
+      in
       assert (equal root r);
       Table.find t.root_map r
 end
 
+let rec lookup_unit ~important_digests ap target_name =
+  let find_root ~digest =
+    match Accessible_paths.find_root ap ~filename:target_name ?digest with
+    | exception Not_found -> Not_found
+    | root ->
+      match Root.file root with
+      | Unit {hidden; _} -> Found {root; hidden}
+      | Page _ -> assert false
+  in
+  function
+  | [] when important_digests -> DocOck.Not_found
+  | [] -> find_root ~digest:None
+  | import :: imports ->
+    match import with
+    | DocOck.Types.Unit.Import.Unresolved (name, digest)
+      when name = target_name ->
+      begin match digest with
+      | None when important_digests -> Forward_reference
+      | _ -> find_root ~digest
+      end
+    | Types.Unit.Import.Resolved root
+      when Root.Odoc_file.name (Root.file root) = target_name -> begin
+        match Root.file root with
+        | Unit {hidden; _} -> Found {root; hidden}
+        | Page _ -> assert false
+      end
+    | _ -> lookup_unit ~important_digests ap target_name imports
 
-type builder = Unit.t -> t
+let lookup_page ap target_name =
+  match Accessible_paths.find_root ap ~filename:("page-" ^ target_name) with
+  | root -> Some root
+  | exception Not_found -> None
+
+let fetch_page ap root =
+  match Accessible_paths.file_of_root ap root with
+  | path -> Page.load path
+  | exception Not_found ->
+    Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
+    exit 2
+
+let fetch_unit ap root =
+  match Accessible_paths.file_of_root ap root with
+  | path -> Unit.load path
+  | exception Not_found ->
+    Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
+    exit 2
+
+type builder = [ `Unit of Unit.t | `Page of Page.t ] -> t
 
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
-  fun unit ->
-    let lookup _ target_name : Root.t DocOck.lookup_result =
-      let rec aux = function
-        | [] ->
-          if important_digests then DocOck.Not_found
-          else begin
-            match Accessible_paths.find_root ap ~name:target_name with
-            | root -> Found {root; hidden = (Root.unit root).Root.Unit.hidden}
-            | exception Not_found -> Not_found
+  fun unit_or_page ->
+    let lookup_unit target_name : Root.t DocOck.lookup_result =
+      match unit_or_page with
+      | `Page _ -> lookup_unit ~important_digests:false ap target_name []
+      | `Unit unit ->
+        match
+          lookup_unit ~important_digests ap target_name unit.Types.Unit.imports
+        with
+        | Not_found -> begin
+            let root = Unit.root unit in
+            match Root.file root with
+            | Page _ -> assert false
+            | Unit {name;hidden} when target_name = name ->
+              Found { root; hidden }
+            | Unit _ -> Not_found
           end
-        | import :: imports ->
-          match import with
-          | DocOck.Types.Unit.Import.Unresolved (name, digest) when name = target_name ->
-            begin match digest with
-            | None when important_digests -> Forward_reference
-            | _ ->
-              match Accessible_paths.find_root ap ~name:target_name ?digest with
-              | root -> Found {root; hidden = (Root.unit root).Root.Unit.hidden}
-              | exception Not_found -> Not_found
-            end
-          | Types.Unit.Import.Resolved root
-            when (Root.unit root).Root.Unit.name = target_name ->
-            Found {root; hidden = (Root.unit root).Root.Unit.hidden}
-          | _ ->
-            aux imports
-      in
-      match aux unit.Types.Unit.imports with
-      | Not_found ->
+        | x -> x
+    in
+    let fetch_unit root : Root.t DocOck.Types.Unit.t =
+      match unit_or_page with
+      | `Page _ -> fetch_unit ap root
+      | `Unit unit ->
         let current_root = Unit.root unit in
-        if target_name = (Root.unit current_root).Root.Unit.name then
-          Found { root = current_root; hidden = unit.Types.Unit.hidden}
+        if Root.equal root current_root then
+          unit
         else
-          Not_found
-      | x -> x
+          fetch_unit ap root
     in
-    let fetch root : Root.t DocOck.Types.Unit.t =
-      let current_root = Unit.root unit in
-      if Root.equal root current_root then
-        unit
-      else
-        match Accessible_paths.file_of_root ap root with
-        | path -> Unit.load path
-        | exception Not_found ->
-          Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
-          exit 2
+    let lookup_page target_name = lookup_page ap target_name in
+    let fetch_page root : Root.t DocOck.Types.Page.t =
+      match unit_or_page with
+      | `Unit _ -> fetch_page ap root
+      | `Page page ->
+        let current_root = Page.root page in
+        if Root.equal root current_root then
+          page
+        else
+          fetch_page ap root
     in
-    let resolver = DocOck.build_resolver lookup fetch in
+    let resolver =
+      DocOck.build_resolver lookup_unit fetch_unit lookup_page fetch_page
+    in
     let expander =
       (* CR trefis: what is the ~root param good for? *)
-      let fetch ~root:_ root = fetch root in
+      let fetch ~root:_ root = fetch_unit root in
+      let lookup _ s = lookup_unit s in
       DocOck.build_expander (lookup ()) fetch
     in
     { expander; resolver }
