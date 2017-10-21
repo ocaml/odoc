@@ -20,5 +20,7 @@ type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 val text: 'r t -> 'r DocOck.Types.Documentation.text t
 
 val unit: 'r t -> 'r DocOck.Types.Unit.t t
+val file_unit: 'r t -> 'r DocOck.Types.Unit.t t
 
-val file: 'r t -> 'r DocOck.Types.Unit.t t
+val page: 'r t -> 'r DocOck.Types.Page.t t
+val file_page: 'r t -> 'r DocOck.Types.Page.t t

@@ -236,6 +236,9 @@ let pack_t output acc =
 let package_t output acc =
   output acc (`El_start ((ns, "package"), []))
 
+let page_t output acc =
+  output acc (`El_start ((ns, "page"), [(Xmlm.ns_xmlns,"xmlns"),DocOckXml.ns]))
+
 let param_t output acc =
   output acc (`El_start ((ns, "param"), []))
 
@@ -449,6 +452,13 @@ let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
         let acc = close output acc in
         let acc = data output acc name in
         close output acc
+      | Page(r, name) ->
+        let acc = page_t output acc in
+        let acc = base_t output acc in
+        let acc = base.f output acc r in
+        let acc = close output acc in
+        let acc = data output acc name in
+        close output acc
       | Argument(sg, pos, name) ->
         let acc = argument_t output acc (Some pos) in
         let acc = identifier_p base output acc sg in
@@ -599,6 +609,7 @@ let ref_tag_p (type a) output acc (tag : a Reference.tag) =
     | Reference.TMethod -> "method"
     | Reference.TInstanceVariable -> "instance_variable"
     | Reference.TLabel -> "label"
+    | Reference.TPage -> "page"
   in
   simple tag_t output acc tag
 
@@ -1466,9 +1477,17 @@ let unit_p base output acc unit =
   let acc = expansion_p base output acc unit.expansion in
   close output acc
 
-let file_p base output acc unit =
+let page_p base output acc page =
+  let open Page in
+  let acc = page_t output acc in
+  let acc = identifier_p base output acc page.name in
+  let acc = doc_p base output acc page.content in
+  let acc = digest_p base output acc page.digest in
+  close output acc
+
+let file_p folder base output acc unit =
   let acc = dtd output acc None in
-    unit_p base output acc unit
+    folder base output acc unit
 
 let text_entry_p base output acc text =
   let acc = unit_t output acc in
@@ -1477,4 +1496,6 @@ let text_entry_p base output acc text =
 
 let text base = {f = fun output acc txt -> text_entry_p base output acc txt}
 let unit base = {f = fun output acc unit -> unit_p base output acc unit}
-let file base = {f = fun output acc unit -> file_p base output acc unit}
+let page base = {f = fun output acc page -> page_p base output acc page}
+let file_unit base = {f = fun output acc unit -> file_p unit_p base output acc unit}
+let file_page base = {f = fun output acc page -> file_p page_p base output acc page}

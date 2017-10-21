@@ -25,5 +25,7 @@ type 'a result =
 val text : 'a parser -> Xmlm.input -> 'a DocOck.Types.Documentation.text result
 
 val unit : 'a parser -> Xmlm.input -> 'a DocOck.Types.Unit.t result
+val unit_file : 'a parser -> Xmlm.input -> 'a DocOck.Types.Unit.t result
 
-val file : 'a parser -> Xmlm.input -> 'a DocOck.Types.Unit.t result
+val page : 'a parser -> Xmlm.input -> 'a DocOck.Types.Page.t result
+val page_file : 'a parser -> Xmlm.input -> 'a DocOck.Types.Page.t result

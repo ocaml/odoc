@@ -19,8 +19,10 @@ type 'a result =
   | Error of Xmlm.pos option * Xmlm.pos * string
 
 type 'a parser =
-  { file : Xmlm.input -> 'a DocOck.Types.Unit.t result;
+  { unit_file : Xmlm.input -> 'a DocOck.Types.Unit.t result;
     unit :  Xmlm.input -> 'a DocOck.Types.Unit.t result;
+    page_file : Xmlm.input -> 'a DocOck.Types.Page.t result;
+    page :  Xmlm.input -> 'a DocOck.Types.Page.t result;
     text : Xmlm.input -> 'a DocOck.Types.Documentation.text result; }
 
 exception LexerError of Xmlm.pos * Xmlm.pos * string
@@ -113,6 +115,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
     Hashtbl.add plain_tags "optional" Parser.OPTIONAL;
     Hashtbl.add plain_tags "pack" Parser.PACK;
     Hashtbl.add plain_tags "package" Parser.PACKAGE;
+    Hashtbl.add plain_tags "page" Parser.PAGE;
     Hashtbl.add plain_tags "param" Parser.PARAM;
     Hashtbl.add plain_tags "path" Parser.PATH;
     Hashtbl.add plain_tags "poly" Parser.POLY;
@@ -233,18 +236,24 @@ let build (type base) (input_base : Xmlm.input -> base) =
         in
           {value; start = position start; finish = position finish}
     in
-    let filep =
-      MenhirLib.Convert.traditional2revised value start finish Parser.file
+    let unit_filep =
+      MenhirLib.Convert.traditional2revised value start finish Parser.unit_file
     in
     let unitp =
       MenhirLib.Convert.traditional2revised value start finish Parser.unit
     in
+    let page_filep =
+      MenhirLib.Convert.traditional2revised value start finish Parser.page_file
+    in
+    let pagep =
+      MenhirLib.Convert.traditional2revised value start finish Parser.page
+    in
     let textp =
       MenhirLib.Convert.traditional2revised value start finish Parser.text_entry
     in
-    let file input =
+    let unit_file input =
       try
-        Ok (filep (lex input))
+        Ok (unit_filep (lex input))
       with
       | LexerError(start, finish, msg) -> Error(Some start, finish, msg)
       | Parser.Error ->
@@ -262,6 +271,26 @@ let build (type base) (input_base : Xmlm.input -> base) =
             Error(None, pos, "Syntax error")
       | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
     in
+    let page_file input =
+      try
+        Ok (page_filep (lex input))
+      with
+      | LexerError(start, finish, msg) -> Error(Some start, finish, msg)
+      | Parser.Error ->
+          let pos = Xmlm.pos input in
+            Error(None, pos, "Syntax error")
+      | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
+    in
+    let page input =
+      try
+        Ok (pagep (lex input))
+      with
+      | LexerError(start, finish, msg) -> Error(Some start, finish, msg)
+      | Parser.Error ->
+          let pos = Xmlm.pos input in
+            Error(None, pos, "Syntax error")
+      | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
+    in
     let text input =
       try
         Ok (textp (lex input))
@@ -272,10 +301,12 @@ let build (type base) (input_base : Xmlm.input -> base) =
             Error(None, pos, "Syntax error")
       | Xmlm.Error(pos, err) -> Error(None, pos, Xmlm.error_message err)
     in
-      {file; unit; text}
+      {unit_file; unit; page_file; page; text}
 
 let text parser = parser.text
 
 let unit parser = parser.unit
+let unit_file parser = parser.unit_file
 
-let file parser = parser.file
+let page parser = parser.page
+let page_file parser = parser.page_file

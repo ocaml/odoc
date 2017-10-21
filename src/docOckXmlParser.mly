@@ -111,6 +111,7 @@ let relax_class_reference cl =
 %token OPTIONAL
 %token PACK
 %token PACKAGE
+%token PAGE
 %token PARAM
 %token PATH
 %token POLY
@@ -170,7 +171,9 @@ let relax_class_reference cl =
 
 %start <Root.t DocOck.Types.Documentation.text> text_entry
 %start <Root.t DocOck.Types.Unit.t> unit
-%start <Root.t DocOck.Types.Unit.t> file
+%start <Root.t DocOck.Types.Unit.t> unit_file
+%start <Root.t DocOck.Types.Page.t> page
+%start <Root.t DocOck.Types.Page.t> page_file
 
 %%
 
@@ -189,6 +192,10 @@ flag(X):
       { "" }
   | data = Data
       { data}
+
+page_identifier:
+  | PAGE base = Base data = string CLOSE
+      { Identifier.Page(base, data) }
 
 module_identifier:
   | ROOT base = Base data = string CLOSE
@@ -261,7 +268,7 @@ instance_variable_identifier:
       { Identifier.InstanceVariable(sg, data) }
 
 label_identifier:
-  | LABEL sg = parent_identifier data = string CLOSE
+  | LABEL sg = label_parent_identifier data = string CLOSE
       { Identifier.Label(sg, data) }
 
 parent_identifier:
@@ -271,6 +278,12 @@ parent_identifier:
     { Identifier.parent_of_class_signature csig }
   | typ = type_identifier
     { Identifier.parent_of_datatype typ }
+
+label_parent_identifier:
+  | p = parent_identifier
+    { Identifier.label_parent_of_parent p }
+  | p = page_identifier
+    { Identifier.label_parent_of_page p }
 
 element_identifier:
   | id = module_identifier
@@ -472,6 +485,12 @@ parent_resolved_reference:
   | t = datatype_resolved_reference
       { Reference.Resolved.parent_of_datatype t }
 
+label_parent_resolved_reference:
+  | pr = parent_resolved_reference
+      { Reference.Resolved.label_parent_of_parent pr }
+  | IDENTIFIER id = page_identifier CLOSE
+      { Reference.Resolved.ident_page id }
+
 element_resolved_reference:
   | IDENTIFIER id = element_identifier CLOSE
       { Reference.Resolved.Identifier id }
@@ -499,7 +518,7 @@ element_resolved_reference:
       { Reference.Resolved.Method(sg, data) }
   | INSTANCE_VARIABLE sg = class_type_resolved_reference data = string CLOSE
       { Reference.Resolved.InstanceVariable(sg, data) }
-  | LABEL sg = parent_resolved_reference data = string CLOSE
+  | LABEL sg = label_parent_resolved_reference data = string CLOSE
       { Reference.Resolved.Label(sg, data) }
 
 reference_tag:
@@ -531,6 +550,31 @@ parent_reference:
         | Reference.TClassType as tag -> Reference.Root (data, tag)
  	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
+      { Reference.Dot(Reference.label_parent_of_parent p, data) }
+  | MODULE p = signature_reference data = string CLOSE
+      { Reference.Module(p, data) }
+  | MODULE_TYPE p = signature_reference data = string CLOSE
+      { Reference.ModuleType(p, data) }
+  | TYPE p = signature_reference data = string CLOSE
+      { Reference.Type(p, data) }
+  | CLASS p = signature_reference data = string CLOSE
+      { Reference.Class(p, data) }
+  | CLASS_TYPE p = signature_reference data = string CLOSE
+      { Reference.ClassType(p, data) }
+
+label_parent_reference:
+  | RESOLVED rf = label_parent_resolved_reference CLOSE
+      { Reference.Resolved rf }
+  | ROOT data = string tag = reference_tag CLOSE
+      { match (Obj.magic tag : Reference.kind Reference.tag) with
+        | Reference.TUnknown as tag -> Reference.Root (data, tag)
+        | Reference.TModule as tag -> Reference.Root (data, tag)
+        | Reference.TModuleType as tag -> Reference.Root (data, tag)
+        | Reference.TType as tag -> Reference.Root (data, tag)
+        | Reference.TClass as tag -> Reference.Root (data, tag)
+        | Reference.TClassType as tag -> Reference.Root (data, tag)
+ 	| _ -> assert false }
+  | DOT p = label_parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
   | MODULE p = signature_reference data = string CLOSE
       { Reference.Module(p, data) }
@@ -553,7 +597,7 @@ signature_reference:
         | Reference.TModuleType as tag -> Reference.Root (data, tag)
 	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
+      { Reference.Dot(Reference.label_parent_of_parent p, data) }
   | MODULE p = signature_reference data = string CLOSE
       { Reference.Module(p, data) }
   | MODULE_TYPE p = signature_reference data = string CLOSE
@@ -568,7 +612,7 @@ module_reference:
         | Reference.TModule as tag -> Reference.Root (data, tag)
 	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
+      { Reference.Dot(Reference.label_parent_of_parent p, data) }
 
 datatype_reference:
   | RESOLVED rf = datatype_resolved_reference CLOSE
@@ -579,7 +623,7 @@ datatype_reference:
         | Reference.TType as tag -> Reference.Root (data, tag)
 	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
+      { Reference.Dot(Reference.label_parent_of_parent p, data) }
   | TYPE p = signature_reference data = string CLOSE
       { Reference.Type(p, data) }
 
@@ -593,7 +637,7 @@ class_signature_reference:
         | Reference.TClassType as tag -> Reference.Root (data, tag)
 	| _ -> assert false }
   | DOT p = parent_reference data = string CLOSE
-      { Reference.Dot(p, data) }
+      { Reference.Dot(Reference.label_parent_of_parent p, data) }
   | CLASS p = signature_reference data = string CLOSE
       { Reference.Class(p, data) }
   | CLASS_TYPE p = signature_reference data = string CLOSE
@@ -604,7 +648,7 @@ element_reference:
       { Reference.Resolved rf }
   | ROOT data = string tag = reference_tag CLOSE
       { Reference.Root (data, (Obj.magic tag : Reference.kind Reference.tag)) }
-  | DOT p = parent_reference data = string CLOSE
+  | DOT p = label_parent_reference data = string CLOSE
       { Reference.Dot(p, data) }
   | MODULE p = signature_reference data = string CLOSE
       { Reference.Module(p, data) }
@@ -630,7 +674,7 @@ element_reference:
       { Reference.Method(p, data) }
   | INSTANCE_VARIABLE p = class_signature_reference data = string CLOSE
       { Reference.InstanceVariable(p, data) }
-  | LABEL p = parent_reference data = string CLOSE
+  | LABEL p = label_parent_reference data = string CLOSE
       { Reference.Label(p, data) }
 
 reference:
@@ -1118,9 +1162,18 @@ unit:
               {id; doc; digest; imports; source; expansion ;
                interface; hidden; content} }
 
-file:
+unit_file:
   | DTD unit = unit EOF
       { unit }
+
+page:
+  | PAGE name = page_identifier content = doc digest = digest CLOSE
+      { let open Page in
+          {name; content; digest} }
+
+page_file:
+  | DTD page = page EOF
+      { page }
 
 text_entry:
   | TEXT elems = text_element* CLOSE
