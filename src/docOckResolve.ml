@@ -674,7 +674,7 @@ let rec resolve_parent_reference :
           end
         | Dot(pr, name) -> begin
             match resolve_label_parent_reference PParent ident tbl pr with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
@@ -692,7 +692,7 @@ let rec resolve_parent_reference :
               resolve_parent_reference PSig ident tbl
                 (Reference.parent_of_signature pr)
             with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
@@ -708,7 +708,7 @@ let rec resolve_parent_reference :
               resolve_parent_reference PSig ident tbl
                 (Reference.parent_of_signature pr)
             with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
@@ -724,7 +724,7 @@ let rec resolve_parent_reference :
               resolve_parent_reference PSig ident tbl
                 (Reference.parent_of_signature pr)
             with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
@@ -740,7 +740,7 @@ let rec resolve_parent_reference :
               resolve_parent_reference PSig ident tbl
                 (Reference.parent_of_signature pr)
             with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
@@ -756,7 +756,7 @@ let rec resolve_parent_reference :
               resolve_parent_reference PSig ident tbl
                 (Reference.parent_of_signature pr)
             with
-            | Unresolved r -> Unresolved r
+            | Unresolved _ -> Unresolved (lpop r)
             | ResolvedSig(rr, parent) ->
               let resolved _ pr = pr in
               let unresolved pr =
