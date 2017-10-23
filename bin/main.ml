@@ -245,7 +245,7 @@ module Targets = struct
 end
 
 module To_xml = struct
-  let to_xml odoc_file =
+  let to_xml output odoc_file =
     match Filename.check_suffix odoc_file ".odoc" with
     | false ->
       (* TODO: don't rely on the extension to check that it indeed is an odoc
@@ -254,9 +254,12 @@ module To_xml = struct
       exit 1
     | true ->
       let output =
-        Filename.chop_extension odoc_file
-        |> (fun file -> file ^ ".xml")
-        |> Fs.File.of_string
+        match output with
+        | Some s -> Fs.File.of_string s
+        | None ->
+          Filename.chop_extension odoc_file
+          |> (fun file -> file ^ ".xml")
+          |> Fs.File.of_string
       in
       let odoc_file = Fs.File.of_string odoc_file in
       let root = Root.read odoc_file in
@@ -273,7 +276,15 @@ module To_xml = struct
       let doc = "Input file" in
       Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
     in
-    Term.(const to_xml $ input)
+    let dst_file =
+      let doc = "Output file path. Non-existing intermediate directories are
+                 created. If absent outputs a $(i,BASE).odoc file in the same
+                 directory as as the input file where $(i,BASE) is the basename
+                 of the input file."
+      in
+      Arg.(value & opt (some string) None @@ info ~docs ~docv:"PATH" ~doc ["o"])
+    in
+    Term.(const to_xml $ dst_file $ input)
 
   let info =
     Term.info ~doc:"Takes a .odoc file and output a.xml version" "to-xml"
