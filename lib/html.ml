@@ -59,12 +59,14 @@ let from_odoc ~env ~output:root_dir input =
       Printf.eprintf
         "odoc should not generate html but will for the time being...\n%!";
     let unit = Unit.load input in
+    let unit = DocOckLookup.lookup unit in
     let odoctree =
       (* See comment in compile for explanation regarding the env duplication. *)
       let resolve_env = Env.build env (`Unit unit) in
       let resolved = DocOck.resolve (Env.resolver resolve_env) unit in
       let expand_env = Env.build env (`Unit resolved) in
       DocOck.expand (Env.expander expand_env) resolved
+      |> DocOckLookup.lookup
       |> DocOck.resolve (Env.resolver expand_env) (* Yes, again. *)
     in
     let pkg_dir =
