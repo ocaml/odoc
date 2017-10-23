@@ -1664,11 +1664,24 @@ and resolve_element_reference ident tbl (r : 'a Reference.any)
   : 'a Reference.any =
   let open Reference.Resolved in
   let open Reference in
+    let find_root_page s =
+        match CTbl.page_base tbl s with
+        | None -> r
+        | Some root -> Resolved (Identifier (Identifier.Page(root, s)))
+    in
     match r with
+    | Root (s, TPage) -> find_root_page s
+    | Root (s, TUnknown) -> begin
+        match CTbl.base tbl s with
+        | CTbl.Not_found -> find_root_page s
+        | CTbl.Forward_reference ->
+          r (* not looking for a page since [s] "exists". *)
+        | CTbl.Found {root;_} -> Resolved (Identifier (Identifier.Root(root, s)))
+      end
     | Root (s, _) -> begin
         match CTbl.base tbl s with
         | CTbl.Not_found -> r
-        | CTbl.Forward_reference -> r (* TODO *)
+        | CTbl.Forward_reference -> r
         | CTbl.Found {root;_} -> Resolved (Identifier (Identifier.Root(root, s)))
       end
     | Resolved rr ->
