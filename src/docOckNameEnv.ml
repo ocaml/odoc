@@ -35,7 +35,7 @@ type 'a class_type_ident =
   ('a, [`Class|`ClassType]) t
 
 type 'a parent_ident =
-  ('a, [`Module|`ModuleType|`Type|`Class|`ClassType]) t
+  ('a, [`Module|`ModuleType|`Type|`Class|`ClassType|`Page]) t
 
 type 'a signature_ident =
   ('a, [`Module|`ModuleType]) t
@@ -82,6 +82,9 @@ let widen_instance_variable : 'a instance_variable -> _ = function
 
 let widen_label : 'a label -> _ = function
   | Label _ as id -> id
+
+let widen_page : 'a page -> _ = function
+  | Page _ as id -> id
 
 type 'a t =
   { modules : 'a module_ StringTbl.t;
@@ -282,6 +285,11 @@ let add_module_ident id env =
   in
     { env with elements; parents; modules; signatures }
 
+let add_page_ident id env =
+  let name = Identifier.name id in
+  let parents = StringTbl.add name (widen_page id) env.parents in
+    { env with parents }
+
 let opt_fold f o acc =
   match o with
   | None -> acc
@@ -415,6 +423,11 @@ let add_unit unit env =
   let open Unit in
   let env = add_documentation unit.doc env in
     add_module_ident unit.id env
+
+let add_page page env =
+  let open Page in
+  let env = add_documentation page.content env in
+    add_page_ident page.name env
 
 let rec add_include incl env =
   let open Include in
@@ -611,7 +624,19 @@ let lookup_label_ident env name =
       Resolved (Identifier id)
   with Not_found -> Root (name, TLabel)
 
-let lookup_parent_ident env name =
+let lookup_parent_ident env name : 'a Reference.parent =
+  match StringTbl.find name env.parents with
+  | Page _ ->
+    assert false
+  | Root _ | Module _ | Argument _ | ModuleType _ | Type _ | CoreType _
+  | Class _ | ClassType _ as id ->
+    Resolved (Identifier id)
+  | exception Not_found ->
+    match core_type_identifier name with
+    | Some id -> Resolved (Identifier id)
+    | None -> Root (name, TUnknown)
+
+let lookup_label_parent_ident env name : 'a Reference.label_parent =
   try
     let id = StringTbl.find name env.parents in
       Resolved (Identifier id)
@@ -677,7 +702,7 @@ and lookup_label_parent env :
   'a Reference.label_parent -> 'a Reference.label_parent =
   function
   | Resolved _ as r -> r
-  | Root (s, TUnknown) -> label_parent_of_parent (lookup_parent_ident env s)
+  | Root (s, TUnknown) -> lookup_label_parent_ident env s
   | Root (_, TPage) as r -> r (* there are no local pages. *)
   | Root (s, TModule) ->
     lookup_module_ident env s

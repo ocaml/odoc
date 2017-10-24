@@ -15,3 +15,5 @@
  *)
 
 val lookup : 'a DocOckTypes.Unit.t -> 'a DocOckTypes.Unit.t
+
+val lookup_page : 'a DocOckTypes.Page.t -> 'a DocOckTypes.Page.t

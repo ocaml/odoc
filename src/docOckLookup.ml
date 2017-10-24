@@ -93,6 +93,14 @@ class ['a] lookup = object
     let this = {< env = env >} in
       this#super_unit unt
 
+  method super_page page = super#page page
+
+  method! page page =
+    let open Page in
+    let env = add_page page env in
+    let this = {< env = env >} in
+      this#super_page page
+
   method super_class cl = super#class_ cl
 
   method! class_ cl =
@@ -132,3 +140,7 @@ end
 let lookup x =
   let obj = new lookup in
   obj#unit x
+
+let lookup_page x =
+  let obj = new lookup in
+  obj#page x
