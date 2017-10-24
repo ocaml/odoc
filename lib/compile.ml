@@ -93,6 +93,7 @@ let mld ~env ~package ~output input =
     in
     (* This is a mess. *)
     let page = DocOck.Types.Page.{ name; content; digest } in
+    let page = DocOckLookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = DocOck.resolve_page (Env.resolver env) page in
     (* TODO? expand *)
