@@ -59,7 +59,7 @@ let cmi ~env ~package ~hidden ~output input =
 let mld ~env ~package ~output input =
   let root_name =
     let page_dash_root =
-      Filename.remove_extension (Fs.File.(to_string @@ basename output))
+      Filename.chop_extension (Fs.File.(to_string @@ basename output))
     in
     String.sub page_dash_root (String.length "page-")
       (String.length page_dash_root - String.length "page-")
