@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Types = OctTypes
+module Types = Types
 
-module Errors = OctErrors
+module Errors = Errors
 
 type nonrec ('a, 'b) result = ('a, 'b) result =
   | Ok of 'a

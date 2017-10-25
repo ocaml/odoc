@@ -14,6 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-exception ParserError of OctErrors.location * OctErrors.parser_error
+exception ParserError of Errors.location * Errors.parser_error
 
-exception LexerError of OctErrors.location * OctErrors.lexer_error
+exception LexerError of Errors.location * Errors.lexer_error

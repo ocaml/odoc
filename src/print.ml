@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open OctTypes
+open Types
 open Format
 
 let fmt_style_kind f x =

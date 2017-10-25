@@ -16,4 +16,4 @@
 
 open Format
 
-val pp : formatter -> OctTypes.t -> unit
+val pp : formatter -> Types.t -> unit

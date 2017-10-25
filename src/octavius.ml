@@ -14,18 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Types = OctTypes
+module Types = Types
 
-module Errors = OctErrors
+module Errors = Errors
 
-open OctCommon
+open Common
 
 type nonrec ('a, 'b) result = ('a, 'b) result =
   | Ok of 'a
   | Error of 'b
 
 let parse lexbuf =
-  let open OctErrors in
+  let open Errors in
     try
       Ok (OctParser.main OctLexer.main lexbuf)
     with
@@ -35,7 +35,7 @@ let parse lexbuf =
         Error {Errors.error = Lexer err; location}
 
 let parse_ref lexbuf =
-  let open OctErrors in
+  let open Errors in
     try
       Ok (OctParser.reference_parts OctLexer.read_ref lexbuf)
     with
@@ -45,4 +45,4 @@ let parse_ref lexbuf =
         Error {Errors.error = Lexer err; location}
 
 let print fmt t =
-  OctPrint.pp fmt t
+  Print.pp fmt t

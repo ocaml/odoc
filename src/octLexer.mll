@@ -1,9 +1,9 @@
 {
 (** The lexer for string to build text structures. *)
-open OctCommon
-open OctTypes
+open Common
+open Types
 open OctParser
-open OctErrors
+open Errors
 open Lexing
 
 (* Convert lexing position into error position *)
