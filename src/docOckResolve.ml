@@ -804,9 +804,10 @@ and resolve_label_parent_reference :
           | _ -> Unresolved r
         end
       | Root (_, (TModule | TModuleType | TType | TClass | TClassType))
-      | Resolved (Identifier Identifier.(Root _ | Module _ | Argument _
-                                        |ModuleType _ |Type _ | CoreType _
-                                        |Class _ | ClassType _)
+      | Resolved (Identifier ( Identifier.Root _ | Identifier.Module _
+                             | Identifier.Argument _ | Identifier.ModuleType _
+                             | Identifier.Type _ | Identifier.CoreType _
+                             | Identifier.Class _ | Identifier.ClassType _)
                  | SubstAlias _ | Module _ | Canonical _
                  | ModuleType _ | Type _ | Class _ | ClassType _)
       | Dot _ | Module _ | ModuleType _ | Type _ | Class _ | ClassType _ as r ->
