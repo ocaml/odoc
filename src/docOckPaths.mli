@@ -14,7 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(**/**)
+(** Paths of documentation *)
+
+(** {3 Sexp serialization} *)
 
 type sexp =
   | List of sexp list
@@ -22,15 +24,16 @@ type sexp =
 
 val string_of_sexp : sexp -> string
 
+(**/**)
+
 val contains_double_underscore : string -> bool
 (* not the best place for this but. *)
 
 (**/**)
 
-(** Paths of documentation *)
+(** {1 Paths} *)
 
-(** {3 Kinds } *)
-
+(** Every path is annotated with its kind. *)
 module Kind : sig
 
   (** {4 General purpose kinds} *)
@@ -60,6 +63,7 @@ module Kind : sig
   type label_parent = [ parent | page ]
 
   (** {4 Identifier kinds}
+
       The kind of an identifier directly corresponds to the kind of its
       referent. *)
 
@@ -81,6 +85,7 @@ module Kind : sig
   type identifier_page = [ `Page ]
 
   (** {4 Path kinds}
+
       There are four kinds of OCaml path:
 
         - module
@@ -99,6 +104,7 @@ module Kind : sig
   type path_class_type = [ `Class | `ClassType ]
 
   (** {4 Fragment kinds}
+
       There are two kinds of OCaml path fragment:
 
         - module
@@ -114,6 +120,7 @@ module Kind : sig
   type fragment_type = [ `Type | `Class | `ClassType ]
 
   (** {4 Reference kinds}
+
       There is one reference kind for each kind of referent. However,
       the kind of a reference does not refer to the kind of its
       referent, but to the kind with which the reference was annotated.
@@ -144,8 +151,6 @@ module Kind : sig
 end
 
 open Kind
-
-(** {3 Identifiers} **)
 
 (** Identifiers for definitions *)
 module Identifier : sig
@@ -179,8 +184,6 @@ module Identifier : sig
   and 'a datatype = ('a, Kind.datatype) t
   and 'a parent = ('a, Kind.parent) t
   and 'a label_parent = ('a, Kind.label_parent) t
-
-  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
   type 'a module_ = ('a, identifier_module) t
   type 'a module_type = ('a, identifier_module_type) t
@@ -220,6 +223,8 @@ module Identifier : sig
   type 'a reference_label = ('a, Kind.reference_label) t
   type 'a reference_page = ('a, Kind.reference_page) t
 
+  (** {2 Explicit coercions} *)
+
   val signature_of_module : 'a module_ -> 'a signature
 
   val signature_of_module_type : 'a module_type -> 'a signature
@@ -242,11 +247,19 @@ module Identifier : sig
 
   val any : ('a, 'b) t -> 'a any
 
-  val name : ('a, 'b) t -> string
+  (** {2 Generic operations} *)
 
   val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
+  (** {3 Printing} *)
+
+  val name : ('a, 'b) t -> string
+
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
+  (** {2 Root retrieval} *)
 
   val signature_root : 'a signature -> 'a
 
@@ -257,9 +270,7 @@ module Identifier : sig
   val class_signature_root : 'a class_signature -> 'a
 end
 
-(** {3 Paths} *)
-
-(** OCaml paths *)
+(** Normal OCaml paths (i.e. the ones present in types) *)
 module rec Path : sig
 
   module Resolved : sig
@@ -281,13 +292,12 @@ module rec Path : sig
       | ClassType : 'a module_ * string -> ('a, [< kind > `ClassType]) t
 
     and 'a any = ('a, kind) t
-
     and 'a module_ = ('a, path_module) t
     and 'a module_type = ('a, path_module_type) t
     and 'a type_ = ('a, path_type) t
     and 'a class_type = ('a, path_class_type) t
 
-    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+    (** {2 Creators} *)
 
     val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
@@ -301,20 +311,32 @@ module rec Path : sig
     val ident_class_type : 'a Identifier.class_type ->
           ('a, [< kind > `ClassType]) t
 
+    (** {2 Explicit coercion} *)
+
     val any : ('a, 'b) t -> 'a any
 
-    val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
+    (** {2 Generic operations} *)
 
     val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+    val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
+    (** [identifier rp] extracts the identifier present at the "root" of [rp]. *)
+
+    val is_hidden : ('a, 'b) t -> bool
+    (** [is_hidden rp] is [true] when some prefix of [rp] (which is not under a
+        [Canonical]) is the [Hidden] constructor.
+
+        [Canonical] are treated specialy because we expect them to rewrite a
+        hidden path to a non-hidden one. *)
+
+    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
     val rebase : 'a Identifier.signature -> ('a, 'b) t -> ('a, 'b) t
 
     val equal_identifier : equal:('a -> 'a -> bool) -> ('a, 'b) Identifier.t ->
       ('a, 'b) t -> bool
-
-    val is_hidden : ('a, 'b) t -> bool
   end
 
   type kind = Kind.path
@@ -327,13 +349,12 @@ module rec Path : sig
     | Apply : 'a module_ * 'a module_ -> ('a, [< kind > `Module]) t
 
   and 'a any = ('a, kind) t
-
   and 'a module_ = ('a, path_module) t
   and 'a module_type = ('a, path_module_type) t
   and 'a type_ = ('a, path_type) t
   and 'a class_type = ('a, path_class_type) t
 
-  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+  (** {2 Creators} *)
 
   val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
@@ -347,8 +368,6 @@ module rec Path : sig
   val ident_class_type : 'a Identifier.class_type ->
         ('a, [< kind > `ClassType]) t
 
-  val any : ('a, 'b) t -> 'a any
-
   val module_ : 'a module_ -> string -> ('a, [< kind > `Module]) t
 
   val apply : 'a module_ -> 'a module_ -> ('a, [< kind > `Module]) t
@@ -361,16 +380,23 @@ module rec Path : sig
 
   val class_type_ : 'a module_ -> string -> ('a, [< kind > `ClassType]) t
 
+  (** {2 Explicit coercions} *)
+
+  val any : ('a, 'b) t -> 'a any
+
   val type_of_class_type : 'a class_type -> 'a type_
+
+  (** {2 Generic operations} *)
 
   val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
-  val is_hidden : ('a, 'b) t -> bool
-end
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 
-(** {3 Fragments} *)
+  val is_hidden : ('a, 'b) t -> bool
+  (** cf. {!Resolved.is_hidden} *)
+end
 
 (** OCaml path fragments for specifying module substitutions *)
 module Fragment : sig
@@ -393,30 +419,36 @@ module Fragment : sig
       | ClassType : 'a signature * string -> ('a, [< kind > `ClassType], [< sort > `Branch]) raw
 
     and ('a, 'b) t = ('a, 'b, [`Branch]) raw
-
     and 'a any = ('a, kind) t
     and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
     and 'a module_ = ('a, fragment_module) t
 
-    val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
-
     type 'a type_ = ('a, fragment_type) t
+
+    (** {2 Explicit coercions} *)
 
     val signature_of_module : 'a module_ -> 'a signature
 
     val any : ('a, 'b) t -> 'a any
+
     val any_sort : ('a, 'b, 'c) raw -> ('a, 'b, sort) raw
+
+    (** {2 Attaching fragments to valid paths} *)
 
     val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
     val identifier: 'a Identifier.signature -> ('a, 'b) t ->
                     ('a, 'b) Identifier.t
 
-    val split : ('a, 'b) t -> string * ('a, 'b) t option
+    (** {2 Generic operations} *)
 
     val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
+
+    val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
+
+    val split : ('a, 'b) t -> string * ('a, 'b) t option
 
   end
 
@@ -429,14 +461,13 @@ module Fragment : sig
     | Dot : 'a signature * string -> ('a, [< kind], [< sort > `Branch]) raw
 
   and ('a, 'b) t = ('a, 'b, [`Branch]) raw
-
   and 'a any = ('a, kind) t
   and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
 
-  val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
-
   type 'a module_ = ('a, fragment_module) t
   type 'a type_ = ('a, fragment_type) t
+
+  (** {2 Explicit coercions} *)
 
   val signature_of_module : 'a module_ -> 'a signature
 
@@ -444,20 +475,23 @@ module Fragment : sig
 
   val any : ('a, 'b) t -> 'a any
 
+  (** {2 Attaching fragments to valid paths} *)
+
   val path: 'a Path.module_ -> ('a, 'b) t -> ('a, 'b) Path.t
 
-  val split: ('a, 'b) t -> string * ('a, 'b) t option
+  (** {2 Generic operations} *)
 
   val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+  val sexp_of_t : ('a -> sexp) -> ('a, _, _) raw -> sexp
+
+  val split: ('a, 'b) t -> string * ('a, 'b) t option
+
 end
 
-
-(** {3 References} *)
-
-(** References to definitions *)
+(** References present in documentation comments ([{!Foo.Bar}]) *)
 module rec Reference : sig
 
   module Resolved : sig
@@ -505,7 +539,7 @@ module rec Reference : sig
     type 'a label = ('a, reference_label) t
     type 'a page = ('a, reference_page) t
 
-    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+    (** {2 Creators} *)
 
     val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
@@ -541,6 +575,8 @@ module rec Reference : sig
 
     val ident_page : 'a Identifier.page -> ('a, [< kind > `Page]) t
 
+    (** {2 Explicit coercions} *)
+
     val signature_of_module : 'a module_ -> 'a signature
 
     val signature_of_module_type : 'a module_type -> 'a signature
@@ -561,13 +597,19 @@ module rec Reference : sig
 
     val any : ('a, 'b) t -> 'a any
 
-    val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
+    (** {2 Generic operations} *)
 
     val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
     val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+    val identifier: ('a, 'b) t -> ('a, 'b) Identifier.t
+    (** [identifier rr] extracts the identifier present at the "root" of [rr]. *)
+
     val rebase : 'a Identifier.signature -> ('a, 'b) t -> ('a, 'b) t
+
+    val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+
   end
 
   type kind = Kind.reference
@@ -630,7 +672,7 @@ module rec Reference : sig
   type 'a label = ('a, reference_label) t
   type 'a page = ('a, reference_page) t
 
-  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
+  (** {2 Creators} *)
 
   val ident_module : 'a Identifier.module_ -> ('a, [< kind > `Module]) t
 
@@ -664,24 +706,6 @@ module rec Reference : sig
 
   val ident_label : 'a Identifier.label -> ('a, [< kind > `Label]) t
 
-  val signature_of_module : 'a module_ -> 'a signature
-
-  val signature_of_module_type : 'a module_type -> 'a signature
-
-  val class_signature_of_class : 'a class_ -> 'a class_signature
-
-  val class_signature_of_class_type : 'a class_type -> 'a class_signature
-
-  val parent_of_signature : 'a signature -> 'a parent
-
-  val parent_of_class_signature : 'a class_signature -> 'a parent
-
-  val parent_of_datatype : 'a datatype -> 'a parent
-
-  val label_parent_of_parent : 'a parent -> 'a label_parent
-
-  val any : ('a, 'b) t -> 'a any
-
   val module_ : 'a signature -> string -> ('a, [< kind > `Module]) t
 
   val module_type : 'a signature -> string ->
@@ -714,8 +738,31 @@ module rec Reference : sig
 
   val label : 'a label_parent -> string -> ('a, [< kind > `Label]) t
 
+  (** {2 Explicit coercions} *)
+
+  val signature_of_module : 'a module_ -> 'a signature
+
+  val signature_of_module_type : 'a module_type -> 'a signature
+
+  val class_signature_of_class : 'a class_ -> 'a class_signature
+
+  val class_signature_of_class_type : 'a class_type -> 'a class_signature
+
+  val parent_of_signature : 'a signature -> 'a parent
+
+  val parent_of_class_signature : 'a class_signature -> 'a parent
+
+  val parent_of_datatype : 'a datatype -> 'a parent
+
+  val label_parent_of_parent : 'a parent -> 'a label_parent
+
+  val any : ('a, 'b) t -> 'a any
+
+  (** {2 Generic operations} *)
+
   val equal : equal:('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
 
   val hash : hash:('a -> int) -> ('a, 'b) t -> int
 
+  val sexp_of_t : ('a -> sexp) -> ('a, _) t -> sexp
 end

@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(**/**)
+
 module Attrs = DocOckAttrs
 
 module Maps = DocOckMaps
@@ -22,9 +24,9 @@ module Paths = DocOckPaths
 
 module Types = DocOckTypes
 
-val core_types : 'a Types.TypeDecl.t list
+(**/**)
 
-val core_exceptions : 'a Types.Exception.t list
+(** {2:from_ocaml Processing OCaml's compilation units} *)
 
 type 'a result =
   | Ok of 'a Types.Unit.t
@@ -39,6 +41,10 @@ val read_cmti: (string -> Digest.t -> 'a) -> string -> 'a result
 val read_cmt: (string -> Digest.t -> 'a) -> string -> 'a result
 
 val read_cmi: (string -> Digest.t -> 'a) -> string -> 'a result
+
+(** {2:resolving Resolving}
+
+    This is the part of DocOck handling the resolving of path and references. *)
 
 type 'a resolver
 
@@ -57,6 +63,11 @@ val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
 
 val resolve_page : 'a resolver -> 'a Types.Page.t -> 'a Types.Page.t
 
+(** {2:expansion Expansion}
+
+    This is the part of DocOck in charge of performing substitutions, inlining
+    of includes, etc. *)
+
 type 'a expander
 
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
@@ -66,3 +77,12 @@ val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
                     (root:'a -> 'a -> 'a Types.Unit.t) -> 'a expander
 
 val expand: 'a expander -> 'a Types.Unit.t -> 'a Types.Unit.t
+
+(** {2 Misc.}
+
+    OCaml's predefined types and exceptions. *)
+
+val core_types : 'a Types.TypeDecl.t list
+
+val core_exceptions : 'a Types.Exception.t list
+
