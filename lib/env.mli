@@ -14,6 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** Management of the documentation environment.
+
+    This is the module which does the link between packages, directories and
+    {!DocOck}'s needs. *)
+
 type t
 type builder
 

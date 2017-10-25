@@ -1,0 +1,57 @@
+{1:main Invoking odoc manually}
+
+odoc works in two steps:
++ {{!section:compile}[odoc compile]}: produces a [.odoc] file from the build
+artifacts of the compiler
++ {{!section:html}[odoc html]}: produces html files from a [.odoc] file.
+
+{2:compile The compilation step}
+
+In this step, [odoc] will work on [.cmti], [.cmt] and [.cmi] files and produce a
+[.odoc] file.
+
+[odoc compile] is meant to be invoked in the same way that the ocaml compiler
+was, that is: if a unit [Foo] depends on a unit [Bar], then you must call odoc
+on [Bar] first.
+
+Also, just as you add directories to the compiler load path using [-I] so that
+it can find [.cmi] files, you must tell odoc in which directories it can find
+the [.odoc] files it needs (for {{!DocOck.resolving}resolving}, and
+{{!DocOck.expansion}expansion}) using [-I].
+
+Omitting some directories from odoc's include list is not a fatal error, it
+simply means that odoc won't be able to resolve some paths and references.
+
+{3 Hand written documentation pages}
+
+As said previously, [odoc compile] accepts build artifacts of the compiler as
+inputs. However, it also accepts [.mld] files. These are manually written
+(textual) files in the same {{!page-syntax.accepted_syntax}syntax} as usual
+documentation comments.
+
+By default [foo.mld] will be translated to [page-foo.odoc] which in turn will
+become [foo.html].
+
+For more details, have a look at:
+{[
+$ odoc compile --help
+]}
+
+{2:html Emitting html}
+
+[odoc html] takes a [.odoc] file and produces either a single html file (in case
+of hand written pages) or a directory tree reflecting the structure of the
+compilation unit being documented.
+
+This step does also do another round of resolving and expansion, to handle the
+forward references which couldn't be properly processed by [odoc compile]. In
+this step the dependency between compilation units of your library is irrelevant
+(so you can process files in any order you want), dependencies are considered
+only at a package level: all the packages you depend on should have been [odoc
+compile]d already and their [.odoc] file should be made available to odoc for
+every single file it processes.
+
+For more details, have a look at:
+{[
+$ odoc html --help
+]}
