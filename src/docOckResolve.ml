@@ -652,6 +652,8 @@ let rec resolve_parent_reference :
                 ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
             | PSigOrType ->
                 ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
+            | PLabelParent ->
+                ResolvedSig(rr, CTbl.resolved_signature_reference tbl rr)
             | _ -> Unresolved (lpop r)
           end
         | Resolved
@@ -662,6 +664,8 @@ let rec resolve_parent_reference :
                 ResolvedClassSig(rr, CTbl.resolved_class_signature_reference tbl rr)
             | PClassSig ->
                 ResolvedClassSig(rr, CTbl.resolved_class_signature_reference tbl rr)
+            | PLabelParent ->
+                ResolvedClassSig(rr, CTbl.resolved_class_signature_reference tbl rr)
             | _ -> Unresolved (lpop r)
           end
         | Resolved (Identifier (Type _ | CoreType _) | Type _ as rr) -> begin
@@ -669,6 +673,8 @@ let rec resolve_parent_reference :
             | PParent ->
                 ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
             | PSigOrType ->
+                ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
+            | PLabelParent ->
                 ResolvedDatatype(rr, CTbl.resolved_datatype_reference tbl rr)
             | _ -> Unresolved (lpop r)
           end
