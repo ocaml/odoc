@@ -264,8 +264,15 @@ class page_creator ?kind ~path content =
         if !Relative_link.semantic_uris then ".." else "../index.html"
       in
       let pkg_href =
-        add_dotdot ~n:(List.length path - 1)
-          (if !Relative_link.semantic_uris then "" else "index.html")
+        let n =
+          List.length path - (
+            (* This is just horrible. *)
+            match kind with
+            | Some `Page -> 2
+            | _ -> 1
+          )
+        in
+        add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
       in
       let article = header self#heading :: content in
       if not has_parent then
