@@ -39,21 +39,20 @@ let from_odoc ~env ~output:root_dir input =
       let resolve_env = Env.build env (`Page page) in
       DocOck.resolve_page (Env.resolver resolve_env) page
     in
-    let pkg = get_package root in
-    let html =
-        Html_tree.enter pkg;
-        Documentation.to_html ~get_package odoctree.DocOck.Types.Page.content
-    in
-    let pager = new from_mld_page_creator ~name:pkg html in
-    let directory = Fs.Directory.reach_from ~dir:root_dir pkg in
-    let oc =
-      Fs.Directory.mkdir_p directory;
-      let file = Fs.File.create ~directory ~name:(page_name ^ ".html") in
-      open_out (Fs.File.to_string file)
-    in
-    let fmt = Format.formatter_of_out_channel oc in
-    Format.fprintf fmt "%a" (Tyxml.Html.pp ()) pager#html;
-    close_out oc
+    let pkg_name = get_package root in
+    let pages = To_html_tree.page ~get_package odoctree in
+    let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
+    Fs.Directory.mkdir_p pkg_dir;
+    Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
+      assert (parents = []);
+      let oc =
+        let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".html") in
+        open_out (Fs.File.to_string f)
+      in
+      let fmt = Format.formatter_of_out_channel oc in
+      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      close_out oc
+    )
   | Unit {hidden; _} ->
     if hidden then
       Printf.eprintf
