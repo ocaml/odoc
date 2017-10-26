@@ -992,7 +992,7 @@ and include_ ~get_package (t : _ Types.Include.t) =
       (div ~a:[ a_class ["doc"] ] doc :: incl)
   ], tree
 
-let rec page ~get_package (t : _ Types.Page.t) : Html_tree.t =
+let page ~get_package (t : _ Types.Page.t) : Html_tree.t =
   let package, name =
     match t.name with
     | Paths.Identifier.Page (a, name) -> get_package a, name

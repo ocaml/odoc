@@ -231,7 +231,15 @@ class page_creator ?kind ~path content =
       Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
 
     method css_url =
-      add_dotdot "odoc.css" ~n:(List.length path)
+        let n =
+          List.length path - (
+            (* This is just horrible. *)
+            match kind with
+            | Some `Page -> 1
+            | _ -> 0
+          )
+        in
+      add_dotdot "odoc.css" ~n
 
     method header : Html_types.head elt =
       head (title (pcdata self#title_string)) [
