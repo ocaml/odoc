@@ -17,7 +17,7 @@
 open StdLabels
 open Tyxml.Html
 
-type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]
+type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 type t = {
   name : string;
@@ -38,6 +38,7 @@ let leave () = ignore @@ Stack.pop path
 (* FIXME: reuse [Url.kind] *)
 let stack_elt_to_path_fragment = function
   | (name, None)
+  | (name, Some `Page) -> name (* fixme? *)
   | (name, Some `Mod) -> name
   | (name, Some `Mty) -> "module-type-" ^ name
   | (name, Some `Arg) -> "argument-" ^ name
@@ -77,7 +78,18 @@ module Relative_link = struct
               "index.html" :: page
           )
         in
-        let current_loc = List.map ~f:stack_elt_to_path_fragment (stack_to_list path) in
+        let current_loc =
+          let path =
+            match Stack.top path with
+            | (_, Some `Page) ->
+              (* Sadness. *)
+              let s = Stack.copy path in
+              ignore (Stack.pop s);
+              s
+            | _ -> path
+          in
+          List.map ~f:stack_elt_to_path_fragment (stack_to_list path)
+        in
         let current_from_common_ancestor, target_from_common_ancestor =
           drop_shared_prefix current_loc target
         in
@@ -196,6 +208,7 @@ module Relative_link = struct
       | `Arg   -> "argument-"
       | `Class -> "class-"
       | `Cty   -> "class-type-"
+      | `Page  -> assert false
     in
     a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
@@ -230,17 +243,21 @@ class page_creator ?kind ~path content =
                   a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
       ]
 
-    method heading : Html_types.h1_content_fun elt list =
-      Markup.keyword (
-        match kind with
-        | None
-        | Some `Mod -> "Module"
-        | Some `Arg -> "Parameter"
-        | Some `Mty -> "Module type"
-        | Some `Cty -> "Class type"
-        | Some `Class -> "Class"
-      ) :: pcdata " " ::
-      [Markup.module_path (List.tl path)]
+    method heading : Html_types.flow5_without_header_footer elt list =
+      match kind with
+      | Some `Page -> []
+      | _ ->
+        Markup.keyword (
+          match kind with
+          | None
+          | Some `Mod -> "Module"
+          | Some `Arg -> "Parameter"
+          | Some `Mty -> "Module type"
+          | Some `Cty -> "Class type"
+          | Some `Class -> "Class"
+          | Some `Page  -> assert false
+        ) :: pcdata " " ::
+        [h1 [Markup.module_path (List.tl path)]]
 
     method content : Html_types.div_content_fun elt list =
       let up_href =
@@ -250,7 +267,7 @@ class page_creator ?kind ~path content =
         add_dotdot ~n:(List.length path - 1)
           (if !Relative_link.semantic_uris then "" else "index.html")
       in
-      let article = header [ h1 self#heading ] :: content in
+      let article = header self#heading :: content in
       if not has_parent then
         article
       else

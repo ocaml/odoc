@@ -28,7 +28,7 @@ val traverse
   -> t
   -> unit
 
-type kind = [ `Arg | `Mod | `Mty | `Class | `Cty ]
+type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 (** These two functions are used to track the depth while building the tree,
     which is needed to produce correct links. *)
@@ -52,7 +52,7 @@ class page_creator :
 
     method header : Html_types.head elt
 
-    method heading : Html_types.h1_content_fun elt list
+    method heading : Html_types.flow5_without_header_footer elt list
 
     method content : Html_types.div_content_fun elt list
 
