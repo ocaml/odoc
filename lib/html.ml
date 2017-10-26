@@ -19,17 +19,6 @@ open DocOckHtml
 
 let get_package root = Root.Package.to_string (Root.package root)
 
-class from_mld_page_creator ~name page_content =
-  object
-    inherit Html_tree.page_creator ~path:[name] page_content
-
-    val! has_parent = true
-
-    method! title_string = name
-
-    method! content = page_content
-  end
-
 let from_odoc ~env ~output:root_dir input =
   let root = Root.read input in
   match Root.file root with

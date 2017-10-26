@@ -50,7 +50,7 @@ individuals.
 If you want to add support for odoc to your preferred build system, or simply
 don't want to use Jbuilder or Odig, you can always invoke odoc directly.
 Instructions regarding how it should be run are available
-{{!manual_usage.main}here}.
+{{!manual_usage}here}.
 
 {3:ocamldoc Divergences from ocamldoc}
 

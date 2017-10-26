@@ -56,6 +56,7 @@ let cmi ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
     (read_cmi @@ root_of_unit ~package ~hidden)
 
+(* TODO: move most of this to doc-ock. *)
 let mld ~env ~package ~output input =
   let root_name =
     let page_dash_root =
@@ -96,5 +97,4 @@ let mld ~env ~package ~output input =
     let page = DocOckLookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = DocOck.resolve_page (Env.resolver env) page in
-    (* TODO? expand *)
     Page.save output resolved
