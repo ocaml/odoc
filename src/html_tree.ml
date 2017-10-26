@@ -246,18 +246,21 @@ class page_creator ?kind ~path content =
     method heading : Html_types.flow5_without_header_footer elt list =
       match kind with
       | Some `Page -> []
-      | _ ->
-        Markup.keyword (
-          match kind with
-          | None
-          | Some `Mod -> "Module"
-          | Some `Arg -> "Parameter"
-          | Some `Mty -> "Module type"
-          | Some `Cty -> "Class type"
-          | Some `Class -> "Class"
-          | Some `Page  -> assert false
-        ) :: pcdata " " ::
-        [h1 [Markup.module_path (List.tl path)]]
+      | _ -> [
+          h1 (
+            Markup.keyword (
+              match kind with
+              | None
+              | Some `Mod -> "Module"
+              | Some `Arg -> "Parameter"
+              | Some `Mty -> "Module type"
+              | Some `Cty -> "Class type"
+              | Some `Class -> "Class"
+              | Some `Page  -> assert false
+            ) :: pcdata " " ::
+            [Markup.module_path (List.tl path)]
+          )
+        ]
 
     method content : Html_types.div_content_fun elt list =
       let up_href =
