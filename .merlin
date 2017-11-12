@@ -1,5 +1,0 @@
-PKG doc-ock tyxml xmlm
-FLG -w -40
-FLG -open StdLabels
-S src
-B _build/src
