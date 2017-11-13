@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(library
+ ((name docOck)
+  (public_name doc-ock)
+  (wrapped false)
+  (libraries (octavius compiler-libs.common))
+  (preprocess (action (run ${bin:cppo} -V OCAML:${ocaml_version} ${<})))))

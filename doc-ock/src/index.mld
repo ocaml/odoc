@@ -1,0 +1,11 @@
+{1 Library doc-ock}
+
+This library defines the AST used in by odoc to represent documentation. It also
+implements the operations working on this AST to do:
+- the {{!DocOck.resolving}resolving} of paths and references
+- the {{!DocOck.expansion}expansion} of signatures, i.e. it performs substitutions, etc.
+
+People wanting to process [.odoc] files (eg. to add a new backend) should only
+need to look at {{!DocOckTypes}DocOck.Types} and {{!DocOckPaths}DocOck.Paths}.
+
+For everything else, {!DocOck} is the main entry point of the library.
