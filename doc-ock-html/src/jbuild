@@ -2,5 +2,5 @@
 
 (library
  ((name docOckHtml)
-  (public_name doc-ock-html)
-  (libraries (doc-ock xmlm tyxml))))
+  (public_name odoc.doc-ock-html)
+  (libraries (odoc.doc-ock xmlm tyxml))))

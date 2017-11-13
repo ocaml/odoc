@@ -1,0 +1,32 @@
+opam-version: "1.2"
+
+version: "dev"
+homepage: "http://github.com/ocaml-doc/odoc"
+bug-reports: "https://github.com/ocaml-doc/odoc/issues"
+license: "ISC"
+
+authors: [
+    "Thomas Refis <trefis@janestreet.com>"
+    "David Sheets <sheets@alum.mit.edu>"
+    "Leo White <leo@lpw25.net>"
+]
+maintainer: "Anton Bachin <antonbachin@yahoo.com>"
+dev-repo: "http://github.com/ocaml-doc/odoc.git"
+
+available: [ocaml-version >= "4.03.0" & ocaml-version < "4.06"]
+depends: [
+  "bos"
+  "cmdliner"
+  "cppo" {build}
+  "fpath"
+  "jbuilder" {build & >= "1.0+beta10"}
+  "menhir"
+  "tyxml" {>= "4.0.0"}
+  "xmlm"
+]
+
+build: [
+  ["jbuilder" "subst"] {pinned}
+  ["ocaml" "odoc/bin/set-etc" "odoc/bin/odoc_etc.ml" odoc:etc]
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]

@@ -4,9 +4,9 @@
  ((name odoc)
   (public_name odoc)
   (libraries (xmlm
-              doc-ock
-              doc-ock-xml
-              doc-ock-html
+              odoc.doc-ock
+              odoc.doc-ock-xml
+              odoc.doc-ock-html
               unix
               fpath
               bos
@@ -15,5 +15,5 @@
               tyxml
               ; the line below is needed only for odoc to be able to cross-ref
               ; to octavius from index.mld. That's sad.
-              octavius
+              odoc.octavius
               ))))

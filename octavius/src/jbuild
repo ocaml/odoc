@@ -5,4 +5,4 @@
 
 (library
  ((name octavius)
-  (public_name octavius)))
+  (public_name odoc.octavius)))

@@ -7,7 +7,7 @@
 (executables
  ((names (testCmi testCmti testCmt))
   (modules (testCmi testCmti testCmt))
-  (libraries (doc-ock doc-ock-xml))))
+  (libraries (odoc.doc-ock odoc.doc-ock-xml))))
 
 (rule
  ((targets (coverage-cmi.out))
