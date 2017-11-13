@@ -123,8 +123,8 @@ end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir
         input_file =
-    DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
-    DocOckHtml.Html_tree.open_details := not closed_details;
+    Doc_html.Html_tree.Relative_link.semantic_uris := semantic_uris;
+    Doc_html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let odoc_file = Fs.File.of_string input_file in
     Html.from_odoc ~env ~output:output_dir odoc_file

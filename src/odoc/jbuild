@@ -6,7 +6,7 @@
   (libraries (xmlm
               odoc.model
               odoc.xml
-              odoc.doc-ock-html
+              odoc.html
               unix
               fpath
               bos

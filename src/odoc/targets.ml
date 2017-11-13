@@ -15,7 +15,7 @@
  *)
 
 open StdLabels
-open DocOckHtml
+open Doc_html
 
 let for_compile_step ~output input =
   let name =

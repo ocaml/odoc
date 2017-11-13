@@ -1,6 +1,6 @@
 (jbuild_version 1)
 
 (library
- ((name docOckHtml)
-  (public_name odoc.doc-ock-html)
+ ((name doc_html)
+  (public_name odoc.html)
   (libraries (odoc.model xmlm tyxml))))

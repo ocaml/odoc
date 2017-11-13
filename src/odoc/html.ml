@@ -15,7 +15,7 @@
  *)
 
 open StdLabels
-open DocOckHtml
+open Doc_html
 
 let get_package root = Root.Package.to_string (Root.package root)
 
