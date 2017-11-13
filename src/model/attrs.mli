@@ -14,15 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Paths
-open Model.Documentation
 
-val empty : t
 
-val read_attributes : Identifier.label_parent -> 'kind Identifier.t ->
-                        Parsetree.attributes -> t
+val empty : Model.Documentation.t
 
-val read_string : Identifier.label_parent -> Location.t -> string -> comment
+val read_attributes :
+  Paths.Identifier.label_parent ->
+  'kind Paths.Identifier.t ->
+  Parsetree.attributes ->
+    Model.Documentation.t
+
+val read_string :
+  Paths.Identifier.label_parent ->
+  Location.t ->
+  string ->
+    Model.Documentation.comment
 (** The parent identifier is used to define labels in the given string (i.e.
     for things like [{1:some_section Some title}]) and the location is used for
     error messages.
@@ -30,8 +36,12 @@ val read_string : Identifier.label_parent -> Location.t -> string -> comment
     This function is meant to be used to read arbitrary files containing text in
     the ocamldoc syntax. *)
 
-val read_comment : Identifier.label_parent ->
-                     Parsetree.attribute -> comment option
+val read_comment :
+  Paths.Identifier.label_parent ->
+  Parsetree.attribute ->
+    Model.Documentation.comment option
 
-val read_comments : Identifier.label_parent ->
-                      Parsetree.attributes -> comment list
+val read_comments :
+  Paths.Identifier.label_parent ->
+  Parsetree.attributes ->
+    Model.Documentation.comment list

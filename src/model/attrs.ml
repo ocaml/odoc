@@ -14,14 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_parser.Output
-open Model.Documentation
+
 
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
-let read_style = function
+let read_style
+    : Doc_parser.Output.style_kind -> Model.Documentation.style = function
   | SK_bold -> Bold
   | SK_italic -> Italic
   | SK_emphasize -> Emphasize
@@ -400,8 +400,11 @@ let read_mod_longident lid : Paths.Reference.module_ =
       (* FIXME: propagate location *)
       raise (Expected_reference_to_a_module_but_got lid)
 
-let read_reference rk s =
-(*   let open Paths.Reference in *)
+let read_reference
+    (rk : Doc_parser.Output.ref_kind)
+    (s : string) :
+      Model.Documentation.reference =
+
   let parsed_ref = lazy (read_longident s) in
   match rk, parsed_ref with
   | RK_link, _ -> Link s
@@ -426,13 +429,16 @@ let read_reference rk s =
       raise (InvalidReference "Conflicting kinds")
                                  *)
 
-let read_special_reference = function
+let read_special_reference
+    : Doc_parser.Output.special_ref_kind -> Model.Documentation.special =
+  function
   | SRK_module_list mds ->
       Modules (List.map (fun lid -> read_mod_longident lid, []) mds)
   | SRK_index_list -> Index
 
 let rec read_text_element parent
-  : Doc_parser.Output.text_element -> text_element =
+    : Doc_parser.Output.text_element -> Model.Documentation.text_element =
+
   function
   | Raw s -> Raw s
   | Code s -> Code s
@@ -457,13 +463,14 @@ let rec read_text_element parent
 
 and read_text parent txt = List.map (read_text_element parent) txt
 
-let read_see = function
+let read_see : Doc_parser.Output.see_ref -> Model.Documentation.see = function
   | See_url s -> Url s
   | See_file s -> File s
   | See_doc s -> Doc s
 
 
-let read_tag parent : Doc_parser.Output.tag -> tag = function
+let read_tag parent : Doc_parser.Output.tag -> Model.Documentation.tag =
+  function
   | Author s -> Author s
   | Version v -> Version v
   | See (r, t) -> See (read_see r, read_text parent t)
@@ -477,28 +484,28 @@ let read_tag parent : Doc_parser.Output.tag -> tag = function
   | Custom (s, t) -> Tag (s, read_text parent t)
   | Canonical p -> Canonical (read_path_longident p, read_mod_longident p)
 
-let empty_body = { text = []; tags = []; }
+let empty_body = {Model.Documentation.text = []; tags = []}
 
-let empty = Ok empty_body
+let empty : Model.Documentation.t = Ok empty_body
 
 let read_offset err =
   let open Doc_parser.Error in
   let loc = err.location in
   let start =
-    { Error.Position.
+    { Model.Documentation.Error.Position.
         line = loc.start.line;
         column = loc.start.column; }
   in
   let finish =
-    { Error.Position.
+    { Model.Documentation.Error.Position.
         line = loc.finish.line;
         column = loc.finish.column; }
   in
-    { Error.Offset.start; finish; }
+    { Model.Documentation.Error.Offset.start; finish; }
 
 let read_position offset pos =
   let open Lexing in
-  let open Error in
+  let open Model.Documentation.Error in
   let off_line = offset.Position.line in
   let off_column = offset.Position.column in
   let line = pos.pos_lnum + off_line - 1 in
@@ -511,7 +518,7 @@ let read_position offset pos =
 
 let read_location offset pos =
   let open Lexing in
-  let open Error in
+  let open Model.Documentation.Error in
   if pos.pos_cnum >= 0 then begin
     let filename = pos.pos_fname in
     let start = read_position offset.Offset.start pos in
@@ -520,7 +527,7 @@ let read_location offset pos =
   end else None
 
 let read_error origin err pos =
-  let open Error in
+  let open Model.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   let offset = read_offset err in
   let location = read_location offset pos in
@@ -530,7 +537,7 @@ let read_error origin err pos =
 let attribute_location loc =
   let open Lexing in
   let open Location in
-  let open Error in
+  let open Model.Documentation.Error in
   let start = loc.loc_start in
   let finish = loc.loc_end in
   if start.pos_cnum >= 0 && finish.pos_cnum >= 0 then begin
@@ -546,7 +553,7 @@ let attribute_location loc =
   end else None
 
 let invalid_attribute_error origin loc =
-  let open Error in
+  let open Model.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   let offset =
     let zero_pos = { Position.line = 0; column = 0 } in
@@ -557,7 +564,7 @@ let invalid_attribute_error origin loc =
     { origin; offset; location; message }
 
 let invalid_reference_error origin loc s =
-  let open Error in
+  let open Model.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   (* TODO get an actual offset *)
   let dummy = { Position.line = 0; column = 0} in
@@ -568,7 +575,7 @@ let invalid_reference_error origin loc s =
     {origin; offset; location; message}
 
 let several_deprecated_error origin loc =
-  let open Error in
+  let open Model.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   (* TODO get an actual offset *)
   let dummy = { Position.line = 0; column = 0} in
@@ -581,7 +588,8 @@ let several_deprecated_error origin loc =
 
 let read_attributes parent id attrs =
   let ocaml_deprecated = ref None in
-  let rec loop first nb_deprecated acc : _ -> t = function
+  let rec loop first nb_deprecated acc : _ -> Model.Documentation.t =
+    function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
         match Payload.read payload with
@@ -596,7 +604,7 @@ let read_attributes parent id attrs =
                   let tags = List.map (read_tag parent) tags in
                   let nb_deprecated =
                     List.fold_right (function
-                      | Deprecated _ -> (+) 1
+                      | Model.Documentation.Deprecated _ -> (+) 1
                       | _ -> fun x -> x
                     ) tags nb_deprecated
                   in
@@ -604,8 +612,10 @@ let read_attributes parent id attrs =
                     Error (several_deprecated_error id loc)
                   else
                     let acc =
-                      { text = acc.text @ text;
-                        tags = acc.tags @ tags; }
+                      Model.Documentation.{
+                        text = acc.text @ text;
+                        tags = acc.tags @ tags;
+                      }
                     in
                     loop false nb_deprecated acc rest
                 with InvalidReference s ->
@@ -620,7 +630,7 @@ let read_attributes parent id attrs =
         match Payload.read payload with
         | Some (str, _) ->
           (* Not parsing with octavius here, we take the string verbatim. *)
-          let deprecated_tag = Deprecated [Raw str] in
+          let deprecated_tag = Model.Documentation.Deprecated [Raw str] in
           ocaml_deprecated := Some deprecated_tag;
           loop first nb_deprecated acc rest
         | None ->
@@ -637,16 +647,16 @@ let read_attributes parent id attrs =
   in
     loop true 0 empty_body attrs
 
-let read_string parent loc str : comment =
+let read_string parent loc str : Model.Documentation.comment =
   let lexbuf = Lexing.from_string str in
   let start_pos = loc.Location.loc_start in
-  let doc =
+  let doc : Model.Documentation.t =
     match Doc_parser.parse lexbuf with
     | Doc_parser.Ok(text, tags) -> begin
         try
           let text = read_text parent text in
           let tags = List.map (read_tag parent) tags in
-          Ok {text; tags}
+          Ok {Model.Documentation.text; tags}
         with InvalidReference s ->
           Error (invalid_reference_error parent loc s)
       end
@@ -654,7 +664,9 @@ let read_string parent loc str : comment =
   in
   Documentation doc
 
-let read_comment parent : Parsetree.attribute -> comment option =
+let read_comment parent
+    : Parsetree.attribute -> Model.Documentation.comment option =
+
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
@@ -662,7 +674,8 @@ let read_comment parent : Parsetree.attribute -> comment option =
       | Some ("/*", _loc) -> Some Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
-          let doc = Error (invalid_attribute_error parent loc) in
+          let doc : Model.Documentation.t =
+            Error (invalid_attribute_error parent loc) in
             Some (Documentation doc)
     end
   | _ -> None
