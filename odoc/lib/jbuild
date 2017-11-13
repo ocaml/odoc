@@ -1,0 +1,19 @@
+(jbuild_version 1)
+
+(library
+ ((name odoc)
+  (public_name odoc)
+  (libraries (xmlm
+              doc-ock
+              doc-ock-xml
+              doc-ock-html
+              unix
+              fpath
+              bos
+              compiler-libs.common
+              result ; FIXME: is this still needed?
+              tyxml
+              ; the line below is needed only for odoc to be able to cross-ref
+              ; to octavius from index.mld. That's sad.
+              octavius
+              ))))

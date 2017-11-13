@@ -1,0 +1,109 @@
+{1 The new OCaml documentation generator}
+
+odoc is a documentation generator for OCaml, designed to address some of the
+deficiencies of ocamldoc. In particular, it aims to:
+- Accurately handle all of the OCaml language, providing accurate links and
+  references for code bases that make heavy use of OCaml's advanced module
+  features.
+- Support links and references between different libraries and packages.
+
+{1:install Getting odoc}
+
+Using opam is of course the easiest way:
+
+{v
+opam install odoc
+v}
+
+But otherwise you can build it from sources:
+
+{v
+$ mkdir odoc && cd odoc && touch jbuild-workspace.here
+$ git clone http://github.com/ocaml-doc/odoc.git
+$ git clone http://github.com/ocaml-doc/doc-ock.git
+$ git clone http://github.com/ocaml-doc/doc-ock-html.git
+$ git clone http://github.com/ocaml-doc/doc-ock-xml.git
+$ git clone http://github.com/ocaml-doc/octavius.git
+$ jbuilder build @install
+$ jbuilder install
+v}
+
+Assuming you have OCaml ≥ 4.03 available and the following set of dependencies
+installed:
+{{:http://erratique.ch/software/bos}bos},
+{{:http://erratique.ch/software/cmdliner}cmdliner},
+{{:http://erratique.ch/software/fpath}fpath},
+{{:http://gallium.inria.fr/~fpottier/menhir/}menhir},
+{{:http://ocsigen.org/tyxml/}tyxml} and
+{{:http://erratique.ch/software/xmlm}xmlm} as well as
+{{:http://github.com/janestreet/jbuilder}jbuilder} for building. All of which
+are available from opam.
+
+{1:usage Using odoc}
+
+{{:http://jbuilder.readthedocs.io/en/latest/api-doc.html}Jbuilder} and
+{{:http://erratique.ch/software/odig}Odig} already know how to invoke odoc for
+you on your libraries.
+They are definitely the easiest, and recommended, way to use odoc for
+individuals.
+
+If you want to add support for odoc to your preferred build system, or simply
+don't want to use Jbuilder or Odig, you can always invoke odoc directly.
+Instructions regarding how it should be run are available
+{{!manual_usage}here}.
+
+{3:ocamldoc Divergences from ocamldoc}
+
+Your docstrings written to work with ocamldoc should be transparently supported
+by odoc. However some additions have been made to the syntax which are described
+{{!page-syntax}here}.
+
+
+{1:contributing Contributing}
+
+{3:issues Reporting issues}
+
+The easiest way to contribute is to report any issue you encounter
+{{:http://github.com/ocaml-doc/odoc/issues}here}.
+
+{3:internals Internal organization of odoc}
+
+If you wish to contribute to odoc, for example by fixing some bugs, you should
+know that odoc is split into the following set of packages:
+
+- {{:http://github.com/ocaml-doc/octavius}octavius} is a parser for a simple
+  documentation language.
+  While [doc-ock] uses it to parse the documentation comments, it is independent
+  of the other parts of odoc and can also be used by other tools (eg. a
+  {{:https://github.com/janestreet/ppx_js_style/blob/master/src/ppx_js_style.ml#L208}linter}
+  for ocaml sources which would also check the syntax of docstrings).
+
+- {{:http://github.com/ocaml-doc/doc-ock}doc-ock} deals with the problem of
+cross-referencing within OCaml's semantics. It has no idea of how things are
+divided into packages or laid out on the file system -- its whole job lives
+within the OCaml language's semantics.
+
+- {{:http://github.com/ocaml-doc/doc-ock-html}doc-ock-html} is fundamentally
+just a function from {{!DocOckTypes}doc-ock's representation} to HTML. This
+should take care of everything to do with how the documentation looks in the
+browser.
+
+- {{:http://github.com/ocaml-doc/doc-ock-xml}doc-ock-xml} is mostly legacy at
+  this point. Originally, odoc files weren't marshalled AST but an XML
+  representation of the AST. That later changed for performance (and disk space
+  usage) reasons, but we've kept the library around (and expose it through a
+  [to-xml] command) mainly for debugging purposes. We plan to get rid of it
+  soon.
+
+- {{:http://github.com/ocaml-doc/odoc}odoc} deals with the relationship between
+the file system, packages, and the OCaml language semantics (e.g. this module is
+from this file and lives in this package).
+Since it deals with the file system it is also in charge of handling
+[doc-ock]s multiple stages (e.g. managing where the [.odoc] intermediate files
+live and making sure things are run in the right dependency order).
+
+{3:contribution_new_backend Adding a backend to odoc}
+
+Adding a new backend (latex, anyone?) to odoc then consists of writing a library
+similar to [doc-ock-html] and exposing a new command in odoc working similarly
+to {{!Odoc.Html}[odoc html]}.

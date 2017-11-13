@@ -1,0 +1,16 @@
+(jbuild_version 1)
+
+; jbuilder won't execute this rule if such a file already exists
+; The idea is that we don't have that file in the repo, so during dev jbuilder
+; generates it, but we also instruct opam to generate it (with some other
+; content) before calling jbuilder.
+(rule
+  ((targets (odoc_etc.ml))
+   (deps    (set-etc))
+   (action  (run ${OCAML} ${<} ${@} etc))))
+
+(executable
+ ((name main)
+  (public_name odoc)
+  (flags (:standard -open StdLabels))
+  (libraries (odoc cmdliner))))
