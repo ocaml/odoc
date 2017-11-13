@@ -121,13 +121,17 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details _hidden directories output_dir
+  let html semantic_uris closed_details _hidden directories output_dir index_for
         input_file =
     DocOckHtml.Html_tree.Relative_link.semantic_uris := semantic_uris;
     DocOckHtml.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
-    let odoc_file = Fs.File.of_string input_file in
-    Html.from_odoc ~env ~output:output_dir odoc_file
+    let file = Fs.File.of_string input_file in
+    match index_for with
+    | None -> Html.from_odoc ~env ~output:output_dir file
+    | Some pkg_name ->
+      let package = Root.Package.create pkg_name in
+      Html.from_mld ~env ~output:output_dir ~package file
 
   let cmd =
     let input =
@@ -144,8 +148,18 @@ end = struct
       in
       Arg.(value & flag (info ~doc ["closed-details"]))
     in
+    let index_for =
+      let doc = "DEPRECATED: you should use 'odoc compile' to process .mld \
+		 files. When this argument is given, then the input file is \
+		 expected to be a .mld file. The output will be a \
+                 \"index.html\" file in the output directory. \
+                 PKG is using to correctly resolve and link references inside \
+		 the input file"
+      in
+      Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
+    in
     Term.(const html $ semantic_uris $ closed_details $ hidden $ env $ dst $
-          input)
+          index_for $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
