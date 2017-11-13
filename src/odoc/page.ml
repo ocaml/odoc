@@ -23,22 +23,22 @@ let root (t : Root.t Types.Page.t) =
   | Paths.Identifier.Page (root, _) -> root
 
 let save_xml file page =
-  let xml_folder = DocOckXmlFold.file_page Root.Xml.fold in
+  let xml_folder = Doc_xml.Fold.file_page Root.Xml.fold in
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out (Fs.File.to_string file) in
   let output = Xmlm.make_output ~nl:true ~indent:(Some 2) (`Channel oc) in
-  xml_folder.DocOckXmlFold.f (fun () -> Xmlm.output output) () page;
+  xml_folder.Doc_xml.Fold.f (fun () -> Xmlm.output output) () page;
   close_out oc
 
 let load_xml file =
-  let xml_parser = DocOckXmlParse.build Root.Xml.parse in
+  let xml_parser = Doc_xml.Parse.build Root.Xml.parse in
   let ic = open_in (Fs.File.to_string file) in
   let input = Xmlm.make_input (`Channel ic) in
-  let result = DocOckXmlParse.page_file xml_parser input in
+  let result = Doc_xml.Parse.page_file xml_parser input in
   close_in ic;
   match result with
-  | DocOckXmlParse.Ok page -> page
-  | DocOckXmlParse.Error (_, (line, col), error_msg) ->
+  | Doc_xml.Parse.Ok page -> page
+  | Doc_xml.Parse.Error (_, (line, col), error_msg) ->
     let msg = Printf.sprintf "File %s, Line %d, column %d: %s"
                 (Fs.File.to_string file) line col error_msg in
     failwith msg

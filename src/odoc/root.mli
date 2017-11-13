@@ -82,7 +82,7 @@ module Xml : sig
 
   val parse : Xmlm.input -> t
 
-  val fold : t DocOckXmlFold.t
+  val fold : t Doc_xml.Fold.t
 
 end
 

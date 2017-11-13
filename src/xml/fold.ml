@@ -17,7 +17,7 @@
 
 type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
-let ns = DocOckXml.ns
+let ns = Ns.ns
 
 (* Terminals *)
 let alias_t output acc =
@@ -237,7 +237,7 @@ let package_t output acc =
   output acc (`El_start ((ns, "package"), []))
 
 let page_t output acc =
-  output acc (`El_start ((ns, "page"), [(Xmlm.ns_xmlns,"xmlns"),DocOckXml.ns]))
+  output acc (`El_start ((ns, "page"), [(Xmlm.ns_xmlns,"xmlns"), ns]))
 
 let param_t output acc =
   output acc (`El_start ((ns, "param"), []))
@@ -339,7 +339,7 @@ let type_subst_t output acc =
   output acc (`El_start ((ns, "type_subst"), []))
 
 let unit_t output acc =
-  output acc (`El_start ((ns, "unit"), [(Xmlm.ns_xmlns,"xmlns"),DocOckXml.ns]))
+  output acc (`El_start ((ns, "unit"), [(Xmlm.ns_xmlns,"xmlns"), ns]))
 
 let url_t output acc =
   output acc (`El_start ((ns, "url"), []))

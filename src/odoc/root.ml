@@ -118,7 +118,7 @@ module Xml = struct
       |> flipped `El_end
       |> flipped `El_end
     in
-    { DocOckXmlFold. f }
+    { Doc_xml.Fold. f }
 end
 
 module Table = Hashtbl.Make(T)

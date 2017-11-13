@@ -43,7 +43,7 @@ let position (l, c) =
            pos_cnum = c; }
 
 let build (type base) (input_base : Xmlm.input -> base) =
-  let module Parser = DocOckXmlParser.Make(struct type t = base end) in
+  let module Parser = Generated_parser.Make(struct type t = base end) in
   let plain_tags = Hashtbl.create 113 in
     Hashtbl.add plain_tags "alias" Parser.ALIAS;
     Hashtbl.add plain_tags "any" Parser.ANY;
@@ -174,7 +174,7 @@ let build (type base) (input_base : Xmlm.input -> base) =
           | `Dtd _ -> Parser.DTD
           | `Data s -> Parser.Data s
           | `El_start ((namespace, tag), attrs) ->
-              if namespace <> DocOckXml.ns then
+              if namespace <> Ns.ns then
                 raise (LexerError(start, finish,
                                   "unknown namespace " ^ namespace))
               else begin
