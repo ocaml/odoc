@@ -1,12 +1,12 @@
 
 let process file lexbuf =
-  match Octavius.parse lexbuf with
-  | Octavius.Ok t ->
-    Format.printf "%a@." Octavius.print t
-  | Octavius.Error { error; location } ->
-    let msg = Octavius.Errors.message error in
+  match Doc_parser.parse lexbuf with
+  | Doc_parser.Ok t ->
+    Format.printf "%a@." Doc_parser.print t
+  | Doc_parser.Error { error; location } ->
+    let msg = Doc_parser.Error.message error in
     let loc =
-      let { Octavius.Errors. start ; finish } = location in
+      let { Doc_parser.Error. start ; finish } = location in
       let open Lexing in
       let loc_start = {
         pos_fname = file;

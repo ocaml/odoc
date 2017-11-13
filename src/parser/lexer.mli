@@ -14,6 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val main : Lexing.lexbuf -> OctParser.token
+val main : Lexing.lexbuf -> Generated_parser.token
 
-val read_ref : Lexing.lexbuf -> OctParser.token
+val read_ref : Lexing.lexbuf -> Generated_parser.token

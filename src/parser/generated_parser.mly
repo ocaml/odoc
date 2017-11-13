@@ -1,7 +1,7 @@
 %{
 open Common
-open Types
-open Errors
+open Output
+open Error
 
 (* Convert lexing position into error position *)
 let position p =
@@ -130,7 +130,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Param
 %token AUTHOR
 %token <string> Version
-%token <Types.see_ref> See
+%token <Output.see_ref> See
 %token <string> Since
 %token <string> Before
 %token DEPRECATED
@@ -144,13 +144,13 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token END
 
 %token <int * string option> Title
-%token <Types.style_kind> Style
+%token <Output.style_kind> Style
 %token LIST
 %token ENUM
 %token <bool> Item
 
-%token <Types.ref_kind * string> Ref
-%token <Types.special_ref_kind> Special_Ref
+%token <Output.ref_kind * string> Ref
+%token <Output.special_ref_kind> Special_Ref
 
 %token <string> Code
 %token <string> Pre_Code
@@ -188,7 +188,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Ref_part
 
 %start main
-%type <Types.t> main
+%type <Output.t> main
 
 %start reference_parts
 %type <(string option * string) list> reference_parts

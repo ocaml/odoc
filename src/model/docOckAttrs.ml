@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Octavius.Types
+open Doc_parser.Output
 open DocOckTypes.Documentation
 
 let opt_map f = function
@@ -432,7 +432,7 @@ let read_special_reference = function
   | SRK_index_list -> Index
 
 let rec read_text_element parent
-  : Octavius.Types.text_element -> 'a text_element =
+  : Doc_parser.Output.text_element -> 'a text_element =
   function
   | Raw s -> Raw s
   | Code s -> Code s
@@ -463,7 +463,7 @@ let read_see = function
   | See_doc s -> Doc s
 
 
-let read_tag parent : Octavius.Types.tag -> 'a tag = function
+let read_tag parent : Doc_parser.Output.tag -> 'a tag = function
   | Author s -> Author s
   | Version v -> Version v
   | See (r, t) -> See (read_see r, read_text parent t)
@@ -482,7 +482,7 @@ let empty_body = { text = []; tags = []; }
 let empty = Ok empty_body
 
 let read_offset err =
-  let open Octavius.Errors in
+  let open Doc_parser.Error in
   let loc = err.location in
   let start =
     { Error.Position.
@@ -524,7 +524,7 @@ let read_error origin err pos =
   let origin = DocOckPaths.Identifier.any origin in
   let offset = read_offset err in
   let location = read_location offset pos in
-  let message = Octavius.Errors.message err.Octavius.Errors.error in
+  let message = Doc_parser.Error.message err.Doc_parser.Error.error in
     { origin; offset; location; message }
 
 let attribute_location loc =
@@ -588,8 +588,8 @@ let read_attributes parent id attrs =
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
-            match Octavius.parse lexbuf with
-            | Octavius.Ok (text, tags) -> begin
+            match Doc_parser.parse lexbuf with
+            | Doc_parser.Ok (text, tags) -> begin
                 try
                   let text = read_text parent text in
                   let text = if first then text else Newline :: text in
@@ -611,7 +611,7 @@ let read_attributes parent id attrs =
                 with InvalidReference s ->
                   Error (invalid_reference_error id loc s)
               end
-            | Octavius.Error err -> Error (read_error id err start_pos)
+            | Doc_parser.Error err -> Error (read_error id err start_pos)
           end
         | None -> Error (invalid_attribute_error id loc)
       end
@@ -641,8 +641,8 @@ let read_string parent loc str : 'a comment =
   let lexbuf = Lexing.from_string str in
   let start_pos = loc.Location.loc_start in
   let doc =
-    match Octavius.parse lexbuf with
-    | Octavius.Ok(text, tags) -> begin
+    match Doc_parser.parse lexbuf with
+    | Doc_parser.Ok(text, tags) -> begin
         try
           let text = read_text parent text in
           let tags = List.map (read_tag parent) tags in
@@ -650,7 +650,7 @@ let read_string parent loc str : 'a comment =
         with InvalidReference s ->
           Error (invalid_reference_error parent loc s)
       end
-    | Octavius.Error err -> Error (read_error parent err start_pos)
+    | Doc_parser.Error err -> Error (read_error parent err start_pos)
   in
   Documentation doc
 

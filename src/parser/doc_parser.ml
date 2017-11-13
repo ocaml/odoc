@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Types = Types
+module Output = Output
 
-module Errors = Errors
+module Error = Error
 
 open Common
 
@@ -25,24 +25,24 @@ type nonrec ('a, 'b) result = ('a, 'b) result =
   | Error of 'b
 
 let parse lexbuf =
-  let open Errors in
+  let open Error in
     try
-      Ok (OctParser.main OctLexer.main lexbuf)
+      Ok (Generated_parser.main Lexer.main lexbuf)
     with
     | ParserError(location, err) ->
-        Error {Errors.error = Parser err; location}
+        Error {Error.error = Parser err; location}
     | LexerError(location, err) ->
-        Error {Errors.error = Lexer err; location}
+        Error {Error.error = Lexer err; location}
 
 let parse_ref lexbuf =
-  let open Errors in
+  let open Error in
     try
-      Ok (OctParser.reference_parts OctLexer.read_ref lexbuf)
+      Ok (Generated_parser.reference_parts Lexer.read_ref lexbuf)
     with
     | ParserError(location, err) ->
-        Error {Errors.error = Parser err; location}
+        Error {Error.error = Parser err; location}
     | LexerError(location, err) ->
-        Error {Errors.error = Lexer err; location}
+        Error {Error.error = Lexer err; location}
 
 let print fmt t =
   Print.pp fmt t

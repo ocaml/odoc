@@ -1,8 +1,8 @@
 (jbuild_version 1)
 
-(ocamllex  (octLexer))
-(ocamlyacc (octParser))
+(ocamllex (lexer))
+(ocamlyacc (generated_parser))
 
 (library
- ((name octavius)
-  (public_name odoc.octavius)))
+ ((name doc_parser)
+  (public_name odoc.parser)))

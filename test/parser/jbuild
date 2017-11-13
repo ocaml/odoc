@@ -2,5 +2,5 @@
 
 (executable
  ((name main)
-  (public_name octavius)
-  (libraries (octavius compiler-libs.common))))
+  (public_name parser_test)
+  (libraries (odoc.parser compiler-libs.common))))

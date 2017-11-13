@@ -14,6 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Format
+module Output = Output
 
-val pp : formatter -> Types.t -> unit
+module Error = Error
+
+type nonrec ('a, 'b) result = ('a, 'b) result =
+  | Ok of 'a
+  | Error of 'b
+
+val parse : Lexing.lexbuf -> (Output.t, Error.t) result
+
+val parse_ref : Lexing.lexbuf -> ((string option * string) list, Error.t) result
+
+val print : Format.formatter -> Output.t -> unit

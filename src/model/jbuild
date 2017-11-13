@@ -4,5 +4,5 @@
  ((name docOck)
   (public_name odoc.doc-ock)
   (wrapped false)
-  (libraries (octavius compiler-libs.common))
+  (libraries (odoc.parser compiler-libs.common))
   (preprocess (action (run ${bin:cppo} -V OCAML:${ocaml_version} ${<})))))
