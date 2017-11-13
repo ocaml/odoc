@@ -27,6 +27,6 @@
   (action  (with-stdout-to ${@}
             (run ${exe:testCmt.exe} ${<})))))
 
-(alias
- ((name runtest)
-  (deps (coverage-cmi.out coverage-cmti.out coverage-cmt.out))))
+; (alias
+;  ((name runtest)
+;   (deps (coverage-cmi.out coverage-cmti.out coverage-cmt.out))))

@@ -10,17 +10,17 @@
   (modules (testCmi testCmti testCmt testCommon))
   (libraries (odoc.doc-ock))))
 
-(alias
- ((name   runtest)
-  (deps   (ocamlary.cmi))
-  (action (run ${exe:testCmi.exe} ${<}))))
+; (alias
+;  ((name   runtest)
+;   (deps   (ocamlary.cmi))
+;   (action (run ${exe:testCmi.exe} ${<}))))
 
-(alias
- ((name   runtest)
-  (deps   (ocamlary.cmti))
-  (action (run ${exe:testCmti.exe} ${<}))))
+; (alias
+;  ((name   runtest)
+;   (deps   (ocamlary.cmti))
+;   (action (run ${exe:testCmti.exe} ${<}))))
 
-(alias
- ((name   runtest)
-  (deps   (ocamlary.cmt))
-  (action (run ${exe:testCmt.exe} ${<}))))
+; (alias
+;  ((name   runtest)
+;   (deps   (ocamlary.cmt))
+;   (action (run ${exe:testCmt.exe} ${<}))))
