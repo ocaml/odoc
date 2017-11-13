@@ -1998,13 +1998,23 @@ class virtual type_expr = object (self)
 
   method type_expr_object_method_name name = name
 
+  method type_expr_object_field fld =
+    let open TypeExpr.Object in
+    match fld with
+    | Method meth ->
+        let meth' = self#type_expr_object_method meth in
+          if meth != meth' then Method meth' else fld
+    | Inherit typ ->
+        let typ' = self#type_expr typ in
+          if typ != typ' then Inherit typ' else fld
+
   method type_expr_object obj =
     let open TypeExpr.Object in
-    let {methods; open_} = obj in
-    let methods' = list_map self#type_expr_object_method methods in
+    let {fields; open_} = obj in
+    let fields' = list_map self#type_expr_object_field fields in
     let open' = self#type_expr_object_open open_ in
-      if methods != methods' || open_ != open' then
-        {methods = methods'; open_ = open'}
+      if fields != fields' || open_ != open' then
+        {fields = fields'; open_ = open'}
       else obj
 
   method type_expr_object_open opn = opn

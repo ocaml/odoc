@@ -469,7 +469,7 @@ and read_object env fi nm =
       in
       let methods =
         List.map
-          (fun (name, typ) -> {name; type_ = read_type_expr env typ})
+          (fun (name, typ) -> Method {name; type_ = read_type_expr env typ})
           sorted_fields
       in
       let open_ =
@@ -479,7 +479,7 @@ and read_object env fi nm =
         | Tnil -> false
         | _ -> assert false
       in
-      Object {methods; open_}
+      Object {fields = methods; open_}
   | Some (p, _ :: params) ->
       let p = Env.Path.read_class_type env p in
       let params = List.map (read_type_expr env) params in

@@ -824,6 +824,9 @@ class virtual type_expr : object
 
   method type_expr_object_method_name : string -> string
 
+  method type_expr_object_field : TypeExpr.Object.field ->
+    TypeExpr.Object.field
+
   method type_expr_object : TypeExpr.Object.t -> TypeExpr.Object.t
 
   method type_expr_object_open : bool -> bool

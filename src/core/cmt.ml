@@ -195,6 +195,9 @@ and read_class_signature env parent params cltyp =
         let items = constraints @ List.rev items in
           Signature {self; items}
     | Tcty_arrow _ -> assert false
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+    | Tcty_open _ -> assert false
+#endif
 
 let rec read_class_type env parent params cty =
   let open Class in
@@ -206,6 +209,9 @@ let rec read_class_type env parent params cty =
       let arg = read_core_type env arg in
       let res = read_class_type env parent params res in
         Arrow(lbl, arg, res)
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent params cty
+#endif
 
 let rec read_class_field env parent cf =
   let open ClassSignature in
@@ -280,6 +286,9 @@ and read_class_structure env parent params cl =
     | Tcl_constraint(cl, None, _, _, _) -> read_class_structure env parent params cl
     | Tcl_constraint(_, Some cltyp, _, _, _) ->
         read_class_signature env parent params cltyp
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+    | Tcl_open (_, _, _, _, cl) -> read_class_structure env parent params cl
+#endif
 
 let rec read_class_expr env parent params cl =
   let open Class in
@@ -299,6 +308,9 @@ let rec read_class_expr env parent params cl =
       read_class_expr env parent params cl
   | Tcl_constraint(_, Some cltyp, _, _, _) ->
       read_class_type env parent params cltyp
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+    | Tcl_open (_, _, _, _, cl) -> read_class_expr env parent params cl
+#endif
 
 let read_class_declaration env parent cld =
   let open Class in

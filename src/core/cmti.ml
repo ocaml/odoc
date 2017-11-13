@@ -62,12 +62,19 @@ let rec read_core_type env ctyp =
           Constr(p, params)
     | Ttyp_object(methods, closed) ->
         let open TypeExpr.Object in
-        let methods =
+        let fields =
           List.map
-            (fun (name, _, typ) -> {name; type_ = read_core_type env typ})
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 06
+            (fun (name, _, typ) -> Method {name; type_ = read_core_type env typ})
+#else
+            (function
+              | OTtag (name, _, typ) ->
+                Method {name = name.txt; type_ = read_core_type env typ}
+              | OTinherit typ -> Inherit (read_core_type env typ))
+#endif
             methods
         in
-          Object {methods; open_ = (closed = Asttypes.Open)}
+          Object {fields; open_ = (closed = Asttypes.Open)}
     | Ttyp_class(p, _, params) ->
         let p = Env.Path.read_class_type env p in
         let params = List.map (read_core_type env) params in
@@ -82,6 +89,9 @@ let rec read_core_type env ctyp =
             (function
               | Ttag(name, _, const, args) ->
                   let args = List.map (read_core_type env) args in
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+                  let name = name.txt in
+#endif
                     Constructor(name, const, args)
               | Tinherit typ -> Type (read_core_type env typ))
             fields

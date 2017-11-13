@@ -687,12 +687,15 @@ and te_object
    : 'inner 'outer. get_package:(Root.t -> string) -> Types.TypeExpr.Object.t
   -> ('inner, 'outer) text elt list
 = fun ~get_package (t : Types.TypeExpr.Object.t) ->
-  let methods =
-    list_concat_map t.methods ~f:(fun { Types.TypeExpr.Object. name; type_ } ->
-      pcdata (name ^ " : ") :: type_expr ~get_package type_ @ [pcdata "; "]
+  let fields =
+    list_concat_map t.fields ~f:(function
+      | Types.TypeExpr.Object.Method { name; type_ } ->
+        pcdata (name ^ " : ") :: type_expr ~get_package type_ @ [pcdata "; "]
+      | Inherit type_ ->
+        type_expr ~get_package type_ @ [pcdata "; "]
     )
   in
-  pcdata "< " :: methods @ [pcdata ((if t.open_ then ".. " else "") ^ ">")]
+  pcdata "< " :: fields @ [pcdata ((if t.open_ then ".. " else "") ^ ">")]
 
 and format_type_path
   : 'inner 'outer. get_package:('a -> string) -> delim:[ `parens | `brackets ]
