@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
+open Doc_model
 
 type t = Root.t Types.Page.t
 

@@ -1,6 +1,6 @@
 module List = ListLabels
 
-open DocOck
+open Doc_model
 open Types
 open Tyxml.Html
 
@@ -100,7 +100,7 @@ let rec collapse = function
 module Reference = struct
   module Id = Html_tree.Relative_link.Id
 
-  open DocOck.Paths
+  open Doc_model.Paths
 
   let rec render_resolved : type a. (_, a) Reference.Resolved.t -> string =
     fun r ->

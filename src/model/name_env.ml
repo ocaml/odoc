@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
-open DocOckPredef
+open Paths
+open Model
+open Predefined
 
 open Identifier
 
@@ -522,8 +522,8 @@ let rec add_class_decl_items decl env =
     | ClassType expr -> add_class_type_expr_items expr env
     | Arrow(_, _, decl) -> add_class_decl_items decl env
 
-open DocOckPaths.Reference.Resolved
-open DocOckPaths.Reference
+open Paths.Reference.Resolved
+open Paths.Reference
 
 let lookup_signature_ident env name =
   try

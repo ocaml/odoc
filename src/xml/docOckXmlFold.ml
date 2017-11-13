@@ -433,7 +433,7 @@ let int t output acc i =
 
 let name_p _ output acc n = simple name_t output acc n
 
-open DocOck.Paths
+open Doc_model.Paths
 
 let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
   fun base output acc id ->
@@ -749,7 +749,7 @@ let canonical_p : type a. _ -> _ -> _ -> ((_, a) Path.t * (_, a) Reference.t) op
     in
     close output acc
 
-open DocOck.Types
+open Doc_model.Types
 
 let doc_reference_p base output acc rf =
   let open Documentation in

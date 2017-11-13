@@ -32,14 +32,14 @@ val def_summary :
 
 val make_def
    : get_package:('a -> string)
-  -> id:('a, _) DocOck.Paths.Identifier.t
+  -> id:('a, _) Doc_model.Paths.Identifier.t
   -> code:[< Html_types.code_content_fun ] elt list
   -> doc:[< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt
 
 val make_spec
    : get_package:('a -> string)
-  -> id:('a, _) DocOck.Paths.Identifier.t
+  -> id:('a, _) Doc_model.Paths.Identifier.t
   -> ?doc:[< Html_types.div_content_fun ] elt list
   -> [< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt
@@ -47,6 +47,6 @@ val make_spec
 val arrow : [> Html_types.span ] elt
 (** "->" with a non breaking hyphen, styled as a keyword. *)
 
-val label : DocOck.Types.TypeExpr.label -> [> `PCDATA ] elt list
+val label : Doc_model.Types.TypeExpr.label -> [> `PCDATA ] elt list
 (** For optional arguments adds a word joiner between the question mark and the
     label. *)

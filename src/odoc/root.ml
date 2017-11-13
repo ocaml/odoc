@@ -34,7 +34,8 @@ module Odoc_file = struct
     | Unit of { name : string; hidden : bool }
 
   let create_unit ~force_hidden name =
-    let hidden = force_hidden || DocOck.Paths.contains_double_underscore name in
+    let hidden =
+      force_hidden || Doc_model.Paths.contains_double_underscore name in
     Unit { name; hidden }
 
   let create_page name = Page name

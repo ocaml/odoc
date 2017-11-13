@@ -15,7 +15,7 @@
  *)
 
 open Tyxml.Html
-open DocOck.Paths
+open Doc_model.Paths
 
 type t = private {
   name : string;

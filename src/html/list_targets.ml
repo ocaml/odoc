@@ -15,7 +15,7 @@
  *)
 
 open StdLabels
-open DocOck
+open Doc_model
 open Paths
 
 let functor_arg_pos { Types.FunctorArgument.id ; _ } =

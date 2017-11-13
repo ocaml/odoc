@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPredef
+open Predefined
 
-module Id = DocOckPaths.Identifier
-module Rp = DocOckPaths.Path.Resolved
+module Id = Paths.Identifier
+module Rp = Paths.Path.Resolved
 
 type 'a type_ident = ('a, [`Type|`Class|`ClassType]) Id.t
 
@@ -37,7 +37,7 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let should_be_hidden = DocOckPaths.contains_double_underscore
+let should_be_hidden = Paths.contains_double_underscore
 
 let add_module parent id env =
   let name = Ident.name id in
@@ -240,8 +240,8 @@ let find_class_type env id =
 
 module Path = struct
 
-  open DocOckPaths.Path.Resolved
-  open DocOckPaths.Path
+  open Paths.Path.Resolved
+  open Paths.Path
 
   let read_module_ident env id =
     if Ident.persistent id then Root (Ident.name id)
@@ -291,8 +291,8 @@ end
 
 module Fragment = struct
 
-  open DocOckPaths.Fragment.Resolved
-  open DocOckPaths.Fragment
+  open Paths.Fragment.Resolved
+  open Paths.Fragment
 
   let rec read_module = function
     | Longident.Lident s -> Dot(Resolved Root, s)

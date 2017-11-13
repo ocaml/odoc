@@ -3,4 +3,4 @@
 (library
  ((name docOckHtml)
   (public_name odoc.doc-ock-html)
-  (libraries (odoc.doc-ock xmlm tyxml))))
+  (libraries (odoc.model xmlm tyxml))))

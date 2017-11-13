@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
+open Doc_model
 
 let it's_all_the_same ~env ~output input reader =
   let fn = Fs.File.to_string input in
@@ -70,7 +70,7 @@ let mld ~env ~package ~output input =
     let file = Root.Odoc_file.create_page root_name in
     Root.create ~package ~file ~digest
   in
-  let name = DocOck.Paths.Identifier.Page (root, root_name) in
+  let name = Doc_model.Paths.Identifier.Page (root, root_name) in
   let location =
     let pos =
       Lexing.{
@@ -88,13 +88,13 @@ let mld ~env ~package ~output input =
     exit 1
   | Ok str ->
     let content =
-      match DocOck.Attrs.read_string name location str with
-      | Stop -> DocOck.Types.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
+      match Doc_model.Attrs.read_string name location str with
+      | Stop -> Doc_model.Types.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
       | Documentation content -> content
     in
     (* This is a mess. *)
-    let page = DocOck.Types.Page.{ name; content; digest } in
-    let page = DocOckLookup.lookup_page page in
+    let page = Doc_model.Types.Page.{ name; content; digest } in
+    let page = Doc_model.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = DocOck.resolve_page (Env.resolver env) page in
+    let resolved = Doc_model.resolve_page (Env.resolver env) page in
     Page.save output resolved

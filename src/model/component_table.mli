@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
+open Paths
+open Model
 
 (** {3 Tables} *)
 
@@ -35,7 +35,7 @@ val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
   (string -> 'a option) -> ('a -> 'a Page.t) ->
   'a t
 
-open DocOckComponents
+open Components
 
 (** {3 Identifier Lookup} *)
 

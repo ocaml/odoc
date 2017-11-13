@@ -16,20 +16,20 @@
 
 (**/**)
 
-module Attrs = DocOckAttrs
+module Attrs = Attrs
 
-module Maps = DocOckMaps
+module Maps = Maps
 
-module Paths = DocOckPaths
+module Paths = Paths
 
-module Types = DocOckTypes
+module Types = Model
 
 (**/**)
 
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
 type 'a result =
-  | Ok of 'a Types.Unit.t
+  | Ok of 'a Model.Unit.t
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -55,13 +55,13 @@ type 'a lookup_result =
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
 val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a lookup_result) -> ('a -> 'a Types.Unit.t)
-  -> (string -> 'a option) -> ('a -> 'a Types.Page.t)
+  -> (string -> 'a lookup_result) -> ('a -> 'a Model.Unit.t)
+  -> (string -> 'a option) -> ('a -> 'a Model.Page.t)
   -> 'a resolver
 
-val resolve: 'a resolver -> 'a Types.Unit.t -> 'a Types.Unit.t
+val resolve: 'a resolver -> 'a Model.Unit.t -> 'a Model.Unit.t
 
-val resolve_page : 'a resolver -> 'a Types.Page.t -> 'a Types.Page.t
+val resolve_page : 'a resolver -> 'a Model.Page.t -> 'a Model.Page.t
 
 (** {2:expansion Expansion}
 
@@ -74,15 +74,17 @@ type 'a expander
     structural equality (=) on ['a]. *)
 val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
                     (string -> 'a lookup_result) ->
-                    (root:'a -> 'a -> 'a Types.Unit.t) -> 'a expander
+                    (root:'a -> 'a -> 'a Model.Unit.t) -> 'a expander
 
-val expand: 'a expander -> 'a Types.Unit.t -> 'a Types.Unit.t
+val expand: 'a expander -> 'a Model.Unit.t -> 'a Model.Unit.t
 
 (** {2 Misc.}
 
     OCaml's predefined types and exceptions. *)
 
-val core_types : 'a Types.TypeDecl.t list
+val core_types : 'a Model.TypeDecl.t list
 
-val core_exceptions : 'a Types.Exception.t list
+val core_exceptions : 'a Model.Exception.t list
+
+module Lookup = Lookup
 

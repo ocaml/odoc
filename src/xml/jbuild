@@ -7,4 +7,4 @@
  ((name docOckXml)
   (public_name odoc.doc-ock-xml)
   (wrapped false) ; TODO
-  (libraries (odoc.doc-ock xmlm menhirLib))))
+  (libraries (odoc.model xmlm menhirLib))))

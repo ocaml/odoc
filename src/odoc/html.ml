@@ -26,7 +26,7 @@ let from_odoc ~env ~output:root_dir input =
     let page = Page.load input in
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
-      DocOck.resolve_page (Env.resolver resolve_env) page
+      Doc_model.resolve_page (Env.resolver resolve_env) page
     in
     let pkg_name = get_package root in
     let pages = To_html_tree.page ~get_package odoctree in
@@ -47,15 +47,15 @@ let from_odoc ~env ~output:root_dir input =
       Printf.eprintf
         "odoc should not generate html but will for the time being...\n%!";
     let unit = Unit.load input in
-    let unit = DocOckLookup.lookup unit in
+    let unit = Doc_model.Lookup.lookup unit in
     let odoctree =
       (* See comment in compile for explanation regarding the env duplication. *)
       let resolve_env = Env.build env (`Unit unit) in
-      let resolved = DocOck.resolve (Env.resolver resolve_env) unit in
+      let resolved = Doc_model.resolve (Env.resolver resolve_env) unit in
       let expand_env = Env.build env (`Unit resolved) in
-      DocOck.expand (Env.expander expand_env) resolved
-      |> DocOckLookup.lookup
-      |> DocOck.resolve (Env.resolver expand_env) (* Yes, again. *)
+      Doc_model.expand (Env.expander expand_env) resolved
+      |> Doc_model.Lookup.lookup
+      |> Doc_model.resolve (Env.resolver expand_env) (* Yes, again. *)
     in
     let pkg_dir =
       let pkg_name = get_package root in

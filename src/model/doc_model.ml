@@ -14,25 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Attrs = DocOckAttrs
+module Attrs = Attrs
 
-module Maps = DocOckMaps
+module Maps = Maps
 
-module Paths = DocOckPaths
+module Paths = Paths
 
-module Types = DocOckTypes
+module Types = Model
 
-type 'a lookup_result = 'a DocOckComponentTbl.lookup_unit_result =
+type 'a lookup_result = 'a Component_table.lookup_unit_result =
   | Forward_reference
   | Found of { root : 'a; hidden : bool }
   | Not_found
 
-let core_types = DocOckPredef.core_types
+let core_types = Predefined.core_types
 
-let core_exceptions = DocOckPredef.core_exceptions
+let core_exceptions = Predefined.core_exceptions
 
 type 'a result =
-  | Ok of 'a Types.Unit.t
+  | Ok of 'a Model.Unit.t
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -42,7 +42,7 @@ type 'a result =
 let read_cmti root_fn filename =
   let open Cmi_format in
   let open Cmt_format in
-  let open Types.Unit in
+  let open Model.Unit in
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
@@ -51,7 +51,7 @@ let read_cmti root_fn filename =
       | Some digest ->
         let name = cmt_info.cmt_modname in
         let root = root_fn name digest in
-        let (id, doc, items) = DocOckCmti.read_interface root name intf in
+        let (id, doc, items) = Cmti.read_interface root name intf in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
@@ -73,7 +73,7 @@ let read_cmti root_fn filename =
           {id; doc; digest; imports; source;
            interface; hidden; content; expansion = None}
         in
-        let unit = DocOckLookup.lookup unit in
+        let unit = Lookup.lookup unit in
           Ok unit
       | None -> Corrupted
     end
@@ -87,7 +87,7 @@ let read_cmti root_fn filename =
 let read_cmt root_fn filename =
   let open Cmi_format in
   let open Cmt_format in
-  let open Types.Unit in
+  let open Model.Unit in
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
@@ -128,13 +128,13 @@ let read_cmt root_fn filename =
         let imports =
           List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
         in
-        let doc = DocOckAttrs.empty in
+        let doc = Attrs.empty in
         let source = None in
         let content = Pack items in
           Ok {id; doc; digest; imports;
               source; interface; hidden; content; expansion = None}
     | Implementation impl ->
-        let open Types.Unit in
+        let open Model.Unit in
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with
@@ -147,7 +147,7 @@ let read_cmt root_fn filename =
         in
         let hidden = Paths.contains_double_underscore name in
         let root = root_fn name digest in
-        let (id, doc, items) = DocOckCmt.read_implementation root name impl in
+        let (id, doc, items) = Cmt.read_implementation root name impl in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
@@ -167,7 +167,7 @@ let read_cmt root_fn filename =
           {id; doc; digest; imports;
            source; interface; hidden; content; expansion = None}
         in
-        let unit = DocOckLookup.lookup unit in
+        let unit = Lookup.lookup unit in
           Ok unit
     | _ -> Not_an_implementation
   with
@@ -178,14 +178,14 @@ let read_cmt root_fn filename =
 
 let read_cmi root_fn filename =
   let open Cmi_format in
-  let open Types.Unit in
+  let open Model.Unit in
   try
     let cmi_info = read_cmi filename in
       match cmi_info.cmi_crcs with
       | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
           let root = root_fn name digest in
           let (id, doc, items) =
-            DocOckCmi.read_interface root name cmi_info.cmi_sign
+            Cmi.read_interface root name cmi_info.cmi_sign
           in
           let imports =
             List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
@@ -198,7 +198,7 @@ let read_cmi root_fn filename =
             {id; doc; digest; imports;
              source; interface; hidden; content; expansion = None}
           in
-          let unit = DocOckLookup.lookup unit in
+          let unit = Lookup.lookup unit in
             Ok unit
       | _ -> Corrupted
   with
@@ -206,16 +206,18 @@ let read_cmi root_fn filename =
   | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
   | Cmi_format.Error (Corrupted_interface _) -> Corrupted
 
-type 'a resolver = 'a DocOckResolve.resolver
+type 'a resolver = 'a Resolve.resolver
 
-let build_resolver = DocOckResolve.build_resolver
+let build_resolver = Resolve.build_resolver
 
-let resolve = DocOckResolve.resolve
+let resolve = Resolve.resolve
 
-let resolve_page = DocOckResolve.resolve_page
+let resolve_page = Resolve.resolve_page
 
-type 'a expander = 'a DocOckExpand.t
+type 'a expander = 'a Expand.t
 
-let build_expander = DocOckExpand.build_expander
+let build_expander = Expand.build_expander
 
-let expand = DocOckExpand.expand
+let expand = Expand.expand
+
+module Lookup = Lookup

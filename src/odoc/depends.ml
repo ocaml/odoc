@@ -53,11 +53,11 @@ end = struct
   let elements t = Root.Table.fold (fun s () acc -> s :: acc) t []
 end
 
-open DocOck
+open Doc_model
 
 let deps_of_unit ~deps input =
   let odoctree = Unit.load input in
-  List.iter odoctree.DocOck.Types.Unit.imports ~f:(fun import ->
+  List.iter odoctree.Doc_model.Types.Unit.imports ~f:(fun import ->
     match import with
     | Types.Unit.Import.Resolved root -> Hash_set.add deps root
     | Types.Unit.Import.Unresolved _  -> ()

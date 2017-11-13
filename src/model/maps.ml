@@ -1,6 +1,6 @@
 
-open DocOckPaths
-open DocOckTypes
+open Paths
+open Model
 
 let rec list_map f l =
   match l with

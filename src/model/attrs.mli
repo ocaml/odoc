@@ -14,19 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckTypes
+open Paths
+open Model.Documentation
 
-type 'a resolver
+val empty : 'a t
 
-(** Lazily extract the components of units. Assumes that it is safe to
-    use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
-val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a DocOckComponentTbl.lookup_unit_result) -> ('a -> 'a Unit.t)
-  -> (string -> 'a option) -> ('a -> 'a Page.t)
-  -> 'a resolver
+val read_attributes : 'a Identifier.label_parent -> ('a, 'k) Identifier.t ->
+                        Parsetree.attributes -> 'a t
 
-(** Try to resolve all paths and references within a unit. *)
-val resolve : 'a resolver -> 'a Unit.t -> 'a Unit.t
+val read_string : 'a Identifier.label_parent -> Location.t -> string -> 'a comment
+(** The parent identifier is used to define labels in the given string (i.e.
+    for things like [{1:some_section Some title}]) and the location is used for
+    error messages.
 
-(** Try to resolve all paths and references within a page. *)
-val resolve_page : 'a resolver -> 'a Page.t -> 'a Page.t
+    This function is meant to be used to read arbitrary files containing text in
+    the ocamldoc syntax. *)
+
+val read_comment : 'a Identifier.label_parent ->
+                     Parsetree.attribute -> 'a comment option
+
+val read_comments : 'a Identifier.label_parent ->
+                      Parsetree.attributes -> 'a comment list

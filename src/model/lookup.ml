@@ -1,11 +1,11 @@
 
-open DocOckTypes
-open DocOckNameEnv
+open Model
+open Name_env
 
 class ['a] lookup = object
   val env = empty
 
-  inherit ['a] DocOckMaps.types as super
+  inherit ['a] Maps.types as super
 
   method root x = x
   method path_type x = x
@@ -122,10 +122,10 @@ class ['a] lookup = object
     let open Documentation in
     match elt with
     | Reference (r, None) ->
-      let open DocOckPaths.Reference in
+      let open Paths.Reference in
       let open Resolved in
       begin match r with
-      | Element Resolved (Identifier (DocOckPaths.Identifier.Label _)
+      | Element Resolved (Identifier (Paths.Identifier.Label _)
                          | Label _ as rr) ->
         begin match lookup_section_title env rr with
         | None -> elt

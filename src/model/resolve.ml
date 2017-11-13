@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
-open DocOckComponents
-module CTbl = DocOckComponentTbl
+open Paths
+open Model
+open Components
+module CTbl = Component_table
 
 let lpop = Reference.label_parent_of_parent
 let rlpop = Reference.Resolved.label_parent_of_parent
@@ -1822,7 +1822,7 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       CTbl.create ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page
     val where_am_i : 'a Identifier.signature option = None
 
-    inherit ['a] DocOckMaps.types as super
+    inherit ['a] Maps.types as super
     method root x = x
 
     method identifier_module x = x
@@ -1855,14 +1855,14 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       let self = {< where_am_i = Some sig_id >} in
       let doc' = self#documentation doc in
       let type' = self#module_decl_with_id sig_id type_ in
-      let expansion' = DocOckMaps.option_map self#module_expansion expansion in
+      let expansion' = Maps.option_map self#module_expansion expansion in
       let canonical' =
-        DocOckMaps.option_map
-          (DocOckMaps.pair_map self#path_module self#reference_module)
+        Maps.option_map
+          (Maps.pair_map self#path_module self#reference_module)
           canonical
       in
       let display_type' =
-        DocOckMaps.option_map (self#module_decl_with_id sig_id) display_type
+        Maps.option_map (self#module_decl_with_id sig_id) display_type
       in
       let hidden' = self#module_hidden hidden in
         if id != id' || doc != doc' || type_ != type'
@@ -1889,7 +1889,7 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
             if body != body' then Some body'
             else expr
       in
-      let expansion' = DocOckMaps.option_map self#module_expansion expansion in
+      let expansion' = Maps.option_map self#module_expansion expansion in
         if id != id' || doc != doc' || expr != expr' || expansion != expansion' then
           {id = id'; doc = doc'; expr = expr'; expansion = expansion'}
         else mty
@@ -1914,7 +1914,7 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
           let sig_id = Identifier.signature_of_module id' in
           let expr' = self#module_type_expr_with_id sig_id expr in
           let expansion' =
-            DocOckMaps.option_map self#module_expansion expansion
+            Maps.option_map self#module_expansion expansion
           in
             if id != id' || expr != expr' || expansion != expansion' then
               Some {id = id'; expr = expr'; expansion = expansion'}

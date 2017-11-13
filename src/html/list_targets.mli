@@ -14,6 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
+open Doc_model
 
 val unit : package:string -> _ Types.Unit.t -> string list

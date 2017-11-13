@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
-open DocOckComponents
+open Paths
+open Model
+open Components
 
 type ('a, 'b) tbl =
   { fresh: int -> ('a, 'b) tbl;
@@ -67,7 +67,7 @@ type 'a t =
     lookup_unit : string -> 'a lookup_unit_result;
     lookup_page : string -> 'a option;
     fetch_unit : 'a -> 'a Unit.t;
-    fetch_page : 'a -> 'a DocOckTypes.Page.t;
+    fetch_page : 'a -> 'a Model.Page.t;
     tbl : ('a, 'a Sig.t) tbl;
     page_tbl: ('a, 'a Page.t) tbl; }
 
@@ -252,14 +252,14 @@ let core_types =
   let open TypeDecl in
     List.map
       (fun decl -> (Identifier.name decl.id, datatype decl))
-      DocOckPredef.core_types
+      Predefined.core_types
 
 let page tbl base =
   try
     tbl.page_tbl.find base
   with Not_found ->
     let page = tbl.fetch_page base in
-    let t = Page.of_doc page.DocOckTypes.Page.content in
+    let t = Page.of_doc page.Model.Page.content in
     tbl.page_tbl.add base t;
     t
 

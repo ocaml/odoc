@@ -4,7 +4,7 @@
  ((name odoc)
   (public_name odoc)
   (libraries (xmlm
-              odoc.doc-ock
+              odoc.model
               odoc.doc-ock-xml
               odoc.doc-ock-html
               unix

@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
+open Paths
+open Model
 
 type 'a partial_expansion =
   | Signature of 'a Signature.t
@@ -25,35 +25,35 @@ type 'a partial_expansion =
 
 let subst_signature sub = function
   | None -> None
-  | Some sg -> Some (DocOckSubst.signature sub sg)
+  | Some sg -> Some (Subst.signature sub sg)
 
 let subst_arg sub arg =
   match arg with
   | None -> None
   | Some {FunctorArgument. id; expr; expansion} ->
-      let id' = DocOckSubst.identifier_module sub id in
-      let expr' = DocOckSubst.module_type_expr sub expr in
+      let id' = Subst.identifier_module sub id in
+      let expr' = Subst.module_type_expr sub expr in
       let expansion' =
-        DocOckMaps.option_map (DocOckSubst.module_expansion sub) expansion
+        Maps.option_map (Subst.module_expansion sub) expansion
       in
         Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
 
 let subst_expansion sub = function
   | None -> None
   | Some (Signature sg) ->
-      let sg' = DocOckSubst.signature sub sg in
+      let sg' = Subst.signature sub sg in
         Some (Signature sg')
   | Some (Functor(arg, id, offset, expr)) ->
       let arg' = subst_arg sub arg in
       let id', offset' =
-        DocOckSubst.offset_identifier_signature sub (id, offset)
+        Subst.offset_identifier_signature sub (id, offset)
       in
-      let expr' = DocOckSubst.module_type_expr sub expr in
+      let expr' = Subst.module_type_expr sub expr in
         Some (Functor(arg', id', offset', expr'))
 
 let subst_class_expansion sub = function
   | None -> None
-  | Some sg -> Some (DocOckSubst.class_signature sub sg)
+  | Some sg -> Some (Subst.class_signature sub sg)
 
 let map_module name ex f =
   let rec loop name items f acc =
@@ -153,15 +153,15 @@ let refine_module ex (frag : 'a Fragment.module_) equation =
 type 'a intermediate_module_expansion =
   'a Identifier.module_ * 'a Documentation.t
   * ('a Path.module_ * 'a Reference.module_) option
-  * 'a partial_expansion option * 'a DocOckSubst.t list
+  * 'a partial_expansion option * 'a Subst.t list
 
 type 'a intermediate_module_type_expansion =
   'a Identifier.module_type * 'a Documentation.t
-  * 'a partial_expansion option * 'a DocOckSubst.t list
+  * 'a partial_expansion option * 'a Subst.t list
 
 type 'a intermediate_class_type_expansion =
   'a Identifier.class_type * 'a Documentation.t
-  * 'a ClassSignature.t option * 'a DocOckSubst.t list
+  * 'a ClassSignature.t option * 'a Subst.t list
 
 type 'a expander =
   { equal: 'a -> 'a -> bool;
@@ -222,7 +222,7 @@ and expand_class_type_expr ({equal; _} as t) root dest expr =
             ex subs
         in
         let src = Identifier.class_signature_of_class_type src in
-        let sub = DocOckSubst.rename_class_signature ~equal src dest in
+        let sub = Subst.rename_class_signature ~equal src dest in
         subst_class_expansion sub ex
       | exception Not_found -> None
     end
@@ -236,7 +236,7 @@ and expand_class_type_expr ({equal; _} as t) root dest expr =
             ex subs
         in
         let src = Identifier.class_signature_of_class_type src in
-        let sub = DocOckSubst.rename_class_signature ~equal src dest in
+        let sub = Subst.rename_class_signature ~equal src dest in
         subst_class_expansion sub ex
       | exception Not_found -> None
     end
@@ -255,9 +255,9 @@ let rec expand_module_decl ({equal; _} as t) root dest offset decl =
               ex subs
           in
           let src = Identifier.signature_of_module src in
-          let sub1 = DocOckSubst.rename_signature ~equal src dest offset in
+          let sub1 = Subst.rename_signature ~equal src dest offset in
           let ex = subst_expansion sub1 ex in
-          let sub2 = DocOckSubst.strengthen p in
+          let sub2 = Subst.strengthen p in
           subst_expansion sub2 ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
@@ -271,7 +271,7 @@ let rec expand_module_decl ({equal; _} as t) root dest offset decl =
               ex subs
           in
           let src = Identifier.signature_of_module src in
-          let sub = DocOckSubst.rename_signature ~equal src dest offset in
+          let sub = Subst.rename_signature ~equal src dest offset in
           subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
@@ -289,7 +289,7 @@ and expand_module_type_expr ({equal; _ } as t) root dest offset expr =
               ex subs
           in
           let src = Identifier.signature_of_module_type src in
-          let sub = DocOckSubst.rename_signature ~equal src dest offset in
+          let sub = Subst.rename_signature ~equal src dest offset in
             subst_expansion sub ex
         | exception Not_found -> None (* TODO: Should be an error *)
       end
@@ -480,7 +480,7 @@ and expand_module_identifier' t root (id : 'a Identifier.module_) =
   | Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
       let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
-      let doc = DocOckAttrs.empty in
+      let doc = Attrs.empty in
         id, doc, None, expand_argument_ t root arg, []
 
 and expand_module_type_identifier' t root (id : 'a Identifier.module_type) =
@@ -515,7 +515,7 @@ and expand_module_resolved_path' ({equal = eq; _ } as t) root p =
       t.expand_module_resolved_path ~root parent
     in
     let md = find_module t root name ex in
-    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    let sub = Subst.prefix ~equal:eq ~canonical id in
     md.id, md.doc, md.canonical, expand_module t root md, sub :: subs
   | Canonical (p, _) -> t.expand_module_resolved_path ~root p
   | Apply _ -> raise Not_found (* TODO support functor application *)
@@ -530,7 +530,7 @@ and expand_module_path' ({equal = eq; _ } as t) root p =
         t.expand_module_path ~root parent
       in
       let md = find_module t root name ex in
-      let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+      let sub = Subst.prefix ~equal:eq ~canonical id in
         md.id, md.doc, md.canonical, expand_module t root md, sub :: subs
   | Root _ | Apply _ | Resolved _ -> raise Not_found (* TODO: assert false? *)
 
@@ -545,7 +545,7 @@ and expand_class_type_path' ({equal = eq ; _ } as t) root
       t.expand_module_path ~root parent
     in
     let c = find_class_type t root name ex in
-    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    let sub = Subst.prefix ~equal:eq ~canonical id in
     c.id, c.doc, expand_class_type t root c, sub :: subs
 
 and expand_class_type_resolved_path' ({equal = eq; _} as t) root
@@ -559,7 +559,7 @@ and expand_class_type_resolved_path' ({equal = eq; _} as t) root
       t.expand_module_resolved_path ~root parent
     in
     let c = find_class_type t root name ex in
-    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    let sub = Subst.prefix ~equal:eq ~canonical id in
     c.id, c.doc, expand_class_type t root c, sub :: subs
   | ClassType(parent, name) ->
     let open ClassType in
@@ -567,7 +567,7 @@ and expand_class_type_resolved_path' ({equal = eq; _} as t) root
       t.expand_module_resolved_path ~root parent
     in
     let c = find_class_type t root name ex in
-    let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+    let sub = Subst.prefix ~equal:eq ~canonical id in
     c.id, c.doc, expand_class_type t root c, sub :: subs
 
 and expand_module_type_resolved_path' ({equal = eq; _} as t) root
@@ -581,7 +581,7 @@ and expand_module_type_resolved_path' ({equal = eq; _} as t) root
         t.expand_module_resolved_path ~root parent
       in
       let mty = find_module_type t root name ex in
-      let sub = DocOckSubst.prefix ~equal:eq ~canonical id in
+      let sub = Subst.prefix ~equal:eq ~canonical id in
         mty.id, mty.doc, expand_module_type t root mty, sub :: subs
 
 and expand_unit ({equal; hash;_} as t) root unit =
@@ -610,13 +610,13 @@ and expand_unit ({equal; hash;_} as t) root unit =
                           let sg =
                             List.fold_left
                               (fun acc sub ->
-                                 DocOckSubst.signature sub acc)
+                                 Subst.signature sub acc)
                               sg subs
                           in
                           let doc =
                             List.fold_left
                               (fun acc sub ->
-                                 DocOckSubst.documentation sub acc)
+                                 Subst.documentation sub acc)
                               doc subs
                           in
                           let open Module in
@@ -633,13 +633,13 @@ and expand_unit ({equal; hash;_} as t) root unit =
                 | _ -> [], None
           in
           let ids, sg = loop [] [] items in
-          let sub = DocOckSubst.pack ~equal ~hash ids in
+          let sub = Subst.pack ~equal ~hash ids in
             subst_signature sub sg
       | Module sg -> Some sg
 
 
 let create (type a) ?equal ?hash
-      (lookup : string -> a DocOckComponentTbl.lookup_unit_result)
+      (lookup : string -> a Component_table.lookup_unit_result)
       (fetch : root:a -> a -> a Unit.t) =
   let equal =
     match equal with
@@ -713,7 +713,7 @@ let create (type a) ?equal ?hash
     match ref with
     | Resolved (Resolved.Identifier (Identifier.Root (_, unit_name))) ->
       begin match lookup unit_name with
-      | DocOckComponentTbl.Found { root; _ } ->
+      | Component_table.Found { root; _ } ->
         let unit = fetch ~root root in
         Some unit
       | _ -> None
@@ -722,7 +722,7 @@ let create (type a) ?equal ?hash
       None
   and expand_forward_ref ~root str =
     match lookup str with
-    | DocOckComponentTbl.Found { root = a; _ } -> expand_root ~root a
+    | Component_table.Found { root = a; _ } -> expand_root ~root a
     | _ -> raise Not_found
   and expand_module_identifier ~root id =
     let key = (root, Identifier.any id) in
@@ -969,7 +969,7 @@ class ['a] t ?equal ?hash lookup fetch = object (self)
   val t = create ?equal ?hash lookup fetch
   val unit = None
 
-  inherit ['a] DocOckMaps.types as super
+  inherit ['a] Maps.types as super
   method root x = x
 
   (* Define virtual methods. *)

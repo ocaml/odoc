@@ -15,7 +15,7 @@
  *)
 
 open Doc_parser.Output
-open DocOckTypes.Documentation
+open Model.Documentation
 
 let opt_map f = function
   | None -> None
@@ -36,7 +36,7 @@ exception InvalidReference of string
 
 let read_qualifier :
   string option ->
-  [< DocOckPaths.Reference.kind ] DocOckPaths.Reference.tag
+  [< Paths.Reference.kind ] Paths.Reference.tag
   = function
   | None -> TUnknown
   | Some "module" -> TModule
@@ -56,7 +56,7 @@ let read_qualifier :
   | Some s -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
 
 let read_longident s =
-  let open DocOckPaths.Reference in
+  let open Paths.Reference in
   let split_qualifier str =
     match String.rindex str '-' with
     | exception Not_found -> (None, str)
@@ -368,7 +368,7 @@ let read_longident s =
     | Some r -> r
 
 let read_path_longident s =
-  let open DocOckPaths.Path in
+  let open Paths.Path in
   let rec loop : 'k. string -> int -> ('a, [< kind > `Module ] as 'k) t option =
     fun s pos ->
       try
@@ -390,8 +390,8 @@ let read_path_longident s =
 
 exception Expected_reference_to_a_module_but_got of string
 
-let read_mod_longident lid : _ DocOckPaths.Reference.module_ =
-  let open DocOckPaths.Reference in
+let read_mod_longident lid : _ Paths.Reference.module_ =
+  let open Paths.Reference in
   match read_longident lid with
   | Root (_, (TUnknown | TModule))
   | Dot (_, _)
@@ -401,7 +401,7 @@ let read_mod_longident lid : _ DocOckPaths.Reference.module_ =
       raise (Expected_reference_to_a_module_but_got lid)
 
 let read_reference rk s =
-(*   let open DocOckPaths.Reference in *)
+(*   let open Paths.Reference in *)
   let parsed_ref = lazy (read_longident s) in
   match rk, parsed_ref with
   | RK_link, _ -> Link s
@@ -447,7 +447,7 @@ let rec read_text_element parent
         match l with
         | None -> Title(i, None, txt)
         | Some name ->
-            let id = DocOckPaths.Identifier.Label(parent, name) in
+            let id = Paths.Identifier.Label(parent, name) in
               Title(i, Some id, txt)
     end
   | Ref(rk, s, txt) ->
@@ -521,7 +521,7 @@ let read_location offset pos =
 
 let read_error origin err pos =
   let open Error in
-  let origin = DocOckPaths.Identifier.any origin in
+  let origin = Paths.Identifier.any origin in
   let offset = read_offset err in
   let location = read_location offset pos in
   let message = Doc_parser.Error.message err.Doc_parser.Error.error in
@@ -547,7 +547,7 @@ let attribute_location loc =
 
 let invalid_attribute_error origin loc =
   let open Error in
-  let origin = DocOckPaths.Identifier.any origin in
+  let origin = Paths.Identifier.any origin in
   let offset =
     let zero_pos = { Position.line = 0; column = 0 } in
     { Offset.start = zero_pos; finish = zero_pos }
@@ -558,7 +558,7 @@ let invalid_attribute_error origin loc =
 
 let invalid_reference_error origin loc s =
   let open Error in
-  let origin = DocOckPaths.Identifier.any origin in
+  let origin = Paths.Identifier.any origin in
   (* TODO get an actual offset *)
   let dummy = { Position.line = 0; column = 0} in
   let offset = { Offset.start = dummy; finish = dummy } in
@@ -569,7 +569,7 @@ let invalid_reference_error origin loc s =
 
 let several_deprecated_error origin loc =
   let open Error in
-  let origin = DocOckPaths.Identifier.any origin in
+  let origin = Paths.Identifier.any origin in
   (* TODO get an actual offset *)
   let dummy = { Position.line = 0; column = 0} in
   let offset = { Offset.start = dummy; finish = dummy } in
@@ -584,7 +584,7 @@ let read_attributes parent id attrs =
   let rec loop first nb_deprecated acc : _ -> 'a t = function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
-        match DocOckPayload.read payload with
+        match Payload.read payload with
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
@@ -617,7 +617,7 @@ let read_attributes parent id attrs =
       end
     | ({Location.txt =
           ("deprecated" | "ocaml.deprecated"); _}, payload) :: rest -> begin
-        match DocOckPayload.read payload with
+        match Payload.read payload with
         | Some (str, _) ->
           (* Not parsing with octavius here, we take the string verbatim. *)
           let deprecated_tag = Deprecated [Raw str] in
@@ -658,7 +658,7 @@ let read_comment parent : Parsetree.attribute -> 'a comment option =
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin
-      match DocOckPayload.read payload with
+      match Payload.read payload with
       | Some ("/*", _loc) -> Some Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->

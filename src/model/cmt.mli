@@ -14,12 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckTypes
-
-type 'a t
-
-val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                     (string -> 'a DocOckComponentTbl.lookup_unit_result) ->
-                     (root:'a -> 'a -> 'a Unit.t) -> 'a t
-
-val expand : 'a t -> 'a Unit.t -> 'a Unit.t
+val read_implementation: 'a -> string -> Typedtree.structure ->
+  'a Paths.Identifier.module_ *
+  'a Model.Documentation.t *
+  'a Model.Signature.t

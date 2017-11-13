@@ -1,4 +1,4 @@
-open DocOck.Paths
+open Doc_model.Paths
 
 type t = {
   page : string list;
@@ -54,7 +54,7 @@ module Anchor : sig
     val from_element
       : get_package:('pkg -> string)
       -> type_ident:('pkg, _) Identifier.t
-      -> 'pkg DocOck.Types.TypeExpr.Variant.element
+      -> 'pkg Doc_model.Types.TypeExpr.Variant.element
       -> t
   end
 

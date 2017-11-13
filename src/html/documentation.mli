@@ -1,5 +1,5 @@
 open Tyxml.Html
-open DocOck.Types.Documentation
+open Doc_model.Types.Documentation
 
 val to_html : ?wrap:unit -> get_package:('a -> string) -> 'a t
   -> Html_types.div_content_fun elt list

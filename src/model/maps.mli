@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
+open Paths
+open Model
 
 val option_map : ('a -> 'a) -> 'a option -> 'a option
 

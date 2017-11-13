@@ -14,6 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val lookup : 'a DocOckTypes.Unit.t -> 'a DocOckTypes.Unit.t
+open Model
 
-val lookup_page : 'a DocOckTypes.Page.t -> 'a DocOckTypes.Page.t
+type 'a t
+
+val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
+                     (string -> 'a Component_table.lookup_unit_result) ->
+                     (root:'a -> 'a -> 'a Unit.t) -> 'a t
+
+val expand : 'a t -> 'a Unit.t -> 'a Unit.t

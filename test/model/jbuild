@@ -2,13 +2,13 @@
 
 (library
  ((name ocamlary)
-  (public_name odoc.doc-ock.ocamlary)
+  (public_name odoc.model.ocamlary)
   (modules (ocamlary))))
 
 (executables
  ((names (testCmi testCmti testCmt))
   (modules (testCmi testCmti testCmt testCommon))
-  (libraries (odoc.doc-ock))))
+  (libraries (odoc.model))))
 
 ; (alias
 ;  ((name   runtest)

@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOck
+open Doc_model
 
 type t = {
-  expander    : Root.t DocOck.expander ;
-  resolver    : Root.t DocOck.resolver ;
+  expander    : Root.t Doc_model.expander ;
+  resolver    : Root.t Doc_model.resolver ;
 }
 
 module Accessible_paths = struct
@@ -94,11 +94,11 @@ let rec lookup_unit ~important_digests ap target_name =
       | Page _ -> assert false
   in
   function
-  | [] when important_digests -> DocOck.Not_found
+  | [] when important_digests -> Doc_model.Not_found
   | [] -> find_root ~digest:None
   | import :: imports ->
     match import with
-    | DocOck.Types.Unit.Import.Unresolved (name, digest)
+    | Doc_model.Types.Unit.Import.Unresolved (name, digest)
       when name = target_name ->
       begin match digest with
       | None when important_digests -> Forward_reference
@@ -136,7 +136,7 @@ type builder = [ `Unit of Unit.t | `Page of Page.t ] -> t
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
-    let lookup_unit target_name : Root.t DocOck.lookup_result =
+    let lookup_unit target_name : Root.t Doc_model.lookup_result =
       match unit_or_page with
       | `Page _ -> lookup_unit ~important_digests:false ap target_name []
       | `Unit unit ->
@@ -153,7 +153,7 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Root.t DocOck.Types.Unit.t =
+    let fetch_unit root : Root.t Doc_model.Types.Unit.t =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
@@ -164,7 +164,7 @@ let create ?(important_digests=true) ~directories : builder =
           fetch_unit ap root
     in
     let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : Root.t DocOck.Types.Page.t =
+    let fetch_page root : Root.t Doc_model.Types.Page.t =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->
@@ -175,13 +175,13 @@ let create ?(important_digests=true) ~directories : builder =
           fetch_page ap root
     in
     let resolver =
-      DocOck.build_resolver lookup_unit fetch_unit lookup_page fetch_page
+      Doc_model.build_resolver lookup_unit fetch_unit lookup_page fetch_page
     in
     let expander =
       (* CR trefis: what is the ~root param good for? *)
       let fetch ~root:_ root = fetch_unit root in
       let lookup _ s = lookup_unit s in
-      DocOck.build_expander (lookup ()) fetch
+      Doc_model.build_expander (lookup ()) fetch
     in
     { expander; resolver }
 

@@ -19,11 +19,11 @@ open Typedtree
 
 module OCamlPath = Path
 
-open DocOckPaths
-open DocOckTypes
-open DocOckAttrs
+open Paths
+open Model
+open Attrs
 
-module Env = DocOckIdentEnv
+module Env = Ident_env
 
 let opt_map f = function
   | None -> None
@@ -41,7 +41,7 @@ let parenthesise name =
       | _ -> "(" ^ name ^ ")"
     else name
 
-let read_label = DocOckCmi.read_label
+let read_label = Cmi.read_label
 
 let rec read_core_type env ctyp =
   let open TypeExpr in
@@ -454,7 +454,7 @@ and read_module_type env parent pos mty =
           | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
           | _ ->
               let mty =
-                DocOckCmi.read_module_type env parent pos mexpr.mod_type
+                Cmi.read_module_type env parent pos mexpr.mod_type
               in
                 ModuleType mty
         in
@@ -573,7 +573,7 @@ and read_include env parent incl =
   let doc = read_attributes container parent incl.incl_attributes in
   let expr = read_module_type env parent 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
-  let content = DocOckCmi.read_signature env parent incl.incl_type in
+  let content = Cmi.read_signature env parent incl.incl_type in
   let expansion = { content; resolved = false} in
     {parent; doc; decl; expansion}
 

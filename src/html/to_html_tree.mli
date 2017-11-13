@@ -15,7 +15,7 @@
  *)
 
 val unit :
-  get_package:('a -> string) -> 'a DocOck.Types.Unit.t -> Html_tree.t
+  get_package:('a -> string) -> 'a Doc_model.Types.Unit.t -> Html_tree.t
 
 val page :
-  get_package:('a -> string) -> 'a DocOck.Types.Page.t -> Html_tree.t
+  get_package:('a -> string) -> 'a Doc_model.Types.Page.t -> Html_tree.t

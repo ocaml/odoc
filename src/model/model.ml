@@ -16,7 +16,7 @@
 
 (** Type of documentation *)
 
-open DocOckPaths
+open Paths
 
 (** {3 Documentation} *)
 

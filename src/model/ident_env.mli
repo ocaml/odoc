@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths.Identifier
+open Paths.Identifier
 
 type 'a t
 
@@ -45,21 +45,21 @@ val add_structure_tree_items : 'a signature -> Typedtree.structure ->
 
 module Path : sig
 
-  val read_module : 'a t -> Path.t -> 'a DocOckPaths.Path.module_
+  val read_module : 'a t -> Path.t -> 'a Paths.Path.module_
 
-  val read_module_type : 'a t -> Path.t -> 'a DocOckPaths.Path.module_type
+  val read_module_type : 'a t -> Path.t -> 'a Paths.Path.module_type
 
-  val read_type : 'a t -> Path.t -> 'a DocOckPaths.Path.type_
+  val read_type : 'a t -> Path.t -> 'a Paths.Path.type_
 
-  val read_class_type : 'a t -> Path.t -> 'a DocOckPaths.Path.class_type
+  val read_class_type : 'a t -> Path.t -> 'a Paths.Path.class_type
 
 end
 
 
 module Fragment : sig
 
-  val read_module : Longident.t -> 'a DocOckPaths.Fragment.module_
+  val read_module : Longident.t -> 'a Paths.Fragment.module_
 
-  val read_type : Longident.t -> 'a DocOckPaths.Fragment.type_
+  val read_type : Longident.t -> 'a Paths.Fragment.type_
 
 end

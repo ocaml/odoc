@@ -14,16 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open DocOckPaths
-open DocOckTypes
+open Paths
+open Model
 
 
 class type ['a] t = object
   method root : 'a -> 'a
-  inherit ['a] DocOckMaps.paths
+  inherit ['a] Maps.paths
   method offset_identifier_signature :
     'a Identifier.signature * int -> 'a Identifier.signature * int
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 end
 
 let signature s sg =
@@ -96,7 +96,7 @@ let module_expansion s expr =
 class ['a] rename_signature ~equal (x : 'a Identifier.signature)
         (y : 'a Identifier.signature) offset : ['a] t = object
 
-  inherit ['a] DocOckMaps.paths as super
+  inherit ['a] Maps.paths as super
 
   method root x = x
 
@@ -117,7 +117,7 @@ class ['a] rename_signature ~equal (x : 'a Identifier.signature)
     if Identifier.equal ~equal id x then (y, offset + offset')
     else (super#identifier_signature id, offset')
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
 end
 
@@ -128,7 +128,7 @@ class ['a] rename_class_signature ~equal
            (x : 'a Identifier.class_signature)
            (y : 'a Identifier.class_signature) : ['a] t = object (self)
 
-  inherit ['a] DocOckMaps.paths as super
+  inherit ['a] Maps.paths as super
 
   method root x = x
 
@@ -136,7 +136,7 @@ class ['a] rename_class_signature ~equal
     if Identifier.equal ~equal id x then y
     else super#identifier_class_signature id
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -149,7 +149,7 @@ let rename_class_signature ~equal x y =
 class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
         (y : 'a Identifier.datatype) : ['a] t = object (self)
 
-  inherit ['a] DocOckMaps.paths as super
+  inherit ['a] Maps.paths as super
 
   method root x = x
 
@@ -157,7 +157,7 @@ class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
     if Identifier.equal ~equal id x then y
     else super#identifier_datatype id
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -174,7 +174,7 @@ let rename_datatype ~equal x y =
 
 class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
 
-  inherit ['a] DocOckMaps.paths as super
+  inherit ['a] Maps.paths as super
 
   method root x = x
 
@@ -260,7 +260,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
         end
       | _ -> super#reference_resolved r
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -272,7 +272,7 @@ let prefix ~equal ~canonical id =
 
 class ['a] strengthen path : ['a] t = object
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
   method root x = x
 
@@ -310,7 +310,7 @@ class ['a] strengthen path : ['a] t = object
 
   method! include_ x = x
 
-  inherit ['a] DocOckMaps.paths
+  inherit ['a] Maps.paths
 
   method offset_identifier_signature x = x
 
@@ -344,7 +344,7 @@ class ['a] pack ~equal ~hash
 
   method root x = x
 
-  inherit ['a] DocOckMaps.paths as super
+  inherit ['a] Maps.paths as super
 
   method! identifier : type k. ('a, k) Identifier.t -> ('a, k) Identifier.t =
     fun id ->
@@ -367,7 +367,7 @@ class ['a] pack ~equal ~hash
           end
         | _ -> super#identifier id
 
-  inherit ['a] DocOckMaps.types
+  inherit ['a] Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)

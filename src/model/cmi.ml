@@ -19,11 +19,11 @@ open Types
 
 module OCamlPath = Path
 
-open DocOckPaths
-open DocOckTypes
-open DocOckAttrs
+open Paths
+open Model
+open Attrs
 
-module Env = DocOckIdentEnv
+module Env = Ident_env
 
 let opt_map f = function
   | None -> None
