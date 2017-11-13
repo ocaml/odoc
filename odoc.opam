@@ -27,6 +27,6 @@ depends: [
 
 build: [
   ["jbuilder" "subst"] {pinned}
-  ["ocaml" "odoc/bin/set-etc" "odoc/bin/odoc_etc.ml" odoc:etc]
+  ["ocaml" "src/odoc/bin/set-etc" "src/odoc/bin/odoc_etc.ml" odoc:etc]
   ["jbuilder" "build" "-p" name "-j" jobs]
 ]
