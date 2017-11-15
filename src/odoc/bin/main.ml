@@ -6,7 +6,7 @@
 open Odoc
 open Cmdliner
 
-let odoc_dir : Fs.Directory.t Arg.converter =
+let convert_directory : Fs.Directory.t Arg.converter =
   let (dir_parser, dir_printer) = Arg.dir in
   let odoc_dir_parser str =
     match dir_parser str with
@@ -18,12 +18,13 @@ let odoc_dir : Fs.Directory.t Arg.converter =
 
 let docs = "ARGUMENTS"
 
-let env =
+let odoc_file_directories =
   let doc =
     "Where to look for required .odoc files. \
      (Can be present several times)."
   in
-  Arg.(value & opt_all odoc_dir [] @@ info ~docs ~docv:"DIR" ~doc ["I"])
+  Arg.(value & opt_all convert_directory [] @@
+    info ~docs ~docv:"DIR" ~doc ["I"])
 
 let hidden =
   let doc =
@@ -34,7 +35,7 @@ let hidden =
 
 let dst =
   let doc = "Output dir" (* TODO: improve *) in
-  Arg.(required & opt (some odoc_dir) None @@
+  Arg.(required & opt (some convert_directory) None @@
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
 module Compile : sig
@@ -99,7 +100,8 @@ end = struct
       let doc = "Try resolving forward references" in
       Arg.(value & flag @@ info ~doc ["r";"resolve-fwd-refs"])
     in
-    Term.(const compile $ hidden $ env $ resolve_fwd_refs $ dst_file $ pkg $ input)
+    Term.(const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $
+      dst_file $ pkg $ input)
 
   let info =
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
@@ -144,8 +146,8 @@ end = struct
       in
       Arg.(value & flag (info ~doc ["closed-details"]))
     in
-    Term.(const html $ semantic_uris $ closed_details $ hidden $ env $ dst $
-          input)
+    Term.(const html $ semantic_uris $ closed_details $ hidden $
+      odoc_file_directories $ dst $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -237,7 +239,7 @@ module Targets = struct
         let doc = "Input file" in
         Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
       in
-      Term.(const list_targets $ env $ dst $ input)
+      Term.(const list_targets $ odoc_file_directories $ dst $ input)
 
     let info =
       Term.info "html-targets" ~doc:"TODO: Fill in."
