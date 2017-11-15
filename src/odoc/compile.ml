@@ -16,9 +16,9 @@
 
 
 
-let it's_all_the_same ~env ~output input reader =
-  let fn = Fs.File.to_string input in
-  match reader ~filename:fn with
+let resolve_and_substitute ~env ~output input_file read_file =
+  let filename = Fs.File.to_string input_file in
+  match read_file ~filename:filename with
   | Error Doc_model.Not_an_interface  -> failwith "Not_an_interface"
   | Error Wrong_version  -> failwith "Wrong_version"
   | Error Corrupted  -> failwith "Corrupted"
@@ -27,8 +27,10 @@ let it's_all_the_same ~env ~output input reader =
   | Ok unit ->
     if not unit.Doc_model.Types.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
-        (if not (Filename.check_suffix fn "cmt") then "" (* ? *)
-         else Printf.sprintf " Using %S while you should use the .cmti file" fn)
+        (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
+         else
+          Printf.sprintf
+            " Using %S while you should use the .cmti file" filename)
     );
     let resolve_env = Env.build env (`Unit unit) in
     let resolved = Doc_model.resolve (Env.resolver resolve_env) unit in
@@ -38,23 +40,28 @@ let it's_all_the_same ~env ~output input reader =
        Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
-    Unit.save output (Doc_model.expand (Env.expander expand_env) resolved)
+    let expanded = Doc_model.expand (Env.expander expand_env) resolved in
+    Unit.save output expanded
 
-let root_of_unit ~package ~hidden ~module_name ~digest =
-  let file = Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  Root.create ~package ~file ~digest
+let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
+  let file_representation : Root.Odoc_file.t =
+    Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
+  Root.create ~package ~file:file_representation ~digest
 
 let cmti ~env ~package ~hidden ~output input =
-  it's_all_the_same ~env ~output input
-    (Doc_model.read_cmti ~make_root:(root_of_unit ~package ~hidden))
+  let make_root = root_of_compilation_unit ~package ~hidden in
+  let read_file = Doc_model.read_cmti ~make_root in
+  resolve_and_substitute ~env ~output input read_file
 
 let cmt ~env ~package ~hidden ~output input =
-  it's_all_the_same ~env ~output input
-    (Doc_model.read_cmt ~make_root:(root_of_unit ~package ~hidden))
+  let make_root = root_of_compilation_unit ~package ~hidden in
+  let read_file = Doc_model.read_cmt ~make_root in
+  resolve_and_substitute ~env ~output input read_file
 
 let cmi ~env ~package ~hidden ~output input =
-  it's_all_the_same ~env ~output input
-    (Doc_model.read_cmi ~make_root:(root_of_unit ~package ~hidden))
+  let make_root = root_of_compilation_unit ~package ~hidden in
+  let read_file = Doc_model.read_cmi ~make_root in
+  resolve_and_substitute ~env ~output input read_file
 
 (* TODO: move most of this to doc-ock. *)
 let mld ~env ~package ~output input =
