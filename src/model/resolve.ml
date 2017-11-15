@@ -2033,7 +2033,7 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       splice_section_title tbl elt
 
     method! unit_import import =
-      let open Unit.Import in
+      let open Compilation_unit.Import in
         match import with
         | Resolved _ -> import
         | Unresolved(name, _) ->
@@ -2043,7 +2043,8 @@ class ['a] resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
 
     method resolve_unit unit =
       let this =
-        {< where_am_i = Some (Identifier.signature_of_module unit.Unit.id) >}
+        {< where_am_i =
+          Some (Identifier.signature_of_module unit.Compilation_unit.id) >}
       in
         this#unit unit
 

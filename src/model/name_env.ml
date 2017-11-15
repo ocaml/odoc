@@ -420,7 +420,7 @@ let add_module md env =
     add_module_ident md.id env
 
 let add_unit unit env =
-  let open Unit in
+  let open Compilation_unit in
   let env = add_documentation unit.doc env in
     add_module_ident unit.id env
 

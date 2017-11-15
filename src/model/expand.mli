@@ -20,6 +20,6 @@ type 'a t
 
 val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
                      (string -> 'a Component_table.lookup_unit_result) ->
-                     (root:'a -> 'a -> 'a Unit.t) -> 'a t
+                     (root:'a -> 'a -> 'a Compilation_unit.t) -> 'a t
 
-val expand : 'a t -> 'a Unit.t -> 'a Unit.t
+val expand : 'a t -> 'a Compilation_unit.t -> 'a Compilation_unit.t

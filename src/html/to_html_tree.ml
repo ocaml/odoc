@@ -42,7 +42,7 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
     let id = string_of_sexp @@ Identifier.sexp_of_t (fun _ -> Atom "") id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
+let rec unit ~get_package (t : _ Types.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
     | Paths.Identifier.Root (a, _) -> get_package a
@@ -59,19 +59,20 @@ let rec unit ~get_package (t : _ Types.Unit.t) : Html_tree.t =
   Html_tree.make (header_doc @ html, subtree)
 
 and pack
-   : get_package:('a -> string) -> 'a Types.Unit.Packed.t
+   : get_package:('a -> string) -> 'a Types.Compilation_unit.Packed.t
   -> Html_types.div_content_fun elt list
 = fun ~get_package t ->
   let open Types in
   List.map t ~f:(fun x ->
-    let modname = Identifier.name x.Unit.Packed.id in
+    let modname = Identifier.name x.Compilation_unit.Packed.id in
     let md_def =
       Markup.keyword "module " ::
       pcdata modname ::
       pcdata " = " ::
       Html_tree.Relative_link.of_path ~stop_before:false ~get_package x.path
     in
-    Markup.make_def ~get_package ~id:x.Unit.Packed.id ~code:md_def ~doc:[]
+    Markup.make_def
+      ~get_package ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
   )
 
 and signature

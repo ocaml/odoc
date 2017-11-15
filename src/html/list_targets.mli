@@ -16,4 +16,4 @@
 
 open Doc_model
 
-val unit : package:string -> _ Types.Unit.t -> string list
+val unit : package:string -> _ Types.Compilation_unit.t -> string list

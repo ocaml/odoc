@@ -16,10 +16,10 @@
 
 open Doc_model
 
-type t = Root.t Types.Unit.t
+type t = Root.t Types.Compilation_unit.t
 
-let root (t : Root.t Types.Unit.t) =
-  match t.Types.Unit.id with
+let root (t : Root.t Types.Compilation_unit.t) =
+  match t.Types.Compilation_unit.id with
   | Paths.Identifier.Root (root, _) -> root
   | _ -> assert false
 

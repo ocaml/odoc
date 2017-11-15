@@ -495,7 +495,7 @@ end = TypeExpr
 
 (** {3 Compilation units} *)
 
-module rec Unit : sig
+module rec Compilation_unit : sig
 
   module Import : sig
 
@@ -539,7 +539,7 @@ module rec Unit : sig
       content: 'a content;
       expansion: 'a Signature.t option; }
 
-end = Unit
+end = Compilation_unit
 
 module rec Page : sig
   type 'a t =

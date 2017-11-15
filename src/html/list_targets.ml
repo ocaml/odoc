@@ -25,7 +25,7 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
     let id = string_of_sexp @@ Identifier.sexp_of_t (fun _ -> Atom "") id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec unit ~package (t : _ Types.Unit.t) : string list =
+let rec unit ~package (t : _ Types.Compilation_unit.t) : string list =
   let name = Printf.sprintf "%s/%s" package (Identifier.name t.id) in
   let rest =
     match t.content with

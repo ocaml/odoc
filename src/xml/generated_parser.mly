@@ -170,8 +170,8 @@ let relax_class_reference cl =
 %token EOF
 
 %start <Root.t Doc_model.Types.Documentation.text> text_entry
-%start <Root.t Doc_model.Types.Unit.t> unit
-%start <Root.t Doc_model.Types.Unit.t> unit_file
+%start <Root.t Doc_model.Types.Compilation_unit.t> unit
+%start <Root.t Doc_model.Types.Compilation_unit.t> unit_file
 %start <Root.t Doc_model.Types.Page.t> page
 %start <Root.t Doc_model.Types.Page.t> page_file
 
@@ -1126,9 +1126,9 @@ digest:
 
 unit_import:
   | IMPORT data = Data digest = digest? CLOSE
-      { Unit.Import.Unresolved(data, digest) }
+      { Compilation_unit.Import.Unresolved(data, digest) }
   | IMPORT base = Base CLOSE
-      { Unit.Import.Resolved base }
+      { Compilation_unit.Import.Resolved base }
 
 source_file:
   | FILE data = Data CLOSE
@@ -1140,25 +1140,25 @@ source_build_dir:
 
 source:
   | SOURCE file = source_file build_dir = source_build_dir digest = digest CLOSE
-      { let open Unit.Source in
+      { let open Compilation_unit.Source in
           {file; build_dir; digest} }
 
 packed_item:
   | ITEM id = module_identifier path = module_path CLOSE
-      { let open Unit.Packed in
+      { let open Compilation_unit.Packed in
           {id; path} }
 
 unit_content:
   | MODULE items = signature_item* CLOSE
-      { Unit.Module items }
+      { Compilation_unit.Module items }
   | PACK items = packed_item* CLOSE
-      { Unit.Pack items }
+      { Compilation_unit.Pack items }
 
 unit:
   | UNIT id = module_identifier doc = doc digest = digest imports = unit_import*
       source = source? interface = flag(INTERFACE) hidden = flag(HIDDEN)
       content = unit_content expansion = expansion_opt CLOSE
-          { let open Unit in
+          { let open Compilation_unit in
               {id; doc; digest; imports; source; expansion ;
                interface; hidden; content} }
 

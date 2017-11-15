@@ -21,12 +21,13 @@ type 'a resolver
 (** Lazily extract the components of units. Assumes that it is safe to
     use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
 val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a Component_table.lookup_unit_result) -> ('a -> 'a Unit.t)
+  -> (string -> 'a Component_table.lookup_unit_result)
+  -> ('a -> 'a Compilation_unit.t)
   -> (string -> 'a option) -> ('a -> 'a Page.t)
   -> 'a resolver
 
 (** Try to resolve all paths and references within a unit. *)
-val resolve : 'a resolver -> 'a Unit.t -> 'a Unit.t
+val resolve : 'a resolver -> 'a Compilation_unit.t -> 'a Compilation_unit.t
 
 (** Try to resolve all paths and references within a page. *)
 val resolve_page : 'a resolver -> 'a Page.t -> 'a Page.t

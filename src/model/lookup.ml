@@ -83,7 +83,7 @@ class ['a] lookup = object
   method super_unit unt = super#unit unt
 
   method! unit unt =
-    let open Unit in
+    let open Compilation_unit in
     let env = add_unit unt env in
     let env =
       match unt.content with

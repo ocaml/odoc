@@ -66,7 +66,7 @@ type 'a t =
     hash : ('a -> int) option;
     lookup_unit : string -> 'a lookup_unit_result;
     lookup_page : string -> 'a option;
-    fetch_unit : 'a -> 'a Unit.t;
+    fetch_unit : 'a -> 'a Compilation_unit.t;
     fetch_page : 'a -> 'a Model.Page.t;
     tbl : ('a, 'a Sig.t) tbl;
     page_tbl: ('a, 'a Page.t) tbl; }
@@ -271,7 +271,7 @@ let rec unit tbl base =
     try
       tbl.tbl.find base
     with Not_found ->
-      let open Unit in
+      let open Compilation_unit in
       let unt = tbl.fetch_unit base in
       let id = Identifier.signature_of_module unt.id in
       let local = create_local tbl (Some id) in
@@ -579,7 +579,7 @@ and module_decl local decl =
 
 and packed_items local =
   let open Sig in
-  let open Unit.Packed in function
+  let open Compilation_unit.Packed in function
     | {id; path} :: rest ->
         let name = Identifier.name id in
         let decl = alias (module_path local) path in

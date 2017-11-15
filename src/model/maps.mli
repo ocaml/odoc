@@ -885,13 +885,15 @@ class virtual ['a] unit : object
 
   method virtual signature : 'a Signature.t -> 'a Signature.t
 
-  method unit_import : 'a Unit.Import.t -> 'a Unit.Import.t
+  method unit_import :
+    'a Compilation_unit.Import.t -> 'a Compilation_unit.Import.t
 
   method unit_import_name : string -> string
 
   method unit_import_digest : Digest.t -> Digest.t
 
-  method unit_source : 'a Unit.Source.t -> 'a Unit.Source.t
+  method unit_source :
+    'a Compilation_unit.Source.t -> 'a Compilation_unit.Source.t
 
   method unit_source_file : string -> string
 
@@ -899,13 +901,16 @@ class virtual ['a] unit : object
 
   method unit_source_digest : Digest.t -> Digest.t
 
-  method unit_packed_item : 'a Unit.Packed.item -> 'a Unit.Packed.item
+  method unit_packed_item :
+    'a Compilation_unit.Packed.item -> 'a Compilation_unit.Packed.item
 
-  method unit_packed : 'a Unit.Packed.t -> 'a Unit.Packed.t
+  method unit_packed :
+    'a Compilation_unit.Packed.t -> 'a Compilation_unit.Packed.t
 
-  method unit_content : 'a Unit.content -> 'a Unit.content
+  method unit_content :
+    'a Compilation_unit.content -> 'a Compilation_unit.content
 
-  method unit : 'a Unit.t -> 'a Unit.t
+  method unit : 'a Compilation_unit.t -> 'a Compilation_unit.t
 
   method unit_digest : Digest.t -> Digest.t
 

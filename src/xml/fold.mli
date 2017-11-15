@@ -19,8 +19,8 @@ type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
 
 val text: 'r t -> 'r Doc_model.Types.Documentation.text t
 
-val unit: 'r t -> 'r Doc_model.Types.Unit.t t
-val file_unit: 'r t -> 'r Doc_model.Types.Unit.t t
+val unit: 'r t -> 'r Doc_model.Types.Compilation_unit.t t
+val file_unit: 'r t -> 'r Doc_model.Types.Compilation_unit.t t
 
 val page: 'r t -> 'r Doc_model.Types.Page.t t
 val file_page: 'r t -> 'r Doc_model.Types.Page.t t

@@ -187,7 +187,7 @@ type 'a expander =
       'a intermediate_class_type_expansion;
     expand_class_type_resolved_path: root:'a -> 'a Path.Resolved.class_type ->
       'a intermediate_class_type_expansion;
-    fetch_unit_from_ref: 'a Reference.module_ -> 'a Unit.t option; }
+    fetch_unit_from_ref: 'a Reference.module_ -> 'a Compilation_unit.t option; }
 
 let add_doc_to_class_expansion_opt doc =
   let open ClassSignature in
@@ -585,7 +585,7 @@ and expand_module_type_resolved_path' ({equal = eq; _} as t) root
         mty.id, mty.doc, expand_module_type t root mty, sub :: subs
 
 and expand_unit ({equal; hash;_} as t) root unit =
-  let open Unit in
+  let open Compilation_unit in
     match unit.expansion with
     | Some ex -> Some ex
     | None ->
@@ -640,7 +640,7 @@ and expand_unit ({equal; hash;_} as t) root unit =
 
 let create (type a) ?equal ?hash
       (lookup : string -> a Component_table.lookup_unit_result)
-      (fetch : root:a -> a -> a Unit.t) =
+      (fetch : root:a -> a -> a Compilation_unit.t) =
   let equal =
     match equal with
     | None -> (=)
@@ -696,7 +696,7 @@ let create (type a) ?equal ?hash
     try
       RootTbl.find expand_root_tbl key
     with Not_found ->
-      let open Unit in
+      let open Compilation_unit in
       let unit = fetch ~root root' in
       let sg = expand_unit t root unit in
       let ex =
@@ -1031,7 +1031,7 @@ class ['a] t ?equal ?hash lookup fetch = object (self)
         | None -> txt
         | Some u ->
           let open Documentation in
-          match u.Unit.doc with
+          match u.Compilation_unit.doc with
           | Ok { text; _ } ->
             begin match text with
             | [] -> txt

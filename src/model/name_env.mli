@@ -23,7 +23,7 @@ val empty : 'a t
 
 val add_page : 'a Page.t -> 'a t -> 'a t
 
-val add_unit : 'a Unit.t -> 'a t -> 'a t
+val add_unit : 'a Compilation_unit.t -> 'a t -> 'a t
 
 val add_signature_items : 'a Signature.t -> 'a t -> 'a t
 

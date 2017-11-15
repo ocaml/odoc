@@ -2116,7 +2116,7 @@ class virtual ['a] unit = object (self)
     'a Signature.t -> 'a Signature.t
 
   method unit_import import =
-    let open Unit.Import in
+    let open Compilation_unit.Import in
       match import with
       | Unresolved(name, digest) ->
           let name' = self#unit_import_name name in
@@ -2134,7 +2134,7 @@ class virtual ['a] unit = object (self)
   method unit_import_digest digest = digest
 
   method unit_source source =
-    let open Unit.Source in
+    let open Compilation_unit.Source in
     let {file; build_dir; digest} = source in
     let file' = self#unit_source_file file in
     let build_dir' = self#unit_source_build_dir build_dir in
@@ -2150,7 +2150,7 @@ class virtual ['a] unit = object (self)
   method unit_source_digest digest = digest
 
   method unit_packed_item item =
-    let open Unit.Packed in
+    let open Compilation_unit.Packed in
     let {id; path} = item in
     let id' = self#identifier_module id in
     let path' = self#path_module path in
@@ -2161,7 +2161,7 @@ class virtual ['a] unit = object (self)
     list_map self#unit_packed_item items
 
   method unit_content content =
-    let open Unit in
+    let open Compilation_unit in
       match content with
       | Module items ->
           let items' = self#signature items in
@@ -2173,7 +2173,7 @@ class virtual ['a] unit = object (self)
             else content
 
   method unit unit =
-    let open Unit in
+    let open Compilation_unit in
     let {id; doc; digest; imports;
          source; interface; hidden; content; expansion} = unit
     in

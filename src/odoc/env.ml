@@ -98,13 +98,13 @@ let rec lookup_unit ~important_digests ap target_name =
   | [] -> find_root ~digest:None
   | import :: imports ->
     match import with
-    | Doc_model.Types.Unit.Import.Unresolved (name, digest)
+    | Doc_model.Types.Compilation_unit.Import.Unresolved (name, digest)
       when name = target_name ->
       begin match digest with
       | None when important_digests -> Forward_reference
       | _ -> find_root ~digest
       end
-    | Types.Unit.Import.Resolved root
+    | Types.Compilation_unit.Import.Resolved root
       when Root.Odoc_file.name (Root.file root) = target_name -> begin
         match Root.file root with
         | Unit {hidden; _} -> Found {root; hidden}
@@ -140,9 +140,14 @@ let create ?(important_digests=true) ~directories : builder =
       match unit_or_page with
       | `Page _ -> lookup_unit ~important_digests:false ap target_name []
       | `Unit unit ->
-        match
-          lookup_unit ~important_digests ap target_name unit.Types.Unit.imports
-        with
+        let lookup_result =
+          lookup_unit
+            ~important_digests
+            ap
+            target_name
+            unit.Types.Compilation_unit.imports
+        in
+        match lookup_result with
         | Not_found -> begin
             let root = Unit.root unit in
             match Root.file root with
@@ -153,7 +158,7 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Root.t Doc_model.Types.Unit.t =
+    let fetch_unit root : Root.t Doc_model.Types.Compilation_unit.t =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->

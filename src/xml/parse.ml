@@ -19,8 +19,8 @@ type 'a result =
   | Error of Xmlm.pos option * Xmlm.pos * string
 
 type 'a parser =
-  { unit_file : Xmlm.input -> 'a Doc_model.Types.Unit.t result;
-    unit :  Xmlm.input -> 'a Doc_model.Types.Unit.t result;
+  { unit_file : Xmlm.input -> 'a Doc_model.Types.Compilation_unit.t result;
+    unit :  Xmlm.input -> 'a Doc_model.Types.Compilation_unit.t result;
     page_file : Xmlm.input -> 'a Doc_model.Types.Page.t result;
     page :  Xmlm.input -> 'a Doc_model.Types.Page.t result;
     text : Xmlm.input -> 'a Doc_model.Types.Documentation.text result; }

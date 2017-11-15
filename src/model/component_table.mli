@@ -31,7 +31,7 @@ type 'a lookup_unit_result =
 (** Create a table of the components of units. Optionally provide
     equality and hash functons. *)
 val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-  (string -> 'a lookup_unit_result) -> ('a -> 'a Unit.t) ->
+  (string -> 'a lookup_unit_result) -> ('a -> 'a Compilation_unit.t) ->
   (string -> 'a option) -> ('a -> 'a Page.t) ->
   'a t
 

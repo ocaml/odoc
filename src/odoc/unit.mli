@@ -16,7 +16,7 @@
 
 open Doc_model
 
-type t = Root.t Types.Unit.t
+type t = Root.t Types.Compilation_unit.t
 
 val root : t -> Root.t
 

@@ -29,7 +29,7 @@ module Types = Model
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
 type 'a result =
-  | Ok of 'a Model.Unit.t
+  | Ok of 'a Model.Compilation_unit.t
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -55,11 +55,12 @@ type 'a lookup_result =
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
 val build_resolver : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a lookup_result) -> ('a -> 'a Model.Unit.t)
+  -> (string -> 'a lookup_result) -> ('a -> 'a Model.Compilation_unit.t)
   -> (string -> 'a option) -> ('a -> 'a Model.Page.t)
   -> 'a resolver
 
-val resolve : 'a resolver -> 'a Model.Unit.t -> 'a Model.Unit.t
+val resolve :
+  'a resolver -> 'a Model.Compilation_unit.t -> 'a Model.Compilation_unit.t
 
 val resolve_page : 'a resolver -> 'a Model.Page.t -> 'a Model.Page.t
 
@@ -73,10 +74,12 @@ type 'a expander
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
 val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a lookup_result) -> (root:'a -> 'a -> 'a Model.Unit.t)
+  -> (string -> 'a lookup_result)
+  -> (root:'a -> 'a -> 'a Model.Compilation_unit.t)
   -> 'a expander
 
-val expand : 'a expander -> 'a Model.Unit.t -> 'a Model.Unit.t
+val expand :
+  'a expander -> 'a Model.Compilation_unit.t -> 'a Model.Compilation_unit.t
 
 (** {2 Misc.}
 

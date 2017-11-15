@@ -1414,7 +1414,7 @@ let digest_p _base output acc digest =
   close output acc
 
 let unit_import_p base output acc =
-  let open Unit.Import in function
+  let open Compilation_unit.Import in function
     | Unresolved(name, digest) ->
       let acc = import_t output acc in
       let acc = data output acc name in
@@ -1438,7 +1438,7 @@ let source_build_dir_p output acc build_dir =
   close output acc
 
 let source_p base output acc source =
-  let open Unit.Source in
+  let open Compilation_unit.Source in
   let acc = source_t output acc in
   let acc = source_file_p output acc source.file in
   let acc = source_build_dir_p output acc source.build_dir in
@@ -1446,14 +1446,14 @@ let source_p base output acc source =
   close output acc
 
 let packed_item_p base output acc item =
-  let open Unit.Packed in
+  let open Compilation_unit.Packed in
   let acc = item_t output acc in
   let acc = identifier_p base output acc item.id in
   let acc = path_p base output acc item.path in
   close output acc
 
 let unit_content_p base output acc =
-  let open Unit in function
+  let open Compilation_unit in function
     | Module items ->
         let acc = module_t output acc in
         let acc = list signature_item_p base output acc items in
@@ -1464,7 +1464,7 @@ let unit_content_p base output acc =
         close output acc
 
 let unit_p base output acc unit =
-  let open Unit in
+  let open Compilation_unit in
   let acc = unit_t output acc in
   let acc = identifier_p base output acc unit.id in
   let acc = doc_p base output acc unit.doc in

@@ -32,7 +32,7 @@ let core_types = Predefined.core_types
 let core_exceptions = Predefined.core_exceptions
 
 type 'a result =
-  | Ok of 'a Model.Unit.t
+  | Ok of 'a Model.Compilation_unit.t
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -42,7 +42,7 @@ type 'a result =
 let read_cmti root_fn filename =
   let open Cmi_format in
   let open Cmt_format in
-  let open Model.Unit in
+  let open Model.Compilation_unit in
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
@@ -87,7 +87,7 @@ let read_cmti root_fn filename =
 let read_cmt root_fn filename =
   let open Cmi_format in
   let open Cmt_format in
-  let open Model.Unit in
+  let open Model.Compilation_unit in
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
@@ -134,7 +134,7 @@ let read_cmt root_fn filename =
           Ok {id; doc; digest; imports;
               source; interface; hidden; content; expansion = None}
     | Implementation impl ->
-        let open Model.Unit in
+        let open Model.Compilation_unit in
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with
@@ -178,7 +178,7 @@ let read_cmt root_fn filename =
 
 let read_cmi root_fn filename =
   let open Cmi_format in
-  let open Model.Unit in
+  let open Model.Compilation_unit in
   try
     let cmi_info = read_cmi filename in
       match cmi_info.cmi_crcs with

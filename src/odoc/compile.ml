@@ -25,7 +25,7 @@ let it's_all_the_same ~env ~output input reader =
   | Not_a_typedtree  -> failwith "Not_a_typedtree"
   | Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
-    if not unit.Doc_model.Types.Unit.interface then (
+    if not unit.Doc_model.Types.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
         (if not (Filename.check_suffix fn "cmt") then "" (* ? *)
          else Printf.sprintf " Using %S while you should use the .cmti file" fn)
