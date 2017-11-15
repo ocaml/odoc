@@ -42,8 +42,6 @@ type 'a result =
 let read_cmti root_fn filename =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | exception Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
-  | exception Cmi_format.Error (Corrupted_interface _) -> Corrupted
   | exception Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
   | cmt_info ->
     match cmt_info.cmt_annots with
