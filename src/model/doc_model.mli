@@ -36,11 +36,11 @@ type 'a result =
   | Not_a_typedtree
   | Not_an_implementation
 
-val read_cmti: (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmti : (string -> Digest.t -> 'a) -> string -> 'a result
 
-val read_cmt: (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmt : (string -> Digest.t -> 'a) -> string -> 'a result
 
-val read_cmi: (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmi : (string -> Digest.t -> 'a) -> string -> 'a result
 
 (** {2:resolving Resolving}
 
@@ -54,12 +54,12 @@ type 'a lookup_result =
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
-val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
+val build_resolver : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
   -> (string -> 'a lookup_result) -> ('a -> 'a Model.Unit.t)
   -> (string -> 'a option) -> ('a -> 'a Model.Page.t)
   -> 'a resolver
 
-val resolve: 'a resolver -> 'a Model.Unit.t -> 'a Model.Unit.t
+val resolve : 'a resolver -> 'a Model.Unit.t -> 'a Model.Unit.t
 
 val resolve_page : 'a resolver -> 'a Model.Page.t -> 'a Model.Page.t
 
@@ -72,11 +72,11 @@ type 'a expander
 
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
-val build_expander: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                    (string -> 'a lookup_result) ->
-                    (root:'a -> 'a -> 'a Model.Unit.t) -> 'a expander
+val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
+  -> (string -> 'a lookup_result) -> (root:'a -> 'a -> 'a Model.Unit.t)
+  -> 'a expander
 
-val expand: 'a expander -> 'a Model.Unit.t -> 'a Model.Unit.t
+val expand : 'a expander -> 'a Model.Unit.t -> 'a Model.Unit.t
 
 (** {2 Misc.}
 
