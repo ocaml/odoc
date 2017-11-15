@@ -2,3 +2,6 @@
 _build/
 *.install
 *.merlin
+
+# For local experiments.
+scratch/
