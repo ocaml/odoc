@@ -31,8 +31,10 @@ let core_types = Predefined.core_types
 
 let core_exceptions = Predefined.core_exceptions
 
-type 'a result =
-  | Ok of 'a Model.Compilation_unit.t
+type 'root read_result =
+  ('root Model.Compilation_unit.t, read_error) result
+
+and read_error =
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -41,8 +43,8 @@ type 'a result =
 
 let read_cmti ~make_root ~filename =
   match Cmt_format.read_cmt filename with
-  | exception Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | exception Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
+  | exception Cmi_format.Error (Not_an_interface _) -> Error Not_an_interface
+  | exception Cmt_format.Error (Not_a_typedtree _) -> Error Not_a_typedtree
   | cmt_info ->
     match cmt_info.cmt_annots with
     | Interface intf -> begin
@@ -75,9 +77,9 @@ let read_cmti ~make_root ~filename =
         in
         let unit = Lookup.lookup unit in
           Ok unit
-      | None -> Corrupted
+      | None -> Error Corrupted
     end
-    | _ -> Not_an_interface
+    | _ -> Error Not_an_interface
 
 let read_cmt ~make_root ~filename =
   let open Cmi_format in
@@ -164,12 +166,12 @@ let read_cmt ~make_root ~filename =
         in
         let unit = Lookup.lookup unit in
           Ok unit
-    | _ -> Not_an_implementation
+    | _ -> Error Not_an_implementation
   with
-  | Cmi_format.Error (Not_an_interface _) -> Not_an_implementation
-  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
-  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
-  | Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
+  | Cmi_format.Error (Not_an_interface _) -> Error Not_an_implementation
+  | Cmi_format.Error (Wrong_version_interface _) -> Error Wrong_version
+  | Cmi_format.Error (Corrupted_interface _) -> Error Corrupted
+  | Cmt_format.Error (Not_a_typedtree _) -> Error Not_a_typedtree
 
 let read_cmi ~make_root ~filename =
   let open Cmi_format in
@@ -195,11 +197,11 @@ let read_cmi ~make_root ~filename =
           in
           let unit = Lookup.lookup unit in
             Ok unit
-      | _ -> Corrupted
+      | _ -> Error Corrupted
   with
-  | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
-  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
+  | Cmi_format.Error (Not_an_interface _) -> Error Not_an_interface
+  | Cmi_format.Error (Wrong_version_interface _) -> Error Wrong_version
+  | Cmi_format.Error (Corrupted_interface _) -> Error Corrupted
 
 type 'a resolver = 'a Resolve.resolver
 

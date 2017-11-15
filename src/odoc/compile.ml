@@ -19,11 +19,11 @@
 let it's_all_the_same ~env ~output input reader =
   let fn = Fs.File.to_string input in
   match reader ~filename:fn with
-  | Doc_model.Not_an_interface  -> failwith "Not_an_interface"
-  | Wrong_version  -> failwith "Wrong_version"
-  | Corrupted  -> failwith "Corrupted"
-  | Not_a_typedtree  -> failwith "Not_a_typedtree"
-  | Not_an_implementation  -> failwith "Not_an_implementation"
+  | Error Doc_model.Not_an_interface  -> failwith "Not_an_interface"
+  | Error Wrong_version  -> failwith "Wrong_version"
+  | Error Corrupted  -> failwith "Corrupted"
+  | Error Not_a_typedtree  -> failwith "Not_a_typedtree"
+  | Error Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
     if not unit.Doc_model.Types.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"

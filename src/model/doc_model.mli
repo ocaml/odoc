@@ -28,8 +28,10 @@ module Types = Model
 
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
-type 'a result = private
-  | Ok of 'a Model.Compilation_unit.t
+type 'root read_result =
+  ('root Model.Compilation_unit.t, read_error) result
+
+and read_error = private
   | Not_an_interface
   | Wrong_version
   | Corrupted
@@ -39,17 +41,17 @@ type 'a result = private
 val read_cmti :
   make_root:(module_name:string -> digest:Digest.t -> 'root) ->
   filename:string ->
-    'root result
+    'root read_result
 
 val read_cmt :
   make_root:(module_name:string -> digest:Digest.t -> 'root) ->
   filename:string ->
-    'root result
+    'root read_result
 
 val read_cmi :
   make_root:(module_name:string -> digest:Digest.t -> 'root) ->
   filename:string ->
-    'root result
+    'root read_result
 
 (** {2:resolving Resolving}
 
