@@ -24,4 +24,4 @@ module Root = Root
 
 module Page = Page
 
-module Unit = Unit
+module Compilation_unit = Compilation_unit

@@ -45,7 +45,7 @@ let from_odoc ~env ~output:root_dir input =
     if hidden then
       Printf.eprintf
         "odoc should not generate html but will for the time being...\n%!";
-    let unit = Unit.load input in
+    let unit = Compilation_unit.load input in
     let unit = Doc_model.Lookup.lookup unit in
     let odoctree =
       (* See comment in compile for explanation regarding the env duplication. *)

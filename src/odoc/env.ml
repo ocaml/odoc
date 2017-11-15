@@ -126,12 +126,12 @@ let fetch_page ap root =
 
 let fetch_unit ap root =
   match Accessible_paths.file_of_root ap root with
-  | path -> Unit.load path
+  | path -> Compilation_unit.load path
   | exception Not_found ->
     Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
     exit 2
 
-type builder = [ `Unit of Unit.t | `Page of Page.t ] -> t
+type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
@@ -149,7 +149,7 @@ let create ?(important_digests=true) ~directories : builder =
         in
         match lookup_result with
         | Not_found -> begin
-            let root = Unit.root unit in
+            let root = Compilation_unit.root unit in
             match Root.file root with
             | Page _ -> assert false
             | Unit {name;hidden} when target_name = name ->
@@ -162,7 +162,7 @@ let create ?(important_digests=true) ~directories : builder =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
-        let current_root = Unit.root unit in
+        let current_root = Compilation_unit.root unit in
         if Root.equal root current_root then
           unit
         else

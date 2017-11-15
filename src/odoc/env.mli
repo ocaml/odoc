@@ -30,7 +30,7 @@ val create :
     @param important_digests indicate whether digests should be compared when
     doc-ock tries to lookup or fetch a unit. It defaults to [true]. *)
 
-val build : builder -> [ `Unit of Unit.t | `Page of Page.t ] -> t
+val build : builder -> [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 (** Initialize the environment for the given unit. *)
 
 val resolver : t -> Root.t Doc_model.resolver

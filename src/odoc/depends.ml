@@ -56,7 +56,7 @@ end
 open Doc_model
 
 let deps_of_unit ~deps input =
-  let odoctree = Unit.load input in
+  let odoctree = Compilation_unit.load input in
   List.iter odoctree.Doc_model.Types.Compilation_unit.imports ~f:(fun import ->
     match import with
     | Types.Compilation_unit.Import.Resolved root -> Hash_set.add deps root

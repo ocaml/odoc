@@ -267,8 +267,8 @@ module To_xml = struct
       let root = Root.read odoc_file in
       match Root.file root with
       | Unit _ ->
-        Unit.load odoc_file
-        |> Unit.save_xml output
+        Compilation_unit.load odoc_file
+        |> Compilation_unit.save_xml output
       | Page _ ->
         Page.load odoc_file
         |> Page.save_xml output

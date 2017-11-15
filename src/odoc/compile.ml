@@ -41,7 +41,7 @@ let resolve_and_substitute ~env ~output input_file read_file =
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
     let expanded = Doc_model.expand (Env.expander expand_env) resolved in
-    Unit.save output expanded
+    Compilation_unit.save output expanded
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   let file_representation : Root.Odoc_file.t =

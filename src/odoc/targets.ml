@@ -26,11 +26,11 @@ let for_compile_step ~output input =
   [Fs.File.create ~directory:output ~name]
 
 let unit ~env ~output:_root_dir input =
-  let unit = Unit.load input in
+  let unit = Compilation_unit.load input in
   let env = Env.build env (`Unit unit) in
   let odoctree = Doc_model.resolve (Env.resolver env) unit in
   let odoctree = Doc_model.expand (Env.expander env) odoctree in
-  let root = Unit.root odoctree in
+  let root = Compilation_unit.root odoctree in
   let package = Root.(Package.to_string (package root)) in
   let targets = Doc_html.List_targets.unit ~package odoctree in
   (* CR-someday trefis: have [List_targets] return a tree instead of
