@@ -15,7 +15,6 @@
  *)
 
 open StdLabels
-open Doc_html
 
 let get_package root = Root.Package.to_string (Root.package root)
 
@@ -29,10 +28,10 @@ let from_odoc ~env ~output:root_dir input =
       Doc_model.resolve_page (Env.resolver resolve_env) page
     in
     let pkg_name = get_package root in
-    let pages = To_html_tree.page ~get_package odoctree in
+    let pages = Doc_html.To_html_tree.page ~get_package odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
-    Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
+    Doc_html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
       assert (parents = []);
       let oc =
         let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".html") in
@@ -61,8 +60,8 @@ let from_odoc ~env ~output:root_dir input =
       let pkg_name = get_package root in
       Fs.Directory.reach_from ~dir:root_dir pkg_name
     in
-    let pages = To_html_tree.unit ~get_package odoctree in
-    Html_tree.traverse pages ~f:(fun ~parents name content ->
+    let pages = Doc_html.To_html_tree.unit ~get_package odoctree in
+    Doc_html.Html_tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =
           List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)

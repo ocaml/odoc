@@ -15,7 +15,6 @@
  *)
 
 open StdLabels
-open Doc_html
 
 let for_compile_step ~output input =
   let name =
@@ -33,7 +32,7 @@ let unit ~env ~output:_root_dir input =
   let odoctree = Doc_model.expand (Env.expander env) odoctree in
   let root = Unit.root odoctree in
   let package = Root.(Package.to_string (package root)) in
-  let targets = List_targets.unit ~package odoctree in
+  let targets = Doc_html.List_targets.unit ~package odoctree in
   (* CR-someday trefis: have [List_targets] return a tree instead of
      postprocessing. *)
   List.map targets ~f:(fun path ->
