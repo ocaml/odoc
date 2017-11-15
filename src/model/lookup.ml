@@ -96,7 +96,6 @@ class ['a] lookup = object
   method super_page page = super#page page
 
   method! page page =
-    let open Page in
     let env = add_page page env in
     let this = {< env = env >} in
       this#super_page page

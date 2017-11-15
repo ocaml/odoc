@@ -1,6 +1,6 @@
 .PHONY : build
 build :
-	jbuilder build
+	jbuilder build --dev
 
 .PHONY : test
 test :
