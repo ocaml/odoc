@@ -35,7 +35,7 @@ let it's_all_the_same ~env ~output input reader =
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
-       Note that this is shitty and once rewritten expand should not fetch the unit it is
+       Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
     Unit.save output (Doc_model.expand (Env.expander expand_env) resolved)
