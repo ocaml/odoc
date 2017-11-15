@@ -77,7 +77,7 @@ module Accessible_paths = struct
         | Page page_name ->
           let filename = "page-" ^ page_name in
           find_root ~digest:(digest root) t ~filename
-        | Unit { name; _ } ->
+        | Compilation_unit { name; _ } ->
           find_root ~digest:(digest root) t ~filename:name
       in
       assert (equal root r);
@@ -90,7 +90,7 @@ let rec lookup_unit ~important_digests ap target_name =
     | exception Not_found -> Not_found
     | root ->
       match Root.file root with
-      | Unit {hidden; _} -> Found {root; hidden}
+      | Compilation_unit {hidden; _} -> Found {root; hidden}
       | Page _ -> assert false
   in
   function
@@ -107,7 +107,7 @@ let rec lookup_unit ~important_digests ap target_name =
     | Types.Compilation_unit.Import.Resolved root
       when Root.Odoc_file.name (Root.file root) = target_name -> begin
         match Root.file root with
-        | Unit {hidden; _} -> Found {root; hidden}
+        | Compilation_unit {hidden; _} -> Found {root; hidden}
         | Page _ -> assert false
       end
     | _ -> lookup_unit ~important_digests ap target_name imports
@@ -152,9 +152,9 @@ let create ?(important_digests=true) ~directories : builder =
             let root = Compilation_unit.root unit in
             match Root.file root with
             | Page _ -> assert false
-            | Unit {name;hidden} when target_name = name ->
+            | Compilation_unit {name;hidden} when target_name = name ->
               Found { root; hidden }
-            | Unit _ -> Not_found
+            | Compilation_unit _ -> Not_found
           end
         | x -> x
     in

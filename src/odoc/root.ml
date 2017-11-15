@@ -31,22 +31,22 @@ end
 module Odoc_file = struct
   type t =
     | Page of string
-    | Unit of { name : string; hidden : bool }
+    | Compilation_unit of { name : string; hidden : bool }
 
   let create_unit ~force_hidden name =
     let hidden =
       force_hidden || Doc_model.Paths.contains_double_underscore name in
-    Unit { name; hidden }
+    Compilation_unit { name; hidden }
 
   let create_page name = Page name
 
   let name = function
     | Page name
-    | Unit { name; _ } -> name
+    | Compilation_unit { name; _ } -> name
 
   let kind = function
     | Page _ -> "page"
-    | Unit _ -> "unit"
+    | Compilation_unit _ -> "unit"
 end
 
 module T = struct

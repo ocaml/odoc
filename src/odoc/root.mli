@@ -36,7 +36,7 @@ module Odoc_file : sig
 
   type t = private
     | Page of string
-    | Unit of { name : string; hidden : bool }
+    | Compilation_unit of { name : string; hidden : bool }
 
   val create_unit : force_hidden:bool -> string -> t
   val create_page : string -> t

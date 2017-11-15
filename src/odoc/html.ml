@@ -41,7 +41,7 @@ let from_odoc ~env ~output:root_dir input =
       Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
       close_out oc
     )
-  | Unit {hidden; _} ->
+  | Compilation_unit {hidden; _} ->
     if hidden then
       Printf.eprintf
         "odoc should not generate html but will for the time being...\n%!";
