@@ -40,11 +40,8 @@ type 'a result =
   | Not_an_implementation
 
 let read_cmti root_fn filename =
-  let open Cmi_format in
-  let open Cmt_format in
-  let open Model.Compilation_unit in
   try
-    let cmt_info = read_cmt filename in
+    let cmt_info = Cmt_format.read_cmt filename in
     match cmt_info.cmt_annots with
     | Interface intf -> begin
       match cmt_info.cmt_interface_digest with
@@ -56,21 +53,22 @@ let read_cmti root_fn filename =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
         let imports =
-          List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
+          List.map (fun (s, d) ->
+            Model.Compilation_unit.Import.Unresolved (s, d))
+          imports
         in
         let interface = true in
         let hidden = Paths.contains_double_underscore name in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
-            let open Source in
             let build_dir = cmt_info.cmt_builddir in
-            Some {file; digest; build_dir}
+            Some {Model.Compilation_unit.Source.file; digest; build_dir}
           | _, _ -> None
         in
-        let content = Module items in
+        let content = Model.Compilation_unit.Module items in
         let unit =
-          {id; doc; digest; imports; source;
+          {Model.Compilation_unit.id; doc; digest; imports; source;
            interface; hidden; content; expansion = None}
         in
         let unit = Lookup.lookup unit in
