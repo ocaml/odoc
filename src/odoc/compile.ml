@@ -18,7 +18,7 @@
 
 let it's_all_the_same ~env ~output input reader =
   let fn = Fs.File.to_string input in
-  match reader fn with
+  match reader ~filename:fn with
   | Doc_model.Not_an_interface  -> failwith "Not_an_interface"
   | Wrong_version  -> failwith "Wrong_version"
   | Corrupted  -> failwith "Corrupted"
@@ -40,21 +40,21 @@ let it's_all_the_same ~env ~output input reader =
     let expand_env = Env.build env (`Unit resolved) in
     Unit.save output (Doc_model.expand (Env.expander expand_env) resolved)
 
-let root_of_unit ~package ~hidden unit_name digest =
-  let file = Root.Odoc_file.create_unit ~force_hidden:hidden unit_name in
+let root_of_unit ~package ~hidden ~module_name ~digest =
+  let file = Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
   Root.create ~package ~file ~digest
 
 let cmti ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
-    (Doc_model.read_cmti @@ root_of_unit ~package ~hidden)
+    (Doc_model.read_cmti ~make_root:(root_of_unit ~package ~hidden))
 
 let cmt ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
-    (Doc_model.read_cmt @@ root_of_unit ~package ~hidden)
+    (Doc_model.read_cmt ~make_root:(root_of_unit ~package ~hidden))
 
 let cmi ~env ~package ~hidden ~output input =
   it's_all_the_same ~env ~output input
-    (Doc_model.read_cmi @@ root_of_unit ~package ~hidden)
+    (Doc_model.read_cmi ~make_root:(root_of_unit ~package ~hidden))
 
 (* TODO: move most of this to doc-ock. *)
 let mld ~env ~package ~output input =

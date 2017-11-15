@@ -39,7 +39,7 @@ type 'a result =
   | Not_a_typedtree
   | Not_an_implementation
 
-let read_cmti root_fn filename =
+let read_cmti ~make_root ~filename =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) -> Not_an_interface
   | exception Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
@@ -49,7 +49,7 @@ let read_cmti root_fn filename =
       match cmt_info.cmt_interface_digest with
       | Some digest ->
         let name = cmt_info.cmt_modname in
-        let root = root_fn name digest in
+        let root = make_root ~module_name:name ~digest in
         let (id, doc, items) = Cmti.read_interface root name intf in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
@@ -79,7 +79,7 @@ let read_cmti root_fn filename =
     end
     | _ -> Not_an_interface
 
-let read_cmt root_fn filename =
+let read_cmt ~make_root ~filename =
   let open Cmi_format in
   let open Cmt_format in
   let open Model.Compilation_unit in
@@ -98,7 +98,7 @@ let read_cmt root_fn filename =
             | exception Not_found -> assert false
         in
         let hidden = Paths.contains_double_underscore name in
-        let root = root_fn name digest in
+        let root = make_root ~module_name:name ~digest in
         let id = Paths.Identifier.Root(root, name) in
         let items =
           List.map
@@ -141,7 +141,7 @@ let read_cmt root_fn filename =
               | exception Not_found -> assert false
         in
         let hidden = Paths.contains_double_underscore name in
-        let root = root_fn name digest in
+        let root = make_root ~module_name:name ~digest in
         let (id, doc, items) = Cmt.read_implementation root name impl in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
@@ -171,14 +171,14 @@ let read_cmt root_fn filename =
   | Cmi_format.Error (Corrupted_interface _) -> Corrupted
   | Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
 
-let read_cmi root_fn filename =
+let read_cmi ~make_root ~filename =
   let open Cmi_format in
   let open Model.Compilation_unit in
   try
     let cmi_info = read_cmi filename in
       match cmi_info.cmi_crcs with
       | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-          let root = root_fn name digest in
+          let root = make_root ~module_name:name ~digest:digest in
           let (id, doc, items) =
             Cmi.read_interface root name cmi_info.cmi_sign
           in

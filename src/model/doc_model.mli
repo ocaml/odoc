@@ -36,11 +36,20 @@ type 'a result = private
   | Not_a_typedtree
   | Not_an_implementation
 
-val read_cmti : (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmti :
+  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  filename:string ->
+    'root result
 
-val read_cmt : (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmt :
+  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  filename:string ->
+    'root result
 
-val read_cmi : (string -> Digest.t -> 'a) -> string -> 'a result
+val read_cmi :
+  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  filename:string ->
+    'root result
 
 (** {2:resolving Resolving}
 
