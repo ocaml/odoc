@@ -28,7 +28,7 @@ module Types = Model
 
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
-type 'a result =
+type 'a result = private
   | Ok of 'a Model.Compilation_unit.t
   | Not_an_interface
   | Wrong_version
