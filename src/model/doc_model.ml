@@ -40,8 +40,12 @@ type 'a result =
   | Not_an_implementation
 
 let read_cmti root_fn filename =
-  try
-    let cmt_info = Cmt_format.read_cmt filename in
+  match Cmt_format.read_cmt filename with
+  | exception Cmi_format.Error (Not_an_interface _) -> Not_an_interface
+  | exception Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
+  | exception Cmi_format.Error (Corrupted_interface _) -> Corrupted
+  | exception Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
+  | cmt_info ->
     match cmt_info.cmt_annots with
     | Interface intf -> begin
       match cmt_info.cmt_interface_digest with
@@ -76,11 +80,6 @@ let read_cmti root_fn filename =
       | None -> Corrupted
     end
     | _ -> Not_an_interface
-  with
-  | Cmi_format.Error (Not_an_interface _) -> Not_an_interface
-  | Cmi_format.Error (Wrong_version_interface _) -> Wrong_version
-  | Cmi_format.Error (Corrupted_interface _) -> Corrupted
-  | Cmt_format.Error (Not_a_typedtree _) -> Not_a_typedtree
 
 let read_cmt root_fn filename =
   let open Cmi_format in
