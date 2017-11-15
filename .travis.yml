@@ -1,0 +1,27 @@
+language: generic
+
+env:
+  - OCAML=4.03.0
+  - OCAML=4.04.2
+  - OCAML=4.05.0
+  # Waiting for a conclusive 4.06 fix.
+  # - OCAML=4.06.0
+
+before_script:
+  - sudo add-apt-repository -y ppa:avsm/ocaml42+opam12
+  - sudo apt-get update
+  - sudo apt-get install opam
+  - "opam init -y --compiler=$OCAML"
+  - eval `opam config env`
+
+script:
+  - opam pin add -y --no-action odoc .
+  - opam install -y --deps-only odoc
+  - opam install -y --verbose odoc
+
+notifications:
+  email:
+    recipients:
+      - antonbachin@yahoo.com
+    on_success: always
+    on_failure: always
