@@ -1,26 +1,6 @@
-module List = ListLabels
-
-open Doc_model
-open Types
 open Tyxml.Html
 
-(* Why is this unused all of the sudden? *)
-(*
-module Html_parser = struct
-  let mk_attr ((_, local), value) = Xml.string_attrib local value
 
-  let of_string str =
-    let source = `String (0, str) in
-    let input  = Xmlm.make_input source in
-    Xmlm.input_tree input ~data:Xml.pcdata ~el:(fun ((_, name), attrs) subs ->
-      let attrs = List.map attrs ~f:mk_attr in
-      match subs with
-      | [] -> Xml.leaf ~a:attrs name
-      | _  -> Xml.node ~a:attrs name subs
-    )
-    |> tot
-end
-*)
 
 type kind =
   | Phrasing : Html_types.phrasing elt list -> kind
@@ -247,7 +227,9 @@ module Reference = struct
           | Newline _ -> Phrasing_without_interactive tail
         )
 
-  let link ~get_package ?text (ref : Documentation.reference) =
+  let link
+      ~get_package ?text (ref : Doc_model.Types.Documentation.reference) =
+
     (* It is wonderful that although each these [r] is a [Reference.t] the phantom
        type parameters are not the same so we can't merge the branches. *)
     match ref with
@@ -273,7 +255,7 @@ module Reference = struct
 end
 
 let paragraphise lst =
-  List.concat @@ List.map lst ~f:(function
+  ListLabels.concat @@ ListLabels.map lst ~f:(function
     | Phrasing l -> [p l]
     | Phrasing_without_interactive l -> [p l]
     | Flow5 l -> l
@@ -282,7 +264,7 @@ let paragraphise lst =
   )
 
 let paragraphise_without_interactive lst =
-  List.concat @@ List.map lst ~f:(function
+  ListLabels.concat @@ ListLabels.map lst ~f:(function
     | Phrasing_without_interactive l -> [p l]
     | Flow5_without_interactive l -> (l :> Html_types.flow5 elt list)
     | Newline _ -> []
@@ -310,9 +292,11 @@ let whitespace_only s =
   aux (String.length s - 1)
 
 let rec aggregate ~get_package lst =
-  collapse (List.concat @@ List.map lst ~f:(format ~get_package))
+  collapse (ListLabels.concat @@ ListLabels.map lst ~f:(format ~get_package))
 
-and format ~get_package : Documentation.text_element -> kind list = function
+and format ~get_package :
+    Doc_model.Types.Documentation.text_element -> kind list = function
+
   | Raw      s ->
     if whitespace_only s then []
     else [ Phrasing_without_interactive [ pcdata s ] ]
@@ -324,39 +308,39 @@ and format ~get_package : Documentation.text_element -> kind list = function
     [ Flow5_without_interactive [ pre [ code ~a:[ a_class ["code"] ] [ pcdata p ] ] ] ]
   | Style (style, txt) -> apply_style ~get_package ~style txt
   | List subs  ->
-    let subs = List.map subs ~f:(aggregate ~get_package) in
-    if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ul (List.map subs ~f:make_li)] ]
+    let subs = ListLabels.map subs ~f:(aggregate ~get_package) in
+    if ListLabels.exists subs ~f:(ListLabels.exists ~f:is_interactive) then
+      [ Flow5 [ul (ListLabels.map subs ~f:make_li)] ]
     else
       [ Flow5_without_interactive
-          [ul (List.map subs ~f:make_li_without_interactive)] ]
+          [ul (ListLabels.map subs ~f:make_li_without_interactive)] ]
   | Enum subs ->
-    let subs = List.map subs ~f:(aggregate ~get_package) in
-    if List.exists subs ~f:(List.exists ~f:is_interactive) then
-      [ Flow5 [ol (List.map subs ~f:make_li)] ]
+    let subs = ListLabels.map subs ~f:(aggregate ~get_package) in
+    if ListLabels.exists subs ~f:(ListLabels.exists ~f:is_interactive) then
+      [ Flow5 [ol (ListLabels.map subs ~f:make_li)] ]
     else
       [ Flow5_without_interactive
-          [ol (List.map subs ~f:make_li_without_interactive)] ]
+          [ol (ListLabels.map subs ~f:make_li_without_interactive)] ]
   | Newline -> [ Newline [] ]
   | Title (lvl, label, txt) -> make_title ~get_package ~lvl ~label txt
   | Reference (r,text) ->
     begin match text with
     | None -> [ Reference.link ~get_package r ]
     | Some text ->
-      List.map (aggregate ~get_package text)
+      ListLabels.map (aggregate ~get_package text)
         ~f:(fun text -> Reference.link ~get_package ~text r)
     end
   | Target (Some "html", str) ->
     [ Flow5 [Unsafe.data str] ]
   | Target (_, str) ->
     [ Flow5_without_interactive [ pre [pcdata str] ] ]
-  | Special (Documentation.Modules refs) ->
+  | Special (Doc_model.Types.Documentation.Modules refs) ->
     let table =
       table ~a:[ a_class ["modules"] ]
-        (List.map refs ~f:(module_index_entry ~get_package))
+        (ListLabels.map refs ~f:(module_index_entry ~get_package))
     in
     [ Flow5 [ table ] ]
-  | Special (Documentation.Index) ->
+  | Special (Doc_model.Types.Documentation.Index) ->
     Printf.eprintf "Warning: {!indexlist} is not yet supported by odoc.\n%!";
     []
 
@@ -399,7 +383,7 @@ and make_title ~get_package ~lvl ~label txt =
   let header_fun =
     match label with
     | None -> header_fun ~a:attrs
-    | Some (Paths.Identifier.Label (_, lbl)) ->
+    | Some (Doc_model.Paths.Identifier.Label (_, lbl)) ->
         fun txt ->
           header_fun ~a:(a_id lbl :: a_class ["anchored"] :: attrs)
             ((a ~a:[ a_href ("#" ^ lbl); a_class ["anchor"] ] []) :: txt)
@@ -427,69 +411,69 @@ and make_title ~get_package ~lvl ~label txt =
 and apply_style ~get_package ~style txt =
   let aggregated = aggregate ~get_package txt in
   let assert_phrasing for_message =
-    if not (List.for_all aggregated ~f:is_phrasing) then
+    if not (ListLabels.for_all aggregated ~f:is_phrasing) then
       Printf.eprintf "ERROR: only \"simple\" content allowed inside %s\n%!"
         for_message
   in
   match style with
   | Bold ->
     assert_phrasing "{b }";
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Phrasing p -> Phrasing [b p]
       | Phrasing_without_interactive p -> Phrasing_without_interactive [b p]
       | anything_else -> anything_else
     )
   | Italic ->
     assert_phrasing "{i }";
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Phrasing p -> Phrasing [i p]
       | Phrasing_without_interactive p -> Phrasing_without_interactive [i p]
       | anything_else -> anything_else
     )
   | Emphasize ->
     assert_phrasing "{e }";
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Phrasing p -> Phrasing [em p]
       | Phrasing_without_interactive p -> Phrasing_without_interactive [em p]
       | anything_else -> anything_else
     )
   | Center ->
-    if List.for_all aggregated ~f:is_phrasing then
-      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+    if ListLabels.for_all aggregated ~f:is_phrasing then
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_phrasing in
       [ Flow5 [ p ~a:[ a_class ["center"] ] lst ] ]
     else
-      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_flow5 in
       [ Flow5 [ div ~a:[ a_class ["center"] ] lst ] ]
   | Left ->
-    if List.for_all aggregated ~f:is_phrasing then
-      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+    if ListLabels.for_all aggregated ~f:is_phrasing then
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_phrasing in
       [ Flow5 [ p ~a:[ a_class ["left"] ] lst ] ]
     else
-      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_flow5 in
       [ Flow5 [ div ~a:[ a_class ["left"] ] lst ] ]
   | Right ->
-    if List.for_all aggregated ~f:is_phrasing then
-      let lst = List.concat @@ List.map aggregated ~f:to_phrasing in
+    if ListLabels.for_all aggregated ~f:is_phrasing then
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_phrasing in
       [ Flow5 [ p ~a:[ a_class ["right"] ] lst ] ]
     else
-      let lst = List.concat @@ List.map aggregated ~f:to_flow5 in
+      let lst = ListLabels.concat @@ ListLabels.map aggregated ~f:to_flow5 in
       [ Flow5 [ div ~a:[ a_class ["right"] ] lst ] ]
   | Superscript ->
     assert_phrasing "{^ }";
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Phrasing p -> Phrasing [sup p]
       | Phrasing_without_interactive p -> Phrasing_without_interactive [sup p]
       | anything_else -> anything_else
     )
   | Subscript ->
     assert_phrasing "{_ }";
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Phrasing p -> Phrasing [sup p]
       | Phrasing_without_interactive p -> Phrasing_without_interactive [sub p]
       | anything_else -> anything_else
     )
   | Custom str  ->
-    List.map aggregated ~f:(function
+    ListLabels.map aggregated ~f:(function
       | Newline l -> Newline l
       | Phrasing l -> Phrasing [span ~a:[ a_class [str] ] l]
       | Phrasing_without_interactive l ->
@@ -512,11 +496,10 @@ let handle_tags ~get_package tags =
       in
       span ~a:[ a_class [ "at-tag"; class_ ] ] [pcdata txt]
     in
-    List.map tags ~f:(
-      let open Documentation in
+    ListLabels.map tags ~f:(
       (* TODO: better everything. *)
       function
-      | Author  s ->
+      | Doc_model.Types.Documentation.Author  s ->
         [ Phrasing [ make_tag "Author" ; pcdata ": "; pcdata s ] ]
       | Version s ->
         [ Phrasing [ make_tag "Version" ; pcdata ": "; pcdata s ] ]
@@ -568,13 +551,15 @@ let handle_tags ~get_package tags =
       | Canonical _ -> [] (* TODO: display? *)
     )
   in
-  let cleaned = List.filter ~f:(function [] -> false | _ -> true) raw in
+  let cleaned = ListLabels.filter ~f:(function [] -> false | _ -> true) raw in
   match cleaned with
   | [] -> []
-  | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:make_li) ]
+  | lst -> [ ul ~a:[ a_class ["at-tag"] ] (ListLabels.map lst ~f:make_li) ]
 
-let prerr_error (err : Documentation.Error.t) =
-  let print_pos oc { Documentation.Error.Position. line; column } =
+let prerr_error (err : Doc_model.Types.Documentation.Error.t) =
+  let print_pos
+      oc { Doc_model.Types.Documentation.Error.Position. line; column } =
+
     Printf.fprintf oc "line %d, col %d" line column
   in
   let print_loc =
@@ -582,11 +567,11 @@ let prerr_error (err : Documentation.Error.t) =
     | None ->
       begin fun oc () ->
         Printf.fprintf oc "%s, offset: %a to %a" (* Good luck with that. *)
-          (Paths.Identifier.name err.origin)
-          print_pos err.offset.Documentation.Error.Offset.start
-          print_pos err.offset.Documentation.Error.Offset.finish
+          (Doc_model.Paths.Identifier.name err.origin)
+          print_pos err.offset.start
+          print_pos err.offset.finish
       end
-    | Some { Documentation.Error.Location. filename; start; finish } ->
+    | Some { filename; start; finish } ->
       begin fun oc () ->
         Printf.fprintf oc "%s, %a to %a" filename print_pos start
           print_pos finish
@@ -594,7 +579,7 @@ let prerr_error (err : Documentation.Error.t) =
   in
   Printf.eprintf "Error %a: %s\n%!" print_loc () err.message
 
-let first_to_html ~get_package (t : Documentation.t) =
+let first_to_html ~get_package (t : Doc_model.Types.Documentation.t) =
   match t with
   | Ok { text; _ } ->
     begin match handle_text ~get_package text with
@@ -603,7 +588,7 @@ let first_to_html ~get_package (t : Documentation.t) =
     end
   | Error e -> prerr_error e; []
 
-let to_html ?wrap ~get_package (t : Documentation.t) =
+let to_html ?wrap ~get_package (t : Doc_model.Types.Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
   | Ok body ->
@@ -613,19 +598,21 @@ let to_html ?wrap ~get_package (t : Documentation.t) =
       let tags = handle_tags ~get_package body.tags in
       doc @ tags
     | Some () ->
-      let open Documentation in
       let open_ = "(** " in
       let close = " *)" in
       match body.text, body.tags with
       | [], [] -> []
-      | _, [] -> handle_text ~get_package (Raw open_ :: body.text @ [Raw close])
+      | _, [] ->
+        handle_text
+          ~get_package
+          (Doc_model.Types.Documentation.Raw open_ :: body.text @ [Raw close])
       | [], _ -> p [pcdata open_] :: handle_tags ~get_package body.tags @ [p [pcdata close]]
       | _, _ ->
         handle_text ~get_package (Raw open_ :: body.text) @
         handle_tags ~get_package body.tags @
         [p [pcdata close]]
 
-let has_doc (t : Types.Documentation.t) =
+let has_doc (t : Doc_model.Types.Documentation.t) =
   match t with
   | Ok body -> body.text <> [] || body.tags <> []
   | Error e -> prerr_error e; false
