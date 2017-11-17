@@ -13,6 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+
 open StdLabels
 
 open Doc_model
@@ -42,7 +43,9 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
     let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec unit ~get_package (t : Types.Compilation_unit.t) : Html_tree.t =
+let rec compilation_unit
+    ~get_package (t : Types.Compilation_unit.t) : Html_tree.t =
+
   let package =
     match t.id with
     | Paths.Identifier.Root (a, _) -> get_package a
@@ -1002,4 +1005,3 @@ let page ~get_package (t : Types.Page.t) : Html_tree.t =
   Html_tree.enter ~kind:`Page name;
   let html = Documentation.to_html ~get_package t.content in
   Html_tree.make (html, [])
-

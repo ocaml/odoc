@@ -61,7 +61,7 @@ let from_odoc ~env ~output:root_dir input =
       let pkg_name = get_package root in
       Fs.Directory.reach_from ~dir:root_dir pkg_name
     in
-    let pages = Doc_html.To_html_tree.unit ~get_package odoctree in
+    let pages = Doc_html.To_html_tree.compilation_unit ~get_package odoctree in
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =

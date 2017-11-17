@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val unit :
+val compilation_unit :
   get_package:(Doc_model.Root.t -> string) ->
   Doc_model.Types.Compilation_unit.t ->
     Html_tree.t
