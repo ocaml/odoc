@@ -17,9 +17,9 @@
 (** Type of documentation *)
 
 module Root = Root
-module Paths_types = Paths_types
+module Paths = Paths
 
-open Paths_types
+open Paths
 
 (** {3 Documentation} *)
 

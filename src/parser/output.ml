@@ -16,24 +16,6 @@
 
 (** Types for the information collected in comments. *)
 
-(** The differents kinds of element references. *)
-type ref_kind =
-  | RK_element
-  | RK_module
-  | RK_module_type
-  | RK_class
-  | RK_class_type
-  | RK_value
-  | RK_type
-  | RK_exception
-  | RK_attribute
-  | RK_method
-  | RK_section
-  | RK_recfield
-  | RK_const
-  | RK_link
-  | RK_custom of string
-
 (* The different kinds of special reference *)
 type special_ref_kind =
   | SRK_module_list of string list
@@ -50,7 +32,7 @@ and text_element =
   | Newline   (** To force a line break. *)
   | Title of int * string option * text
               (** Style number, optional label, and text. *)
-  | Ref of ref_kind * string * text option
+  | Ref of Model.Documentation.reference * text option
     (** A reference to an element. Complete name and kind. An optional
         text can be given to display this text instead of the element name.*)
   | Special_ref of special_ref_kind (** Special kinds of reference *)

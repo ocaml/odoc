@@ -133,7 +133,7 @@ let pop_inner_start_loc () =
 let target_format = ref None;;
 
 (* To store the kind of a reference *)
-let ref_kind = ref Output.RK_element;;
+let ref_kind = ref Helpers.RK_element;;
 
 (* To store the start of a see description *)
 let see_loc = ref dummy_loc;;
@@ -177,7 +177,7 @@ let ref_kind_table = Hashtbl.create 19
 let () =
   List.iter
     (fun (kind, tok) -> Hashtbl.add ref_kind_table kind tok)
-    [ ("val", Output.RK_value);
+    [ ("val", Helpers.RK_value);
       ("type", RK_type);
       ("exception", RK_exception);
       ("module", RK_module);
@@ -290,7 +290,7 @@ rule main = parse
       reference lexbuf }
   | "{!" (ident as lbl) "}"
     { if lbl = "indexlist" then Special_Ref SRK_index_list
-      else Ref(RK_element, lbl) }
+      else Ref (Element (Helpers.read_longident lbl)) }
   | "{!" (ident as kind) ":"
     { reset_string_buffer ();
       set_start_loc lexbuf;
@@ -301,7 +301,7 @@ rule main = parse
         let kind =
           try
             Hashtbl.find ref_kind_table kind
-          with Not_found -> Output.RK_custom kind
+          with Not_found -> Helpers.RK_custom kind
         in
           ref_kind := kind;
           reference lexbuf
@@ -582,7 +582,7 @@ and reference = parse
     { buffer_char chr; reference lexbuf }
   | "}"
     { use_start_loc lexbuf;
-      Ref(!ref_kind, get_buffered_string ()) }
+      Ref (Helpers.read_reference !ref_kind (get_buffered_string ())) }
   | eof
     { raise_lexer_error (get_start_loc ()) Unterminated_ref }
   | newline

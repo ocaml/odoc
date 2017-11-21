@@ -149,7 +149,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token ENUM
 %token <bool> Item
 
-%token <Output.ref_kind * string> Ref
+%token <Model.Documentation.reference> Ref
 %token <Output.special_ref_kind> Special_Ref
 
 %token <string> Code
@@ -506,11 +506,9 @@ text_element :
   | ENUM whitespace error
     { expecting 3 "enumerated list item" }
   | Ref
-    { let k, n = $1 in
-      Ref (k, n, None) }
+    { Ref ($1, None) }
   | BEGIN Ref text END
-    { let k, n = $2 in
-      Ref (k, n, Some (inner $3)) }
+    { Ref ($2, Some (inner $3)) }
   | BEGIN Ref text error
     { unclosed "{" 1 "text" "}" 3 }
   | Special_Ref
