@@ -18,7 +18,7 @@
 
 let parse
     : Model.Paths.Identifier.label_parent -> Lexing.lexbuf ->
-        (Output.t, Error.t) result =
+        (Model.Documentation.body, Error.t) result =
     fun parent_definition lexbuf ->
 
   Helpers.parent_definition := Some parent_definition;
@@ -50,5 +50,4 @@ let parse_ref
 
 
 
-module Output = Output
 module Error = Error

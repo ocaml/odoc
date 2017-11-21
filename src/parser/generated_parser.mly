@@ -1,9 +1,9 @@
 %{
 
 (* This parser definitions provides two entry points, [main] and
-   [reference_parts], both functions of type [Lexing.lexbuf -> Output.t].
-   However, in addition to the [lexbuf], they take one more argument through a
-   reference
+   [reference_parts], both functions of type
+   [Lexing.lexbuf -> Model.Documentation.body]. However, in addition to the
+   [lexbuf], they take one more argument through a reference
 
 {[
 Helpers.parent_definition : Model.Paths.Identifier.label_parent option ref
@@ -15,7 +15,6 @@ Helpers.parent_definition : Model.Paths.Identifier.label_parent option ref
    not worth the switch for only this reference. *)
 
 open Common
-open! Output
 open Error
 
 (* Convert lexing position into error position *)
@@ -203,7 +202,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Ref_part
 
 %start main
-%type <Output.t> main
+%type <Model.Documentation.body> main
 
 %start reference_parts
 %type <(string option * string) list> reference_parts
@@ -218,9 +217,9 @@ let html_close_to_string t = "</" ^ t ^ ">"
 
 main :
   | text
-    { (text $1, []) }
+    { {text = text $1; tags = []} }
   | text tags
-    { (text $1, List.rev $2) }
+    { {text = text $1; tags = List.rev $2} }
 ;
 
 /* Entry point for reference parsing */

@@ -118,7 +118,7 @@ let read_attributes parent id attrs =
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
             match Doc_parser.parse parent lexbuf with
-            | Ok (text, tags) -> begin
+            | Ok {text; tags} -> begin
                 let text = if first then text else Newline :: text in
                 let nb_deprecated =
                   List.fold_right (function
@@ -168,7 +168,7 @@ let read_string parent loc str : Model.Documentation.comment =
   let start_pos = loc.Location.loc_start in
   let doc : Model.Documentation.t =
     match Doc_parser.parse parent lexbuf with
-    | Ok (text, tags) -> begin
+    | Ok {text; tags} -> begin
         Ok {Model.Documentation.text; tags}
       end
     | Error err -> Error (read_error parent err start_pos)
