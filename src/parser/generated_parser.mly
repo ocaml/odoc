@@ -110,15 +110,15 @@ let title_to_string (i, _) =
     "{" ^ i
 
 let style_to_string = function
-  | SK_bold -> "{b"
-  | SK_italic -> "{i"
-  | SK_emphasize -> "{e"
-  | SK_center -> "{C"
-  | SK_left -> "{L"
-  | SK_right -> "{R"
-  | SK_superscript -> "{^"
-  | SK_subscript -> "{_"
-  | SK_custom s -> "{" ^ s
+  | Model.Documentation.Bold -> "{b"
+  | Italic -> "{i"
+  | Emphasize -> "{e"
+  | Center -> "{C"
+  | Left -> "{L"
+  | Right -> "{R"
+  | Superscript -> "{^"
+  | Subscript -> "{_"
+  | Custom s -> "{" ^ s
 
 let item_to_string i = if i then "{-" else "{li"
 
@@ -144,7 +144,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token END
 
 %token <int * string option> Title
-%token <Output.style_kind> Style
+%token <Model.Documentation.style> Style
 %token LIST
 %token ENUM
 %token <bool> Item
@@ -554,27 +554,27 @@ html_text_element :
       unclosed (html_open_to_string tag) 1
         "text" (html_close_to_string tag) 3 }
   | HTML_Bold text HTML_END_BOLD
-    { Style(SK_bold, (inner $2)) }
+    { Style(Bold, (inner $2)) }
   | HTML_Bold text error
     { unclosed (html_open_to_string $1) 1
         "text" (html_close_to_string $1) 3 }
   | HTML_Italic text HTML_END_ITALIC
-    { Style(SK_italic, (inner $2)) }
+    { Style(Italic, (inner $2)) }
   | HTML_Italic text error
     { unclosed (html_open_to_string $1) 1
         "text" (html_close_to_string $1) 3 }
   | HTML_Center text HTML_END_CENTER
-    { Style(SK_center, (inner $2)) }
+    { Style(Center, (inner $2)) }
   | HTML_Center text error
     { unclosed (html_open_to_string $1) 1
         "text" (html_close_to_string $1) 3 }
   | HTML_Left text HTML_END_LEFT
-    { Style(SK_left, (inner $2)) }
+    { Style(Left, (inner $2)) }
   | HTML_Left text error
     { unclosed (html_open_to_string $1) 1
         "text" (html_close_to_string $1) 3 }
   | HTML_Right text HTML_END_RIGHT
-    { Style(SK_right, (inner $2)) }
+    { Style(Right, (inner $2)) }
   | HTML_Right text error
     { unclosed (html_open_to_string $1) 1
         "text" (html_close_to_string $1) 3 }

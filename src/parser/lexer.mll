@@ -161,12 +161,12 @@ let style_table = Hashtbl.create 19
 let () =
   List.iter
     (fun (kwd, tok) -> Hashtbl.add style_table kwd tok)
-    [ ("b", Generated_parser.Style SK_bold);
-      ("e", Style SK_emphasize);
-      ("C", Style SK_center);
-      ("L", Style SK_left);
-      ("R", Style SK_right);
-      ("i", Style SK_italic);
+    [ ("b", Generated_parser.Style Bold);
+      ("e", Style Emphasize);
+      ("C", Style Center);
+      ("L", Style Left);
+      ("R", Style Right);
+      ("i", Style Italic);
       ("ul", LIST);
       ("ol", ENUM);
       ("li", Item false); ]
@@ -316,13 +316,13 @@ rule main = parse
   | "{" (ident as style)
     { try
         Hashtbl.find style_table style
-      with Not_found -> Style (SK_custom style) }
+      with Not_found -> Style (Custom style) }
   | "{-"
     { Item true }
   | "{^"
-    { Style SK_superscript }
+    { Style Superscript }
   | "{_"
-    { Style SK_subscript }
+    { Style Subscript }
   | html_code
     { reset_string_buffer ();
       set_start_loc lexbuf;

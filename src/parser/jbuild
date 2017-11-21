@@ -4,4 +4,5 @@
 (ocamlyacc (generated_parser))
 
 (library
- ((name doc_parser)))
+ ((name doc_parser)
+  (libraries (model))))

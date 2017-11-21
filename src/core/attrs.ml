@@ -20,18 +20,6 @@ let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
-let read_style
-    : Doc_parser.Output.style_kind -> Model.Documentation.style = function
-  | SK_bold -> Bold
-  | SK_italic -> Italic
-  | SK_emphasize -> Emphasize
-  | SK_center -> Center
-  | SK_left -> Left
-  | SK_right -> Right
-  | SK_superscript -> Superscript
-  | SK_subscript -> Subscript
-  | SK_custom s -> Custom s
-
 exception InvalidReference of string
 
 let read_qualifier :
@@ -444,7 +432,7 @@ let rec read_text_element parent
   | Code s -> Code s
   | PreCode s -> PreCode s
   | Verbatim s -> Verbatim s
-  | Style(sk, txt) -> Style(read_style sk, read_text parent txt)
+  | Style(sk, txt) -> Style (sk, read_text parent txt)
   | List l -> List (List.map (read_text parent) l)
   | Enum l -> Enum (List.map (read_text parent) l)
   | Newline -> Newline

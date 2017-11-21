@@ -16,18 +16,6 @@
 
 (** Types for the information collected in comments. *)
 
-(** The differents kinds of style. *)
-type style_kind =
-  | SK_bold
-  | SK_italic
-  | SK_emphasize
-  | SK_center
-  | SK_left
-  | SK_right
-  | SK_superscript
-  | SK_subscript
-  | SK_custom of string
-
 (** The differents kinds of element references. *)
 type ref_kind =
   | RK_element
@@ -56,7 +44,7 @@ and text_element =
   | Code of string (** The string is source code. *)
   | PreCode of string (** The string is pre-formatted source code. *)
   | Verbatim of string (** String 'as is'. *)
-  | Style of style_kind * text (** Text tagged with a style. *)
+  | Style of Model.Documentation.style * text (** Text tagged with a style. *)
   | List of text list (** A list. *)
   | Enum of text list (** An enumerated list. *)
   | Newline   (** To force a line break. *)
