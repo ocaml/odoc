@@ -4,5 +4,4 @@
 (ocamlyacc (generated_parser))
 
 (library
- ((name doc_parser)
-  (public_name odoc.parser)))
+ ((name doc_parser)))

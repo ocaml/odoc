@@ -2,6 +2,5 @@
 
 (library
  ((name odoc)
-  (public_name odoc)
   (libraries
-   (doc_model odoc.html unix fpath bos compiler-libs.common tyxml))))
+   (doc_model doc_html unix fpath bos compiler-libs.common tyxml))))

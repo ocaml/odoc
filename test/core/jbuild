@@ -2,7 +2,6 @@
 
 (library
  ((name ocamlary)
-  (public_name odoc.model.ocamlary)
   (modules (ocamlary))))
 
 (executables

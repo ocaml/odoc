@@ -2,5 +2,4 @@
 
 (library
  ((name doc_html)
-  (public_name odoc.html)
   (libraries (doc_model tyxml))))
