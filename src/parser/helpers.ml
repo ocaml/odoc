@@ -1,5 +1,7 @@
 module Paths = Model.Paths
 
+let parent_definition : Paths.Identifier.label_parent option ref = ref None
+
 exception InvalidReference of string
 
 let read_qualifier :

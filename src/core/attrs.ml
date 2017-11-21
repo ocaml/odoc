@@ -395,7 +395,7 @@ let read_special_reference
       Modules (List.map (fun lid -> read_mod_longident lid, []) mds)
   | SRK_index_list -> Index
 
-let rec read_text_element parent
+let rec read_text_element
     : Doc_parser.Output.text_element -> Model.Documentation.text_element =
 
   function
@@ -403,38 +403,34 @@ let rec read_text_element parent
   | Code s -> Code s
   | PreCode s -> PreCode s
   | Verbatim s -> Verbatim s
-  | Style(sk, txt) -> Style (sk, read_text parent txt)
-  | List l -> List (List.map (read_text parent) l)
-  | Enum l -> Enum (List.map (read_text parent) l)
+  | Style(sk, txt) -> Style (sk, read_text txt)
+  | List l -> List (List.map read_text l)
+  | Enum l -> Enum (List.map read_text l)
   | Newline -> Newline
   | Title(i, l, txt) -> begin
-      let txt = read_text parent txt in
-        match l with
-        | None -> Title(i, None, txt)
-        | Some name ->
-            let id = Paths.Identifier.Label(parent, name) in
-              Title(i, Some id, txt)
+      let txt = read_text txt in
+      Title (i, l, txt)
     end
   | Ref(rk, txt) ->
-      Reference(rk, opt_map (read_text parent) txt)
+      Reference(rk, opt_map read_text txt)
   | Special_ref srk -> Special (read_special_reference srk)
   | Target (target, code) -> Target (target, code)
 
-and read_text parent txt = List.map (read_text_element parent) txt
+and read_text txt = List.map read_text_element txt
 
-let read_tag parent : Doc_parser.Output.tag -> Model.Documentation.tag =
+let read_tag : Doc_parser.Output.tag -> Model.Documentation.tag =
   function
   | Author s -> Author s
   | Version v -> Version v
-  | See (r, t) -> See (r, read_text parent t)
+  | See (r, t) -> See (r, read_text t)
   | Since s -> Since s
-  | Before (s, t) -> Before (s, read_text parent t)
-  | Deprecated t -> Deprecated (read_text parent t)
-  | Param (s, t) -> Param (s, read_text parent t)
-  | Raised_exception (s, t) -> Raise (s, read_text parent t)
-  | Return_value t -> Return (read_text parent t)
+  | Before (s, t) -> Before (s, read_text t)
+  | Deprecated t -> Deprecated (read_text t)
+  | Param (s, t) -> Param (s, read_text t)
+  | Raised_exception (s, t) -> Raise (s, read_text t)
+  | Return_value t -> Return (read_text t)
   | Inline -> Inline
-  | Custom (s, t) -> Tag (s, read_text parent t)
+  | Custom (s, t) -> Tag (s, read_text t)
   | Canonical p -> Canonical (read_path_longident p, read_mod_longident p)
 
 let empty_body = {Model.Documentation.text = []; tags = []}
@@ -549,12 +545,12 @@ let read_attributes parent id attrs =
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
-            match Doc_parser.parse lexbuf with
+            match Doc_parser.parse parent lexbuf with
             | Ok (text, tags) -> begin
                 try
-                  let text = read_text parent text in
+                  let text = read_text text in
                   let text = if first then text else Newline :: text in
-                  let tags = List.map (read_tag parent) tags in
+                  let tags = List.map read_tag tags in
                   let nb_deprecated =
                     List.fold_right (function
                       | Model.Documentation.Deprecated _ -> (+) 1
@@ -604,11 +600,11 @@ let read_string parent loc str : Model.Documentation.comment =
   let lexbuf = Lexing.from_string str in
   let start_pos = loc.Location.loc_start in
   let doc : Model.Documentation.t =
-    match Doc_parser.parse lexbuf with
+    match Doc_parser.parse parent lexbuf with
     | Ok (text, tags) -> begin
         try
-          let text = read_text parent text in
-          let tags = List.map (read_tag parent) tags in
+          let text = read_text text in
+          let tags = List.map read_tag tags in
           Ok {Model.Documentation.text; tags}
         with InvalidReference s ->
           Error (invalid_reference_error parent loc s)

@@ -1,4 +1,19 @@
 %{
+
+(* This parser definitions provides two entry points, [main] and
+   [reference_parts], both functions of type [Lexing.lexbuf -> Output.t].
+   However, in addition to the [lexbuf], they take one more argument through a
+   reference
+
+{[
+Helpers.parent_definition : Model.Paths.Identifier.label_parent option ref
+]}
+
+   This is used in constructing section label definitions. It is possible to
+   replace this piece of state with a parameter passed to the parser, but that
+   requires using Menhir instead of ocamlyacc, and I subjectively decided it's
+   not worth the switch for only this reference. *)
+
 open Common
 open! Output
 open Error
@@ -486,6 +501,14 @@ shortcut_enum_final :
 text_element :
   | Title text END
     { let n, l = $1 in
+      let l =
+        match l with
+        | None -> None
+        | Some name ->
+          match !Helpers.parent_definition with
+          | None -> assert false
+          | Some parent -> Some (Model.Paths.Identifier.Label (parent, name))
+      in
       Title (n, l, (inner $2)) }
   | Title text error
     { unclosed (title_to_string $1) 1 "text" "}" 3 }

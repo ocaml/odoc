@@ -16,27 +16,37 @@
 
 
 
-let parse : Lexing.lexbuf -> (Output.t, Error.t) result = fun lexbuf ->
-  let open Error in
-  try
-    Ok (Generated_parser.main Lexer.main lexbuf)
-  with
-  | Common.ParserError(location, err) ->
-    Error {Error.error = Parser err; location}
-  | Common.LexerError(location, err) ->
-    Error {Error.error = Lexer err; location}
+let parse
+    : Model.Paths.Identifier.label_parent -> Lexing.lexbuf ->
+        (Output.t, Error.t) result =
+    fun parent_definition lexbuf ->
+
+  Helpers.parent_definition := Some parent_definition;
+  match Generated_parser.main Lexer.main lexbuf with
+  | parsed_result ->
+    Helpers.parent_definition := None;
+    Ok parsed_result
+  | exception Common.ParserError (location, error) ->
+    Helpers.parent_definition := None;
+    Error {Error.error = Error.Parser error; location}
+  | exception Common.LexerError (location, error) ->
+    Helpers.parent_definition := None;
+    Error {Error.error = Error.Lexer error; location}
+  | exception exn ->
+    Helpers.parent_definition := None;
+    raise exn
 
 let parse_ref
     : Lexing.lexbuf -> ((string option * string) list, Error.t) result =
     fun lexbuf ->
-  let open Error in
+
   try
     Ok (Generated_parser.reference_parts Lexer.read_ref lexbuf)
   with
   | Common.ParserError(location, err) ->
-    Error {Error.error = Parser err; location}
+    Error {Error.error = Error.Parser err; location}
   | Common.LexerError(location, err) ->
-    Error {Error.error = Lexer err; location}
+    Error {Error.error = Error.Lexer err; location}
 
 
 

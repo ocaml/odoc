@@ -30,7 +30,7 @@ and text_element =
   | List of text list (** A list. *)
   | Enum of text list (** An enumerated list. *)
   | Newline   (** To force a line break. *)
-  | Title of int * string option * text
+  | Title of int * Model.Paths.Identifier.label option * text
               (** Style number, optional label, and text. *)
   | Ref of Model.Documentation.reference * text option
     (** A reference to an element. Complete name and kind. An optional
