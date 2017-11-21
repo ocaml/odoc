@@ -23,9 +23,7 @@ val root : t -> Root.t
 (** {2 Serialization} *)
 
 val save : Fs.File.t -> t -> unit
-val save_xml : Fs.File.t -> t -> unit
 
 (** {2 Deserialization} *)
 
 val load : Fs.File.t -> t
-val load_xml : Fs.File.t -> t

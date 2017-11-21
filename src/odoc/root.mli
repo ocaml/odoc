@@ -26,14 +26,3 @@ val read : Fs.File.t -> Doc_model.Root.t
 
 val save : out_channel -> Doc_model.Root.t -> unit
 (** [save oc t] marshalls [t] to [oc]. *)
-
-(** XML de/serialization.
-
-    Necessary for the [to-xml] command. *)
-module Xml : sig
-
-  val parse : Xmlm.input -> Doc_model.Root.t
-
-  val fold : Doc_model.Root.t Doc_xml.Fold.t
-
-end

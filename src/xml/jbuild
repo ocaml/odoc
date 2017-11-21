@@ -1,9 +1,0 @@
-(jbuild_version 1)
-
-(menhir
- ((modules (generated_parser))))
-
-(library
- ((name doc_xml)
-  (public_name odoc.xml)
-  (libraries (odoc.model xmlm menhirLib))))

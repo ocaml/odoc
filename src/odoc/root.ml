@@ -16,63 +16,6 @@
 
 
 
-module Xml = struct
-  let parse i =
-    begin match Xmlm.input i with
-    | `El_start ((_, "root_description"), _) -> ()
-    | _ -> assert false
-    end;
-    let package = ref "" in
-    let file = ref (Doc_model.Root.Odoc_file.Page "") in
-    let digest = ref "" in
-    let get_elt () =
-      match Xmlm.input i, Xmlm.input i, Xmlm.input i with
-      | `El_start ((_, name), _), `Data value, `El_end ->
-        begin match name with
-        | "package" -> package := value
-        | "unit" ->
-          file := Doc_model.Root.Odoc_file.create_unit ~force_hidden:false value
-        | "page" -> file := Doc_model.Root.Odoc_file.create_page value
-        | "digest" -> digest := (Digest.from_hex value)
-        | _ -> assert false
-        end
-      | _ -> assert false
-    in
-    get_elt ();
-    get_elt ();
-    get_elt ();
-    begin match Xmlm.input i with
-    | `El_end -> ()
-    | _ -> assert false
-    end;
-    Doc_model.Root.create
-      ~package:(Doc_model.Root.Package.create !package)
-      ~file:!file ~digest:!digest
-
-  let fold =
-    let make_tag name = (("", name), []) in
-    let f output acc root =
-      let flipped sign acc = output acc sign in
-      acc
-      |> flipped (`El_start (make_tag "root_description"))
-      |> flipped (`El_start (make_tag "package"))
-      |> flipped
-        (`Data (Doc_model.Root.Package.to_string (Doc_model.Root.package root)))
-      |> flipped `El_end
-      |> flipped
-        (`El_start
-          (make_tag (Doc_model.Root.Odoc_file.kind (Doc_model.Root.file root))))
-      |> flipped
-        (`Data (Doc_model.Root.Odoc_file.name (Doc_model.Root.file root)))
-      |> flipped `El_end
-      |> flipped (`El_start (make_tag "digest"))
-      |> flipped (`Data (Digest.to_hex (Doc_model.Root.digest root)))
-      |> flipped `El_end
-      |> flipped `El_end
-    in
-    { Doc_xml.Fold. f }
-end
-
 let magic = "odoc-%%VERSION%%"
 
 let load file ic =

@@ -20,9 +20,7 @@ depends: [
   "cppo" {build}
   "fpath"
   "jbuilder" {build & >= "1.0+beta10"}
-  "menhir"
   "tyxml" {>= "4.0.0"}
-  "xmlm"
 ]
 
 build: [

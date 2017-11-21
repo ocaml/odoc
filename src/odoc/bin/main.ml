@@ -259,52 +259,6 @@ module Targets = struct
   end
 end
 
-module To_xml = struct
-  let to_xml output odoc_file =
-    match Filename.check_suffix odoc_file ".odoc" with
-    | false ->
-      (* TODO: don't rely on the extension to check that it indeed is an odoc
-         file. *)
-      Printf.eprintf "to_xml: expected a .odoc file\n%!";
-      exit 1
-    | true ->
-      let output =
-        match output with
-        | Some s -> Fs.File.of_string s
-        | None ->
-          Filename.chop_extension odoc_file
-          |> (fun file -> file ^ ".xml")
-          |> Fs.File.of_string
-      in
-      let odoc_file = Fs.File.of_string odoc_file in
-      let root = Root.read odoc_file in
-      match Doc_model.Root.file root with
-      | Compilation_unit _ ->
-        Compilation_unit.load odoc_file
-        |> Compilation_unit.save_xml output
-      | Page _ ->
-        Page.load odoc_file
-        |> Page.save_xml output
-
-  let cmd =
-    let input =
-      let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
-    in
-    let dst_file =
-      let doc = "Output file path. Non-existing intermediate directories are
-                 created. If absent outputs a $(i,BASE).odoc file in the same
-                 directory as as the input file where $(i,BASE) is the basename
-                 of the input file."
-      in
-      Arg.(value & opt (some string) None @@ info ~docs ~docv:"PATH" ~doc ["o"])
-    in
-    Term.(const to_xml $ dst_file $ input)
-
-  let info =
-    Term.info ~doc:"Takes a .odoc file and output a.xml version" "to-xml"
-end
-
 let () =
   let subcommands =
     [ Compile.(cmd, info)
@@ -314,7 +268,7 @@ let () =
     ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Html.(cmd, info)
-    ; To_xml.(cmd, info) ]
+    ]
   in
   let default =
     let print_default () =

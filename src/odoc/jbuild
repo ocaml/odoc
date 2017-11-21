@@ -3,9 +3,7 @@
 (library
  ((name odoc)
   (public_name odoc)
-  (libraries (xmlm
-              odoc.model
-              odoc.xml
+  (libraries (odoc.model
               odoc.html
               unix
               fpath
