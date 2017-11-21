@@ -16,7 +16,7 @@
 
 (** Type of documentation *)
 
-open Paths
+open Paths_types
 
 (** {3 Documentation} *)
 

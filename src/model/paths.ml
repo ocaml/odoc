@@ -30,73 +30,7 @@ let atom s = Atom (Printf.sprintf "%S" s)
    the sexp_of_t functions. *)
 let sexp_of_root _ = Atom ""
 
-module Kind = struct
-
-  type any =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label | `Page ]
-
-  type signature = [ `Module | `ModuleType ]
-
-  type class_signature = [ `Class | `ClassType ]
-
-  type datatype = [ `Type ]
-
-  type page = [ `Page ]
-
-  type parent = [ signature | class_signature | datatype ]
-
-  type label_parent = [ parent | page ]
-
-  type identifier = any
-
-  type identifier_module = [ `Module ]
-  type identifier_module_type = [ `ModuleType ]
-  type identifier_type =  [ `Type ]
-  type identifier_constructor = [ `Constructor ]
-  type identifier_field = [ `Field ]
-  type identifier_extension = [ `Extension ]
-  type identifier_exception = [ `Exception ]
-  type identifier_value = [ `Value ]
-  type identifier_class = [ `Class ]
-  type identifier_class_type = [ `ClassType ]
-  type identifier_method = [ `Method ]
-  type identifier_instance_variable = [ `InstanceVariable ]
-  type identifier_label = [ `Label ]
-  type identifier_page = [ `Page ]
-
-  type path = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
-
-  type path_module = [ `Module ]
-  type path_module_type = [ `ModuleType ]
-  type path_type = [ `Type | `Class | `ClassType ]
-  type path_class_type = [ `Class | `ClassType ]
-
-  type fragment = [ `Module | `Type | `Class | `ClassType ]
-
-  type fragment_module = [ `Module ]
-  type fragment_type = [ `Type | `Class | `ClassType ]
-
-  type reference = any
-
-  type reference_module = [ `Module ]
-  type reference_module_type = [ `ModuleType ]
-  type reference_type = [ `Type | `Class | `ClassType ]
-  type reference_constructor = [ `Constructor | `Extension | `Exception ]
-  type reference_field = [ `Field ]
-  type reference_extension = [ `Extension | `Exception ]
-  type reference_exception = [ `Exception ]
-  type reference_value = [ `Value ]
-  type reference_class = [ `Class ]
-  type reference_class_type = [ `Class | `ClassType ]
-  type reference_method = [ `Method ]
-  type reference_instance_variable = [ `InstanceVariable ]
-  type reference_label = [ `Label ]
-  type reference_page = [ `Page ]
-
-end
+module Kind = Paths_types.Kind
 
 open Kind
 
@@ -127,35 +61,7 @@ end
 
 module Identifier = struct
 
-  type kind = Kind.identifier
-
-  type 'kind t =
-    | Root : Root.t * string -> [< kind > `Module] t
-    | Page : Root.t * string -> [< kind > `Page] t
-    | Module : signature * string -> [< kind > `Module] t
-    | Argument : signature * int * string -> [< kind > `Module] t
-    | ModuleType : signature * string -> [< kind > `ModuleType] t
-    | Type : signature * string -> [< kind > `Type] t
-    | CoreType : string -> [< kind > `Type] t
-    | Constructor : datatype * string -> [< kind > `Constructor] t
-    | Field : parent * string -> [< kind > `Field] t
-    | Extension : signature * string -> [< kind > `Extension] t
-    | Exception : signature * string -> [< kind > `Exception] t
-    | CoreException : string -> [< kind > `Exception] t
-    | Value : signature * string -> [< kind > `Value] t
-    | Class : signature * string -> [< kind > `Class] t
-    | ClassType : signature * string -> [< kind > `ClassType] t
-    | Method : class_signature * string -> [< kind > `Method] t
-    | InstanceVariable : class_signature * string ->
-        [< kind > `InstanceVariable] t
-    | Label : label_parent * string -> [< kind > `Label] t
-
-  and any = kind t
-  and signature = Kind.signature t
-  and class_signature = Kind.class_signature t
-  and datatype = Kind.datatype t
-  and parent = Kind.parent t
-  and label_parent = Kind.label_parent t
+  include Paths_types.Identifier
 
   let rec sexp_of_t : type kind. kind t -> sexp =
     fun t ->
@@ -193,44 +99,6 @@ module Identifier = struct
           List [ Atom "InstanceVariable"; List [sexp_of_t sg; atom s] ]
       | Label (sg, s) ->
           List [ Atom "Label"; List [sexp_of_t sg; atom s] ]
-
-  type module_ = identifier_module t
-  type module_type = identifier_module_type t
-  type type_ = identifier_type t
-  type constructor = identifier_constructor t
-  type field = identifier_field t
-  type extension = identifier_extension t
-  type exception_ = identifier_exception t
-  type value = identifier_value t
-  type class_ = identifier_class t
-  type class_type = identifier_class_type t
-  type method_ = identifier_method t
-  type instance_variable = identifier_instance_variable t
-  type label = identifier_label t
-  type page = identifier_page t
-
-  type path_module = Kind.path_module t
-  type path_module_type = Kind.path_module_type t
-  type path_type = Kind.path_type t
-  type path_class_type = Kind.path_class_type t
-
-  type fragment_module = Kind.fragment_module t
-  type fragment_type = Kind.fragment_type t
-
-  type reference_module = Kind.reference_module t
-  type reference_module_type = Kind.reference_module_type t
-  type reference_type =  Kind.reference_type t
-  type reference_constructor = Kind.reference_constructor t
-  type reference_field = Kind.reference_field t
-  type reference_extension = Kind.reference_extension t
-  type reference_exception = Kind.reference_exception t
-  type reference_value = Kind.reference_value t
-  type reference_class = Kind.reference_class t
-  type reference_class_type = Kind.reference_class_type t
-  type reference_method = Kind.reference_method t
-  type reference_instance_variable = Kind.reference_instance_variable t
-  type reference_label = Kind.reference_label t
-  type reference_page = Kind.reference_page t
 
   let signature_of_module : module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> x
@@ -423,51 +291,9 @@ module Path = struct
   (* Separate types module to avoid repeating type definitions *)
   module rec Types : sig
 
-    module Resolved : sig
+    module Resolved = Paths_types.Resolved_path
 
-      type kind = Kind.path
-
-      type 'kind t =
-        | Identifier : 'kind Identifier.t -> ([< kind] as 'kind) t
-        | Subst : module_type * module_ -> [< kind > `Module] t
-        | SubstAlias : module_ * module_ -> [< kind > `Module] t
-        | Hidden : module_ -> [< kind > `Module ] t
-        | Module : module_ * string -> [< kind > `Module] t
-        | Canonical : module_ * Types.Path.module_ -> [< kind > `Module] t
-        | Apply : module_ * Types.Path.module_ -> [< kind > `Module] t
-        | ModuleType : module_ * string -> [< kind > `ModuleType] t
-        | Type : module_ * string -> [< kind > `Type] t
-        | Class : module_ * string -> [< kind > `Class] t
-        | ClassType : module_ * string -> [< kind > `ClassType] t
-
-      and any = kind t
-
-      and module_ = path_module t
-      and module_type = path_module_type t
-      and type_ = path_type t
-      and class_type = path_class_type t
-
-    end
-
-    module Path : sig
-
-      type kind = Kind.path
-
-      type 'kind t =
-        | Resolved : 'kind Resolved.t -> 'kind t
-        | Root : string -> [< kind > `Module] t
-        | Forward : string -> [< kind > `Module] t
-        | Dot : module_ * string -> [< kind] t
-        | Apply : module_ * module_ -> [< kind > `Module] t
-
-      and any = kind t
-
-      and module_ = path_module t
-      and module_type = path_module_type t
-      and type_ = path_type t
-      and class_type = path_class_type t
-
-    end
+    module Path = Paths_types.Path
 
   end = Types
 
@@ -949,30 +775,7 @@ module Fragment = struct
 
   module Resolved = struct
 
-    type kind = Kind.fragment
-
-    type sort = [ `Root | `Branch ]
-
-    type ('b, 'c) raw =
-      | Root : ('b, [< sort > `Root]) raw
-      | Subst : Path.Resolved.module_type * module_ ->
-          ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | SubstAlias : Path.Resolved.module_ * module_ ->
-          ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | Module : signature * string ->
-          ([< kind > `Module], [< sort > `Branch]) raw
-      | Type : signature * string ->
-          ([< kind > `Type], [< sort > `Branch]) raw
-      | Class : signature * string ->
-          ([< kind > `Class], [< sort > `Branch]) raw
-      | ClassType : signature * string ->
-          ([< kind > `ClassType], [< sort > `Branch]) raw
-
-    and 'b t = ('b, [`Branch]) raw
-
-    and any = kind t
-    and signature = (fragment_module, [`Root | `Branch]) raw
-    and module_ = fragment_module t
+    include Paths_types.Resolved_fragment
 
     let rec sexp_of_t :
       type a c. (a, c) raw -> sexp =
@@ -1015,8 +818,6 @@ module Fragment = struct
               List [ sexp_of_t raw
                   ; atom s ]
             ]
-
-    type type_ = fragment_type t
 
     let signature_of_module : module_ -> signature = function
       | Subst _ | SubstAlias _ | Module _ as x -> x
@@ -1203,18 +1004,7 @@ module Fragment = struct
 
   open Resolved
 
-  type kind = Kind.fragment
-
-  type sort = [ `Root | `Branch ]
-
-  type ('b, 'c) raw =
-    | Resolved : ('b, 'c) Resolved.raw -> ('b, 'c) raw
-    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
-
-  and 'b t = ('b, [`Branch]) raw
-
-  and any = kind t
-  and signature = (fragment_module, [`Root | `Branch]) raw
+  include Paths_types.Fragment
 
   let rec sexp_of_t :
     type a c. (a, c) raw -> sexp =
@@ -1230,9 +1020,6 @@ module Fragment = struct
             Atom "Dot";
             List [ sexp_of_t raw ; atom s ];
           ]
-
-  type module_ = fragment_module t
-  type type_ = fragment_type t
 
   let signature_of_module : module_ -> signature = function
     | Resolved(Subst _ | SubstAlias _ | Module _) | Dot _ as x -> x
@@ -1317,112 +1104,9 @@ end
 
 module Reference = struct
   module rec Types : sig
-    module Resolved : sig
-      type kind = Kind.reference
+    module Resolved = Paths_types.Resolved_reference
 
-      type 'kind t =
-        | Identifier : 'kind Identifier.t -> 'kind t
-        | SubstAlias : Path.Resolved.module_ * module_ -> [< kind > `Module ] t
-        | Module : signature * string -> [< kind > `Module] t
-        | Canonical : module_ * Types.Reference.module_ -> [< kind > `Module] t
-        | ModuleType : signature * string -> [< kind > `ModuleType] t
-        | Type : signature * string -> [< kind > `Type] t
-        | Constructor : datatype * string -> [< kind > `Constructor] t
-        | Field : parent * string -> [< kind > `Field] t
-        | Extension : signature * string -> [< kind > `Extension] t
-        | Exception : signature * string -> [< kind > `Exception] t
-        | Value : signature * string -> [< kind > `Value] t
-        | Class : signature * string -> [< kind > `Class] t
-        | ClassType : signature * string -> [< kind > `ClassType] t
-        | Method : class_signature * string -> [< kind > `Method] t
-        | InstanceVariable : class_signature * string ->
-          [< kind > `InstanceVariable] t
-        | Label : label_parent * string -> [< kind > `Label] t
-
-      and any = kind t
-      and signature = Kind.signature t
-      and class_signature = Kind.class_signature t
-      and datatype = Kind.datatype t
-      and parent = Kind.parent t
-      and module_ = reference_module t
-      and label_parent = [ Kind.parent | Kind.page ] t
-
-      type module_type = reference_module_type t
-      type type_ = reference_type t
-      type constructor = reference_constructor t
-      type field = reference_field t
-      type extension = reference_extension t
-      type exception_ = reference_exception t
-      type value = reference_value t
-      type class_ = reference_class t
-      type class_type = reference_class_type t
-      type method_ = reference_method t
-      type instance_variable = reference_instance_variable t
-      type label = reference_label t
-      type page = reference_page t
-    end
-
-    module Reference : sig
-      type kind = Kind.reference
-
-      type _ tag =
-        | TUnknown : [< kind ] tag
-        | TModule : [< kind > `Module ] tag
-        | TModuleType : [< kind > `ModuleType ] tag
-        | TType : [< kind > `Type ] tag
-        | TConstructor : [< kind > `Constructor ] tag
-        | TField : [< kind > `Field ] tag
-        | TExtension : [< kind > `Extension ] tag
-        | TException : [< kind > `Exception ] tag
-        | TValue : [< kind > `Value ] tag
-        | TClass : [< kind > `Class ] tag
-        | TClassType : [< kind > `ClassType ] tag
-        | TMethod : [< kind > `Method ] tag
-        | TInstanceVariable : [< kind > `InstanceVariable ] tag
-        | TLabel : [< kind > `Label ] tag
-        | TPage : [< kind > `Page ] tag
-
-      type 'kind t =
-        | Resolved : 'kind Resolved.t -> 'kind t
-        | Root : string * 'kind tag -> 'kind t
-        | Dot : label_parent * string -> [< kind ] t
-        | Module : signature * string -> [< kind > `Module] t
-        | ModuleType : signature * string -> [< kind > `ModuleType] t
-        | Type : signature * string -> [< kind > `Type] t
-        | Constructor : datatype * string -> [< kind > `Constructor] t
-        | Field : parent * string -> [< kind > `Field] t
-        | Extension : signature * string -> [< kind > `Extension] t
-        | Exception : signature * string -> [< kind > `Exception] t
-        | Value : signature * string -> [< kind > `Value] t
-        | Class : signature * string -> [< kind > `Class] t
-        | ClassType : signature * string -> [< kind > `ClassType] t
-        | Method : class_signature * string -> [< kind > `Method] t
-        | InstanceVariable : class_signature * string ->
-          [< kind > `InstanceVariable] t
-        | Label : label_parent * string -> [< kind > `Label] t
-
-      and any = kind t
-      and signature = Kind.signature t
-      and class_signature = Kind.class_signature t
-      and datatype = Kind.datatype t
-      and parent = Kind.parent t
-      and label_parent = [ Kind.parent | Kind.page ] t
-
-      type module_ = reference_module t
-      type module_type = reference_module_type t
-      type type_ = reference_type t
-      type constructor = reference_constructor t
-      type field = reference_field t
-      type extension = reference_extension t
-      type exception_ = reference_exception t
-      type value = reference_value t
-      type class_ = reference_class t
-      type class_type = reference_class_type t
-      type method_ = reference_method t
-      type instance_variable = reference_instance_variable t
-      type label = reference_label t
-      type page = reference_page t
-    end
+    module Reference = Paths_types.Reference
   end = Types
 
   let sexp_of_tag : type k. k Types.Reference.tag -> sexp = function
