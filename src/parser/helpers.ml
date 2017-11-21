@@ -382,3 +382,15 @@ let read_reference
       (* FIXME: better error message *)
       raise (InvalidReference "Conflicting kinds")
                                  *)
+
+exception Expected_reference_to_a_module_but_got of string
+
+let read_mod_longident lid : Paths.Reference.module_ =
+  let open Paths.Reference in
+  match read_longident lid with
+  | Root (_, (TUnknown | TModule))
+  | Dot (_, _)
+  | Module (_,_) as r -> r
+  | _ ->
+      (* FIXME: propagate location *)
+      raise (Expected_reference_to_a_module_but_got lid)

@@ -16,12 +16,7 @@
 
 (** Types for the information collected in comments. *)
 
-(* The different kinds of special reference *)
-type special_ref_kind =
-  | SRK_module_list of string list
-  | SRK_index_list
-
-and text_element =
+type text_element =
   | Raw of string (** Raw text. *)
   | Code of string (** The string is source code. *)
   | PreCode of string (** The string is pre-formatted source code. *)
@@ -35,7 +30,7 @@ and text_element =
   | Ref of Model.Documentation.reference * text option
     (** A reference to an element. Complete name and kind. An optional
         text can be given to display this text instead of the element name.*)
-  | Special_ref of special_ref_kind (** Special kinds of reference *)
+  | Special_ref of Model.Documentation.special (** Special kinds of reference *)
   | Target of string option * string
     (** (target, code) : to specify code for a specific target format *)
 

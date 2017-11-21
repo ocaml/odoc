@@ -289,7 +289,7 @@ rule main = parse
       ref_kind := RK_element;
       reference lexbuf }
   | "{!" (ident as lbl) "}"
-    { if lbl = "indexlist" then Special_Ref SRK_index_list
+    { if lbl = "indexlist" then Special_Ref Index
       else Ref (Element (Helpers.read_longident lbl)) }
   | "{!" (ident as kind) ":"
     { reset_string_buffer ();
@@ -600,7 +600,11 @@ and module_list = parse
   | "}"
     { if not @@ !buffer_empty then add_module (get_buffered_string ());
       use_start_loc lexbuf;
-      Special_Ref(SRK_module_list (get_module_list ())) }
+      let modules =
+        get_module_list ()
+        |> List.map (fun lid -> Helpers.read_mod_longident lid, [])
+      in
+      Special_Ref (Modules modules) }
   | eof
     { raise_lexer_error (get_start_loc ()) Unterminated_ref }
   | blank+

@@ -165,7 +165,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <bool> Item
 
 %token <Model.Documentation.reference> Ref
-%token <Output.special_ref_kind> Special_Ref
+%token <Model.Documentation.special> Special_Ref
 
 %token <string> Code
 %token <string> Pre_Code

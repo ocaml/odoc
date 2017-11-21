@@ -388,13 +388,6 @@ let read_mod_longident lid : Paths.Reference.module_ =
       (* FIXME: propagate location *)
       raise (Expected_reference_to_a_module_but_got lid)
 
-let read_special_reference
-    : Doc_parser.Output.special_ref_kind -> Model.Documentation.special =
-  function
-  | SRK_module_list mds ->
-      Modules (List.map (fun lid -> read_mod_longident lid, []) mds)
-  | SRK_index_list -> Index
-
 let rec read_text_element
     : Doc_parser.Output.text_element -> Model.Documentation.text_element =
 
@@ -413,7 +406,7 @@ let rec read_text_element
     end
   | Ref(rk, txt) ->
       Reference(rk, opt_map read_text txt)
-  | Special_ref srk -> Special (read_special_reference srk)
+  | Special_ref srk -> Special srk
   | Target (target, code) -> Target (target, code)
 
 and read_text txt = List.map read_text_element txt
