@@ -1,9 +1,9 @@
 
 let process file lexbuf =
   match Doc_parser.parse lexbuf with
-  | Doc_parser.Ok t ->
+  | Ok t ->
     Format.printf "%a@." Doc_parser.print t
-  | Doc_parser.Error { error; location } ->
+  | Error { error; location } ->
     let msg = Doc_parser.Error.message error in
     let loc =
       let { Doc_parser.Error. start ; finish } = location in

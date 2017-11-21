@@ -16,11 +16,7 @@
 
 
 
-type nonrec ('a, 'b) result = ('a, 'b) result =
-  | Ok of 'a
-  | Error of 'b
-
-let parse lexbuf =
+let parse : Lexing.lexbuf -> (Output.t, Error.t) result = fun lexbuf ->
   let open Error in
   try
     Ok (Generated_parser.main Lexer.main lexbuf)
@@ -30,7 +26,9 @@ let parse lexbuf =
   | Common.LexerError(location, err) ->
     Error {Error.error = Lexer err; location}
 
-let parse_ref lexbuf =
+let parse_ref
+    : Lexing.lexbuf -> ((string option * string) list, Error.t) result =
+    fun lexbuf ->
   let open Error in
   try
     Ok (Generated_parser.reference_parts Lexer.read_ref lexbuf)
@@ -40,7 +38,7 @@ let parse_ref lexbuf =
   | Common.LexerError(location, err) ->
     Error {Error.error = Lexer err; location}
 
-let print fmt t =
+let print : Format.formatter -> Output.t -> unit = fun fmt t ->
   Print.pp fmt t
 
 

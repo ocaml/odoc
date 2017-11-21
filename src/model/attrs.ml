@@ -597,7 +597,7 @@ let read_attributes parent id attrs =
             let start_pos = loc.Location.loc_start in
             let lexbuf = Lexing.from_string str in
             match Doc_parser.parse lexbuf with
-            | Doc_parser.Ok (text, tags) -> begin
+            | Ok (text, tags) -> begin
                 try
                   let text = read_text parent text in
                   let text = if first then text else Newline :: text in
@@ -621,7 +621,7 @@ let read_attributes parent id attrs =
                 with InvalidReference s ->
                   Error (invalid_reference_error id loc s)
               end
-            | Doc_parser.Error err -> Error (read_error id err start_pos)
+            | Error err -> Error (read_error id err start_pos)
           end
         | None -> Error (invalid_attribute_error id loc)
       end
@@ -652,7 +652,7 @@ let read_string parent loc str : Model.Documentation.comment =
   let start_pos = loc.Location.loc_start in
   let doc : Model.Documentation.t =
     match Doc_parser.parse lexbuf with
-    | Doc_parser.Ok(text, tags) -> begin
+    | Ok (text, tags) -> begin
         try
           let text = read_text parent text in
           let tags = List.map (read_tag parent) tags in
@@ -660,7 +660,7 @@ let read_string parent loc str : Model.Documentation.comment =
         with InvalidReference s ->
           Error (invalid_reference_error parent loc s)
       end
-    | Doc_parser.Error err -> Error (read_error parent err start_pos)
+    | Error err -> Error (read_error parent err start_pos)
   in
   Documentation doc
 
