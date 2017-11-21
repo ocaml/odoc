@@ -102,3 +102,4 @@ val core_exceptions : 'a Model.Exception.t list
 
 module Lookup = Lookup
 
+module Root = Root

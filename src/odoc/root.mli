@@ -14,65 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** A root can be seen as a unique representative of a odoc file.
 
-    {{!t}Roots} are used by doc-ock (at the root of every resolved
-    path/identifier/reference) and present at the beginning of every [.odoc]
-    file.
-*)
 
-(** {1 } *)
-
-module Package : sig
-
-  type t
-
-  val create : string -> t
-
-  val to_string : t -> string
-end
-
-module Odoc_file : sig
-
-  type t = private
-    | Page of string
-    | Compilation_unit of { name : string; hidden : bool }
-
-  val create_unit : force_hidden:bool -> string -> t
-  val create_page : string -> t
-
-  val name : t -> string
-end
-
-module Digest = Digest
-
-type t
-
-val equal : t -> t -> bool
-val hash  : t -> int
-
-val create : package:Package.t -> file:Odoc_file.t -> digest:Digest.t -> t
-
-(** {1 Accessors} *)
-
-val digest : t -> Digest.t
-val package: t -> Package.t
-val file   : t -> Odoc_file.t
-
-(** {1 Serialization} *)
-
-val to_string : t -> string
-(** Useful for debugging *)
-
-val load : string -> in_channel -> t
+val load : string -> in_channel -> Doc_model.Root.t
 (** [load fn ic] reads a {!t} from [ic].
     [fn] is the name of the file [ic] is "watching", and is used for error
     reporting. *)
 
-val read : Fs.File.t -> t
+val read : Fs.File.t -> Doc_model.Root.t
 (** [read f] opens [f] for reading and then calls {!load}. *)
 
-val save : out_channel -> t -> unit
+val save : out_channel -> Doc_model.Root.t -> unit
 (** [save oc t] marshalls [t] to [oc]. *)
 
 (** XML de/serialization.
@@ -80,12 +32,8 @@ val save : out_channel -> t -> unit
     Necessary for the [to-xml] command. *)
 module Xml : sig
 
-  val parse : Xmlm.input -> t
+  val parse : Xmlm.input -> Doc_model.Root.t
 
-  val fold : t Doc_xml.Fold.t
+  val fold : Doc_model.Root.t Doc_xml.Fold.t
 
 end
-
-(**/**)
-
-module Table : Hashtbl.S with type key = t

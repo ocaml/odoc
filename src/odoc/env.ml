@@ -14,22 +14,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_model
+
 
 type t = {
-  expander    : Root.t Doc_model.expander ;
-  resolver    : Root.t Doc_model.resolver ;
+  expander    : Doc_model.Root.t Doc_model.expander ;
+  resolver    : Doc_model.Root.t Doc_model.resolver ;
 }
 
 module Accessible_paths = struct
   type t = {
-    root_map : Fs.File.t Root.Table.t;
-    file_map : (string, Root.t) Hashtbl.t;
+    root_map : Fs.File.t Doc_model.Root.Table.t;
+    file_map : (string, Doc_model.Root.t) Hashtbl.t;
     directories : Fs.Directory.t list;
   }
 
   let create ~directories =
-    { root_map = Root.Table.create 42
+    { root_map = Doc_model.Root.Table.create 42
     ; file_map = Hashtbl.create 42
     ; directories }
 
@@ -58,18 +58,18 @@ module Accessible_paths = struct
       let path = find_file_by_name t filename in
       let root = Root.read path in
       begin match digest with
-      | Some d when Digest.compare d (Root.digest root) <> 0 ->
+      | Some d when Digest.compare d (Doc_model.Root.digest root) <> 0 ->
         Printf.eprintf
           "WARNING: digest of %s doesn't match the one excepted for file %s\n%!"
           (Fs.File.to_string path) filename
       | _ -> ()
       end;
       Hashtbl.add t.file_map filename root;
-      Root.Table.add t.root_map root path;
+      Doc_model.Root.Table.add t.root_map root path;
       root
 
   let file_of_root t root =
-    let open Root in
+    let open Doc_model.Root in
     try Table.find t.root_map root
     with Not_found ->
       let r =
@@ -89,8 +89,8 @@ let rec lookup_unit ~important_digests ap target_name =
     match Accessible_paths.find_root ap ~filename:target_name ?digest with
     | exception Not_found -> Not_found
     | root ->
-      match Root.file root with
-      | Compilation_unit {hidden; _} -> Found {root; hidden}
+      match Doc_model.Root.file root with
+      | Compilation_unit {hidden; _} -> Doc_model.Found {root; hidden}
       | Page _ -> assert false
   in
   function
@@ -104,9 +104,10 @@ let rec lookup_unit ~important_digests ap target_name =
       | None when important_digests -> Forward_reference
       | _ -> find_root ~digest
       end
-    | Types.Compilation_unit.Import.Resolved root
-      when Root.Odoc_file.name (Root.file root) = target_name -> begin
-        match Root.file root with
+    | Doc_model.Types.Compilation_unit.Import.Resolved root
+      when Doc_model.Root.Odoc_file.name (Doc_model.Root.file root) =
+          target_name -> begin
+        match Doc_model.Root.file root with
         | Compilation_unit {hidden; _} -> Found {root; hidden}
         | Page _ -> assert false
       end
@@ -121,14 +122,14 @@ let fetch_page ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Page.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
+    Printf.eprintf "No unit for root: %s\n%!" (Doc_model.Root.to_string root);
     exit 2
 
 let fetch_unit ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Compilation_unit.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Root.to_string root);
+    Printf.eprintf "No unit for root: %s\n%!" (Doc_model.Root.to_string root);
     exit 2
 
 type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
@@ -136,7 +137,7 @@ type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
-    let lookup_unit target_name : Root.t Doc_model.lookup_result =
+    let lookup_unit target_name : Doc_model.Root.t Doc_model.lookup_result =
       match unit_or_page with
       | `Page _ -> lookup_unit ~important_digests:false ap target_name []
       | `Unit unit ->
@@ -145,12 +146,12 @@ let create ?(important_digests=true) ~directories : builder =
             ~important_digests
             ap
             target_name
-            unit.Types.Compilation_unit.imports
+            unit.Doc_model.Types.Compilation_unit.imports
         in
         match lookup_result with
         | Not_found -> begin
             let root = Compilation_unit.root unit in
-            match Root.file root with
+            match Doc_model.Root.file root with
             | Page _ -> assert false
             | Compilation_unit {name;hidden} when target_name = name ->
               Found { root; hidden }
@@ -158,23 +159,23 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Root.t Doc_model.Types.Compilation_unit.t =
+    let fetch_unit root : Doc_model.Root.t Doc_model.Types.Compilation_unit.t =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
         let current_root = Compilation_unit.root unit in
-        if Root.equal root current_root then
+        if Doc_model.Root.equal root current_root then
           unit
         else
           fetch_unit ap root
     in
     let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : Root.t Doc_model.Types.Page.t =
+    let fetch_page root : Doc_model.Root.t Doc_model.Types.Page.t =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->
         let current_root = Page.root page in
-        if Root.equal root current_root then
+        if Doc_model.Root.equal root current_root then
           page
         else
           fetch_page ap root

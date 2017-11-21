@@ -63,7 +63,7 @@ end = struct
         output
       | None -> Fs.File.(set_ext ".odoc" input)
     in
-    let package = Root.Package.create package_name in
+    let package = Doc_model.Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
       Compile.cmti ~env ~package ~hidden ~output input
@@ -132,7 +132,7 @@ end = struct
     match index_for with
     | None -> Html.from_odoc ~env ~output:output_dir file
     | Some pkg_name ->
-      let package = Root.Package.create pkg_name in
+      let package = Doc_model.Root.Package.create pkg_name in
       Html.from_mld ~env ~output:output_dir ~package file
 
   let cmd =
@@ -195,11 +195,10 @@ module Depends = struct
     let list_dependencies input_file =
       List.iter (Depends.for_html_step (Fs.Directory.of_string input_file))
         ~f:(fun root ->
-          let open Root in
           Printf.printf "%s %s %s\n"
-            (Package.to_string (package root))
-            (Odoc_file.name (file root))
-            (Digest.to_hex (digest root))
+            (Doc_model.Root.Package.to_string (Doc_model.Root.package root))
+            (Doc_model.Root.Odoc_file.name (Doc_model.Root.file root))
+            (Digest.to_hex (Doc_model.Root.digest root))
         )
 
     let cmd =
@@ -279,7 +278,7 @@ module To_xml = struct
       in
       let odoc_file = Fs.File.of_string odoc_file in
       let root = Root.read odoc_file in
-      match Root.file root with
+      match Doc_model.Root.file root with
       | Compilation_unit _ ->
         Compilation_unit.load odoc_file
         |> Compilation_unit.save_xml output

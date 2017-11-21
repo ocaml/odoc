@@ -14,13 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_model
 
-type t = Root.t Types.Page.t
 
-let root (t : Root.t Types.Page.t) =
-  match t.Types.Page.name with
-  | Paths.Identifier.Page (root, _) -> root
+type t = Doc_model.Root.t Doc_model.Types.Page.t
+
+let root (t : Doc_model.Root.t Doc_model.Types.Page.t) =
+  match t.Doc_model.Types.Page.name with
+  | Doc_model.Paths.Identifier.Page (root, _) -> root
 
 let save_xml file page =
   let xml_folder = Doc_xml.Fold.file_page Root.Xml.fold in

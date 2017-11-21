@@ -19,5 +19,5 @@
 val from_odoc :
   env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
 
-val from_mld : env:Env.builder -> package:Root.Package.t ->
+val from_mld : env:Env.builder -> package:Doc_model.Root.Package.t ->
   output:Fs.Directory.t -> Fs.File.t -> unit

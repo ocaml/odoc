@@ -218,3 +218,5 @@ let build_expander = Expand.build_expander
 let expand = Expand.expand
 
 module Lookup = Lookup
+
+module Root = Root

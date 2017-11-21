@@ -14,62 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Digest = Digest
 
-module Package = struct
-  type t = string
-  let create s = s
-  let to_string s = s
-
-  module Table = Hashtbl.Make(struct
-    type nonrec t = t
-    let equal : t -> t -> bool = (=)
-    let hash : t -> int = Hashtbl.hash
-  end)
-end
-
-module Odoc_file = struct
-  type t =
-    | Page of string
-    | Compilation_unit of { name : string; hidden : bool }
-
-  let create_unit ~force_hidden name =
-    let hidden =
-      force_hidden || Doc_model.Paths.contains_double_underscore name in
-    Compilation_unit { name; hidden }
-
-  let create_page name = Page name
-
-  let name = function
-    | Page name
-    | Compilation_unit { name; _ } -> name
-
-  let kind = function
-    | Page _ -> "page"
-    | Compilation_unit _ -> "unit"
-end
-
-module T = struct
-  type t = {
-    package : Package.t;
-    file    : Odoc_file.t;
-    digest  : Digest.t;
-  }
-
-  let digest t = t.digest
-
-  let equal : t -> t -> bool = (=)
-  let hash  : t -> int       = Hashtbl.hash
-end
-
-include T
-
-let to_string t = Printf.sprintf "%s::%s" t.package (Odoc_file.name t.file)
-
-let create ~package ~file ~digest = { package; file; digest }
-
-let file t = t.file
-let package t = t.package
 
 module Xml = struct
   let parse i =
@@ -78,15 +23,16 @@ module Xml = struct
     | _ -> assert false
     end;
     let package = ref "" in
-    let file = ref (Odoc_file.Page "") in
+    let file = ref (Doc_model.Root.Odoc_file.Page "") in
     let digest = ref "" in
     let get_elt () =
       match Xmlm.input i, Xmlm.input i, Xmlm.input i with
       | `El_start ((_, name), _), `Data value, `El_end ->
         begin match name with
         | "package" -> package := value
-        | "unit" -> file := Odoc_file.create_unit ~force_hidden:false value
-        | "page" -> file := Odoc_file.create_page value
+        | "unit" ->
+          file := Doc_model.Root.Odoc_file.create_unit ~force_hidden:false value
+        | "page" -> file := Doc_model.Root.Odoc_file.create_page value
         | "digest" -> digest := (Digest.from_hex value)
         | _ -> assert false
         end
@@ -99,7 +45,9 @@ module Xml = struct
     | `El_end -> ()
     | _ -> assert false
     end;
-    create ~package:!package ~file:!file ~digest:!digest
+    Doc_model.Root.create
+      ~package:(Doc_model.Root.Package.create !package)
+      ~file:!file ~digest:!digest
 
   let fold =
     let make_tag name = (("", name), []) in
@@ -108,20 +56,22 @@ module Xml = struct
       acc
       |> flipped (`El_start (make_tag "root_description"))
       |> flipped (`El_start (make_tag "package"))
-      |> flipped (`Data root.package)
+      |> flipped
+        (`Data (Doc_model.Root.Package.to_string (Doc_model.Root.package root)))
       |> flipped `El_end
-      |> flipped (`El_start (make_tag (Odoc_file.kind root.file)))
-      |> flipped (`Data (Odoc_file.name root.file))
+      |> flipped
+        (`El_start
+          (make_tag (Doc_model.Root.Odoc_file.kind (Doc_model.Root.file root))))
+      |> flipped
+        (`Data (Doc_model.Root.Odoc_file.name (Doc_model.Root.file root)))
       |> flipped `El_end
       |> flipped (`El_start (make_tag "digest"))
-      |> flipped (`Data (Digest.to_hex root.digest))
+      |> flipped (`Data (Digest.to_hex (Doc_model.Root.digest root)))
       |> flipped `El_end
       |> flipped `El_end
     in
     { Doc_xml.Fold. f }
 end
-
-module Table = Hashtbl.Make(T)
 
 let magic = "odoc-%%VERSION%%"
 

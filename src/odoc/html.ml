@@ -16,11 +16,12 @@
 
 open StdLabels
 
-let get_package root = Root.Package.to_string (Root.package root)
+let get_package root =
+  Doc_model.Root.Package.to_string (Doc_model.Root.package root)
 
 let from_odoc ~env ~output:root_dir input =
   let root = Root.read input in
-  match Root.file root with
+  match Doc_model.Root.file root with
   | Page page_name ->
     let page = Page.load input in
     let odoctree =
@@ -87,8 +88,8 @@ let from_mld ~env ~package ~output:root_dir input =
   in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
-    let file = Root.Odoc_file.create_page root_name in
-    Root.create ~package ~file ~digest
+    let file = Doc_model.Root.Odoc_file.create_page root_name in
+    Doc_model.Root.create ~package ~file ~digest
   in
   let name = Doc_model.Paths.Identifier.Page (root, root_name) in
   let location =

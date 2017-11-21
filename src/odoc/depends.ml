@@ -40,17 +40,21 @@ module Hash_set : sig
 
   val create : unit -> t
 
-  val add : t -> Root.t -> unit
+  val add : t -> Doc_model.Root.t -> unit
 
-  val elements : t -> Root.t list
+  val elements : t -> Doc_model.Root.t list
 end = struct
-  type t = unit Root.Table.t
+  type t = unit Doc_model.Root.Table.t
 
-  let add t elt = if Root.Table.mem t elt then () else Root.Table.add t elt ()
+  let add t elt =
+    if Doc_model.Root.Table.mem t elt then
+      ()
+    else
+      Doc_model.Root.Table.add t elt ()
 
-  let create () = Root.Table.create 42
+  let create () = Doc_model.Root.Table.create 42
 
-  let elements t = Root.Table.fold (fun s () acc -> s :: acc) t []
+  let elements t = Doc_model.Root.Table.fold (fun s () acc -> s :: acc) t []
 end
 
 open Doc_model
