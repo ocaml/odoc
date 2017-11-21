@@ -383,6 +383,27 @@ let read_reference
       raise (InvalidReference "Conflicting kinds")
                                  *)
 
+let read_path_longident s =
+  let open Paths.Path in
+  let rec loop : 'k. string -> int -> ([< kind > `Module ] as 'k) t option =
+    fun s pos ->
+      try
+        let idx = String.rindex_from s pos '.' in
+        let name = String.sub s (idx + 1) (pos - idx) in
+        if String.length name = 0 then None
+        else
+          match loop s (idx - 1) with
+          | None -> None
+          | Some parent -> Some (Dot(parent, name))
+      with Not_found ->
+        let name = String.sub s 0 (pos + 1) in
+        if String.length name = 0 then None
+        else Some (Root name)
+  in
+    match loop s (String.length s - 1) with
+    | None -> raise (InvalidReference s)
+    | Some r -> r
+
 exception Expected_reference_to_a_module_but_got of string
 
 let read_mod_longident lid : Paths.Reference.module_ =

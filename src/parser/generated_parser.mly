@@ -261,7 +261,9 @@ simple_tag :
   | Since
     { Since $1 }
   | Canonical
-    { Canonical $1 }
+    { let path = Helpers.read_path_longident $1 in
+      let module_ = Helpers.read_mod_longident $1 in
+      Canonical (path, module_) }
 ;
 
 text_tag :

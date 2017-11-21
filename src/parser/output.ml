@@ -29,7 +29,8 @@ type tag =
   | Return_value of Model.Documentation.text (** \@return tag *)
   | Inline (** \@inline tag *)
   | Custom of string * Model.Documentation.text (** custom tag *)
-  | Canonical of string (** \@canonical tag *)
+  | Canonical of Model.Paths.Path.module_ * Model.Paths.Reference.module_
+    (** \@canonical tag *)
 
 (** A special comment *)
 type t = Model.Documentation.text * tag list
