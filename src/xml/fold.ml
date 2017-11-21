@@ -435,7 +435,7 @@ let name_p _ output acc n = simple name_t output acc n
 
 open Doc_model.Paths
 
-let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
+let rec identifier_p: type a. _ -> _ -> _ -> a Identifier.t -> _ =
   fun base output acc id ->
     let open Identifier in
     let component t sg name =
@@ -480,7 +480,7 @@ let rec identifier_p: type a. _ -> _ -> _ -> (_, a) Identifier.t -> _ =
       | InstanceVariable(csig, name) -> component instance_variable_t csig name
       | Label(cnt, name) -> component label_t cnt name
 
-let rec resolved_path_p : type a. _ -> _ -> _ -> (_, a) Path.Resolved.t -> _ =
+let rec resolved_path_p : type a. _ -> _ -> _ -> a Path.Resolved.t -> _ =
   fun base output acc p ->
     let component t m name =
       let acc = t output acc in
@@ -524,7 +524,7 @@ let rec resolved_path_p : type a. _ -> _ -> _ -> (_, a) Path.Resolved.t -> _ =
       | Class(m, name) -> component class_t m name
       | ClassType(m, name) -> component class_type_t m name
 
-and path_p : type a. _ -> _ -> _ -> (_, a) Path.t -> _ =
+and path_p : type a. _ -> _ -> _ -> a Path.t -> _ =
   fun base output acc p ->
     let open Path in
       match p with
@@ -552,7 +552,7 @@ and path_p : type a. _ -> _ -> _ -> (_, a) Path.t -> _ =
         close output acc
 
 let rec resolved_fragment_p
-  : type a b. _ -> _ -> _ -> (_, a, b) Fragment.Resolved.raw -> _ =
+  : type a b. _ -> _ -> _ -> (a, b) Fragment.Resolved.raw -> _ =
   fun base output acc frag ->
     let component t m name =
       let acc = t output acc in
@@ -578,7 +578,7 @@ let rec resolved_fragment_p
       | Class(m, name) -> component class_t m name
       | ClassType(m, name) -> component class_type_t m name
 
-let rec fragment_p : type a b. _ -> _ -> _ -> (_, a, b) Fragment.raw -> _ =
+let rec fragment_p : type a b. _ -> _ -> _ -> (a, b) Fragment.raw -> _ =
   fun base output acc frag ->
     let open Fragment in
       match frag with
@@ -614,7 +614,7 @@ let ref_tag_p (type a) output acc (tag : a Reference.tag) =
   simple tag_t output acc tag
 
 let rec resolved_reference_p
-  : type a. _ -> _ -> _ -> (_, a) Reference.Resolved.t -> _ =
+  : type a. _ -> _ -> _ -> a Reference.Resolved.t -> _ =
   fun base output acc rf ->
     let component t sg name =
       let acc = t output acc in
@@ -652,7 +652,7 @@ let rec resolved_reference_p
       | InstanceVariable(csig, name) -> component instance_variable_t csig name
       | Label(cnt, name) -> component label_t cnt name
 
-and reference_p : type a. _ -> _ -> _ -> (_, a) Reference.t -> _ =
+and reference_p : type a. _ -> _ -> _ -> a Reference.t -> _ =
   fun base output acc rf ->
     let open Reference in
       match rf with
@@ -737,7 +737,7 @@ and reference_p : type a. _ -> _ -> _ -> (_, a) Reference.t -> _ =
         let acc = data output acc name in
         close output acc
 
-let canonical_p : type a. _ -> _ -> _ -> ((_, a) Path.t * (_, a) Reference.t) option -> _ =
+let canonical_p : type a. _ -> _ -> _ -> (a Path.t * a Reference.t) option -> _ =
   fun base output acc p_opt ->
     let acc = canonical_t output acc in
     let acc =

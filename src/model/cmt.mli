@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val read_implementation: 'a -> string -> Typedtree.structure ->
-  'a Paths.Identifier.module_ *
-  'a Model.Documentation.t *
-  'a Model.Signature.t
+val read_implementation: Root.t -> string -> Typedtree.structure ->
+  Paths.Identifier.module_ *
+  Model.Documentation.t *
+  Model.Signature.t

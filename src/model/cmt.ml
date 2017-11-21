@@ -402,7 +402,7 @@ and read_module_binding env parent mb =
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> contains_double_underscore (Ident.name mb.mb_id)
+    | None -> Root.contains_double_underscore (Ident.name mb.mb_id)
   in
   let expansion =
     match type_ with

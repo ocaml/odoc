@@ -16,10 +16,11 @@
 
 open Model
 
-type 'a t
+type t
 
-val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-                     (string -> 'a Component_table.lookup_unit_result) ->
-                     (root:'a -> 'a -> 'a Compilation_unit.t) -> 'a t
+val build_expander : ?equal:(Root.t -> Root.t -> bool) ->
+                     ?hash:(Root.t -> int) ->
+                     (string -> Component_table.lookup_unit_result) ->
+                     (root:Root.t -> Root.t -> Compilation_unit.t) -> t
 
-val expand : 'a t -> 'a Compilation_unit.t -> 'a Compilation_unit.t
+val expand : t -> Compilation_unit.t -> Compilation_unit.t

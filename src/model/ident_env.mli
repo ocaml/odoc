@@ -16,50 +16,45 @@
 
 open Paths.Identifier
 
-type 'a t
+type t
 
-val empty : 'a t
+val empty : t
 
-val add_module : 'a signature -> Ident.t -> 'a t -> 'a t
+val add_module : signature -> Ident.t -> t -> t
 
-val add_argument : 'a signature -> int -> Ident.t -> 'a t -> 'a t
+val add_argument : signature -> int -> Ident.t -> t -> t
 
-val add_module_type : 'a signature -> Ident.t -> 'a t -> 'a t
+val add_module_type : signature -> Ident.t -> t -> t
 
-val add_type : 'a signature -> Ident.t -> 'a t -> 'a t
+val add_type : signature -> Ident.t -> t -> t
 
-val add_class : 'a signature -> Ident.t -> Ident.t -> Ident.t -> Ident.t ->
-                  'a t -> 'a t
+val add_class : signature -> Ident.t -> Ident.t -> Ident.t -> Ident.t -> t -> t
 
-val add_class_type : 'a signature -> Ident.t -> Ident.t -> Ident.t ->
-                     'a t -> 'a t
+val add_class_type : signature -> Ident.t -> Ident.t -> Ident.t -> t -> t
 
-val add_signature_type_items : 'a signature -> Types.signature ->
-                                 'a t -> 'a t
+val add_signature_type_items : signature -> Types.signature -> t -> t
 
-val add_signature_tree_items : 'a signature -> Typedtree.signature ->
-                                 'a t -> 'a t
+val add_signature_tree_items : signature -> Typedtree.signature -> t -> t
 
-val add_structure_tree_items : 'a signature -> Typedtree.structure ->
-                                 'a t -> 'a t
+val add_structure_tree_items : signature -> Typedtree.structure -> t -> t
 
 module Path : sig
 
-  val read_module : 'a t -> Path.t -> 'a Paths.Path.module_
+  val read_module : t -> Path.t -> Paths.Path.module_
 
-  val read_module_type : 'a t -> Path.t -> 'a Paths.Path.module_type
+  val read_module_type : t -> Path.t -> Paths.Path.module_type
 
-  val read_type : 'a t -> Path.t -> 'a Paths.Path.type_
+  val read_type : t -> Path.t -> Paths.Path.type_
 
-  val read_class_type : 'a t -> Path.t -> 'a Paths.Path.class_type
+  val read_class_type : t -> Path.t -> Paths.Path.class_type
 
 end
 
 
 module Fragment : sig
 
-  val read_module : Longident.t -> 'a Paths.Fragment.module_
+  val read_module : Longident.t -> Paths.Fragment.module_
 
-  val read_type : Longident.t -> 'a Paths.Fragment.type_
+  val read_type : Longident.t -> Paths.Fragment.type_
 
 end

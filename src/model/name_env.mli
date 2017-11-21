@@ -17,67 +17,54 @@
 open Paths
 open Model
 
-type 'a t
+type t
 
-val empty : 'a t
+val empty : t
 
-val add_page : 'a Page.t -> 'a t -> 'a t
+val add_page : Page.t -> t -> t
 
-val add_unit : 'a Compilation_unit.t -> 'a t -> 'a t
+val add_unit : Compilation_unit.t -> t -> t
 
-val add_signature_items : 'a Signature.t -> 'a t -> 'a t
+val add_signature_items : Signature.t -> t -> t
 
-val add_module_type_expr_items : 'a ModuleType.expr -> 'a t -> 'a t
+val add_module_type_expr_items : ModuleType.expr -> t -> t
 
-val add_module_decl_items : 'a Module.decl -> 'a t -> 'a t
+val add_module_decl_items : Module.decl -> t -> t
 
-val add_class_signature_items : 'a ClassSignature.t -> 'a t -> 'a t
+val add_class_signature_items : ClassSignature.t -> t -> t
 
-val add_class_type_expr_items : 'a ClassType.expr -> 'a t -> 'a t
+val add_class_type_expr_items : ClassType.expr -> t -> t
 
-val add_class_decl_items : 'a Class.decl -> 'a t -> 'a t
+val add_class_decl_items : Class.decl -> t -> t
 
-val lookup_module : 'a t -> 'a Reference.module_ ->
-  'a Reference.module_
+val lookup_module : t -> Reference.module_ -> Reference.module_
 
-val lookup_module_type : 'a t -> 'a Reference.module_type ->
-  'a Reference.module_type
+val lookup_module_type : t -> Reference.module_type -> Reference.module_type
 
-val lookup_type : 'a t -> 'a Reference.type_ ->
-  'a Reference.type_
+val lookup_type : t -> Reference.type_ -> Reference.type_
 
-val lookup_constructor : 'a t -> 'a Reference.constructor ->
-  'a Reference.constructor
+val lookup_constructor : t -> Reference.constructor -> Reference.constructor
 
-val lookup_field : 'a t -> 'a Reference.field ->
-  'a Reference.field
+val lookup_field : t -> Reference.field -> Reference.field
 
-val lookup_extension : 'a t -> 'a Reference.extension ->
-  'a Reference.extension
+val lookup_extension : t -> Reference.extension -> Reference.extension
 
-val lookup_exception : 'a t -> 'a Reference.exception_ ->
-  'a Reference.exception_
+val lookup_exception : t -> Reference.exception_ -> Reference.exception_
 
-val lookup_value : 'a t -> 'a Reference.value ->
-  'a Reference.value
+val lookup_value : t -> Reference.value -> Reference.value
 
-val lookup_class : 'a t -> 'a Reference.class_ ->
-  'a Reference.class_
+val lookup_class : t -> Reference.class_ -> Reference.class_
 
-val lookup_class_type : 'a t -> 'a Reference.class_type ->
-  'a Reference.class_type
+val lookup_class_type : t -> Reference.class_type -> Reference.class_type
 
-val lookup_method : 'a t -> 'a Reference.method_ ->
-  'a Reference.method_
+val lookup_method : t -> Reference.method_ -> Reference.method_
 
-val lookup_instance_variable : 'a t -> 'a Reference.instance_variable ->
-  'a Reference.instance_variable
+val lookup_instance_variable : t -> Reference.instance_variable ->
+  Reference.instance_variable
 
-val lookup_label : 'a t -> 'a Reference.label ->
-  'a Reference.label
+val lookup_label : t -> Reference.label -> Reference.label
 
-val lookup_element : 'a t -> 'a Reference.any ->
-  'a Reference.any
+val lookup_element : t -> Reference.any -> Reference.any
 
-val lookup_section_title : 'a t -> 'a Reference.Resolved.label ->
-  'a Documentation.text option
+val lookup_section_title : t -> Reference.Resolved.label ->
+  Documentation.text option

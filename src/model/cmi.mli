@@ -15,17 +15,17 @@
  *)
 
 
-val read_interface: 'a -> string -> Types.signature ->
-  'a Paths.Identifier.module_ *
-  'a Model.Documentation.t *
-  'a Model.Signature.t
+val read_interface: Root.t -> string -> Types.signature ->
+  Paths.Identifier.module_ *
+  Model.Documentation.t *
+  Model.Signature.t
 
 val read_label : Asttypes.arg_label -> Model.TypeExpr.label option
 
 val mark_type_expr : Types.type_expr -> unit
 
-val read_type_expr : 'a Ident_env.t ->
-                     Types.type_expr -> 'a Model.TypeExpr.t
+val read_type_expr : Ident_env.t ->
+                     Types.type_expr -> Model.TypeExpr.t
 
 val mark_type_extension : Types.type_expr list ->
                           Types.extension_constructor list ->
@@ -36,35 +36,35 @@ val read_type_parameter : bool -> Types.Variance.t ->
 
 val mark_class_declaration : Types.class_declaration -> unit
 
-val read_self_type : Types.type_expr -> 'a Model.TypeExpr.t option
+val read_self_type : Types.type_expr -> Model.TypeExpr.t option
 
-val read_type_constraints : 'a Ident_env.t -> Types.type_expr list ->
-                            ('a Model.TypeExpr.t
-                             * 'a Model.TypeExpr.t) list
+val read_type_constraints : Ident_env.t -> Types.type_expr list ->
+                            (Model.TypeExpr.t
+                             * Model.TypeExpr.t) list
 
-val read_class_signature : 'a Ident_env.t ->
-                           'a Paths.Identifier.class_signature ->
+val read_class_signature : Ident_env.t ->
+                           Paths.Identifier.class_signature ->
                            Types.type_expr list -> Types.class_type ->
-                           'a Model.ClassType.expr
+                           Model.ClassType.expr
 
-val read_class_type : 'a Ident_env.t ->
-                      'a Paths.Identifier.class_signature ->
+val read_class_type : Ident_env.t ->
+                      Paths.Identifier.class_signature ->
                       Types.type_expr list -> Types.class_type ->
-                      'a Model.Class.decl
+                      Model.Class.decl
 
-val read_module_type : 'a Ident_env.t ->
-                       'a Paths.Identifier.signature -> int ->
-                       Types.module_type -> 'a Model.ModuleType.expr
+val read_module_type : Ident_env.t ->
+                       Paths.Identifier.signature -> int ->
+                       Types.module_type -> Model.ModuleType.expr
 
-val read_signature : 'a Ident_env.t ->
-                     'a Paths.Identifier.signature ->
-                     Types.signature -> 'a Model.Signature.t
+val read_signature : Ident_env.t ->
+                     Paths.Identifier.signature ->
+                     Types.signature -> Model.Signature.t
 
-val read_extension_constructor : 'a Ident_env.t ->
-                       'a Paths.Identifier.signature ->
+val read_extension_constructor : Ident_env.t ->
+                       Paths.Identifier.signature ->
                        Ident.t -> Types.extension_constructor ->
-                       'a Model.Extension.Constructor.t
+                       Model.Extension.Constructor.t
 
-val read_exception : 'a Ident_env.t ->
-  'a Paths.Identifier.signature -> Ident.t ->
-  Types.extension_constructor -> 'a Model.Exception.t
+val read_exception : Ident_env.t ->
+  Paths.Identifier.signature -> Ident.t ->
+  Types.extension_constructor -> Model.Exception.t

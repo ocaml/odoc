@@ -889,7 +889,7 @@ and read_module_declaration env parent ident md =
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> contains_double_underscore (Ident.name ident)
+    | None -> Root.contains_double_underscore (Ident.name ident)
   in
   let expansion =
     match type_ with

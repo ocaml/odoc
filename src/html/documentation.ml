@@ -102,7 +102,7 @@ module Reference = struct
 
   open Doc_model.Paths
 
-  let rec render_resolved : type a. (_, a) Reference.Resolved.t -> string =
+  let rec render_resolved : type a. a Reference.Resolved.t -> string =
     fun r ->
       let open Reference.Resolved in
       match r with
@@ -128,7 +128,7 @@ module Reference = struct
         render_resolved r ^ "." ^ s
       | Label (r, s) -> render_resolved r ^ ":" ^ s
 
-  let rec ref_to_string : type a. (_, a) Reference.t -> string = function
+  let rec ref_to_string : type a. a Reference.t -> string = function
     | Reference.Root (s, _) -> s
     | Reference.Dot (parent, s) -> ref_to_string parent ^ "." ^ s
     | Reference.Module (parent, s) -> ref_to_string parent ^ "." ^ s
@@ -148,7 +148,7 @@ module Reference = struct
 
 
   let rec to_html : type a. get_package:('b -> string) -> ?text:kind -> stop_before:bool
-    -> (_, a) Reference.t -> kind =
+    -> a Reference.t -> kind =
     fun ~get_package ?text ~stop_before ref ->
       let span' txt =
         let span x =
@@ -230,7 +230,7 @@ module Reference = struct
 
   and unresolved_parts_to_html :
     type a. get_package:('b -> string) -> ?text:kind -> (kind -> kind) ->
-      (_, a) Reference.t -> string -> kind =
+      a Reference.t -> string -> kind =
     fun ~get_package ?text span' parent s ->
       match text with
       | Some s -> span' s
@@ -247,7 +247,7 @@ module Reference = struct
           | Newline _ -> Phrasing_without_interactive tail
         )
 
-  let link ~get_package ?text (ref : _ Documentation.reference) =
+  let link ~get_package ?text (ref : Documentation.reference) =
     (* It is wonderful that although each these [r] is a [Reference.t] the phantom
        type parameters are not the same so we can't merge the branches. *)
     match ref with
@@ -312,7 +312,7 @@ let whitespace_only s =
 let rec aggregate ~get_package lst =
   collapse (List.concat @@ List.map lst ~f:(format ~get_package))
 
-and format ~get_package : _ Documentation.text_element -> kind list = function
+and format ~get_package : Documentation.text_element -> kind list = function
   | Raw      s ->
     if whitespace_only s then []
     else [ Phrasing_without_interactive [ pcdata s ] ]
@@ -573,7 +573,7 @@ let handle_tags ~get_package tags =
   | [] -> []
   | lst -> [ ul ~a:[ a_class ["at-tag"] ] (List.map lst ~f:make_li) ]
 
-let prerr_error (err : _ Documentation.Error.t) =
+let prerr_error (err : Documentation.Error.t) =
   let print_pos oc { Documentation.Error.Position. line; column } =
     Printf.fprintf oc "line %d, col %d" line column
   in
@@ -594,7 +594,7 @@ let prerr_error (err : _ Documentation.Error.t) =
   in
   Printf.eprintf "Error %a: %s\n%!" print_loc () err.message
 
-let first_to_html ~get_package (t : _ Documentation.t) =
+let first_to_html ~get_package (t : Documentation.t) =
   match t with
   | Ok { text; _ } ->
     begin match handle_text ~get_package text with
@@ -603,7 +603,7 @@ let first_to_html ~get_package (t : _ Documentation.t) =
     end
   | Error e -> prerr_error e; []
 
-let to_html ?wrap ~get_package (t : _ Documentation.t) =
+let to_html ?wrap ~get_package (t : Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
   | Ok body ->
@@ -625,7 +625,7 @@ let to_html ?wrap ~get_package (t : _ Documentation.t) =
         handle_tags ~get_package body.tags @
         [p [pcdata close]]
 
-let has_doc (t : _ Types.Documentation.t) =
+let has_doc (t : Types.Documentation.t) =
   match t with
   | Ok body -> body.text <> [] || body.tags <> []
   | Error e -> prerr_error e; false

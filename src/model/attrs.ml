@@ -65,7 +65,7 @@ let read_longident s =
       let name = String.sub str (idx + 1) (String.length str - idx - 1) in
       (Some qualifier, name)
   in
-  let rec loop_datatype : string -> int -> 'a datatype option =
+  let rec loop_datatype : string -> int -> datatype option =
     fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
@@ -96,7 +96,7 @@ let read_longident s =
               | Some parent -> Some (Type(parent, name))
             end
           | _ -> None
-  and loop_signature : string -> int -> 'a signature option = fun s pos ->
+  and loop_signature : string -> int -> signature option = fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
         let maybe_qualified = String.sub s 0 (pos + 1) in
@@ -131,7 +131,7 @@ let read_longident s =
               | Some parent -> Some (ModuleType(parent, name))
             end
           | _ -> None
-  and loop_class_signature : string -> int -> 'a class_signature option =
+  and loop_class_signature : string -> int -> class_signature option =
     fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
@@ -167,7 +167,7 @@ let read_longident s =
               | Some parent -> Some (ClassType(parent, name))
             end
           | _ -> None
-  and loop_label_parent : string -> int -> 'a label_parent option =
+  and loop_label_parent : string -> int -> label_parent option =
     fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
@@ -220,7 +220,7 @@ let read_longident s =
               | Some parent -> Some (ClassType(parent, name))
             end
           | _ -> None
-  and loop_parent : string -> int -> 'a parent option =
+  and loop_parent : string -> int -> parent option =
     fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
@@ -274,7 +274,7 @@ let read_longident s =
             end
           | _ -> None
   in
-  let loop : 'k. string -> int -> ('a, kind) t option =
+  let loop : 'k. string -> int -> kind t option =
     fun s pos ->
       match String.rindex_from s pos '.' with
       | exception Not_found ->
@@ -369,7 +369,7 @@ let read_longident s =
 
 let read_path_longident s =
   let open Paths.Path in
-  let rec loop : 'k. string -> int -> ('a, [< kind > `Module ] as 'k) t option =
+  let rec loop : 'k. string -> int -> ([< kind > `Module ] as 'k) t option =
     fun s pos ->
       try
         let idx = String.rindex_from s pos '.' in
@@ -390,7 +390,7 @@ let read_path_longident s =
 
 exception Expected_reference_to_a_module_but_got of string
 
-let read_mod_longident lid : _ Paths.Reference.module_ =
+let read_mod_longident lid : Paths.Reference.module_ =
   let open Paths.Reference in
   match read_longident lid with
   | Root (_, (TUnknown | TModule))
@@ -432,7 +432,7 @@ let read_special_reference = function
   | SRK_index_list -> Index
 
 let rec read_text_element parent
-  : Doc_parser.Output.text_element -> 'a text_element =
+  : Doc_parser.Output.text_element -> text_element =
   function
   | Raw s -> Raw s
   | Code s -> Code s
@@ -463,7 +463,7 @@ let read_see = function
   | See_doc s -> Doc s
 
 
-let read_tag parent : Doc_parser.Output.tag -> 'a tag = function
+let read_tag parent : Doc_parser.Output.tag -> tag = function
   | Author s -> Author s
   | Version v -> Version v
   | See (r, t) -> See (read_see r, read_text parent t)
@@ -581,7 +581,7 @@ let several_deprecated_error origin loc =
 
 let read_attributes parent id attrs =
   let ocaml_deprecated = ref None in
-  let rec loop first nb_deprecated acc : _ -> 'a t = function
+  let rec loop first nb_deprecated acc : _ -> t = function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
         match Payload.read payload with
@@ -637,7 +637,7 @@ let read_attributes parent id attrs =
   in
     loop true 0 empty_body attrs
 
-let read_string parent loc str : 'a comment =
+let read_string parent loc str : comment =
   let lexbuf = Lexing.from_string str in
   let start_pos = loc.Location.loc_start in
   let doc =
@@ -654,7 +654,7 @@ let read_string parent loc str : 'a comment =
   in
   Documentation doc
 
-let read_comment parent : Parsetree.attribute -> 'a comment option =
+let read_comment parent : Parsetree.attribute -> comment option =
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc}, payload) -> begin

@@ -16,7 +16,7 @@
 
 open Doc_model
 
-type t = Root.t Types.Page.t
+type t = Types.Page.t
 
 val root : t -> Root.t
 

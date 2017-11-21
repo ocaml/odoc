@@ -17,8 +17,8 @@
 
 
 type t = {
-  expander    : Doc_model.Root.t Doc_model.expander ;
-  resolver    : Doc_model.Root.t Doc_model.resolver ;
+  expander : Doc_model.expander ;
+  resolver : Doc_model.resolver ;
 }
 
 module Accessible_paths = struct
@@ -137,7 +137,7 @@ type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
-    let lookup_unit target_name : Doc_model.Root.t Doc_model.lookup_result =
+    let lookup_unit target_name : Doc_model.lookup_result =
       match unit_or_page with
       | `Page _ -> lookup_unit ~important_digests:false ap target_name []
       | `Unit unit ->
@@ -159,7 +159,7 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Doc_model.Root.t Doc_model.Types.Compilation_unit.t =
+    let fetch_unit root : Doc_model.Types.Compilation_unit.t =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
@@ -170,7 +170,7 @@ let create ?(important_digests=true) ~directories : builder =
           fetch_unit ap root
     in
     let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : Doc_model.Root.t Doc_model.Types.Page.t =
+    let fetch_page root : Doc_model.Types.Page.t =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->

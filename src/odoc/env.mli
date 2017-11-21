@@ -33,10 +33,10 @@ val create :
 val build : builder -> [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 (** Initialize the environment for the given unit. *)
 
-val resolver : t -> Doc_model.Root.t Doc_model.resolver
+val resolver : t -> Doc_model.resolver
 (** Get a resolver from an env *)
 
-val expander : t -> Doc_model.Root.t Doc_model.expander
+val expander : t -> Doc_model.expander
 (** Get an expander from an env *)
 
 (* val forward_resolver : t -> Root.t DocOck.forward_resolver *)

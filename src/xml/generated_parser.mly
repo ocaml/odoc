@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-%parameter< Root : sig type t end >
+
 
 %{
 
@@ -22,18 +22,18 @@ open Doc_model.Paths
 open Doc_model.Types
 
 let relax_class_path cl =
-  match (cl : ('a, Kind.identifier_class) Path.Resolved.t) with
+  match (cl : Kind.identifier_class Path.Resolved.t) with
   | Path.Resolved.Identifier (Identifier.Class _)
   | Path.Resolved.Class _ as cl -> cl
 
 let relax_class_type_path cltyp =
-  match (cltyp : 'a Path.Resolved.class_type) with
+  match (cltyp : Path.Resolved.class_type) with
   | Path.Resolved.Identifier (Identifier.Class _ | Identifier.ClassType _)
   | Path.Resolved.Class _
   | Path.Resolved.ClassType _ as cltyp -> cltyp
 
 let relax_class_reference cl =
-  match (cl : 'a Reference.Resolved.class_) with
+  match (cl : Reference.Resolved.class_) with
   | Reference.Resolved.Identifier (Identifier.Class _)
   | Reference.Resolved.Class _ as cl -> cl
 
@@ -166,14 +166,14 @@ let relax_class_reference cl =
 %token DTD
 %token CLOSE
 %token <string> Data
-%token <Root.t> Base
+%token <Doc_model.Root.t> Base
 %token EOF
 
-%start <Root.t Doc_model.Types.Documentation.text> text_entry
-%start <Root.t Doc_model.Types.Compilation_unit.t> unit
-%start <Root.t Doc_model.Types.Compilation_unit.t> unit_file
-%start <Root.t Doc_model.Types.Page.t> page
-%start <Root.t Doc_model.Types.Page.t> page_file
+%start <Doc_model.Types.Documentation.text> text_entry
+%start <Doc_model.Types.Compilation_unit.t> unit
+%start <Doc_model.Types.Compilation_unit.t> unit_file
+%start <Doc_model.Types.Page.t> page
+%start <Doc_model.Types.Page.t> page_file
 
 %%
 

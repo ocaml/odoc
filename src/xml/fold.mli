@@ -15,12 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'r t = { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'r -> 'acc }
+type 'a t =
+  { f : 'acc. ('acc -> Xmlm.signal -> 'acc) -> 'acc -> 'a -> 'acc }
 
-val text: 'r t -> 'r Doc_model.Types.Documentation.text t
+val text: Doc_model.Root.t t -> Doc_model.Types.Documentation.text t
 
-val unit: 'r t -> 'r Doc_model.Types.Compilation_unit.t t
-val file_unit: 'r t -> 'r Doc_model.Types.Compilation_unit.t t
+val unit: Doc_model.Root.t t -> Doc_model.Types.Compilation_unit.t t
+val file_unit: Doc_model.Root.t t -> Doc_model.Types.Compilation_unit.t t
 
-val page: 'r t -> 'r Doc_model.Types.Page.t t
-val file_page: 'r t -> 'r Doc_model.Types.Page.t t
+val page: Doc_model.Root.t t -> Doc_model.Types.Page.t t
+val file_page: Doc_model.Root.t t -> Doc_model.Types.Page.t t

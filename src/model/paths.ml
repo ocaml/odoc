@@ -26,14 +26,9 @@ let rec string_of_sexp = function
 
 let atom s = Atom (Printf.sprintf "%S" s)
 
-let contains_double_underscore s =
-  let len = String.length s in
-  let rec aux i =
-    if i > len - 2 then false else
-    if s.[i] = '_' && s.[i + 1] = '_' then true
-    else aux (i + 1)
-  in
-  aux 0
+(* At the time of refactoring, this was the only function ever used with any of
+   the sexp_of_t functions. *)
+let sexp_of_root _ = Atom ""
 
 module Kind = struct
 
@@ -134,141 +129,141 @@ module Identifier = struct
 
   type kind = Kind.identifier
 
-  type ('a, 'b) t =
-    | Root : 'a * string -> ('a, [< kind > `Module]) t
-    | Page : 'a * string -> ('a, [< kind > `Page]) t
-    | Module : 'a signature * string -> ('a, [< kind > `Module]) t
-    | Argument : 'a signature * int * string -> ('a, [< kind > `Module]) t
-    | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
-    | Type : 'a signature * string -> ('a, [< kind > `Type]) t
-    | CoreType : string -> ('a, [< kind > `Type]) t
-    | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-    | Field : 'a parent * string -> ('a, [< kind > `Field]) t
-    | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
-    | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
-    | CoreException : string -> ('a, [< kind > `Exception]) t
-    | Value : 'a signature * string -> ('a, [< kind > `Value]) t
-    | Class : 'a signature * string -> ('a, [< kind > `Class]) t
-    | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
-    | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
-    | InstanceVariable : 'a class_signature * string ->
-                           ('a, [< kind > `InstanceVariable]) t
-    | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
+  type 'kind t =
+    | Root : Root.t * string -> [< kind > `Module] t
+    | Page : Root.t * string -> [< kind > `Page] t
+    | Module : signature * string -> [< kind > `Module] t
+    | Argument : signature * int * string -> [< kind > `Module] t
+    | ModuleType : signature * string -> [< kind > `ModuleType] t
+    | Type : signature * string -> [< kind > `Type] t
+    | CoreType : string -> [< kind > `Type] t
+    | Constructor : datatype * string -> [< kind > `Constructor] t
+    | Field : parent * string -> [< kind > `Field] t
+    | Extension : signature * string -> [< kind > `Extension] t
+    | Exception : signature * string -> [< kind > `Exception] t
+    | CoreException : string -> [< kind > `Exception] t
+    | Value : signature * string -> [< kind > `Value] t
+    | Class : signature * string -> [< kind > `Class] t
+    | ClassType : signature * string -> [< kind > `ClassType] t
+    | Method : class_signature * string -> [< kind > `Method] t
+    | InstanceVariable : class_signature * string ->
+        [< kind > `InstanceVariable] t
+    | Label : label_parent * string -> [< kind > `Label] t
 
-  and 'a any = ('a, Kind.any) t
-  and 'a signature = ('a, Kind.signature) t
-  and 'a class_signature = ('a, Kind.class_signature) t
-  and 'a datatype = ('a, Kind.datatype) t
-  and 'a parent = ('a, Kind.parent) t
-  and 'a label_parent = ('a, Kind.label_parent) t
+  and any = kind t
+  and signature = Kind.signature t
+  and class_signature = Kind.class_signature t
+  and datatype = Kind.datatype t
+  and parent = Kind.parent t
+  and label_parent = Kind.label_parent t
 
-  let rec sexp_of_t : type a b. (a -> sexp) -> (a,b) t -> sexp =
-    fun sexp_of_a t ->
+  let rec sexp_of_t : type kind. kind t -> sexp =
+    fun t ->
       let int i = Atom (string_of_int i) in
       match t with
-      | Root (a, s) -> List [ Atom "Root"; List [sexp_of_a a; atom s] ]
-      | Page (a, s) -> List [ Atom "Page"; List [sexp_of_a a; atom s] ]
+      | Root (a, s) -> List [ Atom "Root"; List [sexp_of_root a; atom s] ]
+      | Page (a, s) -> List [ Atom "Page"; List [sexp_of_root a; atom s] ]
       | Module (sg, s) ->
-          List [ Atom "Module"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Module"; List [sexp_of_t sg; atom s] ]
       | Argument (sg, i, s) ->
-          List [ Atom "Argument"; List [sexp_of_t sexp_of_a sg; int i; atom s] ]
+        List [Atom "Argument"; List [sexp_of_t sg; int i; atom s]]
       | ModuleType (sg, s) ->
-          List [ Atom "ModuleType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "ModuleType"; List [sexp_of_t sg; atom s] ]
       | Type (sg, s) ->
-          List [ Atom "Type"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Type"; List [sexp_of_t sg; atom s] ]
       | CoreType s -> List [ Atom "CoreType"; atom s ]
       | Constructor (cs, s) ->
-          List [ Atom "Constructor"; List [sexp_of_t sexp_of_a cs; atom s] ]
+          List [ Atom "Constructor"; List [sexp_of_t cs; atom s] ]
       | Field (f, s) ->
-          List [ Atom "Field"; List [sexp_of_t sexp_of_a f; atom s] ]
+          List [ Atom "Field"; List [sexp_of_t f; atom s] ]
       | Extension (sg, s) ->
-          List [ Atom "Extension"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Extension"; List [sexp_of_t sg; atom s] ]
       | Exception (sg, s) ->
-          List [ Atom "Exception"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Exception"; List [sexp_of_t sg; atom s] ]
       | CoreException s -> List [ Atom "CoreException"; atom s ]
       | Value (sg, s) ->
-          List [ Atom "Value"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Value"; List [sexp_of_t sg; atom s] ]
       | Class (sg, s) ->
-          List [ Atom "Class"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Class"; List [sexp_of_t sg; atom s] ]
       | ClassType (sg, s) ->
-          List [ Atom "ClassType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "ClassType"; List [sexp_of_t sg; atom s] ]
       | Method (sg, s) ->
-          List [ Atom "Method"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Method"; List [sexp_of_t sg; atom s] ]
       | InstanceVariable (sg, s) ->
-          List [ Atom "InstanceVariable"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "InstanceVariable"; List [sexp_of_t sg; atom s] ]
       | Label (sg, s) ->
-          List [ Atom "Label"; List [sexp_of_t sexp_of_a sg; atom s] ]
+          List [ Atom "Label"; List [sexp_of_t sg; atom s] ]
 
-  type 'a module_ = ('a, identifier_module) t
-  type 'a module_type = ('a, identifier_module_type) t
-  type 'a type_ =  ('a, identifier_type) t
-  type 'a constructor = ('a, identifier_constructor) t
-  type 'a field = ('a, identifier_field) t
-  type 'a extension = ('a, identifier_extension) t
-  type 'a exception_ = ('a, identifier_exception) t
-  type 'a value = ('a, identifier_value) t
-  type 'a class_ = ('a, identifier_class) t
-  type 'a class_type = ('a, identifier_class_type) t
-  type 'a method_ = ('a, identifier_method) t
-  type 'a instance_variable = ('a, identifier_instance_variable) t
-  type 'a label = ('a, identifier_label) t
-  type 'a page = ('a, identifier_page) t
+  type module_ = identifier_module t
+  type module_type = identifier_module_type t
+  type type_ = identifier_type t
+  type constructor = identifier_constructor t
+  type field = identifier_field t
+  type extension = identifier_extension t
+  type exception_ = identifier_exception t
+  type value = identifier_value t
+  type class_ = identifier_class t
+  type class_type = identifier_class_type t
+  type method_ = identifier_method t
+  type instance_variable = identifier_instance_variable t
+  type label = identifier_label t
+  type page = identifier_page t
 
-  type 'a path_module = ('a, Kind.path_module) t
-  type 'a path_module_type = ('a, Kind.path_module_type) t
-  type 'a path_type =  ('a, Kind.path_type) t
-  type 'a path_class_type = ('a, Kind.path_class_type) t
+  type path_module = Kind.path_module t
+  type path_module_type = Kind.path_module_type t
+  type path_type = Kind.path_type t
+  type path_class_type = Kind.path_class_type t
 
-  type 'a fragment_module = ('a, Kind.fragment_module) t
-  type 'a fragment_type =  ('a, Kind.fragment_type) t
+  type fragment_module = Kind.fragment_module t
+  type fragment_type = Kind.fragment_type t
 
-  type 'a reference_module = ('a, Kind.reference_module) t
-  type 'a reference_module_type = ('a, Kind.reference_module_type) t
-  type 'a reference_type =  ('a, Kind.reference_type) t
-  type 'a reference_constructor = ('a, Kind.reference_constructor) t
-  type 'a reference_field = ('a, Kind.reference_field) t
-  type 'a reference_extension = ('a, Kind.reference_extension) t
-  type 'a reference_exception = ('a, Kind.reference_exception) t
-  type 'a reference_value = ('a, Kind.reference_value) t
-  type 'a reference_class = ('a, Kind.reference_class) t
-  type 'a reference_class_type = ('a, Kind.reference_class_type) t
-  type 'a reference_method = ('a, Kind.reference_method) t
-  type 'a reference_instance_variable = ('a, Kind.reference_instance_variable) t
-  type 'a reference_label = ('a, Kind.reference_label) t
-  type 'a reference_page = ('a, Kind.reference_page) t
+  type reference_module = Kind.reference_module t
+  type reference_module_type = Kind.reference_module_type t
+  type reference_type =  Kind.reference_type t
+  type reference_constructor = Kind.reference_constructor t
+  type reference_field = Kind.reference_field t
+  type reference_extension = Kind.reference_extension t
+  type reference_exception = Kind.reference_exception t
+  type reference_value = Kind.reference_value t
+  type reference_class = Kind.reference_class t
+  type reference_class_type = Kind.reference_class_type t
+  type reference_method = Kind.reference_method t
+  type reference_instance_variable = Kind.reference_instance_variable t
+  type reference_label = Kind.reference_label t
+  type reference_page = Kind.reference_page t
 
-  let signature_of_module : 'a module_ -> _ = function
+  let signature_of_module : module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> x
 
-  let signature_of_module_type : 'a module_type -> _  = function
+  let signature_of_module_type : module_type -> _  = function
     | ModuleType _ as x -> x
 
-  let class_signature_of_class : 'a class_ -> _ = function
+  let class_signature_of_class : class_ -> _ = function
     | Class _ as x -> x
 
-  let class_signature_of_class_type : 'a class_type -> _ = function
+  let class_signature_of_class_type : class_type -> _ = function
     | ClassType _ as x -> x
 
-  let datatype_of_type : 'a type_ -> 'a datatype = function
+  let datatype_of_type : type_ -> datatype = function
     | x -> x
 
-  let parent_of_signature : 'a signature -> 'a parent = function
+  let parent_of_signature : signature -> parent = function
     | Root _ | Module _ | Argument _ | ModuleType _ as x -> x
 
-  let parent_of_class_signature : 'a class_signature -> 'a parent =
+  let parent_of_class_signature : class_signature -> parent =
     function Class _ | ClassType _ as x -> x
 
-  let parent_of_datatype : 'a datatype -> 'a parent =
+  let parent_of_datatype : datatype -> parent =
     function Type _ | CoreType _ as x -> x
 
-  let label_parent_of_parent : 'a parent -> 'a label_parent =
+  let label_parent_of_parent : parent -> label_parent =
     function Root _ | Module _ | Argument _ | ModuleType _ | Type _
            | CoreType _ | Class _ | ClassType _ as x -> x
 
-  let label_parent_of_page : 'a page -> 'a label_parent =
+  let label_parent_of_page : page -> label_parent =
     function Page _ as x -> x
 
-  let any : type k. ('a, k) t -> 'a any = function
+  let any : type k. k t -> any = function
     | Root _ as x -> x
     | Page _ as x -> x
     | Module _ as x -> x
@@ -288,7 +283,7 @@ module Identifier = struct
     | InstanceVariable _ as x -> x
     | Label _ as x -> x
 
-  let name : type k. ('a, k) t -> string = function
+  let name : type k. k t -> string = function
     | Root(_, name) -> name
     | Page(_, name) -> name
     | Module(_, name) -> name
@@ -308,112 +303,111 @@ module Identifier = struct
     | InstanceVariable(_, name) -> name
     | Label(_, name) -> name
 
-  let equal ~equal id1 id2 =
-    let rec loop : type k. ('a -> 'a -> bool) ->
-                            ('a, k) t -> ('a, k) t -> bool =
-      fun equal id1 id2 ->
+  let equal id1 id2 =
+    let rec loop : type k. k t -> k t -> bool =
+      fun id1 id2 ->
         match id1, id2 with
         | Root(r1, s1), Root(r2, s2) ->
-            s1 = s2 && equal r1 r2
+            s1 = s2 && Root.equal r1 r2
         | Module(id1, s1), Module(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
-            n1 = n2 && s1 = s2 && loop equal id1 id2
+            n1 = n2 && s1 = s2 && loop id1 id2
         | ModuleType(id1, s1), ModuleType(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Type(id1, s1), Type(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | CoreType s1, CoreType s2 ->
             s1 = s2
         | Constructor(id1, s1), Constructor(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Field(id1, s1), Field(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Extension(id1, s1), Extension(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Exception(id1, s1), Exception(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | CoreException s1, CoreException s2 ->
             s1 = s2
         | Value(id1, s1), Value(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Class(id1, s1), Class(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | ClassType(id1, s1), ClassType(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Method(id1, s1), Method(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | InstanceVariable(id1, s1), InstanceVariable(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | Label(id1, s1), Label(id2, s2) ->
-            s1 = s2 && loop equal id1 id2
+            s1 = s2 && loop id1 id2
         | _, _ -> false
     in
-      loop equal id1 id2
+      loop id1 id2
 
-  let hash ~hash id =
-    let rec loop : type k. ('a -> int) -> ('a, k) t -> int =
-      fun hash id ->
+  let hash id =
+    let rec loop : type k. k t -> int =
+      fun id ->
         match id with
         | Root(r, s) ->
-            Hashtbl.hash (1, hash r, s)
+            Hashtbl.hash (1, Root.hash r, s)
         | Page(r, s) ->
-            Hashtbl.hash (2, hash r, s)
+            Hashtbl.hash (2, Root.hash r, s)
         | Module(id, s) ->
-            Hashtbl.hash (3, loop hash id, s)
+            Hashtbl.hash (3, loop id, s)
         | Argument(id, n, s) ->
-            Hashtbl.hash (4, loop hash id, n, s)
+            Hashtbl.hash (4, loop id, n, s)
         | ModuleType(id, s) ->
-            Hashtbl.hash (5, loop hash id, s)
+            Hashtbl.hash (5, loop id, s)
         | Type(id, s) ->
-            Hashtbl.hash (6, loop hash id, s)
+            Hashtbl.hash (6, loop id, s)
         | CoreType s ->
             Hashtbl.hash (7, s)
         | Constructor(id, s) ->
-            Hashtbl.hash (8, loop hash id, s)
+            Hashtbl.hash (8, loop id, s)
         | Field(id, s) ->
-            Hashtbl.hash (9, loop hash id, s)
+            Hashtbl.hash (9, loop id, s)
         | Extension(id, s) ->
-            Hashtbl.hash (10, loop hash id, s)
+            Hashtbl.hash (10, loop id, s)
         | Exception(id, s) ->
-            Hashtbl.hash (11, loop hash id, s)
+            Hashtbl.hash (11, loop id, s)
         | CoreException s ->
             Hashtbl.hash (12, s)
         | Value(id, s) ->
-            Hashtbl.hash (13, loop hash id, s)
+            Hashtbl.hash (13, loop id, s)
         | Class(id, s) ->
-            Hashtbl.hash (14, loop hash id, s)
+            Hashtbl.hash (14, loop id, s)
         | ClassType(id, s) ->
-            Hashtbl.hash (15, loop hash id, s)
+            Hashtbl.hash (15, loop id, s)
         | Method(id, s) ->
-            Hashtbl.hash (16, loop hash id, s)
+            Hashtbl.hash (16, loop id, s)
         | InstanceVariable(id, s) ->
-            Hashtbl.hash (17, loop hash id, s)
+            Hashtbl.hash (17, loop id, s)
         | Label(id, s) ->
-            Hashtbl.hash (18, loop hash id, s)
+            Hashtbl.hash (18, loop id, s)
     in
-      loop hash id
+      loop id
 
-  let rec signature_root : 'a signature -> 'a = function
+  let rec signature_root : signature -> Root.t = function
     | Root(r, _) -> r
     | Module(id, _) -> signature_root id
     | Argument(id, _, _) -> signature_root id
     | ModuleType(id, _) -> signature_root id
 
-  let module_root : 'a module_ -> 'a = function
+  let module_root : module_ -> Root.t = function
     | Root(r, _) -> r
     | Module(id, _) -> signature_root id
     | Argument(id, _, _) -> signature_root id
 
-  let module_type_root : 'a module_type -> 'a = function
+  let module_type_root : module_type -> Root.t = function
     | ModuleType(id, _) -> signature_root id
 
-  let class_signature_root : 'a class_signature -> 'a = function
+  let class_signature_root : class_signature -> Root.t = function
     | Class(id, _)
     | ClassType(id, _) -> signature_root id
 
   let to_reversed i =
-    let rec loop acc : 'a signature -> Reversed.t = function
+    let rec loop acc : signature -> Reversed.t = function
       | Root (_, s) -> Reversed.Root s :: acc
       | Module (i, s) -> loop (Reversed.Module s :: acc) i
       | ModuleType (i, s) -> loop (Reversed.ModuleType s :: acc) i
@@ -433,25 +427,25 @@ module Path = struct
 
       type kind = Kind.path
 
-      type ('a, 'b) t =
-        | Identifier : ('a, 'b) Identifier.t -> ('a, [< kind] as 'b) t
-        | Subst : 'a module_type * 'a module_ -> ('a, [< kind > `Module]) t
-        | SubstAlias : 'a module_ * 'a module_ -> ('a, [< kind > `Module]) t
-        | Hidden : 'a module_ -> ('a, [< kind > `Module ]) t
-        | Module : 'a module_ * string -> ('a, [< kind > `Module]) t
-        | Canonical : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
-        | Apply : 'a module_ * 'a Types.Path.module_ -> ('a, [< kind > `Module]) t
-        | ModuleType : 'a module_ * string -> ('a, [< kind > `ModuleType]) t
-        | Type : 'a module_ * string -> ('a, [< kind > `Type]) t
-        | Class : 'a module_ * string -> ('a, [< kind > `Class]) t
-        | ClassType : 'a module_ * string -> ('a, [< kind > `ClassType]) t
+      type 'kind t =
+        | Identifier : 'kind Identifier.t -> ([< kind] as 'kind) t
+        | Subst : module_type * module_ -> [< kind > `Module] t
+        | SubstAlias : module_ * module_ -> [< kind > `Module] t
+        | Hidden : module_ -> [< kind > `Module ] t
+        | Module : module_ * string -> [< kind > `Module] t
+        | Canonical : module_ * Types.Path.module_ -> [< kind > `Module] t
+        | Apply : module_ * Types.Path.module_ -> [< kind > `Module] t
+        | ModuleType : module_ * string -> [< kind > `ModuleType] t
+        | Type : module_ * string -> [< kind > `Type] t
+        | Class : module_ * string -> [< kind > `Class] t
+        | ClassType : module_ * string -> [< kind > `ClassType] t
 
-      and 'a any = ('a, kind) t
+      and any = kind t
 
-      and 'a module_ = ('a, path_module) t
-      and 'a module_type = ('a, path_module_type) t
-      and 'a type_ = ('a, path_type) t
-      and 'a class_type = ('a, path_class_type) t
+      and module_ = path_module t
+      and module_type = path_module_type t
+      and type_ = path_type t
+      and class_type = path_class_type t
 
     end
 
@@ -459,161 +453,155 @@ module Path = struct
 
       type kind = Kind.path
 
-      type ('a, 'b) t =
-      | Resolved : ('a, 'b) Types.Resolved.t -> ('a, 'b) t
-      | Root : string -> ('a, [< kind >`Module]) t
-      | Forward : string -> ('a, [< kind >`Module]) t
-      | Dot : 'a module_ * string -> ('a, [< kind]) t
-      | Apply : 'a module_ * 'a module_ -> ('a, [< kind >`Module]) t
+      type 'kind t =
+        | Resolved : 'kind Resolved.t -> 'kind t
+        | Root : string -> [< kind > `Module] t
+        | Forward : string -> [< kind > `Module] t
+        | Dot : module_ * string -> [< kind] t
+        | Apply : module_ * module_ -> [< kind > `Module] t
 
-      and 'a any = ('a, kind) t
+      and any = kind t
 
-      and 'a module_ = ('a, path_module) t
-      and 'a module_type = ('a, path_module_type) t
-      and 'a type_ = ('a, path_type) t
-      and 'a class_type = ('a, path_class_type) t
+      and module_ = path_module t
+      and module_type = path_module_type t
+      and type_ = path_type t
+      and class_type = path_class_type t
 
     end
 
   end = Types
 
-  let rec equal_resolved_path : type k. ('a -> 'a -> bool) ->
-                                     ('a, k) Types.Resolved.t ->
-                                       ('a, k) Types.Resolved.t -> bool =
-    fun equal p1 p2 ->
+  let rec equal_resolved_path : type k. k Types.Resolved.t -> k Types.Resolved.t -> bool =
+    fun p1 p2 ->
       let open Types.Resolved in
         match p1, p2 with
         | Identifier id1, Identifier id2 ->
-            Identifier.equal ~equal id1 id2
+            Identifier.equal id1 id2
         | Subst(sub1, p1), Subst(sub2, p2) ->
-            equal_resolved_path equal p1 p2
-            && equal_resolved_path equal sub1 sub2
+            equal_resolved_path p1 p2
+            && equal_resolved_path sub1 sub2
         | SubstAlias(sub1, p1), SubstAlias(sub2, p2) ->
-            equal_resolved_path equal p1 p2
-            && equal_resolved_path equal sub1 sub2
+            equal_resolved_path p1 p2
+            && equal_resolved_path sub1 sub2
         | Module(p1, s1), Module(p2, s2) ->
-            s1 = s2 && equal_resolved_path equal p1 p2
+            s1 = s2 && equal_resolved_path p1 p2
         | Apply(p1, arg1), Apply(p2, arg2) ->
-            equal_path equal arg1 arg2
-            && equal_resolved_path equal p1 p2
+            equal_path arg1 arg2
+            && equal_resolved_path p1 p2
         | ModuleType(p1, s1), ModuleType(p2, s2) ->
-            s1 = s2 && equal_resolved_path equal p1 p2
+            s1 = s2 && equal_resolved_path p1 p2
         | Type(p1, s1), Type(p2, s2) ->
-            s1 = s2 && equal_resolved_path equal p1 p2
+            s1 = s2 && equal_resolved_path p1 p2
         | Class(p1, s1), Class(p2, s2) ->
-            s1 = s2 && equal_resolved_path equal p1 p2
+            s1 = s2 && equal_resolved_path p1 p2
         | ClassType(p1, s1), ClassType(p2, s2) ->
-            s1 = s2 && equal_resolved_path equal p1 p2
+            s1 = s2 && equal_resolved_path p1 p2
         | _, _ -> false
 
-  and equal_path : type k. ('a -> 'a -> bool) ->
-                             ('a, k) Types.Path.t ->
-                               ('a, k) Types.Path.t -> bool =
-    fun equal p1 p2 ->
+  and equal_path : type k. k Types.Path.t -> k Types.Path.t -> bool =
+    fun p1 p2 ->
       let open Types.Path in
         match p1, p2 with
         | Resolved p1, Resolved p2 ->
-            equal_resolved_path equal p1 p2
+            equal_resolved_path p1 p2
         | Root s1, Root s2 ->
             s1 = s2
         | Dot(p1, s1), Dot(p2, s2) ->
-            s1 = s2 && equal_path equal p1 p2
+            s1 = s2 && equal_path p1 p2
         | Apply(p1, arg1), Apply(p2, arg2) ->
-            equal_path equal arg1 arg2 && equal_path equal p1 p2
+            equal_path arg1 arg2 && equal_path p1 p2
         | _, _ -> false
 
-  let rec hash_resolved_path : type k. ('a -> int) ->
-                                    ('a, k) Types.Resolved.t -> int =
-    fun hash p ->
+  let rec hash_resolved_path : type k. k Types.Resolved.t -> int =
+    fun p ->
       let open Types.Resolved in
         match p with
         | Identifier id ->
-            Identifier.hash ~hash id
+            Identifier.hash id
         | Subst(sub, p) ->
-            Hashtbl.hash (19, hash_resolved_path hash sub,
-                          hash_resolved_path hash p)
+            Hashtbl.hash (19, hash_resolved_path sub,
+                          hash_resolved_path p)
         | SubstAlias(sub, p) ->
-            Hashtbl.hash (20, hash_resolved_path hash sub,
-                          hash_resolved_path hash p)
-        | Hidden p -> Hashtbl.hash (21, hash_resolved_path hash p)
+            Hashtbl.hash (20, hash_resolved_path sub,
+                          hash_resolved_path p)
+        | Hidden p -> Hashtbl.hash (21, hash_resolved_path p)
         | Module(p, s) ->
-            Hashtbl.hash (22, hash_resolved_path hash p, s)
+            Hashtbl.hash (22, hash_resolved_path p, s)
         | Canonical(p, canonical) ->
-          Hashtbl.hash (23, hash_resolved_path hash p, hash_path hash canonical)
+          Hashtbl.hash (23, hash_resolved_path p, hash_path canonical)
         | Apply(p, arg) ->
-            Hashtbl.hash (24, hash_resolved_path hash p, hash_path hash arg)
+            Hashtbl.hash (24, hash_resolved_path p, hash_path arg)
         | ModuleType(p, s) ->
-            Hashtbl.hash (25, hash_resolved_path hash p, s)
+            Hashtbl.hash (25, hash_resolved_path p, s)
         | Type(p, s) ->
-            Hashtbl.hash (26, hash_resolved_path hash p, s)
+            Hashtbl.hash (26, hash_resolved_path p, s)
         | Class(p, s) ->
-            Hashtbl.hash (27, hash_resolved_path hash p, s)
+            Hashtbl.hash (27, hash_resolved_path p, s)
         | ClassType(p, s) ->
-            Hashtbl.hash (28, hash_resolved_path hash p, s)
+            Hashtbl.hash (28, hash_resolved_path p, s)
 
-  and hash_path : type k. ('a -> int) -> ('a, k) Types.Path.t -> int =
-    fun hash p ->
+  and hash_path : type k. k Types.Path.t -> int =
+    fun p ->
       let open Types.Path in
         match p with
-        | Resolved p -> hash_resolved_path hash p
+        | Resolved p -> hash_resolved_path p
         | Root s ->
             Hashtbl.hash (29, s)
         | Forward s ->
             Hashtbl.hash (30, s)
         | Dot(p, s) ->
-            Hashtbl.hash (31, hash_path hash p, s)
+            Hashtbl.hash (31, hash_path p, s)
         | Apply(p, arg) ->
-            Hashtbl.hash (32, hash_path hash p, hash_path hash arg)
+            Hashtbl.hash (32, hash_path p, hash_path arg)
 
-  let equal ~equal p1 p2 = equal_path equal p1 p2
+  let equal p1 p2 = equal_path p1 p2
 
-  let hash ~hash p = hash_path hash p
+  let hash p = hash_path p
 
-  let rec sexp_of_path : type a b. (a -> sexp) -> (a, b) Types.Path.t -> sexp =
-    fun sexp_of_a t ->
+  let rec sexp_of_path : type k. k Types.Path.t -> sexp =
+    fun t ->
       let atom s = Atom (Printf.sprintf "%S" s) in
       let open Types.Path in
       match t with
-      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved_path sexp_of_a r ]
+      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved_path r ]
       | Root s -> List [ Atom "Root"; atom s ]
       | Forward s -> List [ Atom "Forward"; atom s ]
-      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_path sexp_of_a md; atom s]]
+      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_path md; atom s]]
       | Apply (m1, m2) ->
-        List [ Atom "Apply" ; List [ sexp_of_path sexp_of_a m1
-                                   ; sexp_of_path sexp_of_a m2 ]]
+        List [ Atom "Apply" ; List [ sexp_of_path m1
+                                   ; sexp_of_path m2 ]]
 
-  and sexp_of_resolved_path : type a b. (a -> sexp) -> (a, b) Types.Resolved.t -> sexp =
-    fun sexp_of_a t ->
+  and sexp_of_resolved_path : type k. k Types.Resolved.t -> sexp =
+    fun t ->
       let atom s = Atom (Printf.sprintf "%S" s) in
       let open Types.Resolved in
       match t with
-      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
-                                                     sexp_of_a id ]
+      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t id ]
       | Subst (sg, t) ->
-        List [ Atom "Subst"; List [ sexp_of_resolved_path sexp_of_a sg
-                                  ; sexp_of_resolved_path sexp_of_a t ]]
+        List [ Atom "Subst"; List [ sexp_of_resolved_path sg
+                                  ; sexp_of_resolved_path t ]]
       | SubstAlias (sg, t) ->
-        List [ Atom "SubstAlias"; List [ sexp_of_resolved_path sexp_of_a sg
-                                       ; sexp_of_resolved_path sexp_of_a t ]]
-      | Hidden p -> List [ Atom "Hidden" ; sexp_of_resolved_path sexp_of_a p ]
+        List [ Atom "SubstAlias"; List [ sexp_of_resolved_path sg
+                                       ; sexp_of_resolved_path t ]]
+      | Hidden p -> List [ Atom "Hidden" ; sexp_of_resolved_path p ]
       | Module (md, s) ->
-        List [ Atom "Module"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+        List [ Atom "Module"; List [ sexp_of_resolved_path md ; atom s ]]
       | Canonical (md, p) ->
-        List [ Atom "Canonical"; List [ sexp_of_resolved_path sexp_of_a md
-                                      ; sexp_of_path sexp_of_a p ]]
+        List [ Atom "Canonical"; List [ sexp_of_resolved_path md
+                                      ; sexp_of_path p ]]
       | Apply (md, arg) ->
-        List [ Atom "Apply"; List [ sexp_of_resolved_path sexp_of_a md
-                                  ; sexp_of_path sexp_of_a arg ]]
+        List [ Atom "Apply"; List [ sexp_of_resolved_path md
+                                  ; sexp_of_path arg ]]
       | ModuleType (md, s) ->
-        List [ Atom "ModuleType"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+        List [ Atom "ModuleType"; List [ sexp_of_resolved_path md ; atom s ]]
       | Type (md, s) ->
-        List [ Atom "Type"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+        List [ Atom "Type"; List [ sexp_of_resolved_path md ; atom s ]]
       | Class (md, s) ->
-        List [ Atom "Class"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+        List [ Atom "Class"; List [ sexp_of_resolved_path md ; atom s ]]
       | ClassType (md, s) ->
-        List [ Atom "ClassType"; List [ sexp_of_resolved_path sexp_of_a md ; atom s ]]
+        List [ Atom "ClassType"; List [ sexp_of_resolved_path md ; atom s ]]
 
-  let rec is_resolved_hidden : type k. ('a, k) Types.Resolved.t -> bool =
+  let rec is_resolved_hidden : type k. k Types.Resolved.t -> bool =
     let open Types.Resolved in
     function
     | Identifier _ -> false
@@ -628,7 +616,7 @@ module Path = struct
     | Class (p, _) -> is_resolved_hidden p
     | ClassType (p, _) -> is_resolved_hidden p
 
-  and is_path_hidden : type k. ('a, k) Types.Path.t -> bool =
+  and is_path_hidden : type k. k Types.Path.t -> bool =
     let open Types.Path in
     function
     | Resolved r -> is_resolved_hidden r
@@ -643,26 +631,26 @@ module Path = struct
 
     include Types.Resolved
 
-    let sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
-      fun sexp_of_a t ->
-        sexp_of_resolved_path sexp_of_a t
+    let sexp_of_t : type k. k t -> sexp =
+      fun t ->
+        sexp_of_resolved_path t
 
-    let ident_module : 'a Identifier.module_ -> _ = function
+    let ident_module : Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
 
-    let ident_module_type : 'a Identifier.module_type -> _ = function
+    let ident_module_type : Identifier.module_type -> _ = function
       | ModuleType _ as x -> Identifier x
 
-    let ident_type : 'a Identifier.type_ -> _ = function
+    let ident_type : Identifier.type_ -> _ = function
       | Type _ | CoreType _ as x -> Identifier x
 
-    let ident_class : 'a Identifier.class_ -> _ = function
+    let ident_class : Identifier.class_ -> _ = function
       | Class _ as x -> Identifier x
 
-    let ident_class_type : 'a Identifier.class_type -> _ = function
+    let ident_class_type : Identifier.class_type -> _ = function
       | ClassType _ as x -> Identifier x
 
-    let any : type k. ('a, k) t -> 'a any = function
+    let any : type k. k t -> any = function
       | Identifier (Root _) as x -> x
       | Identifier (Module _) as x -> x
       | Identifier (Argument _) as x -> x
@@ -682,15 +670,15 @@ module Path = struct
       | Class _ as x -> x
       | ClassType _ as x -> x
 
-    let open_module : 'b. 'a module_ -> ('a, [< kind > `Module ] as 'b) t = function
+    let open_module : 'k. module_ -> ([< kind > `Module ] as 'k) t = function
       | Identifier (Root _ | Module _ | Argument _) | Subst _ | SubstAlias _
       | Hidden _ | Module _ | Canonical _ | Apply _ as x -> x
 
-    let rec parent_module_type_identifier : 'a module_type -> 'a Identifier.signature = function
+    let rec parent_module_type_identifier : module_type -> Identifier.signature = function
       | Identifier id -> Identifier.signature_of_module_type id
       | ModuleType(m, n) -> ModuleType(parent_module_identifier m, n)
 
-    and parent_module_identifier : 'a module_ -> 'a Identifier.signature = function
+    and parent_module_identifier : module_ -> Identifier.signature = function
       | Identifier id -> Identifier.signature_of_module id
       | Subst(sub, _) -> parent_module_type_identifier sub
       | SubstAlias(sub, _) -> parent_module_identifier sub
@@ -700,7 +688,7 @@ module Path = struct
       | Canonical(p, _) -> parent_module_identifier p
       | Apply(m, _) -> parent_module_identifier m
 
-    let rec identifier : type k. ('a, k) t -> ('a, k) Identifier.t = function
+    let rec identifier : type k. k t -> k Identifier.t = function
       | Identifier id -> id
       | Subst(_, p) -> identifier (open_module p)
       | SubstAlias(_, p) -> identifier (open_module p)
@@ -723,15 +711,15 @@ module Path = struct
       | Class(m, n) -> Class(parent_module_identifier m, n)
       | ClassType(m, n) -> ClassType(parent_module_identifier m, n)
 
-    let equal ~equal p1 p2 = equal_resolved_path equal p1 p2
+    let equal p1 p2 = equal_resolved_path p1 p2
 
-    let hash ~hash p = hash_resolved_path hash p
+    let hash p = hash_resolved_path p
 
-    type ('a, 'b) rebase_result =
-      | Stop of ('a, 'b) t
-      | Continue of ('a, 'b) Identifier.t * Reversed.t
+    type 'kind rebase_result =
+      | Stop of 'kind t
+      | Continue of 'kind Identifier.t * Reversed.t
 
-    let rec rebase_module_path : Reversed.t -> 'a module_ -> ('a, Kind.path_module) rebase_result =
+    let rec rebase_module_path : Reversed.t -> module_ -> Kind.path_module rebase_result =
       fun new_base t ->
         match t with
         | Identifier id ->
@@ -773,7 +761,7 @@ module Path = struct
         | Apply _ -> Stop t
         (* TODO: rewrite which side? *)
 
-    let rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
+    let rebase : type k. Reversed.t -> k t -> k t =
       fun new_base t ->
         match t with
         | Identifier _ -> t
@@ -840,7 +828,7 @@ module Path = struct
       let rev = Identifier.to_reversed id in
       rebase rev t
 
-    let signature_of_module : 'a module_ -> ('a, Kind.signature) t = function
+    let signature_of_module : module_ -> Kind.signature t = function
       | Identifier (Root _) as x -> x
       | Identifier (Module _) as x -> x
       | Identifier (Argument _) as x -> x
@@ -852,14 +840,14 @@ module Path = struct
       | SubstAlias _ as x -> x
 
     let rec equal_identifier :
-      type k. equal:('a -> 'a -> bool) -> ('a, k) Identifier.t -> ('a, k) t -> bool =
-      fun ~equal id p ->
+      type k. k Identifier.t -> k t -> bool =
+      fun id p ->
         match id, p with
-        | _, Identifier id' -> Identifier.equal ~equal id id'
+        | _, Identifier id' -> Identifier.equal id id'
         | Module (id, s1), Module (p, s2) when s1 = s2 ->
-          equal_identifier ~equal id (signature_of_module p)
+          equal_identifier id (signature_of_module p)
         | ModuleType (id, s1), ModuleType (p, s2) when s1 = s2 ->
-          equal_identifier ~equal id (signature_of_module p)
+          equal_identifier id (signature_of_module p)
         | _, _ ->
           false
 
@@ -872,26 +860,26 @@ module Path = struct
 
   include Types.Path
 
-  let sexp_of_t : type a b. (a -> sexp) -> (a, b) t -> sexp =
-    fun sexp_of_a t ->
-      sexp_of_path sexp_of_a t
+  let sexp_of_t : type k. k t -> sexp =
+    fun t ->
+      sexp_of_path t
 
-  let ident_module : 'a Identifier.module_ -> _ = function
+  let ident_module : Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
 
-  let ident_module_type : 'a Identifier.module_type -> _ = function
+  let ident_module_type : Identifier.module_type -> _ = function
     | ModuleType _ as x -> Resolved (Identifier x)
 
-  let ident_type : 'a Identifier.type_ -> _ = function
+  let ident_type : Identifier.type_ -> _ = function
     | Type _ | CoreType _ as x -> Resolved (Identifier x)
 
-  let ident_class : 'a Identifier.class_ -> _ = function
+  let ident_class : Identifier.class_ -> _ = function
     | Class _ as x -> Resolved (Identifier x)
 
-  let ident_class_type : 'a Identifier.class_type -> _ = function
+  let ident_class_type : Identifier.class_type -> _ = function
     | ClassType _ as x -> Resolved (Identifier x)
 
-  let any : type k. ('a, k) t -> 'a any = function
+  let any : type k. k t -> any = function
     | Resolved (Identifier (Root _)) as x -> x
     | Resolved (Identifier (Module _)) as x -> x
     | Resolved (Identifier (Argument _)) as x -> x
@@ -945,7 +933,7 @@ module Path = struct
     | Resolved p -> Resolved (ClassType(p, name))
     | p -> Dot(p, name)
 
-  let type_of_class_type : 'a class_type -> 'a type_ = function
+  let type_of_class_type : class_type -> type_ = function
     | Resolved (Identifier (Class _)) as x -> x
     | Resolved (Identifier (ClassType _)) as x -> x
     | Resolved (Class _) as x -> x
@@ -965,75 +953,75 @@ module Fragment = struct
 
     type sort = [ `Root | `Branch ]
 
-    type ('a, 'b, 'c) raw =
-      | Root : ('a, 'b, [< sort > `Root]) raw
-      | Subst : 'a Path.Resolved.module_type * 'a module_ ->
-          ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | SubstAlias : 'a Path.Resolved.module_ * 'a module_ ->
-          ('a, [< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-      | Module : 'a signature * string ->
-          ('a, [< kind > `Module], [< sort > `Branch]) raw
-      | Type : 'a signature * string ->
-          ('a, [< kind > `Type], [< sort > `Branch]) raw
-      | Class : 'a signature * string ->
-          ('a, [< kind > `Class], [< sort > `Branch]) raw
-      | ClassType : 'a signature * string ->
-          ('a, [< kind > `ClassType], [< sort > `Branch]) raw
+    type ('b, 'c) raw =
+      | Root : ('b, [< sort > `Root]) raw
+      | Subst : Path.Resolved.module_type * module_ ->
+          ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | SubstAlias : Path.Resolved.module_ * module_ ->
+          ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
+      | Module : signature * string ->
+          ([< kind > `Module], [< sort > `Branch]) raw
+      | Type : signature * string ->
+          ([< kind > `Type], [< sort > `Branch]) raw
+      | Class : signature * string ->
+          ([< kind > `Class], [< sort > `Branch]) raw
+      | ClassType : signature * string ->
+          ([< kind > `ClassType], [< sort > `Branch]) raw
 
-    and ('a, 'b) t = ('a, 'b, [`Branch]) raw
+    and 'b t = ('b, [`Branch]) raw
 
-    and 'a any = ('a, kind) t
-    and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
-    and 'a module_ = ('a, fragment_module) t
+    and any = kind t
+    and signature = (fragment_module, [`Root | `Branch]) raw
+    and module_ = fragment_module t
 
     let rec sexp_of_t :
-      type a c. ('b -> sexp) -> ('b, a, c) raw -> sexp =
-      fun sexp_of_a raw ->
+      type a c. (a, c) raw -> sexp =
+      fun raw ->
         match raw with
         | Root -> Atom "Root"
         | Subst (path, raw) ->
             List [
               Atom "Subst";
-              List [ Path.Resolved.sexp_of_t sexp_of_a path
-                  ; sexp_of_t sexp_of_a raw ]
+              List [ Path.Resolved.sexp_of_t path
+                  ; sexp_of_t raw ]
             ]
         | SubstAlias (path, raw) ->
             List [
               Atom "SubstAlias";
-              List [ Path.Resolved.sexp_of_t sexp_of_a path
-                  ; sexp_of_t sexp_of_a raw ]
+              List [ Path.Resolved.sexp_of_t path
+                  ; sexp_of_t raw ]
             ]
         | Module (raw, s) ->
             List [
               Atom "Module";
-              List [ sexp_of_t sexp_of_a raw
+              List [ sexp_of_t raw
                   ; atom s ]
             ]
         | Type (raw, s) ->
             List [
               Atom "Type";
-              List [ sexp_of_t sexp_of_a raw
+              List [ sexp_of_t raw
                   ; atom s ]
             ]
         | Class (raw, s) ->
             List [
               Atom "Class";
-              List [ sexp_of_t sexp_of_a raw
+              List [ sexp_of_t raw
                   ; atom s ]
             ]
         | ClassType (raw, s) ->
             List [
               Atom "ClassType";
-              List [ sexp_of_t sexp_of_a raw
+              List [ sexp_of_t raw
                   ; atom s ]
             ]
 
-    type 'a type_ = ('a, fragment_type) t
+    type type_ = fragment_type t
 
-    let signature_of_module : 'a module_ -> 'a signature = function
+    let signature_of_module : module_ -> signature = function
       | Subst _ | SubstAlias _ | Module _ as x -> x
 
-    let any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw =
+    let any_sort : type b c. (b, c) raw -> (b, sort) raw =
       function
       | Root as x -> x
       | Subst _ as x -> x
@@ -1043,15 +1031,15 @@ module Fragment = struct
       | Class (_,_) as x -> x
       | ClassType (_,_) as x -> x
 
-    let open_sort : 'a module_ -> ('a, Kind.fragment_module, [< sort > `Branch ]) raw =
+    let open_sort : module_ -> (Kind.fragment_module, [< sort > `Branch ]) raw =
       function
       | Module _ | Subst _ | SubstAlias _ as x -> x
 
-    let open_module : 'a module_ -> ('a, [< kind > `Module ]) t =
+    let open_module : module_ -> ([< kind > `Module ]) t =
       function
       | Module _ | Subst _ | SubstAlias _ as x -> x
 
-    let any : type k. ('a, k) t -> 'a any = function
+    let any : type k. k t -> any = function
       | Subst _ as x -> x
       | SubstAlias _ as x -> x
       | Module _ as x -> x
@@ -1069,8 +1057,8 @@ module Fragment = struct
           Path.Resolved.Module(parent_resolved_path root m, n)
 
     let rec resolved_path
-        : type k. 'a Path.Resolved.module_ ->
-               ('a, k) t -> ('a, k) Path.Resolved.t =
+        : type k. Path.Resolved.module_ ->
+               k t -> k Path.Resolved.t =
       fun root frag ->
         match frag with
         | Subst(sub, p) ->
@@ -1093,7 +1081,7 @@ module Fragment = struct
       | Module(m, n) -> Path.Dot(parent_unresolved_path root m, n)
 
     let rec unresolved_path
-        : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
+        : type k. Path.module_ -> k t -> k Path.t =
       fun root -> function
         | Subst(_, p) -> unresolved_path root (open_module p)
         | SubstAlias(_, p) -> unresolved_path root (open_module p)
@@ -1107,7 +1095,7 @@ module Fragment = struct
       | Path.Resolved root -> Path.Resolved (parent_resolved_path root frag)
       | _ -> parent_unresolved_path root frag
 
-    let path (root : 'a Path.module_) frag =
+    let path (root : Path.module_) frag =
       match root with
       | Path.Resolved root -> Path.Resolved (resolved_path root frag)
       | _ -> unresolved_path root frag
@@ -1119,7 +1107,7 @@ module Fragment = struct
       | Module(m, n) -> Identifier.Module(parent_identifier root m, n)
 
     let rec identifier :
-      type k. 'a Identifier.signature -> ('a, k) t -> ('a, k) Identifier.t =
+      type k. Identifier.signature -> k t -> k Identifier.t =
         fun root -> function
           | Subst(_, p) -> identifier root (open_module p)
           | SubstAlias(_, p) -> identifier root (open_module p)
@@ -1131,10 +1119,10 @@ module Fragment = struct
 
     type ('a, 'b) base_name =
       | Base : ('a, [< sort > `Root]) base_name
-      | Branch : string * 'a signature -> ('a, [< sort > `Branch]) base_name
+      | Branch : string * signature -> ('a, [< sort > `Branch]) base_name
 
     let rec split_parent
-            : type s . ('a, fragment_module, s) raw -> ('a, s) base_name =
+            : type s . (fragment_module, s) raw -> ('a, s) base_name =
       function
         | Root -> Base
         | Subst(_, p) -> split_parent (open_sort p)
@@ -1144,7 +1132,7 @@ module Fragment = struct
             | Base -> Branch(name, Root)
             | Branch(base, m) -> Branch(base, Module(m, name))
 
-    let rec split : type k . ('a, k) t -> string * ('a, k) t option = function
+    let rec split : type k . k t -> string * k t option = function
       | Subst(_, p) -> split (open_module p)
       | SubstAlias(_, p) -> split (open_module p)
       | Module(m, name) -> begin
@@ -1168,49 +1156,48 @@ module Fragment = struct
           | Branch(base, m)-> base, Some (ClassType(m, name))
         end
 
-    let equal ~equal p1 p2 =
-      let rec loop : type k s. ('a -> 'a -> bool) ->
-                              ('a, k, s) raw -> ('a, k, s) raw -> bool =
-        fun equal p1 p2 ->
+    let equal p1 p2 =
+      let rec loop : type k s. (k, s) raw -> (k, s) raw -> bool =
+        fun p1 p2 ->
           match p1, p2 with
           | Root, Root -> true
           | Subst(sub1, p1), Subst(sub2, p2) ->
-              Path.Resolved.equal ~equal sub1 sub2
-              && loop equal p1 p2
+              Path.Resolved.equal sub1 sub2
+              && loop p1 p2
           | SubstAlias(sub1, p1), SubstAlias(sub2, p2) ->
-              Path.Resolved.equal ~equal sub1 sub2
-              && loop equal p1 p2
+              Path.Resolved.equal sub1 sub2
+              && loop p1 p2
           | Module(p1, s1), Module(p2, s2) ->
-              s1 = s2 && loop equal p1 p2
+              s1 = s2 && loop p1 p2
           | Type(p1, s1), Type(p2, s2) ->
-              s1 = s2 && loop equal p1 p2
+              s1 = s2 && loop p1 p2
           | Class(p1, s1), Class(p2, s2) ->
-              s1 = s2 && loop equal p1 p2
+              s1 = s2 && loop p1 p2
           | ClassType(p1, s1), ClassType(p2, s2) ->
-              s1 = s2 && loop equal p1 p2
+              s1 = s2 && loop p1 p2
           | _, _ -> false
       in
-        loop equal p1 p2
+        loop p1 p2
 
-    let hash ~hash p =
-      let rec loop : type k s. ('a -> int) -> ('a, k, s) raw -> int =
-        fun hash p ->
+    let hash p =
+      let rec loop : type k s. (k, s) raw -> int =
+        fun p ->
           match p with
           | Root -> Hashtbl.hash 32
           | Subst(sub, p) ->
-              Hashtbl.hash (34, Path.Resolved.hash ~hash sub, loop hash p)
+              Hashtbl.hash (34, Path.Resolved.hash sub, loop p)
           | SubstAlias(sub, p) ->
-              Hashtbl.hash (35, Path.Resolved.hash ~hash sub, loop hash p)
+              Hashtbl.hash (35, Path.Resolved.hash sub, loop p)
           | Module(p, s) ->
-              Hashtbl.hash (36, loop hash p, s)
+              Hashtbl.hash (36, loop p, s)
           | Type(p, s) ->
-              Hashtbl.hash (37, loop hash p, s)
+              Hashtbl.hash (37, loop p, s)
           | Class(p, s) ->
-              Hashtbl.hash (38, loop hash p, s)
+              Hashtbl.hash (38, loop p, s)
           | ClassType(p, s) ->
-              Hashtbl.hash (39, loop hash p, s)
+              Hashtbl.hash (39, loop p, s)
       in
-        loop hash p
+        loop p
 
   end
 
@@ -1220,41 +1207,41 @@ module Fragment = struct
 
   type sort = [ `Root | `Branch ]
 
-  type ('a, 'b, 'c) raw =
-    | Resolved : ('a, 'b, 'c) Resolved.raw -> ('a, 'b, 'c) raw
-    | Dot : 'a signature * string -> ('a, [< kind], [< sort > `Branch]) raw
+  type ('b, 'c) raw =
+    | Resolved : ('b, 'c) Resolved.raw -> ('b, 'c) raw
+    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
 
-  and ('a, 'b) t = ('a, 'b, [`Branch]) raw
+  and 'b t = ('b, [`Branch]) raw
 
-  and 'a any = ('a, kind) t
-  and 'a signature = ('a, fragment_module, [`Root | `Branch]) raw
+  and any = kind t
+  and signature = (fragment_module, [`Root | `Branch]) raw
 
   let rec sexp_of_t :
-    type a c. ('b -> sexp) -> ('b, a, c) raw -> sexp =
-    fun sexp_of_a raw ->
+    type a c. (a, c) raw -> sexp =
+    fun raw ->
       match raw with
       | Resolved r ->
           List [
             Atom "Resolved";
-            Resolved.sexp_of_t sexp_of_a r;
+            Resolved.sexp_of_t r;
           ]
       | Dot (raw, s) ->
           List [
             Atom "Dot";
-            List [ sexp_of_t sexp_of_a raw ; atom s ];
+            List [ sexp_of_t raw ; atom s ];
           ]
 
-  type 'a module_ = ('a, fragment_module) t
-  type 'a type_ = ('a, fragment_type) t
+  type module_ = fragment_module t
+  type type_ = fragment_type t
 
-  let signature_of_module : 'a module_ -> 'a signature = function
+  let signature_of_module : module_ -> signature = function
     | Resolved(Subst _ | SubstAlias _ | Module _) | Dot _ as x -> x
 
-  let any_sort : type b c. ('a, b, c) raw -> ('a, b, sort) raw = function
+  let any_sort : type b c. (b, c) raw -> (b, sort) raw = function
     | Resolved r -> Resolved (any_sort r)
     | Dot _ as x -> x
 
-  let any : type k. ('a, k) t -> 'a any = function
+  let any : type k. k t -> any = function
     | Resolved (Subst _) as x -> x
     | Resolved (SubstAlias _) as x -> x
     | Resolved (Module _) as x -> x
@@ -1267,17 +1254,17 @@ module Fragment = struct
     | Resolved r -> Resolved.parent_path root r
     | Dot(m, n) -> Path.Dot(parent_path root m, n)
 
-  let path : type k. 'a Path.module_ -> ('a, k) t -> ('a, k) Path.t =
+  let path : type k. Path.module_ -> k t -> k Path.t =
    fun root -> function
     | Resolved r -> Resolved.path root r
     | Dot(m, s) -> Path.Dot(parent_path root m, s)
 
   type ('a, 'b) base_name =
     | Base : ('a, [< sort > `Root]) base_name
-    | Branch : string * 'a signature -> ('a, [< sort > `Branch]) base_name
+    | Branch : string * signature -> ('a, [< sort > `Branch]) base_name
 
   let rec split_parent
-          : type s . ('a, fragment_module, s) raw -> ('a, s) base_name =
+          : type s . (fragment_module, s) raw -> ('a, s) base_name =
     function
       | Resolved r -> begin
           match Resolved.split_parent r with
@@ -1290,7 +1277,7 @@ module Fragment = struct
           | Branch(base, m) -> Branch(base, Dot(m, name))
         end
 
-  let split : type k . ('a, k) t -> string * ('a, k) t option = function
+  let split : type k . k t -> string * k t option = function
     | Resolved r ->
         let base, m = Resolved.split r in
         let m =
@@ -1304,28 +1291,27 @@ module Fragment = struct
         | Base -> name, None
         | Branch(base, m) -> base, Some(Dot(m, name))
 
-  let equal ~equal p1 p2 =
-    let rec loop : type k s. ('a -> 'a -> bool) ->
-                            ('a, k, s) raw -> ('a, k, s) raw -> bool =
-      fun equal p1 p2 ->
+  let equal p1 p2 =
+    let rec loop : type k s. (k, s) raw -> (k, s) raw -> bool =
+      fun p1 p2 ->
         match p1, p2 with
         | Resolved p1, Resolved p2 ->
-            Resolved.equal ~equal p1 p2
+            Resolved.equal p1 p2
         | Dot(p1, s1), Dot(p2, s2) ->
-            s1 = s2 && loop equal p1 p2
+            s1 = s2 && loop p1 p2
         | _, _ -> false
     in
-      loop equal p1 p2
+      loop p1 p2
 
-  let hash ~hash p =
-    let rec loop : type k s. ('a -> int) -> ('a, k, s) raw -> int =
-      fun hash p ->
+  let hash p =
+    let rec loop : type k s. (k, s) raw -> int =
+      fun p ->
         match p with
-        | Resolved p -> Resolved.hash ~hash p
+        | Resolved p -> Resolved.hash p
         | Dot(p, s) ->
-            Hashtbl.hash (40, loop hash p, s)
+            Hashtbl.hash (40, loop p, s)
     in
-      loop hash p
+      loop p
 
 end
 
@@ -1334,46 +1320,46 @@ module Reference = struct
     module Resolved : sig
       type kind = Kind.reference
 
-      type ('a, 'b) t =
-        | Identifier : ('a, 'b) Identifier.t -> ('a, 'b) t
-        | SubstAlias : 'a Path.Resolved.module_ * 'a module_ -> ('a, [< kind > `Module ]) t
-        | Module : 'a signature * string -> ('a, [< kind > `Module]) t
-        | Canonical : 'a module_ * 'a Types.Reference.module_ -> ('a, [< kind > `Module]) t
-        | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
-        | Type : 'a signature * string -> ('a, [< kind > `Type]) t
-        | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-        | Field : 'a parent * string -> ('a, [< kind > `Field]) t
-        | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
-        | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
-        | Value : 'a signature * string -> ('a, [< kind > `Value]) t
-        | Class : 'a signature * string -> ('a, [< kind > `Class]) t
-        | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
-        | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
-        | InstanceVariable : 'a class_signature * string ->
-          ('a, [< kind > `InstanceVariable]) t
-        | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
+      type 'kind t =
+        | Identifier : 'kind Identifier.t -> 'kind t
+        | SubstAlias : Path.Resolved.module_ * module_ -> [< kind > `Module ] t
+        | Module : signature * string -> [< kind > `Module] t
+        | Canonical : module_ * Types.Reference.module_ -> [< kind > `Module] t
+        | ModuleType : signature * string -> [< kind > `ModuleType] t
+        | Type : signature * string -> [< kind > `Type] t
+        | Constructor : datatype * string -> [< kind > `Constructor] t
+        | Field : parent * string -> [< kind > `Field] t
+        | Extension : signature * string -> [< kind > `Extension] t
+        | Exception : signature * string -> [< kind > `Exception] t
+        | Value : signature * string -> [< kind > `Value] t
+        | Class : signature * string -> [< kind > `Class] t
+        | ClassType : signature * string -> [< kind > `ClassType] t
+        | Method : class_signature * string -> [< kind > `Method] t
+        | InstanceVariable : class_signature * string ->
+          [< kind > `InstanceVariable] t
+        | Label : label_parent * string -> [< kind > `Label] t
 
-      and 'a any = ('a, kind) t
-      and 'a signature = ('a, Kind.signature) t
-      and 'a class_signature = ('a, Kind.class_signature) t
-      and 'a datatype = ('a, Kind.datatype) t
-      and 'a parent = ('a, Kind.parent) t
-      and 'a module_ = ('a, reference_module) t
-      and 'a label_parent = ('a, [ Kind.parent | Kind.page ]) t
+      and any = kind t
+      and signature = Kind.signature t
+      and class_signature = Kind.class_signature t
+      and datatype = Kind.datatype t
+      and parent = Kind.parent t
+      and module_ = reference_module t
+      and label_parent = [ Kind.parent | Kind.page ] t
 
-      type 'a module_type = ('a, reference_module_type) t
-      type 'a type_ = ('a, reference_type) t
-      type 'a constructor = ('a, reference_constructor) t
-      type 'a field = ('a, reference_field) t
-      type 'a extension = ('a, reference_extension) t
-      type 'a exception_ = ('a, reference_exception) t
-      type 'a value = ('a, reference_value) t
-      type 'a class_ = ('a, reference_class) t
-      type 'a class_type = ('a, reference_class_type) t
-      type 'a method_ = ('a, reference_method) t
-      type 'a instance_variable = ('a, reference_instance_variable) t
-      type 'a label = ('a, reference_label) t
-      type 'a page = ('a, reference_page) t
+      type module_type = reference_module_type t
+      type type_ = reference_type t
+      type constructor = reference_constructor t
+      type field = reference_field t
+      type extension = reference_extension t
+      type exception_ = reference_exception t
+      type value = reference_value t
+      type class_ = reference_class t
+      type class_type = reference_class_type t
+      type method_ = reference_method t
+      type instance_variable = reference_instance_variable t
+      type label = reference_label t
+      type page = reference_page t
     end
 
     module Reference : sig
@@ -1396,46 +1382,46 @@ module Reference = struct
         | TLabel : [< kind > `Label ] tag
         | TPage : [< kind > `Page ] tag
 
-      type ('a, 'b) t =
-        | Resolved : ('a, 'b) Resolved.t -> ('a, 'b) t
-        | Root : string * 'b tag -> ('a, 'b) t
-        | Dot : 'a label_parent * string -> ('a, [< kind ] as 'b) t
-        | Module : 'a signature * string -> ('a, [< kind > `Module]) t
-        | ModuleType : 'a signature * string -> ('a, [< kind > `ModuleType]) t
-        | Type : 'a signature * string -> ('a, [< kind > `Type]) t
-        | Constructor : 'a datatype * string -> ('a, [< kind > `Constructor]) t
-        | Field : 'a parent * string -> ('a, [< kind > `Field]) t
-        | Extension : 'a signature * string -> ('a, [< kind > `Extension]) t
-        | Exception : 'a signature * string -> ('a, [< kind > `Exception]) t
-        | Value : 'a signature * string -> ('a, [< kind > `Value]) t
-        | Class : 'a signature * string -> ('a, [< kind > `Class]) t
-        | ClassType : 'a signature * string -> ('a, [< kind > `ClassType]) t
-        | Method : 'a class_signature * string -> ('a, [< kind > `Method]) t
-        | InstanceVariable : 'a class_signature * string ->
-          ('a, [< kind > `InstanceVariable]) t
-        | Label : 'a label_parent * string -> ('a, [< kind > `Label]) t
+      type 'kind t =
+        | Resolved : 'kind Resolved.t -> 'kind t
+        | Root : string * 'kind tag -> 'kind t
+        | Dot : label_parent * string -> [< kind ] t
+        | Module : signature * string -> [< kind > `Module] t
+        | ModuleType : signature * string -> [< kind > `ModuleType] t
+        | Type : signature * string -> [< kind > `Type] t
+        | Constructor : datatype * string -> [< kind > `Constructor] t
+        | Field : parent * string -> [< kind > `Field] t
+        | Extension : signature * string -> [< kind > `Extension] t
+        | Exception : signature * string -> [< kind > `Exception] t
+        | Value : signature * string -> [< kind > `Value] t
+        | Class : signature * string -> [< kind > `Class] t
+        | ClassType : signature * string -> [< kind > `ClassType] t
+        | Method : class_signature * string -> [< kind > `Method] t
+        | InstanceVariable : class_signature * string ->
+          [< kind > `InstanceVariable] t
+        | Label : label_parent * string -> [< kind > `Label] t
 
-      and 'a any = ('a, kind) t
-      and 'a signature = ('a, Kind.signature) t
-      and 'a class_signature = ('a, Kind.class_signature) t
-      and 'a datatype = ('a, Kind.datatype) t
-      and 'a parent = ('a, Kind.parent) t
-      and 'a label_parent = ('a, [ Kind.parent | Kind.page ]) t
+      and any = kind t
+      and signature = Kind.signature t
+      and class_signature = Kind.class_signature t
+      and datatype = Kind.datatype t
+      and parent = Kind.parent t
+      and label_parent = [ Kind.parent | Kind.page ] t
 
-      type 'a module_ = ('a, reference_module) t
-      type 'a module_type = ('a, reference_module_type) t
-      type 'a type_ = ('a, reference_type) t
-      type 'a constructor = ('a, reference_constructor) t
-      type 'a field = ('a, reference_field) t
-      type 'a extension = ('a, reference_extension) t
-      type 'a exception_ = ('a, reference_exception) t
-      type 'a value = ('a, reference_value) t
-      type 'a class_ = ('a, reference_class) t
-      type 'a class_type = ('a, reference_class_type) t
-      type 'a method_ = ('a, reference_method) t
-      type 'a instance_variable = ('a, reference_instance_variable) t
-      type 'a label = ('a, reference_label) t
-      type 'a page = ('a, reference_page) t
+      type module_ = reference_module t
+      type module_type = reference_module_type t
+      type type_ = reference_type t
+      type constructor = reference_constructor t
+      type field = reference_field t
+      type extension = reference_extension t
+      type exception_ = reference_exception t
+      type value = reference_value t
+      type class_ = reference_class t
+      type class_type = reference_class_type t
+      type method_ = reference_method t
+      type instance_variable = reference_instance_variable t
+      type label = reference_label t
+      type page = reference_page t
     end
   end = Types
 
@@ -1456,226 +1442,225 @@ module Reference = struct
     | Types.Reference.TLabel -> Atom "TLabel"
     | Types.Reference.TPage -> Atom "TPage"
 
-  let rec sexp_of_resolved : type a b. (a -> sexp) -> (a, b) Types.Resolved.t -> sexp =
-    fun sexp_of_a t ->
+  let rec sexp_of_resolved : type k. k Types.Resolved.t -> sexp =
+    fun t ->
       let atom s = Atom (Printf.sprintf "%S" s) in
       let open Types.Resolved in
       match t with
-      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t
-                                                     sexp_of_a id ]
+      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t id ]
       | SubstAlias (r1, r2) ->
-        List [ Atom "SubstAlias"; List [ Path.Resolved.sexp_of_t sexp_of_a r1;
-                                         sexp_of_resolved sexp_of_a r2] ]
+        List [ Atom "SubstAlias"; List [ Path.Resolved.sexp_of_t r1;
+                                         sexp_of_resolved r2] ]
       | Module (sg, s) ->
-        List [ Atom "Module"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Module"; List [sexp_of_resolved sg; atom s] ]
       | Canonical (t, rf) ->
-        List [ Atom "Canonical"; List [ sexp_of_resolved sexp_of_a t
-                                      ; sexp_of_t sexp_of_a rf ] ]
+        List [ Atom "Canonical"; List [ sexp_of_resolved t
+                                      ; sexp_of_t rf ] ]
       | ModuleType (sg, s) ->
-        List [ Atom "ModuleType"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "ModuleType"; List [sexp_of_resolved sg; atom s] ]
       | Type (sg, s) ->
-        List [ Atom "Type"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Type"; List [sexp_of_resolved sg; atom s] ]
       | Constructor (cs, s) ->
-        List [ Atom "Constructor"; List [sexp_of_resolved sexp_of_a cs; atom s] ]
+        List [ Atom "Constructor"; List [sexp_of_resolved cs; atom s] ]
       | Field (f, s) ->
-        List [ Atom "Field"; List [sexp_of_resolved sexp_of_a f; atom s] ]
+        List [ Atom "Field"; List [sexp_of_resolved f; atom s] ]
       | Extension (sg, s) ->
-        List [ Atom "Extension"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Extension"; List [sexp_of_resolved sg; atom s] ]
       | Exception (sg, s) ->
-        List [ Atom "Exception"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Exception"; List [sexp_of_resolved sg; atom s] ]
       | Value (sg, s) ->
-        List [ Atom "Value"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Value"; List [sexp_of_resolved sg; atom s] ]
       | Class (sg, s) ->
-        List [ Atom "Class"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Class"; List [sexp_of_resolved sg; atom s] ]
       | ClassType (sg, s) ->
-        List [ Atom "ClassType"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "ClassType"; List [sexp_of_resolved sg; atom s] ]
       | Method (sg, s) ->
-        List [ Atom "Method"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Method"; List [sexp_of_resolved sg; atom s] ]
       | InstanceVariable (sg, s) ->
-        List [ Atom "InstanceVariable"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "InstanceVariable"; List [sexp_of_resolved sg; atom s] ]
       | Label (sg, s) ->
-        List [ Atom "Label"; List [sexp_of_resolved sexp_of_a sg; atom s] ]
+        List [ Atom "Label"; List [sexp_of_resolved sg; atom s] ]
 
-  and sexp_of_t : type a b. (a -> sexp) -> (a, b) Types.Reference.t -> sexp =
-    fun sexp_of_a t ->
+  and sexp_of_t : type k. k Types.Reference.t -> sexp =
+    fun t ->
       let atom s = Atom (Printf.sprintf "%S" s) in
       let open Types.Reference in
       match t with
-      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved sexp_of_a r ]
+      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved r ]
       | Root (s, tag) ->
         List [ Atom "Root"; List [atom s; sexp_of_tag tag] ]
       | Dot (md, s) ->
-        List [ Atom "Dot" ; List [sexp_of_t sexp_of_a md; atom s] ]
+        List [ Atom "Dot" ; List [sexp_of_t md; atom s] ]
       | Module (sg, s) ->
-        List [ Atom "Module"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Module"; List [sexp_of_t sg; atom s] ]
       | ModuleType (sg, s) ->
-        List [ Atom "ModuleType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "ModuleType"; List [sexp_of_t sg; atom s] ]
       | Type (sg, s) ->
-        List [ Atom "Type"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Type"; List [sexp_of_t sg; atom s] ]
       | Constructor (cs, s) ->
-        List [ Atom "Constructor"; List [sexp_of_t sexp_of_a cs; atom s] ]
+        List [ Atom "Constructor"; List [sexp_of_t cs; atom s] ]
       | Field (f, s) ->
-        List [ Atom "Field"; List [sexp_of_t sexp_of_a f; atom s] ]
+        List [ Atom "Field"; List [sexp_of_t f; atom s] ]
       | Extension (sg, s) ->
-        List [ Atom "Extension"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Extension"; List [sexp_of_t sg; atom s] ]
       | Exception (sg, s) ->
-        List [ Atom "Exception"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Exception"; List [sexp_of_t sg; atom s] ]
       | Value (sg, s) ->
-        List [ Atom "Value"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Value"; List [sexp_of_t sg; atom s] ]
       | Class (sg, s) ->
-        List [ Atom "Class"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Class"; List [sexp_of_t sg; atom s] ]
       | ClassType (sg, s) ->
-        List [ Atom "ClassType"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "ClassType"; List [sexp_of_t sg; atom s] ]
       | Method (sg, s) ->
-        List [ Atom "Method"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Method"; List [sexp_of_t sg; atom s] ]
       | InstanceVariable (sg, s) ->
-        List [ Atom "InstanceVariable"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "InstanceVariable"; List [sexp_of_t sg; atom s] ]
       | Label (sg, s) ->
-        List [ Atom "Label"; List [sexp_of_t sexp_of_a sg; atom s] ]
+        List [ Atom "Label"; List [sexp_of_t sg; atom s] ]
 
-  let rec hash_resolved : type k. ('a -> int) -> ('a, k) Types.Resolved.t -> int =
-    fun hash p ->
+  let rec hash_resolved : type k. k Types.Resolved.t -> int =
+    fun p ->
       let open Types.Resolved in
       match p with
       | Identifier id ->
-        Identifier.hash ~hash id
+        Identifier.hash id
       | SubstAlias (r1, r2) ->
-        Hashtbl.hash (41, Path.Resolved.hash ~hash r1, hash_resolved hash r2)
+        Hashtbl.hash (41, Path.Resolved.hash r1, hash_resolved r2)
       | Module(p, s) ->
-        Hashtbl.hash (42, hash_resolved hash p, s)
+        Hashtbl.hash (42, hash_resolved p, s)
       | Canonical (rp, p) ->
-        Hashtbl.hash (43, hash_resolved hash rp, hash_reference hash p)
+        Hashtbl.hash (43, hash_resolved rp, hash_reference p)
       | ModuleType(p, s) ->
-        Hashtbl.hash (44, hash_resolved hash p, s)
+        Hashtbl.hash (44, hash_resolved p, s)
       | Type(p, s) ->
-        Hashtbl.hash (45, hash_resolved hash p, s)
+        Hashtbl.hash (45, hash_resolved p, s)
       | Constructor(p, s) ->
-        Hashtbl.hash (46, hash_resolved hash p, s)
+        Hashtbl.hash (46, hash_resolved p, s)
       | Field(p, s) ->
-        Hashtbl.hash (47, hash_resolved hash p, s)
+        Hashtbl.hash (47, hash_resolved p, s)
       | Extension(p, s) ->
-        Hashtbl.hash (48, hash_resolved hash p, s)
+        Hashtbl.hash (48, hash_resolved p, s)
       | Exception(p, s) ->
-        Hashtbl.hash (49, hash_resolved hash p, s)
+        Hashtbl.hash (49, hash_resolved p, s)
       | Value(p, s) ->
-        Hashtbl.hash (50, hash_resolved hash p, s)
+        Hashtbl.hash (50, hash_resolved p, s)
       | Class(p, s) ->
-        Hashtbl.hash (51, hash_resolved hash p, s)
+        Hashtbl.hash (51, hash_resolved p, s)
       | ClassType(p, s) ->
-        Hashtbl.hash (52, hash_resolved hash p, s)
+        Hashtbl.hash (52, hash_resolved p, s)
       | Method(p, s) ->
-        Hashtbl.hash (53, hash_resolved hash p, s)
+        Hashtbl.hash (53, hash_resolved p, s)
       | InstanceVariable(p, s) ->
-        Hashtbl.hash (54, hash_resolved hash p, s)
+        Hashtbl.hash (54, hash_resolved p, s)
       | Label(p, s) ->
-        Hashtbl.hash (55, hash_resolved hash p, s)
+        Hashtbl.hash (55, hash_resolved p, s)
 
-  and hash_reference : type k. ('a -> int) -> ('a, k) Types.Reference.t -> int =
-    fun hash p ->
+  and hash_reference : type k. k Types.Reference.t -> int =
+    fun p ->
       let open Types.Reference in
       match p with
-      | Resolved p -> hash_resolved hash p
+      | Resolved p -> hash_resolved p
       | Root (s, k) -> Hashtbl.hash (56, s, k)
-      | Dot (p,s) -> Hashtbl.hash (57, hash_reference hash p, s)
-      | Module (p,s) -> Hashtbl.hash (58, hash_reference hash p, s)
-      | ModuleType (p,s) -> Hashtbl.hash (59, hash_reference hash p, s)
-      | Type (p,s) -> Hashtbl.hash (60, hash_reference hash p, s)
-      | Constructor (p,s) -> Hashtbl.hash (61, hash_reference hash p, s)
-      | Field (p,s) -> Hashtbl.hash (62, hash_reference hash p, s)
-      | Extension (p,s) -> Hashtbl.hash (63, hash_reference hash p, s)
-      | Exception (p,s) -> Hashtbl.hash (64, hash_reference hash p, s)
-      | Value (p,s) -> Hashtbl.hash (65, hash_reference hash p, s)
-      | Class (p,s) -> Hashtbl.hash (66, hash_reference hash p, s)
-      | ClassType (p,s) -> Hashtbl.hash (67, hash_reference hash p, s)
-      | Method (p,s) -> Hashtbl.hash (68, hash_reference hash p, s)
-      | InstanceVariable (p,s) -> Hashtbl.hash (69, hash_reference hash p, s)
-      | Label (p,s) -> Hashtbl.hash (70, hash_reference hash p, s)
+      | Dot (p,s) -> Hashtbl.hash (57, hash_reference p, s)
+      | Module (p,s) -> Hashtbl.hash (58, hash_reference p, s)
+      | ModuleType (p,s) -> Hashtbl.hash (59, hash_reference p, s)
+      | Type (p,s) -> Hashtbl.hash (60, hash_reference p, s)
+      | Constructor (p,s) -> Hashtbl.hash (61, hash_reference p, s)
+      | Field (p,s) -> Hashtbl.hash (62, hash_reference p, s)
+      | Extension (p,s) -> Hashtbl.hash (63, hash_reference p, s)
+      | Exception (p,s) -> Hashtbl.hash (64, hash_reference p, s)
+      | Value (p,s) -> Hashtbl.hash (65, hash_reference p, s)
+      | Class (p,s) -> Hashtbl.hash (66, hash_reference p, s)
+      | ClassType (p,s) -> Hashtbl.hash (67, hash_reference p, s)
+      | Method (p,s) -> Hashtbl.hash (68, hash_reference p, s)
+      | InstanceVariable (p,s) -> Hashtbl.hash (69, hash_reference p, s)
+      | Label (p,s) -> Hashtbl.hash (70, hash_reference p, s)
 
   module Resolved = struct
     open Identifier
 
     include Types.Resolved
 
-    let sexp_of_t sexp_of_a t = sexp_of_resolved sexp_of_a t
+    let sexp_of_t t = sexp_of_resolved t
 
-    let ident_module : 'a Identifier.module_ -> _ = function
+    let ident_module : Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
 
-    let ident_module_type : 'a Identifier.module_type -> _ = function
+    let ident_module_type : Identifier.module_type -> _ = function
       | ModuleType _ as x -> Identifier x
 
-    let ident_type : 'a Identifier.type_ -> _ = function
+    let ident_type : Identifier.type_ -> _ = function
       | Type _ | CoreType _ as x -> Identifier x
 
-    let ident_constructor : 'a Identifier.constructor -> _ = function
+    let ident_constructor : Identifier.constructor -> _ = function
       | Constructor _ as x -> Identifier x
 
-    let ident_field : 'a Identifier.field -> _ = function
+    let ident_field : Identifier.field -> _ = function
       | Field _ as x -> Identifier x
 
-    let ident_extension : 'a Identifier.extension -> _ = function
+    let ident_extension : Identifier.extension -> _ = function
       | Extension _ as x -> Identifier x
 
-    let ident_exception : 'a Identifier.exception_ -> _ = function
+    let ident_exception : Identifier.exception_ -> _ = function
       | Exception _ | CoreException _ as x -> Identifier x
 
-    let ident_value : 'a Identifier.value -> _ = function
+    let ident_value : Identifier.value -> _ = function
       | Value _ as x -> Identifier x
 
-    let ident_class : 'a Identifier.class_ -> _ = function
+    let ident_class : Identifier.class_ -> _ = function
       | Class _ as x -> Identifier x
 
-    let ident_class_type : 'a Identifier.class_type -> _ = function
+    let ident_class_type : Identifier.class_type -> _ = function
       | ClassType _ as x -> Identifier x
 
-    let ident_method : 'a Identifier.method_ -> _ = function
+    let ident_method : Identifier.method_ -> _ = function
       | Method _ as x -> Identifier x
 
-    let ident_instance_variable : 'a Identifier.instance_variable -> _ =
+    let ident_instance_variable : Identifier.instance_variable -> _ =
       function InstanceVariable _ as x -> Identifier x
 
-    let ident_label : 'a Identifier.label -> _ = function
+    let ident_label : Identifier.label -> _ = function
       | Label _ as x -> Identifier x
 
-    let ident_page : 'a Identifier.page -> _ = function
+    let ident_page : Identifier.page -> _ = function
       | Page _ as x -> Identifier x
 
-    let signature_of_module : 'a module_ -> _ = function
+    let signature_of_module : module_ -> _ = function
       | Identifier (Root _ | Module _ | Argument _)
       | SubstAlias _
       | Module _
       | Canonical _ as x -> x
 
-    let signature_of_module_type : 'a module_type -> _ = function
+    let signature_of_module_type : module_type -> _ = function
       | Identifier (ModuleType _) | ModuleType _ as x -> x
 
-    let class_signature_of_class : 'a class_ -> _ = function
+    let class_signature_of_class : class_ -> _ = function
       | Identifier (Class _) | Class _ as x -> x
 
-    let class_signature_of_class_type : 'a class_type -> _ = function
+    let class_signature_of_class_type : class_type -> _ = function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
-    let parent_of_signature : 'a signature -> _ = function
+    let parent_of_signature : signature -> _ = function
       | Identifier (Root _ | Module _ | Argument _ | ModuleType _)
       | SubstAlias _ | Module _ | ModuleType _ | Canonical _ as x -> x
 
-    let parent_of_class_signature : 'a class_signature -> _ =
+    let parent_of_class_signature : class_signature -> _ =
       function
       | Identifier (Class _ | ClassType _) | Class _ | ClassType _ as x -> x
 
-    let parent_of_datatype : 'a datatype -> _ = function
+    let parent_of_datatype : datatype -> _ = function
       | Identifier (Type _ |CoreType _) | Type _ as x -> x
 
-    let label_parent_of_parent : 'a parent -> 'a label_parent = function
+    let label_parent_of_parent : parent -> label_parent = function
       | Identifier (Root _ | Module _ | Argument _ | ModuleType _
                    |Type _ | CoreType _ | Class _ | ClassType _)
       | SubstAlias _ | Module _ | ModuleType _ | Canonical _
       | Type _ | Class _ | ClassType _ as x -> x
 
-    let label_parent_of_page : 'a page -> 'a label_parent = function
+    let label_parent_of_page : page -> label_parent = function
       | Identifier Page _ as x -> x
 
-    let any : type k. ('a, k) t -> 'a any = function
+    let any : type k. k t -> any = function
       | Identifier (Root _ ) as x -> x
       | Identifier (Page _ ) as x -> x
       | Identifier (Module _) as x -> x
@@ -1710,12 +1695,12 @@ module Reference = struct
       | InstanceVariable _ as x -> x
       | Label _ as x -> x
 
-    let open_module : 'b. 'a module_ -> ('a, [< kind > `Module ] as 'b) t =
+    let open_module : 'b. module_ -> ([< kind > `Module ] as 'b) t =
       function
       | Identifier (Root _ | Module _ | Argument _) | SubstAlias _
       | Module _ | Canonical _ as x -> x
 
-    let rec parent_signature_identifier : 'a signature -> 'a Identifier.signature =
+    let rec parent_signature_identifier : signature -> Identifier.signature =
       function
       | Identifier id -> id
       | SubstAlias(sub, _) -> Path.Resolved.parent_module_identifier sub
@@ -1725,19 +1710,19 @@ module Reference = struct
       | Canonical (r, _) -> parent_signature_identifier (open_module r)
       | ModuleType(m, s) -> ModuleType(parent_signature_identifier m, s)
 
-    let parent_type_identifier : 'a datatype -> 'a Identifier.datatype =
+    let parent_type_identifier : datatype -> Identifier.datatype =
       function
       | Identifier id -> id
       | Type(sg, s) -> Type(parent_signature_identifier sg, s)
 
     let parent_class_signature_identifier :
-      'a class_signature -> 'a Identifier.class_signature =
+      class_signature -> Identifier.class_signature =
       function
       | Identifier id -> id
       | Class(sg, s) -> Class(parent_signature_identifier sg, s)
       | ClassType(sg, s) -> ClassType(parent_signature_identifier sg, s)
 
-    let rec parent_identifier : 'a parent -> 'a Identifier.parent =
+    let rec parent_identifier : parent -> Identifier.parent =
       function
       | Identifier id -> id
       | SubstAlias(sub, _) ->
@@ -1752,7 +1737,7 @@ module Reference = struct
       | Class(sg, s) -> Class(parent_signature_identifier sg, s)
       | ClassType(sg, s) -> ClassType(parent_signature_identifier sg, s)
 
-    let rec label_parent_identifier : 'a label_parent -> 'a Identifier.label_parent =
+    let rec label_parent_identifier : label_parent -> Identifier.label_parent =
       function
       | Identifier id -> id
       | SubstAlias(sub, _) ->
@@ -1768,7 +1753,7 @@ module Reference = struct
       | Class(sg, s) -> Class(parent_signature_identifier sg, s)
       | ClassType(sg, s) -> ClassType(parent_signature_identifier sg, s)
 
-    let rec identifier: type k. ('a, k) t -> ('a, k) Identifier.t = function
+    let rec identifier: type k. k t -> k Identifier.t = function
       | Identifier id -> id
       | SubstAlias(_, p) -> identifier (open_module p)
       | Module(s, n) -> Module(parent_signature_identifier s, n)
@@ -1794,51 +1779,50 @@ module Reference = struct
         InstanceVariable(parent_class_signature_identifier s, n)
       | Label(s, n) -> Label (label_parent_identifier s, n)
 
-    let equal ~equal r1 r2 =
-      let rec loop : type k. ('a -> 'a -> bool) ->
-                              ('a, k) t -> ('a, k) t -> bool =
-        fun equal id1 id2 ->
+    let equal r1 r2 =
+      let rec loop : type k. k t -> k t -> bool =
+        fun id1 id2 ->
           match id1, id2 with
           | Identifier id1, Identifier id2 ->
-              Identifier.equal ~equal id1 id2
+              Identifier.equal id1 id2
           | Module(r1, s1), Module(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | ModuleType(r1, s1), ModuleType(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Type(r1, s1), Type(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Constructor(r1, s1), Constructor(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Field(r1, s1), Field(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Extension(r1, s1), Extension(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Exception(r1, s1), Exception(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Value(r1, s1), Value(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Class(r1, s1), Class(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | ClassType(r1, s1), ClassType(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Method(r1, s1), Method(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | InstanceVariable(r1, s1), InstanceVariable(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | Label(r1, s1), Label(r2, s2) ->
-              s1 = s2 && loop equal r1 r2
+              s1 = s2 && loop r1 r2
           | _, _ -> false
       in
-        loop equal r1 r2
+        loop r1 r2
 
-    let hash ~hash p = hash_resolved hash p
+    let hash p = hash_resolved p
 
-    type ('a, 'b) rebase_result =
-      | Stop of ('a, 'b) t
-      | Continue of ('a, 'b) Identifier.t * Reversed.t
+    type 'kind rebase_result =
+      | Stop of 'kind t
+      | Continue of 'kind Identifier.t * Reversed.t
 
     let rec rebase_module_reference :
-      Reversed.t -> 'a module_ -> ('a, Kind.reference_module) rebase_result =
+      Reversed.t -> module_ -> Kind.reference_module rebase_result =
       fun new_base t ->
         match t with
         | Identifier id ->
@@ -1870,7 +1854,7 @@ module Reference = struct
           end
 
     and rebase_signature_reference :
-      Reversed.t -> 'a signature -> ('a, Kind.signature) rebase_result =
+      Reversed.t -> signature -> Kind.signature rebase_result =
       fun new_base t ->
         match t with
         | Identifier id ->
@@ -1896,7 +1880,7 @@ module Reference = struct
           end
         | SubstAlias _ -> Stop t (* FIXME? *)
 
-    let rec rebase : type k. Reversed.t -> ('a, k) t -> ('a, k) t =
+    let rec rebase : type k. Reversed.t -> k t -> k t =
       fun new_base t ->
         match t with
         | Identifier _ -> t
@@ -1985,72 +1969,72 @@ module Reference = struct
 
   include Types.Reference
 
-  let ident_module : 'a Identifier.module_ -> _ = function
+  let ident_module : Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
 
-  let ident_module_type : 'a Identifier.module_type -> _ = function
+  let ident_module_type : Identifier.module_type -> _ = function
     | ModuleType _ as x -> Resolved (Identifier x)
 
-  let ident_type : 'a Identifier.type_ -> _ = function
+  let ident_type : Identifier.type_ -> _ = function
     | Type _ | CoreType _ as x -> Resolved (Identifier x)
 
-  let ident_constructor : 'a Identifier.constructor -> _ = function
+  let ident_constructor : Identifier.constructor -> _ = function
     | Constructor _ as x -> Resolved (Identifier x)
 
-  let ident_field : 'a Identifier.field -> _ = function
+  let ident_field : Identifier.field -> _ = function
     | Field _ as x -> Resolved (Identifier x)
 
-  let ident_extension : 'a Identifier.extension -> _ = function
+  let ident_extension : Identifier.extension -> _ = function
     | Extension _ as x -> Resolved (Identifier x)
 
-  let ident_exception : 'a Identifier.exception_ -> _ = function
+  let ident_exception : Identifier.exception_ -> _ = function
     | Exception _ | CoreException _ as x -> Resolved (Identifier x)
 
-  let ident_value : 'a Identifier.value -> _ = function
+  let ident_value : Identifier.value -> _ = function
     | Value _ as x -> Resolved (Identifier x)
 
-  let ident_class : 'a Identifier.class_ -> _ = function
+  let ident_class : Identifier.class_ -> _ = function
     | Class _ as x -> Resolved (Identifier x)
 
-  let ident_class_type : 'a Identifier.class_type -> _ = function
+  let ident_class_type : Identifier.class_type -> _ = function
     | ClassType _ as x -> Resolved (Identifier x)
 
-  let ident_method : 'a Identifier.method_ -> _ = function
+  let ident_method : Identifier.method_ -> _ = function
     | Method _ as x -> Resolved (Identifier x)
 
-  let ident_instance_variable : 'a Identifier.instance_variable -> _ =
+  let ident_instance_variable : Identifier.instance_variable -> _ =
     function InstanceVariable _ as x -> Resolved (Identifier x)
 
-  let ident_label : 'a Identifier.label -> _ = function
+  let ident_label : Identifier.label -> _ = function
     | Label _ as x -> Resolved (Identifier x)
 
-  let signature_of_module : 'a module_ -> 'a signature = function
+  let signature_of_module : module_ -> signature = function
     | Resolved (Identifier (Root _ | Module _ | Argument _)
                | SubstAlias _ | Module _ | Canonical _)
     | Root (_, (TUnknown | TModule))
     | Dot (_, _)
     | Module (_,_) as x -> x
 
-  let signature_of_module_type : 'a module_type -> 'a signature = function
+  let signature_of_module_type : module_type -> signature = function
     | Resolved (Identifier (ModuleType _) | ModuleType _)
     | Root (_, (TUnknown | TModuleType))
     | Dot (_, _)
     | ModuleType (_,_) as x -> x
 
-  let class_signature_of_class : 'a class_ -> 'a class_signature = function
+  let class_signature_of_class : class_ -> class_signature = function
     | Resolved (Identifier (Class _) | Class _)
     | Root (_, (TUnknown | TClass))
     | Dot (_, _)
     | Class (_,_) as x -> x
 
-  let class_signature_of_class_type : 'a class_type -> 'a class_signature = function
+  let class_signature_of_class_type : class_type -> class_signature = function
     | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
     | Root (_, (TUnknown | TClass | TClassType))
     | Dot (_, _)
     | Class (_,_)
     | ClassType (_,_) as x -> x
 
-  let parent_of_signature : 'a signature -> 'a parent = function
+  let parent_of_signature : signature -> parent = function
     | Resolved (Identifier (Root _ | Module _ | Argument _ | ModuleType _)
                | SubstAlias _ | Module _ | ModuleType _ | Canonical _)
     | Root (_, (TUnknown | TModule | TModuleType))
@@ -2058,20 +2042,20 @@ module Reference = struct
     | Module (_,_)
     | ModuleType (_,_) as x -> x
 
-  let parent_of_class_signature : 'a class_signature -> 'a parent = function
+  let parent_of_class_signature : class_signature -> parent = function
     | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _)
     | Root  (_, (TUnknown | TClass | TClassType))
     | Dot (_, _)
     | Class (_,_)
     | ClassType (_,_) as x -> x
 
-  let parent_of_datatype : 'a datatype -> 'a parent = function
+  let parent_of_datatype : datatype -> parent = function
     | Resolved (Identifier (Type _ | CoreType _) | Type _)
     | Root (_, (TUnknown | TType))
     | Dot (_, _)
     | Type (_,_) as x -> x
 
-  let label_parent_of_parent : 'a parent -> 'a label_parent = function
+  let label_parent_of_parent : parent -> label_parent = function
     | Resolved (Identifier (Root _ | Module _ | Argument _ | ModuleType _
                            |Type _ | CoreType _ | Class _ | ClassType _)
                | SubstAlias _ | Module _ | ModuleType _ | Canonical _
@@ -2085,7 +2069,7 @@ module Reference = struct
     | ClassType (_,_)
       as x -> x
 
-  let any : type k. ('a, k) t -> 'a any = function
+  let any : type k. k t -> any = function
     | Resolved (Identifier (Root _)) as x -> x
     | Resolved (Identifier (Page _)) as x -> x
     | Resolved (Identifier (Module _)) as x -> x
@@ -2214,45 +2198,44 @@ module Reference = struct
     | Resolved p -> Resolved (Label(p, arg))
     | p -> Label(p, arg)
 
-  let equal ~equal r1 r2 =
-    let rec loop : type k. ('a -> 'a -> bool) ->
-                            ('a, k) t -> ('a, k) t -> bool =
-      fun equal r1 r2 ->
+  let equal r1 r2 =
+    let rec loop : type k. k t -> k t -> bool =
+      fun r1 r2 ->
         match r1, r2 with
         | Resolved r1, Resolved r2 ->
-            Resolved.equal ~equal r1 r2
+            Resolved.equal r1 r2
         | Root (s1, k1), Root (s2, k2) ->
             s1 = s2 && k1 = k2
         | Dot(r1, s1), Dot(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Module(r1, s1), Module(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | ModuleType(r1, s1), ModuleType(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Type(r1, s1), Type(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Constructor(r1, s1), Constructor(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Field(r1, s1), Field(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Extension(r1, s1), Extension(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Exception(r1, s1), Exception(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Class(r1, s1), Class(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | ClassType(r1, s1), ClassType(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Method(r1, s1), Method(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | InstanceVariable(r1, s1), InstanceVariable(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | Label(r1, s1), Label(r2, s2) ->
-            s1 = s2 && loop equal r1 r2
+            s1 = s2 && loop r1 r2
         | _, _ -> false
     in
-      loop equal r1 r2
+      loop r1 r2
 
-  let hash ~hash p = hash_reference hash p
+  let hash p = hash_reference p
 
 end

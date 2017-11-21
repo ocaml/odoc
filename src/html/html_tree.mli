@@ -76,21 +76,21 @@ module Relative_link : sig
   module Id : sig
     exception Not_linkable
 
-    val href : get_package:('a -> string) -> stop_before:bool ->
-      ('a, _) Identifier.t -> string
+    val href : get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
+      _ Identifier.t -> string
   end
 
-  val of_path : get_package:('a -> string) -> stop_before:bool -> ('a, _) Path.t
+  val of_path : get_package:(Doc_model.Root.t -> string) -> stop_before:bool -> _ Path.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
-  val of_fragment : get_package:('a -> string) -> base:'a Identifier.signature
-    -> ('a, _, Fragment.sort) Fragment.raw
+  val of_fragment : get_package:(Doc_model.Root.t -> string) -> base:Identifier.signature
+    -> (_, Fragment.sort) Fragment.raw
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
   val to_sub_element : kind:kind -> string -> [> `Href ] attrib
 end
 
-val render_fragment : (_, _, Fragment.sort) Fragment.raw -> string
+val render_fragment : (_, Fragment.sort) Fragment.raw -> string
 
 (* TODO: move to a centralized [State] module or something. Along with
    Relative_link.semantic_uris. *)

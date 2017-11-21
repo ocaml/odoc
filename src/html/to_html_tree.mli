@@ -15,8 +15,11 @@
  *)
 
 val unit :
-  get_package:('a -> string) -> 'a Doc_model.Types.Compilation_unit.t ->
+  get_package:(Doc_model.Root.t -> string) ->
+  Doc_model.Types.Compilation_unit.t ->
     Html_tree.t
 
 val page :
-  get_package:('a -> string) -> 'a Doc_model.Types.Page.t -> Html_tree.t
+  get_package:(Doc_model.Root.t -> string) ->
+  Doc_model.Types.Page.t ->
+    Html_tree.t

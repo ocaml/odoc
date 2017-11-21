@@ -16,18 +16,18 @@
 
 open Model
 
-type 'a resolver
+type resolver
 
 (** Lazily extract the components of units. Assumes that it is safe to
     use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
-val build_resolver: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a Component_table.lookup_unit_result)
-  -> ('a -> 'a Compilation_unit.t)
-  -> (string -> 'a option) -> ('a -> 'a Page.t)
-  -> 'a resolver
+val build_resolver: ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
+  -> (string -> Component_table.lookup_unit_result)
+  -> (Root.t -> Compilation_unit.t)
+  -> (string -> Root.t option) -> (Root.t -> Page.t)
+  -> resolver
 
 (** Try to resolve all paths and references within a unit. *)
-val resolve : 'a resolver -> 'a Compilation_unit.t -> 'a Compilation_unit.t
+val resolve : resolver -> Compilation_unit.t -> Compilation_unit.t
 
 (** Try to resolve all paths and references within a page. *)
-val resolve_page : 'a resolver -> 'a Page.t -> 'a Page.t
+val resolve_page : resolver -> Page.t -> Page.t

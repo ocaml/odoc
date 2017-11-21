@@ -20,89 +20,89 @@ open Model
 (** {3 Tables} *)
 
 (** The type of tables of components *)
-type 'a t
+type t
 
 (* FIXME: use different types for unit and page lookups. *)
-type 'a lookup_unit_result =
+type lookup_unit_result =
   | Forward_reference
-  | Found of { root : 'a; hidden : bool }
+  | Found of { root : Root.t; hidden : bool }
   | Not_found
 
 (** Create a table of the components of units. Optionally provide
     equality and hash functons. *)
-val create: ?equal:('a -> 'a -> bool) -> ?hash:('a -> int) ->
-  (string -> 'a lookup_unit_result) -> ('a -> 'a Compilation_unit.t) ->
-  (string -> 'a option) -> ('a -> 'a Page.t) ->
-  'a t
+val create: ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int) ->
+  (string -> lookup_unit_result) -> (Root.t -> Compilation_unit.t) ->
+  (string -> Root.t option) -> (Root.t -> Page.t) ->
+  t
 
 open Components
 
 (** {3 Identifier Lookup} *)
 
 (** Lookup the components of a signature identifier *)
-val signature_identifier : 'a t -> 'a Identifier.signature -> 'a Sig.t
+val signature_identifier : t -> Identifier.signature -> Sig.t
 
 (** Lookup the components of a class signature identifier *)
-val class_signature_identifier : 'a t -> 'a Identifier.class_signature ->
-      'a ClassSig.t
+val class_signature_identifier : t -> Identifier.class_signature ->
+      ClassSig.t
 
 (** Lookup the components of a datatype identifier *)
-val datatype_identifier : 'a t -> 'a Identifier.type_ -> 'a Datatype.t
+val datatype_identifier : t -> Identifier.type_ -> Datatype.t
 
 (** {3 Path Lookup} *)
 
 (** Lookup the components of a resolved module path *)
-val resolved_module_path : 'a t -> 'a Path.Resolved.module_ -> 'a Sig.t
+val resolved_module_path : t -> Path.Resolved.module_ -> Sig.t
 
 (** Lookup the components of a resolved module type path *)
-val resolved_module_type_path : 'a t -> 'a Path.Resolved.module_type -> 'a Sig.t
+val resolved_module_type_path : t -> Path.Resolved.module_type -> Sig.t
 
 (** Lookup the components of a resolved class type path *)
-val resolved_class_type_path : 'a t ->
-      'a Path.Resolved.class_type -> 'a ClassSig.t
+val resolved_class_type_path : t ->
+      Path.Resolved.class_type -> ClassSig.t
 
 (** Lookup the components of a module path, needed for module
     applications. *)
-val module_path : 'a t -> 'a Path.module_ -> 'a Sig.t
+val module_path : t -> Path.module_ -> Sig.t
 
 (** {3 Fragment Lookup} *)
 
 (** Table specialised to lookup fragments based on a module expression
     or path. *)
-type 'a with_
+type with_
 
 (** Create specialised fragment table for a module type expression *)
-val module_type_expr_with : 'a t ->
-      'a Identifier.signature -> 'a ModuleType.expr -> 'a with_
+val module_type_expr_with : t ->
+      Identifier.signature -> ModuleType.expr -> with_
 
 (** Create specialised fragment table for a module path *)
-val module_type_path_with : 'a t ->
-      'a Path.module_type -> 'a with_
+val module_type_path_with : t ->
+      Path.module_type -> with_
 
 (** Lookup the components of a resolved module fragment *)
-val resolved_signature_fragment : 'a with_ ->
-      'a Fragment.Resolved.signature -> 'a Sig.t
+val resolved_signature_fragment : with_ ->
+      Fragment.Resolved.signature -> Sig.t
 
 (** {3 Reference Lookup} *)
 
 (** Lookup the components of a resolved signature reference *)
-val resolved_signature_reference : 'a t ->
-      'a Reference.Resolved.signature -> 'a Sig.t
+val resolved_signature_reference : t ->
+      Reference.Resolved.signature -> Sig.t
 
 (** Lookup the components of a resolved class signature reference *)
-val resolved_class_signature_reference : 'a t ->
-      'a Reference.Resolved.class_signature -> 'a ClassSig.t
+val resolved_class_signature_reference : t ->
+      Reference.Resolved.class_signature -> ClassSig.t
 
 (** Lookup the components of a resolved datatype reference *)
-val resolved_datatype_reference : 'a t ->
-  'a Reference.Resolved.datatype -> 'a Datatype.t
+val resolved_datatype_reference : t ->
+  Reference.Resolved.datatype -> Datatype.t
 
-val resolved_page_reference : 'a t -> 'a Reference.Resolved.page -> 'a Page.t
+val resolved_page_reference : t -> Reference.Resolved.page -> Page.t
 
 (** {3 Root lookup} *)
 
 (** Lookup the base of a unit name *)
-val base : 'a t -> string -> 'a lookup_unit_result
+val base : t -> string -> lookup_unit_result
 
 (** Lookup the base of a page name *)
-val page_base : 'a t -> string -> 'a option
+val page_base : t -> string -> Root.t option

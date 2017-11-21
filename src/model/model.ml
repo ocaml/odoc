@@ -33,8 +33,8 @@ module rec Documentation : sig
     | Subscript
     | Custom of string
 
-  type 'a reference =
-    | Element of 'a Reference.any
+  type reference =
+    | Element of Reference.any
     | Link of string
     | Custom of string * string
 
@@ -43,38 +43,38 @@ module rec Documentation : sig
     | File of string
     | Doc of string
 
-  type 'a text = 'a text_element list
+  type text = text_element list
 
-  and 'a text_element =
+  and text_element =
     | Raw of string
     | Code of string
     | PreCode of string
     | Verbatim of string
-    | Style of style * 'a text
-    | List of 'a text list
-    | Enum of 'a text list
+    | Style of style * text
+    | List of text list
+    | Enum of text list
     | Newline
-    | Title of int * 'a Identifier.label option * 'a text
-    | Reference of 'a reference * 'a text option
+    | Title of int * Identifier.label option * text
+    | Reference of reference * text option
     | Target of string option * string
-    | Special of 'a special
+    | Special of special
 
-  and 'a tag =
+  and tag =
     | Author of string
     | Version of string
-    | See of see * 'a text
+    | See of see * text
     | Since of string
-    | Before of string * 'a text
-    | Deprecated of 'a text
-    | Param of string * 'a text
-    | Raise of string * 'a text
-    | Return of 'a text
+    | Before of string * text
+    | Deprecated of text
+    | Param of string * text
+    | Raise of string * text
+    | Return of text
     | Inline
-    | Tag of string * 'a text
-    | Canonical of 'a Path.module_ * 'a Reference.module_
+    | Tag of string * text
+    | Canonical of Path.module_ * Reference.module_
 
-  and 'a special =
-    | Modules of ('a Reference.module_ * 'a text) list
+  and special =
+    | Modules of (Reference.module_ * text) list
     | Index
 
 
@@ -105,24 +105,24 @@ module rec Documentation : sig
 
     end
 
-    type 'a t =
-      { origin: 'a Identifier.any; (** TODO remove this *)
+    type t =
+      { origin: Identifier.any; (** TODO remove this *)
         offset: Offset.t;
         location: Location.t option;
         message: string; }
 
   end
 
-  type 'a body =
-    { text: 'a text;
-      tags: 'a tag list; }
+  type body =
+    { text: text;
+      tags: tag list; }
 
-  type 'a t =
-    | Ok of 'a body
-    | Error of 'a Error.t
+  type t =
+    | Ok of body
+    | Error of Error.t
 
-  type 'a comment =
-    | Documentation of 'a t
+  type comment =
+    | Documentation of t
     | Stop
 
 end = Documentation
@@ -131,38 +131,38 @@ end = Documentation
 
 module rec Module : sig
 
-  type 'a expansion =
+  type expansion =
     | AlreadyASig
-    | Signature of 'a Signature.t
-    | Functor of 'a FunctorArgument.t option list * 'a Signature.t
+    | Signature of Signature.t
+    | Functor of FunctorArgument.t option list * Signature.t
 
-  type 'a decl =
-    | Alias of 'a Path.module_
-    | ModuleType of 'a ModuleType.expr
+  type decl =
+    | Alias of Path.module_
+    | ModuleType of ModuleType.expr
 
-  type 'a t =
-    { id: 'a Identifier.module_;
-      doc: 'a Documentation.t;
-      type_: 'a decl;
-      canonical : ('a Path.module_ * 'a Reference.module_) option;
+  type t =
+    { id: Identifier.module_;
+      doc: Documentation.t;
+      type_: decl;
+      canonical : (Path.module_ * Reference.module_) option;
       hidden : bool;
-      display_type : 'a decl option;
-      expansion: 'a expansion option;
+      display_type : decl option;
+      expansion: expansion option;
     }
 
   module Equation : sig
 
-    type 'a t = 'a decl
+    type t = decl
 
   end
 
 end = Module
 
 and FunctorArgument : sig
-  type 'a t = {
-    id : 'a Identifier.module_;
-    expr : 'a ModuleType.expr;
-    expansion: 'a Module.expansion option;
+  type t = {
+    id : Identifier.module_;
+    expr : ModuleType.expr;
+    expansion: Module.expansion option;
   }
 end = FunctorArgument
 
@@ -170,24 +170,24 @@ end = FunctorArgument
 
 and ModuleType : sig
 
-  type 'a substitution =
-    | ModuleEq of 'a Fragment.module_ * 'a Module.Equation.t
-    | TypeEq of 'a Fragment.type_ * 'a TypeDecl.Equation.t
-    | ModuleSubst of 'a Fragment.module_ * 'a Path.module_
-    | TypeSubst of 'a Fragment.type_ * string list * 'a Path.type_
+  type substitution =
+    | ModuleEq of Fragment.module_ * Module.Equation.t
+    | TypeEq of Fragment.type_ * TypeDecl.Equation.t
+    | ModuleSubst of Fragment.module_ * Path.module_
+    | TypeSubst of Fragment.type_ * string list * Path.type_
 
-  type 'a expr =
-    | Path of 'a Path.module_type
-    | Signature of 'a Signature.t
-    | Functor of 'a FunctorArgument.t option * 'a expr
-    | With of 'a expr * 'a substitution list
-    | TypeOf of 'a Module.decl
+  type expr =
+    | Path of Path.module_type
+    | Signature of Signature.t
+    | Functor of FunctorArgument.t option * expr
+    | With of expr * substitution list
+    | TypeOf of Module.decl
 
-  type 'a t =
-    { id: 'a Identifier.module_type;
-      doc: 'a Documentation.t;
-      expr: 'a expr option;
-      expansion: 'a Module.expansion option;
+  type t =
+    { id: Identifier.module_type;
+      doc: Documentation.t;
+      expr: expr option;
+      expansion: Module.expansion option;
     }
 
 end = ModuleType
@@ -196,36 +196,36 @@ end = ModuleType
 
 and Signature : sig
 
-  type 'a item =
-    | Module of 'a Module.t
-    | ModuleType of 'a ModuleType.t
-    | Type of 'a TypeDecl.t
-    | TypExt of 'a Extension.t
-    | Exception of 'a Exception.t
-    | Value of 'a Value.t
-    | External of 'a External.t
-    | Class of 'a Class.t
-    | ClassType of 'a ClassType.t
-    | Include of 'a Include.t
-    | Comment of 'a Documentation.comment
+  type item =
+    | Module of Module.t
+    | ModuleType of ModuleType.t
+    | Type of TypeDecl.t
+    | TypExt of Extension.t
+    | Exception of Exception.t
+    | Value of Value.t
+    | External of External.t
+    | Class of Class.t
+    | ClassType of ClassType.t
+    | Include of Include.t
+    | Comment of Documentation.comment
 
-  type 'a t = 'a item list
+  type t = item list
 
 end = Signature
 
 (** {3 Includes} *)
 
 and Include : sig
-  type 'a expansion = {
+  type expansion = {
     resolved: bool;
-    content: 'a Signature.t;
+    content: Signature.t;
   }
 
-  type 'a t =
-    { parent: 'a Identifier.signature;
-      doc: 'a Documentation.t;
-      decl: 'a Module.decl;
-      expansion: 'a expansion; }
+  type t =
+    { parent: Identifier.signature;
+      doc: Documentation.t;
+      decl: Module.decl;
+      expansion: expansion; }
 
 end = Include
 
@@ -235,33 +235,33 @@ and TypeDecl : sig
 
   module Field : sig
 
-    type 'a t =
-      { id: 'a Identifier.field;
-        doc: 'a Documentation.t;
+    type t =
+      { id: Identifier.field;
+        doc: Documentation.t;
         mutable_ : bool;
-        type_: 'a TypeExpr.t; }
+        type_: TypeExpr.t; }
 
   end
 
   module Constructor : sig
-    type 'a argument =
-      | Tuple  of 'a TypeExpr.t list
-      | Record of 'a Field.t list
+    type argument =
+      | Tuple of TypeExpr.t list
+      | Record of Field.t list
 
-    type 'a t =
-      { id: 'a Identifier.constructor;
-        doc: 'a Documentation.t;
-        args: 'a argument;
-        res: 'a TypeExpr.t option; }
+    type t =
+      { id: Identifier.constructor;
+        doc: Documentation.t;
+        args: argument;
+        res: TypeExpr.t option; }
 
   end
 
 
   module Representation : sig
 
-    type 'a t =
-      | Variant of 'a Constructor.t list
-      | Record of 'a Field.t list
+    type t =
+      | Variant of Constructor.t list
+      | Record of Field.t list
       | Extensible
 
   end
@@ -278,19 +278,19 @@ and TypeDecl : sig
 
   module Equation : sig
 
-    type 'a t =
+    type t =
       { params: param list;
         private_: bool;
-        manifest: 'a TypeExpr.t option;
-        constraints: ('a TypeExpr.t * 'a TypeExpr.t) list; }
+        manifest: TypeExpr.t option;
+        constraints: (TypeExpr.t * TypeExpr.t) list; }
 
   end
 
-  type 'a t =
-    { id: 'a Identifier.type_;
-      doc: 'a Documentation.t;
-      equation: 'a Equation.t;
-      representation: 'a Representation.t option; }
+  type t =
+    { id: Identifier.type_;
+      doc: Documentation.t;
+      equation: Equation.t;
+      representation: Representation.t option; }
 
 end = TypeDecl
 
@@ -300,31 +300,31 @@ and Extension : sig
 
   module Constructor : sig
 
-    type 'a t =
-      { id: 'a Identifier.extension;
-        doc: 'a Documentation.t;
-        args: 'a TypeDecl.Constructor.argument;
-        res: 'a TypeExpr.t option; }
+    type t =
+      { id: Identifier.extension;
+        doc: Documentation.t;
+        args: TypeDecl.Constructor.argument;
+        res: TypeExpr.t option; }
 
   end
 
-  type 'a t =
-    { type_path: 'a Path.type_;
-      doc: 'a Documentation.t;
+  type t =
+    { type_path: Path.type_;
+      doc: Documentation.t;
       type_params: TypeDecl.param list;
       private_: bool;
-      constructors: 'a Constructor.t list; }
+      constructors: Constructor.t list; }
 
 end = Extension
 
 (** {3 Exception} *)
 and Exception : sig
 
-  type 'a t =
-    { id: 'a Identifier.exception_;
-      doc: 'a Documentation.t;
-      args: 'a TypeDecl.Constructor.argument;
-      res: 'a TypeExpr.t option; }
+  type t =
+    { id: Identifier.exception_;
+      doc: Documentation.t;
+      args: TypeDecl.Constructor.argument;
+      res: TypeExpr.t option; }
 
 end = Exception
 
@@ -333,10 +333,10 @@ end = Exception
 
 and Value : sig
 
-  type 'a t =
-    { id: 'a Identifier.value;
-      doc: 'a Documentation.t;
-      type_: 'a TypeExpr.t; }
+  type t =
+    { id: Identifier.value;
+      doc: Documentation.t;
+      type_: TypeExpr.t; }
 
 end = Value
 
@@ -344,10 +344,10 @@ end = Value
 
 and External : sig
 
-  type 'a t =
-    { id: 'a Identifier.value;
-      doc: 'a Documentation.t;
-      type_: 'a TypeExpr.t;
+  type t =
+    { id: Identifier.value;
+      doc: Documentation.t;
+      type_: TypeExpr.t;
       primitives: string list; }
 
 end = External
@@ -356,17 +356,17 @@ end = External
 
 and Class : sig
 
-  type 'a decl =
-    | ClassType of 'a ClassType.expr
-    | Arrow of TypeExpr.label option * 'a TypeExpr.t * 'a decl
+  type decl =
+    | ClassType of ClassType.expr
+    | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
-  type 'a t =
-    { id: 'a Identifier.class_;
-      doc: 'a Documentation.t;
+  type t =
+    { id: Identifier.class_;
+      doc: Documentation.t;
       virtual_: bool;
       params: TypeDecl.param list;
-      type_: 'a decl;
-      expansion: 'a ClassSignature.t option; }
+      type_: decl;
+      expansion: ClassSignature.t option; }
 
 end = Class
 
@@ -374,17 +374,17 @@ end = Class
 
 and ClassType : sig
 
-  type 'a expr =
-    | Constr of 'a Path.class_type * 'a TypeExpr.t list
-    | Signature of 'a ClassSignature.t
+  type expr =
+    | Constr of Path.class_type * TypeExpr.t list
+    | Signature of ClassSignature.t
 
-  type 'a t =
-    { id: 'a Identifier.class_type;
-      doc: 'a Documentation.t;
+  type t =
+    { id: Identifier.class_type;
+      doc: Documentation.t;
       virtual_: bool;
       params: TypeDecl.param list;
-      expr: 'a expr;
-      expansion: 'a ClassSignature.t option; }
+      expr: expr;
+      expansion: ClassSignature.t option; }
 
 end = ClassType
 
@@ -392,16 +392,16 @@ end = ClassType
 
 and ClassSignature : sig
 
-  type 'a item =
-    | Method of 'a Method.t
-    | InstanceVariable of 'a InstanceVariable.t
-    | Constraint of 'a TypeExpr.t * 'a TypeExpr.t
-    | Inherit of 'a ClassType.expr
-    | Comment of 'a Documentation.comment
+  type item =
+    | Method of Method.t
+    | InstanceVariable of InstanceVariable.t
+    | Constraint of TypeExpr.t * TypeExpr.t
+    | Inherit of ClassType.expr
+    | Comment of Documentation.comment
 
-  type 'a t =
-    { self: 'a TypeExpr.t option;
-      items: 'a item list; }
+  type t =
+    { self: TypeExpr.t option;
+      items: item list; }
 
 end = ClassSignature
 
@@ -409,12 +409,12 @@ end = ClassSignature
 
 and Method : sig
 
-  type 'a t =
-    { id: 'a Identifier.method_;
-      doc: 'a Documentation.t;
+  type t =
+    { id: Identifier.method_;
+      doc: Documentation.t;
       private_: bool;
       virtual_: bool;
-      type_: 'a TypeExpr.t; }
+      type_: TypeExpr.t; }
 
 end = Method
 
@@ -422,12 +422,12 @@ end = Method
 
 and InstanceVariable : sig
 
-  type 'a t =
-    { id: 'a Identifier.instance_variable;
-      doc: 'a Documentation.t;
+  type t =
+    { id: Identifier.instance_variable;
+      doc: Documentation.t;
       mutable_: bool;
       virtual_: bool;
-      type_: 'a TypeExpr.t; }
+      type_: TypeExpr.t; }
 
 end = InstanceVariable
 
@@ -442,35 +442,35 @@ and TypeExpr : sig
       | Closed of string list
       | Open
 
-    type 'a element =
-      | Type of 'a TypeExpr.t
-      | Constructor of string * bool * 'a TypeExpr.t list
+    type element =
+      | Type of TypeExpr.t
+      | Constructor of string * bool * TypeExpr.t list
 
-    type 'a t =
+    type t =
       { kind: kind;
-        elements: 'a element list;}
+        elements: element list;}
 
   end
 
   module Object : sig
 
-    type 'a method_ =
+    type method_ =
       { name: string;
-        type_: 'a TypeExpr.t; }
+        type_: TypeExpr.t; }
 
-    type 'a t =
-      { methods: 'a method_ list;
+    type t =
+      { methods: method_ list;
         open_ : bool; }
 
   end
 
   module Package : sig
 
-    type 'a substitution = 'a Fragment.type_ * 'a TypeExpr.t
+    type substitution = Fragment.type_ * TypeExpr.t
 
-    type 'a t =
-      { path: 'a Path.module_type;
-        substitutions: 'a substitution list; }
+    type t =
+      { path: Path.module_type;
+        substitutions: substitution list; }
 
   end
 
@@ -478,18 +478,18 @@ and TypeExpr : sig
     | Label of string
     | Optional of string
 
-  type 'a t =
+  type t =
     | Var of string
     | Any
-    | Alias of 'a t * string
-    | Arrow of label option * 'a t * 'a t
-    | Tuple of 'a t list
-    | Constr of 'a Path.type_ * 'a t list
-    | Variant of 'a TypeExpr.Variant.t
-    | Object of 'a TypeExpr.Object.t
-    | Class of 'a Path.class_type * 'a t list
-    | Poly of string list * 'a t
-    | Package of 'a TypeExpr.Package.t
+    | Alias of t * string
+    | Arrow of label option * t * t
+    | Tuple of t list
+    | Constr of Path.type_ * t list
+    | Variant of TypeExpr.Variant.t
+    | Object of TypeExpr.Object.t
+    | Class of Path.class_type * t list
+    | Poly of string list * t
+    | Package of TypeExpr.Package.t
 
 end = TypeExpr
 
@@ -499,15 +499,15 @@ module rec Compilation_unit : sig
 
   module Import : sig
 
-    type 'a t =
+    type t =
       | Unresolved of string * Digest.t option
-      | Resolved of 'a
+      | Resolved of Root.t
 
   end
 
   module Source : sig
 
-    type 'a t =
+    type t =
       { file: string;
         build_dir: string;
         digest: Digest.t; }
@@ -516,34 +516,34 @@ module rec Compilation_unit : sig
 
   module Packed : sig
 
-    type 'a item =
-      { id: 'a Identifier.module_;
-        path: 'a Path.module_; }
+    type item =
+      { id: Identifier.module_;
+        path: Path.module_; }
 
-    type 'a t = 'a item list
+    type t = item list
 
   end
 
-  type 'a content =
-    | Module of 'a Signature.t
-    | Pack of 'a Packed.t
+  type content =
+    | Module of Signature.t
+    | Pack of Packed.t
 
-  type 'a t =
-    { id: 'a Identifier.module_;
-      doc: 'a Documentation.t;
+  type t =
+    { id: Identifier.module_;
+      doc: Documentation.t;
       digest: Digest.t;
-      imports: 'a Import.t list;
-      source: 'a Source.t option;
+      imports: Import.t list;
+      source: Source.t option;
       interface: bool;
       hidden: bool;
-      content: 'a content;
-      expansion: 'a Signature.t option; }
+      content: content;
+      expansion: Signature.t option; }
 
 end = Compilation_unit
 
 module rec Page : sig
-  type 'a t =
-    { name: 'a Identifier.page;
-      content: 'a Documentation.t;
+  type t =
+    { name: Identifier.page;
+      content: Documentation.t;
       digest: Digest.t; }
 end = Page

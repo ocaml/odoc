@@ -18,12 +18,12 @@ type 'a result =
   | Ok of 'a
   | Error of Xmlm.pos option * Xmlm.pos * string
 
-type 'a parser =
-  { unit_file : Xmlm.input -> 'a Doc_model.Types.Compilation_unit.t result;
-    unit :  Xmlm.input -> 'a Doc_model.Types.Compilation_unit.t result;
-    page_file : Xmlm.input -> 'a Doc_model.Types.Page.t result;
-    page :  Xmlm.input -> 'a Doc_model.Types.Page.t result;
-    text : Xmlm.input -> 'a Doc_model.Types.Documentation.text result; }
+type parser =
+  { unit_file : Xmlm.input -> Doc_model.Types.Compilation_unit.t result;
+    unit :  Xmlm.input -> Doc_model.Types.Compilation_unit.t result;
+    page_file : Xmlm.input -> Doc_model.Types.Page.t result;
+    page :  Xmlm.input -> Doc_model.Types.Page.t result;
+    text : Xmlm.input -> Doc_model.Types.Documentation.text result; }
 
 exception LexerError of Xmlm.pos * Xmlm.pos * string
 
@@ -42,8 +42,8 @@ let position (l, c) =
            pos_bol = -1;
            pos_cnum = c; }
 
-let build (type base) (input_base : Xmlm.input -> base) =
-  let module Parser = Generated_parser.Make(struct type t = base end) in
+let build (input_base : Xmlm.input -> Doc_model.Root.t) =
+  let module Parser = Generated_parser in
   let plain_tags = Hashtbl.create 113 in
     Hashtbl.add plain_tags "alias" Parser.ALIAS;
     Hashtbl.add plain_tags "any" Parser.ANY;

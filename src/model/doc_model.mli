@@ -28,8 +28,8 @@ module Types = Model
 
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
-type 'root read_result =
-  ('root Model.Compilation_unit.t, read_error) result
+type read_result =
+  (Model.Compilation_unit.t, read_error) result
 
 and read_error = private
   | Not_an_interface
@@ -39,66 +39,64 @@ and read_error = private
   | Not_an_implementation
 
 val read_cmti :
-  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
   filename:string ->
-    'root read_result
+    read_result
 
 val read_cmt :
-  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
   filename:string ->
-    'root read_result
+    read_result
 
 val read_cmi :
-  make_root:(module_name:string -> digest:Digest.t -> 'root) ->
+  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
   filename:string ->
-    'root read_result
+    read_result
 
 (** {2:resolving Resolving}
 
     This is the part of DocOck handling the resolving of path and references. *)
 
-type 'a resolver
+type resolver
 
-type 'a lookup_result =
+type lookup_result =
   | Forward_reference
-  | Found of { root : 'a; hidden : bool }
+  | Found of { root : Root.t; hidden : bool }
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
-val build_resolver : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a lookup_result) -> ('a -> 'a Model.Compilation_unit.t)
-  -> (string -> 'a option) -> ('a -> 'a Model.Page.t)
-  -> 'a resolver
+val build_resolver : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
+  -> (string -> lookup_result) -> (Root.t -> Model.Compilation_unit.t)
+  -> (string -> Root.t option) -> (Root.t -> Model.Page.t)
+  -> resolver
 
-val resolve :
-  'a resolver -> 'a Model.Compilation_unit.t -> 'a Model.Compilation_unit.t
+val resolve : resolver -> Model.Compilation_unit.t -> Model.Compilation_unit.t
 
-val resolve_page : 'a resolver -> 'a Model.Page.t -> 'a Model.Page.t
+val resolve_page : resolver -> Model.Page.t -> Model.Page.t
 
 (** {2:expansion Expansion}
 
     This is the part of DocOck in charge of performing substitutions, inlining
     of includes, etc. *)
 
-type 'a expander
+type expander
 
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
-val build_expander : ?equal:('a -> 'a -> bool) -> ?hash:('a -> int)
-  -> (string -> 'a lookup_result)
-  -> (root:'a -> 'a -> 'a Model.Compilation_unit.t)
-  -> 'a expander
+val build_expander : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
+  -> (string -> lookup_result)
+  -> (root:Root.t -> Root.t -> Model.Compilation_unit.t)
+  -> expander
 
-val expand :
-  'a expander -> 'a Model.Compilation_unit.t -> 'a Model.Compilation_unit.t
+val expand : expander -> Model.Compilation_unit.t -> Model.Compilation_unit.t
 
 (** {2 Misc.}
 
     OCaml's predefined types and exceptions. *)
 
-val core_types : 'a Model.TypeDecl.t list
+val core_types : Model.TypeDecl.t list
 
-val core_exceptions : 'a Model.Exception.t list
+val core_exceptions : Model.Exception.t list
 
 module Lookup = Lookup
 

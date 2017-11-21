@@ -16,9 +16,9 @@
 
 
 
-type t = Doc_model.Root.t Doc_model.Types.Compilation_unit.t
+type t = Doc_model.Types.Compilation_unit.t
 
-let root (t : Doc_model.Root.t Doc_model.Types.Compilation_unit.t) =
+let root (t : Doc_model.Types.Compilation_unit.t) =
   match t.Doc_model.Types.Compilation_unit.id with
   | Doc_model.Paths.Identifier.Root (root, _) -> root
   | _ -> assert false

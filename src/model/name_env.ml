@@ -22,88 +22,88 @@ open Identifier
 
 module StringTbl = Map.Make(String)
 
-type 'a type_ident =
-  ('a, [`Type|`Class|`ClassType]) t
+type type_ident =
+  [`Type | `Class | `ClassType] t
 
-type 'a constructor_ident =
-  ('a, [`Constructor|`Extension|`Exception]) t
+type constructor_ident =
+  [`Constructor|`Extension|`Exception] t
 
-type 'a extension_ident =
-  ('a, [`Extension|`Exception]) t
+type extension_ident =
+  [`Extension|`Exception] t
 
-type 'a class_type_ident =
-  ('a, [`Class|`ClassType]) t
+type class_type_ident =
+  [`Class|`ClassType] t
 
-type 'a parent_ident =
-  ('a, [`Module|`ModuleType|`Type|`Class|`ClassType|`Page]) t
+type parent_ident =
+  [`Module|`ModuleType|`Type|`Class|`ClassType|`Page] t
 
-type 'a signature_ident =
-  ('a, [`Module|`ModuleType]) t
+type signature_ident =
+  [`Module|`ModuleType] t
 
-let widen_module : 'a module_ -> _ = function
+let widen_module : module_ -> _ = function
   | Root _ as id -> id
   | Module _ as id -> id
   | Argument _ as id -> id
 
-let widen_module_type : 'a module_type -> _ = function
+let widen_module_type : module_type -> _ = function
   | ModuleType _ as id -> id
 
-let widen_type : 'a type_ -> _ = function
+let widen_type : type_ -> _ = function
   | Type _ as id -> id
   | CoreType _ as id -> id
 
-let widen_constructor : 'a constructor -> _ = function
+let widen_constructor : constructor -> _ = function
   | Constructor _ as id -> id
 
-let widen_field : 'a field -> _ = function
+let widen_field : field -> _ = function
   | Field _ as id -> id
 
-let widen_extension : 'a extension -> _ = function
+let widen_extension : extension -> _ = function
   | Extension _ as id -> id
 
-let widen_exception : 'a exception_ -> _ = function
+let widen_exception : exception_ -> _ = function
   | Exception _ as id -> id
   | CoreException _ as id -> id
 
-let widen_value : 'a value -> _ = function
+let widen_value : value -> _ = function
   | Value _ as id -> id
 
-let widen_class : 'a class_ -> _ = function
+let widen_class : class_ -> _ = function
   | Class _ as id -> id
 
-let widen_class_type : 'a class_type -> _ = function
+let widen_class_type : class_type -> _ = function
   | ClassType _ as id -> id
 
-let widen_method : 'a method_ -> _ = function
+let widen_method : method_ -> _ = function
   | Method _ as id -> id
 
-let widen_instance_variable : 'a instance_variable -> _ = function
+let widen_instance_variable : instance_variable -> _ = function
   | InstanceVariable _ as id -> id
 
-let widen_label : 'a label -> _ = function
+let widen_label : label -> _ = function
   | Label _ as id -> id
 
-let widen_page : 'a page -> _ = function
+let widen_page : page -> _ = function
   | Page _ as id -> id
 
-type 'a t =
-  { modules : 'a module_ StringTbl.t;
-    module_types : 'a module_type StringTbl.t;
-    types : 'a type_ident StringTbl.t;
-    constructors : 'a constructor_ident StringTbl.t;
-    fields : 'a field StringTbl.t;
-    extensions : 'a extension_ident StringTbl.t;
-    exceptions : 'a exception_ StringTbl.t;
-    values : 'a value StringTbl.t;
-    classes : 'a class_ StringTbl.t;
-    class_types : 'a class_type_ident StringTbl.t;
-    methods : 'a method_ StringTbl.t;
-    instance_variables : 'a instance_variable StringTbl.t;
-    labels : 'a label StringTbl.t;
-    parents : 'a parent_ident StringTbl.t;
-    elements : 'a any StringTbl.t;
-    titles : 'a Documentation.text StringTbl.t; (* Hack *)
-    signatures : 'a signature_ident StringTbl.t;
+type t =
+  { modules : module_ StringTbl.t;
+    module_types : module_type StringTbl.t;
+    types : type_ident StringTbl.t;
+    constructors : constructor_ident StringTbl.t;
+    fields : field StringTbl.t;
+    extensions : extension_ident StringTbl.t;
+    exceptions : exception_ StringTbl.t;
+    values : value StringTbl.t;
+    classes : class_ StringTbl.t;
+    class_types : class_type_ident StringTbl.t;
+    methods : method_ StringTbl.t;
+    instance_variables : instance_variable StringTbl.t;
+    labels : label StringTbl.t;
+    parents : parent_ident StringTbl.t;
+    elements : any StringTbl.t;
+    titles : Documentation.text StringTbl.t; (* Hack *)
+    signatures : signature_ident StringTbl.t;
   }
 
 let empty =
@@ -624,7 +624,7 @@ let lookup_label_ident env name =
       Resolved (Identifier id)
   with Not_found -> Root (name, TLabel)
 
-let lookup_parent_ident env name : 'a Reference.parent =
+let lookup_parent_ident env name : Reference.parent =
   match StringTbl.find name env.parents with
   | Page _ ->
     assert false
@@ -636,7 +636,7 @@ let lookup_parent_ident env name : 'a Reference.parent =
     | Some id -> Resolved (Identifier id)
     | None -> Root (name, TUnknown)
 
-let lookup_label_parent_ident env name : 'a Reference.label_parent =
+let lookup_label_parent_ident env name : Reference.label_parent =
   try
     let id = StringTbl.find name env.parents in
       Resolved (Identifier id)
@@ -660,7 +660,7 @@ let lookup_element_ident env name =
             | Some id -> Resolved (Identifier id)
             | None -> Root (name, TUnknown)
 
-let rec lookup_parent env : 'a Reference.parent -> 'a Reference.parent =
+let rec lookup_parent env : Reference.parent -> Reference.parent =
   function
   | Resolved _ as r -> r
   | Root (s, TUnknown) -> lookup_parent_ident env s
@@ -699,7 +699,7 @@ let rec lookup_parent env : 'a Reference.parent -> 'a Reference.parent =
   | ClassType(r, s) -> ClassType(lookup_signature env r, s)
 
 and lookup_label_parent env :
-  'a Reference.label_parent -> 'a Reference.label_parent =
+  Reference.label_parent -> Reference.label_parent =
   function
   | Resolved _ as r -> r
   | Root (s, TUnknown) -> lookup_label_parent_ident env s
@@ -744,7 +744,7 @@ and lookup_label_parent env :
   | ClassType(r, s) -> ClassType(lookup_signature env r, s)
 
 and lookup_signature env :
-  'a Reference.signature -> 'a Reference.signature = function
+  Reference.signature -> Reference.signature = function
   | Resolved _ as r -> r
   | Root (s, TUnknown)    -> lookup_signature_ident env s
   | Root (s, TModule)     -> signature_of_module (lookup_module_ident env s)
@@ -774,7 +774,7 @@ let lookup_type env = function
   | Class(r, s) -> Class(lookup_signature env r, s)
   | ClassType(r, s) -> ClassType(lookup_signature env r, s)
 
-let lookup_datatype env : 'a Reference.datatype -> 'a Reference.datatype = function
+let lookup_datatype env : Reference.datatype -> Reference.datatype = function
   | Resolved _ as r -> r
   | Root (s, _) as r -> begin
       match lookup_type_ident env s with

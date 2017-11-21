@@ -18,10 +18,10 @@
 
 
 
-class ['a] lookup = object
+class lookup = object
   val env = Name_env.empty
 
-  inherit ['a] Maps.types as super
+  inherit Maps.types as super
 
   method root x = x
   method path_type x = x

@@ -14,29 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val read_interface: 'a -> string -> Typedtree.signature ->
-  'a Paths.Identifier.module_ *
-  'a Model.Documentation.t *
-  'a Model.Signature.t
+val read_interface: Root.t -> string -> Typedtree.signature ->
+  Paths.Identifier.module_ *
+  Model.Documentation.t *
+  Model.Signature.t
 
-val read_module_type : 'a Ident_env.t ->
-  'a Paths.Identifier.signature -> int ->
-  Typedtree.module_type -> 'a Model.ModuleType.expr
+val read_module_type : Ident_env.t ->
+  Paths.Identifier.signature -> int ->
+  Typedtree.module_type -> Model.ModuleType.expr
 
-val read_value_description : 'a Ident_env.t ->
-  'a Paths.Identifier.signature ->
-  Typedtree.value_description -> 'a Model.Signature.item
+val read_value_description : Ident_env.t ->
+  Paths.Identifier.signature ->
+  Typedtree.value_description -> Model.Signature.item
 
-val read_type_declarations : 'a Ident_env.t ->
-  'a Paths.Identifier.signature ->
+val read_type_declarations : Ident_env.t ->
+  Paths.Identifier.signature ->
   Typedtree.type_declaration list ->
-  'a Model.Signature.item list
+  Model.Signature.item list
 
-val read_module_type_declaration : 'a Ident_env.t ->
-  'a Paths.Identifier.signature ->
-  Typedtree.module_type_declaration -> 'a Model.ModuleType.t
+val read_module_type_declaration : Ident_env.t ->
+  Paths.Identifier.signature ->
+  Typedtree.module_type_declaration -> Model.ModuleType.t
 
-val read_class_type_declarations : 'a Ident_env.t ->
-  'a Paths.Identifier.signature ->
+val read_class_type_declarations : Ident_env.t ->
+  Paths.Identifier.signature ->
   Typedtree.class_type Typedtree.class_infos list ->
-  'a Model.Signature.item list
+  Model.Signature.item list

@@ -179,163 +179,163 @@ let comment_labels acc comment =
 
 module rec Sig : sig
 
-  type 'a t
+  type t
 
-  val set_canonical : 'a t -> ('a Path.module_ * 'a Reference.module_) option -> 'a t
+  val set_canonical : t -> (Path.module_ * Reference.module_) option -> t
 
-  val get_canonical : 'a t -> ('a Path.module_ * 'a Reference.module_) option
+  val get_canonical : t -> (Path.module_ * Reference.module_) option
 
-  val set_hidden : 'a t -> bool -> 'a t
+  val set_hidden : t -> bool -> t
 
-  val get_hidden : 'a t -> bool
+  val get_hidden : t -> bool
 
-  val find_parent_module : string -> 'a t -> 'a Parent.module_
+  val find_parent_module : string -> t -> Parent.module_
 
-  val find_parent_apply : ('a Path.module_ -> 'a t) -> 'a Path.module_ ->
-        'a t -> 'a Parent.module_
+  val find_parent_apply : (Path.module_ -> t) -> Path.module_ ->
+        t -> Parent.module_
 
-  val find_parent_module_type : string -> 'a t -> 'a Parent.module_type
+  val find_parent_module_type : string -> t -> Parent.module_type
 
-  val find_parent_signature : string -> 'a t -> 'a Parent.signature
+  val find_parent_signature : string -> t -> Parent.signature
 
-  val find_parent_class_signature : string -> 'a t -> 'a Parent.class_signature
+  val find_parent_class_signature : string -> t -> Parent.class_signature
 
-  val find_parent_datatype : string -> 'a t -> 'a Parent.datatype
+  val find_parent_datatype : string -> t -> Parent.datatype
 
-  val find_parent_sig_or_type : string -> 'a t -> 'a Parent.sig_or_type
+  val find_parent_sig_or_type : string -> t -> Parent.sig_or_type
 
-  val find_parent_subst : 'a t -> 'a Parent.subst
+  val find_parent_subst : t -> Parent.subst
 
-  val find_parent : string -> 'a t -> 'a Parent.any
+  val find_parent : string -> t -> Parent.any
 
-  val find_module_element : string -> 'a t -> 'a Element.signature_module
+  val find_module_element : string -> t -> Element.signature_module
 
-  val find_apply_element : 'a t -> 'a Element.signature_module
+  val find_apply_element : t -> Element.signature_module
 
-  val find_module_type_element : string -> 'a t -> 'a Element.signature_module_type
+  val find_module_type_element : string -> t -> Element.signature_module_type
 
-  val find_type_element : string -> 'a t -> 'a Element.signature_type
+  val find_type_element : string -> t -> Element.signature_type
 
-  val find_constructor_element : string -> 'a t -> 'a Element.signature_constructor
+  val find_constructor_element : string -> t -> Element.signature_constructor
 
-  val find_field_element : string -> 'a t -> 'a Element.signature_field
+  val find_field_element : string -> t -> Element.signature_field
 
-  val find_extension_element : string -> 'a t -> 'a Element.signature_extension
+  val find_extension_element : string -> t -> Element.signature_extension
 
-  val find_exception_element : string -> 'a t -> 'a Element.signature_exception
+  val find_exception_element : string -> t -> Element.signature_exception
 
-  val find_value_element : string -> 'a t -> 'a Element.signature_value
+  val find_value_element : string -> t -> Element.signature_value
 
-  val find_class_element : string -> 'a t -> 'a Element.signature_class
+  val find_class_element : string -> t -> Element.signature_class
 
-  val find_class_type_element : string -> 'a t -> 'a Element.signature_class_type
+  val find_class_type_element : string -> t -> Element.signature_class_type
 
-  val find_label_element : string -> 'a t -> 'a Element.signature_label
+  val find_label_element : string -> t -> Element.signature_label
 
-  val find_element : string -> 'a t -> 'a Element.signature
+  val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> 'a t -> 'a Documentation.text
+  val find_section_title : string -> t -> Documentation.text
 
-  val lookup_module : string -> 'a t -> 'a t
+  val lookup_module : string -> t -> t
 
-  val lookup_argument : int -> 'a t -> 'a t
+  val lookup_argument : int -> t -> t
 
-  val lookup_apply : ('a Path.module_ -> 'a t) -> 'a Path.module_ ->
-        'a t -> 'a t
+  val lookup_apply : (Path.module_ -> t) -> Path.module_ ->
+        t -> t
 
-  val lookup_module_type  : string -> 'a t -> 'a t
+  val lookup_module_type  : string -> t -> t
 
-  val lookup_class_type : string -> 'a t -> 'a ClassSig.t
+  val lookup_class_type : string -> t -> ClassSig.t
 
-  val lookup_datatype : string -> 'a t -> 'a Datatype.t
+  val lookup_datatype : string -> t -> Datatype.t
 
-  type 'a signature
+  type signature
 
-  val empty : 'a signature
+  val empty : signature
 
-  val add_module : string -> 'a t -> 'a signature -> 'a signature
+  val add_module : string -> t -> signature -> signature
 
-  val add_module_type : string -> 'a t -> 'a signature -> 'a signature
+  val add_module_type : string -> t -> signature -> signature
 
-  val add_datatype : string -> 'a Datatype.t -> 'a signature -> 'a signature
+  val add_datatype : string -> Datatype.t -> signature -> signature
 
-  val add_class : string -> 'a ClassSig.t -> 'a signature -> 'a signature
+  val add_class : string -> ClassSig.t -> signature -> signature
 
-  val add_class_type : string -> 'a ClassSig.t -> 'a signature -> 'a signature
+  val add_class_type : string -> ClassSig.t -> signature -> signature
 
-  val add_element : string -> 'a Element.signature -> 'a signature -> 'a signature
+  val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
+  val add_documentation : Documentation.t -> signature -> signature
 
-  val add_comment : 'a Documentation.comment -> 'a signature -> 'a signature
+  val add_comment : Documentation.comment -> signature -> signature
 
-  val include_ : 'a t -> 'a signature -> 'a signature
+  val include_ : t -> signature -> signature
 
-  val modules : 'a t -> (string * 'a t) list
+  val modules : t -> (string * t) list
 
-  val module_types : 'a t -> (string * 'a t) list
+  val module_types : t -> (string * t) list
 
-  val path : ('a Path.module_type -> 'a t) -> 'a Path.module_type -> 'a t
+  val path : (Path.module_type -> t) -> Path.module_type -> t
 
-  val alias : ('a Path.module_ -> 'a t) -> 'a Path.module_ -> 'a t
+  val alias : (Path.module_ -> t) -> Path.module_ -> t
 
-  val signature : ('b -> 'a signature) -> 'b -> 'a t
+  val signature : ('b -> signature) -> 'b -> t
 
-  val functor_ : ('a -> 'a -> bool) option -> ('a -> int) option ->
-                 'a Identifier.module_ -> 'a t -> 'a t -> 'a t
+  val functor_ : (Root.t -> Root.t -> bool) option -> (Root.t -> int) option ->
+                 Identifier.module_ -> t -> t -> t
 
-  val generative : 'a t -> 'a t
+  val generative : t -> t
 
-  val abstract : 'a t
+  val abstract : t
 
-  val unresolved : 'a t
+  val unresolved : t
 
-  val with_module : 'a Fragment.module_ -> 'a t -> 'a t -> 'a t
+  val with_module : Fragment.module_ -> t -> t -> t
 
-  val with_module_subst : 'a Fragment.module_ -> 'a t -> 'a t
+  val with_module_subst : Fragment.module_ -> t -> t
 
-  val with_type_subst : 'a Fragment.type_ -> 'a t -> 'a t
+  val with_type_subst : Fragment.type_ -> t -> t
 
 end = struct
 
-  type 'a term =
-    | Path of 'a Path.module_type * bool
-    | Alias of 'a Path.module_ * bool
-    | WithModule of 'a expr * 'a Fragment.module_ * 'a t
-    | WithModuleSubst of 'a expr * 'a Fragment.module_
-    | WithTypeSubst of 'a expr * 'a Fragment.type_
+  type term =
+    | Path of Path.module_type * bool
+    | Alias of Path.module_ * bool
+    | WithModule of expr * Fragment.module_ * t
+    | WithModuleSubst of expr * Fragment.module_
+    | WithTypeSubst of expr * Fragment.type_
 
-  and 'a expr =
-    { term : 'a term;
-      expansion : 'a t Lazy.t; }
+  and expr =
+    { term : term;
+      expansion : t Lazy.t; }
 
-  and 'a functor_ =
-    { id : 'a Identifier.module_;
-      arg : 'a t;
-      res : 'a t;
-      cache : ('a Path.module_, 'a t) tbl; }
+  and functor_ =
+    { id : Identifier.module_;
+      arg : t;
+      res : t;
+      cache : (Path.module_, t) tbl; }
 
-  and 'a signature =
-    { modules: 'a t SMap.t;
-      module_types: 'a t SMap.t;
-      class_signatures: 'a ClassSig.t SMap.t;
-      types: 'a Element.signature_type SMap.t;
-      parents: 'a Parent.any LMap.t;
-      elements: 'a Element.signature LMap.t;
-      section_titles: 'a Documentation.text SMap.t; }
+  and signature =
+    { modules: t SMap.t;
+      module_types: t SMap.t;
+      class_signatures: ClassSig.t SMap.t;
+      types: Element.signature_type SMap.t;
+      parents: Parent.any LMap.t;
+      elements: Element.signature LMap.t;
+      section_titles: Documentation.text SMap.t; }
 
-  and 'a body =
-    | Expr of 'a expr
-    | Sig of 'a signature Lazy.t
-    | Functor of 'a functor_
-    | Generative of 'a t
+  and body =
+    | Expr of expr
+    | Sig of signature Lazy.t
+    | Functor of functor_
+    | Generative of t
     | Abstract
     | Unresolved
 
-  and 'a t =
-    { canonical : ('a Path.module_ * 'a Reference.module_) option;
+  and t =
+    { canonical : (Path.module_ * Reference.module_) option;
       hidden : bool;
-      body : 'a body }
+      body : body }
 
   let set_canonical t canonical = { t with canonical }
 
@@ -682,7 +682,7 @@ end = struct
     let types = SMap.add name Element.Type sg.types in
     let parents = LMap.add name (Parent.Datatype decl) sg.parents in
     let elements =
-      let add_element name (elem : 'a Element.datatype) acc =
+      let add_element name (elem : Element.datatype) acc =
         let open Element in
         let (Constructor _ | Field _ | Label _ as elem) = elem in
           LMap.add name elem acc
@@ -823,12 +823,12 @@ end = struct
     let equal =
       match equal with
       | None -> None
-      | Some equal -> Some (Path.equal ~equal)
+      | Some _equal -> Some Path.equal
     in
     let hash =
       match hash with
       | None -> None
-      | Some hash -> Some (Path.hash ~hash)
+      | Some _hash -> Some Path.hash
     in
     let cache = make_tbl equal hash 3 in
       mkFunctor {id; arg; res; cache}
@@ -1004,7 +1004,7 @@ end = struct
 
   and reduce_module_ident id path =
     let open Identifier in function
-      | (Root _ : 'a module_) -> None
+      | (Root _ : module_) -> None
       | Module(p, name) -> begin
           match reduce_signature_ident id path p with
           | Some p -> Some (Path.module_ p name)
@@ -1041,7 +1041,7 @@ end = struct
 
   and reduce_resolved_module_type_path id path =
     let open Path.Resolved in function
-    | (Identifier _ : 'a module_type) -> None
+    | (Identifier _ : module_type) -> None
     | ModuleType(p, name) -> begin
         match reduce_resolved_module_path false id path p with
         | Some p -> Some (Path.module_type p name)
@@ -1097,7 +1097,7 @@ end = struct
     let open Identifier in
     if id = id' then Some (path, lazy (lookup path))
     else match id' with
-      | (Root _ : 'a Identifier.module_) -> None
+      | (Root _ : Identifier.module_) -> None
       | Module(p, name) -> begin
           match subst_signature_ident id lookup path p with
           | Some (p, t) ->
@@ -1108,10 +1108,10 @@ end = struct
         end
       | Argument _ -> None
 
-  and subst_module_type_ident id lookup (path : 'a Path.module_) id' =
+  and subst_module_type_ident id lookup (path : Path.module_) id' =
     let open Identifier in
       match id' with
-      | (ModuleType(p, name) : 'a Identifier.module_type) -> begin
+      | (ModuleType(p, name) : Identifier.module_type) -> begin
           match subst_signature_ident id lookup path p with
           | Some (p, t) ->
               let p = Path.module_type p name in
@@ -1144,7 +1144,7 @@ end = struct
         | None -> None
       end
 
-  and subst_resolved_module_type_path id lookup (path : 'a Path.module_) =
+  and subst_resolved_module_type_path id lookup (path : Path.module_) =
     let open Path.Resolved in function
     | Identifier id' -> subst_module_type_ident id lookup path id'
     | ModuleType(p, name) -> begin
@@ -1178,7 +1178,7 @@ end = struct
         | None -> None
       end
 
-  and subst_module_type_path id lookup (path : 'a Path.module_) =
+  and subst_module_type_path id lookup (path : Path.module_) =
     let open Path in function
     | Resolved r -> subst_resolved_module_type_path id lookup path r
     | Dot(p, name) -> begin
@@ -1328,45 +1328,45 @@ end
 
 and Datatype : sig
 
-  type +'a t
+  type t
 
-  val find_constructor_element : string -> 'a t -> 'a Element.datatype_constructor
+  val find_constructor_element : string -> t -> Element.datatype_constructor
 
-  val find_field_element : string -> 'a t -> 'a Element.datatype_field
+  val find_field_element : string -> t -> Element.datatype_field
 
-  val find_label_element : string -> 'a t -> 'a Element.datatype_label
+  val find_label_element : string -> t -> Element.datatype_label
 
-  val find_element : string -> 'a t -> 'a Element.datatype
+  val find_element : string -> t -> Element.datatype
 
-  val add_documentation : 'a Documentation.t -> 'a t -> 'a t
+  val add_documentation : Documentation.t -> t -> t
 
-  val abstract : 'a t
+  val abstract : t
 
-  val variant : string -> string list -> 'a t
+  val variant : string -> string list -> t
 
-  val record : string -> string list -> 'a t
+  val record : string -> string list -> t
 
-  val extensible : 'a t
+  val extensible : t
 
-  val unresolved : 'a t
+  val unresolved : t
 
-  val elements : 'a t -> ('a, [ `Constructor | `Field | `Label]) Element.t LMap.t
+  val elements : t -> [ `Constructor | `Field | `Label] Element.t LMap.t
 
 end = struct
 
-  type 'a variant =
+  type variant =
     { type_name: string;
       constructors: SSet.t;
       labels: SSet.t; }
 
-  type 'a record =
+  type record =
     { type_name: string;
       fields: SSet.t;
       labels: SSet.t; }
 
-  type 'a t =
-    | Variant of 'a variant
-    | Record of 'a record
+  type t =
+    | Variant of variant
+    | Record of record
     | Unresolved
 
   let find_constructor_element name = function
@@ -1473,45 +1473,45 @@ end
 
 and ClassSig : sig
 
-  type 'a t
+  type t
 
-  val find_method_element : string -> 'a t -> 'a Element.class_signature_method
+  val find_method_element : string -> t -> Element.class_signature_method
 
-  val find_instance_variable_element : string -> 'a t ->
-        'a Element.class_signature_instance_variable
+  val find_instance_variable_element : string -> t ->
+        Element.class_signature_instance_variable
 
-  val find_label_element : string -> 'a t -> 'a Element.class_signature_label
+  val find_label_element : string -> t -> Element.class_signature_label
 
-  val find_element : string -> 'a t -> 'a Element.class_signature
+  val find_element : string -> t -> Element.class_signature
 
-  type 'a signature
+  type signature
 
-  val empty : 'a signature
+  val empty : signature
 
-  val add_element : string -> 'a Element.class_signature ->
-    'a signature -> 'a signature
+  val add_element : string -> Element.class_signature ->
+    signature -> signature
 
-  val add_documentation : 'a Documentation.t -> 'a signature -> 'a signature
+  val add_documentation : Documentation.t -> signature -> signature
 
-  val add_comment : 'a Documentation.comment -> 'a signature -> 'a signature
+  val add_comment : Documentation.comment -> signature -> signature
 
-  val inherit_ : 'a t -> 'a signature -> 'a signature
+  val inherit_ : t -> signature -> signature
 
-  val constr : ('a Path.class_type -> 'a t) -> 'a Path.class_type -> 'a t
+  val constr : (Path.class_type -> t) -> Path.class_type -> t
 
-  val signature : ('b -> 'a signature) -> 'b -> 'a t
+  val signature : ('b -> signature) -> 'b -> t
 
-  val unresolved : 'a t
+  val unresolved : t
 
 end = struct
 
-  type 'a signature = 'a Element.class_signature LMap.t
+  type signature = Element.class_signature LMap.t
 
-  type 'a desc =
-    | Sig of 'a signature
+  type desc =
+    | Sig of signature
     | Unresolved
 
-  type 'a t = 'a desc Lazy.t
+  type t = desc Lazy.t
 
   open Element
 
@@ -1585,19 +1585,19 @@ end
 
 and Page : sig
 
-  type 'a t
+  type t
 
-  val find_label_element : string -> 'a t -> 'a Element.page_label
+  val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> 'a t -> 'a Documentation.text
+  val find_section_title : string -> t -> Documentation.text
 
-  val of_doc : 'a Documentation.t -> 'a t
+  val of_doc : Documentation.t -> t
 
 end = struct
 
-  type 'a t = {
-    labels : 'a Element.page_label LMap.t;
-    section_titles : 'a Documentation.text SMap.t;
+  type t = {
+    labels : Element.page_label LMap.t;
+    section_titles : Documentation.text SMap.t;
   }
 
   let find_label_element name t =
@@ -1622,30 +1622,30 @@ and Parent : sig
 
   type kind = Kind.parent
 
-  type ('a, 'b) t =
-    | Module : 'a Sig.t -> ('a, [< kind > `Module]) t
-    | ModuleType : 'a Sig.t -> ('a, [< kind > `ModuleType]) t
-    | Datatype : 'a Datatype.t -> ('a, [< kind > `Type]) t
-    | Class : 'a ClassSig.t -> ('a, [< kind > `Class]) t
-    | ClassType : 'a ClassSig.t -> ('a, [< kind > `ClassType]) t
+  type 'kind t =
+    | Module : Sig.t -> [< kind > `Module] t
+    | ModuleType : Sig.t -> [< kind > `ModuleType] t
+    | Datatype : Datatype.t -> [< kind > `Type] t
+    | Class : ClassSig.t -> [< kind > `Class] t
+    | ClassType : ClassSig.t -> [< kind > `ClassType] t
 
-  type 'a signature = ('a, [`Module | `ModuleType]) t
+  type signature = [`Module | `ModuleType] t
 
-  type 'a class_signature = ('a, [`Class |` ClassType]) t
+  type class_signature = [`Class |` ClassType] t
 
-  type 'a datatype = ('a, [`Type]) t
+  type datatype = [`Type] t
 
-  type 'a module_ = ('a, [`Module]) t
+  type module_ = [`Module] t
 
-  type 'a module_type = ('a, [`ModuleType]) t
+  type module_type = [`ModuleType] t
 
-  type 'a sig_or_type = ('a, [`Module | `ModuleType | `Type]) t
+  type sig_or_type = [`Module | `ModuleType | `Type] t
 
-  type 'a any = ('a, kind) t
+  type any = kind t
 
-  type 'a subst =
-    | Subst of 'a Path.module_type
-    | SubstAlias of 'a Path.module_
+  type subst =
+    | Subst of Path.module_type
+    | SubstAlias of Path.module_
 
 end = Parent
 
@@ -1657,66 +1657,66 @@ and Element : sig
     | `Exception | `Value | `Class | `ClassType
     | `Method | `InstanceVariable | `Label ]
 
-  type ('a, 'b) t =
+  type 'kind t =
     | Module :
-        { canonical : ('a Path.module_ * 'a Reference.module_) option
+        { canonical : (Path.module_ * Reference.module_) option
         ; hidden : bool } ->
-        ('a, [< kind > `Module]) t
-    | ModuleType : ('a, [< kind > `ModuleType]) t
-    | Type : ('a, [< kind > `Type]) t
-    | Constructor : string -> ('a, [< kind > `Constructor]) t
-    | Field : string -> ('a, [< kind > `Field]) t
-    | Extension : ('a, [< kind > `Extension]) t
-    | Exception : ('a, [< kind > `Exception]) t
-    | Value : ('a, [< kind > `Value]) t
-    | Class : ('a, [< kind > `Class]) t
-    | ClassType : ('a, [< kind > `ClassType]) t
-    | Method : ('a, [< kind > `Method]) t
-    | InstanceVariable : ('a, [< kind > `InstanceVariable]) t
-    | Label : string option -> ('a, [< kind > `Label]) t
+        [< kind > `Module] t
+    | ModuleType : [< kind > `ModuleType] t
+    | Type : [< kind > `Type] t
+    | Constructor : string -> [< kind > `Constructor] t
+    | Field : string -> [< kind > `Field] t
+    | Extension : [< kind > `Extension] t
+    | Exception : [< kind > `Exception] t
+    | Value : [< kind > `Value] t
+    | Class : [< kind > `Class] t
+    | ClassType : [< kind > `ClassType] t
+    | Method : [< kind > `Method] t
+    | InstanceVariable : [< kind > `InstanceVariable] t
+    | Label : string option -> [< kind > `Label] t
 
-  type 'a signature_module = ('a, [`Module]) t
+  type signature_module = [`Module] t
 
-  type 'a signature_module_type = ('a, [`ModuleType]) t
+  type signature_module_type = [`ModuleType] t
 
-  type 'a signature_type = ('a, [`Type | `Class | `ClassType]) t
+  type signature_type = [`Type | `Class | `ClassType] t
 
-  type 'a signature_constructor = ('a, [`Constructor | `Extension | `Exception]) t
+  type signature_constructor = [`Constructor | `Extension | `Exception] t
 
-  type 'a signature_field = ('a, [`Field]) t
+  type signature_field = [`Field] t
 
-  type 'a signature_extension = ('a, [`Extension | `Exception]) t
+  type signature_extension = [`Extension | `Exception] t
 
-  type 'a signature_exception = ('a, [`Exception]) t
+  type signature_exception = [`Exception] t
 
-  type 'a signature_value = ('a, [`Value]) t
+  type signature_value = [`Value] t
 
-  type 'a signature_class = ('a, [`Class]) t
+  type signature_class = [`Class] t
 
-  type 'a signature_class_type = ('a, [`Class | `ClassType]) t
+  type signature_class_type = [`Class | `ClassType] t
 
-  type 'a signature_label = ('a, [`Label]) t
+  type signature_label = [`Label] t
 
-  type 'a datatype_constructor = ('a, [`Constructor]) t
+  type datatype_constructor = [`Constructor] t
 
-  type 'a datatype_field = ('a, [`Field]) t
+  type datatype_field = [`Field] t
 
-  type 'a datatype_label = ('a, [`Label]) t
+  type datatype_label = [`Label] t
 
-  type 'a class_signature_method = ('a, [`Method]) t
+  type class_signature_method = [`Method] t
 
-  type 'a class_signature_instance_variable = ('a, [`InstanceVariable]) t
+  type class_signature_instance_variable = [`InstanceVariable] t
 
-  type 'a class_signature_label = ('a, [`Label]) t
+  type class_signature_label = [`Label] t
 
-  type 'a signature =
-    ('a, [ `Module | `ModuleType | `Type
+  type signature =
+         [ `Module | `ModuleType | `Type
          | `Constructor | `Field | `Extension
-         | `Exception | `Value | `Class | `ClassType | `Label ]) t
+         | `Exception | `Value | `Class | `ClassType | `Label ] t
 
-  type 'a class_signature = ('a, [ `Method | `InstanceVariable | `Label ]) t
+  type class_signature = [ `Method | `InstanceVariable | `Label ] t
 
-  type 'a datatype = ('a, [ `Constructor | `Field | `Label ]) t
+  type datatype = [ `Constructor | `Field | `Label ] t
 
-  type 'a page_label = ('a, [`Label]) t
+  type page_label = [`Label] t
 end = Element

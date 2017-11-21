@@ -27,22 +27,22 @@ module Error : sig
 end
 
 val from_identifier
-  : get_package:('pkg -> string)
+  : get_package:(Doc_model.Root.t -> string)
   -> stop_before:bool
-  -> ('pkg, _) Identifier.t
+  -> _ Identifier.t
   -> (t, Error.t) result
 
 val anchor_of_id_exn
-  : get_package:('pkg -> string)
-  -> ('pkg, _) Identifier.t
+  : get_package:(Doc_model.Root.t -> string)
+  -> _ Identifier.t
   -> string
 
 val kind_of_id_exn
-  : get_package:('pkg -> string)
-  -> ('pkg, _) Identifier.t
+  : get_package:(Doc_model.Root.t -> string)
+  -> _ Identifier.t
   -> string
 
-val render_path : (_, _) Path.t -> string
+val render_path : _ Path.t -> string
 
 module Anchor : sig
   type t = {
@@ -52,13 +52,13 @@ module Anchor : sig
 
   module Polymorphic_variant_decl : sig
     val from_element
-      : get_package:('pkg -> string)
-      -> type_ident:('pkg, _) Identifier.t
-      -> 'pkg Doc_model.Types.TypeExpr.Variant.element
+      : get_package:(Doc_model.Root.t -> string)
+      -> type_ident:_ Identifier.t
+      -> Doc_model.Types.TypeExpr.Variant.element
       -> t
   end
 
   module Module_listing : sig
-    val from_reference : _ Reference.module_ -> t
+    val from_reference : Reference.module_ -> t
   end
 end

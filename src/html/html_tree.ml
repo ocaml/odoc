@@ -54,8 +54,8 @@ module Relative_link = struct
     exception Not_linkable
     exception Can't_stop_before
 
-    val href : get_package:('a -> string) -> stop_before:bool ->
-      ('a, _) Identifier.t -> string
+    val href : get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
+      _ Identifier.t -> string
   end = struct
     exception Not_linkable
 
@@ -113,7 +113,7 @@ module Relative_link = struct
 
   module Of_path = struct
     let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
-      ('b, a) Path.t -> _ =
+      a Path.t -> _ =
       fun ~get_package ~stop_before path ->
         let open Path in
         match path with
@@ -144,14 +144,14 @@ module Relative_link = struct
       | "" -> suffix
       | _  -> prefix ^ "." ^ suffix
 
-    let rec render_raw : type a. (_, a, _) Fragment.raw -> string =
+    let rec render_raw : type a. (a, _) Fragment.raw -> string =
       fun fragment ->
         let open Fragment in
         match fragment with
         | Resolved rr -> render_resolved rr
         | Dot (prefix, suffix) -> dot (render_raw prefix) suffix
 
-    and render_resolved : type a. (_, a, _) Fragment.Resolved.raw -> string =
+    and render_resolved : type a. (a, _) Fragment.Resolved.raw -> string =
       fun fragment ->
         let open Fragment.Resolved in
         match fragment with
@@ -163,8 +163,8 @@ module Relative_link = struct
         | Class (rr, s) -> dot (render_resolved rr) s
         | ClassType (rr, s) -> dot (render_resolved rr) s
 
-    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
-      _ Identifier.signature -> ('b, a, _) Fragment.raw -> _ =
+    let rec to_html : type a. get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
+      Identifier.signature -> (a, _) Fragment.raw -> _ =
       fun ~get_package ~stop_before id fragment ->
         let open Fragment in
         match fragment with
@@ -178,7 +178,7 @@ module Relative_link = struct
             [ pcdata (Identifier.name id) ]
           end
         | Resolved rr ->
-          let id = Resolved.identifier id (Obj.magic rr : (_, a) Resolved.t) in
+          let id = Resolved.identifier id (Obj.magic rr : a Resolved.t) in
           let txt = render_resolved rr in
           begin match Id.href ~get_package ~stop_before id with
           | href ->

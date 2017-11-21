@@ -39,10 +39,10 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
   match id with
   | Identifier.Argument (_, nb, _) -> nb
   | _ ->
-    let id = string_of_sexp @@ Identifier.sexp_of_t (fun _ -> Atom "") id in
+    let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec unit ~get_package (t : _ Types.Compilation_unit.t) : Html_tree.t =
+let rec unit ~get_package (t : Types.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
     | Paths.Identifier.Root (a, _) -> get_package a
@@ -59,7 +59,7 @@ let rec unit ~get_package (t : _ Types.Compilation_unit.t) : Html_tree.t =
   Html_tree.make (header_doc @ html, subtree)
 
 and pack
-   : get_package:('a -> string) -> 'a Types.Compilation_unit.Packed.t
+   : get_package:('a -> string) -> Types.Compilation_unit.Packed.t
   -> Html_types.div_content_fun elt list
 = fun ~get_package t ->
   let open Types in
@@ -76,7 +76,7 @@ and pack
   )
 
 and signature
-   : get_package:('a -> string) -> 'a Types.Signature.t
+   : get_package:('a -> string) -> Types.Signature.t
   -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun ~get_package t ->
   let html_and_subtrees =
@@ -112,7 +112,7 @@ and signature
   List.concat html, List.concat subtrees
 
 and functor_argument
-   : 'row. get_package:('a -> string) -> 'a Types.FunctorArgument.t
+   : 'row. get_package:('a -> string) -> Types.FunctorArgument.t
   -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
 = fun ~get_package arg ->
   let open Types.FunctorArgument in
@@ -153,7 +153,7 @@ and functor_argument
   region, subtree
 
 and module_expansion
-   : get_package:('a -> string) -> 'a Types.Module.expansion
+   : get_package:('a -> string) -> Types.Module.expansion
   -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun ~get_package t ->
   match t with
@@ -179,7 +179,7 @@ and module_expansion
     html, params_subpages @ subpages
 
 and module_
-   : 'row. get_package:('a -> string) -> 'a Types.Module.t
+   : 'row. get_package:('a -> string) -> Types.Module.t
   -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun ~get_package t ->
   let modname = Identifier.name t.id in
@@ -222,14 +222,14 @@ and module_
   in
   [ region ], subtree
 
-and module_decl ~get_package (base : _ Identifier.signature) md =
+and module_decl ~get_package (base : Identifier.signature) md =
   begin match md with
   | Alias _ -> pcdata " = "
   | ModuleType _ -> pcdata " : "
   end ::
   module_decl' ~get_package base md
 
-and extract_path_from_mt ~(default: 'a Identifier.signature) =
+and extract_path_from_mt ~(default: Identifier.signature) =
   let open Types.ModuleType in
   function
   | Path (Path.Resolved r) ->
@@ -241,14 +241,14 @@ and extract_path_from_mt ~(default: 'a Identifier.signature) =
   | _ -> default
 
 and module_decl'
-  : 'inner_row 'outer_row. get_package:('a -> string)
-  -> 'a Identifier.signature -> 'a Types.Module.decl
+  : 'inner_row 'outer_row. get_package:(Root.t -> string)
+  -> Identifier.signature -> Types.Module.decl
   -> ('inner_row, 'outer_row) text elt list
 = fun ~get_package base -> function
   | Alias mod_path -> Html_tree.Relative_link.of_path ~stop_before:true ~get_package mod_path
   | ModuleType mt -> mty ~get_package (extract_path_from_mt ~default:base mt) mt
 
-and module_type ~get_package (t : _ Types.ModuleType.t) =
+and module_type ~get_package (t : Types.ModuleType.t) =
   let modname = Identifier.name t.id in
   let mty =
     match t.expr with
@@ -299,10 +299,10 @@ and module_type ~get_package (t : _ Types.ModuleType.t) =
   [ region ], subtree
 
 and mty
-  : 'inner_row 'outer_row. get_package:('a -> string)
-  -> 'a Identifier.signature -> 'a Types.ModuleType.expr
+  : 'inner_row 'outer_row. get_package:(Root.t -> string)
+  -> Identifier.signature -> Types.ModuleType.expr
   -> ('inner_row, 'outer_row) text elt list
-= fun ~get_package (base : _ Identifier.signature) -> function
+= fun ~get_package (base : Identifier.signature) -> function
   | Path mty_path -> Html_tree.Relative_link.of_path ~stop_before:true ~get_package mty_path
   | Signature _ ->
     [ Markup.keyword "sig" ; pcdata " ... " ; Markup.keyword "end" ]
@@ -334,8 +334,8 @@ and mty
     Markup.keyword "module type of " :: module_decl' ~get_package base md
 
 and substitution
-  : 'inner_row 'outer_row. get_package:('a -> string)
-  -> 'a Identifier.signature -> 'a Types.ModuleType.substitution
+  : 'inner_row 'outer_row. get_package:(Root.t -> string)
+  -> Identifier.signature -> Types.ModuleType.substitution
   -> ('inner_row, 'outer_row) text elt list
 = fun ~get_package base -> function
   | ModuleEq (frag_mod, md) ->
@@ -371,9 +371,9 @@ and substitution
     Html_tree.Relative_link.of_path ~stop_before:false ~get_package typ_path
 
 and constructor
-   : 'b. get_package:('a -> string)
-  -> ('a, 'b) Identifier.t -> 'a Types.TypeDecl.Constructor.argument
-  -> 'a Types.TypeExpr.t option
+   : 'b. get_package:(Root.t -> string)
+  -> 'b Identifier.t -> Types.TypeDecl.Constructor.argument
+  -> Types.TypeExpr.t option
   -> [> `Code | `PCDATA | `Table ] elt list
 = fun ~get_package id args ret_type ->
     let name = Identifier.name id in
@@ -446,9 +446,9 @@ and format_constraints
     )
 
 and format_manifest
-  : 'inner_row 'outer_row. get_package:('a -> string)
+  : 'inner_row 'outer_row. get_package:(Root.t -> string)
   -> ?compact_variants:bool
-  -> 'a Types.TypeDecl.Equation.t
+  -> Types.TypeDecl.Equation.t
   -> ('inner_row, 'outer_row) text elt list * bool
 = fun ~get_package ?(compact_variants=true) equation ->
   let _ = compact_variants in (* TODO *)
@@ -463,7 +463,7 @@ and format_manifest
     in
     manifest, false
 
-and polymorphic_variant ~get_package ~type_ident (t : _ Types.TypeExpr.Variant.t) =
+and polymorphic_variant ~get_package ~type_ident (t : Types.TypeExpr.Variant.t) =
   let row item =
     let kind_approx, cstr =
       match item with
@@ -582,7 +582,7 @@ and record ~get_package fields =
   ; table ~a:[ a_class ["record"] ] rows
   ; code [pcdata "}"]]
 
-and type_decl ~get_package (t : _ Types.TypeDecl.t) =
+and type_decl ~get_package (t : Types.TypeDecl.t) =
   let tyname = Identifier.name t.id in
   let params = format_params t.equation.params in
   let constraints = format_constraints ~get_package t.equation.constraints in
@@ -625,7 +625,7 @@ and type_decl ~get_package (t : _ Types.TypeDecl.t) =
   in
   Markup.make_spec ~get_package ~id:t.id ~doc tdecl_def
 
-and extension ~get_package (t : _ Types.Extension.t) =
+and extension ~get_package (t : Types.Extension.t) =
   let doc = Documentation.to_html ~get_package t.doc in
   let extension =
     code (
@@ -644,20 +644,20 @@ and extension ~get_package (t : _ Types.Extension.t) =
     div ~a:[ a_class ["doc"] ] doc;
   ]
 
-and extension_constructor ~get_package (t : _ Types.Extension.Constructor.t) =
+and extension_constructor ~get_package (t : Types.Extension.Constructor.t) =
   (* TODO doc *)
   constructor ~get_package t.id t.args t.res
 
-and exn ~get_package (t : _ Types.Exception.t) =
+and exn ~get_package (t : Types.Exception.t) =
   let cstr = constructor ~get_package t.id t.args t.res in
   let doc = Documentation.to_html ~get_package t.doc in
   let exn = code [ Markup.keyword "exception " ] :: cstr in
   Markup.make_spec ~get_package ~id:t.id ~doc exn
 
 and te_variant
-   : 'inner 'outer. get_package:('a -> string) -> 'a Types.TypeExpr.Variant.t
+   : 'inner 'outer. get_package:(Root.t -> string) -> Types.TypeExpr.Variant.t
   -> ('inner, 'outer) text elt list
-= fun ~get_package (t : _ Types.TypeExpr.Variant.t) ->
+= fun ~get_package (t : Types.TypeExpr.Variant.t) ->
   let elements =
     list_concat_map t.elements ~sep:(pcdata " | ") ~f:(function
       | Types.TypeExpr.Variant.Type te -> type_expr ~get_package te
@@ -681,9 +681,9 @@ and te_variant
     pcdata "[< " :: elements @ [pcdata (" " ^ constrs ^ " ]")]
 
 and te_object
-   : 'inner 'outer. get_package:('a -> string) -> 'a Types.TypeExpr.Object.t
+   : 'inner 'outer. get_package:(Root.t -> string) -> Types.TypeExpr.Object.t
   -> ('inner, 'outer) text elt list
-= fun ~get_package (t : _ Types.TypeExpr.Object.t) ->
+= fun ~get_package (t : Types.TypeExpr.Object.t) ->
   let methods =
     list_concat_map t.methods ~f:(fun { Types.TypeExpr.Object. name; type_ } ->
       pcdata (name ^ " : ") :: type_expr ~get_package type_ @ [pcdata "; "]
@@ -693,7 +693,7 @@ and te_object
 
 and format_type_path
   : 'inner 'outer. get_package:('a -> string) -> delim:[ `parens | `brackets ]
-  -> 'a Types.TypeExpr.t list -> ('inner, 'outer) text elt list
+  -> Types.TypeExpr.t list -> ('inner, 'outer) text elt list
   -> ('inner, 'outer) text elt list
 = fun ~get_package ~delim params path ->
   match params with
@@ -711,7 +711,7 @@ and format_type_path
 
 and type_expr
    : 'inner 'outer. ?needs_parentheses:bool -> get_package:('a -> string)
-  -> 'a Types.TypeExpr.t -> ('inner, 'outer) text elt list
+  -> Types.TypeExpr.t -> ('inner, 'outer) text elt list
 = fun ?(needs_parentheses=false) ~get_package t ->
   match t with
   | Var s -> [Markup.Type.var ("'" ^ s)]
@@ -761,8 +761,8 @@ and type_expr
     @ [pcdata ")"]
 
 and package_subst
-   : 'inner 'outer. get_package:('a -> string)
-   -> 'a Path.module_type -> 'a Fragment.type_ * 'a Types.TypeExpr.t
+   : 'inner 'outer. get_package:(Root.t -> string)
+   -> Path.module_type -> Fragment.type_ * Types.TypeExpr.t
    -> ('inner, 'outer) text elt list
    = fun ~get_package pkg_path (frag_typ, te) ->
   Markup.keyword "type " ::
@@ -778,7 +778,7 @@ and package_subst
   pcdata " " :: Markup.keyword "=" :: pcdata " " ::
   type_expr ~get_package te
 
-and value ~get_package (t : _ Types.Value.t) =
+and value ~get_package (t : Types.Value.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
   let value =
@@ -789,7 +789,7 @@ and value ~get_package (t : _ Types.Value.t) =
   in
   Markup.make_def ~get_package ~id:t.id ~doc ~code:value
 
-and external_ ~get_package (t : _ Types.External.t) =
+and external_ ~get_package (t : Types.External.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
   let external_ =
@@ -802,7 +802,7 @@ and external_ ~get_package (t : _ Types.External.t) =
   in
   Markup.make_def ~get_package ~id:t.id ~doc ~code:external_
 
-and class_signature ~get_package (t : _ Types.ClassSignature.t) =
+and class_signature ~get_package (t : Types.ClassSignature.t) =
   (* FIXME: use [t.self] *)
   let recording_doc = ref true in
   List.concat @@ List.map t.items ~f:(function
@@ -823,7 +823,7 @@ and class_signature ~get_package (t : _ Types.ClassSignature.t) =
       []
   )
 
-and method_ ~get_package (t : _ Types.Method.t) =
+and method_ ~get_package (t : Types.Method.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -838,7 +838,7 @@ and method_ ~get_package (t : _ Types.Method.t) =
   in
   Markup.make_def ~get_package ~id:t.id ~doc ~code:method_
 
-and instance_variable ~get_package (t : _ Types.InstanceVariable.t) =
+and instance_variable ~get_package (t : Types.InstanceVariable.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html ~get_package t.doc in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -854,10 +854,10 @@ and instance_variable ~get_package (t : _ Types.InstanceVariable.t) =
   Markup.make_def ~get_package ~id:t.id ~doc ~code:val_
 
 and class_type_expr
-   : 'inner_row 'outer_row. get_package:('a -> string)
-  -> 'a Types.ClassType.expr
+   : 'inner_row 'outer_row. get_package:(Root.t -> string)
+  -> Types.ClassType.expr
   -> ('inner_row, 'outer_row) text elt list
-   = fun ~get_package (cte : _ Types.ClassType.expr) ->
+   = fun ~get_package (cte : Types.ClassType.expr) ->
      match cte with
      | Constr (path, args) ->
        let link = Html_tree.Relative_link.of_path ~stop_before:false ~get_package path in
@@ -866,10 +866,10 @@ and class_type_expr
        [ Markup.keyword "object" ; pcdata " ... " ; Markup.keyword "end" ]
 
 and class_decl
-   : 'inner_row 'outer_row. get_package:('a -> string)
-  -> 'a Types.Class.decl
+   : 'inner_row 'outer_row. get_package:(Root.t -> string)
+  -> Types.Class.decl
   -> ('inner_row, 'outer_row) text elt list
-  = fun ~get_package (cd : _ Types.Class.decl) ->
+  = fun ~get_package (cd : Types.Class.decl) ->
     match cd with
     | ClassType expr -> class_type_expr ~get_package expr
     (* TODO: factorize the following with [type_expr] *)
@@ -881,7 +881,7 @@ and class_decl
       type_expr ~needs_parentheses:true ~get_package src @
       pcdata " " :: Markup.arrow :: pcdata " " :: class_decl ~get_package dst
 
-and class_ ~get_package (t : _ Types.Class.t) =
+and class_ ~get_package (t : Types.Class.t) =
   let name = Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -916,7 +916,7 @@ and class_ ~get_package (t : _ Types.Class.t) =
   in
   [ region ], subtree
 
-and class_type ~get_package (t : _ Types.ClassType.t) =
+and class_type ~get_package (t : Types.ClassType.t) =
   let name = Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -951,7 +951,7 @@ and class_type ~get_package (t : _ Types.ClassType.t) =
   in
   [ region ], subtree
 
-and include_ ~get_package (t : _ Types.Include.t) =
+and include_ ~get_package (t : Types.Include.t) =
   let doc = Documentation.to_html ~get_package t.doc in
   let included_html, tree = signature ~get_package t.expansion.content in
   let should_be_inlined, should_be_open =
@@ -993,7 +993,7 @@ and include_ ~get_package (t : _ Types.Include.t) =
       (div ~a:[ a_class ["doc"] ] doc :: incl)
   ], tree
 
-let page ~get_package (t : _ Types.Page.t) : Html_tree.t =
+let page ~get_package (t : Types.Page.t) : Html_tree.t =
   let package, name =
     match t.name with
     | Paths.Identifier.Page (a, name) -> get_package a, name

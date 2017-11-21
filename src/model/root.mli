@@ -68,3 +68,6 @@ val to_string : t -> string
 (**/**)
 
 module Table : Hashtbl.S with type key = t
+
+val contains_double_underscore : string -> bool
+(* not the best place for this but. *)

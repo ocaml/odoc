@@ -43,7 +43,7 @@ let (>>=) x f =
   | Error _ as e -> e
 
 let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool ->
-  ('x, a) Identifier.t -> (t, Error.t) result =
+  a Identifier.t -> (t, Error.t) result =
   fun ~get_package ~stop_before ->
     let open Error in
     function
@@ -173,7 +173,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Error (Unexpected_anchor otherwise)
 
 and from_identifier_no_anchor : type a. get_package:('x -> string) ->
-  ('x, a) Identifier.t -> (string list, Error.t) result =
+  a Identifier.t -> (string list, Error.t) result =
   fun ~get_package id ->
     from_identifier ~get_package ~stop_before:false id
     >>= function
@@ -190,8 +190,8 @@ let kind_of_id_exn ~get_package id =
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
 
-let render_path : type a. (_, a) Path.t -> string =
-  let rec render_resolved : type a. (_, a) Path.Resolved.t -> string =
+let render_path : type a. a Path.t -> string =
+  let rec render_resolved : type a. a Path.Resolved.t -> string =
     let open Path.Resolved in
     function
     | Identifier id -> Identifier.name id
@@ -206,7 +206,7 @@ let render_path : type a. (_, a) Path.t -> string =
     | Type (p, s) -> render_resolved p ^ "." ^ s
     | Class (p, s) -> render_resolved p ^ "." ^ s
     | ClassType (p, s) -> render_resolved p ^ "." ^ s
-  and render_path : type a. (_, a) Path.t -> string =
+  and render_path : type a. a Path.t -> string =
     let open Path in
     function
     | Root root -> root
@@ -249,7 +249,7 @@ module Anchor = struct
     (* TODO: better error message. *)
     let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
-    let rec from_reference : type a. (_, a) Reference.t -> t = function
+    let rec from_reference : type a. a Reference.t -> t = function
       | Reference.Root (name, _) -> { kind = "xref-unresolved"; name }
       | Reference.Dot (parent, suffix) ->
         let { name; _ } = from_reference parent in
@@ -265,7 +265,7 @@ module Anchor = struct
       | _ ->
         fail ()
 
-    and from_resolved : type a. (_, a) Reference.Resolved.t -> t =
+    and from_resolved : type a. a Reference.Resolved.t -> t =
       let open Reference.Resolved in
       function
       | Identifier id ->

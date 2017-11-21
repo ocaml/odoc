@@ -18,12 +18,12 @@ open Paths
 open Model
 
 
-class type ['a] t = object
-  method root : 'a -> 'a
-  inherit ['a] Maps.paths
+class type t = object
+  method root : Root.t -> Root.t
+  inherit Maps.paths
   method offset_identifier_signature :
-    'a Identifier.signature * int -> 'a Identifier.signature * int
-  inherit ['a] Maps.types
+    Identifier.signature * int -> Identifier.signature * int
+  inherit Maps.types
 end
 
 let signature s sg =
@@ -93,50 +93,50 @@ let module_type_expr s expr =
 let module_expansion s expr =
   s#module_expansion expr
 
-class ['a] rename_signature ~equal (x : 'a Identifier.signature)
-        (y : 'a Identifier.signature) offset : ['a] t = object
+class rename_signature ~equal:_ (x : Identifier.signature)
+        (y : Identifier.signature) offset : t = object
 
-  inherit ['a] Maps.paths as super
+  inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_signature id =
-    if Identifier.equal ~equal id x then y
+    if Identifier.equal id x then y
     else super#identifier_signature id
 
-  method! identifier (type k) (id : ('a, k) Identifier.t)
-         : ('a, k) Identifier.t =
+  method! identifier (type k) (id : k Identifier.t)
+         : k Identifier.t =
     match id with
     | Identifier.Argument(parent, pos, name) ->
-        if Identifier.equal ~equal parent x then
+        if Identifier.equal parent x then
           Identifier.Argument(y, pos + offset, name)
         else super#identifier id
     | id -> super#identifier id
 
   method offset_identifier_signature (id, offset') =
-    if Identifier.equal ~equal id x then (y, offset + offset')
+    if Identifier.equal id x then (y, offset + offset')
     else (super#identifier_signature id, offset')
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
 end
 
 let rename_signature ~equal x y offset =
   new rename_signature ~equal x y offset
 
-class ['a] rename_class_signature ~equal
-           (x : 'a Identifier.class_signature)
-           (y : 'a Identifier.class_signature) : ['a] t = object (self)
+class rename_class_signature ~equal:_
+           (x : Identifier.class_signature)
+           (y : Identifier.class_signature) : t = object (self)
 
-  inherit ['a] Maps.paths as super
+  inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_class_signature id =
-    if Identifier.equal ~equal id x then y
+    if Identifier.equal id x then y
     else super#identifier_class_signature id
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -146,18 +146,18 @@ end
 let rename_class_signature ~equal x y =
   new rename_class_signature ~equal x y
 
-class ['a] rename_datatype ~equal (x : 'a Identifier.datatype)
-        (y : 'a Identifier.datatype) : ['a] t = object (self)
+class rename_datatype ~equal:_ (x : Identifier.datatype)
+        (y : Identifier.datatype) : t = object (self)
 
-  inherit ['a] Maps.paths as super
+  inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_datatype id =
-    if Identifier.equal ~equal id x then y
+    if Identifier.equal id x then y
     else super#identifier_datatype id
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -172,18 +172,17 @@ let rename_datatype ~equal x y =
   let open Path.Resolved in
     (Module(Identifier id, name))*)
 
-class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
+class prefix ~equal:_ ~canonical id : t = object (self)
 
-  inherit ['a] Maps.paths as super
+  inherit Maps.paths as super
 
   method root x = x
 
   (* OCaml can't type-check this method yet, so we use magic*)
-  method! path_resolved : type k. ('a, k) Path.Resolved.t ->
-                              ('a, k) Path.Resolved.t =
+  method! path_resolved : type k. k Path.Resolved.t -> k Path.Resolved.t =
     fun p ->
       let matches id' =
-        Identifier.equal ~equal (Identifier.signature_of_module id) id'
+        Identifier.equal (Identifier.signature_of_module id) id'
       in
       let open Path.Resolved in
       let replacement =
@@ -209,12 +208,12 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
             else super#path_resolved p
         | _ -> super#path_resolved p
 
-  method! reference_resolved : type k. ('a, k) Reference.Resolved.t ->
-                              ('a, k) Reference.Resolved.t =
+  method! reference_resolved : type k. k Reference.Resolved.t ->
+                              k Reference.Resolved.t =
     fun r ->
       let sid = Identifier.signature_of_module id in
       let matches id' =
-        Identifier.equal ~equal sid id'
+        Identifier.equal sid id'
       in
       let open Reference.Resolved in
       let replacement =
@@ -260,7 +259,7 @@ class ['a] prefix ~equal ~canonical id : ['a] t = object (self)
         end
       | _ -> super#reference_resolved r
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)
@@ -270,9 +269,9 @@ end
 let prefix ~equal ~canonical id =
   new prefix ~equal ~canonical id
 
-class ['a] strengthen path : ['a] t = object
+class strengthen path : t = object
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
   method root x = x
 
@@ -310,7 +309,7 @@ class ['a] strengthen path : ['a] t = object
 
   method! include_ x = x
 
-  inherit ['a] Maps.paths
+  inherit Maps.paths
 
   method offset_identifier_signature x = x
 
@@ -321,12 +320,12 @@ end
 let strengthen path =
   new strengthen path
 
-let make_lookup (type a) ~equal ~hash
-                (items : (a Identifier.module_ * a Identifier.module_) list) =
+let make_lookup ~equal:_ ~hash:_
+                (items : (Identifier.module_ * Identifier.module_) list) =
   let module Hash = struct
-    type t = a Identifier.module_
-    let equal = Identifier.equal ~equal
-    let hash = Identifier.hash ~hash
+    type t = Identifier.module_
+    let equal = Identifier.equal
+    let hash = Identifier.hash
   end in
   let module Tbl = Hashtbl.Make(Hash) in
   let tbl = Tbl.create 13 in
@@ -336,17 +335,17 @@ let make_lookup (type a) ~equal ~hash
         | id -> Some id
         | exception Not_found -> None
 
-class ['a] pack ~equal ~hash
-           (items : ('a Identifier.module_
-                     * 'a Identifier.module_) list) : ['a] t = object (self)
+class pack ~equal ~hash
+           (items : (Identifier.module_
+                     * Identifier.module_) list) : t = object (self)
 
   val lookup = make_lookup ~equal ~hash items
 
   method root x = x
 
-  inherit ['a] Maps.paths as super
+  inherit Maps.paths as super
 
-  method! identifier : type k. ('a, k) Identifier.t -> ('a, k) Identifier.t =
+  method! identifier : type k. k Identifier.t -> k Identifier.t =
     fun id ->
       let open Identifier in
         match id with
@@ -367,7 +366,7 @@ class ['a] pack ~equal ~hash
           end
         | _ -> super#identifier id
 
-  inherit ['a] Maps.types
+  inherit Maps.types
 
   method offset_identifier_signature (id, offset) =
     (self#identifier_signature id, offset)

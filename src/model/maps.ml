@@ -28,11 +28,11 @@ let pair_map f g p =
     if a != a' || b != b' then (a', b')
     else p
 
-class virtual ['a] identifier = object (self)
+class virtual identifier = object (self)
 
-  method virtual root : 'a -> 'a
+  method virtual root : Root.t -> Root.t
 
-  method identifier : type k . ('a, k) Identifier.t -> ('a, k) Identifier.t =
+  method identifier : type k . k Identifier.t -> k Identifier.t =
     fun id ->
       let open Identifier in
         match id with
@@ -195,66 +195,64 @@ class virtual ['a] identifier = object (self)
 
   method identifier_label_name name = name
 
-  method identifier_page (id : 'a Identifier.page) =
+  method identifier_page (id : Identifier.page) =
     self#identifier id
 
-  method identifier_signature (id : 'a Identifier.signature) =
+  method identifier_signature (id : Identifier.signature) =
     self#identifier id
 
-  method identifier_class_signature (id : 'a Identifier.class_signature) =
+  method identifier_class_signature (id : Identifier.class_signature) =
     self#identifier id
 
-  method identifier_datatype (id : 'a Identifier.datatype) =
+  method identifier_datatype (id : Identifier.datatype) =
     self#identifier id
 
-  method identifier_module (id : 'a Identifier.module_) =
+  method identifier_module (id : Identifier.module_) =
     self#identifier id
 
-  method identifier_module_type (id : 'a Identifier.module_type) =
+  method identifier_module_type (id : Identifier.module_type) =
     self#identifier id
 
-  method identifier_type (id : 'a Identifier.type_) =
+  method identifier_type (id : Identifier.type_) =
     self#identifier id
 
-  method identifier_constructor (id : 'a Identifier.constructor) =
+  method identifier_constructor (id : Identifier.constructor) =
     self#identifier id
 
-  method identifier_field (id : 'a Identifier.field) =
+  method identifier_field (id : Identifier.field) =
     self#identifier id
 
-  method identifier_extension (id : 'a Identifier.extension) =
+  method identifier_extension (id : Identifier.extension) =
     self#identifier id
 
-  method identifier_exception (id : 'a Identifier.exception_) =
+  method identifier_exception (id : Identifier.exception_) =
     self#identifier id
 
-  method identifier_value (id : 'a Identifier.value) =
+  method identifier_value (id : Identifier.value) =
     self#identifier id
 
-  method identifier_class (id : 'a Identifier.class_) =
+  method identifier_class (id : Identifier.class_) =
     self#identifier id
 
-  method identifier_class_type (id : 'a Identifier.class_type) =
+  method identifier_class_type (id : Identifier.class_type) =
     self#identifier id
 
-  method identifier_method (id : 'a Identifier.method_) =
+  method identifier_method (id : Identifier.method_) =
     self#identifier id
 
-  method identifier_instance_variable (id : 'a Identifier.instance_variable) =
+  method identifier_instance_variable (id : Identifier.instance_variable) =
     self#identifier id
 
-  method identifier_label (id : 'a Identifier.label) =
+  method identifier_label (id : Identifier.label) =
     self#identifier id
 
 end
 
-class virtual ['a] path = object (self)
+class virtual path = object (self)
 
-  method virtual identifier : 'k . ('a, 'k) Identifier.t ->
-    ('a, 'k) Identifier.t
+  method virtual identifier : 'k . 'k Identifier.t -> 'k Identifier.t
 
-  method path_resolved : type k. ('a, k) Path.Resolved.t ->
-                                   ('a, k) Path.Resolved.t =
+  method path_resolved : type k. k Path.Resolved.t -> k Path.Resolved.t =
     fun p ->
       let open Path.Resolved in
         match p with
@@ -325,19 +323,19 @@ class virtual ['a] path = object (self)
 
   method path_resolved_class_type_name name = name
 
-  method path_resolved_module (p : 'a Path.Resolved.module_) =
+  method path_resolved_module (p : Path.Resolved.module_) =
     self#path_resolved p
 
-  method path_resolved_module_type (p : 'a Path.Resolved.module_type) =
+  method path_resolved_module_type (p : Path.Resolved.module_type) =
     self#path_resolved p
 
-  method path_resolved_type (p : 'a Path.Resolved.type_) =
+  method path_resolved_type (p : Path.Resolved.type_) =
     self#path_resolved p
 
-  method path_resolved_class_type (p : 'a Path.Resolved.class_type) =
+  method path_resolved_class_type (p : Path.Resolved.class_type) =
     self#path_resolved p
 
-  method path : type k . ('a, k) Path.t -> ('a, k) Path.t =
+  method path : type k . k Path.t -> k Path.t =
     fun p ->
       let open Path in
         match p with
@@ -368,27 +366,27 @@ class virtual ['a] path = object (self)
 
   method path_dot_name name = name
 
-  method path_module (p : 'a Path.module_) =
+  method path_module (p : Path.module_) =
     self#path p
 
-  method path_module_type (p : 'a Path.module_type) =
+  method path_module_type (p : Path.module_type) =
     self#path p
 
-  method path_type (p : 'a Path.type_) =
+  method path_type (p : Path.type_) =
     self#path p
 
-  method path_class_type (p : 'a Path.class_type) =
+  method path_class_type (p : Path.class_type) =
     self#path p
 
 end
 
-class virtual ['a] fragment = object (self)
+class virtual fragment = object (self)
 
-  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
-                                   ('a, 'k) Path.Resolved.t
+  method virtual path_resolved : 'k. 'k Path.Resolved.t ->
+                                   'k Path.Resolved.t
 
-  method fragment_resolved : type k s. ('a, k, s) Fragment.Resolved.raw ->
-                                         ('a, k, s) Fragment.Resolved.raw =
+  method fragment_resolved : type k s. (k, s) Fragment.Resolved.raw ->
+                                         (k, s) Fragment.Resolved.raw =
     fun p ->
       let open Fragment.Resolved in
         match p with
@@ -433,14 +431,13 @@ class virtual ['a] fragment = object (self)
 
   method fragment_resolved_class_type_name name = name
 
-  method fragment_resolved_module (p : 'a Fragment.Resolved.module_) =
+  method fragment_resolved_module (p : Fragment.Resolved.module_) =
     self#fragment_resolved p
 
-  method fragment_resolved_type (p : 'a Fragment.Resolved.type_) =
+  method fragment_resolved_type (p : Fragment.Resolved.type_) =
     self#fragment_resolved p
 
-  method fragment : type k s. ('a, k, s) Fragment.raw ->
-                                     ('a, k, s) Fragment.raw =
+  method fragment : type k s. (k, s) Fragment.raw -> (k, s) Fragment.raw =
     fun p ->
       let open Fragment in
         match p with
@@ -456,24 +453,22 @@ class virtual ['a] fragment = object (self)
 
   method fragment_name name = name
 
-  method fragment_module (p : 'a Fragment.module_) =
+  method fragment_module (p : Fragment.module_) =
     self#fragment p
 
-  method fragment_type (p : 'a Fragment.type_) =
+  method fragment_type (p : Fragment.type_) =
     self#fragment p
 
 end
 
-class virtual ['a] reference = object (self)
+class virtual reference = object (self)
 
-  method virtual identifier : 'k . ('a, 'k) Identifier.t ->
-    ('a, 'k) Identifier.t
+  method virtual identifier : 'k . 'k Identifier.t -> 'k Identifier.t
 
-  method virtual path_resolved : 'k. ('a, 'k) Path.Resolved.t ->
-    ('a, 'k) Path.Resolved.t
+  method virtual path_resolved : 'k. 'k Path.Resolved.t -> 'k Path.Resolved.t
 
-  method reference_resolved : type k. ('a, k) Reference.Resolved.t ->
-                                        ('a, k) Reference.Resolved.t =
+  method reference_resolved : type k. k Reference.Resolved.t ->
+                                        k Reference.Resolved.t =
     fun r ->
       let open Reference.Resolved in
         match r with
@@ -598,51 +593,51 @@ class virtual ['a] reference = object (self)
 
   method reference_resolved_label_name name = name
 
-  method reference_resolved_module (r : 'a Reference.Resolved.module_) =
+  method reference_resolved_module (r : Reference.Resolved.module_) =
     self#reference_resolved r
 
   method reference_resolved_module_type
-           (r : 'a Reference.Resolved.module_type) =
+           (r : Reference.Resolved.module_type) =
     self#reference_resolved r
 
-  method reference_resolved_type (r : 'a Reference.Resolved.type_) =
+  method reference_resolved_type (r : Reference.Resolved.type_) =
     self#reference_resolved r
 
-  method reference_resolved_constructor (r : 'a Reference.Resolved.constructor) =
+  method reference_resolved_constructor (r : Reference.Resolved.constructor) =
     self#reference_resolved r
 
-  method reference_resolved_field (r : 'a Reference.Resolved.field) =
+  method reference_resolved_field (r : Reference.Resolved.field) =
     self#reference_resolved r
 
-  method reference_resolved_extension (r : 'a Reference.Resolved.extension) =
+  method reference_resolved_extension (r : Reference.Resolved.extension) =
     self#reference_resolved r
 
-  method reference_resolved_exception (r : 'a Reference.Resolved.exception_) =
+  method reference_resolved_exception (r : Reference.Resolved.exception_) =
     self#reference_resolved r
 
-  method reference_resolved_value (r : 'a Reference.Resolved.value) =
+  method reference_resolved_value (r : Reference.Resolved.value) =
     self#reference_resolved r
 
-  method reference_resolved_class (r : 'a Reference.Resolved.class_) =
+  method reference_resolved_class (r : Reference.Resolved.class_) =
     self#reference_resolved r
 
-  method reference_resolved_class_type (r : 'a Reference.Resolved.class_type) =
+  method reference_resolved_class_type (r : Reference.Resolved.class_type) =
     self#reference_resolved r
 
-  method reference_resolved_method (r : 'a Reference.Resolved.method_) =
+  method reference_resolved_method (r : Reference.Resolved.method_) =
     self#reference_resolved r
 
   method reference_resolved_instance_variable
-           (r : 'a Reference.Resolved.instance_variable) =
+           (r : Reference.Resolved.instance_variable) =
     self#reference_resolved r
 
-  method reference_resolved_label (r : 'a Reference.Resolved.label) =
+  method reference_resolved_label (r : Reference.Resolved.label) =
     self#reference_resolved r
 
-  method reference_resolved_any (r : 'a Reference.Resolved.any) =
+  method reference_resolved_any (r : Reference.Resolved.any) =
     self#reference_resolved r
 
-  method reference : type k . ('a, k) Reference.t -> ('a, k) Reference.t =
+  method reference : type k . k Reference.t -> k Reference.t =
     fun r ->
       let open Reference in
         match r with
@@ -755,109 +750,109 @@ class virtual ['a] reference = object (self)
 
   method reference_label_name name = name
 
-  method reference_module (r : 'a Reference.module_) =
+  method reference_module (r : Reference.module_) =
     self#reference r
 
-  method reference_module_type (r : 'a Reference.module_type) =
+  method reference_module_type (r : Reference.module_type) =
     self#reference r
 
-  method reference_type (r : 'a Reference.type_) =
+  method reference_type (r : Reference.type_) =
     self#reference r
 
-  method reference_constructor (r : 'a Reference.constructor) =
+  method reference_constructor (r : Reference.constructor) =
     self#reference r
 
-  method reference_field (r : 'a Reference.field) =
+  method reference_field (r : Reference.field) =
     self#reference r
 
-  method reference_extension (r : 'a Reference.extension) =
+  method reference_extension (r : Reference.extension) =
     self#reference r
 
-  method reference_exception (r : 'a Reference.exception_) =
+  method reference_exception (r : Reference.exception_) =
     self#reference r
 
-  method reference_value (r : 'a Reference.value) =
+  method reference_value (r : Reference.value) =
     self#reference r
 
-  method reference_class (r : 'a Reference.class_) =
+  method reference_class (r : Reference.class_) =
     self#reference r
 
-  method reference_class_type (r : 'a Reference.class_type) =
+  method reference_class_type (r : Reference.class_type) =
     self#reference r
 
-  method reference_method (r : 'a Reference.method_) =
+  method reference_method (r : Reference.method_) =
     self#reference r
 
-  method reference_instance_variable (r : 'a Reference.instance_variable) =
+  method reference_instance_variable (r : Reference.instance_variable) =
     self#reference r
 
-  method reference_label (r : 'a Reference.label) =
+  method reference_label (r : Reference.label) =
     self#reference r
 
-  method reference_any (r : 'a Reference.any) =
+  method reference_any (r : Reference.any) =
     self#reference r
 
 end
 
-class virtual ['a] paths = object
-  inherit ['a] identifier
-  inherit ['a] path
-  inherit ['a] fragment
-  inherit ['a] reference
+class virtual paths = object
+  inherit identifier
+  inherit path
+  inherit fragment
+  inherit reference
 end
 
-class virtual ['a] documentation = object (self)
+class virtual documentation = object (self)
 
   method virtual identifier_label :
-    'a Identifier.label -> 'a Identifier.label
+    Identifier.label -> Identifier.label
 
   method virtual identifier :
-    'k. ('a, 'k) Identifier.t -> ('a, 'k) Identifier.t
+    'k. 'k Identifier.t -> 'k Identifier.t
 
   method virtual path_module :
-    'a Path.module_ -> 'a Path.module_
+    Path.module_ -> Path.module_
 
   method virtual reference_module :
-    'a Reference.module_ -> 'a Reference.module_
+    Reference.module_ -> Reference.module_
 
   method virtual reference_module_type :
-    'a Reference.module_type -> 'a Reference.module_type
+    Reference.module_type -> Reference.module_type
 
   method virtual reference_type :
-    'a Reference.type_ -> 'a Reference.type_
+    Reference.type_ -> Reference.type_
 
   method virtual reference_constructor :
-    'a Reference.constructor -> 'a Reference.constructor
+    Reference.constructor -> Reference.constructor
 
   method virtual reference_field :
-    'a Reference.field -> 'a Reference.field
+    Reference.field -> Reference.field
 
   method virtual reference_extension :
-    'a Reference.extension -> 'a Reference.extension
+    Reference.extension -> Reference.extension
 
   method virtual reference_exception :
-    'a Reference.exception_ -> 'a Reference.exception_
+    Reference.exception_ -> Reference.exception_
 
   method virtual reference_value :
-    'a Reference.value -> 'a Reference.value
+    Reference.value -> Reference.value
 
   method virtual reference_class :
-    'a Reference.class_ -> 'a Reference.class_
+    Reference.class_ -> Reference.class_
 
   method virtual reference_class_type :
-    'a Reference.class_type -> 'a Reference.class_type
+    Reference.class_type -> Reference.class_type
 
   method virtual reference_method :
-    'a Reference.method_ -> 'a Reference.method_
+    Reference.method_ -> Reference.method_
 
   method virtual reference_instance_variable :
-    'a Reference.instance_variable -> 'a Reference.instance_variable
+    Reference.instance_variable -> Reference.instance_variable
 
   method virtual reference_label :
-    'a Reference.label -> 'a Reference.label
+    Reference.label -> Reference.label
 
   method virtual reference_any :
-    'a Reference.any -> 'a Reference.any
+    Reference.any -> Reference.any
 
   method documentation_style ds =
     let open Documentation in
@@ -1141,27 +1136,27 @@ class virtual ['a] documentation = object (self)
 
 end
 
-class virtual ['a] module_ = object (self)
+class virtual module_ = object (self)
 
   method virtual identifier_module :
-    'a Identifier.module_ -> 'a Identifier.module_
+    Identifier.module_ -> Identifier.module_
 
   method virtual path_module :
-    'a Path.module_ -> 'a Path.module_
+    Path.module_ -> Path.module_
 
   method virtual reference_module :
-    'a Reference.module_ -> 'a Reference.module_
+    Reference.module_ -> Reference.module_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual module_type_expr :
-    'a ModuleType.expr -> 'a ModuleType.expr
+    ModuleType.expr -> ModuleType.expr
 
-  method virtual signature : 'a Signature.t -> 'a Signature.t
+  method virtual signature : Signature.t -> Signature.t
 
   method virtual module_type_functor_arg :
-    'a FunctorArgument.t option -> 'a FunctorArgument.t option
+    FunctorArgument.t option -> FunctorArgument.t option
 
   method module_hidden h = h
 
@@ -1216,49 +1211,49 @@ class virtual ['a] module_ = object (self)
 
 end
 
-class virtual ['a] module_type = object (self)
+class virtual module_type = object (self)
 
   method virtual identifier_module :
-    'a Identifier.module_ -> 'a Identifier.module_
+    Identifier.module_ -> Identifier.module_
 
   method virtual identifier_module_type :
-    'a Identifier.module_type -> 'a Identifier.module_type
+    Identifier.module_type -> Identifier.module_type
 
   method virtual path_module :
-    'a Path.module_ -> 'a Path.module_
+    Path.module_ -> Path.module_
 
   method virtual path_module_type :
-    'a Path.module_type -> 'a Path.module_type
+    Path.module_type -> Path.module_type
 
   method virtual path_type :
-    'a Path.type_ -> 'a Path.type_
+    Path.type_ -> Path.type_
 
   method virtual fragment_module :
-    'a Fragment.module_ -> 'a Fragment.module_
+    Fragment.module_ -> Fragment.module_
 
   method virtual fragment_type :
-    'a Fragment.type_ -> 'a Fragment.type_
+    Fragment.type_ -> Fragment.type_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual module_decl :
-    'a Module.decl -> 'a Module.decl
+    Module.decl -> Module.decl
 
   method virtual module_equation :
-    'a Module.Equation.t -> 'a Module.Equation.t
+    Module.Equation.t -> Module.Equation.t
 
   method virtual signature :
-    'a Signature.t -> 'a Signature.t
+    Signature.t -> Signature.t
 
   method virtual type_decl_equation :
-    'a TypeDecl.Equation.t -> 'a TypeDecl.Equation.t
+    TypeDecl.Equation.t -> TypeDecl.Equation.t
 
   method virtual type_decl_param_name :
     string -> string
 
   method virtual module_expansion :
-    'a Module.expansion -> 'a Module.expansion
+    Module.expansion -> Module.expansion
 
   method module_type_substitution subst =
     let open ModuleType in
@@ -1336,40 +1331,40 @@ class virtual ['a] module_type = object (self)
       else mty
 end
 
-class virtual ['a] signature = object (self)
+class virtual signature = object (self)
 
   method virtual documentation_comment :
-    'a Documentation.comment -> 'a Documentation.comment
+    Documentation.comment -> Documentation.comment
 
   method virtual module_ :
-    'a Module.t -> 'a Module.t
+    Module.t -> Module.t
 
   method virtual module_type :
-    'a ModuleType.t -> 'a ModuleType.t
+    ModuleType.t -> ModuleType.t
 
   method virtual type_decl :
-    'a TypeDecl.t -> 'a TypeDecl.t
+    TypeDecl.t -> TypeDecl.t
 
   method virtual extension :
-    'a Extension.t -> 'a Extension.t
+    Extension.t -> Extension.t
 
   method virtual exception_ :
-    'a Exception.t -> 'a Exception.t
+    Exception.t -> Exception.t
 
   method virtual value :
-    'a Value.t -> 'a Value.t
+    Value.t -> Value.t
 
   method virtual external_ :
-    'a External.t -> 'a External.t
+    External.t -> External.t
 
   method virtual class_ :
-    'a Class.t -> 'a Class.t
+    Class.t -> Class.t
 
   method virtual class_type :
-    'a ClassType.t -> 'a ClassType.t
+    ClassType.t -> ClassType.t
 
   method virtual include_:
-    'a Include.t -> 'a Include.t
+    Include.t -> Include.t
 
   method signature_item item =
     let open Signature in
@@ -1424,18 +1419,18 @@ class virtual ['a] signature = object (self)
 
 end
 
-class virtual ['a] include_ = object (self)
+class virtual include_ = object (self)
 
   method virtual module_decl :
-    'a Module.decl -> 'a Module.decl
+    Module.decl -> Module.decl
 
   method virtual identifier_signature :
-    'a Identifier.signature -> 'a Identifier.signature
+    Identifier.signature -> Identifier.signature
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
-  method virtual signature : 'a Signature.t -> 'a Signature.t
+  method virtual signature : Signature.t -> Signature.t
 
   method include_expansion_resolved resolved =
     resolved
@@ -1462,22 +1457,22 @@ class virtual ['a] include_ = object (self)
 
 end
 
-class virtual ['a] type_decl = object (self)
+class virtual type_decl = object (self)
 
   method virtual identifier_type :
-    'a Identifier.type_ -> 'a Identifier.type_
+    Identifier.type_ -> Identifier.type_
 
   method virtual identifier_constructor :
-    'a Identifier.constructor -> 'a Identifier.constructor
+    Identifier.constructor -> Identifier.constructor
 
   method virtual identifier_field :
-    'a Identifier.field -> 'a Identifier.field
+    Identifier.field -> Identifier.field
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method type_decl_constructor_argument arg =
     let open TypeDecl.Constructor in
@@ -1591,16 +1586,16 @@ class virtual ['a] type_decl = object (self)
 
 end
 
-class virtual ['a] extension = object (self)
+class virtual extension = object (self)
 
   method virtual identifier_extension :
-    'a Identifier.extension -> 'a Identifier.extension
+    Identifier.extension -> Identifier.extension
 
   method virtual path_type :
-    'a Path.type_ -> 'a Path.type_
+    Path.type_ -> Path.type_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1609,10 +1604,10 @@ class virtual ['a] extension = object (self)
     bool -> bool
 
   method virtual type_decl_constructor_argument :
-    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
+    TypeDecl.Constructor.argument -> TypeDecl.Constructor.argument
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method extension_constructor cstr =
     let open Extension.Constructor in
@@ -1642,19 +1637,19 @@ class virtual ['a] extension = object (self)
 
 end
 
-class virtual ['a] exception_ = object (self)
+class virtual exception_ = object (self)
 
   method virtual identifier_exception :
-    'a Identifier.exception_ -> 'a Identifier.exception_
+    Identifier.exception_ -> Identifier.exception_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method virtual type_decl_constructor_argument :
-    'a TypeDecl.Constructor.argument -> 'a TypeDecl.Constructor.argument
+    TypeDecl.Constructor.argument -> TypeDecl.Constructor.argument
 
   method exception_ exn =
     let open Exception in
@@ -1669,16 +1664,16 @@ class virtual ['a] exception_ = object (self)
 
 end
 
-class virtual ['a] value = object (self)
+class virtual value = object (self)
 
   method virtual identifier_value :
-    'a Identifier.value -> 'a Identifier.value
+    Identifier.value -> Identifier.value
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method value v =
     let open Value in
@@ -1692,16 +1687,16 @@ class virtual ['a] value = object (self)
 
 end
 
-class virtual ['a] external_ = object (self)
+class virtual external_ = object (self)
 
   method virtual identifier_value :
-    'a Identifier.value -> 'a Identifier.value
+    Identifier.value -> Identifier.value
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method external_ ve =
     let open External in
@@ -1720,28 +1715,28 @@ class virtual ['a] external_ = object (self)
 
 end
 
-class virtual ['a] class_ = object (self)
+class virtual class_ = object (self)
 
   method virtual identifier_class :
-    'a Identifier.class_ -> 'a Identifier.class_
+    Identifier.class_ -> Identifier.class_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
 
   method virtual class_type_expr :
-    'a ClassType.expr -> 'a ClassType.expr
+    ClassType.expr -> ClassType.expr
 
   method virtual type_expr_label :
     TypeExpr.label -> TypeExpr.label
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method virtual class_signature :
-    'a ClassSignature.t -> 'a ClassSignature.t
+    ClassSignature.t -> ClassSignature.t
 
   method class_decl decl =
     let open Class in
@@ -1778,25 +1773,25 @@ class virtual ['a] class_ = object (self)
 
 end
 
-class virtual ['a] class_type = object (self)
+class virtual class_type = object (self)
 
   method virtual identifier_class_type :
-    'a Identifier.class_type -> 'a Identifier.class_type
+    Identifier.class_type -> Identifier.class_type
 
   method virtual path_class_type :
-    'a Path.class_type -> 'a Path.class_type
+    Path.class_type -> Path.class_type
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
 
   method virtual class_signature :
-    'a ClassSignature.t -> 'a ClassSignature.t
+    ClassSignature.t -> ClassSignature.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method class_type_expr expr =
     let open ClassType in
@@ -1831,22 +1826,22 @@ class virtual ['a] class_type = object (self)
 
 end
 
-class virtual ['a] class_signature = object (self)
+class virtual class_signature = object (self)
 
   method virtual documentation_comment :
-    'a Documentation.comment -> 'a Documentation.comment
+    Documentation.comment -> Documentation.comment
 
   method virtual class_type_expr :
-    'a ClassType.expr -> 'a ClassType.expr
+    ClassType.expr -> ClassType.expr
 
   method virtual method_ :
-    'a Method.t -> 'a Method.t
+    Method.t -> Method.t
 
   method virtual instance_variable :
-    'a InstanceVariable.t -> 'a InstanceVariable.t
+    InstanceVariable.t -> InstanceVariable.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method class_signature_item item =
     let open ClassSignature in
@@ -1884,16 +1879,16 @@ class virtual ['a] class_signature = object (self)
 
 end
 
-class virtual ['a] method_ = object (self)
+class virtual method_ = object (self)
 
   method virtual identifier_method :
-    'a Identifier.method_ -> 'a Identifier.method_
+    Identifier.method_ -> Identifier.method_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method method_ meth =
     let open Method in
@@ -1916,16 +1911,16 @@ class virtual ['a] method_ = object (self)
 
 end
 
-class virtual ['a] instance_variable = object (self)
+class virtual instance_variable = object (self)
 
   method virtual identifier_instance_variable :
-    'a Identifier.instance_variable -> 'a Identifier.instance_variable
+    Identifier.instance_variable -> Identifier.instance_variable
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual type_expr :
-    'a TypeExpr.t -> 'a TypeExpr.t
+    TypeExpr.t -> TypeExpr.t
 
   method instance_variable meth =
     let open InstanceVariable in
@@ -1948,19 +1943,19 @@ class virtual ['a] instance_variable = object (self)
 
 end
 
-class virtual ['a] type_expr = object (self)
+class virtual type_expr = object (self)
 
   method virtual path_module_type :
-    'a Path.module_type -> 'a Path.module_type
+    Path.module_type -> Path.module_type
 
   method virtual path_type :
-    'a Path.type_ -> 'a Path.type_
+    Path.type_ -> Path.type_
 
   method virtual path_class_type :
-    'a Path.class_type -> 'a Path.class_type
+    Path.class_type -> Path.class_type
 
   method virtual fragment_type :
-    'a Fragment.type_ -> 'a Fragment.type_
+    Fragment.type_ -> Fragment.type_
 
   method type_expr_variant_kind kind = kind
 
@@ -2099,21 +2094,21 @@ class virtual ['a] type_expr = object (self)
 
 end
 
-class virtual ['a] unit = object (self)
+class virtual unit = object (self)
 
-  method virtual root : 'a -> 'a
+  method virtual root : Root.t -> Root.t
 
   method virtual identifier_module :
-    'a Identifier.module_ -> 'a Identifier.module_
+    Identifier.module_ -> Identifier.module_
 
   method virtual path_module :
-    'a Path.module_ -> 'a Path.module_
+    Path.module_ -> Path.module_
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method virtual signature :
-    'a Signature.t -> 'a Signature.t
+    Signature.t -> Signature.t
 
   method unit_import import =
     let open Compilation_unit.Import in
@@ -2205,13 +2200,13 @@ class virtual ['a] unit = object (self)
 
 end
 
-class virtual ['a] page = object (self)
+class virtual page = object (self)
 
   method virtual identifier_page :
-    'a Identifier.page -> 'a Identifier.page
+    Identifier.page -> Identifier.page
 
   method virtual documentation :
-    'a Documentation.t -> 'a Documentation.t
+    Documentation.t -> Documentation.t
 
   method page page =
     let open Page in
@@ -2228,23 +2223,23 @@ class virtual ['a] page = object (self)
 
 end
 
-class virtual ['a] types = object
-  inherit ['a] documentation
-  inherit ['a] module_
-  inherit ['a] module_type
-  inherit ['a] signature
-  inherit ['a] include_
-  inherit ['a] type_decl
-  inherit ['a] extension
-  inherit ['a] exception_
-  inherit ['a] value
-  inherit ['a] external_
-  inherit ['a] class_
-  inherit ['a] class_type
-  inherit ['a] class_signature
-  inherit ['a] method_
-  inherit ['a] instance_variable
-  inherit ['a] type_expr
-  inherit ['a] unit
-  inherit ['a] page
+class virtual types = object
+  inherit documentation
+  inherit module_
+  inherit module_type
+  inherit signature
+  inherit include_
+  inherit type_decl
+  inherit extension
+  inherit exception_
+  inherit value
+  inherit external_
+  inherit class_
+  inherit class_type
+  inherit class_signature
+  inherit method_
+  inherit instance_variable
+  inherit type_expr
+  inherit unit
+  inherit page
 end

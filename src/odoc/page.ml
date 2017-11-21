@@ -16,9 +16,9 @@
 
 
 
-type t = Doc_model.Root.t Doc_model.Types.Page.t
+type t = Doc_model.Types.Page.t
 
-let root (t : Doc_model.Root.t Doc_model.Types.Page.t) =
+let root (t : Doc_model.Types.Page.t) =
   match t.Doc_model.Types.Page.name with
   | Doc_model.Paths.Identifier.Page (root, _) -> root
 

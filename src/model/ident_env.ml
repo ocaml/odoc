@@ -19,15 +19,15 @@ open Predefined
 module Id = Paths.Identifier
 module Rp = Paths.Path.Resolved
 
-type 'a type_ident = ('a, [`Type|`Class|`ClassType]) Id.t
+type type_ident = [`Type | `Class | `ClassType] Id.t
 
-type 'a class_type_ident = ('a, [`Class|`ClassType]) Id.t
+type class_type_ident = [`Class | `ClassType] Id.t
 
-type 'a t =
-  { modules : 'a Rp.module_ Ident.tbl;
-    module_types : 'a Id.module_type Ident.tbl;
-    types : 'a type_ident Ident.tbl;
-    class_types : 'a class_type_ident Ident.tbl; }
+type t =
+  { modules : Rp.module_ Ident.tbl;
+    module_types : Id.module_type Ident.tbl;
+    types : type_ident Ident.tbl;
+    class_types : class_type_ident Ident.tbl; }
 
 let empty =
   { modules = Ident.empty;
@@ -37,7 +37,7 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let should_be_hidden = Paths.contains_double_underscore
+let should_be_hidden = Root.contains_double_underscore
 
 let add_module parent id env =
   let name = Ident.name id in
@@ -259,7 +259,7 @@ module Path = struct
       Resolved (Identifier (find_type env id))
     with Not_found -> assert false
 
-  let read_class_type_ident env id : 'a class_type =
+  let read_class_type_ident env id : class_type =
     try
       Resolved (Identifier (find_class_type env id))
     with Not_found ->
