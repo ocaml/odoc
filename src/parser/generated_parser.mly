@@ -49,7 +49,7 @@ type text_item =
   | Newline
   | Blank_line
   | String of string
-  | Element of text_element
+  | Element of Model.Documentation.text_element
 
 let iminus = String sminus
 
@@ -69,7 +69,7 @@ let rec skip_whitespace = function
 let rec convert acc stracc = function
   | [] ->
         if stracc = [] then acc
-        else (Raw (String.concat sempty stracc)) :: acc
+        else (Model.Documentation.Raw (String.concat sempty stracc)) :: acc
   | ti :: rest ->
       let acc, stracc =
         match ti with
@@ -529,13 +529,13 @@ text_element :
   | ENUM whitespace error
     { expecting 3 "enumerated list item" }
   | Ref
-    { Ref ($1, None) }
+    { Reference ($1, None) }
   | BEGIN Ref text END
-    { Ref ($2, Some (inner $3)) }
+    { Reference ($2, Some (inner $3)) }
   | BEGIN Ref text error
     { unclosed "{" 1 "text" "}" 3 }
   | Special_Ref
-    { Special_ref $1 }
+    { Special $1 }
   | Code
     { Code $1 }
   | Pre_Code

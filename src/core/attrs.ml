@@ -16,10 +16,6 @@
 
 
 
-let opt_map f = function
-  | None -> None
-  | Some x -> Some (f x)
-
 exception InvalidReference of string
 
 let read_qualifier :
@@ -388,42 +384,19 @@ let read_mod_longident lid : Paths.Reference.module_ =
       (* FIXME: propagate location *)
       raise (Expected_reference_to_a_module_but_got lid)
 
-let rec read_text_element
-    : Doc_parser.Output.text_element -> Model.Documentation.text_element =
-
-  function
-  | Raw s -> Raw s
-  | Code s -> Code s
-  | PreCode s -> PreCode s
-  | Verbatim s -> Verbatim s
-  | Style(sk, txt) -> Style (sk, read_text txt)
-  | List l -> List (List.map read_text l)
-  | Enum l -> Enum (List.map read_text l)
-  | Newline -> Newline
-  | Title(i, l, txt) -> begin
-      let txt = read_text txt in
-      Title (i, l, txt)
-    end
-  | Ref(rk, txt) ->
-      Reference(rk, opt_map read_text txt)
-  | Special_ref srk -> Special srk
-  | Target (target, code) -> Target (target, code)
-
-and read_text txt = List.map read_text_element txt
-
 let read_tag : Doc_parser.Output.tag -> Model.Documentation.tag =
   function
   | Author s -> Author s
   | Version v -> Version v
-  | See (r, t) -> See (r, read_text t)
+  | See (r, t) -> See (r, t)
   | Since s -> Since s
-  | Before (s, t) -> Before (s, read_text t)
-  | Deprecated t -> Deprecated (read_text t)
-  | Param (s, t) -> Param (s, read_text t)
-  | Raised_exception (s, t) -> Raise (s, read_text t)
-  | Return_value t -> Return (read_text t)
+  | Before (s, t) -> Before (s, t)
+  | Deprecated t -> Deprecated t
+  | Param (s, t) -> Param (s, t)
+  | Raised_exception (s, t) -> Raise (s, t)
+  | Return_value t -> Return t
   | Inline -> Inline
-  | Custom (s, t) -> Tag (s, read_text t)
+  | Custom (s, t) -> Tag (s, t)
   | Canonical p -> Canonical (read_path_longident p, read_mod_longident p)
 
 let empty_body = {Model.Documentation.text = []; tags = []}
@@ -541,7 +514,6 @@ let read_attributes parent id attrs =
             match Doc_parser.parse parent lexbuf with
             | Ok (text, tags) -> begin
                 try
-                  let text = read_text text in
                   let text = if first then text else Newline :: text in
                   let tags = List.map read_tag tags in
                   let nb_deprecated =
@@ -596,7 +568,6 @@ let read_string parent loc str : Model.Documentation.comment =
     match Doc_parser.parse parent lexbuf with
     | Ok (text, tags) -> begin
         try
-          let text = read_text text in
           let tags = List.map read_tag tags in
           Ok {Model.Documentation.text; tags}
         with InvalidReference s ->
