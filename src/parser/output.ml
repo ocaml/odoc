@@ -60,17 +60,11 @@ and text_element =
 (** [text] is a list of text_elements. The order matters. *)
 and text = text_element list
 
-(** The different forms of references in \@see tags. *)
-type see_ref =
-  | See_url of string
-  | See_file of string
-  | See_doc of string
-
 (** Tags *)
 type tag =
   | Author of string (** \@author tag *)
   | Version of string (** \@version tag *)
-  | See of see_ref * text (** \@see tag *)
+  | See of Model.Documentation.see * text (** \@see tag *)
   | Since of string (** \@since tag *)
   | Before of string * text (** \@before tag *)
   | Deprecated of text (** \@deprecated tag *)

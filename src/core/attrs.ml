@@ -451,17 +451,11 @@ let rec read_text_element parent
 
 and read_text parent txt = List.map (read_text_element parent) txt
 
-let read_see : Doc_parser.Output.see_ref -> Model.Documentation.see = function
-  | See_url s -> Url s
-  | See_file s -> File s
-  | See_doc s -> Doc s
-
-
 let read_tag parent : Doc_parser.Output.tag -> Model.Documentation.tag =
   function
   | Author s -> Author s
   | Version v -> Version v
-  | See (r, t) -> See (read_see r, read_text parent t)
+  | See (r, t) -> See (r, read_text parent t)
   | Since s -> Since s
   | Before (s, t) -> Before (s, read_text parent t)
   | Deprecated t -> Deprecated (read_text parent t)

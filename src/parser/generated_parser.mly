@@ -130,7 +130,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Param
 %token AUTHOR
 %token <string> Version
-%token <Output.see_ref> See
+%token <Model.Documentation.see> See
 %token <string> Since
 %token <string> Before
 %token DEPRECATED
