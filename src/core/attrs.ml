@@ -16,21 +16,6 @@
 
 
 
-let read_tag : Doc_parser.Output.tag -> Model.Documentation.tag =
-  function
-  | Author s -> Author s
-  | Version v -> Version v
-  | See (r, t) -> See (r, t)
-  | Since s -> Since s
-  | Before (s, t) -> Before (s, t)
-  | Deprecated t -> Deprecated t
-  | Param (s, t) -> Param (s, t)
-  | Raised_exception (s, t) -> Raise (s, t)
-  | Return_value t -> Return t
-  | Inline -> Inline
-  | Custom (s, t) -> Tag (s, t)
-  | Canonical (p, m) -> Canonical (p, m)
-
 let empty_body = {Model.Documentation.text = []; tags = []}
 
 let empty : Model.Documentation.t = Ok empty_body
@@ -135,7 +120,6 @@ let read_attributes parent id attrs =
             match Doc_parser.parse parent lexbuf with
             | Ok (text, tags) -> begin
                 let text = if first then text else Newline :: text in
-                let tags = List.map read_tag tags in
                 let nb_deprecated =
                   List.fold_right (function
                     | Model.Documentation.Deprecated _ -> (+) 1
@@ -185,7 +169,6 @@ let read_string parent loc str : Model.Documentation.comment =
   let doc : Model.Documentation.t =
     match Doc_parser.parse parent lexbuf with
     | Ok (text, tags) -> begin
-        let tags = List.map read_tag tags in
         Ok {Model.Documentation.text; tags}
       end
     | Error err -> Error (read_error parent err start_pos)

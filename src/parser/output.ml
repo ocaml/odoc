@@ -16,21 +16,5 @@
 
 (** Types for the information collected in comments. *)
 
-(** Tags *)
-type tag =
-  | Author of string (** \@author tag *)
-  | Version of string (** \@version tag *)
-  | See of Model.Documentation.see * Model.Documentation.text (** \@see tag *)
-  | Since of string (** \@since tag *)
-  | Before of string * Model.Documentation.text (** \@before tag *)
-  | Deprecated of Model.Documentation.text (** \@deprecated tag *)
-  | Param of string * Model.Documentation.text (** \@param tag *)
-  | Raised_exception of string * Model.Documentation.text (** \@raise tag *)
-  | Return_value of Model.Documentation.text (** \@return tag *)
-  | Inline (** \@inline tag *)
-  | Custom of string * Model.Documentation.text (** custom tag *)
-  | Canonical of Model.Paths.Path.module_ * Model.Paths.Reference.module_
-    (** \@canonical tag *)
-
 (** A special comment *)
-type t = Model.Documentation.text * tag list
+type t = Model.Documentation.text * Model.Documentation.tag list

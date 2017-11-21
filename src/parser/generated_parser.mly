@@ -278,13 +278,13 @@ text_tag :
   | Param text
     { Param($1, (text $2)) }
   | Raise text
-    { Raised_exception($1, (text $2)) }
+    { Raise ($1, (text $2)) }
   | RETURN text
-    { Return_value (text $2) }
+    { Return (text $2) }
   | INLINE whitespace
     { Inline }
   | Custom text
-    { Custom($1, (text $2)) }
+    { Tag ($1, (text $2)) }
 ;
 
 /* Various forms of whitespace */
