@@ -38,9 +38,6 @@ let parse_ref
   | Common.LexerError(location, err) ->
     Error {Error.error = Lexer err; location}
 
-let print : Format.formatter -> Output.t -> unit = fun fmt t ->
-  Print.pp fmt t
-
 
 
 module Output = Output
