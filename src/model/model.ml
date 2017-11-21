@@ -16,15 +16,10 @@
 
 (** Type of documentation *)
 
-module Root = Root
-module Paths = Paths
-
-open Paths
-
 (** {3 Documentation} *)
 
-module rec Documentation : sig
-
+module Documentation =
+struct
   type style =
     | Bold
     | Italic
@@ -37,7 +32,7 @@ module rec Documentation : sig
     | Custom of string
 
   type reference =
-    | Element of Reference.any
+    | Element of Paths.Reference.any
     | Link of string
     | Custom of string * string
 
@@ -57,7 +52,7 @@ module rec Documentation : sig
     | List of text list
     | Enum of text list
     | Newline
-    | Title of int * Identifier.label option * text
+    | Title of int * Paths.Identifier.label option * text
     | Reference of reference * text option
     | Target of string option * string
     | Special of special
@@ -74,51 +69,51 @@ module rec Documentation : sig
     | Return of text
     | Inline
     | Tag of string * text
-    | Canonical of Path.module_ * Reference.module_
+    | Canonical of Paths.Path.module_ * Paths.Reference.module_
 
   and special =
-    | Modules of (Reference.module_ * text) list
+    | Modules of (Paths.Reference.module_ * text) list
     | Index
 
-
-  module Error : sig
-
-    module Position : sig
-
-      type t =
-        { line: int;
-          column: int; }
-
+  module Error =
+  struct
+    module Position =
+    struct
+      type t = {
+        line : int;
+        column : int;
+      }
     end
 
-    module Offset : sig
-
-      type t =
-        { start: Position.t;
-          finish: Position.t; }
-
+    module Offset =
+    struct
+      type t = {
+        start: Position.t;
+        finish: Position.t;
+      }
     end
 
-    module Location : sig
-
-      type t =
-        { filename: string;
-          start: Position.t;
-          finish: Position.t; }
-
+    module Location =
+    struct
+      type t = {
+        filename: string;
+        start: Position.t;
+        finish: Position.t;
+      }
     end
 
-    type t =
-      { origin: Identifier.any; (** TODO remove this *)
-        offset: Offset.t;
-        location: Location.t option;
-        message: string; }
-
+    type t = {
+      origin: Paths.Identifier.any; (** TODO remove this *)
+      offset: Offset.t;
+      location: Location.t option;
+      message: string;
+    }
   end
 
-  type body =
-    { text: text;
-      tags: tag list; }
+  type body = {
+    text: text;
+    tags: tag list;
+  }
 
   type t =
     | Ok of body
@@ -127,8 +122,9 @@ module rec Documentation : sig
   type comment =
     | Documentation of t
     | Stop
+end
 
-end = Documentation
+open Paths
 
 (** {3 Modules} *)
 
@@ -550,3 +546,6 @@ module rec Page : sig
       content: Documentation.t;
       digest: Digest.t; }
 end = Page
+
+module Root = Root
+module Paths = Paths
