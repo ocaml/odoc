@@ -24,6 +24,8 @@ module Paths = Paths
 
 module Types = Model
 
+module Root = Model.Root
+
 (**/**)
 
 (** {2:from_ocaml Processing OCaml's compilation units} *)
@@ -99,5 +101,3 @@ val core_types : Model.TypeDecl.t list
 val core_exceptions : Model.Exception.t list
 
 module Lookup = Lookup
-
-module Root = Root

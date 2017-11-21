@@ -30,7 +30,7 @@ let atom s = Atom (Printf.sprintf "%S" s)
    the sexp_of_t functions. *)
 let sexp_of_root _ = Atom ""
 
-module Kind = Paths_types.Kind
+module Kind = Model.Paths_types.Kind
 
 open Kind
 
@@ -61,7 +61,7 @@ end
 
 module Identifier = struct
 
-  include Paths_types.Identifier
+  include Model.Paths_types.Identifier
 
   let rec sexp_of_t : type kind. kind t -> sexp =
     fun t ->
@@ -176,7 +176,7 @@ module Identifier = struct
       fun id1 id2 ->
         match id1, id2 with
         | Root(r1, s1), Root(r2, s2) ->
-            s1 = s2 && Root.equal r1 r2
+            s1 = s2 && Model.Root.equal r1 r2
         | Module(id1, s1), Module(id2, s2) ->
             s1 = s2 && loop id1 id2
         | Argument(id1, n1, s1), Argument(id2, n2, s2) ->
@@ -218,9 +218,9 @@ module Identifier = struct
       fun id ->
         match id with
         | Root(r, s) ->
-            Hashtbl.hash (1, Root.hash r, s)
+            Hashtbl.hash (1, Model.Root.hash r, s)
         | Page(r, s) ->
-            Hashtbl.hash (2, Root.hash r, s)
+            Hashtbl.hash (2, Model.Root.hash r, s)
         | Module(id, s) ->
             Hashtbl.hash (3, loop id, s)
         | Argument(id, n, s) ->
@@ -256,21 +256,21 @@ module Identifier = struct
     in
       loop id
 
-  let rec signature_root : signature -> Root.t = function
+  let rec signature_root : signature -> Model.Root.t = function
     | Root(r, _) -> r
     | Module(id, _) -> signature_root id
     | Argument(id, _, _) -> signature_root id
     | ModuleType(id, _) -> signature_root id
 
-  let module_root : module_ -> Root.t = function
+  let module_root : module_ -> Model.Root.t = function
     | Root(r, _) -> r
     | Module(id, _) -> signature_root id
     | Argument(id, _, _) -> signature_root id
 
-  let module_type_root : module_type -> Root.t = function
+  let module_type_root : module_type -> Model.Root.t = function
     | ModuleType(id, _) -> signature_root id
 
-  let class_signature_root : class_signature -> Root.t = function
+  let class_signature_root : class_signature -> Model.Root.t = function
     | Class(id, _)
     | ClassType(id, _) -> signature_root id
 
@@ -291,9 +291,9 @@ module Path = struct
   (* Separate types module to avoid repeating type definitions *)
   module rec Types : sig
 
-    module Resolved = Paths_types.Resolved_path
+    module Resolved = Model.Paths_types.Resolved_path
 
-    module Path = Paths_types.Path
+    module Path = Model.Paths_types.Path
 
   end = Types
 
@@ -775,7 +775,7 @@ module Fragment = struct
 
   module Resolved = struct
 
-    include Paths_types.Resolved_fragment
+    include Model.Paths_types.Resolved_fragment
 
     let rec sexp_of_t :
       type a c. (a, c) raw -> sexp =
@@ -1004,7 +1004,7 @@ module Fragment = struct
 
   open Resolved
 
-  include Paths_types.Fragment
+  include Model.Paths_types.Fragment
 
   let rec sexp_of_t :
     type a c. (a, c) raw -> sexp =
@@ -1104,9 +1104,9 @@ end
 
 module Reference = struct
   module rec Types : sig
-    module Resolved = Paths_types.Resolved_reference
+    module Resolved = Model.Paths_types.Resolved_reference
 
-    module Reference = Paths_types.Reference
+    module Reference = Model.Paths_types.Reference
   end = Types
 
   let sexp_of_tag : type k. k Types.Reference.tag -> sexp = function

@@ -8,7 +8,7 @@
 (executables
  ((names (testCmi testCmti testCmt))
   (modules (testCmi testCmti testCmt testCommon))
-  (libraries (odoc.model))))
+  (libraries (doc_model))))
 
 ; (alias
 ;  ((name   runtest)

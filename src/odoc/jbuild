@@ -4,4 +4,4 @@
  ((name odoc)
   (public_name odoc)
   (libraries
-   (odoc.model odoc.html unix fpath bos compiler-libs.common tyxml))))
+   (doc_model odoc.html unix fpath bos compiler-libs.common tyxml))))

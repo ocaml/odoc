@@ -15,7 +15,7 @@
  *)
 
 
-val read_interface: Root.t -> string -> Types.signature ->
+val read_interface: Model.Root.t -> string -> Types.signature ->
   Paths.Identifier.module_ *
   Model.Documentation.t *
   Model.Signature.t

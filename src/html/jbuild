@@ -3,4 +3,4 @@
 (library
  ((name doc_html)
   (public_name odoc.html)
-  (libraries (odoc.model tyxml))))
+  (libraries (doc_model tyxml))))

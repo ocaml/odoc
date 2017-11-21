@@ -24,12 +24,12 @@ type sexp =
 
 val string_of_sexp : sexp -> string
 
-module Kind = Paths_types.Kind
+module Kind = Model.Paths_types.Kind
 
 (** Identifiers for definitions *)
 module Identifier : sig
 
-  include module type of Paths_types.Identifier
+  include module type of Model.Paths_types.Identifier
 
   (** {2 Explicit coercions} *)
 
@@ -69,13 +69,13 @@ module Identifier : sig
 
   (** {2 Root retrieval} *)
 
-  val signature_root : signature -> Root.t
+  val signature_root : signature -> Model.Root.t
 
-  val module_root : module_ -> Root.t
+  val module_root : module_ -> Model.Root.t
 
-  val module_type_root : module_type -> Root.t
+  val module_type_root : module_type -> Model.Root.t
 
-  val class_signature_root : class_signature -> Root.t
+  val class_signature_root : class_signature -> Model.Root.t
 end
 
 (** Normal OCaml paths (i.e. the ones present in types) *)
@@ -83,7 +83,7 @@ module rec Path : sig
 
   module Resolved : sig
 
-    include module type of Paths_types.Resolved_path
+    include module type of Model.Paths_types.Resolved_path
 
     (** {2 Creators} *)
 
@@ -124,7 +124,7 @@ module rec Path : sig
     val equal_identifier : 'kind Identifier.t -> 'kind t -> bool
   end
 
-  include module type of Paths_types.Path
+  include module type of Model.Paths_types.Path
 
   (** {2 Creators} *)
 
@@ -173,7 +173,7 @@ module Fragment : sig
 
   module Resolved : sig
 
-    include module type of Paths_types.Resolved_fragment
+    include module type of Model.Paths_types.Resolved_fragment
 
     (** {2 Explicit coercions} *)
 
@@ -201,7 +201,7 @@ module Fragment : sig
 
   end
 
-  include module type of Paths_types.Fragment
+  include module type of Model.Paths_types.Fragment
 
   (** {2 Explicit coercions} *)
 
@@ -232,7 +232,7 @@ module rec Reference : sig
 
   module Resolved : sig
 
-    include module type of Paths_types.Resolved_reference
+    include module type of Model.Paths_types.Resolved_reference
 
     (** {2 Creators} *)
 
@@ -302,7 +302,7 @@ module rec Reference : sig
 
   end
 
-  include module type of Paths_types.Reference
+  include module type of Model.Paths_types.Reference
 
   (** {2 Creators} *)
 

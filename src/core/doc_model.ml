@@ -22,6 +22,8 @@ module Paths = Paths
 
 module Types = Model
 
+module Root = Model.Root
+
 type lookup_result = Component_table.lookup_unit_result =
   | Forward_reference
   | Found of { root : Root.t; hidden : bool }
@@ -218,5 +220,3 @@ let build_expander = Expand.build_expander
 let expand = Expand.expand
 
 module Lookup = Lookup
-
-module Root = Root
