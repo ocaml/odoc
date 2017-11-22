@@ -329,6 +329,9 @@ and read_class_signature env parent cltyp =
         let items = List.rev items in
           Signature {self; items}
     | Tcty_arrow _ -> assert false
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+    | Tcty_open _ -> assert false
+#endif
 
 let read_class_type_declaration env parent cltd =
   let open ClassType in
@@ -369,6 +372,9 @@ let rec read_class_type env parent cty =
       let arg = read_core_type env arg in
       let res = read_class_type env parent res in
         Arrow(lbl, arg, res)
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent cty
+#endif
 
 let read_class_description env parent cld =
   let open Class in
