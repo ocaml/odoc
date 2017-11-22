@@ -54,8 +54,7 @@ module Relative_link = struct
     exception Not_linkable
     exception Can't_stop_before
 
-    val href : get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
-      _ Identifier.t -> string
+    val href : stop_before:bool -> _ Identifier.t -> string
   end = struct
     exception Not_linkable
 
@@ -67,8 +66,8 @@ module Relative_link = struct
 
     exception Can't_stop_before
 
-    let href ~get_package ~stop_before id =
-      match Url.from_identifier ~get_package ~stop_before id with
+    let href ~stop_before id =
+      match Url.from_identifier ~stop_before id with
       | Ok { Url. page; anchor; kind } ->
         let target =
           List.rev (
@@ -112,24 +111,23 @@ module Relative_link = struct
   end
 
   module Of_path = struct
-    let rec to_html : type a. get_package:('b -> string) -> stop_before:bool ->
-      a Path.t -> _ =
-      fun ~get_package ~stop_before path ->
+    let rec to_html : type a. stop_before:bool -> a Path.t -> _ =
+      fun ~stop_before path ->
         let open Path in
         match path with
         | Root root -> [ pcdata root ]
         | Forward root -> [ pcdata root ] (* FIXME *)
         | Dot (prefix, suffix) ->
-          let link = to_html ~get_package ~stop_before:true prefix in
+          let link = to_html ~stop_before:true prefix in
           link @ [ pcdata ("." ^ suffix) ]
         | Apply (p1, p2) ->
-          let link1 = to_html ~get_package ~stop_before p1 in
-          let link2 = to_html ~get_package ~stop_before p2 in
+          let link1 = to_html ~stop_before p1 in
+          let link2 = to_html ~stop_before p2 in
           link1 @ pcdata "(":: link2 @ [ pcdata ")" ]
         | Resolved rp ->
           let id = Path.Resolved.identifier rp in
           let txt = Url.render_path path in
-          begin match Id.href ~get_package ~stop_before id with
+          begin match Id.href ~stop_before id with
           | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
           | exception Id.Not_linkable -> [ pcdata txt ]
           | exception exn ->
@@ -163,13 +161,13 @@ module Relative_link = struct
         | Class (rr, s) -> dot (render_resolved rr) s
         | ClassType (rr, s) -> dot (render_resolved rr) s
 
-    let rec to_html : type a. get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
+    let rec to_html : type a. stop_before:bool ->
       Identifier.signature -> (a, _) Fragment.raw -> _ =
-      fun ~get_package ~stop_before id fragment ->
+      fun ~stop_before id fragment ->
         let open Fragment in
         match fragment with
         | Resolved Resolved.Root ->
-          begin match Id.href ~get_package ~stop_before:true id with
+          begin match Id.href ~stop_before:true id with
           | href ->
             [ a ~a:[ a_href href ] [ pcdata (Identifier.name id) ] ]
           | exception Id.Not_linkable -> [ pcdata (Identifier.name id) ]
@@ -180,7 +178,7 @@ module Relative_link = struct
         | Resolved rr ->
           let id = Resolved.identifier id (Obj.magic rr : a Resolved.t) in
           let txt = render_resolved rr in
-          begin match Id.href ~get_package ~stop_before id with
+          begin match Id.href ~stop_before id with
           | href ->
             [ a ~a:[ a_href href ] [ pcdata txt ] ]
           | exception Id.Not_linkable -> [ pcdata txt ]
@@ -189,15 +187,15 @@ module Relative_link = struct
             [ pcdata txt ]
           end
         | Dot (prefix, suffix) ->
-          let link = to_html ~get_package ~stop_before:true id prefix in
+          let link = to_html ~stop_before:true id prefix in
           link @ [ pcdata ("." ^ suffix) ]
   end
 
-  let of_path ~get_package ~stop_before p =
-    Of_path.to_html ~get_package ~stop_before p
+  let of_path ~stop_before p =
+    Of_path.to_html ~stop_before p
 
-  let of_fragment ~get_package ~base frag =
-    Of_fragment.to_html ~get_package ~stop_before:false base frag
+  let of_fragment ~base frag =
+    Of_fragment.to_html ~stop_before:false base frag
 
   let to_sub_element ~kind name =
     (* FIXME: Reuse [Url]. *)

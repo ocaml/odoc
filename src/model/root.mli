@@ -60,6 +60,9 @@ val digest : t -> Digest.t
 val package: t -> Package.t
 val file   : t -> Odoc_file.t
 
+val get_package : t -> string
+(** Temporary, during refactoring. *)
+
 (** {1 Serialization} *)
 
 val to_string : t -> string

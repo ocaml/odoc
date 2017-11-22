@@ -145,9 +145,9 @@ module Reference = struct
     | Reference.Resolved r -> render_resolved r
 
 
-  let rec to_html : type a. get_package:('b -> string) -> ?text:kind -> stop_before:bool
+  let rec to_html : type a. ?text:kind -> stop_before:bool
     -> a Reference.t -> kind =
-    fun ~get_package ?text ~stop_before ref ->
+    fun ?text ~stop_before ref ->
       let span' txt =
         let span x =
           span x ~a:[ a_class ["xref-unresolved"]
@@ -174,33 +174,33 @@ module Reference = struct
         | Some s -> span' s
         end
       | Dot (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Module (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | ModuleType (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Type (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Constructor (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Field (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Extension (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Exception (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Value (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Class (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | ClassType (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Method (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | InstanceVariable (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Label (parent, s) ->
-        unresolved_parts_to_html ~get_package ?text span' parent s
+        unresolved_parts_to_html ?text span' parent s
       | Resolved r ->
         let id = Reference.Resolved.identifier r in
         let txt =
@@ -208,7 +208,7 @@ module Reference = struct
           | None -> Phrasing_without_interactive [ pcdata (render_resolved r) ]
           | Some s -> s
         in
-        begin match Id.href ~get_package ~stop_before id with
+        begin match Id.href ~stop_before id with
         | exception Id.Not_linkable -> txt
         | exception exn ->
           (* FIXME: better error message *)
@@ -227,15 +227,15 @@ module Reference = struct
         end
 
   and unresolved_parts_to_html :
-    type a. get_package:('b -> string) -> ?text:kind -> (kind -> kind) ->
+    type a. ?text:kind -> (kind -> kind) ->
       a Reference.t -> string -> kind =
-    fun ~get_package ?text span' parent s ->
+    fun ?text span' parent s ->
       match text with
       | Some s -> span' s
       | None ->
         let tail = [ pcdata ("." ^ s) ] in
         span' (
-          match to_html ~get_package ~stop_before:true parent with
+          match to_html ~stop_before:true parent with
           | Phrasing content -> Phrasing (content @ tail)
           | Phrasing_without_interactive content ->
             Phrasing_without_interactive (content @ tail)
@@ -245,13 +245,11 @@ module Reference = struct
           | Newline _ -> Phrasing_without_interactive tail
         )
 
-  let link
-      ~get_package ?text (ref : Doc_model.Types.Documentation.reference) =
-
+  let link ?text (ref : Doc_model.Types.Documentation.reference) =
     (* It is wonderful that although each these [r] is a [Reference.t] the phantom
        type parameters are not the same so we can't merge the branches. *)
     match ref with
-    | Element r          -> to_html ~get_package ~stop_before:false ?text r
+    | Element r          -> to_html ~stop_before:false ?text r
     | Link s ->
       let text =
         match text with
@@ -309,12 +307,10 @@ let whitespace_only s =
   in
   aux (String.length s - 1)
 
-let rec aggregate ~get_package lst =
-  collapse (ListLabels.concat @@ ListLabels.map lst ~f:(format ~get_package))
+let rec aggregate lst =
+  collapse (ListLabels.concat @@ ListLabels.map lst ~f:format)
 
-and format ~get_package :
-    Doc_model.Types.Documentation.text_element -> kind list = function
-
+and format : Doc_model.Types.Documentation.text_element -> kind list = function
   | Raw      s ->
     if whitespace_only s then []
     else [ Phrasing_without_interactive [ pcdata s ] ]
@@ -324,29 +320,29 @@ and format ~get_package :
     [ Flow5_without_interactive [ pre [ pcdata v ] ] ]
   | PreCode  p ->
     [ Flow5_without_interactive [ pre [ code ~a:[ a_class ["code"] ] [ pcdata p ] ] ] ]
-  | Style (style, txt) -> apply_style ~get_package ~style txt
+  | Style (style, txt) -> apply_style ~style txt
   | List subs  ->
-    let subs = ListLabels.map subs ~f:(aggregate ~get_package) in
+    let subs = ListLabels.map subs ~f:aggregate in
     if ListLabels.exists subs ~f:(ListLabels.exists ~f:is_interactive) then
       [ Flow5 [ul (ListLabels.map subs ~f:make_li)] ]
     else
       [ Flow5_without_interactive
           [ul (ListLabels.map subs ~f:make_li_without_interactive)] ]
   | Enum subs ->
-    let subs = ListLabels.map subs ~f:(aggregate ~get_package) in
+    let subs = ListLabels.map subs ~f:aggregate in
     if ListLabels.exists subs ~f:(ListLabels.exists ~f:is_interactive) then
       [ Flow5 [ol (ListLabels.map subs ~f:make_li)] ]
     else
       [ Flow5_without_interactive
           [ol (ListLabels.map subs ~f:make_li_without_interactive)] ]
   | Newline -> [ Newline [] ]
-  | Title (lvl, label, txt) -> make_title ~get_package ~lvl ~label txt
+  | Title (lvl, label, txt) -> make_title ~lvl ~label txt
   | Reference (r,text) ->
     begin match text with
-    | None -> [ Reference.link ~get_package r ]
+    | None -> [ Reference.link r ]
     | Some text ->
-      ListLabels.map (aggregate ~get_package text)
-        ~f:(fun text -> Reference.link ~get_package ~text r)
+      ListLabels.map (aggregate text)
+        ~f:(fun text -> Reference.link ~text r)
     end
   | Target (Some "html", str) ->
     [ Flow5 [Unsafe.data str] ]
@@ -355,17 +351,17 @@ and format ~get_package :
   | Special (Doc_model.Types.Documentation.Modules refs) ->
     let table =
       table ~a:[ a_class ["modules"] ]
-        (ListLabels.map refs ~f:(module_index_entry ~get_package))
+        (ListLabels.map refs ~f:module_index_entry)
     in
     [ Flow5 [ table ] ]
   | Special (Doc_model.Types.Documentation.Index) ->
     Printf.eprintf "Warning: {!indexlist} is not yet supported by odoc.\n%!";
     []
 
-and module_index_entry ~get_package (reference, preamble) =
-  let link = Reference.to_html ~get_package ~stop_before:false reference in
+and module_index_entry (reference, preamble) =
+  let link = Reference.to_html ~stop_before:false reference in
   let doc =
-    match aggregate ~get_package preamble with
+    match aggregate preamble with
     | [] -> []
     | p :: _ -> to_flow5 p
   in
@@ -385,7 +381,7 @@ and module_index_entry ~get_package (reference, preamble) =
     ; td ~a:[ a_class ["doc"] ] doc
     ]
 
-and make_title ~get_package ~lvl ~label txt =
+and make_title ~lvl ~label txt =
   let header_fun, attrs =
     match lvl with
     | 1 -> h2, []
@@ -406,7 +402,7 @@ and make_title ~get_package ~lvl ~label txt =
           header_fun ~a:(a_id lbl :: a_class ["anchored"] :: attrs)
             ((a ~a:[ a_href ("#" ^ lbl); a_class ["anchor"] ] []) :: txt)
   in
-  let txt = aggregate ~get_package txt in
+  let txt = aggregate txt in
   let result, should_error =
     (* Best effort, titleize the first part of the subtree if we can. *)
     match txt with
@@ -426,8 +422,8 @@ and make_title ~get_package ~lvl ~label txt =
   );
   result
 
-and apply_style ~get_package ~style txt =
-  let aggregated = aggregate ~get_package txt in
+and apply_style ~style txt =
+  let aggregated = aggregate txt in
   let assert_phrasing for_message =
     if not (ListLabels.for_all aggregated ~f:is_phrasing) then
       Printf.eprintf "ERROR: only \"simple\" content allowed inside %s\n%!"
@@ -501,10 +497,10 @@ and apply_style ~get_package ~style txt =
         Flow5_without_interactive [div ~a:[ a_class [str] ] l]
     )
 
-let handle_text ~get_package txt =
-  paragraphise (aggregate ~get_package txt)
+let handle_text txt =
+  paragraphise (aggregate txt)
 
-let handle_tags ~get_package tags =
+let handle_tags tags =
   let raw =
     let make_tag ?class_ txt =
       let class_ =
@@ -529,16 +525,16 @@ let handle_tags ~get_package tags =
           | File s -> pcdata s
           | Doc s -> pcdata s
         in
-        let aggregated = aggregate ~get_package txt in
+        let aggregated = aggregate txt in
         collapse (Phrasing (prefix @ [see]) :: aggregated)
       | Since s ->
         [ Phrasing [ make_tag "Since" ; pcdata ": "; pcdata s ] ]
       | Before (s, txt) ->
         let prefix = [ make_tag "Before" ; pcdata " "; pcdata s; pcdata "." ] in
-        collapse (Phrasing prefix :: aggregate ~get_package txt)
+        collapse (Phrasing prefix :: aggregate txt)
       | Deprecated txt ->
         let prefix = [ make_tag "Deprecated" ; pcdata " " ] in
-        collapse (Phrasing prefix :: aggregate ~get_package txt)
+        collapse (Phrasing prefix :: aggregate txt)
       | Param (name, txt) ->
         let p =
           [ make_tag "Parameter"
@@ -547,7 +543,7 @@ let handle_tags ~get_package tags =
           ; pcdata ": "
           ]
         in
-        collapse (Phrasing p :: aggregate ~get_package txt)
+        collapse (Phrasing p :: aggregate txt)
       | Raise (name, txt) ->
         let p =
           [ make_tag ~class_:"raise" "Raises"
@@ -556,15 +552,15 @@ let handle_tags ~get_package tags =
           ; pcdata ": "
           ]
         in
-        collapse (Phrasing p :: aggregate ~get_package txt)
+        collapse (Phrasing p :: aggregate txt)
       | Return txt ->
         let prefix = [ make_tag ~class_:"return" "Returns" ; pcdata " " ] in
-        collapse (Phrasing prefix :: aggregate ~get_package txt)
+        collapse (Phrasing prefix :: aggregate txt)
       | Tag ("open", _) (* TODO: Make these proper tags. *)
       | Tag ("close", _) -> []
       | Tag (s, txt) ->
         let prefix = [ make_tag ~class_:s ("@" ^ s) ; pcdata " " ] in
-        collapse (Phrasing prefix :: aggregate ~get_package txt)
+        collapse (Phrasing prefix :: aggregate txt)
       | Inline -> []
       | Canonical _ -> [] (* TODO: display? *)
     )
@@ -597,23 +593,23 @@ let prerr_error (err : Doc_model.Types.Documentation.Error.t) =
   in
   Printf.eprintf "Error %a: %s\n%!" print_loc () err.message
 
-let first_to_html ~get_package (t : Doc_model.Types.Documentation.t) =
+let first_to_html (t : Doc_model.Types.Documentation.t) =
   match t with
   | Ok { text; _ } ->
-    begin match handle_text ~get_package text with
+    begin match handle_text text with
     | [] -> []
     | x :: _ -> [x]
     end
   | Error e -> prerr_error e; []
 
-let to_html ?wrap ~get_package (t : Doc_model.Types.Documentation.t) =
+let to_html ?wrap (t : Doc_model.Types.Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
   | Ok body ->
     match wrap with
     | None ->
-      let doc = handle_text ~get_package body.text in
-      let tags = handle_tags ~get_package body.tags in
+      let doc = handle_text body.text in
+      let tags = handle_tags body.tags in
       doc @ tags
     | Some () ->
       let open_ = "(** " in
@@ -622,12 +618,11 @@ let to_html ?wrap ~get_package (t : Doc_model.Types.Documentation.t) =
       | [], [] -> []
       | _, [] ->
         handle_text
-          ~get_package
           (Doc_model.Types.Documentation.Raw open_ :: body.text @ [Raw close])
-      | [], _ -> p [pcdata open_] :: handle_tags ~get_package body.tags @ [p [pcdata close]]
+      | [], _ -> p [pcdata open_] :: handle_tags body.tags @ [p [pcdata close]]
       | _, _ ->
-        handle_text ~get_package (Raw open_ :: body.text) @
-        handle_tags ~get_package body.tags @
+        handle_text (Raw open_ :: body.text) @
+        handle_tags body.tags @
         [p [pcdata close]]
 
 let has_doc (t : Doc_model.Types.Documentation.t) =

@@ -42,13 +42,13 @@ let (>>=) x f =
   | Ok x -> f x
   | Error _ as e -> e
 
-let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool ->
+let rec from_identifier : type a. stop_before:bool ->
   a Identifier.t -> (t, Error.t) result =
-  fun ~get_package ~stop_before ->
+  fun ~stop_before ->
     let open Error in
     function
     | Root (abstr, unit_name) ->
-      begin try Ok (get_package abstr)
+      begin try Ok (Model.Root.get_package abstr)
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
       let page = [ pkg_name ] in
@@ -62,14 +62,14 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       *)
       { page = unit_name :: page; anchor = ""; kind }
     | Page (abstr, page_name) ->
-      begin try Ok (get_package abstr)
+      begin try Ok (Model.Root.get_package abstr)
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
       let page = [ page_name ^ ".html"; pkg_name ] in
       let kind = "page" in
       { page; anchor = ""; kind }
     | Module (parent, mod_name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "module" in
       if stop_before then
@@ -77,7 +77,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       else
         { page = mod_name :: parent; anchor = ""; kind }
     | Argument (functor_id, arg_num, arg_name) ->
-      from_identifier_no_anchor ~get_package functor_id
+      from_identifier_no_anchor functor_id
       >>| fun parent ->
       let kind = "argument" in
       let suffix = Printf.sprintf "%s-%d-%s" kind arg_num arg_name in
@@ -86,7 +86,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       else
         { page = suffix :: parent; anchor = ""; kind }
     | ModuleType (parent, modt_name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "module-type" in
       let suffix = Printf.sprintf "%s-%s" kind modt_name in
@@ -95,14 +95,14 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       else
         { page = suffix :: parent; anchor = ""; kind }
     | Type (parent, type_name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun page ->
       let kind = "type" in
       { page; anchor = Printf.sprintf "%s-%s" kind type_name; kind }
     | CoreType ty_name ->
       Error (Not_linkable ("core_type:"^ty_name))
     | Constructor (parent, name) ->
-      from_identifier ~get_package ~stop_before:false parent
+      from_identifier ~stop_before:false parent
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
@@ -111,7 +111,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Ok { page; anchor = anchor ^ "." ^ name; kind }
       end
     | Field (parent, name) ->
-      from_identifier ~get_package ~stop_before:false parent
+      from_identifier ~stop_before:false parent
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
@@ -120,34 +120,34 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Ok { page; anchor = anchor ^ "." ^ name; kind }
       end
     | Extension (parent, name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "extension" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Exception (parent, name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "exception" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | CoreException name ->
       Error (Not_linkable ("core_exception:" ^ name))
     | Value (parent, name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "val" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Class (parent, name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "class" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | ClassType (parent, name) ->
-      from_identifier_no_anchor ~get_package parent
+      from_identifier_no_anchor parent
       >>| fun parent ->
       let kind = "class-type" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Method (parent, name) ->
-      from_identifier ~get_package ~stop_before:false parent
+      from_identifier ~stop_before:false parent
       >>= begin function
       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
       | { page; anchor; _ } ->
@@ -155,7 +155,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
       end
     | InstanceVariable (parent, name) ->
-      from_identifier ~get_package ~stop_before:false parent
+      from_identifier ~stop_before:false parent
       >>= begin function
       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
       | { page; anchor; _ } ->
@@ -163,7 +163,7 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
         Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
       end
     | Label (parent, anchor) ->
-      from_identifier ~get_package ~stop_before:false parent
+      from_identifier ~stop_before:false parent
       >>= function
       | { page; anchor = ""; kind } ->
         (* Really ad-hoc and shitty, but it works. *)
@@ -172,21 +172,21 @@ let rec from_identifier : type a. get_package:('x -> string) -> stop_before:bool
       | otherwise ->
         Error (Unexpected_anchor otherwise)
 
-and from_identifier_no_anchor : type a. get_package:('x -> string) ->
+and from_identifier_no_anchor : type a.
   a Identifier.t -> (string list, Error.t) result =
-  fun ~get_package id ->
-    from_identifier ~get_package ~stop_before:false id
+  fun id ->
+    from_identifier ~stop_before:false id
     >>= function
     | { page; anchor = ""; _ } -> Ok page
     | otherwise -> Error (Unexpected_anchor otherwise)
 
-let anchor_of_id_exn ~get_package id =
-  match from_identifier ~get_package ~stop_before:true id with
+let anchor_of_id_exn id =
+  match from_identifier ~stop_before:true id with
   | Error e -> failwith (Error.to_string e)
   | Ok { anchor; _ } -> anchor
 
-let kind_of_id_exn ~get_package id =
-  match from_identifier ~get_package ~stop_before:true id with
+let kind_of_id_exn id =
+  match from_identifier ~stop_before:true id with
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
 
@@ -230,8 +230,8 @@ module Anchor = struct
       | _ ->
         invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
-    let from_element ~get_package ~type_ident elt =
-      match from_identifier ~get_package ~stop_before:true type_ident with
+    let from_element ~type_ident elt =
+      match from_identifier ~stop_before:true type_ident with
       | Error e -> failwith (Error.to_string e)
       | Ok { anchor; _ } ->
         match elt with
@@ -271,7 +271,7 @@ module Anchor = struct
       | Identifier id ->
         let name = Identifier.name id in
         let kind =
-          match from_identifier ~get_package:(fun _ -> "") ~stop_before:false id with
+          match from_identifier ~stop_before:false id with
           | Ok { kind; _ } -> kind
           | Error _ -> fail ()
         in

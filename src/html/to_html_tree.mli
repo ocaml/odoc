@@ -14,12 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val compilation_unit :
-  get_package:(Doc_model.Root.t -> string) ->
-  Doc_model.Types.Compilation_unit.t ->
-    Html_tree.t
+val compilation_unit : Doc_model.Types.Compilation_unit.t -> Html_tree.t
 
-val page :
-  get_package:(Doc_model.Root.t -> string) ->
-  Doc_model.Types.Page.t ->
-    Html_tree.t
+val page : Doc_model.Types.Page.t -> Html_tree.t

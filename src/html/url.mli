@@ -27,19 +27,16 @@ module Error : sig
 end
 
 val from_identifier
-  : get_package:(Doc_model.Root.t -> string)
-  -> stop_before:bool
+  : stop_before:bool
   -> _ Identifier.t
   -> (t, Error.t) result
 
 val anchor_of_id_exn
-  : get_package:(Doc_model.Root.t -> string)
-  -> _ Identifier.t
+  : _ Identifier.t
   -> string
 
 val kind_of_id_exn
-  : get_package:(Doc_model.Root.t -> string)
-  -> _ Identifier.t
+  : _ Identifier.t
   -> string
 
 val render_path : _ Path.t -> string
@@ -52,8 +49,7 @@ module Anchor : sig
 
   module Polymorphic_variant_decl : sig
     val from_element
-      : get_package:(Doc_model.Root.t -> string)
-      -> type_ident:_ Identifier.t
+      : type_ident:_ Identifier.t
       -> Doc_model.Types.TypeExpr.Variant.element
       -> t
   end

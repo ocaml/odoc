@@ -16,9 +16,6 @@
 
 open StdLabels
 
-let get_package root =
-  Doc_model.Root.Package.to_string (Doc_model.Root.package root)
-
 let from_odoc ~env ~output:root_dir input =
   let root = Root.read input in
   match Doc_model.Root.file root with
@@ -28,8 +25,8 @@ let from_odoc ~env ~output:root_dir input =
       let resolve_env = Env.build env (`Page page) in
       Doc_model.resolve_page (Env.resolver resolve_env) page
     in
-    let pkg_name = get_package root in
-    let pages = Doc_html.To_html_tree.page ~get_package odoctree in
+    let pkg_name = Model.Root.get_package root in
+    let pages = Doc_html.To_html_tree.page odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
@@ -58,10 +55,10 @@ let from_odoc ~env ~output:root_dir input =
       |> Doc_model.resolve (Env.resolver expand_env) (* Yes, again. *)
     in
     let pkg_dir =
-      let pkg_name = get_package root in
+      let pkg_name = Model.Root.get_package root in
       Fs.Directory.reach_from ~dir:root_dir pkg_name
     in
-    let pages = Doc_html.To_html_tree.compilation_unit ~get_package odoctree in
+    let pages = Doc_html.To_html_tree.compilation_unit odoctree in
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =
@@ -118,8 +115,8 @@ let from_mld ~env ~package ~output:root_dir input =
     let page = Doc_model.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = Doc_model.resolve_page (Env.resolver env) page in
-    let pages = Doc_html.To_html_tree.page ~get_package resolved in
-    let pkg_name = get_package root in
+    let pages = Doc_html.To_html_tree.page resolved in
+    let pkg_name = Model.Root.get_package root in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->

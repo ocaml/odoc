@@ -82,4 +82,6 @@ let create ~package ~file ~digest = { package; file; digest }
 let file t = t.file
 let package t = t.package
 
+let get_package root = Package.to_string (package root)
+
 module Table = Hashtbl.Make(T)

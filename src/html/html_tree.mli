@@ -76,14 +76,13 @@ module Relative_link : sig
   module Id : sig
     exception Not_linkable
 
-    val href : get_package:(Doc_model.Root.t -> string) -> stop_before:bool ->
-      _ Identifier.t -> string
+    val href : stop_before:bool -> _ Identifier.t -> string
   end
 
-  val of_path : get_package:(Doc_model.Root.t -> string) -> stop_before:bool -> _ Path.t
+  val of_path : stop_before:bool -> _ Path.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
-  val of_fragment : get_package:(Doc_model.Root.t -> string) -> base:Identifier.signature
+  val of_fragment : base:Identifier.signature
     -> (_, Fragment.sort) Fragment.raw
     -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
 
