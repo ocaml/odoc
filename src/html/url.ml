@@ -48,7 +48,7 @@ let rec from_identifier : type a. stop_before:bool ->
     let open Error in
     function
     | Root (abstr, unit_name) ->
-      begin try Ok (Model.Root.get_package abstr)
+      begin try Ok abstr.package
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
       let page = [ pkg_name ] in
@@ -62,7 +62,7 @@ let rec from_identifier : type a. stop_before:bool ->
       *)
       { page = unit_name :: page; anchor = ""; kind }
     | Page (abstr, page_name) ->
-      begin try Ok (Model.Root.get_package abstr)
+      begin try Ok abstr.package
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
       let page = [ page_name ^ ".html"; pkg_name ] in

@@ -18,14 +18,14 @@ open StdLabels
 
 let from_odoc ~env ~output:root_dir input =
   let root = Root.read input in
-  match Doc_model.Root.file root with
+  match root.file with
   | Page page_name ->
     let page = Page.load input in
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
       Doc_model.resolve_page (Env.resolver resolve_env) page
     in
-    let pkg_name = Model.Root.get_package root in
+    let pkg_name = root.package in
     let pages = Doc_html.To_html_tree.page odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
@@ -55,8 +55,7 @@ let from_odoc ~env ~output:root_dir input =
       |> Doc_model.resolve (Env.resolver expand_env) (* Yes, again. *)
     in
     let pkg_dir =
-      let pkg_name = Model.Root.get_package root in
-      Fs.Directory.reach_from ~dir:root_dir pkg_name
+      Fs.Directory.reach_from ~dir:root_dir root.package
     in
     let pages = Doc_html.To_html_tree.compilation_unit odoctree in
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents name content ->
@@ -86,7 +85,7 @@ let from_mld ~env ~package ~output:root_dir input =
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
     let file = Doc_model.Root.Odoc_file.create_page root_name in
-    Doc_model.Root.create ~package ~file ~digest
+    {Model.Root.package; file; digest}
   in
   let name = Doc_model.Paths.Identifier.Page (root, root_name) in
   let location =
@@ -116,8 +115,7 @@ let from_mld ~env ~package ~output:root_dir input =
     let env = Env.build env (`Page page) in
     let resolved = Doc_model.resolve_page (Env.resolver env) page in
     let pages = Doc_html.To_html_tree.page resolved in
-    let pkg_name = Model.Root.get_package root in
-    let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
+    let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
     Doc_html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
       assert (parents = []);

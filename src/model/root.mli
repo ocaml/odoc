@@ -21,56 +21,35 @@
     file.
 *)
 
-(** {1 } *)
-
-module Package : sig
-
-  type t
-
-  val create : string -> t
-
-  val to_string : t -> string
+module Package :
+sig
+  type t = string
 end
 
-module Odoc_file : sig
-
+module Odoc_file :
+sig
   type t =
     | Page of string
-    | Compilation_unit of { name : string; hidden : bool }
+    | Compilation_unit of {name : string; hidden : bool}
 
   val create_unit : force_hidden:bool -> string -> t
   val create_page : string -> t
 
   val name : t -> string
-  val kind : t -> string
 end
 
-module Digest = Digest
-
-type t
+type t = {
+  package : Package.t;
+  file : Odoc_file.t;
+  digest : Digest.t;
+}
 
 val equal : t -> t -> bool
 val hash  : t -> int
 
-val create : package:Package.t -> file:Odoc_file.t -> digest:Digest.t -> t
-
-(** {1 Accessors} *)
-
-val digest : t -> Digest.t
-val package: t -> Package.t
-val file   : t -> Odoc_file.t
-
-val get_package : t -> string
-(** Temporary, during refactoring. *)
-
-(** {1 Serialization} *)
-
 val to_string : t -> string
-(** Useful for debugging *)
 
-(**/**)
-
-module Table : Hashtbl.S with type key = t
+module Hash_table : Hashtbl.S with type key = t
 
 val contains_double_underscore : string -> bool
 (* not the best place for this but. *)

@@ -63,16 +63,15 @@ end = struct
         output
       | None -> Fs.File.(set_ext ".odoc" input)
     in
-    let package = Doc_model.Root.Package.create package_name in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
-      Compile.cmti ~env ~package ~hidden ~output input
+      Compile.cmti ~env ~package:package_name ~hidden ~output input
     else if Fs.File.has_ext ".cmt" input then
-      Compile.cmt ~env ~package ~hidden ~output input
+      Compile.cmt ~env ~package:package_name ~hidden ~output input
     else if Fs.File.has_ext ".cmi" input then
-      Compile.cmi ~env ~package ~hidden ~output input
+      Compile.cmi ~env ~package:package_name ~hidden ~output input
     else if Fs.File.has_ext ".mld" input then
-      Compile.mld ~env ~package ~output input
+      Compile.mld ~env ~package:package_name ~output input
     else (
       Printf.eprintf "Unknown extension, expected one of : cmti, cmt, cmi.\n%!";
       exit 2
@@ -132,8 +131,7 @@ end = struct
     match index_for with
     | None -> Html.from_odoc ~env ~output:output_dir file
     | Some pkg_name ->
-      let package = Doc_model.Root.Package.create pkg_name in
-      Html.from_mld ~env ~output:output_dir ~package file
+      Html.from_mld ~env ~output:output_dir ~package:pkg_name file
 
   let cmd =
     let input =
@@ -194,11 +192,11 @@ module Depends = struct
   module Html = struct
     let list_dependencies input_file =
       List.iter (Depends.for_html_step (Fs.Directory.of_string input_file))
-        ~f:(fun root ->
+        ~f:(fun (root : Model.Root.t) ->
           Printf.printf "%s %s %s\n"
-            (Doc_model.Root.Package.to_string (Doc_model.Root.package root))
-            (Doc_model.Root.Odoc_file.name (Doc_model.Root.file root))
-            (Digest.to_hex (Doc_model.Root.digest root))
+            root.package
+            (Model.Root.Odoc_file.name root.file)
+            (Digest.to_hex root.digest)
         )
 
     let cmd =

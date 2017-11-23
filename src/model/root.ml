@@ -25,12 +25,9 @@ let contains_double_underscore s =
   in
   aux 0
 
-module Digest = Digest
-
-module Package = struct
+module Package =
+struct
   type t = string
-  let create s = s
-  let to_string s = s
 
   module Table = Hashtbl.Make(struct
     type nonrec t = t
@@ -39,49 +36,38 @@ module Package = struct
   end)
 end
 
-module Odoc_file = struct
+module Odoc_file =
+struct
   type t =
     | Page of string
-    | Compilation_unit of { name : string; hidden : bool }
+    | Compilation_unit of {name : string; hidden : bool}
 
   let create_unit ~force_hidden name =
-    let hidden =
-      force_hidden || contains_double_underscore name in
-    Compilation_unit { name; hidden }
+    let hidden = force_hidden || contains_double_underscore name in
+    Compilation_unit {name; hidden}
 
   let create_page name = Page name
 
   let name = function
     | Page name
-    | Compilation_unit { name; _ } -> name
-
-  let kind = function
-    | Page _ -> "page"
-    | Compilation_unit _ -> "unit"
+    | Compilation_unit {name; _} -> name
 end
 
-module T = struct
-  type t = {
-    package : Package.t;
-    file    : Odoc_file.t;
-    digest  : Digest.t;
-  }
+type t = {
+  package : Package.t;
+  file : Odoc_file.t;
+  digest : Digest.t;
+}
 
-  let digest t = t.digest
-
-  let equal : t -> t -> bool = (=)
-  let hash  : t -> int       = Hashtbl.hash
-end
-
-include T
+let equal : t -> t -> bool = (=)
+let hash : t -> int = Hashtbl.hash
 
 let to_string t = Printf.sprintf "%s::%s" t.package (Odoc_file.name t.file)
 
-let create ~package ~file ~digest = { package; file; digest }
-
-let file t = t.file
-let package t = t.package
-
-let get_package root = Package.to_string (package root)
-
-module Table = Hashtbl.Make(T)
+module Hash_table =
+  Hashtbl.Make
+    (struct
+      type nonrec t = t
+      let equal = equal
+      let hash = hash
+    end)

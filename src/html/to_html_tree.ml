@@ -46,7 +46,7 @@ let functor_arg_pos { Types.FunctorArgument.id ; _ } =
 let rec compilation_unit (t : Types.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
-    | Paths.Identifier.Root (a, _) -> Model.Root.get_package a
+    | Paths.Identifier.Root (a, _) -> a.package
     | _ -> assert false
   in
   Html_tree.enter package;
@@ -986,7 +986,7 @@ and include_ (t : Types.Include.t) =
 let page (t : Types.Page.t) : Html_tree.t =
   let package, name =
     match t.name with
-    | Paths.Identifier.Page (a, name) -> Model.Root.get_package a, name
+    | Paths.Identifier.Page (a, name) -> a.package, name
   in
   Html_tree.enter package;
   Html_tree.enter ~kind:`Page name;

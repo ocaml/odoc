@@ -31,7 +31,7 @@ let unit ~env ~output:_root_dir input =
   let odoctree = Doc_model.resolve (Env.resolver env) unit in
   let odoctree = Doc_model.expand (Env.expander env) odoctree in
   let root = Compilation_unit.root odoctree in
-  let package = Doc_model.Root.(Package.to_string (package root)) in
+  let package = root.package in
   let targets = Doc_html.List_targets.unit ~package odoctree in
   (* CR-someday trefis: have [List_targets] return a tree instead of
      postprocessing. *)
