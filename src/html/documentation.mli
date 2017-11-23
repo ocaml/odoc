@@ -1,5 +1,5 @@
 open Tyxml.Html
-open Model.Lang.Documentation
+open Model.Comment
 
 val to_html : ?wrap:unit -> t -> Html_types.div_content_fun elt list
 (** When [wrap] is passed, then "(** *)" are added around the documentation. *)

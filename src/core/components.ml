@@ -16,7 +16,6 @@
 
 open Paths
 open Model
-open Model.Lang
 
 (* Sets and maps for components *)
 
@@ -142,7 +141,7 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 (* Read labels from documentation *)
 
 let rec text_element_labels acc =
-  let open Documentation in function
+  let open Model.Comment in function
   | Title(_, Some id, txt) ->
       let name = Identifier.name id in
         text_labels ((name, txt) :: acc) txt
@@ -156,7 +155,7 @@ let rec text_element_labels acc =
 and text_labels acc txt = List.fold_left text_element_labels acc txt
 
 let tag_labels acc =
-  let open Documentation in function
+  let open Model.Comment in function
   | Author _ | Version _ | Since _ | Inline | Canonical _ -> acc
   | See(_, txt) | Before(_, txt) | Deprecated txt
   | Param(_, txt) | Raise(_, txt) | Return txt | Tag(_, txt) ->
@@ -165,7 +164,7 @@ let tag_labels acc =
 let tags_labels acc tags = List.fold_left tag_labels acc tags
 
 let documentation_labels acc doc =
-  let open Documentation in
+  let open Model.Comment in
   match doc with
   | Ok body ->
       let acc = tags_labels acc body.tags in
@@ -173,7 +172,7 @@ let documentation_labels acc doc =
   | Error _ -> acc
 
 let comment_labels acc comment =
-  let open Documentation in
+  let open Model.Comment in
   match comment with
   | Documentation doc -> documentation_labels acc doc
   | Stop -> acc
@@ -235,7 +234,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> t -> Documentation.text
+  val find_section_title : string -> t -> Model.Comment.text
 
   val lookup_module : string -> t -> t
 
@@ -266,9 +265,9 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : Documentation.t -> signature -> signature
+  val add_documentation : Model.Comment.t -> signature -> signature
 
-  val add_comment : Documentation.comment -> signature -> signature
+  val add_comment : Model.Comment.comment -> signature -> signature
 
   val include_ : t -> signature -> signature
 
@@ -323,7 +322,7 @@ end = struct
       types: Element.signature_type SMap.t;
       parents: Parent.any LMap.t;
       elements: Element.signature LMap.t;
-      section_titles: Documentation.text SMap.t; }
+      section_titles: Model.Comment.text SMap.t; }
 
   and body =
     | Expr of expr
@@ -1339,7 +1338,7 @@ and Datatype : sig
 
   val find_element : string -> t -> Element.datatype
 
-  val add_documentation : Documentation.t -> t -> t
+  val add_documentation : Model.Comment.t -> t -> t
 
   val abstract : t
 
@@ -1492,9 +1491,9 @@ and ClassSig : sig
   val add_element : string -> Element.class_signature ->
     signature -> signature
 
-  val add_documentation : Documentation.t -> signature -> signature
+  val add_documentation : Model.Comment.t -> signature -> signature
 
-  val add_comment : Documentation.comment -> signature -> signature
+  val add_comment : Model.Comment.comment -> signature -> signature
 
   val inherit_ : t -> signature -> signature
 
@@ -1590,15 +1589,15 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> t -> Documentation.text
+  val find_section_title : string -> t -> Model.Comment.text
 
-  val of_doc : Documentation.t -> t
+  val of_doc : Model.Comment.t -> t
 
 end = struct
 
   type t = {
     labels : Element.page_label LMap.t;
-    section_titles : Documentation.text SMap.t;
+    section_titles : Model.Comment.text SMap.t;
   }
 
   let find_label_element name t =

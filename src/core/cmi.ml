@@ -867,7 +867,7 @@ and read_module_declaration env parent ident md =
   in
   let doc = read_attributes container id md.md_attributes in
   let canonical =
-    let open Documentation in
+    let open Model.Comment in
     match doc with
     | Ok { tags; _ } ->
       begin match List.find (function Canonical _ -> true | _ -> false) tags with

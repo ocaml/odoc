@@ -17,7 +17,7 @@
 
 val read_interface: Model.Root.t -> string -> Types.signature ->
   Paths.Identifier.module_ *
-  Model.Lang.Documentation.t *
+  Model.Comment.t *
   Model.Lang.Signature.t
 
 val read_label : Asttypes.arg_label -> Model.Lang.TypeExpr.label option

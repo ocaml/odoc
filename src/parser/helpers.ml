@@ -354,11 +354,7 @@ type ref_kind =
   | RK_link
   | RK_custom of string
 
-let read_reference
-    (rk : ref_kind)
-    (s : string) :
-      Model.Lang.Documentation.reference =
-
+let read_reference (rk : ref_kind) (s : string) : Model.Comment.reference =
   let parsed_ref = lazy (read_longident s) in
   match rk, parsed_ref with
   | RK_link, _ -> Link s

@@ -959,17 +959,17 @@ and include_ (t : Model.Lang.Include.t) =
       let should_be_open =
         let forced_open =
           List.exists tags ~f:(function
-            | Model.Lang.Documentation.Tag ("open", _) -> true
+            | Model.Comment.Tag ("open", _) -> true
             | _ -> false
           )
         in
         if forced_open then true else
           !Html_tree.open_details && List.for_all tags ~f:(function
-            | Model.Lang.Documentation.Tag ("closed", _) -> false
+            | Model.Comment.Tag ("closed", _) -> false
             | _ -> true
           )
       in
-      List.mem Model.Lang.Documentation.Inline ~set:tags, should_be_open
+      List.mem Model.Comment.Inline ~set:tags, should_be_open
     | _ -> false, !Html_tree.open_details
   in
   let incl =

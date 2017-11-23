@@ -418,7 +418,7 @@ and see = parse
 and see_url = parse
   | ">"
     { use_start_loc lexbuf;
-      Model.Lang.Documentation.Url (get_raw_buffered_string ()) }
+      Model.Comment.Url (get_raw_buffered_string ()) }
   | eof
     { raise_lexer_error (get_see_loc ()) Unterminated_see_url }
   | newline
@@ -433,7 +433,7 @@ and see_url = parse
 and see_file = parse
   | "'"
     { use_start_loc lexbuf;
-      Model.Lang.Documentation.File (get_raw_buffered_string ()) }
+      Model.Comment.File (get_raw_buffered_string ()) }
   | eof
     { raise_lexer_error (get_see_loc ()) Unterminated_see_file }
   | newline
@@ -448,7 +448,7 @@ and see_file = parse
 and see_doc = parse
   | "\""
     { use_start_loc lexbuf;
-      Model.Lang.Documentation.Doc (get_raw_buffered_string ()) }
+      Model.Comment.Doc (get_raw_buffered_string ()) }
   | eof
     { raise_lexer_error (get_see_loc ()) Unterminated_see_doc }
   | newline

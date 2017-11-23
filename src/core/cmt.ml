@@ -396,7 +396,7 @@ and read_module_binding env parent mb =
   in
   let doc = read_attributes container id mb.mb_attributes in
   let canonical =
-    let open Documentation in
+    let open Model.Comment in
     match doc with
     | Ok { tags; _ } ->
       begin match List.find (function Canonical _ -> true | _ -> false) tags with
@@ -510,7 +510,7 @@ let read_implementation root name impl =
   let items = read_structure Env.empty id impl in
   let doc, items =
     let open Signature in
-    let open Documentation in
+    let open Model.Comment in
     match items with
     | Comment (Documentation doc) :: items -> doc, items
     | _ -> empty, items

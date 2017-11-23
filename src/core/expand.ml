@@ -152,16 +152,16 @@ let refine_module ex (frag : Fragment.module_) equation =
         end
 
 type intermediate_module_expansion =
-  Identifier.module_ * Documentation.t
+  Identifier.module_ * Model.Comment.t
   * (Path.module_ * Reference.module_) option
   * partial_expansion option * Subst.t list
 
 type intermediate_module_type_expansion =
-  Identifier.module_type * Documentation.t
+  Identifier.module_type * Model.Comment.t
   * partial_expansion option * Subst.t list
 
 type intermediate_class_type_expansion =
-  Identifier.class_type * Documentation.t
+  Identifier.class_type * Model.Comment.t
   * ClassSignature.t option * Subst.t list
 
 type expander =
@@ -194,13 +194,13 @@ let add_doc_to_class_expansion_opt doc =
   let open ClassSignature in
   function
   | Some ({ items; _ } as sg) ->
-      let doc = Comment (Documentation.Documentation doc) in
+      let doc = Comment (Model.Comment.Documentation doc) in
       Some { sg with items = doc :: items }
   | otherwise -> otherwise
 
 let add_doc_to_expansion_opt doc = function
   | Some (Signature sg) ->
-      let doc = Signature.Comment (Documentation.Documentation doc) in
+      let doc = Signature.Comment (Model.Comment.Documentation doc) in
       Some (Signature (doc :: sg))
   | otherwise -> otherwise
 
@@ -847,7 +847,7 @@ let should_expand _t _id decl =
   | _ -> true
 
 let is_canonical_tag doc =
-  let open Documentation in
+  let open Model.Comment in
   match doc with
   | Ok { text = []; tags = [Canonical (_, _)] } -> true
   | _ -> false
@@ -860,10 +860,10 @@ let expand_mod_alias_doc md =
   | ModuleType _  -> md
   | Alias _ ->
     match md.doc with
-    | Documentation.Error _
-    | Documentation.Ok { text = _ :: _ ; _ }
-    | Documentation.Ok { tags = _ :: _ ; _ } -> md
-    | Documentation.Ok _ ->
+    | Model.Comment.Error _
+    | Ok { text = _ :: _ ; _ }
+    | Ok { tags = _ :: _ ; _ } -> md
+    | Ok _ ->
       match md.expansion with
       | Some (
           Signature (
@@ -1031,7 +1031,7 @@ class t ?equal ?hash lookup fetch = object (self)
         match t.fetch_unit_from_ref rf' with
         | None -> txt
         | Some u ->
-          let open Documentation in
+          let open Model.Comment in
           match u.Compilation_unit.doc with
           | Ok { text; _ } ->
             begin match text with

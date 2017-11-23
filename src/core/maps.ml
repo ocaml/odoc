@@ -856,7 +856,7 @@ class virtual documentation = object (self)
     Reference.any -> Reference.any
 
   method documentation_style ds =
-    let open Documentation in
+    let open Model.Comment in
       match ds with
       | Bold | Italic | Emphasize
       | Center | Left | Right
@@ -869,7 +869,7 @@ class virtual documentation = object (self)
   method documentation_style_custom custom = custom
 
   method documentation_reference drf =
-    let open Documentation in
+    let open Model.Comment in
       match drf with
       | Element rf ->
           let rf' = self#reference_any rf in
@@ -896,7 +896,7 @@ class virtual documentation = object (self)
     else pair
 
   method documentation_special sr =
-    let open Documentation in
+    let open Model.Comment in
       match sr with
       | Modules rfs ->
         let rfs' = list_map self#documentation_special_modules rfs in
@@ -905,7 +905,7 @@ class virtual documentation = object (self)
       | Index -> sr
 
   method documentation_see see =
-    let open Documentation in
+    let open Model.Comment in
       match see with
       | Url url ->
           let url' = self#documentation_see_url url in
@@ -925,7 +925,7 @@ class virtual documentation = object (self)
   method documentation_see_doc doc = doc
 
   method documentation_text_element elem =
-    let open Documentation in
+    let open Model.Comment in
       match elem with
       | Raw raw ->
           let raw' = self#documentation_text_raw raw in
@@ -991,7 +991,7 @@ class virtual documentation = object (self)
     list_map self#documentation_text_element text
 
   method documentation_tag tag =
-    let open Documentation in
+    let open Model.Comment in
       match tag with
       | Author author ->
           let author' = self#documentation_tag_author author in
@@ -1058,7 +1058,7 @@ class virtual documentation = object (self)
     list_map self#documentation_tag tags
 
   method documentation_error_position pos =
-    let open Documentation.Error.Position in
+    let open Model.Comment.Error.Position in
     let {line; column} = pos in
     let line' = self#documentation_error_position_line line in
     let column' = self#documentation_error_position_column column in
@@ -1070,7 +1070,7 @@ class virtual documentation = object (self)
   method documentation_error_position_column column = column
 
   method documentation_error_offset offset =
-    let open Documentation.Error.Offset in
+    let open Model.Comment.Error.Offset in
     let {start; finish} = offset in
     let start' = self#documentation_error_position start in
     let finish' = self#documentation_error_position finish in
@@ -1079,7 +1079,7 @@ class virtual documentation = object (self)
       else offset
 
   method documentation_error_location loc =
-    let open Documentation.Error.Location in
+    let open Model.Comment.Error.Location in
     let {filename; start; finish} = loc in
     let filename' = self#documentation_error_location_filename filename in
     let start' = self#documentation_error_position start in
@@ -1091,7 +1091,7 @@ class virtual documentation = object (self)
   method documentation_error_location_filename line = line
 
   method documentation_error err =
-    let open Documentation.Error in
+    let open Model.Comment.Error in
     let {origin; offset; location; message} = err in
     let origin' = self#identifier origin in
     let offset' = self#documentation_error_offset offset in
@@ -1107,7 +1107,7 @@ class virtual documentation = object (self)
   method documentation_error_message message = message
 
   method documentation_body body =
-    let open Documentation in
+    let open Model.Comment in
     let {text; tags} = body in
     let text' = self#documentation_text text in
     let tags' = self#documentation_tags tags in
@@ -1115,7 +1115,7 @@ class virtual documentation = object (self)
       else body
 
   method documentation doc =
-    let open Documentation in
+    let open Model.Comment in
     match doc with
     | Ok body ->
         let body' = self#documentation_body body in
@@ -1127,7 +1127,7 @@ class virtual documentation = object (self)
           else doc
 
   method documentation_comment comment =
-    let open Documentation in
+    let open Model.Comment in
       match comment with
       | Documentation doc ->
           let doc' = self#documentation doc in
@@ -1149,7 +1149,7 @@ class virtual module_ = object (self)
     Reference.module_ -> Reference.module_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual module_type_expr :
     ModuleType.expr -> ModuleType.expr
@@ -1236,7 +1236,7 @@ class virtual module_type = object (self)
     Fragment.type_ -> Fragment.type_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual module_decl :
     Module.decl -> Module.decl
@@ -1335,7 +1335,7 @@ end
 class virtual signature = object (self)
 
   method virtual documentation_comment :
-    Documentation.comment -> Documentation.comment
+    Model.Comment.comment -> Model.Comment.comment
 
   method virtual module_ :
     Module.t -> Module.t
@@ -1429,7 +1429,7 @@ class virtual include_ = object (self)
     Identifier.signature -> Identifier.signature
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -1470,7 +1470,7 @@ class virtual type_decl = object (self)
     Identifier.field -> Identifier.field
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1596,7 +1596,7 @@ class virtual extension = object (self)
     Path.type_ -> Path.type_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1644,7 +1644,7 @@ class virtual exception_ = object (self)
     Identifier.exception_ -> Identifier.exception_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1671,7 +1671,7 @@ class virtual value = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1694,7 +1694,7 @@ class virtual external_ = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1722,7 +1722,7 @@ class virtual class_ = object (self)
     Identifier.class_ -> Identifier.class_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1783,7 +1783,7 @@ class virtual class_type = object (self)
     Path.class_type -> Path.class_type
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1830,7 +1830,7 @@ end
 class virtual class_signature = object (self)
 
   method virtual documentation_comment :
-    Documentation.comment -> Documentation.comment
+    Model.Comment.comment -> Model.Comment.comment
 
   method virtual class_type_expr :
     ClassType.expr -> ClassType.expr
@@ -1886,7 +1886,7 @@ class virtual method_ = object (self)
     Identifier.method_ -> Identifier.method_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1918,7 +1918,7 @@ class virtual instance_variable = object (self)
     Identifier.instance_variable -> Identifier.instance_variable
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -2116,7 +2116,7 @@ class virtual unit = object (self)
     Path.module_ -> Path.module_
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method virtual signature :
     Signature.t -> Signature.t
@@ -2217,7 +2217,7 @@ class virtual page = object (self)
     Identifier.page -> Identifier.page
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method page page =
     let open Page in

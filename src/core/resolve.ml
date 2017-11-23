@@ -1778,7 +1778,7 @@ and resolve_element_reference ident tbl (r : Reference.any)
 let splice_section_title tbl elt =
   let open Reference in
   let title_of_parent :
-    string -> Resolved.label_parent -> Lang.Documentation.text option =
+    string -> Resolved.label_parent -> Model.Comment.text option =
     let open Resolved in
     let open Identifier in
     fun name parent_ref ->
@@ -1793,7 +1793,7 @@ let splice_section_title tbl elt =
       | _ -> None
   in
   let find_section_title :
-    Resolved.label -> Lang.Documentation.text option =
+    Resolved.label -> Model.Comment.text option =
     function
     | Resolved.Identifier Identifier.Label (parent, str) ->
       let parent_ref = Resolved.Identifier parent in
@@ -1801,7 +1801,7 @@ let splice_section_title tbl elt =
     | Resolved.Label (parent_ref, str) ->
       title_of_parent str parent_ref
   in
-  let open Lang.Documentation in
+  let open Model.Comment in
   match elt with
   | Reference (r, None) ->
     begin match r with

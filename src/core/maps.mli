@@ -371,12 +371,12 @@ class virtual documentation : object
 
   method virtual reference_any : Reference.any -> Reference.any
 
-  method documentation_style : Documentation.style -> Documentation.style
+  method documentation_style : Model.Comment.style -> Model.Comment.style
 
   method documentation_style_custom : string -> string
 
-  method documentation_reference : Documentation.reference ->
-    Documentation.reference
+  method documentation_reference : Model.Comment.reference ->
+    Model.Comment.reference
 
   method documentation_reference_link : string -> string
 
@@ -384,13 +384,13 @@ class virtual documentation : object
 
   method documentation_reference_custom_body : string -> string
 
-  method documentation_special : Documentation.special -> Documentation.special
+  method documentation_special : Model.Comment.special -> Model.Comment.special
 
   method documentation_special_modules :
-    Reference.module_ * Documentation.text ->
-    Reference.module_ * Documentation.text
+    Reference.module_ * Model.Comment.text ->
+    Reference.module_ * Model.Comment.text
 
-  method documentation_see : Documentation.see -> Documentation.see
+  method documentation_see : Model.Comment.see -> Model.Comment.see
 
   method documentation_see_url : string -> string
 
@@ -398,8 +398,8 @@ class virtual documentation : object
 
   method documentation_see_doc : string -> string
 
-  method documentation_text_element : Documentation.text_element ->
-    Documentation.text_element
+  method documentation_text_element : Model.Comment.text_element ->
+    Model.Comment.text_element
 
   method documentation_text_raw : string -> string
 
@@ -415,9 +415,9 @@ class virtual documentation : object
 
   method documentation_text_target_body : string -> string
 
-  method documentation_text : Documentation.text -> Documentation.text
+  method documentation_text : Model.Comment.text -> Model.Comment.text
 
-  method documentation_tag : Documentation.tag -> Documentation.tag
+  method documentation_tag : Model.Comment.tag -> Model.Comment.tag
 
   method documentation_tag_author : string -> string
 
@@ -433,34 +433,34 @@ class virtual documentation : object
 
   method documentation_tag_name : string -> string
 
-  method documentation_tags : Documentation.tag list ->
-    Documentation.tag list
+  method documentation_tags : Model.Comment.tag list ->
+    Model.Comment.tag list
 
-  method documentation_error_position : Documentation.Error.Position.t ->
-    Documentation.Error.Position.t
+  method documentation_error_position : Model.Comment.Error.Position.t ->
+    Model.Comment.Error.Position.t
 
   method documentation_error_position_column : int -> int
 
   method documentation_error_position_line : int -> int
 
-  method documentation_error_offset : Documentation.Error.Offset.t ->
-    Documentation.Error.Offset.t
+  method documentation_error_offset : Model.Comment.Error.Offset.t ->
+    Model.Comment.Error.Offset.t
 
-  method documentation_error_location : Documentation.Error.Location.t ->
-    Documentation.Error.Location.t
+  method documentation_error_location : Model.Comment.Error.Location.t ->
+    Model.Comment.Error.Location.t
 
   method documentation_error_location_filename : string -> string
 
-  method documentation_error : Documentation.Error.t ->
-    Documentation.Error.t
+  method documentation_error : Model.Comment.Error.t ->
+    Model.Comment.Error.t
 
   method documentation_error_message : string -> string
 
-  method documentation_body : Documentation.body -> Documentation.body
+  method documentation_body : Model.Comment.body -> Model.Comment.body
 
-  method documentation : Documentation.t -> Documentation.t
+  method documentation : Model.Comment.t -> Model.Comment.t
 
-  method documentation_comment : Documentation.comment -> Documentation.comment
+  method documentation_comment : Model.Comment.comment -> Model.Comment.comment
 
 end
 
@@ -472,7 +472,7 @@ class virtual module_ : object
 
   method virtual reference_module : Reference.module_ -> Reference.module_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual module_type_expr : ModuleType.expr -> ModuleType.expr
 
@@ -509,7 +509,7 @@ class virtual module_type : object
 
   method virtual fragment_type : Fragment.type_ -> Fragment.type_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual module_decl : Module.decl -> Module.decl
 
@@ -537,8 +537,8 @@ end
 
 class virtual signature : object
 
-  method virtual documentation_comment : Documentation.comment ->
-    Documentation.comment
+  method virtual documentation_comment : Model.Comment.comment ->
+    Model.Comment.comment
 
   method virtual module_ : Module.t -> Module.t
 
@@ -573,7 +573,7 @@ class virtual include_ : object
   method virtual identifier_signature : Identifier.signature ->
                                         Identifier.signature
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -594,7 +594,7 @@ class virtual type_decl : object
 
   method virtual identifier_field : Identifier.field -> Identifier.field
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -637,7 +637,7 @@ class virtual extension : object
 
   method virtual path_type : Path.type_ -> Path.type_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -660,7 +660,7 @@ class virtual exception_ : object
   method virtual identifier_exception : Identifier.exception_ ->
     Identifier.exception_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -675,7 +675,7 @@ class virtual value : object
 
   method virtual identifier_value : Identifier.value -> Identifier.value
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -686,7 +686,7 @@ class virtual external_ : object
 
   method virtual identifier_value : Identifier.value -> Identifier.value
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -700,7 +700,7 @@ class virtual class_ : object
 
   method virtual identifier_class : Identifier.class_ -> Identifier.class_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -727,7 +727,7 @@ class virtual class_type : object
 
   method virtual path_class_type : Path.class_type -> Path.class_type
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -745,8 +745,8 @@ end
 
 class virtual class_signature : object
 
-  method virtual documentation_comment : Documentation.comment ->
-    Documentation.comment
+  method virtual documentation_comment : Model.Comment.comment ->
+    Model.Comment.comment
 
   method virtual class_type_expr : ClassType.expr -> ClassType.expr
 
@@ -769,7 +769,7 @@ class virtual method_ : object
   method virtual identifier_method : Identifier.method_ ->
     Identifier.method_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -786,7 +786,7 @@ class virtual instance_variable : object
   method virtual identifier_instance_variable :
     Identifier.instance_variable -> Identifier.instance_variable
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -857,7 +857,7 @@ class virtual unit : object
   method virtual path_module :
     Path.module_ -> Path.module_
 
-  method virtual documentation : Documentation.t -> Documentation.t
+  method virtual documentation : Model.Comment.t -> Model.Comment.t
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -902,7 +902,7 @@ class virtual page : object
     Identifier.page -> Identifier.page
 
   method virtual documentation :
-    Documentation.t -> Documentation.t
+    Model.Comment.t -> Model.Comment.t
 
   method page : Page.t -> Page.t
 

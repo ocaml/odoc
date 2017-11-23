@@ -102,7 +102,7 @@ type t =
     labels : label StringTbl.t;
     parents : parent_ident StringTbl.t;
     elements : any StringTbl.t;
-    titles : Documentation.text StringTbl.t; (* Hack *)
+    titles : Model.Comment.text StringTbl.t; (* Hack *)
     signatures : signature_ident StringTbl.t;
   }
 
@@ -303,7 +303,7 @@ let add_label_ident_title id txt env =
     { env with titles }
 
 let rec add_text_element elem env =
-  let open Documentation in
+  let open Model.Comment in
     match elem with
     | Raw _ | Code _ | PreCode _ | Verbatim _
     | Newline | Special _ | Target _ | Reference(_, None) -> env
@@ -325,7 +325,7 @@ and add_text txt env =
   List.fold_right add_text_element txt env
 
 let add_tag tag env =
-  let open Documentation in
+  let open Model.Comment in
     match tag with
     | Author _ | Version _ | Since _ | Inline | Canonical _ -> env
     | See(_, txt) | Before(_, txt) | Deprecated txt
@@ -333,7 +333,7 @@ let add_tag tag env =
     | Return txt | Tag(_, txt) -> add_text txt env
 
 let add_documentation doc env =
-  let open Documentation in
+  let open Model.Comment in
   match doc with
   | Ok {text; tags} ->
       let env = add_text text env in
@@ -342,7 +342,7 @@ let add_documentation doc env =
   | Error _ -> env
 
 let add_comment com env =
-  let open Documentation in
+  let open Model.Comment in
   match com with
   | Documentation doc -> add_documentation doc env
   | Stop -> env

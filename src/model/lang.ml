@@ -14,116 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Type of documentation *)
-
-(** {3 Documentation} *)
-
-module Documentation =
-struct
-  type style =
-    | Bold
-    | Italic
-    | Emphasize
-    | Center
-    | Left
-    | Right
-    | Superscript
-    | Subscript
-    | Custom of string
-
-  type reference =
-    | Element of Paths.Reference.any
-    | Link of string
-    | Custom of string * string
-
-  type see =
-    | Url of string
-    | File of string
-    | Doc of string
-
-  type text = text_element list
-
-  and text_element =
-    | Raw of string
-    | Code of string
-    | PreCode of string
-    | Verbatim of string
-    | Style of style * text
-    | List of text list
-    | Enum of text list
-    | Newline
-    | Title of int * Paths.Identifier.label option * text
-    | Reference of reference * text option
-    | Target of string option * string
-    | Special of special
-
-  and tag =
-    | Author of string
-    | Version of string
-    | See of see * text
-    | Since of string
-    | Before of string * text
-    | Deprecated of text
-    | Param of string * text
-    | Raise of string * text
-    | Return of text
-    | Inline
-    | Tag of string * text
-    | Canonical of Paths.Path.module_ * Paths.Reference.module_
-
-  and special =
-    | Modules of (Paths.Reference.module_ * text) list
-    | Index
-
-  module Error =
-  struct
-    module Position =
-    struct
-      type t = {
-        line : int;
-        column : int;
-      }
-    end
-
-    module Offset =
-    struct
-      type t = {
-        start: Position.t;
-        finish: Position.t;
-      }
-    end
-
-    module Location =
-    struct
-      type t = {
-        filename: string;
-        start: Position.t;
-        finish: Position.t;
-      }
-    end
-
-    type t = {
-      origin: Paths.Identifier.any; (** TODO remove this *)
-      offset: Offset.t;
-      location: Location.t option;
-      message: string;
-    }
-  end
-
-  type body = {
-    text: text;
-    tags: tag list;
-  }
-
-  type t =
-    | Ok of body
-    | Error of Error.t
-
-  type comment =
-    | Documentation of t
-    | Stop
-end
-
 open Paths
 
 (** {3 Modules} *)
@@ -141,7 +31,7 @@ module rec Module : sig
 
   type t =
     { id: Identifier.module_;
-      doc: Documentation.t;
+      doc: Comment.t;
       type_: decl;
       canonical : (Path.module_ * Reference.module_) option;
       hidden : bool;
@@ -184,7 +74,7 @@ and ModuleType : sig
 
   type t =
     { id: Identifier.module_type;
-      doc: Documentation.t;
+      doc: Comment.t;
       expr: expr option;
       expansion: Module.expansion option;
     }
@@ -206,7 +96,7 @@ and Signature : sig
     | Class of Class.t
     | ClassType of ClassType.t
     | Include of Include.t
-    | Comment of Documentation.comment
+    | Comment of Comment.comment
 
   type t = item list
 
@@ -222,7 +112,7 @@ and Include : sig
 
   type t =
     { parent: Identifier.signature;
-      doc: Documentation.t;
+      doc: Comment.t;
       decl: Module.decl;
       expansion: expansion; }
 
@@ -236,7 +126,7 @@ and TypeDecl : sig
 
     type t =
       { id: Identifier.field;
-        doc: Documentation.t;
+        doc: Comment.t;
         mutable_ : bool;
         type_: TypeExpr.t; }
 
@@ -249,7 +139,7 @@ and TypeDecl : sig
 
     type t =
       { id: Identifier.constructor;
-        doc: Documentation.t;
+        doc: Comment.t;
         args: argument;
         res: TypeExpr.t option; }
 
@@ -287,7 +177,7 @@ and TypeDecl : sig
 
   type t =
     { id: Identifier.type_;
-      doc: Documentation.t;
+      doc: Comment.t;
       equation: Equation.t;
       representation: Representation.t option; }
 
@@ -301,7 +191,7 @@ and Extension : sig
 
     type t =
       { id: Identifier.extension;
-        doc: Documentation.t;
+        doc: Comment.t;
         args: TypeDecl.Constructor.argument;
         res: TypeExpr.t option; }
 
@@ -309,7 +199,7 @@ and Extension : sig
 
   type t =
     { type_path: Path.type_;
-      doc: Documentation.t;
+      doc: Comment.t;
       type_params: TypeDecl.param list;
       private_: bool;
       constructors: Constructor.t list; }
@@ -321,7 +211,7 @@ and Exception : sig
 
   type t =
     { id: Identifier.exception_;
-      doc: Documentation.t;
+      doc: Comment.t;
       args: TypeDecl.Constructor.argument;
       res: TypeExpr.t option; }
 
@@ -334,7 +224,7 @@ and Value : sig
 
   type t =
     { id: Identifier.value;
-      doc: Documentation.t;
+      doc: Comment.t;
       type_: TypeExpr.t; }
 
 end = Value
@@ -345,7 +235,7 @@ and External : sig
 
   type t =
     { id: Identifier.value;
-      doc: Documentation.t;
+      doc: Comment.t;
       type_: TypeExpr.t;
       primitives: string list; }
 
@@ -361,7 +251,7 @@ and Class : sig
 
   type t =
     { id: Identifier.class_;
-      doc: Documentation.t;
+      doc: Comment.t;
       virtual_: bool;
       params: TypeDecl.param list;
       type_: decl;
@@ -379,7 +269,7 @@ and ClassType : sig
 
   type t =
     { id: Identifier.class_type;
-      doc: Documentation.t;
+      doc: Comment.t;
       virtual_: bool;
       params: TypeDecl.param list;
       expr: expr;
@@ -396,7 +286,7 @@ and ClassSignature : sig
     | InstanceVariable of InstanceVariable.t
     | Constraint of TypeExpr.t * TypeExpr.t
     | Inherit of ClassType.expr
-    | Comment of Documentation.comment
+    | Comment of Comment.comment
 
   type t =
     { self: TypeExpr.t option;
@@ -410,7 +300,7 @@ and Method : sig
 
   type t =
     { id: Identifier.method_;
-      doc: Documentation.t;
+      doc: Comment.t;
       private_: bool;
       virtual_: bool;
       type_: TypeExpr.t; }
@@ -423,7 +313,7 @@ and InstanceVariable : sig
 
   type t =
     { id: Identifier.instance_variable;
-      doc: Documentation.t;
+      doc: Comment.t;
       mutable_: bool;
       virtual_: bool;
       type_: TypeExpr.t; }
@@ -533,7 +423,7 @@ module rec Compilation_unit : sig
 
   type t =
     { id: Identifier.module_;
-      doc: Documentation.t;
+      doc: Comment.t;
       digest: Digest.t;
       imports: Import.t list;
       source: Source.t option;
@@ -547,6 +437,6 @@ end = Compilation_unit
 module rec Page : sig
   type t =
     { name: Identifier.page;
-      content: Documentation.t;
+      content: Comment.t;
       digest: Digest.t; }
 end = Page

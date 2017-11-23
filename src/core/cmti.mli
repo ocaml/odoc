@@ -16,7 +16,7 @@
 
 val read_interface: Model.Root.t -> string -> Typedtree.signature ->
   Paths.Identifier.module_ *
-  Model.Lang.Documentation.t *
+  Model.Comment.t *
   Model.Lang.Signature.t
 
 val read_module_type : Ident_env.t ->

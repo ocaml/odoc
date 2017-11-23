@@ -67,4 +67,4 @@ val lookup_label : t -> Reference.label -> Reference.label
 val lookup_element : t -> Reference.any -> Reference.any
 
 val lookup_section_title : t -> Reference.Resolved.label ->
-  Lang.Documentation.text option
+  Model.Comment.text option

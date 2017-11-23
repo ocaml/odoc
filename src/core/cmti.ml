@@ -502,7 +502,7 @@ and read_module_declaration env parent md =
   in
   let doc = read_attributes container id md.md_attributes in
   let canonical =
-    let open Documentation in
+    let open Model.Comment in
     match doc with
     | Ok { tags; _ } ->
       begin match List.find (function Canonical _ -> true | _ -> false) tags with
@@ -610,7 +610,7 @@ let read_interface root name intf =
   let items = read_signature Env.empty id intf in
   let doc, items =
     let open Signature in
-    let open Documentation in
+    let open Model.Comment in
     match items with
     | Comment (Documentation doc) :: items -> doc, items
     | _ -> empty, items

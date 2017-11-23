@@ -96,7 +96,7 @@ let mld ~env ~package ~output input =
   | Ok str ->
     let content =
       match Doc_model.Attrs.read_string name location str with
-      | Stop -> Model.Lang.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
+      | Stop -> Model.Comment.Ok { text = [] ; tags = [] } (* TODO: Error? *)
       | Documentation content -> content
     in
     (* This is a mess. *)
