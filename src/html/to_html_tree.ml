@@ -36,14 +36,14 @@ let rec list_concat_map ?sep ~f = function
     | None -> hd @ tl
     | Some sep -> hd @ sep :: tl
 
-let functor_arg_pos { Types.FunctorArgument.id ; _ } =
+let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
   | Identifier.Argument (_, nb, _) -> nb
   | _ ->
     let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec compilation_unit (t : Types.Compilation_unit.t) : Html_tree.t =
+let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
     | Paths.Identifier.Root (a, _) -> a.package
@@ -60,9 +60,9 @@ let rec compilation_unit (t : Types.Compilation_unit.t) : Html_tree.t =
   Html_tree.make (header_doc @ html, subtree)
 
 and pack
-   : Types.Compilation_unit.Packed.t -> Html_types.div_content_fun elt list
+   : Model.Lang.Compilation_unit.Packed.t -> Html_types.div_content_fun elt list
 = fun t ->
-  let open Types in
+  let open Model.Lang in
   List.map t ~f:(fun x ->
     let modname = Identifier.name x.Compilation_unit.Packed.id in
     let md_def =
@@ -75,20 +75,22 @@ and pack
   )
 
 and signature
-   : Types.Signature.t -> Html_types.div_content_fun elt list * Html_tree.t list
+  : Model.Lang.Signature.t ->
+      Html_types.div_content_fun elt list * Html_tree.t list
 = fun t ->
   let html_and_subtrees =
     let recording_doc = ref true in
     List.map t ~f:(fun item ->
       if not !recording_doc then (
         begin match item with
-        | Types.Signature.Comment Stop -> recording_doc := not !recording_doc
+        | Model.Lang.Signature.Comment Stop ->
+          recording_doc := not !recording_doc
         | _ -> ()
         end;
         [], []
       ) else (
         match item with
-        | Types.Signature.Module md -> module_ md
+        | Model.Lang.Signature.Module md -> module_ md
         | ModuleType mty -> module_type mty
         | Type td -> [ type_decl td ], []
         | TypExt te -> [ extension te ], []
@@ -110,10 +112,10 @@ and signature
   List.concat html, List.concat subtrees
 
 and functor_argument
-   : 'row. Types.FunctorArgument.t
+   : 'row. Model.Lang.FunctorArgument.t
   -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
 = fun arg ->
-  let open Types.FunctorArgument in
+  let open Model.Lang.FunctorArgument in
   let name = Identifier.name arg.id in
   let nb = functor_arg_pos arg in
   let link_name = Printf.sprintf "%d-%s" nb name in
@@ -130,7 +132,7 @@ and functor_argument
         match expansion with
         | AlreadyASig ->
           begin match arg.expr with
-          | Signature sg -> Types.Module.Signature sg
+          | Signature sg -> Model.Lang.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -151,7 +153,7 @@ and functor_argument
   region, subtree
 
 and module_expansion
-   : Types.Module.expansion
+   : Model.Lang.Module.expansion
   -> Html_types.div_content_fun elt list * Html_tree.t list
 = fun t ->
   match t with
@@ -177,7 +179,7 @@ and module_expansion
     html, params_subpages @ subpages
 
 and module_
-   : 'row. Types.Module.t
+   : 'row. Model.Lang.Module.t
   -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
 = fun t ->
   let modname = Identifier.name t.id in
@@ -195,8 +197,8 @@ and module_
         match expansion with
         | AlreadyASig ->
           begin match t.type_ with
-          | ModuleType (Types.ModuleType.Signature sg) ->
-            Types.Module.Signature sg
+          | ModuleType (Model.Lang.ModuleType.Signature sg) ->
+            Model.Lang.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -228,24 +230,24 @@ and module_decl (base : Identifier.signature) md =
   module_decl' base md
 
 and extract_path_from_mt ~(default: Identifier.signature) =
-  let open Types.ModuleType in
+  let open Model.Lang.ModuleType in
   function
   | Path (Path.Resolved r) ->
     Identifier.signature_of_module_type (Path.Resolved.identifier r)
   | With (mt, _) -> extract_path_from_mt ~default mt
-  | TypeOf (Types.Module.Alias (Path.Resolved r)) ->
+  | TypeOf (Model.Lang.Module.Alias (Path.Resolved r)) ->
     Identifier.signature_of_module (Path.Resolved.identifier r)
-  | TypeOf (Types.Module.ModuleType mt) -> extract_path_from_mt ~default mt
+  | TypeOf (Model.Lang.Module.ModuleType mt) -> extract_path_from_mt ~default mt
   | _ -> default
 
 and module_decl'
-  : 'inner_row 'outer_row. Identifier.signature -> Types.Module.decl
+  : 'inner_row 'outer_row. Identifier.signature -> Model.Lang.Module.decl
   -> ('inner_row, 'outer_row) text elt list
 = fun base -> function
   | Alias mod_path -> Html_tree.Relative_link.of_path ~stop_before:true mod_path
   | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
-and module_type (t : Types.ModuleType.t) =
+and module_type (t : Model.Lang.ModuleType.t) =
   let modname = Identifier.name t.id in
   let mty =
     match t.expr with
@@ -265,7 +267,7 @@ and module_type (t : Types.ModuleType.t) =
         match expansion with
         | AlreadyASig ->
           begin match t.expr with
-          | Some (Signature sg) -> Types.Module.Signature sg
+          | Some (Signature sg) -> Model.Lang.Module.Signature sg
           | _ -> assert false
           end
         | e -> e
@@ -296,7 +298,7 @@ and module_type (t : Types.ModuleType.t) =
   [ region ], subtree
 
 and mty
-  : 'inner_row 'outer_row. Identifier.signature -> Types.ModuleType.expr
+  : 'inner_row 'outer_row. Identifier.signature -> Model.Lang.ModuleType.expr
   -> ('inner_row, 'outer_row) text elt list
 = fun (base : Identifier.signature) -> function
   | Path mty_path -> Html_tree.Relative_link.of_path ~stop_before:true mty_path
@@ -307,7 +309,7 @@ and mty
     mty base expr
   | Functor (Some arg, expr) ->
     let name =
-      let open Types.FunctorArgument in
+      let open Model.Lang.FunctorArgument in
       let to_print = pcdata @@ Identifier.name arg.id in
       match
         Html_tree.Relative_link.Id.href
@@ -330,7 +332,8 @@ and mty
     Markup.keyword "module type of " :: module_decl' base md
 
 and substitution
-  : 'inner_row 'outer_row. Identifier.signature -> Types.ModuleType.substitution
+  : 'inner_row 'outer_row. Identifier.signature ->
+      Model.Lang.ModuleType.substitution
   -> ('inner_row, 'outer_row) text elt list
 = fun base -> function
   | ModuleEq (frag_mod, md) ->
@@ -341,10 +344,10 @@ and substitution
     module_decl' base md
   | TypeEq (frag_typ, td) ->
     Markup.keyword "type " ::
-    format_params td.Types.TypeDecl.Equation.params ::
+    format_params td.Model.Lang.TypeDecl.Equation.params ::
     Html_tree.Relative_link.of_fragment ~base (Fragment.any_sort frag_typ) @
     fst (format_manifest td) @
-    format_constraints td.Types.TypeDecl.Equation.constraints
+    format_constraints td.Model.Lang.TypeDecl.Equation.constraints
   | ModuleSubst (frag_mod, mod_path) ->
     Markup.keyword "module " ::
     Html_tree.Relative_link.of_fragment ~base (Fragment.signature_of_module frag_mod) @
@@ -366,8 +369,8 @@ and substitution
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
 
 and constructor
-   : 'b. 'b Identifier.t -> Types.TypeDecl.Constructor.argument
-  -> Types.TypeExpr.t option
+   : 'b. 'b Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
+  -> Model.Lang.TypeExpr.t option
   -> [> `Code | `PCDATA | `Table ] elt list
 = fun id args ret_type ->
     let name = Identifier.name id in
@@ -406,15 +409,19 @@ and constructor
       @ [ code ret_type ]
 
 and format_params
-   : 'row. ?delim:[`parens | `brackets] -> Types.TypeDecl.param list
+   : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
   -> ([> `PCDATA ] as 'row) elt
 = fun ?(delim=`parens) params ->
   let format_param (desc, variance_opt) =
-    let param_desc = match desc with | Types.TypeDecl.Any -> "_" | Var s -> "'" ^ s in
+    let param_desc =
+      match desc with
+      | Model.Lang.TypeDecl.Any -> "_"
+      | Var s -> "'" ^ s
+    in
     match variance_opt with
     | None -> param_desc
-    | Some Types.TypeDecl.Pos -> "+" ^ param_desc
-    | Some Types.TypeDecl.Neg -> "-" ^ param_desc
+    | Some Model.Lang.TypeDecl.Pos -> "+" ^ param_desc
+    | Some Model.Lang.TypeDecl.Neg -> "-" ^ param_desc
   in
   pcdata (
     match params with
@@ -441,7 +448,7 @@ and format_constraints
 
 and format_manifest
   : 'inner_row 'outer_row. ?compact_variants:bool
-  -> Types.TypeDecl.Equation.t
+  -> Model.Lang.TypeDecl.Equation.t
   -> ('inner_row, 'outer_row) text elt list * bool
 = fun ?(compact_variants=true) equation ->
   let _ = compact_variants in (* TODO *)
@@ -456,11 +463,11 @@ and format_manifest
     in
     manifest, false
 
-and polymorphic_variant ~type_ident (t : Types.TypeExpr.Variant.t) =
+and polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
   let row item =
     let kind_approx, cstr =
       match item with
-      | Types.TypeExpr.Variant.Type te ->
+      | Model.Lang.TypeExpr.Variant.Type te ->
         "unknown", [code (type_expr te)]
       | Constructor (name, _bool, args) ->
         let cstr = "`" ^ name in
@@ -524,7 +531,7 @@ and variant cstrs : [> Html_types.table ] elt =
   in
   let rows =
     List.map cstrs ~f:(fun cstr ->
-      let open Types.TypeDecl.Constructor in
+      let open Model.Lang.TypeDecl.Constructor in
       let anchor, lhs = constructor cstr.id cstr.args cstr.res in
       let rhs = Documentation.to_html ~wrap:() cstr.doc in
       tr ~a:[ a_id anchor; a_class ["anchored"] ] (
@@ -559,7 +566,7 @@ and record fields =
   in
   let rows =
     List.map fields ~f:(fun fld ->
-      let open Types.TypeDecl.Field in
+      let open Model.Lang.TypeDecl.Field in
       let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
       let rhs = Documentation.to_html ~wrap:() fld.doc in
       tr ~a:[ a_id anchor; a_class ["anchored"] ] (
@@ -574,13 +581,13 @@ and record fields =
   ; table ~a:[ a_class ["record"] ] rows
   ; code [pcdata "}"]]
 
-and type_decl (t : Types.TypeDecl.t) =
+and type_decl (t : Model.Lang.TypeDecl.t) =
   let tyname = Identifier.name t.id in
   let params = format_params t.equation.params in
   let constraints = format_constraints t.equation.constraints in
   let manifest, need_private =
     match t.equation.manifest with
-    | Some (Types.TypeExpr.Variant variant) ->
+    | Some (Model.Lang.TypeExpr.Variant variant) ->
       let manifest =
         Markup.keyword " = " ::
         (if t.equation.private_ then Markup.keyword "private " else pcdata "") ::
@@ -617,7 +624,7 @@ and type_decl (t : Types.TypeDecl.t) =
   in
   Markup.make_spec ~id:t.id ~doc tdecl_def
 
-and extension (t : Types.Extension.t) =
+and extension (t : Model.Lang.Extension.t) =
   let doc = Documentation.to_html t.doc in
   let extension =
     code (
@@ -636,22 +643,23 @@ and extension (t : Types.Extension.t) =
     div ~a:[ a_class ["doc"] ] doc;
   ]
 
-and extension_constructor (t : Types.Extension.Constructor.t) =
+and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
   (* TODO doc *)
   constructor t.id t.args t.res
 
-and exn (t : Types.Exception.t) =
+and exn (t : Model.Lang.Exception.t) =
   let cstr = constructor t.id t.args t.res in
   let doc = Documentation.to_html t.doc in
   let exn = code [ Markup.keyword "exception " ] :: cstr in
   Markup.make_spec ~id:t.id ~doc exn
 
 and te_variant
-   : 'inner 'outer. Types.TypeExpr.Variant.t -> ('inner, 'outer) text elt list
-= fun (t : Types.TypeExpr.Variant.t) ->
+  : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
+      ('inner, 'outer) text elt list
+= fun (t : Model.Lang.TypeExpr.Variant.t) ->
   let elements =
     list_concat_map t.elements ~sep:(pcdata " | ") ~f:(function
-      | Types.TypeExpr.Variant.Type te -> type_expr te
+      | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
       | Constructor (name, _bool, args) ->
         let constr = "`" ^ name in
         match args with
@@ -672,11 +680,12 @@ and te_variant
     pcdata "[< " :: elements @ [pcdata (" " ^ constrs ^ " ]")]
 
 and te_object
-   : 'inner 'outer. Types.TypeExpr.Object.t -> ('inner, 'outer) text elt list
-= fun (t : Types.TypeExpr.Object.t) ->
+  : 'inner 'outer. Model.Lang.TypeExpr.Object.t ->
+      ('inner, 'outer) text elt list
+= fun (t : Model.Lang.TypeExpr.Object.t) ->
   let fields =
     list_concat_map t.fields ~f:(function
-      | Types.TypeExpr.Object.Method { name; type_ } ->
+      | Model.Lang.TypeExpr.Object.Method { name; type_ } ->
         pcdata (name ^ " : ") :: type_expr type_ @ [pcdata "; "]
       | Inherit type_ ->
         type_expr type_ @ [pcdata "; "]
@@ -686,7 +695,7 @@ and te_object
 
 and format_type_path
   : 'inner 'outer. delim:[ `parens | `brackets ]
-  -> Types.TypeExpr.t list -> ('inner, 'outer) text elt list
+  -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text elt list
   -> ('inner, 'outer) text elt list
 = fun ~delim params path ->
   match params with
@@ -704,7 +713,7 @@ and format_type_path
 
 and type_expr
    : 'inner 'outer. ?needs_parentheses:bool
-  -> Types.TypeExpr.t -> ('inner, 'outer) text elt list
+  -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text elt list
 = fun ?(needs_parentheses=false) t ->
   match t with
   | Var s -> [Markup.Type.var ("'" ^ s)]
@@ -754,7 +763,7 @@ and type_expr
     @ [pcdata ")"]
 
 and package_subst
-   : 'inner 'outer. Path.module_type -> Fragment.type_ * Types.TypeExpr.t
+   : 'inner 'outer. Path.module_type -> Fragment.type_ * Model.Lang.TypeExpr.t
    -> ('inner, 'outer) text elt list
    = fun pkg_path (frag_typ, te) ->
   Markup.keyword "type " ::
@@ -770,7 +779,7 @@ and package_subst
   pcdata " " :: Markup.keyword "=" :: pcdata " " ::
   type_expr te
 
-and value (t : Types.Value.t) =
+and value (t : Model.Lang.Value.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let value =
@@ -781,7 +790,7 @@ and value (t : Types.Value.t) =
   in
   Markup.make_def ~id:t.id ~doc ~code:value
 
-and external_ (t : Types.External.t) =
+and external_ (t : Model.Lang.External.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let external_ =
@@ -794,11 +803,11 @@ and external_ (t : Types.External.t) =
   in
   Markup.make_def ~id:t.id ~doc ~code:external_
 
-and class_signature (t : Types.ClassSignature.t) =
+and class_signature (t : Model.Lang.ClassSignature.t) =
   (* FIXME: use [t.self] *)
   let recording_doc = ref true in
   List.concat @@ List.map t.items ~f:(function
-    | Types.ClassSignature.Method m -> [ method_ m ]
+    | Model.Lang.ClassSignature.Method m -> [ method_ m ]
     | InstanceVariable v -> [ instance_variable v ]
     | Constraint (ty1, ty2) -> format_constraints [ty1, ty2]
     | Inherit (Signature _) -> assert false (* Bold. *)
@@ -815,7 +824,7 @@ and class_signature (t : Types.ClassSignature.t) =
       []
   )
 
-and method_ (t : Types.Method.t) =
+and method_ (t : Model.Lang.Method.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -830,7 +839,7 @@ and method_ (t : Types.Method.t) =
   in
   Markup.make_def ~id:t.id ~doc ~code:method_
 
-and instance_variable (t : Types.InstanceVariable.t) =
+and instance_variable (t : Model.Lang.InstanceVariable.t) =
   let name = Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -846,9 +855,9 @@ and instance_variable (t : Types.InstanceVariable.t) =
   Markup.make_def ~id:t.id ~doc ~code:val_
 
 and class_type_expr
-   : 'inner_row 'outer_row. Types.ClassType.expr
+   : 'inner_row 'outer_row. Model.Lang.ClassType.expr
   -> ('inner_row, 'outer_row) text elt list
-   = fun (cte : Types.ClassType.expr) ->
+   = fun (cte : Model.Lang.ClassType.expr) ->
      match cte with
      | Constr (path, args) ->
        let link = Html_tree.Relative_link.of_path ~stop_before:false path in
@@ -857,9 +866,9 @@ and class_type_expr
        [ Markup.keyword "object" ; pcdata " ... " ; Markup.keyword "end" ]
 
 and class_decl
-   : 'inner_row 'outer_row. Types.Class.decl
+   : 'inner_row 'outer_row. Model.Lang.Class.decl
   -> ('inner_row, 'outer_row) text elt list
-  = fun (cd : Types.Class.decl) ->
+  = fun (cd : Model.Lang.Class.decl) ->
     match cd with
     | ClassType expr -> class_type_expr expr
     (* TODO: factorize the following with [type_expr] *)
@@ -871,7 +880,7 @@ and class_decl
       type_expr ~needs_parentheses:true src @
       pcdata " " :: Markup.arrow :: pcdata " " :: class_decl dst
 
-and class_ (t : Types.Class.t) =
+and class_ (t : Model.Lang.Class.t) =
   let name = Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -906,7 +915,7 @@ and class_ (t : Types.Class.t) =
   in
   [ region ], subtree
 
-and class_type (t : Types.ClassType.t) =
+and class_type (t : Model.Lang.ClassType.t) =
   let name = Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
   let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
@@ -941,7 +950,7 @@ and class_type (t : Types.ClassType.t) =
   in
   [ region ], subtree
 
-and include_ (t : Types.Include.t) =
+and include_ (t : Model.Lang.Include.t) =
   let doc = Documentation.to_html t.doc in
   let included_html, tree = signature t.expansion.content in
   let should_be_inlined, should_be_open =
@@ -950,17 +959,17 @@ and include_ (t : Types.Include.t) =
       let should_be_open =
         let forced_open =
           List.exists tags ~f:(function
-            | Types.Documentation.Tag ("open", _) -> true
+            | Model.Lang.Documentation.Tag ("open", _) -> true
             | _ -> false
           )
         in
         if forced_open then true else
           !Html_tree.open_details && List.for_all tags ~f:(function
-            | Types.Documentation.Tag ("closed", _) -> false
+            | Model.Lang.Documentation.Tag ("closed", _) -> false
             | _ -> true
           )
       in
-      List.mem Types.Documentation.Inline ~set:tags, should_be_open
+      List.mem Model.Lang.Documentation.Inline ~set:tags, should_be_open
     | _ -> false, !Html_tree.open_details
   in
   let incl =
@@ -983,7 +992,7 @@ and include_ (t : Types.Include.t) =
       (div ~a:[ a_class ["doc"] ] doc :: incl)
   ], tree
 
-let page (t : Types.Page.t) : Html_tree.t =
+let page (t : Model.Lang.Page.t) : Html_tree.t =
   let package, name =
     match t.name with
     | Paths.Identifier.Page (a, name) -> a.package, name

@@ -70,7 +70,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> t -> Documentation.text
+  val find_section_title : string -> t -> Lang.Documentation.text
 
   (** {3 Lookup} *)
 
@@ -104,9 +104,9 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : Documentation.t -> signature -> signature
+  val add_documentation : Lang.Documentation.t -> signature -> signature
 
-  val add_comment : Documentation.comment -> signature -> signature
+  val add_comment : Lang.Documentation.comment -> signature -> signature
 
   val include_ : t -> signature -> signature
 
@@ -167,7 +167,7 @@ and Datatype : sig
 
   (** {3 Constructors} *)
 
-  val add_documentation : Documentation.t -> t -> t
+  val add_documentation : Lang.Documentation.t -> t -> t
 
   val abstract : t
 
@@ -204,9 +204,9 @@ and ClassSig : sig
 
   val add_element : string -> Element.class_signature -> signature -> signature
 
-  val add_documentation : Documentation.t -> signature -> signature
+  val add_documentation : Lang.Documentation.t -> signature -> signature
 
-  val add_comment : Documentation.comment -> signature -> signature
+  val add_comment : Lang.Documentation.comment -> signature -> signature
 
   val inherit_ : t -> signature -> signature
 
@@ -257,11 +257,11 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> t -> Documentation.text
+  val find_section_title : string -> t -> Lang.Documentation.text
 
   (** {3 Constructor} *)
 
-  val of_doc : Documentation.t -> t
+  val of_doc : Lang.Documentation.t -> t
 end
 
 and Element : sig

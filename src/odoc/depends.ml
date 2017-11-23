@@ -57,14 +57,12 @@ end = struct
   let elements t = Model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
 end
 
-open Doc_model
-
 let deps_of_unit ~deps input =
   let odoctree = Compilation_unit.load input in
-  List.iter odoctree.Doc_model.Types.Compilation_unit.imports ~f:(fun import ->
+  List.iter odoctree.Model.Lang.Compilation_unit.imports ~f:(fun import ->
     match import with
-    | Types.Compilation_unit.Import.Resolved root -> Hash_set.add deps root
-    | Types.Compilation_unit.Import.Unresolved _  -> ()
+    | Model.Lang.Compilation_unit.Import.Resolved root -> Hash_set.add deps root
+    | Model.Lang.Compilation_unit.Import.Unresolved _  -> ()
   )
 
 let for_html_step pkg_dir =

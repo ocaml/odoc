@@ -16,28 +16,28 @@
 
 
 
-let empty_body = {Model.Documentation.text = []; tags = []}
+let empty_body = {Model.Lang.Documentation.text = []; tags = []}
 
-let empty : Model.Documentation.t = Ok empty_body
+let empty : Model.Lang.Documentation.t = Ok empty_body
 
 let read_offset err =
   let open Doc_parser.Error in
   let loc = err.location in
   let start =
-    { Model.Documentation.Error.Position.
+    { Model.Lang.Documentation.Error.Position.
         line = loc.start.line;
         column = loc.start.column; }
   in
   let finish =
-    { Model.Documentation.Error.Position.
+    { Model.Lang.Documentation.Error.Position.
         line = loc.finish.line;
         column = loc.finish.column; }
   in
-    { Model.Documentation.Error.Offset.start; finish; }
+    { Model.Lang.Documentation.Error.Offset.start; finish; }
 
 let read_position offset pos =
   let open Lexing in
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   let off_line = offset.Position.line in
   let off_column = offset.Position.column in
   let line = pos.pos_lnum + off_line - 1 in
@@ -50,7 +50,7 @@ let read_position offset pos =
 
 let read_location offset pos =
   let open Lexing in
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   if pos.pos_cnum >= 0 then begin
     let filename = pos.pos_fname in
     let start = read_position offset.Offset.start pos in
@@ -59,7 +59,7 @@ let read_location offset pos =
   end else None
 
 let read_error origin err pos =
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   let offset = read_offset err in
   let location = read_location offset pos in
@@ -69,7 +69,7 @@ let read_error origin err pos =
 let attribute_location loc =
   let open Lexing in
   let open Location in
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   let start = loc.loc_start in
   let finish = loc.loc_end in
   if start.pos_cnum >= 0 && finish.pos_cnum >= 0 then begin
@@ -85,7 +85,7 @@ let attribute_location loc =
   end else None
 
 let invalid_attribute_error origin loc =
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   let offset =
     let zero_pos = { Position.line = 0; column = 0 } in
@@ -96,7 +96,7 @@ let invalid_attribute_error origin loc =
     { origin; offset; location; message }
 
 let several_deprecated_error origin loc =
-  let open Model.Documentation.Error in
+  let open Model.Lang.Documentation.Error in
   let origin = Paths.Identifier.any origin in
   (* TODO get an actual offset *)
   let dummy = { Position.line = 0; column = 0} in
@@ -109,7 +109,7 @@ let several_deprecated_error origin loc =
 
 let read_attributes parent id attrs =
   let ocaml_deprecated = ref None in
-  let rec loop first nb_deprecated acc : _ -> Model.Documentation.t =
+  let rec loop first nb_deprecated acc : _ -> Model.Lang.Documentation.t =
     function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc}, payload) :: rest -> begin
@@ -122,7 +122,7 @@ let read_attributes parent id attrs =
                 let text = if first then text else Newline :: text in
                 let nb_deprecated =
                   List.fold_right (function
-                    | Model.Documentation.Deprecated _ -> (+) 1
+                    | Model.Lang.Documentation.Deprecated _ -> (+) 1
                     | _ -> fun x -> x
                   ) tags nb_deprecated
                 in
@@ -130,7 +130,7 @@ let read_attributes parent id attrs =
                   Error (several_deprecated_error id loc)
                 else
                   let acc =
-                    Model.Documentation.{
+                    Model.Lang.Documentation.{
                       text = acc.text @ text;
                       tags = acc.tags @ tags;
                     }
@@ -146,7 +146,7 @@ let read_attributes parent id attrs =
         match Payload.read payload with
         | Some (str, _) ->
           (* Not parsing with octavius here, we take the string verbatim. *)
-          let deprecated_tag = Model.Documentation.Deprecated [Raw str] in
+          let deprecated_tag = Model.Lang.Documentation.Deprecated [Raw str] in
           ocaml_deprecated := Some deprecated_tag;
           loop first nb_deprecated acc rest
         | None ->
@@ -163,20 +163,20 @@ let read_attributes parent id attrs =
   in
     loop true 0 empty_body attrs
 
-let read_string parent loc str : Model.Documentation.comment =
+let read_string parent loc str : Model.Lang.Documentation.comment =
   let lexbuf = Lexing.from_string str in
   let start_pos = loc.Location.loc_start in
-  let doc : Model.Documentation.t =
+  let doc : Model.Lang.Documentation.t =
     match Doc_parser.parse parent lexbuf with
     | Ok {text; tags} -> begin
-        Ok {Model.Documentation.text; tags}
+        Ok {Model.Lang.Documentation.text; tags}
       end
     | Error err -> Error (read_error parent err start_pos)
   in
   Documentation doc
 
 let read_comment parent
-    : Parsetree.attribute -> Model.Documentation.comment option =
+    : Parsetree.attribute -> Model.Lang.Documentation.comment option =
 
   function
   | ({Location.txt =
@@ -185,7 +185,7 @@ let read_comment parent
       | Some ("/*", _loc) -> Some Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
-          let doc : Model.Documentation.t =
+          let doc : Model.Lang.Documentation.t =
             Error (invalid_attribute_error parent loc) in
             Some (Documentation doc)
     end

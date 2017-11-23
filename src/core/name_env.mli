@@ -21,21 +21,21 @@ type t
 
 val empty : t
 
-val add_page : Page.t -> t -> t
+val add_page : Lang.Page.t -> t -> t
 
-val add_unit : Compilation_unit.t -> t -> t
+val add_unit : Lang.Compilation_unit.t -> t -> t
 
-val add_signature_items : Signature.t -> t -> t
+val add_signature_items : Lang.Signature.t -> t -> t
 
-val add_module_type_expr_items : ModuleType.expr -> t -> t
+val add_module_type_expr_items : Lang.ModuleType.expr -> t -> t
 
-val add_module_decl_items : Module.decl -> t -> t
+val add_module_decl_items : Lang.Module.decl -> t -> t
 
-val add_class_signature_items : ClassSignature.t -> t -> t
+val add_class_signature_items : Lang.ClassSignature.t -> t -> t
 
-val add_class_type_expr_items : ClassType.expr -> t -> t
+val add_class_type_expr_items : Lang.ClassType.expr -> t -> t
 
-val add_class_decl_items : Class.decl -> t -> t
+val add_class_decl_items : Lang.Class.decl -> t -> t
 
 val lookup_module : t -> Reference.module_ -> Reference.module_
 
@@ -67,4 +67,4 @@ val lookup_label : t -> Reference.label -> Reference.label
 val lookup_element : t -> Reference.any -> Reference.any
 
 val lookup_section_title : t -> Reference.Resolved.label ->
-  Documentation.text option
+  Lang.Documentation.text option

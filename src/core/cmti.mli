@@ -16,27 +16,27 @@
 
 val read_interface: Model.Root.t -> string -> Typedtree.signature ->
   Paths.Identifier.module_ *
-  Model.Documentation.t *
-  Model.Signature.t
+  Model.Lang.Documentation.t *
+  Model.Lang.Signature.t
 
 val read_module_type : Ident_env.t ->
   Paths.Identifier.signature -> int ->
-  Typedtree.module_type -> Model.ModuleType.expr
+  Typedtree.module_type -> Model.Lang.ModuleType.expr
 
 val read_value_description : Ident_env.t ->
   Paths.Identifier.signature ->
-  Typedtree.value_description -> Model.Signature.item
+  Typedtree.value_description -> Model.Lang.Signature.item
 
 val read_type_declarations : Ident_env.t ->
   Paths.Identifier.signature ->
   Typedtree.type_declaration list ->
-  Model.Signature.item list
+  Model.Lang.Signature.item list
 
 val read_module_type_declaration : Ident_env.t ->
   Paths.Identifier.signature ->
-  Typedtree.module_type_declaration -> Model.ModuleType.t
+  Typedtree.module_type_declaration -> Model.Lang.ModuleType.t
 
 val read_class_type_declarations : Ident_env.t ->
   Paths.Identifier.signature ->
   Typedtree.class_type Typedtree.class_infos list ->
-  Model.Signature.item list
+  Model.Lang.Signature.item list

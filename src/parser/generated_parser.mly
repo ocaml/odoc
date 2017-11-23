@@ -2,7 +2,7 @@
 
 (* This parser definitions provides two entry points, [main] and
    [reference_parts], both functions of type
-   [Lexing.lexbuf -> Model.Documentation.body]. However, in addition to the
+   [Lexing.lexbuf -> Model.Lang.Documentation.body]. However, in addition to the
    [lexbuf], they take one more argument through a reference
 
 {[
@@ -48,7 +48,7 @@ type text_item =
   | Newline
   | Blank_line
   | String of string
-  | Element of Model.Documentation.text_element
+  | Element of Model.Lang.Documentation.text_element
 
 let iminus = String sminus
 
@@ -68,7 +68,7 @@ let rec skip_whitespace = function
 let rec convert acc stracc = function
   | [] ->
         if stracc = [] then acc
-        else (Model.Documentation.Raw (String.concat sempty stracc)) :: acc
+        else (Model.Lang.Documentation.Raw (String.concat sempty stracc)) :: acc
   | ti :: rest ->
       let acc, stracc =
         match ti with
@@ -124,7 +124,7 @@ let title_to_string (i, _) =
     "{" ^ i
 
 let style_to_string = function
-  | Model.Documentation.Bold -> "{b"
+  | Model.Lang.Documentation.Bold -> "{b"
   | Italic -> "{i"
   | Emphasize -> "{e"
   | Center -> "{C"
@@ -144,7 +144,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Param
 %token AUTHOR
 %token <string> Version
-%token <Model.Documentation.see> See
+%token <Model.Lang.Documentation.see> See
 %token <string> Since
 %token <string> Before
 %token DEPRECATED
@@ -158,13 +158,13 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token END
 
 %token <int * string option> Title
-%token <Model.Documentation.style> Style
+%token <Model.Lang.Documentation.style> Style
 %token LIST
 %token ENUM
 %token <bool> Item
 
-%token <Model.Documentation.reference> Ref
-%token <Model.Documentation.special> Special_Ref
+%token <Model.Lang.Documentation.reference> Ref
+%token <Model.Lang.Documentation.special> Special_Ref
 
 %token <string> Code
 %token <string> Pre_Code
@@ -202,7 +202,7 @@ let html_close_to_string t = "</" ^ t ^ ">"
 %token <string> Ref_part
 
 %start main
-%type <Model.Documentation.body> main
+%type <Model.Lang.Documentation.body> main
 
 %start reference_parts
 %type <(string option * string) list> reference_parts

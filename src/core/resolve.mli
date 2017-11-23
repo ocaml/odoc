@@ -22,12 +22,12 @@ type resolver
     use {!Hashtbl.hash} and structural equality (=) on ['a]. *)
 val build_resolver: ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
   -> (string -> Component_table.lookup_unit_result)
-  -> (Root.t -> Compilation_unit.t)
-  -> (string -> Root.t option) -> (Root.t -> Page.t)
+  -> (Root.t -> Lang.Compilation_unit.t)
+  -> (string -> Root.t option) -> (Root.t -> Lang.Page.t)
   -> resolver
 
 (** Try to resolve all paths and references within a unit. *)
-val resolve : resolver -> Compilation_unit.t -> Compilation_unit.t
+val resolve : resolver -> Lang.Compilation_unit.t -> Lang.Compilation_unit.t
 
 (** Try to resolve all paths and references within a page. *)
-val resolve_page : resolver -> Page.t -> Page.t
+val resolve_page : resolver -> Lang.Page.t -> Lang.Page.t

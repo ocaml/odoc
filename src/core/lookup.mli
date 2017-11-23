@@ -14,6 +14,5 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val lookup : Model.Compilation_unit.t -> Model.Compilation_unit.t
-
-val lookup_page : Model.Page.t -> Model.Page.t
+val lookup : Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
+val lookup_page : Model.Lang.Page.t -> Model.Lang.Page.t

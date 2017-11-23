@@ -357,7 +357,7 @@ type ref_kind =
 let read_reference
     (rk : ref_kind)
     (s : string) :
-      Model.Documentation.reference =
+      Model.Lang.Documentation.reference =
 
   let parsed_ref = lazy (read_longident s) in
   match rk, parsed_ref with

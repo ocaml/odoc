@@ -19,42 +19,42 @@ open Model
 
 type t
 
-val signature : t -> Signature.t -> Signature.t
+val signature : t -> Lang.Signature.t -> Lang.Signature.t
 
-val class_signature : t -> ClassSignature.t -> ClassSignature.t
+val class_signature : t -> Lang.ClassSignature.t -> Lang.ClassSignature.t
 
-val datatype : t -> TypeDecl.Representation.t ->
-               TypeDecl.Representation.t
+val datatype : t -> Lang.TypeDecl.Representation.t ->
+               Lang.TypeDecl.Representation.t
 
-val module_ : t -> Module.t -> Module.t
+val module_ : t -> Lang.Module.t -> Lang.Module.t
 
-val module_type : t -> ModuleType.t -> ModuleType.t
+val module_type : t -> Lang.ModuleType.t -> Lang.ModuleType.t
 
-val type_decl : t -> TypeDecl.t -> TypeDecl.t
+val type_decl : t -> Lang.TypeDecl.t -> Lang.TypeDecl.t
 
-val constructor : t -> TypeDecl.Constructor.t ->
-                  TypeDecl.Constructor.t
+val constructor : t -> Lang.TypeDecl.Constructor.t ->
+                  Lang.TypeDecl.Constructor.t
 
-val field : t -> TypeDecl.Field.t -> TypeDecl.Field.t
+val field : t -> Lang.TypeDecl.Field.t -> Lang.TypeDecl.Field.t
 
-val extension : t -> Extension.t -> Extension.t
+val extension : t -> Lang.Extension.t -> Lang.Extension.t
 
-val exception_ : t -> Exception.t -> Exception.t
+val exception_ : t -> Lang.Exception.t -> Lang.Exception.t
 
-val value : t -> Value.t -> Value.t
+val value : t -> Lang.Value.t -> Lang.Value.t
 
-val class_ : t -> Class.t -> Class.t
+val class_ : t -> Lang.Class.t -> Lang.Class.t
 
-val class_type : t -> ClassType.t -> ClassType.t
+val class_type : t -> Lang.ClassType.t -> Lang.ClassType.t
 
-val method_ : t -> Method.t -> Method.t
+val method_ : t -> Lang.Method.t -> Lang.Method.t
 
-val instance_variable : t -> InstanceVariable.t ->
-                        InstanceVariable.t
+val instance_variable : t -> Lang.InstanceVariable.t ->
+                        Lang.InstanceVariable.t
 
-val comment : t -> Documentation.comment -> Documentation.comment
+val comment : t -> Lang.Documentation.comment -> Lang.Documentation.comment
 
-val documentation : t -> Documentation.t -> Documentation.t
+val documentation : t -> Lang.Documentation.t -> Lang.Documentation.t
 
 val identifier_module : t -> Identifier.module_ ->
                         Identifier.module_
@@ -65,9 +65,9 @@ val identifier_signature : t -> Identifier.signature ->
 val offset_identifier_signature : t -> Identifier.signature * int ->
                                   Identifier.signature * int
 
-val module_type_expr : t -> ModuleType.expr -> ModuleType.expr
+val module_type_expr : t -> Lang.ModuleType.expr -> Lang.ModuleType.expr
 
-val module_expansion : t -> Module.expansion -> Module.expansion
+val module_expansion : t -> Lang.Module.expansion -> Lang.Module.expansion
 
 val rename_signature : equal:(Root.t -> Root.t -> bool) ->
                        Identifier.signature ->

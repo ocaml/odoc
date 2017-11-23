@@ -15,7 +15,7 @@
  *)
 
 open Paths
-open Model
+open Model.Lang
 
 let empty_doc =
   let open Documentation in

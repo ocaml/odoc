@@ -20,8 +20,6 @@ module Maps = Maps
 
 module Paths = Paths
 
-module Types = Model
-
 module Root = Model.Root
 
 type lookup_result = Component_table.lookup_unit_result =
@@ -34,7 +32,7 @@ let core_types = Predefined.core_types
 let core_exceptions = Predefined.core_exceptions
 
 type read_result =
-  (Model.Compilation_unit.t, read_error) result
+  (Model.Lang.Compilation_unit.t, read_error) result
 
 and read_error =
   | Not_an_interface
@@ -60,7 +58,7 @@ let read_cmti ~make_root ~filename =
         in
         let imports =
           List.map (fun (s, d) ->
-            Model.Compilation_unit.Import.Unresolved (s, d))
+            Model.Lang.Compilation_unit.Import.Unresolved (s, d))
           imports
         in
         let interface = true in
@@ -69,12 +67,12 @@ let read_cmti ~make_root ~filename =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
             let build_dir = cmt_info.cmt_builddir in
-            Some {Model.Compilation_unit.Source.file; digest; build_dir}
+            Some {Model.Lang.Compilation_unit.Source.file; digest; build_dir}
           | _, _ -> None
         in
-        let content = Model.Compilation_unit.Module items in
+        let content = Model.Lang.Compilation_unit.Module items in
         let unit =
-          {Model.Compilation_unit.id; doc; digest; imports; source;
+          {Model.Lang.Compilation_unit.id; doc; digest; imports; source;
            interface; hidden; content; expansion = None}
         in
         let unit = Lookup.lookup unit in
@@ -86,7 +84,7 @@ let read_cmti ~make_root ~filename =
 let read_cmt ~make_root ~filename =
   let open Cmi_format in
   let open Cmt_format in
-  let open Model.Compilation_unit in
+  let open Model.Lang.Compilation_unit in
   try
     let cmt_info = read_cmt filename in
     match cmt_info.cmt_annots with
@@ -133,7 +131,7 @@ let read_cmt ~make_root ~filename =
           Ok {id; doc; digest; imports;
               source; interface; hidden; content; expansion = None}
     | Implementation impl ->
-        let open Model.Compilation_unit in
+        let open Model.Lang.Compilation_unit in
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with
@@ -177,7 +175,7 @@ let read_cmt ~make_root ~filename =
 
 let read_cmi ~make_root ~filename =
   let open Cmi_format in
-  let open Model.Compilation_unit in
+  let open Model.Lang.Compilation_unit in
   try
     let cmi_info = read_cmi filename in
       match cmi_info.cmi_crcs with

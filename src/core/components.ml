@@ -16,6 +16,7 @@
 
 open Paths
 open Model
+open Model.Lang
 
 (* Sets and maps for components *)
 

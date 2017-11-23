@@ -1,6 +1,7 @@
 
 open Paths
 open Model
+open Model.Lang
 
 let rec list_map f l =
   match l with

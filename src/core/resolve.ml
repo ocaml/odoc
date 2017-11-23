@@ -1778,7 +1778,7 @@ and resolve_element_reference ident tbl (r : Reference.any)
 let splice_section_title tbl elt =
   let open Reference in
   let title_of_parent :
-    string -> Resolved.label_parent -> Documentation.text option =
+    string -> Resolved.label_parent -> Lang.Documentation.text option =
     let open Resolved in
     let open Identifier in
     fun name parent_ref ->
@@ -1793,7 +1793,7 @@ let splice_section_title tbl elt =
       | _ -> None
   in
   let find_section_title :
-    Resolved.label -> Documentation.text option =
+    Resolved.label -> Lang.Documentation.text option =
     function
     | Resolved.Identifier Identifier.Label (parent, str) ->
       let parent_ref = Resolved.Identifier parent in
@@ -1801,7 +1801,7 @@ let splice_section_title tbl elt =
     | Resolved.Label (parent_ref, str) ->
       title_of_parent str parent_ref
   in
-  let open Documentation in
+  let open Lang.Documentation in
   match elt with
   | Reference (r, None) ->
     begin match r with
@@ -1847,7 +1847,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
     method path_class_type x = resolve_class_type_path where_am_i tbl x
 
     method! module_ md =
-      let open Module in
+      let open Lang.Module in
       let {id; doc; type_; expansion; canonical;display_type;hidden} = md in
       let id' = self#identifier_module id in
       let sig_id = Identifier.signature_of_module id' in
@@ -1874,7 +1874,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
         else md
 
     method! module_type mty =
-      let open ModuleType in
+      let open Lang.ModuleType in
       let {id; doc; expr; expansion} = mty in
       let id' = self#identifier_module_type id in
       let sig_id = Identifier.signature_of_module_type id' in
@@ -1894,7 +1894,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
         else mty
 
     method! include_ incl =
-      let open Include in
+      let open Lang.Include in
       let {parent; doc; decl; expansion} = incl in
       let parent' = self#identifier_signature parent in
       let doc' = self#documentation doc in
@@ -1905,7 +1905,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
         else incl
 
     method! module_type_functor_arg arg =
-      let open FunctorArgument in
+      let open Lang.FunctorArgument in
       match arg with
       | None -> arg
       | Some{ id; expr; expansion } ->
@@ -1920,7 +1920,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
             else arg
 
     method module_type_expr_with_id id expr =
-      let open ModuleType in
+      let open Lang.ModuleType in
         match expr with
         | With(body, substs) ->
           let body = self#module_type_expr_with_id id body in
@@ -1967,7 +1967,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
         | Path _ | Signature _ -> self#module_type_expr expr
 
     method module_decl_with_id id decl =
-      let open Module in
+      let open Lang.Module in
         match decl with
         | ModuleType expr ->
             let expr' = self#module_type_expr_with_id id expr in
@@ -1976,7 +1976,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
         | Alias _ -> self#module_decl decl
 
     method! type_expr_package pkg =
-      let open TypeExpr.Package in
+      let open Lang.TypeExpr.Package in
       let path = resolve_module_type_path where_am_i tbl pkg.path in
       let base = CTbl.module_type_path_with tbl path in
       let substitutions =
@@ -2032,7 +2032,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       splice_section_title tbl elt
 
     method! unit_import import =
-      let open Compilation_unit.Import in
+      let open Lang.Compilation_unit.Import in
         match import with
         | Resolved _ -> import
         | Unresolved(name, _) ->
@@ -2043,7 +2043,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
     method resolve_unit unit =
       let this =
         {< where_am_i =
-          Some (Identifier.signature_of_module unit.Compilation_unit.id) >}
+          Some (Identifier.signature_of_module unit.Lang.Compilation_unit.id) >}
       in
         this#unit unit
 

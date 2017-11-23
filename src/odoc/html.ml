@@ -106,11 +106,11 @@ let from_mld ~env ~package ~output:root_dir input =
   | Ok str ->
     let content =
       match Doc_model.Attrs.read_string name location str with
-      | Stop -> Doc_model.Types.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
+      | Stop -> Model.Lang.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
       | Documentation content -> content
     in
     (* This is a mess. *)
-    let page = Doc_model.Types.Page.{ name; content; digest } in
+    let page = Model.Lang.Page.{ name; content; digest } in
     let page = Doc_model.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = Doc_model.resolve_page (Env.resolver env) page in

@@ -20,7 +20,7 @@ open Types
 module OCamlPath = Path
 
 open Paths
-open Model
+open Model.Lang
 open Attrs
 
 module Env = Ident_env
@@ -889,7 +889,7 @@ and read_module_declaration env parent ident md =
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> Root.contains_double_underscore (Ident.name ident)
+    | None -> Model.Root.contains_double_underscore (Ident.name ident)
   in
   let expansion =
     match type_ with

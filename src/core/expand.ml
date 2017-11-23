@@ -16,6 +16,7 @@
 
 open Paths
 open Model
+open Model.Lang
 
 type partial_expansion =
   | Signature of Signature.t

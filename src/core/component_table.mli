@@ -31,8 +31,8 @@ type lookup_unit_result =
 (** Create a table of the components of units. Optionally provide
     equality and hash functons. *)
 val create: ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int) ->
-  (string -> lookup_unit_result) -> (Root.t -> Compilation_unit.t) ->
-  (string -> Root.t option) -> (Root.t -> Page.t) ->
+  (string -> lookup_unit_result) -> (Root.t -> Lang.Compilation_unit.t) ->
+  (string -> Root.t option) -> (Root.t -> Lang.Page.t) ->
   t
 
 open Components
@@ -73,7 +73,7 @@ type with_
 
 (** Create specialised fragment table for a module type expression *)
 val module_type_expr_with : t ->
-      Identifier.signature -> ModuleType.expr -> with_
+      Identifier.signature -> Lang.ModuleType.expr -> with_
 
 (** Create specialised fragment table for a module path *)
 val module_type_path_with : t ->

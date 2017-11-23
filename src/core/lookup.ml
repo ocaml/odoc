@@ -140,7 +140,7 @@ class lookup = object
                          | Label _ as rr) ->
         begin match Name_env.lookup_section_title env rr with
         | None -> elt
-        | txt -> Model.Documentation.Reference (r, txt)
+        | txt -> Model.Lang.Documentation.Reference (r, txt)
         end
       | _ -> elt
       end

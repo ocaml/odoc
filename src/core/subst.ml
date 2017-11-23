@@ -280,7 +280,7 @@ class strengthen path : t = object
   method! module_ md =
     if Path.Resolved.is_hidden path then md
     else begin
-      let open Module in
+      let open Lang.Module in
       match md.type_ with
       | Alias p when not (Path.is_hidden p) -> md
       | _ ->

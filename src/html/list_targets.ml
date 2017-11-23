@@ -18,14 +18,14 @@ open StdLabels
 open Doc_model
 open Paths
 
-let functor_arg_pos { Types.FunctorArgument.id ; _ } =
+let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
   | Identifier.Argument (_, nb, _) -> nb
   | _ ->
     let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
 
-let rec unit ~package (t : Types.Compilation_unit.t) : string list =
+let rec unit ~package (t : Model.Lang.Compilation_unit.t) : string list =
   let name = Printf.sprintf "%s/%s" package (Identifier.name t.id) in
   let rest =
     match t.content with
@@ -34,10 +34,10 @@ let rec unit ~package (t : Types.Compilation_unit.t) : string list =
   in
   name :: rest
 
-and signature ~prefix (t : Types.Signature.t) =
+and signature ~prefix (t : Model.Lang.Signature.t) =
   List.concat (
     List.map t ~f:(function
-      | Types.Signature.Module md -> module_ ~prefix md
+      | Model.Lang.Signature.Module md -> module_ ~prefix md
       | ModuleType mty -> module_type ~prefix mty
       | Type _ -> []
       | TypExt _ -> []
@@ -53,7 +53,7 @@ and signature ~prefix (t : Types.Signature.t) =
   )
 
 and functor_argument ~prefix arg =
-  let open Types.FunctorArgument in
+  let open Model.Lang.FunctorArgument in
   match arg.expansion with
   | None -> []
   | Some expansion ->
@@ -64,7 +64,7 @@ and functor_argument ~prefix arg =
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 
-and module_expansion ~prefix (t : Types.Module.expansion) =
+and module_expansion ~prefix (t : Model.Lang.Module.expansion) =
   match t with
   | AlreadyASig -> [] (* FIXME. *)
   | Signature sg -> signature ~prefix sg
@@ -78,7 +78,7 @@ and module_expansion ~prefix (t : Types.Module.expansion) =
         arg_subpages @ subpages
     )
 
-and module_ ~prefix (t : Types.Module.t) =
+and module_ ~prefix (t : Model.Lang.Module.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
@@ -86,7 +86,7 @@ and module_ ~prefix (t : Types.Module.t) =
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 
-and module_type ~prefix (t : Types.ModuleType.t) =
+and module_type ~prefix (t : Model.Lang.ModuleType.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
@@ -96,5 +96,5 @@ and module_type ~prefix (t : Types.ModuleType.t) =
     page :: subpages
 
 
-and include_ ~prefix (t : Types.Include.t) =
+and include_ ~prefix (t : Model.Lang.Include.t) =
   signature ~prefix t.expansion.content

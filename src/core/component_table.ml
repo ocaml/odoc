@@ -16,6 +16,7 @@
 
 open Paths
 open Model
+open Model.Lang
 open Components
 
 type ('a, 'b) tbl =
@@ -67,7 +68,7 @@ type t =
     lookup_unit : string -> lookup_unit_result;
     lookup_page : string -> Root.t option;
     fetch_unit : Root.t -> Compilation_unit.t;
-    fetch_page : Root.t -> Model.Page.t;
+    fetch_page : Root.t -> Model.Lang.Page.t;
     tbl : (Root.t, Sig.t) tbl;
     page_tbl: (Root.t, Page.t) tbl; }
 
@@ -259,7 +260,7 @@ let page tbl base =
     tbl.page_tbl.find base
   with Not_found ->
     let page = tbl.fetch_page base in
-    let t = Page.of_doc page.Model.Page.content in
+    let t = Page.of_doc page.Model.Lang.Page.content in
     tbl.page_tbl.add base t;
     t
 

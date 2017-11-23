@@ -22,8 +22,6 @@ module Maps = Maps
 
 module Paths = Paths
 
-module Types = Model
-
 module Root = Model.Root
 
 (**/**)
@@ -31,7 +29,7 @@ module Root = Model.Root
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
 type read_result =
-  (Model.Compilation_unit.t, read_error) result
+  (Model.Lang.Compilation_unit.t, read_error) result
 
 and read_error = private
   | Not_an_interface
@@ -68,13 +66,14 @@ type lookup_result =
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
 val build_resolver : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
-  -> (string -> lookup_result) -> (Root.t -> Model.Compilation_unit.t)
-  -> (string -> Root.t option) -> (Root.t -> Model.Page.t)
+  -> (string -> lookup_result) -> (Root.t -> Model.Lang.Compilation_unit.t)
+  -> (string -> Root.t option) -> (Root.t -> Model.Lang.Page.t)
   -> resolver
 
-val resolve : resolver -> Model.Compilation_unit.t -> Model.Compilation_unit.t
+val resolve :
+  resolver -> Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
 
-val resolve_page : resolver -> Model.Page.t -> Model.Page.t
+val resolve_page : resolver -> Model.Lang.Page.t -> Model.Lang.Page.t
 
 (** {2:expansion Expansion}
 
@@ -87,17 +86,18 @@ type expander
     structural equality (=) on ['a]. *)
 val build_expander : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
   -> (string -> lookup_result)
-  -> (root:Root.t -> Root.t -> Model.Compilation_unit.t)
+  -> (root:Root.t -> Root.t -> Model.Lang.Compilation_unit.t)
   -> expander
 
-val expand : expander -> Model.Compilation_unit.t -> Model.Compilation_unit.t
+val expand :
+  expander -> Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
 
 (** {2 Misc.}
 
     OCaml's predefined types and exceptions. *)
 
-val core_types : Model.TypeDecl.t list
+val core_types : Model.Lang.TypeDecl.t list
 
-val core_exceptions : Model.Exception.t list
+val core_exceptions : Model.Lang.Exception.t list
 
 module Lookup = Lookup

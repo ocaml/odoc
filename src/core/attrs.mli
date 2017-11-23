@@ -16,19 +16,19 @@
 
 
 
-val empty : Model.Documentation.t
+val empty : Model.Lang.Documentation.t
 
 val read_attributes :
   Paths.Identifier.label_parent ->
   'kind Paths.Identifier.t ->
   Parsetree.attributes ->
-    Model.Documentation.t
+    Model.Lang.Documentation.t
 
 val read_string :
   Paths.Identifier.label_parent ->
   Location.t ->
   string ->
-    Model.Documentation.comment
+    Model.Lang.Documentation.comment
 (** The parent identifier is used to define labels in the given string (i.e.
     for things like [{1:some_section Some title}]) and the location is used for
     error messages.
@@ -39,9 +39,9 @@ val read_string :
 val read_comment :
   Paths.Identifier.label_parent ->
   Parsetree.attribute ->
-    Model.Documentation.comment option
+    Model.Lang.Documentation.comment option
 
 val read_comments :
   Paths.Identifier.label_parent ->
   Parsetree.attributes ->
-    Model.Documentation.comment list
+    Model.Lang.Documentation.comment list

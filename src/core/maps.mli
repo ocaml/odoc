@@ -16,6 +16,7 @@
 
 open Paths
 open Model
+open Model.Lang
 
 val option_map : ('a -> 'a) -> 'a option -> 'a option
 

@@ -226,7 +226,7 @@ module Anchor = struct
   module Polymorphic_variant_decl = struct
     let name_of_type_constr te =
       match te with
-      | Doc_model.Types.TypeExpr.Constr (path, _) -> render_path path
+      | Model.Lang.TypeExpr.Constr (path, _) -> render_path path
       | _ ->
         invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
@@ -235,7 +235,7 @@ module Anchor = struct
       | Error e -> failwith (Error.to_string e)
       | Ok { anchor; _ } ->
         match elt with
-        | Doc_model.Types.TypeExpr.Variant.Type te ->
+        | Model.Lang.TypeExpr.Variant.Type te ->
           { kind = "type"
           ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
         | Constructor (name, _, _) ->

@@ -55,5 +55,5 @@ let make_spec ~id ?doc code =
 let arrow = span ~a:[ a_class ["keyword" ] ] [ entity "#8209"; entity "gt" ]
 
 let label = function
-  | Doc_model.Types.TypeExpr.Label s -> [ pcdata s ]
+  | Model.Lang.TypeExpr.Label s -> [ pcdata s ]
   | Optional s -> [ pcdata "?"; entity "#8288"; pcdata s ]

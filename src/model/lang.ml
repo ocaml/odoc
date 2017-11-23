@@ -550,6 +550,3 @@ module rec Page : sig
       content: Documentation.t;
       digest: Digest.t; }
 end = Page
-
-module Root = Root
-module Paths = Paths

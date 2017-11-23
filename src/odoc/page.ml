@@ -16,10 +16,10 @@
 
 
 
-type t = Doc_model.Types.Page.t
+type t = Model.Lang.Page.t
 
-let root (t : Doc_model.Types.Page.t) =
-  match t.Doc_model.Types.Page.name with
+let root (t : Model.Lang.Page.t) =
+  match t.Model.Lang.Page.name with
   | Doc_model.Paths.Identifier.Page (root, _) -> root
 
 let save file t =

@@ -14,11 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_model
+type t = Model.Lang.Page.t
 
-type t = Types.Page.t
-
-val root : t -> Root.t
+val root : t -> Model.Root.t
 
 (** {2 Serialization} *)
 

@@ -21,7 +21,7 @@ open Typedtree
 module OCamlPath = Path
 
 open Paths
-open Model
+open Model.Lang
 open Attrs
 
 module Env = Ident_env
@@ -414,7 +414,7 @@ and read_module_binding env parent mb =
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> Root.contains_double_underscore (Ident.name mb.mb_id)
+    | None -> Model.Root.contains_double_underscore (Ident.name mb.mb_id)
   in
   let expansion =
     match type_ with

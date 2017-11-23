@@ -14,6 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_model
-
-val unit : package:string -> Types.Compilation_unit.t -> string list
+val unit : package:string -> Model.Lang.Compilation_unit.t -> string list

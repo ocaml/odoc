@@ -15,7 +15,7 @@
  *)
 
 open Paths
-open Model
+open Model.Lang
 open Predefined
 
 open Identifier

@@ -125,35 +125,35 @@ val undefined_recursive_module_reference : Reference.exception_
 
 (** {3 Declarations} *)
 
-val int_decl : TypeDecl.t
-val char_decl : TypeDecl.t
-val bytes_decl : TypeDecl.t
-val string_decl : TypeDecl.t
-val float_decl : TypeDecl.t
-val bool_decl : TypeDecl.t
-val unit_decl : TypeDecl.t
-val exn_decl : TypeDecl.t
-val array_decl : TypeDecl.t
-val list_decl : TypeDecl.t
-val option_decl : TypeDecl.t
-val int32_decl : TypeDecl.t
-val int64_decl : TypeDecl.t
-val nativeint_decl : TypeDecl.t
-val lazy_t_decl : TypeDecl.t
-val extension_constructor_decl : TypeDecl.t
+val int_decl : Lang.TypeDecl.t
+val char_decl : Lang.TypeDecl.t
+val bytes_decl : Lang.TypeDecl.t
+val string_decl : Lang.TypeDecl.t
+val float_decl : Lang.TypeDecl.t
+val bool_decl : Lang.TypeDecl.t
+val unit_decl : Lang.TypeDecl.t
+val exn_decl : Lang.TypeDecl.t
+val array_decl : Lang.TypeDecl.t
+val list_decl : Lang.TypeDecl.t
+val option_decl : Lang.TypeDecl.t
+val int32_decl : Lang.TypeDecl.t
+val int64_decl : Lang.TypeDecl.t
+val nativeint_decl : Lang.TypeDecl.t
+val lazy_t_decl : Lang.TypeDecl.t
+val extension_constructor_decl : Lang.TypeDecl.t
 
-val match_failure_decl : Exception.t
-val assert_failure_decl : Exception.t
-val invalid_argument_decl : Exception.t
-val failure_decl : Exception.t
-val not_found_decl : Exception.t
-val out_of_memory_decl : Exception.t
-val stack_overflow_decl : Exception.t
-val sys_error_decl : Exception.t
-val end_of_file_decl : Exception.t
-val division_by_zero_decl : Exception.t
-val sys_blocked_io_decl : Exception.t
-val undefined_recursive_module_decl : Exception.t
+val match_failure_decl : Lang.Exception.t
+val assert_failure_decl : Lang.Exception.t
+val invalid_argument_decl : Lang.Exception.t
+val failure_decl : Lang.Exception.t
+val not_found_decl : Lang.Exception.t
+val out_of_memory_decl : Lang.Exception.t
+val stack_overflow_decl : Lang.Exception.t
+val sys_error_decl : Lang.Exception.t
+val end_of_file_decl : Lang.Exception.t
+val division_by_zero_decl : Lang.Exception.t
+val sys_blocked_io_decl : Lang.Exception.t
+val undefined_recursive_module_decl : Lang.Exception.t
 
-val core_types : TypeDecl.t list
-val core_exceptions : Exception.t list
+val core_types : Lang.TypeDecl.t list
+val core_exceptions : Lang.Exception.t list

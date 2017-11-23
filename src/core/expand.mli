@@ -21,6 +21,6 @@ type t
 val build_expander : ?equal:(Root.t -> Root.t -> bool) ->
                      ?hash:(Root.t -> int) ->
                      (string -> Component_table.lookup_unit_result) ->
-                     (root:Root.t -> Root.t -> Compilation_unit.t) -> t
+                     (root:Root.t -> Root.t -> Lang.Compilation_unit.t) -> t
 
-val expand : t -> Compilation_unit.t -> Compilation_unit.t
+val expand : t -> Lang.Compilation_unit.t -> Lang.Compilation_unit.t

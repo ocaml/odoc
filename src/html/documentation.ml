@@ -245,7 +245,7 @@ module Reference = struct
           | Newline _ -> Phrasing_without_interactive tail
         )
 
-  let link ?text (ref : Doc_model.Types.Documentation.reference) =
+  let link ?text (ref : Model.Lang.Documentation.reference) =
     (* It is wonderful that although each these [r] is a [Reference.t] the phantom
        type parameters are not the same so we can't merge the branches. *)
     match ref with
@@ -310,7 +310,7 @@ let whitespace_only s =
 let rec aggregate lst =
   collapse (ListLabels.concat @@ ListLabels.map lst ~f:format)
 
-and format : Doc_model.Types.Documentation.text_element -> kind list = function
+and format : Model.Lang.Documentation.text_element -> kind list = function
   | Raw      s ->
     if whitespace_only s then []
     else [ Phrasing_without_interactive [ pcdata s ] ]
@@ -348,13 +348,13 @@ and format : Doc_model.Types.Documentation.text_element -> kind list = function
     [ Flow5 [Unsafe.data str] ]
   | Target (_, str) ->
     [ Flow5_without_interactive [ pre [pcdata str] ] ]
-  | Special (Doc_model.Types.Documentation.Modules refs) ->
+  | Special (Model.Lang.Documentation.Modules refs) ->
     let table =
       table ~a:[ a_class ["modules"] ]
         (ListLabels.map refs ~f:module_index_entry)
     in
     [ Flow5 [ table ] ]
-  | Special (Doc_model.Types.Documentation.Index) ->
+  | Special (Model.Lang.Documentation.Index) ->
     Printf.eprintf "Warning: {!indexlist} is not yet supported by odoc.\n%!";
     []
 
@@ -513,7 +513,7 @@ let handle_tags tags =
     ListLabels.map tags ~f:(
       (* TODO: better everything. *)
       function
-      | Doc_model.Types.Documentation.Author  s ->
+      | Model.Lang.Documentation.Author  s ->
         [ Phrasing [ make_tag "Author" ; pcdata ": "; pcdata s ] ]
       | Version s ->
         [ Phrasing [ make_tag "Version" ; pcdata ": "; pcdata s ] ]
@@ -570,9 +570,9 @@ let handle_tags tags =
   | [] -> []
   | lst -> [ ul ~a:[ a_class ["at-tag"] ] (ListLabels.map lst ~f:make_li) ]
 
-let prerr_error (err : Doc_model.Types.Documentation.Error.t) =
+let prerr_error (err : Model.Lang.Documentation.Error.t) =
   let print_pos
-      oc { Doc_model.Types.Documentation.Error.Position. line; column } =
+      oc { Model.Lang.Documentation.Error.Position. line; column } =
 
     Printf.fprintf oc "line %d, col %d" line column
   in
@@ -593,7 +593,7 @@ let prerr_error (err : Doc_model.Types.Documentation.Error.t) =
   in
   Printf.eprintf "Error %a: %s\n%!" print_loc () err.message
 
-let first_to_html (t : Doc_model.Types.Documentation.t) =
+let first_to_html (t : Model.Lang.Documentation.t) =
   match t with
   | Ok { text; _ } ->
     begin match handle_text text with
@@ -602,7 +602,7 @@ let first_to_html (t : Doc_model.Types.Documentation.t) =
     end
   | Error e -> prerr_error e; []
 
-let to_html ?wrap (t : Doc_model.Types.Documentation.t) =
+let to_html ?wrap (t : Model.Lang.Documentation.t) =
   match t with
   | Error e -> prerr_error e; []
   | Ok body ->
@@ -618,14 +618,14 @@ let to_html ?wrap (t : Doc_model.Types.Documentation.t) =
       | [], [] -> []
       | _, [] ->
         handle_text
-          (Doc_model.Types.Documentation.Raw open_ :: body.text @ [Raw close])
+          (Model.Lang.Documentation.Raw open_ :: body.text @ [Raw close])
       | [], _ -> p [pcdata open_] :: handle_tags body.tags @ [p [pcdata close]]
       | _, _ ->
         handle_text (Raw open_ :: body.text) @
         handle_tags body.tags @
         [p [pcdata close]]
 
-let has_doc (t : Doc_model.Types.Documentation.t) =
+let has_doc (t : Model.Lang.Documentation.t) =
   match t with
   | Ok body -> body.text <> [] || body.tags <> []
   | Error e -> prerr_error e; false

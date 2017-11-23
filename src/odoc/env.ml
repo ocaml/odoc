@@ -97,13 +97,13 @@ let rec lookup_unit ~important_digests ap target_name =
   | [] -> find_root ~digest:None
   | import :: imports ->
     match import with
-    | Doc_model.Types.Compilation_unit.Import.Unresolved (name, digest)
+    | Model.Lang.Compilation_unit.Import.Unresolved (name, digest)
       when name = target_name ->
       begin match digest with
       | None when important_digests -> Forward_reference
       | _ -> find_root ~digest
       end
-    | Doc_model.Types.Compilation_unit.Import.Resolved root
+    | Model.Lang.Compilation_unit.Import.Resolved root
       when Doc_model.Root.Odoc_file.name root.file =
           target_name -> begin
         match root.file with
@@ -145,7 +145,7 @@ let create ?(important_digests=true) ~directories : builder =
             ~important_digests
             ap
             target_name
-            unit.Doc_model.Types.Compilation_unit.imports
+            unit.Model.Lang.Compilation_unit.imports
         in
         match lookup_result with
         | Not_found -> begin
@@ -158,7 +158,7 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Doc_model.Types.Compilation_unit.t =
+    let fetch_unit root : Model.Lang.Compilation_unit.t =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
@@ -169,7 +169,7 @@ let create ?(important_digests=true) ~directories : builder =
           fetch_unit ap root
     in
     let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : Doc_model.Types.Page.t =
+    let fetch_page root : Model.Lang.Page.t =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->

@@ -14,11 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Doc_model
+type t = Model.Lang.Compilation_unit.t
 
-type t = Types.Compilation_unit.t
-
-val root : t -> Root.t
+val root : t -> Model.Root.t
 
 (** {2 Serialization} *)
 

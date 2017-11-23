@@ -25,7 +25,7 @@ let resolve_and_substitute ~env ~output input_file read_file =
   | Error Not_a_typedtree  -> failwith "Not_a_typedtree"
   | Error Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
-    if not unit.Doc_model.Types.Compilation_unit.interface then (
+    if not unit.Model.Lang.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
         (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
          else
@@ -96,11 +96,11 @@ let mld ~env ~package ~output input =
   | Ok str ->
     let content =
       match Doc_model.Attrs.read_string name location str with
-      | Stop -> Doc_model.Types.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
+      | Stop -> Model.Lang.Documentation.Ok { text = [] ; tags = [] } (* TODO: Error? *)
       | Documentation content -> content
     in
     (* This is a mess. *)
-    let page = Doc_model.Types.Page.{ name; content; digest } in
+    let page = Model.Lang.Page.{ name; content; digest } in
     let page = Doc_model.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = Doc_model.resolve_page (Env.resolver env) page in
