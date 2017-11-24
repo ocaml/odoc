@@ -122,7 +122,7 @@ end
 
 module Table = Hashtbl.Make(T)
 
-let magic = "odoc-%%VERSION%%"
+let magic = "odoc-1.2.0"
 
 let load file ic =
   let m = really_input_string ic (String.length magic) in

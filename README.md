@@ -1,6 +1,6 @@
 odoc — An OCaml API documentation tool
 --------------------------------------
-%%VERSION%%
+v1.2.0
 
 `odoc` is an OCaml API documentation tool
 
