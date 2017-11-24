@@ -15,9 +15,9 @@ available: [ ocaml-version >= "4.03.0" ]
 depends: [
   "ocamlfind" {build}
   "jbuilder" {build & >= "1.0+beta10"}
-  "doc-ock"
-  "doc-ock-html"
-  "doc-ock-xml"
+  "doc-ock" {>= "1.2.0" }
+  "doc-ock-html" {>= "1.2.0" }
+  "doc-ock-xml" {>= "1.2.0" }
   "tyxml" {>= "4.0.0" }
   "bos"
   "fpath"
