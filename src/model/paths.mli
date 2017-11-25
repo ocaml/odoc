@@ -16,14 +16,6 @@
 
 (** Paths of documentation *)
 
-(** {3 Sexp serialization} *)
-
-type sexp =
-  | List of sexp list
-  | Atom of string
-
-val string_of_sexp : sexp -> string
-
 module Kind = Paths_types.Kind
 
 (** Identifiers for definitions *)
@@ -65,8 +57,6 @@ module Identifier : sig
 
   val name : 'kind t -> string
 
-  val sexp_of_t : 'kind t -> sexp
-
   (** {2 Root retrieval} *)
 
   val signature_root : signature -> Root.t
@@ -76,6 +66,8 @@ module Identifier : sig
   val module_type_root : module_type -> Root.t
 
   val class_signature_root : class_signature -> Root.t
+
+  val label_parent_root : label_parent -> Root.t
 end
 
 (** Normal OCaml paths (i.e. the ones present in types) *)
@@ -116,8 +108,6 @@ module rec Path : sig
 
         [Canonical] are treated specialy because we expect them to rewrite a
         hidden path to a non-hidden one. *)
-
-    val sexp_of_t : 'kind t -> sexp
 
     val rebase : Identifier.signature -> 'kind t -> 'kind t
 
@@ -162,8 +152,6 @@ module rec Path : sig
 
   val hash : 'kind t -> int
 
-  val sexp_of_t : 'kind t -> sexp
-
   val is_hidden : 'kind t -> bool
   (** cf. {!Resolved.is_hidden} *)
 end
@@ -195,8 +183,6 @@ module Fragment : sig
 
     val hash : 'b t -> int
 
-    val sexp_of_t : (_, _) raw -> sexp
-
     val split : 'b t -> string * 'b t option
 
   end
@@ -220,8 +206,6 @@ module Fragment : sig
   val equal : 'b t -> 'b t -> bool
 
   val hash : 'b t -> int
-
-  val sexp_of_t : (_, _) raw -> sexp
 
   val split: 'b t -> string * 'b t option
 
@@ -297,8 +281,6 @@ module rec Reference : sig
     (** [identifier rr] extracts the identifier present at the "root" of [rr]. *)
 
     val rebase : Identifier.signature -> 'kind t -> 'kind t
-
-    val sexp_of_t : 'kind t -> sexp
 
   end
 
@@ -386,6 +368,4 @@ module rec Reference : sig
   val equal : 'kind t -> 'kind t -> bool
 
   val hash : 'kind t -> int
-
-  val sexp_of_t : 'kind t -> sexp
 end

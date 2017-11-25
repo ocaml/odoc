@@ -15,11 +15,13 @@ dev-repo: "http://github.com/ocaml-doc/odoc.git"
 
 available: [ocaml-version >= "4.03.0"]
 depends: [
+  "alcotest" {test}
   "bos"
   "cmdliner"
   "cppo" {build}
   "fpath"
   "jbuilder" {build & >= "1.0+beta10"}
+  "sexplib" {test}
   "tyxml" {>= "4.0.0"}
 ]
 

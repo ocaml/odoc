@@ -140,42 +140,21 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 
 (* Read labels from documentation *)
 
-let rec text_element_labels acc =
-  let open Model.Comment in function
-  | Title(_, Some id, txt) ->
-      let name = Identifier.name id in
-        text_labels ((name, txt) :: acc) txt
-  | Raw _ | Code _ | PreCode _ | Verbatim _
-  | Newline | Target _ | Special _ | Reference(_, None) -> acc
-  | Style(_, txt) | Title(_, None, txt) | Reference(_, Some txt) ->
-      text_labels acc txt
-  | List txts | Enum txts ->
-      List.fold_left text_labels acc txts
-
-and text_labels acc txt = List.fold_left text_element_labels acc txt
-
-let tag_labels acc =
-  let open Model.Comment in function
-  | Author _ | Version _ | Since _ | Inline | Canonical _ -> acc
-  | See(_, txt) | Before(_, txt) | Deprecated txt
-  | Param(_, txt) | Raise(_, txt) | Return txt | Tag(_, txt) ->
-      text_labels acc txt
-
-let tags_labels acc tags = List.fold_left tag_labels acc tags
-
 let documentation_labels acc doc =
-  let open Model.Comment in
   match doc with
   | Ok body ->
-      let acc = tags_labels acc body.tags in
-        text_labels acc body.text
+    List.fold_left (fun acc -> function
+      | `Heading (_, Some label, nested_text) ->
+        let name = Identifier.name label in
+        (name, nested_text)::acc
+      | _ -> acc)
+    acc body
   | Error _ -> acc
 
 let comment_labels acc comment =
-  let open Model.Comment in
   match comment with
-  | Documentation doc -> documentation_labels acc doc
-  | Stop -> acc
+  | Model.Comment.Stop -> acc
+  | Model.Comment.Documentation doc -> documentation_labels acc doc
 
 module rec Sig : sig
 
@@ -234,7 +213,8 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> t -> Model.Comment.text
+  val find_section_title :
+    string -> t -> Model.Comment.non_link_inline_element list
 
   val lookup_module : string -> t -> t
 
@@ -322,7 +302,7 @@ end = struct
       types: Element.signature_type SMap.t;
       parents: Parent.any LMap.t;
       elements: Element.signature LMap.t;
-      section_titles: Model.Comment.text SMap.t; }
+      section_titles: Model.Comment.non_link_inline_element list SMap.t; }
 
   and body =
     | Expr of expr
@@ -1589,7 +1569,8 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> t -> Model.Comment.text
+  val find_section_title :
+    string -> t -> Model.Comment.non_link_inline_element list
 
   val of_doc : Model.Comment.t -> t
 
@@ -1597,7 +1578,7 @@ end = struct
 
   type t = {
     labels : Element.page_label LMap.t;
-    section_titles : Model.Comment.text SMap.t;
+    section_titles : Model.Comment.non_link_inline_element list SMap.t;
   }
 
   let find_label_element name t =

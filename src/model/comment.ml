@@ -1,101 +1,67 @@
-type style =
-  | Bold
-  | Italic
-  | Emphasize
-  | Center
-  | Left
-  | Right
-  | Superscript
-  | Subscript
-  | Custom of string
+module Reference = Paths.Reference
+module Identifier = Paths.Identifier
 
-type reference =
-  | Element of Paths.Reference.any
-  | Link of string
-  | Custom of string * string
 
-type see =
-  | Url of string
-  | File of string
-  | Doc of string
 
-type text = text_element list
+type style = [
+  | `Bold
+  | `Italic
+  | `Emphasis
+  | `Superscript
+  | `Subscript
+]
 
-and text_element =
-  | Raw of string
-  | Code of string
-  | PreCode of string
-  | Verbatim of string
-  | Style of style * text
-  | List of text list
-  | Enum of text list
-  | Newline
-  | Title of int * Paths.Identifier.label option * text
-  | Reference of reference * text option
-  | Target of string option * string
-  | Special of special
+type non_link_inline_element = [
+  | `Space
+  | `Word of string
+  | `Code_span of string
+  | `Styled of style * non_link_inline_element list
+]
 
-and tag =
-  | Author of string
-  | Version of string
-  | See of see * text
-  | Since of string
-  | Before of string * text
-  | Deprecated of text
-  | Param of string * text
-  | Raise of string * text
-  | Return of text
-  | Inline
-  | Tag of string * text
-  | Canonical of Paths.Path.module_ * Paths.Reference.module_
+type inline_element = [
+  | non_link_inline_element
+  | `Reference of Reference.any * non_link_inline_element list
+  | `Link of string * non_link_inline_element list
+]
 
-and special =
-  | Modules of (Paths.Reference.module_ * text) list
-  | Index
+type nestable_block_element = [
+  | `Paragraph of inline_element list
+  | `Code_block of string
+  | `Verbatim of string
+  | `List of [ `Unordered | `Ordered ] * (nestable_block_element list) list
+]
 
-module Error =
-struct
-  module Position =
-  struct
-    type t = {
-      line : int;
-      column : int;
-    }
-  end
+type tag = [
+  | `Author of string
+  | `Deprecated of nestable_block_element list
+  | `Param of string * nestable_block_element list
+  | `Raise of string * nestable_block_element list
+  | `Return of nestable_block_element list
+  | `See of [ `Url | `File | `Document ] * string * nestable_block_element list
+  | `Since of string
+  | `Before of string * nestable_block_element list
+  | `Version of string
+]
 
-  module Offset =
-  struct
-    type t = {
-      start: Position.t;
-      finish: Position.t;
-    }
-  end
+type heading_level = [
+  | `Title
+  | `Section
+  | `Subsection
+  | `Subsubsection
+]
 
-  module Location =
-  struct
-    type t = {
-      filename: string;
-      start: Position.t;
-      finish: Position.t;
-    }
-  end
+type block_element = [
+  | nestable_block_element
+  | `Heading of
+      heading_level * Identifier.label option * non_link_inline_element list
+  | `Tag of tag
+]
 
-  type t = {
-    origin: Paths.Identifier.any; (** TODO remove this *)
-    offset: Offset.t;
-    location: Location.t option;
-    message: string;
-  }
-end
+type comment' = block_element list
 
-type body = {
-  text: text;
-  tags: tag list;
-}
 
-type t =
-  | Ok of body
-  | Error of Error.t
+
+type t = (comment', Error.t) result
 
 type comment =
   | Documentation of t

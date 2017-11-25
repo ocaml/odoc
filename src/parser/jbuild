@@ -1,8 +1,7 @@
 (jbuild_version 1)
 
 (ocamllex (lexer))
-(ocamlyacc (generated_parser))
 
 (library
- ((name doc_parser)
+ ((name parser_)
   (libraries (model))))

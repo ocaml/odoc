@@ -1,11 +1,11 @@
-open Tyxml.Html
-open Model.Comment
+module Html = Tyxml.Html
 
-val to_html : ?wrap:unit -> t -> Html_types.div_content_fun elt list
+val to_html :
+  ?wrap:unit -> Model.Comment.t -> (Html_types.div_content Html.elt) list
 (** When [wrap] is passed, then "(** *)" are added around the documentation. *)
 
-val first_to_html : t -> Html_types.div_content_fun elt list
+val first_to_html : Model.Comment.t -> (Html_types.div_content Html.elt) list
 (** Converts the first paragraph (i.e. everything up to the first blank line) to
     html. *)
 
-val has_doc : t -> bool
+val has_doc : Model.Comment.t -> bool

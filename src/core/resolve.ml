@@ -1775,10 +1775,9 @@ and resolve_element_reference ident tbl (r : Reference.any)
     | InstanceVariable _ as r -> any (resolve_instance_variable_reference ident tbl r)
     | Label _ as r -> any (resolve_label_reference ident tbl r)
 
-let splice_section_title tbl elt =
+let splice_section_title tbl path elements =
   let open Reference in
-  let title_of_parent :
-    string -> Resolved.label_parent -> Model.Comment.text option =
+  let title_of_parent =
     let open Resolved in
     let open Identifier in
     fun name parent_ref ->
@@ -1793,7 +1792,7 @@ let splice_section_title tbl elt =
       | _ -> None
   in
   let find_section_title :
-    Resolved.label -> Model.Comment.text option =
+    Resolved.label -> Model.Comment.non_link_inline_element list option =
     function
     | Resolved.Identifier Identifier.Label (parent, str) ->
       let parent_ref = Resolved.Identifier parent in
@@ -1801,17 +1800,16 @@ let splice_section_title tbl elt =
     | Resolved.Label (parent_ref, str) ->
       title_of_parent str parent_ref
   in
-  let open Model.Comment in
-  match elt with
-  | Reference (r, None) ->
+  match (path, elements) with
+  | (r, []) ->
     begin match r with
-    | Element Resolved (Resolved.Label _
+    | Resolved (Resolved.Label _
                        |Resolved.Identifier (Identifier.Label _) as rr) ->
       begin match find_section_title rr with
-      | None -> elt
-      | txt -> Reference (r, txt)
+      | None -> (path, elements)
+      | Some txt -> (r, txt)
       end
-    | _ -> elt
+    | _ -> (path, elements)
     end
   | otherwise -> otherwise
 
@@ -1821,7 +1819,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       CTbl.create ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page
     val where_am_i : Identifier.signature option = None
 
-    inherit Maps.types as super
+    inherit Maps.types
     method root x = x
 
     method identifier_module x = x
@@ -2027,9 +2025,8 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
     method reference_any x =
       resolve_element_reference where_am_i tbl x
 
-    method! documentation_text_element elt =
-      let elt = super#documentation_text_element elt in
-      splice_section_title tbl elt
+    method! documentation_reference (path, elements) =
+      splice_section_title tbl path elements
 
     method! unit_import import =
       let open Lang.Compilation_unit.Import in

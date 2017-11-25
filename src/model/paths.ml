@@ -14,22 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type sexp =
-  | List of sexp list
-  | Atom of string
-
-let rec string_of_sexp = function
-  | Atom s -> s
-  | List lst ->
-      let s = List.map string_of_sexp lst in
-      Printf.sprintf "(%s)" (String.concat " " s)
-
-let atom s = Atom (Printf.sprintf "%S" s)
-
-(* At the time of refactoring, this was the only function ever used with any of
-   the sexp_of_t functions. *)
-let sexp_of_root _ = Atom ""
-
 module Kind = Paths_types.Kind
 
 open Kind
@@ -43,15 +27,6 @@ module Reversed = struct
 
   type t = elt list
 
-  let sexp_of_elt = function
-    | Root s -> List [Atom "Root"; Atom s]
-    | Module s -> List [Atom "Module"; Atom s]
-    | ModuleType s -> List [Atom "ModuleType"; Atom s]
-    | Argument (i, s) -> List [Atom "Argument"; Atom (string_of_int i); Atom s]
-
-  let sexp_of_t l = List (List.map sexp_of_elt l)
-  let _ = sexp_of_t
-
   let rec remove_prefix prefix ~of_ =
     match prefix, of_ with
     | x1 :: xs1, x2 :: xs2 when x1 = x2 ->
@@ -62,43 +37,6 @@ end
 module Identifier = struct
 
   include Paths_types.Identifier
-
-  let rec sexp_of_t : type kind. kind t -> sexp =
-    fun t ->
-      let int i = Atom (string_of_int i) in
-      match t with
-      | Root (a, s) -> List [ Atom "Root"; List [sexp_of_root a; atom s] ]
-      | Page (a, s) -> List [ Atom "Page"; List [sexp_of_root a; atom s] ]
-      | Module (sg, s) ->
-          List [ Atom "Module"; List [sexp_of_t sg; atom s] ]
-      | Argument (sg, i, s) ->
-        List [Atom "Argument"; List [sexp_of_t sg; int i; atom s]]
-      | ModuleType (sg, s) ->
-          List [ Atom "ModuleType"; List [sexp_of_t sg; atom s] ]
-      | Type (sg, s) ->
-          List [ Atom "Type"; List [sexp_of_t sg; atom s] ]
-      | CoreType s -> List [ Atom "CoreType"; atom s ]
-      | Constructor (cs, s) ->
-          List [ Atom "Constructor"; List [sexp_of_t cs; atom s] ]
-      | Field (f, s) ->
-          List [ Atom "Field"; List [sexp_of_t f; atom s] ]
-      | Extension (sg, s) ->
-          List [ Atom "Extension"; List [sexp_of_t sg; atom s] ]
-      | Exception (sg, s) ->
-          List [ Atom "Exception"; List [sexp_of_t sg; atom s] ]
-      | CoreException s -> List [ Atom "CoreException"; atom s ]
-      | Value (sg, s) ->
-          List [ Atom "Value"; List [sexp_of_t sg; atom s] ]
-      | Class (sg, s) ->
-          List [ Atom "Class"; List [sexp_of_t sg; atom s] ]
-      | ClassType (sg, s) ->
-          List [ Atom "ClassType"; List [sexp_of_t sg; atom s] ]
-      | Method (sg, s) ->
-          List [ Atom "Method"; List [sexp_of_t sg; atom s] ]
-      | InstanceVariable (sg, s) ->
-          List [ Atom "InstanceVariable"; List [sexp_of_t sg; atom s] ]
-      | Label (sg, s) ->
-          List [ Atom "Label"; List [sexp_of_t sg; atom s] ]
 
   let signature_of_module : module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> x
@@ -274,6 +212,17 @@ module Identifier = struct
     | Class(id, _)
     | ClassType(id, _) -> signature_root id
 
+  let label_parent_root : label_parent -> Root.t = function
+    | Root (r, _) -> r
+    | Page (r, _) -> r
+    | Module (s, _) -> signature_root s
+    | Argument (s, _, _) -> signature_root s
+    | ModuleType (s, _) -> signature_root s
+    | Type (s, _) -> signature_root s
+    | CoreType _ -> assert false
+    | Class (s, _) -> signature_root s
+    | ClassType (s, _) -> signature_root s
+
   let to_reversed i =
     let rec loop acc : signature -> Reversed.t = function
       | Root (_, s) -> Reversed.Root s :: acc
@@ -384,49 +333,6 @@ module Path = struct
 
   let hash p = hash_path p
 
-  let rec sexp_of_path : type k. k Types.Path.t -> sexp =
-    fun t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      let open Types.Path in
-      match t with
-      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved_path r ]
-      | Root s -> List [ Atom "Root"; atom s ]
-      | Forward s -> List [ Atom "Forward"; atom s ]
-      | Dot (md, s) -> List [ Atom "Dot" ; List [sexp_of_path md; atom s]]
-      | Apply (m1, m2) ->
-        List [ Atom "Apply" ; List [ sexp_of_path m1
-                                   ; sexp_of_path m2 ]]
-
-  and sexp_of_resolved_path : type k. k Types.Resolved.t -> sexp =
-    fun t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      let open Types.Resolved in
-      match t with
-      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t id ]
-      | Subst (sg, t) ->
-        List [ Atom "Subst"; List [ sexp_of_resolved_path sg
-                                  ; sexp_of_resolved_path t ]]
-      | SubstAlias (sg, t) ->
-        List [ Atom "SubstAlias"; List [ sexp_of_resolved_path sg
-                                       ; sexp_of_resolved_path t ]]
-      | Hidden p -> List [ Atom "Hidden" ; sexp_of_resolved_path p ]
-      | Module (md, s) ->
-        List [ Atom "Module"; List [ sexp_of_resolved_path md ; atom s ]]
-      | Canonical (md, p) ->
-        List [ Atom "Canonical"; List [ sexp_of_resolved_path md
-                                      ; sexp_of_path p ]]
-      | Apply (md, arg) ->
-        List [ Atom "Apply"; List [ sexp_of_resolved_path md
-                                  ; sexp_of_path arg ]]
-      | ModuleType (md, s) ->
-        List [ Atom "ModuleType"; List [ sexp_of_resolved_path md ; atom s ]]
-      | Type (md, s) ->
-        List [ Atom "Type"; List [ sexp_of_resolved_path md ; atom s ]]
-      | Class (md, s) ->
-        List [ Atom "Class"; List [ sexp_of_resolved_path md ; atom s ]]
-      | ClassType (md, s) ->
-        List [ Atom "ClassType"; List [ sexp_of_resolved_path md ; atom s ]]
-
   let rec is_resolved_hidden : type k. k Types.Resolved.t -> bool =
     let open Types.Resolved in
     function
@@ -456,10 +362,6 @@ module Path = struct
     open Identifier
 
     include Types.Resolved
-
-    let sexp_of_t : type k. k t -> sexp =
-      fun t ->
-        sexp_of_resolved_path t
 
     let ident_module : Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x
@@ -686,10 +588,6 @@ module Path = struct
 
   include Types.Path
 
-  let sexp_of_t : type k. k t -> sexp =
-    fun t ->
-      sexp_of_path t
-
   let ident_module : Identifier.module_ -> _ = function
     | Root _ | Module _ | Argument _ as x -> Resolved (Identifier x)
 
@@ -776,48 +674,6 @@ module Fragment = struct
   module Resolved = struct
 
     include Paths_types.Resolved_fragment
-
-    let rec sexp_of_t :
-      type a c. (a, c) raw -> sexp =
-      fun raw ->
-        match raw with
-        | Root -> Atom "Root"
-        | Subst (path, raw) ->
-            List [
-              Atom "Subst";
-              List [ Path.Resolved.sexp_of_t path
-                  ; sexp_of_t raw ]
-            ]
-        | SubstAlias (path, raw) ->
-            List [
-              Atom "SubstAlias";
-              List [ Path.Resolved.sexp_of_t path
-                  ; sexp_of_t raw ]
-            ]
-        | Module (raw, s) ->
-            List [
-              Atom "Module";
-              List [ sexp_of_t raw
-                  ; atom s ]
-            ]
-        | Type (raw, s) ->
-            List [
-              Atom "Type";
-              List [ sexp_of_t raw
-                  ; atom s ]
-            ]
-        | Class (raw, s) ->
-            List [
-              Atom "Class";
-              List [ sexp_of_t raw
-                  ; atom s ]
-            ]
-        | ClassType (raw, s) ->
-            List [
-              Atom "ClassType";
-              List [ sexp_of_t raw
-                  ; atom s ]
-            ]
 
     let signature_of_module : module_ -> signature = function
       | Subst _ | SubstAlias _ | Module _ as x -> x
@@ -1006,21 +862,6 @@ module Fragment = struct
 
   include Paths_types.Fragment
 
-  let rec sexp_of_t :
-    type a c. (a, c) raw -> sexp =
-    fun raw ->
-      match raw with
-      | Resolved r ->
-          List [
-            Atom "Resolved";
-            Resolved.sexp_of_t r;
-          ]
-      | Dot (raw, s) ->
-          List [
-            Atom "Dot";
-            List [ sexp_of_t raw ; atom s ];
-          ]
-
   let signature_of_module : module_ -> signature = function
     | Resolved(Subst _ | SubstAlias _ | Module _) | Dot _ as x -> x
 
@@ -1109,99 +950,6 @@ module Reference = struct
     module Reference = Paths_types.Reference
   end = Types
 
-  let sexp_of_tag : type k. k Types.Reference.tag -> sexp = function
-    | Types.Reference.TUnknown -> Atom "TUnknown"
-    | Types.Reference.TModule -> Atom "TModule"
-    | Types.Reference.TModuleType -> Atom "TModuleType"
-    | Types.Reference.TType -> Atom "TType"
-    | Types.Reference.TConstructor -> Atom "TConstructor"
-    | Types.Reference.TField -> Atom "TField"
-    | Types.Reference.TExtension -> Atom "TExtension"
-    | Types.Reference.TException -> Atom "TException"
-    | Types.Reference.TValue -> Atom "TValue"
-    | Types.Reference.TClass -> Atom "TClass"
-    | Types.Reference.TClassType -> Atom "TClassType"
-    | Types.Reference.TMethod -> Atom "TMethod"
-    | Types.Reference.TInstanceVariable -> Atom "TInstanceVariable"
-    | Types.Reference.TLabel -> Atom "TLabel"
-    | Types.Reference.TPage -> Atom "TPage"
-
-  let rec sexp_of_resolved : type k. k Types.Resolved.t -> sexp =
-    fun t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      let open Types.Resolved in
-      match t with
-      | Identifier id -> List [ Atom "Identifier"; Identifier.sexp_of_t id ]
-      | SubstAlias (r1, r2) ->
-        List [ Atom "SubstAlias"; List [ Path.Resolved.sexp_of_t r1;
-                                         sexp_of_resolved r2] ]
-      | Module (sg, s) ->
-        List [ Atom "Module"; List [sexp_of_resolved sg; atom s] ]
-      | Canonical (t, rf) ->
-        List [ Atom "Canonical"; List [ sexp_of_resolved t
-                                      ; sexp_of_t rf ] ]
-      | ModuleType (sg, s) ->
-        List [ Atom "ModuleType"; List [sexp_of_resolved sg; atom s] ]
-      | Type (sg, s) ->
-        List [ Atom "Type"; List [sexp_of_resolved sg; atom s] ]
-      | Constructor (cs, s) ->
-        List [ Atom "Constructor"; List [sexp_of_resolved cs; atom s] ]
-      | Field (f, s) ->
-        List [ Atom "Field"; List [sexp_of_resolved f; atom s] ]
-      | Extension (sg, s) ->
-        List [ Atom "Extension"; List [sexp_of_resolved sg; atom s] ]
-      | Exception (sg, s) ->
-        List [ Atom "Exception"; List [sexp_of_resolved sg; atom s] ]
-      | Value (sg, s) ->
-        List [ Atom "Value"; List [sexp_of_resolved sg; atom s] ]
-      | Class (sg, s) ->
-        List [ Atom "Class"; List [sexp_of_resolved sg; atom s] ]
-      | ClassType (sg, s) ->
-        List [ Atom "ClassType"; List [sexp_of_resolved sg; atom s] ]
-      | Method (sg, s) ->
-        List [ Atom "Method"; List [sexp_of_resolved sg; atom s] ]
-      | InstanceVariable (sg, s) ->
-        List [ Atom "InstanceVariable"; List [sexp_of_resolved sg; atom s] ]
-      | Label (sg, s) ->
-        List [ Atom "Label"; List [sexp_of_resolved sg; atom s] ]
-
-  and sexp_of_t : type k. k Types.Reference.t -> sexp =
-    fun t ->
-      let atom s = Atom (Printf.sprintf "%S" s) in
-      let open Types.Reference in
-      match t with
-      | Resolved r -> List [ Atom "Resolved"; sexp_of_resolved r ]
-      | Root (s, tag) ->
-        List [ Atom "Root"; List [atom s; sexp_of_tag tag] ]
-      | Dot (md, s) ->
-        List [ Atom "Dot" ; List [sexp_of_t md; atom s] ]
-      | Module (sg, s) ->
-        List [ Atom "Module"; List [sexp_of_t sg; atom s] ]
-      | ModuleType (sg, s) ->
-        List [ Atom "ModuleType"; List [sexp_of_t sg; atom s] ]
-      | Type (sg, s) ->
-        List [ Atom "Type"; List [sexp_of_t sg; atom s] ]
-      | Constructor (cs, s) ->
-        List [ Atom "Constructor"; List [sexp_of_t cs; atom s] ]
-      | Field (f, s) ->
-        List [ Atom "Field"; List [sexp_of_t f; atom s] ]
-      | Extension (sg, s) ->
-        List [ Atom "Extension"; List [sexp_of_t sg; atom s] ]
-      | Exception (sg, s) ->
-        List [ Atom "Exception"; List [sexp_of_t sg; atom s] ]
-      | Value (sg, s) ->
-        List [ Atom "Value"; List [sexp_of_t sg; atom s] ]
-      | Class (sg, s) ->
-        List [ Atom "Class"; List [sexp_of_t sg; atom s] ]
-      | ClassType (sg, s) ->
-        List [ Atom "ClassType"; List [sexp_of_t sg; atom s] ]
-      | Method (sg, s) ->
-        List [ Atom "Method"; List [sexp_of_t sg; atom s] ]
-      | InstanceVariable (sg, s) ->
-        List [ Atom "InstanceVariable"; List [sexp_of_t sg; atom s] ]
-      | Label (sg, s) ->
-        List [ Atom "Label"; List [sexp_of_t sg; atom s] ]
-
   let rec hash_resolved : type k. k Types.Resolved.t -> int =
     fun p ->
       let open Types.Resolved in
@@ -1264,8 +1012,6 @@ module Reference = struct
     open Identifier
 
     include Types.Resolved
-
-    let sexp_of_t t = sexp_of_resolved t
 
     let ident_module : Identifier.module_ -> _ = function
       | Root _ | Module _ | Argument _ as x -> Identifier x

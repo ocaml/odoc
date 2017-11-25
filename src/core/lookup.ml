@@ -129,22 +129,17 @@ class lookup = object
     let this = {< env = env >} in
       this#super_class_type cltyp
 
-  method! documentation_text_element elt =
-    let elt = super#documentation_text_element elt in
-    match elt with
-    | Reference (r, None) ->
-      let open Paths.Reference in
-      let open Resolved in
-      begin match r with
-      | Element Resolved (Identifier (Paths.Identifier.Label _)
-                         | Label _ as rr) ->
-        begin match Name_env.lookup_section_title env rr with
-        | None -> elt
-        | txt -> Model.Comment.Reference (r, txt)
-        end
-      | _ -> elt
+  method! documentation_reference (path, elements) =
+    let open Paths.Reference in
+    let open Paths.Reference.Resolved in
+    match path, elements with
+    | Resolved (Identifier (Paths.Identifier.Label _) | Label _ as rr), [] ->
+      begin match Name_env.lookup_section_title env rr with
+      | None -> (path, elements)
+      | Some elements' -> (path, elements')
       end
-    | otherwise -> otherwise
+    | _ ->
+      (path, elements)
 
 end
 

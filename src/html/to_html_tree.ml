@@ -40,8 +40,9 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
   | Identifier.Argument (_, nb, _) -> nb
   | _ ->
-    let id = string_of_sexp @@ Identifier.sexp_of_t id in
-    invalid_arg (Printf.sprintf "functor_arg_pos: %s" id)
+    failwith "TODO"
+    (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
+    invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
 let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   let package =
@@ -953,8 +954,8 @@ and class_type (t : Model.Lang.ClassType.t) =
 and include_ (t : Model.Lang.Include.t) =
   let doc = Documentation.to_html t.doc in
   let included_html, tree = signature t.expansion.content in
-  let should_be_inlined, should_be_open =
-    match t.doc with
+  let should_be_inlined, should_be_open = false, false (* TODO *)
+    (* match t.doc with
     | Ok { tags ; _ } ->
       let should_be_open =
         let forced_open =
@@ -970,7 +971,7 @@ and include_ (t : Model.Lang.Include.t) =
           )
       in
       List.mem Model.Comment.Inline ~set:tags, should_be_open
-    | _ -> false, !Html_tree.open_details
+    | _ -> false, !Html_tree.open_details *)
   in
   let incl =
     if should_be_inlined then

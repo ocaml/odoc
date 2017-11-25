@@ -855,285 +855,77 @@ class virtual documentation = object (self)
   method virtual reference_any :
     Reference.any -> Reference.any
 
-  method documentation_style ds =
-    let open Model.Comment in
-      match ds with
-      | Bold | Italic | Emphasize
-      | Center | Left | Right
-      | Superscript | Subscript -> ds
-      | Custom custom ->
-          let custom' = self#documentation_style_custom custom in
-            if custom != custom' then Custom custom'
-            else ds
+  method documentation_reference r = r
 
-  method documentation_style_custom custom = custom
+  method private documentation_inline_element element =
+    match element with
+    | `Reference (path, nested_elements) ->
+      let path', nested_elements' =
+        self#documentation_reference (path, nested_elements) in
+      if path' != path || nested_elements' != nested_elements then
+        `Reference (path', nested_elements')
+      else
+        element
+    | _ ->
+      element
 
-  method documentation_reference drf =
-    let open Model.Comment in
-      match drf with
-      | Element rf ->
-          let rf' = self#reference_any rf in
-            if rf != rf' then Element rf'
-            else drf
-      | Link link ->
-          let link' = self#documentation_reference_link link in
-            if link != link' then Link link'
-            else drf
-      | Custom(custom, body) ->
-          let custom' = self#documentation_reference_custom custom in
-          let body' = self#documentation_reference_custom_body body in
-            if custom != custom' || body != body' then Custom(custom', body')
-            else drf
+  method private documentation_nestable_block_element = function
+    | `Paragraph elements ->
+      `Paragraph (list_map self#documentation_inline_element elements)
+    | element ->
+      element
 
-  method documentation_reference_link link = link
-  method documentation_reference_custom custom = custom
-  method documentation_reference_custom_body body = body
-
-  method documentation_special_modules (rf, txt as pair) =
-    let rf' = self#reference_module rf in
-    let txt' = self#documentation_text txt in
-    if rf != rf' || txt != txt' then (rf', txt')
-    else pair
-
-  method documentation_special sr =
-    let open Model.Comment in
-      match sr with
-      | Modules rfs ->
-        let rfs' = list_map self#documentation_special_modules rfs in
-        if rfs != rfs' then Modules rfs'
-        else sr
-      | Index -> sr
-
-  method documentation_see see =
-    let open Model.Comment in
-      match see with
-      | Url url ->
-          let url' = self#documentation_see_url url in
-            if url != url' then Url url'
-            else see
-      | File file ->
-          let file' = self#documentation_see_file file in
-            if file != file' then File file'
-            else see
-      | Doc doc ->
-          let doc' = self#documentation_see_doc doc in
-            if doc != doc' then Doc doc'
-            else see
-
-  method documentation_see_url url = url
-  method documentation_see_file file = file
-  method documentation_see_doc doc = doc
-
-  method documentation_text_element elem =
-    let open Model.Comment in
-      match elem with
-      | Raw raw ->
-          let raw' = self#documentation_text_raw raw in
-            if raw != raw' then Raw raw'
-            else elem
-      | Code code ->
-          let code' = self#documentation_text_code code in
-            if code != code' then Code code'
-            else elem
-      | PreCode precode ->
-          let precode' = self#documentation_text_precode precode in
-            if precode != precode' then PreCode precode'
-            else elem
-      | Verbatim verbatim ->
-          let verbatim' = self#documentation_text_verbatim verbatim in
-            if verbatim != verbatim' then Verbatim verbatim'
-            else elem
-      | Style(style, text) ->
-          let style' = self#documentation_style style in
-          let text' = self#documentation_text text in
-            if style != style' || text != text' then Style(style', text')
-            else elem
-      | List texts ->
-          let texts' = list_map self#documentation_text texts in
-            if texts != texts' then List texts'
-            else elem
-      | Newline -> elem
-      | Enum texts ->
-          let texts' = list_map self#documentation_text texts in
-            if texts != texts' then Enum texts'
-            else elem
-      | Title(level, label, text) ->
-          let level' = self#documentation_text_title_level level in
-          let label' = option_map self#identifier_label label in
-          let text' = self#documentation_text text in
-            if level != level' || label != label' || text != text' then
-              Title(level', label', text')
-            else elem
-      | Reference(rf, text) ->
-          let rf' = self#documentation_reference rf in
-          let text' = option_map self#documentation_text text in
-            if rf != rf' || text != text' then Reference(rf', text')
-            else elem
-      | Target(target, body) ->
-          let target' = self#documentation_text_target target in
-          let body' = self#documentation_text_target_body body in
-            if target != target' || body != body' then Target(target', body')
-            else elem
-      | Special sr ->
-          let sr' = self#documentation_special sr in
-            if sr != sr' then Special sr'
-            else elem
-
-  method documentation_text_raw raw = raw
-  method documentation_text_code code = code
-  method documentation_text_precode precode = precode
-  method documentation_text_verbatim verbatim = verbatim
-  method documentation_text_title_level level = level
-  method documentation_text_target target = target
-  method documentation_text_target_body body = body
-
-  method documentation_text text =
-    list_map self#documentation_text_element text
-
-  method documentation_tag tag =
-    let open Model.Comment in
-      match tag with
-      | Author author ->
-          let author' = self#documentation_tag_author author in
-            if author != author' then Author author'
-            else tag
-      | Version version ->
-          let version' = self#documentation_tag_version version in
-            if version != version' then Version version'
-            else tag
-      | See(see, txt) ->
-          let see' = self#documentation_see see in
-          let txt' = self#documentation_text txt in
-            if see != see' || txt != txt' then See(see', txt')
-            else tag
-      | Since since ->
-          let since' = self#documentation_tag_since since in
-            if since != since' then Since since'
-            else tag
-      | Before(before, txt) ->
-          let before' = self#documentation_tag_before before in
-          let txt' = self#documentation_text txt in
-            if before != before' || txt != txt' then Before(before', txt')
-            else tag
-      | Deprecated txt ->
-          let txt' = self#documentation_text txt in
-            if txt != txt' then Deprecated txt'
-            else tag
-      | Param(param, txt) ->
-          let param' = self#documentation_tag_param param in
-          let txt' = self#documentation_text txt in
-            if param != param' || txt != txt' then Param(param', txt')
-            else tag
-      | Raise(raise, txt) ->
-          let raise' = self#documentation_tag_raise raise in
-          let txt' = self#documentation_text txt in
-            if raise != raise' || txt != txt' then Raise(raise', txt')
-            else tag
-      | Inline -> tag
-      | Return txt ->
-          let txt' = self#documentation_text txt in
-            if txt != txt' then Return txt'
-            else tag
-      | Tag(name, txt) ->
-          let name' = self#documentation_tag_name name in
-          let txt' = self#documentation_text txt in
-            if name != name' || txt != txt' then Tag(name', txt')
-            else tag
-      | Canonical(path, reference) ->
-          let path' = self#path_module path in
-          let reference' = self#reference_module reference in
-            if path != path' || reference != reference' then
-              Canonical (path', reference')
-            else tag
-
-  method documentation_tag_author author = author
-  method documentation_tag_version version = version
-  method documentation_tag_since since = since
-  method documentation_tag_before before = before
-  method documentation_tag_param param = param
-  method documentation_tag_raise raise = raise
-  method documentation_tag_name tag = tag
-
-  method documentation_tags tags =
-    list_map self#documentation_tag tags
-
-  method documentation_error_position pos =
-    let open Model.Comment.Error.Position in
-    let {line; column} = pos in
-    let line' = self#documentation_error_position_line line in
-    let column' = self#documentation_error_position_column column in
-      if line != line' || column != column' then
-        {line = line'; column = column'}
-      else pos
-
-  method documentation_error_position_line line = line
-  method documentation_error_position_column column = column
-
-  method documentation_error_offset offset =
-    let open Model.Comment.Error.Offset in
-    let {start; finish} = offset in
-    let start' = self#documentation_error_position start in
-    let finish' = self#documentation_error_position finish in
-      if start != start' || finish != finish' then
-        {start = start'; finish = finish'}
-      else offset
-
-  method documentation_error_location loc =
-    let open Model.Comment.Error.Location in
-    let {filename; start; finish} = loc in
-    let filename' = self#documentation_error_location_filename filename in
-    let start' = self#documentation_error_position start in
-    let finish' = self#documentation_error_position finish in
-      if filename != filename' || start != start' || finish != finish' then
-        {filename = filename'; start = start'; finish = finish'}
-      else loc
-
-  method documentation_error_location_filename line = line
-
-  method documentation_error err =
-    let open Model.Comment.Error in
-    let {origin; offset; location; message} = err in
-    let origin' = self#identifier origin in
-    let offset' = self#documentation_error_offset offset in
-    let location' = option_map self#documentation_error_location location in
-    let message' = self#documentation_error_message message in
-    if origin != origin' || offset != offset'
-       || location != location' || message != message'
-    then
-      {origin = origin'; offset = offset';
-       location = location'; message = message' }
-    else err
-
-  method documentation_error_message message = message
-
-  method documentation_body body =
-    let open Model.Comment in
-    let {text; tags} = body in
-    let text' = self#documentation_text text in
-    let tags' = self#documentation_tags tags in
-      if text != text' || tags != tags' then {text = text'; tags = tags'}
-      else body
+  method private documentation_block_element element =
+    match element with
+    | #Model.Comment.nestable_block_element as element ->
+      (self#documentation_nestable_block_element element
+        :> Model.Comment.block_element)
+    | `Tag tag ->
+      let tag' =
+        match tag with
+        | `Deprecated elements ->
+          `Deprecated
+            (list_map self#documentation_nestable_block_element elements)
+        | `Param (s, elements) ->
+          `Param
+            (s, list_map self#documentation_nestable_block_element elements)
+        | `Raise (s, elements) ->
+          `Raise
+            (s, list_map self#documentation_nestable_block_element elements)
+        | `Return elements ->
+          `Return
+            (list_map self#documentation_nestable_block_element elements)
+        | `See (k, s, elements) ->
+          `See
+            (k, s, list_map self#documentation_nestable_block_element elements)
+        | `Before (s, elements) ->
+          `Before
+            (s, list_map self#documentation_nestable_block_element elements)
+        | _ ->
+          tag
+      in
+      if tag' != tag then
+        `Tag tag'
+      else
+        element
+    | _ ->
+      element
 
   method documentation doc =
-    let open Model.Comment in
     match doc with
     | Ok body ->
-        let body' = self#documentation_body body in
-          if body != body' then Ok body'
-          else doc
-    | Error err ->
-        let err' = self#documentation_error err in
-          if err != err' then Error err'
-          else doc
+      Ok (list_map self#documentation_block_element body)
+    | Error _ ->
+      doc
 
   method documentation_comment comment =
-    let open Model.Comment in
-      match comment with
-      | Documentation doc ->
-          let doc' = self#documentation doc in
-            if doc != doc' then Documentation doc'
-            else comment
-      | Stop -> comment
+    match comment with
+    | Model.Comment.Documentation doc ->
+      let doc' = self#documentation doc in
+      if doc != doc' then Model.Comment.Documentation doc'
+      else comment
+    | Model.Comment.Stop ->
+      comment
 
 end
 

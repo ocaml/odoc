@@ -847,9 +847,10 @@ let should_expand _t _id decl =
   | _ -> true
 
 let is_canonical_tag doc =
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   match doc with
-  | Ok { text = []; tags = [Canonical (_, _)] } -> true
+  (* | Ok { text = []; tags = [Canonical (_, _)] } -> true *)
+  (* TODO *)
   | _ -> false
 
 (** For module aliases where the binding site doesn't have any doc comment
@@ -860,9 +861,8 @@ let expand_mod_alias_doc md =
   | ModuleType _  -> md
   | Alias _ ->
     match md.doc with
-    | Model.Comment.Error _
-    | Ok { text = _ :: _ ; _ }
-    | Ok { tags = _ :: _ ; _ } -> md
+    | Error _
+    | Ok (_::_) -> md
     | Ok _ ->
       match md.expansion with
       | Some (
@@ -966,7 +966,7 @@ let expand_unit t unit =
           { unit with expansion }
 *)
 
-class t ?equal ?hash lookup fetch = object (self)
+class t ?equal ?hash lookup fetch = object
   val t = create ?equal ?hash lookup fetch
   val unit = None
 
@@ -1022,7 +1022,7 @@ class t ?equal ?hash lookup fetch = object (self)
     let c' = expand_class_type t c in
     super#class_type c'
 
-  method! documentation_special_modules (rf, txt as pair) =
+  (* method! documentation_special_modules (rf, txt as pair) =
     let rf' = self#reference_module rf in
     let txt' =
       match txt with
@@ -1042,7 +1042,7 @@ class t ?equal ?hash lookup fetch = object (self)
     in
     let txt' = self#documentation_text txt' in
     if rf != rf' || txt != txt' then (rf', txt')
-    else pair
+    else pair *)
 
   (* CR trefis: TODO *)
   method reference_module x = x

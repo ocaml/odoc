@@ -18,8 +18,7 @@ open Paths
 open Model.Lang
 
 let empty_doc =
-  let open Model.Comment in
-    {text = []; tags = [];}
+  []
 
 let nullary_equation =
   let open TypeDecl.Equation in
@@ -201,7 +200,6 @@ let undefined_recursive_module_reference =
 
 let false_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let args = Tuple [] in
   let res = None in
@@ -209,7 +207,6 @@ let false_decl =
 
 let true_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let args = Tuple [] in
   let res = None in
@@ -217,7 +214,6 @@ let true_decl =
 
 let void_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let args = Tuple [] in
   let res = None in
@@ -225,7 +221,6 @@ let void_decl =
 
 let nil_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let args = Tuple [] in
   let res = None in
@@ -233,7 +228,6 @@ let nil_decl =
 
 let cons_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let head = TypeExpr.Var "'a" in
   let tail = TypeExpr.(Constr(list_path, [head])) in
@@ -243,7 +237,6 @@ let cons_decl =
 
 let none_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let args = Tuple [] in
   let res = None in
@@ -251,7 +244,6 @@ let none_decl =
 
 let some_decl =
   let open TypeDecl.Constructor in
-  let open Model.Comment in
   let doc = Ok empty_doc in
   let var = TypeExpr.Var "'a" in
   let args = Tuple [var] in
@@ -261,50 +253,57 @@ let some_decl =
 
 let int_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = int_identifier in
-  let text = [Raw "The type of integer numbers."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of integer numbers."] in *)
+  (* TODO *)
+  (* let text = [] in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let char_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = char_identifier in
-  let text = [Raw "The type of characters."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of characters."] in *)
+  (* let text = [] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let bytes_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = bytes_identifier in
-  let text = [Raw "The type of (writable) byte sequences."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of (writable) byte sequences."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let string_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = string_identifier in
-  let text = [Raw "The type of (read-only) character strings."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of (read-only) character strings."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let float_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = float_identifier in
-  let text = [Raw "The type of floating-point numbers."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of floating-point numbers."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
@@ -312,10 +311,11 @@ let float_decl =
 let bool_decl =
   let open TypeDecl in
   let open Representation in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = bool_identifier in
-  let text = [Raw "The type of booleans (truth values)."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of booleans (truth values)."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [false_decl; true_decl]) in
     {id; doc; equation; representation}
@@ -323,10 +323,11 @@ let bool_decl =
 let unit_decl =
   let open TypeDecl in
   let open Representation in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = unit_identifier in
-  let text = [Raw "The type of the unit value."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of the unit value."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [void_decl]) in
     {id; doc; equation; representation}
@@ -334,24 +335,26 @@ let unit_decl =
 let exn_decl =
   let open TypeDecl in
   let open Representation in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = exn_identifier in
-  let text = [Raw "The type of exception values."] in
-  let doc = Ok {empty_doc with text} in
+  (* let text = [Raw "The type of exception values."] in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = Some Extensible in
     {id; doc; equation; representation}
 
 let array_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = array_identifier in
-  let text =
+  (* let text =
     [Raw "The type of arrays whose elements have type ";
      Code "'a";
      Raw "."]
-  in
-  let doc = Ok {empty_doc with text} in
+  in *)
+  (* let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = invariant_equation in
   let representation = None in
     {id; doc; equation; representation}
@@ -359,14 +362,15 @@ let array_decl =
 let list_decl =
   let open TypeDecl in
   let open Representation in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = list_identifier in
-  let text =
+  (* let text =
     [Raw "The type of lists whose elements have type ";
      Code "'a";
      Raw "."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = covariant_equation in
   let representation = Some (Variant [nil_decl; cons_decl]) in
     {id; doc; equation; representation}
@@ -374,100 +378,107 @@ let list_decl =
 let option_decl =
   let open TypeDecl in
   let open Representation in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = option_identifier in
-  let text =
+  (* let text =
     [Raw "The type of optional values of type ";
      Code "'a";
      Raw "."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = covariant_equation in
   let representation = Some (Variant [none_decl; some_decl]) in
     {id; doc; equation; representation}
 
 let int32_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = int32_identifier in
-  let text =
+  (* let text =
     [Raw "The type of signed 32-bit integers. See the ";
      Reference(Element(Root("Int32", TModule)), None);
      Raw " module."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let int64_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = int64_identifier in
-  let text =
+  (* let text =
     [Raw "The type of signed 64-bit integers. See the ";
      Reference(Element(Root("Int64", TModule)), None);
      Raw " module."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let nativeint_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = nativeint_identifier in
-  let text =
+  (* let text =
     [Raw "The type of signed, platform-native integers (32 bits on \
           32-bit processors, 64 bits on 64-bit processors). See the ";
      Reference(Element(Root("Nativeint", TModule)), None);
      Raw " module."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = nullary_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let lazy_t_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = lazy_t_identifier in
-  let text =
+  (* let text =
     [Raw "This type is used to implement the ";
      Reference(Element(Root("Lazy", TModule)), None);
      Raw " module. It should not be used directly."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = covariant_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let extension_constructor_decl =
   let open TypeDecl in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = extension_constructor_identifier in
-  let text =
+  (* let text =
     [Raw "cf. ";
      Reference(Element(Root("Obj", TModule)), None);
      Raw " module. It should not be used directly."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let equation = covariant_equation in
   let representation = None in
     {id; doc; equation; representation}
 
 let match_failure_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = match_failure_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised when none of the cases of a pattern matching apply. \
           The arguments are the location of the ";
      Code "match";
      Raw " keyword in the source code (file name, line number, column number)."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
   let args =
@@ -478,15 +489,16 @@ let match_failure_decl =
 
 let assert_failure_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = assert_failure_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised when and assertion fails. \
           The arguments are the location of the ";
      Code "assert";
      Raw " keyword in the source code (file name, line number, column number)."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
   let args =
@@ -497,52 +509,56 @@ let assert_failure_decl =
 
 let invalid_argument_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = invalid_argument_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by library functions to signal that the given \
           arguments do not make sense."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
 let failure_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = failure_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by library functions to signal that they are \
           undefined on the given arguments."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
 let not_found_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = not_found_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by search functions when the desired object \
           could not be found."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
 let out_of_memory_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = out_of_memory_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by the garbage collector when there is \
           insufficient memory to complete the computation."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
@@ -550,69 +566,74 @@ let out_of_memory_decl =
 (* TODO: Provide reference to the OCaml manual *)
 let stack_overflow_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = stack_overflow_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by the bytecode interpreter when the evaluation \
           stack reaches its maximal size. This often indicates infinite or \
           excessively deep recursion in the user's program. (Not fully \
           implemented by the native-code compiler; see section 11.5 of \
           the OCaml manual.)"]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
 let sys_error_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = sys_error_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by the input/output functions to report an \
           operating system error."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [TypeExpr.Constr(string_path, [])] in
   let res = None in
     {id; doc; args; res}
 
 let end_of_file_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = end_of_file_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by input functions to signal that the end of \
           file has been reached."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
 let division_by_zero_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = division_by_zero_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised by integer division and remainder operations \
           when their second argument is zero."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
 
 let sys_blocked_io_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = sys_blocked_io_identifier in
-  let text =
+  (* let text =
     [Raw "A special case of ";
      Reference(Element sys_error_reference, None);
      Raw " raised when no I/O is possible on a non-blocking I/O channel."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let args = TypeDecl.Constructor.Tuple [] in
   let res = None in
     {id; doc; args; res}
@@ -620,15 +641,16 @@ let sys_blocked_io_decl =
 (* TODO: Provide reference to the OCaml manual *)
 let undefined_recursive_module_decl =
   let open Exception in
-  let open Model.Comment in
+  (* let open Model.Comment in *)
   let id = undefined_recursive_module_identifier in
-  let text =
+  (* let text =
     [Raw "Exception raised when an ill-founded recursive module definition \
           is evaluated. (See section 7.8 of the OCaml manual.) The arguments \
           are the location of the definition in the source code \
           (file name, line number, column number)."]
   in
-  let doc = Ok {empty_doc with text} in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = Ok empty_doc in
   let string_expr = TypeExpr.Constr(string_path, []) in
   let int_expr = TypeExpr.Constr(int_path, []) in
   let args =

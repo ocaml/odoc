@@ -866,8 +866,9 @@ and read_module_declaration env parent ident md =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
   let doc = read_attributes container id md.md_attributes in
-  let canonical =
-    let open Model.Comment in
+  let canonical = None
+    (* TODO *)
+    (* let open Model.Comment in
     match doc with
     | Ok { tags; _ } ->
       begin match List.find (function Canonical _ -> true | _ -> false) tags with
@@ -875,7 +876,7 @@ and read_module_declaration env parent ident md =
       | Canonical(p, r) -> Some (p, r)
       | _ -> None
       end
-    | _ -> None
+    | _ -> None *)
   in
   let type_ =
     match md.md_type with

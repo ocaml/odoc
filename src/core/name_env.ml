@@ -102,7 +102,7 @@ type t =
     labels : label StringTbl.t;
     parents : parent_ident StringTbl.t;
     elements : any StringTbl.t;
-    titles : Model.Comment.text StringTbl.t; (* Hack *)
+    titles : Model.Comment.non_link_inline_element list StringTbl.t; (* Hack *)
     signatures : signature_ident StringTbl.t;
   }
 
@@ -302,43 +302,17 @@ let add_label_ident_title id txt env =
   in
     { env with titles }
 
-let rec add_text_element elem env =
-  let open Model.Comment in
-    match elem with
-    | Raw _ | Code _ | PreCode _ | Verbatim _
-    | Newline | Special _ | Target _ | Reference(_, None) -> env
-    | Style(_, txt) | Reference(_, Some txt) -> add_text txt env
-    | List l -> List.fold_right add_text l env
-    | Enum l -> List.fold_right add_text l env
-    | Title(_, l, txt) ->
-        let env = add_text txt env in
-        let env =
-          match l with
-          | None -> env
-          | Some id ->
-            let env = add_label_ident id env in
-            add_label_ident_title id txt env
-        in
-          env
-
-and add_text txt env =
-  List.fold_right add_text_element txt env
-
-let add_tag tag env =
-  let open Model.Comment in
-    match tag with
-    | Author _ | Version _ | Since _ | Inline | Canonical _ -> env
-    | See(_, txt) | Before(_, txt) | Deprecated txt
-    | Param(_, txt) | Raise(_, txt)
-    | Return txt | Tag(_, txt) -> add_text txt env
-
 let add_documentation doc env =
-  let open Model.Comment in
   match doc with
-  | Ok {text; tags} ->
-      let env = add_text text env in
-      let env = List.fold_right add_tag tags env in
+  | Ok comment ->
+    List.fold_right (fun element env ->
+      match element with
+      | `Heading (_, Some label, nested_elements) ->
+        let env = add_label_ident label env in
+        let env = add_label_ident_title label nested_elements env in
         env
+      | _ -> env)
+      comment env
   | Error _ -> env
 
 let add_comment com env =

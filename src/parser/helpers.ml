@@ -1,7 +1,63 @@
+(* This file contains mostly functions from the former [model/attrs.ml], and
+   also some helpers for error handling. It should be reorganized in the
+   future. *)
+
+type raw_parse_error = {
+  start_offset : int;
+  end_offset : int;
+  text : string;
+}
+
+exception Parse_error of raw_parse_error
+
+let not_allowed ?suggestion (start_offset, end_offset) ~what ~in_what =
+  let text = Printf.sprintf "%s is not allowed in %s" what in_what in
+  let text =
+    match suggestion with
+    | None -> text
+    | Some suggestion ->
+      Printf.sprintf "%s\nSuggestion: %s" text suggestion
+  in
+  raise_notrace (Parse_error {start_offset; end_offset; text})
+
+let must_be_followed_by_whitespace (start_offset, end_offset) ~what =
+  let text =
+    Printf.sprintf "%s must be followed by space, a tab, or a new line" what in
+  raise_notrace (Parse_error {start_offset; end_offset; text})
+
+let cannot_be_empty (start_offset, end_offset) ~what =
+  raise_notrace
+    (Parse_error {
+      start_offset;
+      end_offset;
+      text = Printf.sprintf "%s cannot be empty" what
+    })
+
+let no_leading_whitespace_in_verbatim start_offset =
+  raise_notrace
+    (Parse_error {
+      start_offset;
+      end_offset = start_offset + 2;
+      text = "'{v' must be followed by whitespace"
+    })
+
+let no_trailing_whitespace_in_verbatim end_offset =
+  raise_notrace
+    (Parse_error {
+      start_offset = end_offset - 2;
+      end_offset = end_offset;
+      text = "'v}' must be preceded by whitespace"
+    })
+
+let must_begin_on_its_own_line (start_offset, end_offset) ~what =
+  let text = Printf.sprintf "%s must begin on its own line" what in
+  raise_notrace (Parse_error {start_offset; end_offset; text})
+
+
+
 module Paths = Model.Paths
 
-let parent_definition : Paths.Identifier.label_parent option ref = ref None
-
+(* This should be merged into [Parse_error] above. *)
 exception InvalidReference of string
 
 let read_qualifier :
@@ -337,47 +393,13 @@ let read_longident s =
     | None -> raise (InvalidReference s)
     | Some r -> r
 
-type ref_kind =
-  | RK_element
-  | RK_module
-  | RK_module_type
-  | RK_class
-  | RK_class_type
-  | RK_value
-  | RK_type
-  | RK_exception
-  | RK_attribute
-  | RK_method
-  | RK_section
-  | RK_recfield
-  | RK_const
-  | RK_link
-  | RK_custom of string
-
-let read_reference (rk : ref_kind) (s : string) : Model.Comment.reference =
-  let parsed_ref = lazy (read_longident s) in
-  match rk, parsed_ref with
-  | RK_link, _ -> Link s
-  | RK_custom k, _ -> Custom(k, s)
-  | RK_element, lazy ref -> Element ref
-  | RK_module, lazy ref -> Element ref
-  | RK_module_type, lazy ref -> Element ref
-  | RK_type, lazy ref -> Element ref
-  | RK_exception, lazy ref -> Element ref
-  | RK_recfield, lazy ref -> Element ref
-  | RK_const, lazy ref -> Element ref
-  | RK_value, lazy ref -> Element ref
-  | RK_class, lazy ref -> Element ref
-  | RK_class_type, lazy ref -> Element ref
-  | RK_attribute, lazy ref -> Element ref
-  | RK_method, lazy ref -> Element ref
-  | RK_section, lazy ref -> Element ref
-                              (*
-  | _, _ ->
-      (* FIXME: propagate location *)
-      (* FIXME: better error message *)
-      raise (InvalidReference "Conflicting kinds")
-                                 *)
+let read_reference (s : string) : Model.Paths.Reference.any =
+  let s =
+    match String.rindex s ':' with
+    | index -> String.sub s (index + 1) (String.length s - (index + 1))
+    | exception Not_found -> s
+  in
+  read_longident s
 
 let read_path_longident s =
   let open Paths.Path in

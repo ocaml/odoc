@@ -1,10 +1,10 @@
 .PHONY : build
 build :
-	jbuilder build --dev
+	jbuilder build --no-buffer --dev
 
 .PHONY : test
 test :
-	jbuilder runtest
+	jbuilder runtest --no-buffer --dev
 
 .PHONY : clean
 clean :

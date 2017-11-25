@@ -371,92 +371,9 @@ class virtual documentation : object
 
   method virtual reference_any : Reference.any -> Reference.any
 
-  method documentation_style : Model.Comment.style -> Model.Comment.style
-
-  method documentation_style_custom : string -> string
-
-  method documentation_reference : Model.Comment.reference ->
-    Model.Comment.reference
-
-  method documentation_reference_link : string -> string
-
-  method documentation_reference_custom : string -> string
-
-  method documentation_reference_custom_body : string -> string
-
-  method documentation_special : Model.Comment.special -> Model.Comment.special
-
-  method documentation_special_modules :
-    Reference.module_ * Model.Comment.text ->
-    Reference.module_ * Model.Comment.text
-
-  method documentation_see : Model.Comment.see -> Model.Comment.see
-
-  method documentation_see_url : string -> string
-
-  method documentation_see_file : string -> string
-
-  method documentation_see_doc : string -> string
-
-  method documentation_text_element : Model.Comment.text_element ->
-    Model.Comment.text_element
-
-  method documentation_text_raw : string -> string
-
-  method documentation_text_code : string -> string
-
-  method documentation_text_precode : string -> string
-
-  method documentation_text_verbatim : string -> string
-
-  method documentation_text_title_level : int -> int
-
-  method documentation_text_target : string option -> string option
-
-  method documentation_text_target_body : string -> string
-
-  method documentation_text : Model.Comment.text -> Model.Comment.text
-
-  method documentation_tag : Model.Comment.tag -> Model.Comment.tag
-
-  method documentation_tag_author : string -> string
-
-  method documentation_tag_version : string -> string
-
-  method documentation_tag_since : string -> string
-
-  method documentation_tag_before : string -> string
-
-  method documentation_tag_param : string -> string
-
-  method documentation_tag_raise : string -> string
-
-  method documentation_tag_name : string -> string
-
-  method documentation_tags : Model.Comment.tag list ->
-    Model.Comment.tag list
-
-  method documentation_error_position : Model.Comment.Error.Position.t ->
-    Model.Comment.Error.Position.t
-
-  method documentation_error_position_column : int -> int
-
-  method documentation_error_position_line : int -> int
-
-  method documentation_error_offset : Model.Comment.Error.Offset.t ->
-    Model.Comment.Error.Offset.t
-
-  method documentation_error_location : Model.Comment.Error.Location.t ->
-    Model.Comment.Error.Location.t
-
-  method documentation_error_location_filename : string -> string
-
-  method documentation_error : Model.Comment.Error.t ->
-    Model.Comment.Error.t
-
-  method documentation_error_message : string -> string
-
-  method documentation_body : Model.Comment.body -> Model.Comment.body
+  method documentation_reference
+    : Model.Paths.Reference.any * Model.Comment.non_link_inline_element list ->
+      Model.Paths.Reference.any * Model.Comment.non_link_inline_element list
 
   method documentation : Model.Comment.t -> Model.Comment.t
 
