@@ -3,5 +3,8 @@ _build/
 *.install
 *.merlin
 
+# Bisect_ppx output.
+_coverage/
+
 # For local experiments.
 scratch/

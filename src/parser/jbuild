@@ -4,4 +4,5 @@
 
 (library
  ((name parser_)
+  (preprocess (pps (bisect_ppx -conditional)))
   (libraries (model))))
