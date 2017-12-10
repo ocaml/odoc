@@ -18,6 +18,9 @@ script:
   - opam pin add -y --no-action odoc .
   - opam install -y --deps-only odoc
   - opam install -y --verbose odoc
+  - opam remove -y odoc
+  - opam install -y alcotest bisect_ppx sexplib
+  - make test
 
 notifications:
   email:
