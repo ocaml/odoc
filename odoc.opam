@@ -29,7 +29,5 @@ depends: [
 ]
 
 build: [
-  ["jbuilder" "subst"] {pinned}
-  ["ocaml" "src/odoc/bin/set-etc" "src/odoc/bin/odoc_etc.ml" odoc:etc]
   ["jbuilder" "build" "-p" name "-j" jobs]
 ]

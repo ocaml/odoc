@@ -108,7 +108,7 @@ end
 
 module Css = struct
   let copy_default_css output_dir =
-    Css.copy_default_css ~etc_dir:Odoc_etc.dir ~output_dir
+    Css.copy_default_css ~output_dir
 
   let cmd = Term.(const copy_default_css $ dst)
 
