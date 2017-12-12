@@ -95,7 +95,7 @@ let mld ~env ~package ~output input =
     exit 1
   | Ok str ->
     let content =
-      match Doc_model.Attrs.read_string name location str with
+      match Loader.Attrs.read_string name location str with
       | Stop -> Ok [] (* TODO: Error? *)
       | Documentation content -> content
     in

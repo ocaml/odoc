@@ -2,7 +2,8 @@
 
 (library
  ((name odoc)
-  (libraries (doc_model doc_html unix fpath bos compiler-libs.common tyxml))))
+  (libraries
+   (doc_model doc_html loader unix fpath bos compiler-libs.common tyxml))))
 
 (rule
  ((targets (css_file.ml))

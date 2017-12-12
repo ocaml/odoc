@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Attrs = Loader.Attrs
-
 module Maps = Model.Maps
 
 module Root = Model.Root

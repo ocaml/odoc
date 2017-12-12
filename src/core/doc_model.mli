@@ -16,8 +16,6 @@
 
 (**/**)
 
-module Attrs = Loader.Attrs
-
 module Maps = Model.Maps
 
 module Root = Model.Root
