@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Paths
+open Model.Paths
 open Model.Lang
 open Model.Predefined
 
@@ -496,8 +496,8 @@ let rec add_class_decl_items decl env =
     | ClassType expr -> add_class_type_expr_items expr env
     | Arrow(_, _, decl) -> add_class_decl_items decl env
 
-open Paths.Reference.Resolved
-open Paths.Reference
+open Model.Paths.Reference.Resolved
+open Model.Paths.Reference
 
 let lookup_signature_ident env name =
   try

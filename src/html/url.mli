@@ -1,4 +1,4 @@
-open Doc_model.Paths
+open Model.Paths
 
 type t = {
   page : string list;

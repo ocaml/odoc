@@ -46,7 +46,7 @@ let stack_elt_to_path_fragment = function
   | (name, Some `Cty) -> "class-type-" ^ name
 
 module Relative_link = struct
-  open Doc_model.Paths
+  open Model.Paths
 
   let semantic_uris = ref false
 

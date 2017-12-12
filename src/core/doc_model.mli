@@ -20,8 +20,6 @@ module Attrs = Loader.Attrs
 
 module Maps = Model.Maps
 
-module Paths = Paths
-
 module Root = Model.Root
 
 (**/**)

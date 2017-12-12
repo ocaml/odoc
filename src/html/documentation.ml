@@ -28,7 +28,7 @@ type non_link_phrasing = Html_types.phrasing_without_interactive
 module Reference = struct
   module Id = Html_tree.Relative_link.Id
 
-  open Doc_model.Paths
+  open Model.Paths
 
   let rec render_resolved : type a. a Reference.Resolved.t -> string =
     fun r ->

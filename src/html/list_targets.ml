@@ -15,8 +15,7 @@
  *)
 
 open StdLabels
-open Doc_model
-open Paths
+open Model.Paths
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with

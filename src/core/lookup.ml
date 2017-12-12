@@ -130,10 +130,11 @@ class lookup = object
       this#super_class_type cltyp
 
   method! documentation_reference (path, elements) =
-    let open Paths.Reference in
-    let open Paths.Reference.Resolved in
+    let open Model.Paths.Reference in
+    let open Model.Paths.Reference.Resolved in
     match path, elements with
-    | Resolved (Identifier (Paths.Identifier.Label _) | Label _ as rr), [] ->
+    | Resolved
+        (Identifier (Model.Paths.Identifier.Label _) | Label _ as rr), [] ->
       begin match Name_env.lookup_section_title env rr with
       | None -> (path, elements)
       | Some elements' -> (path, elements')

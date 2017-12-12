@@ -1,5 +1,5 @@
 open StdLabels
-open Doc_model.Paths
+open Model.Paths
 open Identifier
 
 type t = {
@@ -244,7 +244,7 @@ module Anchor = struct
   end
 
   module Module_listing = struct
-    module Reference = Doc_model.Paths.Reference
+    module Reference = Model.Paths.Reference
 
     (* TODO: better error message. *)
     let fail () = failwith "Only modules allowed inside {!modules: ...}"

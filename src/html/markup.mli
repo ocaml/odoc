@@ -31,13 +31,13 @@ val def_summary :
   [< Html_types.span_content_fun ] elt list -> [> Html_types.summary ] elt
 
 val make_def
-   : id:_ Doc_model.Paths.Identifier.t
+   : id:_ Model.Paths.Identifier.t
   -> code:[< Html_types.code_content_fun ] elt list
   -> doc:[< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt
 
 val make_spec
-   : id:_ Doc_model.Paths.Identifier.t
+   : id:_ Model.Paths.Identifier.t
   -> ?doc:[< Html_types.div_content_fun ] elt list
   -> [< Html_types.div_content_fun ] elt list
   -> [> Html_types.div ] elt

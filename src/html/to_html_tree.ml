@@ -16,8 +16,7 @@
 
 open StdLabels
 
-open Doc_model
-open Paths
+open Model.Paths
 
 open Tyxml.Html
 
@@ -47,7 +46,7 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
 let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
-    | Paths.Identifier.Root (a, _) -> a.package
+    | Model.Paths.Identifier.Root (a, _) -> a.package
     | _ -> assert false
   in
   Html_tree.enter package;
@@ -996,7 +995,7 @@ and include_ (t : Model.Lang.Include.t) =
 let page (t : Model.Lang.Page.t) : Html_tree.t =
   let package, name =
     match t.name with
-    | Paths.Identifier.Page (a, name) -> a.package, name
+    | Model.Paths.Identifier.Page (a, name) -> a.package, name
   in
   Html_tree.enter package;
   Html_tree.enter ~kind:`Page name;

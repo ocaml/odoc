@@ -20,7 +20,7 @@ type t = Model.Lang.Page.t
 
 let root (t : Model.Lang.Page.t) =
   match t.Model.Lang.Page.name with
-  | Doc_model.Paths.Identifier.Page (root, _) -> root
+  | Model.Paths.Identifier.Page (root, _) -> root
 
 let save file t =
   let dir = Fs.File.dirname file in

@@ -18,8 +18,6 @@ module Attrs = Loader.Attrs
 
 module Maps = Model.Maps
 
-module Paths = Paths
-
 module Root = Model.Root
 
 type lookup_result = Component_table.lookup_unit_result =
@@ -101,7 +99,7 @@ let read_cmt ~make_root ~filename =
         in
         let hidden = Root.contains_double_underscore name in
         let root = make_root ~module_name:name ~digest in
-        let id = Paths.Identifier.Root(root, name) in
+        let id = Model.Paths.Identifier.Root(root, name) in
         let items =
           List.map
             (fun file ->
@@ -114,8 +112,8 @@ let read_cmt ~make_root ~filename =
           List.map
             (fun name ->
                let open Packed in
-               let id = Paths.Identifier.Module(id, name) in
-               let path = Paths.Path.Root name in
+               let id = Model.Paths.Identifier.Module(id, name) in
+               let path = Model.Paths.Path.Root name in
                  {id; path})
             items
         in
