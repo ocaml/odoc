@@ -84,7 +84,7 @@ let from_mld ~env ~package ~output:root_dir input =
   in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
-    let file = Doc_model.Root.Odoc_file.create_page root_name in
+    let file = Model.Root.Odoc_file.create_page root_name in
     {Model.Root.package; file; digest}
   in
   let name = Model.Paths.Identifier.Page (root, root_name) in

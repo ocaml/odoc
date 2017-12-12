@@ -40,9 +40,9 @@ module Hash_set : sig
 
   val create : unit -> t
 
-  val add : t -> Doc_model.Root.t -> unit
+  val add : t -> Model.Root.t -> unit
 
-  val elements : t -> Doc_model.Root.t list
+  val elements : t -> Model.Root.t list
 end = struct
   type t = unit Model.Root.Hash_table.t
 

@@ -14,11 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Root = Model.Root
-
 type lookup_result = Component_table.lookup_unit_result =
   | Forward_reference
-  | Found of { root : Root.t; hidden : bool }
+  | Found of { root : Model.Root.t; hidden : bool }
   | Not_found
 
 let core_types = Model.Predefined.core_types
@@ -56,7 +54,7 @@ let read_cmti ~make_root ~filename =
           imports
         in
         let interface = true in
-        let hidden = Root.contains_double_underscore name in
+        let hidden = Model.Root.contains_double_underscore name in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
@@ -93,7 +91,7 @@ let read_cmt ~make_root ~filename =
             | None -> assert false
             | exception Not_found -> assert false
         in
-        let hidden = Root.contains_double_underscore name in
+        let hidden = Model.Root.contains_double_underscore name in
         let root = make_root ~module_name:name ~digest in
         let id = Model.Paths.Identifier.Root(root, name) in
         let items =
@@ -136,7 +134,7 @@ let read_cmt ~make_root ~filename =
               | None -> assert false
               | exception Not_found -> assert false
         in
-        let hidden = Root.contains_double_underscore name in
+        let hidden = Model.Root.contains_double_underscore name in
         let root = make_root ~module_name:name ~digest in
         let (id, doc, items) = Loader.Cmt.read_implementation root name impl in
         let imports =
@@ -182,7 +180,7 @@ let read_cmi ~make_root ~filename =
             List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
           in
           let interface = true in
-          let hidden = Root.contains_double_underscore name in
+          let hidden = Model.Root.contains_double_underscore name in
           let source = None in
           let content = Module items in
           let unit =

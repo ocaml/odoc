@@ -44,8 +44,8 @@ let resolve_and_substitute ~env ~output input_file read_file =
     Compilation_unit.save output expanded
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
-  let file_representation : Doc_model.Root.Odoc_file.t =
-    Doc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
+  let file_representation : Model.Root.Odoc_file.t =
+    Model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
   {Model.Root.package; file = file_representation; digest}
 
 let cmti ~env ~package ~hidden ~output input =
@@ -74,7 +74,7 @@ let mld ~env ~package ~output input =
   in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
-    let file = Doc_model.Root.Odoc_file.create_page root_name in
+    let file = Model.Root.Odoc_file.create_page root_name in
     {Model.Root.package; file; digest}
   in
   let name = Model.Paths.Identifier.Page (root, root_name) in

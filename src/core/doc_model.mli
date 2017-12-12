@@ -14,12 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(**/**)
-
-module Root = Model.Root
-
-(**/**)
-
 (** {2:from_ocaml Processing OCaml's compilation units} *)
 
 type read_result =
@@ -33,17 +27,17 @@ and read_error = private
   | Not_an_implementation
 
 val read_cmti :
-  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
+  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
   filename:string ->
     read_result
 
 val read_cmt :
-  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
+  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
   filename:string ->
     read_result
 
 val read_cmi :
-  make_root:(module_name:string -> digest:Digest.t -> Root.t) ->
+  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
   filename:string ->
     read_result
 
@@ -55,13 +49,15 @@ type resolver
 
 type lookup_result =
   | Forward_reference
-  | Found of { root : Root.t; hidden : bool }
+  | Found of { root : Model.Root.t; hidden : bool }
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
-val build_resolver : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
-  -> (string -> lookup_result) -> (Root.t -> Model.Lang.Compilation_unit.t)
-  -> (string -> Root.t option) -> (Root.t -> Model.Lang.Page.t)
+val build_resolver :
+  ?equal:(Model.Root.t -> Model.Root.t -> bool) -> ?hash:(Model.Root.t -> int)
+  -> (string -> lookup_result)
+  -> (Model.Root.t -> Model.Lang.Compilation_unit.t)
+  -> (string -> Model.Root.t option) -> (Model.Root.t -> Model.Lang.Page.t)
   -> resolver
 
 val resolve :
@@ -78,9 +74,10 @@ type expander
 
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
-val build_expander : ?equal:(Root.t -> Root.t -> bool) -> ?hash:(Root.t -> int)
+val build_expander :
+  ?equal:(Model.Root.t -> Model.Root.t -> bool) -> ?hash:(Model.Root.t -> int)
   -> (string -> lookup_result)
-  -> (root:Root.t -> Root.t -> Model.Lang.Compilation_unit.t)
+  -> (root:Model.Root.t -> Model.Root.t -> Model.Lang.Compilation_unit.t)
   -> expander
 
 val expand :

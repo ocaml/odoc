@@ -17,17 +17,17 @@
 (** Produces .odoc files out of .cm{i,t,ti} or .mld files. *)
 
 val cmti :
-  env:Env.builder -> package:Doc_model.Root.Package.t -> hidden:bool ->
+  env:Env.builder -> package:Model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t -> unit
 
 val cmt :
-  env:Env.builder -> package:Doc_model.Root.Package.t -> hidden:bool ->
+  env:Env.builder -> package:Model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t -> unit
 
 val cmi :
-  env:Env.builder -> package:Doc_model.Root.Package.t -> hidden:bool ->
+  env:Env.builder -> package:Model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t -> unit
 
 val mld :
-  env:Env.builder -> package:Doc_model.Root.Package.t ->
+  env:Env.builder -> package:Model.Root.Package.t ->
   output:Fs.File.t -> Fs.File.t -> unit

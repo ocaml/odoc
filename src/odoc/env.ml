@@ -24,7 +24,7 @@ type t = {
 module Accessible_paths = struct
   type t = {
     root_map : Fs.File.t Model.Root.Hash_table.t;
-    file_map : (string, Doc_model.Root.t) Hashtbl.t;
+    file_map : (string, Model.Root.t) Hashtbl.t;
     directories : Fs.Directory.t list;
   }
 
@@ -104,7 +104,7 @@ let rec lookup_unit ~important_digests ap target_name =
       | _ -> find_root ~digest
       end
     | Model.Lang.Compilation_unit.Import.Resolved root
-      when Doc_model.Root.Odoc_file.name root.file =
+      when Model.Root.Odoc_file.name root.file =
           target_name -> begin
         match root.file with
         | Compilation_unit {hidden; _} -> Found {root; hidden}
@@ -121,14 +121,14 @@ let fetch_page ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Page.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Doc_model.Root.to_string root);
+    Printf.eprintf "No unit for root: %s\n%!" (Model.Root.to_string root);
     exit 2
 
 let fetch_unit ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Compilation_unit.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Doc_model.Root.to_string root);
+    Printf.eprintf "No unit for root: %s\n%!" (Model.Root.to_string root);
     exit 2
 
 type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
@@ -163,7 +163,7 @@ let create ?(important_digests=true) ~directories : builder =
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
         let current_root = Compilation_unit.root unit in
-        if Doc_model.Root.equal root current_root then
+        if Model.Root.equal root current_root then
           unit
         else
           fetch_unit ap root
@@ -174,7 +174,7 @@ let create ?(important_digests=true) ~directories : builder =
       | `Unit _ -> fetch_page ap root
       | `Page page ->
         let current_root = Page.root page in
-        if Doc_model.Root.equal root current_root then
+        if Model.Root.equal root current_root then
           page
         else
           fetch_page ap root
