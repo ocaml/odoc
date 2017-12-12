@@ -1,7 +1,6 @@
 
 open Paths
-open Model
-open Model.Lang
+open Lang
 
 let rec list_map f l =
   match l with
@@ -877,9 +876,9 @@ class virtual documentation = object (self)
 
   method private documentation_block_element element =
     match element with
-    | #Model.Comment.nestable_block_element as element ->
+    | #Comment.nestable_block_element as element ->
       (self#documentation_nestable_block_element element
-        :> Model.Comment.block_element)
+        :> Comment.block_element)
     | `Tag tag ->
       let tag' =
         match tag with
@@ -920,11 +919,11 @@ class virtual documentation = object (self)
 
   method documentation_comment comment =
     match comment with
-    | Model.Comment.Documentation doc ->
+    | Comment.Documentation doc ->
       let doc' = self#documentation doc in
-      if doc != doc' then Model.Comment.Documentation doc'
+      if doc != doc' then Comment.Documentation doc'
       else comment
-    | Model.Comment.Stop ->
+    | Comment.Stop ->
       comment
 
 end
@@ -941,7 +940,7 @@ class virtual module_ = object (self)
     Reference.module_ -> Reference.module_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual module_type_expr :
     ModuleType.expr -> ModuleType.expr
@@ -1028,7 +1027,7 @@ class virtual module_type = object (self)
     Fragment.type_ -> Fragment.type_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual module_decl :
     Module.decl -> Module.decl
@@ -1127,7 +1126,7 @@ end
 class virtual signature = object (self)
 
   method virtual documentation_comment :
-    Model.Comment.comment -> Model.Comment.comment
+    Comment.comment -> Comment.comment
 
   method virtual module_ :
     Module.t -> Module.t
@@ -1221,7 +1220,7 @@ class virtual include_ = object (self)
     Identifier.signature -> Identifier.signature
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -1262,7 +1261,7 @@ class virtual type_decl = object (self)
     Identifier.field -> Identifier.field
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1388,7 +1387,7 @@ class virtual extension = object (self)
     Path.type_ -> Path.type_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1436,7 +1435,7 @@ class virtual exception_ = object (self)
     Identifier.exception_ -> Identifier.exception_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1463,7 +1462,7 @@ class virtual value = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1486,7 +1485,7 @@ class virtual external_ = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1514,7 +1513,7 @@ class virtual class_ = object (self)
     Identifier.class_ -> Identifier.class_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1575,7 +1574,7 @@ class virtual class_type = object (self)
     Path.class_type -> Path.class_type
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1622,7 +1621,7 @@ end
 class virtual class_signature = object (self)
 
   method virtual documentation_comment :
-    Model.Comment.comment -> Model.Comment.comment
+    Comment.comment -> Comment.comment
 
   method virtual class_type_expr :
     ClassType.expr -> ClassType.expr
@@ -1678,7 +1677,7 @@ class virtual method_ = object (self)
     Identifier.method_ -> Identifier.method_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1710,7 +1709,7 @@ class virtual instance_variable = object (self)
     Identifier.instance_variable -> Identifier.instance_variable
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1908,7 +1907,7 @@ class virtual unit = object (self)
     Path.module_ -> Path.module_
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method virtual signature :
     Signature.t -> Signature.t
@@ -2009,7 +2008,7 @@ class virtual page = object (self)
     Identifier.page -> Identifier.page
 
   method virtual documentation :
-    Model.Comment.t -> Model.Comment.t
+    Comment.t -> Comment.t
 
   method page page =
     let open Page in

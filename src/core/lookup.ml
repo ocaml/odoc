@@ -21,7 +21,7 @@
 class lookup = object
   val env = Name_env.empty
 
-  inherit Maps.types as super
+  inherit Model.Maps.types as super
 
   method root x = x
   method path_type x = x

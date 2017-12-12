@@ -16,7 +16,7 @@
 
 module Attrs = Loader.Attrs
 
-module Maps = Maps
+module Maps = Model.Maps
 
 module Paths = Paths
 
