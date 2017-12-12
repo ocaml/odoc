@@ -15,6 +15,12 @@
  *)
 
 
+
+module Paths = Model.Paths
+module Ident_env = Model.Ident_env
+
+
+
 val read_interface: Model.Root.t -> string -> Types.signature ->
   Paths.Identifier.module_ *
   Model.Comment.t *

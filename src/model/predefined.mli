@@ -15,7 +15,6 @@
  *)
 
 open Paths
-open Model
 
 (** {3 Identifiers} *)
 

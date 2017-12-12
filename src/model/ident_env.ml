@@ -37,7 +37,7 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let should_be_hidden = Model.Root.contains_double_underscore
+let should_be_hidden = Root.contains_double_underscore
 
 let add_module parent id env =
   let name = Ident.name id in

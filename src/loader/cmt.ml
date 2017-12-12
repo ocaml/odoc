@@ -20,11 +20,11 @@ open Typedtree
 
 module OCamlPath = Path
 
-open Paths
+open Model.Paths
 open Model.Lang
 open Attrs
 
-module Env = Ident_env
+module Env = Model.Ident_env
 
 let parenthesise name =
   match name with

@@ -481,7 +481,7 @@ and expand_module_identifier' t root (id : Identifier.module_) =
   | Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
       let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
-      let doc = Attrs.empty in
+      let doc = Loader.Attrs.empty in
         id, doc, None, expand_argument_ t root arg, []
 
 and expand_module_type_identifier' t root (id : Identifier.module_type) =

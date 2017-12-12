@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Attrs = Attrs
+module Attrs = Loader.Attrs
 
 module Maps = Maps
 
@@ -27,9 +27,9 @@ type lookup_result = Component_table.lookup_unit_result =
   | Found of { root : Root.t; hidden : bool }
   | Not_found
 
-let core_types = Predefined.core_types
+let core_types = Model.Predefined.core_types
 
-let core_exceptions = Predefined.core_exceptions
+let core_exceptions = Model.Predefined.core_exceptions
 
 type read_result =
   (Model.Lang.Compilation_unit.t, read_error) result
@@ -52,7 +52,7 @@ let read_cmti ~make_root ~filename =
       | Some digest ->
         let name = cmt_info.cmt_modname in
         let root = make_root ~module_name:name ~digest in
-        let (id, doc, items) = Cmti.read_interface root name intf in
+        let (id, doc, items) = Loader.Cmti.read_interface root name intf in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
@@ -125,7 +125,7 @@ let read_cmt ~make_root ~filename =
         let imports =
           List.map (fun (s, d) -> Import.Unresolved(s, d)) imports
         in
-        let doc = Attrs.empty in
+        let doc = Loader.Attrs.empty in
         let source = None in
         let content = Pack items in
           Ok {id; doc; digest; imports;
@@ -144,7 +144,7 @@ let read_cmt ~make_root ~filename =
         in
         let hidden = Root.contains_double_underscore name in
         let root = make_root ~module_name:name ~digest in
-        let (id, doc, items) = Cmt.read_implementation root name impl in
+        let (id, doc, items) = Loader.Cmt.read_implementation root name impl in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
@@ -182,7 +182,7 @@ let read_cmi ~make_root ~filename =
       | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
           let root = make_root ~module_name:name ~digest:digest in
           let (id, doc, items) =
-            Cmi.read_interface root name cmi_info.cmi_sign
+            Loader.Cmi.read_interface root name cmi_info.cmi_sign
           in
           let imports =
             List.map (fun (s, d) -> Import.Unresolved(s, d)) imports

@@ -16,6 +16,10 @@
 
 
 
+module Paths = Model.Paths
+
+
+
 let empty_body = []
 
 let empty : Model.Comment.t = Ok empty_body
@@ -39,7 +43,7 @@ let read_attributes parent _id attrs =
               end
             | Error err -> Error err
           end
-        | None -> failwith "TODO"
+        | None -> (* TODO *) assert false
       end
     | _ :: rest -> loop first nb_deprecated acc rest
     | [] -> begin
@@ -66,7 +70,8 @@ let read_comment parent
       | Some ("/*", _loc) -> Some Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
-        failwith "TODO"
+        (* TODO *)
+        assert false
           (* let doc : Model.Comment.t =
             Error (invalid_attribute_error parent loc) in
             Some (Documentation doc) *)

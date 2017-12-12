@@ -1,0 +1,6 @@
+(jbuild_version 1)
+
+(library
+ ((name loader)
+  (libraries (compiler-libs.common model parser_))
+  (preprocess (action (run ${bin:cppo} -V OCAML:${ocaml_version} ${<})))))

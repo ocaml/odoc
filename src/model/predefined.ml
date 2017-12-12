@@ -15,7 +15,7 @@
  *)
 
 open Paths
-open Model.Lang
+open Lang
 
 let empty_doc =
   []

@@ -2,5 +2,4 @@
 
 (library
  ((name doc_model)
-  (libraries (model compiler-libs.common parser_))
-  (preprocess (action (run ${bin:cppo} -V OCAML:${ocaml_version} ${<})))))
+  (libraries (compiler-libs.common loader model))))

@@ -16,6 +16,10 @@
 
 
 
+module Paths = Model.Paths
+
+
+
 val empty : Model.Comment.t
 
 val read_attributes :

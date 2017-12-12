@@ -16,7 +16,7 @@
 
 open Paths
 open Model.Lang
-open Predefined
+open Model.Predefined
 
 open Identifier
 

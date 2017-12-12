@@ -16,7 +16,7 @@
 
 (**/**)
 
-module Attrs = Attrs
+module Attrs = Loader.Attrs
 
 module Maps = Maps
 
