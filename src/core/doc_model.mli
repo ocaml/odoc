@@ -16,8 +16,6 @@
 
 (**/**)
 
-module Maps = Model.Maps
-
 module Root = Model.Root
 
 (**/**)

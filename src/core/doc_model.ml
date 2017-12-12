@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Maps = Model.Maps
-
 module Root = Model.Root
 
 type lookup_result = Component_table.lookup_unit_result =
