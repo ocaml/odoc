@@ -17,8 +17,8 @@
 
 
 type t = {
-  expander : Doc_model.expander ;
-  resolver : Doc_model.resolver ;
+  expander : Xref.expander ;
+  resolver : Xref.resolver ;
 }
 
 module Accessible_paths = struct
@@ -89,11 +89,11 @@ let rec lookup_unit ~important_digests ap target_name =
     | exception Not_found -> Not_found
     | root ->
       match root.file with
-      | Compilation_unit {hidden; _} -> Doc_model.Found {root; hidden}
+      | Compilation_unit {hidden; _} -> Xref.Found {root; hidden}
       | Page _ -> assert false
   in
   function
-  | [] when important_digests -> Doc_model.Not_found
+  | [] when important_digests -> Xref.Not_found
   | [] -> find_root ~digest:None
   | import :: imports ->
     match import with
@@ -136,7 +136,7 @@ type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
-    let lookup_unit target_name : Doc_model.lookup_result =
+    let lookup_unit target_name : Xref.lookup_result =
       match unit_or_page with
       | `Page _ -> lookup_unit ~important_digests:false ap target_name []
       | `Unit unit ->
@@ -180,13 +180,13 @@ let create ?(important_digests=true) ~directories : builder =
           fetch_page ap root
     in
     let resolver =
-      Doc_model.build_resolver lookup_unit fetch_unit lookup_page fetch_page
+      Xref.build_resolver lookup_unit fetch_unit lookup_page fetch_page
     in
     let expander =
       (* CR trefis: what is the ~root param good for? *)
       let fetch ~root:_ root = fetch_unit root in
       let lookup _ s = lookup_unit s in
-      Doc_model.build_expander (lookup ()) fetch
+      Xref.build_expander (lookup ()) fetch
     in
     { expander; resolver }
 

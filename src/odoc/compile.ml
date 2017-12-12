@@ -19,7 +19,7 @@
 let resolve_and_substitute ~env ~output input_file read_file =
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
-  | Error Doc_model.Not_an_interface  -> failwith "Not_an_interface"
+  | Error Xref.Not_an_interface  -> failwith "Not_an_interface"
   | Error Wrong_version  -> failwith "Wrong_version"
   | Error Corrupted  -> failwith "Corrupted"
   | Error Not_a_typedtree  -> failwith "Not_a_typedtree"
@@ -33,14 +33,14 @@ let resolve_and_substitute ~env ~output input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let resolve_env = Env.build env (`Unit unit) in
-    let resolved = Doc_model.resolve (Env.resolver resolve_env) unit in
+    let resolved = Xref.resolve (Env.resolver resolve_env) unit in
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
        Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
-    let expanded = Doc_model.expand (Env.expander expand_env) resolved in
+    let expanded = Xref.expand (Env.expander expand_env) resolved in
     Compilation_unit.save output expanded
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
@@ -50,17 +50,17 @@ let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
 
 let cmti ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Doc_model.read_cmti ~make_root in
+  let read_file = Xref.read_cmti ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmt ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Doc_model.read_cmt ~make_root in
+  let read_file = Xref.read_cmt ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmi ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Doc_model.read_cmi ~make_root in
+  let read_file = Xref.read_cmi ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 (* TODO: move most of this to doc-ock. *)
@@ -101,7 +101,7 @@ let mld ~env ~package ~output input =
     in
     (* This is a mess. *)
     let page = Model.Lang.Page.{ name; content; digest } in
-    let page = Doc_model.Lookup.lookup_page page in
+    let page = Xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Doc_model.resolve_page (Env.resolver env) page in
+    let resolved = Xref.resolve_page (Env.resolver env) page in
     Page.save output resolved

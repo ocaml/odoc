@@ -23,7 +23,7 @@ let from_odoc ~env ~output:root_dir input =
     let page = Page.load input in
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
-      Doc_model.resolve_page (Env.resolver resolve_env) page
+      Xref.resolve_page (Env.resolver resolve_env) page
     in
     let pkg_name = root.package in
     let pages = Doc_html.To_html_tree.page odoctree in
@@ -44,15 +44,15 @@ let from_odoc ~env ~output:root_dir input =
       Printf.eprintf
         "odoc should not generate html but will for the time being...\n%!";
     let unit = Compilation_unit.load input in
-    let unit = Doc_model.Lookup.lookup unit in
+    let unit = Xref.Lookup.lookup unit in
     let odoctree =
       (* See comment in compile for explanation regarding the env duplication. *)
       let resolve_env = Env.build env (`Unit unit) in
-      let resolved = Doc_model.resolve (Env.resolver resolve_env) unit in
+      let resolved = Xref.resolve (Env.resolver resolve_env) unit in
       let expand_env = Env.build env (`Unit resolved) in
-      Doc_model.expand (Env.expander expand_env) resolved
-      |> Doc_model.Lookup.lookup
-      |> Doc_model.resolve (Env.resolver expand_env) (* Yes, again. *)
+      Xref.expand (Env.expander expand_env) resolved
+      |> Xref.Lookup.lookup
+      |> Xref.resolve (Env.resolver expand_env) (* Yes, again. *)
     in
     let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
@@ -111,9 +111,9 @@ let from_mld ~env ~package ~output:root_dir input =
     in
     (* This is a mess. *)
     let page = Model.Lang.Page.{ name; content; digest } in
-    let page = Doc_model.Lookup.lookup_page page in
+    let page = Xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Doc_model.resolve_page (Env.resolver env) page in
+    let resolved = Xref.resolve_page (Env.resolver env) page in
     let pages = Doc_html.To_html_tree.page resolved in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;

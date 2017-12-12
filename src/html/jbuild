@@ -2,4 +2,4 @@
 
 (library
  ((name doc_html)
-  (libraries (doc_model tyxml))))
+  (libraries (model tyxml))))

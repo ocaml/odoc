@@ -1,5 +1,5 @@
 (jbuild_version 1)
 
 (library
- ((name doc_model)
+ ((name xref)
   (libraries (compiler-libs.common loader model))))
