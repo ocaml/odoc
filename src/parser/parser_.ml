@@ -58,7 +58,7 @@ let parse ~containing_definition ~comment_text =
     in
     let offset_to_location = make_offset_to_location_function comment_text in
     Error
-      (`Parse_error {
+      (`With_location {
         Model.Error.file;
         location = {
           start = offset_to_location start_offset;

@@ -8,22 +8,18 @@ type location_span = {
   end_ : location;
 }
 
-type parse_error_payload = {
+type with_location_payload = {
   file : string;
   location : location_span;
   error : string;
 }
 
-type parse_error = [
-  | `Parse_error of parse_error_payload
-]
-
 type t = [
-  | parse_error
+  | `With_location of with_location_payload
 ]
 
 let to_string : t -> string = function
-  | `Parse_error {file; location; error} ->
+  | `With_location {file; location; error} ->
     let location =
       if location.start.line = location.end_.line then
         Printf.sprintf "line %i, characters %i-%i"
