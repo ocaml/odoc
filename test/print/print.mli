@@ -1,1 +1,1 @@
-val comment : Format.formatter -> Model.Comment.comment' -> unit
+val comment : Format.formatter -> Model.Comment.docs -> unit

@@ -22,7 +22,7 @@ module Paths = Model.Paths
 
 let empty_body = []
 
-let empty : (Model.Comment.comment', Model.Error.t) result = Ok empty_body
+let empty : (Model.Comment.docs, Model.Error.t) result = Ok empty_body
 
 
 
@@ -40,7 +40,7 @@ let read_payload =
 let read_attributes parent _id attrs =
   let ocaml_deprecated = ref None in
   let rec loop first nb_deprecated acc
-      : _ -> (Model.Comment.comment', Model.Error.t) result =
+      : _ -> (Model.Comment.docs, Model.Error.t) result =
     function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc = _loc}, payload) :: rest -> begin
@@ -68,7 +68,7 @@ let read_attributes parent _id attrs =
 
 let read_string parent loc str : Model.Comment.comment =
   let _start_pos = loc.Location.loc_start in
-  let doc : (Model.Comment.comment', Model.Error.t) result =
+  let doc : (Model.Comment.docs, Model.Error.t) result =
     Parser_.parse ~containing_definition:parent ~comment_text:str in
   Documentation doc
 

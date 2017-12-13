@@ -308,7 +308,7 @@ struct
       List [Atom level; label; List (List.map non_link_inline_element es)]
     | `Tag t -> tag t
 
-  let comment : Comment.comment' -> sexp = fun comment ->
+  let comment : Comment.docs -> sexp = fun comment ->
     List (List.map block_element comment)
 end
 

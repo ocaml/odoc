@@ -12,7 +12,7 @@ let ref_to_foo : _ Model.Paths.Reference.t =
   Root ("foo", TUnknown)
 
 let test =
-  let comment_testable : Comment.comment' Alcotest.testable =
+  let comment_testable : Comment.docs Alcotest.testable =
     Alcotest.of_pp Print.comment in
   let error_testable : Model.Error.t Alcotest.testable =
     let pp_error formatter error =

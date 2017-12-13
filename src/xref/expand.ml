@@ -152,16 +152,16 @@ let refine_module ex (frag : Fragment.module_) equation =
         end
 
 type intermediate_module_expansion =
-  Identifier.module_ * (Model.Comment.comment', Model.Error.t) result
+  Identifier.module_ * (Model.Comment.docs, Model.Error.t) result
   * (Path.module_ * Reference.module_) option
   * partial_expansion option * Subst.t list
 
 type intermediate_module_type_expansion =
-  Identifier.module_type * (Model.Comment.comment', Model.Error.t) result
+  Identifier.module_type * (Model.Comment.docs, Model.Error.t) result
   * partial_expansion option * Subst.t list
 
 type intermediate_class_type_expansion =
-  Identifier.class_type * (Model.Comment.comment', Model.Error.t) result
+  Identifier.class_type * (Model.Comment.docs, Model.Error.t) result
   * ClassSignature.t option * Subst.t list
 
 type expander =

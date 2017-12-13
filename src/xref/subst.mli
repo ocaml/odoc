@@ -56,8 +56,8 @@ val comment : t -> Model.Comment.comment -> Model.Comment.comment
 
 val documentation :
   t ->
-  (Model.Comment.comment', Model.Error.t) result ->
-    (Model.Comment.comment', Model.Error.t) result
+  (Model.Comment.docs, Model.Error.t) result ->
+    (Model.Comment.docs, Model.Error.t) result
 
 val identifier_module : t -> Identifier.module_ ->
                         Identifier.module_

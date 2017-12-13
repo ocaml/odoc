@@ -23,7 +23,7 @@ module Ident_env = Model.Ident_env
 
 val read_interface: Model.Root.t -> string -> Types.signature ->
   Paths.Identifier.module_ *
-  (Model.Comment.comment', Model.Error.t) result *
+  (Model.Comment.docs, Model.Error.t) result *
   Model.Lang.Signature.t
 
 val read_label : Asttypes.arg_label -> Model.Lang.TypeExpr.label option
