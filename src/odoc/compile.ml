@@ -96,8 +96,8 @@ let mld ~env ~package ~output input =
   | Ok str ->
     let content =
       match Loader.Attrs.read_string name location str with
-      | Stop -> Ok [] (* TODO: Error? *)
-      | Documentation content -> content
+      | `Stop -> Ok [] (* TODO: Error? *)
+      | `Docs content -> content
     in
     (* This is a mess. *)
     let page = Model.Lang.Page.{ name; content; digest } in

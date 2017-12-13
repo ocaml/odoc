@@ -316,10 +316,9 @@ let add_documentation doc env =
   | Error _ -> env
 
 let add_comment com env =
-  let open Model.Comment in
   match com with
-  | Documentation doc -> add_documentation doc env
-  | Stop -> env
+  | `Docs doc -> add_documentation doc env
+  | `Stop -> env
 
 let add_value vl env =
   let open Value in

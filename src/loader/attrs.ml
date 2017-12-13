@@ -70,7 +70,7 @@ let read_string parent loc str : Model.Comment.comment =
   let _start_pos = loc.Location.loc_start in
   let doc : (Model.Comment.docs, Model.Error.t) result =
     Parser_.parse ~containing_definition:parent ~comment_text:str in
-  Documentation doc
+  `Docs doc
 
 let read_comment parent
     : Parsetree.attribute -> Model.Comment.comment option =
@@ -79,7 +79,7 @@ let read_comment parent
   | ({Location.txt =
         ("text" | "ocaml.text"); loc = _loc}, payload) -> begin
       match read_payload payload with
-      | Some ("/*", _loc) -> Some Stop
+      | Some ("/*", _loc) -> Some `Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
         (* TODO *)

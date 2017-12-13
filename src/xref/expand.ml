@@ -194,13 +194,13 @@ let add_doc_to_class_expansion_opt doc =
   let open ClassSignature in
   function
   | Some ({ items; _ } as sg) ->
-      let doc = Comment (Model.Comment.Documentation doc) in
+      let doc = Comment (`Docs doc) in
       Some { sg with items = doc :: items }
   | otherwise -> otherwise
 
 let add_doc_to_expansion_opt doc = function
   | Some (Signature sg) ->
-      let doc = Signature.Comment (Model.Comment.Documentation doc) in
+      let doc = Signature.Comment (`Docs doc) in
       Some (Signature (doc :: sg))
   | otherwise -> otherwise
 
@@ -867,8 +867,8 @@ let expand_mod_alias_doc md =
       match md.expansion with
       | Some (
           Signature (
-            Comment (Documentation c) ::
-            Comment (Documentation doc) ::
+            Comment (`Docs c) ::
+            Comment (`Docs doc) ::
             expansion
           )
         ) when is_canonical_tag c ->

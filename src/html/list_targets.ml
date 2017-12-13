@@ -47,8 +47,8 @@ and signature ~prefix (t : Model.Lang.Signature.t) =
       | Class _ -> []
       | ClassType _ -> []
       | Include incl -> include_ ~prefix incl
-      | Comment (Documentation _) -> []
-      | Comment Stop -> []
+      | Comment (`Docs _) -> []
+      | Comment `Stop -> []
     )
   )
 

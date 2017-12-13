@@ -917,13 +917,13 @@ class virtual documentation = object (self)
     | Error _ ->
       doc
 
-  method documentation_comment comment =
+  method documentation_comment (comment : Comment.comment) =
     match comment with
-    | Comment.Documentation doc ->
+    | `Docs doc ->
       let doc' = self#documentation doc in
-      if doc != doc' then Comment.Documentation doc'
+      if doc != doc' then `Docs doc'
       else comment
-    | Comment.Stop ->
+    | `Stop ->
       comment
 
 end

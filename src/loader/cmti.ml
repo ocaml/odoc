@@ -613,9 +613,8 @@ let read_interface root name intf =
   let items = read_signature Env.empty id intf in
   let doc, items =
     let open Signature in
-    let open Model.Comment in
     match items with
-    | Comment (Documentation doc) :: items -> doc, items
+    | Comment (`Docs doc) :: items -> doc, items
     | _ -> empty, items
   in
     (id, doc, items)

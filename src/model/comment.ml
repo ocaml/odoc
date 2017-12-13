@@ -61,6 +61,7 @@ type docs = block_element list
 
 
 
-type comment =
-  | Documentation of (docs, Error.t) result
-  | Stop
+type comment = [
+  | `Docs of (docs, Error.t) result
+  | `Stop
+]

@@ -153,8 +153,8 @@ let documentation_labels acc doc =
 
 let comment_labels acc comment =
   match comment with
-  | Model.Comment.Stop -> acc
-  | Model.Comment.Documentation doc -> documentation_labels acc doc
+  | `Stop -> acc
+  | `Docs doc -> documentation_labels acc doc
 
 module rec Sig : sig
 

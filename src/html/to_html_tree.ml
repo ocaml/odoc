@@ -83,7 +83,7 @@ and signature
     List.map t ~f:(fun item ->
       if not !recording_doc then (
         begin match item with
-        | Model.Lang.Signature.Comment Stop ->
+        | Model.Lang.Signature.Comment `Stop ->
           recording_doc := not !recording_doc
         | _ -> ()
         end;
@@ -100,9 +100,9 @@ and signature
         | Class c -> class_ c
         | ClassType cty -> class_type cty
         | Include incl -> include_ incl
-        | Comment (Documentation doc) ->
+        | Comment (`Docs doc) ->
           Documentation.to_html doc, []
-        | Comment Stop ->
+        | Comment `Stop ->
           recording_doc := not !recording_doc;
           [], []
       )
@@ -814,12 +814,12 @@ and class_signature (t : Model.Lang.ClassSignature.t) =
     | Inherit cte ->
       Markup.keyword "inherit " ::
       class_type_expr cte
-    | Comment (Documentation doc) ->
+    | Comment (`Docs doc) ->
       if !recording_doc then
         Documentation.to_html doc
       else
         []
-    | Comment Stop ->
+    | Comment `Stop ->
       recording_doc := not !recording_doc;
       []
   )

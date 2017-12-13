@@ -511,9 +511,8 @@ let read_implementation root name impl =
   let items = read_structure Env.empty id impl in
   let doc, items =
     let open Signature in
-    let open Model.Comment in
     match items with
-    | Comment (Documentation doc) :: items -> doc, items
+    | Comment (`Docs doc) :: items -> doc, items
     | _ -> empty, items
   in
     (id, doc, items)
