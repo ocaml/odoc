@@ -940,7 +940,7 @@ class virtual module_ = object (self)
     Reference.module_ -> Reference.module_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual module_type_expr :
     ModuleType.expr -> ModuleType.expr
@@ -1027,7 +1027,7 @@ class virtual module_type = object (self)
     Fragment.type_ -> Fragment.type_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual module_decl :
     Module.decl -> Module.decl
@@ -1220,7 +1220,7 @@ class virtual include_ = object (self)
     Identifier.signature -> Identifier.signature
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -1261,7 +1261,7 @@ class virtual type_decl = object (self)
     Identifier.field -> Identifier.field
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1387,7 +1387,7 @@ class virtual extension = object (self)
     Path.type_ -> Path.type_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1435,7 +1435,7 @@ class virtual exception_ = object (self)
     Identifier.exception_ -> Identifier.exception_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1462,7 +1462,7 @@ class virtual value = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1485,7 +1485,7 @@ class virtual external_ = object (self)
     Identifier.value -> Identifier.value
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1513,7 +1513,7 @@ class virtual class_ = object (self)
     Identifier.class_ -> Identifier.class_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1574,7 +1574,7 @@ class virtual class_type = object (self)
     Path.class_type -> Path.class_type
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param :
     TypeDecl.param -> TypeDecl.param
@@ -1677,7 +1677,7 @@ class virtual method_ = object (self)
     Identifier.method_ -> Identifier.method_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1709,7 +1709,7 @@ class virtual instance_variable = object (self)
     Identifier.instance_variable -> Identifier.instance_variable
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr :
     TypeExpr.t -> TypeExpr.t
@@ -1907,7 +1907,7 @@ class virtual unit = object (self)
     Path.module_ -> Path.module_
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual signature :
     Signature.t -> Signature.t
@@ -2008,7 +2008,7 @@ class virtual page = object (self)
     Identifier.page -> Identifier.page
 
   method virtual documentation :
-    Comment.t -> Comment.t
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method page page =
     let open Page in

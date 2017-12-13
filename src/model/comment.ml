@@ -61,8 +61,6 @@ type comment' = block_element list
 
 
 
-type t = (comment', Error.t) result
-
 type comment =
-  | Documentation of t
+  | Documentation of (comment', Error.t) result
   | Stop

@@ -374,7 +374,8 @@ class virtual documentation : object
     : Paths.Reference.any * Comment.non_link_inline_element list ->
         Paths.Reference.any * Comment.non_link_inline_element list
 
-  method documentation : Comment.t -> Comment.t
+  method documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method documentation_comment : Comment.comment -> Comment.comment
 
@@ -388,7 +389,8 @@ class virtual module_ : object
 
   method virtual reference_module : Reference.module_ -> Reference.module_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual module_type_expr : ModuleType.expr -> ModuleType.expr
 
@@ -425,7 +427,8 @@ class virtual module_type : object
 
   method virtual fragment_type : Fragment.type_ -> Fragment.type_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual module_decl : Module.decl -> Module.decl
 
@@ -488,7 +491,8 @@ class virtual include_ : object
   method virtual identifier_signature : Identifier.signature ->
                                         Identifier.signature
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -509,7 +513,8 @@ class virtual type_decl : object
 
   method virtual identifier_field : Identifier.field -> Identifier.field
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -552,7 +557,8 @@ class virtual extension : object
 
   method virtual path_type : Path.type_ -> Path.type_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -575,7 +581,8 @@ class virtual exception_ : object
   method virtual identifier_exception : Identifier.exception_ ->
     Identifier.exception_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -590,7 +597,8 @@ class virtual value : object
 
   method virtual identifier_value : Identifier.value -> Identifier.value
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -601,7 +609,8 @@ class virtual external_ : object
 
   method virtual identifier_value : Identifier.value -> Identifier.value
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -615,7 +624,8 @@ class virtual class_ : object
 
   method virtual identifier_class : Identifier.class_ -> Identifier.class_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -642,7 +652,8 @@ class virtual class_type : object
 
   method virtual path_class_type : Path.class_type -> Path.class_type
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_decl_param : TypeDecl.param -> TypeDecl.param
 
@@ -683,7 +694,8 @@ class virtual method_ : object
   method virtual identifier_method : Identifier.method_ ->
     Identifier.method_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -700,7 +712,8 @@ class virtual instance_variable : object
   method virtual identifier_instance_variable :
     Identifier.instance_variable -> Identifier.instance_variable
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual type_expr : TypeExpr.t -> TypeExpr.t
 
@@ -771,7 +784,8 @@ class virtual unit : object
   method virtual path_module :
     Path.module_ -> Path.module_
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method virtual signature : Signature.t -> Signature.t
 
@@ -814,7 +828,8 @@ class virtual page : object
 
   method virtual identifier_page : Identifier.page -> Identifier.page
 
-  method virtual documentation : Comment.t -> Comment.t
+  method virtual documentation :
+    (Comment.comment', Error.t) result -> (Comment.comment', Error.t) result
 
   method page : Page.t -> Page.t
 

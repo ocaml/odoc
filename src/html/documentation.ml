@@ -301,13 +301,16 @@ let prerr_error (error : Model.Error.t) =
   prerr_endline (Model.Error.to_string error);
   Pervasives.flush stderr
 
-let first_to_html (_t : Model.Comment.t) =
+let first_to_html (_t : (Model.Comment.comment', Model.Error.t) result) =
   (* TODO *)
   failwith "unimplemented"
 
 (* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in
    ocamldoc, and there is no need to emulate it. *)
-let to_html ?wrap:_ (docs : Model.Comment.t) : (flow Html.elt) list =
+let to_html
+    ?wrap:_
+    (docs : (Model.Comment.comment', Model.Error.t) result) :
+      (flow Html.elt) list =
   match docs with
   | Error e ->
     prerr_error e;
@@ -315,7 +318,7 @@ let to_html ?wrap:_ (docs : Model.Comment.t) : (flow Html.elt) list =
   | Ok comment ->
     block_element_list comment
 
-let has_doc (t : Model.Comment.t) =
+let has_doc (t : (Model.Comment.comment', Model.Error.t) result) =
   match t with
   | Ok body -> body <> []
   | Error e -> prerr_error e; false

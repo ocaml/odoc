@@ -31,7 +31,7 @@ module rec Module : sig
 
   type t =
     { id: Identifier.module_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       type_: decl;
       canonical : (Path.module_ * Reference.module_) option;
       hidden : bool;
@@ -74,7 +74,7 @@ and ModuleType : sig
 
   type t =
     { id: Identifier.module_type;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       expr: expr option;
       expansion: Module.expansion option;
     }
@@ -112,7 +112,7 @@ and Include : sig
 
   type t =
     { parent: Identifier.signature;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       decl: Module.decl;
       expansion: expansion; }
 
@@ -126,7 +126,7 @@ and TypeDecl : sig
 
     type t =
       { id: Identifier.field;
-        doc: Comment.t;
+        doc: (Comment.comment', Error.t) result;
         mutable_ : bool;
         type_: TypeExpr.t; }
 
@@ -139,7 +139,7 @@ and TypeDecl : sig
 
     type t =
       { id: Identifier.constructor;
-        doc: Comment.t;
+        doc: (Comment.comment', Error.t) result;
         args: argument;
         res: TypeExpr.t option; }
 
@@ -177,7 +177,7 @@ and TypeDecl : sig
 
   type t =
     { id: Identifier.type_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       equation: Equation.t;
       representation: Representation.t option; }
 
@@ -191,7 +191,7 @@ and Extension : sig
 
     type t =
       { id: Identifier.extension;
-        doc: Comment.t;
+        doc: (Comment.comment', Error.t) result;
         args: TypeDecl.Constructor.argument;
         res: TypeExpr.t option; }
 
@@ -199,7 +199,7 @@ and Extension : sig
 
   type t =
     { type_path: Path.type_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       type_params: TypeDecl.param list;
       private_: bool;
       constructors: Constructor.t list; }
@@ -211,7 +211,7 @@ and Exception : sig
 
   type t =
     { id: Identifier.exception_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       args: TypeDecl.Constructor.argument;
       res: TypeExpr.t option; }
 
@@ -224,7 +224,7 @@ and Value : sig
 
   type t =
     { id: Identifier.value;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       type_: TypeExpr.t; }
 
 end = Value
@@ -235,7 +235,7 @@ and External : sig
 
   type t =
     { id: Identifier.value;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       type_: TypeExpr.t;
       primitives: string list; }
 
@@ -251,7 +251,7 @@ and Class : sig
 
   type t =
     { id: Identifier.class_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       virtual_: bool;
       params: TypeDecl.param list;
       type_: decl;
@@ -269,7 +269,7 @@ and ClassType : sig
 
   type t =
     { id: Identifier.class_type;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       virtual_: bool;
       params: TypeDecl.param list;
       expr: expr;
@@ -300,7 +300,7 @@ and Method : sig
 
   type t =
     { id: Identifier.method_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       private_: bool;
       virtual_: bool;
       type_: TypeExpr.t; }
@@ -313,7 +313,7 @@ and InstanceVariable : sig
 
   type t =
     { id: Identifier.instance_variable;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       mutable_: bool;
       virtual_: bool;
       type_: TypeExpr.t; }
@@ -423,7 +423,7 @@ module rec Compilation_unit : sig
 
   type t =
     { id: Identifier.module_;
-      doc: Comment.t;
+      doc: (Comment.comment', Error.t) result;
       digest: Digest.t;
       imports: Import.t list;
       source: Source.t option;
@@ -437,6 +437,6 @@ end = Compilation_unit
 module rec Page : sig
   type t =
     { name: Identifier.page;
-      content: Comment.t;
+      content: (Comment.comment', Error.t) result;
       digest: Digest.t; }
 end = Page

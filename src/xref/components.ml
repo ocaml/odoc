@@ -245,7 +245,8 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : Model.Comment.t -> signature -> signature
+  val add_documentation :
+    (Model.Comment.comment', Model.Error.t) result -> signature -> signature
 
   val add_comment : Model.Comment.comment -> signature -> signature
 
@@ -1318,7 +1319,8 @@ and Datatype : sig
 
   val find_element : string -> t -> Element.datatype
 
-  val add_documentation : Model.Comment.t -> t -> t
+  val add_documentation :
+    (Model.Comment.comment', Model.Error.t) result -> t -> t
 
   val abstract : t
 
@@ -1471,7 +1473,8 @@ and ClassSig : sig
   val add_element : string -> Element.class_signature ->
     signature -> signature
 
-  val add_documentation : Model.Comment.t -> signature -> signature
+  val add_documentation :
+    (Model.Comment.comment', Model.Error.t) result -> signature -> signature
 
   val add_comment : Model.Comment.comment -> signature -> signature
 
@@ -1572,7 +1575,7 @@ and Page : sig
   val find_section_title :
     string -> t -> Model.Comment.non_link_inline_element list
 
-  val of_doc : Model.Comment.t -> t
+  val of_doc : (Model.Comment.comment', Model.Error.t) result -> t
 
 end = struct
 

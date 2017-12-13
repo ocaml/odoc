@@ -20,13 +20,13 @@ module Paths = Model.Paths
 
 
 
-val empty : Model.Comment.t
+val empty : (Model.Comment.comment', Model.Error.t) result
 
 val read_attributes :
   Paths.Identifier.label_parent ->
   'kind Paths.Identifier.t ->
   Parsetree.attributes ->
-    Model.Comment.t
+    (Model.Comment.comment', Model.Error.t) result
 
 val read_string :
   Paths.Identifier.label_parent ->
