@@ -14,33 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** {2:from_ocaml Processing OCaml's compilation units} *)
-
-type read_result =
-  (Model.Lang.Compilation_unit.t, read_error) result
-
-and read_error = private
-  | Not_an_interface
-  | Wrong_version
-  | Corrupted
-  | Not_a_typedtree
-  | Not_an_implementation
-
-val read_cmti :
-  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
-  filename:string ->
-    read_result
-
-val read_cmt :
-  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
-  filename:string ->
-    read_result
-
-val read_cmi :
-  make_root:(module_name:string -> digest:Digest.t -> Model.Root.t) ->
-  filename:string ->
-    read_result
-
 (** {2:resolving Resolving}
 
     This is the part of DocOck handling the resolving of path and references. *)

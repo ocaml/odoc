@@ -2,4 +2,4 @@
 
 (library
  ((name xref)
-  (libraries (compiler-libs.common loader model))))
+  (libraries (compiler-libs.common model))))

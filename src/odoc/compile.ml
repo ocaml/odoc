@@ -19,12 +19,13 @@
 let resolve_and_substitute ~env ~output input_file read_file =
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
-  | Error Xref.Not_an_interface  -> failwith "Not_an_interface"
+  | Error Loader.Not_an_interface  -> failwith "Not_an_interface"
   | Error Wrong_version  -> failwith "Wrong_version"
   | Error Corrupted  -> failwith "Corrupted"
   | Error Not_a_typedtree  -> failwith "Not_a_typedtree"
   | Error Not_an_implementation  -> failwith "Not_an_implementation"
   | Ok unit ->
+    let unit = Xref.Lookup.lookup unit in
     if not unit.Model.Lang.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
         (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
@@ -50,17 +51,17 @@ let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
 
 let cmti ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Xref.read_cmti ~make_root in
+  let read_file = Loader.read_cmti ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmt ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Xref.read_cmt ~make_root in
+  let read_file = Loader.read_cmt ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmi ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Xref.read_cmi ~make_root in
+  let read_file = Loader.read_cmi ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 (* TODO: move most of this to doc-ock. *)
@@ -95,7 +96,7 @@ let mld ~env ~package ~output input =
     exit 1
   | Ok str ->
     let content =
-      match Loader.Attrs.read_string name location str with
+      match Loader.read_string name location str with
       | `Stop -> Ok [] (* TODO: Error? *)
       | `Docs content -> content
     in
