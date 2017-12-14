@@ -303,17 +303,14 @@ let add_label_ident_title id txt env =
     { env with titles }
 
 let add_documentation doc env =
-  match doc with
-  | Ok comment ->
-    List.fold_right (fun element env ->
-      match element with
-      | `Heading (_, Some label, nested_elements) ->
-        let env = add_label_ident label env in
-        let env = add_label_ident_title label nested_elements env in
-        env
-      | _ -> env)
-      comment env
-  | Error _ -> env
+  List.fold_right (fun element env ->
+    match element with
+    | `Heading (_, Some label, nested_elements) ->
+      let env = add_label_ident label env in
+      let env = add_label_ident_title label nested_elements env in
+      env
+    | _ -> env)
+    doc env
 
 let add_comment com env =
   match com with

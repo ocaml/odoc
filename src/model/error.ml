@@ -34,3 +34,9 @@ let to_string : t -> string = function
           location.end_.column
     in
     Printf.sprintf "File \"%s\", %s:\n%s" file location error
+
+exception Conveyed_by_exception of t
+
+let get_value_or_convey_error_by_exception : ('a, t) result -> 'a = function
+  | Ok v -> v
+  | Error e -> raise (Conveyed_by_exception e)

@@ -59,9 +59,7 @@ type block_element = [
 
 type docs = block_element list
 
-
-
-type comment = [
-  | `Docs of (docs, Error.t) result
+type docs_or_stop = [
+  | `Docs of docs
   | `Stop
 ]

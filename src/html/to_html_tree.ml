@@ -100,8 +100,7 @@ and signature
         | Class c -> class_ c
         | ClassType cty -> class_type cty
         | Include incl -> include_ incl
-        | Comment (`Docs doc) ->
-          Documentation.to_html doc, []
+        | Comment (`Docs doc) -> Documentation.to_html doc, []
         | Comment `Stop ->
           recording_doc := not !recording_doc;
           [], []

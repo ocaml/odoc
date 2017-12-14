@@ -106,7 +106,7 @@ let from_mld ~env ~package ~output:root_dir input =
   | Ok str ->
     let content =
       match Loader.read_string name location str with
-      | `Stop -> Ok [] (* TODO: Error? *)
+      | `Stop -> [] (* TODO: Error? *)
       | `Docs content -> content
     in
     (* This is a mess. *)

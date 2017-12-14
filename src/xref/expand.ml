@@ -152,16 +152,16 @@ let refine_module ex (frag : Fragment.module_) equation =
         end
 
 type intermediate_module_expansion =
-  Identifier.module_ * (Model.Comment.docs, Model.Error.t) result
+  Identifier.module_ * Model.Comment.docs
   * (Path.module_ * Reference.module_) option
   * partial_expansion option * Subst.t list
 
 type intermediate_module_type_expansion =
-  Identifier.module_type * (Model.Comment.docs, Model.Error.t) result
+  Identifier.module_type * Model.Comment.docs
   * partial_expansion option * Subst.t list
 
 type intermediate_class_type_expansion =
-  Identifier.class_type * (Model.Comment.docs, Model.Error.t) result
+  Identifier.class_type * Model.Comment.docs
   * ClassSignature.t option * Subst.t list
 
 type expander =
@@ -481,7 +481,7 @@ and expand_module_identifier' t root (id : Identifier.module_) =
   | Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
       let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
-      let doc = Ok [] in
+      let doc = [] in
         id, doc, None, expand_argument_ t root arg, []
 
 and expand_module_type_identifier' t root (id : Identifier.module_type) =
@@ -861,9 +861,8 @@ let expand_mod_alias_doc md =
   | ModuleType _  -> md
   | Alias _ ->
     match md.doc with
-    | Error _
-    | Ok (_::_) -> md
-    | Ok _ ->
+    | (_::_) -> md
+    | _ ->
       match md.expansion with
       | Some (
           Signature (

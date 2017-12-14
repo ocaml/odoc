@@ -297,28 +297,14 @@ let block_element_list elements =
 
 
 
-let prerr_error (error : Model.Error.t) =
-  prerr_endline (Model.Error.to_string error);
-  Pervasives.flush stderr
-
-let first_to_html (_t : (Model.Comment.docs, Model.Error.t) result) =
+let first_to_html (_t : Model.Comment.docs) =
   (* TODO *)
   failwith "unimplemented"
 
 (* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in
    ocamldoc, and there is no need to emulate it. *)
-let to_html
-    ?wrap:_
-    (docs : (Model.Comment.docs, Model.Error.t) result) :
-      (flow Html.elt) list =
-  match docs with
-  | Error e ->
-    prerr_error e;
-    []
-  | Ok comment ->
-    block_element_list comment
+let to_html ?wrap:_ (docs : Model.Comment.docs) : (flow Html.elt) list =
+  block_element_list docs
 
-let has_doc (t : (Model.Comment.docs, Model.Error.t) result) =
-  match t with
-  | Ok body -> body <> []
-  | Error e -> prerr_error e; false
+let has_doc docs =
+  docs <> []

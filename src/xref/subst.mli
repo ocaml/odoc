@@ -52,12 +52,9 @@ val method_ : t -> Lang.Method.t -> Lang.Method.t
 val instance_variable : t -> Lang.InstanceVariable.t ->
                         Lang.InstanceVariable.t
 
-val comment : t -> Model.Comment.comment -> Model.Comment.comment
+val comment : t -> Model.Comment.docs_or_stop -> Model.Comment.docs_or_stop
 
-val documentation :
-  t ->
-  (Model.Comment.docs, Model.Error.t) result ->
-    (Model.Comment.docs, Model.Error.t) result
+val documentation : t -> Model.Comment.docs -> Model.Comment.docs
 
 val identifier_module : t -> Identifier.module_ ->
                         Identifier.module_

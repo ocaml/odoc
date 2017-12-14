@@ -2,7 +2,7 @@ val read_string :
   Model.Paths.Identifier.label_parent ->
   Location.t ->
   string ->
-    Model.Comment.comment
+    Model.Comment.docs_or_stop
 
 type read_result =
   (Model.Lang.Compilation_unit.t, read_error) result

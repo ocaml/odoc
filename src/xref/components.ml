@@ -141,15 +141,12 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 (* Read labels from documentation *)
 
 let documentation_labels acc doc =
-  match doc with
-  | Ok body ->
-    List.fold_left (fun acc -> function
-      | `Heading (_, Some label, nested_text) ->
-        let name = Identifier.name label in
-        (name, nested_text)::acc
-      | _ -> acc)
-    acc body
-  | Error _ -> acc
+  List.fold_left (fun acc -> function
+    | `Heading (_, Some label, nested_text) ->
+      let name = Identifier.name label in
+      (name, nested_text)::acc
+    | _ -> acc)
+  acc doc
 
 let comment_labels acc comment =
   match comment with
@@ -245,10 +242,9 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation :
-    (Model.Comment.docs, Model.Error.t) result -> signature -> signature
+  val add_documentation : Model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.comment -> signature -> signature
+  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
 
   val include_ : t -> signature -> signature
 
@@ -1319,7 +1315,7 @@ and Datatype : sig
 
   val find_element : string -> t -> Element.datatype
 
-  val add_documentation : (Model.Comment.docs, Model.Error.t) result -> t -> t
+  val add_documentation : Model.Comment.docs -> t -> t
 
   val abstract : t
 
@@ -1472,10 +1468,9 @@ and ClassSig : sig
   val add_element : string -> Element.class_signature ->
     signature -> signature
 
-  val add_documentation :
-    (Model.Comment.docs, Model.Error.t) result -> signature -> signature
+  val add_documentation : Model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.comment -> signature -> signature
+  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
 
   val inherit_ : t -> signature -> signature
 
@@ -1574,7 +1569,7 @@ and Page : sig
   val find_section_title :
     string -> t -> Model.Comment.non_link_inline_element list
 
-  val of_doc : (Model.Comment.docs, Model.Error.t) result -> t
+  val of_doc : Model.Comment.docs -> t
 
 end = struct
 

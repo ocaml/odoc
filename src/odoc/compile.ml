@@ -97,7 +97,7 @@ let mld ~env ~package ~output input =
   | Ok str ->
     let content =
       match Loader.read_string name location str with
-      | `Stop -> Ok [] (* TODO: Error? *)
+      | `Stop -> [] (* TODO: Error? *)
       | `Docs content -> content
     in
     (* This is a mess. *)
