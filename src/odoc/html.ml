@@ -105,9 +105,11 @@ let from_mld ~env ~package ~output:root_dir input =
     exit 1
   | Ok str ->
     let content =
-      match Loader.read_string name location str with
-      | `Stop -> [] (* TODO: Error? *)
-      | `Docs content -> content
+      Loader.read_string name location str
+      |> Model.Error.convey_by_exception
+      |> function
+        | `Stop -> [] (* TODO: Error? *)
+        | `Docs content -> content
     in
     (* This is a mess. *)
     let page = Model.Lang.Page.{ name; content; digest } in

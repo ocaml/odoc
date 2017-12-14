@@ -65,13 +65,13 @@ let read_attributes parent _id attrs =
       end
   in
     loop true 0 empty_body attrs
-  |> Model.Error.get_value_or_convey_error_by_exception
+  |> Model.Error.convey_by_exception
 
 let read_string parent loc str : Model.Comment.docs_or_stop =
   let _start_pos = loc.Location.loc_start in
   let doc : Model.Comment.docs =
     Parser_.parse ~containing_definition:parent ~comment_text:str
-    |> Model.Error.get_value_or_convey_error_by_exception
+    |> Model.Error.convey_by_exception
   in
   `Docs doc
 

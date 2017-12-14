@@ -19,11 +19,7 @@
 let resolve_and_substitute ~env ~output input_file read_file =
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
-  | Error Loader.Not_an_interface  -> failwith "Not_an_interface"
-  | Error Wrong_version  -> failwith "Wrong_version"
-  | Error Corrupted  -> failwith "Corrupted"
-  | Error Not_a_typedtree  -> failwith "Not_a_typedtree"
-  | Error Not_an_implementation  -> failwith "Not_an_implementation"
+  | Error e -> failwith (Model.Error.to_string e)
   | Ok unit ->
     let unit = Xref.Lookup.lookup unit in
     if not unit.Model.Lang.Compilation_unit.interface then (
@@ -96,9 +92,11 @@ let mld ~env ~package ~output input =
     exit 1
   | Ok str ->
     let content =
-      match Loader.read_string name location str with
-      | `Stop -> [] (* TODO: Error? *)
-      | `Docs content -> content
+      Loader.read_string name location str
+      |> Model.Error.convey_by_exception
+      |> function
+        | `Stop -> [] (* TODO: Error? *)
+        | `Docs content -> content
     in
     (* This is a mess. *)
     let page = Model.Lang.Page.{ name; content; digest } in

@@ -14,8 +14,14 @@ type with_location_payload = {
   error : string;
 }
 
+type with_filename_only_payload = {
+  file : string;
+  error : string;
+}
+
 type t = [
   | `With_location of with_location_payload
+  | `With_filename_only of with_filename_only_payload
 ]
 
 let to_string : t -> string = function
@@ -35,8 +41,15 @@ let to_string : t -> string = function
     in
     Printf.sprintf "File \"%s\", %s:\n%s" file location error
 
+  | `With_filename_only {file; error} ->
+    Printf.sprintf "File \"%s\":\n%s" file error
+
 exception Conveyed_by_exception of t
 
-let get_value_or_convey_error_by_exception : ('a, t) result -> 'a = function
+let convey_by_exception : ('a, t) result -> 'a = function
   | Ok v -> v
   | Error e -> raise (Conveyed_by_exception e)
+
+let catch_conveyed_by_exception : (unit -> 'a) -> ('a, t) result = fun f ->
+  try Ok (f ())
+  with Conveyed_by_exception e -> Error e
