@@ -8,6 +8,14 @@ let dummy_page : Model.Paths.Identifier.label_parent =
   in
   Page (root, "test-suite")
 
+let to_lexing_position : Model.Error.location -> Lexing.position = fun l ->
+  {
+    pos_fname = "";
+    pos_lnum = l.line;
+    pos_bol = 0;
+    pos_cnum = l.column
+  }
+
 let ref_to_foo : _ Model.Paths.Reference.t =
   Root ("foo", TUnknown)
 
@@ -22,12 +30,21 @@ let test =
   let parser_result_testable =
     Alcotest.result comment_testable error_testable in
 
-  fun test_name comment_text expected_result ->
+  fun
+      test_name
+      ?(comment_location = {Model.Error.line = 1; column = 0})
+      comment_text
+      expected_result ->
+
     test_name,
     `Quick,
     fun () ->
       let actual_result =
-        Parser_.parse ~containing_definition:dummy_page ~comment_text in
+        Parser_.parse_comment
+          ~containing_definition:dummy_page
+          ~location:(to_lexing_position comment_location)
+          ~text:comment_text
+      in
       Alcotest.check
         parser_result_testable
         "document tree is correct"
@@ -2204,6 +2221,16 @@ let tests = [
     test "right brace"
       "\xce\xbb}"
       (error 1 2 1 3 ["unpaired '}' (end of markup)"]);
+  ];
+
+  "comment location", [
+    test "error on first line" ~comment_location:{line = 2; column = 4}
+      "  @foo"
+      (error 2 6 2 10 ["unknown tag '@foo'"]);
+
+    test "error on second line" ~comment_location:{line = 2; column = 4}
+      "  \n  @foo"
+      (error 3 2 3 6 ["unknown tag '@foo'"]);
   ];
 
   "unsupported", [

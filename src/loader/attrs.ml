@@ -43,9 +43,13 @@ let read_attributes parent _id attrs =
           ("doc" | "ocaml.doc"); loc = _loc}, payload) :: rest -> begin
         match load_payload payload with
         | Some (str, loc) -> begin
-            let _start_pos = loc.Location.loc_start in
+            let start_pos = loc.Location.loc_start in
             let parsed =
-              Parser_.parse ~containing_definition:parent ~comment_text:str in
+              Parser_.parse_comment
+                ~containing_definition:parent
+                ~location:start_pos
+                ~text:str
+            in
             match parsed with
             | Ok comment -> begin
                 loop false 0 (acc @ comment) rest
@@ -65,9 +69,12 @@ let read_attributes parent _id attrs =
   |> Model.Error.convey_by_exception
 
 let read_string parent loc str : Model.Comment.docs_or_stop =
-  let _start_pos = loc.Location.loc_start in
+  let start_pos = loc.Location.loc_start in
   let doc : Model.Comment.docs =
-    Parser_.parse ~containing_definition:parent ~comment_text:str
+    Parser_.parse_comment
+      ~containing_definition:parent
+      ~location:start_pos
+      ~text:str
     |> Model.Error.convey_by_exception
   in
   `Docs doc
