@@ -53,12 +53,7 @@ let parse_comment ~containing_definition ~location ~text:comment_text =
   with Helpers.Parse_error {start_offset; end_offset; text = error_text} ->
     (* In case of error, we need the filename, and to convert the absolute
        offsets in the raw parse error to human-friendly line, column pairs. *)
-    (* Extract the filename from the parent definition. *)
-    let file =
-      let root =
-        Model.Paths.Identifier.label_parent_root containing_definition in
-      Model.Root.Odoc_file.name root.file
-    in
+    let file = location.Lexing.pos_fname in
 
     (* Construct a function that will convert absolute offsets to line, column
        pairs, which are relative to the start of the comment. *)

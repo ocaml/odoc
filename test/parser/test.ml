@@ -34,18 +34,20 @@ sig
      - A list of strings to be concatenated into the expected error message. *)
 end =
 struct
+  let dummy_filename = "test-suite"
+
   let dummy_page =
     let root : Model.Root.t = {
-      package = "test-suite";
-      file = Page "test-suite";
+      package = dummy_filename;
+      file = Page dummy_filename;
       digest = ""
     }
     in
-    Model.Paths.Identifier.Page (root, "test-suite")
+    Model.Paths.Identifier.Page (root, dummy_filename)
 
   let to_lexing_position : Model.Error.location -> Lexing.position = fun loc ->
     {
-      pos_fname = "";
+      pos_fname = dummy_filename;
       pos_lnum = loc.line;
       pos_bol = 0;
       pos_cnum = loc.column
