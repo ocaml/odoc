@@ -297,9 +297,9 @@ let block_element_list elements =
 
 
 
-let first_to_html (_t : Model.Comment.docs) =
-  (* TODO *)
-  failwith "unimplemented"
+let first_to_html : Model.Comment.docs -> (flow Html.elt) list = function
+  | (`Paragraph _ as first_paragraph)::_ -> [block_element first_paragraph]
+  | _ -> []
 
 (* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in
    ocamldoc, and there is no need to emulate it. *)

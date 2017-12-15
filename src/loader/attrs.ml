@@ -26,16 +26,13 @@ let empty : Model.Comment.docs = empty_body
 
 
 
-let read_payload =
-  let open Parsetree in function
-  | PStr[{ pstr_desc =
-             Pstr_eval({ pexp_desc =
-                           Pexp_constant( Parsetree.Pconst_string(str, _));
-                         pexp_loc = loc;
-                         _
-                       }, _)
-         ; _ }] -> Some(str, loc)
-  | _ -> None
+let load_payload : Parsetree.payload -> (string * Location.t) option = function
+  | PStr [{pstr_desc =
+      Pstr_eval ({pexp_desc =
+        Pexp_constant (Pconst_string (text, _)); pexp_loc = loc; _}, _); _}] ->
+    Some (text, loc)
+  | _ ->
+    None
 
 let read_attributes parent _id attrs =
   let ocaml_deprecated = ref None in
@@ -44,7 +41,7 @@ let read_attributes parent _id attrs =
     function
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc = _loc}, payload) :: rest -> begin
-        match read_payload payload with
+        match load_payload payload with
         | Some (str, loc) -> begin
             let _start_pos = loc.Location.loc_start in
             let parsed =
@@ -81,7 +78,7 @@ let read_comment parent
   function
   | ({Location.txt =
         ("text" | "ocaml.text"); loc = _loc}, payload) -> begin
-      match read_payload payload with
+      match load_payload payload with
       | Some ("/*", _loc) -> Some `Stop
       | Some (str, loc) -> Some (read_string parent loc str)
       | None ->
