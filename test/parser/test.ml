@@ -1,71 +1,108 @@
-module Comment = Model.Comment
+module Test_helpers :
+sig
+  val test :
+    string ->
+    ?comment_location:Model.Error.location ->
+    string ->
+    (Model.Comment.docs, Model.Error.t) result ->
+      unit Alcotest.test_case
+  (* Creates an Alcotest test case for the comment parser, given:
 
-let dummy_page : Model.Paths.Identifier.label_parent =
-  let root : Model.Root.t =
-    {package = "test-suite";
+     - The test name.
+     - An optional location for the comment within the fictional input file.
+       This is used to calculate correct error locations. If not given, the test
+       case assumes the comment is at line 1, column 0 in the fictional input
+       file.
+     - The comment text to be parsed.
+     - The expected result of parsing. This is always either [Ok ast] with some
+       expected parse tree [ast], or an error message with a location
+       constructed using the helper [error] (below). *)
+
+  val dummy_page : Model.Paths.Identifier.label_parent
+  (* A representation of the fictional file that each comment is in during
+     comment parser testing. *)
+
+  val error :
+    int -> int -> int -> int -> string list ->
+      (Model.Comment.docs, Model.Error.t) result
+  (* Constructs the representation of a parse error, given:
+
+     - The expected starting line of the error (1-based).
+     - The expected starting column of the error (0-based).
+     - The expected ending line of the error.
+     - The expected ending column of the error.
+     - A list of strings to be concatenated into the expected error message. *)
+end =
+struct
+  let dummy_page =
+    let root : Model.Root.t = {
+      package = "test-suite";
       file = Page "test-suite";
-      digest = ""}
-  in
-  Page (root, "test-suite")
+      digest = ""
+    }
+    in
+    Model.Paths.Identifier.Page (root, "test-suite")
 
-let to_lexing_position : Model.Error.location -> Lexing.position = fun l ->
-  {
-    pos_fname = "";
-    pos_lnum = l.line;
-    pos_bol = 0;
-    pos_cnum = l.column
-  }
+  let to_lexing_position : Model.Error.location -> Lexing.position = fun loc ->
+    {
+      pos_fname = "";
+      pos_lnum = loc.line;
+      pos_bol = 0;
+      pos_cnum = loc.column
+    }
 
-let ref_to_foo : _ Model.Paths.Reference.t =
-  Root ("foo", TUnknown)
+  let comment_testable : Model.Comment.docs Alcotest.testable =
+    Alcotest.of_pp Print.comment
 
-let test =
-  let comment_testable : Comment.docs Alcotest.testable =
-    Alcotest.of_pp Print.comment in
   let error_testable : Model.Error.t Alcotest.testable =
     let pp_error formatter error =
       Format.pp_print_string formatter (Model.Error.to_string error) in
     Alcotest.of_pp pp_error
-  in
-  let parser_result_testable =
-    Alcotest.result comment_testable error_testable in
 
-  fun
+  let result_testable
+      : ((Model.Comment.docs, Model.Error.t) result) Alcotest.testable =
+    Alcotest.result comment_testable error_testable
+
+  let test
       test_name
-      ?(comment_location = {Model.Error.line = 1; column = 0})
-      comment_text
-      expected_result ->
+       ?(comment_location = {Model.Error.line = 1; column = 0})
+       comment_text
+       expected_result =
 
-    test_name,
-    `Quick,
-    fun () ->
+    let test_function () =
       let actual_result =
         Parser_.parse_comment
           ~containing_definition:dummy_page
           ~location:(to_lexing_position comment_location)
           ~text:comment_text
       in
-      Alcotest.check
-        parser_result_testable
-        "document tree is correct"
-        expected_result actual_result
 
-let error start_line start_column end_line end_column ss =
-  Error
-    (`With_location {
-      Model.Error.file = "test-suite";
-      location = {
-        start = {
-          line = start_line;
-          column = start_column;
+      Alcotest.check
+        result_testable "document tree is correct" expected_result actual_result
+    in
+
+    (test_name, `Quick, test_function)
+
+  let error start_line start_column end_line end_column message_strings =
+    Error
+      (`With_location {
+        Model.Error.file = "test-suite";
+        location = {
+          start = {
+            line = start_line;
+            column = start_column;
+          };
+          end_ = {
+            line = end_line;
+            column = end_column;
+          };
         };
-        end_ = {
-          line = end_line;
-          column = end_column;
-        };
-      };
-      error = String.concat "" ss;
-    })
+        error = String.concat "" message_strings;
+      })
+end
+open Test_helpers
+
+
 
 let tests = [
   "trivial", [
@@ -101,6 +138,8 @@ let tests = [
       "\r\n"
       (Ok []);
   ];
+
+
 
   "one paragraph", [
     test "word"
@@ -152,6 +191,8 @@ let tests = [
       (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
   ];
 
+
+
   "two paragraphs", [
     test "basic"
       "foo\n\nbar"
@@ -174,6 +215,8 @@ let tests = [
       (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
   ];
 
+
+
   "plus, minus words", [
     test "minus in word"
       "foo-bar"
@@ -191,6 +234,8 @@ let tests = [
       "foo +"
       (Ok [`Paragraph [`Word "foo"; `Space; `Word "+"]]);
   ];
+
+
 
   "escape sequence", [
     test "left brace"
@@ -250,6 +295,8 @@ let tests = [
       (Ok [`Paragraph [`Word "\\"]]);
   ];
 
+
+
   "code span", [
     test "basic"
       "[foo]"
@@ -299,6 +346,8 @@ let tests = [
       "[foo"
       (error 1 4 1 4 ["end of text is not allowed in '[...]' (code)"]);
   ];
+
+
 
   "bold", [
     test "basic"
@@ -428,6 +477,8 @@ let tests = [
       (error 1 0 1 2 ["'{b ...}' (boldface text) cannot be empty"]);
   ];
 
+
+
   "italic", [
     test "basic"
       "{i foo}"
@@ -446,6 +497,8 @@ let tests = [
       (Ok [`Paragraph [`Styled (`Italic, [`Word "foo"])]]);
   ];
 
+
+
   "emphasis", [
     test "basic"
       "{e foo}"
@@ -463,6 +516,8 @@ let tests = [
       "{e\n foo}"
       (Ok [`Paragraph [`Styled (`Emphasis, [`Word "foo"])]]);
   ];
+
+
 
   "superscript", [
     test "basic"
@@ -498,6 +553,8 @@ let tests = [
       (error 1 0 1 2 ["'{^...}' (superscript) cannot be empty"]);
   ];
 
+
+
   "subscript", [
     test "basic"
       "{_ foo}"
@@ -524,38 +581,42 @@ let tests = [
       (Ok [`Paragraph [`Styled (`Subscript, [`Word "uv"])]]);
   ];
 
+
+
   "simple reference", [
     test "basic"
       "{!foo}"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
 
     test "leading whitespace"
       "{! foo}"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
 
     test "trailing whitespace"
       "{!foo }"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
 
     test "adjacent word (leading)"
       "bar{!foo}"
-      (Ok [`Paragraph [`Word "bar"; `Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph [`Word "bar"; `Reference (Root ("foo", TUnknown), [])]]);
 
     test "explicit leading space"
       "bar {!foo}"
-      (Ok [`Paragraph [`Word "bar"; `Space; `Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph
+        [`Word "bar"; `Space; `Reference (Root ("foo", TUnknown), [])]]);
 
     test "adjacent word (trailing)"
       "{!foo}bar"
-      (Ok [`Paragraph [`Reference (ref_to_foo, []); `Word "bar"]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), []); `Word "bar"]]);
 
     test "explicit trailing space"
       "{!foo} bar"
-      (Ok [`Paragraph [`Reference (ref_to_foo, []); `Space; `Word "bar"]]);
+      (Ok [`Paragraph
+        [`Reference (Root ("foo", TUnknown), []); `Space; `Word "bar"]]);
 
     test "kind"
       "{!val:foo}"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
 
     test "empty"
       "{!}"
@@ -605,10 +666,12 @@ let tests = [
         ["end of text is not allowed in '{!...}' (cross-reference)"]);
   ];
 
+
+
   "reference with text", [
     test "basic"
       "{{!foo} bar}"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [`Word "bar"])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
 
     test "degenerate"
       "{{!foo}}"
@@ -622,16 +685,17 @@ let tests = [
       "{{!foo} {b bar}}"
       (Ok
         [`Paragraph
-          [`Reference (ref_to_foo, [`Styled (`Bold, [`Word "bar"])])]]);
+          [`Reference
+            (Root ("foo", TUnknown), [`Styled (`Bold, [`Word "bar"])])]]);
 
     test "no separating space"
       "{{!foo}bar}"
-      (Ok [`Paragraph [`Reference (ref_to_foo, [`Word "bar"])]]);
+      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
 
     test "kind"
       "{{!val:foo} bar}"
       (Ok
-        [`Paragraph [`Reference (ref_to_foo, [`Word "bar"])]]);
+        [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
 
     test "nested reference"
       "{{!foo} {!bar}}"
@@ -662,6 +726,8 @@ let tests = [
       (error 1 6 1 6
         ["end of text is not allowed in '{{!...} ...}' (cross-reference)"]);
   ];
+
+
 
   "reference target", [
     (* test "empty kind"
@@ -710,6 +776,8 @@ let tests = [
         ["end of text is not allowed in '{!...}' (cross-reference)"]); *)
   ];
 
+
+
   "link", [
     test "basic"
       "{{:foo} bar}"
@@ -752,6 +820,8 @@ let tests = [
       (error 1 6 1 6
         ["end of text is not allowed in '{{:...} ...}' (external link)"]);
   ];
+
+
 
   "code block", [
     test "basic"
@@ -902,6 +972,8 @@ let tests = [
       "{[foo\r]}"
       (Ok [`Code_block "foo\r"]);
   ];
+
+
 
   "verbatim", [
     test "basic"
@@ -1077,6 +1149,8 @@ let tests = [
       (Ok [`Verbatim "foo\r"]);
   ];
 
+
+
   "shorthand list", [
     test "basic"
       "- foo"
@@ -1162,6 +1236,8 @@ let tests = [
       "{[foo]} - bar"
       (error 1 8 1 9 ["'-' (bulleted list item) must begin on its own line"]);
   ];
+
+
 
   "explicit list", [
     test "basic"
@@ -1317,6 +1393,8 @@ let tests = [
       (error 1 8 1 11
         ["'{ul ...}' (bulleted list) must begin on its own line"]);
   ];
+
+
 
   "heading", [
     test "basic"
@@ -1476,6 +1554,8 @@ let tests = [
           "Suggestion: move '{2' outside of any other markup";
         ]);
   ];
+
+
 
   "author", [
     test "basic"
@@ -1704,6 +1784,8 @@ let tests = [
       (error 1 0 1 10 ["unknown tag '@authorfoo'"]);
   ];
 
+
+
   "deprecated", [
     test "basic"
       "@deprecated"
@@ -1810,6 +1892,8 @@ let tests = [
         ]);
   ];
 
+
+
   "param", [
     test "basic"
       "@param foo"
@@ -1875,6 +1959,8 @@ let tests = [
       (error 1 8 1 18 ["'@param' must begin on its own line"]);
   ];
 
+
+
   "raise", [
     test "basic"
       "@raise Foo"
@@ -1894,6 +1980,8 @@ let tests = [
       (error 1 0 1 9 ["unknown tag '@raisefoo'"]);
   ];
 
+
+
   "return", [
     test "basic"
       "@return"
@@ -1907,6 +1995,8 @@ let tests = [
       "@returnfoo"
       (error 1 0 1 10 ["unknown tag '@returnfoo'"]);
   ];
+
+
 
   "see", [
     test "url"
@@ -1958,6 +2048,8 @@ let tests = [
       (error 1 8 1 18 ["'@see' must begin on its own line"]);
   ];
 
+
+
   "since", [
     test "basic"
       "@since foo"
@@ -1988,6 +2080,8 @@ let tests = [
       (error 1 0 1 7 ["'@since' cannot be empty"]);
   ];
 
+
+
   "before", [
     test "basic"
       "@before Foo"
@@ -2006,6 +2100,8 @@ let tests = [
       "@beforefoo"
       (error 1 0 1 10 ["unknown tag '@beforefoo'"]);
   ];
+
+
 
   "version", [
     test "basic"
@@ -2036,6 +2132,8 @@ let tests = [
       "@version "
       (error 1 0 1 9 ["'@version' cannot be empty"]);
   ];
+
+
 
   "bad markup", [
     test "left brace"
@@ -2132,6 +2230,8 @@ let tests = [
       (error 1 3 1 7 ["unknown tag '@bar'"]);
   ];
 
+
+
   "utf-8", [
     test "lambda"
       "\xce\xbb"
@@ -2223,6 +2323,8 @@ let tests = [
       (error 1 2 1 3 ["unpaired '}' (end of markup)"]);
   ];
 
+
+
   "comment location", [
     test "error on first line" ~comment_location:{line = 2; column = 4}
       "  @foo"
@@ -2232,6 +2334,8 @@ let tests = [
       "  \n  @foo"
       (error 3 2 3 6 ["unknown tag '@foo'"]);
   ];
+
+
 
   "unsupported", [
     (* test "module index"
@@ -2275,6 +2379,8 @@ let tests = [
       (Ok [`Paragraph [`Word "<b>foo</b>"]]);
   ];
 ]
+
+
 
 let () =
   Alcotest.run "parser" tests
