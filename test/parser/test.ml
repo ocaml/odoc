@@ -312,6 +312,15 @@ let tests = [
       "[[]]"
       (Ok [`Paragraph [`Code_span "[]"]]);
 
+    (* TODO The next two error messages are particularly unintuitive. *)
+    test "unbalanced list"
+      "[[]"
+      (error 1 3 1 3 ["end of text is not allowed in '[...]' (code)"]);
+
+    test "unbalanced list, backslash"
+      "[\\[]"
+      (error 1 4 1 4 ["end of text is not allowed in '[...]' (code)"]);
+
     test "no markup"
       "[{b]"
       (Ok [`Paragraph [`Code_span "{b"]]);
@@ -629,9 +638,16 @@ let tests = [
       (error 1 0 1 4 ["reference target cannot be empty"]);
 
     test "internal whitespace"
-      "{!foo bar}"
+      "{!foo ()}"
       (error 1 5 1 6
         ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
+
+    (* TODO Limiting the character combinations allowed will make it easier to
+       catch expressions accidentally written inside references. This can also
+       be caught by a good resolver and resolver error messages. *)
+    (* test "expression"
+      "{!foo+1}"
+      (Ok []); *)
 
     test "unterminated"
       "{!foo"
@@ -726,6 +742,11 @@ let tests = [
     test "unterminated"
       "{{!foo"
       (error 1 6 1 6
+        ["end of text is not allowed in '{{!...} ...}' (cross-reference)"]);
+
+    test "unterminated content"
+      "{{!foo} bar"
+      (error 1 11 1 11
         ["end of text is not allowed in '{{!...} ...}' (cross-reference)"]);
   ];
 
@@ -2231,6 +2252,10 @@ let tests = [
     test "left brace with letter"
       "{g"
       (error 1 0 1 2 ["'{g': bad markup"]);
+
+    test "braces instead of brackets"
+      "{foo}"
+      (error 1 0 1 2 ["'{f': bad markup"]);
 
     test "right brace"
       "}"
