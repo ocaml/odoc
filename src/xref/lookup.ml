@@ -129,7 +129,8 @@ class lookup = object
     let this = {< env = env >} in
       this#super_class_type cltyp
 
-  method! documentation_reference (path, elements) =
+  method! documentation_reference r =
+    let (path, elements) = super#documentation_reference r in
     let open Model.Paths.Reference in
     let open Model.Paths.Reference.Resolved in
     match path, elements with

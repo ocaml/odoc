@@ -1819,7 +1819,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
       CTbl.create ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page
     val where_am_i : Identifier.signature option = None
 
-    inherit Maps.types
+    inherit Maps.types as super
     method root x = x
 
     method identifier_module x = x
@@ -2025,7 +2025,8 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
     method reference_any x =
       resolve_element_reference where_am_i tbl x
 
-    method! documentation_reference (path, elements) =
+    method! documentation_reference r =
+      let (path, elements) = super#documentation_reference r in
       splice_section_title tbl path elements
 
     method! unit_import import =

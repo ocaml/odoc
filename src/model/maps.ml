@@ -854,7 +854,12 @@ class virtual documentation = object (self)
   method virtual reference_any :
     Reference.any -> Reference.any
 
-  method documentation_reference r = r
+  method documentation_reference ((path, content) as r) =
+    let path' = self#reference_any path in
+    if path' != path then
+      (path', content)
+    else
+      r
 
   method private documentation_inline_element element =
     match element with
