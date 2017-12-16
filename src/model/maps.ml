@@ -861,6 +861,13 @@ class virtual documentation = object (self)
     else
       r
 
+  method private documentation_special_modules reference =
+    let reference' = self#reference_module reference in
+    if reference' != reference then
+      reference'
+    else
+      reference
+
   method private documentation_inline_element element =
     match element with
     | `Reference (path, nested_elements) ->
@@ -876,6 +883,8 @@ class virtual documentation = object (self)
   method private documentation_nestable_block_element = function
     | `Paragraph elements ->
       `Paragraph (list_map self#documentation_inline_element elements)
+    | `Modules modules ->
+      `Modules (List.map self#documentation_special_modules modules)
     | element ->
       element
 

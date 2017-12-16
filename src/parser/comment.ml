@@ -742,6 +742,52 @@ let rec block_element_list
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 
+    | l, (`Modules s as token) as stream_head ->
+      raise_if_after_tags stream_head;
+      raise_if_after_text stream_head;
+
+      junk input;
+
+      (* TODO Use some library for a splitting function, or move this out into a
+         Util module. *)
+      let split_string delimiters s =
+        let rec scan_delimiters acc index =
+          if index >= String.length s then
+            List.rev acc
+          else
+            if String.contains delimiters s.[index] then
+              scan_delimiters acc (index + 1)
+            else
+              scan_word acc index (index + 1)
+
+        and scan_word acc start_index index =
+          if index >= String.length s then
+            let word = String.sub s start_index (index - start_index) in
+            List.rev (word::acc)
+          else
+            if String.contains delimiters s.[index] then
+              let word = String.sub s start_index (index - start_index) in
+              scan_delimiters (word::acc) (index + 1)
+            else
+              scan_word acc start_index (index + 1)
+
+        in
+
+        scan_delimiters [] 0
+      in
+
+      let modules =
+        split_string " \t\r\n" s
+        |> List.map Helpers.read_mod_longident
+      in
+
+      if modules = [] then
+        Raise.cannot_be_empty l ~what:(Token.describe token);
+
+      let block = accepted_in_all_contexts context (`Modules modules) in
+      let acc = block::acc in
+      consume_block_elements ~parsed_a_tag `After_text acc
+
 
 
     | l, (`Begin_list kind as token) as stream_head ->

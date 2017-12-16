@@ -62,6 +62,7 @@ type t = [
   (* Leaf block element markup. *)
   | `Code_block of string
   | `Verbatim of string
+  | `Modules of string
 
   (* List markup. *)
   | `Begin_list of [ `Unordered | `Ordered ]
@@ -171,6 +172,8 @@ let describe : [< t | `Comment ] -> string = function
     "'{[...]}' (code block)"
   | `Verbatim _ ->
     "'{v ... v}' (verbatim text)"
+  | `Modules _ ->
+    "'{!modules ...}'"
   | `Begin_list `Unordered ->
     "'{ul ...}' (bulleted list)"
   | `Begin_list `Ordered ->

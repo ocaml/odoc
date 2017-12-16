@@ -173,6 +173,9 @@ rule token = parse
   | "{_"
     { emit lexbuf (`Begin_style `Subscript) }
 
+  | "{!modules:" ([^ '}']* as modules) '}'
+    { emit lexbuf (`Modules modules) }
+
   | (reference_start as start)
     space_char* (no_brace+ as target) space_char* '}'
     { emit lexbuf (reference_token target start) }
@@ -335,6 +338,12 @@ rule token = parse
          Lexing.lexeme_end lexbuf - 1)
         ~what:"internal whitespace"
         ~in_what:(Token.describe (reference_token "" start)) }
+
+  | "{!modules:" [^ '}']* eof
+    { Helpers.not_allowed
+        (Lexing.lexeme_end lexbuf, Lexing.lexeme_end lexbuf)
+        ~what:(Token.describe `End)
+        ~in_what:(Token.describe (`Modules "")) }
 
   | (reference_start as start) [^ '}']* eof
     { Helpers.not_allowed

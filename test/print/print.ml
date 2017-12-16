@@ -251,6 +251,8 @@ struct
       List [Atom "paragraph"; List (List.map inline_element es)]
     | `Code_block c -> List [Atom "code_block"; Atom c]
     | `Verbatim t -> List [Atom "verbatim"; Atom t]
+    | `Modules ps ->
+      List [Atom "modules"; List (List.map Reference_to_sexp.reference ps)]
     | `List (kind, items) ->
       let kind =
         match kind with

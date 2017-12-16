@@ -29,6 +29,7 @@ type nestable_block_element = [
   | `Paragraph of inline_element list
   | `Code_block of string
   | `Verbatim of string
+  | `Modules of Reference.module_ list
   | `List of [ `Unordered | `Ordered ] * (nestable_block_element list) list
 ]
 

@@ -370,9 +370,9 @@ class virtual documentation : object
 
   method virtual reference_any : Reference.any -> Reference.any
 
-  method documentation_reference
-    : Paths.Reference.any * Comment.non_link_inline_element list ->
-        Paths.Reference.any * Comment.non_link_inline_element list
+  method documentation_reference :
+    Paths.Reference.any * Comment.non_link_inline_element list ->
+      Paths.Reference.any * Comment.non_link_inline_element list
 
   method documentation : Comment.docs -> Comment.docs
 

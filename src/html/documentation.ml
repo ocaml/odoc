@@ -217,6 +217,10 @@ let rec nestable_block_element
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s -> Html.pre [Html.code [Html.pcdata s]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
+  | `Modules ms ->
+    let items = List.map (Reference.to_html ~stop_before:false) ms in
+    let items = List.map (fun e -> Html.li [e]) (items :> flow Html.elt list) in
+    Html.ul items
   | `List (kind, items) ->
     let items =
       items

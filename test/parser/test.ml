@@ -825,6 +825,54 @@ let tests = [
 
 
 
+  "module list", [
+    test "basic"
+      "{!modules:Foo}"
+      (Ok [`Modules [Root ("Foo", TUnknown)]]);
+
+    test "two"
+      "{!modules:Foo Bar}"
+      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
+
+    test "extra whitespace"
+      "{!modules: Foo  Bar }"
+      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
+
+    test "newline"
+      "{!modules:Foo\nBar}"
+      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
+
+    test "cr-lf"
+      "{!modules:Foo\r\nBar}"
+      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
+
+    test "empty"
+      "{!modules:}"
+      (error 1 0 1 11 ["'{!modules ...}' cannot be empty"]);
+
+    test "whitespace only"
+      "{!modules: }"
+      (error 1 0 1 12 ["'{!modules ...}' cannot be empty"]);
+
+    test "unterminated"
+      "{!modules:"
+      (error 1 10 1 10 ["end of text is not allowed in '{!modules ...}'"]);
+
+    test "in paragraph"
+      "foo {!modules:Foo}"
+      (error 1 4 1 18 ["'{!modules ...}' must begin on its own line"]);
+
+    test "followed by word"
+      "{!modules:Foo} foo"
+      (error 1 15 1 18 ["paragraph must begin on its own line"]);
+
+    test "in list"
+      "- {!modules:Foo}"
+      (Ok [`List (`Unordered, [[`Modules [Root ("Foo", TUnknown)]]])]);
+  ];
+
+
+
   "code block", [
     test "basic"
       "{[foo]}"
@@ -1620,6 +1668,14 @@ let tests = [
           "Suggestion: move '{v ... v}' (verbatim text) before any tags";
         ]);
 
+    test "followed by modules"
+      "@author foo\n{!modules:Foo}"
+      (error 2 0 2 14
+        [
+          "'{!modules ...}' is not allowed in the tags section\n";
+          "Suggestion: move '{!modules ...}' before any tags";
+        ]);
+
     test "followed by list"
       "@author Foo\n{ul {li bar}}"
       (error 2 0 2 3
@@ -2370,10 +2426,6 @@ let tests = [
 
 
   "unsupported", [
-    (* test "module index"
-      "{!modules:foo}"
-      (Ok []); *)
-
     (* test "index list"
       "{!indexlist}"
       (Ok []); *)
