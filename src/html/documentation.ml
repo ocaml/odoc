@@ -280,14 +280,34 @@ let tag : Comment.tag -> flow Html.elt = function
 let block_element : Comment.block_element -> flow Html.elt = function
   | #Comment.nestable_block_element as e ->
     nestable_block_element e
-  | `Heading (level, _label, content) ->
-    (* TODO The label. *)
-    let content = non_link_inline_element_list content in
+  | `Heading (level, label, content) ->
+    (* TODO Simplify the id/label formatting. *)
+    let attributes =
+      match label with
+      | None ->
+        []
+      | Some (Model.Paths.Identifier.Label (_, label)) ->
+        [Html.a_id label; Html.a_class ["anchored"]]
+    in
+    let a = attributes in
+
+    let content =
+      (non_link_inline_element_list content :> (phrasing Html.elt) list) in
+    let content =
+      match label with
+      | None ->
+        content
+      | Some (Model.Paths.Identifier.Label (_, label)) ->
+        let anchor =
+          Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
+        anchor::content
+    in
+
     begin match level with
-    | `Title -> Html.h1 content
-    | `Section -> Html.h2 content
-    | `Subsection -> Html.h3 content
-    | `Subsubsection -> Html.h4 content
+    | `Title -> Html.h1 ~a content
+    | `Section -> Html.h2 ~a content
+    | `Subsection -> Html.h3 ~a content
+    | `Subsubsection -> Html.h4 ~a content
     end
   | `Tag t ->
     tag t
