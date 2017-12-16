@@ -847,10 +847,8 @@ let should_expand _t _id decl =
   | _ -> true
 
 let is_canonical_tag doc =
-  (* let open Model.Comment in *)
   match doc with
-  (* | Ok { text = []; tags = [Canonical (_, _)] } -> true *)
-  (* TODO *)
+  | [`Tag (`Canonical _)] -> true
   | _ -> false
 
 (** For module aliases where the binding site doesn't have any doc comment

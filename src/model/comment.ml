@@ -1,3 +1,4 @@
+module Path = Paths.Path
 module Reference = Paths.Reference
 module Identifier = Paths.Identifier
 
@@ -41,6 +42,7 @@ type tag = [
   | `Since of string
   | `Before of string * nestable_block_element list
   | `Version of string
+  | `Canonical of Path.module_ * Reference.module_
 ]
 
 type heading_level = [

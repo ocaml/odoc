@@ -396,16 +396,10 @@ and read_module_binding env parent mb =
   in
   let doc = read_attributes container id mb.mb_attributes in
   let canonical =
-    None (* TODO *)
-    (* let open Model.Comment in
-    match doc with
-    | Ok { tags; _ } ->
-      begin match List.find (function Canonical _ -> true | _ -> false) tags with
-      | exception Not_found -> None
-      | Canonical(p, r) -> Some (p, r)
-      | _ -> None
-      end
-    | _ -> None *)
+    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
+    | exception Not_found -> None
+    | `Tag (`Canonical (p, r)) -> Some (p, r)
+    | _ -> None
   in
   let type_ =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with

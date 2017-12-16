@@ -240,6 +240,9 @@ rule token = parse
   | "@version" horizontal_space+ ([^ '\r' '\n']* as version)
     { emit lexbuf (`Tag (`Version version)) }
 
+  | "@canonical" horizontal_space+ ([^ '\r' '\n']* as identifier)
+    { emit lexbuf (`Tag (`Canonical identifier)) }
+
 
 
   | '{' (['0' '1' '5'-'9'] | ['0'-'9'] ['0'-'9']+ as level)
@@ -271,7 +274,7 @@ rule token = parse
           text = "unpaired ']' (end of code)"
         }) }
 
-  | '@' ("author" | "since" | "version")
+  | '@' ("author" | "since" | "version" | "canonical")
     { Helpers.cannot_be_empty
         (Lexing.lexeme_start lexbuf, Lexing.lexeme_end lexbuf)
         ~what:(Printf.sprintf "'%s'" (Lexing.lexeme lexbuf)) }

@@ -19,6 +19,7 @@ type tag = [
     | `Since of string
     | `Before of string
     | `Version of string
+    | `Canonical of string
   ]
 ]
 
@@ -129,6 +130,8 @@ let print : [< t ] -> string = function
     "'@before'"
   | `Tag (`Version _) ->
     "'@version'"
+  | `Tag (`Canonical _) ->
+    "'@canonical'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
@@ -207,5 +210,7 @@ let describe : [< t | `Comment ] -> string = function
     "'@before'"
   | `Tag (`Version _) ->
     "'@version'"
+  | `Tag (`Canonical _) ->
+    "'@canonical'"
   | `Comment ->
     "top-level text"

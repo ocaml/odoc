@@ -238,48 +238,51 @@ and nestable_block_element_list elements =
 
 
 
-let tag : Comment.tag -> flow Html.elt = function
+let tag : Comment.tag -> (flow Html.elt) option = function
   | `Author s ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "author"];
-      dd [pcdata s]])
+      dd [pcdata s]]))
   | `Deprecated content ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "deprecated"];
-      dd (nestable_block_element_list content)])
+      dd (nestable_block_element_list content)]))
   | `Param (name, content) ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "parameter "; pcdata name];
-      dd (nestable_block_element_list content)])
+      dd (nestable_block_element_list content)]))
   | `Raise (name, content) ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "raises "; pcdata name];
-      dd (nestable_block_element_list content)])
+      dd (nestable_block_element_list content)]))
   | `Return content ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "returns"];
-      dd (nestable_block_element_list content)])
+      dd (nestable_block_element_list content)]))
   | `See _ ->
     (* TODO *)
     failwith "unimplemented"
   | `Since s ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "since"];
-      dd [pcdata s]])
+      dd [pcdata s]]))
   | `Before (version, content) ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "before "; pcdata version];
-      dd (nestable_block_element_list content)])
+      dd (nestable_block_element_list content)]))
   | `Version s ->
-    Html.(dl [
+    Some (Html.(dl [
       dt [pcdata "version"];
-      dd [pcdata s]])
+      dd [pcdata s]]))
+  | `Canonical _ ->
+    None
 
 
 
-let block_element : Comment.block_element -> flow Html.elt = function
+let block_element : Comment.block_element -> (flow Html.elt) option = function
   | #Comment.nestable_block_element as e ->
-    nestable_block_element e
+    Some (nestable_block_element e)
+
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
     let attributes =
@@ -303,22 +306,34 @@ let block_element : Comment.block_element -> flow Html.elt = function
         anchor::content
     in
 
-    begin match level with
-    | `Title -> Html.h1 ~a content
-    | `Section -> Html.h2 ~a content
-    | `Subsection -> Html.h3 ~a content
-    | `Subsubsection -> Html.h4 ~a content
-    end
+    let element =
+      match level with
+      | `Title -> Html.h1 ~a content
+      | `Section -> Html.h2 ~a content
+      | `Subsection -> Html.h3 ~a content
+      | `Subsubsection -> Html.h4 ~a content
+    in
+    Some element
+
   | `Tag t ->
     tag t
 
 let block_element_list elements =
-  List.map block_element elements
+  List.fold_left (fun html_elements block ->
+    match block_element block with
+    | Some e -> e::html_elements
+    | None -> html_elements)
+    [] elements
+  |> List.rev
 
 
 
 let first_to_html : Model.Comment.docs -> (flow Html.elt) list = function
-  | (`Paragraph _ as first_paragraph)::_ -> [block_element first_paragraph]
+  | (`Paragraph _ as first_paragraph)::_ ->
+    begin match block_element first_paragraph with
+    | Some element -> [element]
+    | None -> []
+    end
   | _ -> []
 
 (* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in

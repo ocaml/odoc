@@ -669,7 +669,7 @@ let rec block_element_list
         junk input;
 
         begin match tag with
-        | `Author s | `Since s | `Version s as tag ->
+        | `Author s | `Since s | `Version s | `Canonical s as tag ->
           let s = String.trim s in
           if s = "" then
             Raise.cannot_be_empty l ~what:(Token.describe token);
@@ -678,6 +678,10 @@ let rec block_element_list
             | `Author _ -> `Author s
             | `Since _ -> `Since s
             | `Version _ -> `Version s
+            | `Canonical _ ->
+              let path = Helpers.read_path_longident s in
+              let module_ = Helpers.read_mod_longident s in
+              `Canonical (path, module_)
           in
           let acc = (`Tag tag)::acc in
           consume_block_elements ~parsed_a_tag:true `After_text acc

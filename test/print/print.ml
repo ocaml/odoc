@@ -289,6 +289,9 @@ struct
     | `Before (s, es) ->
       List ([Atom "@before"; Atom s] @ (List.map nestable_block_element es))
     | `Version s -> List [Atom "@version"; Atom s]
+    | `Canonical (p, r) ->
+      List
+        [Atom "@canonical"; Path_to_sexp.path p; Reference_to_sexp.reference r]
 
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e

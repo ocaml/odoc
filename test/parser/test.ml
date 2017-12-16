@@ -2137,6 +2137,36 @@ let tests = [
 
 
 
+  "canonical", [
+    test "basic"
+      "@canonical Foo"
+      (Ok [`Tag (`Canonical (Root "Foo", Root ("Foo", TUnknown)))]);
+
+    test "empty"
+      "@canonical"
+      (error 1 0 1 10 ["'@canonical' cannot be empty"]);
+
+    test "whitespace only"
+      "@canonical "
+      (error 1 0 1 11 ["'@canonical' cannot be empty"]);
+
+    test "extra whitespace"
+      "@canonical  Foo "
+      (Ok [`Tag (`Canonical (Root "Foo", Root ("Foo", TUnknown)))]);
+
+    test "prefix"
+      "@canonicalfoo"
+      (error 1 0 1 13 ["unknown tag '@canonicalfoo'"]);
+
+    (* TODO This should probably be an error of some kind, as Foo Bar is not a
+       valid module path. *)
+    test "with whitespace"
+      "@canonical Foo Bar"
+      (Ok [`Tag (`Canonical (Root "Foo Bar", Root ("Foo Bar", TUnknown)))]);
+  ];
+
+
+
   "bad markup", [
     test "left brace"
       "{"
