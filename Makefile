@@ -13,7 +13,7 @@ BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
 coverage :
 	BISECT_ENABLE=yes jbuilder build --no-buffer --dev test/parser/test.exe
 	(cd _build/default/test/parser && ./test.exe) || true
-	bisect-ppx-report \
+	@bisect-ppx-report \
 	    -I _build/default/ -html $(COVERAGE)/ \
 	    -text - -summary-only \
 	    $(BISECT_FILES_PATTERN)
