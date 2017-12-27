@@ -300,16 +300,12 @@ class page_creator ?kind ~path content =
       html self#header (body self#content)
   end
 
-let page_creator_maker = ref (new page_creator)
-
-let set_page_creator f = page_creator_maker := f
-
 let make (content, children) =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = snd (Stack.top path) in
   let path    = List.map ~f:fst (stack_to_list path) in
-  let creator = !page_creator_maker content ?kind ~path in
+  let creator = new page_creator content ?kind ~path in
   let content = creator#html in
   { name; content; children }
 
