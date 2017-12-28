@@ -14,14 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open StdLabels
-open Tyxml.Html
+
+
+module Html = Tyxml.Html
+
+
 
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 type t = {
   name : string;
-  content : [ `Html ] elt;
+  content : [ `Html ] Html.elt;
   children : t list
 }
 
@@ -87,16 +90,16 @@ module Relative_link = struct
               s
             | _ -> path
           in
-          List.map ~f:stack_elt_to_path_fragment (stack_to_list path)
+          List.map stack_elt_to_path_fragment (stack_to_list path)
         in
         let current_from_common_ancestor, target_from_common_ancestor =
           drop_shared_prefix current_loc target
         in
         let relative_target =
-          List.map current_from_common_ancestor ~f:(fun _ -> "..")
+          List.map (fun _ -> "..") current_from_common_ancestor
           @ target_from_common_ancestor
         in
-        let page = String.concat ~sep:"/" relative_target in
+        let page = String.concat "/" relative_target in
         begin match anchor with
         | "" -> page
         | anchor -> page ^ "#" ^ anchor
@@ -115,24 +118,24 @@ module Relative_link = struct
       fun ~stop_before path ->
         let open Path in
         match path with
-        | Root root -> [ pcdata root ]
-        | Forward root -> [ pcdata root ] (* FIXME *)
+        | Root root -> [ Html.pcdata root ]
+        | Forward root -> [ Html.pcdata root ] (* FIXME *)
         | Dot (prefix, suffix) ->
           let link = to_html ~stop_before:true prefix in
-          link @ [ pcdata ("." ^ suffix) ]
+          link @ [ Html.pcdata ("." ^ suffix) ]
         | Apply (p1, p2) ->
           let link1 = to_html ~stop_before p1 in
           let link2 = to_html ~stop_before p2 in
-          link1 @ pcdata "(":: link2 @ [ pcdata ")" ]
+          link1 @ Html.pcdata "(":: link2 @ [ Html.pcdata ")" ]
         | Resolved rp ->
           let id = Path.Resolved.identifier rp in
           let txt = Url.render_path path in
           begin match Id.href ~stop_before id with
-          | href -> [ a ~a:[ a_href href ] [ pcdata txt ] ]
-          | exception Id.Not_linkable -> [ pcdata txt ]
+          | href -> [ Html.a ~a:[ Html.a_href href ] [ Html.pcdata txt ] ]
+          | exception Id.Not_linkable -> [ Html.pcdata txt ]
           | exception exn ->
             Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ pcdata txt ]
+            [ Html.pcdata txt ]
           end
   end
 
@@ -169,26 +172,26 @@ module Relative_link = struct
         | Resolved Resolved.Root ->
           begin match Id.href ~stop_before:true id with
           | href ->
-            [ a ~a:[ a_href href ] [ pcdata (Identifier.name id) ] ]
-          | exception Id.Not_linkable -> [ pcdata (Identifier.name id) ]
+            [Html.a ~a:[Html.a_href href] [Html.pcdata (Identifier.name id)]]
+          | exception Id.Not_linkable -> [ Html.pcdata (Identifier.name id) ]
           | exception exn ->
             Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ pcdata (Identifier.name id) ]
+            [ Html.pcdata (Identifier.name id) ]
           end
         | Resolved rr ->
           let id = Resolved.identifier id (Obj.magic rr : a Resolved.t) in
           let txt = render_resolved rr in
           begin match Id.href ~stop_before id with
           | href ->
-            [ a ~a:[ a_href href ] [ pcdata txt ] ]
-          | exception Id.Not_linkable -> [ pcdata txt ]
+            [ Html.a ~a:[ Html.a_href href ] [ Html.pcdata txt ] ]
+          | exception Id.Not_linkable -> [ Html.pcdata txt ]
           | exception exn ->
             Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ pcdata txt ]
+            [ Html.pcdata txt ]
           end
         | Dot (prefix, suffix) ->
           let link = to_html ~stop_before:true id prefix in
-          link @ [ pcdata ("." ^ suffix) ]
+          link @ [ Html.pcdata ("." ^ suffix) ]
   end
 
   let of_path ~stop_before p =
@@ -208,7 +211,7 @@ module Relative_link = struct
       | `Cty   -> "class-type-"
       | `Page  -> assert false
     in
-    a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
+    Html.a_href (prefix ^ name ^ (if !semantic_uris then "" else "/index.html"))
 end
 
 let render_fragment = Relative_link.Of_fragment.render_raw
@@ -226,7 +229,7 @@ class page_creator ?kind ~path content =
     method name = List.hd @@ List.rev path
 
     method title_string =
-      Printf.sprintf "%s (%s)" self#name (String.concat ~sep:"." path)
+      Printf.sprintf "%s (%s)" self#name (String.concat "." path)
 
     method css_url =
         let n =
@@ -239,21 +242,21 @@ class page_creator ?kind ~path content =
         in
       add_dotdot "odoc.css" ~n
 
-    method header : Html_types.head elt =
-      head (title (pcdata self#title_string)) [
-        link ~rel:[`Stylesheet] ~href:self#css_url () ;
-        meta ~a:[ a_charset "utf-8" ] () ;
-        meta ~a:[ a_name "viewport";
-                  a_content "width=device-width,initial-scale=1.0"; ] ();
-        meta ~a:[ a_name "generator";
-                  a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
+    method header : Html_types.head Html.elt =
+      Html.head (Html.title (Html.pcdata self#title_string)) [
+        Html.link ~rel:[`Stylesheet] ~href:self#css_url () ;
+        Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
+        Html.meta ~a:[ Html.a_name "viewport";
+                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
+        Html.meta ~a:[ Html.a_name "generator";
+                       Html.a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
       ]
 
-    method heading : Html_types.flow5_without_header_footer elt list =
+    method heading : Html_types.flow5_without_header_footer Html.elt list =
       match kind with
       | Some `Page -> []
       | _ -> [
-          h1 (
+          Html.h1 (
             Markup.keyword (
               match kind with
               | None
@@ -263,12 +266,12 @@ class page_creator ?kind ~path content =
               | Some `Cty -> "Class type"
               | Some `Class -> "Class"
               | Some `Page  -> assert false
-            ) :: pcdata " " ::
+            ) :: Html.pcdata " " ::
             [Markup.module_path (List.tl path)]
           )
         ]
 
-    method content : Html_types.div_content_fun elt list =
+    method content : Html_types.div_content_fun Html.elt list =
       let up_href =
         if !Relative_link.semantic_uris then ".." else "../index.html"
       in
@@ -283,28 +286,28 @@ class page_creator ?kind ~path content =
         in
         add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
       in
-      let article = header self#heading :: content in
+      let article = Html.header self#heading :: content in
       if not has_parent then
         article
       else
-        nav ~a:[ a_id "top" ]
-          [ a ~a:[ a_href up_href ] [ pcdata "Up" ]
-          ; pcdata " "; entity "mdash"; pcdata " "
-          ; span ~a:[ a_class ["package"]]
-              [ pcdata "package ";
-                a ~a:[ a_href pkg_href] [ pcdata (List.hd path) ]]
+        Html.nav ~a:[ Html.a_id "top" ]
+          [ Html.a ~a:[ Html.a_href up_href ] [ Html.pcdata "Up" ]
+          ; Html.pcdata " "; Html.entity "mdash"; Html.pcdata " "
+          ; Html.span ~a:[ Html.a_class ["package"]]
+              [ Html.pcdata "package ";
+                Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]]
           ]
         :: article
 
-    method html : [ `Html ] elt =
-      html self#header (body self#content)
+    method html : [ `Html ] Html.elt =
+      Html.html self#header (Html.body self#content)
   end
 
 let make (content, children) =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = snd (Stack.top path) in
-  let path    = List.map ~f:fst (stack_to_list path) in
+  let path    = List.map fst (stack_to_list path) in
   let creator = new page_creator content ?kind ~path in
   let content = creator#html in
   { name; content; children }
@@ -312,7 +315,7 @@ let make (content, children) =
 let traverse ~f t =
   let rec aux parents node =
     f ~parents node.name node.content;
-    List.iter node.children ~f:(aux (node.name :: parents))
+    List.iter (aux (node.name :: parents)) node.children
   in
   aux [] t
 
