@@ -14,17 +14,21 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Tyxml.Html
-open Model.Paths
+
+
+module Html = Tyxml.Html
+module Paths = Model.Paths
+
+
 
 type t = private {
   name : string;
-  content : [ `Html ] elt;
+  content : [ `Html ] Html.elt;
   children : t list
 }
 
 val traverse
-    : f:(parents:string list -> string -> [ `Html ] elt -> unit)
+    : f:(parents:string list -> string -> [ `Html ] Html.elt -> unit)
   -> t
   -> unit
 
@@ -39,7 +43,7 @@ val leave : unit -> unit
 
 (** {1 Page creator} *)
 
-val make : Html_types.div_content_fun elt list * t list -> t
+val make : Html_types.div_content_fun Html.elt list * t list -> t
 (** [make (body, children)] calls "the page creator" to turn [body] into an
     [[ `Html ] elt]. *)
 
@@ -50,20 +54,20 @@ module Relative_link : sig
   module Id : sig
     exception Not_linkable
 
-    val href : stop_before:bool -> _ Identifier.t -> string
+    val href : stop_before:bool -> _ Paths.Identifier.t -> string
   end
 
-  val of_path : stop_before:bool -> _ Path.t
-    -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
+  val of_path : stop_before:bool -> _ Paths.Path.t
+    -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
 
-  val of_fragment : base:Identifier.signature
-    -> (_, Fragment.sort) Fragment.raw
-    -> [> `A of [> `PCDATA ] | `PCDATA ] elt list
+  val of_fragment : base:Paths.Identifier.signature
+    -> (_, Paths.Fragment.sort) Paths.Fragment.raw
+    -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
 
-  val to_sub_element : kind:kind -> string -> [> `Href ] attrib
+  val to_sub_element : kind:kind -> string -> [> `Href ] Html.attrib
 end
 
-val render_fragment : (_, Fragment.sort) Fragment.raw -> string
+val render_fragment : (_, Paths.Fragment.sort) Paths.Fragment.raw -> string
 
 (* TODO: move to a centralized [State] module or something. Along with
    Relative_link.semantic_uris. *)

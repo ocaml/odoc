@@ -17,6 +17,7 @@
 
 
 module Html = Tyxml.Html
+module Paths = Model.Paths
 
 
 
