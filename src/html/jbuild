@@ -1,5 +1,5 @@
 (jbuild_version 1)
 
 (library
- ((name doc_html)
+ ((name html)
   (libraries (model tyxml))))

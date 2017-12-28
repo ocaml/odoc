@@ -124,14 +124,14 @@ end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
         input_file =
-    Doc_html.Html_tree.Relative_link.semantic_uris := semantic_uris;
-    Doc_html.Html_tree.open_details := not closed_details;
+    Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
+    Html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
-    | None -> Html.from_odoc ~env ~output:output_dir file
+    | None -> Html_page.from_odoc ~env ~output:output_dir file
     | Some pkg_name ->
-      Html.from_mld ~env ~output:output_dir ~package:pkg_name file
+      Html_page.from_mld ~env ~output:output_dir ~package:pkg_name file
 
   let cmd =
     let input =
