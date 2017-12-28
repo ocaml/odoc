@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open StdLabels
 
-open Model.Paths
 
-open Tyxml.Html
+module Paths = Model.Paths
+module Html = Tyxml.Html
+
+
 
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
@@ -37,7 +38,7 @@ let rec list_concat_map ?sep ~f = function
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
-  | Identifier.Argument (_, nb, _) -> nb
+  | Paths.Identifier.Argument (_, nb, _) -> nb
   | _ ->
     failwith "TODO"
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
@@ -50,7 +51,7 @@ let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
     | _ -> assert false
   in
   Html_tree.enter package;
-  Html_tree.enter (Identifier.name t.id);
+  Html_tree.enter (Paths.Identifier.name t.id);
   let header_doc = Documentation.to_html t.doc in
   let html, subtree =
     match t.content with
@@ -60,15 +61,16 @@ let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   Html_tree.make (header_doc @ html, subtree)
 
 and pack
-   : Model.Lang.Compilation_unit.Packed.t -> Html_types.div_content_fun elt list
+   : Model.Lang.Compilation_unit.Packed.t ->
+      Html_types.div_content_fun Html.elt list
 = fun t ->
   let open Model.Lang in
-  List.map t ~f:(fun x ->
-    let modname = Identifier.name x.Compilation_unit.Packed.id in
+  t |> List.map (fun x ->
+    let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
     let md_def =
       Markup.keyword "module " ::
-      pcdata modname ::
-      pcdata " = " ::
+      Html.pcdata modname ::
+      Html.pcdata " = " ::
       Html_tree.Relative_link.of_path ~stop_before:false x.path
     in
     Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
@@ -76,11 +78,11 @@ and pack
 
 and signature
   : Model.Lang.Signature.t ->
-      Html_types.div_content_fun elt list * Html_tree.t list
+      Html_types.div_content_fun Html.elt list * Html_tree.t list
 = fun t ->
   let html_and_subtrees =
     let recording_doc = ref true in
-    List.map t ~f:(fun item ->
+    t |> List.map (fun item ->
       if not !recording_doc then (
         begin match item with
         | Model.Lang.Signature.Comment `Stop ->
@@ -112,19 +114,19 @@ and signature
 
 and functor_argument
    : 'row. Model.Lang.FunctorArgument.t
-  -> ([> Html_types.div ] as 'row) elt * Html_tree.t list
+  -> ([> Html_types.div ] as 'row) Html.elt * Html_tree.t list
 = fun arg ->
   let open Model.Lang.FunctorArgument in
-  let name = Identifier.name arg.id in
+  let name = Paths.Identifier.name arg.id in
   let nb = functor_arg_pos arg in
   let link_name = Printf.sprintf "%d-%s" nb name in
   let def_div, subtree =
     match arg.expansion with
     | None ->
       (
-        pcdata (Identifier.name arg.id) ::
-        pcdata " : " ::
-        mty (Identifier.signature_of_module arg.id) arg.expr
+        Html.pcdata (Paths.Identifier.name arg.id) ::
+        Html.pcdata " : " ::
+        mty (Paths.Identifier.signature_of_module arg.id) arg.expr
       ), []
     | Some expansion ->
       let expansion =
@@ -141,9 +143,9 @@ and functor_argument
       let subtree = Html_tree.make node in
       Html_tree.leave ();
       (
-        a ~a:[ a_href ~kind:`Arg link_name ] [pcdata name] ::
-        pcdata " : " ::
-        mty (Identifier.signature_of_module arg.id) arg.expr
+        Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.pcdata name] ::
+        Html.pcdata " : " ::
+        mty (Paths.Identifier.signature_of_module arg.id) arg.expr
       ), [subtree]
   in
   let region =
@@ -153,7 +155,7 @@ and functor_argument
 
 and module_expansion
    : Model.Lang.Module.expansion
-  -> Html_types.div_content_fun elt list * Html_tree.t list
+  -> Html_types.div_content_fun Html.elt list * Html_tree.t list
 = fun t ->
   match t with
   | AlreadyASig -> assert false
@@ -161,36 +163,37 @@ and module_expansion
   | Functor (args, sg) ->
     let sig_html, subpages = signature sg in
     let params, params_subpages =
-      List.fold_left args ~init:([], []) ~f:(fun (args, subpages as acc) arg ->
+      List.fold_left (fun (args, subpages as acc) arg ->
         match arg with
         | None -> acc
         | Some arg ->
           let arg, arg_subpages = functor_argument arg in
           (arg :: args, arg_subpages @ subpages)
       )
+      ([], []) args
     in
     let html =
-      h3 ~a:[ a_class ["heading"] ] [ pcdata "Parameters" ] ::
-      div params ::
-      h3 ~a:[ a_class ["heading"] ] [ pcdata "Signature" ] ::
+      Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Parameters" ] ::
+      Html.div params ::
+      Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Signature" ] ::
       sig_html
     in
     html, params_subpages @ subpages
 
 and module_
    : 'row. Model.Lang.Module.t
-  -> ([> Html_types.div ] as 'row) elt list * Html_tree.t list
+  -> ([> Html_types.div ] as 'row) Html.elt list * Html_tree.t list
 = fun t ->
-  let modname = Identifier.name t.id in
+  let modname = Paths.Identifier.name t.id in
   let md =
-    module_decl (Identifier.signature_of_module t.id)
+    module_decl (Paths.Identifier.signature_of_module t.id)
       (match t.display_type with
        | None -> t.type_
        | Some t -> t)
   in
   let modname, subtree =
     match t.expansion with
-    | None -> pcdata modname, []
+    | None -> Html.pcdata modname, []
     | Some expansion ->
       let expansion =
         match expansion with
@@ -208,11 +211,11 @@ and module_
       let expansion =
         match doc with
         | [] -> expansion
-        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
-      a ~a:[ a_href ~kind:`Mod modname ] [pcdata modname], [subtree]
+      Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
   in
   let md_def_content = Markup.keyword "module " :: modname :: md in
   let region =
@@ -221,46 +224,46 @@ and module_
   in
   [ region ], subtree
 
-and module_decl (base : Identifier.signature) md =
+and module_decl (base : Paths.Identifier.signature) md =
   begin match md with
-  | Alias _ -> pcdata " = "
-  | ModuleType _ -> pcdata " : "
+  | Alias _ -> Html.pcdata " = "
+  | ModuleType _ -> Html.pcdata " : "
   end ::
   module_decl' base md
 
-and extract_path_from_mt ~(default: Identifier.signature) =
+and extract_path_from_mt ~(default: Paths.Identifier.signature) =
   let open Model.Lang.ModuleType in
   function
-  | Path (Path.Resolved r) ->
-    Identifier.signature_of_module_type (Path.Resolved.identifier r)
+  | Path (Paths.Path.Resolved r) ->
+    Paths.Identifier.signature_of_module_type (Paths.Path.Resolved.identifier r)
   | With (mt, _) -> extract_path_from_mt ~default mt
-  | TypeOf (Model.Lang.Module.Alias (Path.Resolved r)) ->
-    Identifier.signature_of_module (Path.Resolved.identifier r)
+  | TypeOf (Model.Lang.Module.Alias (Paths.Path.Resolved r)) ->
+    Paths.Identifier.signature_of_module (Paths.Path.Resolved.identifier r)
   | TypeOf (Model.Lang.Module.ModuleType mt) -> extract_path_from_mt ~default mt
   | _ -> default
 
 and module_decl'
-  : 'inner_row 'outer_row. Identifier.signature -> Model.Lang.Module.decl
-  -> ('inner_row, 'outer_row) text elt list
+  : 'inner_row 'outer_row. Paths.Identifier.signature -> Model.Lang.Module.decl
+  -> ('inner_row, 'outer_row) text Html.elt list
 = fun base -> function
   | Alias mod_path -> Html_tree.Relative_link.of_path ~stop_before:true mod_path
   | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
 and module_type (t : Model.Lang.ModuleType.t) =
-  let modname = Identifier.name t.id in
+  let modname = Paths.Identifier.name t.id in
   let mty =
     match t.expr with
     | None -> []
     | Some expr ->
       begin match expr with
-      | Path _ -> pcdata " = "
-      | _ -> pcdata " : "
+      | Path _ -> Html.pcdata " = "
+      | _ -> Html.pcdata " : "
       end ::
-      mty (Identifier.signature_of_module_type t.id) expr
+      mty (Paths.Identifier.signature_of_module_type t.id) expr
   in
   let modname, subtree =
     match t.expansion with
-    | None -> pcdata modname, []
+    | None -> Html.pcdata modname, []
     | Some expansion ->
       let expansion =
         match expansion with
@@ -277,11 +280,11 @@ and module_type (t : Model.Lang.ModuleType.t) =
       let expansion =
         match doc with
         | [] -> expansion
-        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
       let subtree = Html_tree.make (expansion, subpages) in
       Html_tree.leave ();
-      a ~a:[ a_href ~kind:`Mty modname ] [pcdata modname], [subtree]
+      Html.a ~a:[ a_href ~kind:`Mty modname ] [Html.pcdata modname], [subtree]
   in
   let mty_def =
     (
@@ -297,30 +300,31 @@ and module_type (t : Model.Lang.ModuleType.t) =
   [ region ], subtree
 
 and mty
-  : 'inner_row 'outer_row. Identifier.signature -> Model.Lang.ModuleType.expr
-  -> ('inner_row, 'outer_row) text elt list
-= fun (base : Identifier.signature) -> function
+  : 'inner_row 'outer_row.
+    Paths.Identifier.signature -> Model.Lang.ModuleType.expr
+  -> ('inner_row, 'outer_row) text Html.elt list
+= fun (base : Paths.Identifier.signature) -> function
   | Path mty_path -> Html_tree.Relative_link.of_path ~stop_before:true mty_path
   | Signature _ ->
-    [ Markup.keyword "sig" ; pcdata " ... " ; Markup.keyword "end" ]
+    [ Markup.keyword "sig" ; Html.pcdata " ... " ; Markup.keyword "end" ]
   | Functor (None, expr) ->
-    Markup.keyword "functor" :: pcdata " () " ::
+    Markup.keyword "functor" :: Html.pcdata " () " ::
     mty base expr
   | Functor (Some arg, expr) ->
     let name =
       let open Model.Lang.FunctorArgument in
-      let to_print = pcdata @@ Identifier.name arg.id in
+      let to_print = Html.pcdata @@ Paths.Identifier.name arg.id in
       match
         Html_tree.Relative_link.Id.href
           ~stop_before:(arg.expansion = None) arg.id
       with
       | exception _ -> to_print
-      | href -> a ~a:[ Tyxml.Html.a_href href ] [ to_print ]
+      | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
     in
     Markup.keyword "functor" ::
-    pcdata " (" :: name :: pcdata " : " ::
+    Html.pcdata " (" :: name :: Html.pcdata " : " ::
     mty base arg.expr @
-    pcdata ") -> " ::
+    Html.pcdata ") -> " ::
     mty base expr
   | With (expr, substitutions) ->
     mty base expr @
@@ -331,49 +335,53 @@ and mty
     Markup.keyword "module type of " :: module_decl' base md
 
 and substitution
-  : 'inner_row 'outer_row. Identifier.signature ->
+  : 'inner_row 'outer_row. Paths.Identifier.signature ->
       Model.Lang.ModuleType.substitution
-  -> ('inner_row, 'outer_row) text elt list
+  -> ('inner_row, 'outer_row) text Html.elt list
 = fun base -> function
   | ModuleEq (frag_mod, md) ->
     Markup.keyword "module " ::
     Html_tree.Relative_link.of_fragment ~base
-      (Fragment.signature_of_module frag_mod)
-    @ pcdata " = " ::
+      (Paths.Fragment.signature_of_module frag_mod)
+    @ Html.pcdata " = " ::
     module_decl' base md
   | TypeEq (frag_typ, td) ->
     Markup.keyword "type " ::
     format_params td.Model.Lang.TypeDecl.Equation.params ::
-    Html_tree.Relative_link.of_fragment ~base (Fragment.any_sort frag_typ) @
+    Html_tree.Relative_link.of_fragment
+      ~base (Paths.Fragment.any_sort frag_typ) @
     fst (format_manifest td) @
     format_constraints td.Model.Lang.TypeDecl.Equation.constraints
   | ModuleSubst (frag_mod, mod_path) ->
     Markup.keyword "module " ::
-    Html_tree.Relative_link.of_fragment ~base (Fragment.signature_of_module frag_mod) @
-    pcdata " := " ::
+    Html_tree.Relative_link.of_fragment
+      ~base (Paths.Fragment.signature_of_module frag_mod) @
+    Html.pcdata " := " ::
     Html_tree.Relative_link.of_path ~stop_before:true mod_path
   | TypeSubst (frag_typ, vars, typ_path) ->
     let params =
-      pcdata begin match vars with
+      Html.pcdata begin match vars with
         | [] -> ""
         | [v] -> v ^ "\194\160"
-        | _ -> "(" ^ String.concat ~sep:",\194\160" vars ^ ")\194\160"
+        | _ -> "(" ^ String.concat ",\194\160" vars ^ ")\194\160"
       end
     in
     Markup.keyword "type " ::
     params ::
-    Html_tree.Relative_link.of_fragment ~base (Fragment.any_sort frag_typ) @
-    pcdata " := " ::
+    Html_tree.Relative_link.of_fragment
+      ~base (Paths.Fragment.any_sort frag_typ) @
+    Html.pcdata " := " ::
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
 
 and constructor
-   : 'b. 'b Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
+   : 'b. 'b Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
   -> Model.Lang.TypeExpr.t option
-  -> [> `Code | `PCDATA | `Table ] elt list
+  -> [> `Code | `PCDATA | `Table ] Html.elt list
 = fun id args ret_type ->
-    let name = Identifier.name id in
-    let cstr = span ~a:[ a_class [ Url.kind_of_id_exn id ] ] [ pcdata name ] in
+    let name = Paths.Identifier.name id in
+    let cstr =
+      Html.span ~a:[Html.a_class [Url.kind_of_id_exn id]] [Html.pcdata name] in
     let is_gadt, ret_type =
       match ret_type with
       | None -> false, []
@@ -384,17 +392,17 @@ and constructor
           | _ -> false
         in
         let ret_type =
-          pcdata " " ::
+          Html.pcdata " " ::
           (if constant then Markup.keyword ":" else Markup.arrow) ::
-          pcdata " " ::
+          Html.pcdata " " ::
           type_expr te
         in
         true, ret_type
     in
     match args with
-    | Tuple [] -> [ code (cstr :: ret_type) ]
+    | Tuple [] -> [ Html.code (cstr :: ret_type) ]
     | Tuple lst ->
-      [ code (
+      [ Html.code (
           cstr ::
           Markup.keyword (if is_gadt then " : " else " of ") ::
           list_concat_map lst ~sep:(Markup.keyword " * ")
@@ -403,13 +411,13 @@ and constructor
         )
       ]
     | Record fields ->
-      code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
+      Html.code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
       :: record fields
-      @ [ code ret_type ]
+      @ [ Html.code ret_type ]
 
 and format_params
    : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
-  -> ([> `PCDATA ] as 'row) elt
+  -> ([> `PCDATA ] as 'row) Html.elt
 = fun ?(delim=`parens) params ->
   let format_param (desc, variance_opt) =
     let param_desc =
@@ -422,12 +430,12 @@ and format_params
     | Some Model.Lang.TypeDecl.Pos -> "+" ^ param_desc
     | Some Model.Lang.TypeDecl.Neg -> "-" ^ param_desc
   in
-  pcdata (
+  Html.pcdata (
     match params with
     | [] -> ""
     | [x] -> format_param x ^ " "
     | lst ->
-      let params = String.concat ~sep:", " (List.map lst ~f:format_param) in
+      let params = String.concat ", " (List.map format_param lst) in
       (match delim with `parens -> "(" | `brackets -> "[")
       ^ params ^
       (match delim with `parens -> ") " | `brackets -> "] ")
@@ -436,19 +444,19 @@ and format_params
 and format_constraints
   : 'inner_row 'outer_row. (_ * _) list ->
   ([> `PCDATA | `Span
-   | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) elt list
+   | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list
   = function
   | [] -> []
   | lst ->
     Markup.keyword " constraint " ::
     list_concat_map lst ~sep:(Markup.keyword " and ") ~f:(fun (t1, t2) ->
-      type_expr t1 @ pcdata " = " :: type_expr t2
+      type_expr t1 @ Html.pcdata " = " :: type_expr t2
     )
 
 and format_manifest
   : 'inner_row 'outer_row. ?compact_variants:bool
   -> Model.Lang.TypeDecl.Equation.t
-  -> ('inner_row, 'outer_row) text elt list * bool
+  -> ('inner_row, 'outer_row) text Html.elt list * bool
 = fun ?(compact_variants=true) equation ->
   let _ = compact_variants in (* TODO *)
   let private_ = equation.private_ in
@@ -457,7 +465,7 @@ and format_manifest
   | Some t ->
     let manifest =
       Markup.keyword " = " ::
-      (if private_ then Markup.keyword "private " else pcdata "") ::
+      (if private_ then Markup.keyword "private " else Html.pcdata "") ::
       type_expr t
     in
     manifest, false
@@ -467,15 +475,15 @@ and polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
     let kind_approx, cstr =
       match item with
       | Model.Lang.TypeExpr.Variant.Type te ->
-        "unknown", [code (type_expr te)]
+        "unknown", [Html.code (type_expr te)]
       | Constructor (name, _bool, args) ->
         let cstr = "`" ^ name in
         "constructor",
         match args with
-        | [] -> [code [ pcdata cstr ]]
+        | [] -> [Html.code [ Html.pcdata cstr ]]
         | _ ->
-          [ code (
-              pcdata cstr ::
+          [ Html.code (
+              Html.pcdata cstr ::
               Markup.keyword " of " ::
               list_concat_map args ~sep:(Markup.keyword " * ")
                 ~f:type_expr
@@ -486,102 +494,108 @@ and polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
       let { Url.Anchor. name = anchor; kind } =
         Url.Anchor.Polymorphic_variant_decl.from_element ~type_ident item
       in
-      tr ~a:[ a_id anchor; a_class ["anchored"] ] [
-        td ~a:[ a_class ["def"; kind] ] (
-          a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
-          code [Markup.keyword "| " ] ::
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] [
+        Html.td ~a:[ Html.a_class ["def"; kind] ] (
+          Html.a ~a:[
+            Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
+          Html.code [Markup.keyword "| " ] ::
           cstr
         );
         (* TODO: retrieve doc comments. *)
       ]
     with Failure s ->
       Printf.eprintf "ERROR: %s\n%!" s;
-      tr [
-        td ~a:[ a_class ["def"; kind_approx] ] (
-          code [Markup.keyword "| " ] ::
+      Html.tr [
+        Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
+          Html.code [Markup.keyword "| " ] ::
           cstr
         );
         (* TODO: retrieve doc comments. *)
       ]
   in
-  let table = table ~a:[a_class ["variant"]] (List.map t.elements ~f:row) in
+  let table =
+    Html.table ~a:[Html.a_class ["variant"]] (List.map row t.elements) in
   match t.kind with
-  | Fixed -> code [pcdata "[ "] :: table :: [code [pcdata " ]"]]
-  | Open -> code [pcdata "[> "] :: table :: [code [pcdata " ]"]]
-  | Closed [] -> code [pcdata "[< "] :: table :: [code [pcdata " ]"]]
+  | Fixed ->
+    Html.code [Html.pcdata "[ "] :: table :: [Html.code [Html.pcdata " ]"]]
+  | Open ->
+    Html.code [Html.pcdata "[> "] :: table :: [Html.code [Html.pcdata " ]"]]
+  | Closed [] ->
+    Html.code [Html.pcdata "[< "] :: table :: [Html.code [Html.pcdata " ]"]]
   | Closed lst ->
-    let constrs = String.concat ~sep:" " lst in
-    code [pcdata "[< "] :: table :: [code [pcdata (" " ^ constrs ^ " ]")]]
+    let constrs = String.concat " " lst in
+    Html.code [Html.pcdata "[< "] :: table ::
+      [Html.code [Html.pcdata (" " ^ constrs ^ " ]")]]
 
 
-and variant cstrs : [> Html_types.table ] elt =
+and variant cstrs : [> Html_types.table ] Html.elt =
   let constructor id args res =
     match Url.from_identifier ~stop_before:true id with
     | Error e -> failwith (Url.Error.to_string e)
     | Ok { anchor; kind; _ } ->
       let cell =
-        td ~a:[ a_class ["def"; kind ] ] (
-          a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
-          code [Markup.keyword "| " ] ::
+        Html.td ~a:[ Html.a_class ["def"; kind ] ] (
+          Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
+          Html.code [Markup.keyword "| " ] ::
           constructor id args res
         )
       in
       anchor, cell
   in
   let rows =
-    List.map cstrs ~f:(fun cstr ->
+    cstrs |> List.map (fun cstr ->
       let open Model.Lang.TypeDecl.Constructor in
       let anchor, lhs = constructor cstr.id cstr.args cstr.res in
       let rhs = Documentation.to_html ~wrap:() cstr.doc in
-      tr ~a:[ a_id anchor; a_class ["anchored"] ] (
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc cstr.doc) then [] else [
-          td ~a:[ a_class ["doc"] ] rhs
+          Html.td ~a:[ Html.a_class ["doc"] ] rhs
         ]
       )
     )
   in
-  table ~a:[ a_class ["variant"] ] rows
+  Html.table ~a:[ Html.a_class ["variant"] ] rows
 
 and record fields =
   let field mutable_ id typ =
     match Url.from_identifier ~stop_before:true id with
     | Error e -> failwith (Url.Error.to_string e)
     | Ok { anchor; kind; _ } ->
-      let name = Identifier.name id in
+      let name = Paths.Identifier.name id in
       let cell =
-        td ~a:[ a_class ["def"; kind ] ]
-          [ a ~a:[ Tyxml.Html.a_href ("#" ^ anchor); a_class ["anchor"] ] []
-          ; code (
-              (if mutable_ then Markup.keyword "mutable " else pcdata "")
-              :: (pcdata name)
-              :: (pcdata " : ")
+        Html.td ~a:[ Html.a_class ["def"; kind ] ]
+          [ Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] []
+          ; Html.code (
+              (if mutable_ then Markup.keyword "mutable " else Html.pcdata "")
+              :: (Html.pcdata name)
+              :: (Html.pcdata " : ")
               :: (type_expr typ)
-              @  [pcdata ";"]
+              @  [Html.pcdata ";"]
             )
           ]
       in
       anchor, cell
   in
   let rows =
-    List.map fields ~f:(fun fld ->
+    fields |> List.map (fun fld ->
       let open Model.Lang.TypeDecl.Field in
       let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
       let rhs = Documentation.to_html ~wrap:() fld.doc in
-      tr ~a:[ a_id anchor; a_class ["anchored"] ] (
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc fld.doc) then [] else [
-          td ~a:[ a_class ["doc"] ] rhs
+          Html.td ~a:[ Html.a_class ["doc"] ] rhs
         ]
       )
     )
   in
-  [ code [pcdata "{"]
-  ; table ~a:[ a_class ["record"] ] rows
-  ; code [pcdata "}"]]
+  [ Html.code [Html.pcdata "{"]
+  ; Html.table ~a:[ Html.a_class ["record"] ] rows
+  ; Html.code [Html.pcdata "}"]]
 
 and type_decl (t : Model.Lang.TypeDecl.t) =
-  let tyname = Identifier.name t.id in
+  let tyname = Paths.Identifier.name t.id in
   let params = format_params t.equation.params in
   let constraints = format_constraints t.equation.constraints in
   let manifest, need_private =
@@ -589,57 +603,60 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
     | Some (Model.Lang.TypeExpr.Variant variant) ->
       let manifest =
         Markup.keyword " = " ::
-        (if t.equation.private_ then Markup.keyword "private " else pcdata "") ::
+        (if t.equation.private_ then
+          Markup.keyword "private "
+        else
+          Html.pcdata "") ::
         polymorphic_variant ~type_ident:t.id variant
       in
       manifest, false
     | _ ->
       let manifest, need_private = format_manifest t.equation in
-      [code manifest], need_private
+      [Html.code manifest], need_private
   in
   let representation =
     match t.representation with
     | None -> []
     | Some repr ->
-      code [
+      Html.code [
         Markup.keyword " = ";
-        if need_private then Markup.keyword "private " else pcdata ""
+        if need_private then Markup.keyword "private " else Html.pcdata ""
       ] ::
       match repr with
-      | Extensible -> [code [Markup.keyword  ".."]]
+      | Extensible -> [Html.code [Markup.keyword  ".."]]
       | Variant cstrs -> [variant cstrs]
       | Record fields -> record fields
   in
   let doc = Documentation.to_html t.doc in
   let tdecl_def =
-    code [
+    Html.code [
       Markup.keyword "type ";
       params;
-      pcdata tyname;
+      Html.pcdata tyname;
     ] ::
     manifest @
     representation @
-    [code constraints]
+    [Html.code constraints]
   in
   Markup.make_spec ~id:t.id ~doc tdecl_def
 
 and extension (t : Model.Lang.Extension.t) =
   let doc = Documentation.to_html t.doc in
   let extension =
-    code (
+    Html.code (
       Markup.keyword "type " ::
       Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
       [ Markup.keyword " += " ]
     ) ::
-    list_concat_map t.constructors ~sep:(code [Markup.keyword " | "])
+    list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
       ~f:extension_constructor
   in
   (* FIXME: really want to use the kind "extension" here? *)
   (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
      have an anchor either). *)
-  div ~a:[ a_class ["spec"; "extension"] ] [
-    div ~a:[ a_class ["def"; "extension"] ] extension;
-    div ~a:[ a_class ["doc"] ] doc;
+  Html.div ~a:[ Html.a_class ["spec"; "extension"] ] [
+    Html.div ~a:[ Html.a_class ["def"; "extension"] ] extension;
+    Html.div ~a:[ Html.a_class ["doc"] ] doc;
   ]
 
 and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
@@ -649,96 +666,106 @@ and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
 and exn (t : Model.Lang.Exception.t) =
   let cstr = constructor t.id t.args t.res in
   let doc = Documentation.to_html t.doc in
-  let exn = code [ Markup.keyword "exception " ] :: cstr in
+  let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
   Markup.make_spec ~id:t.id ~doc exn
 
 and te_variant
   : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
-      ('inner, 'outer) text elt list
+      ('inner, 'outer) text Html.elt list
 = fun (t : Model.Lang.TypeExpr.Variant.t) ->
   let elements =
-    list_concat_map t.elements ~sep:(pcdata " | ") ~f:(function
+    list_concat_map t.elements ~sep:(Html.pcdata " | ") ~f:(function
       | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
       | Constructor (name, _bool, args) ->
         let constr = "`" ^ name in
         match args with
-        | [] -> [ pcdata constr ]
+        | [] -> [ Html.pcdata constr ]
         | _ ->
           let args =
-            list_concat_map args ~sep:(pcdata " * ") ~f:type_expr
+            list_concat_map args ~sep:(Html.pcdata " * ") ~f:type_expr
           in
-          pcdata (constr ^ " of ") :: args
+          Html.pcdata (constr ^ " of ") :: args
     )
   in
   match t.kind with
-  | Fixed -> pcdata "[ " :: elements @ [pcdata " ]"]
-  | Open -> pcdata "[> " :: elements @ [pcdata " ]"]
-  | Closed [] -> pcdata "[< " :: elements @ [pcdata " ]"]
+  | Fixed -> Html.pcdata "[ " :: elements @ [Html.pcdata " ]"]
+  | Open -> Html.pcdata "[> " :: elements @ [Html.pcdata " ]"]
+  | Closed [] -> Html.pcdata "[< " :: elements @ [Html.pcdata " ]"]
   | Closed lst ->
-    let constrs = String.concat ~sep:" " lst in
-    pcdata "[< " :: elements @ [pcdata (" " ^ constrs ^ " ]")]
+    let constrs = String.concat " " lst in
+    Html.pcdata "[< " :: elements @ [Html.pcdata (" " ^ constrs ^ " ]")]
 
 and te_object
   : 'inner 'outer. Model.Lang.TypeExpr.Object.t ->
-      ('inner, 'outer) text elt list
+      ('inner, 'outer) text Html.elt list
 = fun (t : Model.Lang.TypeExpr.Object.t) ->
   let fields =
     list_concat_map t.fields ~f:(function
       | Model.Lang.TypeExpr.Object.Method { name; type_ } ->
-        pcdata (name ^ " : ") :: type_expr type_ @ [pcdata "; "]
+        Html.pcdata (name ^ " : ") :: type_expr type_ @ [Html.pcdata "; "]
       | Inherit type_ ->
-        type_expr type_ @ [pcdata "; "]
+        type_expr type_ @ [Html.pcdata "; "]
     )
   in
-  pcdata "< " :: fields @ [pcdata ((if t.open_ then ".. " else "") ^ ">")]
+  Html.pcdata "< " ::
+    fields @ [Html.pcdata ((if t.open_ then ".. " else "") ^ ">")]
 
 and format_type_path
   : 'inner 'outer. delim:[ `parens | `brackets ]
-  -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text elt list
-  -> ('inner, 'outer) text elt list
+  -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
+  -> ('inner, 'outer) text Html.elt list
 = fun ~delim params path ->
   match params with
   | [] -> path
   | [param] ->
-    type_expr ~needs_parentheses:true param @ pcdata " " :: path
+    type_expr ~needs_parentheses:true param @ Html.pcdata " " :: path
   | params  ->
     let params =
-      list_concat_map params ~sep:(pcdata ",\194\160")
+      list_concat_map params ~sep:(Html.pcdata ",\194\160")
         ~f:type_expr
     in
     match delim with
-    | `parens   -> pcdata "(" :: params @ pcdata ")\194\160" :: path
-    | `brackets -> pcdata "[" :: params @ pcdata "]\194\160" :: path
+    | `parens   -> Html.pcdata "(" :: params @ Html.pcdata ")\194\160" :: path
+    | `brackets -> Html.pcdata "[" :: params @ Html.pcdata "]\194\160" :: path
 
 and type_expr
    : 'inner 'outer. ?needs_parentheses:bool
-  -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text elt list
+  -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
 = fun ?(needs_parentheses=false) t ->
   match t with
   | Var s -> [Markup.Type.var ("'" ^ s)]
   | Any  -> [Markup.Type.var "_"]
   | Alias (te, alias) ->
     type_expr ~needs_parentheses:true te @
-    Markup.keyword " as " :: [ pcdata alias ]
+    Markup.keyword " as " :: [ Html.pcdata alias ]
   | Arrow (None, src, dst) ->
     let res =
       type_expr ~needs_parentheses:true src @
-      pcdata " " :: Markup.arrow :: pcdata " " :: type_expr dst
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
     in
-    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
   | Arrow (Some lbl, src, dst) ->
     let res =
-      Markup.label lbl @ pcdata ":" ::
+      Markup.label lbl @ Html.pcdata ":" ::
       type_expr ~needs_parentheses:true src @
-      pcdata " " :: Markup.arrow :: pcdata " " :: type_expr dst
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
     in
-    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
   | Tuple lst ->
     let res =
       list_concat_map lst ~sep:(Markup.keyword " * ")
         ~f:(type_expr ~needs_parentheses:true)
     in
-    if not needs_parentheses then res else pcdata "(" :: res @ [pcdata ")"]
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
   | Constr (path, args) ->
     let link = Html_tree.Relative_link.of_path ~stop_before:false path in
     format_type_path ~delim:(`parens) args link
@@ -748,64 +775,67 @@ and type_expr
     format_type_path ~delim:(`brackets) args
       (Html_tree.Relative_link.of_path ~stop_before:false path)
   | Poly (polyvars, t) ->
-    pcdata (String.concat ~sep:" " polyvars ^ ". ") :: type_expr t
+    Html.pcdata (String.concat " " polyvars ^ ". ") :: type_expr t
   | Package pkg ->
-    pcdata "(" :: Markup.keyword "module " ::
+    Html.pcdata "(" :: Markup.keyword "module " ::
     Html_tree.Relative_link.of_path ~stop_before:false pkg.path @
     begin match pkg.substitutions with
     | [] -> []
     | lst ->
-      pcdata " " :: Markup.keyword "with" :: pcdata " " ::
+      Html.pcdata " " :: Markup.keyword "with" :: Html.pcdata " " ::
       list_concat_map ~sep:(Markup.keyword " and ") lst
         ~f:(package_subst pkg.path)
     end
-    @ [pcdata ")"]
+    @ [Html.pcdata ")"]
 
 and package_subst
-   : 'inner 'outer. Path.module_type -> Fragment.type_ * Model.Lang.TypeExpr.t
-   -> ('inner, 'outer) text elt list
+   : 'inner 'outer.
+     Paths.Path.module_type -> Paths.Fragment.type_ * Model.Lang.TypeExpr.t
+   -> ('inner, 'outer) text Html.elt list
    = fun pkg_path (frag_typ, te) ->
   Markup.keyword "type " ::
   (match pkg_path with
-   | Path.Resolved rp ->
+   | Paths.Path.Resolved rp ->
      let base =
-       Identifier.signature_of_module_type (Path.Resolved.identifier rp)
+       Paths.Identifier.signature_of_module_type
+        (Paths.Path.Resolved.identifier rp)
      in
      Html_tree.Relative_link.of_fragment ~base
-       (Fragment.any_sort frag_typ)
+       (Paths.Fragment.any_sort frag_typ)
    | _ ->
-     [ pcdata (Html_tree.render_fragment (Fragment.any_sort frag_typ)) ]) @
-  pcdata " " :: Markup.keyword "=" :: pcdata " " ::
+     [Html.pcdata
+      (Html_tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
+  Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
   type_expr te
 
 and value (t : Model.Lang.Value.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let value =
     Markup.keyword "val " ::
-    pcdata name ::
-    pcdata " : " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
     type_expr t.type_
   in
   Markup.make_def ~id:t.id ~doc ~code:value
 
 and external_ (t : Model.Lang.External.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
   let external_ =
     Markup.keyword "external " ::
-    pcdata name ::
-    pcdata " : " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
     type_expr t.type_ @
-    pcdata " = " ::
-    List.map t.primitives ~f:(fun p -> pcdata ("\"" ^ p ^ "\" "))
+    Html.pcdata " = " ::
+    List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
   in
   Markup.make_def ~id:t.id ~doc ~code:external_
 
 and class_signature (t : Model.Lang.ClassSignature.t) =
   (* FIXME: use [t.self] *)
   let recording_doc = ref true in
-  List.concat @@ List.map t.items ~f:(function
+  List.concat @@ (t.items |> List.map (function
     | Model.Lang.ClassSignature.Method m -> [ method_ m ]
     | InstanceVariable v -> [ instance_variable v ]
     | Constraint (ty1, ty2) -> format_constraints [ty1, ty2]
@@ -821,72 +851,77 @@ and class_signature (t : Model.Lang.ClassSignature.t) =
     | Comment `Stop ->
       recording_doc := not !recording_doc;
       []
-  )
+  ))
 
 and method_ (t : Model.Lang.Method.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
-  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
-  let private_ = if t.private_ then Markup.keyword "private " else pcdata "" in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let private_ =
+    if t.private_ then Markup.keyword "private " else Html.pcdata "" in
   let method_ =
     Markup.keyword "method " ::
     private_ ::
     virtual_ ::
-    pcdata name ::
-    pcdata " : " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
     type_expr t.type_
   in
   Markup.make_def ~id:t.id ~doc ~code:method_
 
 and instance_variable (t : Model.Lang.InstanceVariable.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let doc = Documentation.to_html t.doc in
-  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
-  let mutable_ = if t.mutable_ then Markup.keyword "mutable " else pcdata "" in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let mutable_ =
+    if t.mutable_ then Markup.keyword "mutable " else Html.pcdata "" in
   let val_ =
     Markup.keyword "val " ::
     mutable_ ::
     virtual_ ::
-    pcdata name ::
-    pcdata " : " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
     type_expr t.type_
   in
   Markup.make_def ~id:t.id ~doc ~code:val_
 
 and class_type_expr
    : 'inner_row 'outer_row. Model.Lang.ClassType.expr
-  -> ('inner_row, 'outer_row) text elt list
+  -> ('inner_row, 'outer_row) text Html.elt list
    = fun (cte : Model.Lang.ClassType.expr) ->
      match cte with
      | Constr (path, args) ->
        let link = Html_tree.Relative_link.of_path ~stop_before:false path in
        format_type_path ~delim:(`brackets) args link
      | Signature _ ->
-       [ Markup.keyword "object" ; pcdata " ... " ; Markup.keyword "end" ]
+       [ Markup.keyword "object" ; Html.pcdata " ... " ; Markup.keyword "end" ]
 
 and class_decl
    : 'inner_row 'outer_row. Model.Lang.Class.decl
-  -> ('inner_row, 'outer_row) text elt list
+  -> ('inner_row, 'outer_row) text Html.elt list
   = fun (cd : Model.Lang.Class.decl) ->
     match cd with
     | ClassType expr -> class_type_expr expr
     (* TODO: factorize the following with [type_expr] *)
     | Arrow (None, src, dst) ->
       type_expr ~needs_parentheses:true src @
-      pcdata " " :: Markup.arrow :: pcdata " " :: class_decl dst
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
     | Arrow (Some lbl, src, dst) ->
-      Markup.label lbl @ pcdata ":" ::
+      Markup.label lbl @ Html.pcdata ":" ::
       type_expr ~needs_parentheses:true src @
-      pcdata " " :: Markup.arrow :: pcdata " " :: class_decl dst
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
 
 and class_ (t : Model.Lang.Class.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
-  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
   let cd = class_decl t.type_ in
   let cname, subtree =
     match t.expansion with
-    | None -> pcdata name, []
+    | None -> Html.pcdata name, []
     | Some csig ->
       Html_tree.enter ~kind:(`Class) name;
       let doc = Documentation.to_html t.doc in
@@ -894,18 +929,18 @@ and class_ (t : Model.Lang.Class.t) =
       let expansion =
         match doc with
         | [] -> expansion
-        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
       let subtree = Html_tree.make (expansion, []) in
       Html_tree.leave ();
-      a ~a:[ a_href ~kind:`Class name ] [pcdata name], [subtree]
+      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
   in
   let class_def_content =
     Markup.keyword "class " ::
     virtual_ ::
     params ::
     cname ::
-    pcdata " : " ::
+    Html.pcdata " : " ::
     cd
   in
   let region =
@@ -915,13 +950,14 @@ and class_ (t : Model.Lang.Class.t) =
   [ region ], subtree
 
 and class_type (t : Model.Lang.ClassType.t) =
-  let name = Identifier.name t.id in
+  let name = Paths.Identifier.name t.id in
   let params = format_params ~delim:(`brackets) t.params in
-  let virtual_ = if t.virtual_ then Markup.keyword "virtual " else pcdata "" in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
   let expr = class_type_expr t.expr in
   let cname, subtree =
     match t.expansion with
-    | None -> pcdata name, []
+    | None -> Html.pcdata name, []
     | Some csig ->
       Html_tree.enter ~kind:(`Cty) name;
       let doc = Documentation.to_html t.doc in
@@ -929,18 +965,18 @@ and class_type (t : Model.Lang.ClassType.t) =
       let expansion =
         match doc with
         | [] -> expansion
-        | _ -> div ~a:[ a_class ["doc"] ] doc :: expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
       let subtree = Html_tree.make (expansion, []) in
       Html_tree.leave ();
-      a ~a:[ a_href ~kind:`Class name ] [pcdata name], [subtree]
+      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
   in
   let ctyp =
     Markup.keyword "class type " ::
     virtual_ ::
     params ::
     cname ::
-    pcdata " = " ::
+    Html.pcdata " = " ::
     expr
   in
   let region =
@@ -976,19 +1012,19 @@ and include_ (t : Model.Lang.Include.t) =
       included_html
     else
       let incl =
-        code (
+        Html.code (
           Markup.keyword "include " ::
           module_decl' t.parent t.decl
         )
       in
       (* FIXME: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      [ details ~a:(if should_be_open then [a_open ()] else [])
+      [ Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
           (Markup.def_summary [incl]) included_html
       ]
   in
-  [ div ~a:[ a_class ["spec"; "include"] ]
-      (div ~a:[ a_class ["doc"] ] doc :: incl)
+  [ Html.div ~a:[ Html.a_class ["spec"; "include"] ]
+      (Html.div ~a:[ Html.a_class ["doc"] ] doc :: incl)
   ], tree
 
 let page (t : Model.Lang.Page.t) : Html_tree.t =
