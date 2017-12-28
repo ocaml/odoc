@@ -14,46 +14,54 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open StdLabels
-open Tyxml.Html
 
-let keyword keyword = span ~a:[ a_class ["keyword"] ] [ pcdata keyword ]
+
+module Html = Tyxml.Html
+
+
+
+let keyword keyword =
+  Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.pcdata keyword ]
+
 let module_path ids =
-  span ~a:[ a_class ["module-path"] ] [pcdata (String.concat ~sep:"." ids)]
+  Html.span
+    ~a:[ Html.a_class ["module-path"] ] [Html.pcdata (String.concat "." ids)]
 
 module Type = struct
-  let path p = span ~a:[ a_class ["type-id"] ] p
-  let var tv = span ~a:[ a_class ["type-var"] ] [ pcdata tv ]
+  let path p = Html.span ~a:[ Html.a_class ["type-id"] ] p
+  let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.pcdata tv ]
 end
 
-let def_div lst = div ~a:[ a_class ["def" ] ] [ code lst ]
+let def_div lst = Html.div ~a:[ Html.a_class ["def" ] ] [ Html.code lst ]
 
-let def_summary lst = summary [ span ~a:[ a_class ["def"] ] lst ]
+let def_summary lst = Html.summary [ Html.span ~a:[ Html.a_class ["def"] ] lst ]
 
 let make_def ~id ~code:def ~doc =
   match Url.from_identifier ~stop_before:true id with
   | Error e -> failwith (Url.Error.to_string e)
   | Ok { anchor; kind; _ } ->
-    div ~a:[ a_class ["spec"; kind] ; a_id anchor ] [
-      a ~a:[ a_href ("#" ^ anchor); a_class ["anchor"] ] [];
-      div ~a:[ a_class ["def"; kind] ] [ code def ];
-      div ~a:[ a_class ["doc"] ] doc;
+    Html.div ~a:[ Html.a_class ["spec"; kind] ; Html.a_id anchor ] [
+      Html.a ~a:[ Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [];
+      Html.div ~a:[ Html.a_class ["def"; kind] ] [ Html.code def ];
+      Html.div ~a:[ Html.a_class ["doc"] ] doc;
     ]
 
 let make_spec ~id ?doc code =
   match Url.from_identifier ~stop_before:true id with
   | Error e -> failwith (Url.Error.to_string e)
   | Ok { anchor; kind; _ } ->
-    div ~a:[ a_class ["spec"; kind] ; a_id anchor ] (
-      a ~a:[ a_href ("#" ^ anchor); a_class ["anchor"] ] [] ::
-      div ~a:[ a_class ["def"; kind] ] code ::
+    Html.div ~a:[ Html.a_class ["spec"; kind] ; Html.a_id anchor ] (
+      Html.a ~a:[ Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
+      Html.div ~a:[ Html.a_class ["def"; kind] ] code ::
       (match doc with
        | None -> []
-       | Some doc -> [div ~a:[ a_class ["doc"] ] doc])
+       | Some doc -> [Html.div ~a:[ Html.a_class ["doc"] ] doc])
     )
 
-let arrow = span ~a:[ a_class ["keyword" ] ] [ entity "#8209"; entity "gt" ]
+let arrow =
+  Html.span
+    ~a:[ Html.a_class ["keyword" ] ] [ Html.entity "#8209"; Html.entity "gt" ]
 
 let label = function
-  | Model.Lang.TypeExpr.Label s -> [ pcdata s ]
-  | Optional s -> [ pcdata "?"; entity "#8288"; pcdata s ]
+  | Model.Lang.TypeExpr.Label s -> [ Html.pcdata s ]
+  | Optional s -> [ Html.pcdata "?"; Html.entity "#8288"; Html.pcdata s ]

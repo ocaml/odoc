@@ -14,37 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Tyxml.Html
 
-val keyword : string -> [> Html_types.span ] elt
-val module_path : string list -> [> Html_types.span ] elt
+
+module Html = Tyxml.Html
+
+
+
+val keyword : string -> [> Html_types.span ] Html.elt
+val module_path : string list -> [> Html_types.span ] Html.elt
 
 module Type : sig
-  val path: [< Html_types.span_content_fun ] elt list -> [> Html_types.span ] elt
-  val var : string -> [> Html_types.span ] elt
+  val path :
+    [< Html_types.span_content_fun ] Html.elt list ->
+      [> Html_types.span ] Html.elt
+  val var : string -> [> Html_types.span ] Html.elt
 end
 
 val def_div :
-  [< Html_types.code_content_fun ] elt list -> [> Html_types.div ] elt
+  [< Html_types.code_content_fun ] Html.elt list -> [> Html_types.div ] Html.elt
 
 val def_summary :
-  [< Html_types.span_content_fun ] elt list -> [> Html_types.summary ] elt
+  [< Html_types.span_content_fun ] Html.elt list ->
+    [> Html_types.summary ] Html.elt
 
 val make_def
    : id:_ Model.Paths.Identifier.t
-  -> code:[< Html_types.code_content_fun ] elt list
-  -> doc:[< Html_types.div_content_fun ] elt list
-  -> [> Html_types.div ] elt
+  -> code:[< Html_types.code_content_fun ] Html.elt list
+  -> doc:[< Html_types.div_content_fun ] Html.elt list
+  -> [> Html_types.div ] Html.elt
 
 val make_spec
    : id:_ Model.Paths.Identifier.t
-  -> ?doc:[< Html_types.div_content_fun ] elt list
-  -> [< Html_types.div_content_fun ] elt list
-  -> [> Html_types.div ] elt
+  -> ?doc:[< Html_types.div_content_fun ] Html.elt list
+  -> [< Html_types.div_content_fun ] Html.elt list
+  -> [> Html_types.div ] Html.elt
 
-val arrow : [> Html_types.span ] elt
+val arrow : [> Html_types.span ] Html.elt
 (** "->" with a non breaking hyphen, styled as a keyword. *)
 
-val label : Model.Lang.TypeExpr.label -> [> `PCDATA ] elt list
+val label : Model.Lang.TypeExpr.label -> [> `PCDATA ] Html.elt list
 (** For optional arguments adds a word joiner between the question mark and the
     label. *)
