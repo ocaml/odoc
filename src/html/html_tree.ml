@@ -216,22 +216,22 @@ end
 
 let render_fragment = Relative_link.Of_fragment.render_raw
 
-class page_creator ?kind ~path content =
+let page_creator ?kind ~path content =
   let rec add_dotdot ~n acc =
     if n = 0 then
       acc
     else
       add_dotdot ~n:(n - 1) ("../" ^ acc)
   in
-  object(self)
-    val has_parent = List.length path > 1
 
-    method name = List.hd @@ List.rev path
+    let has_parent = List.length path > 1 in
 
-    method title_string =
-      Printf.sprintf "%s (%s)" self#name (String.concat "." path)
+    let name = List.hd @@ List.rev path in
 
-    method css_url =
+    let title_string =
+      Printf.sprintf "%s (%s)" name (String.concat "." path) in
+
+    let css_url =
         let n =
           List.length path - (
             (* This is just horrible. *)
@@ -241,18 +241,20 @@ class page_creator ?kind ~path content =
           )
         in
       add_dotdot "odoc.css" ~n
+    in
 
-    method header : Html_types.head Html.elt =
-      Html.head (Html.title (Html.pcdata self#title_string)) [
-        Html.link ~rel:[`Stylesheet] ~href:self#css_url () ;
+    let header : Html_types.head Html.elt =
+      Html.head (Html.title (Html.pcdata title_string)) [
+        Html.link ~rel:[`Stylesheet] ~href:css_url () ;
         Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
         Html.meta ~a:[ Html.a_name "viewport";
                    Html.a_content "width=device-width,initial-scale=1.0"; ] ();
         Html.meta ~a:[ Html.a_name "generator";
                        Html.a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
       ]
+    in
 
-    method heading : Html_types.flow5_without_header_footer Html.elt list =
+    let heading : Html_types.flow5_without_header_footer Html.elt list =
       match kind with
       | Some `Page -> []
       | _ -> [
@@ -270,8 +272,9 @@ class page_creator ?kind ~path content =
             [Markup.module_path (List.tl path)]
           )
         ]
+    in
 
-    method content : Html_types.div_content_fun Html.elt list =
+    let content : Html_types.div_content_fun Html.elt list =
       let up_href =
         if !Relative_link.semantic_uris then ".." else "../index.html"
       in
@@ -286,7 +289,7 @@ class page_creator ?kind ~path content =
         in
         add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
       in
-      let article = Html.header self#heading :: content in
+      let article = Html.header heading :: content in
       if not has_parent then
         article
       else
@@ -298,18 +301,19 @@ class page_creator ?kind ~path content =
                 Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]]
           ]
         :: article
+    in
 
-    method html : [ `Html ] Html.elt =
-      Html.html self#header (Html.body self#content)
-  end
+    let html : [ `Html ] Html.elt =
+      Html.html header (Html.body content) in
+
+    html
 
 let make (content, children) =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = snd (Stack.top path) in
   let path    = List.map fst (stack_to_list path) in
-  let creator = new page_creator content ?kind ~path in
-  let content = creator#html in
+  let content = page_creator content ?kind ~path in
   { name; content; children }
 
 let traverse ~f t =
