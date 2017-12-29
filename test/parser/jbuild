@@ -5,5 +5,10 @@
   (libraries (alcotest parser_ print))))
 
 (alias
+ ((name tester)
+  (deps (test.exe))))
+
+(alias
  ((name runtest)
+  (deps ((alias tester)))
   (action (run ${exe:test.exe}))))

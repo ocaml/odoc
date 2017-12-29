@@ -96,7 +96,7 @@ let () =
         Alcotest.failf "'diff' exited with %i" exit_code
     in
 
-    test_name, [test_name, `Slow, run_test_case]
+    "html", [test_name, `Slow, run_test_case]
   in
 
   let html_tests = List.map make_html_test cases in

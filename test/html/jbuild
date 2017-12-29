@@ -5,10 +5,10 @@
   (libraries (alcotest lambdasoup))))
 
 (alias
- ((name html-tester)
+ ((name tester)
   (deps (test.exe ${ROOT}/src/odoc/bin/main.exe (files_recursively_in cases)))))
 
 (alias
  ((name runtest)
-  (deps ((alias html-tester)))
+  (deps ((alias tester)))
   (action (run ${exe:test.exe}))))
