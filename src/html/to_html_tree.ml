@@ -44,39 +44,7 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
-let rec compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
-  let package =
-    match t.id with
-    | Model.Paths.Identifier.Root (a, _) -> a.package
-    | _ -> assert false
-  in
-  Html_tree.enter package;
-  Html_tree.enter (Paths.Identifier.name t.id);
-  let header_doc = Documentation.to_html t.doc in
-  let html, subtree =
-    match t.content with
-    | Module sign -> signature sign
-    | Pack packed -> pack packed, []
-  in
-  Html_tree.make (header_doc @ html, subtree)
-
-and pack
-   : Model.Lang.Compilation_unit.Packed.t ->
-      Html_types.div_content_fun Html.elt list
-= fun t ->
-  let open Model.Lang in
-  t |> List.map (fun x ->
-    let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
-    let md_def =
-      Markup.keyword "module " ::
-      Html.pcdata modname ::
-      Html.pcdata " = " ::
-      Html_tree.Relative_link.of_path ~stop_before:false x.path
-    in
-    Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
-  )
-
-and signature
+let rec signature
   : Model.Lang.Signature.t ->
       Html_types.div_content_fun Html.elt list * Html_tree.t list
 = fun t ->
@@ -1026,6 +994,38 @@ and include_ (t : Model.Lang.Include.t) =
   [ Html.div ~a:[ Html.a_class ["spec"; "include"] ]
       (Html.div ~a:[ Html.a_class ["doc"] ] doc :: incl)
   ], tree
+
+let pack
+   : Model.Lang.Compilation_unit.Packed.t ->
+      Html_types.div_content_fun Html.elt list
+= fun t ->
+  let open Model.Lang in
+  t |> List.map (fun x ->
+    let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
+    let md_def =
+      Markup.keyword "module " ::
+      Html.pcdata modname ::
+      Html.pcdata " = " ::
+      Html_tree.Relative_link.of_path ~stop_before:false x.path
+    in
+    Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
+  )
+
+let compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
+  let package =
+    match t.id with
+    | Model.Paths.Identifier.Root (a, _) -> a.package
+    | _ -> assert false
+  in
+  Html_tree.enter package;
+  Html_tree.enter (Paths.Identifier.name t.id);
+  let header_doc = Documentation.to_html t.doc in
+  let html, subtree =
+    match t.content with
+    | Module sign -> signature sign
+    | Pack packed -> pack packed, []
+  in
+  Html_tree.make (header_doc @ html, subtree)
 
 let page (t : Model.Lang.Page.t) : Html_tree.t =
   let package, name =
