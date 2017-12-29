@@ -262,36 +262,47 @@ let page_creator ?kind ~path content =
       in
       add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
     in
-    let heading : Html_types.flow5_without_header_footer Html.elt list =
+
+    let kind_text =
       match kind with
-      | Some `Page -> []
-      | _ -> [
-        Html.h1 (
-          Markup.keyword (
-            match kind with
-            | None
-            | Some `Mod -> "Module"
-            | Some `Arg -> "Parameter"
-            | Some `Mty -> "Module type"
-            | Some `Cty -> "Class type"
-            | Some `Class -> "Class"
-            | Some `Page  -> assert false
-          ) :: Html.pcdata " " ::
-          [Markup.module_path (List.tl path)]
-        )
-      ]
+      | None
+      | Some `Mod -> "Module"
+      | Some `Arg -> "Parameter"
+      | Some `Mty -> "Module type"
+      | Some `Cty -> "Class type"
+      | Some `Class -> "Class"
+      | Some `Page -> assert false
     in
-    let article = Html.header heading :: content in
-    let has_parent = List.length path > 1 in
-    if not has_parent then
-      article
-    else
-      Html.nav [
-        Html.a ~a:[Html.a_href up_href] [Html.pcdata "Up"];
-        Html.pcdata " – package ";
-        Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]
-      ]
-      :: article
+
+    let title_heading =
+      Html.h1 [
+        Html.pcdata (kind_text ^ " ");
+        Markup.module_path (List.tl path);
+      ];
+    in
+
+    let header_content =
+      let has_parent = List.length path > 1 in
+      if has_parent then
+        let nav =
+          Html.nav [
+            Html.a ~a:[Html.a_href up_href] [
+              Html.pcdata "Up"
+            ];
+            Html.pcdata " – package ";
+            Html.a ~a:[Html.a_href pkg_href] [
+              Html.pcdata (List.hd path)
+            ];
+          ]
+        in
+        [nav; title_heading]
+      else
+        [title_heading]
+    in
+
+    let header = Html.header header_content in
+
+    header::content
   in
 
   let html : [ `Html ] Html.elt = Html.html head (Html.body wrapped_content) in
