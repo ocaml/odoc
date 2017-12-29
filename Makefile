@@ -5,8 +5,8 @@ build :
 .PHONY : test
 test : build
 	jbuilder build --dev @tester
-	jbuilder build --dev --no-buffer -j 1 @test/parser/runtest
-	jbuilder build --dev --no-buffer -j 1 @test/html/runtest
+	(cd _build/default/test/parser && ./test.exe)
+	(cd _build/default/test/html && ./test.exe)
 
 COVERAGE := _coverage
 BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
