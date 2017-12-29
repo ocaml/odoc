@@ -24,6 +24,10 @@ depends: [
   "cppo" {build}
   "fpath"
   "jbuilder" {build & >= "1.0+beta10"}
+  # The pretty-printer in Lambda Soup is needed for HTML testing until
+  # https://github.com/ocsigen/tyxml/pull/187 is merged into TyXML.
+  "lambdasoup" {test}
+  "ocamlfind" {test}
   "sexplib" {test}
   "tyxml" {>= "4.0.0"}
 ]

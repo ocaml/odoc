@@ -1,0 +1,14 @@
+(jbuild_version 1)
+
+(executable
+ ((name test)
+  (libraries (alcotest lambdasoup))))
+
+(alias
+ ((name html-tester)
+  (deps (test.exe ${ROOT}/src/odoc/bin/main.exe (files_recursively_in cases)))))
+
+(alias
+ ((name runtest)
+  (deps ((alias html-tester)))
+  (action (run ${exe:test.exe}))))

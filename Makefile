@@ -1,18 +1,20 @@
 .PHONY : build
 build :
-	jbuilder build --no-buffer --dev
+	jbuilder build --dev
 
 .PHONY : test
-test :
-	jbuilder runtest --no-buffer --dev
+test : build
+	jbuilder runtest --no-buffer -j 1 --dev
 
 COVERAGE := _coverage
 BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
 
 .PHONY : coverage
 coverage :
-	BISECT_ENABLE=yes jbuilder build --no-buffer --dev test/parser/test.exe
+	BISECT_ENABLE=yes jbuilder build --dev test/parser/test.exe
+	BISECT_ENABLE=yes jbuilder build --dev @html-tester
 	(cd _build/default/test/parser && ./test.exe) || true
+	(cd _build/default/test/html && ./test.exe) || true
 	@bisect-ppx-report \
 	    -I _build/default/ -html $(COVERAGE)/ \
 	    -text - -summary-only \
