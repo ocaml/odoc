@@ -243,8 +243,6 @@ let page_creator ?kind ~path content =
       Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
       Html.meta ~a:[ Html.a_name "viewport";
                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
-      Html.meta ~a:[ Html.a_name "generator";
-                      Html.a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
     ]
   in
 
