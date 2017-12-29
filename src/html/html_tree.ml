@@ -275,10 +275,8 @@ let page_creator ?kind ~path content =
     in
 
     let title_heading =
-      Html.h1 [
-        Html.pcdata (kind_text ^ " ");
-        Markup.module_path (List.tl path);
-      ];
+      Html.h1
+        [Html.pcdata (kind_text ^ " " ^ (String.concat "." (List.tl path)))];
     in
 
     let header_content =

@@ -23,10 +23,6 @@ module Html = Tyxml.Html
 let keyword keyword =
   Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.pcdata keyword ]
 
-let module_path ids =
-  Html.span
-    ~a:[ Html.a_class ["module-path"] ] [Html.pcdata (String.concat "." ids)]
-
 module Type = struct
   let path p = Html.span ~a:[ Html.a_class ["type-id"] ] p
   let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.pcdata tv ]

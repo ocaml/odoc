@@ -21,7 +21,6 @@ module Html = Tyxml.Html
 
 
 val keyword : string -> [> Html_types.span ] Html.elt
-val module_path : string list -> [> Html_types.span ] Html.elt
 
 module Type : sig
   val path :
