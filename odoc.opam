@@ -6,9 +6,9 @@ bug-reports: "https://github.com/ocaml-doc/odoc/issues"
 license: "ISC"
 
 authors: [
-    "Thomas Refis <trefis@janestreet.com>"
-    "David Sheets <sheets@alum.mit.edu>"
-    "Leo White <leo@lpw25.net>"
+  "Thomas Refis <trefis@janestreet.com>"
+  "David Sheets <sheets@alum.mit.edu>"
+  "Leo White <leo@lpw25.net>"
 ]
 maintainer: "Anton Bachin <antonbachin@yahoo.com>"
 dev-repo: "http://github.com/ocaml-doc/odoc.git"
