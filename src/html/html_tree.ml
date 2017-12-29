@@ -225,87 +225,78 @@ let page_creator ?kind ~path content =
       add_dotdot ~n:(n - 1) ("../" ^ acc)
   in
 
-    let has_parent = List.length path > 1 in
-
+  let head : Html_types.head Html.elt =
     let name = List.hd @@ List.rev path in
-
-    let title_string =
-      Printf.sprintf "%s (%s)" name (String.concat "." path) in
-
+    let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
     let css_url =
-        let n =
-          List.length path - (
-            (* This is just horrible. *)
-            match kind with
-            | Some `Page -> 1
-            | _ -> 0
-          )
-        in
+      let n =
+        List.length path - (
+          (* This is just horrible. *)
+          match kind with
+          | Some `Page -> 1
+          | _ -> 0)
+      in
       add_dotdot "odoc.css" ~n
     in
+    Html.head (Html.title (Html.pcdata title_string)) [
+      Html.link ~rel:[`Stylesheet] ~href:css_url () ;
+      Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
+      Html.meta ~a:[ Html.a_name "viewport";
+                  Html.a_content "width=device-width,initial-scale=1.0"; ] ();
+      Html.meta ~a:[ Html.a_name "generator";
+                      Html.a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
+    ]
+  in
 
-    let header : Html_types.head Html.elt =
-      Html.head (Html.title (Html.pcdata title_string)) [
-        Html.link ~rel:[`Stylesheet] ~href:css_url () ;
-        Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
-        Html.meta ~a:[ Html.a_name "viewport";
-                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
-        Html.meta ~a:[ Html.a_name "generator";
-                       Html.a_content "doc-ock-html v1.0.0-1-g1fc9bf0" ] ();
-      ]
+  let wrapped_content : (Html_types.div_content Html.elt) list =
+    let up_href =
+      if !Relative_link.semantic_uris then ".." else "../index.html" in
+    let pkg_href =
+      let n =
+        List.length path - (
+          (* This is just horrible. *)
+          match kind with
+          | Some `Page -> 2
+          | _ -> 1
+        )
+      in
+      add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
     in
-
     let heading : Html_types.flow5_without_header_footer Html.elt list =
       match kind with
       | Some `Page -> []
       | _ -> [
-          Html.h1 (
-            Markup.keyword (
-              match kind with
-              | None
-              | Some `Mod -> "Module"
-              | Some `Arg -> "Parameter"
-              | Some `Mty -> "Module type"
-              | Some `Cty -> "Class type"
-              | Some `Class -> "Class"
-              | Some `Page  -> assert false
-            ) :: Html.pcdata " " ::
-            [Markup.module_path (List.tl path)]
-          )
-        ]
-    in
-
-    let content : Html_types.div_content_fun Html.elt list =
-      let up_href =
-        if !Relative_link.semantic_uris then ".." else "../index.html"
-      in
-      let pkg_href =
-        let n =
-          List.length path - (
-            (* This is just horrible. *)
+        Html.h1 (
+          Markup.keyword (
             match kind with
-            | Some `Page -> 2
-            | _ -> 1
-          )
-        in
-        add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
-      in
-      let article = Html.header heading :: content in
-      if not has_parent then
-        article
-      else
-        Html.nav [
-          Html.a ~a:[Html.a_href up_href] [Html.pcdata "Up"];
-          Html.pcdata " – package ";
-          Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]
-        ]
-        :: article
+            | None
+            | Some `Mod -> "Module"
+            | Some `Arg -> "Parameter"
+            | Some `Mty -> "Module type"
+            | Some `Cty -> "Class type"
+            | Some `Class -> "Class"
+            | Some `Page  -> assert false
+          ) :: Html.pcdata " " ::
+          [Markup.module_path (List.tl path)]
+        )
+      ]
     in
+    let article = Html.header heading :: content in
+    let has_parent = List.length path > 1 in
+    if not has_parent then
+      article
+    else
+      Html.nav [
+        Html.a ~a:[Html.a_href up_href] [Html.pcdata "Up"];
+        Html.pcdata " – package ";
+        Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]
+      ]
+      :: article
+  in
 
-    let html : [ `Html ] Html.elt =
-      Html.html header (Html.body content) in
+  let html : [ `Html ] Html.elt = Html.html head (Html.body wrapped_content) in
 
-    html
+  html
 
 let make (content, children) =
   assert (not (Stack.is_empty path));
