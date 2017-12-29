@@ -294,13 +294,11 @@ let page_creator ?kind ~path content =
       if not has_parent then
         article
       else
-        Html.nav ~a:[ Html.a_id "top" ]
-          [ Html.a ~a:[ Html.a_href up_href ] [ Html.pcdata "Up" ]
-          ; Html.pcdata " "; Html.entity "mdash"; Html.pcdata " "
-          ; Html.span ~a:[ Html.a_class ["package"]]
-              [ Html.pcdata "package ";
-                Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]]
-          ]
+        Html.nav [
+          Html.a ~a:[Html.a_href up_href] [Html.pcdata "Up"];
+          Html.pcdata " – package ";
+          Html.a ~a:[Html.a_href pkg_href] [Html.pcdata (List.hd path)]
+        ]
         :: article
     in
 
