@@ -200,7 +200,6 @@ let rec inline_element : Comment.inline_element -> phrasing Html.elt = function
   | `Link (target, content) ->
     let content =
       match content with
-      (* TODO Actually allow empty links, and fill them with the URL? *)
       | [] -> [Html.pcdata target]
       | _ -> non_link_inline_element_list content
     in

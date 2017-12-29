@@ -830,6 +830,10 @@ let tests = [
       "{{: } foo}"
       (error 1 0 1 5 ["reference target cannot be empty"]);
 
+    test "empty"
+      "{{:foo}}"
+      (Ok [`Paragraph [`Link ("foo", [])]]);
+
     test "internal whitespace"
       "{{:foo bar} baz}"
       (error 1 6 1 7

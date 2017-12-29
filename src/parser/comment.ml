@@ -164,6 +164,8 @@ let rec non_link_inline_element
         ~requires_leading_whitespace
         input
     in
+    if content = [] then
+      Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
     `Styled (s, content)
 
 (* Consumes tokens that make up a sequence of non-link inline elements. See
@@ -280,8 +282,8 @@ and delimited_non_link_inline_element_list
       ~in_what:(Token.describe parent_markup)
 
   | _, `Right_brace ->
-    Raise.cannot_be_empty
-      parent_markup_location ~what:(Token.describe parent_markup);
+    junk input;
+    []
 
   | _ ->
     if requires_leading_whitespace then
@@ -360,6 +362,8 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
           ~requires_leading_whitespace:false
           input
       in
+      if content = [] then
+        Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
       let acc = (`Reference (Helpers.read_reference r, content))::acc in
       paragraph_line acc
 
@@ -856,6 +860,8 @@ let rec block_element_list
             ~requires_leading_whitespace:true
             input
         in
+        if content = [] then
+          Raise.cannot_be_empty l ~what:(Token.describe token);
         let label =
           match label with
           | None -> None
