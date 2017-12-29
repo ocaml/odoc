@@ -217,7 +217,7 @@ end
 
 let render_fragment = Relative_link.Of_fragment.render_raw
 
-let page_creator ?kind ~path content =
+let page_creator ?kind ~path header_docs content =
   let rec add_dotdot ~n acc =
     if n = 0 then
       acc
@@ -291,9 +291,9 @@ let page_creator ?kind ~path content =
             ];
           ]
         in
-        [nav; title_heading]
+        nav::title_heading::header_docs
       else
-        [title_heading]
+        title_heading::header_docs
     in
 
     let header = Html.header header_content in
@@ -305,12 +305,12 @@ let page_creator ?kind ~path content =
 
   html
 
-let make (content, children) =
+let make ?(header_docs = []) content children =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = snd (Stack.top path) in
   let path    = List.map fst (stack_to_list path) in
-  let content = page_creator content ?kind ~path in
+  let content = page_creator ?kind ~path header_docs content in
   { name; content; children }
 
 let traverse ~f t =

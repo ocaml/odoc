@@ -43,7 +43,13 @@ val leave : unit -> unit
 
 (** {1 Page creator} *)
 
-val make : Html_types.div_content_fun Html.elt list * t list -> t
+(* TOOD Passing the header docs should become non-optional as the code in
+   To_html_tree is progressively refactored. *)
+val make :
+  ?header_docs:(Html_types.flow5_without_header_footer Html.elt) list ->
+  (Html_types.div_content Html.elt) list ->
+  t list ->
+    t
 (** [make (body, children)] calls "the page creator" to turn [body] into an
     [[ `Html ] elt]. *)
 

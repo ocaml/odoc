@@ -19,7 +19,8 @@
 module Comment = Model.Comment
 module Html = Tyxml.Html
 
-type flow = Html_types.flow5
+type top_level_flow = Html_types.flow5_without_header_footer
+type any_flow = Html_types.flow5
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
@@ -211,26 +212,27 @@ and inline_element_list elements =
 
 
 let rec nestable_block_element
-    : Comment.nestable_block_element -> flow Html.elt =
+    : Comment.nestable_block_element -> top_level_flow Html.elt =
   function
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s -> Html.pre [Html.code [Html.pcdata s]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
     let items = List.map (Reference.to_html ~stop_before:false) ms in
-    let items = List.map (fun e -> Html.li [e]) (items :> flow Html.elt list) in
+    let items = (items :> (any_flow Html.elt) list) in
+    let items = List.map (fun e -> Html.li [e]) items in
     Html.ul items
   | `List (kind, items) ->
     let items =
       items
       |> List.map begin function
         | [`Paragraph content] ->
-          (inline_element_list content :> (flow Html.elt) list)
+          (inline_element_list content :> (any_flow Html.elt) list)
         | item ->
-          nestable_block_element_list item
+          nested_block_element_list item
         end
-      |> List.map Html.li
     in
+    let items = List.map Html.li items in
 
     match kind with
     | `Unordered -> Html.ul items
@@ -239,9 +241,12 @@ let rec nestable_block_element
 and nestable_block_element_list elements =
   List.map nestable_block_element elements
 
+and nested_block_element_list elements =
+  (nestable_block_element_list elements :> (any_flow Html.elt) list)
 
 
-let tag : Comment.tag -> (flow Html.elt) option = function
+
+let tag : Comment.tag -> (top_level_flow Html.elt) option = function
   | `Author s ->
     Some (Html.(dl [
       dt [pcdata "author"];
@@ -249,19 +254,19 @@ let tag : Comment.tag -> (flow Html.elt) option = function
   | `Deprecated content ->
     Some (Html.(dl [
       dt [pcdata "deprecated"];
-      dd (nestable_block_element_list content)]))
+      dd (nested_block_element_list content)]))
   | `Param (name, content) ->
     Some (Html.(dl [
       dt [pcdata "parameter "; pcdata name];
-      dd (nestable_block_element_list content)]))
+      dd (nested_block_element_list content)]))
   | `Raise (name, content) ->
     Some (Html.(dl [
       dt [pcdata "raises "; pcdata name];
-      dd (nestable_block_element_list content)]))
+      dd (nested_block_element_list content)]))
   | `Return content ->
     Some (Html.(dl [
       dt [pcdata "returns"];
-      dd (nestable_block_element_list content)]))
+      dd (nested_block_element_list content)]))
   | `See _ ->
     (* TODO *)
     failwith "unimplemented"
@@ -272,7 +277,7 @@ let tag : Comment.tag -> (flow Html.elt) option = function
   | `Before (version, content) ->
     Some (Html.(dl [
       dt [pcdata "before "; pcdata version];
-      dd (nestable_block_element_list content)]))
+      dd (nested_block_element_list content)]))
   | `Version s ->
     Some (Html.(dl [
       dt [pcdata "version"];
@@ -282,7 +287,8 @@ let tag : Comment.tag -> (flow Html.elt) option = function
 
 
 
-let block_element : Comment.block_element -> (flow Html.elt) option = function
+let block_element : Comment.block_element -> (top_level_flow Html.elt) option =
+  function
   | #Comment.nestable_block_element as e ->
     Some (nestable_block_element e)
 
@@ -331,7 +337,8 @@ let block_element_list elements =
 
 
 
-let first_to_html : Model.Comment.docs -> (flow Html.elt) list = function
+let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
+  function
   | (`Paragraph _ as first_paragraph)::_ ->
     begin match block_element first_paragraph with
     | Some element -> [element]
@@ -341,7 +348,9 @@ let first_to_html : Model.Comment.docs -> (flow Html.elt) list = function
 
 (* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in
    ocamldoc, and there is no need to emulate it. *)
-let to_html ?wrap:_ (docs : Model.Comment.docs) : (flow Html.elt) list =
+let to_html
+    ?wrap:_ (docs : Model.Comment.docs) : (top_level_flow Html.elt) list =
+
   block_element_list docs
 
 let has_doc docs =

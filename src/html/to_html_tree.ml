@@ -21,6 +21,12 @@ module Html = Tyxml.Html
 
 
 
+let relax_docs_type docs =
+  (docs :> (Html_types.div_content Html.elt) list)
+
+let docs_to_general_html docs =
+  relax_docs_type (Documentation.to_html docs)
+
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
 
@@ -70,7 +76,7 @@ let rec signature
         | Class c -> class_ c
         | ClassType cty -> class_type cty
         | Include incl -> include_ incl
-        | Comment (`Docs doc) -> Documentation.to_html doc, []
+        | Comment (`Docs doc) -> docs_to_general_html doc, []
         | Comment `Stop ->
           recording_doc := not !recording_doc;
           [], []
@@ -107,8 +113,8 @@ and functor_argument
         | e -> e
       in
       Html_tree.enter ~kind:(`Arg) link_name;
-      let node = module_expansion expansion in
-      let subtree = Html_tree.make node in
+      let (docs, subpages) = module_expansion expansion in
+      let subtree = Html_tree.make docs subpages in
       Html_tree.leave ();
       (
         Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.pcdata name] ::
@@ -174,21 +180,21 @@ and module_
         | e -> e
       in
       Html_tree.enter ~kind:(`Mod) modname;
-      let doc = Documentation.to_html t.doc in
+      let doc = docs_to_general_html t.doc in
       let expansion, subpages = module_expansion expansion in
       let expansion =
         match doc with
         | [] -> expansion
         | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
-      let subtree = Html_tree.make (expansion, subpages) in
+      let subtree = Html_tree.make expansion subpages in
       Html_tree.leave ();
       Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
   in
   let md_def_content = Markup.keyword "module " :: modname :: md in
   let region =
     Markup.make_def ~id:t.id ~code:md_def_content
-      ~doc:(Documentation.first_to_html t.doc)
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
   [ region ], subtree
 
@@ -243,14 +249,14 @@ and module_type (t : Model.Lang.ModuleType.t) =
         | e -> e
       in
       Html_tree.enter ~kind:(`Mty) modname;
-      let doc = Documentation.to_html t.doc in
+      let doc = docs_to_general_html t.doc in
       let expansion, subpages = module_expansion expansion in
       let expansion =
         match doc with
         | [] -> expansion
         | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
-      let subtree = Html_tree.make (expansion, subpages) in
+      let subtree = Html_tree.make expansion subpages in
       Html_tree.leave ();
       Html.a ~a:[ a_href ~kind:`Mty modname ] [Html.pcdata modname], [subtree]
   in
@@ -263,7 +269,7 @@ and module_type (t : Model.Lang.ModuleType.t) =
   in
   let region =
     Markup.make_def ~id:t.id ~code:mty_def
-      ~doc:(Documentation.first_to_html t.doc)
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
   [ region ], subtree
 
@@ -514,7 +520,7 @@ and variant cstrs : [> Html_types.table ] Html.elt =
     cstrs |> List.map (fun cstr ->
       let open Model.Lang.TypeDecl.Constructor in
       let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-      let rhs = Documentation.to_html ~wrap:() cstr.doc in
+      let rhs = relax_docs_type (Documentation.to_html ~wrap:() cstr.doc) in
       Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc cstr.doc) then [] else [
@@ -549,7 +555,7 @@ and record fields =
     fields |> List.map (fun fld ->
       let open Model.Lang.TypeDecl.Field in
       let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-      let rhs = Documentation.to_html ~wrap:() fld.doc in
+      let rhs = relax_docs_type (Documentation.to_html ~wrap:() fld.doc) in
       Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
         lhs ::
         if not (Documentation.has_doc fld.doc) then [] else [
@@ -595,7 +601,7 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
       | Variant cstrs -> [variant cstrs]
       | Record fields -> record fields
   in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let tdecl_def =
     Html.code [
       Markup.keyword "type ";
@@ -609,7 +615,7 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
   Markup.make_spec ~id:t.id ~doc tdecl_def
 
 and extension (t : Model.Lang.Extension.t) =
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let extension =
     Html.code (
       Markup.keyword "type " ::
@@ -633,7 +639,7 @@ and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
 
 and exn (t : Model.Lang.Exception.t) =
   let cstr = constructor t.id t.args t.res in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
   Markup.make_spec ~id:t.id ~doc exn
 
@@ -778,7 +784,7 @@ and package_subst
 
 and value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let value =
     Markup.keyword "val " ::
     Html.pcdata name ::
@@ -789,7 +795,7 @@ and value (t : Model.Lang.Value.t) =
 
 and external_ (t : Model.Lang.External.t) =
   let name = Paths.Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let external_ =
     Markup.keyword "external " ::
     Html.pcdata name ::
@@ -813,7 +819,7 @@ and class_signature (t : Model.Lang.ClassSignature.t) =
       class_type_expr cte
     | Comment (`Docs doc) ->
       if !recording_doc then
-        Documentation.to_html doc
+        docs_to_general_html doc
       else
         []
     | Comment `Stop ->
@@ -823,7 +829,7 @@ and class_signature (t : Model.Lang.ClassSignature.t) =
 
 and method_ (t : Model.Lang.Method.t) =
   let name = Paths.Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let virtual_ =
     if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
   let private_ =
@@ -840,7 +846,7 @@ and method_ (t : Model.Lang.Method.t) =
 
 and instance_variable (t : Model.Lang.InstanceVariable.t) =
   let name = Paths.Identifier.name t.id in
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let virtual_ =
     if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
   let mutable_ =
@@ -892,14 +898,14 @@ and class_ (t : Model.Lang.Class.t) =
     | None -> Html.pcdata name, []
     | Some csig ->
       Html_tree.enter ~kind:(`Class) name;
-      let doc = Documentation.to_html t.doc in
+      let doc = docs_to_general_html t.doc in
       let expansion = class_signature csig in
       let expansion =
         match doc with
         | [] -> expansion
         | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
-      let subtree = Html_tree.make (expansion, []) in
+      let subtree = Html_tree.make expansion [] in
       Html_tree.leave ();
       Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
   in
@@ -913,7 +919,7 @@ and class_ (t : Model.Lang.Class.t) =
   in
   let region =
     Markup.make_def ~id:t.id ~code:class_def_content
-      ~doc:(Documentation.first_to_html t.doc)
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
   [ region ], subtree
 
@@ -928,14 +934,14 @@ and class_type (t : Model.Lang.ClassType.t) =
     | None -> Html.pcdata name, []
     | Some csig ->
       Html_tree.enter ~kind:(`Cty) name;
-      let doc = Documentation.to_html t.doc in
+      let doc = docs_to_general_html t.doc in
       let expansion = class_signature csig in
       let expansion =
         match doc with
         | [] -> expansion
         | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
       in
-      let subtree = Html_tree.make (expansion, []) in
+      let subtree = Html_tree.make expansion [] in
       Html_tree.leave ();
       Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
   in
@@ -949,12 +955,12 @@ and class_type (t : Model.Lang.ClassType.t) =
   in
   let region =
     Markup.make_def ~id:t.id ~code:ctyp
-      ~doc:(Documentation.first_to_html t.doc)
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
   [ region ], subtree
 
 and include_ (t : Model.Lang.Include.t) =
-  let doc = Documentation.to_html t.doc in
+  let doc = docs_to_general_html t.doc in
   let included_html, tree = signature t.expansion.content in
   let should_be_inlined, should_be_open = false, false (* TODO *)
     (* match t.doc with
@@ -1019,13 +1025,13 @@ let compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   in
   Html_tree.enter package;
   Html_tree.enter (Paths.Identifier.name t.id);
-  let header_doc = Documentation.to_html t.doc in
+  let header_docs = Documentation.to_html t.doc in
   let html, subtree =
     match t.content with
     | Module sign -> signature sign
     | Pack packed -> pack packed, []
   in
-  Html_tree.make (header_doc @ html, subtree)
+  Html_tree.make ~header_docs html subtree
 
 let page (t : Model.Lang.Page.t) : Html_tree.t =
   let package, name =
@@ -1034,5 +1040,5 @@ let page (t : Model.Lang.Page.t) : Html_tree.t =
   in
   Html_tree.enter package;
   Html_tree.enter ~kind:`Page name;
-  let html = Documentation.to_html t.content in
-  Html_tree.make (html, [])
+  let html = relax_docs_type (Documentation.to_html t.content) in
+  Html_tree.make html []
