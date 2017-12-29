@@ -40,11 +40,17 @@ let make_def ~id ~code:def ~doc =
   match Url.from_identifier ~stop_before:true id with
   | Error e -> failwith (Url.Error.to_string e)
   | Ok { anchor; kind; _ } ->
-    Html.div ~a:[ Html.a_class ["spec"; kind] ; Html.a_id anchor ] [
-      Html.a ~a:[ Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [];
-      Html.div ~a:[ Html.a_class ["def"; kind] ] [ Html.code def ];
-      Html.div ~a:[ Html.a_class ["doc"] ] doc;
+    let content = [
+      Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] [];
+      Html.div ~a:[Html.a_class ["def"; kind]] [Html.code def];
     ]
+    in
+    let content =
+      match doc with
+      | [] -> content
+      | _ -> content @ [Html.div ~a:[Html.a_class ["doc"]] doc]
+    in
+    Html.div ~a:[Html.a_class ["spec"; kind]; Html.a_id anchor] content
 
 let make_spec ~id ?doc code =
   match Url.from_identifier ~stop_before:true id with
