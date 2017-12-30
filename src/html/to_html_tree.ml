@@ -51,44 +51,71 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
 let rec signature
-  : Model.Lang.Signature.t ->
-      Html_types.div_content_fun Html.elt list * Html_tree.t list
-= fun t ->
-  let html_and_subtrees =
-    let recording_doc = ref true in
-    t |> List.map (fun item ->
-      if not !recording_doc then (
-        begin match item with
-        | Model.Lang.Signature.Comment `Stop ->
-          recording_doc := not !recording_doc
-        | _ -> ()
-        end;
-        [], []
-      ) else (
-        match item with
-        | Model.Lang.Signature.Module md -> module_ md
-        | ModuleType mty -> module_type mty
-        | Type td -> [ type_decl td ], []
-        | TypExt te -> [ extension te ], []
-        | Exception e -> [ exn e ], []
-        | Value v -> [ value v ], []
-        | External e -> [ external_ e ], []
-        | Class c -> class_ c
-        | ClassType cty -> class_type cty
-        | Include incl -> include_ incl
-        | Comment (`Docs doc) -> docs_to_general_html doc, []
-        | Comment `Stop ->
-          recording_doc := not !recording_doc;
-          [], []
-      )
-    )
+    : Model.Lang.Signature.t ->
+      Html_types.div_content Html.elt list * Html_tree.t list
+    = fun s ->
+
+  let accumulate_definitions definitions html =
+    match definitions with
+    | [] -> html
+    | _ -> html @ [Html.dl definitions]
   in
-  let html, subtrees = List.split html_and_subtrees in
-  List.concat html, List.concat subtrees
+
+  let rec traverse_items ~hiding_docs definitions html subpages items =
+    match items with
+    | [] ->
+      accumulate_definitions definitions html, subpages
+
+    | item::items ->
+      if hiding_docs then
+        match item with
+        | Model.Lang.Signature.Comment `Stop ->
+          traverse_items ~hiding_docs:false definitions html subpages items
+        | _ ->
+          traverse_items ~hiding_docs definitions html subpages items
+
+      else
+        (* TODO This could benefit slightly from a type-level distinction
+           between comments and definitions. *)
+        match item with
+        | Model.Lang.Signature.Comment comment ->
+          let html = accumulate_definitions definitions html in
+          begin match comment with
+          | `Stop ->
+            traverse_items ~hiding_docs:true [] html subpages items
+          | `Docs docs ->
+            let html = html @ (docs_to_general_html docs) in
+            traverse_items ~hiding_docs [] html subpages items
+          end
+
+        | _ ->
+          let new_definitions, new_subpages =
+            match item with
+            | Model.Lang.Signature.Comment _ ->
+              assert false
+            | Module m -> module_ m
+            | ModuleType m -> module_type m
+            | Type t -> type_decl t
+            | TypExt e -> extension e
+            | Exception e -> exn e
+            | Value v -> value v
+            | External e -> external_ e
+            | Class c -> class_ c
+            | ClassType c -> class_type c
+            | Include m -> include_ m
+          in
+
+          let definitions = definitions @ new_definitions in
+          let subpages = subpages @ new_subpages in
+
+          traverse_items ~hiding_docs definitions html subpages items
+  in
+
+  traverse_items ~hiding_docs:false [] [] [] s
 
 and functor_argument
    : 'row. Model.Lang.FunctorArgument.t
-  -> ([> Html_types.div ] as 'row) Html.elt * Html_tree.t list
+  -> ([> Html_types.dl_content ] as 'row) Html.elt list * Html_tree.t list
 = fun arg ->
   let open Model.Lang.FunctorArgument in
   let name = Paths.Identifier.name arg.id in
@@ -142,13 +169,13 @@ and module_expansion
         | None -> acc
         | Some arg ->
           let arg, arg_subpages = functor_argument arg in
-          (arg :: args, arg_subpages @ subpages)
+          (arg @ args, arg_subpages @ subpages)
       )
       ([], []) args
     in
     let html =
       Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Parameters" ] ::
-      Html.div params ::
+      Html.dl params ::
       Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Signature" ] ::
       sig_html
     in
@@ -156,7 +183,7 @@ and module_expansion
 
 and module_
    : 'row. Model.Lang.Module.t
-  -> ([> Html_types.div ] as 'row) Html.elt list * Html_tree.t list
+  -> ([> Html_types.dl_content ] as 'row) Html.elt list * Html_tree.t list
 = fun t ->
   let modname = Paths.Identifier.name t.id in
   let md =
@@ -196,7 +223,7 @@ and module_
     Markup.make_def ~id:t.id ~code:md_def_content
       ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
-  [ region ], subtree
+  region, subtree
 
 and module_decl (base : Paths.Identifier.signature) md =
   begin match md with
@@ -271,7 +298,7 @@ and module_type (t : Model.Lang.ModuleType.t) =
     Markup.make_def ~id:t.id ~code:mty_def
       ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
-  [ region ], subtree
+  region, subtree
 
 and mty
   : 'inner_row 'outer_row.
@@ -612,7 +639,7 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
     representation @
     [Html.code constraints]
   in
-  Markup.make_spec ~id:t.id ~doc tdecl_def
+  Markup.make_spec ~id:t.id ~doc tdecl_def, []
 
 and extension (t : Model.Lang.Extension.t) =
   let doc = docs_to_general_html t.doc in
@@ -628,10 +655,9 @@ and extension (t : Model.Lang.Extension.t) =
   (* FIXME: really want to use the kind "extension" here? *)
   (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
      have an anchor either). *)
-  Html.div ~a:[ Html.a_class ["spec"; "extension"] ] [
-    Html.div ~a:[ Html.a_class ["def"; "extension"] ] extension;
-    Html.div ~a:[ Html.a_class ["doc"] ] doc;
-  ]
+  (* TODO Fix this junk. *)
+  (* TODO make_spec needs to be modified to make the anchor optional. *)
+  Markup.make_spec ~id:(CoreType "fixme") ~doc extension, []
 
 and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
   (* TODO doc *)
@@ -641,7 +667,7 @@ and exn (t : Model.Lang.Exception.t) =
   let cstr = constructor t.id t.args t.res in
   let doc = docs_to_general_html t.doc in
   let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
-  Markup.make_spec ~id:t.id ~doc exn
+  Markup.make_spec ~id:t.id ~doc exn, []
 
 and te_variant
   : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
@@ -791,7 +817,7 @@ and value (t : Model.Lang.Value.t) =
     Html.pcdata " : " ::
     type_expr t.type_
   in
-  Markup.make_def ~id:t.id ~doc ~code:value
+  Markup.make_def ~id:t.id ~doc ~code:value, []
 
 and external_ (t : Model.Lang.External.t) =
   let name = Paths.Identifier.name t.id in
@@ -804,9 +830,11 @@ and external_ (t : Model.Lang.External.t) =
     Html.pcdata " = " ::
     List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
   in
-  Markup.make_def ~id:t.id ~doc ~code:external_
+  Markup.make_def ~id:t.id ~doc ~code:external_, []
 
-and class_signature (t : Model.Lang.ClassSignature.t) =
+and class_signature (_t : Model.Lang.ClassSignature.t) =
+  assert false
+  (* TODO
   (* FIXME: use [t.self] *)
   let recording_doc = ref true in
   List.concat @@ (t.items |> List.map (function
@@ -826,7 +854,8 @@ and class_signature (t : Model.Lang.ClassSignature.t) =
       recording_doc := not !recording_doc;
       []
   ))
-
+  *)
+(*
 and method_ (t : Model.Lang.Method.t) =
   let name = Paths.Identifier.name t.id in
   let doc = docs_to_general_html t.doc in
@@ -842,7 +871,7 @@ and method_ (t : Model.Lang.Method.t) =
     Html.pcdata " : " ::
     type_expr t.type_
   in
-  Markup.make_def ~id:t.id ~doc ~code:method_
+  Markup.make_def ~id:t.id ~doc ~code:method_, []
 
 and instance_variable (t : Model.Lang.InstanceVariable.t) =
   let name = Paths.Identifier.name t.id in
@@ -859,8 +888,8 @@ and instance_variable (t : Model.Lang.InstanceVariable.t) =
     Html.pcdata " : " ::
     type_expr t.type_
   in
-  Markup.make_def ~id:t.id ~doc ~code:val_
-
+  Markup.make_def ~id:t.id ~doc ~code:val_, []
+*)
 and class_type_expr
    : 'inner_row 'outer_row. Model.Lang.ClassType.expr
   -> ('inner_row, 'outer_row) text Html.elt list
@@ -921,7 +950,7 @@ and class_ (t : Model.Lang.Class.t) =
     Markup.make_def ~id:t.id ~code:class_def_content
       ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
-  [ region ], subtree
+  region, subtree
 
 and class_type (t : Model.Lang.ClassType.t) =
   let name = Paths.Identifier.name t.id in
@@ -957,9 +986,12 @@ and class_type (t : Model.Lang.ClassType.t) =
     Markup.make_def ~id:t.id ~code:ctyp
       ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
-  [ region ], subtree
+  region, subtree
 
-and include_ (t : Model.Lang.Include.t) =
+and include_ (_t : Model.Lang.Include.t) =
+  assert false
+  (* TODO *)
+  (*
   let doc = docs_to_general_html t.doc in
   let included_html, tree = signature t.expansion.content in
   let should_be_inlined, should_be_open = false, false (* TODO *)
@@ -1000,13 +1032,15 @@ and include_ (t : Model.Lang.Include.t) =
   [ Html.div ~a:[ Html.a_class ["spec"; "include"] ]
       (Html.div ~a:[ Html.a_class ["doc"] ] doc :: incl)
   ], tree
+  *)
 
 let pack
    : Model.Lang.Compilation_unit.Packed.t ->
-      Html_types.div_content_fun Html.elt list
+      Html_types.div_content Html.elt list
 = fun t ->
   let open Model.Lang in
-  t |> List.map (fun x ->
+  t
+  |> List.map begin fun x ->
     let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
     let md_def =
       Markup.keyword "module " ::
@@ -1015,7 +1049,10 @@ let pack
       Html_tree.Relative_link.of_path ~stop_before:false x.path
     in
     Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
-  )
+  end
+  |> List.flatten
+  |> fun definitions ->
+    [Html.dl definitions]
 
 let compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   let package =
