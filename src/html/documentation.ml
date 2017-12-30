@@ -267,9 +267,16 @@ let tag : Comment.tag -> (top_level_flow Html.elt) option = function
     Some (Html.(dl [
       dt [pcdata "returns"];
       dd (nested_block_element_list content)]))
-  | `See _ ->
-    (* TODO *)
-    failwith "unimplemented"
+  | `See (kind, target, content) ->
+    let target =
+      match kind with
+      | `Url -> Html.a ~a:[Html.a_href target] [Html.pcdata target]
+      | `File -> Html.code [Html.pcdata target]
+      | `Document -> Html.pcdata target
+    in
+    Some (Html.(dl [
+      dt [pcdata "see "; target];
+      dd (nested_block_element_list content)]))
   | `Since s ->
     Some (Html.(dl [
       dt [pcdata "since"];
