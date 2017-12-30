@@ -20,9 +20,10 @@ let () =
 
   Unix.mkdir build_directory 0o755;
 
-  let make_html_test : string -> unit Alcotest.test = fun case_filename ->
+  let make_html_test : string -> unit Alcotest.test_case = fun case_filename ->
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
+    let file_title = String.sub file_title 4 (String.length file_title - 4) in
     let test_name = file_title in
     let module_name = String.capitalize_ascii test_name in
 
@@ -96,10 +97,10 @@ let () =
         Alcotest.failf "'diff' exited with %i" exit_code
     in
 
-    "html", [test_name, `Slow, run_test_case]
+    test_name, `Slow, run_test_case
   in
 
-  let html_tests = List.map make_html_test cases in
+  let html_tests : unit Alcotest.test = "html", List.map make_html_test cases in
 
   let output_css : unit Alcotest.test =
     let run_test_case () =
@@ -110,4 +111,4 @@ let () =
     "css", ["css", `Slow, run_test_case]
   in
 
-  Alcotest.run "html" (output_css::html_tests)
+  Alcotest.run "html" [output_css; html_tests]
