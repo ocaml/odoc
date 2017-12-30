@@ -45,8 +45,11 @@ type 'token stream_head = (int * int) * 'token
   This is done when the stream head has already been examined by the caller, and
   it allows a precise and limited set of cases in the function. *)
 type input = {
+  permissive : bool;
+  sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
   token_stream : (Token.t stream_head) Stream.t;
   parent_of_sections : Model.Paths.Identifier.label_parent;
+  accumulated_warnings : (Helpers.raw_parse_error list) ref;
 }
 
 let junk input =
@@ -61,6 +64,12 @@ let peek input =
 
 let npeek n input =
   Stream.npeek n input.token_stream
+
+let warning input error =
+  if input.permissive then
+    input.accumulated_warnings := error::!(input.accumulated_warnings)
+  else
+    raise (Helpers.Parse_error error)
 
 
 
@@ -539,11 +548,12 @@ let rec block_element_list
     fun context ~parent_markup input ->
 
   let rec consume_block_elements
-      : parsed_a_tag:bool ->
+      : parsed_a_title:bool ->
+        parsed_a_tag:bool ->
         where_in_line ->
         block list ->
           block list * stops_at_which_tokens stream_head * where_in_line =
-      fun ~parsed_a_tag where_in_line acc ->
+      fun ~parsed_a_title ~parsed_a_tag where_in_line acc ->
 
     let describe token =
       match token with
@@ -605,11 +615,11 @@ let rec block_element_list
        well as to ensure that all block elements begin on their own line. *)
     | _, `Space ->
       junk input;
-      consume_block_elements ~parsed_a_tag where_in_line acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag where_in_line acc
 
     | _, `Single_newline ->
       junk input;
-      consume_block_elements ~parsed_a_tag `At_start_of_line acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag `At_start_of_line acc
 
     | _, `Blank_line as stream_head ->
       begin match context with
@@ -620,7 +630,8 @@ let rec block_element_list
       (* Otherwise, blank lines are pretty much like single newlines. *)
       | _ ->
         junk input;
-        consume_block_elements ~parsed_a_tag `At_start_of_line acc
+        consume_block_elements
+          ~parsed_a_title ~parsed_a_tag `At_start_of_line acc
       end
 
 
@@ -688,7 +699,8 @@ let rec block_element_list
               `Canonical (path, module_)
           in
           let acc = (`Tag tag)::acc in
-          consume_block_elements ~parsed_a_tag:true `After_text acc
+          consume_block_elements
+            ~parsed_a_title ~parsed_a_tag:true `After_text acc
 
         | `Deprecated | `Return as tag ->
           let content, _stream_head, where_in_line =
@@ -699,7 +711,8 @@ let rec block_element_list
             | `Return -> `Return content
           in
           let acc = (`Tag tag)::acc in
-          consume_block_elements ~parsed_a_tag:true where_in_line acc
+          consume_block_elements
+            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
 
         | `Param _ | `Raise _ | `Before _ as tag ->
           let content, _stream_head, where_in_line =
@@ -711,13 +724,15 @@ let rec block_element_list
             | `Before s -> `Before (s, content)
           in
           let acc = (`Tag tag)::acc in
-          consume_block_elements ~parsed_a_tag:true where_in_line acc
+          consume_block_elements
+            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
 
         | `See (kind, target) ->
           let content, _stream_head, where_in_line =
             block_element_list In_tag ~parent_markup:token input in
           let acc = (`Tag (`See (kind, target, content)))::acc in
-          consume_block_elements ~parsed_a_tag:true where_in_line acc
+          consume_block_elements
+            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
         end
       end
 
@@ -729,7 +744,7 @@ let rec block_element_list
       let block = paragraph input in
       let block = accepted_in_all_contexts context block in
       let acc = block::acc in
-      consume_block_elements ~parsed_a_tag `After_text acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
     | l, ((`Code_block s | `Verbatim s) as token) as stream_head ->
       raise_if_after_tags stream_head;
@@ -744,7 +759,7 @@ let rec block_element_list
       in
       let block = accepted_in_all_contexts context block in
       let acc = block::acc in
-      consume_block_elements ~parsed_a_tag `After_text acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
     | l, (`Modules s as token) as stream_head ->
       raise_if_after_tags stream_head;
@@ -790,7 +805,7 @@ let rec block_element_list
 
       let block = accepted_in_all_contexts context (`Modules modules) in
       let acc = block::acc in
-      consume_block_elements ~parsed_a_tag `After_text acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
 
 
@@ -804,7 +819,7 @@ let rec block_element_list
       let block = `List (kind, items) in
       let block = accepted_in_all_contexts context block in
       let acc = block::acc in
-      consume_block_elements ~parsed_a_tag `After_text acc
+      consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
 
 
@@ -830,7 +845,7 @@ let rec block_element_list
         let block = `List (kind, items) in
         let block = accepted_in_all_contexts context block in
         let acc = block::acc in
-        consume_block_elements ~parsed_a_tag where_in_line acc
+        consume_block_elements ~parsed_a_title ~parsed_a_tag where_in_line acc
       end
 
 
@@ -852,7 +867,65 @@ let rec block_element_list
       | Top_level ->
         if where_in_line <> `At_start_of_line then
           Raise.must_begin_on_its_own_line l ~what:(Token.describe token);
+
+        let parsed_a_title, create_heading =
+          match input.sections, level with
+          | `No_sections, _ ->
+            let message =
+              {
+                Helpers.start_offset = fst l;
+                end_offset = snd l;
+                text = "sections not allowed in this comment";
+              }
+            in
+            warning input message;
+            parsed_a_title,
+            fun _label content ->
+              accepted_in_all_contexts
+                context (`Paragraph [`Styled (`Bold, content)])
+
+          | `Allow_all_sections, 1 ->
+            if parsed_a_title then begin
+              let message =
+                {
+                  Helpers.start_offset = fst l;
+                  end_offset = snd l;
+                  text = "only one title-level heading is allowed";
+                }
+              in
+              raise_notrace (Helpers.Parse_error message)
+            end;
+            true,
+            fun label content -> `Heading (`Title, label, content)
+
+          | _, _ ->
+            let level =
+              match level with
+              | 2 -> `Section
+              | 3 -> `Subsection
+              | 4 -> `Subsubsection
+              | _ ->
+                let message =
+                  {
+                    Helpers.start_offset = fst l;
+                    end_offset = snd l;
+                    text =
+                      Printf.sprintf "'%i': bad section level (2-4 allowed)"
+                        level
+                  }
+                in
+                warning input message;
+                if level < 2 then
+                  `Section
+                else
+                  `Subsubsection
+            in
+            parsed_a_title,
+            fun label content -> `Heading (level, label, content)
+        in
+
         junk input;
+
         let content =
           delimited_non_link_inline_element_list
             ~parent_markup:token
@@ -862,6 +935,7 @@ let rec block_element_list
         in
         if content = [] then
           Raise.cannot_be_empty l ~what:(Token.describe token);
+
         let label =
           match label with
           | None -> None
@@ -869,8 +943,10 @@ let rec block_element_list
             Some
               (Model.Paths.Identifier.Label (input.parent_of_sections, label))
         in
-        let acc = (`Heading (level, label, content))::acc in
-        consume_block_elements ~parsed_a_tag `After_text acc
+
+        let heading = create_heading label content in
+        let acc = heading::acc in
+        consume_block_elements ~parsed_a_title  ~parsed_a_tag `After_text acc
       end
   in
 
@@ -882,7 +958,8 @@ let rec block_element_list
     | In_tag -> `After_tag
   in
 
-  consume_block_elements ~parsed_a_tag:false where_in_line []
+  consume_block_elements
+    ~parsed_a_title:false ~parsed_a_tag:false where_in_line []
 
 (* {3 Lists} *)
 
@@ -1040,8 +1117,22 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let comment ~parent_of_sections ~token_stream =
-  let input = {token_stream; parent_of_sections} in
+let comment
+    ~permissive
+    sections
+    ~parent_of_sections
+    ~token_stream
+    ~accumulated_warnings =
+
+  let input =
+    {
+      permissive;
+      sections;
+      token_stream;
+      parent_of_sections;
+      accumulated_warnings
+    }
+  in
 
   let elements, stream_head, _where_in_line =
     block_element_list Top_level ~parent_markup:`Comment input in

@@ -2,7 +2,10 @@ module Test_helpers :
 sig
   val test :
     string ->
+    ?permissive:bool ->
+    ?sections:[ `Allow_all_sections | `No_titles_allowed | `No_sections ] ->
     ?comment_location:Model.Error.location ->
+    ?warnings:Model.Error.t list ->
     string ->
     (Model.Comment.docs, Model.Error.t) result ->
       unit Alcotest.test_case
@@ -32,6 +35,8 @@ sig
      - The expected ending line of the error.
      - The expected ending column of the error.
      - A list of strings to be concatenated into the expected error message. *)
+
+  val warning : int -> int -> int -> int -> string list -> Model.Error.t
 end =
 struct
   let dummy_filename = "test-suite"
@@ -53,54 +58,73 @@ struct
       pos_cnum = loc.column
     }
 
-  let comment_testable : Model.Comment.docs Alcotest.testable =
-    Alcotest.of_pp Print.comment
-
-  let error_testable : Model.Error.t Alcotest.testable =
+  let error_testable =
     let pp_error formatter error =
-      Format.pp_print_string formatter (Model.Error.to_string error) in
+      Format.pp_print_string formatter (Model.Error.to_string error)
+    in
     Alcotest.of_pp pp_error
 
-  let result_testable
-      : ((Model.Comment.docs, Model.Error.t) result) Alcotest.testable =
-    Alcotest.result comment_testable error_testable
+  let without_warnings_testable =
+    (Alcotest.result
+      (Alcotest.of_pp Print.comment)
+      error_testable)
+
+  let with_warnings_testable =
+    Alcotest.pair
+      without_warnings_testable
+      (Alcotest.list error_testable)
 
   let test
       test_name
-       ?(comment_location = {Model.Error.line = 1; column = 0})
-       comment_text
-       expected_result =
+      ?(permissive = false)
+      ?(sections = `No_titles_allowed)
+      ?(comment_location = {Model.Error.line = 1; column = 0})
+      ?(warnings = [])
+      comment_text
+      expected_result =
 
     let test_function () =
-      let actual_result =
-        Parser_.parse_comment
-          ~containing_definition:dummy_page
-          ~location:(to_lexing_position comment_location)
-          ~text:comment_text
-      in
+      Parser_.parse_comment
+        ~permissive
+        sections
+        ~containing_definition:dummy_page
+        ~location:(to_lexing_position comment_location)
+        ~text:comment_text
 
-      Alcotest.check
-        result_testable "document tree is correct" expected_result actual_result
+      |> fun {Model.Error.result = actual_result; warnings = actual_warnings} ->
+        match warnings, actual_warnings with
+        | [], [] ->
+          Alcotest.check
+            without_warnings_testable "document tree incorrect"
+            expected_result
+            actual_result
+        | _ ->
+          Alcotest.check
+            with_warnings_testable "document tree incorrect"
+            (expected_result, warnings)
+            (actual_result, actual_warnings)
     in
 
     (test_name, `Quick, test_function)
 
-  let error start_line start_column end_line end_column message_strings =
-    Error
-      (`With_location {
-        Model.Error.file = "test-suite";
-        location = {
-          start = {
-            line = start_line;
-            column = start_column;
-          };
-          end_ = {
-            line = end_line;
-            column = end_column;
-          };
+  let warning start_line start_column end_line end_column message_strings =
+    `With_location {
+      Model.Error.file = "test-suite";
+      location = {
+        start = {
+          line = start_line;
+          column = start_column;
         };
-        error = String.concat "" message_strings;
-      })
+        end_ = {
+          line = end_line;
+          column = end_column;
+        };
+      };
+      error = String.concat "" message_strings;
+    }
+
+  let error start_line start_column end_line end_column message_strings =
+    Error (warning start_line start_column end_line end_column message_strings)
 end
 open Test_helpers
 
@@ -1484,18 +1508,6 @@ let tests = [
       "{4 Foo}"
       (Ok [`Heading (`Subsubsection, None, [`Word "Foo"])]);
 
-    test "bad level (title)"
-      "{1 Foo}"
-      (error 1 1 1 2 ["'1': bad section level (2-4 allowed)"]);
-
-    test "bad level (too deep)"
-      "{5 Foo}"
-      (error 1 1 1 2 ["'5': bad section level (2-4 allowed)"]);
-
-    test "bad level (long number)"
-      "{22 Foo}"
-      (error 1 1 1 3 ["'22': bad section level (2-4 allowed)"]);
-
     test "leading whitespace"
       "{2  Foo}"
       (Ok [`Heading (`Section, None, [`Word "Foo"])]);
@@ -1628,6 +1640,98 @@ let tests = [
           " '{li ...}' (list item)\n";
           "Suggestion: move '{2' outside of any other markup";
         ]);
+
+    test "bad level (long number)"
+      "{22 Foo}"
+      (error 1 0 1 3 ["'22': bad section level (2-4 allowed)"]);
+
+    test "bad level (title)"
+      "{1 Foo}"
+      (error 1 0 1 2 ["'1': bad section level (2-4 allowed)"]);
+
+    test "bad level (too deep)"
+      "{5 Foo}"
+      (error 1 0 1 2 ["'5': bad section level (2-4 allowed)"]);
+  ];
+
+
+
+  "section contexts", [
+    test "titles: allowed" ~sections:`Allow_all_sections
+      "{1 Foo}"
+      (Ok [`Heading (`Title, None, [`Word "Foo"])]);
+
+    test "titles: zero not allowed" ~sections:`Allow_all_sections
+      "{0 Foo}"
+      (error 1 0 1 2 ["'0': bad section level (2-4 allowed)"]);
+
+    test "titles: no high levels" ~sections:`Allow_all_sections
+      "{5 Foo}"
+      (error 1 0 1 2 ["'5': bad section level (2-4 allowed)"]);
+
+    test "two titles" ~sections:`Allow_all_sections
+      "{1 Foo}\n{1 Bar}"
+      (error 2 0 2 2 ["only one title-level heading is allowed"]);
+
+    test "none" ~sections:`No_sections
+      "{2 Foo}"
+      (error 1 0 1 2 ["sections not allowed in this comment"]);
+
+    test "permissive"
+      ~permissive:true
+      "{1 Foo}"
+      (Ok [`Heading (`Section, None, [`Word "Foo"])])
+      ~warnings:[warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"]];
+
+    test "titles: allowed (permissive)"
+      ~permissive:true ~sections:`Allow_all_sections
+      "{1 Foo}"
+      (Ok [`Heading (`Title, None, [`Word "Foo"])]);
+
+    test "titles: zero not allowed (permissive)"
+      ~permissive:true ~sections:`Allow_all_sections
+      "{0 Foo}"
+      (Ok [`Heading (`Section, None, [`Word "Foo"])])
+      ~warnings:[warning 1 0 1 2 ["'0': bad section level (2-4 allowed)"]];
+
+    test "titles: no high levels (permissive)"
+      ~permissive:true ~sections:`Allow_all_sections
+      "{5 Foo}"
+      (Ok [`Heading (`Subsubsection, None, [`Word "Foo"])])
+      ~warnings:[warning 1 0 1 2 ["'5': bad section level (2-4 allowed)"]];
+
+    test "two titles (permissive)"
+      ~permissive:true ~sections:`Allow_all_sections
+      "{1 Foo}\n{1 Bar}"
+      (error 2 0 2 2 ["only one title-level heading is allowed"]);
+
+    test "none (permissive)"
+      ~permissive:true ~sections:`No_sections
+      "{2 Foo}"
+      (Ok [`Paragraph [`Styled (`Bold, [`Word "Foo"])]])
+      ~warnings:[warning 1 0 1 2 ["sections not allowed in this comment"]];
+  ];
+
+
+
+  "warnings", [
+    test "multiple"
+      ~permissive:true
+      "{1 Foo}\n{1 Foo}"
+      (Ok [
+        `Heading (`Section, None, [`Word "Foo"]);
+        `Heading (`Section, None, [`Word "Foo"])])
+      ~warnings:[
+        warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"];
+        warning 2 0 2 2 ["'1': bad section level (2-4 allowed)"];
+      ];
+
+    test "with error"
+      ~permissive:true
+      "{1 Foo} {1 Foo}"
+      (error 1 8 1 10
+        ["'{1 ...}' (section heading) must begin on its own line"])
+      ~warnings:[warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"]];
   ];
 
 

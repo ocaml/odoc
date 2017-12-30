@@ -5,7 +5,7 @@
 
 
 type section_heading = [
-  `Begin_section_heading of Model.Comment.heading_level * string option
+  `Begin_section_heading of int * string option
 ]
 
 type tag = [
@@ -100,13 +100,6 @@ let print : [< t ] -> string = function
   | `Plus ->
     "'+'"
   | `Begin_section_heading (level, label) ->
-    let level =
-      match level with
-      | `Title -> 1
-      | `Section -> 2
-      | `Subsection -> 3
-      | `Subsubsection -> 4
-    in
     let label =
       match label with
       | None -> ""
@@ -187,13 +180,6 @@ let describe : [< t | `Comment ] -> string = function
   | `Plus ->
     "'+' (numbered list item)"
   | `Begin_section_heading (level, _) ->
-    let level =
-      match level with
-      | `Title -> 1
-      | `Section -> 2
-      | `Subsection -> 3
-      | `Subsubsection -> 4
-    in
     Printf.sprintf "'{%i ...}' (section heading)" level
   | `Tag (`Author _) ->
     "'@author'"

@@ -24,6 +24,11 @@ type t = [
   | `With_filename_only of with_filename_only_payload
 ]
 
+type 'a with_warnings = {
+  result : 'a;
+  warnings : t list;
+}
+
 let to_string : t -> string = function
   | `With_location {file; location; error} ->
     let location =
@@ -53,3 +58,10 @@ let convey_by_exception : ('a, t) result -> 'a = function
 let catch_conveyed_by_exception : (unit -> 'a) -> ('a, t) result = fun f ->
   try Ok (f ())
   with Conveyed_by_exception e -> Error e
+
+(* TODO This is a temporary measure until odoc is ported to handle warnings
+   throughout. *)
+let shed_warnings : 'a with_warnings -> 'a = fun with_warnings ->
+  with_warnings.warnings
+  |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
+  with_warnings.result

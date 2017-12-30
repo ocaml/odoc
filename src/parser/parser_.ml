@@ -41,29 +41,19 @@ let make_offset_to_location_function
 
 
 
-let parse_comment ~containing_definition ~location ~text:comment_text =
-  let token_stream =
-    let lexbuf = Lexing.from_string comment_text in
-    Stream.from (fun _token_index -> Some (Lexer.token lexbuf))
-  in
+let parse_comment
+    ~permissive sections ~containing_definition ~location ~text:comment_text =
 
-  try
-    Ok (Comment.comment ~parent_of_sections:containing_definition ~token_stream)
+  (* Converts byte offsets into the comment to line, column pairs, which are
+     relative to the start of the file that contains the comment. *)
+  let offset_to_location =
+    let offset_to_location_relative_to_start_of_comment =
+      lazy (make_offset_to_location_function comment_text) in
 
-  with Helpers.Parse_error {start_offset; end_offset; text = error_text} ->
-    (* In case of error, we need the filename, and to convert the absolute
-       offsets in the raw parse error to human-friendly line, column pairs. *)
-    let file = location.Lexing.pos_fname in
+    let offset_to_location_relative_to_start_of_file offset =
+      let in_comment =
+        (Lazy.force offset_to_location_relative_to_start_of_comment) offset in
 
-    (* Construct a function that will convert absolute offsets to line, column
-       pairs, which are relative to the start of the comment. *)
-    let offset_to_location = make_offset_to_location_function comment_text in
-
-    (* Wrap [offset_to_location] into a function that will convert absolute
-       offsets to line, column pairs which are relative to the start of the file
-       containing the comment. *)
-    let offset_to_location offset =
-      let in_comment = offset_to_location offset in
       let line_in_file = in_comment.line + location.Lexing.pos_lnum - 1 in
       let offset_in_line =
         if in_comment.line = 1 then
@@ -71,16 +61,58 @@ let parse_comment ~containing_definition ~location ~text:comment_text =
         else
           in_comment.column
       in
+
       {Model.Error.line = line_in_file; column = offset_in_line}
     in
 
-    (* Construct the final error representation. *)
-    Error
-      (`With_location {
-        Model.Error.file;
-        location = {
-          start = offset_to_location start_offset;
-          end_ = offset_to_location end_offset;
-        };
-        error = error_text;
-      })
+    offset_to_location_relative_to_start_of_file
+  in
+
+  (* The parser signals errors by raising exceptions. These carry byte offsets
+     into the comment for the start and end of the offending text, and a
+     description. We need to convert the offsets to locations relative to the
+     file containing the comment, add the filename, and package the result in
+     the type of error accepted by the rest of odoc. *)
+  let convert_parsing_error_to_odoc_error
+      : Helpers.raw_parse_error -> Model.Error.t = fun error ->
+
+    `With_location {
+      file = location.Lexing.pos_fname;
+      location = {
+        start = offset_to_location error.start_offset;
+        end_ = offset_to_location error.end_offset;
+      };
+      error = error.text;
+    }
+  in
+
+  let token_stream =
+    let lexbuf = Lexing.from_string comment_text in
+    Stream.from (fun _token_index -> Some (Lexer.token lexbuf))
+  in
+
+  let accumulated_warnings = ref [] in
+  let convert_warnings () =
+    !accumulated_warnings
+    |> List.rev_map convert_parsing_error_to_odoc_error
+  in
+
+  try
+    let parse_tree =
+      Comment.comment
+        ~permissive
+        sections
+        ~parent_of_sections:containing_definition
+        ~token_stream
+        ~accumulated_warnings
+    in
+    {
+      Model.Error.result = Ok parse_tree;
+      warnings = convert_warnings ();
+    }
+
+  with Helpers.Parse_error error ->
+    {
+      Model.Error.result = Error (convert_parsing_error_to_odoc_error error);
+      warnings = convert_warnings ();
+    }

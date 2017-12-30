@@ -46,9 +46,12 @@ let read_attributes parent _id attrs =
             let start_pos = loc.Location.loc_start in
             let parsed =
               Parser_.parse_comment
+                ~permissive:true
+                `No_titles_allowed
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
+              |> Model.Error.shed_warnings
             in
             match parsed with
             | Ok comment -> begin
@@ -72,9 +75,12 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
   let start_pos = loc.Location.loc_start in
   let doc : Model.Comment.docs =
     Parser_.parse_comment
+      ~permissive:true
+      `No_titles_allowed
       ~containing_definition:parent
       ~location:start_pos
       ~text:str
+    |> Model.Error.shed_warnings
     |> Model.Error.convey_by_exception
   in
   `Docs doc

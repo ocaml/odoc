@@ -81,11 +81,9 @@ let reference_token target = function
   | "{{:" -> `Begin_link_with_replacement_text target
   | _ -> assert false
 
-let heading_level = function
-  | '2' -> `Section
-  | '3' -> `Subsection
-  | '4' -> `Subsubsection
-  | _ -> assert false
+(* Assuming an ASCII-compatible input encoding here. *)
+let heading_level level =
+  Char.code level - Char.code '0'
 
 }
 
@@ -204,10 +202,10 @@ rule token = parse
   | "{-"
     { emit lexbuf (`Begin_list_item `Dash) }
 
-  | '{' (['2'-'4'] as level) ':' (no_brace+ as label)
+  | '{' (['0'-'9'] as level) ':' (no_brace+ as label)
     { emit lexbuf (`Begin_section_heading (heading_level level, Some label)) }
 
-  | '{' (['2'-'4'] as level)
+  | '{' (['0'-'9'] as level)
     { emit lexbuf (`Begin_section_heading (heading_level level, None)) }
 
   | "@author" horizontal_space+ ([^ '\r' '\n']* as author)
@@ -248,15 +246,15 @@ rule token = parse
 
 
 
-  | '{' (['0' '1' '5'-'9'] | ['0'-'9'] ['0'-'9']+ as level)
+  | '{' (['0'-'9'] ['0'-'9']+ as level)
     { raise_notrace
         (Helpers.Parse_error {
-          start_offset = Lexing.lexeme_start lexbuf + 1;
+          start_offset = Lexing.lexeme_start lexbuf;
           end_offset = Lexing.lexeme_end lexbuf;
           text = Printf.sprintf "'%s': bad section level (2-4 allowed)" level;
         }) }
 
-  | '{' ['2'-'4'] ':'
+  | '{' ['0'-'9'] ':'
     { Helpers.cannot_be_empty
         (Lexing.lexeme_start lexbuf + 2, Lexing.lexeme_end lexbuf)
         ~what:"heading label" }
