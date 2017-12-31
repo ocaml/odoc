@@ -67,4 +67,4 @@ val lookup_label : t -> Reference.label -> Reference.label
 val lookup_element : t -> Reference.any -> Reference.any
 
 val lookup_section_title : t -> Reference.Resolved.label ->
-  Model.Comment.non_link_inline_element list option
+  Model.Comment.link_content option

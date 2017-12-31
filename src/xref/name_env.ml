@@ -102,7 +102,7 @@ type t =
     labels : label StringTbl.t;
     parents : parent_ident StringTbl.t;
     elements : any StringTbl.t;
-    titles : Model.Comment.non_link_inline_element list StringTbl.t; (* Hack *)
+    titles : Model.Comment.link_content StringTbl.t; (* Hack *)
     signatures : signature_ident StringTbl.t;
   }
 

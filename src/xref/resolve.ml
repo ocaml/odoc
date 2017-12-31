@@ -1792,7 +1792,7 @@ let splice_section_title tbl path elements =
       | _ -> None
   in
   let find_section_title :
-    Resolved.label -> Model.Comment.non_link_inline_element list option =
+    Resolved.label -> Model.Comment.link_content option =
     function
     | Resolved.Identifier Identifier.Label (parent, str) ->
       let parent_ref = Resolved.Identifier parent in

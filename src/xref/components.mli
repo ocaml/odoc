@@ -70,8 +70,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title :
-    string -> t -> Model.Comment.non_link_inline_element list
+  val find_section_title : string -> t -> Model.Comment.link_content
 
   (** {3 Lookup} *)
 
@@ -258,8 +257,7 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title :
-    string -> t -> Model.Comment.non_link_inline_element list
+  val find_section_title : string -> t -> Model.Comment.link_content
 
   (** {3 Constructor} *)
 

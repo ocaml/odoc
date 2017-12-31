@@ -19,10 +19,15 @@ type non_link_inline_element = [
   | `Styled of style * non_link_inline_element list
 ]
 
+(* The cross-referencer stores section heading text, and sometimes pastes it
+   into link contents. This type alias is provided for use by the
+   cross-referencer. *)
+type link_content = non_link_inline_element list
+
 type inline_element = [
   | non_link_inline_element
-  | `Reference of Reference.any * non_link_inline_element list
-  | `Link of string * non_link_inline_element list
+  | `Reference of Reference.any * link_content
+  | `Link of string * link_content
 ]
 
 type nestable_block_element = [

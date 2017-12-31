@@ -210,8 +210,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title :
-    string -> t -> Model.Comment.non_link_inline_element list
+  val find_section_title : string -> t -> Model.Comment.link_content
 
   val lookup_module : string -> t -> t
 
@@ -299,7 +298,7 @@ end = struct
       types: Element.signature_type SMap.t;
       parents: Parent.any LMap.t;
       elements: Element.signature LMap.t;
-      section_titles: Model.Comment.non_link_inline_element list SMap.t; }
+      section_titles: Model.Comment.link_content SMap.t; }
 
   and body =
     | Expr of expr
@@ -1566,8 +1565,7 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title :
-    string -> t -> Model.Comment.non_link_inline_element list
+  val find_section_title : string -> t -> Model.Comment.link_content
 
   val of_doc : Model.Comment.docs -> t
 
@@ -1575,7 +1573,7 @@ end = struct
 
   type t = {
     labels : Element.page_label LMap.t;
-    section_titles : Model.Comment.non_link_inline_element list SMap.t;
+    section_titles : Model.Comment.link_content SMap.t;
   }
 
   let find_label_element name t =
