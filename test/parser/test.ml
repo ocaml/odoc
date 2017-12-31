@@ -829,9 +829,12 @@ let () =
         |> ignore;
 
         prerr_endline "\nTo replace expected output with actual, run";
-        Printf.eprintf "cp %s %s\n\n"
-          ("_build/default" // test_root // actual_file)
-          (test_root // expect_file);
+        [
+          Printf.sprintf "cp %s %s"
+            ("_build/default" // test_root // actual_file)
+            (test_root // expect_file);
+        ]
+        |> suggest_commands actual_root_directory;
 
         Alcotest.fail "document tree incorrect";
       end
