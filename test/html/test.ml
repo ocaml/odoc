@@ -2,7 +2,7 @@ let cases_directory = "cases"
 let build_directory = "_scratch"
 let test_package = "test_package"
 let odoc = "../../src/odoc/bin/main.exe"
-let test_source = "test/html"
+let test_root = "test/html"
 
 let (//) = Filename.concat
 let command label =
@@ -88,8 +88,8 @@ let () =
            actual output, in case it is the actual output that is correct. *)
         prerr_endline "\nTo replace expected output with actual, run";
         Printf.eprintf "cp %s %s\n\n"
-          ("_build/default" // test_source // html_file)
-          (test_source // reference_file);
+          ("_build/default" // test_root // html_file)
+          (test_root // reference_file);
 
         Alcotest.fail "actual HTML output does not match expected"
 
