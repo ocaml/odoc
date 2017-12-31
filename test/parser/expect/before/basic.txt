@@ -1,0 +1,1 @@
+((output (ok ((@before Foo)))) (warnings ()))

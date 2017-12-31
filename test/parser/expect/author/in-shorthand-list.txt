@@ -1,0 +1,6 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 6-17:\
+   \n'@author' is not allowed in '-' (bulleted list item)\
+   \nSuggestion: move '@author' outside of any other markup"))
+ (warnings ()))

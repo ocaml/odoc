@@ -1,0 +1,1 @@
+((output (ok ((4 "no label" ((word Foo)))))) (warnings ()))

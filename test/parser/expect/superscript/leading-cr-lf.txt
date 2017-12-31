@@ -1,0 +1,1 @@
+((output (ok ((paragraph ((superscript ((word foo)))))))) (warnings ()))

@@ -1,0 +1,5 @@
+((output
+  (ok
+   ((@deprecated (paragraph ((word foo))))
+    (@deprecated (paragraph ((word bar)))))))
+ (warnings ()))

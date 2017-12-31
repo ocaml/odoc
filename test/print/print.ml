@@ -317,5 +317,29 @@ struct
     List (List.map block_element comment)
 end
 
-let comment formatter comment =
-  Sexplib.Sexp.pp_hum formatter (Comment_to_sexp.comment comment)
+
+
+module Error_to_sexp =
+struct
+  let error : Model.Error.t -> sexp = fun error ->
+    Atom (Model.Error.to_string error)
+end
+
+
+
+let parser_output formatter {Model.Error.result; warnings} =
+  let result =
+    match result with
+    | Ok comment -> List [Atom "ok"; Comment_to_sexp.comment comment]
+    | Error error -> List [Atom "error"; Error_to_sexp.error error]
+  in
+  let warnings = List (List.map Error_to_sexp.error warnings) in
+  let output =
+    List [
+      List [Atom "output"; result];
+      List [Atom "warnings"; warnings];
+    ]
+  in
+  Sexplib.Sexp.pp_hum formatter output;
+  Format.pp_print_newline formatter ();
+  Format.pp_print_flush formatter ()

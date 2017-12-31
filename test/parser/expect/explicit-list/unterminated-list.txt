@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 3-3:\
+   \nend of text is not allowed in '{ul ...}' (bulleted list)"))
+ (warnings ()))

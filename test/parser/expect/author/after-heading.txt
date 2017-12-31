@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 8-19:\
+   \n'@author' must begin on its own line"))
+ (warnings ()))

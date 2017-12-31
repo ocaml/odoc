@@ -1,0 +1,1 @@
+((output (ok ((@raise Foo)))) (warnings ()))

@@ -1,0 +1,7 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 8-10:\
+   \n'{1 ...}' (section heading) must begin on its own line"))
+ (warnings
+  ( "File \"test-suite\", line 1, characters 0-2:\
+   \n'1': bad section level (2-4 allowed)")))

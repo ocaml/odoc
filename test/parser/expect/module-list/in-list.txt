@@ -1,0 +1,2 @@
+((output (ok ((unordered (((modules ((root Foo unknown)))))))))
+ (warnings ()))

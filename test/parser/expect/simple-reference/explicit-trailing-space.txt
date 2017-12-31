@@ -1,0 +1,3 @@
+((output
+  (ok ((paragraph ((reference (root foo unknown) ()) space (word bar))))))
+ (warnings ()))

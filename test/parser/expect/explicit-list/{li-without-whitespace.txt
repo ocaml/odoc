@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 4-7:\
+   \n'{li ...}' must be followed by space, a tab, or a new line"))
+ (warnings ()))

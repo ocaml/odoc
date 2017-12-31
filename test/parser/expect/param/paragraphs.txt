@@ -1,0 +1,3 @@
+((output
+  (ok ((@param foo (paragraph ((word bar))) (paragraph ((word baz)))))))
+ (warnings ()))

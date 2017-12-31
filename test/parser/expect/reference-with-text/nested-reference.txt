@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 8-14:\
+   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)"))
+ (warnings ()))

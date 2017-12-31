@@ -1,0 +1,1 @@
+((output (ok ((modules ((root Foo unknown)))))) (warnings ()))

@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 10-19:\
+   \n'{v ... v}' (verbatim text) must begin on its own line"))
+ (warnings ()))

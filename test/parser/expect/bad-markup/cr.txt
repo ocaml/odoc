@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 0-1:\
+   \nstray '\\r' (carriage return character)"))
+ (warnings ()))

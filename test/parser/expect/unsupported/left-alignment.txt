@@ -1,0 +1,4 @@
+((output
+  (error  "File \"test-suite\", line 1, characters 0-2:\
+         \n'{L': bad markup"))
+ (warnings ()))

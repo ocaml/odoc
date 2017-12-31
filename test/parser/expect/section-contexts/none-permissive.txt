@@ -1,0 +1,4 @@
+((output (ok ((paragraph ((bold ((word Foo))))))))
+ (warnings
+  ( "File \"test-suite\", line 1, characters 0-2:\
+   \nsections not allowed in this comment")))

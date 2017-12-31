@@ -1,0 +1,1 @@
+((output (ok ((paragraph ((word <b>foo</b>)))))) (warnings ()))

@@ -1,0 +1,8 @@
+((output
+  (ok
+   ((2
+     (label
+      ((root (test-suite (page test-suite) "") test-suite)
+       (label "\206\187")))
+     ((word Bar))))))
+ (warnings ()))

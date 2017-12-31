@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 3-10:\
+   \n'{[...]}' (code block) is not allowed in '{b ...}' (boldface text)"))
+ (warnings ()))

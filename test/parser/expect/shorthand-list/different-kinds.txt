@@ -1,0 +1,5 @@
+((output
+  (ok
+   ((unordered (((paragraph ((word foo))))))
+    (ordered (((paragraph ((word bar)))))))))
+ (warnings ()))

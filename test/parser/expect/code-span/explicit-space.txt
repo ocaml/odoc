@@ -1,0 +1,2 @@
+((output (ok ((paragraph ((code_span foo) space (code_span bar))))))
+ (warnings ()))

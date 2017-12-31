@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 4-6:\
+   \n'{2 ...}' (section heading) must begin on its own line"))
+ (warnings ()))

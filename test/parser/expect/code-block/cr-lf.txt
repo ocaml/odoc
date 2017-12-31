@@ -1,0 +1,2 @@
+((output (ok ((code_block  "foo\r\
+                          \nbar")))) (warnings ()))

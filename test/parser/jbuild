@@ -2,11 +2,11 @@
 
 (executable
  ((name test)
-  (libraries (alcotest parser_ print))))
+  (libraries (alcotest lambdasoup parser_ print))))
 
 (alias
  ((name tester)
-  (deps (test.exe))))
+  (deps (test.exe (files_recursively_in expect)))))
 
 (alias
  ((name runtest)

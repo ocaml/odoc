@@ -1,0 +1,2 @@
+((output (ok ((paragraph ((bold ((word foo))) (bold ((word bar))))))))
+ (warnings ()))

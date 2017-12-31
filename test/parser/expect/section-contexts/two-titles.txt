@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 2, characters 0-2:\
+   \nonly one title-level heading is allowed"))
+ (warnings ()))

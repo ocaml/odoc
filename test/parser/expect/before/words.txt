@@ -1,0 +1,2 @@
+((output (ok ((@before foo (paragraph ((word bar) space (word baz)))))))
+ (warnings ()))

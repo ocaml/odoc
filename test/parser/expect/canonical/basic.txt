@@ -1,0 +1,1 @@
+((output (ok ((@canonical (root Foo) (root Foo unknown))))) (warnings ()))

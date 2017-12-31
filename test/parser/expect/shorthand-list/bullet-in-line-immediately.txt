@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 2-3:\
+   \n'-' (bulleted list item) must begin on its own line"))
+ (warnings ()))

@@ -1,0 +1,6 @@
+((output
+  (error
+    "File \"test-suite\", line 2, characters 1-2:\
+   \n'+' (numbered list item) is not allowed in '{b ...}' (boldface text)\
+   \nSuggestion: move '+' so it isn't the first thing on the line"))
+ (warnings ()))

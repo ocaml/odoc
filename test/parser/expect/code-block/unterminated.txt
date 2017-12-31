@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 5-5:\
+   \nend of text is not allowed in '{[...]}' (code block)"))
+ (warnings ()))

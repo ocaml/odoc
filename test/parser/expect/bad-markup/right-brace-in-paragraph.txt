@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 3-4:\
+   \nunpaired '}' (end of markup)"))
+ (warnings ()))

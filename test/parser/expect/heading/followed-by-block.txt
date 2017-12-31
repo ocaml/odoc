@@ -1,0 +1,2 @@
+((output (ok ((2 "no label" ((word Foo))) (paragraph ((word bar))))))
+ (warnings ()))

@@ -1,0 +1,2 @@
+((output (ok ((paragraph ((link foo ((bold ((word bar))))))))))
+ (warnings ()))

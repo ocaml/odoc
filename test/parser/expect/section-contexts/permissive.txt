@@ -1,0 +1,4 @@
+((output (ok ((2 "no label" ((word Foo))))))
+ (warnings
+  ( "File \"test-suite\", line 1, characters 0-2:\
+   \n'1': bad section level (2-4 allowed)")))

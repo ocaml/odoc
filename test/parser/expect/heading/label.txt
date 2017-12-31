@@ -1,0 +1,7 @@
+((output
+  (ok
+   ((2
+     (label
+      ((root (test-suite (page test-suite) "") test-suite) (label foo)))
+     ((word Bar))))))
+ (warnings ()))

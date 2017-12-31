@@ -1,0 +1,2 @@
+((output (ok ((verbatim  "foo\
+                        \nbar")))) (warnings ()))

@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 1, characters 4-18:\
+   \n'{!modules ...}' must begin on its own line"))
+ (warnings ()))

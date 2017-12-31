@@ -1,787 +1,667 @@
-module Test_helpers :
-sig
-  val test :
-    string ->
-    ?permissive:bool ->
-    ?sections:[ `Allow_all_sections | `No_titles_allowed | `No_sections ] ->
-    ?comment_location:Model.Error.location ->
-    ?warnings:Model.Error.t list ->
-    string ->
-    (Model.Comment.docs, Model.Error.t) result ->
-      unit Alcotest.test_case
-  (* Creates an Alcotest test case for the comment parser, given:
+type test_case = {
+  name : string;
+  parser_input : string;
+  permissive : bool;
+  sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
+  location : Model.Error.location;
+}
 
-     - The test name.
-     - An optional location for the comment within the fictional input file.
-       This is used to calculate correct error locations. If not given, the test
-       case assumes the comment is at line 1, column 0 in the fictional input
-       file.
-     - The comment text to be parsed.
-     - The expected result of parsing. This is always either [Ok ast] with some
-       expected parse tree [ast], or an error message with a location
-       constructed using the helper [error] (below). *)
+let make_test_case
+    ?(permissive = false)
+    ?(sections = `No_titles_allowed)
+    ?(location = {Model.Error.line = 1; column = 0})
+    name
+    parser_input =
+  {name; parser_input; permissive; sections; location}
 
-  val dummy_page : Model.Paths.Identifier.label_parent
-  (* A representation of the fictional file that each comment is in during
-     comment parser testing. *)
+let t = make_test_case
 
-  val error :
-    int -> int -> int -> int -> string list ->
-      (Model.Comment.docs, Model.Error.t) result
-  (* Constructs the representation of a parse error, given:
-
-     - The expected starting line of the error (1-based).
-     - The expected starting column of the error (0-based).
-     - The expected ending line of the error.
-     - The expected ending column of the error.
-     - A list of strings to be concatenated into the expected error message. *)
-
-  val warning : int -> int -> int -> int -> string list -> Model.Error.t
-end =
-struct
-  let dummy_filename = "test-suite"
-
-  let dummy_page =
-    let root : Model.Root.t = {
-      package = dummy_filename;
-      file = Page dummy_filename;
-      digest = ""
-    }
-    in
-    Model.Paths.Identifier.Page (root, dummy_filename)
-
-  let to_lexing_position : Model.Error.location -> Lexing.position = fun loc ->
-    {
-      pos_fname = dummy_filename;
-      pos_lnum = loc.line;
-      pos_bol = 0;
-      pos_cnum = loc.column
-    }
-
-  let error_testable =
-    let pp_error formatter error =
-      Format.pp_print_string formatter (Model.Error.to_string error)
-    in
-    Alcotest.of_pp pp_error
-
-  let without_warnings_testable =
-    (Alcotest.result
-      (Alcotest.of_pp Print.comment)
-      error_testable)
-
-  let with_warnings_testable =
-    Alcotest.pair
-      without_warnings_testable
-      (Alcotest.list error_testable)
-
-  let test
-      test_name
-      ?(permissive = false)
-      ?(sections = `No_titles_allowed)
-      ?(comment_location = {Model.Error.line = 1; column = 0})
-      ?(warnings = [])
-      comment_text
-      expected_result =
-
-    let test_function () =
-      Parser_.parse_comment
-        ~permissive
-        sections
-        ~containing_definition:dummy_page
-        ~location:(to_lexing_position comment_location)
-        ~text:comment_text
-
-      |> fun {Model.Error.result = actual_result; warnings = actual_warnings} ->
-        match warnings, actual_warnings with
-        | [], [] ->
-          Alcotest.check
-            without_warnings_testable "document tree incorrect"
-            expected_result
-            actual_result
-        | _ ->
-          Alcotest.check
-            with_warnings_testable "document tree incorrect"
-            (expected_result, warnings)
-            (actual_result, actual_warnings)
-    in
-
-    (test_name, `Quick, test_function)
-
-  let warning start_line start_column end_line end_column message_strings =
-    `With_location {
-      Model.Error.file = "test-suite";
-      location = {
-        start = {
-          line = start_line;
-          column = start_column;
-        };
-        end_ = {
-          line = end_line;
-          column = end_column;
-        };
-      };
-      error = String.concat "" message_strings;
-    }
-
-  let error start_line start_column end_line end_column message_strings =
-    Error (warning start_line start_column end_line end_column message_strings)
-end
-open Test_helpers
+type test_suite = string * (test_case list)
 
 
 
-let tests = [
+let tests : test_suite list = [
   "trivial", [
-    test "empty"
-      ""
-      (Ok []);
-
-    test "space"
-      " "
-      (Ok []);
-
-    test "two spaces"
-      "  "
-      (Ok []);
-
-    test "tab"
-      "\t"
-      (Ok []);
-
-    test "mixed space"
-      " \t \t"
-      (Ok []);
-
-    test "newline"
-      "\n"
-      (Ok []);
-
-    test "blank line"
-      "\n\n"
-      (Ok []);
-
-    test "cr-lf"
-      "\r\n"
-      (Ok []);
+    t "empty" "";
+    t "space" " ";
+    t "two-spaces" "  ";
+    t "tab" "\t";
+    t "mixed-space" " \t \t";
+    t "newline" "\n";
+    t "blank-line" "\n\n";
+    t "cr-lf" "\r\n";
   ];
 
-
-
-  "one paragraph", [
-    test "word"
-      "foo"
-      (Ok [`Paragraph [`Word "foo"]]);
-
-    test "two words"
-      "foo bar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "two spaces"
-      "foo  bar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "mixed space"
-      "foo \t \t bar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "two lines"
-      "foo\nbar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "two lines (cr-lf)"
-      "foo\r\nbar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "leading space"
-      " foo"
-      (Ok [`Paragraph [`Word "foo"]]);
-
-    test "trailing space"
-      "foo "
-      (Ok [`Paragraph [`Word "foo"]]);
-
-    test "trailing space on line"
-      "foo \nbar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "leading space on line"
-      "foo\n bar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "trailing tab on line"
-      "foo\t\nbar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
-
-    test "leading tab on line"
-      "foo\n\tbar"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "bar"]]);
+  "one-paragraph", [
+    t "word" "foo";
+    t "two-words" "foo bar";
+    t "two-spaces" "foo  bar";
+    t "mixed-space" "foo \t \t bar";
+    t "two-lines" "foo\nbar";
+    t "two-lines-cr-lf" "foo\r\nbar";
+    t "leading-space" " foo";
+    t "trailing-space" "foo ";
+    t "leading-space-on-line" "foo\n bar";
+    t "trailing-space-on-line" "foo \nbar";
+    t "leading-tab-on-line" "foo\n\tbar";
+    t "trailing-tab-on-line" "foo\t\nbar";
   ];
 
-
-
-  "two paragraphs", [
-    test "basic"
-      "foo\n\nbar"
-      (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
-
-    test "trailing space"
-      "foo \n\nbar"
-      (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
-
-    test "leading space"
-      "foo\n\n bar"
-      (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
-
-    test "cr-lf"
-      "foo\r\n\r\nbar"
-      (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
-
-    test "mixed cr-lf"
-      "foo\n\r\nbar"
-      (Ok [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]);
+  "two-paragraphs", [
+    t "basic" "foo\n\nbar";
+    t "trailing-space" "foo \n\nbar";
+    t "leading-space" "foo\n\n bar";
+    t "cr-lf" "foo\r\n\r\nbar";
+    t "mixed-cr-lf" "foo\n\r\nbar";
   ];
 
-
-
-  "plus, minus words", [
-    test "minus in word"
-      "foo-bar"
-      (Ok [`Paragraph [`Word "foo-bar"]]);
-
-    test "minus as word"
-      "foo -"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "-"]]);
-
-    test "plus in word"
-      "foo+bar"
-      (Ok [`Paragraph [`Word "foo+bar"]]);
-
-    test "plus as word"
-      "foo +"
-      (Ok [`Paragraph [`Word "foo"; `Space; `Word "+"]]);
+  "plus-minus-words", [
+    t "minus-in-word" "foo-bar";
+    t "minus-as-word" "foo -";
+    t "plus-in-word" "foo+bar";
+    t "plus-as-word" "foo +";
   ];
 
-
-
-  "escape sequence", [
-    test "left brace"
-      "\\{"
-      (Ok [`Paragraph [`Word "{"]]);
-
-    test "left brace in word"
-      "foo\\{bar"
-      (Ok [`Paragraph [`Word "foo{bar"]]);
-
-    test "right brace"
-      "\\}"
-      (Ok [`Paragraph [`Word "}"]]);
-
-    test "right brace in word"
-      "foo\\}bar"
-      (Ok [`Paragraph [`Word "foo}bar"]]);
-
-    test "left bracket"
-      "\\["
-      (Ok [`Paragraph [`Word "["]]);
-
-    test "left bracket in word"
-      "foo\\[bar"
-      (Ok [`Paragraph [`Word "foo[bar"]]);
-
-    test "right bracket"
-      "\\]"
-      (Ok [`Paragraph [`Word "]"]]);
-
-    test "right bracket in word"
-      "foo\\]bar"
-      (Ok [`Paragraph [`Word "foo]bar"]]);
-
-    test "at"
-      "\\@"
-      (Ok [`Paragraph [`Word "@"]]);
-
-    test "at in word"
-      "foo\\@bar"
-      (Ok [`Paragraph [`Word "foo@bar"]]);
-
-    test "trailing backslash"
-      "foo\\"
-      (Ok [`Paragraph [`Word "foo\\"]]);
-
-    test "non-escape"
-      "foo\\bar"
-      (Ok [`Paragraph [`Word "foo\\bar"]]);
-
-    test "backslash not escaped"
-      "foo\\\\{bar"
-      (Ok [`Paragraph [`Word "foo\\{bar"]]);
-
-    test "single backslash"
-      "\\"
-      (Ok [`Paragraph [`Word "\\"]]);
+  "escape-sequence", [
+    t "left-brace" "\\{";
+    t "left-brace-in-word" "foo\\{bar";
+    t "right-brace" "\\}";
+    t "right-brace-in-word" "foo\\}bar";
+    t "left-bracket" "\\[";
+    t "left-bracket-in-word" "foo\\[bar";
+    t "right-bracket" "\\]";
+    t "right-bracket-in-word" "foo\\]bar";
+    t "at" "\\@";
+    t "at-in-word" "foo\\@bar";
+    t "trailing-backslash" "foo\\";
+    t "non-escape" "foo\\bar";
+    t "backslash-not-escaped" "foo\\\\{bar";
+    t "single-backslash" "\\";
   ];
 
-
-
-  "code span", [
-    test "basic"
-      "[foo]"
-      (Ok [`Paragraph [`Code_span "foo"]]);
-
-    test "empty"
-      "[]"
-      (Ok [`Paragraph [`Code_span ""]]);
-
-    test "list"
-      "[[]]"
-      (Ok [`Paragraph [`Code_span "[]"]]);
-
+  "code-span", [
+    t "basic" "[foo]";
+    t "empty" "[]";
+    t "list" "[[]]";
     (* TODO The next two error messages are particularly unintuitive. *)
-    test "unbalanced list"
-      "[[]"
-      (error 1 3 1 3 ["end of text is not allowed in '[...]' (code)"]);
-
-    test "unbalanced list, backslash"
-      "[\\[]"
-      (error 1 4 1 4 ["end of text is not allowed in '[...]' (code)"]);
-
-    test "no markup"
-      "[{b]"
-      (Ok [`Paragraph [`Code_span "{b"]]);
-
-    test "few escapes"
-      "[\\{]"
-      (Ok [`Paragraph [`Code_span "\\{"]]);
-
-    test "escaped right bracket"
-      "[\\]]"
-      (Ok [`Paragraph [`Code_span "]"]]);
-
-    test "whitespace preserved"
-      "[ foo  bar ]"
-      (Ok [`Paragraph [`Code_span " foo  bar "]]);
-
-    test "no newlines"
-      "[foo\n\nbar]"
-      (error 1 4 2 0 ["line break is not allowed in '[...]' (code)"]);
-
-    test "cr-lf preserved"
-      "[foo\r\nbar]"
-      (error 1 4 2 0 ["line break is not allowed in '[...]' (code)"]);
-
-    test "not merged"
-      "[foo][bar]"
-      (Ok [`Paragraph [`Code_span "foo"; `Code_span "bar"]]);
-
-    test "explicit space"
-      "[foo] [bar]"
-      (Ok [`Paragraph [`Code_span "foo"; `Space; `Code_span "bar"]]);
-
-    test "unterminated"
-      "[foo"
-      (error 1 4 1 4 ["end of text is not allowed in '[...]' (code)"]);
+    t "unbalanced-list" "[[]";
+    t "unbalanced-list-backslash" "[\\[]";
+    t "no-markup" "[{b]";
+    t "few-escapes" "[\\{]";
+    t "escaped-right-bracket" "[\\]]";
+    t "whitespace-preserved" "[ foo  bar ]";
+    t "no-newlines" "[foo\n\nbar]";
+    t "cr-lf-preserved" "[foo\r\nbar]";
+    t "not-merged" "[foo][bar]";
+    t "explicit-space" "[foo] [bar]";
+    t "unterminated" "[foo";
   ];
-
-
 
   "bold", [
-    test "basic"
-      "{b foo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "extra leading whitespace"
-      "{b  \t foo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "leading newline"
-      "{b\nfoo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "leading cr-lf"
-      "{b\r\nfoo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "leading newline and whitespace"
-      "{b\n foo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "no leading whitespace"
-      "{bfoo}"
-      (error 1 0 1 2 ["'{b' must be followed by space, a tab, or a new line"]);
-
-    test "trailing whitespace"
-      "{b foo }"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "trailing newline"
-      "{b foo\n}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "trailing cr-lf"
-      "{b foo\r\n}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"])]]);
-
-    test "two words"
-      "{b foo bar}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"; `Space; `Word "bar"])]]);
-
-    test "not merged"
-      "{b foo}{b bar}"
-      (Ok [`Paragraph [
-        `Styled (`Bold, [`Word "foo"]); `Styled (`Bold, [`Word "bar"])]]);
-
-    test "nested"
-      "{b foo{b bar}}"
-      (Ok [`Paragraph [
-        `Styled (`Bold, [`Word "foo"; `Styled (`Bold, [`Word "bar"])])]]);
-
-    test "newline"
-      "{b foo\nbar}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"; `Space; `Word "bar"])]]);
-
-    test "cr-lf"
-      "{b foo\r\nbar}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "foo"; `Space; `Word "bar"])]]);
-
-    test "minus"
-      "{b -}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "-"])]]);
-
-    test "minus list item"
-      "{b foo\n -bar}"
-      (error 2 1 2 2
-        [
-          "'-' (bulleted list item) is not allowed";
-            " in '{b ...}' (boldface text)\n";
-          "Suggestion: move '-' so it isn't the first thing on the line";
-        ]);
-
-    test "plus list item"
-      "{b foo\n +bar}"
-      (error 2 1 2 2
-        [
-          "'+' (numbered list item) is not allowed";
-            " in '{b ...}' (boldface text)\n";
-          "Suggestion: move '+' so it isn't the first thing on the line";
-        ]);
-
-    test "immediate minus list item"
-      "{b\n-foo}"
-      (error 2 0 2 1
-        [
-          "'-' (bulleted list item) is not allowed";
-            " in '{b ...}' (boldface text)\n";
-          "Suggestion: move '-' so it isn't the first thing on the line";
-        ]);
-
-    test "immediate plus list item"
-      "{b\n+foo}"
-      (error 2 0 2 1
-        [
-          "'+' (numbered list item) is not allowed";
-            " in '{b ...}' (boldface text)\n";
-          "Suggestion: move '+' so it isn't the first thing on the line";
-        ]);
-
-    test "blank line"
-      "{b foo\n\nbar}"
-      (error 2 0 2 0
-        ["blank line is not allowed in '{b ...}' (boldface text)"]);
-
-    test "immediate blank line"
-      "{b\n\n"
-      (error 2 0 2 0
-        ["blank line is not allowed in '{b ...}' (boldface text)"]);
-
-    test "end of comment"
-      "{b foo"
-      (error 1 6 1 6
-        ["end of text is not allowed in '{b ...}' (boldface text)"]);
-
-    test "nested code block"
-      "{b {[foo]}"
-      (error 1 3 1 10
-        ["'{[...]}' (code block) is not allowed in '{b ...}' (boldface text)"]);
-
-    test "degenerate"
-      "{b}"
-      (error 1 0 1 2 ["'{b ...}' (boldface text) cannot be empty"]);
-
-    test "empty"
-      "{b }"
-      (error 1 0 1 2 ["'{b ...}' (boldface text) cannot be empty"]);
+    t "basic" "{b foo}";
+    t "extra-leading-whitespace" "{b  \t foo}";
+    t "leading-newline" "{b\nfoo}";
+    t "leading-cr-lf" "{b\r\nfoo}";
+    t "leading-newline-and-whitespace" "{b\n foo}";
+    t "no-leading-whitespace" "{bfoo}";
+    t "trailing-whitespace" "{b foo }";
+    t "trailing-newline" "{b foo\n}";
+    t "trailing-cr-lf" "{b foo\r\n}";
+    t "two-words" "{b foo bar}";
+    t "not-merged" "{b foo}{b bar}";
+    t "nested" "{b foo{b bar}}";
+    t "newline" "{b foo\nbar}";
+    t "cr-lf" "{b foo\r\nbar}";
+    t "minus" "{b -}";
+    t "minus-list-item" "{b foo\n -bar}";
+    t "plus-list-item" "{b foo\n +bar}";
+    t "immediate-minus-list-item" "{b\n-foo}";
+    t "immediate-plus-list-item" "{b\n+foo}";
+    t "blank-line" "{b foo\n\nbar}";
+    t "immediate-blank-line" "{b\n\n";
+    t "end-of-comment" "{b foo";
+    t "nested-code-block" "{b {[foo]}";
+    t "degenerate" "{b}";
+    t "empty" "{b }";
   ];
-
-
 
   "italic", [
-    test "basic"
-      "{i foo}"
-      (Ok [`Paragraph [`Styled (`Italic, [`Word "foo"])]]);
-
-    test "extra leading whitespace"
-      "{i  \t foo}"
-      (Ok [`Paragraph [`Styled (`Italic, [`Word "foo"])]]);
-
-    test "leading newline"
-      "{i\nfoo}"
-      (Ok [`Paragraph [`Styled (`Italic, [`Word "foo"])]]);
-
-    test "leading newline and whitespace"
-      "{i\n foo}"
-      (Ok [`Paragraph [`Styled (`Italic, [`Word "foo"])]]);
+    t "basic" "{i foo}";
+    t "extra-leading-whitespace" "{i  \t foo}";
+    t "leading-newline" "{i\nfoo}";
+    t "leading-newline-and-whitespace" "{i\n foo}";
   ];
-
-
 
   "emphasis", [
-    test "basic"
-      "{e foo}"
-      (Ok [`Paragraph [`Styled (`Emphasis, [`Word "foo"])]]);
-
-    test "extra leading whitespace"
-      "{e  \t foo}"
-      (Ok [`Paragraph [`Styled (`Emphasis, [`Word "foo"])]]);
-
-    test "leading newline"
-      "{e\nfoo}"
-      (Ok [`Paragraph [`Styled (`Emphasis, [`Word "foo"])]]);
-
-    test "leading newline and whitespace"
-      "{e\n foo}"
-      (Ok [`Paragraph [`Styled (`Emphasis, [`Word "foo"])]]);
+    t "basic" "{e foo}";
+    t "extra-leading-whitespace" "{e  \t foo}";
+    t "leading-newline" "{e\nfoo}";
+    t "leading-newline-and-whitespace" "{e\n foo}";
   ];
-
-
 
   "superscript", [
-    test "basic"
-      "{^ foo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "extra leading whitespace"
-      "{^  \t foo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "leading newline"
-      "{^\nfoo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "leading cr-lf"
-      "{^\r\nfoo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "leading newline and whitespace"
-      "{^\n foo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "no whitespace"
-      "{^foo}"
-      (Ok [`Paragraph [`Styled (`Superscript, [`Word "foo"])]]);
-
-    test "degenerate"
-      "{^}"
-      (error 1 0 1 2 ["'{^...}' (superscript) cannot be empty"]);
-
-    test "empty"
-      "{^ }"
-      (error 1 0 1 2 ["'{^...}' (superscript) cannot be empty"]);
+    t "basic" "{^ foo}";
+    t "extra-leading-whitespace" "{^  \t foo}";
+    t "leading-newline" "{^\nfoo}";
+    t "leading-cr-lf" "{^\r\nfoo}";
+    t "leading-newline-and-whitespace" "{^\n foo}";
+    t "no-whitespace" "{^foo}";
+    t "degenerate" "{^}";
+    t "empty" "{^ }";
   ];
-
-
 
   "subscript", [
-    test "basic"
-      "{_ foo}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "foo"])]]);
-
-    test "extra leading whitespace"
-      "{_  \t foo}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "foo"])]]);
-
-    test "leading newline"
-      "{_\nfoo}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "foo"])]]);
-
-    test "leading newline and whitespace"
-      "{_\n foo}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "foo"])]]);
-
-    test "no whitespace"
-      "{_foo}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "foo"])]]);
-
-    test "v"
-      "{_uv}"
-      (Ok [`Paragraph [`Styled (`Subscript, [`Word "uv"])]]);
+    t "basic" "{_ foo}";
+    t "extra-leading-whitespace" "{_  \t foo}";
+    t "leading-newline" "{_\nfoo}";
+    t "leading-newline-and-whitespace" "{_\n foo}";
+    t "no-whitespace" "{_foo}";
+    t "v-verbose" "{_uv}";
   ];
 
-
-
-  "simple reference", [
-    test "basic"
-      "{!foo}"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
-
-    test "leading whitespace"
-      "{! foo}"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
-
-    test "trailing whitespace"
-      "{!foo }"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
-
-    test "adjacent word (leading)"
-      "bar{!foo}"
-      (Ok [`Paragraph [`Word "bar"; `Reference (Root ("foo", TUnknown), [])]]);
-
-    test "explicit leading space"
-      "bar {!foo}"
-      (Ok [`Paragraph
-        [`Word "bar"; `Space; `Reference (Root ("foo", TUnknown), [])]]);
-
-    test "adjacent word (trailing)"
-      "{!foo}bar"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), []); `Word "bar"]]);
-
-    test "explicit trailing space"
-      "{!foo} bar"
-      (Ok [`Paragraph
-        [`Reference (Root ("foo", TUnknown), []); `Space; `Word "bar"]]);
-
-    test "kind"
-      "{!val:foo}"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [])]]);
-
-    test "empty"
-      "{!}"
-      (error 1 0 1 3 ["reference target cannot be empty"]);
-
-    test "whitespace only"
-      "{! }"
-      (error 1 0 1 4 ["reference target cannot be empty"]);
-
-    test "internal whitespace"
-      "{!foo ()}"
-      (error 1 5 1 6
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
+  "simple-reference", [
+    t "basic" "{!foo}";
+    t "leading-whitespace" "{! foo}";
+    t "trailing-whitespace" "{!foo }";
+    t "adjacent-word-leading" "bar{!foo}";
+    t "explicit-leading-space" "bar {!foo}";
+    t "adjacent-word-trailing" "{!foo}bar";
+    t "explicit-trailing-space" "{!foo} bar";
+    t "kind" "{!val:foo}";
+    t "empty" "{!}";
+    t "whitespace-only" "{! }";
+    t "internal-whitespace" "{!foo ()}";
     (* TODO Limiting the character combinations allowed will make it easier to
        catch expressions accidentally written inside references. This can also
        be caught by a good resolver and resolver error messages. *)
-    (* test "expression"
-      "{!foo+1}"
+    (* t "expression" *)
+    t "unterminated" "{!foo";
+    t "internal-whitespace-in-kind" "{!va l:foo}";
+    t "internal-whitespace-in-referent" "{!val:foo bar}";
+    t "two-colons" "{!val:foo:bar}";
+    t "space-before-colon" "{!val :foo}";
+    t "space-after-colon" "{!val: foo}";
+    t "unterminated-after-kind" "{!val:foo";
+  ];
+
+  "reference-with-text", [
+    t "basic" "{{!foo} bar}";
+    t "degenerate" "{{!foo}}";
+    t "empty" "{{!foo} }";
+    t "nested-markup" "{{!foo} {b bar}}";
+    t "no-separating-space" "{{!foo}bar}";
+    t "kind" "{{!val:foo} bar}";
+    t "nested-reference" "{{!foo} {!bar}}";
+    t "empty-target" "{{!} foo}";
+    t "whitespace-only-in-target" "{{! } foo}";
+    t "internal-whitespace" "{{!foo bar} baz}";
+    t "unterminated" "{{!foo";
+    t "unterminated-content" "{{!foo} bar";
+  ];
+
+  "link", [
+    t "basic" "{{:foo} bar}";
+    t "nested-markup" "{{:foo} {b bar}}";
+    t "no-separating-space" "{{:foo}bar}";
+    t "nested-link" "{{:foo} {{:bar} baz}}";
+    t "empty-target" "{{:} foo}";
+    t "whitespace-only-in-target" "{{: } foo}";
+    t "empty" "{{:foo}}";
+    t "internal-whitespace" "{{:foo bar} baz}";
+    t "unterminated" "{{:foo";
+  ];
+
+  "module-list", [
+    t "basic" "{!modules:Foo}";
+    t "two" "{!modules:Foo Bar}";
+    t "extra-whitespace" "{!modules: Foo  Bar }";
+    t "newline" "{!modules:Foo\nBar}";
+    t "cr-lf" "{!modules:Foo\r\nBar}";
+    t "empty" "{!modules:}";
+    t "whitespace-only" "{!modules: }";
+    t "unterminated" "{!modules:";
+    t "in-paragraph" "foo {!modules:Foo}";
+    t "followed-by-word" "{!modules:Foo} foo";
+    t "in-list" "- {!modules:Foo}";
+  ];
+
+  "code-block", [
+    t "basic" "{[foo]}";
+    t "empty" "{[]}";
+    t "whitespace-only" "{[ ]}";
+    t "blank-line-only" "{[\n  \n]}";
+    t "whitespace" "{[foo bar]}";
+    t "newline" "{[foo\nbar]}";
+    t "cr-lf" "{[foo\r\nbar]}";
+    t "blank-line" "{[foo\n\nbar]}";
+    t "leading-whitespace" "{[ foo]}";
+    t "leading-tab" "{[\tfoo]}";
+    t "leading-newline" "{[\nfoo]}";
+    t "leading-cr-lf" "{[\r\nfoo]}";
+    t "leading-newlines" "{[\n\nfoo]}";
+    t "leading-newline-with-space" "{[\n foo]}";
+    t "leading-newline-with-trash" "{[ \nfoo]}";
+    t "nested-opener" "{[{[]}";
+    t "nested-closer" "{[foo]}]}";
+    t "nested-bracket" "{[]]}";
+    t "two-nested-brackets" "{[]]]}";
+    t "nested-brackets-in-text" "{[foo]]bar]}";
+    t "trailing-whitespace" "{[foo ]}";
+    t "trailing-tab" "{[foo\t]}";
+    t "trailing-newline" "{[foo\n]}";
+    t "trailing-cr-lf" "{[foo\r\n]}";
+    t "trailing-newlines" "{[foo\n\n]}";
+    t "preceded-by-whitespace" " {[foo]}";
+    t "followed-by-whitespace" "{[foo]} ";
+    t "two-on-one-line" "{[foo]} {[bar]}";
+    t "two" "{[foo]}\n{[bar]}";
+    t "two-with-blank-line" "{[foo]}\n\n{[bar]}";
+    t "followed-by-words" "{[foo]} bar";
+    t "preceded-by-words" "foo {[bar]}";
+    t "preceded-by-paragraph" "foo\n{[bar]}";
+    t "followed-by-paragraph" "{[foo]}\nbar";
+    t "unterminated" "{[foo";
+    t "unterminated-bracket" "{[foo]";
+    t "trailing-cr" "{[foo\r]}";
+  ];
+
+  "verbatim", [
+    t "basic" "{v foo v}";
+    t "empty" "{v v}";
+    t "degenerate" "{vv}";
+    t "whitespace-only" "{v  v}";
+    t "blank-line-only" "{v\n  \nv}";
+    t "no-leading-whitespace" "{vfoo v}";
+    t "no-trailing-whitespace" "{v foov}";
+    t "multiple-leading-whitespace" "{v  foo v}";
+    t "multiple-trailing-whitespace" "{v foo  v}";
+    t "leading-tab" "{v\tfoo v}";
+    t "leading-newline" "{v\nfoo v}";
+    t "leading-cr-lf" "{v\r\nfoo v}";
+    t "trailing-tab" "{v foo\tv}";
+    t "trailing-newline" "{v foo\nv}";
+    t "trailing-cr-lf" "{v foo\r\nv}";
+    t "internal-whitespace" "{v foo bar v}";
+    t "newline" "{v foo\nbar v}";
+    t "cr-lf" "{v foo\r\nbar v}";
+    t "blank-line" "{v foo\n\nbar v}";
+    t "leading-newlines" "{v\n\nfoo v}";
+    t "leading-newline-with-space" "{v\n foo v}";
+    t "leading-newline-with-trash" "{v \nfoo v}";
+    t "nested-opener" "{v {v v}";
+    t "nested-closer" "{v foo v} v}";
+    t "nested-v" "{v v v}";
+    t "two-nested-vs" "{v vv v}";
+    t "nested-v-at-end" "{v vv}";
+    t "two-nested-vs-at-end" "{v vvv}";
+    t "nested-vs-in-text" "{v foovvbar v}";
+    t "trailing-newlines" "{v foo\n\nv}";
+    t "preceded-by-whitespace" " {v foo v}";
+    t "followed-by-whitespace" "{v foo v} ";
+    t "two-on-one-line" "{v foo v} {v bar v}";
+    t "two" "{v foo v}\n{v bar v}";
+    t "two-with-blank-line" "{v foo v}\n\n{v bar v}";
+    t "followed-by-words" "{v foo v} bar";
+    t "preceded-by-words" "foo {v bar v}";
+    t "preceded-by-paragraph" "foo\n{v bar v}";
+    t "followed-by-paragraph" "{v foo v}\nbar";
+    t "unterminated" "{v foo";
+    t "unterminated-v" "{v foo v";
+    t "trailing-cr" "{v foo\rv}";
+  ];
+
+  "shorthand-list", [
+    t "basic" "- foo";
+    t "multiple-items" "- foo\n- bar";
+    t "two-lists" "- foo\n\n- bar";
+    t "ordered" "+ foo";
+    t "leading-whitespace" " - foo";
+    t "trailing-whitespace" "- foo ";
+    t "no-whitespace-after-bullet" "-foo";
+    t "bullet-in-line" "- foo - bar";
+    t "bullet-in-line-immediately" "- - foo";
+    t "code-block" "- {[foo]}";
+    t "verbatim" "- {v foo v}";
+    t "multiple-blocks" "- foo\n{[bar]}";
+    t "followed-by-code-block" "- foo\n\n{[bar]}";
+    t "different-kinds" "- foo\n+ bar";
+    t "no-content" "-";
+    t "immediate-newline" "-\nfoo";
+    t "immediate-blank-line" "-\n\nfoo";
+    t "after-code-block" "{[foo]} - bar";
+  ];
+
+  "explicit-list", [
+    t "basic" "{ul {li foo}}";
+    t "ordered" "{ol {li foo}}";
+    t "two-items" "{ul {li foo} {li bar}}";
+    t "items-on-separate-lines" "{ul {li foo}\n{li bar}}";
+    t "blank-line" "{ul {li foo}\n\n{li bar}}";
+    t "blank-line-in-item" "{ul {li foo\n\nbar}}";
+    t "junk" "{ul foo}";
+    t "junk-with-no-whitespace" "{ulfoo}";
+    t "empty" "{ul}";
+    t "unterminated-list" "{ul";
+    t "no-whitespace" "{ul{li foo}}";
+    t "whitespace-at-end-of-item" "{ul {li foo\n\n\n}}";
+    t "unterminated-{li" "{ul {li foo";
+    t "unterminated-{-" "{ul {- foo";
+    t "empty-{li" "{ul {li }}";
+    t "empty-{-" "{ul {- }}";
+    t "{li-without-whitespace" "{ul {lifoo}}";
+    t "{li-followed-by-newline" "{ul {li\nfoo}}";
+    t "{li-followed-by-cr-lf" "{ul {li\r\nfoo}}";
+    t "{li-followed-by-blank-line" "{ul {li\n\nfoo}}";
+    t "{--without-whitespace" "{ul {-foo}}";
+    t "mixed-list-items" "{ul {li foo} {- bar}}";
+    t "nested" "{ul {li {ul {li foo}}}}";
+    t "shorthand-in-explicit" "{ul {li - foo\n- bar}}";
+    t "explicit-in-shorthand" "- {ul {li foo}}";
+    t "bare-{li" "{li foo}";
+    t "bare-{-" "{- foo";
+    t "after-code-block" "{[foo]} {ul {li bar}}";
+  ];
+
+  "heading", [
+    t "basic" "{2 Foo}";
+    t "subsection" "{3 Foo}";
+    t "subsubsection" "{4 Foo}";
+    t "leading-whitespace" "{2  Foo}";
+    t "no-leading-whitespace" "{2Foo}";
+    t "no-leading-whitespace-h3" "{3Foo}";
+    t "leading-newline" "{2\nFoo}";
+    t "leading-cr-lf" "{2\r\nFoo}";
+    t "leading-blank-line" "{2\n\nFoo}";
+    t "leading-blank-line-h3" "{3\n\nFoo}";
+    t "trailing-whitespace" "{2 Foo }";
+    t "trailing-newline" "{2 Foo\n}";
+    t "trailing-blank-line" "{2 Foo\n\n}";
+    t "nested-markup" "{2 [foo]}";
+    t "words" "{2 foo bar}";
+    t "nested-heading" "{2 {2 Foo}}";
+    t "in-list" "- {2 Foo}";
+    t "followed-by-junk" "{2 Foo} bar";
+    t "preceded-by-junk" "foo {2 Bar}";
+    t "followed-by-block" "{2 Foo}\nbar";
+    t "preceded-by-block" "foo\n{2 Bar}";
+    t "label" "{2:foo Bar}";
+    t "whitespace-before-colon" "{2 :foo Bar}";
+    t "whitespace-after-colon" "{2: foo Bar}";
+    t "label-only" "{2:foo}";
+    t "label-only-with-whitespace" "{2:foo }";
+    t "in-list-outside-item" "{ul {2 Foo}}";
+    t "preceded-by-shorthand-list" "- foo\n{2 Bar}";
+    t "nested-in-two-lists" "{ul {li - foo\n{2 Bar}}}";
+    t "bad-level-long-number" "{22 Foo}";
+    t "bad-level-title" "{1 Foo}";
+    t "bad-level-too-deep" "{5 Foo}";
+  ];
+
+  "section-contexts", [
+    t "titles-allowed" "{1 Foo}"
+      ~sections:`Allow_all_sections;
+    t "titles-zero-not-allowed" "{0 Foo}"
+      ~sections:`Allow_all_sections;
+    t "titles-no-high-levels" "{5 Foo}"
+      ~sections:`Allow_all_sections;
+    t "two-titles" "{1 Foo}\n{1 Bar}"
+      ~sections:`Allow_all_sections;
+    t "none" "{2 Foo}"
+      ~sections:`No_sections;
+    t "permissive" "{1 Foo}"
+      ~permissive:true;
+    t "titles-allowed-permissive" "{1 Foo}"
+      ~permissive:true ~sections:`Allow_all_sections;
+    t "titles-zero-not-allowed-permissive" "{0 Foo}"
+      ~permissive:true ~sections:`Allow_all_sections;
+    t "titles-no-high-levels-permissive" "{5 Foo}"
+      ~permissive:true ~sections:`Allow_all_sections;
+    t "two-titles-permissive" "{1 Foo}\n{1 Bar}"
+      ~permissive:true ~sections:`Allow_all_sections;
+    t "none-permissive" "{2 Foo}"
+      ~permissive:true ~sections:`No_sections;
+  ];
+
+  "warnings", [
+    t "multiple" "{1 Foo}\n{1 Foo}"
+      ~permissive:true;
+    t "with-error" "{1 Foo} {1 Foo}"
+      ~permissive:true;
+  ];
+
+  "author", [
+    t "basic" "@author Foo Bar";
+    t "empty" "@author";
+    t "whitespace-only" "@author ";
+    t "extra-whitespace" "@author  Foo Bar ";
+    t "newline" "@author Foo Bar\n";
+    t "cr-lf" "@author Foo Bar\r\n";
+    t "blank-line" "@author Foo Bar\n\n";
+    t "followed-by-junk" "@author Foo\nbar";
+    t "followed-by-code-span" "@author Foo\n[bar]";
+    t "followed-by-code-block" "@author Foo\n{[bar]}";
+    t "followed-by-verbatim" "@author Foo\n{v bar v}";
+    t "followed-by-modules" "@author foo\n{!modules:Foo}";
+    t "followed-by-list" "@author Foo\n{ul {li bar}}";
+    t "followed-by-shorthand-list" "@author Foo\n- bar";
+    t "followed-by-section-heading" "@author Foo\n{2 Bar}";
+    t "followed-by-author" "@author Foo\n@author Bar";
+    t "followed-by-author-cr-lf" "@author Foo\n@author Bar";
+    t "in-author" "@author Foo @author Bar";
+    t "in-author-at-start" "@author @author Foo";
+    t "preceded-by-paragraph" "foo\n@author Bar";
+    t "no-markup" "@author Foo [Bar]";
+    t "in-paragraph" "foo @author Bar";
+    t "in-code" "[@author Foo]";
+    t "in-style" "{b @author Foo}";
+    t "in-heading" "{2 @author Foo}";
+    t "after-shorthand-list" "- foo\n@author Bar";
+    t "in-shorthand-list" "- foo @author Bar";
+    t "in-shorthand-list-at-start" "- @author Foo";
+    t "in-shorthand-list-immediate" "-@author Foo";
+    t "in-list-item" "{ul {li foo @author Bar}}";
+    t "in-list-item-at-start" "{ul {li @author Foo}}";
+    t "in-list-item-on-new-line" "{ul {li foo\n@author Bar}}";
+    t "in-list" "{ul @author Foo}";
+    t "in-code-block" "{[@author Foo]}";
+    t "in-verbatim" "{v @author Foo v}";
+    t "after-code-block" "{[foo]} @author Bar";
+    t "after-verbatim" "{v foo v} @author Bar";
+    t "after-heading" "{2 Foo} @author Bar";
+    t "after-list" "{ul {li foo}} @author Bar";
+    t "preceded-by-whitespace" " @author Foo Bar";
+    t "second-preceded-by-whitespace" "@author Foo\n @author Bar";
+    t "prefix" "@authorfoo";
+  ];
+
+  "deprecated", [
+    t "basic" "@deprecated";
+    t "words" "@deprecated foo bar";
+    t "multiline" "@deprecated foo\nbar";
+    t "paragraphs" "@deprecated foo\n\nbar";
+    t "whitespace-only" "@deprecated ";
+    t "immediate-newline" "@deprecated\nfoo";
+    t "immediate-cr-lf" "@deprecated\r\nfoo";
+    t "immediate-blank-line" "@deprecated\n\nfoo";
+    t "extra-whitespace" "@deprecated  foo";
+    t "followed-by-deprecated" "@deprecated foo\n@deprecated bar";
+    t "followed-by-deprecated-cr-lf" "@deprecated foo\r\n@deprecated bar";
+    t "nested-in-self" "@deprecated foo @deprecated bar";
+    t "nested-in-self-at-start" "@deprecated @deprecated foo";
+    t "preceded-by-paragraph" "foo\n@deprecated";
+    t "preceded-by-shorthand-list" "- foo\n@deprecated";
+    t "with-shorthand-list" "@deprecated - foo";
+    t "with-shorthand-list-after-newline" "@deprecated\n-foo";
+    t "prefix" "@deprecatedfoo";
+    t "after-code-block" "{[foo]} @deprecated";
+    t "followed-by-section" "@deprecated foo\n{2 Bar}";
+  ];
+
+  "param", [
+    t "basic" "@param foo";
+    t "bare" "@param";
+    t "bare-with-whitespace" "@param ";
+    t "immediate-newline" "@param\nfoo";
+    t "followed-by-whitespace" "@param foo ";
+    t "extra-whitespace" "@param  foo";
+    t "words" "@param foo bar baz";
+    t "multiline" "@param foo\nbar\nbaz";
+    t "paragraphs" "@param foo bar\n\nbaz";
+    t "two" "@param foo\n@param bar";
+    t "nested" "@param foo @param bar";
+    t "preceded-by-paragraph" "foo\n@param bar";
+    t "prefix" "@paramfoo";
+    t "after-code-block" "{[foo]} @param foo";
+  ];
+
+  "raise", [
+    t "basic" "@raise Foo";
+    t "bare" "@raise";
+    t "words" "@raise foo bar baz";
+    t "prefix" "@raisefoo";
+  ];
+
+  "return", [
+    t "basic" "@return";
+    t "words" "@return foo bar";
+    t "prefix" "@returnfoo";
+  ];
+
+  "see", [
+    t "url" "@see <foo>";
+    t "file" "@see 'foo'";
+    t "document" "@see \"foo\"";
+    t "bare" "@see";
+    t "unterminated-url" "@see <foo";
+    t "unterminated-file" "@see 'foo";
+    t "unterminated-document" "@see \"foo";
+    t "no-space" "@see<foo>";
+    t "words" "@see <foo> bar";
+    t "prefix" "@seefoo";
+    t "after-code-block" "{[foo]} @see <foo>";
+  ];
+
+  "since", [
+    t "basic" "@since foo";
+    t "bare" "@since";
+    t "prefix" "@sincefoo";
+    t "with-whitespace" "@since foo bar";
+    t "leading-whitespace" "@since  foo";
+    t "trailing-whitespace" "@since foo ";
+    t "whitespace-only" "@since ";
+  ];
+
+  "before", [
+    t "basic" "@before Foo";
+    t "bare" "@before";
+    t "words" "@before foo bar baz";
+    t "prefix" "@beforefoo";
+  ];
+
+  "version", [
+    t "basic" "@version foo";
+    t "bare" "@version";
+    t "prefix" "@versionfoo";
+    t "with-whitespace" "@version foo bar";
+    t "leading-whitespace" "@version  foo";
+    t "trailing-whitespace" "@version foo ";
+    t "whitespace-only" "@version ";
+  ];
+
+  "canonical", [
+    t "basic" "@canonical Foo";
+    t "empty" "@canonical";
+    t "whitespace-only" "@canonical ";
+    t "extra-whitespace" "@canonical  Foo ";
+    t "prefix" "@canonicalfoo";
+    (* TODO This should probably be an error of some kind, as Foo Bar is not a
+       valid module path. *)
+    t "with-whitespace" "@canonical Foo Bar";
+  ];
+
+  "bad-markup", [
+    t "left-brace" "{";
+    t "left-brace-with-letter" "{g";
+    t "braces-instead-of-brackets" "{foo}";
+    t "right-brace" "}";
+    t "right-brace-in-paragraph" "foo}";
+    t "right-brace-in-list-item" "- foo}";
+    t "right-brace-in-code-span" "[foo}]";
+    t "right-brace-in-code-block" "{[foo}]}";
+    t "right-brace-in-verbatim-text" "{v foo} v}";
+    t "right-brace-in-author" "@author Foo}";
+    t "right-brace-in-deprecated" "@deprecated }";
+    t "right-bracket" "]";
+    t "right-bracket-in-paragraph" "foo]";
+    t "right-bracket-in-shorthand-list" "- foo]";
+    t "right-bracket-in-code-span" "[]]";
+    t "right-bracket-in-style" "{b]}";
+    t "right-bracket-in-verbatim" "{v ] v}";
+    t "right-bracket-in-list" "{ul ]}";
+    t "right-bracket-in-list-item" "{ul {li ]}}";
+    t "right-bracket-in-heading" "{2 ]}";
+    t "right-bracket-in-author" "@author Foo]";
+    t "at" "@";
+    t "cr" "\r";
+    (* TODO We may actually want to support this instead. *)
+    t "email" "foo@bar.com";
+  ];
+
+  "utf-8", [
+    t "lambda" "\xce\xbb";
+    t "words" "\xce\xbb \xce\xbb";
+    t "no-validation" "\xce";
+    t "escapes" "\xce\xbb\\}";
+    t "newline" "\xce\xbb \n \xce\xbb";
+    t "paragraphs" "\xce\xbb \n\n \xce\xbb";
+    t "code-span" "[\xce\xbb]";
+    t "minus" "\xce\xbb-\xce\xbb";
+    t "shorthand-list" "- \xce\xbb";
+    t "styled" "{b \xce\xbb}";
+    t "reference-target" "{!\xce\xbb}";
+    t "code-block" "{[\xce\xbb]}";
+    t "verbatim" "{v \xce\xbb v}";
+    t "label" "{2:\xce\xbb Bar}";
+    t "author" "@author \xce\xbb";
+    t "param" "@param \xce\xbb";
+    t "raise" "@raise \xce\xbb";
+    t "see" "@see <\xce\xbb>";
+    t "since" "@since \xce\xbb";
+    t "before" "@before \xce\xbb";
+    t "version" "@version \xce\xbb";
+    t "right-brace" "\xce\xbb}";
+  ];
+
+  "comment-location", [
+    t "error-on-first-line" "  @foo"
+      ~location:{line = 2; column = 4};
+    t "error-on-second-line" "  \n  @foo"
+      ~location:{line = 2; column = 4};
+  ];
+
+  "unsupported", [
+    (* test "index list"
+      "{!indexlist}"
       (Ok []); *)
-
-    test "unterminated"
-      "{!foo"
-      (error 1 5 1 5
-        ["end of text is not allowed in '{!...}' (cross-reference)"]);
-
-    test "internal whitespace in kind"
-      "{!va l:foo}"
-      (error 1 4 1 5
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "internal whitespace in referent"
-      "{!val:foo bar}"
-      (error 1 9 1 10
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "two colons"
-      "{!val:foo:bar}"
-      (Ok [`Paragraph [`Reference (Root ("bar", TUnknown), [])]]);
-
-    test "space before colon"
-      "{!val :foo}"
-      (error 1 5 1 6
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "space after colon"
-      "{!val: foo}"
-      (error 1 6 1 7
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "unterminated after kind"
-      "{!val:foo"
-      (error 1 9 1 9
-        ["end of text is not allowed in '{!...}' (cross-reference)"]);
+    t "left-alignment" "{L foo}";
+    t "center-alignment" "{C foo}";
+    t "right-alignment" "{R foo}";
+    t "target-specific-code" "{%foo%}";
+    t "custom-style" "{c foo}";
+    t "custom-tag" "@custom";
+    (* test "custom reference kind"
+      "{!custom:foo}"
+      (Ok []); *)
+    t "html-tag" "<b>foo</b>";
   ];
 
-
-
-  "reference with text", [
-    test "basic"
-      "{{!foo} bar}"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
-
-    test "degenerate"
-      "{{!foo}}"
-      (error 1 0 1 7 ["'{{!...} ...}' (cross-reference) cannot be empty"]);
-
-    test "empty"
-      "{{!foo} }"
-      (error 1 0 1 7 ["'{{!...} ...}' (cross-reference) cannot be empty"]);
-
-    test "nested markup"
-      "{{!foo} {b bar}}"
-      (Ok
-        [`Paragraph
-          [`Reference
-            (Root ("foo", TUnknown), [`Styled (`Bold, [`Word "bar"])])]]);
-
-    test "no separating space"
-      "{{!foo}bar}"
-      (Ok [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
-
-    test "kind"
-      "{{!val:foo} bar}"
-      (Ok
-        [`Paragraph [`Reference (Root ("foo", TUnknown), [`Word "bar"])]]);
-
-    test "nested reference"
-      "{{!foo} {!bar}}"
-      (error 1 8 1 14
-        [
-          "'{!...}' (cross-reference) is not allowed in";
-            " '{{!...} ...}' (cross-reference)";
-        ]);
-
-    test "empty target"
-      "{{!} foo}"
-      (error 1 0 1 4 ["reference target cannot be empty"]);
-
-    test "whitespace only in target"
-      "{{! } foo}"
-      (error 1 0 1 5 ["reference target cannot be empty"]);
-
-    test "internal whitespace"
-      "{{!foo bar} baz}"
-      (error 1 6 1 7
-        [
-          "internal whitespace is not allowed in";
-            " '{{!...} ...}' (cross-reference)";
-        ]);
-
-    test "unterminated"
-      "{{!foo"
-      (error 1 6 1 6
-        ["end of text is not allowed in '{{!...} ...}' (cross-reference)"]);
-
-    test "unterminated content"
-      "{{!foo} bar"
-      (error 1 11 1 11
-        ["end of text is not allowed in '{{!...} ...}' (cross-reference)"]);
-  ];
-
-
-
-  "reference target", [
-    (* test "empty kind"
+  (*
+  "reference-target", [
+    test "empty kind"
       "{!:foo}"
-      (error 1 0 1 3 ["'{!...:' (reference kind) cannot be empty"]); *)
+      (error 1 0 1 3 ["'{!...:' (reference kind) cannot be empty"]);
 
-    (* test "with kind but empty"
+    test "with kind but empty"
       "{!val:}"
       (error 1 5 1 7 ["':...}' (reference target) cannot be empty"]);
 
@@ -820,1784 +700,149 @@ let tests = [
     test "unterminated after kind"
       "{!val:foo"
       (error 1 9 1 9
-        ["end of text is not allowed in '{!...}' (cross-reference)"]); *)
+        ["end of text is not allowed in '{!...}' (cross-reference)"]);
   ];
-
-
-
-  "link", [
-    test "basic"
-      "{{:foo} bar}"
-      (Ok [`Paragraph [`Link ("foo", [`Word "bar"])]]);
-
-    test "nested markup"
-      "{{:foo} {b bar}}"
-      (Ok [`Paragraph [`Link ("foo", [`Styled (`Bold, [`Word "bar"])])]]);
-
-    test "no separating space"
-      "{{:foo}bar}"
-      (Ok [`Paragraph [`Link ("foo", [`Word "bar"])]]);
-
-    test "nested link"
-      "{{:foo} {{:bar} baz}}"
-      (error 1 8 1 15
-        [
-          "'{{:...} ...}' (external link) is not allowed in";
-            " '{{:...} ...}' (external link)";
-        ]);
-
-    test "empty target"
-      "{{:} foo}"
-      (error 1 0 1 4 ["reference target cannot be empty"]);
-
-    test "whitespace only in target"
-      "{{: } foo}"
-      (error 1 0 1 5 ["reference target cannot be empty"]);
-
-    test "empty"
-      "{{:foo}}"
-      (Ok [`Paragraph [`Link ("foo", [])]]);
-
-    test "internal whitespace"
-      "{{:foo bar} baz}"
-      (error 1 6 1 7
-        [
-          "internal whitespace is not allowed in";
-            " '{{:...} ...}' (external link)";
-        ]);
-
-    test "unterminated"
-      "{{:foo"
-      (error 1 6 1 6
-        ["end of text is not allowed in '{{:...} ...}' (external link)"]);
-  ];
-
-
-
-  "module list", [
-    test "basic"
-      "{!modules:Foo}"
-      (Ok [`Modules [Root ("Foo", TUnknown)]]);
-
-    test "two"
-      "{!modules:Foo Bar}"
-      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
-
-    test "extra whitespace"
-      "{!modules: Foo  Bar }"
-      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
-
-    test "newline"
-      "{!modules:Foo\nBar}"
-      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
-
-    test "cr-lf"
-      "{!modules:Foo\r\nBar}"
-      (Ok [`Modules [Root ("Foo", TUnknown); Root ("Bar", TUnknown)]]);
-
-    test "empty"
-      "{!modules:}"
-      (error 1 0 1 11 ["'{!modules ...}' cannot be empty"]);
-
-    test "whitespace only"
-      "{!modules: }"
-      (error 1 0 1 12 ["'{!modules ...}' cannot be empty"]);
-
-    test "unterminated"
-      "{!modules:"
-      (error 1 10 1 10 ["end of text is not allowed in '{!modules ...}'"]);
-
-    test "in paragraph"
-      "foo {!modules:Foo}"
-      (error 1 4 1 18 ["'{!modules ...}' must begin on its own line"]);
-
-    test "followed by word"
-      "{!modules:Foo} foo"
-      (error 1 15 1 18 ["paragraph must begin on its own line"]);
-
-    test "in list"
-      "- {!modules:Foo}"
-      (Ok [`List (`Unordered, [[`Modules [Root ("Foo", TUnknown)]]])]);
-  ];
-
-
-
-  "code block", [
-    test "basic"
-      "{[foo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "empty"
-      "{[]}"
-      (error 1 0 1 4 ["'{[...]}' (code block) cannot be empty"]);
-
-    test "whitespace only"
-      "{[ ]}"
-      (error 1 0 1 5 ["'{[...]}' (code block) cannot be empty"]);
-
-    test "blank line only"
-      "{[\n  \n]}"
-      (error 1 0 3 2 ["'{[...]}' (code block) cannot be empty"]);
-
-    test "whitespace"
-      "{[foo bar]}"
-      (Ok [`Code_block "foo bar"]);
-
-    test "newline"
-      "{[foo\nbar]}"
-      (Ok [`Code_block "foo\nbar"]);
-
-    test "cr-lf"
-      "{[foo\r\nbar]}"
-      (Ok [`Code_block "foo\r\nbar"]);
-
-    test "blank line"
-      "{[foo\n\nbar]}"
-      (Ok [`Code_block "foo\n\nbar"]);
-
-    test "leading whitespace"
-      "{[ foo]}"
-      (Ok [`Code_block " foo"]);
-
-    test "leading tab"
-      "{[\tfoo]}"
-      (Ok [`Code_block "\tfoo"]);
-
-    test "leading newline"
-      "{[\nfoo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "leading cr-lf"
-      "{[\r\nfoo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "leading newlines"
-      "{[\n\nfoo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "leading newline with space"
-      "{[\n foo]}"
-      (Ok [`Code_block " foo"]);
-
-    test "leading newline with trash"
-      "{[ \nfoo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "nested opener"
-      "{[{[]}"
-      (Ok [`Code_block "{["]);
-
-    test "nested closer"
-      "{[foo]}]}"
-      (error 1 7 1 8 ["unpaired ']' (end of code)"]);
-
-    test "nested bracket"
-      "{[]]}"
-      (Ok [`Code_block "]"]);
-
-    test "two nested brackets"
-      "{[]]]}"
-      (Ok [`Code_block "]]"]);
-
-    test "nested brackets in text"
-      "{[foo]]bar]}"
-      (Ok [`Code_block "foo]]bar"]);
-
-    test "trailing whitespace"
-      "{[foo ]}"
-      (Ok [`Code_block "foo "]);
-
-    test "trailing tab"
-      "{[foo\t]}"
-      (Ok [`Code_block "foo\t"]);
-
-    test "trailing newline"
-      "{[foo\n]}"
-      (Ok [`Code_block "foo"]);
-
-    test "trailing cr-lf"
-      "{[foo\r\n]}"
-      (Ok [`Code_block "foo"]);
-
-    test "trailing newlines"
-      "{[foo\n\n]}"
-      (Ok [`Code_block "foo"]);
-
-    test "preceded by whitespace"
-      " {[foo]}"
-      (Ok [`Code_block "foo"]);
-
-    test "followed by whitespace"
-      "{[foo]} "
-      (Ok [`Code_block "foo"]);
-
-    test "two on one line"
-      "{[foo]} {[bar]}"
-      (error 1 8 1 15 ["'{[...]}' (code block) must begin on its own line"]);
-
-    test "two"
-      "{[foo]}\n{[bar]}"
-      (Ok [`Code_block "foo"; `Code_block "bar"]);
-
-    test "two with blank line"
-      "{[foo]}\n\n{[bar]}"
-      (Ok [`Code_block "foo"; `Code_block "bar"]);
-
-    test "followed by words"
-      "{[foo]} bar"
-      (error 1 8 1 11 ["paragraph must begin on its own line"]);
-
-    test "preceded by words"
-      "foo {[bar]}"
-      (error 1 4 1 11 ["'{[...]}' (code block) must begin on its own line"]);
-
-    test "preceded by paragraph"
-      "foo\n{[bar]}"
-      (Ok [`Paragraph [`Word "foo"]; `Code_block "bar"]);
-
-    test "followed by paragraph"
-      "{[foo]}\nbar"
-      (Ok [`Code_block "foo"; `Paragraph [`Word "bar"]]);
-
-    test "unterminated"
-      "{[foo"
-      (error 1 5 1 5 ["end of text is not allowed in '{[...]}' (code block)"]);
-
-    test "unterminated, bracket"
-      "{[foo]"
-      (error 1 6 1 6 ["end of text is not allowed in '{[...]}' (code block)"]);
-
-    test "trailing cr"
-      "{[foo\r]}"
-      (Ok [`Code_block "foo\r"]);
-  ];
-
-
-
-  "verbatim", [
-    test "basic"
-      "{v foo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "empty"
-      "{v v}"
-      (error 1 0 1 5 ["'{v ... v}' (verbatim text) cannot be empty"]);
-
-    test "degenerate"
-      "{vv}"
-      (error 1 0 1 4 ["'{v ... v}' (verbatim text) cannot be empty"]);
-
-    test "whitespace only"
-      "{v  v}"
-      (error 1 0 1 6 ["'{v ... v}' (verbatim text) cannot be empty"]);
-
-    test "blank line only"
-      "{v\n  \nv}"
-      (error 1 0 3 2 ["'{v ... v}' (verbatim text) cannot be empty"]);
-
-    test "no leading whitespace"
-      "{vfoo v}"
-      (error 1 0 1 2 ["'{v' must be followed by whitespace"]);
-
-    test "no trailing whitespace"
-      "{v foov}"
-      (error 1 6 1 8 ["'v}' must be preceded by whitespace"]);
-
-    test "multiple leading whitespace"
-      "{v  foo v}"
-      (Ok [`Verbatim " foo"]);
-
-    test "multiple trailing whitespace"
-      "{v foo  v}"
-      (Ok [`Verbatim "foo "]);
-
-    test "leading tab"
-      "{v\tfoo v}"
-      (Ok [`Verbatim "\tfoo"]);
-
-    test "leading newline"
-      "{v\nfoo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "leading cr-lf"
-      "{v\r\nfoo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "trailing tab"
-      "{v foo\tv}"
-      (Ok [`Verbatim "foo\t"]);
-
-    test "trailing newline"
-      "{v foo\nv}"
-      (Ok [`Verbatim "foo"]);
-
-    test "trailing cr-lf"
-      "{v foo\r\nv}"
-      (Ok [`Verbatim "foo"]);
-
-    test "internal whitespace"
-      "{v foo bar v}"
-      (Ok [`Verbatim "foo bar"]);
-
-    test "newline"
-      "{v foo\nbar v}"
-      (Ok [`Verbatim "foo\nbar"]);
-
-    test "cr-lf"
-      "{v foo\r\nbar v}"
-      (Ok [`Verbatim "foo\r\nbar"]);
-
-    test "blank line"
-      "{v foo\n\nbar v}"
-      (Ok [`Verbatim "foo\n\nbar"]);
-
-    test "leading newlines"
-      "{v\n\nfoo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "leading newline with space"
-      "{v\n foo v}"
-      (Ok [`Verbatim " foo"]);
-
-    test "leading newline with trash"
-      "{v \nfoo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "nested opener"
-      "{v {v v}"
-      (Ok [`Verbatim "{v"]);
-
-    test "nested closer"
-      "{v foo v} v}"
-      (error 1 10 1 11 ["paragraph must begin on its own line"]);
-
-    test "nested v"
-      "{v v v}"
-      (Ok [`Verbatim "v"]);
-
-    test "two nested vs"
-      "{v vv v}"
-      (Ok [`Verbatim "vv"]);
-
-    test "nested v at end"
-      "{v vv}"
-      (error 1 4 1 6 ["'v}' must be preceded by whitespace"]);
-
-    test "two nested vs at end"
-      "{v vvv}"
-      (error 1 5 1 7 ["'v}' must be preceded by whitespace"]);
-
-    test "nested vs in text"
-      "{v foovvbar v}"
-      (Ok [`Verbatim "foovvbar"]);
-
-    test "trailing newlines"
-      "{v foo\n\nv}"
-      (Ok [`Verbatim "foo"]);
-
-    test "preceded by whitespace"
-      " {v foo v}"
-      (Ok [`Verbatim "foo"]);
-
-    test "followed by whitespace"
-      "{v foo v} "
-      (Ok [`Verbatim "foo"]);
-
-    test "two on one line"
-      "{v foo v} {v bar v}"
-      (error 1 10 1 19
-        ["'{v ... v}' (verbatim text) must begin on its own line"]);
-
-    test "two"
-      "{v foo v}\n{v bar v}"
-      (Ok [`Verbatim "foo"; `Verbatim "bar"]);
-
-    test "two with blank line"
-      "{v foo v}\n\n{v bar v}"
-      (Ok [`Verbatim "foo"; `Verbatim "bar"]);
-
-    test "followed by words"
-      "{v foo v} bar"
-      (error 1 10 1 13 ["paragraph must begin on its own line"]);
-
-    test "preceded by words"
-      "foo {v bar v}"
-      (error 1 4 1 13
-        ["'{v ... v}' (verbatim text) must begin on its own line"]);
-
-    test "preceded by paragraph"
-      "foo\n{v bar v}"
-      (Ok [`Paragraph [`Word "foo"]; `Verbatim "bar"]);
-
-    test "followed by paragraph"
-      "{v foo v}\nbar"
-      (Ok [`Verbatim "foo"; `Paragraph [`Word "bar"]]);
-
-    test "unterminated"
-      "{v foo"
-      (error 1 6 1 6
-        ["end of text is not allowed in '{v ... v}' (verbatim text)"]);
-
-    test "unterminated, v"
-      "{v foo v"
-      (error 1 8 1 8
-        ["end of text is not allowed in '{v ... v}' (verbatim text)"]);
-
-    test "trailing cr"
-      "{v foo\rv}"
-      (Ok [`Verbatim "foo\r"]);
-  ];
-
-
-
-  "shorthand list", [
-    test "basic"
-      "- foo"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "multiple items"
-      "- foo\n- bar"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]);
-
-    test "two lists"
-      "- foo\n\n- bar"
-      (Ok [
-        `List (`Unordered, [[`Paragraph [`Word "foo"]]]);
-        `List (`Unordered, [[`Paragraph [`Word "bar"]]]);
-      ]);
-
-    test "ordered"
-      "+ foo"
-      (Ok [`List (`Ordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "leading whitespace"
-      " - foo"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "trailing whitespace"
-      "- foo "
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "no whitespace after bullet"
-      "-foo"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "bullet in line"
-      "- foo - bar"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"; `Space; `Word "-"; `Space; `Word "bar"]]])]);
-
-    test "bullet in line immediately"
-      "- - foo"
-      (error 1 2 1 3 ["'-' (bulleted list item) must begin on its own line"]);
-
-    test "code block"
-      "- {[foo]}"
-      (Ok [`List (`Unordered, [[`Code_block "foo"]])]);
-
-    test "verbatim"
-      "- {v foo v}"
-      (Ok [`List (`Unordered, [[`Verbatim "foo"]])]);
-
-    test "multiple blocks"
-      "- foo\n{[bar]}"
-      (Ok [`List (`Unordered,
-        [[`Paragraph [`Word "foo"]; `Code_block "bar"]])]);
-
-    test "followed by code block"
-      "- foo\n\n{[bar]}"
-      (Ok [
-        `List (`Unordered, [[`Paragraph [`Word "foo"]]]); `Code_block "bar"]);
-
-    test "different kinds"
-      "- foo\n+ bar"
-      (Ok [
-        `List (`Unordered, [[`Paragraph [`Word "foo"]]]);
-        `List (`Ordered, [[`Paragraph [`Word "bar"]]]);
-      ]);
-
-    test "no content"
-      "-"
-      (error 1 0 1 1 ["'-' (bulleted list item) cannot be empty"]);
-
-    test "immediate newline"
-      "-\nfoo"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "immediate blank line"
-      "-\n\nfoo"
-      (error 1 0 1 1 ["'-' (bulleted list item) cannot be empty"]);
-
-    test "after code block"
-      "{[foo]} - bar"
-      (error 1 8 1 9 ["'-' (bulleted list item) must begin on its own line"]);
-  ];
-
-
-
-  "explicit list", [
-    test "basic"
-      "{ul {li foo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "ordered"
-      "{ol {li foo}}"
-      (Ok [`List (`Ordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "two items"
-      "{ul {li foo} {li bar}}"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]);
-
-    test "items on separate lines"
-      "{ul {li foo}\n{li bar}}"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]);
-
-    test "blank line"
-      "{ul {li foo}\n\n{li bar}}"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]);
-
-    test "blank line in item"
-      "{ul {li foo\n\nbar}}"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]]])]);
-
-    test "junk"
-      "{ul foo}"
-      (error 1 4 1 7
-        [
-          "'foo' is not allowed in '{ul ...}' (bulleted list)\n";
-          "Suggestion: move 'foo' into a list item, '{li ...}' or '{- ...}'"
-        ]);
-
-    test "junk with no whitespace"
-      "{ulfoo}"
-      (error 1 3 1 6
-        [
-          "'foo' is not allowed in '{ul ...}' (bulleted list)\n";
-          "Suggestion: move 'foo' into a list item, '{li ...}' or '{- ...}'"
-        ]);
-
-    test "empty"
-      "{ul}"
-      (error 1 0 1 3 ["'{ul ...}' (bulleted list) cannot be empty"]);
-
-    test "unterminated list"
-      "{ul"
-      (error 1 3 1 3
-        ["end of text is not allowed in '{ul ...}' (bulleted list)"]);
-
-    test "no whitespace"
-      "{ul{li foo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "whitespace at end of item"
-      "{ul {li foo\n\n\n}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "unterminated {li"
-      "{ul {li foo"
-      (error 1 11 1 11
-        ["end of text is not allowed in '{li ...}' (list item)"]);
-
-    test "unterminated {-"
-      "{ul {- foo"
-      (error 1 10 1 10
-        ["end of text is not allowed in '{- ...}' (list item)"]);
-
-    test "empty {li"
-      "{ul {li }}"
-      (error 1 4 1 7 ["'{li ...}' (list item) cannot be empty"]);
-
-    test "empty {-"
-      "{ul {- }}"
-      (error 1 4 1 6 ["'{- ...}' (list item) cannot be empty"]);
-
-    test "{li without whitespace"
-      "{ul {lifoo}}"
-      (error 1 4 1 7
-        ["'{li ...}' must be followed by space, a tab, or a new line"]);
-
-    test "{li followed by newline"
-      "{ul {li\nfoo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "{li followed by cr-lf"
-      "{ul {li\r\nfoo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "{li followed by blank line"
-      "{ul {li\n\nfoo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "{- without whitespace"
-      "{ul {-foo}}"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "foo"]]])]);
-
-    test "mixed list items"
-      "{ul {li foo} {- bar}}"
-      (Ok [`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]);
-
-    test "nested"
-      "{ul {li {ul {li foo}}}}"
-      (Ok [`List (`Unordered,
-        [[`List (`Unordered, [[`Paragraph [`Word "foo"]]])]])]);
-
-    test "shorthand in explicit"
-      "{ul {li - foo\n- bar}}"
-      (Ok [`List (`Unordered, [[`List (`Unordered, [
-        [`Paragraph [`Word "foo"]];
-        [`Paragraph [`Word "bar"]];
-      ])]])]);
-
-    test "explicit in shorthand"
-      "- {ul {li foo}}"
-      (Ok [`List (`Unordered,
-        [[`List (`Unordered, [[`Paragraph [`Word "foo"]]])]])]);
-
-    test "bare {li"
-      "{li foo}"
-      (error 1 0 1 3
-        [
-          "'{li ...}' (list item) is not allowed in top-level text\n";
-          "Suggestion: move '{li ...}' into '{ul ...}' (bulleted list),";
-            " or use '-' (bulleted list item)"
-        ]);
-
-    test "bare {-"
-      "{- foo"
-      (error 1 0 1 2
-        [
-          "'{- ...}' (list item) is not allowed in top-level text\n";
-          "Suggestion: move '{- ...}' into '{ul ...}' (bulleted list),";
-            " or use '-' (bulleted list item)"
-        ]);
-
-    test "after code block"
-      "{[foo]} {ul {li bar}}"
-      (error 1 8 1 11
-        ["'{ul ...}' (bulleted list) must begin on its own line"]);
-  ];
-
-
-
-  "heading", [
-    test "basic"
-      "{2 Foo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "subsection"
-      "{3 Foo}"
-      (Ok [`Heading (`Subsection, None, [`Word "Foo"])]);
-
-    test "subsubsection"
-      "{4 Foo}"
-      (Ok [`Heading (`Subsubsection, None, [`Word "Foo"])]);
-
-    test "leading whitespace"
-      "{2  Foo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "no leading whitespace"
-      "{2Foo}"
-      (error 1 0 1 2 ["'{2' must be followed by space, a tab, or a new line"]);
-
-    test "no leading whitespace (h3)"
-      "{3Foo}"
-      (error 1 0 1 2 ["'{3' must be followed by space, a tab, or a new line"]);
-
-    test "leading newline"
-      "{2\nFoo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "leading cr-lf"
-      "{2\r\nFoo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "leading blank line"
-      "{2\n\nFoo}"
-      (error 2 0 2 0
-        ["blank line is not allowed in '{2 ...}' (section heading)"]);
-
-    test "leading blank line (h3)"
-      "{3\n\nFoo}"
-      (error 2 0 2 0
-        ["blank line is not allowed in '{3 ...}' (section heading)"]);
-
-    test "trailing whitespace"
-      "{2 Foo }"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "trailing newline"
-      "{2 Foo\n}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])]);
-
-    test "trailing blank line"
-      "{2 Foo\n\n}"
-      (error 2 0 2 0
-        ["blank line is not allowed in '{2 ...}' (section heading)"]);
-
-    test "nested markup"
-      "{2 [foo]}"
-      (Ok [`Heading (`Section, None, [`Code_span "foo"])]);
-
-    test "words"
-      "{2 foo bar}"
-      (Ok [`Heading (`Section, None, [`Word "foo"; `Space; `Word "bar"])]);
-
-    test "nested heading"
-      "{2 {2 Foo}}"
-      (error 1 3 1 5
-        [
-          "'{2 ...}' (section heading) is not allowed in";
-            " '{2 ...}' (section heading)";
-        ]);
-
-    test "in list"
-      "- {2 Foo}"
-      (error 1 2 1 4
-        [
-          "'{2 ...}' (section heading) is not allowed in";
-            " '-' (bulleted list item)\n";
-          "Suggestion: move '{2' outside of any other markup";
-        ]);
-
-    test "followed by junk"
-      "{2 Foo} bar"
-      (error 1 8 1 11 ["paragraph must begin on its own line"]);
-
-    test "preceded by junk"
-      "foo {2 Bar}"
-      (error 1 4 1 6
-        ["'{2 ...}' (section heading) must begin on its own line"]);
-
-    test "followed by block"
-      "{2 Foo}\nbar"
-      (Ok [`Heading (`Section, None, [`Word "Foo"]); `Paragraph [`Word "bar"]]);
-
-    test "preceded by block"
-      "foo\n{2 Bar}"
-      (Ok [`Paragraph [`Word "foo"]; `Heading (`Section, None, [`Word "Bar"])]);
-
-    test "label"
-      "{2:foo Bar}"
-      (Ok [`Heading
-        (`Section, Some (Label (dummy_page, "foo")), [`Word "Bar"])]);
-
-    test "whitespace before colon"
-      "{2 :foo Bar}"
-      (Ok [`Heading (`Section, None, [`Word ":foo"; `Space; `Word "Bar"])]);
-
-    test "whitespace after colon"
-      "{2: foo Bar}"
-      (error 1 2 1 3 ["heading label cannot be empty"]);
-
-    test "label only"
-      "{2:foo}"
-      (error 1 0 1 6
-        ["'{2 ...}' (section heading) cannot be empty"]);
-
-    test "label only with whitespace"
-      "{2:foo }"
-      (error 1 0 1 6
-        ["'{2 ...}' (section heading) cannot be empty"]);
-
-    test "in list outside item"
-      "{ul {2 Foo}}"
-      (error 1 4 1 6
-        [
-          "'{2 ...}' (section heading) is not allowed in";
-            " '{ul ...}' (bulleted list)\n";
-          "Suggestion: move '{2 ...}' (section heading) outside the list";
-        ]);
-
-    test "preceded by shorthand list"
-      "- foo\n{2 Bar}"
-      (Ok [
-        `List (`Unordered, [[`Paragraph [`Word "foo"]]]);
-        `Heading (`Section, None, [`Word "Bar"])
-      ]);
-
-    test "nested in two lists"
-      "{ul {li - foo\n{2 Bar}}}"
-      (error 2 0 2 2
-        [
-          "'{2 ...}' (section heading) is not allowed in";
-          " '{li ...}' (list item)\n";
-          "Suggestion: move '{2' outside of any other markup";
-        ]);
-
-    test "bad level (long number)"
-      "{22 Foo}"
-      (error 1 0 1 3 ["'22': bad section level (2-4 allowed)"]);
-
-    test "bad level (title)"
-      "{1 Foo}"
-      (error 1 0 1 2 ["'1': bad section level (2-4 allowed)"]);
-
-    test "bad level (too deep)"
-      "{5 Foo}"
-      (error 1 0 1 2 ["'5': bad section level (2-4 allowed)"]);
-  ];
-
-
-
-  "section contexts", [
-    test "titles: allowed" ~sections:`Allow_all_sections
-      "{1 Foo}"
-      (Ok [`Heading (`Title, None, [`Word "Foo"])]);
-
-    test "titles: zero not allowed" ~sections:`Allow_all_sections
-      "{0 Foo}"
-      (error 1 0 1 2 ["'0': bad section level (2-4 allowed)"]);
-
-    test "titles: no high levels" ~sections:`Allow_all_sections
-      "{5 Foo}"
-      (error 1 0 1 2 ["'5': bad section level (2-4 allowed)"]);
-
-    test "two titles" ~sections:`Allow_all_sections
-      "{1 Foo}\n{1 Bar}"
-      (error 2 0 2 2 ["only one title-level heading is allowed"]);
-
-    test "none" ~sections:`No_sections
-      "{2 Foo}"
-      (error 1 0 1 2 ["sections not allowed in this comment"]);
-
-    test "permissive"
-      ~permissive:true
-      "{1 Foo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])])
-      ~warnings:[warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"]];
-
-    test "titles: allowed (permissive)"
-      ~permissive:true ~sections:`Allow_all_sections
-      "{1 Foo}"
-      (Ok [`Heading (`Title, None, [`Word "Foo"])]);
-
-    test "titles: zero not allowed (permissive)"
-      ~permissive:true ~sections:`Allow_all_sections
-      "{0 Foo}"
-      (Ok [`Heading (`Section, None, [`Word "Foo"])])
-      ~warnings:[warning 1 0 1 2 ["'0': bad section level (2-4 allowed)"]];
-
-    test "titles: no high levels (permissive)"
-      ~permissive:true ~sections:`Allow_all_sections
-      "{5 Foo}"
-      (Ok [`Heading (`Subsubsection, None, [`Word "Foo"])])
-      ~warnings:[warning 1 0 1 2 ["'5': bad section level (2-4 allowed)"]];
-
-    test "two titles (permissive)"
-      ~permissive:true ~sections:`Allow_all_sections
-      "{1 Foo}\n{1 Bar}"
-      (error 2 0 2 2 ["only one title-level heading is allowed"]);
-
-    test "none (permissive)"
-      ~permissive:true ~sections:`No_sections
-      "{2 Foo}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "Foo"])]])
-      ~warnings:[warning 1 0 1 2 ["sections not allowed in this comment"]];
-  ];
-
-
-
-  "warnings", [
-    test "multiple"
-      ~permissive:true
-      "{1 Foo}\n{1 Foo}"
-      (Ok [
-        `Heading (`Section, None, [`Word "Foo"]);
-        `Heading (`Section, None, [`Word "Foo"])])
-      ~warnings:[
-        warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"];
-        warning 2 0 2 2 ["'1': bad section level (2-4 allowed)"];
-      ];
-
-    test "with error"
-      ~permissive:true
-      "{1 Foo} {1 Foo}"
-      (error 1 8 1 10
-        ["'{1 ...}' (section heading) must begin on its own line"])
-      ~warnings:[warning 1 0 1 2 ["'1': bad section level (2-4 allowed)"]];
-  ];
-
-
-
-  "author", [
-    test "basic"
-      "@author Foo Bar"
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "empty"
-      "@author"
-      (error 1 0 1 7 ["'@author' cannot be empty"]);
-
-    test "whitespace only"
-      "@author "
-      (error 1 0 1 8 ["'@author' cannot be empty"]);
-
-    test "extra whitespace"
-      "@author  Foo Bar "
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "newline"
-      "@author Foo Bar\n"
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "cr-lf"
-      "@author Foo Bar\r\n"
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "blank line"
-      "@author Foo Bar\n\n"
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "followed by junk"
-      "@author Foo\nbar"
-      (error 2 0 2 3
-        [
-          "paragraph is not allowed in the tags section\n";
-          "Suggestion: move 'bar' before any tags";
-        ]);
-
-    test "followed by code span"
-      "@author Foo\n[bar]"
-      (error 2 0 2 5
-        [
-          "paragraph is not allowed in the tags section\n";
-          "Suggestion: move '[...]' (code) before any tags";
-        ]);
-
-    test "followed by code block"
-      "@author Foo\n{[bar]}"
-      (error 2 0 2 7
-        [
-          "'{[...]}' (code block) is not allowed in the tags section\n";
-          "Suggestion: move '{[...]}' (code block) before any tags";
-        ]);
-
-    test "followed by verbatim"
-      "@author Foo\n{v bar v}"
-      (error 2 0 2 9
-        [
-          "'{v ... v}' (verbatim text) is not allowed in the tags section\n";
-          "Suggestion: move '{v ... v}' (verbatim text) before any tags";
-        ]);
-
-    test "followed by modules"
-      "@author foo\n{!modules:Foo}"
-      (error 2 0 2 14
-        [
-          "'{!modules ...}' is not allowed in the tags section\n";
-          "Suggestion: move '{!modules ...}' before any tags";
-        ]);
-
-    test "followed by list"
-      "@author Foo\n{ul {li bar}}"
-      (error 2 0 2 3
-        [
-          "'{ul ...}' (bulleted list) is not allowed in the tags section\n";
-          "Suggestion: move '{ul ...}' (bulleted list) before any tags";
-        ]);
-
-    test "followed by shorthand list"
-      "@author Foo\n- bar"
-      (error 2 0 2 1
-        [
-          "'-' (bulleted list item) is not allowed in the tags section\n";
-          "Suggestion: move '-' (bulleted list item) before any tags";
-        ]);
-
-    test "followed by section heading"
-      "@author Foo\n{2 Bar}"
-      (error 2 0 2 2
-        [
-          "'{2 ...}' (section heading) is not allowed in the tags section\n";
-          "Suggestion: move '{2 ...}' (section heading) before any tags";
-        ]);
-
-    test "followed by author"
-      "@author Foo\n@author Bar"
-      (Ok [`Tag (`Author "Foo"); `Tag (`Author "Bar")]);
-
-    test "followed by author, cr-lf"
-      "@author Foo\n@author Bar"
-      (Ok [`Tag (`Author "Foo"); `Tag (`Author "Bar")]);
-
-    test "in author"
-      "@author Foo @author Bar"
-      (Ok [`Tag (`Author "Foo @author Bar")]);
-
-    test "in author at start"
-      "@author @author Foo"
-      (Ok [`Tag (`Author "@author Foo")]);
-
-    test "preceded by paragraph"
-      "foo\n@author Bar"
-      (Ok [`Paragraph [`Word "foo"]; `Tag (`Author "Bar")]);
-
-    test "no markup"
-      "@author Foo [Bar]"
-      (Ok [`Tag (`Author "Foo [Bar]")]);
-
-    test "in paragraph"
-      "foo @author Bar"
-      (error 1 4 1 15 ["'@author' must begin on its own line"]);
-
-    test "in code"
-      "[@author Foo]"
-      (Ok [`Paragraph [`Code_span "@author Foo"]]);
-
-    test "in style"
-      "{b @author Foo}"
-      (error 1 3 1 15
-        ["'@author' is not allowed in '{b ...}' (boldface text)"]);
-
-    test "in heading"
-      "{2 @author Foo}"
-      (error 1 3 1 15
-        ["'@author' is not allowed in '{2 ...}' (section heading)"]);
-
-    test "after shorthand list"
-      "- foo\n@author Bar"
-      (Ok [`List (
-        `Unordered, [[`Paragraph [`Word "foo"]]]);
-        `Tag (`Author "Bar")
-      ]);
-
-    test "in shorthand list"
-      "- foo @author Bar"
-      (error 1 6 1 17
-        [
-          "'@author' is not allowed in '-' (bulleted list item)\n";
-          "Suggestion: move '@author' outside of any other markup";
-        ]);
-
-    test "in shorthand list at start"
-      "- @author Foo"
-      (error 1 2 1 13
-        [
-          "'@author' is not allowed in '-' (bulleted list item)\n";
-          "Suggestion: move '@author' outside of any other markup";
-        ]);
-
-    test "in shorthand list immediate"
-      "-@author Foo"
-      (error 1 1 1 12
-        [
-          "'@author' is not allowed in '-' (bulleted list item)\n";
-          "Suggestion: move '@author' outside of any other markup"
-        ]);
-
-    test "in list item"
-      "{ul {li foo @author Bar}}"
-      (error 1 12 1 25
-        [
-          "'@author' is not allowed in '{li ...}' (list item)\n";
-          "Suggestion: move '@author' outside of any other markup";
-        ]);
-
-    test "in list item at start"
-      "{ul {li @author Foo}}"
-      (error 1 8 1 21
-        [
-          "'@author' is not allowed in '{li ...}' (list item)\n";
-          "Suggestion: move '@author' outside of any other markup";
-        ]);
-
-    test "in list item on new line"
-      "{ul {li foo\n@author Bar}}"
-      (error 2 0 2 13
-        [
-          "'@author' is not allowed in '{li ...}' (list item)\n";
-          "Suggestion: move '@author' outside of any other markup";
-        ]);
-
-    test "in list"
-      "{ul @author Foo}"
-      (error 1 4 1 16
-        [
-          "'@author' is not allowed in '{ul ...}' (bulleted list)\n";
-          "Suggestion: move '@author' outside the list";
-        ]);
-
-    test "in code block"
-      "{[@author Foo]}"
-      (Ok [`Code_block "@author Foo"]);
-
-    test "in verbatim"
-      "{v @author Foo v}"
-      (Ok [`Verbatim "@author Foo"]);
-
-    test "after code block"
-      "{[foo]} @author Bar"
-      (error 1 8 1 19 ["'@author' must begin on its own line"]);
-
-    test "after verbatim"
-      "{v foo v} @author Bar"
-      (error 1 10 1 21 ["'@author' must begin on its own line"]);
-
-    test "after heading"
-      "{2 Foo} @author Bar"
-      (error 1 8 1 19 ["'@author' must begin on its own line"]);
-
-    test "after list"
-      "{ul {li foo}} @author Bar"
-      (error 1 14 1 25 ["'@author' must begin on its own line"]);
-
-    test "preceded by whitespace"
-      " @author Foo Bar"
-      (Ok [`Tag (`Author "Foo Bar")]);
-
-    test "second preceded by whitespace"
-      "@author Foo\n @author Bar"
-      (Ok [`Tag (`Author "Foo"); `Tag (`Author "Bar")]);
-
-    test "prefix"
-      "@authorfoo"
-      (error 1 0 1 10 ["unknown tag '@authorfoo'"]);
-  ];
-
-
-
-  "deprecated", [
-    test "basic"
-      "@deprecated"
-      (Ok [`Tag (`Deprecated [])]);
-
-    test "words"
-      "@deprecated foo bar"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"; `Space; `Word "bar"]])]);
-
-    test "multiline"
-      "@deprecated foo\nbar"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"; `Space; `Word "bar"]])]);
-
-    test "paragraphs"
-      "@deprecated foo\n\nbar"
-      (Ok [`Tag
-        (`Deprecated [`Paragraph [`Word "foo"]; `Paragraph [`Word "bar"]])]);
-
-    test "whitespace only"
-      "@deprecated "
-      (Ok [`Tag (`Deprecated [])]);
-
-    test "immediate newline"
-      "@deprecated\nfoo"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"]])]);
-
-    test "immediate cr-lf"
-      "@deprecated\r\nfoo"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"]])]);
-
-    test "immediate blank line"
-      "@deprecated\n\nfoo"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"]])]);
-
-    test "extra whitespace"
-      "@deprecated  foo"
-      (Ok [`Tag (`Deprecated [`Paragraph [`Word "foo"]])]);
-
-    test "followed by deprecated"
-      "@deprecated foo\n@deprecated bar"
-      (Ok [
-        `Tag (`Deprecated [`Paragraph [`Word "foo"]]);
-        `Tag (`Deprecated [`Paragraph [`Word "bar"]])
-      ]);
-
-    test "followed by deprecated, cr-lf"
-      "@deprecated foo\r\n@deprecated bar"
-      (Ok [
-        `Tag (`Deprecated [`Paragraph [`Word "foo"]]);
-        `Tag (`Deprecated [`Paragraph [`Word "bar"]])
-      ]);
-
-    test "nested in self"
-      "@deprecated foo @deprecated bar"
-      (error 1 16 1 27
-        [
-          "'@deprecated' is not allowed in '@deprecated'\n";
-          "Suggestion: move '@deprecated' outside of any other markup";
-        ]);
-
-    test "nested in self at start"
-      "@deprecated @deprecated foo"
-      (error 1 12 1 23
-        [
-          "'@deprecated' is not allowed in '@deprecated'\n";
-          "Suggestion: move '@deprecated' outside of any other markup";
-        ]);
-
-    test "preceded by paragraph"
-      "foo\n@deprecated"
-      (Ok [`Paragraph [`Word "foo"]; `Tag (`Deprecated [])]);
-
-    test "preceded by shorthand list"
-      "- foo\n@deprecated"
-      (Ok [
-        `List (`Unordered, [[`Paragraph [`Word "foo"]]]);
-        `Tag (`Deprecated [])
-      ]);
-
-    test "with shorthand list"
-      "@deprecated - foo"
-      (Ok [`Tag
-        (`Deprecated [`List (`Unordered, [[`Paragraph [`Word "foo"]]])])]);
-
-    test "with shorthand list after newline"
-      "@deprecated\n-foo"
-      (Ok [`Tag
-        (`Deprecated [`List (`Unordered, [[`Paragraph [`Word "foo"]]])])]);
-
-    test "prefix"
-      "@deprecatedfoo"
-      (error 1 0 1 14 ["unknown tag '@deprecatedfoo'"]);
-
-    test "after code block"
-      "{[foo]} @deprecated"
-      (error 1 8 1 19 ["'@deprecated' must begin on its own line"]);
-
-    test "followed by section"
-      "@deprecated foo\n{2 Bar}"
-      (error 2 0 2 2
-        [
-          "'{2 ...}' (section heading) is not allowed in '@deprecated'\n";
-          "Suggestion: move '{2' outside of any other markup"
-        ]);
-  ];
-
-
-
-  "param", [
-    test "basic"
-      "@param foo"
-      (Ok [`Tag (`Param ("foo", []))]);
-
-    test "bare"
-      "@param"
-      (error 1 0 1 6 ["'@param' expects parameter name on the same line"]);
-
-    test "bare with whitespace"
-      "@param "
-      (error 1 0 1 6 ["'@param' expects parameter name on the same line"]);
-
-    test "immediate newline"
-      "@param\nfoo"
-      (error 1 0 1 6 ["'@param' expects parameter name on the same line"]);
-
-    test "followed by whitespace"
-      "@param foo "
-      (Ok [`Tag (`Param ("foo", []))]);
-
-    test "extra whitespace"
-      "@param  foo"
-      (Ok [`Tag (`Param ("foo", []))]);
-
-    test "words"
-      "@param foo bar baz"
-      (Ok [`Tag
-        (`Param ("foo", [`Paragraph [`Word "bar"; `Space; `Word "baz"]]))]);
-
-    test "multiline"
-      "@param foo\nbar\nbaz"
-      (Ok [`Tag
-        (`Param ("foo", [`Paragraph [`Word "bar"; `Space; `Word "baz"]]))]);
-
-    test "paragraphs"
-      "@param foo bar\n\nbaz"
-      (Ok [`Tag (`Param ("foo", [
-        `Paragraph [`Word "bar"]; `Paragraph [`Word "baz"]]))]);
-
-    test "two"
-      "@param foo\n@param bar"
-      (Ok [`Tag (`Param ("foo", [])); `Tag (`Param ("bar", []))]);
-
-    test "nested"
-      "@param foo @param bar"
-      (error 1 11 1 21
-        [
-          "'@param' is not allowed in '@param'\n";
-          "Suggestion: move '@param' outside of any other markup";
-        ]);
-
-    test "preceded by paragraph"
-      "foo\n@param bar"
-      (Ok [`Paragraph [`Word "foo"]; `Tag (`Param ("bar", []))]);
-
-    test "prefix"
-      "@paramfoo"
-      (error 1 0 1 9 ["unknown tag '@paramfoo'"]);
-
-    test "after code block"
-      "{[foo]} @param foo"
-      (error 1 8 1 18 ["'@param' must begin on its own line"]);
-  ];
-
-
-
-  "raise", [
-    test "basic"
-      "@raise Foo"
-      (Ok [`Tag (`Raise ("Foo", []))]);
-
-    test "bare"
-      "@raise"
-      (error 1 0 1 6 ["'@raise' expects parameter name on the same line"]);
-
-    test "words"
-      "@raise foo bar baz"
-      (Ok [`Tag
-        (`Raise ("foo", [`Paragraph [`Word "bar"; `Space; `Word "baz"]]))]);
-
-    test "prefix"
-      "@raisefoo"
-      (error 1 0 1 9 ["unknown tag '@raisefoo'"]);
-  ];
-
-
-
-  "return", [
-    test "basic"
-      "@return"
-      (Ok [`Tag (`Return [])]);
-
-    test "words"
-      "@return foo bar"
-      (Ok [`Tag (`Return [`Paragraph [`Word "foo"; `Space; `Word "bar"]])]);
-
-    test "prefix"
-      "@returnfoo"
-      (error 1 0 1 10 ["unknown tag '@returnfoo'"]);
-  ];
-
-
-
-  "see", [
-    test "url"
-      "@see <foo>"
-      (Ok [`Tag (`See (`Url, "foo", []))]);
-
-    test "file"
-      "@see 'foo'"
-      (Ok [`Tag (`See (`File, "foo", []))]);
-
-    test "document"
-      "@see \"foo\""
-      (Ok [`Tag (`See (`Document, "foo", []))]);
-
-    test "bare"
-      "@see"
-      (error 1 0 1 4
-        ["'@see' must be followed by <url>, 'file', or \"document title\""]);
-
-    test "unterminated url"
-      "@see <foo"
-      (error 1 0 1 4
-        ["'@see' must be followed by <url>, 'file', or \"document title\""]);
-
-    test "unterminated file"
-      "@see 'foo"
-      (error 1 0 1 4
-        ["'@see' must be followed by <url>, 'file', or \"document title\""]);
-
-    test "unterminated document"
-      "@see \"foo"
-      (error 1 0 1 4
-        ["'@see' must be followed by <url>, 'file', or \"document title\""]);
-
-    test "no space"
-      "@see<foo>"
-      (Ok [`Tag (`See (`Url, "foo", []))]);
-
-    test "words"
-      "@see <foo> bar"
-      (Ok [`Tag (`See (`Url, "foo", [`Paragraph [`Word "bar"]]))]);
-
-    test "prefix"
-      "@seefoo"
-      (error 1 0 1 7 ["unknown tag '@seefoo'"]);
-
-    test "after code block"
-      "{[foo]} @see <foo>"
-      (error 1 8 1 18 ["'@see' must begin on its own line"]);
-  ];
-
-
-
-  "since", [
-    test "basic"
-      "@since foo"
-      (Ok [`Tag (`Since "foo")]);
-
-    test "bare"
-      "@since"
-      (error 1 0 1 6 ["'@since' cannot be empty"]);
-
-    test "prefix"
-      "@sincefoo"
-      (error 1 0 1 9 ["unknown tag '@sincefoo'"]);
-
-    test "with whitespace"
-      "@since foo bar"
-      (Ok [`Tag (`Since "foo bar")]);
-
-    test "leading whitespace"
-      "@since  foo"
-      (Ok [`Tag (`Since "foo")]);
-
-    test "trailing whitespace"
-      "@since foo "
-      (Ok [`Tag (`Since "foo")]);
-
-    test "whitespace only"
-      "@since "
-      (error 1 0 1 7 ["'@since' cannot be empty"]);
-  ];
-
-
-
-  "before", [
-    test "basic"
-      "@before Foo"
-      (Ok [`Tag (`Before ("Foo", []))]);
-
-    test "bare"
-      "@before"
-      (error 1 0 1 7 ["'@before' expects parameter name on the same line"]);
-
-    test "words"
-      "@before foo bar baz"
-      (Ok [`Tag
-        (`Before ("foo", [`Paragraph [`Word "bar"; `Space; `Word "baz"]]))]);
-
-    test "prefix"
-      "@beforefoo"
-      (error 1 0 1 10 ["unknown tag '@beforefoo'"]);
-  ];
-
-
-
-  "version", [
-    test "basic"
-      "@version foo"
-      (Ok [`Tag (`Version "foo")]);
-
-    test "bare"
-      "@version"
-      (error 1 0 1 8 ["'@version' cannot be empty"]);
-
-    test "prefix"
-      "@versionfoo"
-      (error 1 0 1 11 ["unknown tag '@versionfoo'"]);
-
-    test "with whitespace"
-      "@version foo bar"
-      (Ok [`Tag (`Version "foo bar")]);
-
-    test "leading whitespace"
-      "@version  foo"
-      (Ok [`Tag (`Version "foo")]);
-
-    test "trailing whitespace"
-      "@version foo "
-      (Ok [`Tag (`Version "foo")]);
-
-    test "whitespace only"
-      "@version "
-      (error 1 0 1 9 ["'@version' cannot be empty"]);
-  ];
-
-
-
-  "canonical", [
-    test "basic"
-      "@canonical Foo"
-      (Ok [`Tag (`Canonical (Root "Foo", Root ("Foo", TUnknown)))]);
-
-    test "empty"
-      "@canonical"
-      (error 1 0 1 10 ["'@canonical' cannot be empty"]);
-
-    test "whitespace only"
-      "@canonical "
-      (error 1 0 1 11 ["'@canonical' cannot be empty"]);
-
-    test "extra whitespace"
-      "@canonical  Foo "
-      (Ok [`Tag (`Canonical (Root "Foo", Root ("Foo", TUnknown)))]);
-
-    test "prefix"
-      "@canonicalfoo"
-      (error 1 0 1 13 ["unknown tag '@canonicalfoo'"]);
-
-    (* TODO This should probably be an error of some kind, as Foo Bar is not a
-       valid module path. *)
-    test "with whitespace"
-      "@canonical Foo Bar"
-      (Ok [`Tag (`Canonical (Root "Foo Bar", Root ("Foo Bar", TUnknown)))]);
-  ];
-
-
-
-  "bad markup", [
-    test "left brace"
-      "{"
-      (error 1 0 1 1 ["'{': bad markup"]);
-
-    test "left brace with letter"
-      "{g"
-      (error 1 0 1 2 ["'{g': bad markup"]);
-
-    test "braces instead of brackets"
-      "{foo}"
-      (error 1 0 1 2 ["'{f': bad markup"]);
-
-    test "right brace"
-      "}"
-      (error 1 0 1 1 ["unpaired '}' (end of markup)"]);
-
-    test "right brace in paragraph"
-      "foo}"
-      (error 1 3 1 4 ["unpaired '}' (end of markup)"]);
-
-    test "right brace in list item"
-      "- foo}"
-      (error 1 5 1 6 ["unpaired '}' (end of markup)"]);
-
-    test "right brace in code span"
-      "[foo}]"
-      (Ok [`Paragraph [`Code_span "foo}"]]);
-
-    test "right brace in code block"
-      "{[foo}]}"
-      (Ok [`Code_block "foo}"]);
-
-    test "right brace in verbatim text"
-      "{v foo} v}"
-      (Ok [`Verbatim "foo}"]);
-
-    test "right brace in author"
-      "@author Foo}"
-      (Ok [`Tag (`Author "Foo}")]);
-
-    test "right brace in deprecated"
-      "@deprecated }"
-      (error 1 12 1 13 ["unpaired '}' (end of markup)"]);
-
-    test "right bracket"
-      "]"
-      (error 1 0 1 1 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in paragraph"
-      "foo]"
-      (error 1 3 1 4 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in shorthand list"
-      "- foo]"
-      (error 1 5 1 6 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in code span"
-      "[]]"
-      (error 1 2 1 3 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in style"
-      "{b]}"
-      (error 1 2 1 3 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in verbatim"
-      "{v ] v}"
-      (Ok [`Verbatim "]"]);
-
-    test "right bracket in list"
-      "{ul ]}"
-      (error 1 4 1 5 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in list item"
-      "{ul {li ]}}"
-      (error 1 8 1 9 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in heading"
-      "{2 ]}"
-      (error 1 3 1 4 ["unpaired ']' (end of code)"]);
-
-    test "right bracket in author"
-      "@author Foo]"
-      (Ok [`Tag (`Author "Foo]")]);
-
-    test "at"
-      "@"
-      (error 1 0 1 1 ["stray '@'"]);
-
-    test "cr"
-      "\r"
-      (error 1 0 1 1 ["stray '\\r' (carriage return character)"]);
-
-    (* We may actually want to support this instead. *)
-    test "email"
-      "foo@bar.com"
-      (error 1 3 1 7 ["unknown tag '@bar'"]);
-  ];
-
-
-
-  "utf-8", [
-    test "lambda"
-      "\xce\xbb"
-      (Ok [`Paragraph [`Word "\xce\xbb"]]);
-
-    test "words"
-      "\xce\xbb \xce\xbb"
-      (Ok [`Paragraph [`Word "\xce\xbb"; `Space; `Word "\xce\xbb"]]);
-
-    test "no validation"
-      "\xce"
-      (Ok [`Paragraph [`Word "\xce"]]);
-
-    test "escapes"
-      "\xce\xbb\\}"
-      (Ok [`Paragraph [`Word "\xce\xbb}"]]);
-
-    test "newline"
-      "\xce\xbb \n \xce\xbb"
-      (Ok [`Paragraph [`Word "\xce\xbb"; `Space; `Word "\xce\xbb"]]);
-
-    test "paragraphs"
-      "\xce\xbb \n\n \xce\xbb"
-      (Ok [`Paragraph [`Word "\xce\xbb"]; `Paragraph [`Word "\xce\xbb"]]);
-
-    test "code span"
-      "[\xce\xbb]"
-      (Ok [`Paragraph [`Code_span "\xce\xbb"]]);
-
-    test "minus"
-      "\xce\xbb-\xce\xbb"
-      (Ok [`Paragraph [`Word "\xce\xbb-\xce\xbb"]]);
-
-    test "shorthand list"
-      "- \xce\xbb"
-      (Ok [`List (`Unordered, [[`Paragraph [`Word "\xce\xbb"]]])]);
-
-    test "styled"
-      "{b \xce\xbb}"
-      (Ok [`Paragraph [`Styled (`Bold, [`Word "\xce\xbb"])]]);
-
-    test "reference target"
-      "{!\xce\xbb}"
-      (Ok [`Paragraph [`Reference (Root ("\xce\xbb", TUnknown), [])]]);
-
-    test "code block"
-      "{[\xce\xbb]}"
-      (Ok [`Code_block "\xce\xbb"]);
-
-    test "verbatim"
-      "{v \xce\xbb v}"
-      (Ok [`Verbatim "\xce\xbb"]);
-
-    test "label"
-      "{2:\xce\xbb Bar}"
-      (Ok [`Heading
-        (`Section, Some (Label (dummy_page, "\xce\xbb")), [`Word "Bar"])]);
-
-    test "author"
-      "@author \xce\xbb"
-      (Ok [`Tag (`Author "\xce\xbb")]);
-
-    test "param"
-      "@param \xce\xbb"
-      (Ok [`Tag (`Param ("\xce\xbb", []))]);
-
-    test "raise"
-      "@raise \xce\xbb"
-      (Ok [`Tag (`Raise ("\xce\xbb", []))]);
-
-    test "see"
-      "@see <\xce\xbb>"
-      (Ok [`Tag (`See (`Url, "\xce\xbb", []))]);
-
-    test "since"
-      "@since \xce\xbb"
-      (Ok [`Tag (`Since "\xce\xbb")]);
-
-    test "before"
-      "@before \xce\xbb"
-      (Ok [`Tag (`Before ("\xce\xbb", []))]);
-
-    test "version"
-      "@version \xce\xbb"
-      (Ok [`Tag (`Version "\xce\xbb")]);
-
-    test "right brace"
-      "\xce\xbb}"
-      (error 1 2 1 3 ["unpaired '}' (end of markup)"]);
-  ];
-
-
-
-  "comment location", [
-    test "error on first line" ~comment_location:{line = 2; column = 4}
-      "  @foo"
-      (error 2 6 2 10 ["unknown tag '@foo'"]);
-
-    test "error on second line" ~comment_location:{line = 2; column = 4}
-      "  \n  @foo"
-      (error 3 2 3 6 ["unknown tag '@foo'"]);
-  ];
-
-
-
-  "unsupported", [
-    (* test "index list"
-      "{!indexlist}"
-      (Ok []); *)
-
-    test "left alignment"
-      "{L foo}"
-      (error 1 0 1 2 ["'{L': bad markup"]);
-
-    test "center alignment"
-      "{C foo}"
-      (error 1 0 1 2 ["'{C': bad markup"]);
-
-    test "right alignment"
-      "{R foo}"
-      (error 1 0 1 2 ["'{R': bad markup"]);
-
-    test "target-specific code"
-      "{%foo%}"
-      (error 1 0 1 2 ["'{%': bad markup"]);
-
-    test "custom style"
-      "{c foo}"
-      (error 1 0 1 2 ["'{c': bad markup"]);
-
-    test "custom tag"
-      "@custom"
-      (error 1 0 1 7 ["unknown tag '@custom'"]);
-
-    (* test "custom reference kind"
-      "{!custom:foo}"
-      (Ok []); *)
-
-    test "html tag"
-      "<b>foo</b>"
-      (Ok [`Paragraph [`Word "<b>foo</b>"]]);
-  ];
+  *)
 ]
 
 
 
+let expect_directory = "expect"
+let actual_root_directory = "_actual"
+let test_root = "test/parser"
+
+let (//) = Filename.concat
+
+(* We are temporarily using Lambda Soup, so take advantage of it. *)
+let read_file = Soup.read_file
+let write_file = Soup.write_file
+
+let mkdir directory =
+  try Unix.mkdir directory 0o755
+  with Unix.Unix_error (Unix.EEXIST, "mkdir", _) -> ()
+
+(* TODO Is this correct? Won't this be for the last failed test in the suite? *)
+(* TODO Ok, how to make this correct... *)
+let suggest_commands script_directory commands =
+  let commands = String.concat "\n" commands in
+
+  let script_file = script_directory // "replace.sh" in
+
+  if not (Sys.file_exists script_file) then
+    write_file script_file commands;
+
+  prerr_endline commands;
+  prerr_endline "\nor\n";
+  Printf.eprintf "bash %s\n\n"
+    ("_build/default" // test_root // script_directory // "replace.sh")
+
 let () =
+  mkdir actual_root_directory;
+  (* TODO Proper factoring. *)
+  begin
+    try Unix.unlink (actual_root_directory // "replace.sh");
+    with _ -> ()
+  end;
+
+  let make_parser_test : string -> test_case -> unit Alcotest.test_case =
+      fun suite case ->
+
+    let run_test_case () =
+      let file_title = case.name in
+      let expect_suite_directory = expect_directory // suite in
+      let actual_suite_directory = actual_root_directory // suite in
+      let expect_file = expect_suite_directory // (file_title ^ ".txt") in
+      let actual_file = actual_suite_directory // (file_title ^ ".txt") in
+
+      let actual =
+        let {permissive; sections; location; parser_input; _} = case in
+
+        let dummy_filename = "test-suite" in
+
+        let dummy_page =
+          let root : Model.Root.t = {
+            package = dummy_filename;
+            file = Page dummy_filename;
+            digest = ""
+          }
+          in
+          Model.Paths.Identifier.Page (root, dummy_filename)
+        in
+
+        let location =
+          {
+            Lexing.pos_fname = dummy_filename;
+            pos_lnum = location.line;
+            pos_bol = 0;
+            pos_cnum = location.column
+          }
+        in
+
+        Parser_.parse_comment
+          ~permissive
+          sections
+          ~containing_definition:dummy_page
+          ~location
+          ~text:parser_input
+        |> fun parser_output ->
+          let buffer = Buffer.create 1024 in
+          Print.parser_output (Format.formatter_of_buffer buffer) parser_output;
+          Buffer.contents buffer
+      in
+
+      let expected =
+        try read_file expect_file
+        with Sys_error _ ->
+          mkdir actual_suite_directory;
+          write_file actual_file actual;
+
+          prerr_newline ();
+          prerr_endline case.parser_input;
+          prerr_newline ();
+
+          prerr_string actual;
+
+          prerr_endline "\nThe expected output file does not exist.";
+          prerr_endline "\nTo create it, run";
+          [
+            Printf.sprintf "mkdir -p %s"
+              (test_root // expect_suite_directory);
+            Printf.sprintf "cp %s %s"
+              ("_build/default" // test_root // actual_file)
+              (test_root // expect_file);
+          ]
+          |> suggest_commands actual_root_directory;
+
+          Alcotest.fail "expected output file does not exist";
+      in
+
+      if actual <> expected then begin
+        mkdir actual_suite_directory;
+        write_file actual_file actual;
+
+        prerr_newline ();
+        prerr_endline case.parser_input;
+        prerr_newline ();
+
+        Printf.sprintf "diff -u %s %s" expect_file actual_file
+        |> Sys.command
+        |> ignore;
+
+        prerr_endline "\nTo replace expected output with actual, run";
+        Printf.eprintf "cp %s %s\n\n"
+          ("_build/default" // test_root // actual_file)
+          (test_root // expect_file);
+
+        Alcotest.fail "document tree incorrect";
+      end
+    in
+
+    case.name, `Quick, run_test_case
+  in
+
+  let tests : (unit Alcotest.test) list =
+    tests |> List.map (fun (suite_name, test_cases) ->
+      suite_name, List.map (make_parser_test suite_name) test_cases)
+  in
+
   Alcotest.run "parser" tests

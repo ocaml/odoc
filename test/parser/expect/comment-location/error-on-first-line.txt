@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"test-suite\", line 2, characters 6-10:\
+   \nunknown tag '@foo'"))
+ (warnings ()))
