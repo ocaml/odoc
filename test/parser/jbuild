@@ -7,8 +7,3 @@
 (alias
  ((name tester)
   (deps (test.exe (files_recursively_in expect)))))
-
-(alias
- ((name runtest)
-  (deps ((alias tester)))
-  (action (run ${exe:test.exe}))))
