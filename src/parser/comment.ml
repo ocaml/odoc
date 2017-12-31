@@ -47,6 +47,7 @@ type 'token stream_head = (int * int) * 'token
 type input = {
   permissive : bool;
   sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
+  offset_to_location : int -> Model.Location_.point;
   token_stream : (Token.t stream_head) Stream.t;
   parent_of_sections : Model.Paths.Identifier.label_parent;
   accumulated_warnings : (Helpers.raw_parse_error list) ref;
@@ -70,6 +71,26 @@ let warning input error =
     input.accumulated_warnings := error::!(input.accumulated_warnings)
   else
     raise (Helpers.Parse_error error)
+
+type 'a with_location = 'a Model.Location_.with_location
+
+let at_token input (start_offset, end_offset) value : _ with_location =
+  {
+    location = {
+      start = input.offset_to_location start_offset;
+      end_ = input.offset_to_location end_offset;
+    };
+    value;
+  }
+
+let token_span input (start_offset, _) (_, end_offset) value : _ with_location =
+  {
+    location = {
+      start = input.offset_to_location start_offset;
+      end_ = input.offset_to_location end_offset;
+    };
+    value;
+  }
 
 
 
@@ -100,26 +121,28 @@ module Raise = Helpers
      tokens, so "brace \{" becomes [`Word "brace"; `Word "{"].
 
    This parser stops on the first non-word token, and does not consume it. *)
-let word : input -> Grammar.non_link_inline_element = fun input ->
-  let rec consume_word_tokens : string -> Grammar.non_link_inline_element =
-      fun acc ->
+let word
+    : input -> (int * int) ->
+        Grammar.non_link_inline_element with_location =
+    fun input start_location ->
+  let rec consume_word_tokens end_location acc =
     match peek input with
-    | _, `Word w ->
+    | l, `Word w ->
       junk input;
-      consume_word_tokens (acc ^ w)
+      consume_word_tokens l (acc ^ w)
 
-    | _, `Minus ->
+    | l, `Minus ->
       junk input;
-      consume_word_tokens (acc ^ "-")
+      consume_word_tokens l (acc ^ "-")
 
-    | _, `Plus ->
+    | l, `Plus ->
       junk input;
-      consume_word_tokens (acc ^ "+")
+      consume_word_tokens l (acc ^ "+")
 
     | _ ->
-      `Word acc
+      token_span input start_location end_location (`Word acc)
   in
-  consume_word_tokens ""
+  consume_word_tokens start_location ""
 
 (* Consumes tokens that make up a single non-link inline element:
 
@@ -143,21 +166,23 @@ let word : input -> Grammar.non_link_inline_element = fun input ->
 
    This function consumes exactly the tokens that make up the element. *)
 let rec non_link_inline_element
-    : [> ] stream_head -> input -> Grammar.non_link_inline_element =
+    : [> ] stream_head -> input ->
+        Grammar.non_link_inline_element with_location =
     fun stream_head input ->
+
   match stream_head with
-  | _, `Space ->
+  | l, `Space ->
     junk input;
-    `Space
+    at_token input l `Space
 
-  | _, `Word _
-  | _, `Minus
-  | _, `Plus ->
-    word input
+  | l, `Word _
+  | l, `Minus
+  | l, `Plus ->
+    word input l
 
-  | _, `Code_span c ->
+  | l, `Code_span c ->
     junk input;
-    `Code_span c
+    at_token input l (`Code_span c)
 
   | l, (`Begin_style s as parent_markup) ->
     junk input;
@@ -166,7 +191,7 @@ let rec non_link_inline_element
       | `Superscript | `Subscript -> false
       | _ -> true
     in
-    let content =
+    let content, end_location =
       delimited_non_link_inline_element_list
         ~parent_markup
         ~parent_markup_location:l
@@ -175,7 +200,7 @@ let rec non_link_inline_element
     in
     if content = [] then
       Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
-    `Styled (s, content)
+    token_span input l end_location (`Styled (s, content))
 
 (* Consumes tokens that make up a sequence of non-link inline elements. See
    function [non_link_inline_element] for a list of what those are.
@@ -206,7 +231,7 @@ and delimited_non_link_inline_element_list
       parent_markup_location:(int * int) ->
       requires_leading_whitespace:bool ->
       input ->
-        Grammar.non_link_inline_element list =
+        (Grammar.non_link_inline_element with_location) list * (int * int) =
     fun
       ~parent_markup
       ~parent_markup_location
@@ -217,14 +242,15 @@ and delimited_non_link_inline_element_list
      word tokens if not the first non-whitespace tokens on their line. Then,
      they are allowed in a non-link element list. *)
   let rec consume_non_link_inline_elements
-      : at_start_of_line:bool -> Grammar.non_link_inline_element list ->
-          Grammar.non_link_inline_element list =
+      : at_start_of_line:bool ->
+        (Grammar.non_link_inline_element with_location) list ->
+          (Grammar.non_link_inline_element with_location) list * (int * int) =
       fun ~at_start_of_line acc ->
 
     match peek input with
-    | _, `Right_brace ->
+    | l, `Right_brace ->
       junk input;
-      List.rev acc
+      List.rev acc, l
 
     (* The [`Space] token is not space at the beginning or end of line, because
        that is combined into [`Single_newline] or [`Blank_line] tokens. It is
@@ -241,10 +267,10 @@ and delimited_non_link_inline_element_list
       let acc = (non_link_inline_element stream_head input)::acc in
       consume_non_link_inline_elements ~at_start_of_line:false acc
 
-    | _, `Single_newline ->
+    | l, `Single_newline ->
       junk input;
-      let acc = `Space::acc in
-      consume_non_link_inline_elements ~at_start_of_line:true acc
+      let element = at_token input l `Space in
+      consume_non_link_inline_elements ~at_start_of_line:true (element::acc)
 
     | l, (`Minus | `Plus as bullet) as stream_head ->
       if not at_start_of_line then
@@ -290,9 +316,9 @@ and delimited_non_link_inline_element_list
       ~what:(Token.describe `Blank_line)
       ~in_what:(Token.describe parent_markup)
 
-  | _, `Right_brace ->
+  | l, `Right_brace ->
     junk input;
-    []
+    [], l
 
   | _ ->
     if requires_leading_whitespace then
@@ -354,6 +380,7 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
     | _, `Code_span _
     | _, `Begin_style _ as stream_head ->
       let element = non_link_inline_element stream_head input in
+      let element = element.value in
       let acc = (element :> Grammar.inline_element)::acc in
       paragraph_line acc
 
@@ -364,7 +391,7 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
 
     | l, (`Begin_reference_with_replacement_text r as parent_markup) ->
       junk input;
-      let content =
+      let content, _ =
         delimited_non_link_inline_element_list
           ~parent_markup
           ~parent_markup_location:l
@@ -378,7 +405,7 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
 
     | l, (`Begin_link_with_replacement_text u as parent_markup) ->
       junk input;
-      let content =
+      let content, _ =
         delimited_non_link_inline_element_list
           ~parent_markup
           ~parent_markup_location:l
@@ -926,7 +953,7 @@ let rec block_element_list
 
         junk input;
 
-        let content =
+        let content, _ =
           delimited_non_link_inline_element_list
             ~parent_markup:token
             ~parent_markup_location:l
@@ -1121,6 +1148,7 @@ let comment
     ~permissive
     sections
     ~parent_of_sections
+    ~offset_to_location
     ~token_stream
     ~accumulated_warnings =
 
@@ -1128,6 +1156,7 @@ let comment
     {
       permissive;
       sections;
+      offset_to_location;
       token_stream;
       parent_of_sections;
       accumulated_warnings

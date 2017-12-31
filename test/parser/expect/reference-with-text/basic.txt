@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((reference (root foo unknown) ((word bar))))))))
+((output
+  (ok
+   ((paragraph
+     ((reference (root foo unknown) ((((1 8) (1 11)) (word bar)))))))))
  (warnings ()))

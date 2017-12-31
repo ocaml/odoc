@@ -3,5 +3,5 @@
    ((2
      (label
       ((root (test-suite (page test-suite) "") test-suite) (label foo)))
-     ((word Bar))))))
+     ((((1 7) (1 10)) (word Bar)))))))
  (warnings ()))

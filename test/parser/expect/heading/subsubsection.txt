@@ -1,1 +1,1 @@
-((output (ok ((4 "no label" ((word Foo)))))) (warnings ()))
+((output (ok ((4 "no label" ((((1 3) (1 6)) (word Foo))))))) (warnings ()))

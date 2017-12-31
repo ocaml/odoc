@@ -1,3 +1,5 @@
 ((output
-  (ok ((unordered (((paragraph ((word foo)))))) (2 "no label" ((word Bar))))))
+  (ok
+   ((unordered (((paragraph ((word foo))))))
+    (2 "no label" ((((2 3) (2 6)) (word Bar)))))))
  (warnings ()))

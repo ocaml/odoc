@@ -209,9 +209,27 @@ end
 
 
 
+module Location_to_sexp =
+struct
+  module Location_ = Model.Location_
+
+  let point : Location_.point -> sexp = fun {line; column} ->
+    List [Atom (string_of_int line); Atom (string_of_int column)]
+
+  let span : Location_.span -> sexp = fun {start; end_} ->
+    List [point start; point end_]
+
+  let at : ('a -> sexp) -> 'a Location_.with_location -> sexp =
+      fun f {location; value} ->
+    List [span location; f value]
+end
+
+
+
 module Comment_to_sexp =
 struct
   module Comment = Model.Comment
+  let at = Location_to_sexp.at
 
   let style : Comment.style -> sexp = function
     | `Bold -> Atom "bold"
@@ -226,7 +244,7 @@ struct
     | `Word w -> List [Atom "word"; Atom w]
     | `Code_span c -> List [Atom "code_span"; Atom c]
     | `Styled (s, es) ->
-      List [style s; List (List.map non_link_inline_element es)]
+      List [style s; List (List.map (at non_link_inline_element) es)]
 
   let inline_element : Comment.inline_element -> sexp = function
     | #Comment.non_link_inline_element as e ->
@@ -235,13 +253,13 @@ struct
       List [
         Atom "reference";
         Reference_to_sexp.reference r;
-        List (List.map non_link_inline_element es)
+        List (List.map (at non_link_inline_element) es)
       ]
     | `Link (u, es) ->
       List [
         Atom "link";
         Atom u;
-        List (List.map non_link_inline_element es)
+        List (List.map (at non_link_inline_element) es)
       ]
 
   let rec nestable_block_element
@@ -310,7 +328,7 @@ struct
         | `Subsection -> "3"
         | `Subsubsection -> "4"
       in
-      List [Atom level; label; List (List.map non_link_inline_element es)]
+      List [Atom level; label; List (List.map (at non_link_inline_element) es)]
     | `Tag t -> tag t
 
   let comment : Comment.docs -> sexp = fun comment ->

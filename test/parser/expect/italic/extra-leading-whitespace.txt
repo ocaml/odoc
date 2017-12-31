@@ -1,1 +1,2 @@
-((output (ok ((paragraph ((italic ((word foo)))))))) (warnings ()))
+((output (ok ((paragraph ((italic ((((1 6) (1 9)) (word foo)))))))))
+ (warnings ()))

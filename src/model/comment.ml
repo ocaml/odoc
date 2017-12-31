@@ -2,6 +2,8 @@ module Path = Paths.Path
 module Reference = Paths.Reference
 module Identifier = Paths.Identifier
 
+type 'a with_location = 'a Location_.with_location
+
 
 
 type style = [
@@ -16,13 +18,13 @@ type non_link_inline_element = [
   | `Space
   | `Word of string
   | `Code_span of string
-  | `Styled of style * non_link_inline_element list
+  | `Styled of style * (non_link_inline_element with_location) list
 ]
 
 (* The cross-referencer stores section heading text, and sometimes pastes it
    into link contents. This type alias is provided for use by the
    cross-referencer. *)
-type link_content = non_link_inline_element list
+type link_content = (non_link_inline_element with_location) list
 
 type inline_element = [
   | non_link_inline_element
@@ -60,8 +62,7 @@ type heading_level = [
 
 type block_element = [
   | nestable_block_element
-  | `Heading of
-      heading_level * Identifier.label option * non_link_inline_element list
+  | `Heading of heading_level * Identifier.label option * link_content
   | `Tag of tag
 ]
 

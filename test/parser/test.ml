@@ -3,13 +3,13 @@ type test_case = {
   parser_input : string;
   permissive : bool;
   sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
-  location : Model.Error.location;
+  location : Model.Location_.point;
 }
 
 let make_test_case
     ?(permissive = false)
     ?(sections = `No_titles_allowed)
-    ?(location = {Model.Error.line = 1; column = 0})
+    ?(location = {Model.Location_.line = 1; column = 0})
     name
     parser_input =
   {name; parser_input; permissive; sections; location}

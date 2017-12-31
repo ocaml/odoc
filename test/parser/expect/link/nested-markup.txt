@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((link foo ((bold ((word bar))))))))))
+((output
+  (ok
+   ((paragraph
+     ((link foo ((((1 8) (1 15)) (bold ((((1 11) (1 14)) (word bar))))))))))))
  (warnings ()))

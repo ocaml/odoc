@@ -1,27 +1,17 @@
-type location = {
-  line : int;
-  column : int;
-}
-
-type location_span = {
-  start : location;
-  end_ : location;
-}
-
-type with_location_payload = {
+type full_location_payload = {
   file : string;
-  location : location_span;
+  location : Location_.span;
   error : string;
 }
 
-type with_filename_only_payload = {
+type filename_only_payload = {
   file : string;
   error : string;
 }
 
 type t = [
-  | `With_location of with_location_payload
-  | `With_filename_only of with_filename_only_payload
+  | `With_location of full_location_payload
+  | `With_filename_only of filename_only_payload
 ]
 
 type 'a with_warnings = {

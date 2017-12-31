@@ -167,7 +167,8 @@ end
 
 let rec non_link_inline_element
     : Comment.non_link_inline_element -> non_link_phrasing Html.elt =
-  function
+    fun element ->
+  match element with
   | `Space -> Html.pcdata " "
   | `Word s -> Html.pcdata s
   | `Code_span s -> Html.code [Html.pcdata s]
@@ -181,7 +182,9 @@ let rec non_link_inline_element
     | `Subscript -> Html.sub content
 
 and non_link_inline_element_list elements =
-  List.map non_link_inline_element elements
+  elements
+  |> List.map (fun element -> element.Model.Location_.value)
+  |> List.map non_link_inline_element
 
 
 

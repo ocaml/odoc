@@ -6,7 +6,7 @@
    function is given the input string, and it returns a function which converts
    absolute offsets into the input into line/byte offset within line pairs. *)
 let make_offset_to_location_function
-    : string -> (int -> Model.Error.location) = fun s ->
+    : string -> (int -> Model.Location_.point) = fun s ->
 
   let rec find_newlines line_number input_index newlines_accumulator =
     if input_index >= String.length s then
@@ -31,7 +31,7 @@ let make_offset_to_location_function
       | (line_number, line_start_offset)::prefix ->
         if line_start_offset <= absolute_offset then
           {
-            Model.Error.line = line_number;
+            Model.Location_.line = line_number;
             column = absolute_offset - line_start_offset
           }
         else
@@ -62,7 +62,7 @@ let parse_comment
           in_comment.column
       in
 
-      {Model.Error.line = line_in_file; column = offset_in_line}
+      {Model.Location_.line = line_in_file; column = offset_in_line}
     in
 
     offset_to_location_relative_to_start_of_file
@@ -103,6 +103,7 @@ let parse_comment
         ~permissive
         sections
         ~parent_of_sections:containing_definition
+        ~offset_to_location
         ~token_stream
         ~accumulated_warnings
     in

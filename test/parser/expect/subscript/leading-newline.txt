@@ -1,1 +1,2 @@
-((output (ok ((paragraph ((subscript ((word foo)))))))) (warnings ()))
+((output (ok ((paragraph ((subscript ((((2 0) (2 3)) (word foo)))))))))
+ (warnings ()))

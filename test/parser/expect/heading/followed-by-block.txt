@@ -1,2 +1,3 @@
-((output (ok ((2 "no label" ((word Foo))) (paragraph ((word bar))))))
+((output
+  (ok ((2 "no label" ((((1 3) (1 6)) (word Foo)))) (paragraph ((word bar))))))
  (warnings ()))

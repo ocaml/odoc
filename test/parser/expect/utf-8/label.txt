@@ -4,5 +4,5 @@
      (label
       ((root (test-suite (page test-suite) "") test-suite)
        (label "\206\187")))
-     ((word Bar))))))
+     ((((1 6) (1 9)) (word Bar)))))))
  (warnings ()))
