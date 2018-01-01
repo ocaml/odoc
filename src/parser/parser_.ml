@@ -91,12 +91,6 @@ let parse_comment
     Stream.from (fun _token_index -> Some (Lexer.token lexbuf))
   in
 
-  let accumulated_warnings = ref [] in
-  let convert_warnings () =
-    !accumulated_warnings
-    |> List.rev_map convert_parsing_error_to_odoc_error
-  in
-
   try
     Syntax.parse
       ~file:location.Lexing.pos_fname
@@ -110,7 +104,7 @@ let parse_comment
   with Helpers.Parse_error error ->
     {
       Model.Error.result = Error (convert_parsing_error_to_odoc_error error);
-      warnings = convert_warnings ();
+      warnings = [];
     }
 
 
