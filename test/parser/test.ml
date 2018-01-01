@@ -721,8 +721,6 @@ let mkdir directory =
   try Unix.mkdir directory 0o755
   with Unix.Unix_error (Unix.EEXIST, "mkdir", _) -> ()
 
-(* TODO Is this correct? Won't this be for the last failed test in the suite? *)
-(* TODO Ok, how to make this correct... *)
 let suggest_commands script_directory commands =
   let commands = String.concat "\n" commands in
 
@@ -731,9 +729,7 @@ let suggest_commands script_directory commands =
   if not (Sys.file_exists script_file) then
     write_file script_file commands;
 
-  prerr_endline commands;
-  prerr_endline "\nor\n";
-  Printf.eprintf "bash %s\n\n"
+  Printf.eprintf "\nbash %s\n\n"
     ("_build/default" // test_root // script_directory // "replace.sh")
 
 let () =
