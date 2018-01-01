@@ -1,8 +1,6 @@
 ((output
   (ok
-   ((((1 0) (1 11))
-     (2
-      (label
-       ((root (test-suite (page test-suite) "") test-suite) (label foo)))
-      ((((1 7) (1 10)) (word Bar))))))))
+   (((f.ml (1 0) (1 11))
+     (2 (label ((root (f.ml (page f.ml) "") f.ml) (label foo)))
+      (((f.ml (1 7) (1 10)) (word Bar))))))))
  (warnings ()))

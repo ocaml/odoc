@@ -1,5 +1,6 @@
 ((output
   (ok
-   ((((1 0) (1 12))
-     (paragraph ((((1 0) (1 12)) (link foo ((((1 8) (1 11)) (word bar)))))))))))
+   (((f.ml (1 0) (1 12))
+     (paragraph
+      (((f.ml (1 0) (1 12)) (link foo (((f.ml (1 8) (1 11)) (word bar)))))))))))
  (warnings ()))

@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 0-5:\
+    "File \"f.ml\", line 1, characters 0-5:\
    \n'{[...]}' (code block) cannot be empty"))
  (warnings ()))

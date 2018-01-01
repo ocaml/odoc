@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 8-8:\
+    "File \"f.ml\", line 1, characters 8-8:\
    \nend of text is not allowed in '{v ... v}' (verbatim text)"))
  (warnings ()))

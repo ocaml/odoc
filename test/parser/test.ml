@@ -753,7 +753,7 @@ let () =
       let actual =
         let {permissive; sections; location; parser_input; _} = case in
 
-        let dummy_filename = "test-suite" in
+        let dummy_filename = "f.ml" in
 
         let dummy_page =
           let root : Model.Root.t = {

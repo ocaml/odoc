@@ -1,5 +1,5 @@
 ((output
   (ok
-   ((((1 0) (1 3)) (paragraph ((((1 0) (1 3)) (word foo)))))
-    (((2 0) (2 7)) (2 "no label" ((((2 3) (2 6)) (word Bar))))))))
+   (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo)))))
+    ((f.ml (2 0) (2 7)) (2 "no label" (((f.ml (2 3) (2 6)) (word Bar))))))))
  (warnings ()))

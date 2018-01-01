@@ -1,9 +1,9 @@
 ((output
   (ok
-   ((((1 0) (1 7)) (2 "no label" ((((1 3) (1 6)) (word Foo)))))
-    (((2 0) (2 7)) (2 "no label" ((((2 3) (2 6)) (word Foo))))))))
+   (((f.ml (1 0) (1 7)) (2 "no label" (((f.ml (1 3) (1 6)) (word Foo)))))
+    ((f.ml (2 0) (2 7)) (2 "no label" (((f.ml (2 3) (2 6)) (word Foo))))))))
  (warnings
-  ( "File \"test-suite\", line 1, characters 0-2:\
+  ( "File \"f.ml\", line 1, characters 0-2:\
    \n'1': bad section level (2-4 allowed)"
-    "File \"test-suite\", line 2, characters 0-2:\
+    "File \"f.ml\", line 2, characters 0-2:\
    \n'1': bad section level (2-4 allowed)")))

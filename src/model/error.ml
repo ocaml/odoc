@@ -1,5 +1,4 @@
 type full_location_payload = {
-  file : string;
   location : Location_.span;
   error : string;
 }
@@ -10,7 +9,7 @@ type filename_only_payload = {
 }
 
 type t = [
-  | `With_location of full_location_payload
+  | `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload
 ]
 
@@ -20,8 +19,8 @@ type 'a with_warnings = {
 }
 
 let to_string : t -> string = function
-  | `With_location {file; location; error} ->
-    let location =
+  | `With_full_location {location; error} ->
+    let location_string =
       if location.start.line = location.end_.line then
         Printf.sprintf "line %i, characters %i-%i"
           location.start.line
@@ -34,7 +33,7 @@ let to_string : t -> string = function
           location.end_.line
           location.end_.column
     in
-    Printf.sprintf "File \"%s\", %s:\n%s" file location error
+    Printf.sprintf "File \"%s\", %s:\n%s" location.file location_string error
 
   | `With_filename_only {file; error} ->
     Printf.sprintf "File \"%s\":\n%s" file error

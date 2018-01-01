@@ -6,6 +6,7 @@ type point = {
 type span = {
   start : point;
   end_ : point;
+  file : string;
 }
 
 type 'a with_location = {

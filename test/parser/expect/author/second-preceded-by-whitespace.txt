@@ -1,3 +1,4 @@
 ((output
-  (ok ((((1 0) (1 11)) (@author Foo)) (((2 1) (2 12)) (@author Bar)))))
+  (ok
+   (((f.ml (1 0) (1 11)) (@author Foo)) ((f.ml (2 1) (2 12)) (@author Bar)))))
  (warnings ()))

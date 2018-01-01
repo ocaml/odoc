@@ -1,3 +1,4 @@
 ((output
-  (ok ((((1 0) (1 21)) (modules ((root Foo unknown) (root Bar unknown)))))))
+  (ok
+   (((f.ml (1 0) (1 21)) (modules ((root Foo unknown) (root Bar unknown)))))))
  (warnings ()))

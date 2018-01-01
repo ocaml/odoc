@@ -1,7 +1,7 @@
 ((output
   (ok
-   ((((1 0) (3 3))
+   (((f.ml (1 0) (3 3))
      (@deprecated
-      (((1 12) (1 15)) (paragraph ((((1 12) (1 15)) (word foo)))))
-      (((3 0) (3 3)) (paragraph ((((3 0) (3 3)) (word bar))))))))))
+      ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word foo)))))
+      ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word bar))))))))))
  (warnings ()))

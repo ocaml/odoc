@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 9-10:\
+    "File \"f.ml\", line 1, characters 9-10:\
    \ninternal whitespace is not allowed in '{!...}' (cross-reference)"))
  (warnings ()))

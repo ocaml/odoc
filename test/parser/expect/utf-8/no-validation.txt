@@ -1,2 +1,4 @@
-((output (ok ((((1 0) (1 1)) (paragraph ((((1 0) (1 1)) (word "\206"))))))))
+((output
+  (ok
+   (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word "\206"))))))))
  (warnings ()))

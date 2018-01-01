@@ -1,6 +1,6 @@
 ((output
   (ok
-   ((((1 0) (1 10))
+   (((f.ml (1 0) (1 10))
      (paragraph
-      ((((1 0) (1 10)) (superscript ((((1 6) (1 9)) (word foo)))))))))))
+      (((f.ml (1 0) (1 10)) (superscript (((f.ml (1 6) (1 9)) (word foo)))))))))))
  (warnings ()))

@@ -76,9 +76,9 @@ let parse_comment
   let convert_parsing_error_to_odoc_error
       : Helpers.raw_parse_error -> Model.Error.t = fun error ->
 
-    `With_location {
-      file = location.Lexing.pos_fname;
+    `With_full_location {
       location = {
+        file = location.Lexing.pos_fname;
         start = offset_to_location error.start_offset;
         end_ = offset_to_location error.end_offset;
       };
@@ -103,6 +103,7 @@ let parse_comment
         ~permissive
         sections
         ~parent_of_sections:containing_definition
+        ~file:location.Lexing.pos_fname
         ~offset_to_location
         ~token_stream
         ~accumulated_warnings

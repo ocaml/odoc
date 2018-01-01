@@ -1,5 +1,4 @@
 ((output
-  (error
-    "File \"test-suite\", line 3, characters 2-6:\
-   \nunknown tag '@foo'"))
+  (error  "File \"f.ml\", line 3, characters 2-6:\
+         \nunknown tag '@foo'"))
  (warnings ()))

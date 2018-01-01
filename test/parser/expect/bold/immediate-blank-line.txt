@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 2, characters 0-0:\
+    "File \"f.ml\", line 2, characters 0-0:\
    \nblank line is not allowed in '{b ...}' (boldface text)"))
  (warnings ()))

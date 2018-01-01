@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 10-10:\
+    "File \"f.ml\", line 1, characters 10-10:\
    \nend of text is not allowed in '{!modules ...}'"))
  (warnings ()))

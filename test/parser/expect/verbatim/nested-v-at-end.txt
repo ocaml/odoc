@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 4-6:\
+    "File \"f.ml\", line 1, characters 4-6:\
    \n'v}' must be preceded by whitespace"))
  (warnings ()))

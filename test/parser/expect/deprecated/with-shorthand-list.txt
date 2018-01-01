@@ -1,8 +1,9 @@
 ((output
   (ok
-   ((((1 0) (1 17))
+   (((f.ml (1 0) (1 17))
      (@deprecated
-      (((1 12) (1 17))
+      ((f.ml (1 12) (1 17))
        (unordered
-        (((((1 14) (1 17)) (paragraph ((((1 14) (1 17)) (word foo))))))))))))))
+        ((((f.ml (1 14) (1 17))
+           (paragraph (((f.ml (1 14) (1 17)) (word foo))))))))))))))
  (warnings ()))

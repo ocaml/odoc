@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 2-3:\
+    "File \"f.ml\", line 1, characters 2-3:\
    \nunpaired ']' (end of code)"))
  (warnings ()))

@@ -1,8 +1,8 @@
 ((output
   (ok
-   ((((1 0) (1 16))
+   (((f.ml (1 0) (1 16))
      (paragraph
-      ((((1 0) (1 16))
+      (((f.ml (1 0) (1 16))
         (reference (root foo unknown)
-         ((((1 8) (1 15)) (bold ((((1 11) (1 14)) (word bar))))))))))))))
+         (((f.ml (1 8) (1 15)) (bold (((f.ml (1 11) (1 14)) (word bar))))))))))))))
  (warnings ()))

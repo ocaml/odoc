@@ -216,8 +216,8 @@ struct
   let point : Location_.point -> sexp = fun {line; column} ->
     List [Atom (string_of_int line); Atom (string_of_int column)]
 
-  let span : Location_.span -> sexp = fun {start; end_} ->
-    List [point start; point end_]
+  let span : Location_.span -> sexp = fun {file; start; end_} ->
+    List [Atom file; point start; point end_]
 
   let at : ('a -> sexp) -> 'a Location_.with_location -> sexp =
       fun f {location; value} ->

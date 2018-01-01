@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 11-11:\
+    "File \"f.ml\", line 1, characters 11-11:\
    \nend of text is not allowed in '{li ...}' (list item)"))
  (warnings ()))

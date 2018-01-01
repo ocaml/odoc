@@ -1,6 +1,6 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 12-23:\
+    "File \"f.ml\", line 1, characters 12-23:\
    \n'@deprecated' is not allowed in '@deprecated'\
    \nSuggestion: move '@deprecated' outside of any other markup"))
  (warnings ()))

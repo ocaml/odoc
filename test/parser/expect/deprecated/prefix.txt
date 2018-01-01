@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 0-14:\
+    "File \"f.ml\", line 1, characters 0-14:\
    \nunknown tag '@deprecatedfoo'"))
  (warnings ()))

@@ -1,2 +1,4 @@
-((output (ok ((((1 0) (1 10)) (@param foo)) (((2 0) (2 10)) (@param bar)))))
+((output
+  (ok
+   (((f.ml (1 0) (1 10)) (@param foo)) ((f.ml (2 0) (2 10)) (@param bar)))))
  (warnings ()))

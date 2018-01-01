@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 10-21:\
+    "File \"f.ml\", line 1, characters 10-21:\
    \n'@author' must begin on its own line"))
  (warnings ()))

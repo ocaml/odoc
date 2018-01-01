@@ -1,6 +1,7 @@
 ((output
   (ok
-   ((((1 0) (3 3))
-     (@param foo (((1 11) (1 14)) (paragraph ((((1 11) (1 14)) (word bar)))))
-      (((3 0) (3 3)) (paragraph ((((3 0) (3 3)) (word baz))))))))))
+   (((f.ml (1 0) (3 3))
+     (@param foo
+      ((f.ml (1 11) (1 14)) (paragraph (((f.ml (1 11) (1 14)) (word bar)))))
+      ((f.ml (3 0) (3 3)) (paragraph (((f.ml (3 0) (3 3)) (word baz))))))))))
  (warnings ()))

@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 8-18:\
+    "File \"f.ml\", line 1, characters 8-18:\
    \n'@param' must begin on its own line"))
  (warnings ()))

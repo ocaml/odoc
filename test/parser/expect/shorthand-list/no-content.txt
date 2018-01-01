@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 0-1:\
+    "File \"f.ml\", line 1, characters 0-1:\
    \n'-' (bulleted list item) cannot be empty"))
  (warnings ()))

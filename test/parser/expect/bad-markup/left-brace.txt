@@ -1,4 +1,3 @@
-((output
-  (error  "File \"test-suite\", line 1, characters 0-1:\
-         \n'{': bad markup"))
+((output (error  "File \"f.ml\", line 1, characters 0-1:\
+                \n'{': bad markup"))
  (warnings ()))

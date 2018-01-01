@@ -1,4 +1,5 @@
 ((output
   (ok
-   ((((1 0) (1 12)) (paragraph ((((1 0) (1 12)) (code_span " foo  bar "))))))))
+   (((f.ml (1 0) (1 12))
+     (paragraph (((f.ml (1 0) (1 12)) (code_span " foo  bar "))))))))
  (warnings ()))

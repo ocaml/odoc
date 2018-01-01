@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"test-suite\", line 1, characters 4-7:\
+    "File \"f.ml\", line 1, characters 4-7:\
    \n'{li ...}' (list item) cannot be empty"))
  (warnings ()))

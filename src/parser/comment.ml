@@ -47,6 +47,7 @@ type 'token stream_head = (int * int) * 'token
 type input = {
   permissive : bool;
   sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
+  file : string;
   offset_to_location : int -> Model.Location_.point;
   token_stream : (Token.t stream_head) Stream.t;
   parent_of_sections : Model.Paths.Identifier.label_parent;
@@ -77,6 +78,7 @@ type 'a with_location = 'a Model.Location_.with_location
 let at_token input (start_offset, end_offset) value : _ with_location =
   {
     location = {
+      file = input.file;
       start = input.offset_to_location start_offset;
       end_ = input.offset_to_location end_offset;
     };
@@ -86,6 +88,7 @@ let at_token input (start_offset, end_offset) value : _ with_location =
 let token_span input (start_offset, _) (_, end_offset) value : _ with_location =
   {
     location = {
+      file = input.file;
       start = input.offset_to_location start_offset;
       end_ = input.offset_to_location end_offset;
     };
@@ -103,6 +106,7 @@ let child_span input (start_offset, end_offset) children value
   | None ->
     {
       location = {
+        file = input.file;
         start = input.offset_to_location start_offset;
         end_ = input.offset_to_location end_offset;
       };
@@ -111,6 +115,7 @@ let child_span input (start_offset, end_offset) children value
   | Some nested_end_location ->
     {
       location = {
+        file = input.file;
         start = input.offset_to_location start_offset;
         end_ = nested_end_location.end_;
       };
@@ -1196,6 +1201,7 @@ let comment
     ~permissive
     sections
     ~parent_of_sections
+    ~file
     ~offset_to_location
     ~token_stream
     ~accumulated_warnings =
@@ -1205,6 +1211,7 @@ let comment
       permissive;
       sections;
       offset_to_location;
+      file;
       token_stream;
       parent_of_sections;
       accumulated_warnings

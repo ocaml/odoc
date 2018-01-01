@@ -1,7 +1,7 @@
 ((output
   (ok
-   ((((1 0) (1 11))
+   (((f.ml (1 0) (1 11))
      (paragraph
-      ((((1 0) (1 5)) (code_span foo)) (((1 5) (1 6)) space)
-       (((1 6) (1 11)) (code_span bar))))))))
+      (((f.ml (1 0) (1 5)) (code_span foo)) ((f.ml (1 5) (1 6)) space)
+       ((f.ml (1 6) (1 11)) (code_span bar))))))))
  (warnings ()))
