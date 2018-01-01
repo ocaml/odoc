@@ -16,109 +16,32 @@
      is not explicitly delimited with curly braces.
    - [block_element_list] parses a sequence of block elements. A comment is a
      sequence of block elements, so [block_element_list] is the top-level
-     parser. It is also used for list item and tag content.
+     parser. It is also used for list item and tag content. *)
 
-   The parser raises exceptions with constructor [Helpers.Parse_error]. These
-   contain raw byte offsets as locations. These are caught in module [Parser_],
-   and translated to line/column locations. *)
+
+
+module Location = Model.Location_
+module Error = Model.Error
+module Comment = Model.Comment
+
+type 'a with_location = 'a Location.with_location
 
 
 
 (* {2 Input} *)
 
-(* Tokens paired with their start and end byte offsets.
+type input = (Token.t Location.with_location) Stream.t
 
-   This type constructor is mainly used as [Token.t stream_head]. However, in
-   places where only a subset of tokens is allowed, it is used with more
-   restrictive types, such as [[ `Space | `Single_newline ] stream_head]. *)
-type 'token stream_head = (int * int) * 'token
-
-(* What the parser needs from the outside world. A value of type [input] is
-   passed around between all the parsing functions.
-
-   - [file] is the name of the file containing the comment being parsed. It is
-     needed to construct locations.
-   - [offset_to_location] converts byte indexes relative to the start of the
-     comment to line, column pairs relative to the start of the file containing
-     the comment.
-   - [token_stream] is the stream of tokens emitted by the lexer.
-
-  In addition to a value of type [input], some parsing functions also take a
-  value of type ['a stream_head], for some ['a] that is narrower than [Token.t].
-  This is done when the stream head has already been examined by the caller, and
-  it allows a precise and limited set of cases in the function. *)
-type input = {
-  file : string;
-  offset_to_location : int -> Model.Location_.point;
-  token_stream : (Token.t stream_head) Stream.t;
-}
-
-let junk input =
-  Stream.junk input.token_stream
+let junk = Stream.junk
 
 let peek input =
-  match Stream.peek input.token_stream with
+  match Stream.peek input with
   | Some token -> token
   | None -> assert false
   (* The last token in the stream is always [`End], and it is never consumed by
      the parser, so the [None] case is impossible. *)
 
-let npeek n input =
-  Stream.npeek n input.token_stream
-
-type 'a with_location = 'a Model.Location_.with_location
-
-let at_token input (start_offset, end_offset) value : _ with_location =
-  {
-    location = {
-      file = input.file;
-      start = input.offset_to_location start_offset;
-      end_ = input.offset_to_location end_offset;
-    };
-    value;
-  }
-
-let token_span input (start_offset, _) (_, end_offset) value : _ with_location =
-  {
-    location = {
-      file = input.file;
-      start = input.offset_to_location start_offset;
-      end_ = input.offset_to_location end_offset;
-    };
-    value;
-  }
-
-let child_span input (start_offset, end_offset) children value
-    : _ with_location =
-  let nested_end_location =
-    List.fold_left (fun _acc child ->
-      Some child.Model.Location_.location)
-    None children
-  in
-  match nested_end_location with
-  | None ->
-    {
-      location = {
-        file = input.file;
-        start = input.offset_to_location start_offset;
-        end_ = input.offset_to_location end_offset;
-      };
-      value;
-    }
-  | Some nested_end_location ->
-    {
-      location = {
-        file = input.file;
-        start = input.offset_to_location start_offset;
-        end_ = nested_end_location.end_;
-      };
-      value;
-    }
-
-
-
-module Comment = Model.Comment
-module Raise = Helpers
+let npeek = Stream.npeek
 
 
 
@@ -144,28 +67,32 @@ module Raise = Helpers
      tokens, so "brace \{" becomes [`Word "brace"; `Word "{"].
 
    This parser stops on the first non-word token, and does not consume it. *)
-let word
-    : input -> (int * int) ->
-        Comment.non_link_inline_element with_location =
-    fun input start_location ->
-  let rec consume_word_tokens end_location acc =
-    match peek input with
-    | l, `Word w ->
-      junk input;
-      consume_word_tokens l (acc ^ w)
+let word : input -> Comment.non_link_inline_element with_location =
+    fun input ->
+  let first_token = peek input in
 
-    | l, `Minus ->
+  let rec consume_word_tokens last_token acc =
+    let next_token = peek input in
+    match next_token.value with
+    | `Word w ->
       junk input;
-      consume_word_tokens l (acc ^ "-")
+      consume_word_tokens next_token (acc ^ w)
 
-    | l, `Plus ->
+    | `Minus ->
       junk input;
-      consume_word_tokens l (acc ^ "+")
+      consume_word_tokens next_token (acc ^ "-")
+
+    | `Plus ->
+      junk input;
+      consume_word_tokens next_token (acc ^ "+")
 
     | _ ->
-      token_span input start_location end_location (`Word acc)
+      let location =
+        Location.span [first_token.location; last_token.location] in
+      Location.at location (`Word acc)
   in
-  consume_word_tokens start_location ""
+
+  consume_word_tokens first_token ""
 
 (* Consumes tokens that make up a single non-link inline element:
 
@@ -189,41 +116,46 @@ let word
 
    This function consumes exactly the tokens that make up the element. *)
 let rec non_link_inline_element
-    : [> ] stream_head -> input ->
+    : input -> _ with_location ->
         Comment.non_link_inline_element with_location =
-    fun stream_head input ->
+    fun input next_token ->
 
-  match stream_head with
-  | l, `Space ->
+  match next_token.value with
+  | `Space ->
     junk input;
-    at_token input l `Space
+    Location.same next_token `Space
 
-  | l, `Word _
-  | l, `Minus
-  | l, `Plus ->
-    word input l
+  | `Word _
+  | `Minus
+  | `Plus ->
+    word input
 
-  | l, `Code_span c ->
+  | `Code_span c ->
     junk input;
-    at_token input l (`Code_span c)
+    Location.same next_token (`Code_span c)
 
-  | l, (`Begin_style s as parent_markup) ->
+  | `Begin_style s as parent_markup ->
     junk input;
+
     let requires_leading_whitespace =
       match s with
       | `Superscript | `Subscript -> false
       | _ -> true
     in
-    let content, end_location =
+    let content, brace_location =
       delimited_non_link_inline_element_list
         ~parent_markup
-        ~parent_markup_location:l
+        ~parent_markup_location:next_token.location
         ~requires_leading_whitespace
         input
     in
     if content = [] then
-      Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
-    token_span input l end_location (`Styled (s, content))
+      Parse_error.cannot_be_empty
+        ~what:(Token.describe parent_markup) next_token.location
+      |> Error.raise_exception;
+
+    (`Styled (s, content))
+    |> Location.at (Location.span [next_token.location; brace_location])
 
 (* Consumes tokens that make up a sequence of non-link inline elements. See
    function [non_link_inline_element] for a list of what those are.
@@ -251,10 +183,10 @@ let rec non_link_inline_element
    generating error messages. *)
 and delimited_non_link_inline_element_list
     : parent_markup:[< Token.t ] ->
-      parent_markup_location:(int * int) ->
+      parent_markup_location:Location.span ->
       requires_leading_whitespace:bool ->
       input ->
-        (Comment.non_link_inline_element with_location) list * (int * int) =
+        (Comment.non_link_inline_element with_location) list * Location.span =
     fun
       ~parent_markup
       ~parent_markup_location
@@ -267,13 +199,13 @@ and delimited_non_link_inline_element_list
   let rec consume_non_link_inline_elements
       : at_start_of_line:bool ->
         (Comment.non_link_inline_element with_location) list ->
-          (Comment.non_link_inline_element with_location) list * (int * int) =
+          (Comment.non_link_inline_element with_location) list * Location.span =
       fun ~at_start_of_line acc ->
 
     match peek input with
-    | l, `Right_brace ->
+    | {value = `Right_brace; location} ->
       junk input;
-      List.rev acc, l
+      List.rev acc, location
 
     (* The [`Space] token is not space at the beginning or end of line, because
        that is combined into [`Single_newline] or [`Blank_line] tokens. It is
@@ -283,21 +215,21 @@ and delimited_non_link_inline_element_list
        because that is combined into the [`Right_brace] token by the lexer. So,
        it is an internal space, and we want to add it to the non-link inline
        element list. *)
-    | _, `Space
-    | _, `Word _
-    | _, `Code_span _
-    | _, `Begin_style _ as stream_head ->
-      let acc = (non_link_inline_element stream_head input)::acc in
+    | {value = `Space; _}
+    | {value = `Word _; _}
+    | {value = `Code_span _; _}
+    | {value = `Begin_style _; _} as next_token ->
+      let acc = (non_link_inline_element input next_token)::acc in
       consume_non_link_inline_elements ~at_start_of_line:false acc
 
-    | l, `Single_newline ->
+    | {value = `Single_newline; location} ->
       junk input;
-      let element = at_token input l `Space in
+      let element = Location.at location `Space in
       consume_non_link_inline_elements ~at_start_of_line:true (element::acc)
 
-    | l, (`Minus | `Plus as bullet) as stream_head ->
+    | {value = `Minus | `Plus as bullet; location} as next_token ->
       if not at_start_of_line then
-        let acc = (non_link_inline_element stream_head input)::acc in
+        let acc = (non_link_inline_element input next_token)::acc in
         consume_non_link_inline_elements ~at_start_of_line:false acc
       else
         let suggestion =
@@ -305,48 +237,55 @@ and delimited_non_link_inline_element_list
             "move %s so it isn't the first thing on the line"
             (Token.print bullet)
         in
-        Raise.not_allowed
-          l
+        Parse_error.not_allowed
           ~what:(Token.describe bullet)
           ~in_what:(Token.describe parent_markup)
           ~suggestion
+          location
+        |> Error.raise_exception
 
-    | l, token ->
-      Raise.not_allowed
-        l ~what:(Token.describe token) ~in_what:(Token.describe parent_markup)
+    | other_token ->
+      Parse_error.not_allowed
+        ~what:(Token.describe other_token.value)
+        ~in_what:(Token.describe parent_markup)
+        other_token.location
+      |> Error.raise_exception
   in
 
-  match peek input with
-  | _, `Space ->
+  let first_token = peek input in
+  match first_token.value with
+  | `Space ->
     junk input;
     consume_non_link_inline_elements ~at_start_of_line:false []
     (* [~at_start_of_line] is [false] here because the preceding token was some
        some markup like '{b', and we didn't move to the next line, so the next
        token will not be the first non-whitespace token on its line. *)
 
-  | _, `Single_newline ->
+  | `Single_newline ->
     junk input;
     consume_non_link_inline_elements ~at_start_of_line:true []
 
-  | l, `Blank_line ->
+  | `Blank_line ->
     (* In case the markup is immediately followed by a blank line, the error
        message printed by the catch-all case below can be confusing, as it will
        suggest that the markup must be followed by a newline (which it is). It
        just must not be followed by two newlines. To explain that clearly,
        handle that case specifically. *)
-    Raise.not_allowed
-      l
+    Parse_error.not_allowed
       ~what:(Token.describe `Blank_line)
       ~in_what:(Token.describe parent_markup)
+      first_token.location
+    |> Error.raise_exception
 
-  | l, `Right_brace ->
+  | `Right_brace ->
     junk input;
-    [], l
+    [], first_token.location
 
   | _ ->
     if requires_leading_whitespace then
-      Raise.must_be_followed_by_whitespace
-        parent_markup_location ~what:(Token.print parent_markup)
+      Parse_error.must_be_followed_by_whitespace
+        ~what:(Token.print parent_markup) parent_markup_location
+      |> Error.raise_exception
     else
       consume_non_link_inline_elements ~at_start_of_line:false []
 
@@ -384,9 +323,8 @@ let _check_subset : token_that_begins_a_paragraph_line -> Token.t =
    then parses a line of inline elements. Afterwards, it looks ahead to the next
    line. If that line also begins with an inline element, it parses that line,
    and so on. *)
-let paragraph
-    : input -> (int * int) -> Comment.nestable_block_element with_location =
-    fun input start_offsets ->
+let paragraph : input -> Comment.nestable_block_element with_location =
+    fun input ->
 
   (* Parses a single line of a paragraph, consisting of inline elements. The
      only valid ways to end a paragraph line are with [`End], [`Single_newline],
@@ -399,71 +337,86 @@ let paragraph
           (Comment.inline_element with_location) list =
       fun acc ->
     match peek input with
-    | _, `Space
-    | _, `Minus
-    | _, `Plus
-    | _, `Word _
-    | _, `Code_span _
-    | _, `Begin_style _ as stream_head ->
-      let element = non_link_inline_element stream_head input in
+    | {value = `Space; _}
+    | {value = `Minus; _}
+    | {value = `Plus; _}
+    | {value = `Word _; _}
+    | {value = `Code_span _; _}
+    | {value = `Begin_style _; _} as next_token ->
+      let element = non_link_inline_element input next_token in
       let acc = (element :> Comment.inline_element with_location)::acc in
       paragraph_line acc
 
-    | l, `Simple_reference r ->
+    | {value = `Simple_reference r; location} ->
       junk input;
       let element =
-        at_token input l (`Reference (Helpers.read_reference r, [])) in
+        Location.at location (`Reference (Helpers.read_reference r, [])) in
       paragraph_line (element::acc)
 
-    | l, (`Begin_reference_with_replacement_text r as parent_markup) ->
+    | {value = `Begin_reference_with_replacement_text r as parent_markup;
+       location} ->
       junk input;
-      let content, end_location =
+
+      let content, brace_location =
         delimited_non_link_inline_element_list
           ~parent_markup
-          ~parent_markup_location:l
+          ~parent_markup_location:location
           ~requires_leading_whitespace:false
           input
       in
       if content = [] then
-        Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
-      let element = `Reference (Helpers.read_reference r, content) in
-      let element = token_span input l end_location element in
+        Parse_error.cannot_be_empty
+          ~what:(Token.describe parent_markup) location
+        |> Error.raise_exception;
+
+      let element =
+        `Reference (Helpers.read_reference r, content)
+        |> Location.at (Location.span [location; brace_location])
+      in
       paragraph_line (element::acc)
 
-    | l, (`Begin_link_with_replacement_text u as parent_markup) ->
+    | {value = `Begin_link_with_replacement_text u as parent_markup;
+       location} ->
       junk input;
-      let content, end_location =
+
+      let content, brace_location =
         delimited_non_link_inline_element_list
           ~parent_markup
-          ~parent_markup_location:l
+          ~parent_markup_location:location
           ~requires_leading_whitespace:false
           input
       in
-      let element = token_span input l end_location (`Link (u, content)) in
+
+      let element =
+        `Link (u, content)
+        |> Location.at (Location.span [location; brace_location])
+      in
       paragraph_line (element::acc)
 
     | _ ->
       acc
   in
 
-  (* After each row is parsed, decides whether to parse more rows. *)
-  let rec additional_rows
+  (* After each line is parsed, decides whether to parse more lines. *)
+  let rec additional_lines
       : (Comment.inline_element with_location) list ->
           (Comment.inline_element with_location) list =
       fun acc ->
     match npeek 2 input with
-    | (l, `Single_newline)::(_, #token_that_begins_a_paragraph_line)::_ ->
+    | {value = `Single_newline; location}::
+      {value = #token_that_begins_a_paragraph_line; _}::_ ->
       junk input;
-      let acc = (at_token input l `Space)::acc in
+      let acc = (Location.at location `Space)::acc in
       let acc = paragraph_line acc in
-      additional_rows acc
+      additional_lines acc
 
     | _ ->
       List.rev acc
   in
 
-  let all_elements = additional_rows (paragraph_line []) in
-  child_span input start_offsets all_elements (`Paragraph all_elements)
+  let elements = paragraph_line [] |> additional_lines in
+  `Paragraph elements
+  |> Location.at (Location.span (List.map Location.location elements))
 
 
 
@@ -600,7 +553,7 @@ let rec block_element_list
       parent_markup:[< Token.t | `Comment ] ->
       input ->
         (block with_location) list *
-        stops_at_which_tokens stream_head *
+        stops_at_which_tokens with_location *
         where_in_line =
     fun context ~parent_markup input ->
 
@@ -609,7 +562,7 @@ let rec block_element_list
         where_in_line ->
         (block with_location) list ->
           (block with_location) list *
-          stops_at_which_tokens stream_head *
+          stops_at_which_tokens with_location *
           where_in_line =
       fun ~parsed_a_tag where_in_line acc ->
 
@@ -619,51 +572,57 @@ let rec block_element_list
       | _ -> Token.describe token
     in
 
-    let raise_if_after_text (l, token) =
+    let raise_if_after_text {Location.location; value = token} =
       if where_in_line = `After_text then
-        Raise.must_begin_on_its_own_line l ~what:(describe token)
+        Parse_error.must_begin_on_its_own_line ~what:(describe token) location
+        |> Error.raise_exception
     in
 
-    let raise_if_after_tags (l, token) =
+    let raise_if_after_tags {Location.location; value = token} =
       if parsed_a_tag then
         let suggestion =
           Printf.sprintf
             "move %s before any tags" (Token.describe token)
         in
-        Raise.not_allowed
-          l ~what:(describe token) ~in_what:"the tags section" ~suggestion
+        Parse_error.not_allowed
+          ~what:(describe token)
+          ~in_what:"the tags section"
+          ~suggestion
+          location
+        |> Error.raise_exception
     in
 
-    let raise_because_not_at_top_level (l, token) =
+    let raise_because_not_at_top_level {Location.location; value = token} =
       let suggestion =
         Printf.sprintf
           "move %s outside of any other markup" (Token.print token)
       in
-      Raise.not_allowed
-        l
+      Parse_error.not_allowed
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
+        location
+      |> Error.raise_exception
     in
 
 
 
     match peek input with
     (* Terminators: the two tokens that terminate anything. *)
-    | _, `End
-    | _, `Right_brace as stream_head ->
+    | {value = `End; _}
+    | {value = `Right_brace; _} as next_token ->
       (* This little absurdity is needed to satisfy the type system. Without it,
          OCaml is unable to prove that [stream_head] has the right type for all
          possible values of [context]. *)
       begin match context with
       | Top_level ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       | In_shorthand_list ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       | In_explicit_list ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       | In_tag ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       end
 
 
@@ -671,20 +630,20 @@ let rec block_element_list
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
        well as to ensure that all block elements begin on their own line. *)
-    | _, `Space ->
+    | {value = `Space; _} ->
       junk input;
       consume_block_elements ~parsed_a_tag where_in_line acc
 
-    | _, `Single_newline ->
+    | {value = `Single_newline; _} ->
       junk input;
       consume_block_elements ~parsed_a_tag `At_start_of_line acc
 
-    | _, `Blank_line as stream_head ->
+    | {value = `Blank_line; _} as next_token ->
       begin match context with
       (* Blank lines terminate shorthand lists ([- foo]). They also terminate
          paragraphs, but the paragraph parser is aware of that internally. *)
       | In_shorthand_list ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       (* Otherwise, blank lines are pretty much like single newlines. *)
       | _ ->
         junk input;
@@ -696,7 +655,7 @@ let rec block_element_list
     (* Explicit list items ([{li ...}] and [{- ...}]) can never appear directly
        in block content. They can only appear inside [{ul ...}] and [{ol ...}].
        So, catch those. *)
-    | l, (`Begin_list_item _ as token) ->
+    | {value = `Begin_list_item _ as token; location} ->
       let suggestion =
         Printf.sprintf
           "move %s into %s, or use %s"
@@ -704,47 +663,52 @@ let rec block_element_list
           (Token.describe (`Begin_list `Unordered))
           (Token.describe (`Minus))
       in
-      Raise.not_allowed
-        l
+      Parse_error.not_allowed
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
+        location
+      |> Error.raise_exception
 
 
 
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
-    | l, (`Tag tag as token) as stream_head ->
+    | {value = `Tag tag as token; location} as next_token ->
       begin match context with
       (* Tags cannot make sense in an explicit list ([{ul {li ...}}]). *)
       | In_explicit_list ->
-        raise_because_not_at_top_level stream_head
+        raise_because_not_at_top_level next_token
       (* If a tag starts at the beginning of a line, it terminates the preceding
          tag and/or the current shorthand list. In this case, return to the
          caller, and let the caller decide how to interpret the tag token. *)
       | In_shorthand_list ->
         if where_in_line = `At_start_of_line then
-          List.rev acc, stream_head, where_in_line
+          List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level stream_head
+          raise_because_not_at_top_level next_token
       | In_tag ->
         if where_in_line = `At_start_of_line then
-          List.rev acc, stream_head, where_in_line
+          List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level stream_head
+          raise_because_not_at_top_level next_token
 
       (* If this is the top-level call to [block_element_list], parse the
          tag. *)
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Raise.must_begin_on_its_own_line l ~what:(Token.describe token);
+          Parse_error.must_begin_on_its_own_line
+            ~what:(Token.describe token) location
+          |> Error.raise_exception;
+
         junk input;
 
         begin match tag with
         | `Author s | `Since s | `Version s | `Canonical s as tag ->
           let s = String.trim s in
           if s = "" then
-            Raise.cannot_be_empty l ~what:(Token.describe token);
+            Parse_error.cannot_be_empty ~what:(Token.describe token) location
+            |> Error.raise_exception;
           let tag =
             match tag with
             | `Author _ -> `Author s
@@ -755,7 +719,7 @@ let rec block_element_list
               let module_ = Helpers.read_mod_longident s in
               `Canonical (path, module_)
           in
-          let tag = at_token input l (`Tag tag) in
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
@@ -766,7 +730,11 @@ let rec block_element_list
             | `Deprecated -> `Deprecated content
             | `Return -> `Return content
           in
-          let tag = child_span input l content (`Tag tag) in
+          let location =
+            location::(List.map Location.location content)
+            |> Location.span
+          in
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true where_in_line (tag::acc)
 
         | `Param _ | `Raise _ | `Before _ as tag ->
@@ -778,34 +746,45 @@ let rec block_element_list
             | `Raise s -> `Raise (s, content)
             | `Before s -> `Before (s, content)
           in
-          let tag = child_span input l content (`Tag tag) in
+          let location =
+            location::(List.map Location.location content)
+            |> Location.span
+          in
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true where_in_line (tag::acc)
 
         | `See (kind, target) ->
-          let content, _stream_head, where_in_line =
+          let content, _next_token, where_in_line =
             block_element_list In_tag ~parent_markup:token input in
+          let location =
+            location::(List.map Location.location content)
+            |> Location.span
+          in
           let tag = `Tag (`See (kind, target, content)) in
-          let tag = child_span input l content tag in
+          let tag = Location.at location tag in
           consume_block_elements ~parsed_a_tag:true where_in_line (tag::acc)
         end
       end
 
 
 
-    | l, #token_that_begins_a_paragraph_line as stream_head ->
-      raise_if_after_tags stream_head;
-      raise_if_after_text stream_head;
-      let block = paragraph input l in
+    | {value = #token_that_begins_a_paragraph_line; _} as next_token ->
+      raise_if_after_tags next_token;
+      raise_if_after_text next_token;
+
+      let block = paragraph input in
       let block =
         Model.Location_.map (accepted_in_all_contexts context) block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 
-    | l, ((`Code_block s | `Verbatim s) as token) as stream_head ->
-      raise_if_after_tags stream_head;
-      raise_if_after_text stream_head;
+    | {value = `Code_block s | `Verbatim s as token; location} as next_token ->
+      raise_if_after_tags next_token;
+      raise_if_after_text next_token;
       if s = "" then
-        Raise.cannot_be_empty l ~what:(Token.describe token);
+        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        |> Error.raise_exception;
+
       junk input;
       let block =
         match token with
@@ -813,13 +792,13 @@ let rec block_element_list
         | `Verbatim _ -> `Verbatim s
       in
       let block = accepted_in_all_contexts context block in
-      let block = at_token input l block in
+      let block = Location.at location block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 
-    | l, (`Modules s as token) as stream_head ->
-      raise_if_after_tags stream_head;
-      raise_if_after_text stream_head;
+    | {value = `Modules s as token; location} as next_token ->
+      raise_if_after_tags next_token;
+      raise_if_after_text next_token;
 
       junk input;
 
@@ -857,90 +836,110 @@ let rec block_element_list
       in
 
       if modules = [] then
-        Raise.cannot_be_empty l ~what:(Token.describe token);
+        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        |> Error.raise_exception;
 
       let block = accepted_in_all_contexts context (`Modules modules) in
-      let block = at_token input l block in
+      let block = Location.at location block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 
 
 
-    | l, (`Begin_list kind as token) as stream_head ->
-      raise_if_after_tags stream_head;
-      raise_if_after_text stream_head;
+    | {value = `Begin_list kind as token; location} as next_token ->
+      raise_if_after_tags next_token;
+      raise_if_after_text next_token;
+
       junk input;
-      let items, right_brace_offsets =
+
+      let items, brace_location =
         explicit_list_items ~parent_markup:token input in
       if items = [] then
-        Raise.cannot_be_empty l ~what:(Token.describe token);
+        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        |> Error.raise_exception;
+
+      let location = Location.span [location; brace_location] in
       let block = `List (kind, items) in
       let block = accepted_in_all_contexts context block in
-      let block = token_span input l right_brace_offsets block in
+      let block = Location.at location block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 
 
 
-    | l, (`Minus | `Plus as token) as stream_head ->
-      raise_if_after_tags stream_head;
+    | {value = `Minus | `Plus as token; location} as next_token ->
+      raise_if_after_tags next_token;
       begin match where_in_line with
       | `After_text | `After_shorthand_bullet ->
-        Raise.must_begin_on_its_own_line l ~what:(Token.describe token);
+        Parse_error.must_begin_on_its_own_line
+          ~what:(Token.describe token) location
+        |> Error.raise_exception
       | _ ->
         ()
       end;
+
       begin match context with
       | In_shorthand_list ->
-        List.rev acc, stream_head, where_in_line
+        List.rev acc, next_token, where_in_line
       | _ ->
         let items, where_in_line =
-          shorthand_list_items stream_head where_in_line input in
+          shorthand_list_items next_token where_in_line input in
         let kind =
           match token with
           | `Minus -> `Unordered
           | `Plus -> `Ordered
         in
+        let location =
+          location::(List.map Location.location (List.flatten items))
+          |> Location.span
+        in
         let block = `List (kind, items) in
         let block = accepted_in_all_contexts context block in
-        let block = child_span input l (List.flatten items) block in
+        let block = Location.at location block in
         let acc = block::acc in
         consume_block_elements ~parsed_a_tag where_in_line acc
       end
 
 
 
-    | l, (`Begin_section_heading (level, label) as token) as stream_head ->
-      raise_if_after_tags stream_head;
+    | {value = `Begin_section_heading (level, label) as token; location}
+        as next_token ->
+
+      raise_if_after_tags next_token;
 
       begin match context with
       | In_shorthand_list ->
         if where_in_line = `At_start_of_line then
-          List.rev acc, stream_head, where_in_line
+          List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level stream_head
+          raise_because_not_at_top_level next_token
       | In_explicit_list ->
-        raise_because_not_at_top_level stream_head
+        raise_because_not_at_top_level next_token
       | In_tag ->
-        raise_because_not_at_top_level stream_head
+        raise_because_not_at_top_level next_token
 
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Raise.must_begin_on_its_own_line l ~what:(Token.describe token);
+          Parse_error.must_begin_on_its_own_line
+            ~what:(Token.describe token) location
+          |> Error.raise_exception;
+
         junk input;
 
-        let content, right_brace_offsets =
+        let content, brace_location =
           delimited_non_link_inline_element_list
             ~parent_markup:token
-            ~parent_markup_location:l
+            ~parent_markup_location:location
             ~requires_leading_whitespace:true
             input
         in
         if content = [] then
-          Raise.cannot_be_empty l ~what:(Token.describe token);
+          Parse_error.cannot_be_empty ~what:(Token.describe token) location
+          |> Error.raise_exception;
 
+        let location = Location.span [location; brace_location] in
         let heading = `Heading (level, label, content) in
-        let heading = token_span input l right_brace_offsets heading in
+        let heading = Location.at location heading in
         let acc = heading::acc in
         consume_block_elements ~parsed_a_tag `After_text acc
       end
@@ -969,37 +968,42 @@ let rec block_element_list
    above). That parser returns to [implicit_list_items] only on [`Blank_line],
    [`End], [`Minus] or [`Plus] at the start of a line, or [`Right_brace]. *)
 and shorthand_list_items
-    : [ `Minus | `Plus ] stream_head ->
+    : [ `Minus | `Plus ] with_location ->
       where_in_line ->
       input ->
         ((Comment.nestable_block_element with_location) list) list *
         where_in_line =
-    fun ((_, bullet_token) as stream_head) where_in_line input ->
+    fun first_token where_in_line input ->
+
+  let bullet_token = first_token.value in
 
   let rec consume_list_items
-      : [> ] stream_head ->
+      : [> ] with_location ->
         where_in_line ->
         ((Comment.nestable_block_element with_location) list) list ->
           ((Comment.nestable_block_element with_location) list) list *
           where_in_line =
-      fun stream_head where_in_line acc ->
+      fun next_token where_in_line acc ->
 
-    match stream_head with
-    | _, `End
-    | _, `Right_brace
-    | _, `Blank_line
-    | _, `Tag _
-    | _, `Begin_section_heading _ ->
+    match next_token.value with
+    | `End
+    | `Right_brace
+    | `Blank_line
+    | `Tag _
+    | `Begin_section_heading _ ->
       List.rev acc, where_in_line
 
-    | l, (`Minus | `Plus as bullet) ->
+    | `Minus
+    | `Plus as bullet ->
       if bullet = bullet_token then begin
         junk input;
 
         let content, stream_head, where_in_line =
           block_element_list In_shorthand_list ~parent_markup:bullet input in
         if content = [] then
-          Raise.cannot_be_empty l ~what:(Token.describe bullet);
+          Parse_error.cannot_be_empty
+            ~what:(Token.describe bullet) next_token.location
+          |> Error.raise_exception;
 
         let acc = content::acc in
         consume_list_items stream_head where_in_line acc
@@ -1009,7 +1013,7 @@ and shorthand_list_items
   in
 
   consume_list_items
-    (stream_head :> stopped_implicitly stream_head) where_in_line []
+    (first_token :> stopped_implicitly with_location) where_in_line []
 
 (* Consumes a sequence of explicit list items (starting with '{li ...}' and
    '{-...}', which are represented by [`Begin_list_item _] tokens).
@@ -1025,38 +1029,42 @@ and explicit_list_items
     : parent_markup:[< Token.t ] ->
       input ->
         ((Comment.nestable_block_element with_location) list) list *
-        (int * int) =
+        Location.span =
     fun ~parent_markup input ->
 
   let rec consume_list_items
       : ((Comment.nestable_block_element with_location) list) list ->
           ((Comment.nestable_block_element with_location) list) list *
-          (int * int) =
+          Location.span =
       fun acc ->
 
-    match peek input with
-    | l, `End ->
-      Raise.not_allowed
-        l ~what:(Token.describe `End) ~in_what:(Token.describe parent_markup)
+    let next_token = peek input in
+    match next_token.value with
+    | `End ->
+      Parse_error.not_allowed
+        next_token.location
+        ~what:(Token.describe `End)
+        ~in_what:(Token.describe parent_markup)
+      |> Error.raise_exception
 
-    | l, `Right_brace ->
+    | `Right_brace ->
       junk input;
-      List.rev acc, l
+      List.rev acc, next_token.location
 
-    | _, `Space
-    | _, `Single_newline
-    | _, `Blank_line ->
+    | `Space
+    | `Single_newline
+    | `Blank_line ->
       junk input;
       consume_list_items acc
 
-    | l, (`Begin_list_item kind as token) ->
+    | `Begin_list_item kind as token ->
       junk input;
 
       (* '{li', represented by [`Begin_list_item `Li], must be followed by
          whitespace. *)
       if kind = `Li then begin
-        match peek input with
-        | _, (`Space | `Single_newline | `Blank_line | `Right_brace) ->
+        match (peek input).value with
+        | `Space | `Single_newline | `Blank_line | `Right_brace ->
           ()
           (* The presence of [`Right_brace] above requires some explanation:
 
@@ -1071,27 +1079,34 @@ and explicit_list_items
                it is not represented as [`Space], [`Single_newline], or
                [`Blank_line]. *)
         | _ ->
-          Raise.must_be_followed_by_whitespace l ~what:(Token.print token)
+          Parse_error.must_be_followed_by_whitespace
+            next_token.location ~what:(Token.print token)
+          |> Error.raise_exception
       end;
 
-      let content, stream_head, _where_in_line =
+      let content, token_after_list_item, _where_in_line =
         block_element_list In_explicit_list ~parent_markup:token input in
 
       if content = [] then
-        Raise.cannot_be_empty l ~what:(Token.describe token);
+        Parse_error.cannot_be_empty
+          next_token.location ~what:(Token.describe token)
+        |> Error.raise_exception;
 
-      begin match stream_head with
-      | _, `Right_brace ->
+      begin match token_after_list_item.value with
+      | `Right_brace ->
         junk input
-      | l', `End ->
-        Raise.not_allowed
-          l' ~what:(Token.describe `End) ~in_what:(Token.describe token)
+      | `End ->
+        Parse_error.not_allowed
+          token_after_list_item.location
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe token)
+        |> Error.raise_exception
       end;
 
       let acc = content::acc in
       consume_list_items acc
 
-    | l, token ->
+    | token ->
       let suggestion =
         match token with
         | `Begin_section_heading _ | `Tag _ ->
@@ -1103,11 +1118,12 @@ and explicit_list_items
             (Token.print (`Begin_list_item `Li))
             (Token.print (`Begin_list_item `Dash))
       in
-      Raise.not_allowed
-        l
+      Parse_error.not_allowed
+        next_token.location
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
+      |> Error.raise_exception
   in
 
   consume_list_items []
@@ -1116,19 +1132,15 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let parse ~file ~offset_to_location ~token_stream =
-  let input = {file; offset_to_location; token_stream} in
+let parse token_stream =
+  Error.catch begin fun () ->
+    let elements, last_token, _where_in_line =
+      block_element_list Top_level ~parent_markup:`Comment token_stream in
 
-  let elements, stream_head, _where_in_line =
-    block_element_list Top_level ~parent_markup:`Comment input in
-
-  match stream_head with
-  | _, `End ->
-    elements
-
-  | l, `Right_brace ->
-    raise_notrace (Helpers.Parse_error {
-      start_offset = fst l;
-      end_offset = snd l;
-      text = "unpaired '}' (end of markup)"
-    })
+    match last_token.value with
+    | `End ->
+      elements
+    | `Right_brace ->
+      Parse_error.unpaired_right_brace last_token.location
+      |> Error.raise_exception
+  end

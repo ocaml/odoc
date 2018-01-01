@@ -17,7 +17,7 @@ let warning status message =
   if status.permissive then
     status.warnings <- message::status.warnings
   else
-    raise_notrace (Error.Conveyed_by_exception message)
+    Error.raise_exception message
 
 
 
@@ -56,7 +56,7 @@ let filter_section_heading status ~parsed_a_title location heading =
           error = "only one title-level heading is allowed";
         }
       in
-      raise_notrace (Error.Conveyed_by_exception message)
+      Error.raise_exception message
     end;
     let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
@@ -127,11 +127,7 @@ let ast_to_comment ~permissive ~sections_allowed ~parent_of_sections ast =
     }
   in
 
-  let result =
-    Error.catch_conveyed_by_exception (fun () ->
-      top_level_block_elements status ast)
-  in
-
+  let result = Error.catch (fun () -> top_level_block_elements status ast) in
   let warnings = List.rev status.warnings in
 
   {Error.result; warnings}

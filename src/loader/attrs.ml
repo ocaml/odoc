@@ -69,7 +69,7 @@ let read_attributes parent _id attrs =
       end
   in
     loop true 0 empty_body attrs
-  |> Model.Error.convey_by_exception
+  |> Model.Error.to_exception
 
 let read_string parent loc str : Model.Comment.docs_or_stop =
   let start_pos = loc.Location.loc_start in
@@ -81,7 +81,7 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
       ~location:start_pos
       ~text:str
     |> Model.Error.shed_warnings
-    |> Model.Error.convey_by_exception
+    |> Model.Error.to_exception
   in
   `Docs doc
 

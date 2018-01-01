@@ -18,6 +18,12 @@ type 'a with_warnings = {
   warnings : t list;
 }
 
+let make : string -> Location_.span -> t = fun message location ->
+  `With_full_location {location; error = message}
+
+let makef = fun format ->
+  (Printf.ksprintf make) format
+
 let to_string : t -> string = function
   | `With_full_location {location; error} ->
     let location_string =
@@ -40,13 +46,16 @@ let to_string : t -> string = function
 
 exception Conveyed_by_exception of t
 
-let convey_by_exception : ('a, t) result -> 'a = function
-  | Ok v -> v
-  | Error e -> raise (Conveyed_by_exception e)
+let raise_exception : t -> _ = fun error ->
+  raise (Conveyed_by_exception error)
 
-let catch_conveyed_by_exception : (unit -> 'a) -> ('a, t) result = fun f ->
+let to_exception : ('a, t) result -> 'a = function
+  | Ok v -> v
+  | Error error -> raise_exception error
+
+let catch : (unit -> 'a) -> ('a, t) result = fun f ->
   try Ok (f ())
-  with Conveyed_by_exception e -> Error e
+  with Conveyed_by_exception error -> Error error
 
 (* TODO This is a temporary measure until odoc is ported to handle warnings
    throughout. *)

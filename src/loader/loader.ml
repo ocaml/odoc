@@ -1,5 +1,5 @@
 let read_string parent_definition location text =
-  Model.Error.catch_conveyed_by_exception (fun () ->
+  Model.Error.catch (fun () ->
     Attrs.read_string parent_definition location text)
 
 
@@ -33,7 +33,7 @@ let read_cmti ~make_root ~filename =
       begin match cmt_info.cmt_interface_digest with
       | None -> corrupted filename
       | Some digest ->
-        Model.Error.catch_conveyed_by_exception begin fun () ->
+        Model.Error.catch begin fun () ->
           let name = cmt_info.cmt_modname in
           let root = make_root ~module_name:name ~digest in
           let (id, doc, items) = Cmti.read_interface root name intf in
@@ -114,7 +114,7 @@ let read_cmt ~make_root ~filename =
           source; interface; hidden; content; expansion = None}
 
     | Implementation impl ->
-      Model.Error.catch_conveyed_by_exception begin fun () ->
+      Model.Error.catch begin fun () ->
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with
@@ -159,7 +159,7 @@ let read_cmi ~make_root ~filename =
   | cmi_info ->
     match cmi_info.cmi_crcs with
     | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-      Model.Error.catch_conveyed_by_exception begin fun () ->
+      Model.Error.catch begin fun () ->
         let root = make_root ~module_name:name ~digest:digest in
         let (id, doc, items) = Cmi.read_interface root name cmi_info.cmi_sign in
         let imports =

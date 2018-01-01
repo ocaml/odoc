@@ -1,5 +1,3 @@
 val parse :
-  file:string ->
-  offset_to_location:(int -> Model.Location_.point) ->
-  token_stream:((int * int) * Token.t) Stream.t ->
-    Ast.docs
+  (Token.t Model.Location_.with_location) Stream.t ->
+    (Ast.docs, Model.Error.t) result

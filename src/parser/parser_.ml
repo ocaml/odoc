@@ -68,44 +68,27 @@ let parse_comment
     offset_to_location_relative_to_start_of_file
   in
 
-  (* The parser signals errors by raising exceptions. These carry byte offsets
-     into the comment for the start and end of the offending text, and a
-     description. We need to convert the offsets to locations relative to the
-     file containing the comment, add the filename, and package the result in
-     the type of error accepted by the rest of odoc. *)
-  let convert_parsing_error_to_odoc_error
-      : Helpers.raw_parse_error -> Model.Error.t = fun error ->
-
-    `With_full_location {
-      location = {
-        file = location.Lexing.pos_fname;
-        start = offset_to_location error.start_offset;
-        end_ = offset_to_location error.end_offset;
-      };
-      error = error.text;
-    }
-  in
-
   let token_stream =
     let lexbuf = Lexing.from_string text in
-    Stream.from (fun _token_index -> Some (Lexer.token lexbuf))
+    let input : Lexer.input =
+      {
+        file = location.Lexing.pos_fname;
+        offset_to_location;
+        lexbuf;
+      }
+    in
+    Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in
 
-  try
-    Syntax.parse
-      ~file:location.Lexing.pos_fname
-      ~offset_to_location
-      ~token_stream
-    |> Semantics.ast_to_comment
+  match Syntax.parse token_stream with
+  | Error error ->
+    {Model.Error.result = Error error; warnings = []}
+  | Ok ast ->
+    Semantics.ast_to_comment
       ~permissive
       ~sections_allowed
       ~parent_of_sections:containing_definition
-
-  with Helpers.Parse_error error ->
-    {
-      Model.Error.result = Error (convert_parsing_error_to_odoc_error error);
-      warnings = [];
-    }
+      ast
 
 
 
