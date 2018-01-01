@@ -117,7 +117,7 @@ let child_span input (start_offset, end_offset) children value
 
 
 
-module Grammar = Model.Comment
+module Comment = Model.Comment
 module Raise = Helpers
 
 
@@ -146,7 +146,7 @@ module Raise = Helpers
    This parser stops on the first non-word token, and does not consume it. *)
 let word
     : input -> (int * int) ->
-        Grammar.non_link_inline_element with_location =
+        Comment.non_link_inline_element with_location =
     fun input start_location ->
   let rec consume_word_tokens end_location acc =
     match peek input with
@@ -190,7 +190,7 @@ let word
    This function consumes exactly the tokens that make up the element. *)
 let rec non_link_inline_element
     : [> ] stream_head -> input ->
-        Grammar.non_link_inline_element with_location =
+        Comment.non_link_inline_element with_location =
     fun stream_head input ->
 
   match stream_head with
@@ -254,7 +254,7 @@ and delimited_non_link_inline_element_list
       parent_markup_location:(int * int) ->
       requires_leading_whitespace:bool ->
       input ->
-        (Grammar.non_link_inline_element with_location) list * (int * int) =
+        (Comment.non_link_inline_element with_location) list * (int * int) =
     fun
       ~parent_markup
       ~parent_markup_location
@@ -266,8 +266,8 @@ and delimited_non_link_inline_element_list
      they are allowed in a non-link element list. *)
   let rec consume_non_link_inline_elements
       : at_start_of_line:bool ->
-        (Grammar.non_link_inline_element with_location) list ->
-          (Grammar.non_link_inline_element with_location) list * (int * int) =
+        (Comment.non_link_inline_element with_location) list ->
+          (Comment.non_link_inline_element with_location) list * (int * int) =
       fun ~at_start_of_line acc ->
 
     match peek input with
@@ -385,7 +385,7 @@ let _check_subset : token_that_begins_a_paragraph_line -> Token.t =
    line. If that line also begins with an inline element, it parses that line,
    and so on. *)
 let paragraph
-    : input -> (int * int) -> Grammar.nestable_block_element with_location =
+    : input -> (int * int) -> Comment.nestable_block_element with_location =
     fun input start_offsets ->
 
   (* Parses a single line of a paragraph, consisting of inline elements. The
@@ -395,8 +395,8 @@ let paragraph
      paragraph row, which is an error. These errors are currently caught
      elsewhere; the paragraph parser just stops. *)
   let rec paragraph_line
-      : (Grammar.inline_element with_location) list ->
-          (Grammar.inline_element with_location) list =
+      : (Comment.inline_element with_location) list ->
+          (Comment.inline_element with_location) list =
       fun acc ->
     match peek input with
     | _, `Space
@@ -406,7 +406,7 @@ let paragraph
     | _, `Code_span _
     | _, `Begin_style _ as stream_head ->
       let element = non_link_inline_element stream_head input in
-      let acc = (element :> Grammar.inline_element with_location)::acc in
+      let acc = (element :> Comment.inline_element with_location)::acc in
       paragraph_line acc
 
     | l, `Simple_reference r ->
@@ -448,8 +448,8 @@ let paragraph
 
   (* After each row is parsed, decides whether to parse more rows. *)
   let rec additional_rows
-      : (Grammar.inline_element with_location) list ->
-          (Grammar.inline_element with_location) list =
+      : (Comment.inline_element with_location) list ->
+          (Comment.inline_element with_location) list =
       fun acc ->
     match npeek 2 input with
     | (l, `Single_newline)::(_, #token_that_begins_a_paragraph_line)::_ ->
@@ -563,18 +563,18 @@ type ('block, 'stops_at_which_tokens) context =
   | Top_level :
       (Ast.block_element, stops_at_delimiters) context
   | In_shorthand_list :
-      (Grammar.nestable_block_element, stopped_implicitly) context
+      (Comment.nestable_block_element, stopped_implicitly) context
   | In_explicit_list :
-      (Grammar.nestable_block_element, stops_at_delimiters) context
+      (Comment.nestable_block_element, stops_at_delimiters) context
   | In_tag :
-      (Grammar.nestable_block_element, Token.t) context
+      (Comment.nestable_block_element, Token.t) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
 let accepted_in_all_contexts
     : type block stops_at_which_tokens.
       (block, stops_at_which_tokens) context ->
-      Grammar.nestable_block_element ->
+      Comment.nestable_block_element ->
         block =
     fun context block ->
   match context with
@@ -972,15 +972,15 @@ and shorthand_list_items
     : [ `Minus | `Plus ] stream_head ->
       where_in_line ->
       input ->
-        ((Grammar.nestable_block_element with_location) list) list *
+        ((Comment.nestable_block_element with_location) list) list *
         where_in_line =
     fun ((_, bullet_token) as stream_head) where_in_line input ->
 
   let rec consume_list_items
       : [> ] stream_head ->
         where_in_line ->
-        ((Grammar.nestable_block_element with_location) list) list ->
-          ((Grammar.nestable_block_element with_location) list) list *
+        ((Comment.nestable_block_element with_location) list) list ->
+          ((Comment.nestable_block_element with_location) list) list *
           where_in_line =
       fun stream_head where_in_line acc ->
 
@@ -1024,13 +1024,13 @@ and shorthand_list_items
 and explicit_list_items
     : parent_markup:[< Token.t ] ->
       input ->
-        ((Grammar.nestable_block_element with_location) list) list *
+        ((Comment.nestable_block_element with_location) list) list *
         (int * int) =
     fun ~parent_markup input ->
 
   let rec consume_list_items
-      : ((Grammar.nestable_block_element with_location) list) list ->
-          ((Grammar.nestable_block_element with_location) list) list *
+      : ((Comment.nestable_block_element with_location) list) list ->
+          ((Comment.nestable_block_element with_location) list) list *
           (int * int) =
       fun acc ->
 
@@ -1116,7 +1116,7 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let comment ~file ~offset_to_location ~token_stream =
+let parse ~file ~offset_to_location ~token_stream =
   let input = {file; offset_to_location; token_stream} in
 
   let elements, stream_head, _where_in_line =

@@ -98,7 +98,7 @@ let parse_comment
   in
 
   try
-    Comment.comment
+    Syntax.parse
       ~file:location.Lexing.pos_fname
       ~offset_to_location
       ~token_stream
