@@ -1,1 +1,1 @@
-((output (ok ((code_block foo]]bar)))) (warnings ()))
+((output (ok ((((1 0) (1 12)) (code_block foo]]bar))))) (warnings ()))

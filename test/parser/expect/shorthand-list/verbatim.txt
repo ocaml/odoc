@@ -1,1 +1,3 @@
-((output (ok ((unordered (((verbatim foo))))))) (warnings ()))
+((output
+  (ok ((((1 0) (1 11)) (unordered (((((1 2) (1 11)) (verbatim foo)))))))))
+ (warnings ()))

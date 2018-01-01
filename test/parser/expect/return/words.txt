@@ -1,2 +1,9 @@
-((output (ok ((@return (paragraph ((word foo) space (word bar)))))))
+((output
+  (ok
+   ((((1 0) (1 15))
+     (@return
+      (((1 8) (1 15))
+       (paragraph
+        ((((1 8) (1 11)) (word foo)) (((1 11) (1 12)) space)
+         (((1 12) (1 15)) (word bar))))))))))
  (warnings ()))

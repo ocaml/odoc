@@ -1,3 +1,7 @@
 ((output
-  (ok ((paragraph ((reference (root foo unknown) ()) space (word bar))))))
+  (ok
+   ((((1 0) (1 10))
+     (paragraph
+      ((((1 0) (1 6)) (reference (root foo unknown) ()))
+       (((1 6) (1 7)) space) (((1 7) (1 10)) (word bar))))))))
  (warnings ()))

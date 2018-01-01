@@ -1,1 +1,3 @@
-((output (ok ((paragraph ((code_span foo})))))) (warnings ()))
+((output
+  (ok ((((1 0) (1 6)) (paragraph ((((1 0) (1 6)) (code_span foo}))))))))
+ (warnings ()))

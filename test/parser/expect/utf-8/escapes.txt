@@ -1,1 +1,3 @@
-((output (ok ((paragraph ((word "\206\187}")))))) (warnings ()))
+((output
+  (ok ((((1 0) (1 4)) (paragraph ((((1 0) (1 4)) (word "\206\187}"))))))))
+ (warnings ()))

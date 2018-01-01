@@ -1,2 +1,6 @@
-((output (ok ((unordered (((paragraph ((word foo)))))) (@author Bar))))
+((output
+  (ok
+   ((((1 0) (1 5))
+     (unordered (((((1 2) (1 5)) (paragraph ((((1 2) (1 5)) (word foo)))))))))
+    (((2 0) (2 11)) (@author Bar)))))
  (warnings ()))

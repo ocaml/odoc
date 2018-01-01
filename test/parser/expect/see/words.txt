@@ -1,1 +1,6 @@
-((output (ok ((@see url foo (paragraph ((word bar))))))) (warnings ()))
+((output
+  (ok
+   ((((1 0) (1 14))
+     (@see url foo
+      (((1 11) (1 14)) (paragraph ((((1 11) (1 14)) (word bar))))))))))
+ (warnings ()))

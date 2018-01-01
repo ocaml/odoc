@@ -210,7 +210,9 @@ let rec inline_element : Comment.inline_element -> phrasing Html.elt = function
     Html.a ~a:[Html.a_href target] content
 
 and inline_element_list elements =
-  List.map inline_element elements
+  elements
+  |> List.map Model.Location_.value
+  |> List.map inline_element
 
 
 
@@ -229,7 +231,7 @@ let rec nestable_block_element
     let items =
       items
       |> List.map begin function
-        | [`Paragraph content] ->
+        | [{Model.Location_.value = `Paragraph content; _}] ->
           (inline_element_list content :> (any_flow Html.elt) list)
         | item ->
           nested_block_element_list item
@@ -242,7 +244,9 @@ let rec nestable_block_element
     | `Ordered -> Html.ol items
 
 and nestable_block_element_list elements =
-  List.map nestable_block_element elements
+  elements
+  |> List.map Model.Location_.value
+  |> List.map nestable_block_element
 
 and nested_block_element_list elements =
   (nestable_block_element_list elements :> (any_flow Html.elt) list)
@@ -349,7 +353,7 @@ let block_element_list elements =
 
 let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
   function
-  | (`Paragraph _ as first_paragraph)::_ ->
+  | {Model.Location_.value = `Paragraph _ as first_paragraph; _}::_ ->
     begin match block_element first_paragraph with
     | Some element -> [element]
     | None -> []
@@ -361,7 +365,7 @@ let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
 let to_html
     ?wrap:_ (docs : Model.Comment.docs) : (top_level_flow Html.elt) list =
 
-  block_element_list docs
+  block_element_list (List.map Model.Location_.value docs)
 
 let has_doc docs =
   docs <> []

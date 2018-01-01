@@ -1,1 +1,1 @@
-((output (ok ((verbatim foo)))) (warnings ()))
+((output (ok ((((1 0) (3 6)) (verbatim foo))))) (warnings ()))

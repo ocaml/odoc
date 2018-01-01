@@ -1,2 +1,8 @@
-((output (ok ((@deprecated (unordered (((paragraph ((word foo))))))))))
+((output
+  (ok
+   ((((1 0) (2 4))
+     (@deprecated
+      (((2 0) (2 4))
+       (unordered
+        (((((2 1) (2 4)) (paragraph ((((2 1) (2 4)) (word foo))))))))))))))
  (warnings ()))

@@ -141,7 +141,8 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 (* Read labels from documentation *)
 
 let documentation_labels acc doc =
-  List.fold_left (fun acc -> function
+  List.fold_left (fun acc element ->
+    match element.Model.Location_.value with
     | `Heading (_, Some label, nested_text) ->
       let name = Identifier.name label in
       (name, nested_text)::acc

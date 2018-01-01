@@ -1,2 +1,7 @@
-((output (ok ((paragraph ((code_span foo) space (code_span bar))))))
+((output
+  (ok
+   ((((1 0) (1 11))
+     (paragraph
+      ((((1 0) (1 5)) (code_span foo)) (((1 5) (1 6)) space)
+       (((1 6) (1 11)) (code_span bar))))))))
  (warnings ()))

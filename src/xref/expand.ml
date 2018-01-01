@@ -848,7 +848,7 @@ let should_expand _t _id decl =
 
 let is_canonical_tag doc =
   match doc with
-  | [`Tag (`Canonical _)] -> true
+  | [{Model.Location_.value = `Tag (`Canonical _); _}] -> true
   | _ -> false
 
 (** For module aliases where the binding site doesn't have any doc comment

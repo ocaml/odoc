@@ -1,7 +1,8 @@
 ((output
   (ok
-   ((2
-     (label
-      ((root (test-suite (page test-suite) "") test-suite) (label foo)))
-     ((((1 7) (1 10)) (word Bar)))))))
+   ((((1 0) (1 11))
+     (2
+      (label
+       ((root (test-suite (page test-suite) "") test-suite) (label foo)))
+      ((((1 7) (1 10)) (word Bar))))))))
  (warnings ()))

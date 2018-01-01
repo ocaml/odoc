@@ -396,6 +396,7 @@ and read_module_binding env parent mb =
   in
   let doc = read_attributes container id mb.mb_attributes in
   let canonical =
+    let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
     | exception Not_found -> None
     | `Tag (`Canonical (p, r)) -> Some (p, r)

@@ -92,6 +92,31 @@ let token_span input (start_offset, _) (_, end_offset) value : _ with_location =
     value;
   }
 
+let child_span input (start_offset, end_offset) children value
+    : _ with_location =
+  let nested_end_location =
+    List.fold_left (fun _acc child ->
+      Some child.Model.Location_.location)
+    None children
+  in
+  match nested_end_location with
+  | None ->
+    {
+      location = {
+        start = input.offset_to_location start_offset;
+        end_ = input.offset_to_location end_offset;
+      };
+      value;
+    }
+  | Some nested_end_location ->
+    {
+      location = {
+        start = input.offset_to_location start_offset;
+        end_ = nested_end_location.end_;
+      };
+      value;
+    }
+
 
 
 module Grammar = Model.Comment
@@ -361,7 +386,9 @@ let _check_subset : token_that_begins_a_paragraph_line -> Token.t =
    then parses a line of inline elements. Afterwards, it looks ahead to the next
    line. If that line also begins with an inline element, it parses that line,
    and so on. *)
-let paragraph : input -> Grammar.nestable_block_element = fun input ->
+let paragraph
+    : input -> (int * int) -> Grammar.nestable_block_element with_location =
+    fun input start_offsets ->
 
   (* Parses a single line of a paragraph, consisting of inline elements. The
      only valid ways to end a paragraph line are with [`End], [`Single_newline],
@@ -370,7 +397,8 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
      paragraph row, which is an error. These errors are currently caught
      elsewhere; the paragraph parser just stops. *)
   let rec paragraph_line
-      : Grammar.inline_element list -> Grammar.inline_element list =
+      : (Grammar.inline_element with_location) list ->
+          (Grammar.inline_element with_location) list =
       fun acc ->
     match peek input with
     | _, `Space
@@ -380,18 +408,18 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
     | _, `Code_span _
     | _, `Begin_style _ as stream_head ->
       let element = non_link_inline_element stream_head input in
-      let element = element.value in
-      let acc = (element :> Grammar.inline_element)::acc in
+      let acc = (element :> Grammar.inline_element with_location)::acc in
       paragraph_line acc
 
-    | _, `Simple_reference r ->
+    | l, `Simple_reference r ->
       junk input;
-      let acc = (`Reference (Helpers.read_reference r, []))::acc in
-      paragraph_line acc
+      let element =
+        at_token input l (`Reference (Helpers.read_reference r, [])) in
+      paragraph_line (element::acc)
 
     | l, (`Begin_reference_with_replacement_text r as parent_markup) ->
       junk input;
-      let content, _ =
+      let content, end_location =
         delimited_non_link_inline_element_list
           ~parent_markup
           ~parent_markup_location:l
@@ -400,20 +428,21 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
       in
       if content = [] then
         Raise.cannot_be_empty l ~what:(Token.describe parent_markup);
-      let acc = (`Reference (Helpers.read_reference r, content))::acc in
-      paragraph_line acc
+      let element = `Reference (Helpers.read_reference r, content) in
+      let element = token_span input l end_location element in
+      paragraph_line (element::acc)
 
     | l, (`Begin_link_with_replacement_text u as parent_markup) ->
       junk input;
-      let content, _ =
+      let content, end_location =
         delimited_non_link_inline_element_list
           ~parent_markup
           ~parent_markup_location:l
           ~requires_leading_whitespace:false
           input
       in
-      let acc = (`Link (u, content))::acc in
-      paragraph_line acc
+      let element = token_span input l end_location (`Link (u, content)) in
+      paragraph_line (element::acc)
 
     | _ ->
       acc
@@ -421,12 +450,13 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
 
   (* After each row is parsed, decides whether to parse more rows. *)
   let rec additional_rows
-      : Grammar.inline_element list -> Grammar.inline_element list =
+      : (Grammar.inline_element with_location) list ->
+          (Grammar.inline_element with_location) list =
       fun acc ->
     match npeek 2 input with
-    | (_, `Single_newline)::(_, #token_that_begins_a_paragraph_line)::_ ->
+    | (l, `Single_newline)::(_, #token_that_begins_a_paragraph_line)::_ ->
       junk input;
-      let acc = `Space::acc in
+      let acc = (at_token input l `Space)::acc in
       let acc = paragraph_line acc in
       additional_rows acc
 
@@ -434,8 +464,8 @@ let paragraph : input -> Grammar.nestable_block_element = fun input ->
       List.rev acc
   in
 
-  let elements_from_first_row = paragraph_line [] in
-  `Paragraph (additional_rows elements_from_first_row)
+  let all_elements = additional_rows (paragraph_line []) in
+  child_span input start_offsets all_elements (`Paragraph all_elements)
 
 
 
@@ -571,15 +601,19 @@ let rec block_element_list
       (block, stops_at_which_tokens) context ->
       parent_markup:[< Token.t | `Comment ] ->
       input ->
-        block list * stops_at_which_tokens stream_head * where_in_line =
+        (block with_location) list *
+        stops_at_which_tokens stream_head *
+        where_in_line =
     fun context ~parent_markup input ->
 
   let rec consume_block_elements
       : parsed_a_title:bool ->
         parsed_a_tag:bool ->
         where_in_line ->
-        block list ->
-          block list * stops_at_which_tokens stream_head * where_in_line =
+        (block with_location) list ->
+          (block with_location) list *
+          stops_at_which_tokens stream_head *
+          where_in_line =
       fun ~parsed_a_title ~parsed_a_tag where_in_line acc ->
 
     let describe token =
@@ -725,9 +759,9 @@ let rec block_element_list
               let module_ = Helpers.read_mod_longident s in
               `Canonical (path, module_)
           in
-          let acc = (`Tag tag)::acc in
+          let tag = at_token input l (`Tag tag) in
           consume_block_elements
-            ~parsed_a_title ~parsed_a_tag:true `After_text acc
+            ~parsed_a_title ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
           let content, _stream_head, where_in_line =
@@ -737,9 +771,9 @@ let rec block_element_list
             | `Deprecated -> `Deprecated content
             | `Return -> `Return content
           in
-          let acc = (`Tag tag)::acc in
+          let tag = child_span input l content (`Tag tag) in
           consume_block_elements
-            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
+            ~parsed_a_title ~parsed_a_tag:true where_in_line (tag::acc)
 
         | `Param _ | `Raise _ | `Before _ as tag ->
           let content, _stream_head, where_in_line =
@@ -750,26 +784,28 @@ let rec block_element_list
             | `Raise s -> `Raise (s, content)
             | `Before s -> `Before (s, content)
           in
-          let acc = (`Tag tag)::acc in
+          let tag = child_span input l content (`Tag tag) in
           consume_block_elements
-            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
+            ~parsed_a_title ~parsed_a_tag:true where_in_line (tag::acc)
 
         | `See (kind, target) ->
           let content, _stream_head, where_in_line =
             block_element_list In_tag ~parent_markup:token input in
-          let acc = (`Tag (`See (kind, target, content)))::acc in
+          let tag = `Tag (`See (kind, target, content)) in
+          let tag = child_span input l content tag in
           consume_block_elements
-            ~parsed_a_title ~parsed_a_tag:true where_in_line acc
+            ~parsed_a_title ~parsed_a_tag:true where_in_line (tag::acc)
         end
       end
 
 
 
-    | _, #token_that_begins_a_paragraph_line as stream_head ->
+    | l, #token_that_begins_a_paragraph_line as stream_head ->
       raise_if_after_tags stream_head;
       raise_if_after_text stream_head;
-      let block = paragraph input in
-      let block = accepted_in_all_contexts context block in
+      let block = paragraph input l in
+      let block =
+        Model.Location_.map (accepted_in_all_contexts context) block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
@@ -785,6 +821,7 @@ let rec block_element_list
         | `Verbatim _ -> `Verbatim s
       in
       let block = accepted_in_all_contexts context block in
+      let block = at_token input l block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
@@ -831,6 +868,7 @@ let rec block_element_list
         Raise.cannot_be_empty l ~what:(Token.describe token);
 
       let block = accepted_in_all_contexts context (`Modules modules) in
+      let block = at_token input l block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
@@ -840,11 +878,13 @@ let rec block_element_list
       raise_if_after_tags stream_head;
       raise_if_after_text stream_head;
       junk input;
-      let items = explicit_list_items ~parent_markup:token input in
+      let items, right_brace_offsets =
+        explicit_list_items ~parent_markup:token input in
       if items = [] then
         Raise.cannot_be_empty l ~what:(Token.describe token);
       let block = `List (kind, items) in
       let block = accepted_in_all_contexts context block in
+      let block = token_span input l right_brace_offsets block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_title ~parsed_a_tag `After_text acc
 
@@ -871,6 +911,7 @@ let rec block_element_list
         in
         let block = `List (kind, items) in
         let block = accepted_in_all_contexts context block in
+        let block = child_span input l (List.flatten items) block in
         let acc = block::acc in
         consume_block_elements ~parsed_a_title ~parsed_a_tag where_in_line acc
       end
@@ -908,8 +949,10 @@ let rec block_element_list
             warning input message;
             parsed_a_title,
             fun _label content ->
-              accepted_in_all_contexts
-                context (`Paragraph [`Styled (`Bold, content)])
+              (* TODO The location is incorrect, but we are adding locations
+                 precisely to be able to factor this sort of thing out. *)
+              let content = at_token input l (`Styled (`Bold, content)) in
+              accepted_in_all_contexts context (`Paragraph [content])
 
           | `Allow_all_sections, 1 ->
             if parsed_a_title then begin
@@ -953,7 +996,7 @@ let rec block_element_list
 
         junk input;
 
-        let content, _ =
+        let content, right_brace_offsets =
           delimited_non_link_inline_element_list
             ~parent_markup:token
             ~parent_markup_location:l
@@ -972,6 +1015,7 @@ let rec block_element_list
         in
 
         let heading = create_heading label content in
+        let heading = token_span input l right_brace_offsets heading in
         let acc = heading::acc in
         consume_block_elements ~parsed_a_title  ~parsed_a_tag `After_text acc
       end
@@ -1004,14 +1048,16 @@ and shorthand_list_items
     : [ `Minus | `Plus ] stream_head ->
       where_in_line ->
       input ->
-        (Grammar.nestable_block_element list) list * where_in_line =
+        ((Grammar.nestable_block_element with_location) list) list *
+        where_in_line =
     fun ((_, bullet_token) as stream_head) where_in_line input ->
 
   let rec consume_list_items
       : [> ] stream_head ->
         where_in_line ->
-        (Grammar.nestable_block_element list) list ->
-          (Grammar.nestable_block_element list) list * where_in_line =
+        ((Grammar.nestable_block_element with_location) list) list ->
+          ((Grammar.nestable_block_element with_location) list) list *
+          where_in_line =
       fun stream_head where_in_line acc ->
 
     match stream_head with
@@ -1054,12 +1100,14 @@ and shorthand_list_items
 and explicit_list_items
     : parent_markup:[< Token.t ] ->
       input ->
-        (Grammar.nestable_block_element list) list =
+        ((Grammar.nestable_block_element with_location) list) list *
+        (int * int) =
     fun ~parent_markup input ->
 
   let rec consume_list_items
-      : (Grammar.nestable_block_element list) list ->
-          (Grammar.nestable_block_element list) list =
+      : ((Grammar.nestable_block_element with_location) list) list ->
+          ((Grammar.nestable_block_element with_location) list) list *
+          (int * int) =
       fun acc ->
 
     match peek input with
@@ -1067,9 +1115,9 @@ and explicit_list_items
       Raise.not_allowed
         l ~what:(Token.describe `End) ~in_what:(Token.describe parent_markup)
 
-    | _, `Right_brace ->
+    | l, `Right_brace ->
       junk input;
-      List.rev acc
+      List.rev acc, l
 
     | _, `Space
     | _, `Single_newline

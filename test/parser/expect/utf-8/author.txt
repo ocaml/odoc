@@ -1,1 +1,1 @@
-((output (ok ((@author "\206\187")))) (warnings ()))
+((output (ok ((((1 0) (1 10)) (@author "\206\187"))))) (warnings ()))

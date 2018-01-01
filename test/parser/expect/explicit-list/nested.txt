@@ -1,2 +1,8 @@
-((output (ok ((unordered (((unordered (((paragraph ((word foo))))))))))))
+((output
+  (ok
+   ((((1 0) (1 23))
+     (unordered
+      (((((1 8) (1 21))
+         (unordered
+          (((((1 16) (1 19)) (paragraph ((((1 16) (1 19)) (word foo))))))))))))))))
  (warnings ()))

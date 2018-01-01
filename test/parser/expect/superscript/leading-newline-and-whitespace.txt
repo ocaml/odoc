@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((superscript ((((2 1) (2 4)) (word foo)))))))))
+((output
+  (ok
+   ((((1 0) (2 5))
+     (paragraph ((((1 0) (2 5)) (superscript ((((2 1) (2 4)) (word foo)))))))))))
  (warnings ()))

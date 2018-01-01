@@ -1,5 +1,9 @@
 ((output
   (ok
-   ((unordered
-     (((unordered (((paragraph ((word foo)))) ((paragraph ((word bar))))))))))))
+   ((((1 0) (2 7))
+     (unordered
+      (((((1 8) (2 5))
+         (unordered
+          (((((1 10) (1 13)) (paragraph ((((1 10) (1 13)) (word foo))))))
+           ((((2 2) (2 5)) (paragraph ((((2 2) (2 5)) (word bar))))))))))))))))
  (warnings ()))

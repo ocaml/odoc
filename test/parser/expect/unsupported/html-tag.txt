@@ -1,1 +1,3 @@
-((output (ok ((paragraph ((word <b>foo</b>)))))) (warnings ()))
+((output
+  (ok ((((1 0) (1 10)) (paragraph ((((1 0) (1 10)) (word <b>foo</b>))))))))
+ (warnings ()))

@@ -1,1 +1,2 @@
-((output (ok ((paragraph ((code_span "")))))) (warnings ()))
+((output (ok ((((1 0) (1 2)) (paragraph ((((1 0) (1 2)) (code_span ""))))))))
+ (warnings ()))

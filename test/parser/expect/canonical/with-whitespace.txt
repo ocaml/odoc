@@ -1,2 +1,4 @@
-((output (ok ((@canonical (root "Foo Bar") (root "Foo Bar" unknown)))))
+((output
+  (ok
+   ((((1 0) (1 18)) (@canonical (root "Foo Bar") (root "Foo Bar" unknown))))))
  (warnings ()))

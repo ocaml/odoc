@@ -1,1 +1,3 @@
-((output (ok ((code_block foo) (code_block bar)))) (warnings ()))
+((output
+  (ok ((((1 0) (1 7)) (code_block foo)) (((2 0) (2 7)) (code_block bar)))))
+ (warnings ()))

@@ -1,1 +1,1 @@
-((output (ok ((@author Foo])))) (warnings ()))
+((output (ok ((((1 0) (1 12)) (@author Foo]))))) (warnings ()))

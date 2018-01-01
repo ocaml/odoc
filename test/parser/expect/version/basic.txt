@@ -1,1 +1,1 @@
-((output (ok ((@version foo)))) (warnings ()))
+((output (ok ((((1 0) (1 12)) (@version foo))))) (warnings ()))

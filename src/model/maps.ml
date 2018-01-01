@@ -882,7 +882,8 @@ class virtual documentation = object (self)
 
   method private documentation_nestable_block_element = function
     | `Paragraph elements ->
-      `Paragraph (list_map self#documentation_inline_element elements)
+      `Paragraph
+        (list_map (Location_.map self#documentation_inline_element) elements)
     | `Modules modules ->
       `Modules (List.map self#documentation_special_modules modules)
     | element ->
@@ -898,22 +899,34 @@ class virtual documentation = object (self)
         match tag with
         | `Deprecated elements ->
           `Deprecated
-            (list_map self#documentation_nestable_block_element elements)
+            (list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | `Param (s, elements) ->
           `Param
-            (s, list_map self#documentation_nestable_block_element elements)
+            (s, list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | `Raise (s, elements) ->
           `Raise
-            (s, list_map self#documentation_nestable_block_element elements)
+            (s, list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | `Return elements ->
           `Return
-            (list_map self#documentation_nestable_block_element elements)
+            (list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | `See (k, s, elements) ->
           `See
-            (k, s, list_map self#documentation_nestable_block_element elements)
+            (k, s, list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | `Before (s, elements) ->
           `Before
-            (s, list_map self#documentation_nestable_block_element elements)
+            (s, list_map
+              (Location_.map self#documentation_nestable_block_element)
+              elements)
         | _ ->
           tag
       in
@@ -925,7 +938,7 @@ class virtual documentation = object (self)
       element
 
   method documentation doc =
-    list_map self#documentation_block_element doc
+    list_map (Location_.map self#documentation_block_element) doc
 
   method documentation_comment (comment : Comment.docs_or_stop) =
     match comment with

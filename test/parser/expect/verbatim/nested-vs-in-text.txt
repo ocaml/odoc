@@ -1,1 +1,1 @@
-((output (ok ((verbatim foovvbar)))) (warnings ()))
+((output (ok ((((1 0) (1 14)) (verbatim foovvbar))))) (warnings ()))

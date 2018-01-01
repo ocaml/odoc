@@ -266,7 +266,7 @@ struct
       : Comment.nestable_block_element -> sexp =
     function
     | `Paragraph es ->
-      List [Atom "paragraph"; List (List.map inline_element es)]
+      List [Atom "paragraph"; List (List.map (at inline_element) es)]
     | `Code_block c -> List [Atom "code_block"; Atom c]
     | `Verbatim t -> List [Atom "verbatim"; Atom t]
     | `Modules ps ->
@@ -279,7 +279,8 @@ struct
       in
       let items =
         items
-        |> List.map (fun item -> List (List.map nestable_block_element item))
+        |> List.map (fun item ->
+          List (List.map (at nestable_block_element) item))
         |> fun items -> List items
       in
       List [Atom kind; items]
@@ -288,13 +289,13 @@ struct
     | `Author s ->
       List [Atom "@author"; Atom s]
     | `Deprecated es ->
-      List ((Atom "@deprecated")::(List.map nestable_block_element es))
+      List ((Atom "@deprecated")::(List.map (at nestable_block_element) es))
     | `Param (s, es) ->
-      List ([Atom "@param"; Atom s] @ (List.map nestable_block_element es))
+      List ([Atom "@param"; Atom s] @ (List.map (at nestable_block_element) es))
     | `Raise (s, es) ->
-      List ([Atom "@raise"; Atom s] @ (List.map nestable_block_element es))
+      List ([Atom "@raise"; Atom s] @ (List.map (at nestable_block_element) es))
     | `Return es ->
-      List ((Atom "@return")::(List.map nestable_block_element es))
+      List ((Atom "@return")::(List.map (at nestable_block_element) es))
     | `See (kind, s, es) ->
       let kind =
         match kind with
@@ -304,10 +305,11 @@ struct
       in
       List
         ([Atom "@see"; Atom kind; Atom s] @
-          (List.map nestable_block_element es))
+          (List.map (at nestable_block_element) es))
     | `Since s -> List [Atom "@since"; Atom s]
     | `Before (s, es) ->
-      List ([Atom "@before"; Atom s] @ (List.map nestable_block_element es))
+      List ([Atom "@before"; Atom s] @
+        (List.map (at nestable_block_element) es))
     | `Version s -> List [Atom "@version"; Atom s]
     | `Canonical (p, r) ->
       List
@@ -332,7 +334,7 @@ struct
     | `Tag t -> tag t
 
   let comment : Comment.docs -> sexp = fun comment ->
-    List (List.map block_element comment)
+    List (List.map (at block_element) comment)
 end
 
 

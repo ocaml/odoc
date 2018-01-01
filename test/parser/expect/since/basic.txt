@@ -1,1 +1,1 @@
-((output (ok ((@since foo)))) (warnings ()))
+((output (ok ((((1 0) (1 10)) (@since foo))))) (warnings ()))

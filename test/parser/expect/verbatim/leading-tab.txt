@@ -1,1 +1,1 @@
-((output (ok ((verbatim "\tfoo")))) (warnings ()))
+((output (ok ((((1 0) (1 9)) (verbatim "\tfoo"))))) (warnings ()))

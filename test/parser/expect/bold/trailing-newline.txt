@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((bold ((((1 3) (1 6)) (word foo)))))))))
+((output
+  (ok
+   ((((1 0) (2 1))
+     (paragraph ((((1 0) (2 1)) (bold ((((1 3) (1 6)) (word foo)))))))))))
  (warnings ()))

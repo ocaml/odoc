@@ -1,1 +1,5 @@
-((output (ok ((paragraph ((word foo))) (@deprecated)))) (warnings ()))
+((output
+  (ok
+   ((((1 0) (1 3)) (paragraph ((((1 0) (1 3)) (word foo)))))
+    (((2 0) (2 11)) (@deprecated)))))
+ (warnings ()))

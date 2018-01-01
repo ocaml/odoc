@@ -1,2 +1,2 @@
-((output (ok ((verbatim  "foo\r\
-                        \nbar")))) (warnings ()))
+((output (ok ((((1 0) (2 6)) (verbatim  "foo\r\
+                                       \nbar"))))) (warnings ()))

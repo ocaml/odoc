@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((link foo ((((1 8) (1 11)) (word bar)))))))))
+((output
+  (ok
+   ((((1 0) (1 12))
+     (paragraph ((((1 0) (1 12)) (link foo ((((1 8) (1 11)) (word bar)))))))))))
  (warnings ()))

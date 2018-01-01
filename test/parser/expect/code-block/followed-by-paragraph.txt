@@ -1,1 +1,5 @@
-((output (ok ((code_block foo) (paragraph ((word bar)))))) (warnings ()))
+((output
+  (ok
+   ((((1 0) (1 7)) (code_block foo))
+    (((2 0) (2 3)) (paragraph ((((2 0) (2 3)) (word bar))))))))
+ (warnings ()))

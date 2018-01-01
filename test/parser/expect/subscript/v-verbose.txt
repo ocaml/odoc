@@ -1,2 +1,5 @@
-((output (ok ((paragraph ((subscript ((((1 2) (1 4)) (word uv)))))))))
+((output
+  (ok
+   ((((1 0) (1 5))
+     (paragraph ((((1 0) (1 5)) (subscript ((((1 2) (1 4)) (word uv)))))))))))
  (warnings ()))

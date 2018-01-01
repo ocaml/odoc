@@ -1,2 +1,5 @@
-((output (ok ((unordered (((modules ((root Foo unknown)))))))))
+((output
+  (ok
+   ((((1 0) (1 16))
+     (unordered (((((1 2) (1 16)) (modules ((root Foo unknown)))))))))))
  (warnings ()))

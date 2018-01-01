@@ -1,2 +1,7 @@
-((output (ok ((unordered (((paragraph ((word foo))) (code_block bar)))))))
+((output
+  (ok
+   ((((1 0) (2 7))
+     (unordered
+      (((((1 2) (1 5)) (paragraph ((((1 2) (1 5)) (word foo)))))
+        (((2 0) (2 7)) (code_block bar)))))))))
  (warnings ()))

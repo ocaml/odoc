@@ -1,1 +1,4 @@
-((output (ok ((paragraph ((code_span "@author Foo")))))) (warnings ()))
+((output
+  (ok
+   ((((1 0) (1 13)) (paragraph ((((1 0) (1 13)) (code_span "@author Foo"))))))))
+ (warnings ()))

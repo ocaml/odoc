@@ -1,8 +1,9 @@
 ((output
   (ok
-   ((2
-     (label
-      ((root (test-suite (page test-suite) "") test-suite)
-       (label "\206\187")))
-     ((((1 6) (1 9)) (word Bar)))))))
+   ((((1 0) (1 10))
+     (2
+      (label
+       ((root (test-suite (page test-suite) "") test-suite)
+        (label "\206\187")))
+      ((((1 6) (1 9)) (word Bar))))))))
  (warnings ()))

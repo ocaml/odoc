@@ -1,2 +1,7 @@
-((output (ok ((paragraph ((word "\206\187") space (word "\206\187"))))))
+((output
+  (ok
+   ((((1 0) (2 3))
+     (paragraph
+      ((((1 0) (1 2)) (word "\206\187")) (((1 2) (2 1)) space)
+       (((2 1) (2 3)) (word "\206\187"))))))))
  (warnings ()))

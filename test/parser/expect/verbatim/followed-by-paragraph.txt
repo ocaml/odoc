@@ -1,1 +1,5 @@
-((output (ok ((verbatim foo) (paragraph ((word bar)))))) (warnings ()))
+((output
+  (ok
+   ((((1 0) (1 9)) (verbatim foo))
+    (((2 0) (2 3)) (paragraph ((((2 0) (2 3)) (word bar))))))))
+ (warnings ()))

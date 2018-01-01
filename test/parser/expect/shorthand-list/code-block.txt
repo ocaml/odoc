@@ -1,1 +1,3 @@
-((output (ok ((unordered (((code_block foo))))))) (warnings ()))
+((output
+  (ok ((((1 0) (1 9)) (unordered (((((1 2) (1 9)) (code_block foo)))))))))
+ (warnings ()))

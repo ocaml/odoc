@@ -33,22 +33,27 @@ type inline_element = [
 ]
 
 type nestable_block_element = [
-  | `Paragraph of inline_element list
+  | `Paragraph of (inline_element with_location) list
   | `Code_block of string
   | `Verbatim of string
   | `Modules of Reference.module_ list
-  | `List of [ `Unordered | `Ordered ] * (nestable_block_element list) list
+  | `List of
+    [ `Unordered | `Ordered ] *
+    ((nestable_block_element with_location) list) list
 ]
 
 type tag = [
   | `Author of string
-  | `Deprecated of nestable_block_element list
-  | `Param of string * nestable_block_element list
-  | `Raise of string * nestable_block_element list
-  | `Return of nestable_block_element list
-  | `See of [ `Url | `File | `Document ] * string * nestable_block_element list
+  | `Deprecated of (nestable_block_element with_location) list
+  | `Param of string * (nestable_block_element with_location) list
+  | `Raise of string * (nestable_block_element with_location) list
+  | `Return of (nestable_block_element with_location) list
+  | `See of
+      [ `Url | `File | `Document ] *
+      string *
+      (nestable_block_element with_location) list
   | `Since of string
-  | `Before of string * nestable_block_element list
+  | `Before of string * (nestable_block_element with_location) list
   | `Version of string
   | `Canonical of Path.module_ * Reference.module_
 ]
@@ -66,7 +71,7 @@ type block_element = [
   | `Tag of tag
 ]
 
-type docs = block_element list
+type docs = (block_element with_location) list
 
 type docs_or_stop = [
   | `Docs of docs
