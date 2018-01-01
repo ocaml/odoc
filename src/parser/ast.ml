@@ -7,7 +7,7 @@ type 'a with_location = 'a Model.Location_.with_location
 
 type block_element = [
   | Comment.nestable_block_element
-  | `Heading of int * Identifier.label option * Comment.link_content
+  | `Heading of int * string option * Comment.link_content
   | `Tag of Comment.tag
 ]
 

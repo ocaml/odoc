@@ -99,13 +99,13 @@ let parse_comment
 
   try
     Comment.comment
-      ~parent_of_sections:containing_definition
       ~file:location.Lexing.pos_fname
       ~offset_to_location
       ~token_stream
     |> Semantics.ast_to_comment
       ~permissive
       ~sections_allowed
+      ~parent_of_sections:containing_definition
 
   with Helpers.Parse_error error ->
     {

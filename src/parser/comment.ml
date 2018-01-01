@@ -36,9 +36,12 @@ type 'token stream_head = (int * int) * 'token
 (* What the parser needs from the outside world. A value of type [input] is
    passed around between all the parsing functions.
 
+   - [file] is the name of the file containing the comment being parsed. It is
+     needed to construct locations.
+   - [offset_to_location] converts byte indexes relative to the start of the
+     comment to line, column pairs relative to the start of the file containing
+     the comment.
    - [token_stream] is the stream of tokens emitted by the lexer.
-   - [parent_of_sections] is the definition or page containing the comment being
-     parsed. It is used to fully qualify section labels.
 
   In addition to a value of type [input], some parsing functions also take a
   value of type ['a stream_head], for some ['a] that is narrower than [Token.t].
@@ -48,7 +51,6 @@ type input = {
   file : string;
   offset_to_location : int -> Model.Location_.point;
   token_stream : (Token.t stream_head) Stream.t;
-  parent_of_sections : Model.Paths.Identifier.label_parent;
 }
 
 let junk input =
@@ -937,14 +939,6 @@ let rec block_element_list
         if content = [] then
           Raise.cannot_be_empty l ~what:(Token.describe token);
 
-        let label =
-          match label with
-          | None -> None
-          | Some label ->
-            Some
-              (Model.Paths.Identifier.Label (input.parent_of_sections, label))
-        in
-
         let heading = `Heading (level, label, content) in
         let heading = token_span input l right_brace_offsets heading in
         let acc = heading::acc in
@@ -1122,15 +1116,8 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let comment ~parent_of_sections ~file ~offset_to_location ~token_stream =
-  let input =
-    {
-      offset_to_location;
-      file;
-      token_stream;
-      parent_of_sections;
-    }
-  in
+let comment ~file ~offset_to_location ~token_stream =
+  let input = {file; offset_to_location; token_stream} in
 
   let elements, stream_head, _where_in_line =
     block_element_list Top_level ~parent_markup:`Comment input in

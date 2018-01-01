@@ -8,8 +8,9 @@ type 'a with_location = 'a Location.with_location
 
 type status = {
   permissive : bool;
-  sections_allowed : Ast.sections_allowed;
   mutable warnings : Error.t list;
+  sections_allowed : Ast.sections_allowed;
+  parent_of_sections : Model.Paths.Identifier.label_parent;
 }
 
 let warning status message =
@@ -22,6 +23,14 @@ let warning status message =
 
 let filter_section_heading status ~parsed_a_title location heading =
   let `Heading (level, label, content) = heading in
+
+  let label =
+    match label with
+    | None ->
+      None
+    | Some label ->
+      Some (Model.Paths.Identifier.Label (status.parent_of_sections, label))
+  in
 
   match status.sections_allowed, level with
   | `None, _ ->
@@ -108,12 +117,13 @@ let top_level_block_elements
 
 
 
-let ast_to_comment ~permissive ~sections_allowed ast =
+let ast_to_comment ~permissive ~sections_allowed ~parent_of_sections ast =
   let status =
     {
       permissive;
-      sections_allowed;
       warnings = [];
+      sections_allowed;
+      parent_of_sections;
     }
   in
 
