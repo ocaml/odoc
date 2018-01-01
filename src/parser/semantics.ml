@@ -20,6 +20,65 @@ let warning status message =
 
 
 
+let filter_section_heading status ~parsed_a_title location heading =
+  let `Heading (level, label, content) = heading in
+
+  match status.sections_allowed, level with
+  | `None, _ ->
+    let message : Error.t =
+      `With_full_location {
+        location;
+        error = "sections not allowed in this comment";
+      }
+    in
+    warning status message;
+    let element =
+      Location.at location
+        (`Paragraph [Location.at location
+          (`Styled (`Bold, content))])
+    in
+    parsed_a_title, element
+
+  | `All, 1 ->
+    if parsed_a_title then begin
+      let message : Error.t =
+        `With_full_location {
+          location = location;
+          error = "only one title-level heading is allowed";
+        }
+      in
+      raise_notrace (Error.Conveyed_by_exception message)
+    end;
+    let element = `Heading (`Title, label, content) in
+    let element = Location.at location element in
+    true, element
+
+  | _ ->
+    let level =
+      match level with
+      | 2 -> `Section
+      | 3 -> `Subsection
+      | 4 -> `Subsubsection
+      | _ ->
+        let message : Error.t =
+          `With_full_location {
+            location = location;
+            error =
+              Printf.sprintf "'%i': bad section level (2-4 allowed)" level;
+          }
+        in
+        warning status message;
+        if level < 2 then
+          `Section
+        else
+          `Subsubsection
+    in
+    let element = `Heading (level, label, content) in
+    let element = Location.at location element in
+    parsed_a_title, element
+
+
+
 let top_level_block_elements
     : status -> (Ast.block_element with_location) list ->
         (Comment.block_element with_location) list =
@@ -37,62 +96,12 @@ let top_level_block_elements
         let element = Location.same ast_element element in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
 
-      | `Heading (level, label, content) ->
-        match status.sections_allowed, level with
-        | `None, _ ->
-          let message : Error.t =
-            `With_full_location {
-              location = ast_element.location;
-              error = "sections not allowed in this comment";
-            }
-          in
-          warning status message;
-          let element =
-            Location.same ast_element
-              (`Paragraph [Location.same ast_element
-                (`Styled (`Bold, content))])
-          in
-          traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
-
-        | `All, 1 ->
-          if parsed_a_title then begin
-            let message : Error.t =
-              `With_full_location {
-                location = ast_element.location;
-                error = "only one title-level heading is allowed";
-              }
-            in
-            raise_notrace (Error.Conveyed_by_exception message)
-          end;
-          let element =
-            Location.same ast_element (`Heading (`Title, label, content)) in
-          traverse
-            ~parsed_a_title:true (element::comment_elements_acc) ast_elements
-
-        | _ ->
-          let level =
-            match level with
-            | 2 -> `Section
-            | 3 -> `Subsection
-            | 4 -> `Subsubsection
-            | _ ->
-              let message : Error.t =
-                `With_full_location {
-                  location = ast_element.location;
-                  error =
-                    Printf.sprintf
-                      "'%i': bad section level (2-4 allowed)" level;
-                }
-              in
-              warning status message;
-              if level < 2 then
-                `Section
-              else
-                `Subsubsection
-          in
-          let element =
-            Location.same ast_element (`Heading (level, label, content)) in
-          traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+      | `Heading _ as heading ->
+        let parsed_a_title, element =
+          filter_section_heading
+            status ~parsed_a_title ast_element.Location.location heading
+        in
+        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
   in
 
   traverse ~parsed_a_title:false [] ast_elements

@@ -14,6 +14,9 @@ type 'a with_location = {
   value : 'a;
 }
 
+let at : span -> 'a -> 'a with_location = fun location value ->
+  {location; value}
+
 let value : 'a with_location -> 'a = fun {value; _} ->
   value
 
