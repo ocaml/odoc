@@ -42,13 +42,13 @@ let make_offset_to_location_function
 
 
 let parse_comment
-    ~permissive sections ~containing_definition ~location ~text:comment_text =
+    ~permissive ~sections_allowed ~containing_definition ~location ~text =
 
   (* Converts byte offsets into the comment to line, column pairs, which are
      relative to the start of the file that contains the comment. *)
   let offset_to_location =
     let offset_to_location_relative_to_start_of_comment =
-      lazy (make_offset_to_location_function comment_text) in
+      lazy (make_offset_to_location_function text) in
 
     let offset_to_location_relative_to_start_of_file offset =
       let in_comment =
@@ -87,7 +87,7 @@ let parse_comment
   in
 
   let token_stream =
-    let lexbuf = Lexing.from_string comment_text in
+    let lexbuf = Lexing.from_string text in
     Stream.from (fun _token_index -> Some (Lexer.token lexbuf))
   in
 
@@ -98,23 +98,21 @@ let parse_comment
   in
 
   try
-    let parse_tree =
-      Comment.comment
-        ~permissive
-        sections
-        ~parent_of_sections:containing_definition
-        ~file:location.Lexing.pos_fname
-        ~offset_to_location
-        ~token_stream
-        ~accumulated_warnings
-    in
-    {
-      Model.Error.result = Ok parse_tree;
-      warnings = convert_warnings ();
-    }
+    Comment.comment
+      ~parent_of_sections:containing_definition
+      ~file:location.Lexing.pos_fname
+      ~offset_to_location
+      ~token_stream
+    |> Semantics.ast_to_comment
+      ~permissive
+      ~sections_allowed
 
   with Helpers.Parse_error error ->
     {
       Model.Error.result = Error (convert_parsing_error_to_odoc_error error);
       warnings = convert_warnings ();
     }
+
+
+
+type sections_allowed = Ast.sections_allowed

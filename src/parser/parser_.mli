@@ -1,6 +1,8 @@
+type sections_allowed = Ast.sections_allowed
+
 val parse_comment :
   permissive:bool ->
-  [ `Allow_all_sections | `No_titles_allowed | `No_sections ] ->
+  sections_allowed:sections_allowed ->
   containing_definition:Model.Paths.Identifier.label_parent ->
   location:Lexing.position ->
   text:string ->

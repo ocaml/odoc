@@ -47,7 +47,7 @@ let read_attributes parent _id attrs =
             let parsed =
               Parser_.parse_comment
                 ~permissive:true
-                `No_titles_allowed
+                ~sections_allowed:`No_titles
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
@@ -76,7 +76,7 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
   let doc : Model.Comment.docs =
     Parser_.parse_comment
       ~permissive:true
-      `No_titles_allowed
+      ~sections_allowed:`No_titles
       ~containing_definition:parent
       ~location:start_pos
       ~text:str

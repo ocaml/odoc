@@ -2,17 +2,17 @@ type test_case = {
   name : string;
   parser_input : string;
   permissive : bool;
-  sections : [ `Allow_all_sections | `No_titles_allowed | `No_sections ];
+  sections_allowed : Parser_.sections_allowed;
   location : Model.Location_.point;
 }
 
 let make_test_case
     ?(permissive = false)
-    ?(sections = `No_titles_allowed)
+    ?(sections_allowed = `No_titles)
     ?(location = {Model.Location_.line = 1; column = 0})
     name
     parser_input =
-  {name; parser_input; permissive; sections; location}
+  {name; parser_input; permissive; sections_allowed; location}
 
 let t = make_test_case
 
@@ -399,34 +399,34 @@ let tests : test_suite list = [
 
   "section-contexts", [
     t "titles-allowed" "{1 Foo}"
-      ~sections:`Allow_all_sections;
+      ~sections_allowed:`All;
     t "titles-zero-not-allowed" "{0 Foo}"
-      ~sections:`Allow_all_sections;
+      ~sections_allowed:`All;
     t "titles-no-high-levels" "{5 Foo}"
-      ~sections:`Allow_all_sections;
+      ~sections_allowed:`All;
     t "two-titles" "{1 Foo}\n{1 Bar}"
-      ~sections:`Allow_all_sections;
+      ~sections_allowed:`All;
     t "none" "{2 Foo}"
-      ~sections:`No_sections;
+      ~sections_allowed:`None;
     t "permissive" "{1 Foo}"
       ~permissive:true;
     t "titles-allowed-permissive" "{1 Foo}"
-      ~permissive:true ~sections:`Allow_all_sections;
+      ~permissive:true ~sections_allowed:`All;
     t "titles-zero-not-allowed-permissive" "{0 Foo}"
-      ~permissive:true ~sections:`Allow_all_sections;
+      ~permissive:true ~sections_allowed:`All;
     t "titles-no-high-levels-permissive" "{5 Foo}"
-      ~permissive:true ~sections:`Allow_all_sections;
+      ~permissive:true ~sections_allowed:`All;
     t "two-titles-permissive" "{1 Foo}\n{1 Bar}"
-      ~permissive:true ~sections:`Allow_all_sections;
+      ~permissive:true ~sections_allowed:`All;
     t "none-permissive" "{2 Foo}"
-      ~permissive:true ~sections:`No_sections;
+      ~permissive:true ~sections_allowed:`None;
   ];
 
   "warnings", [
     t "multiple" "{1 Foo}\n{1 Foo}"
       ~permissive:true;
-    t "with-error" "{1 Foo} {1 Foo}"
-      ~permissive:true;
+    t "with-error" "{0 Foo}\n{1 Foo}\n{1 Foo}"
+      ~permissive:true ~sections_allowed:`All;
   ];
 
   "author", [
@@ -751,7 +751,7 @@ let () =
       let actual_file = actual_suite_directory // (file_title ^ ".txt") in
 
       let actual =
-        let {permissive; sections; location; parser_input; _} = case in
+        let {permissive; sections_allowed; location; parser_input; _} = case in
 
         let dummy_filename = "f.ml" in
 
@@ -776,7 +776,7 @@ let () =
 
         Parser_.parse_comment
           ~permissive
-          sections
+          ~sections_allowed
           ~containing_definition:dummy_page
           ~location
           ~text:parser_input
