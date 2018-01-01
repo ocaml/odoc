@@ -280,15 +280,28 @@ rule token = parse
         (Lexing.lexeme_start lexbuf, Lexing.lexeme_end lexbuf)
         ~what:(Printf.sprintf "'%s'" (Lexing.lexeme lexbuf)) }
 
-  | '@' ("param" | "raise" | "before")
+  | "@param"
     { raise_notrace
         (Helpers.Parse_error {
           start_offset = Lexing.lexeme_start lexbuf;
           end_offset = Lexing.lexeme_end lexbuf;
-          text =
-            Printf.sprintf
-              "'%s' expects parameter name on the same line"
-              (Lexing.lexeme lexbuf);
+          text = "'@param' expects parameter name on the same line";
+        }) }
+
+  | "@raise"
+    { raise_notrace
+        (Helpers.Parse_error {
+          start_offset = Lexing.lexeme_start lexbuf;
+          end_offset = Lexing.lexeme_end lexbuf;
+          text = "'@raise' expects exception constructor on the same line";
+        }) }
+
+  | "@before"
+    { raise_notrace
+        (Helpers.Parse_error {
+          start_offset = Lexing.lexeme_start lexbuf;
+          end_offset = Lexing.lexeme_end lexbuf;
+          text = "'@before' expects version number on the same line";
         }) }
 
   | "@see"

@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-7:\
-   \n'@before' expects parameter name on the same line"))
+   \n'@before' expects version number on the same line"))
  (warnings ()))
