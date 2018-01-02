@@ -34,13 +34,7 @@ let filter_section_heading status ~parsed_a_title location heading =
 
   match status.sections_allowed, level with
   | `None, _ ->
-    let message : Error.t =
-      `With_full_location {
-        location;
-        error = "sections not allowed in this comment";
-      }
-    in
-    warning status message;
+    warning status (Parse_error.sections_not_allowed location);
     let element =
       Location.at location
         (`Paragraph [Location.at location
@@ -49,15 +43,8 @@ let filter_section_heading status ~parsed_a_title location heading =
     parsed_a_title, element
 
   | `All, 1 ->
-    if parsed_a_title then begin
-      let message : Error.t =
-        `With_full_location {
-          location = location;
-          error = "only one title-level heading is allowed";
-        }
-      in
-      Error.raise_exception message
-    end;
+    if parsed_a_title then
+      Error.raise_exception (Parse_error.only_one_title_allowed location);
     let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
     true, element
@@ -69,14 +56,8 @@ let filter_section_heading status ~parsed_a_title location heading =
       | 3 -> `Subsection
       | 4 -> `Subsubsection
       | _ ->
-        let message : Error.t =
-          `With_full_location {
-            location = location;
-            error =
-              Printf.sprintf "'%i': bad section level (2-4 allowed)" level;
-          }
-        in
-        warning status message;
+        Parse_error.bad_section_level (string_of_int level) location
+        |> warning status;
         if level < 2 then
           `Section
         else

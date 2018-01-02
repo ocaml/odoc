@@ -4,21 +4,21 @@ module Error = Model.Error
 
 
 let bad_markup : string -> Location.span -> Error.t =
-  Error.makef "'%s': bad markup"
+  Error.format "'%s': bad markup"
 
 let bad_section_level : string -> Location.span -> Error.t =
-  Error.makef "'%s': bad section level (2-4 allowed)"
+  Error.format "'%s': bad section level (2-4 allowed)"
 
 let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
-  Error.makef "%s cannot be empty" what
+  Error.format "%s cannot be empty" what
 
 let must_begin_on_its_own_line : what:string -> Location.span -> Error.t =
     fun ~what ->
-  Error.makef "%s must begin on its own line" what
+  Error.format "%s must begin on its own line" what
 
 let must_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
     fun ~what ->
-  Error.makef "%s must be followed by space, a tab, or a new line" what
+  Error.format "%s must be followed by space, a tab, or a new line" what
 
 let not_allowed
     : ?suggestion:string -> what:string -> in_what:string -> Location.span ->
@@ -37,6 +37,12 @@ let no_leading_whitespace_in_verbatim : Location.span -> Error.t =
 
 let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
   Error.make "'v}' must be preceded by whitespace"
+
+let only_one_title_allowed : Location.span -> Error.t =
+  Error.make "only one title-level heading is allowed"
+
+let sections_not_allowed : Location.span -> Error.t =
+  Error.make "sections not allowed in this comment"
 
 let stray_at : Location.span -> Error.t =
   Error.make "stray '@'"
@@ -57,7 +63,7 @@ let truncated_see : Location.span -> Error.t =
   Error.make "'@see' must be followed by <url>, 'file', or \"document title\""
 
 let unknown_tag : string -> Location.span -> Error.t =
-  Error.makef "unknown tag '%s'"
+  Error.format "unknown tag '%s'"
 
 let unpaired_right_brace : Location.span -> Error.t =
   Error.make "unpaired '}' (end of markup)"

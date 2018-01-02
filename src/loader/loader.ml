@@ -1,39 +1,43 @@
+module Error = Model.Error
+
+
+
 let read_string parent_definition location text =
-  Model.Error.catch (fun () ->
+  Error.catch (fun () ->
     Attrs.read_string parent_definition location text)
 
 
 
-let corrupted : string -> (_, Model.Error.t) result = fun file ->
-  Error (`With_filename_only {file; error = "corrupted"})
+let corrupted : string -> Error.t =
+  Error.filename_only "corrupted"
 
-let not_a_typedtree : string -> (_, Model.Error.t) result = fun file ->
-  Error (`With_filename_only {file; error = "not a Typedtree"})
+let not_a_typedtree : string -> Error.t =
+  Error.filename_only "not a Typedtree"
 
-let not_an_implementation : string -> (_, Model.Error.t) result = fun file ->
-  Error (`With_filename_only {file; error = "not an implementation"})
+let not_an_implementation : string -> Error.t =
+  Error.filename_only "not an implementation"
 
-let not_an_interface : string -> (_, Model.Error.t) result = fun file ->
-  Error (`With_filename_only {file; error = "not an interface"})
+let not_an_interface : string -> Error.t =
+  Error.filename_only "not an interface"
 
-let wrong_version : string -> (_, Model.Error.t) result = fun file ->
-  Error (`With_filename_only {file; error = "wrong OCaml version"})
+let wrong_version : string -> Error.t =
+  Error.filename_only "wrong OCaml version"
 
 
 
 let read_cmti ~make_root ~filename =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_interface filename
+    Error (not_an_interface filename)
   | exception Cmt_format.Error (Not_a_typedtree _) ->
-    not_a_typedtree filename
+    Error (not_a_typedtree filename)
   | cmt_info ->
     match cmt_info.cmt_annots with
     | Interface intf ->
       begin match cmt_info.cmt_interface_digest with
-      | None -> corrupted filename
+      | None -> Error (corrupted filename)
       | Some digest ->
-        Model.Error.catch begin fun () ->
+        Error.catch begin fun () ->
           let name = cmt_info.cmt_modname in
           let root = make_root ~module_name:name ~digest in
           let (id, doc, items) = Cmti.read_interface root name intf in
@@ -59,18 +63,18 @@ let read_cmti ~make_root ~filename =
            interface; hidden; content; expansion = None}
         end
       end
-    | _ -> not_an_interface filename
+    | _ -> Error (not_an_interface filename)
 
 let read_cmt ~make_root ~filename =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_implementation filename
+    Error (not_an_implementation filename)
   | exception Cmi_format.Error (Wrong_version_interface _) ->
-    wrong_version filename
+    Error (wrong_version filename)
   | exception Cmi_format.Error (Corrupted_interface _) ->
-    corrupted filename
+    Error (corrupted filename)
   | exception Cmt_format.Error (Not_a_typedtree _) ->
-    not_a_typedtree filename
+    Error (not_a_typedtree filename)
   | cmt_info ->
     match cmt_info.cmt_annots with
     | Packed(_, files) ->
@@ -114,7 +118,7 @@ let read_cmt ~make_root ~filename =
           source; interface; hidden; content; expansion = None}
 
     | Implementation impl ->
-      Model.Error.catch begin fun () ->
+      Error.catch begin fun () ->
         let name = cmt_info.cmt_modname in
         let interface, digest =
           match cmt_info.cmt_interface_digest with
@@ -146,20 +150,20 @@ let read_cmt ~make_root ~filename =
          source; interface; hidden; content; expansion = None}
       end
 
-    | _ -> not_an_implementation filename
+    | _ -> Error (not_an_implementation filename)
 
 let read_cmi ~make_root ~filename =
   match Cmi_format.read_cmi filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_interface filename
+    Error (not_an_interface filename)
   | exception Cmi_format.Error (Wrong_version_interface _) ->
-    wrong_version filename
+    Error (wrong_version filename)
   | exception Cmi_format.Error (Corrupted_interface _) ->
-    corrupted filename
+    Error (corrupted filename)
   | cmi_info ->
     match cmi_info.cmi_crcs with
     | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-      Model.Error.catch begin fun () ->
+      Error.catch begin fun () ->
         let root = make_root ~module_name:name ~digest:digest in
         let (id, doc, items) = Cmi.read_interface root name cmi_info.cmi_sign in
         let imports =
@@ -174,4 +178,4 @@ let read_cmi ~make_root ~filename =
          source; interface; hidden; content; expansion = None}
       end
 
-    | _ -> corrupted filename
+    | _ -> Error (corrupted filename)

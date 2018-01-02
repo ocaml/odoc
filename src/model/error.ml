@@ -1,11 +1,11 @@
 type full_location_payload = {
   location : Location_.span;
-  error : string;
+  message : string;
 }
 
 type filename_only_payload = {
   file : string;
-  error : string;
+  message : string;
 }
 
 type t = [
@@ -19,13 +19,16 @@ type 'a with_warnings = {
 }
 
 let make : string -> Location_.span -> t = fun message location ->
-  `With_full_location {location; error = message}
+  `With_full_location {location; message}
 
-let makef = fun format ->
+let filename_only : string -> string -> t = fun message file ->
+  `With_filename_only {file; message}
+
+let format = fun format ->
   (Printf.ksprintf make) format
 
 let to_string : t -> string = function
-  | `With_full_location {location; error} ->
+  | `With_full_location {location; message} ->
     let location_string =
       if location.start.line = location.end_.line then
         Printf.sprintf "line %i, characters %i-%i"
@@ -39,10 +42,10 @@ let to_string : t -> string = function
           location.end_.line
           location.end_.column
     in
-    Printf.sprintf "File \"%s\", %s:\n%s" location.file location_string error
+    Printf.sprintf "File \"%s\", %s:\n%s" location.file location_string message
 
-  | `With_filename_only {file; error} ->
-    Printf.sprintf "File \"%s\":\n%s" file error
+  | `With_filename_only {file; message} ->
+    Printf.sprintf "File \"%s\":\n%s" file message
 
 exception Conveyed_by_exception of t
 
