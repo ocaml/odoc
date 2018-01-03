@@ -21,8 +21,123 @@ let warning status message =
 
 
 
-let filter_section_heading status ~parsed_a_title location heading =
-  let `Heading (level, label, content) = heading in
+(* TODO This and Token.describe probably belong in Parse_error. *)
+let describe_element = function
+  | `Reference (`Simple, _, _) ->
+    Token.describe (`Simple_reference "")
+  | `Reference (`With_text, _, _) ->
+    Token.describe (`Begin_reference_with_replacement_text "")
+  | `Link _ ->
+    Token.describe (`Begin_link_with_replacement_text "")
+  | `Heading (level, _, _) ->
+    Token.describe (`Begin_section_heading (level, None))
+
+
+
+let rec non_link_inline_element
+    : surrounding:_ -> Ast.inline_element with_location ->
+        Comment.non_link_inline_element with_location =
+    fun ~surrounding element ->
+
+  match element with
+  | {value = #Comment.leaf_inline_element; _} as element ->
+    element
+
+  | {value = `Styled (style, content); _} ->
+    `Styled (style, non_link_inline_elements ~surrounding content)
+    |> Location.same element
+
+  | {value = `Reference _; _}
+  | {value = `Link _; _} as element ->
+    Parse_error.not_allowed
+      ~what:(describe_element element.value)
+      ~in_what:(describe_element surrounding)
+      element.location
+    |> Error.raise_exception
+
+and non_link_inline_elements ~surrounding elements =
+  List.map (non_link_inline_element ~surrounding) elements
+
+let rec inline_element
+    : Ast.inline_element with_location -> Comment.inline_element with_location =
+  function
+  | {value = #Comment.leaf_inline_element; _} as element ->
+    element
+
+  | {value = `Styled (style, content); location} ->
+    `Styled (style, inline_elements content)
+    |> Location.at location
+
+  | {value = `Reference (_, target, content) as value; location} ->
+    `Reference (target, non_link_inline_elements ~surrounding:value content)
+    |> Location.at location
+
+  | {value = `Link (target, content) as value; location} ->
+    `Link (target, non_link_inline_elements ~surrounding:value content)
+    |> Location.at location
+
+and inline_elements elements =
+  List.map inline_element elements
+
+
+
+let rec nestable_block_element
+    : Ast.nestable_block_element with_location ->
+        Comment.nestable_block_element with_location =
+  function
+  | {value = `Paragraph content; location} ->
+    Location.at location (`Paragraph (inline_elements content))
+
+  | {value = `Code_block _; _}
+  | {value = `Verbatim _; _}
+  | {value = `Modules _; _} as element ->
+    element
+
+  | {value = `List (kind, items); location} ->
+    `List (kind, List.map nestable_block_elements items)
+    |> Location.at location
+
+and nestable_block_elements elements =
+  List.map nestable_block_element elements
+
+
+
+let tag : Ast.tag -> Comment.tag = function
+  | `Author _
+  | `Since _
+  | `Version _
+  | `Canonical _ as tag ->
+    tag
+
+  | `Deprecated content ->
+    `Deprecated (nestable_block_elements content)
+
+  | `Param (name, content) ->
+    `Param (name, nestable_block_elements content)
+
+  | `Raise (name, content) ->
+    `Raise (name, nestable_block_elements content)
+
+  | `Return content ->
+    `Return (nestable_block_elements content)
+
+  | `See (kind, target, content) ->
+    `See (kind, target, nestable_block_elements content)
+
+  | `Before (version, content) ->
+    `Before (version, nestable_block_elements content)
+
+
+
+let section_heading
+    : status ->
+      parsed_a_title:bool ->
+      Location.span ->
+      int ->
+      string option ->
+      (Ast.inline_element with_location) list ->
+        bool * (Comment.block_element with_location) =
+    fun status ~parsed_a_title location level label content ->
 
   let label =
     match label with
@@ -32,9 +147,15 @@ let filter_section_heading status ~parsed_a_title location heading =
       Some (Model.Paths.Identifier.Label (status.parent_of_sections, label))
   in
 
+  let content =
+    non_link_inline_elements
+      ~surrounding:(`Heading (level, label, content)) content
+  in
+
   match status.sections_allowed, level with
   | `None, _ ->
     warning status (Parse_error.sections_not_allowed location);
+    let content = (content :> (Comment.inline_element with_location) list) in
     let element =
       Location.at location
         (`Paragraph [Location.at location
@@ -74,22 +195,37 @@ let top_level_block_elements
         (Comment.block_element with_location) list =
     fun status ast_elements ->
 
-  let rec traverse ~parsed_a_title comment_elements_acc ast_elements =
+  let rec traverse
+      : parsed_a_title:bool ->
+        (Comment.block_element with_location) list ->
+        (Ast.block_element with_location) list ->
+          (Comment.block_element with_location) list =
+      fun ~parsed_a_title comment_elements_acc ast_elements ->
+
     match ast_elements with
     | [] ->
       List.rev comment_elements_acc
 
     | ast_element::ast_elements ->
-      match ast_element.Location.value with
-      | #Comment.nestable_block_element
-      | `Tag _ as element ->
-        let element = Location.same ast_element element in
+      match ast_element with
+      | {value = #Ast.nestable_block_element; _} as element ->
+        let element = nestable_block_element element in
+        let element = (element :> Comment.block_element with_location) in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
 
-      | `Heading _ as heading ->
+      | {value = `Tag the_tag; _} ->
+        let element = Location.same ast_element (`Tag (tag the_tag)) in
+        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+
+      | {value = `Heading (level, label, content); _} ->
         let parsed_a_title, element =
-          filter_section_heading
-            status ~parsed_a_title ast_element.Location.location heading
+          section_heading
+            status
+            ~parsed_a_title
+            ast_element.Location.location
+            level
+            label
+            content
         in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
   in

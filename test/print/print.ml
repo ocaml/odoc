@@ -238,17 +238,24 @@ struct
     | `Superscript -> Atom "superscript"
     | `Subscript -> Atom "subscript"
 
-  let rec non_link_inline_element : Comment.non_link_inline_element -> sexp =
+  let leaf_inline_element : Comment.leaf_inline_element -> sexp =
     function
     | `Space -> Atom "space"
     | `Word w -> List [Atom "word"; Atom w]
     | `Code_span c -> List [Atom "code_span"; Atom c]
+
+  let rec non_link_inline_element : Comment.non_link_inline_element -> sexp =
+    function
+    | #Comment.leaf_inline_element as e ->
+      leaf_inline_element e
     | `Styled (s, es) ->
       List [style s; List (List.map (at non_link_inline_element) es)]
 
-  let inline_element : Comment.inline_element -> sexp = function
-    | #Comment.non_link_inline_element as e ->
-      non_link_inline_element e
+  let rec inline_element : Comment.inline_element -> sexp = function
+    | #Comment.leaf_inline_element as e ->
+      leaf_inline_element e
+    | `Styled (s, es) ->
+      List [style s; List (List.map (at inline_element) es)]
     | `Reference (r, es) ->
       List [
         Atom "reference";

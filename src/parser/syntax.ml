@@ -1,7 +1,6 @@
 (* This module is a recursive descent parser for the ocamldoc syntax. The parser
    consumes a token stream of type [Token.t Stream.t], provided by the lexer,
-   and produces a comment AST of the type defined in [Model.Comment] – see
-   [src/model/comment.ml].
+   and produces a comment AST of the type defined in [Parser_.Ast].
 
    The AST has two main levels: inline elements, which can appear inside
    paragraphs, and are spaced horizontally when presented, and block elements,
@@ -10,8 +9,8 @@
 
    Corresponding to this, the parser has three "main" functions:
 
-   - [delimited_non_link_inline_element_list] parses a run of inline elements
-     that is delimited by curly brace markup ([{...}]).
+   - [delimited_inline_element_list] parses a run of inline elements that is
+     delimited by curly brace markup ([{...}]).
    - [paragraph] parses a run of inline elements that make up a paragraph, and
      is not explicitly delimited with curly braces.
    - [block_element_list] parses a sequence of block elements. A comment is a
@@ -47,6 +46,20 @@ let npeek = Stream.npeek
 
 (* {2 Non-link inline elements} *)
 
+(* Convenient abbreviation for use in patterns. *)
+type token_that_always_begins_an_inline_element = [
+  | `Word of string
+  | `Code_span of string
+  | `Begin_style of Comment.style
+  | `Simple_reference of string
+  | `Begin_reference_with_replacement_text of string
+  | `Begin_link_with_replacement_text of string
+]
+
+(* Check that the token constructors above actually are all in [Token.t]. *)
+let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
+  fun t -> (t :> Token.t)
+
 (* Consumes tokens that make up a single word – a sequence of consecutive
    [`Word _], [`Minus], and [`Plus] tokens.
 
@@ -67,7 +80,7 @@ let npeek = Stream.npeek
      tokens, so "brace \{" becomes [`Word "brace"; `Word "{"].
 
    This parser stops on the first non-word token, and does not consume it. *)
-let word : input -> Comment.non_link_inline_element with_location =
+let word : input -> Ast.inline_element with_location =
     fun input ->
   let first_token = peek input in
 
@@ -101,29 +114,27 @@ let word : input -> Comment.non_link_inline_element with_location =
    - a code span ([...], [`Code_span _]), or
    - styled text ({e ...}).
 
-   The latter requires a recursive call to
-   [delimited_non_link_inline_element_list], defined below.
+   The latter requires a recursive call to [delimited_inline_element_list],
+   defined below.
 
-   This should be part of [delimited_non_link_inline_element_list]; however, it
-   is also called by function [paragraph], which uses it to parse the non-link
-   subset of general inline elements. As a result, it is factored out, and made
-   mutually-recursive with [delimited_non_link_inline_element_list].
+   This should be part of [delimited_inline_element_list]; however, it is also
+   called by function [paragraph]. As a result, it is factored out, and made
+   mutually-recursive with [delimited_inline_element_list].
 
    This is called only when it is known that the first token in the list is the
-   beginning of a non-link inline element. In the case of [`Minus] and [`Plus],
-   that means the caller has determined that they are not a list bullet (i.e.,
-   not the first non-whitespace tokens on their line).
+   beginning of an inline element. In the case of [`Minus] and [`Plus], that
+   means the caller has determined that they are not a list bullet (i.e., not
+   the first non-whitespace tokens on their line).
 
    This function consumes exactly the tokens that make up the element. *)
-let rec non_link_inline_element
-    : input -> _ with_location ->
-        Comment.non_link_inline_element with_location =
-    fun input next_token ->
+let rec inline_element
+    : input -> Location.span -> _ -> Ast.inline_element with_location =
+    fun input location next_token ->
 
-  match next_token.value with
+  match next_token with
   | `Space ->
     junk input;
-    Location.same next_token `Space
+    Location.at location `Space
 
   | `Word _
   | `Minus
@@ -132,7 +143,7 @@ let rec non_link_inline_element
 
   | `Code_span c ->
     junk input;
-    Location.same next_token (`Code_span c)
+    Location.at location (`Code_span c)
 
   | `Begin_style s as parent_markup ->
     junk input;
@@ -143,50 +154,80 @@ let rec non_link_inline_element
       | _ -> true
     in
     let content, brace_location =
-      delimited_non_link_inline_element_list
+      delimited_inline_element_list
         ~parent_markup
-        ~parent_markup_location:next_token.location
+        ~parent_markup_location:location
         ~requires_leading_whitespace
         input
     in
     if content = [] then
-      Parse_error.cannot_be_empty
-        ~what:(Token.describe parent_markup) next_token.location
+      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
-    (`Styled (s, content))
-    |> Location.at (Location.span [next_token.location; brace_location])
+    `Styled (s, content)
+    |> Location.at (Location.span [location; brace_location])
 
-(* Consumes tokens that make up a sequence of non-link inline elements. See
-   function [non_link_inline_element] for a list of what those are.
+  | `Simple_reference r ->
+    junk input;
+    Location.at location (`Reference (`Simple, Helpers.read_reference r, []))
 
-   It turns out, as an accident of the comment grammar, that every sequence of
-   non-link inline elements is nested in markup that can only be properly ended
-   with a '}', a [`Right_brace] token. This parser consumes that token also.
+  | `Begin_reference_with_replacement_text r as parent_markup ->
+    junk input;
+
+    let content, brace_location =
+      delimited_inline_element_list
+        ~parent_markup
+        ~parent_markup_location:location
+        ~requires_leading_whitespace:false
+        input
+    in
+    if content = [] then
+      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
+      |> Error.raise_exception;
+
+    `Reference (`With_text, Helpers.read_reference r, content)
+    |> Location.at (Location.span [location; brace_location])
+
+  | `Begin_link_with_replacement_text u as parent_markup ->
+    junk input;
+
+    let content, brace_location =
+      delimited_inline_element_list
+        ~parent_markup
+        ~parent_markup_location:location
+        ~requires_leading_whitespace:false
+        input
+    in
+
+    `Link (u, content)
+    |> Location.at (Location.span [location; brace_location])
+
+(* Consumes tokens that make up a sequence of inline elements that is ended by
+   a '}', a [`Right_brace] token. The brace token is also consumed.
 
    The sequences are also preceded by some markup like '{b'. Some of these
    markup tokens require whitespace immediately after the token, and others not.
    The caller indicates which way that is through the
    [~requires_leading_whitespace] argument.
 
-   Whitespace is significant in non-link inline element lists. In particular,
-   "foo [bar]" is represented as [`Word "foo"; `Space; `Code_span "bar"], while
-   "foo[bar]" is [`Word "foo"; `Code_span "bar"]. It doesn't matter how much
-   whitespace is there, just whether it is present or not. Single newlines and
-   horizontal space in any amount are allowed. Blank lines are not, as these are
-   separators for {e block} elements.
+   Whitespace is significant in inline element lists. In particular, "foo [bar]"
+   is represented as [`Word "foo"; `Space; `Code_span "bar"], while "foo[bar]"
+   is [`Word "foo"; `Code_span "bar"]. It doesn't matter how much whitespace is
+   there, just whether it is present or not. Single newlines and horizontal
+   space in any amount are allowed. Blank lines are not, as these are separators
+   for {e block} elements.
 
    The first and last elements emitted will not be [`Space], i.e. [`Space]
    appears only between other non-link inline elements.
 
    The [~parent_markup] and [~parent_markup_location] arguments are used for
    generating error messages. *)
-and delimited_non_link_inline_element_list
+and delimited_inline_element_list
     : parent_markup:[< Token.t ] ->
       parent_markup_location:Location.span ->
       requires_leading_whitespace:bool ->
       input ->
-        (Comment.non_link_inline_element with_location) list * Location.span =
+        (Ast.inline_element with_location) list * Location.span =
     fun
       ~parent_markup
       ~parent_markup_location
@@ -196,16 +237,16 @@ and delimited_non_link_inline_element_list
   (* [~at_start_of_line] is used to interpret [`Minus] and [`Plus]. These are
      word tokens if not the first non-whitespace tokens on their line. Then,
      they are allowed in a non-link element list. *)
-  let rec consume_non_link_inline_elements
-      : at_start_of_line:bool ->
-        (Comment.non_link_inline_element with_location) list ->
-          (Comment.non_link_inline_element with_location) list * Location.span =
+  let rec consume_elements
+      : at_start_of_line:bool -> (Ast.inline_element with_location) list ->
+          (Ast.inline_element with_location) list * Location.span =
       fun ~at_start_of_line acc ->
 
-    match peek input with
-    | {value = `Right_brace; location} ->
+    let next_token = peek input in
+    match next_token.value with
+    | `Right_brace ->
       junk input;
-      List.rev acc, location
+      List.rev acc, next_token.location
 
     (* The [`Space] token is not space at the beginning or end of line, because
        that is combined into [`Single_newline] or [`Blank_line] tokens. It is
@@ -215,22 +256,21 @@ and delimited_non_link_inline_element_list
        because that is combined into the [`Right_brace] token by the lexer. So,
        it is an internal space, and we want to add it to the non-link inline
        element list. *)
-    | {value = `Space; _}
-    | {value = `Word _; _}
-    | {value = `Code_span _; _}
-    | {value = `Begin_style _; _} as next_token ->
-      let acc = (non_link_inline_element input next_token)::acc in
-      consume_non_link_inline_elements ~at_start_of_line:false acc
+    | `Space
+    | #token_that_always_begins_an_inline_element as token ->
+      let acc = (inline_element input next_token.location token)::acc in
+      consume_elements ~at_start_of_line:false acc
 
-    | {value = `Single_newline; location} ->
+    | `Single_newline ->
       junk input;
-      let element = Location.at location `Space in
-      consume_non_link_inline_elements ~at_start_of_line:true (element::acc)
+      let element = Location.same next_token `Space in
+      consume_elements ~at_start_of_line:true (element::acc)
 
-    | {value = `Minus | `Plus as bullet; location} as next_token ->
+    | `Minus
+    | `Plus as bullet ->
       if not at_start_of_line then
-        let acc = (non_link_inline_element input next_token)::acc in
-        consume_non_link_inline_elements ~at_start_of_line:false acc
+        let acc = (inline_element input next_token.location bullet)::acc in
+        consume_elements ~at_start_of_line:false acc
       else
         let suggestion =
           Printf.sprintf
@@ -241,14 +281,14 @@ and delimited_non_link_inline_element_list
           ~what:(Token.describe bullet)
           ~in_what:(Token.describe parent_markup)
           ~suggestion
-          location
+          next_token.location
         |> Error.raise_exception
 
     | other_token ->
       Parse_error.not_allowed
-        ~what:(Token.describe other_token.value)
+        ~what:(Token.describe other_token)
         ~in_what:(Token.describe parent_markup)
-        other_token.location
+        next_token.location
       |> Error.raise_exception
   in
 
@@ -256,14 +296,14 @@ and delimited_non_link_inline_element_list
   match first_token.value with
   | `Space ->
     junk input;
-    consume_non_link_inline_elements ~at_start_of_line:false []
+    consume_elements ~at_start_of_line:false []
     (* [~at_start_of_line] is [false] here because the preceding token was some
        some markup like '{b', and we didn't move to the next line, so the next
        token will not be the first non-whitespace token on its line. *)
 
   | `Single_newline ->
     junk input;
-    consume_non_link_inline_elements ~at_start_of_line:true []
+    consume_elements ~at_start_of_line:true []
 
   | `Blank_line ->
     (* In case the markup is immediately followed by a blank line, the error
@@ -287,35 +327,16 @@ and delimited_non_link_inline_element_list
         ~what:(Token.print parent_markup) parent_markup_location
       |> Error.raise_exception
     else
-      consume_non_link_inline_elements ~at_start_of_line:false []
+      consume_elements ~at_start_of_line:false []
 
 
 
 (* {2 Paragraphs} *)
 
-(* Convenient abbreviation for use in patterns. *)
-type token_that_begins_a_paragraph_line = [
-  | `Word of string
-  | `Code_span of string
-  | `Begin_style of Model.Comment.style
-  | `Simple_reference of string
-  | `Begin_reference_with_replacement_text of string
-  | `Begin_link_with_replacement_text of string
-]
-
-(* Check that the token constructors above actually are all in [Token.t]. *)
-let _check_subset : token_that_begins_a_paragraph_line -> Token.t =
-  fun t -> (t :> Token.t)
-
 (* Consumes tokens that make up a paragraph.
 
-   A paragraph is a sequence of general inline elements. These include all the
-   non-link inline elements (see above), and also cross-references and external
-   links.
-
-   Paragraphs end at a blank line, or when another block element begins on a new
-   line. Other block elements are verbatim text, code blocks, section headings,
-   and lists.
+   A paragraph is a sequence of inline elements that ends on a blank line, or
+   explicit block markup such as a verbatim block on a new line.
 
    Because of the significance of newlines, paragraphs are parsed line-by-line.
    The function [paragraph] is called only when the current token is the first
@@ -323,74 +344,27 @@ let _check_subset : token_that_begins_a_paragraph_line -> Token.t =
    then parses a line of inline elements. Afterwards, it looks ahead to the next
    line. If that line also begins with an inline element, it parses that line,
    and so on. *)
-let paragraph : input -> Comment.nestable_block_element with_location =
+let paragraph : input -> Ast.nestable_block_element with_location =
     fun input ->
 
   (* Parses a single line of a paragraph, consisting of inline elements. The
      only valid ways to end a paragraph line are with [`End], [`Single_newline],
      [`Blank_line], and [`Right_brace]. Everything else either belongs in the
      paragraph, or signifies an attempt to begin a block element inside a
-     paragraph row, which is an error. These errors are currently caught
-     elsewhere; the paragraph parser just stops. *)
+     paragraph line, which is an error. These errors are caught elsewhere; the
+     paragraph parser just stops. *)
   let rec paragraph_line
-      : (Comment.inline_element with_location) list ->
-          (Comment.inline_element with_location) list =
+      : (Ast.inline_element with_location) list ->
+          (Ast.inline_element with_location) list =
       fun acc ->
-    match peek input with
-    | {value = `Space; _}
-    | {value = `Minus; _}
-    | {value = `Plus; _}
-    | {value = `Word _; _}
-    | {value = `Code_span _; _}
-    | {value = `Begin_style _; _} as next_token ->
-      let element = non_link_inline_element input next_token in
-      let acc = (element :> Comment.inline_element with_location)::acc in
-      paragraph_line acc
 
-    | {value = `Simple_reference r; location} ->
-      junk input;
-      let element =
-        Location.at location (`Reference (Helpers.read_reference r, [])) in
-      paragraph_line (element::acc)
-
-    | {value = `Begin_reference_with_replacement_text r as parent_markup;
-       location} ->
-      junk input;
-
-      let content, brace_location =
-        delimited_non_link_inline_element_list
-          ~parent_markup
-          ~parent_markup_location:location
-          ~requires_leading_whitespace:false
-          input
-      in
-      if content = [] then
-        Parse_error.cannot_be_empty
-          ~what:(Token.describe parent_markup) location
-        |> Error.raise_exception;
-
-      let element =
-        `Reference (Helpers.read_reference r, content)
-        |> Location.at (Location.span [location; brace_location])
-      in
-      paragraph_line (element::acc)
-
-    | {value = `Begin_link_with_replacement_text u as parent_markup;
-       location} ->
-      junk input;
-
-      let content, brace_location =
-        delimited_non_link_inline_element_list
-          ~parent_markup
-          ~parent_markup_location:location
-          ~requires_leading_whitespace:false
-          input
-      in
-
-      let element =
-        `Link (u, content)
-        |> Location.at (Location.span [location; brace_location])
-      in
+    let next_token = peek input in
+    match next_token.value with
+    | `Space
+    | `Minus
+    | `Plus
+    | #token_that_always_begins_an_inline_element as token ->
+      let element = inline_element input next_token.location token in
       paragraph_line (element::acc)
 
     | _ ->
@@ -399,12 +373,13 @@ let paragraph : input -> Comment.nestable_block_element with_location =
 
   (* After each line is parsed, decides whether to parse more lines. *)
   let rec additional_lines
-      : (Comment.inline_element with_location) list ->
-          (Comment.inline_element with_location) list =
+      : (Ast.inline_element with_location) list ->
+          (Ast.inline_element with_location) list =
       fun acc ->
+
     match npeek 2 input with
     | {value = `Single_newline; location}::
-      {value = #token_that_begins_a_paragraph_line; _}::_ ->
+      {value = #token_that_always_begins_an_inline_element; _}::_ ->
       junk input;
       let acc = (Location.at location `Space)::acc in
       let acc = paragraph_line acc in
@@ -516,18 +491,18 @@ type ('block, 'stops_at_which_tokens) context =
   | Top_level :
       (Ast.block_element, stops_at_delimiters) context
   | In_shorthand_list :
-      (Comment.nestable_block_element, stopped_implicitly) context
+      (Ast.nestable_block_element, stopped_implicitly) context
   | In_explicit_list :
-      (Comment.nestable_block_element, stops_at_delimiters) context
+      (Ast.nestable_block_element, stops_at_delimiters) context
   | In_tag :
-      (Comment.nestable_block_element, Token.t) context
+      (Ast.nestable_block_element, Token.t) context
 
 (* This is a no-op. It is needed to prove to the type system that nestable block
    elements are acceptable block elements in all contexts. *)
 let accepted_in_all_contexts
     : type block stops_at_which_tokens.
       (block, stops_at_which_tokens) context ->
-      Comment.nestable_block_element ->
+      Ast.nestable_block_element ->
         block =
     fun context block ->
   match context with
@@ -568,7 +543,7 @@ let rec block_element_list
 
     let describe token =
       match token with
-      | #token_that_begins_a_paragraph_line -> "paragraph"
+      | #token_that_always_begins_an_inline_element -> "paragraph"
       | _ -> Token.describe token
     in
 
@@ -768,7 +743,7 @@ let rec block_element_list
 
 
 
-    | {value = #token_that_begins_a_paragraph_line; _} as next_token ->
+    | {value = #token_that_always_begins_an_inline_element; _} as next_token ->
       raise_if_after_tags next_token;
       raise_if_after_text next_token;
 
@@ -927,7 +902,7 @@ let rec block_element_list
         junk input;
 
         let content, brace_location =
-          delimited_non_link_inline_element_list
+          delimited_inline_element_list
             ~parent_markup:token
             ~parent_markup_location:location
             ~requires_leading_whitespace:true
@@ -971,7 +946,7 @@ and shorthand_list_items
     : [ `Minus | `Plus ] with_location ->
       where_in_line ->
       input ->
-        ((Comment.nestable_block_element with_location) list) list *
+        ((Ast.nestable_block_element with_location) list) list *
         where_in_line =
     fun first_token where_in_line input ->
 
@@ -980,8 +955,8 @@ and shorthand_list_items
   let rec consume_list_items
       : [> ] with_location ->
         where_in_line ->
-        ((Comment.nestable_block_element with_location) list) list ->
-          ((Comment.nestable_block_element with_location) list) list *
+        ((Ast.nestable_block_element with_location) list) list ->
+          ((Ast.nestable_block_element with_location) list) list *
           where_in_line =
       fun next_token where_in_line acc ->
 
@@ -1028,13 +1003,13 @@ and shorthand_list_items
 and explicit_list_items
     : parent_markup:[< Token.t ] ->
       input ->
-        ((Comment.nestable_block_element with_location) list) list *
+        ((Ast.nestable_block_element with_location) list) list *
         Location.span =
     fun ~parent_markup input ->
 
   let rec consume_list_items
-      : ((Comment.nestable_block_element with_location) list) list ->
-          ((Comment.nestable_block_element with_location) list) list *
+      : ((Ast.nestable_block_element with_location) list) list ->
+          ((Ast.nestable_block_element with_location) list) list *
           Location.span =
       fun acc ->
 

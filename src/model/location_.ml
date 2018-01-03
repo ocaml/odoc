@@ -9,7 +9,7 @@ type span = {
   end_ : point;
 }
 
-type 'a with_location = {
+type +'a with_location = {
   location : span;
   value : 'a;
 }

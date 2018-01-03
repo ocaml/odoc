@@ -189,9 +189,13 @@ let tests : test_suite list = [
     t "degenerate" "{{!foo}}";
     t "empty" "{{!foo} }";
     t "nested-markup" "{{!foo} {b bar}}";
+    t "in-markup" "{e {{!foo} bar}}";
     t "no-separating-space" "{{!foo}bar}";
     t "kind" "{{!val:foo} bar}";
     t "nested-reference" "{{!foo} {!bar}}";
+    t "nested-empty" "{{!foo} {{!bar}}}";
+    t "nested-through-emphasis" "{{!foo} {e {{!bar} baz}}}";
+    t "simple-through-emphasis" "{{!foo} {e {!bar}}}";
     t "empty-target" "{{!} foo}";
     t "whitespace-only-in-target" "{{! } foo}";
     t "internal-whitespace" "{{!foo bar} baz}";
@@ -202,8 +206,12 @@ let tests : test_suite list = [
   "link", [
     t "basic" "{{:foo} bar}";
     t "nested-markup" "{{:foo} {b bar}}";
+    t "in-markup" "{e {{:foo} bar}}";
     t "no-separating-space" "{{:foo}bar}";
     t "nested-link" "{{:foo} {{:bar} baz}}";
+    t "nested-through-emphasis" "{{:foo} {e {{:bar} baz}}}";
+    t "reference-through-emphasis" "{{:foo} {e {!bar}}}";
+    t "nested-in-reference" "{{!foo} {e {{:bar} baz}}}";
     t "empty-target" "{{:} foo}";
     t "whitespace-only-in-target" "{{: } foo}";
     t "empty" "{{:foo}}";

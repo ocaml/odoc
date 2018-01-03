@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"f.ml\", line 1, characters 8-20:\
+    "File \"f.ml\", line 1, characters 11-23:\
    \n'{{:...} ...}' (external link) is not allowed in '{{:...} ...}' (external link)"))
  (warnings ()))

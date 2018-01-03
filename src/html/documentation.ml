@@ -165,21 +165,26 @@ end
 
 
 
-let rec non_link_inline_element
-    : Comment.non_link_inline_element -> non_link_phrasing Html.elt =
-    fun element ->
-  match element with
+let style_to_combinator = function
+  | `Bold -> Html.b
+  | `Italic -> Html.i
+  | `Emphasis -> Html.em
+  | `Superscript -> Html.sup
+  | `Subscript -> Html.sub
+
+
+
+let leaf_inline_element
+    : Comment.leaf_inline_element -> non_link_phrasing Html.elt = function
   | `Space -> Html.pcdata " "
   | `Word s -> Html.pcdata s
   | `Code_span s -> Html.code [Html.pcdata s]
+
+let rec non_link_inline_element
+    : Comment.non_link_inline_element -> non_link_phrasing Html.elt = function
+  | #Comment.leaf_inline_element as e -> leaf_inline_element e
   | `Styled (style, content) ->
-    let content = non_link_inline_element_list content in
-    match style with
-    | `Bold -> Html.b content
-    | `Italic -> Html.i content
-    | `Emphasis -> Html.em content
-    | `Superscript -> Html.sup content
-    | `Subscript -> Html.sub content
+    (style_to_combinator style) (non_link_inline_element_list content)
 
 and non_link_inline_element_list elements =
   elements
@@ -189,8 +194,10 @@ and non_link_inline_element_list elements =
 
 
 let rec inline_element : Comment.inline_element -> phrasing Html.elt = function
-  | #Comment.non_link_inline_element as e ->
-    (non_link_inline_element e :> phrasing Html.elt)
+  | #Comment.leaf_inline_element as e ->
+    (leaf_inline_element e :> phrasing Html.elt)
+  | `Styled (style, content) ->
+    (style_to_combinator style) (inline_element_list content)
   | `Reference (path, content) ->
     (* TODO Rework that ugly function. *)
     (* TODO References should be set in code style, if they are to code

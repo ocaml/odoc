@@ -14,10 +14,14 @@ type style = [
   | `Subscript
 ]
 
-type non_link_inline_element = [
+type leaf_inline_element = [
   | `Space
   | `Word of string
   | `Code_span of string
+]
+
+type non_link_inline_element = [
+  | leaf_inline_element
   | `Styled of style * (non_link_inline_element with_location) list
 ]
 
@@ -27,7 +31,8 @@ type non_link_inline_element = [
 type link_content = (non_link_inline_element with_location) list
 
 type inline_element = [
-  | non_link_inline_element
+  | leaf_inline_element
+  | `Styled of style * (inline_element with_location) list
   | `Reference of Reference.any * link_content
   | `Link of string * link_content
 ]

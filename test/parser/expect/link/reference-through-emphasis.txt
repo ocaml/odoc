@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, characters 11-17:\
+   \n'{!...}' (cross-reference) is not allowed in '{{:...} ...}' (external link)"))
+ (warnings ()))
