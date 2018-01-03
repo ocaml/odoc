@@ -160,12 +160,14 @@ let rec inline_element
         ~requires_leading_whitespace
         input
     in
+
+    let location = Location.span [location; brace_location] in
+
     if content = [] then
       Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
-    `Styled (s, content)
-    |> Location.at (Location.span [location; brace_location])
+    Location.at location (`Styled (s, content))
 
   | `Simple_reference r ->
     junk input;
@@ -181,12 +183,15 @@ let rec inline_element
         ~requires_leading_whitespace:false
         input
     in
+
+    let location = Location.span [location; brace_location] in
+
     if content = [] then
       Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
     `Reference (`With_text, Helpers.read_reference r, content)
-    |> Location.at (Location.span [location; brace_location])
+    |> Location.at location
 
   | `Begin_link_with_replacement_text u as parent_markup ->
     junk input;
