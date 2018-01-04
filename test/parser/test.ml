@@ -85,10 +85,10 @@ let tests : test_suite list = [
     t "list" "[[]]";
     (* TODO The next two error messages are particularly unintuitive. *)
     t "unbalanced-list" "[[]";
-    t "unbalanced-list-backslash" "[\\[]";
     t "no-markup" "[{b]";
     t "few-escapes" "[\\{]";
     t "escaped-right-bracket" "[\\]]";
+    t "escaped-left-bracket" "[\\[]";
     t "whitespace-preserved" "[ foo  bar ]";
     t "no-newlines" "[foo\nbar]";
     t "cr-lf-preserved" "[foo\r\nbar]";

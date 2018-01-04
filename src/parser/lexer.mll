@@ -397,8 +397,8 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer '[';
       code_span buffer (nesting_level + 1) start_offset input lexbuf }
 
-  | "\\]"
-    { Buffer.add_char buffer ']';
+  | '\\' ('[' | ']' as c)
+    { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline newline

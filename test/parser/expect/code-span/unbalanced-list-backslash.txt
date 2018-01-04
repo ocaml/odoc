@@ -1,5 +1,0 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 4-4:\
-   \nend of text is not allowed in '[...]' (code)"))
- (warnings ()))
