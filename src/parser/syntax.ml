@@ -113,8 +113,8 @@ let rec inline_element
 
     let requires_leading_whitespace =
       match s with
+      | `Bold | `Italic | `Emphasis -> true
       | `Superscript | `Subscript -> false
-      | _ -> true
     in
     let content, brace_location =
       delimited_inline_element_list
@@ -292,7 +292,7 @@ and delimited_inline_element_list
   | _ ->
     if requires_leading_whitespace then
       Parse_error.must_be_followed_by_whitespace
-        ~what:(Token.print parent_markup) parent_markup_location
+        ~what:(Token.describe parent_markup) parent_markup_location
       |> Error.raise_exception
     else
       consume_elements ~at_start_of_line:false []
