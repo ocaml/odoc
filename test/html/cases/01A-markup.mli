@@ -108,6 +108,11 @@ v}
           {li can be nested.}}}}
 
 
+    {2 Unicode}
+
+    The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
+
+
     {2 Tags}
 
     Each comment can end with zero or more tags. Here are some examples:
