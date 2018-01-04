@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, character 4 to line 3, character 0:\
+   \nblank line is not allowed in '[...]' (code)"))
+ (warnings ()))

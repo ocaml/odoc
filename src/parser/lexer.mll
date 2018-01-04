@@ -401,11 +401,11 @@ and code_span buffer nesting_level start_offset input = parse
     { Buffer.add_char buffer ']';
       code_span buffer nesting_level start_offset input lexbuf }
 
-  | newline
+  | newline newline
     { raise_error
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe `Single_newline)
+          ~what:(Token.describe `Blank_line)
           ~in_what:(Token.describe (`Code_span ""))) }
 
   | eof

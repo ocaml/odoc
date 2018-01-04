@@ -34,17 +34,41 @@ let describe_element = function
 
 
 
+let leaf_inline_element
+    : status -> Comment.leaf_inline_element with_location ->
+        Comment.leaf_inline_element with_location =
+  fun status element ->
+
+  begin match element.value with
+  | `Code_span c as token ->
+    begin match String.index c '\n' with
+    | exception Not_found -> ()
+    | _ ->
+      Parse_error.not_allowed
+        ~what:(Token.describe `Single_newline)
+        ~in_what:(Token.describe token)
+        element.location
+      |> warning status
+    end
+  | _ -> ()
+  end;
+
+  element
+
+
+
 let rec non_link_inline_element
-    : surrounding:_ -> Ast.inline_element with_location ->
+    : status -> surrounding:_ -> Ast.inline_element with_location ->
         Comment.non_link_inline_element with_location =
-    fun ~surrounding element ->
+    fun status ~surrounding element ->
 
   match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+    let element = leaf_inline_element status element in
+    (element :> Comment.non_link_inline_element with_location)
 
   | {value = `Styled (style, content); _} ->
-    `Styled (style, non_link_inline_elements ~surrounding content)
+    `Styled (style, non_link_inline_elements status ~surrounding content)
     |> Location.same element
 
   | {value = `Reference _; _}
@@ -55,38 +79,46 @@ let rec non_link_inline_element
       element.location
     |> Error.raise_exception
 
-and non_link_inline_elements ~surrounding elements =
-  List.map (non_link_inline_element ~surrounding) elements
+and non_link_inline_elements status ~surrounding elements =
+  List.map (non_link_inline_element status ~surrounding) elements
+
+
 
 let rec inline_element
-    : Ast.inline_element with_location -> Comment.inline_element with_location =
-  function
+    : status -> Ast.inline_element with_location ->
+        Comment.inline_element with_location =
+    fun status element ->
+
+  match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+    (leaf_inline_element status element :> Comment.inline_element with_location)
 
   | {value = `Styled (style, content); location} ->
-    `Styled (style, inline_elements content)
+    `Styled (style, inline_elements status content)
     |> Location.at location
 
   | {value = `Reference (_, target, content) as value; location} ->
-    `Reference (target, non_link_inline_elements ~surrounding:value content)
+    `Reference
+      (target, non_link_inline_elements status ~surrounding:value content)
     |> Location.at location
 
   | {value = `Link (target, content) as value; location} ->
-    `Link (target, non_link_inline_elements ~surrounding:value content)
+    `Link (target, non_link_inline_elements status ~surrounding:value content)
     |> Location.at location
 
-and inline_elements elements =
-  List.map inline_element elements
+and inline_elements status elements =
+  List.map (inline_element status) elements
 
 
 
 let rec nestable_block_element
-    : Ast.nestable_block_element with_location ->
+    : status -> Ast.nestable_block_element with_location ->
         Comment.nestable_block_element with_location =
-  function
+    fun status element ->
+
+  match element with
   | {value = `Paragraph content; location} ->
-    Location.at location (`Paragraph (inline_elements content))
+    Location.at location (`Paragraph (inline_elements status content))
 
   | {value = `Code_block _; _}
   | {value = `Verbatim _; _}
@@ -94,15 +126,16 @@ let rec nestable_block_element
     element
 
   | {value = `List (kind, items); location} ->
-    `List (kind, List.map nestable_block_elements items)
+    `List (kind, List.map (nestable_block_elements status) items)
     |> Location.at location
 
-and nestable_block_elements elements =
-  List.map nestable_block_element elements
+and nestable_block_elements status elements =
+  List.map (nestable_block_element status) elements
 
 
 
-let tag : Ast.tag -> Comment.tag = function
+let tag : status -> Ast.tag -> Comment.tag = fun status tag ->
+  match tag with
   | `Author _
   | `Since _
   | `Version _
@@ -110,22 +143,22 @@ let tag : Ast.tag -> Comment.tag = function
     tag
 
   | `Deprecated content ->
-    `Deprecated (nestable_block_elements content)
+    `Deprecated (nestable_block_elements status content)
 
   | `Param (name, content) ->
-    `Param (name, nestable_block_elements content)
+    `Param (name, nestable_block_elements status content)
 
   | `Raise (name, content) ->
-    `Raise (name, nestable_block_elements content)
+    `Raise (name, nestable_block_elements status content)
 
   | `Return content ->
-    `Return (nestable_block_elements content)
+    `Return (nestable_block_elements status content)
 
   | `See (kind, target, content) ->
-    `See (kind, target, nestable_block_elements content)
+    `See (kind, target, nestable_block_elements status content)
 
   | `Before (version, content) ->
-    `Before (version, nestable_block_elements content)
+    `Before (version, nestable_block_elements status content)
 
 
 
@@ -149,7 +182,7 @@ let section_heading
 
   let content =
     non_link_inline_elements
-      ~surrounding:(`Heading (level, label, content)) content
+      status ~surrounding:(`Heading (level, label, content)) content
   in
 
   match status.sections_allowed, level with
@@ -209,12 +242,12 @@ let top_level_block_elements
     | ast_element::ast_elements ->
       match ast_element with
       | {value = #Ast.nestable_block_element; _} as element ->
-        let element = nestable_block_element element in
+        let element = nestable_block_element status element in
         let element = (element :> Comment.block_element with_location) in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
 
       | {value = `Tag the_tag; _} ->
-        let element = Location.same ast_element (`Tag (tag the_tag)) in
+        let element = Location.same ast_element (`Tag (tag status the_tag)) in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
 
       | {value = `Heading (level, label, content); _} ->

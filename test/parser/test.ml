@@ -90,11 +90,22 @@ let tests : test_suite list = [
     t "few-escapes" "[\\{]";
     t "escaped-right-bracket" "[\\]]";
     t "whitespace-preserved" "[ foo  bar ]";
-    t "no-newlines" "[foo\n\nbar]";
+    t "no-newlines" "[foo\nbar]";
     t "cr-lf-preserved" "[foo\r\nbar]";
+    t "no-double-newline" "[foo\n\nbar]";
+    t "no-double-crlf" "[foo\r\n\r\nbar]";
     t "not-merged" "[foo][bar]";
     t "explicit-space" "[foo] [bar]";
     t "unterminated" "[foo";
+  ];
+
+  "code-span-warnings", [
+    t "newline" "[foo\nbar]"
+      ~permissive:true;
+    t "cr-lf" "[foo\r\nbar]"
+      ~permissive:true;
+    t "no-double-newline" "[foo\n\nbar]"
+      ~permissive:true;
   ];
 
   "bold", [

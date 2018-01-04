@@ -1,0 +1,8 @@
+((output
+  (ok
+   (((f.ml (1 0) (2 4))
+     (paragraph (((f.ml (1 0) (2 4)) (code_span  "foo\
+                                                \nbar"))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, character 0 to line 2, character 4:\
+   \nline break is not allowed in '[...]' (code)")))
