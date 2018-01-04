@@ -42,17 +42,18 @@
     This is a {{:#} link}. It sends you to the top of this page. Links can have
     markup inside them: {{:#} {b bold}}, {{:#} {i italics}},
     {{:#} {e emphasis}}, {{:#} super{^script}}, {{:#} sub{_script}}, and
-    {{:#} [code]}. Links cannot be nested in styling markup, and they cannot be
-    nested inside each other. This link has no replacement text: {{:#}}. The URL
-    is filled in by odoc.
+    {{:#} [code]}. Links can also be nested {e {{:#} inside}} markup. Links
+    cannot be nested inside each other. This link has no replacement text:
+    {{:#}}. The URL is filled in by odoc.
 
     This is a reference to {!foo}. References can have replacement text:
     {{!foo} the value foo}. Except for the special lookup support, references
     are pretty much just like links. The replacement text can have nested
     styles: {{!foo} {b bold}}, {{!foo} {i italic}}, {{!foo} {e emphasis}},
-    {{!foo} super{^script}}, {{!foo} sub{_script}}, and {{!foo} [code]}.
-    References can't be nested inside references, and links and references can't
-    be nested inside each other.
+    {{!foo} super{^script}}, {{!foo} sub{_script}}, and {{!foo} [code]}. It's
+    also possible to surround a reference in a style: {b {!foo}}. References
+    can't be nested inside references, and links and references can't be nested
+    inside each other.
 
 
     {2 Preformatted text}
