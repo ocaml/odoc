@@ -17,6 +17,12 @@
     but odoc has banned deeper headings. There are also title headings, but they
     are only allowed in mld files.
 
+    {4:anchors Anchors}
+
+    Sections can have attached {!anchors}, and it is possible to {{!anchors}
+    link} to them. Links to section headers should not be set in source code
+    style.
+
 
     {2 Styling}
 
