@@ -77,12 +77,6 @@ module Error = Model.Error
 
 
 
-let reference_token target = function
-  | "{!" -> `Simple_reference target
-  | "{{!" -> `Begin_reference_with_replacement_text target
-  | "{{:" -> `Begin_link_with_replacement_text target
-  | _ -> assert false
-
 (* Assuming an ASCII-compatible input encoding here. *)
 let heading_level level =
   Char.code level - Char.code '0'
@@ -138,6 +132,21 @@ let raise_error
   in
   Error.raise_exception (error location)
 
+let reference_token start target =
+  match start with
+  | "{!" -> `Simple_reference target
+  | "{{!" -> `Begin_reference_with_replacement_text target
+  | "{{:" -> `Begin_link_with_replacement_text target
+  | _ -> assert false
+
+let emit_reference input start target =
+  let target = String.trim target in
+  let token = reference_token start target in
+  if target = "" then
+    raise_error input (Parse_error.cannot_be_empty ~what:(Token.describe token))
+  else
+    emit input token
+
 
 
 let trim_leading_space_or_accept_whitespace input text =
@@ -180,11 +189,6 @@ let horizontal_space =
   [' ' '\t']
 let newline =
   '\n' | "\r\n"
-
-let no_brace =
-  [^ '}'] # space_char
-let no_brace_or_colon =
-  [^ ':' '}'] # space_char
 
 let reference_start =
   "{!" | "{{!" | "{{:"
@@ -245,9 +249,8 @@ rule token input = parse
   | "{!modules:" ([^ '}']* as modules) '}'
     { emit input (`Modules modules) }
 
-  | (reference_start as start)
-    space_char* (no_brace+ as target) space_char* '}'
-    { emit input (reference_token target start) }
+  | (reference_start as start) ([^ '}']* as target) '}'
+    { emit_reference input start target }
 
   | "{[" (code_block_text as c) "]}"
     { let c = trim_leading_blank_lines c in
@@ -273,7 +276,7 @@ rule token input = parse
   | "{-"
     { emit input (`Begin_list_item `Dash) }
 
-  | '{' (['0'-'9'] as level) ':' (no_brace+ as label)
+  | '{' (['0'-'9'] as level) ':' (([^ '}'] # space_char)+ as label)
     { emit input (`Begin_section_heading (heading_level level, Some label)) }
 
   | '{' (['0'-'9'] as level)
@@ -359,19 +362,6 @@ rule token input = parse
   | '\r'
     { raise_error input Parse_error.stray_cr }
 
-  | reference_start space_char* "}"
-    { raise_error input (Parse_error.cannot_be_empty ~what:"reference target") }
-
-  | ((reference_start as start) space_char* no_brace+) as prefix
-    space_char+ no_brace
-    { raise_error
-        input
-        ~adjust_start_by:prefix
-        ~adjust_end_by:" "
-        (Parse_error.not_allowed
-          ~what:"internal whitespace"
-          ~in_what:(Token.describe (reference_token "" start))) }
-
   | "{!modules:" [^ '}']* eof
     { raise_error
         input
@@ -386,7 +376,7 @@ rule token input = parse
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (reference_token "" start))) }
+          ~in_what:(Token.describe (reference_token start ""))) }
 
   | "{[" code_block_text eof
     { raise_error

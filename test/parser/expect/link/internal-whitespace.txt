@@ -1,5 +1,7 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 6-7:\
-   \ninternal whitespace is not allowed in '{{:...} ...}' (external link)"))
+  (ok
+   (((f.ml (1 0) (1 16))
+     (paragraph
+      (((f.ml (1 0) (1 16))
+        (link "foo bar" (((f.ml (1 12) (1 15)) (word baz)))))))))))
  (warnings ()))

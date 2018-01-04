@@ -194,14 +194,14 @@ let tests : test_suite list = [
     t "kind" "{!val:foo}";
     t "empty" "{!}";
     t "whitespace-only" "{! }";
-    t "internal-whitespace" "{!foo ()}";
+    t "internal-whitespace" "{!( * )}";
     (* TODO Limiting the character combinations allowed will make it easier to
        catch expressions accidentally written inside references. This can also
        be caught by a good resolver and resolver error messages. *)
     (* t "expression" *)
     t "unterminated" "{!foo";
     t "internal-whitespace-in-kind" "{!va l:foo}";
-    t "internal-whitespace-in-referent" "{!val:foo bar}";
+    t "internal-whitespace-in-referent" "{!val:( * )}";
     t "two-colons" "{!val:foo:bar}";
     t "space-before-colon" "{!val :foo}";
     t "space-after-colon" "{!val: foo}";
@@ -222,7 +222,7 @@ let tests : test_suite list = [
     t "simple-through-emphasis" "{{!foo} {e {!bar}}}";
     t "empty-target" "{{!} foo}";
     t "whitespace-only-in-target" "{{! } foo}";
-    t "internal-whitespace" "{{!foo bar} baz}";
+    t "internal-whitespace" "{{!( * )} baz}";
     t "unterminated" "{{!foo";
     t "unterminated-content" "{{!foo} bar";
   ];

@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-4:\
-   \nreference target cannot be empty"))
+   \n'{{!...} ...}' (cross-reference) cannot be empty"))
  (warnings ()))

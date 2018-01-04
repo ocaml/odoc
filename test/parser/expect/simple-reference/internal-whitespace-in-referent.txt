@@ -1,5 +1,6 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 9-10:\
-   \ninternal whitespace is not allowed in '{!...}' (cross-reference)"))
+  (ok
+   (((f.ml (1 0) (1 12))
+     (paragraph
+      (((f.ml (1 0) (1 12)) (reference (root "( * )" unknown) ()))))))))
  (warnings ()))

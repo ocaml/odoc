@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-5:\
-   \nreference target cannot be empty"))
+   \n'{{:...} ...}' (external link) cannot be empty"))
  (warnings ()))
