@@ -45,6 +45,7 @@ let tests : test_suite list = [
     t "trailing-space-on-line" "foo \nbar";
     t "leading-tab-on-line" "foo\n\tbar";
     t "trailing-tab-on-line" "foo\t\nbar";
+    t "email" "foo@bar.com";
   ];
 
   "two-paragraphs", [
@@ -60,6 +61,11 @@ let tests : test_suite list = [
     t "minus-as-word" "foo -";
     t "plus-in-word" "foo+bar";
     t "plus-as-word" "foo +";
+    t "negative-number" "-3.14 -1337";
+    t "en-em-dash" "-- ---";
+    t "minus-at" "-@";
+    t "at-minus" "-@-";
+    t "option" "--option";
   ];
 
   "escape-sequence", [
@@ -72,11 +78,18 @@ let tests : test_suite list = [
     t "right-bracket" "\\]";
     t "right-bracket-in-word" "foo\\]bar";
     t "at" "\\@";
+    t "not-a-tag" "\\@author";
     t "at-in-word" "foo\\@bar";
     t "trailing-backslash" "foo\\";
     t "non-escape" "foo\\bar";
     t "backslash-not-escaped" "foo\\\\{bar";
     t "single-backslash" "\\";
+    t "escape-minus" "\\{- foo";
+    t "escape-plus" "\\{+ foo";
+    t "minus-escape" "-\\{";
+    t "plus-escape" "+\\{";
+    t "escape-at" "\\{@author";
+    t "two" "\\{\\}";
   ];
 
   "code-span", [
@@ -124,10 +137,10 @@ let tests : test_suite list = [
     t "newline" "{b foo\nbar}";
     t "cr-lf" "{b foo\r\nbar}";
     t "minus" "{b -}";
-    t "minus-list-item" "{b foo\n -bar}";
-    t "plus-list-item" "{b foo\n +bar}";
-    t "immediate-minus-list-item" "{b\n-foo}";
-    t "immediate-plus-list-item" "{b\n+foo}";
+    t "minus-list-item" "{b foo\n - bar}";
+    t "plus-list-item" "{b foo\n + bar}";
+    t "immediate-minus-list-item" "{b\n- foo}";
+    t "immediate-plus-list-item" "{b\n+ foo}";
     t "blank-line" "{b foo\n\nbar}";
     t "immediate-blank-line" "{b\n\n";
     t "end-of-comment" "{b foo";
@@ -336,7 +349,6 @@ let tests : test_suite list = [
     t "ordered" "+ foo";
     t "leading-whitespace" " - foo";
     t "trailing-whitespace" "- foo ";
-    t "no-whitespace-after-bullet" "-foo";
     t "bullet-in-line" "- foo - bar";
     t "bullet-in-line-immediately" "- - foo";
     t "code-block" "- {[foo]}";
@@ -347,6 +359,7 @@ let tests : test_suite list = [
     t "no-content" "-";
     t "immediate-newline" "-\nfoo";
     t "immediate-blank-line" "-\n\nfoo";
+    t "immediate-markup" "-{b foo}";
     t "after-code-block" "{[foo]} - bar";
   ];
 
@@ -477,7 +490,6 @@ let tests : test_suite list = [
     t "after-shorthand-list" "- foo\n@author Bar";
     t "in-shorthand-list" "- foo @author Bar";
     t "in-shorthand-list-at-start" "- @author Foo";
-    t "in-shorthand-list-immediate" "-@author Foo";
     t "in-list-item" "{ul {li foo @author Bar}}";
     t "in-list-item-at-start" "{ul {li @author Foo}}";
     t "in-list-item-on-new-line" "{ul {li foo\n@author Bar}}";
@@ -510,7 +522,7 @@ let tests : test_suite list = [
     t "preceded-by-paragraph" "foo\n@deprecated";
     t "preceded-by-shorthand-list" "- foo\n@deprecated";
     t "with-shorthand-list" "@deprecated - foo";
-    t "with-shorthand-list-after-newline" "@deprecated\n-foo";
+    t "with-shorthand-list-after-newline" "@deprecated\n- foo";
     t "prefix" "@deprecatedfoo";
     t "after-code-block" "{[foo]} @deprecated";
     t "followed-by-section" "@deprecated foo\n{2 Bar}";
@@ -622,8 +634,6 @@ let tests : test_suite list = [
     t "right-bracket-in-author" "@author Foo]";
     t "at" "@";
     t "cr" "\r";
-    (* TODO We may actually want to support this instead. *)
-    t "email" "foo@bar.com";
   ];
 
   "utf-8", [

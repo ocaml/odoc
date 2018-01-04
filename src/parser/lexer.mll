@@ -1,5 +1,34 @@
 {
 
+let unescape_word : string -> string = fun s ->
+  (* The common case is that there are no escape sequences. *)
+  match String.index s '\\' with
+  | exception Not_found -> s
+  | _ ->
+    let buffer = Buffer.create (String.length s) in
+    let rec scan_word index =
+      if index >= String.length s then
+        ()
+      else
+        let c = s.[index] in
+        let c, increment =
+          match c with
+          | '\\' ->
+            if index + 1 < String.length s then
+              match s.[index + 1] with
+              | '{' | '}' | '[' | ']' | '@' as c -> c, 2
+              | _ -> c, 1
+            else c, 1
+          | _ -> c, 1
+        in
+        Buffer.add_char buffer c;
+        scan_word (index + increment)
+    in
+    scan_word 0;
+    Buffer.contents buffer
+
+
+
 (* This is used for code and verbatim blocks. It can be done with a regular
    expression, but the regexp gets quite ugly, so a function is easier to
    understand. *)
@@ -143,11 +172,9 @@ let space_char =
   [' ' '\t' '\n' '\r']
 let bullet_char =
   ['-' '+']
-let word_char =
-  _ # markup_char # space_char # bullet_char # '\\'
 
-let escape_sequence =
-  '\\' markup_char
+let word_char =
+  (_ # markup_char # space_char # bullet_char) | ('\\' markup_char)
 
 let horizontal_space =
   [' ' '\t']
@@ -186,14 +213,9 @@ rule token input = parse
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
     { emit input `Right_brace ~adjust_start_by:p }
 
-  | word_char+ as w
-    { emit input (`Word w) }
-
-  | '\\' (markup_char as c)
-    { emit input (`Word (String.make 1 c)) }
-
-  | '\\'
-    { emit input (`Word "\\") }
+  | word_char (word_char | bullet_char | '@')*
+  | bullet_char (word_char | bullet_char | '@')+ as w
+    { emit input (`Word (unescape_word w)) }
 
   | '['
     { code_span

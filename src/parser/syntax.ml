@@ -60,53 +60,6 @@ type token_that_always_begins_an_inline_element = [
 let _check_subset : token_that_always_begins_an_inline_element -> Token.t =
   fun t -> (t :> Token.t)
 
-(* Consumes tokens that make up a single word – a sequence of consecutive
-   [`Word _], [`Minus], and [`Plus] tokens.
-
-   This function is only called when the first token in the token stream is
-   known to be [`Word _], [`Minus], or [`Plus]. In case the first token is
-   [`Minus] or [`Plus], the caller has already decided that the token is not the
-   beginning of a shorthand list item (i.e., it is not the first non-whitespace
-   token on its line).
-
-   There are two reasons consecutive tokens need to be combined into a single
-   word:
-
-   - [`Minus] and [`Plus] are part of words when they are not list bullets, but
-     that determination is made by the parser. The lexer blindly emits them as
-     [`Minus] and [`Plus], so a word like "cool-headed" becomes the token stream
-     [`Word "cool"; `Minus; `Word "headed"].
-   - For convenience in the lexer, escape sequences are emitted as separate
-     tokens, so "brace \{" becomes [`Word "brace"; `Word "{"].
-
-   This parser stops on the first non-word token, and does not consume it. *)
-let word : input -> Ast.inline_element with_location =
-    fun input ->
-  let first_token = peek input in
-
-  let rec consume_word_tokens last_token acc =
-    let next_token = peek input in
-    match next_token.value with
-    | `Word w ->
-      junk input;
-      consume_word_tokens next_token (acc ^ w)
-
-    | `Minus ->
-      junk input;
-      consume_word_tokens next_token (acc ^ "-")
-
-    | `Plus ->
-      junk input;
-      consume_word_tokens next_token (acc ^ "+")
-
-    | _ ->
-      let location =
-        Location.span [first_token.location; last_token.location] in
-      Location.at location (`Word acc)
-  in
-
-  consume_word_tokens first_token ""
-
 (* Consumes tokens that make up a single non-link inline element:
 
    - a horizontal space ([`Space], significant in inline elements),
@@ -136,10 +89,20 @@ let rec inline_element
     junk input;
     Location.at location `Space
 
-  | `Word _
-  | `Minus
+  | `Word w ->
+    junk input;
+    Location.at location (`Word w)
+    (* This is actually the same memory representation as the token, complete
+       with location, and is probably the most common case. Perhaps the token
+       can be reused somehow. The same is true of [`Space], [`Code_span]. *)
+
+  | `Minus ->
+    junk input;
+    Location.at location (`Word "-")
+
   | `Plus ->
-    word input
+    junk input;
+    Location.at location (`Word "+")
 
   | `Code_span c ->
     junk input;
