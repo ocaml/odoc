@@ -62,6 +62,8 @@ type tag = [
   | `Version of string
   | `Canonical of Path.module_ * Reference.module_
   | `Inline
+  | `Open
+  | `Closed
 ]
 
 type heading_level = [

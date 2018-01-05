@@ -21,6 +21,8 @@ type tag = [
     | `Version of string
     | `Canonical of string
     | `Inline
+    | `Open
+    | `Closed
   ]
 ]
 
@@ -129,6 +131,10 @@ let print : [< t ] -> string = function
     "'@canonical'"
   | `Tag `Inline ->
     "'@inline'"
+  | `Tag `Open ->
+    "'@open'"
+  | `Tag `Closed ->
+    "'@closed'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
@@ -206,5 +212,9 @@ let describe : [< t | `Comment ] -> string = function
     "'@canonical'"
   | `Tag `Inline ->
     "'@inline'"
+  | `Tag `Open ->
+    "'@open'"
+  | `Tag `Closed ->
+    "'@closed'"
   | `Comment ->
     "top-level text"

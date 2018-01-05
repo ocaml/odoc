@@ -707,8 +707,8 @@ let rec block_element_list
           let tag = Location.at location tag in
           consume_block_elements ~parsed_a_tag:true where_in_line (tag::acc)
 
-        | `Inline ->
-          let tag = Location.at location (`Tag `Inline) in
+        | `Inline | `Open | `Closed as tag ->
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
         end
       end

@@ -991,28 +991,17 @@ and class_type (t : Model.Lang.ClassType.t) =
 and include_ (t : Model.Lang.Include.t) =
   let docs = docs_to_general_html t.doc in
   let included_html, tree = signature t.expansion.content in
-  let should_be_inlined, should_be_open =
-(*
-    match t.doc with
-    | Ok { tags ; _ } ->
-      let should_be_open =
-        let forced_open =
-          List.exists tags ~f:(function
-            | Model.Comment.Tag ("open", _) -> true
-            | _ -> false
-          )
-        in
-        if forced_open then true else
-          !Html_tree.open_details && List.for_all tags ~f:(function
-            | Model.Comment.Tag ("closed", _) -> false
-            | _ -> true
-          )
-      in
-    *)
+  let should_be_inlined =
     let is_inline_tag element = element.Model.Location_.value = `Tag `Inline in
-    match List.find is_inline_tag t.doc with
-    | exception Not_found -> false, !Html_tree.open_details
-    | _ -> true, !Html_tree.open_details
+    List.exists is_inline_tag t.doc
+  in
+  let should_be_open =
+    let is_open_tag element = element.Model.Location_.value = `Tag `Open in
+    let is_closed_tag element = element.Model.Location_.value = `Tag `Closed in
+    if List.exists is_open_tag t.doc then
+      true
+    else
+      !Html_tree.open_details && not (List.exists is_closed_tag t.doc)
   in
   let incl =
     if should_be_inlined then

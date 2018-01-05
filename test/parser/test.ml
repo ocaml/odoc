@@ -620,6 +620,26 @@ let tests : test_suite list = [
     t "with-list" "@inline - foo";
   ];
 
+  "open", [
+    t "basic" "@open";
+    t "prefix" "@openfoo";
+    t "extra-whitespace" "@open ";
+    t "followed-by-junk" "@open foo";
+    t "followed-by-paragraph" "@open\nfoo";
+    t "followed-by-tag" "@open\n@deprecated";
+    t "with-list" "@open - foo";
+  ];
+
+  "closed", [
+    t "basic" "@closed";
+    t "prefix" "@closedfoo";
+    t "extra-whitespace" "@closed ";
+    t "followed-by-junk" "@closed foo";
+    t "followed-by-paragraph" "@closed\nfoo";
+    t "followed-by-tag" "@closed\n@deprecated";
+    t "with-list" "@closed - foo";
+  ];
+
   "bad-markup", [
     t "left-brace" "{";
     t "left-brace-with-letter" "{g";

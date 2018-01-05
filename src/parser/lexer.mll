@@ -321,6 +321,12 @@ rule token input = parse
   | "@inline"
     { emit input (`Tag `Inline) }
 
+  | "@open"
+    { emit input (`Tag `Open) }
+
+  | "@closed"
+    { emit input (`Tag `Closed) }
+
 
 
 

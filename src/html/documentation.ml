@@ -303,9 +303,7 @@ let tag : Comment.tag -> (top_level_flow Html.elt) option = function
     Some (Html.(dl [
       dt [pcdata "version"];
       dd [pcdata s]]))
-  | `Canonical _ ->
-    None
-  | `Inline ->
+  | `Canonical _ | `Inline | `Open | `Closed ->
     None
 
 
