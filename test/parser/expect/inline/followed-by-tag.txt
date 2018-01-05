@@ -1,0 +1,3 @@
+((output
+  (ok (((f.ml (1 0) (1 7)) @inline) ((f.ml (2 0) (2 11)) (@deprecated)))))
+ (warnings ()))

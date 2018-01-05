@@ -1,0 +1,6 @@
+((output
+  (error
+    "File \"f.ml\", line 2, characters 0-3:\
+   \nparagraph is not allowed in the tags section\
+   \nSuggestion: move 'foo' before any tags"))
+ (warnings ()))

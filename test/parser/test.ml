@@ -610,6 +610,16 @@ let tests : test_suite list = [
     t "with-whitespace" "@canonical Foo Bar";
   ];
 
+  "inline", [
+    t "basic" "@inline";
+    t "prefix" "@inlinefoo";
+    t "extra-whitespace" "@inline ";
+    t "followed-by-junk" "@inline foo";
+    t "followed-by-paragraph" "@inline\nfoo";
+    t "followed-by-tag" "@inline\n@deprecated";
+    t "with-list" "@inline - foo";
+  ];
+
   "bad-markup", [
     t "left-brace" "{";
     t "left-brace-with-letter" "{g";

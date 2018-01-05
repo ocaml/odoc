@@ -706,14 +706,18 @@ let rec block_element_list
           let tag = `Tag (`See (kind, target, content)) in
           let tag = Location.at location tag in
           consume_block_elements ~parsed_a_tag:true where_in_line (tag::acc)
+
+        | `Inline ->
+          let tag = Location.at location (`Tag `Inline) in
+          consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
         end
       end
 
 
 
     | {value = #token_that_always_begins_an_inline_element; _} as next_token ->
-      raise_if_after_tags next_token;
       raise_if_after_text next_token;
+      raise_if_after_tags next_token;
 
       let block = paragraph input in
       let block =
@@ -722,8 +726,8 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Code_block s | `Verbatim s as token; location} as next_token ->
-      raise_if_after_tags next_token;
       raise_if_after_text next_token;
+      raise_if_after_tags next_token;
       if s = "" then
         Parse_error.cannot_be_empty ~what:(Token.describe token) location
         |> Error.raise_exception;
@@ -740,8 +744,8 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Modules s as token; location} as next_token ->
-      raise_if_after_tags next_token;
       raise_if_after_text next_token;
+      raise_if_after_tags next_token;
 
       junk input;
 
@@ -790,8 +794,8 @@ let rec block_element_list
 
 
     | {value = `Begin_list kind as token; location} as next_token ->
-      raise_if_after_tags next_token;
       raise_if_after_text next_token;
+      raise_if_after_tags next_token;
 
       junk input;
 
@@ -811,7 +815,6 @@ let rec block_element_list
 
 
     | {value = `Minus | `Plus as token; location} as next_token ->
-      raise_if_after_tags next_token;
       begin match where_in_line with
       | `After_text | `After_shorthand_bullet ->
         Parse_error.must_begin_on_its_own_line
@@ -820,6 +823,8 @@ let rec block_element_list
       | _ ->
         ()
       end;
+
+      raise_if_after_tags next_token;
 
       begin match context with
       | In_shorthand_list ->

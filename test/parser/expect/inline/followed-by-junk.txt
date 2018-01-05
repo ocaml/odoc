@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, characters 8-11:\
+   \nparagraph must begin on its own line"))
+ (warnings ()))

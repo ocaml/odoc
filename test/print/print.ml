@@ -321,6 +321,8 @@ struct
     | `Canonical (p, r) ->
       List
         [Atom "@canonical"; Path_to_sexp.path p; Reference_to_sexp.reference r]
+    | `Inline ->
+      Atom "@inline"
 
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e

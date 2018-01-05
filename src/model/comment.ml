@@ -61,6 +61,7 @@ type tag = [
   | `Before of string * (nestable_block_element with_location) list
   | `Version of string
   | `Canonical of Path.module_ * Reference.module_
+  | `Inline
 ]
 
 type heading_level = [

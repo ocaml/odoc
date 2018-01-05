@@ -988,14 +988,12 @@ and class_type (t : Model.Lang.ClassType.t) =
   in
   region, subtree
 
-and include_ (_t : Model.Lang.Include.t) =
-  assert false
-  (* TODO *)
-  (*
-  let doc = docs_to_general_html t.doc in
+and include_ (t : Model.Lang.Include.t) =
+  let docs = docs_to_general_html t.doc in
   let included_html, tree = signature t.expansion.content in
-  let should_be_inlined, should_be_open = false, false (* TODO *)
-    (* match t.doc with
+  let should_be_inlined, should_be_open =
+(*
+    match t.doc with
     | Ok { tags ; _ } ->
       let should_be_open =
         let forced_open =
@@ -1010,8 +1008,11 @@ and include_ (_t : Model.Lang.Include.t) =
             | _ -> true
           )
       in
-      List.mem Model.Comment.Inline ~set:tags, should_be_open
-    | _ -> false, !Html_tree.open_details *)
+    *)
+    let is_inline_tag element = element.Model.Location_.value = `Tag `Inline in
+    match List.find is_inline_tag t.doc with
+    | exception Not_found -> false, !Html_tree.open_details
+    | _ -> true, !Html_tree.open_details
   in
   let incl =
     if should_be_inlined then
@@ -1025,14 +1026,21 @@ and include_ (_t : Model.Lang.Include.t) =
       in
       (* FIXME: I'd like to add an anchor here, but I don't know what id to give
          it... *)
-      [ Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
-          (Markup.def_summary [incl]) included_html
+      [
+        Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
+          (Markup.def_summary [incl])
+          included_html
       ]
   in
-  [ Html.div ~a:[ Html.a_class ["spec"; "include"] ]
-      (Html.div ~a:[ Html.a_class ["doc"] ] doc :: incl)
-  ], tree
-  *)
+  [
+    (* TODO The coercion is temporary until TyXML with
+       https://github.com/ocsigen/tyxml/pull/193 is available. *)
+    Html.Unsafe.coerce_elt
+      (Html.div ~a:[Html.a_class ["spec"; "include"]]
+        [Html.div ~a:[Html.a_class ["doc"]]
+          (docs @ incl)])
+  ],
+  tree
 
 let pack
    : Model.Lang.Compilation_unit.Packed.t ->

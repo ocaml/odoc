@@ -139,7 +139,8 @@ let tag : status -> Ast.tag -> Comment.tag = fun status tag ->
   | `Author _
   | `Since _
   | `Version _
-  | `Canonical _ as tag ->
+  | `Canonical _
+  | `Inline as tag ->
     tag
 
   | `Deprecated content ->

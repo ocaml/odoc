@@ -318,6 +318,10 @@ rule token input = parse
   | "@canonical" horizontal_space+ ([^ '\r' '\n']* as identifier)
     { emit input (`Tag (`Canonical identifier)) }
 
+  | "@inline"
+    { emit input (`Tag `Inline) }
+
+
 
 
   | '{' (['0'-'9'] ['0'-'9']+ as level)

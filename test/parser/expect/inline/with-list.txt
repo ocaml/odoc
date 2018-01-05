@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, characters 8-9:\
+   \n'-' (bulleted list item) must begin on its own line"))
+ (warnings ()))

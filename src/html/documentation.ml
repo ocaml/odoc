@@ -305,6 +305,8 @@ let tag : Comment.tag -> (top_level_flow Html.elt) option = function
       dd [pcdata s]]))
   | `Canonical _ ->
     None
+  | `Inline ->
+    None
 
 
 
