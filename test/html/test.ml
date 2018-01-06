@@ -27,6 +27,13 @@ let () =
     let test_name = file_title in
     let module_name = String.capitalize_ascii test_name in
 
+    (* Filename.extension is only available on 4.04. *)
+    let extension =
+      let dot_index = String.rindex case_filename '.' in
+      String.sub
+        case_filename dot_index (String.length case_filename - dot_index)
+    in
+
     (* Source and intermediate files. *)
     let source_file = cases_directory // case_filename in
     let cmi_file = build_directory // (file_title ^ ".cmi") in
@@ -36,18 +43,42 @@ let () =
     (* HTML files to be compared. *)
     let reference_file = cases_directory // (file_title ^ ".html") in
     let html_file =
-      build_directory // test_package // module_name // "index.html" in
+      match extension with
+      | ".mli" -> build_directory // test_package // module_name // "index.html"
+      | ".mld" -> build_directory // test_package // "index.html"
+      | _ -> assert false
+    in
+
+    (* The commands to run differ depending on what kind of source filw we
+       have. *)
+    let generate_html =
+      match extension with
+      | ".mli" ->
+        fun () ->
+          command "ocamlfind c"
+            "ocamlfind c -bin-annot -o %s -c %s" cmi_file source_file;
+
+          command "odoc compile"
+            "%s compile --package %s %s" odoc test_package cmti_file;
+
+          command "odoc html"
+            "%s html --output-dir %s %s" odoc build_directory odoc_file;
+
+      | ".mld" ->
+        fun () ->
+          prerr_endline (Sys.getcwd ());
+          prerr_endline case_filename;
+          command "odoc html"
+            "%s html --output-dir %s --index-for %s %s"
+            odoc build_directory test_package source_file
+
+      | _ ->
+        assert false
+    in
 
     (* Running the actual commands for the test. *)
     let run_test_case () =
-      command "ocamlfind c"
-        "ocamlfind c -bin-annot -o %s -c %s" cmi_file source_file;
-
-      command "odoc compile"
-        "%s compile --package %s %s" odoc test_package cmti_file;
-
-      command "odoc html"
-        "%s html --output-dir %s %s" odoc build_directory odoc_file;
+      generate_html ();
 
       let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
       match Sys.command diff with
