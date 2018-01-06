@@ -261,20 +261,27 @@ let page_creator ?kind ~path header_docs content =
       add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
     in
 
-    let kind_text =
+    let title_prefix =
       match kind with
       | None
-      | Some `Mod -> "Module"
-      | Some `Arg -> "Parameter"
-      | Some `Mty -> "Module type"
-      | Some `Cty -> "Class type"
-      | Some `Class -> "Class"
-      | Some `Page -> assert false
+      | Some `Mod -> Some "Module"
+      | Some `Arg -> Some "Parameter"
+      | Some `Mty -> Some "Module type"
+      | Some `Cty -> Some "Class type"
+      | Some `Class -> Some "Class"
+      | Some `Page -> None
     in
 
-    let title_heading =
-      Html.h1
-        [Html.pcdata (kind_text ^ " " ^ (String.concat "." (List.tl path)))];
+    let header_docs =
+      match title_prefix with
+      | None ->
+        header_docs
+      | Some prefix ->
+        let title_heading =
+          Html.h1
+            [Html.pcdata (prefix ^ " " ^ (String.concat "." (List.tl path)))]
+        in
+        title_heading::header_docs
     in
 
     let header_content =
@@ -291,9 +298,9 @@ let page_creator ?kind ~path header_docs content =
             ];
           ]
         in
-        nav::title_heading::header_docs
+        nav::header_docs
       else
-        title_heading::header_docs
+        header_docs
     in
 
     let header = Html.header header_content in
