@@ -3,10 +3,19 @@ build :
 	jbuilder build --dev
 
 .PHONY : test
-test : build
+test : unit-test jbuilder-test
+
+.PHONY : unit-test
+unit-test : build
 	jbuilder build --dev @tester
 	(cd _build/default/test/parser && ./test.exe)
 	(cd _build/default/test/html && ./test.exe)
+
+ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
+
+.PHONY : jbuilder-test
+jbuilder-test : build
+	(cd test/jbuilder && PATH=$(ODOC_RELATIVE_PATH):$$PATH jbuilder build @doc)
 
 COVERAGE := _coverage
 BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
@@ -25,4 +34,5 @@ coverage :
 .PHONY : clean
 clean :
 	jbuilder clean
+	(cd test/jbuilder && jbuilder clean)
 	rm -rf $(COVERAGE)

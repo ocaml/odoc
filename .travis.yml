@@ -19,7 +19,9 @@ script:
   - opam install -y --verbose odoc
   - opam remove -y odoc
   - opam install -y alcotest bisect_ppx lambdasoup ocamlfind sexplib
-  - make test
+  - make unit-test
+  - opam pin add -y --dev-repo jbuilder
+  - make jbuilder-test
 
 notifications:
   email:
