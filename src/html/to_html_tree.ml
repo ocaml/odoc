@@ -853,6 +853,49 @@ and substitution
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
 
+and include_ (t : Model.Lang.Include.t) =
+  let docs = docs_to_general_html t.doc in
+  let included_html, tree = signature t.expansion.content in
+  let should_be_inlined =
+    let is_inline_tag element = element.Model.Location_.value = `Tag `Inline in
+    List.exists is_inline_tag t.doc
+  in
+  let should_be_open =
+    let is_open_tag element = element.Model.Location_.value = `Tag `Open in
+    let is_closed_tag element = element.Model.Location_.value = `Tag `Closed in
+    if List.exists is_open_tag t.doc then
+      true
+    else
+      !Html_tree.open_details && not (List.exists is_closed_tag t.doc)
+  in
+  let incl =
+    if should_be_inlined then
+      included_html
+    else
+      let incl =
+        Html.code (
+          Markup.keyword "include " ::
+          module_decl' t.parent t.decl
+        )
+      in
+      (* FIXME: I'd like to add an anchor here, but I don't know what id to give
+         it... *)
+      [
+        Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
+          (Markup.def_summary [incl])
+          included_html
+      ]
+  in
+  [
+    (* TODO The coercion is temporary until TyXML with
+       https://github.com/ocsigen/tyxml/pull/193 is available. *)
+    Html.Unsafe.coerce_elt
+      (Html.div ~a:[Html.a_class ["spec"; "include"]]
+        [Html.div ~a:[Html.a_class ["doc"]]
+          (docs @ incl)])
+  ],
+  tree
+
 
 
 and class_signature (_t : Model.Lang.ClassSignature.t) =
@@ -1010,49 +1053,6 @@ and class_type (t : Model.Lang.ClassType.t) =
       ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
   in
   region, subtree
-
-and include_ (t : Model.Lang.Include.t) =
-  let docs = docs_to_general_html t.doc in
-  let included_html, tree = signature t.expansion.content in
-  let should_be_inlined =
-    let is_inline_tag element = element.Model.Location_.value = `Tag `Inline in
-    List.exists is_inline_tag t.doc
-  in
-  let should_be_open =
-    let is_open_tag element = element.Model.Location_.value = `Tag `Open in
-    let is_closed_tag element = element.Model.Location_.value = `Tag `Closed in
-    if List.exists is_open_tag t.doc then
-      true
-    else
-      !Html_tree.open_details && not (List.exists is_closed_tag t.doc)
-  in
-  let incl =
-    if should_be_inlined then
-      included_html
-    else
-      let incl =
-        Html.code (
-          Markup.keyword "include " ::
-          module_decl' t.parent t.decl
-        )
-      in
-      (* FIXME: I'd like to add an anchor here, but I don't know what id to give
-         it... *)
-      [
-        Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
-          (Markup.def_summary [incl])
-          included_html
-      ]
-  in
-  [
-    (* TODO The coercion is temporary until TyXML with
-       https://github.com/ocsigen/tyxml/pull/193 is available. *)
-    Html.Unsafe.coerce_elt
-      (Html.div ~a:[Html.a_class ["spec"; "include"]]
-        [Html.div ~a:[Html.a_class ["doc"]]
-          (docs @ incl)])
-  ],
-  tree
 
 
 
