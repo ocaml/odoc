@@ -19,6 +19,10 @@ let cases = [
   "interlude.mli";
   "include.mli";
   "mld.mld";
+  "type.mli";
+  "external.mli";
+  "functor.mli";
+  "stop.mli";
 ]
 
 let () =
