@@ -23,6 +23,7 @@ BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
 .PHONY : coverage
 coverage :
 	BISECT_ENABLE=yes jbuilder build --dev @tester
+	find . -name 'bisect*.out' | xargs rm -f
 	(cd _build/default/test/parser && ./test.exe) || true
 	(cd _build/default/test/html && ./test.exe) || true
 	@bisect-ppx-report \
