@@ -853,6 +853,8 @@ and substitution
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
 
+
+
 and class_signature (_t : Model.Lang.ClassSignature.t) =
   assert false
   (* TODO
@@ -1052,6 +1054,8 @@ and include_ (t : Model.Lang.Include.t) =
   ],
   tree
 
+
+
 let pack
    : Model.Lang.Compilation_unit.Packed.t ->
       Html_types.div_content Html.elt list
@@ -1072,6 +1076,8 @@ let pack
   |> fun definitions ->
     [Html.dl definitions]
 
+
+
 let compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
   let package =
     match t.id with
@@ -1087,6 +1093,8 @@ let compilation_unit (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
     | Pack packed -> pack packed, []
   in
   Html_tree.make ~header_docs html subtree
+
+
 
 let page (t : Model.Lang.Page.t) : Html_tree.t =
   let package, name =
