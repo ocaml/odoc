@@ -275,6 +275,37 @@ let constructor
 
 
 
+let variant cstrs : [> Html_types.table ] Html.elt =
+  let constructor id args res =
+    match Url.from_identifier ~stop_before:true id with
+    | Error e -> failwith (Url.Error.to_string e)
+    | Ok { anchor; kind; _ } ->
+      let cell =
+        Html.td ~a:[ Html.a_class ["def"; kind ] ] (
+          Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
+          Html.code [Markup.keyword "| " ] ::
+          constructor id args res
+        )
+      in
+      anchor, cell
+  in
+  let rows =
+    cstrs |> List.map (fun cstr ->
+      let open Model.Lang.TypeDecl.Constructor in
+      let anchor, lhs = constructor cstr.id cstr.args cstr.res in
+      let rhs = relax_docs_type (Documentation.to_html ~wrap:() cstr.doc) in
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
+        lhs ::
+        if not (Documentation.has_doc cstr.doc) then [] else [
+          Html.td ~a:[ Html.a_class ["doc"] ] rhs
+        ]
+      )
+    )
+  in
+  Html.table ~a:[ Html.a_class ["variant"] ] rows
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -711,36 +742,6 @@ and polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
     let constrs = String.concat " " lst in
     Html.code [Html.pcdata "[< "] :: table ::
       [Html.code [Html.pcdata (" " ^ constrs ^ " ]")]]
-
-
-and variant cstrs : [> Html_types.table ] Html.elt =
-  let constructor id args res =
-    match Url.from_identifier ~stop_before:true id with
-    | Error e -> failwith (Url.Error.to_string e)
-    | Ok { anchor; kind; _ } ->
-      let cell =
-        Html.td ~a:[ Html.a_class ["def"; kind ] ] (
-          Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
-          Html.code [Markup.keyword "| " ] ::
-          constructor id args res
-        )
-      in
-      anchor, cell
-  in
-  let rows =
-    cstrs |> List.map (fun cstr ->
-      let open Model.Lang.TypeDecl.Constructor in
-      let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-      let rhs = relax_docs_type (Documentation.to_html ~wrap:() cstr.doc) in
-      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
-        lhs ::
-        if not (Documentation.has_doc cstr.doc) then [] else [
-          Html.td ~a:[ Html.a_class ["doc"] ] rhs
-        ]
-      )
-    )
-  in
-  Html.table ~a:[ Html.a_class ["variant"] ] rows
 
 and type_decl (t : Model.Lang.TypeDecl.t) =
   let tyname = Paths.Identifier.name t.id in
