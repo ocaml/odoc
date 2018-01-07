@@ -454,6 +454,54 @@ let format_manifest
 
 
 
+let type_decl (t : Model.Lang.TypeDecl.t) =
+  let tyname = Paths.Identifier.name t.id in
+  let params = format_params t.equation.params in
+  let constraints = format_constraints t.equation.constraints in
+  let manifest, need_private =
+    match t.equation.manifest with
+    | Some (Model.Lang.TypeExpr.Variant variant) ->
+      let manifest =
+        Markup.keyword " = " ::
+        (if t.equation.private_ then
+          Markup.keyword "private "
+        else
+          Html.pcdata "") ::
+        polymorphic_variant ~type_ident:t.id variant
+      in
+      manifest, false
+    | _ ->
+      let manifest, need_private = format_manifest t.equation in
+      [Html.code manifest], need_private
+  in
+  let representation =
+    match t.representation with
+    | None -> []
+    | Some repr ->
+      Html.code [
+        Markup.keyword " = ";
+        if need_private then Markup.keyword "private " else Html.pcdata ""
+      ] ::
+      match repr with
+      | Extensible -> [Html.code [Markup.keyword  ".."]]
+      | Variant cstrs -> [variant cstrs]
+      | Record fields -> record fields
+  in
+  let doc = docs_to_general_html t.doc in
+  let tdecl_def =
+    Html.code [
+      Markup.keyword "type ";
+      params;
+      Html.pcdata tyname;
+    ] ::
+    manifest @
+    representation @
+    [Html.code constraints]
+  in
+  Markup.make_spec ~id:t.id ~doc tdecl_def, []
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -778,52 +826,6 @@ and substitution
     Html.pcdata " := " ::
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
-
-and type_decl (t : Model.Lang.TypeDecl.t) =
-  let tyname = Paths.Identifier.name t.id in
-  let params = format_params t.equation.params in
-  let constraints = format_constraints t.equation.constraints in
-  let manifest, need_private =
-    match t.equation.manifest with
-    | Some (Model.Lang.TypeExpr.Variant variant) ->
-      let manifest =
-        Markup.keyword " = " ::
-        (if t.equation.private_ then
-          Markup.keyword "private "
-        else
-          Html.pcdata "") ::
-        polymorphic_variant ~type_ident:t.id variant
-      in
-      manifest, false
-    | _ ->
-      let manifest, need_private = format_manifest t.equation in
-      [Html.code manifest], need_private
-  in
-  let representation =
-    match t.representation with
-    | None -> []
-    | Some repr ->
-      Html.code [
-        Markup.keyword " = ";
-        if need_private then Markup.keyword "private " else Html.pcdata ""
-      ] ::
-      match repr with
-      | Extensible -> [Html.code [Markup.keyword  ".."]]
-      | Variant cstrs -> [variant cstrs]
-      | Record fields -> record fields
-  in
-  let doc = docs_to_general_html t.doc in
-  let tdecl_def =
-    Html.code [
-      Markup.keyword "type ";
-      params;
-      Html.pcdata tyname;
-    ] ::
-    manifest @
-    representation @
-    [Html.code constraints]
-  in
-  Markup.make_spec ~id:t.id ~doc tdecl_def, []
 
 and value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
