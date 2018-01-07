@@ -232,6 +232,49 @@ let record fields =
 
 
 
+let constructor
+   : 'b. 'b Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
+  -> Model.Lang.TypeExpr.t option
+  -> [> `Code | `PCDATA | `Table ] Html.elt list
+= fun id args ret_type ->
+    let name = Paths.Identifier.name id in
+    let cstr =
+      Html.span ~a:[Html.a_class [Url.kind_of_id_exn id]] [Html.pcdata name] in
+    let is_gadt, ret_type =
+      match ret_type with
+      | None -> false, []
+      | Some te ->
+        let constant =
+          match args with
+          | Tuple [] -> true
+          | _ -> false
+        in
+        let ret_type =
+          Html.pcdata " " ::
+          (if constant then Markup.keyword ":" else Markup.arrow) ::
+          Html.pcdata " " ::
+          type_expr te
+        in
+        true, ret_type
+    in
+    match args with
+    | Tuple [] -> [ Html.code (cstr :: ret_type) ]
+    | Tuple lst ->
+      [ Html.code (
+          cstr ::
+          Markup.keyword (if is_gadt then " : " else " of ") ::
+          list_concat_map lst ~sep:(Markup.keyword " * ")
+            ~f:(type_expr ~needs_parentheses:is_gadt)
+          @ ret_type
+        )
+      ]
+    | Record fields ->
+      Html.code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
+      :: record fields
+      @ [ Html.code ret_type ]
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -556,47 +599,6 @@ and substitution
     Html.pcdata " := " ::
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
-
-and constructor
-   : 'b. 'b Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
-  -> Model.Lang.TypeExpr.t option
-  -> [> `Code | `PCDATA | `Table ] Html.elt list
-= fun id args ret_type ->
-    let name = Paths.Identifier.name id in
-    let cstr =
-      Html.span ~a:[Html.a_class [Url.kind_of_id_exn id]] [Html.pcdata name] in
-    let is_gadt, ret_type =
-      match ret_type with
-      | None -> false, []
-      | Some te ->
-        let constant =
-          match args with
-          | Tuple [] -> true
-          | _ -> false
-        in
-        let ret_type =
-          Html.pcdata " " ::
-          (if constant then Markup.keyword ":" else Markup.arrow) ::
-          Html.pcdata " " ::
-          type_expr te
-        in
-        true, ret_type
-    in
-    match args with
-    | Tuple [] -> [ Html.code (cstr :: ret_type) ]
-    | Tuple lst ->
-      [ Html.code (
-          cstr ::
-          Markup.keyword (if is_gadt then " : " else " of ") ::
-          list_concat_map lst ~sep:(Markup.keyword " * ")
-            ~f:(type_expr ~needs_parentheses:is_gadt)
-          @ ret_type
-        )
-      ]
-    | Record fields ->
-      Html.code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
-      :: record fields
-      @ [ Html.code ret_type ]
 
 and format_params
    : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
