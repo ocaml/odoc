@@ -330,6 +330,14 @@ let extension (t : Model.Lang.Extension.t) =
 
 
 
+let exn (t : Model.Lang.Exception.t) =
+  let cstr = constructor t.id t.args t.res in
+  let doc = docs_to_general_html t.doc in
+  let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
+  Markup.make_spec ~id:t.id ~doc exn, []
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -812,12 +820,6 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
     [Html.code constraints]
   in
   Markup.make_spec ~id:t.id ~doc tdecl_def, []
-
-and exn (t : Model.Lang.Exception.t) =
-  let cstr = constructor t.id t.args t.res in
-  let doc = docs_to_general_html t.doc in
-  let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
-  Markup.make_spec ~id:t.id ~doc exn, []
 
 and value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
