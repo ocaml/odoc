@@ -338,6 +338,65 @@ let exn (t : Model.Lang.Exception.t) =
 
 
 
+let polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
+  let row item =
+    let kind_approx, cstr =
+      match item with
+      | Model.Lang.TypeExpr.Variant.Type te ->
+        "unknown", [Html.code (type_expr te)]
+      | Constructor (name, _bool, args) ->
+        let cstr = "`" ^ name in
+        "constructor",
+        match args with
+        | [] -> [Html.code [ Html.pcdata cstr ]]
+        | _ ->
+          [ Html.code (
+              Html.pcdata cstr ::
+              Markup.keyword " of " ::
+              list_concat_map args ~sep:(Markup.keyword " * ")
+                ~f:type_expr
+            )
+          ]
+    in
+    try
+      let { Url.Anchor. name = anchor; kind } =
+        Url.Anchor.Polymorphic_variant_decl.from_element ~type_ident item
+      in
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] [
+        Html.td ~a:[ Html.a_class ["def"; kind] ] (
+          Html.a ~a:[
+            Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
+          Html.code [Markup.keyword "| " ] ::
+          cstr
+        );
+        (* TODO: retrieve doc comments. *)
+      ]
+    with Failure s ->
+      Printf.eprintf "ERROR: %s\n%!" s;
+      Html.tr [
+        Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
+          Html.code [Markup.keyword "| " ] ::
+          cstr
+        );
+        (* TODO: retrieve doc comments. *)
+      ]
+  in
+  let table =
+    Html.table ~a:[Html.a_class ["variant"]] (List.map row t.elements) in
+  match t.kind with
+  | Fixed ->
+    Html.code [Html.pcdata "[ "] :: table :: [Html.code [Html.pcdata " ]"]]
+  | Open ->
+    Html.code [Html.pcdata "[> "] :: table :: [Html.code [Html.pcdata " ]"]]
+  | Closed [] ->
+    Html.code [Html.pcdata "[< "] :: table :: [Html.code [Html.pcdata " ]"]]
+  | Closed lst ->
+    let constrs = String.concat " " lst in
+    Html.code [Html.pcdata "[< "] :: table ::
+      [Html.code [Html.pcdata (" " ^ constrs ^ " ]")]]
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -717,63 +776,6 @@ and format_manifest
       type_expr t
     in
     manifest, false
-
-and polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
-  let row item =
-    let kind_approx, cstr =
-      match item with
-      | Model.Lang.TypeExpr.Variant.Type te ->
-        "unknown", [Html.code (type_expr te)]
-      | Constructor (name, _bool, args) ->
-        let cstr = "`" ^ name in
-        "constructor",
-        match args with
-        | [] -> [Html.code [ Html.pcdata cstr ]]
-        | _ ->
-          [ Html.code (
-              Html.pcdata cstr ::
-              Markup.keyword " of " ::
-              list_concat_map args ~sep:(Markup.keyword " * ")
-                ~f:type_expr
-            )
-          ]
-    in
-    try
-      let { Url.Anchor. name = anchor; kind } =
-        Url.Anchor.Polymorphic_variant_decl.from_element ~type_ident item
-      in
-      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] [
-        Html.td ~a:[ Html.a_class ["def"; kind] ] (
-          Html.a ~a:[
-            Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
-          Html.code [Markup.keyword "| " ] ::
-          cstr
-        );
-        (* TODO: retrieve doc comments. *)
-      ]
-    with Failure s ->
-      Printf.eprintf "ERROR: %s\n%!" s;
-      Html.tr [
-        Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
-          Html.code [Markup.keyword "| " ] ::
-          cstr
-        );
-        (* TODO: retrieve doc comments. *)
-      ]
-  in
-  let table =
-    Html.table ~a:[Html.a_class ["variant"]] (List.map row t.elements) in
-  match t.kind with
-  | Fixed ->
-    Html.code [Html.pcdata "[ "] :: table :: [Html.code [Html.pcdata " ]"]]
-  | Open ->
-    Html.code [Html.pcdata "[> "] :: table :: [Html.code [Html.pcdata " ]"]]
-  | Closed [] ->
-    Html.code [Html.pcdata "[< "] :: table :: [Html.code [Html.pcdata " ]"]]
-  | Closed lst ->
-    let constrs = String.concat " " lst in
-    Html.code [Html.pcdata "[< "] :: table ::
-      [Html.code [Html.pcdata (" " ^ constrs ^ " ]")]]
 
 and type_decl (t : Model.Lang.TypeDecl.t) =
   let tyname = Paths.Identifier.name t.id in
