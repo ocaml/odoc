@@ -502,6 +502,32 @@ let type_decl (t : Model.Lang.TypeDecl.t) =
 
 
 
+and value (t : Model.Lang.Value.t) =
+  let name = Paths.Identifier.name t.id in
+  let doc = docs_to_general_html t.doc in
+  let value =
+    Markup.keyword "val " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
+    type_expr t.type_
+  in
+  Markup.make_def ~id:t.id ~doc ~code:value, []
+
+and external_ (t : Model.Lang.External.t) =
+  let name = Paths.Identifier.name t.id in
+  let doc = docs_to_general_html t.doc in
+  let external_ =
+    Markup.keyword "external " ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
+    type_expr t.type_ @
+    Html.pcdata " = " ::
+    List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
+  in
+  Markup.make_def ~id:t.id ~doc ~code:external_, []
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -826,30 +852,6 @@ and substitution
     Html.pcdata " := " ::
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
-
-and value (t : Model.Lang.Value.t) =
-  let name = Paths.Identifier.name t.id in
-  let doc = docs_to_general_html t.doc in
-  let value =
-    Markup.keyword "val " ::
-    Html.pcdata name ::
-    Html.pcdata " : " ::
-    type_expr t.type_
-  in
-  Markup.make_def ~id:t.id ~doc ~code:value, []
-
-and external_ (t : Model.Lang.External.t) =
-  let name = Paths.Identifier.name t.id in
-  let doc = docs_to_general_html t.doc in
-  let external_ =
-    Markup.keyword "external " ::
-    Html.pcdata name ::
-    Html.pcdata " : " ::
-    type_expr t.type_ @
-    Html.pcdata " = " ::
-    List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
-  in
-  Markup.make_def ~id:t.id ~doc ~code:external_, []
 
 and class_signature (_t : Model.Lang.ClassSignature.t) =
   assert false
