@@ -51,10 +51,17 @@ let make_def ~id ~code:def ~doc =
 
 (* TODO This should be merged with make_def, above. *)
 let make_spec ~id ?doc code =
-  match Url.from_identifier ~stop_before:true id with
-  | Error e -> failwith (Url.Error.to_string e)
-  | Ok { anchor; kind; _ } ->
-    let item =
+  let item =
+    match Url.from_identifier ~stop_before:true id with
+    | Error _ ->
+      (* TODO Perhps Url.from_identifier shouldn't return an error, but an
+         option, or maybe all things that can be passed to it should be made
+         linkable. In the meantime, this is a workaround that generates markup
+         without an anchor. It is a workaround for extensible type
+         extensions. *)
+      Html.dt [
+        Html.Unsafe.coerce_elt (Html.div ~a:[Html.a_class ["def"]] code)]
+    | Ok { anchor; kind; _ } ->
       Html.dt [
         Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] [];
         Html.Unsafe.coerce_elt
@@ -62,11 +69,11 @@ let make_spec ~id ?doc code =
         (* TODO The coercion is temporary until TyXML with
            https://github.com/ocsigen/tyxml/pull/193 is available. *)
       ]
-    in
-    match doc with
-    | None
-    | Some [] -> [item]
-    | Some doc -> [item; Html.dd doc]
+  in
+  match doc with
+  | None
+  | Some [] -> [item]
+  | Some doc -> [item; Html.dd doc]
 
 let arrow =
   Html.span
