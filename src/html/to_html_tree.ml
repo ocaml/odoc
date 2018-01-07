@@ -306,6 +306,30 @@ let variant cstrs : [> Html_types.table ] Html.elt =
 
 
 
+let extension_constructor (t : Model.Lang.Extension.Constructor.t) =
+  (* TODO doc *)
+  constructor t.id t.args t.res
+
+let extension (t : Model.Lang.Extension.t) =
+  let doc = docs_to_general_html t.doc in
+  let extension =
+    Html.code (
+      Markup.keyword "type " ::
+      Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
+      [ Markup.keyword " += " ]
+    ) ::
+    list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
+      ~f:extension_constructor
+  in
+  (* FIXME: really want to use the kind "extension" here? *)
+  (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
+     have an anchor either). *)
+  (* TODO Fix this junk. *)
+  (* TODO make_spec needs to be modified to make the anchor optional. *)
+  Markup.make_spec ~id:(CoreType "fixme") ~doc extension, []
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -788,28 +812,6 @@ and type_decl (t : Model.Lang.TypeDecl.t) =
     [Html.code constraints]
   in
   Markup.make_spec ~id:t.id ~doc tdecl_def, []
-
-and extension (t : Model.Lang.Extension.t) =
-  let doc = docs_to_general_html t.doc in
-  let extension =
-    Html.code (
-      Markup.keyword "type " ::
-      Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
-      [ Markup.keyword " += " ]
-    ) ::
-    list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
-      ~f:extension_constructor
-  in
-  (* FIXME: really want to use the kind "extension" here? *)
-  (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
-     have an anchor either). *)
-  (* TODO Fix this junk. *)
-  (* TODO make_spec needs to be modified to make the anchor optional. *)
-  Markup.make_spec ~id:(CoreType "fixme") ~doc extension, []
-
-and extension_constructor (t : Model.Lang.Extension.Constructor.t) =
-  (* TODO doc *)
-  constructor t.id t.args t.res
 
 and exn (t : Model.Lang.Exception.t) =
   let cstr = constructor t.id t.args t.res in
