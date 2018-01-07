@@ -50,6 +50,149 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
+
+
+let rec te_variant
+  : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
+      ('inner, 'outer) text Html.elt list
+= fun (t : Model.Lang.TypeExpr.Variant.t) ->
+  let elements =
+    list_concat_map t.elements ~sep:(Html.pcdata " | ") ~f:(function
+      | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
+      | Constructor (name, _bool, args) ->
+        let constr = "`" ^ name in
+        match args with
+        | [] -> [ Html.pcdata constr ]
+        | _ ->
+          let args =
+            list_concat_map args ~sep:(Html.pcdata " * ") ~f:type_expr
+          in
+          Html.pcdata (constr ^ " of ") :: args
+    )
+  in
+  match t.kind with
+  | Fixed -> Html.pcdata "[ " :: elements @ [Html.pcdata " ]"]
+  | Open -> Html.pcdata "[> " :: elements @ [Html.pcdata " ]"]
+  | Closed [] -> Html.pcdata "[< " :: elements @ [Html.pcdata " ]"]
+  | Closed lst ->
+    let constrs = String.concat " " lst in
+    Html.pcdata "[< " :: elements @ [Html.pcdata (" " ^ constrs ^ " ]")]
+
+and te_object
+  : 'inner 'outer. Model.Lang.TypeExpr.Object.t ->
+      ('inner, 'outer) text Html.elt list
+= fun (t : Model.Lang.TypeExpr.Object.t) ->
+  let fields =
+    list_concat_map t.fields ~f:(function
+      | Model.Lang.TypeExpr.Object.Method { name; type_ } ->
+        Html.pcdata (name ^ " : ") :: type_expr type_ @ [Html.pcdata "; "]
+      | Inherit type_ ->
+        type_expr type_ @ [Html.pcdata "; "]
+    )
+  in
+  Html.pcdata "< " ::
+    fields @ [Html.pcdata ((if t.open_ then ".. " else "") ^ ">")]
+
+and format_type_path
+  : 'inner 'outer. delim:[ `parens | `brackets ]
+  -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
+  -> ('inner, 'outer) text Html.elt list
+= fun ~delim params path ->
+  match params with
+  | [] -> path
+  | [param] ->
+    type_expr ~needs_parentheses:true param @ Html.pcdata " " :: path
+  | params  ->
+    let params =
+      list_concat_map params ~sep:(Html.pcdata ",\194\160")
+        ~f:type_expr
+    in
+    match delim with
+    | `parens   -> Html.pcdata "(" :: params @ Html.pcdata ")\194\160" :: path
+    | `brackets -> Html.pcdata "[" :: params @ Html.pcdata "]\194\160" :: path
+
+and type_expr
+   : 'inner 'outer. ?needs_parentheses:bool
+  -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
+= fun ?(needs_parentheses=false) t ->
+  match t with
+  | Var s -> [Markup.Type.var ("'" ^ s)]
+  | Any  -> [Markup.Type.var "_"]
+  | Alias (te, alias) ->
+    type_expr ~needs_parentheses:true te @
+    Markup.keyword " as " :: [ Html.pcdata alias ]
+  | Arrow (None, src, dst) ->
+    let res =
+      type_expr ~needs_parentheses:true src @
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
+    in
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
+  | Arrow (Some lbl, src, dst) ->
+    let res =
+      Markup.label lbl @ Html.pcdata ":" ::
+      type_expr ~needs_parentheses:true src @
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
+    in
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
+  | Tuple lst ->
+    let res =
+      list_concat_map lst ~sep:(Markup.keyword " * ")
+        ~f:(type_expr ~needs_parentheses:true)
+    in
+    if not needs_parentheses then
+      res
+    else
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
+  | Constr (path, args) ->
+    let link = Html_tree.Relative_link.of_path ~stop_before:false path in
+    format_type_path ~delim:(`parens) args link
+  | Variant v -> te_variant v
+  | Object o -> te_object o
+  | Class (path, args) ->
+    format_type_path ~delim:(`brackets) args
+      (Html_tree.Relative_link.of_path ~stop_before:false path)
+  | Poly (polyvars, t) ->
+    Html.pcdata (String.concat " " polyvars ^ ". ") :: type_expr t
+  | Package pkg ->
+    Html.pcdata "(" :: Markup.keyword "module " ::
+    Html_tree.Relative_link.of_path ~stop_before:false pkg.path @
+    begin match pkg.substitutions with
+    | [] -> []
+    | lst ->
+      Html.pcdata " " :: Markup.keyword "with" :: Html.pcdata " " ::
+      list_concat_map ~sep:(Markup.keyword " and ") lst
+        ~f:(package_subst pkg.path)
+    end
+    @ [Html.pcdata ")"]
+
+and package_subst
+   : 'inner 'outer.
+     Paths.Path.module_type -> Paths.Fragment.type_ * Model.Lang.TypeExpr.t
+   -> ('inner, 'outer) text Html.elt list
+   = fun pkg_path (frag_typ, te) ->
+  Markup.keyword "type " ::
+  (match pkg_path with
+   | Paths.Path.Resolved rp ->
+     let base =
+       Paths.Identifier.signature_of_module_type
+        (Paths.Path.Resolved.identifier rp)
+     in
+     Html_tree.Relative_link.of_fragment ~base
+       (Paths.Fragment.any_sort frag_typ)
+   | _ ->
+     [Html.pcdata
+      (Html_tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
+  Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
+  type_expr te
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -668,145 +811,6 @@ and exn (t : Model.Lang.Exception.t) =
   let doc = docs_to_general_html t.doc in
   let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
   Markup.make_spec ~id:t.id ~doc exn, []
-
-and te_variant
-  : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
-      ('inner, 'outer) text Html.elt list
-= fun (t : Model.Lang.TypeExpr.Variant.t) ->
-  let elements =
-    list_concat_map t.elements ~sep:(Html.pcdata " | ") ~f:(function
-      | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
-      | Constructor (name, _bool, args) ->
-        let constr = "`" ^ name in
-        match args with
-        | [] -> [ Html.pcdata constr ]
-        | _ ->
-          let args =
-            list_concat_map args ~sep:(Html.pcdata " * ") ~f:type_expr
-          in
-          Html.pcdata (constr ^ " of ") :: args
-    )
-  in
-  match t.kind with
-  | Fixed -> Html.pcdata "[ " :: elements @ [Html.pcdata " ]"]
-  | Open -> Html.pcdata "[> " :: elements @ [Html.pcdata " ]"]
-  | Closed [] -> Html.pcdata "[< " :: elements @ [Html.pcdata " ]"]
-  | Closed lst ->
-    let constrs = String.concat " " lst in
-    Html.pcdata "[< " :: elements @ [Html.pcdata (" " ^ constrs ^ " ]")]
-
-and te_object
-  : 'inner 'outer. Model.Lang.TypeExpr.Object.t ->
-      ('inner, 'outer) text Html.elt list
-= fun (t : Model.Lang.TypeExpr.Object.t) ->
-  let fields =
-    list_concat_map t.fields ~f:(function
-      | Model.Lang.TypeExpr.Object.Method { name; type_ } ->
-        Html.pcdata (name ^ " : ") :: type_expr type_ @ [Html.pcdata "; "]
-      | Inherit type_ ->
-        type_expr type_ @ [Html.pcdata "; "]
-    )
-  in
-  Html.pcdata "< " ::
-    fields @ [Html.pcdata ((if t.open_ then ".. " else "") ^ ">")]
-
-and format_type_path
-  : 'inner 'outer. delim:[ `parens | `brackets ]
-  -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
-  -> ('inner, 'outer) text Html.elt list
-= fun ~delim params path ->
-  match params with
-  | [] -> path
-  | [param] ->
-    type_expr ~needs_parentheses:true param @ Html.pcdata " " :: path
-  | params  ->
-    let params =
-      list_concat_map params ~sep:(Html.pcdata ",\194\160")
-        ~f:type_expr
-    in
-    match delim with
-    | `parens   -> Html.pcdata "(" :: params @ Html.pcdata ")\194\160" :: path
-    | `brackets -> Html.pcdata "[" :: params @ Html.pcdata "]\194\160" :: path
-
-and type_expr
-   : 'inner 'outer. ?needs_parentheses:bool
-  -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
-= fun ?(needs_parentheses=false) t ->
-  match t with
-  | Var s -> [Markup.Type.var ("'" ^ s)]
-  | Any  -> [Markup.Type.var "_"]
-  | Alias (te, alias) ->
-    type_expr ~needs_parentheses:true te @
-    Markup.keyword " as " :: [ Html.pcdata alias ]
-  | Arrow (None, src, dst) ->
-    let res =
-      type_expr ~needs_parentheses:true src @
-      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
-    in
-    if not needs_parentheses then
-      res
-    else
-      Html.pcdata "(" :: res @ [Html.pcdata ")"]
-  | Arrow (Some lbl, src, dst) ->
-    let res =
-      Markup.label lbl @ Html.pcdata ":" ::
-      type_expr ~needs_parentheses:true src @
-      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: type_expr dst
-    in
-    if not needs_parentheses then
-      res
-    else
-      Html.pcdata "(" :: res @ [Html.pcdata ")"]
-  | Tuple lst ->
-    let res =
-      list_concat_map lst ~sep:(Markup.keyword " * ")
-        ~f:(type_expr ~needs_parentheses:true)
-    in
-    if not needs_parentheses then
-      res
-    else
-      Html.pcdata "(" :: res @ [Html.pcdata ")"]
-  | Constr (path, args) ->
-    let link = Html_tree.Relative_link.of_path ~stop_before:false path in
-    format_type_path ~delim:(`parens) args link
-  | Variant v -> te_variant v
-  | Object o -> te_object o
-  | Class (path, args) ->
-    format_type_path ~delim:(`brackets) args
-      (Html_tree.Relative_link.of_path ~stop_before:false path)
-  | Poly (polyvars, t) ->
-    Html.pcdata (String.concat " " polyvars ^ ". ") :: type_expr t
-  | Package pkg ->
-    Html.pcdata "(" :: Markup.keyword "module " ::
-    Html_tree.Relative_link.of_path ~stop_before:false pkg.path @
-    begin match pkg.substitutions with
-    | [] -> []
-    | lst ->
-      Html.pcdata " " :: Markup.keyword "with" :: Html.pcdata " " ::
-      list_concat_map ~sep:(Markup.keyword " and ") lst
-        ~f:(package_subst pkg.path)
-    end
-    @ [Html.pcdata ")"]
-
-and package_subst
-   : 'inner 'outer.
-     Paths.Path.module_type -> Paths.Fragment.type_ * Model.Lang.TypeExpr.t
-   -> ('inner, 'outer) text Html.elt list
-   = fun pkg_path (frag_typ, te) ->
-  Markup.keyword "type " ::
-  (match pkg_path with
-   | Paths.Path.Resolved rp ->
-     let base =
-       Paths.Identifier.signature_of_module_type
-        (Paths.Path.Resolved.identifier rp)
-     in
-     Html_tree.Relative_link.of_fragment ~base
-       (Paths.Fragment.any_sort frag_typ)
-   | _ ->
-     [Html.pcdata
-      (Html_tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
-  Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
-  type_expr te
 
 and value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
