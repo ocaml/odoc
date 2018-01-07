@@ -1,4 +1,5 @@
 let cases_directory = "cases"
+let expect_directory = "expect"
 let build_directory = "_scratch"
 let test_package = "test_package"
 let odoc = "../../src/odoc/bin/main.exe"
@@ -11,19 +12,21 @@ let command label =
     if exit_code <> 0 then
       Alcotest.failf "'%s' exited with %i" label exit_code)
 
-let () =
-  let cases : string list =
-    Sys.readdir cases_directory
-    |> Array.to_list
-    |> List.filter (fun entry -> not (Filename.check_suffix entry ".html"))
-  in
+let cases = [
+  "val.mli";
+  "markup.mli";
+  "module.mli";
+  "interlude.mli";
+  "include.mli";
+  "mld.mld";
+]
 
+let () =
   Unix.mkdir build_directory 0o755;
 
   let make_html_test : string -> unit Alcotest.test_case = fun case_filename ->
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
-    let file_title = String.sub file_title 4 (String.length file_title - 4) in
     let test_name = file_title in
     let module_name = String.capitalize_ascii test_name in
 
@@ -41,7 +44,7 @@ let () =
     let odoc_file = build_directory // (file_title ^ ".odoc") in
 
     (* HTML files to be compared. *)
-    let reference_file = cases_directory // (file_title ^ ".html") in
+    let reference_file = expect_directory // (file_title ^ ".html") in
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
