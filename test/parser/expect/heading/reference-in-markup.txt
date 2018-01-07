@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, characters 3-9:\
+   \n'{!...}' (cross-reference) is not allowed in '{2 ...}' (section heading)"))
+ (warnings ()))

@@ -427,6 +427,8 @@ let tests : test_suite list = [
     t "bad-level-long-number" "{22 Foo}";
     t "bad-level-title" "{1 Foo}";
     t "bad-level-too-deep" "{5 Foo}";
+    t "link-in-markup" "{2 {{:foo}}}";
+    t "reference-in-markup" "{2 {!foo}}";
   ];
 
   "section-contexts", [
