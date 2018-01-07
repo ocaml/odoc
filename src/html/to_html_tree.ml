@@ -397,6 +397,63 @@ let polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
 
 
 
+let format_params
+   : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
+  -> ([> `PCDATA ] as 'row) Html.elt
+= fun ?(delim=`parens) params ->
+  let format_param (desc, variance_opt) =
+    let param_desc =
+      match desc with
+      | Model.Lang.TypeDecl.Any -> "_"
+      | Var s -> "'" ^ s
+    in
+    match variance_opt with
+    | None -> param_desc
+    | Some Model.Lang.TypeDecl.Pos -> "+" ^ param_desc
+    | Some Model.Lang.TypeDecl.Neg -> "-" ^ param_desc
+  in
+  Html.pcdata (
+    match params with
+    | [] -> ""
+    | [x] -> format_param x ^ " "
+    | lst ->
+      let params = String.concat ", " (List.map format_param lst) in
+      (match delim with `parens -> "(" | `brackets -> "[")
+      ^ params ^
+      (match delim with `parens -> ") " | `brackets -> "] ")
+  )
+
+let format_constraints
+  : 'inner_row 'outer_row. (_ * _) list ->
+  ([> `PCDATA | `Span
+   | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list
+  = function
+  | [] -> []
+  | lst ->
+    Markup.keyword " constraint " ::
+    list_concat_map lst ~sep:(Markup.keyword " and ") ~f:(fun (t1, t2) ->
+      type_expr t1 @ Html.pcdata " = " :: type_expr t2
+    )
+
+let format_manifest
+  : 'inner_row 'outer_row. ?compact_variants:bool
+  -> Model.Lang.TypeDecl.Equation.t
+  -> ('inner_row, 'outer_row) text Html.elt list * bool
+= fun ?(compact_variants=true) equation ->
+  let _ = compact_variants in (* TODO *)
+  let private_ = equation.private_ in
+  match equation.manifest with
+  | None -> [], private_
+  | Some t ->
+    let manifest =
+      Markup.keyword " = " ::
+      (if private_ then Markup.keyword "private " else Html.pcdata "") ::
+      type_expr t
+    in
+    manifest, false
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -721,61 +778,6 @@ and substitution
     Html.pcdata " := " ::
     params ::
     Html_tree.Relative_link.of_path ~stop_before:false typ_path
-
-and format_params
-   : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
-  -> ([> `PCDATA ] as 'row) Html.elt
-= fun ?(delim=`parens) params ->
-  let format_param (desc, variance_opt) =
-    let param_desc =
-      match desc with
-      | Model.Lang.TypeDecl.Any -> "_"
-      | Var s -> "'" ^ s
-    in
-    match variance_opt with
-    | None -> param_desc
-    | Some Model.Lang.TypeDecl.Pos -> "+" ^ param_desc
-    | Some Model.Lang.TypeDecl.Neg -> "-" ^ param_desc
-  in
-  Html.pcdata (
-    match params with
-    | [] -> ""
-    | [x] -> format_param x ^ " "
-    | lst ->
-      let params = String.concat ", " (List.map format_param lst) in
-      (match delim with `parens -> "(" | `brackets -> "[")
-      ^ params ^
-      (match delim with `parens -> ") " | `brackets -> "] ")
-  )
-
-and format_constraints
-  : 'inner_row 'outer_row. (_ * _) list ->
-  ([> `PCDATA | `Span
-   | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list
-  = function
-  | [] -> []
-  | lst ->
-    Markup.keyword " constraint " ::
-    list_concat_map lst ~sep:(Markup.keyword " and ") ~f:(fun (t1, t2) ->
-      type_expr t1 @ Html.pcdata " = " :: type_expr t2
-    )
-
-and format_manifest
-  : 'inner_row 'outer_row. ?compact_variants:bool
-  -> Model.Lang.TypeDecl.Equation.t
-  -> ('inner_row, 'outer_row) text Html.elt list * bool
-= fun ?(compact_variants=true) equation ->
-  let _ = compact_variants in (* TODO *)
-  let private_ = equation.private_ in
-  match equation.manifest with
-  | None -> [], private_
-  | Some t ->
-    let manifest =
-      Markup.keyword " = " ::
-      (if private_ then Markup.keyword "private " else Html.pcdata "") ::
-      type_expr t
-    in
-    manifest, false
 
 and type_decl (t : Model.Lang.TypeDecl.t) =
   let tyname = Paths.Identifier.name t.id in
