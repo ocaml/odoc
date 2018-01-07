@@ -193,6 +193,45 @@ and package_subst
 
 
 
+let record fields =
+  let field mutable_ id typ =
+    match Url.from_identifier ~stop_before:true id with
+    | Error e -> failwith (Url.Error.to_string e)
+    | Ok { anchor; kind; _ } ->
+      let name = Paths.Identifier.name id in
+      let cell =
+        Html.td ~a:[ Html.a_class ["def"; kind ] ]
+          [ Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] []
+          ; Html.code (
+              (if mutable_ then Markup.keyword "mutable " else Html.pcdata "")
+              :: (Html.pcdata name)
+              :: (Html.pcdata " : ")
+              :: (type_expr typ)
+              @  [Html.pcdata ";"]
+            )
+          ]
+      in
+      anchor, cell
+  in
+  let rows =
+    fields |> List.map (fun fld ->
+      let open Model.Lang.TypeDecl.Field in
+      let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
+      let rhs = relax_docs_type (Documentation.to_html ~wrap:() fld.doc) in
+      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
+        lhs ::
+        if not (Documentation.has_doc fld.doc) then [] else [
+          Html.td ~a:[ Html.a_class ["doc"] ] rhs
+        ]
+      )
+    )
+  in
+  [ Html.code [Html.pcdata "{"]
+  ; Html.table ~a:[ Html.a_class ["record"] ] rows
+  ; Html.code [Html.pcdata "}"]]
+
+
+
 let rec signature
     : Model.Lang.Signature.t ->
       Html_types.div_content Html.elt list * Html_tree.t list
@@ -700,43 +739,6 @@ and variant cstrs : [> Html_types.table ] Html.elt =
     )
   in
   Html.table ~a:[ Html.a_class ["variant"] ] rows
-
-and record fields =
-  let field mutable_ id typ =
-    match Url.from_identifier ~stop_before:true id with
-    | Error e -> failwith (Url.Error.to_string e)
-    | Ok { anchor; kind; _ } ->
-      let name = Paths.Identifier.name id in
-      let cell =
-        Html.td ~a:[ Html.a_class ["def"; kind ] ]
-          [ Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] []
-          ; Html.code (
-              (if mutable_ then Markup.keyword "mutable " else Html.pcdata "")
-              :: (Html.pcdata name)
-              :: (Html.pcdata " : ")
-              :: (type_expr typ)
-              @  [Html.pcdata ";"]
-            )
-          ]
-      in
-      anchor, cell
-  in
-  let rows =
-    fields |> List.map (fun fld ->
-      let open Model.Lang.TypeDecl.Field in
-      let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-      let rhs = relax_docs_type (Documentation.to_html ~wrap:() fld.doc) in
-      Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
-        lhs ::
-        if not (Documentation.has_doc fld.doc) then [] else [
-          Html.td ~a:[ Html.a_class ["doc"] ] rhs
-        ]
-      )
-    )
-  in
-  [ Html.code [Html.pcdata "{"]
-  ; Html.table ~a:[ Html.a_class ["record"] ] rows
-  ; Html.code [Html.pcdata "}"]]
 
 and type_decl (t : Model.Lang.TypeDecl.t) =
   let tyname = Paths.Identifier.name t.id in
