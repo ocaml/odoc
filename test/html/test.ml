@@ -22,6 +22,7 @@ let cases = [
   "type.mli";
   "external.mli";
   "functor.mli";
+  "class.mli";
   "stop.mli";
 ]
 

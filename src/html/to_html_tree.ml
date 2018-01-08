@@ -898,30 +898,63 @@ and include_ (t : Model.Lang.Include.t) =
 
 
 
-and class_signature (_t : Model.Lang.ClassSignature.t) =
-  assert false
-  (* TODO
+and class_signature (t : Model.Lang.ClassSignature.t) =
   (* FIXME: use [t.self] *)
-  let recording_doc = ref true in
-  List.concat @@ (t.items |> List.map (function
-    | Model.Lang.ClassSignature.Method m -> [ method_ m ]
-    | InstanceVariable v -> [ instance_variable v ]
-    | Constraint (ty1, ty2) -> format_constraints [ty1, ty2]
-    | Inherit (Signature _) -> assert false (* Bold. *)
-    | Inherit cte ->
-      Markup.keyword "inherit " ::
-      class_type_expr cte
-    | Comment (`Docs doc) ->
-      if !recording_doc then
-        docs_to_general_html doc
+
+  (* TODO This is duplicated with [signature], behaves in the same way, and has
+     the same purpose. The two definition accumulating things should proably be
+     factored out. *)
+  let accumulate_definitions definitions html =
+    match definitions with
+    | [] -> html
+    | _ -> html @ [Html.dl definitions]
+  in
+
+  let rec traverse_items ~hiding_docs definitions html items =
+    match items with
+    | [] ->
+      accumulate_definitions definitions html
+
+    | item::items ->
+      if hiding_docs then
+        match item with
+        | Model.Lang.ClassSignature.Comment `Stop ->
+          traverse_items ~hiding_docs:false definitions html items
+        | _ ->
+          traverse_items ~hiding_docs definitions html items
+
       else
-        []
-    | Comment `Stop ->
-      recording_doc := not !recording_doc;
-      []
-  ))
-  *)
-(*
+        match item with
+        | Model.Lang.ClassSignature.Comment comment ->
+          let html = accumulate_definitions definitions html in
+          begin match comment with
+          | `Stop ->
+            traverse_items ~hiding_docs:true [] html items
+          | `Docs docs ->
+            let html = html @ (docs_to_general_html docs) in
+            traverse_items ~hiding_docs [] html items
+          end
+
+        | _ ->
+          let new_definitions =
+            match item with
+            | Model.Lang.ClassSignature.Comment _ -> assert false
+            | Method m -> method_ m
+            | InstanceVariable v -> instance_variable v
+            | Constraint (t1, t2) -> [Html.dt (format_constraints [(t1, t2)])]
+            | Inherit (Signature _) -> assert false (* Bold. *)
+            | Inherit class_type_expression ->
+              [Html.dt
+                (Markup.keyword "inherit " ::
+                 class_type_expr class_type_expression)]
+          in
+
+          let definitions = definitions @ new_definitions in
+          traverse_items ~hiding_docs definitions html items
+  in
+
+  traverse_items ~hiding_docs:false [] [] t.items
+
 and method_ (t : Model.Lang.Method.t) =
   let name = Paths.Identifier.name t.id in
   let doc = docs_to_general_html t.doc in
@@ -937,7 +970,7 @@ and method_ (t : Model.Lang.Method.t) =
     Html.pcdata " : " ::
     type_expr t.type_
   in
-  Markup.make_def ~id:t.id ~doc ~code:method_, []
+  Markup.make_def ~id:t.id ~doc ~code:method_
 
 and instance_variable (t : Model.Lang.InstanceVariable.t) =
   let name = Paths.Identifier.name t.id in
@@ -954,8 +987,8 @@ and instance_variable (t : Model.Lang.InstanceVariable.t) =
     Html.pcdata " : " ::
     type_expr t.type_
   in
-  Markup.make_def ~id:t.id ~doc ~code:val_, []
-*)
+  Markup.make_def ~id:t.id ~doc ~code:val_
+
 and class_type_expr
    : 'inner_row 'outer_row. Model.Lang.ClassType.expr
   -> ('inner_row, 'outer_row) text Html.elt list
