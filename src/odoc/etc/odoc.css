@@ -21,13 +21,13 @@ table { border-collapse: collapse; border-spacing: 0; }
 body
 { font-family: Helvetica, "DejaVu Sans", Arial, sans-serif;
   font-weight: normal;
-  font-size: 0.875rem;
-  line-height:1.25rem;
+  font-size: 14px;
+  line-height:20px;
   text-align: left;
   min-width: 40ex;
   max-width: 78ex;
-  padding: 1.25rem;
-  margin-left: 3.75rem;
+  padding: 20px;
+  margin-left: 60px;
   color: #222; background: #FAFAFA; }
 
 /* Basic markup elements */
@@ -127,6 +127,20 @@ h3 tt, h3 code { font-size: 16px }
 div.def { margin-top: 0; text-indent: -2ex; padding-left: 2ex; }
 div.def + div.doc { margin-left: 1ex; margin-top: 2.5px }
 div.doc > *:first-child { margin-top: 0; }
+
+/* The elements other than heading should be wrapped in <aside> elements. */
+heading, body > p, body > ul, body > ol, h3, h4, body > pre {
+    margin-bottom: 16px;
+}
+
+dd {
+    margin-left: 8px;
+    margin-bottom: 16px;
+}
+
+dd > :first-child {
+    margin-top: 0;
+}
 
 /* Collapsible inlined include and module */
 
