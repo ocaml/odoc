@@ -37,16 +37,16 @@ em { font-style: italic; }
 
 sup { vertical-align: super; }
 sub { vertical-align: sub; }
-sup, sub { font-size : 0.75rem; line-height: 0; margin-left: 0.2ex; }
+sup, sub { font-size : 12px; line-height: 0; margin-left: 0.2ex; }
 
-p, div, img { margin-top: 1.25rem; }
+p, div, img { margin-top: 20px; }
 
 ul, ol
-{ margin-top: 0.625rem; margin-bottom: 0.625rem; list-style-position: outside }
+{ margin-top: 10px; margin-bottom: 10px; list-style-position: outside }
 
 ul { list-style-type: square }
-ul > li { margin-left: 1.375rem; }
-ol > li { margin-left: 1.7rem; }
+ul > li { margin-left: 22px; }
+ol > li { margin-left: 27.2px; }
 li > *:first-child { margin-top: 0 }
 
 /* Text alignements, this should be forbidden. */
@@ -83,19 +83,21 @@ a.anchor
    we restart the sequence there like h2  */
 
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10
-{ font-weight: bold; margin-top: 1.25rem; }
+{ font-weight: bold; margin-top: 20px; }
 
-h1 + *, h2 + *, .h7 + * { margin-top: 0.625rem; }
+h1 + *, h2 + *, .h7 + * { margin-top: 10px; }
+
 h1, h2, .h7
-{ font-size: 1.25rem;
-  line-height: 2.4375rem; /* 2.5rem - border width */
-  padding-top: 0.625rem;
+{ font-size: 20px;
+  line-height: 39px;
+  padding-top: 10px;
   border-top: solid;
   border-width: 1px;
   border-color: #DDD; }
 
-h3, .h8 { font-size: 1.125rem; }
-h2 + h3, .h7 + .h8 { margin-top: 0.625rem; }
+h3 { font-size: 18px; }
+
+h2 + h3, .h7 + .h8 { margin-top: 10px; }
 
 /* Preformatted and code */
 
@@ -103,18 +105,18 @@ tt, code, pre
 { font-family: Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
   monospace;
   font-weight: normal;
-  font-size: 0.75rem; }
+  font-size: 12px; }
 
 pre
-{ padding-left: 0.25rem; padding-right: 0.25rem;
-  margin-left: -0.25rem; margin-right: -0.25rem;
-  padding-top: 0.3125rem; padding-bottom: 0.3125rem;
-  margin-top: 1.25rem; /*  margin-bottom: 0.625rem; */
-  line-height: 1.1875rem;
+{ padding-left: 4px; padding-right: 4px;
+  margin-left: -4px; margin-right: -4px;
+  padding-top: 5px; padding-bottom: 5px;
+  margin-top: 20px; /*  margin-bottom: 0.625rem; */
+  line-height: 19px;
   background: #F1F1F1; }
 
-h1 tt, h1 code, h2 tt, h2 code, .h7 tt, .h7 code { font-size: 1.125rem }
-h3 tt, h3 code { font-size: 1rem }
+h1 tt, h1 code, h2 tt, h2 code, .h7 tt, .h7 code { font-size: 18px }
+h3 tt, h3 code { font-size: 16px }
 
 /* Code lexemes */
 
@@ -122,19 +124,19 @@ h3 tt, h3 code { font-size: 1rem }
 
 /* Module member specification */
 
-div.def { margin-top: 0rem; text-indent: -2ex; padding-left: 2ex; }
-div.def + div.doc { margin-left: 1ex; margin-top: 0.15625rem }
-div.doc > *:first-child { margin-top: 0rem; }
+div.def { margin-top: 0; text-indent: -2ex; padding-left: 2ex; }
+div.def + div.doc { margin-left: 1ex; margin-top: 2.5px }
+div.doc > *:first-child { margin-top: 0; }
 
 /* Collapsible inlined include and module */
 
 details
-{ border-radius: 0.5rem;
-  border-left: 0.2rem solid;
+{ border-radius: 8px;
+  border-left: 1.6px solid;
   border-color: #FAFAFA /* Background */;
-  margin-left: -1.5rem;
-  padding-left: 1.3rem;
-  padding-bottom: 0.625rem; }
+  margin-left: -24px;
+  padding-left: 20.8px;
+  padding-bottom: 10px; }
 
 details[open] { border-color: #AAA; }
 
@@ -157,7 +159,7 @@ span.at-tag { font-weight: bold }
 /* FIXME random other things to review. */
 
 .heading
-{ margin-top: 0.625rem;
+{ margin-top: 10px;
   border-top: solid;
   border-width: 1px;
   border-color: #DDD;
@@ -165,8 +167,8 @@ span.at-tag { font-weight: bold }
   font-weight: normal;
   font-style: italic; }
 
-.heading + .sig { margin-top: -1.25rem; }
-.heading + .parameters { margin-top: -1.25rem; }
+.heading + .sig { margin-top: -20px; }
+.heading + .parameters { margin-top: -20px; }
 
 /* Odig package index */
 
@@ -174,28 +176,28 @@ span.at-tag { font-weight: bold }
 .by-name ol ol, .by-tag ol ol { margin-top:0; margin-bottom: 0 }
 .by-name li, .by-tag li, .errors li { margin-left:0; }
 
-.by-name .version { font-size: 0.625rem; color: #AAA }
-.by-name nav { margin-bottom: 0.625rem }
+.by-name .version { font-size: 10px; color: #AAA }
+.by-name nav { margin-bottom: 10px }
 .by-name nav a
-{ text-transform: uppercase; font-size: 1.125rem;
+{ text-transform: uppercase; font-size: 18px;
   margin-right:1ex; color: #222; display: inline-block; }
 
 .by-tag nav a { margin-right:1ex; color: #222; display: inline-block; }
-.by-tag > ol > li { margin-top: 0.625rem; }
+.by-tag > ol > li { margin-top: 10px; }
 .by-tag > ol > li > span,
 .by-tag > ol > li > ol,
 .by-tag > ol > li > ol > li { display: inline-block; margin-right: 1ex; }
 
 /* Odig package page */
 
-.package nav { display: inline; font-size: 0.875rem; font-weight: normal; }
-.package .version { font-size: 0.875rem; }
+.package nav { display: inline; font-size: 14px; font-weight: normal; }
+.package .version { font-size: 14px; }
 
-h1 + .modules, h1 + .sel { margin-top: 0.625rem }
+h1 + .modules, h1 + .sel { margin-top: 10px }
 .sel { font-weight: normal; font-style: italic;
-       font-size:0.875rem; margin-top:1.25rem; }
-.sel + .modules { margin-top:0.625rem;
-                  margin-bottom: 1.25rem; margin-left: 1ex; }
+       font-size:14px; margin-top:20px; }
+.sel + .modules { margin-top:10px;
+                  margin-bottom: 20px; margin-left: 1ex; }
 
 .modules { margin:0; }
 .modules .module { min-width:8ex; padding-right: 2ex }
