@@ -502,7 +502,7 @@ let type_decl (t : Model.Lang.TypeDecl.t) =
 
 
 
-and value (t : Model.Lang.Value.t) =
+let value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
   let doc = docs_to_general_html t.doc in
   let value =
@@ -513,7 +513,7 @@ and value (t : Model.Lang.Value.t) =
   in
   Markup.make_def ~id:t.id ~doc ~code:value, []
 
-and external_ (t : Model.Lang.External.t) =
+let external_ (t : Model.Lang.External.t) =
   let name = Paths.Identifier.name t.id in
   let doc = docs_to_general_html t.doc in
   let external_ =
@@ -525,6 +525,197 @@ and external_ (t : Model.Lang.External.t) =
     List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
   in
   Markup.make_def ~id:t.id ~doc ~code:external_, []
+
+
+
+let rec class_signature (t : Model.Lang.ClassSignature.t) =
+  (* FIXME: use [t.self] *)
+
+  (* TODO This is duplicated with [signature], behaves in the same way, and has
+     the same purpose. The two definition accumulating things should proably be
+     factored out. *)
+  let accumulate_definitions definitions html =
+    match definitions with
+    | [] -> html
+    | _ -> html @ [Html.dl definitions]
+  in
+
+  let rec traverse_items ~hiding_docs definitions html items =
+    match items with
+    | [] ->
+      accumulate_definitions definitions html
+
+    | item::items ->
+      if hiding_docs then
+        match item with
+        | Model.Lang.ClassSignature.Comment `Stop ->
+          traverse_items ~hiding_docs:false definitions html items
+        | _ ->
+          traverse_items ~hiding_docs definitions html items
+
+      else
+        match item with
+        | Model.Lang.ClassSignature.Comment comment ->
+          let html = accumulate_definitions definitions html in
+          begin match comment with
+          | `Stop ->
+            traverse_items ~hiding_docs:true [] html items
+          | `Docs docs ->
+            let html = html @ (docs_to_general_html docs) in
+            traverse_items ~hiding_docs [] html items
+          end
+
+        | _ ->
+          let new_definitions =
+            match item with
+            | Model.Lang.ClassSignature.Comment _ -> assert false
+            | Method m -> method_ m
+            | InstanceVariable v -> instance_variable v
+            | Constraint (t1, t2) -> [Html.dt (format_constraints [(t1, t2)])]
+            | Inherit (Signature _) -> assert false (* Bold. *)
+            | Inherit class_type_expression ->
+              [Html.dt
+                (Markup.keyword "inherit " ::
+                 class_type_expr class_type_expression)]
+          in
+
+          let definitions = definitions @ new_definitions in
+          traverse_items ~hiding_docs definitions html items
+  in
+
+  traverse_items ~hiding_docs:false [] [] t.items
+
+and method_ (t : Model.Lang.Method.t) =
+  let name = Paths.Identifier.name t.id in
+  let doc = docs_to_general_html t.doc in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let private_ =
+    if t.private_ then Markup.keyword "private " else Html.pcdata "" in
+  let method_ =
+    Markup.keyword "method " ::
+    private_ ::
+    virtual_ ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
+    type_expr t.type_
+  in
+  Markup.make_def ~id:t.id ~doc ~code:method_
+
+and instance_variable (t : Model.Lang.InstanceVariable.t) =
+  let name = Paths.Identifier.name t.id in
+  let doc = docs_to_general_html t.doc in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let mutable_ =
+    if t.mutable_ then Markup.keyword "mutable " else Html.pcdata "" in
+  let val_ =
+    Markup.keyword "val " ::
+    mutable_ ::
+    virtual_ ::
+    Html.pcdata name ::
+    Html.pcdata " : " ::
+    type_expr t.type_
+  in
+  Markup.make_def ~id:t.id ~doc ~code:val_
+
+and class_type_expr
+   : 'inner_row 'outer_row. Model.Lang.ClassType.expr
+  -> ('inner_row, 'outer_row) text Html.elt list
+   = fun (cte : Model.Lang.ClassType.expr) ->
+     match cte with
+     | Constr (path, args) ->
+       let link = Html_tree.Relative_link.of_path ~stop_before:false path in
+       format_type_path ~delim:(`brackets) args link
+     | Signature _ ->
+       [ Markup.keyword "object" ; Html.pcdata " ... " ; Markup.keyword "end" ]
+
+and class_decl
+   : 'inner_row 'outer_row. Model.Lang.Class.decl
+  -> ('inner_row, 'outer_row) text Html.elt list
+  = fun (cd : Model.Lang.Class.decl) ->
+    match cd with
+    | ClassType expr -> class_type_expr expr
+    (* TODO: factorize the following with [type_expr] *)
+    | Arrow (None, src, dst) ->
+      type_expr ~needs_parentheses:true src @
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
+    | Arrow (Some lbl, src, dst) ->
+      Markup.label lbl @ Html.pcdata ":" ::
+      type_expr ~needs_parentheses:true src @
+      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
+
+and class_ (t : Model.Lang.Class.t) =
+  let name = Paths.Identifier.name t.id in
+  let params = format_params ~delim:(`brackets) t.params in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let cd = class_decl t.type_ in
+  let cname, subtree =
+    match t.expansion with
+    | None -> Html.pcdata name, []
+    | Some csig ->
+      Html_tree.enter ~kind:(`Class) name;
+      let doc = docs_to_general_html t.doc in
+      let expansion = class_signature csig in
+      let expansion =
+        match doc with
+        | [] -> expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
+      in
+      let subtree = Html_tree.make expansion [] in
+      Html_tree.leave ();
+      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
+  in
+  let class_def_content =
+    Markup.keyword "class " ::
+    virtual_ ::
+    params ::
+    cname ::
+    Html.pcdata " : " ::
+    cd
+  in
+  let region =
+    Markup.make_def ~id:t.id ~code:class_def_content
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+  in
+  region, subtree
+
+and class_type (t : Model.Lang.ClassType.t) =
+  let name = Paths.Identifier.name t.id in
+  let params = format_params ~delim:(`brackets) t.params in
+  let virtual_ =
+    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
+  let expr = class_type_expr t.expr in
+  let cname, subtree =
+    match t.expansion with
+    | None -> Html.pcdata name, []
+    | Some csig ->
+      Html_tree.enter ~kind:(`Cty) name;
+      let doc = docs_to_general_html t.doc in
+      let expansion = class_signature csig in
+      let expansion =
+        match doc with
+        | [] -> expansion
+        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
+      in
+      let subtree = Html_tree.make expansion [] in
+      Html_tree.leave ();
+      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
+  in
+  let ctyp =
+    Markup.keyword "class type " ::
+    virtual_ ::
+    params ::
+    cname ::
+    Html.pcdata " = " ::
+    expr
+  in
+  let region =
+    Markup.make_def ~id:t.id ~code:ctyp
+      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+  in
+  region, subtree
 
 
 
@@ -895,197 +1086,6 @@ and include_ (t : Model.Lang.Include.t) =
           (docs @ incl)])
   ],
   tree
-
-
-
-and class_signature (t : Model.Lang.ClassSignature.t) =
-  (* FIXME: use [t.self] *)
-
-  (* TODO This is duplicated with [signature], behaves in the same way, and has
-     the same purpose. The two definition accumulating things should proably be
-     factored out. *)
-  let accumulate_definitions definitions html =
-    match definitions with
-    | [] -> html
-    | _ -> html @ [Html.dl definitions]
-  in
-
-  let rec traverse_items ~hiding_docs definitions html items =
-    match items with
-    | [] ->
-      accumulate_definitions definitions html
-
-    | item::items ->
-      if hiding_docs then
-        match item with
-        | Model.Lang.ClassSignature.Comment `Stop ->
-          traverse_items ~hiding_docs:false definitions html items
-        | _ ->
-          traverse_items ~hiding_docs definitions html items
-
-      else
-        match item with
-        | Model.Lang.ClassSignature.Comment comment ->
-          let html = accumulate_definitions definitions html in
-          begin match comment with
-          | `Stop ->
-            traverse_items ~hiding_docs:true [] html items
-          | `Docs docs ->
-            let html = html @ (docs_to_general_html docs) in
-            traverse_items ~hiding_docs [] html items
-          end
-
-        | _ ->
-          let new_definitions =
-            match item with
-            | Model.Lang.ClassSignature.Comment _ -> assert false
-            | Method m -> method_ m
-            | InstanceVariable v -> instance_variable v
-            | Constraint (t1, t2) -> [Html.dt (format_constraints [(t1, t2)])]
-            | Inherit (Signature _) -> assert false (* Bold. *)
-            | Inherit class_type_expression ->
-              [Html.dt
-                (Markup.keyword "inherit " ::
-                 class_type_expr class_type_expression)]
-          in
-
-          let definitions = definitions @ new_definitions in
-          traverse_items ~hiding_docs definitions html items
-  in
-
-  traverse_items ~hiding_docs:false [] [] t.items
-
-and method_ (t : Model.Lang.Method.t) =
-  let name = Paths.Identifier.name t.id in
-  let doc = docs_to_general_html t.doc in
-  let virtual_ =
-    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
-  let private_ =
-    if t.private_ then Markup.keyword "private " else Html.pcdata "" in
-  let method_ =
-    Markup.keyword "method " ::
-    private_ ::
-    virtual_ ::
-    Html.pcdata name ::
-    Html.pcdata " : " ::
-    type_expr t.type_
-  in
-  Markup.make_def ~id:t.id ~doc ~code:method_
-
-and instance_variable (t : Model.Lang.InstanceVariable.t) =
-  let name = Paths.Identifier.name t.id in
-  let doc = docs_to_general_html t.doc in
-  let virtual_ =
-    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
-  let mutable_ =
-    if t.mutable_ then Markup.keyword "mutable " else Html.pcdata "" in
-  let val_ =
-    Markup.keyword "val " ::
-    mutable_ ::
-    virtual_ ::
-    Html.pcdata name ::
-    Html.pcdata " : " ::
-    type_expr t.type_
-  in
-  Markup.make_def ~id:t.id ~doc ~code:val_
-
-and class_type_expr
-   : 'inner_row 'outer_row. Model.Lang.ClassType.expr
-  -> ('inner_row, 'outer_row) text Html.elt list
-   = fun (cte : Model.Lang.ClassType.expr) ->
-     match cte with
-     | Constr (path, args) ->
-       let link = Html_tree.Relative_link.of_path ~stop_before:false path in
-       format_type_path ~delim:(`brackets) args link
-     | Signature _ ->
-       [ Markup.keyword "object" ; Html.pcdata " ... " ; Markup.keyword "end" ]
-
-and class_decl
-   : 'inner_row 'outer_row. Model.Lang.Class.decl
-  -> ('inner_row, 'outer_row) text Html.elt list
-  = fun (cd : Model.Lang.Class.decl) ->
-    match cd with
-    | ClassType expr -> class_type_expr expr
-    (* TODO: factorize the following with [type_expr] *)
-    | Arrow (None, src, dst) ->
-      type_expr ~needs_parentheses:true src @
-      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
-    | Arrow (Some lbl, src, dst) ->
-      Markup.label lbl @ Html.pcdata ":" ::
-      type_expr ~needs_parentheses:true src @
-      Html.pcdata " " :: Markup.arrow :: Html.pcdata " " :: class_decl dst
-
-and class_ (t : Model.Lang.Class.t) =
-  let name = Paths.Identifier.name t.id in
-  let params = format_params ~delim:(`brackets) t.params in
-  let virtual_ =
-    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
-  let cd = class_decl t.type_ in
-  let cname, subtree =
-    match t.expansion with
-    | None -> Html.pcdata name, []
-    | Some csig ->
-      Html_tree.enter ~kind:(`Class) name;
-      let doc = docs_to_general_html t.doc in
-      let expansion = class_signature csig in
-      let expansion =
-        match doc with
-        | [] -> expansion
-        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
-      in
-      let subtree = Html_tree.make expansion [] in
-      Html_tree.leave ();
-      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
-  in
-  let class_def_content =
-    Markup.keyword "class " ::
-    virtual_ ::
-    params ::
-    cname ::
-    Html.pcdata " : " ::
-    cd
-  in
-  let region =
-    Markup.make_def ~id:t.id ~code:class_def_content
-      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-  in
-  region, subtree
-
-and class_type (t : Model.Lang.ClassType.t) =
-  let name = Paths.Identifier.name t.id in
-  let params = format_params ~delim:(`brackets) t.params in
-  let virtual_ =
-    if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
-  let expr = class_type_expr t.expr in
-  let cname, subtree =
-    match t.expansion with
-    | None -> Html.pcdata name, []
-    | Some csig ->
-      Html_tree.enter ~kind:(`Cty) name;
-      let doc = docs_to_general_html t.doc in
-      let expansion = class_signature csig in
-      let expansion =
-        match doc with
-        | [] -> expansion
-        | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
-      in
-      let subtree = Html_tree.make expansion [] in
-      Html_tree.leave ();
-      Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
-  in
-  let ctyp =
-    Markup.keyword "class type " ::
-    virtual_ ::
-    params ::
-    cname ::
-    Html.pcdata " = " ::
-    expr
-  in
-  let region =
-    Markup.make_def ~id:t.id ~code:ctyp
-      ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-  in
-  region, subtree
 
 
 
