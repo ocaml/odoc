@@ -17,6 +17,7 @@
 
 
 module Paths = Model.Paths
+module Lang = Model.Lang
 module Html = Tyxml.Html
 
 
@@ -51,6 +52,21 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
 
+
+module Type_expression :
+sig
+  val type_expr :
+    ?needs_parentheses:bool ->
+    Lang.TypeExpr.t ->
+      (('inner, 'outer) text Html.elt) list
+
+  val format_type_path :
+    delim:[ `parens | `brackets ] ->
+    Lang.TypeExpr.t list ->
+    (('inner, 'outer) text Html.elt) list ->
+      (('inner, 'outer) text Html.elt) list
+end =
+struct
 
 let rec te_variant
   : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
@@ -191,7 +207,43 @@ and package_subst
   Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
   type_expr te
 
+end
+open Type_expression
 
+
+
+(* Also handles constructor declarations for exceptions and extensible
+   variants, and exposes a few helpers used in formatting classes and signature
+   constraints. *)
+module Type_declaration :
+sig
+  val type_decl :
+    Lang.TypeDecl.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+
+  val extension :
+    Lang.Extension.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+
+  val exn :
+    Lang.Exception.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+
+  val format_params :
+    ?delim:[ `parens | `brackets ] ->
+    Lang.TypeDecl.param list ->
+      [> `PCDATA ] Html.elt
+
+  val format_manifest :
+    ?compact_variants:bool ->
+    Lang.TypeDecl.Equation.t ->
+      ((('inner, 'outer) text Html.elt) list) * bool
+
+  val format_constraints :
+    (Lang.TypeExpr.t * Lang.TypeExpr.t) list ->
+      (('inner, 'outer) text Html.elt) list
+end =
+struct
 
 let record fields =
   let field mutable_ id typ =
@@ -500,7 +552,22 @@ let type_decl (t : Model.Lang.TypeDecl.t) =
   in
   Markup.make_spec ~id:t.id ~doc tdecl_def, []
 
+end
+open Type_declaration
 
+
+
+module Value :
+sig
+  val value :
+    Lang.Value.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+
+  val external_ :
+    Lang.External.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+end =
+struct
 
 let value (t : Model.Lang.Value.t) =
   let name = Paths.Identifier.name t.id in
@@ -526,7 +593,22 @@ let external_ (t : Model.Lang.External.t) =
   in
   Markup.make_def ~id:t.id ~doc ~code:external_, []
 
+end
+open Value
 
+
+
+module Class :
+sig
+  val class_ :
+    Lang.Class.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (Html_tree.t list)
+
+  val class_type :
+    Lang.ClassType.t ->
+      (([> Html_types.dl_content ] Html.elt) list) * (Html_tree.t list)
+end =
+struct
 
 let rec class_signature (t : Model.Lang.ClassSignature.t) =
   (* FIXME: use [t.self] *)
@@ -717,7 +799,18 @@ and class_type (t : Model.Lang.ClassType.t) =
   in
   region, subtree
 
+end
+open Class
 
+
+
+module Module :
+sig
+  val signature :
+    Lang.Signature.t ->
+      ((Html_types.div_content Html.elt) list) * (Html_tree.t list)
+end =
+struct
 
 let rec signature
     : Model.Lang.Signature.t ->
@@ -1087,7 +1180,17 @@ and include_ (t : Model.Lang.Include.t) =
   ],
   tree
 
+end
+open Module
 
+
+
+module Page :
+sig
+  val compilation_unit : Lang.Compilation_unit.t -> Html_tree.t
+  val page : Lang.Page.t -> Html_tree.t
+end =
+struct
 
 let pack
    : Model.Lang.Compilation_unit.Packed.t ->
@@ -1138,3 +1241,6 @@ let page (t : Model.Lang.Page.t) : Html_tree.t =
   Html_tree.enter ~kind:`Page name;
   let html = relax_docs_type (Documentation.to_html t.content) in
   Html_tree.make html []
+
+end
+include Page
