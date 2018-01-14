@@ -316,24 +316,18 @@ let block_element : Comment.block_element -> (top_level_flow Html.elt) option =
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
     let attributes =
-      match label with
-      | None ->
-        []
-      | Some (Model.Paths.Identifier.Label (_, label)) ->
-        [Html.a_id label; Html.a_class ["anchored"]]
+      let Model.Paths.Identifier.Label (_, label) = label in
+      [Html.a_id label; Html.a_class ["anchored"]]
     in
     let a = attributes in
 
     let content =
       (non_link_inline_element_list content :> (phrasing Html.elt) list) in
     let content =
-      match label with
-      | None ->
-        content
-      | Some (Model.Paths.Identifier.Label (_, label)) ->
-        let anchor =
-          Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
-        anchor::content
+      let Model.Paths.Identifier.Label (_, label) = label in
+      let anchor =
+        Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
+      anchor::content
     in
 
     let element =

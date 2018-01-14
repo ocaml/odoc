@@ -409,6 +409,9 @@ let tests : test_suite list = [
     t "trailing-newline" "{2 Foo\n}";
     t "trailing-blank-line" "{2 Foo\n\n}";
     t "nested-markup" "{2 [foo]}";
+    t "nested-code-with-uppercase" "{2 [Foo]}";
+    t "nested-code-with-spaces" "{2 [ foo bar  baz  \t]}";
+    t "nested-style" "{2 {e foo bar}}";
     t "words" "{2 foo bar}";
     t "nested-heading" "{2 {2 Foo}}";
     t "in-list" "- {2 Foo}";
@@ -454,6 +457,8 @@ let tests : test_suite list = [
       ~permissive:true ~sections_allowed:`All;
     t "none-permissive" "{2 Foo}"
       ~permissive:true ~sections_allowed:`None;
+    t "nested-code-with-newline" "{2 [foo\nbar\r\nbaz]}"
+      ~permissive:true;
   ];
 
   "warnings", [

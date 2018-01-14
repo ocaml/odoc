@@ -165,6 +165,52 @@ let tag : status -> Ast.tag -> Comment.tag = fun status tag ->
 
 
 
+(* When the user does not give a section heading a label (anchor), we generate
+   one from the text in the heading. This is the common case. This involves
+   simply scanning the AST for words, lowercasing them, and joining them with
+   hyphens.
+
+   This must be done in the parser (i.e. early, not at HTML/other output
+   generation time), so that the cross-referencer can see these anchors. *)
+let generate_heading_label : Comment.link_content -> string = fun content ->
+
+  (* Code spans can contain spaces, so we need to replace them with hyphens. We
+     also lowercase all the letters, for consistency with the rest of this
+     procedure. *)
+  let replace_spaces_with_hyphens_and_lowercase s =
+    let result = Bytes.create (String.length s) in
+    s |> String.iteri begin fun index c ->
+      let c =
+        match c with
+        | ' ' | '\t' | '\r' | '\n' -> '-'
+        | _ -> Char.lowercase_ascii c
+      in
+      Bytes.set result index c
+    end;
+    Bytes.unsafe_to_string result
+  in
+
+  (* Perhaps this should be done using a [Buffer.t]; we can switch to that as
+     needed. *)
+  let rec scan_inline_elements anchor = function
+    | [] ->
+      anchor
+    | element::more ->
+      let anchor =
+        match element.Location.value with
+        | `Space ->
+          anchor ^ "-"
+        | `Word w ->
+          anchor ^ (String.lowercase_ascii w)
+        | `Code_span c ->
+          anchor ^ (replace_spaces_with_hyphens_and_lowercase c)
+        | `Styled (_, content) ->
+          scan_inline_elements anchor content
+      in
+      scan_inline_elements anchor more
+  in
+  scan_inline_elements "" content
+
 let section_heading
     : status ->
       parsed_a_title:bool ->
@@ -175,18 +221,17 @@ let section_heading
         bool * (Comment.block_element with_location) =
     fun status ~parsed_a_title location level label content ->
 
-  let label =
-    match label with
-    | None ->
-      None
-    | Some label ->
-      Some (Model.Paths.Identifier.Label (status.parent_of_sections, label))
-  in
-
   let content =
     non_link_inline_elements
       status ~surrounding:(`Heading (level, label, content)) content
   in
+
+  let label =
+    match label with
+    | Some label -> label
+    | None -> generate_heading_label content
+  in
+  let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
 
   match status.sections_allowed, level with
   | `None, _ ->

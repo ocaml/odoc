@@ -331,11 +331,7 @@ struct
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e
     | `Heading (level, label, es) ->
-      let label =
-        match label with
-        | None -> Atom "no label"
-        | Some label -> List [Atom "label"; Identifier_to_sexp.identifier label]
-      in
+      let label = List [Atom "label"; Identifier_to_sexp.identifier label] in
       let level =
         match level with
         | `Title -> "1"

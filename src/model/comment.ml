@@ -75,7 +75,7 @@ type heading_level = [
 
 type block_element = [
   | nestable_block_element
-  | `Heading of heading_level * Identifier.label option * link_content
+  | `Heading of heading_level * Identifier.label * link_content
   | `Tag of tag
 ]
 

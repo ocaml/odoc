@@ -305,7 +305,7 @@ let add_label_ident_title id txt env =
 let add_documentation doc env =
   List.fold_right (fun element env ->
     match element.Model.Location_.value with
-    | `Heading (_, Some label, nested_elements) ->
+    | `Heading (_, label, nested_elements) ->
       let env = add_label_ident label env in
       let env = add_label_ident_title label nested_elements env in
       env
