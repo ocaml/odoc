@@ -17,8 +17,16 @@
 
 
 module Paths = Model.Paths
+module Comment = Model.Comment
 module Lang = Model.Lang
 module Html = Tyxml.Html
+
+
+
+type rendered_item = (Html_types.div_content Html.elt) list
+type rendered_docs = (Html_types.dd_content Html.elt) list
+(* [rendered_item] should really be [dt_content], but that is bugged in TyXML
+   until https://github.com/ocsigen/tyxml/pull/193 is released. *)
 
 
 
@@ -215,17 +223,9 @@ open Type_expression
    constraints. *)
 module Type_declaration :
 sig
-  val type_decl :
-    Lang.TypeDecl.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
-
-  val extension :
-    Lang.Extension.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
-
-  val exn :
-    Lang.Exception.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+  val type_decl : Lang.TypeDecl.t -> rendered_item * rendered_docs option
+  val extension : Lang.Extension.t -> rendered_item * rendered_docs option
+  val exn : Lang.Exception.t -> rendered_item * rendered_docs option
 
   val format_params :
     ?delim:[ `parens | `brackets ] ->
@@ -378,7 +378,7 @@ struct
       have an anchor either). *)
     (* TODO Fix this junk. *)
     (* TODO make_spec needs to be modified to make the anchor optional. *)
-    Markup.make_spec ~id:(CoreType "fixme") ~doc extension, []
+    Markup.make_spec ~id:(CoreType "fixme") ~doc extension
 
 
 
@@ -386,7 +386,7 @@ struct
     let cstr = constructor t.id t.args t.res in
     let doc = docs_to_general_html t.doc in
     let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
-    Markup.make_spec ~id:t.id ~doc exn, []
+    Markup.make_spec ~id:t.id ~doc exn
 
 
 
@@ -449,7 +449,7 @@ struct
 
 
 
-let format_params
+  let format_params
     : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
     -> ([> `PCDATA ] as 'row) Html.elt
   = fun ?(delim=`parens) params ->
@@ -506,7 +506,7 @@ let format_params
 
 
 
-  let type_decl (t : Model.Lang.TypeDecl.t) =
+  let type_decl (t : Lang.TypeDecl.t) =
     let tyname = Paths.Identifier.name t.id in
     let params = format_params t.equation.params in
     let constraints = format_constraints t.equation.constraints in
@@ -550,7 +550,7 @@ let format_params
       representation @
       [Html.code constraints]
     in
-    Markup.make_spec ~id:t.id ~doc tdecl_def, []
+    Markup.make_spec ~id:t.id ~doc tdecl_def
 end
 open Type_declaration
 
@@ -558,13 +558,8 @@ open Type_declaration
 
 module Value :
 sig
-  val value :
-    Lang.Value.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
-
-  val external_ :
-    Lang.External.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (_ list)
+  val value : Lang.Value.t -> rendered_item * rendered_docs option
+  val external_ : Lang.External.t -> rendered_item * rendered_docs option
 end =
 struct
   let value (t : Model.Lang.Value.t) =
@@ -576,7 +571,7 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~doc ~code:value, []
+    Markup.make_def ~id:t.id ~doc ~code:value
 
   let external_ (t : Model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
@@ -589,9 +584,110 @@ struct
       Html.pcdata " = " ::
       List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
     in
-    Markup.make_def ~id:t.id ~doc ~code:external_, []
+    Markup.make_def ~id:t.id ~doc ~code:external_
 end
 open Value
+
+
+
+type ('item_kind, 'item) tagged_item = [
+  | `Flat_item of 'item_kind * 'item
+  | `Nested_article of 'item
+  | `Comment of Comment.docs_or_stop
+  | `End
+]
+
+module High_level_markup :
+sig
+  val lay_out :
+    render_flat_item:('item -> rendered_item * rendered_docs option) ->
+    render_nested_article:
+      ('item ->
+        (Html_types.article_content Html.elt) list * Html_tree.t list) ->
+    ((_, 'item) tagged_item) list ->
+      (Html_types.article_content Html.elt) list * (Html_tree.t list)
+end =
+struct
+  type content = Html_types.article_content Html.elt
+
+  let lay_out ~render_flat_item ~render_nested_article items =
+
+    let flat_item_group : 'item_kind -> 'item list -> (content * 'item list) =
+        fun first_item_kind items ->
+
+      let rec consume_flat_items_until_one_is_documented =
+          fun items acc ->
+
+        match List.hd items with
+        | `Flat_item (this_item_kind, item)
+            when this_item_kind = first_item_kind ->
+
+          let rendered_item, maybe_rendered_docs = render_flat_item item in
+          (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
+             is released in TyXML; see also type [rendered_item]. *)
+          let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
+          let rendered_item = Html.dt rendered_item in
+          let acc = rendered_item::acc in
+          begin match maybe_rendered_docs with
+          | None ->
+            consume_flat_items_until_one_is_documented (List.tl items) acc
+          | Some docs ->
+            let docs = Html.dd docs in
+            List.rev (docs::acc), List.tl items
+          end
+
+        | _ ->
+          List.rev acc, items
+      in
+
+      let rendered_item_group, remaining_items =
+        consume_flat_items_until_one_is_documented items [] in
+
+      Html.dl rendered_item_group, remaining_items
+    in
+
+    let rec skip_everything_until_next_stop_comment : 'item list -> 'item list =
+        fun items ->
+
+      match List.hd items with
+      | `Comment `Stop -> List.tl items
+      | `End -> items
+      | _ -> skip_everything_until_next_stop_comment (List.tl items)
+    in
+
+    let rec top_level
+        : 'item list -> content list -> Html_tree.t list ->
+            content list * Html_tree.t list =
+        fun items acc nested_pages ->
+
+      match List.hd items with
+      | `Flat_item (kind, _) ->
+        let rendered_group, remaining_items = flat_item_group kind items in
+        top_level remaining_items (rendered_group::acc) nested_pages
+
+      | `Nested_article item ->
+        let rendered_item, more_nested_pages = render_nested_article item in
+        let rendered_item = Html.article rendered_item in
+        top_level
+          (List.tl items)
+          (rendered_item::acc)
+          (nested_pages @ more_nested_pages)
+
+      | `Comment `Stop ->
+        let remaining_items =
+          skip_everything_until_next_stop_comment (List.tl items) in
+        top_level remaining_items acc nested_pages
+
+      | `Comment (`Docs docs) ->
+        let rendered_docs = Html.aside (docs_to_general_html docs) in
+        top_level (List.tl items) (rendered_docs::acc) nested_pages
+
+      | `End ->
+        List.rev acc, nested_pages
+    in
+
+    top_level (items @ [`End]) [] []
+end
 
 
 
@@ -599,69 +695,41 @@ module Class :
 sig
   val class_ :
     Lang.Class.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (Html_tree.t list)
+      ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
 
   val class_type :
     Lang.ClassType.t ->
-      (([> Html_types.dl_content ] Html.elt) list) * (Html_tree.t list)
+      ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
 end =
 struct
-  let rec class_signature (t : Model.Lang.ClassSignature.t) =
+  let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
+    match item with
+    | Method _ -> `Flat_item (`Method, item)
+    | InstanceVariable _ -> `Flat_item (`Variable, item)
+    | Constraint _ -> `Flat_item (`Constraint, item)
+    | Inherit _ -> `Flat_item (`Inherit, item)
+
+    | Comment comment -> `Comment comment
+
+  let rec render_signature_item : Lang.ClassSignature.item -> _ = function
+    | Method m -> method_ m
+    | InstanceVariable v -> instance_variable v
+    | Constraint (t1, t2) -> format_constraints [(t1, t2)], None
+    | Inherit (Signature _) -> assert false (* Bold. *)
+    | Inherit class_type_expression ->
+      (Markup.keyword "inherit " ::
+       class_type_expr class_type_expression),
+      None
+
+    | Comment _ -> assert false
+
+  and class_signature (c : Lang.ClassSignature.t) =
     (* FIXME: use [t.self] *)
-
-    (* TODO This is duplicated with [signature], behaves in the same way, and
-       has the same purpose. The two definition accumulating things should
-       probably be factored out. *)
-    let accumulate_definitions definitions html =
-      match definitions with
-      | [] -> html
-      | _ -> html @ [Html.dl definitions]
-    in
-
-    let rec traverse_items ~hiding_docs definitions html items =
-      match items with
-      | [] ->
-        accumulate_definitions definitions html
-
-      | item::items ->
-        if hiding_docs then
-          match item with
-          | Model.Lang.ClassSignature.Comment `Stop ->
-            traverse_items ~hiding_docs:false definitions html items
-          | _ ->
-            traverse_items ~hiding_docs definitions html items
-
-        else
-          match item with
-          | Model.Lang.ClassSignature.Comment comment ->
-            let html = accumulate_definitions definitions html in
-            begin match comment with
-            | `Stop ->
-              traverse_items ~hiding_docs:true [] html items
-            | `Docs docs ->
-              let html = html @ (docs_to_general_html docs) in
-              traverse_items ~hiding_docs [] html items
-            end
-
-          | _ ->
-            let new_definitions =
-              match item with
-              | Model.Lang.ClassSignature.Comment _ -> assert false
-              | Method m -> method_ m
-              | InstanceVariable v -> instance_variable v
-              | Constraint (t1, t2) -> [Html.dt (format_constraints [(t1, t2)])]
-              | Inherit (Signature _) -> assert false (* Bold. *)
-              | Inherit class_type_expression ->
-                [Html.dt
-                  (Markup.keyword "inherit " ::
-                  class_type_expr class_type_expression)]
-            in
-
-            let definitions = definitions @ new_definitions in
-            traverse_items ~hiding_docs definitions html items
-    in
-
-    traverse_items ~hiding_docs:false [] [] t.items
+    let tagged_items = List.map tag_class_signature_item c.items in
+    High_level_markup.lay_out
+      ~render_flat_item:render_signature_item
+      ~render_nested_article:(fun _ -> assert false)
+      tagged_items
 
   and method_ (t : Model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
@@ -735,7 +803,7 @@ struct
       | Some csig ->
         Html_tree.enter ~kind:(`Class) name;
         let doc = docs_to_general_html t.doc in
-        let expansion = class_signature csig in
+        let expansion = class_signature csig |> fst in
         let expansion =
           match doc with
           | [] -> expansion
@@ -756,6 +824,7 @@ struct
     let region =
       Markup.make_def ~id:t.id ~code:class_def_content
         ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+      |> fst
     in
     region, subtree
 
@@ -771,7 +840,7 @@ struct
       | Some csig ->
         Html_tree.enter ~kind:(`Cty) name;
         let doc = docs_to_general_html t.doc in
-        let expansion = class_signature csig in
+        let expansion = class_signature csig |> fst in
         let expansion =
           match doc with
           | [] -> expansion
@@ -792,6 +861,7 @@ struct
     let region =
       Markup.make_def ~id:t.id ~code:ctyp
         ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+      |> fst
     in
     region, subtree
 end
@@ -806,72 +876,48 @@ sig
       ((Html_types.div_content Html.elt) list) * (Html_tree.t list)
 end =
 struct
-  let rec signature
-      : Model.Lang.Signature.t ->
-        Html_types.div_content Html.elt list * Html_tree.t list
-      = fun s ->
+  let tag_signature_item : Lang.Signature.item -> _ = fun item ->
+    match item with
+    | Type _ -> `Flat_item (`Type, item)
+    | TypExt _ -> `Flat_item (`Extension, item)
+    | Exception _ -> `Flat_item (`Exception, item)
+    | Value _ -> `Flat_item (`Value, item)
+    | External _ -> `Flat_item (`External, item)
 
-    let accumulate_definitions definitions html =
-      match definitions with
-      | [] -> html
-      | _ -> html @ [Html.dl definitions]
-    in
+    | Module _
+    | ModuleType _
+    | Include _
+    | Class _
+    | ClassType _ -> `Nested_article item
 
-    let rec traverse_items ~hiding_docs definitions html subpages items =
-      match items with
-      | [] ->
-        accumulate_definitions definitions html, subpages
+    | Comment comment -> `Comment comment
 
-      | item::items ->
-        if hiding_docs then
-          match item with
-          | Model.Lang.Signature.Comment `Stop ->
-            traverse_items ~hiding_docs:false definitions html subpages items
-          | _ ->
-            traverse_items ~hiding_docs definitions html subpages items
+  let rec render_flat_signature_item : Lang.Signature.item -> _ = function
+    | Type t -> type_decl t
+    | TypExt e -> extension e
+    | Exception e -> exn e
+    | Value v -> value v
+    | External e -> external_ e
+    | _ -> assert false
 
-        else
-          (* TODO This could benefit slightly from a type-level distinction
-             between comments and definitions. *)
-          match item with
-          | Model.Lang.Signature.Comment comment ->
-            let html = accumulate_definitions definitions html in
-            begin match comment with
-            | `Stop ->
-              traverse_items ~hiding_docs:true [] html subpages items
-            | `Docs docs ->
-              let html = html @ (docs_to_general_html docs) in
-              traverse_items ~hiding_docs [] html subpages items
-            end
+  and render_nested_signature_or_class : Lang.Signature.item -> _ = function
+    | Module m -> module_ m
+    | ModuleType m -> module_type m
+    | Class c -> class_ c
+    | ClassType c -> class_type c
+    | Include m -> include_ m
+    | _ -> assert false
 
-          | _ ->
-            let new_definitions, new_subpages =
-              match item with
-              | Model.Lang.Signature.Comment _ ->
-                assert false
-              | Module m -> module_ m
-              | ModuleType m -> module_type m
-              | Type t -> type_decl t
-              | TypExt e -> extension e
-              | Exception e -> exn e
-              | Value v -> value v
-              | External e -> external_ e
-              | Class c -> class_ c
-              | ClassType c -> class_type c
-              | Include m -> include_ m
-            in
-
-            let definitions = definitions @ new_definitions in
-            let subpages = subpages @ new_subpages in
-
-            traverse_items ~hiding_docs definitions html subpages items
-    in
-
-    traverse_items ~hiding_docs:false [] [] [] s
+  and signature s =
+    let tagged_items = List.map tag_signature_item s in
+    High_level_markup.lay_out
+      ~render_flat_item:render_flat_signature_item
+      ~render_nested_article:render_nested_signature_or_class
+      tagged_items
 
   and functor_argument
     : 'row. Model.Lang.FunctorArgument.t
-    -> ([> Html_types.dl_content ] as 'row) Html.elt list * Html_tree.t list
+    -> Html_types.div_content Html.elt list * Html_tree.t list
   = fun arg ->
     let open Model.Lang.FunctorArgument in
     let name = Paths.Identifier.name arg.id in
@@ -907,6 +953,7 @@ struct
     in
     let region =
       Markup.make_def ~id:arg.id ~code:def_div ~doc:[]
+      |> fst
     in
     region, subtree
 
@@ -931,16 +978,16 @@ struct
       in
       let html =
         Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Parameters" ] ::
-        Html.dl params ::
+        Html.dl (List.map Html.Unsafe.coerce_elt params) ::
         Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.pcdata "Signature" ] ::
         sig_html
       in
       html, params_subpages @ subpages
 
   and module_
-    : 'row. Model.Lang.Module.t
-    -> ([> Html_types.dl_content ] as 'row) Html.elt list * Html_tree.t list
-  = fun t ->
+      : Model.Lang.Module.t ->
+          Html_types.article_content Html.elt list * Html_tree.t list
+      = fun t ->
     let modname = Paths.Identifier.name t.id in
     let md =
       module_decl (Paths.Identifier.signature_of_module t.id)
@@ -978,6 +1025,7 @@ struct
     let region =
       Markup.make_def ~id:t.id ~code:md_def_content
         ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+      |> fst
     in
     region, subtree
 
@@ -1057,6 +1105,7 @@ struct
     let region =
       Markup.make_def ~id:t.id ~code:mty_def
         ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
+      |> fst
     in
     region, subtree
 
@@ -1206,10 +1255,11 @@ struct
         Html_tree.Relative_link.of_path ~stop_before:false x.path
       in
       Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
+      |> fst
     end
     |> List.flatten
     |> fun definitions ->
-      [Html.dl definitions]
+      [Html.article definitions]
 
 
 
