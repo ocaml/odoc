@@ -39,16 +39,12 @@ val def_summary :
 val make_def :
   id:_ Model.Paths.Identifier.t ->
   code:([< Html_types.code_content ] Html.elt) list ->
-  doc:(Html_types.div_content Html.elt) list ->
-    (Html_types.div_content Html.elt) list *
-    (Html_types.dd_content Html.elt) list option
+    (Html_types.div_content Html.elt) list
 
 val make_spec :
   id:_ Model.Paths.Identifier.t ->
-  ?doc:(Html_types.div_content Html.elt) list ->
   ([< Html_types.div_content ] Html.elt) list ->
-    (Html_types.div_content Html.elt) list *
-    (Html_types.dd_content Html.elt) list option
+    (Html_types.div_content Html.elt) list
 
 val arrow : [> Html_types.span ] Html.elt
 (** "->" with a non breaking hyphen, styled as a keyword. *)

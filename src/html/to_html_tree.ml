@@ -24,7 +24,6 @@ module Html = Tyxml.Html
 
 
 type rendered_item = (Html_types.div_content Html.elt) list
-type rendered_docs = (Html_types.dd_content Html.elt) list
 (* [rendered_item] should really be [dt_content], but that is bugged in TyXML
    until https://github.com/ocsigen/tyxml/pull/193 is released. *)
 
@@ -223,9 +222,9 @@ open Type_expression
    constraints. *)
 module Type_declaration :
 sig
-  val type_decl : Lang.TypeDecl.t -> rendered_item * rendered_docs option
-  val extension : Lang.Extension.t -> rendered_item * rendered_docs option
-  val exn : Lang.Exception.t -> rendered_item * rendered_docs option
+  val type_decl : Lang.TypeDecl.t -> rendered_item * Comment.docs
+  val extension : Lang.Extension.t -> rendered_item * Comment.docs
+  val exn : Lang.Exception.t -> rendered_item * Comment.docs
 
   val format_params :
     ?delim:[ `parens | `brackets ] ->
@@ -363,7 +362,6 @@ struct
     constructor t.id t.args t.res
 
   let extension (t : Model.Lang.Extension.t) =
-    let doc = docs_to_general_html t.doc in
     let extension =
       Html.code (
         Markup.keyword "type " ::
@@ -378,15 +376,14 @@ struct
       have an anchor either). *)
     (* TODO Fix this junk. *)
     (* TODO make_spec needs to be modified to make the anchor optional. *)
-    Markup.make_spec ~id:(CoreType "fixme") ~doc extension
+    Markup.make_spec ~id:(CoreType "fixme") extension, t.doc
 
 
 
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
-    let doc = docs_to_general_html t.doc in
     let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
-    Markup.make_spec ~id:t.id ~doc exn
+    Markup.make_spec ~id:t.id exn, t.doc
 
 
 
@@ -539,7 +536,6 @@ struct
         | Variant cstrs -> [variant cstrs]
         | Record fields -> record fields
     in
-    let doc = docs_to_general_html t.doc in
     let tdecl_def =
       Html.code [
         Markup.keyword "type ";
@@ -550,7 +546,7 @@ struct
       representation @
       [Html.code constraints]
     in
-    Markup.make_spec ~id:t.id ~doc tdecl_def
+    Markup.make_spec ~id:t.id tdecl_def, t.doc
 end
 open Type_declaration
 
@@ -558,24 +554,22 @@ open Type_declaration
 
 module Value :
 sig
-  val value : Lang.Value.t -> rendered_item * rendered_docs option
-  val external_ : Lang.External.t -> rendered_item * rendered_docs option
+  val value : Lang.Value.t -> rendered_item * Comment.docs
+  val external_ : Lang.External.t -> rendered_item * Comment.docs
 end =
 struct
   let value (t : Model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
-    let doc = docs_to_general_html t.doc in
     let value =
       Markup.keyword "val " ::
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~doc ~code:value
+    Markup.make_def ~id:t.id ~code:value, t.doc
 
   let external_ (t : Model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
-    let doc = docs_to_general_html t.doc in
     let external_ =
       Markup.keyword "external " ::
       Html.pcdata name ::
@@ -584,107 +578,153 @@ struct
       Html.pcdata " = " ::
       List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
     in
-    Markup.make_def ~id:t.id ~doc ~code:external_
+    Markup.make_def ~id:t.id ~code:external_, t.doc
 end
 open Value
 
 
 
+(* This chunk of code is responsible for laying out signatures and class
+   signatures: the parts of OCaml that contain other parts as nested items.
+
+   Each item is either
+
+   - a leaf, like a type declaration or a value,
+   - something that has a nested signature/class signature, or
+   - a comment.
+
+   Comments can contain section headings, and the top-level markup code is also
+   responsible for generating a table of contents. As a result, it must compute
+   the nesting of sections.
+
+   This is also a good opportunity to properly nest everything in <section>
+   tags. Even though that is not strictly required by HTML, we carry out the
+   computation for it anyway when computing nesting for the table of
+   contents.
+
+   Leaf items are set in <dl> tags – the name and any definition in <dt>, and
+   documentation in <dd>. Multiple adjacent undocumented leaf items of the same
+   kind are set as sibling <dt>s in one <dl>, until one of them has
+   documentation. This indicates groups like:
+
+{[
+type sync
+type async
+(** Documentation for both types. *)
+]}
+
+   Nested signatures are currently marked up with <article> tags. The top-level
+   layout code is eventually indirectly triggered recursively for laying them
+   out, as well. *)
+
 type ('item_kind, 'item) tagged_item = [
   | `Leaf_item of 'item_kind * 'item
   | `Nested_article of 'item
   | `Comment of Comment.docs_or_stop
-  | `End
 ]
 
-module High_level_markup :
+type toc = [ `Section of string * toc ] list
+
+module Top_level_markup :
 sig
   val lay_out :
-    render_leaf_item:('item -> rendered_item * rendered_docs option) ->
+    render_leaf_item:('item -> rendered_item * Comment.docs) ->
     render_nested_article:('item -> rendered_item * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
-      rendered_item * Html_tree.t list
+      rendered_item * toc * Html_tree.t list
 end =
 struct
   type content = Html_types.flow5 Html.elt
 
+
+
+  (* "Consumes" adjacent leaf items of the same kind, until one is found with
+     documentation. Then, joins all their definitions, and the documentation of
+     the last item (if any), into a <dl> element. *)
+  let leaf_item_group
+      : render_leaf_item:_ -> 'kind -> 'item list -> (content * 'item list) =
+      fun ~render_leaf_item first_item_kind items ->
+
+    let rec consume_leaf_items_until_one_is_documented =
+        fun items acc ->
+
+      match items with
+      | (`Leaf_item (this_item_kind, item))::items
+          when this_item_kind = first_item_kind ->
+
+        let rendered_item, maybe_docs = render_leaf_item item in
+        (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
+           is released in TyXML; see also type [rendered_item]. *)
+        let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
+        let rendered_item = Html.dt rendered_item in
+        let acc = rendered_item::acc in
+        begin match maybe_docs with
+        | [] ->
+          consume_leaf_items_until_one_is_documented items acc
+        | docs ->
+          let docs = docs_to_general_html docs in
+          let docs = Html.dd docs in
+          List.rev (docs::acc), items
+        end
+
+      | _ ->
+        List.rev acc, items
+    in
+
+    let rendered_item_group, remaining_items =
+      consume_leaf_items_until_one_is_documented items [] in
+
+    Html.dl rendered_item_group, remaining_items
+
+
+
+  let rec skip_everything_until_next_stop_comment : 'item list -> 'item list =
+    function
+    | [] -> []
+    | item::items ->
+      match item with
+      | `Comment `Stop -> items
+      | _ -> skip_everything_until_next_stop_comment items
+
+
+
   let lay_out ~render_leaf_item ~render_nested_article items =
 
-    let leaf_item_group : 'item_kind -> 'item list -> (content * 'item list) =
-        fun first_item_kind items ->
-
-      let rec consume_leaf_items_until_one_is_documented =
-          fun items acc ->
-
-        match List.hd items with
-        | `Leaf_item (this_item_kind, item)
-            when this_item_kind = first_item_kind ->
-
-          let rendered_item, maybe_rendered_docs = render_leaf_item item in
-          (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
-             is released in TyXML; see also type [rendered_item]. *)
-          let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
-          let rendered_item = Html.dt rendered_item in
-          let acc = rendered_item::acc in
-          begin match maybe_rendered_docs with
-          | None ->
-            consume_leaf_items_until_one_is_documented (List.tl items) acc
-          | Some docs ->
-            let docs = Html.dd docs in
-            List.rev (docs::acc), List.tl items
-          end
-
-        | _ ->
-          List.rev acc, items
-      in
-
-      let rendered_item_group, remaining_items =
-        consume_leaf_items_until_one_is_documented items [] in
-
-      Html.dl rendered_item_group, remaining_items
-    in
-
-    let rec skip_everything_until_next_stop_comment : 'item list -> 'item list =
-        fun items ->
-
-      match List.hd items with
-      | `Comment `Stop -> List.tl items
-      | `End -> items
-      | _ -> skip_everything_until_next_stop_comment (List.tl items)
-    in
-
-    let rec top_level
+    let rec section_content
         : 'item list -> content list -> Html_tree.t list ->
-            content list * Html_tree.t list =
+            content list * toc * Html_tree.t list =
         fun items acc nested_pages ->
 
-      match List.hd items with
-      | `Leaf_item (kind, _) ->
-        let rendered_group, remaining_items = leaf_item_group kind items in
-        top_level remaining_items (rendered_group::acc) nested_pages
+      match items with
+      | [] ->
+        List.rev acc, [], nested_pages
 
-      | `Nested_article item ->
-        let rendered_item, more_nested_pages = render_nested_article item in
-        let rendered_item = Html.article rendered_item in
-        top_level
-          (List.tl items)
-          (rendered_item::acc)
-          (nested_pages @ more_nested_pages)
+      | item::rest ->
+        match item with
+        | `Leaf_item (kind, _) ->
+          let rendered_group, remaining_items =
+            leaf_item_group ~render_leaf_item kind items in
+          section_content remaining_items (rendered_group::acc) nested_pages
 
-      | `Comment `Stop ->
-        let remaining_items =
-          skip_everything_until_next_stop_comment (List.tl items) in
-        top_level remaining_items acc nested_pages
+        | `Nested_article item ->
+          let rendered_item, more_nested_pages = render_nested_article item in
+          let rendered_item = Html.article rendered_item in
+          section_content
+            rest
+            (rendered_item::acc)
+            (nested_pages @ more_nested_pages)
 
-      | `Comment (`Docs docs) ->
-        let rendered_docs = Html.aside (docs_to_general_html docs) in
-        top_level (List.tl items) (rendered_docs::acc) nested_pages
+        | `Comment `Stop ->
+          let remaining_items =
+            skip_everything_until_next_stop_comment rest in
+          section_content remaining_items acc nested_pages
 
-      | `End ->
-        List.rev acc, nested_pages
+        | `Comment (`Docs docs) ->
+          let rendered_docs = Html.aside (docs_to_general_html docs) in
+          section_content rest (rendered_docs::acc) nested_pages
     in
 
-    top_level (items @ [`End]) [] []
+    section_content items [] []
 end
 
 
@@ -709,29 +749,28 @@ struct
 
     | Comment comment -> `Comment comment
 
-  let rec render_signature_item : Lang.ClassSignature.item -> _ = function
+  let rec render_class_signature_item : Lang.ClassSignature.item -> _ = function
     | Method m -> method_ m
     | InstanceVariable v -> instance_variable v
-    | Constraint (t1, t2) -> format_constraints [(t1, t2)], None
+    | Constraint (t1, t2) -> format_constraints [(t1, t2)], []
     | Inherit (Signature _) -> assert false (* Bold. *)
     | Inherit class_type_expression ->
       (Markup.keyword "inherit " ::
        class_type_expr class_type_expression),
-      None
+      []
 
     | Comment _ -> assert false
 
   and class_signature (c : Lang.ClassSignature.t) =
     (* FIXME: use [t.self] *)
     let tagged_items = List.map tag_class_signature_item c.items in
-    High_level_markup.lay_out
-      ~render_leaf_item:render_signature_item
+    Top_level_markup.lay_out
+      ~render_leaf_item:render_class_signature_item
       ~render_nested_article:(fun _ -> assert false)
       tagged_items
 
   and method_ (t : Model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
-    let doc = docs_to_general_html t.doc in
     let virtual_ =
       if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let private_ =
@@ -744,11 +783,10 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~doc ~code:method_
+    Markup.make_def ~id:t.id ~code:method_, t.doc
 
   and instance_variable (t : Model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
-    let doc = docs_to_general_html t.doc in
     let virtual_ =
       if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let mutable_ =
@@ -761,7 +799,7 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~doc ~code:val_
+    Markup.make_def ~id:t.id ~code:val_, t.doc
 
   and class_type_expr
     : 'inner_row 'outer_row. Model.Lang.ClassType.expr
@@ -801,7 +839,7 @@ struct
       | Some csig ->
         Html_tree.enter ~kind:(`Class) name;
         let doc = docs_to_general_html t.doc in
-        let expansion = class_signature csig |> fst in
+        let expansion, _, _ = class_signature csig in
         let expansion =
           match doc with
           | [] -> expansion
@@ -821,8 +859,7 @@ struct
     in
     let region =
       Markup.make_def ~id:t.id ~code:class_def_content
-        ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-      |> fst
+        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
 
@@ -838,7 +875,7 @@ struct
       | Some csig ->
         Html_tree.enter ~kind:(`Cty) name;
         let doc = docs_to_general_html t.doc in
-        let expansion = class_signature csig |> fst in
+        let expansion, _, _ = class_signature csig in
         let expansion =
           match doc with
           | [] -> expansion
@@ -858,8 +895,7 @@ struct
     in
     let region =
       Markup.make_def ~id:t.id ~code:ctyp
-        ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-      |> fst
+        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
 end
@@ -871,7 +907,7 @@ module Module :
 sig
   val signature :
     Lang.Signature.t ->
-      ((Html_types.div_content Html.elt) list) * (Html_tree.t list)
+      (Html_types.div_content Html.elt) list * toc * Html_tree.t list
 end =
 struct
   let tag_signature_item : Lang.Signature.item -> _ = fun item ->
@@ -908,7 +944,7 @@ struct
 
   and signature s =
     let tagged_items = List.map tag_signature_item s in
-    High_level_markup.lay_out
+    Top_level_markup.lay_out
       ~render_leaf_item:render_leaf_signature_item
       ~render_nested_article:render_nested_signature_or_class
       tagged_items
@@ -949,10 +985,7 @@ struct
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), [subtree]
     in
-    let region =
-      Markup.make_def ~id:arg.id ~code:def_div ~doc:[]
-      |> fst
-    in
+    let region = Markup.make_def ~id:arg.id ~code:def_div in
     region, subtree
 
   and module_expansion
@@ -961,9 +994,11 @@ struct
   = fun t ->
     match t with
     | AlreadyASig -> assert false
-    | Signature sg -> signature sg
+    | Signature sg ->
+      let expansion, _, subpages = signature sg in
+      expansion, subpages
     | Functor (args, sg) ->
-      let sig_html, subpages = signature sg in
+      let sig_html, _, subpages = signature sg in
       let params, params_subpages =
         List.fold_left (fun (args, subpages as acc) arg ->
           match arg with
@@ -1022,8 +1057,7 @@ struct
     let md_def_content = Markup.keyword "module " :: modname :: md in
     let region =
       Markup.make_def ~id:t.id ~code:md_def_content
-        ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-      |> fst
+        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
 
@@ -1102,8 +1136,7 @@ struct
     in
     let region =
       Markup.make_def ~id:t.id ~code:mty_def
-        ~doc:(relax_docs_type (Documentation.first_to_html t.doc))
-      |> fst
+        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
 
@@ -1185,7 +1218,7 @@ struct
 
   and include_ (t : Model.Lang.Include.t) =
     let docs = docs_to_general_html t.doc in
-    let included_html, tree = signature t.expansion.content in
+    let included_html, _, tree = signature t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
         element.Model.Location_.value = `Tag `Inline in
@@ -1252,8 +1285,7 @@ struct
         Html.pcdata " = " ::
         Html_tree.Relative_link.of_path ~stop_before:false x.path
       in
-      Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def ~doc:[]
-      |> fst
+      Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def
     end
     |> List.flatten
     |> fun definitions ->
@@ -1272,7 +1304,9 @@ struct
     let header_docs = Documentation.to_html t.doc in
     let html, subtree =
       match t.content with
-      | Module sign -> signature sign
+      | Module sign ->
+        let html, _, subpages = signature sign in
+        html, subpages
       | Pack packed -> pack packed, []
     in
     Html_tree.make ~header_docs html subtree
