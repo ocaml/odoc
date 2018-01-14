@@ -16,6 +16,7 @@
 
 
 
+module Location = Model.Location_
 module Paths = Model.Paths
 module Comment = Model.Comment
 module Lang = Model.Lang
@@ -632,6 +633,9 @@ sig
     render_nested_article:('item -> rendered_item * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
       rendered_item * toc * Html_tree.t list
+
+  val render_toc :
+    toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
 end =
 struct
   type content = Html_types.flow5 Html.elt
@@ -688,43 +692,180 @@ struct
 
 
 
+  type ('kind, 'item) sectioning_state = {
+    current_comment : Comment.docs;
+    items : (('kind, 'item) tagged_item) list;
+    heading_is_adjacent : bool;
+    rendered : content list;
+    toc : toc;
+    subpages : Html_tree.t list;
+  }
+
+  let finish_section state =
+    {state with
+      rendered = List.rev state.rendered;
+      toc = List.rev state.toc;
+    }
+
+  let is_deeper_section_level =
+    let level_to_int = function
+      | `Title -> 1
+      | `Section -> 2
+      | `Subsection -> 3
+      | `Subsubsection -> 4
+    in
+    fun ~than other_level ->
+      level_to_int other_level > level_to_int than
+
+  let render_comment_until_heading_or_end
+      : Comment.docs -> content list * Comment.docs = fun docs ->
+
+    let rec scan_comment acc docs =
+      match docs with
+      | [] -> List.rev acc, docs
+      | block::rest ->
+        match block.Location.value with
+        | `Heading _ -> List.rev acc, docs
+        | _ -> scan_comment (block::acc) rest
+    in
+    let included, remaining = scan_comment [] docs in
+    docs_to_general_html included, remaining
+
   let lay_out ~render_leaf_item ~render_nested_article items =
 
-    let rec section_content
-        : 'item list -> content list -> Html_tree.t list ->
-            content list * toc * Html_tree.t list =
-        fun items acc nested_pages ->
+    let rec section_content section_level state =
 
-      match items with
+      match state.current_comment with
+      | block::rest ->
+        begin match block.Location.value with
+        | `Heading (level, label, _) ->
+          if not (is_deeper_section_level ~than:section_level level) then
+            finish_section state
+          else
+            let nested_result =
+              section_content level {state with
+                  current_comment = rest;
+                  heading_is_adjacent = true;
+                  rendered = docs_to_general_html [block];
+                  toc = [];
+                }
+            in
+            let subsection = Html.section nested_result.rendered in
+
+            let Paths.Identifier.Label (_, label) = label in
+            let toc_entry = `Section (label, nested_result.toc) in
+
+            section_content section_level {nested_result with
+                heading_is_adjacent = false;
+                rendered = subsection::state.rendered;
+                toc = toc_entry::state.toc;
+              }
+
+        | _ ->
+          let rendered_docs, comment_remaining =
+            render_comment_until_heading_or_end state.current_comment in
+          let rendered_docs =
+            if state.heading_is_adjacent then
+              (* TODO Remove coercion. *)
+              let heading_markup = state.rendered in
+              [
+                Html.header
+                  (List.map
+                    Html.Unsafe.coerce_elt (heading_markup @ rendered_docs))
+              ]
+            else
+              (Html.aside rendered_docs)::state.rendered
+          in
+          section_content section_level {state with
+              current_comment = comment_remaining;
+              heading_is_adjacent = false;
+              rendered = rendered_docs;
+            }
+        end
+
       | [] ->
-        List.rev acc, [], nested_pages
+        let state =
+          if not state.heading_is_adjacent then
+            state
+          else
+            (* TODO Remove coercion. *)
+            let heading_markup =
+              List.map Html.Unsafe.coerce_elt state.rendered in
+            {state with
+              heading_is_adjacent = false;
+              rendered = [Html.header heading_markup];
+            }
+        in
 
-      | item::rest ->
-        match item with
-        | `Leaf_item (kind, _) ->
-          let rendered_group, remaining_items =
-            leaf_item_group ~render_leaf_item kind items in
-          section_content remaining_items (rendered_group::acc) nested_pages
+        match state.items with
+        | [] ->
+          finish_section state
 
-        | `Nested_article item ->
-          let rendered_item, more_nested_pages = render_nested_article item in
-          let rendered_item = Html.article rendered_item in
-          section_content
-            rest
-            (rendered_item::acc)
-            (nested_pages @ more_nested_pages)
+        | item::rest ->
+          match item with
+          | `Leaf_item (kind, _) ->
+            let rendered_group, remaining_items =
+              leaf_item_group ~render_leaf_item kind state.items in
+            section_content section_level {state with
+                items = remaining_items;
+                rendered = rendered_group::state.rendered;
+              }
 
-        | `Comment `Stop ->
-          let remaining_items =
-            skip_everything_until_next_stop_comment rest in
-          section_content remaining_items acc nested_pages
+          | `Nested_article item ->
+            let rendered_item, more_subpages = render_nested_article item in
+            let rendered_item = Html.article rendered_item in
+            section_content section_level {state with
+                items = rest;
+                rendered = rendered_item::state.rendered;
+                subpages = state.subpages @ more_subpages;
+              }
 
-        | `Comment (`Docs docs) ->
-          let rendered_docs = Html.aside (docs_to_general_html docs) in
-          section_content rest (rendered_docs::acc) nested_pages
+          | `Comment `Stop ->
+            let remaining_items =
+              skip_everything_until_next_stop_comment rest in
+            section_content section_level {state with
+                items = remaining_items;
+              }
+
+          | `Comment (`Docs docs) ->
+            section_content section_level {state with
+              current_comment = docs;
+              items = rest;
+            }
     in
 
-    section_content items [] []
+    let initial_state =
+      {
+        current_comment = [];
+        items;
+        heading_is_adjacent = false;
+        rendered = [];
+        toc = [];
+        subpages = []
+      }
+    in
+    let result = section_content `Title initial_state in
+
+    result.rendered, result.toc, result.subpages
+
+
+
+  (* TODO This is preliminary markup, we'll figure out how to structure nesting
+     later. *)
+  let render_toc toc =
+    let rec traverse acc = function
+      | [] -> acc
+      | (`Section (anchor, children))::more ->
+        let acc = anchor::acc in
+        let acc = traverse acc children in
+        traverse acc more
+    in
+    traverse [] toc
+    |> List.rev_map (fun anchor ->
+      [Html.br (); Html.a ~a:[Html.a_href ("#" ^ anchor)] [Html.pcdata anchor]])
+    |> List.flatten
+    |> Html.nav
+    |> fun html -> [html]
 end
 
 
@@ -1302,12 +1443,18 @@ struct
     Html_tree.enter package;
     Html_tree.enter (Paths.Identifier.name t.id);
     let header_docs = Documentation.to_html t.doc in
-    let html, subtree =
+    let header_docs, html, subtree =
       match t.content with
       | Module sign ->
-        let html, _, subpages = signature sign in
-        html, subpages
-      | Pack packed -> pack packed, []
+        let html, toc, subpages = signature sign in
+        let header_docs =
+          match toc with
+          | [] -> header_docs
+          | _ -> header_docs @ (Top_level_markup.render_toc toc)
+        in
+        header_docs, html, subpages
+      | Pack packed ->
+        header_docs, pack packed, []
     in
     Html_tree.make ~header_docs html subtree
 

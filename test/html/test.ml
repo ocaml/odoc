@@ -17,6 +17,7 @@ let command label =
 let cases = [
   "val.mli";
   "markup.mli";
+  "section.mli";
   "module.mli";
   "interlude.mli";
   "include.mli";
