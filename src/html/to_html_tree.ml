@@ -266,7 +266,7 @@ struct
       fields |> List.map (fun fld ->
         let open Model.Lang.TypeDecl.Field in
         let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-        let rhs = relax_docs_type (Documentation.to_html ~wrap:() fld.doc) in
+        let rhs = relax_docs_type (Documentation.to_html fld.doc) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
           if not (Documentation.has_doc fld.doc) then [] else [
@@ -345,7 +345,7 @@ struct
       cstrs |> List.map (fun cstr ->
         let open Model.Lang.TypeDecl.Constructor in
         let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-        let rhs = relax_docs_type (Documentation.to_html ~wrap:() cstr.doc) in
+        let rhs = relax_docs_type (Documentation.to_html cstr.doc) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
           if not (Documentation.has_doc cstr.doc) then [] else [
@@ -591,7 +591,7 @@ open Value
 
 
 type ('item_kind, 'item) tagged_item = [
-  | `Flat_item of 'item_kind * 'item
+  | `Leaf_item of 'item_kind * 'item
   | `Nested_article of 'item
   | `Comment of Comment.docs_or_stop
   | `End
@@ -600,29 +600,27 @@ type ('item_kind, 'item) tagged_item = [
 module High_level_markup :
 sig
   val lay_out :
-    render_flat_item:('item -> rendered_item * rendered_docs option) ->
-    render_nested_article:
-      ('item ->
-        (Html_types.article_content Html.elt) list * Html_tree.t list) ->
+    render_leaf_item:('item -> rendered_item * rendered_docs option) ->
+    render_nested_article:('item -> rendered_item * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
-      (Html_types.article_content Html.elt) list * (Html_tree.t list)
+      rendered_item * Html_tree.t list
 end =
 struct
-  type content = Html_types.article_content Html.elt
+  type content = Html_types.flow5 Html.elt
 
-  let lay_out ~render_flat_item ~render_nested_article items =
+  let lay_out ~render_leaf_item ~render_nested_article items =
 
-    let flat_item_group : 'item_kind -> 'item list -> (content * 'item list) =
+    let leaf_item_group : 'item_kind -> 'item list -> (content * 'item list) =
         fun first_item_kind items ->
 
-      let rec consume_flat_items_until_one_is_documented =
+      let rec consume_leaf_items_until_one_is_documented =
           fun items acc ->
 
         match List.hd items with
-        | `Flat_item (this_item_kind, item)
+        | `Leaf_item (this_item_kind, item)
             when this_item_kind = first_item_kind ->
 
-          let rendered_item, maybe_rendered_docs = render_flat_item item in
+          let rendered_item, maybe_rendered_docs = render_leaf_item item in
           (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
              is released in TyXML; see also type [rendered_item]. *)
           let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
@@ -630,7 +628,7 @@ struct
           let acc = rendered_item::acc in
           begin match maybe_rendered_docs with
           | None ->
-            consume_flat_items_until_one_is_documented (List.tl items) acc
+            consume_leaf_items_until_one_is_documented (List.tl items) acc
           | Some docs ->
             let docs = Html.dd docs in
             List.rev (docs::acc), List.tl items
@@ -641,7 +639,7 @@ struct
       in
 
       let rendered_item_group, remaining_items =
-        consume_flat_items_until_one_is_documented items [] in
+        consume_leaf_items_until_one_is_documented items [] in
 
       Html.dl rendered_item_group, remaining_items
     in
@@ -661,8 +659,8 @@ struct
         fun items acc nested_pages ->
 
       match List.hd items with
-      | `Flat_item (kind, _) ->
-        let rendered_group, remaining_items = flat_item_group kind items in
+      | `Leaf_item (kind, _) ->
+        let rendered_group, remaining_items = leaf_item_group kind items in
         top_level remaining_items (rendered_group::acc) nested_pages
 
       | `Nested_article item ->
@@ -704,10 +702,10 @@ end =
 struct
   let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
     match item with
-    | Method _ -> `Flat_item (`Method, item)
-    | InstanceVariable _ -> `Flat_item (`Variable, item)
-    | Constraint _ -> `Flat_item (`Constraint, item)
-    | Inherit _ -> `Flat_item (`Inherit, item)
+    | Method _ -> `Leaf_item (`Method, item)
+    | InstanceVariable _ -> `Leaf_item (`Variable, item)
+    | Constraint _ -> `Leaf_item (`Constraint, item)
+    | Inherit _ -> `Leaf_item (`Inherit, item)
 
     | Comment comment -> `Comment comment
 
@@ -727,7 +725,7 @@ struct
     (* FIXME: use [t.self] *)
     let tagged_items = List.map tag_class_signature_item c.items in
     High_level_markup.lay_out
-      ~render_flat_item:render_signature_item
+      ~render_leaf_item:render_signature_item
       ~render_nested_article:(fun _ -> assert false)
       tagged_items
 
@@ -878,11 +876,11 @@ end =
 struct
   let tag_signature_item : Lang.Signature.item -> _ = fun item ->
     match item with
-    | Type _ -> `Flat_item (`Type, item)
-    | TypExt _ -> `Flat_item (`Extension, item)
-    | Exception _ -> `Flat_item (`Exception, item)
-    | Value _ -> `Flat_item (`Value, item)
-    | External _ -> `Flat_item (`External, item)
+    | Type _ -> `Leaf_item (`Type, item)
+    | TypExt _ -> `Leaf_item (`Extension, item)
+    | Exception _ -> `Leaf_item (`Exception, item)
+    | Value _ -> `Leaf_item (`Value, item)
+    | External _ -> `Leaf_item (`External, item)
 
     | Module _
     | ModuleType _
@@ -892,7 +890,7 @@ struct
 
     | Comment comment -> `Comment comment
 
-  let rec render_flat_signature_item : Lang.Signature.item -> _ = function
+  let rec render_leaf_signature_item : Lang.Signature.item -> _ = function
     | Type t -> type_decl t
     | TypExt e -> extension e
     | Exception e -> exn e
@@ -911,7 +909,7 @@ struct
   and signature s =
     let tagged_items = List.map tag_signature_item s in
     High_level_markup.lay_out
-      ~render_flat_item:render_flat_signature_item
+      ~render_leaf_item:render_leaf_signature_item
       ~render_nested_article:render_nested_signature_or_class
       tagged_items
 

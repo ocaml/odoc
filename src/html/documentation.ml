@@ -367,11 +367,7 @@ let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
     end
   | _ -> []
 
-(* TODO Ignoring [wrap]. Wrapping in doc comment markup was a mistake in
-   ocamldoc, and there is no need to emulate it. *)
-let to_html
-    ?wrap:_ (docs : Model.Comment.docs) : (top_level_flow Html.elt) list =
-
+let to_html (docs : Model.Comment.docs) : (top_level_flow Html.elt) list =
   block_element_list (List.map Model.Location_.value docs)
 
 let has_doc docs =

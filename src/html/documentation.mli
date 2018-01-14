@@ -1,9 +1,8 @@
 module Html = Tyxml.Html
 
 val to_html :
-  ?wrap:unit -> Model.Comment.docs ->
+  Model.Comment.docs ->
     (Html_types.flow5_without_header_footer Html.elt) list
-(** When [wrap] is passed, then "(** *)" are added around the documentation. *)
 
 val first_to_html :
   Model.Comment.docs -> (Html_types.flow5_without_header_footer Html.elt) list

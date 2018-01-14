@@ -3,7 +3,7 @@
 
 (** {2 Sections}
 
-    Let's get those done first, because sections will be used to break up the
+    Let's get these done first, because sections will be used to break up the
     rest of this test.
 
     Besides the section heading above, there are also
