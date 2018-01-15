@@ -12,6 +12,8 @@ let command label =
     if exit_code <> 0 then
       Alcotest.failf "'%s' exited with %i" label exit_code)
 
+
+
 let cases = [
   "val.mli";
   "markup.mli";
@@ -25,6 +27,40 @@ let cases = [
   "class.mli";
   "stop.mli";
 ]
+
+
+
+let pretty_print_html source_file pretty_printed_file =
+  Markup.file source_file
+  |> fst
+  |> Markup.parse_html
+  |> Markup.signals
+  |> Markup.transform begin fun (at_start_of_line, after_markup) signal ->
+    match signal with
+    | `Text ss ->
+      (* Markup.ml gives a "normalized" signal stream, so no empty text
+         signals. *)
+      let s = String.concat "" ss in
+      let at_start_of_line = s.[String.length s - 1] = '\n' in
+      let s =
+        if after_markup && s.[0] = '\n' then
+          String.sub s 1 (String.length s - 1)
+        else
+          s
+      in
+      [`Text [s]], Some (at_start_of_line, false)
+
+    | _ ->
+      let signals =
+        if at_start_of_line then
+          [signal; `Text ["\n"]]
+        else
+          [`Text ["\n"]; signal; `Text ["\n"]]
+      in
+      signals, Some (true, true)
+  end (true, false)
+  |> Markup.write_html
+  |> Markup.to_file pretty_printed_file
 
 let () =
   Unix.mkdir build_directory 0o755;
@@ -108,13 +144,6 @@ let () =
           build_directory // "actual.pretty.html" in
 
         (* Do the actual pretty printing. *)
-        let pretty_print_html source_file pretty_printed_file =
-          Soup.read_file source_file
-          |> Soup.parse
-          |> Soup.pretty_print
-          |> Soup.write_file pretty_printed_file
-        in
-
         pretty_print_html reference_file pretty_reference_file;
         pretty_print_html html_file pretty_actual_file;
 
