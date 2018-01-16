@@ -19,8 +19,7 @@
 module Comment = Model.Comment
 module Html = Tyxml.Html
 
-type top_level_flow = Html_types.flow5_without_header_footer
-type any_flow = Html_types.flow5
+type flow = Html_types.flow5_without_header_footer
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
@@ -224,14 +223,14 @@ and inline_element_list elements =
 
 
 let rec nestable_block_element
-    : Comment.nestable_block_element -> top_level_flow Html.elt =
+    : 'a. Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
   function
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s -> Html.pre [Html.code [Html.pcdata s]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
     let items = List.map (Reference.to_html ~stop_before:false) ms in
-    let items = (items :> (any_flow Html.elt) list) in
+    let items = (items :> (Html_types.li_content Html.elt) list) in
     let items = List.map (fun e -> Html.li [e]) items in
     Html.ul items
   | `List (kind, items) ->
@@ -239,7 +238,7 @@ let rec nestable_block_element
       items
       |> List.map begin function
         | [{Model.Location_.value = `Paragraph content; _}] ->
-          (inline_element_list content :> (any_flow Html.elt) list)
+          (inline_element_list content :> (Html_types.li_content Html.elt) list)
         | item ->
           nested_block_element_list item
         end
@@ -256,11 +255,11 @@ and nestable_block_element_list elements =
   |> List.map nestable_block_element
 
 and nested_block_element_list elements =
-  (nestable_block_element_list elements :> (any_flow Html.elt) list)
+  (nestable_block_element_list elements :> (Html_types.flow5 Html.elt) list)
 
 
 
-let tag : Comment.tag -> (top_level_flow Html.elt) option = function
+let tag : Comment.tag -> ([> flow ] Html.elt) option = function
   | `Author s ->
     Some (Html.(dl [
       dt [pcdata "author"];
@@ -308,7 +307,8 @@ let tag : Comment.tag -> (top_level_flow Html.elt) option = function
 
 
 
-let block_element : Comment.block_element -> (top_level_flow Html.elt) option =
+let block_element
+    : 'a. Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
   function
   | #Comment.nestable_block_element as e ->
     Some (nestable_block_element e)
@@ -352,8 +352,7 @@ let block_element_list elements =
 
 
 
-let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
-  function
+let first_to_html = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; _}::_ ->
     begin match block_element first_paragraph with
     | Some element -> [element]
@@ -361,7 +360,7 @@ let first_to_html : Model.Comment.docs -> (top_level_flow Html.elt) list =
     end
   | _ -> []
 
-let to_html (docs : Model.Comment.docs) : (top_level_flow Html.elt) list =
+let to_html docs =
   block_element_list (List.map Model.Location_.value docs)
 
 let has_doc docs =

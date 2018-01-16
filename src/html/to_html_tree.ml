@@ -30,12 +30,6 @@ type rendered_item = (Html_types.div_content Html.elt) list
 
 
 
-let relax_docs_type docs =
-  (docs :> (Html_types.div_content Html.elt) list)
-
-let docs_to_general_html docs =
-  relax_docs_type (Documentation.to_html docs)
-
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
 
@@ -266,7 +260,8 @@ struct
       fields |> List.map (fun fld ->
         let open Model.Lang.TypeDecl.Field in
         let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-        let rhs = relax_docs_type (Documentation.to_html fld.doc) in
+        let rhs = Documentation.to_html fld.doc in
+        let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
           if not (Documentation.has_doc fld.doc) then [] else [
@@ -345,7 +340,8 @@ struct
       cstrs |> List.map (fun cstr ->
         let open Model.Lang.TypeDecl.Constructor in
         let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-        let rhs = relax_docs_type (Documentation.to_html cstr.doc) in
+        let rhs = Documentation.to_html cstr.doc in
+        let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
           if not (Documentation.has_doc cstr.doc) then [] else [
@@ -638,16 +634,18 @@ sig
     toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
 end =
 struct
-  type content = Html_types.flow5 Html.elt
+  (* Just some type abbreviations. *)
+  type html = Html_types.flow5 Html.elt
+  type comment_html = Html_types.flow5_without_header_footer Html.elt
 
 
 
   (* "Consumes" adjacent leaf items of the same kind, until one is found with
      documentation. Then, joins all their definitions, and the documentation of
-     the last item (if any), into a <dl> element. *)
+     the last item (if any), into a <dl> element. The rendered <dl> element is
+     paired with the list of unconsumed items remaining in the input. *)
   let leaf_item_group
-      : render_leaf_item:_ -> 'kind -> 'item list -> (content * 'item list) =
-      fun ~render_leaf_item first_item_kind items ->
+      render_leaf_item first_item_kind items : html * 'item list =
 
     let rec consume_leaf_items_until_one_is_documented =
         fun items acc ->
@@ -666,7 +664,8 @@ struct
         | [] ->
           consume_leaf_items_until_one_is_documented items acc
         | docs ->
-          let docs = docs_to_general_html docs in
+          let docs = Documentation.to_html docs in
+          let docs = (docs :> (Html_types.dd_content Html.elt) list) in
           let docs = Html.dd docs in
           List.rev (docs::acc), items
         end
@@ -682,6 +681,10 @@ struct
 
 
 
+  (* When we encounter a stop comment, [(**/**)], we read everything until the
+     next stop comment, if there is one, and discard it. The returned item list
+     is the signature items following the next stop comment, if there are
+     any. *)
   let rec skip_everything_until_next_stop_comment : 'item list -> 'item list =
     function
     | [] -> []
@@ -692,33 +695,12 @@ struct
 
 
 
-  type ('kind, 'item) sectioning_state = {
-    current_comment : Comment.docs;
-    items : (('kind, 'item) tagged_item) list;
-    heading_is_adjacent : bool;
-    rendered : content list;
-    toc : toc;
-    subpages : Html_tree.t list;
-  }
-
-  let finish_section state =
-    {state with
-      rendered = List.rev state.rendered;
-      toc = List.rev state.toc;
-    }
-
-  let is_deeper_section_level =
-    let level_to_int = function
-      | `Title -> 1
-      | `Section -> 2
-      | `Subsection -> 3
-      | `Subsubsection -> 4
-    in
-    fun ~than other_level ->
-      level_to_int other_level > level_to_int than
-
+  (* Reads comment content until the next heading, or the end of comment, and
+     renders it as HTML. The returned HTML is paired with the remainder of the
+     comment, which will either start with the next section heading in the
+     comment, or be empty if there are no section headings. *)
   let render_comment_until_heading_or_end
-      : Comment.docs -> content list * Comment.docs = fun docs ->
+      : Comment.docs -> comment_html list * Comment.docs = fun docs ->
 
     let rec scan_comment acc docs =
       match docs with
@@ -729,124 +711,179 @@ struct
         | _ -> scan_comment (block::acc) rest
     in
     let included, remaining = scan_comment [] docs in
-    docs_to_general_html included, remaining
+    let docs = Documentation.to_html included in
+    docs, remaining
 
-  let lay_out ~render_leaf_item ~render_nested_article items =
 
-    let rec section_content section_level state =
 
-      match state.current_comment with
-      | block::rest ->
-        begin match block.Location.value with
-        | `Heading (level, label, _) ->
-          if not (is_deeper_section_level ~than:section_level level) then
-            finish_section state
-          else
-            let nested_result =
-              section_content level {state with
-                  current_comment = rest;
-                  heading_is_adjacent = true;
-                  rendered = docs_to_general_html [block];
-                  toc = [];
-                }
-            in
-            let subsection = Html.section nested_result.rendered in
+  (* The sectioning functions take several arguments, and return "modified"
+     instances of them as results. So, it is convenient to group them into a
+     record type. This is most useful for the return type, as otherwise there is
+     no way to give names to its components.
 
-            let Paths.Identifier.Label (_, label) = label in
-            let toc_entry = `Section (label, nested_result.toc) in
+     The components themselves are:
 
-            section_content section_level {nested_result with
-                heading_is_adjacent = false;
-                rendered = subsection::state.rendered;
-                toc = toc_entry::state.toc;
-              }
+     - The current comment being read. When non-empty, this is progressively
+       replaced with its tail until it is exhausted.
+     - The general signature items to be read. These are read one at a time when
+       there is no current comment. Upon encountering a comment, it becomes the
+       "current comment," and the sectioning functions read it one block element
+       at a time, scanning for section headings.
+     - A reversed accumulator of the rendered signature items.
+     - A reversed accumulator of the table of contents.
+     - An accumulator of the subpages generated for nested signatures.
 
-        | _ ->
-          let rendered_docs, comment_remaining =
-            render_comment_until_heading_or_end state.current_comment in
-          let rendered_docs =
-            if state.heading_is_adjacent then
-              (* TODO Remove coercion. *)
-              let heading_markup = state.rendered in
-              [
-                Html.header
-                  (List.map
-                    Html.Unsafe.coerce_elt (heading_markup @ rendered_docs))
-              ]
-            else
-              (Html.aside rendered_docs)::state.rendered
-          in
-          section_content section_level {state with
-              current_comment = comment_remaining;
-              heading_is_adjacent = false;
-              rendered = rendered_docs;
-            }
-        end
+     The record is also convenient for passing around the two item-rendering
+     functions. *)
+  type ('kind, 'item) sectioning_state = {
+    input_items : (('kind, 'item) tagged_item) list;
+    input_comment : Comment.docs;
 
-      | [] ->
-        let state =
-          if not state.heading_is_adjacent then
-            state
-          else
-            (* TODO Remove coercion. *)
-            let heading_markup =
-              List.map Html.Unsafe.coerce_elt state.rendered in
-            {state with
-              heading_is_adjacent = false;
-              rendered = [Html.header heading_markup];
-            }
+    acc_html : html list;
+    acc_toc : toc;
+    acc_subpages : Html_tree.t list;
+
+    render_leaf_item : 'item -> rendered_item * Comment.docs;
+    render_nested_article : 'item -> rendered_item * Html_tree.t list;
+  }
+
+  let finish_section state =
+    {state with
+      acc_html = List.rev state.acc_html;
+      acc_toc = List.rev state.acc_toc;
+    }
+
+  let is_deeper_section_level =
+    let level_to_int = function
+      | `Title -> 1
+      | `Section -> 2
+      | `Subsection -> 3
+      | `Subsubsection -> 4
+    in
+    fun other_level ~than ->
+      level_to_int other_level > level_to_int than
+
+
+
+  let rec section_items section_level state =
+    match state.input_items with
+    | [] ->
+      finish_section state
+
+    | tagged_item::input_items ->
+
+      match tagged_item with
+      | `Leaf_item (kind, _) ->
+        let html, input_items =
+          leaf_item_group
+            state.render_leaf_item
+            kind
+            state.input_items
         in
+        section_items section_level {state with
+            input_items;
+            acc_html = html::state.acc_html;
+          }
 
-        match state.items with
-        | [] ->
+      | `Nested_article item ->
+        let html, subpages = state.render_nested_article item in
+        section_items section_level {state with
+            input_items;
+            acc_html = (Html.article html)::state.acc_html;
+            acc_subpages = state.acc_subpages @ subpages;
+          }
+
+      | `Comment `Stop ->
+        let input_items = skip_everything_until_next_stop_comment input_items in
+        section_items section_level {state with
+            input_items;
+          }
+
+      | `Comment (`Docs input_comment) ->
+        section_comment section_level {state with
+            input_items;
+            input_comment;
+          }
+
+
+
+  and section_comment section_level state =
+    match state.input_comment with
+    | [] ->
+      section_items section_level state
+
+    | element::input_comment ->
+
+      match element.Location.value with
+      | `Heading (level, label, _) ->
+        if not (is_deeper_section_level level ~than:section_level) then
           finish_section state
 
-        | item::rest ->
-          match item with
-          | `Leaf_item (kind, _) ->
-            let rendered_group, remaining_items =
-              leaf_item_group ~render_leaf_item kind state.items in
-            section_content section_level {state with
-                items = remaining_items;
-                rendered = rendered_group::state.rendered;
-              }
-
-          | `Nested_article item ->
-            let rendered_item, more_subpages = render_nested_article item in
-            let rendered_item = Html.article rendered_item in
-            section_content section_level {state with
-                items = rest;
-                rendered = rendered_item::state.rendered;
-                subpages = state.subpages @ more_subpages;
-              }
-
-          | `Comment `Stop ->
-            let remaining_items =
-              skip_everything_until_next_stop_comment rest in
-            section_content section_level {state with
-                items = remaining_items;
-              }
-
-          | `Comment (`Docs docs) ->
-            section_content section_level {state with
-              current_comment = docs;
-              items = rest;
+        else
+          (* We have a deeper section heading in a comment within this section.
+             Parse it recursively. We start the nested HTML by parsing the
+             section heading itself, and anything that follows it in the current
+             comment, up to the next section heading, if any. All of this
+             comment matter goes into a <header> element. The nested HTML will
+             then be extended recursively by parsing more structure items,
+             including, perhaps, additional comments in <aside> elements. *)
+          let heading_html = Documentation.to_html [element] in
+          let more_comment_html, input_comment =
+            render_comment_until_heading_or_end input_comment in
+          let html = Html.header (heading_html @ more_comment_html) in
+          let nested_section_state =
+            {state with
+              input_comment = input_comment;
+              acc_html = [html];
+              acc_toc = [];
             }
-    in
+          in
+          let nested_section_state =
+            section_comment level nested_section_state in
 
+          (* Wrap the nested section in a <section> element, and extend the
+             table of contents. *)
+          let html = Html.section nested_section_state.acc_html in
+
+          let Paths.Identifier.Label (_, label) = label in
+          let toc_entry = `Section (label, nested_section_state.acc_toc) in
+
+          (* Continue parsing after the nested section. In practice, we have
+             either run out of items, or the first thing in the input will be
+             another section heading – the nested section will have consumed
+             everything else. *)
+          section_comment section_level {nested_section_state with
+              acc_html = html::state.acc_html;
+              acc_toc = toc_entry::state.acc_toc;
+            }
+
+      | _ ->
+        let html, input_comment =
+          render_comment_until_heading_or_end state.input_comment in
+        let html = (html :> (Html_types.aside_content Html.elt) list) in
+        section_comment section_level {state with
+            input_comment;
+            acc_html = (Html.aside html)::state.acc_html;
+          }
+
+
+
+  let lay_out ~render_leaf_item ~render_nested_article items =
     let initial_state =
       {
-        current_comment = [];
-        items;
-        heading_is_adjacent = false;
-        rendered = [];
-        toc = [];
-        subpages = []
+        input_items = items;
+        input_comment = [];
+
+        acc_html = [];
+        acc_toc = [];
+        acc_subpages = [];
+
+        render_leaf_item;
+        render_nested_article;
       }
     in
-    let result = section_content `Title initial_state in
-
-    result.rendered, result.toc, result.subpages
+    let state = section_items `Title initial_state in
+    state.acc_html, state.acc_toc, state.acc_subpages
 
 
 
@@ -979,7 +1016,8 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Class) name;
-        let doc = docs_to_general_html t.doc in
+        let doc = Documentation.to_html t.doc in
+        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
           match doc with
@@ -1015,7 +1053,8 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Cty) name;
-        let doc = docs_to_general_html t.doc in
+        let doc = Documentation.to_html t.doc in
+        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
           match doc with
@@ -1184,7 +1223,8 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mod) modname;
-        let doc = docs_to_general_html t.doc in
+        let doc = Documentation.to_html t.doc in
+        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
         let expansion =
           match doc with
@@ -1257,7 +1297,8 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mty) modname;
-        let doc = docs_to_general_html t.doc in
+        let doc = Documentation.to_html t.doc in
+        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
         let expansion =
           match doc with
@@ -1358,7 +1399,8 @@ struct
       Html_tree.Relative_link.of_path ~stop_before:false typ_path
 
   and include_ (t : Model.Lang.Include.t) =
-    let docs = docs_to_general_html t.doc in
+    let docs = Documentation.to_html t.doc in
+    let docs = (docs :> (Html_types.div_content Html.elt) list) in
     let included_html, _, tree = signature t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
@@ -1467,7 +1509,8 @@ struct
     in
     Html_tree.enter package;
     Html_tree.enter ~kind:`Page name;
-    let html = relax_docs_type (Documentation.to_html t.content) in
+    let html = Documentation.to_html t.content in
+    let html = (html :> (Html_types.div_content Html.elt) list) in
     Html_tree.make html []
 end
 include Page
