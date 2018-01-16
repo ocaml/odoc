@@ -174,21 +174,27 @@ let style_to_combinator = function
 
 
 let leaf_inline_element
-    : Comment.leaf_inline_element -> non_link_phrasing Html.elt = function
+    : Comment.leaf_inline_element -> [> non_link_phrasing ] Html.elt = function
   | `Space -> Html.pcdata " "
   | `Word s -> Html.pcdata s
   | `Code_span s -> Html.code [Html.pcdata s]
 
 let rec non_link_inline_element
-    : Comment.non_link_inline_element -> non_link_phrasing Html.elt = function
+    : 'a. Comment.non_link_inline_element ->
+        ([> non_link_phrasing ] as 'a) Html.elt =
+  function
   | #Comment.leaf_inline_element as e -> leaf_inline_element e
   | `Styled (style, content) ->
     (style_to_combinator style) (non_link_inline_element_list content)
 
-and non_link_inline_element_list elements =
+and non_link_inline_element_list :
+    'a. _ -> ([> non_link_phrasing ] as 'a) Html.elt list = fun elements ->
   elements
   |> List.map (fun element -> element.Model.Location_.value)
   |> List.map non_link_inline_element
+
+let link_content_to_html =
+  non_link_inline_element_list
 
 
 

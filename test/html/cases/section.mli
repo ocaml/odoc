@@ -22,3 +22,9 @@ val foo : unit
     {2 within a comment}
 
     {3 and one with a nested section} *)
+
+(** {2 {e This} [section] {b title} {_has} {^markup}}
+
+    But links are impossible thanks to the parser, so we never have trouble
+    rendering a section title in a table of contents – no link will be nested
+    inside another link. *)

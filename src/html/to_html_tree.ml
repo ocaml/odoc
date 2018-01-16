@@ -620,7 +620,13 @@ type ('item_kind, 'item) tagged_item = [
   | `Comment of Comment.docs_or_stop
 ]
 
-type toc = [ `Section of string * toc ] list
+type section = {
+  anchor : string;
+  text : Comment.link_content;
+  children : section list;
+}
+
+type toc = section list
 
 module Top_level_markup :
 sig
@@ -815,7 +821,7 @@ struct
     | element::input_comment ->
 
       match element.Location.value with
-      | `Heading (level, label, _) ->
+      | `Heading (level, label, content) ->
         if not (is_deeper_section_level level ~than:section_level) then
           finish_section state
 
@@ -846,7 +852,13 @@ struct
           let html = Html.section nested_section_state.acc_html in
 
           let Paths.Identifier.Label (_, label) = label in
-          let toc_entry = `Section (label, nested_section_state.acc_toc) in
+          let toc_entry =
+            {
+              anchor = label;
+              text = content;
+              children = nested_section_state.acc_toc;
+            }
+          in
 
           (* Continue parsing after the nested section. In practice, we have
              either run out of items, or the first thing in the input will be
@@ -887,22 +899,32 @@ struct
 
 
 
-  (* TODO This is preliminary markup, we'll figure out how to structure nesting
-     later. *)
   let render_toc toc =
-    let rec traverse acc = function
-      | [] -> acc
-      | (`Section (anchor, children))::more ->
-        let acc = anchor::acc in
-        let acc = traverse acc children in
-        traverse acc more
+    let rec section the_section : Html_types.li_content Html.elt list =
+      let text = Documentation.link_content_to_html the_section.text in
+      let text =
+        (text
+          : Html_types.phrasing_without_interactive Html.elt list
+          :> (Html_types.flow5_without_interactive Html.elt) list)
+      in
+      let link =
+        Html.a
+          ~a:[Html.a_href ("#" ^ the_section.anchor)] text
+      in
+      match the_section.children with
+      | [] -> [link]
+      | _ -> [link; sections the_section.children]
+
+    and sections the_sections =
+      the_sections
+      |> List.map (fun the_section -> Html.li (section the_section))
+      |> Html.ul
+
     in
-    traverse [] toc
-    |> List.rev_map (fun anchor ->
-      [Html.br (); Html.a ~a:[Html.a_href ("#" ^ anchor)] [Html.pcdata anchor]])
-    |> List.flatten
-    |> Html.nav
-    |> fun html -> [html]
+
+    match toc with
+    | [] -> []
+    | _ -> [Html.nav [sections toc]]
 end
 
 
