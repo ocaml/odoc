@@ -95,7 +95,7 @@ module Reference = struct
       match ref with
       | Root (s, _) ->
         begin match text with
-        | None -> Html.pcdata s
+        | None -> Html.code [Html.pcdata s]
         | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
         end
       | Dot (parent, s) ->
@@ -131,7 +131,7 @@ module Reference = struct
         let id = Reference.Resolved.identifier r in
         let txt : non_link_phrasing Html.elt =
           match text with
-          | None -> Html.pcdata (render_resolved r)
+          | None -> Html.code [Html.pcdata (render_resolved r)]
           | Some s -> s
         in
         begin match Id.href ~stop_before id with
