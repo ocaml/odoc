@@ -870,6 +870,12 @@ class virtual documentation = object (self)
 
   method private documentation_inline_element element =
     match element with
+    | `Styled (style, nested_elements) ->
+      let nested_elements =
+        List.map
+          (Location_.map self#documentation_inline_element) nested_elements
+      in
+      `Styled (style, nested_elements)
     | `Reference (path, nested_elements) ->
       let path', nested_elements' =
         self#documentation_reference (path, nested_elements) in
