@@ -28,35 +28,6 @@ module Type = struct
   let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.pcdata tv ]
 end
 
-let def_div lst = Html.div ~a:[ Html.a_class ["def" ] ] [ Html.code lst ]
-
-let def_summary lst = Html.summary [ Html.span ~a:[ Html.a_class ["def"] ] lst ]
-
-let make_def ~id ~code:def =
-  match Url.from_identifier ~stop_before:true id with
-  | Error e -> failwith (Url.Error.to_string e)
-  | Ok { anchor; kind; _ } ->
-    [
-      Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] [];
-      Html.div ~a:[Html.a_class ["def"; kind]] [Html.code def];
-    ]
-
-(* TODO This should be merged with make_def, above. *)
-let make_spec ~id code =
-  match Url.from_identifier ~stop_before:true id with
-  | Error _ ->
-    (* TODO Perhaps Url.from_identifier shouldn't return an error, but an
-       option, or maybe all things that can be passed to it should be made
-       linkable. In the meantime, this is a workaround that generates markup
-       without an anchor. It is a workaround for extensible type
-       extensions. *)
-    [Html.div ~a:[Html.a_class ["def"]] code]
-  | Ok { anchor; kind; _ } ->
-    [
-      Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] [];
-      Html.div ~a:[ Html.a_class ["def"; kind] ] code;
-    ]
-
 let arrow =
   Html.span
     ~a:[ Html.a_class ["keyword" ] ] [ Html.entity "#8209"; Html.entity "gt" ]

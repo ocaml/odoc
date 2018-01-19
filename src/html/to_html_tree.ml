@@ -368,19 +368,14 @@ struct
       list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
         ~f:extension_constructor
     in
-    (* FIXME: really want to use the kind "extension" here? *)
-    (* Inlined [Markup.make_spec] as we don't have an id (which implies we don't
-      have an anchor either). *)
-    (* TODO Fix this junk. *)
-    (* TODO make_spec needs to be modified to make the anchor optional. *)
-    Markup.make_spec ~id:(CoreType "fixme") extension, t.doc
+    extension, t.doc
 
 
 
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
     let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
-    Markup.make_spec ~id:t.id exn, t.doc
+    exn, t.doc
 
 
 
@@ -543,7 +538,7 @@ struct
       representation @
       [Html.code constraints]
     in
-    Markup.make_spec ~id:t.id tdecl_def, t.doc
+    tdecl_def, t.doc
 end
 open Type_declaration
 
@@ -563,7 +558,7 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~code:value, t.doc
+    [Html.code value], t.doc
 
   let external_ (t : Model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
@@ -575,7 +570,7 @@ struct
       Html.pcdata " = " ::
       List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
     in
-    Markup.make_def ~id:t.id ~code:external_, t.doc
+    [Html.code external_], t.doc
 end
 open Value
 
@@ -647,6 +642,22 @@ struct
 
 
 
+  let add_anchor item_to_id item html =
+    match item_to_id item with
+    | None ->
+      html,
+      []
+    | Some anchor_text ->
+      let anchor =
+        Html.a
+          ~a:[Html.a_href ("#" ^ anchor_text); Html.a_class ["anchor"]]
+          []
+      in
+      anchor::html,
+      [Html.a_id anchor_text]
+
+
+
   (* "Consumes" adjacent leaf items of the same kind, until one is found with
      documentation. Then, joins all their definitions, and the documentation of
      the last item (if any), into a <dl> element. The rendered <dl> element is
@@ -661,17 +672,14 @@ struct
       | (`Leaf_item (this_item_kind, item))::items
           when this_item_kind = first_item_kind ->
 
-        let rendered_item, maybe_docs = render_leaf_item item in
+        let html, maybe_docs = render_leaf_item item in
         (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
            is released in TyXML; see also type [rendered_item]. *)
-        let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
-        let maybe_id =
-          match item_to_id item with
-          | None -> []
-          | Some anchor -> [Html.a_id anchor]
-        in
-        let rendered_item = Html.dt ~a:maybe_id rendered_item in
-        let acc = rendered_item::acc in
+        let html = List.map Html.Unsafe.coerce_elt html in
+        let html, maybe_id = add_anchor item_to_id item html in
+        let html = Html.dt ~a:maybe_id html in
+        let acc = html::acc in
+
         begin match maybe_docs with
         | [] ->
           consume_leaf_items_until_one_is_documented items acc
@@ -801,9 +809,10 @@ struct
 
       | `Nested_article item ->
         let html, subpages = state.render_nested_article item in
+        let html, maybe_id = add_anchor state.item_to_id item html in
         section_items section_level {state with
             input_items;
-            acc_html = (Html.article html)::state.acc_html;
+            acc_html = (Html.article ~a:maybe_id html)::state.acc_html;
             acc_subpages = state.acc_subpages @ subpages;
           }
 
@@ -1009,7 +1018,7 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~code:method_, t.doc
+    [Html.code method_], t.doc
 
   and instance_variable (t : Model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
@@ -1025,7 +1034,7 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_
     in
-    Markup.make_def ~id:t.id ~code:val_, t.doc
+    [Html.code val_], t.doc
 
   and class_type_expr
     : 'inner_row 'outer_row. Model.Lang.ClassType.expr
@@ -1085,7 +1094,7 @@ struct
       cd
     in
     let region =
-      Markup.make_def ~id:t.id ~code:class_def_content
+      [Html.code class_def_content]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
@@ -1122,7 +1131,7 @@ struct
       expr
     in
     let region =
-      Markup.make_def ~id:t.id ~code:ctyp
+      [Html.code ctyp]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
@@ -1227,7 +1236,7 @@ struct
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), [subtree]
     in
-    let region = Markup.make_def ~id:arg.id ~code:def_div in
+    let region = [Html.code def_div] in
     region, subtree
 
   and module_expansion
@@ -1299,7 +1308,7 @@ struct
     in
     let md_def_content = Markup.keyword "module " :: modname :: md in
     let region =
-      Markup.make_def ~id:t.id ~code:md_def_content
+      [Html.code md_def_content]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
@@ -1379,7 +1388,7 @@ struct
       )
     in
     let region =
-      Markup.make_def ~id:t.id ~code:mty_def
+      [Html.code mty_def]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
     in
     region, subtree
@@ -1492,7 +1501,7 @@ struct
            give it... *)
         [
           Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
-            (Markup.def_summary [incl])
+            (Html.summary [Html.span ~a:[Html.a_class ["def"]] [incl]])
             included_html
         ]
     in
@@ -1530,7 +1539,7 @@ struct
         Html.pcdata " = " ::
         Html_tree.Relative_link.of_path ~stop_before:false x.path
       in
-      Markup.make_def ~id:x.Compilation_unit.Packed.id ~code:md_def
+      [Html.code md_def]
     end
     |> List.flatten
     |> fun definitions ->

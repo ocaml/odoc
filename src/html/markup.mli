@@ -29,23 +29,6 @@ module Type : sig
   val var : string -> [> Html_types.span ] Html.elt
 end
 
-val def_div :
-  [< Html_types.code_content_fun ] Html.elt list -> [> Html_types.div ] Html.elt
-
-val def_summary :
-  [< Html_types.span_content_fun ] Html.elt list ->
-    [> Html_types.summary ] Html.elt
-
-val make_def :
-  id:_ Model.Paths.Identifier.t ->
-  code:([< Html_types.code_content ] Html.elt) list ->
-    (Html_types.div_content Html.elt) list
-
-val make_spec :
-  id:_ Model.Paths.Identifier.t ->
-  ([< Html_types.div_content ] Html.elt) list ->
-    (Html_types.div_content Html.elt) list
-
 val arrow : [> Html_types.span ] Html.elt
 (** "->" with a non breaking hyphen, styled as a keyword. *)
 
