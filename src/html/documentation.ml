@@ -323,7 +323,7 @@ let block_element
     (* TODO Simplify the id/label formatting. *)
     let attributes =
       let Model.Paths.Identifier.Label (_, label) = label in
-      [Html.a_id label; Html.a_class ["anchored"]]
+      [Html.a_id label]
     in
     let a = attributes in
 

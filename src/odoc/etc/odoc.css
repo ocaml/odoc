@@ -63,8 +63,9 @@ a:hover { box-shadow:0 1px 0 0 #2C5CBD; }
 { background-color: #FFF8E5;
   box-shadow: 0 0 0 2px #FFF8E5, 0 0 0 3px #DDD; }
 
-.spec:hover > a.anchor, /* FIXME remove */
-.anchored:hover a.anchor { visibility: visible; }
+*:hover > a.anchor {
+    visibility: visible;
+}
 
 a.anchor:before { content: "#" }
 a.anchor:hover {  box-shadow: none; text-decoration: underline }

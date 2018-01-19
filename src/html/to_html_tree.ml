@@ -665,12 +665,12 @@ struct
         (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
            is released in TyXML; see also type [rendered_item]. *)
         let rendered_item = List.map Html.Unsafe.coerce_elt rendered_item in
-        let maybe_anchor =
+        let maybe_id =
           match item_to_id item with
           | None -> []
           | Some anchor -> [Html.a_id anchor]
         in
-        let rendered_item = Html.dt ~a:maybe_anchor rendered_item in
+        let rendered_item = Html.dt ~a:maybe_id rendered_item in
         let acc = rendered_item::acc in
         begin match maybe_docs with
         | [] ->
