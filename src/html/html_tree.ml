@@ -278,8 +278,12 @@ let page_creator ?kind ~path header_docs content =
         header_docs
       | Some prefix ->
         let title_heading =
-          Html.h1
-            [Html.pcdata (prefix ^ " " ^ (String.concat "." (List.tl path)))]
+          Html.h1 [
+            Html.pcdata (prefix ^ " ");
+            Html.code [
+              Html.pcdata (String.concat "." (List.tl path))
+            ]
+          ]
         in
         title_heading::header_docs
     in
