@@ -29,8 +29,7 @@ module Type = struct
 end
 
 let arrow =
-  Html.span
-    ~a:[ Html.a_class ["keyword" ] ] [ Html.entity "#8209"; Html.entity "gt" ]
+  Html.span [ Html.entity "#8209"; Html.entity "gt" ]
 
 let label = function
   | Model.Lang.TypeExpr.Label s -> [ Html.pcdata s ]
