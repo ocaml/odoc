@@ -6,6 +6,10 @@ let odoc = "../../src/odoc/bin/main.exe"
 let test_root = "test/html"
 
 let (//) = Filename.concat
+
+let contains_actual = build_directory // "actual"
+let contains_expected = build_directory // "expected"
+
 let command label =
   Printf.ksprintf (fun s ->
     let exit_code = Sys.command s in
@@ -65,6 +69,8 @@ let pretty_print_html source_file pretty_printed_file =
 
 let () =
   Unix.mkdir build_directory 0o755;
+
+  let already_failed = ref false in
 
   let make_html_test : string -> unit Alcotest.test_case = fun case_filename ->
     (* Titles. *)
@@ -155,10 +161,20 @@ let () =
 
         (* Also provide the command for overwriting the expected output with the
            actual output, in case it is the actual output that is correct. *)
-        prerr_endline "\nTo replace expected output with actual, run";
-        Printf.eprintf "cp %s %s\n\n"
-          ("_build/default" // test_root // html_file)
-          (test_root // reference_file);
+        if not !already_failed then begin
+          let actual = "_build/default" // test_root // html_file in
+          let expected = test_root // reference_file in
+          Soup.write_file contains_actual actual;
+          Soup.write_file contains_expected expected;
+
+          let actual = "_build/default" // test_root // contains_actual in
+          let expected = "_build/default" // test_root // contains_expected in
+          prerr_endline "\nTo replace expected output with actual, run";
+          Printf.eprintf
+            "cp `cat %s` `cat %s` && make test\n\n" actual expected;
+
+          already_failed := true
+        end;
 
         Alcotest.fail "actual HTML output does not match expected"
 
