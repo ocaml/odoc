@@ -14,3 +14,13 @@
      (echo "let content = {css|")
      (cat ${<})
      (echo "|css}"))))))
+
+(rule
+ ((targets (highlight_js.ml))
+  (deps (../vendor/highlight.pack.js))
+  (action
+   (with-stdout-to ${@}
+    (progn
+     (echo "let content = {js|")
+     (cat ${<})
+     (echo "|js}"))))))

@@ -234,6 +234,18 @@ h1 + .modules, h1 + .sel { margin-top: 10px }
 { body { color: black; background: white; }
   body nav:first-child { visibility: hidden; }}
 
+.hljs-keyword {
+    font-weight: bold;
+}
+
+.hljs-literal {
+    opacity: 0.8;
+}
+
+.hljs-comment {
+    opacity: 0.5;
+}
+
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 Daniel C. Bünzli
 

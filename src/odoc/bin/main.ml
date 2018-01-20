@@ -108,7 +108,7 @@ end
 
 module Css = struct
   let copy_default_css output_dir =
-    Assets.copy_default_css ~output_dir
+    Assets.write ~output_dir
 
   let cmd = Term.(const copy_default_css $ dst)
 

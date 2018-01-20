@@ -228,6 +228,7 @@ let page_creator ?kind ~path header_docs content =
   let head : Html_types.head Html.elt =
     let name = List.hd @@ List.rev path in
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
+
     let css_url =
       let n =
         List.length path - (
@@ -238,11 +239,16 @@ let page_creator ?kind ~path header_docs content =
       in
       add_dotdot "odoc.css" ~n
     in
+
+    let highlight_js_path = (Filename.dirname css_url) ^ "/highlight.pack.js" in
+
     Html.head (Html.title (Html.pcdata title_string)) [
       Html.link ~rel:[`Stylesheet] ~href:css_url () ;
       Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
       Html.meta ~a:[ Html.a_name "viewport";
                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
+      Html.script ~a:[Html.a_src highlight_js_path] (Html.pcdata "");
+      Html.script (Html.pcdata "hljs.initHighlightingOnLoad();");
     ]
   in
 

@@ -187,13 +187,13 @@ let () =
 
   let html_tests : unit Alcotest.test = "html", List.map make_html_test cases in
 
-  let output_css : unit Alcotest.test =
+  let output_assets : unit Alcotest.test =
     let run_test_case () =
       command "odoc css"
         "%s css --output-dir %s" odoc build_directory
     in
 
-    "css", ["css", `Slow, run_test_case]
+    "assets", ["assets", `Slow, run_test_case]
   in
 
-  Alcotest.run "html" [output_css; html_tests]
+  Alcotest.run "html" [output_assets; html_tests]
