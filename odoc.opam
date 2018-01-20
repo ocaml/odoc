@@ -19,17 +19,17 @@ depends: [
   # For development only. Should be removed before release. See
   #   https://github.com/janestreet/jbuilder/issues/57
   "bisect_ppx"
-  "bos"
-  "cmdliner"
+  "bos" {build}
+  "cmdliner" {build}
   "cppo" {build}
-  "fpath"
+  "fpath" {build}
   "jbuilder" {build & >= "1.0+beta10"}
   # The pretty-printer in Lambda Soup is needed for HTML testing until
   # https://github.com/ocsigen/tyxml/pull/187 is merged into TyXML.
   "lambdasoup" {test}
   "ocamlfind" {test}
   "sexplib" {test}
-  "tyxml" {>= "4.0.0"}
+  "tyxml" {build & >= "4.0.0"}
 ]
 
 build: [
