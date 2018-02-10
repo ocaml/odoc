@@ -33,7 +33,7 @@ body
 /* Basic markup elements */
 
 b, strong { font-weight: bold; }
-em { font-style: italic; }
+i, em { font-style: italic; }
 
 sup { vertical-align: super; }
 sub { vertical-align: sub; }
