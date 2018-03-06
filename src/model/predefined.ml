@@ -64,6 +64,7 @@ let int64_identifier = CoreType "int64"
 let nativeint_identifier = CoreType "nativeint"
 let lazy_t_identifier = CoreType "lazy_t"
 let extension_constructor_identifier = CoreType "extension_constructor"
+let floatarray_identifier = CoreType "floatarray"
 
 
 let false_identifier = Constructor(bool_identifier, "false")
@@ -105,6 +106,7 @@ let core_type_identifier = function
   | "nativeint" -> Some nativeint_identifier
   | "lazy_t" -> Some lazy_t_identifier
   | "extension_constructor" -> Some extension_constructor_identifier
+  | "floatarray" -> Some floatarray_identifier
   | _ -> None
 
 let core_exception_identifier = function
@@ -154,6 +156,7 @@ let nativeint_path = Resolved (Identifier nativeint_identifier)
 let lazy_t_path = Resolved (Identifier lazy_t_identifier)
 let extension_constructor_path =
   Resolved (Identifier extension_constructor_identifier)
+let _floatarray_path = Resolved (Identifier floatarray_identifier)
 
 open Reference.Resolved
 open Reference
@@ -175,6 +178,7 @@ let nativeint_reference = Resolved (Identifier nativeint_identifier)
 let lazy_t_reference = Resolved (Identifier lazy_t_identifier)
 let extension_constructor_reference =
   Resolved (Identifier extension_constructor_identifier)
+let _floatarray_reference = Resolved (Identifier floatarray_identifier)
 
 let false_reference = Resolved (Identifier false_identifier)
 let true_reference = Resolved (Identifier true_identifier)
@@ -467,6 +471,21 @@ let extension_constructor_decl =
   let representation = None in
     {id; doc; equation; representation}
 
+let floatarray_decl =
+  let open TypeDecl in
+  (* let open Documentation in *)
+  let id = floatarray_identifier in
+  (* let text =
+    [Raw "This type is used to implement the ";
+     Reference(Element(Module(Root("Array", TModule), "Floatarray")), None);
+     Raw " module. It should not be used directly."]
+  in
+  let doc = Ok {empty_doc with text} in *)
+  let doc = empty_doc in
+  let equation = covariant_equation in
+  let representation = None in
+    {id; doc; equation; representation}
+
 let match_failure_decl =
   let open Exception in
   (* let open Model.Comment in *)
@@ -662,7 +681,7 @@ let undefined_recursive_module_decl =
 let core_types =
   [int_decl; char_decl; bytes_decl; string_decl; float_decl; bool_decl;
    unit_decl; exn_decl; array_decl; list_decl; option_decl; int32_decl;
-   int64_decl; nativeint_decl; lazy_t_decl]
+   int64_decl; nativeint_decl; lazy_t_decl; floatarray_decl]
 
 let core_exceptions =
   [match_failure_decl; assert_failure_decl; invalid_argument_decl;
