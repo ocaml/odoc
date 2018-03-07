@@ -1120,7 +1120,7 @@ struct
         in
         let subtree = Html_tree.make expansion [] in
         Html_tree.leave ();
-        Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
+        Html.a ~a:[ a_href ~kind:`Cty name ] [Html.pcdata name], [subtree]
     in
     let ctyp =
       Markup.keyword "class type " ::
