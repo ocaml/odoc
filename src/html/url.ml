@@ -156,21 +156,15 @@ let rec from_identifier : type a. stop_before:bool ->
       else
         { page = suffix :: parent; anchor = ""; kind }
     | Method (parent, name) ->
-      from_identifier ~stop_before:false parent
-      >>= begin function
-      | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
-      | { page; anchor; _ } ->
-        let kind = "method" in
-        Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
-      end
+      from_identifier_no_anchor parent ("method " ^ name)
+      >>| fun page ->
+      let kind = "method" in
+      { page; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | InstanceVariable (parent, name) ->
-      from_identifier ~stop_before:false parent
-      >>= begin function
-      | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name))
-      | { page; anchor; _ } ->
-        let kind = "val" in
-        Ok { page; anchor = Printf.sprintf "%s-%s-%s" anchor kind name; kind }
-      end
+      from_identifier_no_anchor parent ("val " ^ name)
+      >>| fun page ->
+      let kind = "val" in
+      { page; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Label (parent, anchor) ->
       from_identifier ~stop_before:false parent
       >>= function
