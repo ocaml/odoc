@@ -19,13 +19,14 @@ module Error = struct
     | Not_linkable of string
     | Uncaught_exn of string
     (* These should basicaly never happen *)
-    | Unexpected_anchor of t
+    | Unexpected_anchor of t * string
     | Missing_anchor of t * string
 
   let to_string = function
     | Not_linkable s -> Printf.sprintf "Not_linkable %S" s
     | Uncaught_exn s -> Printf.sprintf "Uncaught_exn %S" s
-    | Unexpected_anchor t -> Printf.sprintf "Unexpected_anchor %S" (to_string t)
+    | Unexpected_anchor (t, s) ->
+      Printf.sprintf "Unexpected_anchor %S (parent of %s)" (to_string t) s
     | Missing_anchor (t, s) ->
       Printf.sprintf "Missing_anchor on %S for %S" (to_string t) s
 end
@@ -69,7 +70,7 @@ let rec from_identifier : type a. stop_before:bool ->
       let kind = "page" in
       { page; anchor = ""; kind }
     | Module (parent, mod_name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("module " ^ mod_name)
       >>| fun parent ->
       let kind = "module" in
       if stop_before then
@@ -77,7 +78,7 @@ let rec from_identifier : type a. stop_before:bool ->
       else
         { page = mod_name :: parent; anchor = ""; kind }
     | Argument (functor_id, arg_num, arg_name) ->
-      from_identifier_no_anchor functor_id
+      from_identifier_no_anchor functor_id ("arg " ^ arg_name)
       >>| fun parent ->
       let kind = "argument" in
       let suffix = Printf.sprintf "%s-%d-%s" kind arg_num arg_name in
@@ -86,7 +87,7 @@ let rec from_identifier : type a. stop_before:bool ->
       else
         { page = suffix :: parent; anchor = ""; kind }
     | ModuleType (parent, modt_name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("module type " ^ modt_name)
       >>| fun parent ->
       let kind = "module-type" in
       let suffix = Printf.sprintf "%s-%s" kind modt_name in
@@ -95,7 +96,7 @@ let rec from_identifier : type a. stop_before:bool ->
       else
         { page = suffix :: parent; anchor = ""; kind }
     | Type (parent, type_name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("type " ^ type_name)
       >>| fun page ->
       let kind = "type" in
       { page; anchor = Printf.sprintf "%s-%s" kind type_name; kind }
@@ -120,29 +121,29 @@ let rec from_identifier : type a. stop_before:bool ->
         Ok { page; anchor = anchor ^ "." ^ name; kind }
       end
     | Extension (parent, name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("extension " ^ name)
       >>| fun parent ->
       let kind = "extension" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Exception (parent, name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("exception " ^ name)
       >>| fun parent ->
       let kind = "exception" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | CoreException name ->
       Error (Not_linkable ("core_exception:" ^ name))
     | Value (parent, name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("val " ^ name)
       >>| fun parent ->
       let kind = "val" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | Class (parent, name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("class " ^ name)
       >>| fun parent ->
       let kind = "class" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
     | ClassType (parent, name) ->
-      from_identifier_no_anchor parent
+      from_identifier_no_anchor parent ("class type " ^ name)
       >>| fun parent ->
       let kind = "class-type" in
       { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
@@ -170,15 +171,15 @@ let rec from_identifier : type a. stop_before:bool ->
         if kind = "page" then Ok { page; anchor; kind }
         else Ok {page; anchor; kind = "" }
       | otherwise ->
-        Error (Unexpected_anchor otherwise)
+        Error (Unexpected_anchor (otherwise, "label " ^ anchor))
 
 and from_identifier_no_anchor : type a.
-  a Identifier.t -> (string list, Error.t) result =
-  fun id ->
+  a Identifier.t -> string -> (string list, Error.t) result =
+  fun id child ->
     from_identifier ~stop_before:false id
     >>= function
     | { page; anchor = ""; _ } -> Ok page
-    | otherwise -> Error (Unexpected_anchor otherwise)
+    | otherwise -> Error (Unexpected_anchor (otherwise, child))
 
 let anchor_of_id_exn id =
   match from_identifier ~stop_before:true id with

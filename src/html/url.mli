@@ -20,7 +20,7 @@ module Error : sig
     | Not_linkable of string
     | Uncaught_exn of string
     (* These should basicaly never happen *)
-    | Unexpected_anchor of t
+    | Unexpected_anchor of t * string
     | Missing_anchor of t * string
 
   val to_string : t -> string
