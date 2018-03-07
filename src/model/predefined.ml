@@ -17,6 +17,19 @@
 open Paths
 open Lang
 
+let predefined_location =
+  let point =
+    {
+      Location_.line = 1;
+      column = 0;
+    }
+  in
+  {
+    Location_.file = "predefined";
+    start = point;
+    end_ = point;
+  }
+
 let empty_doc =
   []
 
@@ -473,15 +486,25 @@ let extension_constructor_decl =
 
 let floatarray_decl =
   let open TypeDecl in
-  (* let open Documentation in *)
   let id = floatarray_identifier in
-  (* let text =
-    [Raw "This type is used to implement the ";
-     Reference(Element(Module(Root("Array", TModule), "Floatarray")), None);
-     Raw " module. It should not be used directly."]
+  let words ss =
+    ss
+    |> List.rev_map (fun s -> [`Space; `Word s])
+    |> List.flatten
+    |> List.tl
+    |> List.rev
   in
-  let doc = Ok {empty_doc with text} in *)
-  let doc = empty_doc in
+  let doc =
+    [`Paragraph (
+      words ["This"; "type"; "is"; "used"; "to"; "implement"; "the"] @
+      [`Space;
+       `Reference (Module (Root ("Array", TModule), "Floatarray"), []);
+       `Space] @
+      words ["module."; "It"; "should"; "not"; "be"; "used"; "directly."]
+      |> List.map (Location_.at predefined_location)
+    )]
+    |> List.map (Location_.at predefined_location)
+  in
   let equation = covariant_equation in
   let representation = None in
     {id; doc; equation; representation}
