@@ -111,7 +111,7 @@ pre
   padding-top: 0.3125rem; padding-bottom: 0.3125rem;
   margin-top: 1.25rem; /*  margin-bottom: 0.625rem; */
   line-height: 1.1875rem;
-  background: #F1F1F1; }
+  background: #F1F1F1; overflow: auto; }
 
 h1 tt, h1 code, h2 tt, h2 code, .h7 tt, .h7 code { font-size: 1.125rem }
 h3 tt, h3 code { font-size: 1rem }
