@@ -1,4 +1,4 @@
-(* odoc's uses an ocamllex lexer. The "engine" for such lexers is the standard
+(* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
 
    As the [Lexing] module reads the input, it keeps track of only the byte
