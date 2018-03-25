@@ -20,8 +20,10 @@ script:
   - opam remove -y odoc
   - opam install -y alcotest bisect_ppx lambdasoup ocamlfind sexplib
   - make unit-test
-  - opam pin add -y --dev-repo jbuilder
-  - make jbuilder-test
+  # Disabled temporarily; see
+  #   https://travis-ci.org/ocaml/odoc/jobs/357935535#L1420
+  # - opam pin add -y --dev-repo jbuilder
+  # - make jbuilder-test
 
 notifications:
   email:
