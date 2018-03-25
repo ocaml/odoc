@@ -50,7 +50,8 @@
     {{:#} {e emphasis}}, {{:#} super{^script}}, {{:#} sub{_script}}, and
     {{:#} [code]}. Links can also be nested {e {{:#} inside}} markup. Links
     cannot be nested inside each other. This link has no replacement text:
-    {{:#}}. The URL is filled in by odoc.
+    {{:#}}. The text is filled in by odoc. This is a shorthand link: {:#}. The
+    text is also filled in by odoc in this case.
 
     This is a reference to {!foo}. References can have replacement text:
     {{!foo} the value foo}. Except for the special lookup support, references

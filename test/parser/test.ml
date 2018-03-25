@@ -241,6 +241,10 @@ let tests : test_suite list = [
     t "empty" "{{:foo}}";
     t "internal-whitespace" "{{:foo bar} baz}";
     t "unterminated" "{{:foo";
+    t "single-braces" "{:foo}";
+    t "unterminated-single-braces" "{:foo";
+    t "empty-single-braces" "{:}";
+    t "single-braces-whitespace-only" "{: }";
   ];
 
   "module-list", [

@@ -60,6 +60,7 @@ type t = [
   (* Other inline element markup. *)
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
+  | `Simple_link of string
   | `Begin_link_with_replacement_text of string
 
   (* Leaf block element markup. *)
@@ -158,6 +159,8 @@ let describe : [< t | `Comment ] -> string = function
     "'{!...}' (cross-reference)"
   | `Begin_reference_with_replacement_text _ ->
     "'{{!...} ...}' (cross-reference)"
+  | `Simple_link _ ->
+    "'{:...} (external link)'"
   | `Begin_link_with_replacement_text _ ->
     "'{{:...} ...}' (external link)"
   | `End ->

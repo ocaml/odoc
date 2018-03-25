@@ -136,6 +136,7 @@ let reference_token start target =
   match start with
   | "{!" -> `Simple_reference target
   | "{{!" -> `Begin_reference_with_replacement_text target
+  | "{:" -> `Simple_link target
   | "{{:" -> `Begin_link_with_replacement_text target
   | _ -> assert false
 
@@ -191,7 +192,7 @@ let newline =
   '\n' | "\r\n"
 
 let reference_start =
-  "{!" | "{{!" | "{{:"
+  "{!" | "{{!" | "{:" | "{{:"
 
 let code_block_text =
   ([^ ']'] | ']'+ [^ ']' '}'])* ']'*

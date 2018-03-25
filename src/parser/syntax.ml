@@ -53,6 +53,7 @@ type token_that_always_begins_an_inline_element = [
   | `Begin_style of Comment.style
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
+  | `Simple_link of string
   | `Begin_link_with_replacement_text of string
 ]
 
@@ -155,6 +156,10 @@ let rec inline_element
 
     `Reference (`With_text, Helpers.read_reference r, content)
     |> Location.at location
+
+  | `Simple_link u ->
+    junk input;
+    Location.at location (`Link (u, []))
 
   | `Begin_link_with_replacement_text u as parent_markup ->
     junk input;
