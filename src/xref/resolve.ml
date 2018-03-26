@@ -1943,13 +1943,12 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
                 in
                 let p = self#path_module p in
                 ModuleSubst(frag, p)
-              | TypeSubst(frag, params, p) ->
+              | TypeSubst(frag, eq) ->
                 let frag =
                   resolve_type_fragment where_am_i tbl base frag
                 in
-                let params = List.map self#type_decl_param_name params in
-                let p = self#path_type p in
-                TypeSubst(frag, params, p)
+                let eq = self#type_decl_equation eq in
+                TypeSubst(frag, eq)
             ) substs
           in
           With(body, substs)

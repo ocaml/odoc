@@ -1453,21 +1453,16 @@ struct
         ~base (Paths.Fragment.signature_of_module frag_mod) @
       Html.pcdata " := " ::
       Html_tree.Relative_link.of_path ~stop_before:true mod_path
-    | TypeSubst (frag_typ, vars, typ_path) ->
-      let params =
-        Html.pcdata begin match vars with
-          | [] -> ""
-          | [v] -> v ^ "\194\160"
-          | _ -> "(" ^ String.concat ",\194\160" vars ^ ")\194\160"
-        end
-      in
+    | TypeSubst (frag_typ, td) ->
       Markup.keyword "type " ::
-      params ::
+      format_params td.Lang.TypeDecl.Equation.params ::
       Html_tree.Relative_link.of_fragment
         ~base (Paths.Fragment.any_sort frag_typ) @
       Html.pcdata " := " ::
-      params ::
-      Html_tree.Relative_link.of_path ~stop_before:false typ_path
+      match td.Lang.TypeDecl.Equation.manifest with
+      | None -> assert false (* cf loader/cmti *)
+      | Some te ->
+        type_expr te
 
   and include_ (t : Model.Lang.Include.t) =
     let docs = Documentation.to_html t.doc in

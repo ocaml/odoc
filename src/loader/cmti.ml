@@ -420,19 +420,8 @@ let rec read_with_constraint env (_, frag, constr) =
           ModuleEq(frag, eq)
     | Twith_typesubst decl ->
         let frag = Env.Fragment.read_type frag.Location.txt in
-        let read_param (ctyp, _) =
-          match ctyp.ctyp_desc with
-          | Ttyp_var s -> s
-          | _ -> assert false
-        in
-        let params = List.map read_param decl.typ_params in
-        let p =
-          match decl.typ_manifest with
-          | Some {ctyp_desc = Ttyp_constr(p, _, _); _} ->
-              Env.Path.read_type env p
-          | _ -> assert false
-        in
-          TypeSubst(frag, params, p)
+        let eq = read_type_equation env decl in
+          TypeSubst(frag, eq)
     | Twith_modsubst(p, _) ->
         let frag = Env.Fragment.read_module frag.Location.txt in
         let p = Env.Path.read_module env p in

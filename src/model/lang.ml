@@ -63,7 +63,7 @@ and ModuleType : sig
     | ModuleEq of Fragment.module_ * Module.Equation.t
     | TypeEq of Fragment.type_ * TypeDecl.Equation.t
     | ModuleSubst of Fragment.module_ * Path.module_
-    | TypeSubst of Fragment.type_ * string list * Path.type_
+    | TypeSubst of Fragment.type_ * TypeDecl.Equation.t
 
   type expr =
     | Path of Path.module_type

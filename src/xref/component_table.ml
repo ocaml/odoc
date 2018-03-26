@@ -566,7 +566,7 @@ and module_type_expr local expr =
                | TypeEq _ -> body
                | ModuleSubst(frag, _) ->
                    with_module_subst frag body
-               | TypeSubst(frag, _, _) ->
+               | TypeSubst(frag, _) ->
                    with_type_subst frag body)
             body subs
     | TypeOf decl -> module_decl local decl

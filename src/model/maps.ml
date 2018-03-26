@@ -1095,12 +1095,10 @@ class virtual module_type = object (self)
             if frag != frag' || p != p' then
               ModuleSubst(frag', p')
             else subst
-      | TypeSubst(frag, params, p) ->
+      | TypeSubst(frag, eq) ->
           let frag' = self#fragment_type frag in
-          let params' = list_map self#type_decl_param_name params in
-          let p' = self#path_type p in
-            if frag != frag' || params != params' || p != p' then
-              TypeSubst(frag', params', p')
+          let eq' = self#type_decl_equation eq in
+            if frag != frag' || eq != eq' then TypeSubst(frag', eq')
             else subst
 
   method module_type_expr expr =
