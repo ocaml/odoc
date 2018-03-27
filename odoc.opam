@@ -15,7 +15,7 @@ dev-repo: "http://github.com/ocaml-doc/odoc.git"
 
 available: [ocaml-version >= "4.03.0"]
 depends: [
-  "alcotest" {test}
+  "alcotest" {test & >= "0.8.3"}
   # For development only. Should be removed before release. See
   #   https://github.com/janestreet/jbuilder/issues/57
   "bisect_ppx"
