@@ -95,6 +95,17 @@ let parse_comment
       ~parent_of_sections:containing_definition
       ast
 
+let errors_to_warnings parsed =
+  match Model.Error.(parsed.result) with
+  | Ok _ ->
+    parsed
+
+  | Error fatal_error ->
+    {
+      result = Ok [];
+      warnings = fatal_error::parsed.warnings;
+    }
+
 
 
 type sections_allowed = Ast.sections_allowed

@@ -51,6 +51,7 @@ let read_attributes parent _id attrs =
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
+              |> Parser_.errors_to_warnings
               |> Model.Error.shed_warnings
             in
             match parsed with
@@ -80,6 +81,7 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
       ~containing_definition:parent
       ~location:start_pos
       ~text:str
+    |> Parser_.errors_to_warnings
     |> Model.Error.shed_warnings
     |> Model.Error.to_exception
   in
