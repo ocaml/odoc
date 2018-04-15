@@ -16,9 +16,6 @@ before_script:
 script:
   - opam pin add -y --no-action odoc .
   - opam install -y --deps-only odoc
-  - opam install -y --verbose odoc
-  - opam remove -y odoc
-  - opam install -y alcotest bisect_ppx lambdasoup ocamlfind sexplib
   - make unit-test
   # Disabled temporarily; see
   #   https://travis-ci.org/ocaml/odoc/jobs/357935535#L1420
