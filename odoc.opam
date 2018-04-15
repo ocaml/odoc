@@ -15,21 +15,20 @@ dev-repo: "http://github.com/ocaml-doc/odoc.git"
 
 available: [ocaml-version >= "4.03.0"]
 depends: [
-  "alcotest" {test & >= "0.8.3"}
-  # For development only. Should be removed before release. See
-  #   https://github.com/janestreet/jbuilder/issues/57
-  "bisect_ppx"
   "bos" {build}
   "cmdliner" {build}
   "cppo" {build}
   "fpath" {build}
   "jbuilder" {build & >= "1.0+beta10"}
-  # The pretty-printer in Lambda Soup is needed for HTML testing until
-  # https://github.com/ocsigen/tyxml/pull/187 is merged into TyXML.
-  "lambdasoup" {test}
-  "ocamlfind" {test}
-  "sexplib" {test}
   "tyxml" {build & >= "4.0.0"}
+
+  # Development dependencies. These should be removed in opam files sent to the
+  # opam repo.
+  "alcotest" {>= "0.8.3"}
+  "bisect_ppx"
+  "lambdasoup"
+  "ocamlfind"
+  "sexplib"
 ]
 
 build: [
