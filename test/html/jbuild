@@ -5,7 +5,8 @@
   (libraries (alcotest lambdasoup))))
 
 (alias
- ((name tester)
+ ((name runtest)
+  (action (run ${exe:test.exe}))
   (deps
     (test.exe
      ${ROOT}/src/odoc/bin/main.exe

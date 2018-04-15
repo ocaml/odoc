@@ -7,9 +7,8 @@ test : unit-test jbuilder-test
 
 .PHONY : unit-test
 unit-test : build
-	jbuilder build --dev @tester
-	(cd _build/default/test/parser && ./test.exe)
-	(cd _build/default/test/html && ./test.exe)
+	jbuilder build @test/parser/runtest --dev --no-buffer -j 1
+	jbuilder build @test/html/runtest --dev --no-buffer -j 1
 
 ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
 
