@@ -16,7 +16,7 @@ before_script:
 script:
   - opam pin add -y --no-action odoc .
   - opam install -y --deps-only odoc
-  - make unit-test
+  - make test
   - opam pin add -y --dev-repo jbuilder
   - make jbuilder-test
 

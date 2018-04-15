@@ -3,10 +3,7 @@ build :
 	jbuilder build --dev
 
 .PHONY : test
-test : unit-test jbuilder-test
-
-.PHONY : unit-test
-unit-test : build
+test : build
 	jbuilder build @test/parser/runtest --dev --no-buffer -j 1
 	jbuilder build @test/html/runtest --dev --no-buffer -j 1
 
