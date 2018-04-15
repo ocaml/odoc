@@ -19,7 +19,7 @@ depends: [
   "cmdliner" {build}
   "cppo" {build}
   "fpath" {build}
-  "jbuilder" {build & >= "1.0+beta10"}
+  "jbuilder" {build & >= "1.0+beta17"}
   "tyxml" {build & >= "4.0.0"}
 
   # Development dependencies. These should be removed in opam files sent to the

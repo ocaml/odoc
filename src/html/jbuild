@@ -2,5 +2,5 @@
 
 (library
  ((name html)
-  (preprocess (pps (bisect_ppx -conditional)))
+  (preprocess (pps (bisect_ppx)))
   (libraries (model tyxml))))
