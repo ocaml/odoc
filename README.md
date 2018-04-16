@@ -1,9 +1,4 @@
-# odoc &nbsp;&nbsp; [![version 1.2.0][version]][releases] [![Travis status][travis-img]][travis]
-
-[version]: https://img.shields.io/badge/version-1.2.0-blue.svg
-[releases]: https://github.com/ocaml/odoc/releases
-[travis]: https://travis-ci.org/ocaml/odoc/branches
-[travis-img]: https://img.shields.io/travis/ocaml/odoc/master.svg?label=travis
+# odoc
 
 **odoc** is a new documentation generator for OCaml. It includes an accurate
 cross-referencer, which handles the complexity of the OCaml module system.
