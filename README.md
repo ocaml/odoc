@@ -28,8 +28,8 @@ The generated docs can then be found locally at
 
 ## Contact
 
-odoc is most discussed on [discuss.ocaml.org][discourse]. Please also don't
-hesitate to [open an issue][issues].
+odoc is most discussed on [discuss.ocaml.org's Ecosystem category][discourse] with the `odoc` tag.
+Please also don't hesitate to [open an issue][issues].
 
 We may add a Gitter chat to the repo, or find some other way of communicating
 that is more interactive :)
@@ -41,12 +41,12 @@ that is more interactive :)
 Any [question asked](#contact), [issue opened][issues], feedback offered, is a
 contribution to odoc, and the project and all its users are thankful :) If
 you'd like to contribute code specifically, you may find the guide in
-[`CONTRIBUTING.md`][contributingmd] helpful. If anything is missing from it,
+[`CONTRIBUTING.md`][contributing.md] helpful. If anything is missing from it,
 please don't hesitate to [reach out](#contact) for help.
 
 In the coming days, we will ask odoc users for a wishlist, and post a roadmap
 based on it.
 
-[discourse]: https://discuss.ocaml.org/
+[discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
 [contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md
