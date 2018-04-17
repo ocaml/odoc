@@ -24,6 +24,8 @@ module type S4 = S with type t := int
 
 module type S5 = S with type 'a v := 'a list
 
+type ('a, 'b) result
+
 module type S6 = S with type ('a, 'b) w := ('a, 'b) result
 
 module M' : sig end
