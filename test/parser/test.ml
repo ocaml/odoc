@@ -271,7 +271,13 @@ let tests : test_suite list = [
     t "cr-lf" "{[foo\r\nbar]}";
     t "blank-line" "{[foo\n\nbar]}";
     t "leading-whitespace" "{[ foo]}";
+    t "leading-whitespace-two" "{[ foo\n bar]}";
+    t "leading-whitespace-two-cr-lf" "{[ foo\r\n bar]}";
+    t "leading-whitespace-two-different-indent" "{[ foo\n   bar]}";
+    t "leading-whitespace-two-different-indent-rev" "{[   foo\n bar]}";
     t "leading-tab" "{[\tfoo]}";
+    t "leading-tab-two" "{[\tfoo\n\tbar]}";
+    t "leading-tab-two-different-indent" "{[\tfoo\n\t\tbar]}";
     t "leading-newline" "{[\nfoo]}";
     t "leading-cr-lf" "{[\r\nfoo]}";
     t "leading-newlines" "{[\n\nfoo]}";
