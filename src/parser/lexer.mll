@@ -82,7 +82,7 @@ let trim_leading_whitespace : string -> string = fun s ->
     in
     count_leading_whitespace' 0
   in
-  let lines = Str.(split (regexp "\n") s) in
+  let lines = Astring.String.cuts ~sep:"\n" s in
   let least_amount_of_whitespace =
     lines
     |> List.map count_leading_whitespace
