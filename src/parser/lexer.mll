@@ -92,7 +92,10 @@ let trim_leading_whitespace : string -> string = fun s ->
     |> List.fold_left min max_int
   in
   let remove_whitespace : string -> string = fun line ->
-    String.sub line least_amount_of_whitespace (String.length line - least_amount_of_whitespace)
+    String.sub
+      line
+      least_amount_of_whitespace
+      (String.length line - least_amount_of_whitespace)
   in
   lines
   |> List.map remove_whitespace
