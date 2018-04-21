@@ -8,3 +8,6 @@ _coverage/
 
 # For local experiments.
 scratch/
+
+# opam v2
+_opam/
