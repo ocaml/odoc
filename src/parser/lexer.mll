@@ -86,6 +86,9 @@ let trim_leading_whitespace : string -> string = fun s ->
   let least_amount_of_whitespace =
     lines
     |> List.map count_leading_whitespace
+    (* Note that if [lines] is empty, [least_amount_of_whitespace] will be
+       [max_int]. But this is okay since if it's indeed empty, the value
+       will not be used when trying to remove whitespace below. *)
     |> List.fold_left min max_int
   in
   let remove_whitespace : string -> string = fun line ->
