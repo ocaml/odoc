@@ -70,6 +70,32 @@ let trim_trailing_blank_lines : string -> string = fun s ->
     in
     String.sub s 0 trim_from
 
+let trim_leading_whitespace : string -> string = fun s ->
+  let count_leading_whitespace : string -> int = fun line ->
+    let rec count_leading_whitespace' : int -> int = fun index ->
+      if index >= String.length line then
+        index
+      else
+        match line.[index] with
+        | ' ' | '\t' -> count_leading_whitespace' (index + 1)
+        | _ -> index
+    in
+    count_leading_whitespace' 0
+  in
+  let lines = Str.(split (regexp "\n") s) in
+  let least_amount_of_whitespace =
+    lines
+    |> List.map count_leading_whitespace
+    |> List.fold_left min max_int
+  in
+  let remove_whitespace : string -> string = fun line ->
+    String.sub line least_amount_of_whitespace (String.length line - least_amount_of_whitespace)
+  in
+  lines
+  |> List.map remove_whitespace
+  |> String.concat "\n"
+
+
 
 
 module Location = Model.Location_
@@ -256,6 +282,7 @@ rule token input = parse
   | "{[" (code_block_text as c) "]}"
     { let c = trim_leading_blank_lines c in
       let c = trim_trailing_blank_lines c in
+      let c = trim_leading_whitespace c in
       emit input (`Code_block c) }
 
   | "{v" (verbatim_text as t) "v}"
