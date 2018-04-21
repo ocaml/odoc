@@ -16,6 +16,7 @@ dev-repo: "http://github.com/ocaml-doc/odoc.git"
 
 available: [ocaml-version >= "4.03.0"]
 depends: [
+  "astring" {build}
   "bos" {build}
   "cmdliner" {build}
   "cppo" {build}
