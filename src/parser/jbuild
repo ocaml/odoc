@@ -5,4 +5,4 @@
 (library
  ((name parser_)
   (preprocess (pps (bisect_ppx)))
-  (libraries (model))))
+  (libraries (model str))))
