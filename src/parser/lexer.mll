@@ -72,11 +72,9 @@ let trim_trailing_blank_lines : string -> string = fun s ->
 
 let trim_leading_whitespace : string -> string = fun s ->
   let count_leading_whitespace : string -> int = fun line ->
-    (* Ignore empty lines. *)
-    if String.length line = 0 then max_int else
     let rec count_leading_whitespace' : int -> int = fun index ->
       if index >= String.length line then
-        (* Ignore whitespace-only lines. *)
+        (* Ignore empty and whitespace-only lines. *)
         max_int
       else
         match line.[index] with
