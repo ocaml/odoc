@@ -309,11 +309,12 @@ rule token input = parse
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s) "%}"
     { let target =
         match target with
-        | None -> `Html
         | Some "html" -> `Html
         | Some invalid_target ->
           raise_error input
             (Parse_error.invalid_raw_markup_target invalid_target)
+        | None ->
+          raise_error input Parse_error.default_raw_markup_target_not_supported
       in
       emit input (`Raw_markup (target, s)) }
 

@@ -122,10 +122,10 @@ v}
 
     {2 Raw HTML}
 
-    Raw HTML can be {%<input type="text" placeholder="inserted">%} as inline
-    elements into sentences.
+    Raw HTML can be {%html:<input type="text" placeholder="inserted">%} as
+    inline elements into sentences.
 
-    {%
+    {%html:
     <blockquote>
       If the raw HTML is the only thing in a paragraph, it is treated as a block
       element, and won't be wrapped in paragraph tags by the HTML generator.
