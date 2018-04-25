@@ -120,6 +120,19 @@ v}
     The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
 
 
+    {2 Raw HTML}
+
+    Raw HTML can be {%<input type="text" placeholder="inserted">%} as inline
+    elements into sentences.
+
+    {%
+    <blockquote>
+      If the raw HTML is the only thing in a paragraph, it is treated as a block
+      element, and won't be wrapped in paragraph tags by the HTML generator.
+    </blockquote>
+    %}
+
+
     {2 Tags}
 
     Each comment can end with zero or more tags. Here are some examples:

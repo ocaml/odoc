@@ -50,6 +50,7 @@ let npeek = Stream.npeek
 type token_that_always_begins_an_inline_element = [
   | `Word of string
   | `Code_span of string
+  | `Raw_markup of Comment.raw_markup_target * string
   | `Begin_style of Comment.style
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
@@ -108,6 +109,10 @@ let rec inline_element
   | `Code_span c ->
     junk input;
     Location.at location (`Code_span c)
+
+  | `Raw_markup (raw_markup_target, s) ->
+    junk input;
+    Location.at location (`Raw_markup (raw_markup_target, s))
 
   | `Begin_style s as parent_markup ->
     junk input;

@@ -174,35 +174,41 @@ let style_to_combinator = function
 
 
 let leaf_inline_element
-    : Comment.leaf_inline_element -> [> non_link_phrasing ] Html.elt = function
-  | `Space -> Html.pcdata " "
-  | `Word s -> Html.pcdata s
-  | `Code_span s -> Html.code [Html.pcdata s]
+    : Comment.leaf_inline_element -> ([> non_link_phrasing ] Html.elt) option =
+  function
+  | `Space -> Some (Html.pcdata " ")
+  | `Word s -> Some (Html.pcdata s)
+  | `Code_span s -> Some (Html.code [Html.pcdata s])
+  | `Raw_markup (`Html, s) -> Some (Html.Unsafe.data s)
 
 let rec non_link_inline_element
     : 'a. Comment.non_link_inline_element ->
-        ([> non_link_phrasing ] as 'a) Html.elt =
+        (([> non_link_phrasing ] as 'a) Html.elt) option =
   function
   | #Comment.leaf_inline_element as e -> leaf_inline_element e
   | `Styled (style, content) ->
-    (style_to_combinator style) (non_link_inline_element_list content)
+    Some ((style_to_combinator style) (non_link_inline_element_list content))
 
 and non_link_inline_element_list :
     'a. _ -> ([> non_link_phrasing ] as 'a) Html.elt list = fun elements ->
-  elements
-  |> List.map (fun element -> element.Model.Location_.value)
-  |> List.map non_link_inline_element
+  List.fold_left (fun html_elements ast_element ->
+    match non_link_inline_element ast_element.Model.Location_.value with
+    | None -> html_elements
+    | Some e -> e::html_elements)
+    [] elements
+  |> List.rev
 
 let link_content_to_html =
   non_link_inline_element_list
 
 
 
-let rec inline_element : Comment.inline_element -> phrasing Html.elt = function
+let rec inline_element : Comment.inline_element -> (phrasing Html.elt) option =
+  function
   | #Comment.leaf_inline_element as e ->
-    (leaf_inline_element e :> phrasing Html.elt)
+    (leaf_inline_element e :> (phrasing Html.elt) option)
   | `Styled (style, content) ->
-    (style_to_combinator style) (inline_element_list content)
+    Some ((style_to_combinator style) (inline_element_list content))
   | `Reference (path, content) ->
     (* TODO Rework that ugly function. *)
     (* TODO References should be set in code style, if they are to code
@@ -212,25 +218,29 @@ let rec inline_element : Comment.inline_element -> phrasing Html.elt = function
       | [] -> None
       | _ -> Some (Html.span (non_link_inline_element_list content))
     in
-    Reference.to_html ?text:content ~stop_before:false path
+    Some (Reference.to_html ?text:content ~stop_before:false path)
   | `Link (target, content) ->
     let content =
       match content with
       | [] -> [Html.pcdata target]
       | _ -> non_link_inline_element_list content
     in
-    Html.a ~a:[Html.a_href target] content
+    Some (Html.a ~a:[Html.a_href target] content)
 
 and inline_element_list elements =
-  elements
-  |> List.map Model.Location_.value
-  |> List.map inline_element
+  List.fold_left (fun html_elements ast_element ->
+    match inline_element ast_element.Model.Location_.value with
+    | None -> html_elements
+    | Some e -> e::html_elements)
+    [] elements
+  |> List.rev
 
 
 
 let rec nestable_block_element
     : 'a. Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
   function
+  | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s -> Html.pre [Html.code [Html.pcdata s]]
   | `Verbatim s -> Html.pre [Html.pcdata s]

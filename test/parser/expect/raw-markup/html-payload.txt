@@ -1,0 +1,5 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 14))
+     (paragraph (((f.ml (1 0) (1 14)) (raw_markup html <e>foo</e>))))))))
+ (warnings ()))

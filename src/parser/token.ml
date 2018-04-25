@@ -55,6 +55,7 @@ type t = [
      bullets. *)
   | `Word of string
   | `Code_span of string
+  | `Raw_markup of Model.Comment.raw_markup_target * string
   | `Begin_style of Model.Comment.style
 
   (* Other inline element markup. *)
@@ -145,6 +146,8 @@ let describe : [< t | `Comment ] -> string = function
     Printf.sprintf "'%s'" w
   | `Code_span _ ->
     "'[...]' (code)"
+  | `Raw_markup _ ->
+    "'{%...%}' (raw markup)"
   | `Begin_style `Bold ->
     "'{b ...}' (boldface text)"
   | `Begin_style `Italic ->

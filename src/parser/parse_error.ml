@@ -70,3 +70,6 @@ let unpaired_right_brace : Location.span -> Error.t =
 
 let unpaired_right_bracket : Location.span -> Error.t =
   Error.make "unpaired ']' (end of code)"
+
+let invalid_raw_markup_target : string -> Location.span -> Error.t =
+  Error.format "'{%%%s:': bad raw markup target"
