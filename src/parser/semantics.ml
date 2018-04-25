@@ -204,6 +204,10 @@ let generate_heading_label : Comment.link_content -> string = fun content ->
           anchor ^ (String.lowercase_ascii w)
         | `Code_span c ->
           anchor ^ (replace_spaces_with_hyphens_and_lowercase c)
+        | `Raw_markup _ ->
+          (* TODO Perhaps having raw markup in a section heading should be an
+             error? *)
+          anchor
         | `Styled (_, content) ->
           scan_inline_elements anchor content
       in

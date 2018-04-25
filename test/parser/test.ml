@@ -247,6 +247,33 @@ let tests : test_suite list = [
     t "single-braces-whitespace-only" "{: }";
   ];
 
+  "raw-markup", [
+    t "basic" "{%foo%}";
+    t "html-target" "{%html:foo%}";
+    t "whitespace" "{% foo bar %}";
+    t "whitespace-only" "{% %}";
+    t "empty" "{%%}";
+    t "target-and-empty" "{%html:%}";
+    t "html-payload" "{%<e>foo</e>%}";
+    t "colon" "{%html:foo:bar%}";
+    t "empty-target" "{%:foo%}";
+    t "whitespace-target" "{% :foo%}";
+    t "invalid-target" "{%xml:foo%}";
+    t "incorrect-case-target" "{%HTML:foo%}";
+    t "multiline-target" "{%\n:foo%}";
+    t "percent-in-target" "{%%:%}";
+    t "percent-in-payload" "{%%%}";
+    t "multiple-percent-in-target" "{%%%foo%%:%}";
+    t "multiple-percent-in-payload" "{%%%foo%%%}";
+    t "opener-in-target" "{%{%:foo%}";
+    t "opener-in-payload" "{%{%%}";
+    t "right-brace-in-target" "{%}:%}";
+    t "right-brace-in-payload" "{%}%}";
+    t "unterminated" "{%";
+    t "unterminated-after-target" "{%:";
+    t "degenerate" "{%}";
+  ];
+
   "module-list", [
     t "basic" "{!modules:Foo}";
     t "two" "{!modules:Foo Bar}";
@@ -725,7 +752,6 @@ let tests : test_suite list = [
     t "left-alignment" "{L foo}";
     t "center-alignment" "{C foo}";
     t "right-alignment" "{R foo}";
-    t "target-specific-code" "{%foo%}";
     t "custom-style" "{c foo}";
     t "custom-tag" "@custom";
     (* test "custom reference kind"

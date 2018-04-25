@@ -1,4 +1,0 @@
-((output
-  (error  "File \"f.ml\", line 1, characters 0-2:\
-         \n'{%': bad markup"))
- (warnings ()))

@@ -243,6 +243,7 @@ struct
     | `Space -> Atom "space"
     | `Word w -> List [Atom "word"; Atom w]
     | `Code_span c -> List [Atom "code_span"; Atom c]
+    | `Raw_markup (`Html, s) -> List [Atom "raw_markup"; Atom "html"; Atom s]
 
   let rec non_link_inline_element : Comment.non_link_inline_element -> sexp =
     function

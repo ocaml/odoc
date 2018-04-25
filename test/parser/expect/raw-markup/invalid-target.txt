@@ -1,0 +1,5 @@
+((output
+  (error
+    "File \"f.ml\", line 1, characters 0-11:\
+   \n'{%xml:': bad raw markup target"))
+ (warnings ()))

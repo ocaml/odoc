@@ -14,10 +14,15 @@ type style = [
   | `Subscript
 ]
 
+type raw_markup_target = [
+  | `Html
+]
+
 type leaf_inline_element = [
   | `Space
   | `Word of string
   | `Code_span of string
+  | `Raw_markup of raw_markup_target * string
 ]
 
 type non_link_inline_element = [

@@ -1,0 +1,5 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 13))
+     (paragraph (((f.ml (1 0) (1 13)) (raw_markup html " foo bar "))))))))
+ (warnings ()))

@@ -234,6 +234,10 @@ let code_block_text =
   ([^ ']'] | ']'+ [^ ']' '}'])* ']'*
 let verbatim_text =
   ([^ 'v'] | 'v'+ [^ 'v' '}'])* 'v'*
+let raw_markup =
+  ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
+let raw_markup_target =
+  ([^ ':' '%'] | '%'+ [^ ':' '%' '}'])* '%'*
 
 
 
@@ -301,6 +305,17 @@ rule token input = parse
       let t = trim_leading_blank_lines t in
       let t = trim_trailing_blank_lines t in
       emit input (`Verbatim t) }
+
+  | "{%" ((raw_markup_target as target) ':')? (raw_markup as s) "%}"
+    { let target =
+        match target with
+        | None -> `Html
+        | Some "html" -> `Html
+        | Some invalid_target ->
+          raise_error input
+            (Parse_error.invalid_raw_markup_target invalid_target)
+      in
+      emit input (`Raw_markup (target, s)) }
 
   | "{ul"
     { emit input (`Begin_list `Unordered) }
@@ -441,6 +456,14 @@ rule token input = parse
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Verbatim ""))) }
+
+  | "{%" raw_markup eof
+    { raise_error
+        input
+        ~start_offset:(Lexing.lexeme_end lexbuf)
+        (Parse_error.not_allowed
+          ~what:(Token.describe `End)
+          ~in_what:(Token.describe (`Raw_markup (`Html, "")))) }
 
 
 
