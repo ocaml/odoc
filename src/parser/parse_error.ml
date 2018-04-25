@@ -73,3 +73,9 @@ let unpaired_right_bracket : Location.span -> Error.t =
 
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
   Error.format "'{%%%s:': bad raw markup target"
+
+let default_raw_markup_target_not_supported : Location.span -> Error.t =
+  Error.format
+    "%s needs a target language, try %s"
+    (Token.describe (`Raw_markup (`Html, "")))
+    "'{%html:...%}'"

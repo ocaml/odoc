@@ -248,29 +248,28 @@ let tests : test_suite list = [
   ];
 
   "raw-markup", [
-    t "basic" "{%foo%}";
     t "html-target" "{%html:foo%}";
-    t "whitespace" "{% foo bar %}";
-    t "whitespace-only" "{% %}";
-    t "empty" "{%%}";
-    t "target-and-empty" "{%html:%}";
-    t "html-payload" "{%<e>foo</e>%}";
+    t "whitespace" "{%html: foo bar %}";
+    t "whitespace-only" "{%html: %}";
+    t "empty" "{%html:%}";
+    t "html-payload" "{%html:<e>foo</e>%}";
     t "colon" "{%html:foo:bar%}";
+    t "no-target" "{%foo%}";
     t "empty-target" "{%:foo%}";
     t "whitespace-target" "{% :foo%}";
     t "invalid-target" "{%xml:foo%}";
     t "incorrect-case-target" "{%HTML:foo%}";
     t "multiline-target" "{%\n:foo%}";
     t "percent-in-target" "{%%:%}";
-    t "percent-in-payload" "{%%%}";
+    t "percent-in-payload" "{%html:%%}";
     t "multiple-percent-in-target" "{%%%foo%%:%}";
-    t "multiple-percent-in-payload" "{%%%foo%%%}";
+    t "multiple-percent-in-payload" "{%html:%%foo%%%}";
     t "opener-in-target" "{%{%:foo%}";
-    t "opener-in-payload" "{%{%%}";
+    t "opener-in-payload" "{%html:{%%}";
     t "right-brace-in-target" "{%}:%}";
-    t "right-brace-in-payload" "{%}%}";
+    t "right-brace-in-payload" "{%html:}%}";
     t "unterminated" "{%";
-    t "unterminated-after-target" "{%:";
+    t "unterminated-after-target" "{%html:";
     t "degenerate" "{%}";
   ];
 

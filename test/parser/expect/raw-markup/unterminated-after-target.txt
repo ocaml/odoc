@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"f.ml\", line 1, characters 3-3:\
+    "File \"f.ml\", line 1, characters 7-7:\
    \nend of text is not allowed in '{%...%}' (raw markup)"))
  (warnings ()))
