@@ -74,7 +74,8 @@ let trim_leading_whitespace : string -> string = fun s ->
   let count_leading_whitespace : string -> int = fun line ->
     let rec count_leading_whitespace' : int -> int = fun index ->
       if index >= String.length line then
-        index
+        (* Ignore empty and whitespace-only lines. *)
+        max_int
       else
         match line.[index] with
         | ' ' | '\t' -> count_leading_whitespace' (index + 1)
@@ -92,10 +93,13 @@ let trim_leading_whitespace : string -> string = fun s ->
     |> List.fold_left min max_int
   in
   let remove_whitespace : string -> string = fun line ->
-    String.sub
+    if String.length line < least_amount_of_whitespace then
       line
-      least_amount_of_whitespace
-      (String.length line - least_amount_of_whitespace)
+    else
+      String.sub
+        line
+        least_amount_of_whitespace
+        (String.length line - least_amount_of_whitespace)
   in
   lines
   |> List.map remove_whitespace
