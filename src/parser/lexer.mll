@@ -71,40 +71,46 @@ let trim_trailing_blank_lines : string -> string = fun s ->
     String.sub s 0 trim_from
 
 let trim_leading_whitespace : string -> string = fun s ->
-  let count_leading_whitespace : string -> int = fun line ->
-    let rec count_leading_whitespace' : int -> int = fun index ->
-      if index >= String.length line then
-        (* Ignore empty and whitespace-only lines. *)
-        max_int
-      else
-        match line.[index] with
-        | ' ' | '\t' -> count_leading_whitespace' (index + 1)
-        | _ -> index
+  let count_leading_whitespace line =
+    let rec count_leading_whitespace' index =
+      match line.[index] with
+      | ' ' | '\t' -> count_leading_whitespace' (index + 1)
+      | _ -> `Leading_whitespace index
+      | exception Invalid_argument _ -> `Blank_line
     in
     count_leading_whitespace' 0
   in
+
   let lines = Astring.String.cuts ~sep:"\n" s in
+
   let least_amount_of_whitespace =
     lines
-    |> List.map count_leading_whitespace
-    (* Note that if [lines] is empty, [least_amount_of_whitespace] will be
-       [max_int]. But this is okay since if it's indeed empty, the value
-       will not be used when trying to remove whitespace below. *)
-    |> List.fold_left min max_int
+    |> List.fold_left (fun least_so_far line ->
+      match (count_leading_whitespace line, least_so_far) with
+      | (`Leading_whitespace n, None) -> Some n
+      | (`Leading_whitespace n, Some least) when n < least -> Some n
+      | _ -> least_so_far)
+      None
   in
-  let remove_whitespace : string -> string = fun line ->
-    if String.length line < least_amount_of_whitespace then
-      line
-    else
-      String.sub
+  match least_amount_of_whitespace with
+  | None ->
+    s
+  | Some least_amount_of_whitespace ->
+    let remove_whitespace : string -> string = fun line ->
+      if String.length line < least_amount_of_whitespace then
+        (* Since blank lines were ignored when calculating
+           [least_amount_of_whitespace], their length might be less than the
+           amount. *)
         line
-        least_amount_of_whitespace
-        (String.length line - least_amount_of_whitespace)
-  in
-  lines
-  |> List.map remove_whitespace
-  |> String.concat "\n"
-
+      else
+        String.sub
+          line
+          least_amount_of_whitespace
+          (String.length line - least_amount_of_whitespace)
+    in
+    lines
+    |> List.map remove_whitespace
+    |> String.concat "\n"
 
 
 
