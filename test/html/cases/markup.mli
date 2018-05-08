@@ -66,14 +66,16 @@
     {2 Preformatted text}
 
     This is a code block:
-{[
-let foo = ()
-(** There are some nested comments in here, but an unpaired comment
-    terminator would terminate the whole doc surrounding comment. It's
-    best to keep code blocks no wider than 72 characters. *)
-]}
 
-    We still need to add syntax highlighting. That should be its own test.
+    {[
+        let foo = ()
+        (** There are some nested comments in here, but an unpaired comment
+            terminator would terminate the whole doc surrounding comment. It's
+            best to keep code blocks no wider than 72 characters. *)
+
+        let bar =
+          ignore foo
+    ]}
 
     There are also verbatim blocks:
 
