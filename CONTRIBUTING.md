@@ -164,7 +164,10 @@ The intended response to this is:
 The odoc repo is set up for coverage analysis. This is most useful if you're
 writing new tests, and want to know what they are actually touching. To use it,
 
-1. Run `make coverage`. This will run the tests as normal, except at the end you
+1. Run `make clean` once, before beginning to work with coverage. This rebuilds
+   odoc with Bisect_ppx linked in.
+
+2. Run `make coverage`. This will run the tests as normal, except at the end you
    will get a message like
 
     ```
@@ -177,9 +180,9 @@ writing new tests, and want to know what they are actually touching. To use it,
    "accidentally" by tests that are checking other properties, however, in which
    case coverage analysis will not be very useful :)
 
-2. Write new tests.
+3. Write new tests.
 
-3. Check coverage again.
+4. Check coverage again.
 
 <br/>
 
