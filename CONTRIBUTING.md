@@ -15,6 +15,7 @@ find the information in this file helpful.
 
 - [Quick start: HTML and CSS](#Quick_start)
 - [Testing](#Testing)
+  - [Debug prints](#Debug_prints)
   - [Expect tests](#Expect_tests)
   - [Coverage analysis](#Coverage_analysis)
 - [Project structure](#Project_structure)
@@ -88,6 +89,19 @@ To make edits to the HTML generation, run the following commands:
 
 The basic testing instructions are covered in [Quick start](#Quick_start), but
 here is some more detail on odoc's testing setup.
+
+<br/>
+
+<a id="Debug_prints"></a>
+### Debug prints
+
+If you want to display something during the execution of the tests, write to
+STDERR with [`prerr_endline`][prerr_endline] or [`Printf.eprintf`][eprintf].
+The [testing framework][alcotest] will display STDERR if a test fails.
+
+[prerr_endline]: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Pervasives.html#VALprerr_endline
+[eprintf]: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Printf.html#VALeprintf
+[alcotest]: https://github.com/mirage/alcotest
 
 <br/>
 
