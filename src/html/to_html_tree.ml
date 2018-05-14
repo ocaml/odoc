@@ -942,7 +942,7 @@ struct
 
     match toc with
     | [] -> []
-    | _ -> [Html.nav [sections toc]]
+    | _ -> [Html.nav ~a:[Html.a_class ["toc"]] [sections toc]]
 end
 
 (* TODO Figure out when this function would fail. It is currently pasted from

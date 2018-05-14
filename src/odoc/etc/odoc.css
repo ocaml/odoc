@@ -44,9 +44,9 @@ body {
 }
 
 .content {
-  min-width: 40ex;
-  max-width: 78ex;
-  margin-left: 60px;
+  min-width: 300px;
+  max-width: 600px;
+  margin-left: 220px;
   padding: 20px;
 }
 
@@ -456,11 +456,54 @@ h1+.modules, h1+.sel {
   display: block;
 }
 
+/* Sidebar and TOC */
+
+.toc:before {
+  display: block;
+  content: "Topics";
+  text-transform: uppercase;
+  font-size: 0.95em;
+  margin: 1.414em 0 0.5em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.toc {
+  position: fixed;
+  top: 60px;
+  bottom: 0px;
+  left: 20px;
+  width: 200px;
+}
+
+.toc ul li a {
+  font-size: 0.95em;
+  color: #333;
+}
+
+/* First level titles */
+.toc > ul > li > a {
+  font-weight: bold;
+}
+
+.toc li ul {
+  margin-top: 3px;
+  margin-left: 0;
+}
+
+.toc ul li {
+  margin-left: 20px;
+}
+
 /* Mobile adjustements. */
 
-@media only screen and (max-width: 78ex) {
-  body {
+@media only screen and (max-width: 750px) {
+  .content {
     margin: auto;
+  }
+  .toc {
+    position: static;
+    width: auto;
   }
 }
 
