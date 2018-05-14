@@ -315,7 +315,7 @@ let page_creator ?kind ~path header_docs content =
 
     let header = Html.header header_content in
 
-    header::content
+    [Html.div ~a:[Html.a_class ["content"]] (header::content)]
   in
 
   let html : [ `Html ] Html.elt = Html.html head (Html.body wrapped_content) in

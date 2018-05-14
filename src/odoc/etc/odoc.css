@@ -15,7 +15,6 @@ summary, time, mark, audio, video {
   margin: 0;
   padding: 0;
   border: 0;
-  /* outline: 0; */
   font-size: 100%;
   font: inherit;
   line-height: inherit;
@@ -40,12 +39,15 @@ body {
   font-size: 14px;
   line-height: 20px;
   text-align: left;
-  min-width: 40ex;
-  max-width: 78ex;
-  padding: 20px;
-  margin-left: 60px;
   color: #222;
   background: #FAFAFA;
+}
+
+.content {
+  min-width: 40ex;
+  max-width: 78ex;
+  margin-left: 60px;
+  padding: 20px;
 }
 
 /* Basic markup elements */
