@@ -365,7 +365,7 @@ struct
         Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
         [ Markup.keyword " += " ]
       ) ::
-      list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
+      list_concat_map t.constructors ~sep:(Html.code [Html.pcdata " | "])
         ~f:extension_constructor
     in
     extension, t.doc
@@ -407,7 +407,7 @@ struct
           Html.td ~a:[ Html.a_class ["def"; kind] ] (
             Html.a ~a:[
               Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
-            Html.code [Markup.keyword "| " ] ::
+            Html.code [Html.pcdata "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)
@@ -416,7 +416,7 @@ struct
         Printf.eprintf "ERROR: %s\n%!" s;
         Html.tr [
           Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
-            Html.code [Markup.keyword "| " ] ::
+            Html.code [Html.pcdata "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)

@@ -5,17 +5,11 @@
 
 /* Reset a few things. */
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
-blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img,
-ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i,
-center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption,
-tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section,
-summary, time, mark, audio, video {
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: 100%;
+  font-size: inherit;
   font: inherit;
   line-height: inherit;
   vertical-align: baseline;
@@ -35,25 +29,26 @@ table {
 
 body {
   font-family: Helvetica, "DejaVu Sans", Arial, sans-serif;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 20px;
+  font-weight: 300;
+  font-size: 1em;
+  line-height: 1.5;
   text-align: left;
-  color: #222;
-  background: #FAFAFA;
+  color: #333;
+  background: #FFFFFF;
 }
 
 .content {
   min-width: 300px;
-  max-width: 600px;
-  margin-left: 220px;
-  padding: 20px;
+  max-width: 700px;
+  margin-left: 310px;
+  margin-top: 20px;
+  margin-bottom: 50px;
 }
 
 /* Basic markup elements */
 
 b, strong {
-  font-weight: bold;
+  font-weight: 400;
 }
 
 i, em {
@@ -74,8 +69,11 @@ sup, sub {
   margin-left: 0.2ex;
 }
 
-p, div, img {
-  margin-top: 20px;
+p {
+  margin-bottom: 1.0em;
+}
+pre {
+  margin-bottom: 1.5em;
 }
 
 ul, ol {
@@ -127,8 +125,7 @@ a:hover {
 
 /* Linked highlight */
 *:target {
-  background-color: #FFF8E5;
-  box-shadow: 0 0 0 2px #FFF8E5, 0 0 0 3px #DDD;
+  background-color: rgba(187,239,253,0.3);
 }
 
 *:hover>a.anchor {
@@ -141,20 +138,27 @@ a.anchor:before {
 
 a.anchor:hover {
   box-shadow: none;
-  text-decoration: underline
+  text-decoration: none;
+  color: #555;
 }
 
 a.anchor {
   visibility: hidden;
   position: absolute;
   /* top: 0px; */
-  margin-left: -3ex;
+  /* margin-left: -3ex; */
+  margin-left: -1.3em;
   font-weight: normal;
   font-style: normal;
-  padding-right: 1ex;
-  padding-left: 1ex;
+  padding-right: 0.4em;
+  padding-left: 0.4em;
   /* To remain selectable */
-  color: #AAA;
+  color: #d5d5d5;
+}
+
+dl dt>a.anchor {
+  padding-right: 1.2em;
+  margin-left: -2.2em;
 }
 
 .xref-unresolved {
@@ -165,30 +169,57 @@ a.anchor {
    Until at least 4.03 many of the modules of the stdlib start at .h7,
    we restart the sequence there like h2  */
 
+section header {
+  margin-bottom: 1.3em;
+}
+
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
-  font-weight: bold;
-  margin-top: 20px;
+  font-weight: 600;
+  margin: 1.414em 0 0.5em;
+  line-height: 1.2;
 }
 
-h1+*, h2+*, .h7+* {
-  margin-top: 10px;
+h1 {
+  font-size: 2.441em;
+  margin-top: 1.214em;
 }
 
-h1, h2, .h7 {
-  font-size: 20px;
-  line-height: 39px;
-  padding-top: 10px;
-  border-top: solid;
-  border-width: 1px;
-  border-color: #DDD;
+h2 {
+  font-size: 1.953em;
+  box-shadow: 0 1px 0 0 #ddd;
+  padding-bottom: 0.1em;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 1.563em;
 }
 
-h2+h3, .h7+.h8 {
-  margin-top: 10px;
+h4 {
+  font-size: 1.25em;
+}
+
+small, .font_small {
+  font-size: 0.8em;
+}
+
+h1 code, h1 tt {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+h2 code, h2 tt {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+h3 code, h3 tt {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+h4 code, h4 tt {
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 /* Preformatted and code */
@@ -196,37 +227,54 @@ h2+h3, .h7+.h8 {
 tt, code, pre {
   font-family: Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
   font-weight: normal;
-  font-size: 12px;
+  font-size: inherit;
 }
 
 pre {
-  padding-left: 4px;
-  padding-right: 4px;
-  margin-left: -4px;
-  margin-right: -4px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  margin-top: 20px;
-  /*  margin-bottom: 0.625rem; */
-  line-height: 19px;
-  background: #F1F1F1;
+  padding: 0.1em;
+  border: 1px solid #eee;
+  border-radius: 5px;
 }
 
-h1 tt, h1 code, h2 tt, h2 code, .h7 tt, .h7 code {
-  font-size: 18px
-}
+/* Code blocks (e.g. Examples) */
 
-h3 tt, h3 code {
-  font-size: 16px
+pre code {
+  font-size: 0.90rem;
 }
 
 /* Code lexemes */
 
 .keyword {
-  font-weight: bold;
+  font-weight: 500;
 }
 
 /* Module member specification */
+
+/* FIXME: Ideally `dl`s should have a class. For now select immediate children of section. */
+section > dl > dt {
+  font-size: 0.95em;
+  background-color: #F8F8F8;
+  border-radius: 3px;
+  border-left: 5px solid #5c9cf5;
+  border-right: 5px solid transparent;
+  padding: 0.5em;
+}
+
+section > dl > dd {
+  padding: 0.75em;
+}
+
+dl dt+dt {
+  margin-top: 1.3em;
+}
+
+dl dt .variant {
+  margin-left: 2ch;
+}
+
+dd> :first-child {
+  margin-top: 0;
+}
 
 div.def {
   margin-top: 0;
@@ -248,22 +296,13 @@ heading, body>p, body>ul, body>ol, h3, h4, body>pre {
   margin-bottom: 16px;
 }
 
-dd {
-  margin-left: 8px;
-  margin-bottom: 16px;
-}
-
-dd> :first-child {
-  margin-top: 0;
-}
-
 /* Collapsible inlined include and module */
 
 details {
   border-radius: 8px;
   border-left: 1.6px solid;
-  border-color: #FAFAFA/* Background */
-  ;
+  border-color: #FAFAFA;
+  /* Background */
   margin-left: -24px;
   padding-left: 20.8px;
   padding-bottom: 10px;
@@ -465,25 +504,37 @@ h1+.modules, h1+.sel {
   font-size: 0.95em;
   margin: 1.414em 0 0.5em;
   font-weight: 600;
+  color: #777;
   line-height: 1.2;
 }
 
 .toc {
   position: fixed;
-  top: 60px;
+  top: 0px;
   bottom: 0px;
-  left: 20px;
-  width: 200px;
+  left: 00px;
+  width: 250px;
+  background: #F5F7F7;
+  color: #1F2D3D;
+  border-right: 1px solid rgba(99, 114, 130, 0.16);
+  padding-left: 15px;
 }
 
 .toc ul li a {
   font-size: 0.95em;
   color: #333;
+  font-weight: 400;
+}
+
+.toc ul li a:hover {
+  box-shadow: none;
+  text-decoration: underline;
 }
 
 /* First level titles */
-.toc > ul > li > a {
-  font-weight: bold;
+
+.toc>ul>li>a {
+  font-weight: 600;
 }
 
 .toc li ul {
@@ -497,13 +548,17 @@ h1+.modules, h1+.sel {
 
 /* Mobile adjustements. */
 
-@media only screen and (max-width: 750px) {
+@media only screen and (max-width: 950px) {
   .content {
     margin: auto;
+    padding: 1.5em;
   }
   .toc {
     position: static;
     width: auto;
+    border: none;
+    padding: 0.2em 0.5em;
+    border-radius: 5px;
   }
 }
 
@@ -519,8 +574,81 @@ h1+.modules, h1+.sel {
   }
 }
 
-.hljs-keyword {
-  font-weight: bold;
+/* Syntax highlighting (based on github-gist) */
+
+.hljs {
+  display: block;
+  background: white;
+  padding: 0.5em;
+  color: #333333;
+  overflow-x: auto;
+}
+
+.hljs-comment,
+.hljs-meta {
+  color: #969896;
+}
+
+.hljs-string,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-strong,
+.hljs-emphasis,
+.hljs-quote {
+  color: #df5000;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #a71d5d;
+}
+
+.hljs-type,
+.hljs-class .hljs-title {
+  color: #458;
+  font-weight: 500;
+}
+
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attribute {
+  color: #0086b3;
+}
+
+.hljs-section,
+.hljs-name {
+  color: #63a35c;
+}
+
+.hljs-tag {
+  color: #333333;
+}
+
+.hljs-attr,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #795da3;
+}
+
+.hljs-addition {
+  color: #55a532;
+  background-color: #eaffea;
+}
+
+.hljs-deletion {
+  color: #bd2c00;
+  background-color: #ffecec;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
+/* .hljs-keyword {
+  font-weight: 600;
 }
 
 .hljs-literal {
@@ -529,7 +657,7 @@ h1+.modules, h1+.sel {
 
 .hljs-comment {
   opacity: 0.5;
-}
+} */
 
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 Daniel C. Bünzli
