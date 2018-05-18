@@ -156,9 +156,11 @@ a.anchor {
   color: #d5d5d5;
 }
 
-dl dt>a.anchor {
-  padding-right: 1.2em;
-  margin-left: -2.2em;
+dl dt > a.anchor,
+section > article > a.anchor,
+.content article > a.anchor {
+  margin-left: -2.3em;
+  padding-right: 0.9em;
 }
 
 .xref-unresolved {
@@ -236,6 +238,13 @@ pre {
   border-radius: 5px;
 }
 
+p code {
+  background-color: #f6f8fa;
+  color: #0d2b3e;
+  border-radius: 5px;
+  padding: 2px 5px;
+}
+
 /* Code blocks (e.g. Examples) */
 
 pre code {
@@ -251,9 +260,10 @@ pre code {
 /* Module member specification */
 
 /* FIXME: Ideally `dl`s should have a class. For now select immediate children of section. */
-section > dl > dt {
+section > dl > dt,
+section > article, .content > article {
   font-size: 0.95em;
-  background-color: #F8F8F8;
+  background-color: #f6f8fa;
   border-radius: 3px;
   border-left: 5px solid #5c9cf5;
   border-right: 5px solid transparent;
@@ -264,7 +274,8 @@ section > dl > dd {
   padding: 0.75em;
 }
 
-dl dt+dt {
+dl dt+dt,
+section > article, .content > article {
   margin-top: 1.3em;
 }
 
@@ -516,7 +527,7 @@ h1+.modules, h1+.sel {
   width: 250px;
   background: #F5F7F7;
   color: #1F2D3D;
-  border-right: 1px solid rgba(99, 114, 130, 0.16);
+  outline: 1px solid rgba(99, 114, 130, 0.16);
   padding-left: 15px;
 }
 
