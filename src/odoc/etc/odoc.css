@@ -242,7 +242,6 @@ p code {
   background-color: #f6f8fa;
   color: #0d2b3e;
   border-radius: 5px;
-  padding: 2px 5px;
 }
 
 /* Code blocks (e.g. Examples) */
@@ -281,6 +280,10 @@ section > article, .content > article {
 
 dl dt .variant {
   margin-left: 2ch;
+}
+dl dt .variant p {
+  margin: 0;
+  font-style: italic;
 }
 
 dd> :first-child {
