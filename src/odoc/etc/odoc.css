@@ -538,9 +538,9 @@ h1+.modules, h1+.sel {
   bottom: 0px;
   left: 00px;
   width: 250px;
-  background: #F5F7F7;
+  background: #f6f8fa;
+  overflow-y: scroll;
   color: #1F2D3D;
-  outline: 1px solid rgba(99, 114, 130, 0.16);
   padding-left: 15px;
 }
 
