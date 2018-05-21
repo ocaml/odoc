@@ -627,6 +627,7 @@ module Top_level_markup :
 sig
   val lay_out :
     item_to_id:('item -> string option) ->
+    item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Comment.docs) ->
     render_nested_article:('item -> rendered_item * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
@@ -657,13 +658,20 @@ struct
       [Html.a_id anchor_text]
 
 
+(* Adds spec class to the list of existing item attributes. *)
+  let add_spec item_to_spec item a =
+    match item_to_spec item with
+    | Some spec -> Html.a_class ["spec " ^ spec] :: a
+    | None -> a
+
 
   (* "Consumes" adjacent leaf items of the same kind, until one is found with
      documentation. Then, joins all their definitions, and the documentation of
      the last item (if any), into a <dl> element. The rendered <dl> element is
      paired with the list of unconsumed items remaining in the input. *)
   let leaf_item_group
-      item_to_id render_leaf_item first_item_kind items : html * 'item list =
+      item_to_id item_to_spec render_leaf_item first_item_kind items
+      : html * 'item list =
 
     let rec consume_leaf_items_until_one_is_documented =
         fun items acc ->
@@ -677,7 +685,8 @@ struct
            is released in TyXML; see also type [rendered_item]. *)
         let html = List.map Html.Unsafe.coerce_elt html in
         let html, maybe_id = add_anchor item_to_id item html in
-        let html = Html.dt ~a:maybe_id html in
+        let a = add_spec item_to_spec item maybe_id in
+        let html = Html.dt ~a html in
         let acc = html::acc in
 
         begin match maybe_docs with
@@ -764,6 +773,7 @@ struct
     acc_subpages : Html_tree.t list;
 
     item_to_id : 'item -> string option;
+    item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Comment.docs;
     render_nested_article : 'item -> rendered_item * Html_tree.t list;
   }
@@ -798,6 +808,7 @@ struct
         let html, input_items =
           leaf_item_group
             state.item_to_id
+            state.item_to_spec
             state.render_leaf_item
             kind
             state.input_items
@@ -810,9 +821,10 @@ struct
       | `Nested_article item ->
         let html, subpages = state.render_nested_article item in
         let html, maybe_id = add_anchor state.item_to_id item html in
+        let a = add_spec state.item_to_spec item maybe_id in
         section_items section_level {state with
             input_items;
-            acc_html = (Html.article ~a:maybe_id html)::state.acc_html;
+            acc_html = (Html.article ~a html)::state.acc_html;
             acc_subpages = state.acc_subpages @ subpages;
           }
 
@@ -897,7 +909,7 @@ struct
 
 
 
-  let lay_out ~item_to_id ~render_leaf_item ~render_nested_article items =
+  let lay_out ~item_to_id ~item_to_spec ~render_leaf_item ~render_nested_article items =
     let initial_state =
       {
         input_items = items;
@@ -908,6 +920,7 @@ struct
         acc_subpages = [];
 
         item_to_id;
+        item_to_spec;
         render_leaf_item;
         render_nested_article;
       }
@@ -974,6 +987,13 @@ struct
     | Inherit _
     | Comment _ -> None
 
+  let class_signature_item_to_spec : Lang.ClassSignature.item -> _ = function
+    | Method {id; _} -> Some "method"
+    | InstanceVariable {id; _} -> Some "instance-variable"
+    | Constraint _
+    | Inherit _
+    | Comment _ -> None
+
   let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
     match item with
     | Method _ -> `Leaf_item (`Method, item)
@@ -1000,6 +1020,7 @@ struct
     let tagged_items = List.map tag_class_signature_item c.items in
     Top_level_markup.lay_out
       ~item_to_id:class_signature_item_to_id
+      ~item_to_spec:class_signature_item_to_spec
       ~render_leaf_item:render_class_signature_item
       ~render_nested_article:(fun _ -> assert false)
       tagged_items
@@ -1160,6 +1181,19 @@ struct
     | Include _
     | Comment _ -> None
 
+  let signature_item_to_spec : Lang.Signature.item -> _ = function
+    | Type {id; _} -> Some "type"
+    | Exception {id; _} -> Some "exception"
+    | Value {id; _} -> Some "value"
+    | External {id; _} -> Some "external"
+    | Module {id; _} -> Some "module"
+    | ModuleType {id; _} -> Some "module-type"
+    | Class {id; _} -> Some "class"
+    | ClassType {id; _} -> Some "class-type"
+    | TypExt _
+    | Include _
+    | Comment _ -> None
+
   let tag_signature_item : Lang.Signature.item -> _ = fun item ->
     match item with
     | Type _ -> `Leaf_item (`Type, item)
@@ -1196,6 +1230,7 @@ struct
     let tagged_items = List.map tag_signature_item s in
     Top_level_markup.lay_out
       ~item_to_id:signature_item_to_id
+      ~item_to_spec:signature_item_to_spec
       ~render_leaf_item:render_leaf_signature_item
       ~render_nested_article:render_nested_signature_or_class
       tagged_items

@@ -125,7 +125,8 @@ a:hover {
 
 /* Linked highlight */
 *:target {
-  background-color: rgba(187,239,253,0.3);
+  background-color: rgba(187,239,253,0.3) !important;
+  box-shadow: 0 0px 0 1px rgba(187,239,253,0.8) !important;
 }
 
 *:hover>a.anchor {
@@ -156,9 +157,7 @@ a.anchor {
   color: #d5d5d5;
 }
 
-dl dt > a.anchor,
-section > article > a.anchor,
-.content article > a.anchor {
+.spec > a.anchor {
   margin-left: -2.3em;
   padding-right: 0.9em;
 }
@@ -229,7 +228,7 @@ h4 code, h4 tt {
 tt, code, pre {
   font-family: Menlo, "DejaVu Sans Mono", "Bitstream Vera Sans Mono", monospace;
   font-weight: normal;
-  font-size: inherit;
+  font-size: 0.95em
 }
 
 pre {
@@ -258,9 +257,7 @@ pre code {
 
 /* Module member specification */
 
-/* FIXME: Ideally `dl`s should have a class. For now select immediate children of section. */
-section > dl > dt,
-section > article, .content > article {
+.spec:not(.include) {
   font-size: 0.95em;
   background-color: #f6f8fa;
   border-radius: 3px;
@@ -269,25 +266,31 @@ section > article, .content > article {
   padding: 0.5em;
 }
 
-section > dl > dd {
+/* Indent the second line in multiline spec definitions. */
+.spec:not(.type) code {
+  display: inline-block;
+  padding-left: 4ex;
+  text-indent: -4ex;
+}
+
+dl > dd {
   padding: 0.75em;
-}
-
-dl dt+dt,
-section > article, .content > article {
-  margin-top: 1.3em;
-}
-
-dl dt .variant {
-  margin-left: 2ch;
-}
-dl dt .variant p {
-  margin: 0;
-  font-style: italic;
 }
 
 dd> :first-child {
   margin-top: 0;
+}
+
+.spec + .spec, dl + dl {
+  margin-top: 1.3em;
+}
+
+.spec.type .variant {
+  margin-left: 2ch;
+}
+.spec.type .variant p {
+  margin: 0;
+  font-style: italic;
 }
 
 div.def {
@@ -312,18 +315,25 @@ heading, body>p, body>ul, body>ol, h3, h4, body>pre {
 
 /* Collapsible inlined include and module */
 
-details {
-  border-radius: 8px;
-  border-left: 1.6px solid;
-  border-color: #FAFAFA;
-  /* Background */
-  margin-left: -24px;
-  padding-left: 20.8px;
-  padding-bottom: 10px;
+.spec.include details {
+  border-radius: 10px;
+  border: 1px solid #eee;
+  margin-bottom: 30px;
+  padding: 1ex 2.5ex;
 }
 
-details[open] {
-  border-color: #AAA;
+.spec.include details summary {
+  cursor: pointer;
+  outline: none;
+  padding: 1ex;
+}
+
+details summary::-webkit-details-marker {
+  color:#777;
+}
+
+.spec.include details summary + * {
+  margin-top: 1ex;
 }
 
 /* Records and variants FIXME */
@@ -660,18 +670,6 @@ h1+.modules, h1+.sel {
 .hljs-link {
   text-decoration: underline;
 }
-
-/* .hljs-keyword {
-  font-weight: 600;
-}
-
-.hljs-literal {
-  opacity: 0.8;
-}
-
-.hljs-comment {
-  opacity: 0.5;
-} */
 
 /*---------------------------------------------------------------------------
    Copyright (c) 2016 Daniel C. Bünzli
