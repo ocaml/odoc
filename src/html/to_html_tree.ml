@@ -74,7 +74,7 @@ struct
         ('inner, 'outer) text Html.elt list
   = fun (t : Model.Lang.TypeExpr.Variant.t) ->
     let elements =
-      list_concat_map t.elements ~sep:(Html.pcdata " | ") ~f:(function
+      list_concat_map t.elements ~sep:(Markup.keyword " | ") ~f:(function
         | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
         | Constructor (name, _bool, args) ->
           let constr = "`" ^ name in
@@ -365,7 +365,7 @@ struct
         Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
         [ Markup.keyword " += " ]
       ) ::
-      list_concat_map t.constructors ~sep:(Html.code [Html.pcdata " | "])
+      list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
         ~f:extension_constructor
     in
     extension, t.doc
@@ -407,7 +407,7 @@ struct
           Html.td ~a:[ Html.a_class ["def"; kind] ] (
             Html.a ~a:[
               Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
-            Html.code [Html.pcdata "| " ] ::
+            Html.code [Markup.keyword "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)
@@ -416,7 +416,7 @@ struct
         Printf.eprintf "ERROR: %s\n%!" s;
         Html.tr [
           Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
-            Html.code [Html.pcdata "| " ] ::
+            Html.code [Markup.keyword "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)
@@ -988,8 +988,8 @@ struct
     | Comment _ -> None
 
   let class_signature_item_to_spec : Lang.ClassSignature.item -> _ = function
-    | Method {id; _} -> Some "method"
-    | InstanceVariable {id; _} -> Some "instance-variable"
+    | Method _ -> Some "method"
+    | InstanceVariable _ -> Some "instance-variable"
     | Constraint _
     | Inherit _
     | Comment _ -> None
@@ -1182,14 +1182,14 @@ struct
     | Comment _ -> None
 
   let signature_item_to_spec : Lang.Signature.item -> _ = function
-    | Type {id; _} -> Some "type"
-    | Exception {id; _} -> Some "exception"
-    | Value {id; _} -> Some "value"
-    | External {id; _} -> Some "external"
-    | Module {id; _} -> Some "module"
-    | ModuleType {id; _} -> Some "module-type"
-    | Class {id; _} -> Some "class"
-    | ClassType {id; _} -> Some "class-type"
+    | Type _ -> Some "type"
+    | Exception _ -> Some "exception"
+    | Value _ -> Some "value"
+    | External _ -> Some "external"
+    | Module _ -> Some "module"
+    | ModuleType _ -> Some "module-type"
+    | Class _ -> Some "class"
+    | ClassType _ -> Some "class-type"
     | TypExt _
     | Include _
     | Comment _ -> None
