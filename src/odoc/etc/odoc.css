@@ -38,9 +38,10 @@ body {
 }
 
 .content {
-  min-width: 300px;
-  max-width: 700px;
-  margin-left: 310px;
+  min-width: 60ex;
+  max-width: 80ex;
+  margin-left: calc(10% + 19ex);
+  margin-right: 4ex;
   margin-top: 20px;
   margin-bottom: 50px;
 }
@@ -536,12 +537,15 @@ h1+.modules, h1+.sel {
   position: fixed;
   top: 0px;
   bottom: 0px;
-  left: 00px;
-  width: 250px;
+  left: 0px;
+  max-width: 30ex;
+  min-width: 26ex;
+  width: 20%;
   background: #f6f8fa;
   overflow-y: scroll;
   color: #1F2D3D;
-  padding-left: 15px;
+  padding-left: 2ex;
+  padding-right: 2ex;
 }
 
 .toc ul li a {
@@ -572,7 +576,7 @@ h1+.modules, h1+.sel {
 
 /* Mobile adjustements. */
 
-@media only screen and (max-width: 950px) {
+@media only screen and (max-width: 95ex) {
   .content {
     margin: auto;
     padding: 1.5em;
@@ -580,6 +584,8 @@ h1+.modules, h1+.sel {
   .toc {
     position: static;
     width: auto;
+    min-width: unset;
+    max-width: unset;
     border: none;
     padding: 0.2em 0.5em;
     border-radius: 5px;
