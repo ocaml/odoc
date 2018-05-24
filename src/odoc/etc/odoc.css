@@ -38,7 +38,6 @@ body {
 }
 
 .content {
-  min-width: 60ex;
   max-width: 80ex;
   margin-left: calc(10% + 19ex);
   margin-right: 4ex;
@@ -179,6 +178,7 @@ h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   font-weight: 600;
   margin: 1.414em 0 0.5em;
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 h1 {
@@ -242,6 +242,11 @@ p code {
   background-color: #f6f8fa;
   color: #0d2b3e;
   border-radius: 5px;
+  padding: 0 0.5ex;
+}
+
+p a > code {
+  color: #2C5CBD;
 }
 
 /* Code blocks (e.g. Examples) */
@@ -268,7 +273,7 @@ pre code {
 }
 
 /* Indent the second line in multiline spec definitions. */
-.spec:not(.type) code {
+.spec:not(.type) > code {
   display: inline-block;
   padding-left: 4ex;
   text-indent: -4ex;
@@ -317,20 +322,39 @@ heading, body>p, body>ul, body>ol, h3, h4, body>pre {
 /* Collapsible inlined include and module */
 
 .spec.include details {
-  border-radius: 10px;
-  border: 1px solid #eee;
   margin-bottom: 30px;
-  padding: 1ex 2.5ex;
+  position: relative;
+  box-shadow: inset 0 -1px 0 0 #eee;
+}
+
+.spec.include details:after {
+  z-index: -100;
+  display: block;
+  content: " ";
+  position: absolute;
+  border-radius: 0 1ex 1ex 0;
+  right: -20px;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  background: rgba(0, 4, 15, 0.05);
 }
 
 .spec.include details summary {
+  padding: 1.2ex 15px;
+  margin-bottom: 2ex;
   cursor: pointer;
   outline: none;
-  padding: 1ex;
+  border-top: 1px solid #eee;
 }
 
+/* FIXME: Does not work in Firefox. */
 details summary::-webkit-details-marker {
-  color:#777;
+  color:#999;
+  transform: scaleX(-1);
+  position: absolute;
+  top: 16px;
+  right: -24px;
 }
 
 .spec.include details summary + * {
@@ -542,7 +566,7 @@ h1+.modules, h1+.sel {
   min-width: 26ex;
   width: 20%;
   background: #f6f8fa;
-  overflow-y: scroll;
+  overflow: auto;
   color: #1F2D3D;
   padding-left: 2ex;
   padding-right: 2ex;
@@ -579,7 +603,7 @@ h1+.modules, h1+.sel {
 @media only screen and (max-width: 95ex) {
   .content {
     margin: auto;
-    padding: 1.5em;
+    padding: 2.5em;
   }
   .toc {
     position: static;
@@ -605,6 +629,10 @@ h1+.modules, h1+.sel {
 }
 
 /* Syntax highlighting (based on github-gist) */
+
+.keyword {
+  font-weight: 600;
+}
 
 .hljs {
   display: block;
