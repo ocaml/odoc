@@ -267,7 +267,7 @@ pre code {
   font-size: 0.95em;
   background-color: #f6f8fa;
   border-radius: 3px;
-  border-left: 5px solid #5c9cf5;
+  border-left: 4px solid #5c9cf5;
   border-right: 5px solid transparent;
   padding: 0.5em;
 }
@@ -594,7 +594,15 @@ h1+.modules, h1+.sel {
   margin-left: 0;
 }
 
+.toc > ul {
+  list-style-type: none;
+}
+
 .toc ul li {
+  margin: 0;
+}
+
+.toc ul li li {
   margin-left: 20px;
 }
 
