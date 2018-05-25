@@ -1384,6 +1384,7 @@ struct
       | None -> []
       | Some expr ->
         begin match expr with
+        | Signature _
         | Path _ -> Html.pcdata " = "
         | _ -> Html.pcdata " : "
         end ::
