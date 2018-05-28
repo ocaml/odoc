@@ -45,6 +45,10 @@ body {
   margin-bottom: 50px;
 }
 
+.content>header {
+  margin-bottom: 30px;
+}
+
 /* Basic markup elements */
 
 b, strong {
@@ -70,10 +74,10 @@ sup, sub {
 }
 
 p {
-  margin-bottom: 1.0em;
+  margin-bottom: 0.5em;
 }
 pre {
-  margin-bottom: 1.5em;
+  margin: 1.5em 0;
 }
 
 ul, ol {
@@ -170,13 +174,13 @@ a.anchor {
    Until at least 4.03 many of the modules of the stdlib start at .h7,
    we restart the sequence there like h2  */
 
-section header {
-  margin-bottom: 1.3em;
+section > header {
+  margin-bottom: 30px;
 }
 
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   font-weight: 600;
-  margin: 1.414em 0 0.5em;
+  margin: 1em 0 0.5em;
   line-height: 1.2;
   overflow-wrap: break-word;
 }
@@ -263,13 +267,17 @@ pre code {
 
 /* Module member specification */
 
-.spec:not(.include) {
+.spec:not(.include), .spec.include details summary {
   font-size: 0.95em;
   background-color: #f6f8fa;
   border-radius: 3px;
   border-left: 4px solid #5c9cf5;
   border-right: 5px solid transparent;
   padding: 0.5em;
+}
+
+.spec.include details summary:hover {
+  background-color: #ebeff2;
 }
 
 /* Indent the second line in multiline spec definitions. */
@@ -281,14 +289,23 @@ pre code {
 
 dl > dd {
   padding: 0.75em;
+  padding-bottom: 0;
 }
 
 dd> :first-child {
   margin-top: 0;
 }
 
-.spec + .spec, dl + dl {
-  margin-top: 1.3em;
+dl, article, .doc, aside {
+  margin-bottom: 30px;
+}
+
+dl:last-child, aside:last-child, article:last-child {
+  margin-bottom: 0;
+}
+
+dt+dt {
+  margin-top: 30px;
 }
 
 .spec.type .variant {
@@ -322,9 +339,7 @@ heading, body>p, body>ul, body>ol, h3, h4, body>pre {
 /* Collapsible inlined include and module */
 
 .spec.include details {
-  margin-bottom: 30px;
   position: relative;
-  box-shadow: inset 0 -1px 0 0 #eee;
 }
 
 .spec.include details:after {
@@ -341,24 +356,20 @@ heading, body>p, body>ul, body>ol, h3, h4, body>pre {
 }
 
 .spec.include details summary {
-  padding: 1.2ex 15px;
-  margin-bottom: 2ex;
+  position: relative;
+  margin-bottom: 30px;
   cursor: pointer;
   outline: none;
-  border-top: 1px solid #eee;
 }
 
 /* FIXME: Does not work in Firefox. */
 details summary::-webkit-details-marker {
-  color:#999;
+  color: #888;
   transform: scaleX(-1);
   position: absolute;
-  top: 16px;
-  right: -24px;
-}
-
-.spec.include details summary + * {
-  margin-top: 1ex;
+  top: calc(50% - 5px);
+  height: 11px;
+  right: -29px;
 }
 
 /* Records and variants FIXME */
