@@ -19,8 +19,6 @@
 module Html = Tyxml.Html
 module Paths = Model.Paths
 
-
-
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 type t = {
@@ -219,7 +217,7 @@ let render_fragment = Relative_link.Of_fragment.render_raw
 
 let page_creator ?kind ~path header_docs content =
   let rec add_dotdot ~n acc =
-    if n = 0 then
+    if n <= 0 then
       acc
     else
       add_dotdot ~n:(n - 1) ("../" ^ acc)
@@ -284,12 +282,22 @@ let page_creator ?kind ~path header_docs content =
         header_docs
       | Some prefix ->
         let title_heading =
-          Html.h1 [
-            Html.pcdata (prefix ^ " ");
-            Html.code [
-              Html.pcdata (String.concat "." (List.tl path))
-            ]
-          ]
+          Html.h1 @@
+            (Html.pcdata @@ prefix ^ " ")::
+              (* Create links for the module title *)
+              let init =
+                if !Relative_link.semantic_uris then "" else "index.html"
+              in
+              List.tl path |> List.rev |>
+              List.mapi (fun n x -> n, add_dotdot ~n init, x) |>
+              List.rev |>
+              Utils.list_concat_map ?sep:(Some(Html.pcdata "."))
+                ~f:(fun (n, addr, lbl) ->
+                  if n > 0 then
+                    [Html.a ~a:[Html.a_href addr] [Html.pcdata lbl]]
+                  else
+                    [Html.pcdata lbl]
+                )
         in
         title_heading::header_docs
     in
