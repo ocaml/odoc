@@ -22,6 +22,8 @@ module Comment = Model.Comment
 module Lang = Model.Lang
 module Html = Tyxml.Html
 
+open Utils
+
 
 
 type rendered_item = (Html_types.div_content Html.elt) list
@@ -34,16 +36,6 @@ type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA ] as 'inner) ] as 'outer
 
 let a_href = Html_tree.Relative_link.to_sub_element
-
-let rec list_concat_map ?sep ~f = function
-  | [] -> []
-  | [x] -> f x
-  | x :: xs ->
-    let hd = f x in
-    let tl = list_concat_map ?sep ~f xs in
-    match sep with
-    | None -> hd @ tl
-    | Some sep -> hd @ sep :: tl
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
