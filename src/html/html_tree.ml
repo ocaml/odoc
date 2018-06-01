@@ -253,17 +253,6 @@ let page_creator ?kind ~path header_docs content =
   let wrapped_content : (Html_types.div_content Html.elt) list =
     let up_href =
       if !Relative_link.semantic_uris then ".." else "../index.html" in
-    let pkg_href =
-      let n =
-        List.length path - (
-          (* This is just horrible. *)
-          match kind with
-          | Some `Page -> 2
-          | _ -> 1
-        )
-      in
-      add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
-    in
 
     let title_prefix =
       match kind with
@@ -282,22 +271,14 @@ let page_creator ?kind ~path header_docs content =
         header_docs
       | Some prefix ->
         let title_heading =
-          Html.h1 @@
-            (Html.pcdata @@ prefix ^ " ")::
-              (* Create links for the module title *)
-              let init =
-                if !Relative_link.semantic_uris then "" else "index.html"
-              in
-              List.tl path |> List.rev |>
-              List.mapi (fun n x -> n, add_dotdot ~n init, x) |>
-              List.rev |>
-              Utils.list_concat_map ?sep:(Some(Html.pcdata "."))
-                ~f:(fun (n, addr, lbl) ->
-                  if n > 0 then
-                    [Html.a ~a:[Html.a_href addr] [Html.pcdata lbl]]
-                  else
-                    [Html.pcdata lbl]
-                )
+          Html.h1 [
+            Html.pcdata @@ prefix ^ " ";
+            (* Shorten path to at most 2 levels *)
+            match List.tl path |> List.rev with
+            | y :: x :: _ -> Html.pcdata @@ x ^ "." ^ y
+            | x :: _ -> Html.pcdata x
+            | _ -> Html.pcdata "" (* error *)
+          ]
         in
         title_heading::header_docs
     in
@@ -306,15 +287,28 @@ let page_creator ?kind ~path header_docs content =
       let has_parent = List.length path > 1 in
       if has_parent then
         let nav =
-          Html.nav [
+          Html.nav @@ [
             Html.a ~a:[Html.a_href up_href] [
               Html.pcdata "Up"
             ];
-            Html.pcdata " – package ";
-            Html.a ~a:[Html.a_href pkg_href] [
-              Html.pcdata (List.hd path)
-            ];
-          ]
+            Html.pcdata " – "
+          ] @
+            (* Create links for the module title *)
+            let space = Html.pcdata " " in
+            let init =
+              if !Relative_link.semantic_uris then "" else "index.html"
+            in
+            List.rev path |>
+            List.mapi (fun n x -> n, add_dotdot ~n init, x) |>
+            List.rev |>
+            Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
+              ~f:(fun (n, addr, lbl) ->
+                if n > 0 then
+                  [[Html.a ~a:[Html.a_href addr] [Html.pcdata lbl]]]
+                else
+                  [[Html.pcdata lbl]]
+                ) |>
+            List.flatten
         in
         nav::header_docs
       else
