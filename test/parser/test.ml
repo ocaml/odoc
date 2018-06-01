@@ -503,7 +503,7 @@ let tests : test_suite list = [
   "warnings", [
     t "multiple" "{1 Foo}\n{1 Foo}"
       ~permissive:true;
-    t "with-error" "{0 Foo}\n{1 Foo}\n{1 Foo}"
+    t "multiple-with-bad-section" "{0 Foo}\n{1 Foo}\n{1 Foo}"
       ~permissive:true ~sections_allowed:`All;
   ];
 

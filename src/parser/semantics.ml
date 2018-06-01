@@ -237,6 +237,12 @@ let section_heading
   in
   let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
 
+  let is_page =
+    match status.parent_of_sections with
+    | Model.Paths.Identifier.Page _ -> true
+    | _ -> false
+  in
+
   match status.sections_allowed, level with
   | `None, _ ->
     warning status (Parse_error.sections_not_allowed location);
@@ -250,8 +256,21 @@ let section_heading
 
   | `All, 1 ->
     if parsed_a_title then
-      Error.raise_exception (Parse_error.only_one_title_allowed location);
-    let element = `Heading (`Title, label, content) in
+      warning status (Parse_error.only_one_title_allowed location);
+
+    (* The `Title level is lowered to `Section if:
+       - this is not a page, or
+       - it is a page but a title was already parsed. *)
+    let level =
+      if is_page && not parsed_a_title then
+        `Title
+      else begin
+        Parse_error.bad_section_level (string_of_int level) location
+        |> warning status;
+        `Section
+      end
+    in
+    let element = `Heading (level, label, content) in
     let element = Location.at location element in
     true, element
 
