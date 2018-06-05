@@ -293,7 +293,7 @@ let page_creator ?kind ~path header_docs content =
             ];
             Html.pcdata " – "
           ] @
-            (* Create links for the module title *)
+            (* Create breadcrumbs *)
             let space = Html.pcdata " " in
             let init =
               if !Relative_link.semantic_uris then "" else "index.html"
