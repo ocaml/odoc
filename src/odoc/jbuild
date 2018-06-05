@@ -5,6 +5,8 @@
   (libraries
    (bos compiler-libs.common html fpath loader tyxml unix xref))))
 
+(documentation ())
+
 (rule
  ((targets (css_file.ml))
   (deps (etc/odoc.css))
