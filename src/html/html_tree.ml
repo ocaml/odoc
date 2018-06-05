@@ -273,11 +273,13 @@ let page_creator ?kind ~path header_docs content =
         let title_heading =
           Html.h1 [
             Html.pcdata @@ prefix ^ " ";
-            (* Shorten path to at most 2 levels *)
-            match List.tl path |> List.rev with
-            | y :: x :: _ -> Html.pcdata @@ x ^ "." ^ y
-            | x :: _ -> Html.pcdata x
-            | _ -> Html.pcdata "" (* error *)
+            Html.code [
+              (* Shorten path to at most 2 levels *)
+              match List.tl path |> List.rev with
+              | y :: x :: _ -> Html.pcdata @@ x ^ "." ^ y
+              | x :: _ -> Html.pcdata x
+              | _ -> Html.pcdata "" (* error *)
+            ]
           ]
         in
         title_heading::header_docs
