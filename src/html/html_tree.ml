@@ -19,8 +19,6 @@
 module Html = Tyxml.Html
 module Paths = Model.Paths
 
-
-
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 type t = {
@@ -219,7 +217,7 @@ let render_fragment = Relative_link.Of_fragment.render_raw
 
 let page_creator ?kind ~path header_docs content =
   let rec add_dotdot ~n acc =
-    if n = 0 then
+    if n <= 0 then
       acc
     else
       add_dotdot ~n:(n - 1) ("../" ^ acc)
@@ -255,17 +253,6 @@ let page_creator ?kind ~path header_docs content =
   let wrapped_content : (Html_types.div_content Html.elt) list =
     let up_href =
       if !Relative_link.semantic_uris then ".." else "../index.html" in
-    let pkg_href =
-      let n =
-        List.length path - (
-          (* This is just horrible. *)
-          match kind with
-          | Some `Page -> 2
-          | _ -> 1
-        )
-      in
-      add_dotdot ~n (if !Relative_link.semantic_uris then "" else "index.html")
-    in
 
     let title_prefix =
       match kind with
@@ -285,9 +272,13 @@ let page_creator ?kind ~path header_docs content =
       | Some prefix ->
         let title_heading =
           Html.h1 [
-            Html.pcdata (prefix ^ " ");
+            Html.pcdata @@ prefix ^ " ";
             Html.code [
-              Html.pcdata (String.concat "." (List.tl path))
+              (* Shorten path to at most 2 levels *)
+              match List.tl path |> List.rev with
+              | y :: x :: _ -> Html.pcdata @@ x ^ "." ^ y
+              | x :: _ -> Html.pcdata x
+              | _ -> Html.pcdata "" (* error *)
             ]
           ]
         in
@@ -298,15 +289,28 @@ let page_creator ?kind ~path header_docs content =
       let has_parent = List.length path > 1 in
       if has_parent then
         let nav =
-          Html.nav [
+          Html.nav @@ [
             Html.a ~a:[Html.a_href up_href] [
               Html.pcdata "Up"
             ];
-            Html.pcdata " – package ";
-            Html.a ~a:[Html.a_href pkg_href] [
-              Html.pcdata (List.hd path)
-            ];
-          ]
+            Html.pcdata " – "
+          ] @
+            (* Create breadcrumbs *)
+            let space = Html.pcdata " " in
+            let init =
+              if !Relative_link.semantic_uris then "" else "index.html"
+            in
+            List.rev path |>
+            List.mapi (fun n x -> n, add_dotdot ~n init, x) |>
+            List.rev |>
+            Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
+              ~f:(fun (n, addr, lbl) ->
+                if n > 0 then
+                  [[Html.a ~a:[Html.a_href addr] [Html.pcdata lbl]]]
+                else
+                  [[Html.pcdata lbl]]
+                ) |>
+            List.flatten
         in
         nav::header_docs
       else
