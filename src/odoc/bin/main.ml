@@ -16,6 +16,17 @@ let convert_directory : Fs.Directory.t Arg.converter =
   let odoc_dir_printer fmt dir = dir_printer fmt (Fs.Directory.to_string dir) in
   (odoc_dir_parser, odoc_dir_printer)
 
+(* Very basic validation and normalization for URI paths. *)
+let uri_converter : string Arg.converter =
+  let parser str =
+    if String.length str = 0 then
+      `Error "invalid URI"
+    else
+      let last_char = String.get str (String.length str - 1) in
+      `Ok (if last_char <> '/' then str ^ "/" else str)
+  in
+  (parser, Fmt.string)
+
 let docs = "ARGUMENTS"
 
 let odoc_file_directories =
@@ -123,13 +134,13 @@ module Html : sig
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
-        input_file =
+        theme_uri input_file =
     Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
     Html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
-    | None -> Html_page.from_odoc ~env ~output:output_dir file
+    | None -> Html_page.from_odoc ~env ?theme_uri ~output:output_dir file
     | Some pkg_name ->
       Html_page.from_mld ~env ~output:output_dir ~package:pkg_name file
 
@@ -158,8 +169,12 @@ end = struct
       in
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
+    let theme_uri =
+      let doc = "The URI of the theme directory (must contain \"odoc.css\")." in
+      Arg.(value & opt (some uri_converter) None @@ info ~docv:"URI" ~doc ["theme-uri"])
+    in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
-      odoc_file_directories $ dst $ index_for $ input)
+      odoc_file_directories $ dst $ index_for $ theme_uri $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"

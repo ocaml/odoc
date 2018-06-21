@@ -16,7 +16,7 @@
 
 open StdLabels
 
-let from_odoc ~env ~output:root_dir input =
+let from_odoc ~env ?theme_uri ~output:root_dir input =
   let root = Root.read input in
   match root.file with
   | Page page_name ->
@@ -26,7 +26,7 @@ let from_odoc ~env ~output:root_dir input =
       Xref.resolve_page (Env.resolver resolve_env) page
     in
     let pkg_name = root.package in
-    let pages = Html.To_html_tree.page odoctree in
+    let pages = Html.To_html_tree.page ?theme_uri odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
     Html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
@@ -57,7 +57,7 @@ let from_odoc ~env ~output:root_dir input =
     let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
-    let pages = Html.To_html_tree.compilation_unit odoctree in
+    let pages = Html.To_html_tree.compilation_unit ?theme_uri odoctree in
     Html.Html_tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =

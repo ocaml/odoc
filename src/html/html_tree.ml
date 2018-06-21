@@ -215,7 +215,7 @@ end
 
 let render_fragment = Relative_link.Of_fragment.render_raw
 
-let page_creator ?kind ~path header_docs content =
+let page_creator ?kind ?theme_uri ~path header_docs content =
   let rec add_dotdot ~n acc =
     if n <= 0 then
       acc
@@ -227,25 +227,31 @@ let page_creator ?kind ~path header_docs content =
     let name = List.hd @@ List.rev path in
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
 
-    let css_url =
-      let n =
-        List.length path - (
-          (* This is just horrible. *)
-          match kind with
-          | Some `Page -> 1
-          | _ -> 0)
-      in
-      add_dotdot "odoc.css" ~n
+    (* Use the provided theme URI or generate a relative one by default.
+       The URI is assumed to end with `/' in both cases. *)
+    let theme_uri =
+      match theme_uri with
+      | Some uri -> uri
+      | None ->
+        let n =
+          List.length path - (
+            (* This is just horrible. *)
+            match kind with
+            | Some `Page -> 1
+            | _ -> 0)
+        in
+        add_dotdot "" ~n
     in
 
-    let highlight_js_path = (Filename.dirname css_url) ^ "/highlight.pack.js" in
+    let odoc_css_uri = theme_uri ^ "odoc.css" in
+    let highlight_js_uri = theme_uri ^ "highlight.pack.js" in
 
     Html.head (Html.title (Html.pcdata title_string)) [
-      Html.link ~rel:[`Stylesheet] ~href:css_url () ;
+      Html.link ~rel:[`Stylesheet] ~href:odoc_css_uri () ;
       Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
       Html.meta ~a:[ Html.a_name "viewport";
                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
-      Html.script ~a:[Html.a_src highlight_js_path] (Html.pcdata "");
+      Html.script ~a:[Html.a_src highlight_js_uri] (Html.pcdata "");
       Html.script (Html.pcdata "hljs.initHighlightingOnLoad();");
     ]
   in
@@ -326,12 +332,12 @@ let page_creator ?kind ~path header_docs content =
 
   html
 
-let make ?(header_docs = []) content children =
+let make ?(header_docs = []) ?theme_uri content children =
   assert (not (Stack.is_empty path));
   let name    = stack_elt_to_path_fragment (Stack.top path) in
   let kind    = snd (Stack.top path) in
   let path    = List.map fst (stack_to_list path) in
-  let content = page_creator ?kind ~path header_docs content in
+  let content = page_creator ?kind ?theme_uri ~path header_docs content in
   { name; content; children }
 
 let traverse ~f t =
