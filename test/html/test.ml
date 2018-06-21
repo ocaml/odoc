@@ -72,7 +72,8 @@ let () =
 
   let already_failed = ref false in
 
-  let make_html_test : string -> unit Alcotest.test_case = fun case_filename ->
+  let make_html_test : ?theme_uri: string -> string -> unit Alcotest.test_case =
+      fun ?theme_uri case_filename ->
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
     let test_name = file_title in
@@ -92,6 +93,11 @@ let () =
     let odoc_file = build_directory // (file_title ^ ".odoc") in
 
     (* HTML files to be compared. *)
+    let file_title =
+      match theme_uri with
+      | None -> file_title
+      | Some _ -> file_title ^ "-custom_theme"
+    in
     let reference_file = expect_directory // (file_title ^ ".html") in
     let html_file =
       match extension with
@@ -112,8 +118,14 @@ let () =
           command "odoc compile"
             "%s compile --package %s %s" odoc test_package cmti_file;
 
-          command "odoc html"
-            "%s html --output-dir %s %s" odoc build_directory odoc_file;
+          begin match theme_uri with
+          | None ->
+            command "odoc html"
+              "%s html --output-dir %s %s" odoc build_directory odoc_file
+          | Some uri ->
+            command "odoc html"
+              "%s html --theme-uri=%s --output-dir %s %s" odoc uri build_directory odoc_file
+          end
 
       | ".mld" ->
         fun () ->
@@ -196,4 +208,9 @@ let () =
     "assets", ["assets", `Slow, run_test_case]
   in
 
-  Alcotest.run "html" [output_assets; html_tests]
+  (* Custom theme URI tests. *)
+  let theme_uri_tests : unit Alcotest.test =
+    "theme_uri", [make_html_test ~theme_uri:"/a/b/c" "module.mli"]
+  in
+
+  Alcotest.run "html" [output_assets; html_tests; theme_uri_tests]
