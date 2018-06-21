@@ -26,3 +26,9 @@
      (echo "let content = {js|")
      (cat ${<})
      (echo "|js}"))))))
+
+; Install theme assets for odig.
+(install
+  ((section share)
+   (files   ((etc/odoc.css as odoc-theme/default/odoc.css)
+             (../vendor/highlight.pack.js as odoc-theme/default/highlight.pack.js)))))
