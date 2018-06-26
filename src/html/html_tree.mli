@@ -34,6 +34,12 @@ val traverse
 
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
+type uri =
+  | Absolute of string
+  | Relative of string
+(** The type for absolute and relative URIs. The relative URIs are resolved
+    using the HTML output directory as a target. *)
+
 (** These two functions are used to track the depth while building the tree,
     which is needed to produce correct links. *)
 
@@ -47,14 +53,13 @@ val leave : unit -> unit
    To_html_tree is progressively refactored. *)
 val make :
   ?header_docs:(Html_types.flow5_without_header_footer Html.elt) list ->
-  ?theme_uri:string ->
+  ?theme_uri:uri ->
   (Html_types.div_content Html.elt) list ->
   t list ->
     t
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
-    locate the CSS and JS assets, otherwise a path relative to the output
-    directory is used. *)
+    locate the theme assets, otherwise the HTML output directory is used. *)
 
 module Relative_link : sig
   val semantic_uris : bool ref

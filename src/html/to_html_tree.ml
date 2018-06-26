@@ -964,11 +964,11 @@ let path_to_id path =
 module Class :
 sig
   val class_ :
-    ?theme_uri:string -> Lang.Class.t ->
+    ?theme_uri:Html_tree.uri -> Lang.Class.t ->
       ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
 
   val class_type :
-    ?theme_uri:string -> Lang.ClassType.t ->
+    ?theme_uri:Html_tree.uri -> Lang.ClassType.t ->
       ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
 end =
 struct
@@ -1156,7 +1156,7 @@ open Class
 module Module :
 sig
   val signature :
-    ?theme_uri:string -> Lang.Signature.t ->
+    ?theme_uri:Html_tree.uri -> Lang.Signature.t ->
       (Html_types.div_content Html.elt) list * toc * Html_tree.t list
 end =
 struct
@@ -1211,7 +1211,7 @@ struct
     | _ -> assert false
 
   and render_nested_signature_or_class
-      : ?theme_uri:string -> Lang.Signature.item -> _ = fun ?theme_uri item ->
+      : ?theme_uri:Html_tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
     match item with
     | Module m -> module_ ?theme_uri m
     | ModuleType m -> module_type ?theme_uri m
@@ -1230,7 +1230,7 @@ struct
       tagged_items
 
   and functor_argument
-    : 'row. ?theme_uri:string -> Model.Lang.FunctorArgument.t
+    : 'row. ?theme_uri:Html_tree.uri -> Model.Lang.FunctorArgument.t
     -> Html_types.div_content Html.elt list * Html_tree.t list
   = fun ?theme_uri arg ->
     let open Model.Lang.FunctorArgument in
@@ -1269,7 +1269,7 @@ struct
     region, subtree
 
   and module_expansion
-    : ?theme_uri:string -> Model.Lang.Module.expansion
+    : ?theme_uri:Html_tree.uri -> Model.Lang.Module.expansion
     -> Html_types.div_content_fun Html.elt list * Html_tree.t list
   = fun ?theme_uri t ->
     match t with
@@ -1298,7 +1298,7 @@ struct
       html, params_subpages @ subpages
 
   and module_
-      : ?theme_uri:string -> Model.Lang.Module.t ->
+      : ?theme_uri:Html_tree.uri -> Model.Lang.Module.t ->
           Html_types.article_content Html.elt list * Html_tree.t list
       = fun ?theme_uri t ->
     let modname = Paths.Identifier.name t.id in
@@ -1546,8 +1546,8 @@ open Module
 
 module Page :
 sig
-  val compilation_unit : ?theme_uri:string -> Lang.Compilation_unit.t -> Html_tree.t
-  val page : ?theme_uri:string -> Lang.Page.t -> Html_tree.t
+  val compilation_unit : ?theme_uri:Html_tree.uri -> Lang.Compilation_unit.t -> Html_tree.t
+  val page : ?theme_uri:Html_tree.uri -> Lang.Page.t -> Html_tree.t
 end =
 struct
   let pack

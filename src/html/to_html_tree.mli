@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val compilation_unit : ?theme_uri:string -> Model.Lang.Compilation_unit.t -> Html_tree.t
-val page : ?theme_uri:string -> Model.Lang.Page.t -> Html_tree.t
+val compilation_unit : ?theme_uri:Html_tree.uri -> Model.Lang.Compilation_unit.t -> Html_tree.t
+val page : ?theme_uri:Html_tree.uri -> Model.Lang.Page.t -> Html_tree.t
 (** Convert compilation unit or page models into HTML trees.
 
-    Optionally [theme_uri] can be provided to locate custom theme assets. A
-    path relative to the output directory will be used by default. *)
+    Optionally [theme_uri] can be provided to locate custom theme assets. The
+    HTML output directory will be used by default. *)

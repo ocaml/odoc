@@ -17,15 +17,26 @@ let convert_directory : Fs.Directory.t Arg.converter =
   (odoc_dir_parser, odoc_dir_printer)
 
 (* Very basic validation and normalization for URI paths. *)
-let uri_converter : string Arg.converter =
+let convert_uri : Html.Html_tree.uri Arg.converter =
   let parser str =
     if String.length str = 0 then
       `Error "invalid URI"
     else
+      (* The URI is absolute if it starts with a scheme or with '/'. *)
+      let is_absolute =
+        List.exists ["http"; "https"; "file"; "data"; "ftp"]
+          ~f:(fun scheme -> Astring.String.is_prefix ~affix:(scheme ^ ":") str)
+        || String.get str 0 = '/'
+      in
       let last_char = String.get str (String.length str - 1) in
-      `Ok (if last_char <> '/' then str ^ "/" else str)
+      let str = if last_char <> '/' then str ^ "/" else str in
+      `Ok Html.Html_tree.(if is_absolute then Absolute str else Relative str)
   in
-  (parser, Fmt.string)
+  let printer ppf = function
+    | Html.Html_tree.Absolute uri
+    | Html.Html_tree.Relative uri -> Format.pp_print_string ppf uri
+  in
+  (parser, printer)
 
 let docs = "ARGUMENTS"
 
@@ -140,7 +151,7 @@ end = struct
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
-    | None -> Html_page.from_odoc ~env ?theme_uri ~output:output_dir file
+    | None -> Html_page.from_odoc ~env ~theme_uri ~output:output_dir file
     | Some pkg_name ->
       Html_page.from_mld ~env ~output:output_dir ~package:pkg_name file
 
@@ -170,8 +181,10 @@ end = struct
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
     let theme_uri =
-      let doc = "The URI of the theme directory (must contain \"odoc.css\")." in
-      Arg.(value & opt (some uri_converter) None @@ info ~docv:"URI" ~doc ["theme-uri"])
+      let doc = "Where to look for theme assets (e.g. `URI/odoc.css'). \
+                 Relative URIs are resolved using `--output-dir' as a target." in
+      let default = Html.Html_tree.Relative "./" in
+      Arg.(value & opt convert_uri default @@ info ~docv:"URI" ~doc ["theme-uri"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
       odoc_file_directories $ dst $ index_for $ theme_uri $ input)

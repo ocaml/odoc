@@ -21,6 +21,10 @@ module Paths = Model.Paths
 
 type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
+type uri =
+  | Absolute of string
+  | Relative of string
+
 type t = {
   name : string;
   content : [ `Html ] Html.elt;
@@ -215,32 +219,39 @@ end
 
 let render_fragment = Relative_link.Of_fragment.render_raw
 
-let page_creator ?kind ?theme_uri ~path header_docs content =
+let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
   let rec add_dotdot ~n acc =
     if n <= 0 then
       acc
     else
       add_dotdot ~n:(n - 1) ("../" ^ acc)
   in
+  let resolve_relative_uri uri =
+    (* Remove the first "dot segment". *)
+    let uri =
+      if String.length uri >= 2 && String.sub uri 0 2 = "./" then
+        String.sub uri 2 (String.length uri - 2)
+      else uri
+    in
+    (* How deep is this page? *)
+    let n =
+      List.length path - (
+        (* This is just horrible. *)
+        match kind with
+        | Some `Page -> 1
+        | _ -> 0)
+    in
+    add_dotdot uri ~n
+  in
 
   let head : Html_types.head Html.elt =
     let name = List.hd @@ List.rev path in
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
 
-    (* Use the provided theme URI or generate a relative one by default.
-       The URI is assumed to end with `/' in both cases. *)
     let theme_uri =
       match theme_uri with
-      | Some uri -> uri
-      | None ->
-        let n =
-          List.length path - (
-            (* This is just horrible. *)
-            match kind with
-            | Some `Page -> 1
-            | _ -> 0)
-        in
-        add_dotdot "" ~n
+      | Absolute uri -> uri
+      | Relative uri -> resolve_relative_uri uri
     in
 
     let odoc_css_uri = theme_uri ^ "odoc.css" in
