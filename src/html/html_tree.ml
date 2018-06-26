@@ -254,8 +254,10 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
       | Relative uri -> resolve_relative_uri uri
     in
 
+    let assets_uri = resolve_relative_uri "./" in
+
     let odoc_css_uri = theme_uri ^ "odoc.css" in
-    let highlight_js_uri = theme_uri ^ "highlight.pack.js" in
+    let highlight_js_uri = assets_uri ^ "highlight.pack.js" in
 
     Html.head (Html.title (Html.pcdata title_string)) [
       Html.link ~rel:[`Stylesheet] ~href:odoc_css_uri () ;
