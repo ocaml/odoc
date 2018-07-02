@@ -1,4 +1,4 @@
-let write ~output_dir =
+let write ?(without_theme = false) output_dir =
   let file name content =
     let channel =
       Fs.File.create ~directory:output_dir ~name
@@ -9,5 +9,7 @@ let write ~output_dir =
     Pervasives.close_out channel
   in
 
-  file "odoc.css" Css_file.content;
+  if not without_theme then begin
+    file "odoc.css" Css_file.content
+  end;
   file "highlight.pack.js" Highlight_js.content

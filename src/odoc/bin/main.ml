@@ -45,7 +45,7 @@ let odoc_file_directories =
     "Where to look for required .odoc files. \
      (Can be present several times)."
   in
-  Arg.(value & opt_all convert_directory [] @@
+  Arg.(value & opt_all convert_directory [] &
     info ~docs ~docv:"DIR" ~doc ["I"])
 
 let hidden =
@@ -53,11 +53,11 @@ let hidden =
     "Mark the unit as hidden. \
      (Useful for files included in module packs)."
   in
-  Arg.(value & flag @@ info ~docs ~doc ["hidden"])
+  Arg.(value & flag & info ~docs ~doc ["hidden"])
 
 let dst =
-  let doc = "Output dir" (* TODO: improve *) in
-  Arg.(required & opt (some convert_directory) None @@
+  let doc = "Output directory where the HTML tree is expected to be saved." in
+  Arg.(required & opt (some convert_directory) None &
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
 module Compile : sig
@@ -106,20 +106,20 @@ end = struct
                  directory as as the input file where $(i,BASE) is the basename
                  of the input file."
       in
-      Arg.(value & opt (some string) None @@ info ~docs ~docv:"PATH" ~doc ["o"])
+      Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
     in
     let input =
       let doc = "Input file (either .cmti or .cmt)" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"FILE" [])
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
     in
     let pkg =
       let doc = "Package the input is part of" in
-      Arg.(required & opt (some string) None @@
+      Arg.(required & opt (some string) None &
            info ~docs ~docv:"PKG" ~doc ["package"; "pkg"])
     in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references" in
-      Arg.(value & flag @@ info ~doc ["r";"resolve-fwd-refs"])
+      Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $
       dst_file $ pkg $ input)
@@ -128,15 +128,34 @@ end = struct
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
 end
 
-module Css = struct
-  let copy_default_css output_dir =
-    Assets.write ~output_dir
+module Support_files = struct
+  let support_files without_theme output_dir =
+    Support_files.write ~without_theme output_dir
 
-  let cmd = Term.(const copy_default_css $ dst)
+  let cmd =
+    let without_theme =
+      let doc = "Don't copy the default theme to output directory." in
+      Arg.(value & flag & info ~doc ["without-theme"])
+    in
+    Term.(const support_files $ without_theme $ dst)
 
   let info =
-    Term.info ~doc:"Copies the default odoc.css to the specified directory"
-      "css"
+    let doc =
+      "Copy the support files (e.g. default theme, JavaScript files) to the \
+       output directory."
+    in
+    Term.info ~doc "support-files"
+end
+
+module Css = struct
+  let cmd = Support_files.cmd
+
+  let info =
+    let doc =
+      "DEPRECATED: Use `odoc support-files' to copy the CSS file for the \
+       default theme."
+    in
+    Term.info ~doc "css"
 end
 
 module Html : sig
@@ -158,7 +177,7 @@ end = struct
   let cmd =
     let input =
       let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
     in
     let semantic_uris =
       let doc = "Generate pretty (semantic) links" in
@@ -178,13 +197,13 @@ end = struct
                  PKG is using to correctly resolve and link references inside \
 		 the input file"
       in
-      Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
+      Arg.(value & opt (some string) None & info ~docv:"PKG" ~doc ["index-for"])
     in
     let theme_uri =
       let doc = "Where to look for theme assets (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
       let default = Html.Html_tree.Relative "./" in
-      Arg.(value & opt convert_uri default @@ info ~docv:"URI" ~doc ["theme-uri"])
+      Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
       odoc_file_directories $ dst $ index_for $ theme_uri $ input)
@@ -207,7 +226,7 @@ module Depends = struct
   let cmd =
     let input =
       let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.cm{i,t,ti}" [])
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.cm{i,t,ti}" [])
     in
     Term.(const list_dependencies $ input)
 
@@ -230,7 +249,7 @@ module Depends = struct
     let cmd =
       let input =
         let doc = "Input directory" in
-        Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"PKG_DIR" [])
+        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"PKG_DIR" [])
       in
       Term.(const list_dependencies $ input)
 
@@ -255,7 +274,7 @@ module Targets = struct
     let cmd =
       let input =
         let doc = "Input file" in
-        Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.cm{i,t,ti}" [])
+        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.cm{i,t,ti}" [])
       in
       Term.(const list_targets $ dst $ input)
 
@@ -276,7 +295,7 @@ module Targets = struct
     let cmd =
       let input =
         let doc = "Input file" in
-        Arg.(required & pos 0 (some file) None @@ info ~doc ~docv:"file.odoc" [])
+        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
       in
       Term.(const list_targets $ odoc_file_directories $ dst $ input)
 
@@ -289,6 +308,7 @@ let () =
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
+    ; Support_files.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Html.(cmd, info)
