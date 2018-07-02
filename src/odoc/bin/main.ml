@@ -200,7 +200,7 @@ end = struct
       Arg.(value & opt (some string) None & info ~docv:"PKG" ~doc ["index-for"])
     in
     let theme_uri =
-      let doc = "Where to look for theme assets (e.g. `URI/odoc.css'). \
+      let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
       let default = Html.Html_tree.Relative "./" in
       Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])

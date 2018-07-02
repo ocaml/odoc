@@ -199,18 +199,23 @@ let () =
 
   let html_tests : unit Alcotest.test = "html", List.map make_html_test cases in
 
-  let output_assets : unit Alcotest.test =
+  let output_support_files : unit Alcotest.test =
     let run_test_case () =
-      command "odoc css"
+      command "odoc support-files"
         "%s css --output-dir %s" odoc build_directory
     in
 
-    "assets", ["assets", `Slow, run_test_case]
+    "support-files", ["support-files", `Slow, run_test_case]
   in
 
   (* Custom theme URI tests. *)
   let theme_uri_tests : unit Alcotest.test =
-    "theme_uri", [make_html_test ~theme_uri:"/a/b/c" "module.mli"]
+    "theme_uri", [
+      make_html_test ~theme_uri:"/a/b/c" "module.mli";
+      make_html_test ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
+      make_html_test ~theme_uri:"../b/c" "include.mli";
+      make_html_test ~theme_uri:"b/c" "section.mli";
+    ]
   in
 
-  Alcotest.run "html" [output_assets; html_tests; theme_uri_tests]
+  Alcotest.run "html" [output_support_files; html_tests; theme_uri_tests]

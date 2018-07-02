@@ -27,7 +27,7 @@
      (cat ${<})
      (echo "|js}"))))))
 
-; Install theme assets for odig.
+; Install theme files for odig.
 (install
   ((section share)
    (files   ((etc/odoc.css as odoc-theme/default/odoc.css)

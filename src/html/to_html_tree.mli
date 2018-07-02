@@ -18,5 +18,5 @@ val compilation_unit : ?theme_uri:Html_tree.uri -> Model.Lang.Compilation_unit.t
 val page : ?theme_uri:Html_tree.uri -> Model.Lang.Page.t -> Html_tree.t
 (** Convert compilation unit or page models into HTML trees.
 
-    Optionally [theme_uri] can be provided to locate custom theme assets. The
+    Optionally [theme_uri] can be provided to locate custom theme files. The
     HTML output directory will be used by default. *)

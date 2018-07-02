@@ -59,7 +59,7 @@ val make :
     t
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
-    locate the theme assets, otherwise the HTML output directory is used. *)
+    locate the theme files, otherwise the HTML output directory is used. *)
 
 module Relative_link : sig
   val semantic_uris : bool ref
