@@ -2,7 +2,7 @@
 
 (executable
  ((name test)
-  (libraries (alcotest lambdasoup))))
+  (libraries (alcotest lambdasoup markup))))
 
 (alias
  ((name runtest)
