@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Leo White <leo@lpw25.net>
+ * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,17 +14,5 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
-(** Supported languages for printing code parts **)
-
-type lang = OCaml | Reason
-
-val lang_of_string : string -> lang
-
-(** Produces .html files from a .odoc file. *)
-
-val from_odoc :
-  env:Env.builder -> ?lang:lang -> output:Fs.Directory.t -> Fs.File.t -> unit
-
-val from_mld : env:Env.builder -> ?lang:lang -> package:Model.Root.Package.t ->
-  output:Fs.Directory.t -> Fs.File.t -> unit
+val compilation_unit : Model.Lang.Compilation_unit.t -> Html_tree.t
+val page : Model.Lang.Page.t -> Html_tree.t

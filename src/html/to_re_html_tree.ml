@@ -545,7 +545,7 @@ struct
   let value (t : Model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
     let value =
-      Markup.ML.keyword "val " ::
+      Markup.ML.keyword "let " ::
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_

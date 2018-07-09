@@ -100,7 +100,7 @@ end = struct
       Arg.(value & flag @@ info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $
-      dst_file $ pkg $ input)
+          dst_file $ pkg $ input)
 
   let info =
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
@@ -123,15 +123,16 @@ module Html : sig
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
-        input_file =
+        lang input_file =
     Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
     Html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
+    let lang = Html_page.lang_of_string lang in
     let file = Fs.File.of_string input_file in
     match index_for with
-    | None -> Html_page.from_odoc ~env ~output:output_dir file
+    | None -> Html_page.from_odoc ~env ~lang ~output:output_dir file
     | Some pkg_name ->
-      Html_page.from_mld ~env ~output:output_dir ~package:pkg_name file
+      Html_page.from_mld ~env ~lang ~output:output_dir ~package:pkg_name file
 
   let cmd =
     let input =
@@ -158,8 +159,13 @@ end = struct
       in
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
+    let lang =
+      let doc = "Available languages: ocaml | reason"
+      in
+      Arg.(value & opt (some string) (Some "ocaml") @@ info ~docv:"LANG" ~doc ["lang"])
+    in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
-      odoc_file_directories $ dst $ index_for $ input)
+      odoc_file_directories $ dst $ index_for $ lang $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
