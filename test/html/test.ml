@@ -113,7 +113,7 @@ let () =
             "%s compile --package %s %s" odoc test_package cmti_file;
 
           command "odoc html"
-            "%s html --output-dir %s %s" odoc build_directory odoc_file;
+            "%s html --lang ml --output-dir %s %s" odoc build_directory odoc_file;
 
       | ".mld" ->
         fun () ->

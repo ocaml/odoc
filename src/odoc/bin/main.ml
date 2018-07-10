@@ -6,6 +6,23 @@
 open Odoc
 open Cmdliner
 
+let convert_lang : Html_page.lang Arg.converter =
+  let open Html_page in
+  let lang_parser str =
+    match str with
+  | "ml" | "ocaml" -> `Ok OCaml
+  | "re" | "reason" -> `Ok Reason
+  | s -> `Error (Printf.sprintf "Unknown language '%s'" s)
+  in
+  let lang_printer fmt lang =
+    let s = match lang with
+      | OCaml -> "ml"
+      | Reason -> "re"
+    in
+    Format.pp_print_string fmt s
+  in
+  (lang_parser, lang_printer)
+
 let convert_directory : Fs.Directory.t Arg.converter =
   let (dir_parser, dir_printer) = Arg.dir in
   let odoc_dir_parser str =
@@ -122,12 +139,11 @@ module Html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details _hidden directories output_dir index_for
-        lang input_file =
+  let html semantic_uris closed_details _hidden directories output_dir
+  index_for lang input_file =
     Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
     Html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
-    let lang = Html_page.lang_of_string lang in
     let file = Fs.File.of_string input_file in
     match index_for with
     | None -> Html_page.from_odoc ~env ~lang ~output:output_dir file
@@ -160,9 +176,9 @@ end = struct
       Arg.(value & opt (some string) None @@ info ~docv:"PKG" ~doc ["index-for"])
     in
     let lang =
-      let doc = "Available languages: ocaml | reason"
+      let doc = "Available options: ml | re"
       in
-      Arg.(value & opt (some string) (Some "ocaml") @@ info ~docv:"LANG" ~doc ["lang"])
+      Arg.(value & opt (pconv convert_lang) (Html_page.OCaml) @@ info ~docv:"LANG" ~doc ["lang"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
       odoc_file_directories $ dst $ index_for $ lang $ input)

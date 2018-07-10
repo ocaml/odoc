@@ -19,8 +19,6 @@
 
 type lang = OCaml | Reason
 
-val lang_of_string : string -> lang
-
 (** Produces .html files from a .odoc file. *)
 
 val from_odoc :

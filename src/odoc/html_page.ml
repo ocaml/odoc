@@ -18,12 +18,6 @@ open StdLabels
 
 type lang = OCaml | Reason
 
-let lang_of_string =
-  function
-  | "ml" | "ocaml" -> OCaml
-  | "re" | "reason" -> Reason
-  | s -> raise (Invalid_argument (Printf.sprintf "Unknown language '%s'" s))
-
 let to_html_tree_page ~lang v =
   match lang with
   | Reason -> Html.To_html_tree.RE.page v
