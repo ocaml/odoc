@@ -548,7 +548,8 @@ struct
       Markup.ML.keyword "let " ::
       Html.pcdata name ::
       Html.pcdata " : " ::
-      type_expr t.type_
+      type_expr t.type_ @
+      [Html.pcdata ";"]
     in
     [Html.code value], t.doc
 
