@@ -69,10 +69,13 @@ let pretty_print_html source_file pretty_printed_file =
 
 let () =
   Unix.mkdir build_directory 0o755;
+  Unix.mkdir (build_directory // "re") 0o755;
+  Unix.mkdir (build_directory // "ml") 0o755;
 
   let already_failed = ref false in
 
-  let make_html_test : string -> unit Alcotest.test_case = fun case_filename ->
+  let make_html_test : lang:string -> string -> unit Alcotest.test_case = fun ~lang case_filename ->
+    let build_directory = build_directory // lang in
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
     let test_name = file_title in
@@ -91,8 +94,8 @@ let () =
     let cmti_file = build_directory // (file_title ^ ".cmti") in
     let odoc_file = build_directory // (file_title ^ ".odoc") in
 
-    (* HTML files to be compared. *)
-    let reference_file = expect_directory // (file_title ^ ".html") in
+    (* HTML files to be compared (based on language). *)
+    let reference_file = expect_directory // lang // (file_title ^ ".html") in
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
@@ -113,7 +116,7 @@ let () =
             "%s compile --package %s %s" odoc test_package cmti_file;
 
           command "odoc html"
-            "%s html --lang ml --output-dir %s %s" odoc build_directory odoc_file;
+            "%s html --lang %s --output-dir %s %s" odoc lang build_directory odoc_file;
 
       | ".mld" ->
         fun () ->
@@ -185,7 +188,9 @@ let () =
     test_name, `Slow, run_test_case
   in
 
-  let html_tests : unit Alcotest.test = "html", List.map make_html_test cases in
+  let html_ml_tests : unit Alcotest.test = "html (ml)", List.map (make_html_test ~lang:"ml") cases in
+
+  (* let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in *)
 
   let output_assets : unit Alcotest.test =
     let run_test_case () =
@@ -196,4 +201,4 @@ let () =
     "assets", ["assets", `Slow, run_test_case]
   in
 
-  Alcotest.run "html" [output_assets; html_tests]
+  Alcotest.run "html" [output_assets; html_ml_tests(*; html_re_tests*)]
