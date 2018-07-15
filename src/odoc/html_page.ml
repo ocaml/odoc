@@ -16,19 +16,17 @@
 
 open StdLabels
 
-type lang = OCaml | Reason
-
 let to_html_tree_page ~lang v =
   match lang with
-  | Reason -> Html.To_html_tree.RE.page v
-  | OCaml -> Html.To_html_tree.ML.page v
+  | Html.Html_tree.Reason -> Html.To_html_tree.RE.page v
+  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.page v
 
 let to_html_tree_compilation_unit ~lang v =
   match lang with
-  | Reason -> Html.To_html_tree.RE.compilation_unit v
-  | OCaml -> Html.To_html_tree.ML.compilation_unit v
+  | Html.Html_tree.Reason -> Html.To_html_tree.RE.compilation_unit v
+  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.compilation_unit v
 
-let from_odoc ~env ?(lang=OCaml) ~output:root_dir input =
+let from_odoc ~env ?(lang=Html.Html_tree.OCaml) ~output:root_dir input =
   let root = Root.read input in
   match root.file with
   | Page page_name ->
@@ -90,7 +88,7 @@ let from_odoc ~env ?(lang=OCaml) ~output:root_dir input =
 
 (* Used only for [--index-for] which is deprecated and available only for
    backward compatibility. It should be removed whenever. *)
-let from_mld ~env ?(lang=OCaml) ~package ~output:root_dir input =
+let from_mld ~env ?(lang=Html.Html_tree.OCaml) ~package ~output:root_dir input =
   let root_name =
     Filename.chop_extension (Fs.File.(to_string @@ basename input))
   in

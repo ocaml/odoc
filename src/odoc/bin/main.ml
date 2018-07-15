@@ -6,8 +6,8 @@
 open Odoc
 open Cmdliner
 
-let convert_lang : Html_page.lang Arg.converter =
-  let open Html_page in
+let convert_lang : Html.Html_tree.lang Arg.converter =
+  let open Html.Html_tree in
   let lang_parser str =
     match str with
   | "ml" | "ocaml" -> `Ok OCaml
@@ -15,11 +15,7 @@ let convert_lang : Html_page.lang Arg.converter =
   | s -> `Error (Printf.sprintf "Unknown language '%s'" s)
   in
   let lang_printer fmt lang =
-    let s = match lang with
-      | OCaml -> "ml"
-      | Reason -> "re"
-    in
-    Format.pp_print_string fmt s
+    Format.pp_print_string fmt (Html__.Html_tree.string_of_lang lang)
   in
   (lang_parser, lang_printer)
 
@@ -178,7 +174,7 @@ end = struct
     let lang =
       let doc = "Available options: ml | re"
       in
-      Arg.(value & opt (pconv convert_lang) (Html_page.OCaml) @@ info ~docv:"LANG" ~doc ["lang"])
+      Arg.(value & opt (pconv convert_lang) (Html.Html_tree.Reason) @@ info ~docv:"LANG" ~doc ["lang"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
       odoc_file_directories $ dst $ index_for $ lang $ input)

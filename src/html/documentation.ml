@@ -23,7 +23,10 @@ type flow = Html_types.flow5_without_header_footer
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
-
+let reason_from_ocaml str =
+  let ast = Lexing.from_string str |> Reason_toolchain.ML.implementation_with_comments in
+  Reason_toolchain.RE.print_implementation_with_comments Format.str_formatter ast;
+  Format.flush_str_formatter ()
 
 module Reference = struct
   module Id = Html_tree.Relative_link.Id
@@ -238,11 +241,22 @@ and inline_element_list elements =
 
 
 let rec nestable_block_element
-    : 'a. Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
-  function
+    : 'a. lang:Html_tree.lang -> Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
+  fun ~lang element ->
+  match element with
   | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
   | `Paragraph content -> Html.p (inline_element_list content)
-  | `Code_block s -> Html.pre [Html.code [Html.pcdata s]]
+  | `Code_block s ->
+    let open Html_tree in
+    let (code, classname) = match lang with
+      | OCaml -> (s, string_of_lang OCaml)
+      | Reason -> try (reason_from_ocaml s, string_of_lang Reason) with
+        | Syntaxerr.Error(_err) ->
+          (* TODO: Properly report warnings *)
+          (* Syntaxerr.report_error Format.std_formatter err; *)
+          (s, string_of_lang OCaml)
+    in
+    Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
     let items = List.map (Reference.to_html ~stop_before:false) ms in
@@ -268,7 +282,7 @@ let rec nestable_block_element
 and nestable_block_element_list elements =
   elements
   |> List.map Model.Location_.value
-  |> List.map nestable_block_element
+  |> List.map (nestable_block_element ~lang:Html_tree.OCaml)
 
 and nested_block_element_list elements =
   (nestable_block_element_list elements :> (Html_types.flow5 Html.elt) list)
@@ -324,10 +338,11 @@ let tag : Comment.tag -> ([> flow ] Html.elt) option = function
 
 
 let block_element
-    : 'a. Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
-  function
+    : 'a. lang:Html_tree.lang -> Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
+  fun ~lang block ->
+  match block with
   | #Comment.nestable_block_element as e ->
-    Some (nestable_block_element e)
+    Some (nestable_block_element ~lang e)
 
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
@@ -358,9 +373,9 @@ let block_element
   | `Tag t ->
     tag t
 
-let block_element_list elements =
+let block_element_list ~lang elements =
   List.fold_left (fun html_elements block ->
-    match block_element block with
+    match block_element ~lang block with
     | Some e -> e::html_elements
     | None -> html_elements)
     [] elements
@@ -368,16 +383,16 @@ let block_element_list elements =
 
 
 
-let first_to_html = function
+let first_to_html ?(lang=Html_tree.OCaml) = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; _}::_ ->
-    begin match block_element first_paragraph with
+    begin match block_element ~lang first_paragraph with
     | Some element -> [element]
     | None -> []
     end
   | _ -> []
 
-let to_html docs =
-  block_element_list (List.map Model.Location_.value docs)
+let to_html ?(lang=Html_tree.OCaml) docs =
+  block_element_list ~lang (List.map Model.Location_.value docs)
 
 let has_doc docs =
   docs <> []

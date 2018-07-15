@@ -19,7 +19,11 @@
 module Html = Tyxml.Html
 module Paths = Model.Paths
 
+(** Supported languages for printing code parts **)
 
+type lang = OCaml | Reason
+
+val string_of_lang: lang -> string
 
 type t = private {
   name : string;

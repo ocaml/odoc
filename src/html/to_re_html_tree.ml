@@ -24,8 +24,6 @@ module Html = Tyxml.Html
 
 open Utils
 
-
-
 type rendered_item = (Html_types.div_content Html.elt) list
 (* [rendered_item] should really be [dt_content], but that is bugged in TyXML
    until https://github.com/ocsigen/tyxml/pull/193 is released. *)
@@ -252,7 +250,7 @@ struct
       fields |> List.map (fun fld ->
         let open Model.Lang.TypeDecl.Field in
         let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-        let rhs = Documentation.to_html fld.doc in
+        let rhs = Documentation.to_html ~lang:Html_tree.Reason fld.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
@@ -332,7 +330,7 @@ struct
       cstrs |> List.map (fun cstr ->
         let open Model.Lang.TypeDecl.Constructor in
         let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-        let rhs = Documentation.to_html cstr.doc in
+        let rhs = Documentation.to_html ~lang:Html_tree.Reason cstr.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
@@ -686,7 +684,7 @@ struct
         | [] ->
           consume_leaf_items_until_one_is_documented items acc
         | docs ->
-          let docs = Documentation.to_html docs in
+          let docs = Documentation.to_html ~lang:Html_tree.Reason docs in
           let docs = (docs :> (Html_types.dd_content Html.elt) list) in
           let docs = Html.dd docs in
           List.rev (docs::acc), items
@@ -733,7 +731,7 @@ struct
         | _ -> scan_comment (block::acc) rest
     in
     let included, remaining = scan_comment [] docs in
-    let docs = Documentation.to_html included in
+    let docs = Documentation.to_html ~lang:Html_tree.Reason included in
     docs, remaining
 
 
@@ -855,7 +853,7 @@ struct
              comment matter goes into a <header> element. The nested HTML will
              then be extended recursively by parsing more structure items,
              including, perhaps, additional comments in <aside> elements. *)
-          let heading_html = Documentation.to_html [element] in
+          let heading_html = Documentation.to_html ~lang:Html_tree.Reason [element] in
           let more_comment_html, input_comment =
             render_comment_until_heading_or_end input_comment in
           let html = Html.header (heading_html @ more_comment_html) in
@@ -1087,7 +1085,7 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Class) name;
-        let doc = Documentation.to_html t.doc in
+        let doc = Documentation.to_html ~lang:Html_tree.Reason t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
@@ -1109,7 +1107,7 @@ struct
     in
     let region =
       [Html.code class_def_content]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
+        (* ~doc:(relax_docs_type (Documentation.first_to_html ~lang:Html_tree.Reason t.doc)) *)
     in
     region, subtree
 
@@ -1124,7 +1122,7 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Cty) name;
-        let doc = Documentation.to_html t.doc in
+        let doc = Documentation.to_html ~lang:Html_tree.Reason t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
@@ -1146,7 +1144,7 @@ struct
     in
     let region =
       [Html.code ctyp]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
+        (* ~doc:(relax_docs_type (Documentation.first_to_html ~lang:Html_tree.Reason t.doc)) *)
     in
     region, subtree
 end
@@ -1322,7 +1320,7 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mod) modname;
-        let doc = Documentation.to_html t.doc in
+        let doc = Documentation.to_html ~lang:Html_tree.Reason t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
         let expansion =
@@ -1337,7 +1335,7 @@ struct
     let md_def_content = Markup.ML.keyword "module " :: modname :: md in
     let region =
       [Html.code md_def_content]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
+        (* ~doc:(relax_docs_type (Documentation.first_to_html ~lang:Html_tree.Reason t.doc)) *)
     in
     region, subtree
 
@@ -1397,7 +1395,7 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mty) modname;
-        let doc = Documentation.to_html t.doc in
+        let doc = Documentation.to_html ~lang:Html_tree.Reason t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
         let expansion =
@@ -1418,7 +1416,7 @@ struct
     in
     let region =
       [Html.code mty_def]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
+        (* ~doc:(relax_docs_type (Documentation.first_to_html ~lang:Html_tree.Reason t.doc)) *)
     in
     region, subtree
 
@@ -1430,7 +1428,7 @@ struct
     | Path mty_path ->
       Html_tree.Relative_link.of_path ~stop_before:true mty_path
     | Signature _ ->
-      [ Markup.ML.keyword "sig" ; Html.pcdata " ... " ; Markup.ML.keyword "end" ]
+      [ Markup.ML.keyword "{" ; Html.pcdata " ... " ; Markup.ML.keyword "}" ]
     | Functor (None, expr) ->
       Markup.ML.keyword "functor" :: Html.pcdata " () " ::
       mty base expr
@@ -1494,7 +1492,7 @@ struct
         type_expr te
 
   and include_ (t : Model.Lang.Include.t) =
-    let docs = Documentation.to_html t.doc in
+    let docs = Documentation.to_html ~lang:Html_tree.Reason t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
     let included_html, _, tree = signature t.expansion.content in
     let should_be_inlined =
@@ -1579,7 +1577,7 @@ struct
     in
     Html_tree.enter package;
     Html_tree.enter (Paths.Identifier.name t.id);
-    let header_docs = Documentation.to_html t.doc in
+    let header_docs = Documentation.to_html ~lang:Html_tree.Reason t.doc in
     let header_docs, html, subtree =
       match t.content with
       | Module sign ->
@@ -1604,7 +1602,7 @@ struct
     in
     Html_tree.enter package;
     Html_tree.enter ~kind:`Page name;
-    let html = Documentation.to_html t.content in
+    let html = Documentation.to_html ~lang:Html_tree.Reason t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
     Html_tree.make html []
 end
