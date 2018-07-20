@@ -20,6 +20,9 @@ let at : span -> 'a -> 'a with_location = fun location value ->
 let location : 'a with_location -> span = fun {location; _} ->
   location
 
+let file_ext : span -> string = fun span ->
+  Filename.extension span.file
+
 let value : 'a with_location -> 'a = fun {value; _} ->
   value
 

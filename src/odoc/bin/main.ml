@@ -174,7 +174,7 @@ end = struct
     let lang =
       let doc = "Available options: ml | re"
       in
-      Arg.(value & opt (pconv convert_lang) (Html.Html_tree.Reason) @@ info ~docv:"LANG" ~doc ["lang"])
+      Arg.(value & opt (pconv convert_lang) (Html.Html_tree.OCaml) @@ info ~docv:"LANG" ~doc ["lang"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
       odoc_file_directories $ dst $ index_for $ lang $ input)
