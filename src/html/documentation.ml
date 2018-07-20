@@ -162,7 +162,6 @@ end
 
 
 let location_to_lang (loc:Model.Location_.span) =
-  print_endline loc.file;
   match Model.Location_.file_ext loc with
   | ".rei" -> Html_tree.Reason
   | ".mli" -> Html_tree.OCaml
