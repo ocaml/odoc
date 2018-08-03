@@ -66,7 +66,7 @@ struct
         ('inner, 'outer) text Html.elt list
   = fun (t : Model.Lang.TypeExpr.Variant.t) ->
     let elements =
-      list_concat_map t.elements ~sep:(Markup.ML.keyword " | ") ~f:(function
+      list_concat_map t.elements ~sep:(Markup.keyword " | ") ~f:(function
         | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
         | Constructor (name, _bool, args) ->
           let constr = "`" ^ name in
@@ -129,7 +129,7 @@ struct
     | Any  -> [Markup.ML.Type.var "_"]
     | Alias (te, alias) ->
       type_expr ~needs_parentheses:true te @
-      Markup.ML.keyword " as " :: [ Html.pcdata alias ]
+      Markup.keyword " as " :: [ Html.pcdata alias ]
     | Arrow (None, src, dst) ->
       let res =
         type_expr ~needs_parentheses:true src @
@@ -151,7 +151,7 @@ struct
         Html.pcdata "(" :: res @ [Html.pcdata ")"]
     | Tuple lst ->
       let res =
-        list_concat_map lst ~sep:(Markup.ML.keyword " * ")
+        list_concat_map lst ~sep:(Markup.keyword " * ")
           ~f:(type_expr ~needs_parentheses:true)
       in
       if not needs_parentheses then
@@ -169,13 +169,13 @@ struct
     | Poly (polyvars, t) ->
       Html.pcdata (String.concat " " polyvars ^ ". ") :: type_expr t
     | Package pkg ->
-      Html.pcdata "(" :: Markup.ML.keyword "module " ::
+      Html.pcdata "(" :: Markup.keyword "module " ::
       Html_tree.Relative_link.of_path ~stop_before:false pkg.path @
       begin match pkg.substitutions with
       | [] -> []
       | lst ->
-        Html.pcdata " " :: Markup.ML.keyword "with" :: Html.pcdata " " ::
-        list_concat_map ~sep:(Markup.ML.keyword " and ") lst
+        Html.pcdata " " :: Markup.keyword "with" :: Html.pcdata " " ::
+        list_concat_map ~sep:(Markup.keyword " and ") lst
           ~f:(package_subst pkg.path)
       end
       @ [Html.pcdata ")"]
@@ -185,7 +185,7 @@ struct
       Paths.Path.module_type -> Paths.Fragment.type_ * Model.Lang.TypeExpr.t
     -> ('inner, 'outer) text Html.elt list
     = fun pkg_path (frag_typ, te) ->
-    Markup.ML.keyword "type " ::
+    Markup.keyword "type " ::
     (match pkg_path with
     | Paths.Path.Resolved rp ->
       let base =
@@ -197,7 +197,7 @@ struct
     | _ ->
       [Html.pcdata
         (Html_tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
-    Html.pcdata " " :: Markup.ML.keyword "=" :: Html.pcdata " " ::
+    Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
     type_expr te
 end
 open Type_expression
@@ -238,7 +238,7 @@ struct
           Html.td ~a:[ Html.a_class ["def"; kind ] ]
             [Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] []
             ; Html.code (
-                (if mutable_ then Markup.ML.keyword "mutable " else Html.pcdata "")
+                (if mutable_ then Markup.keyword "mutable " else Html.pcdata "")
                 :: (Html.pcdata name)
                 :: (Html.pcdata " : ")
                 :: (type_expr typ)
@@ -289,7 +289,7 @@ struct
           in
           let ret_type =
             Html.pcdata " " ::
-            (if constant then Markup.ML.keyword ":" else Markup.ML.arrow) ::
+            (if constant then Markup.keyword ":" else Markup.ML.arrow) ::
             Html.pcdata " " ::
             type_expr te
           in
@@ -300,14 +300,14 @@ struct
       | Tuple lst ->
         [ Html.code (
             cstr ::
-            Markup.ML.keyword (if is_gadt then " : " else " of ") ::
-            list_concat_map lst ~sep:(Markup.ML.keyword " * ")
+            Markup.keyword (if is_gadt then " : " else " of ") ::
+            list_concat_map lst ~sep:(Markup.keyword " * ")
               ~f:(type_expr ~needs_parentheses:is_gadt)
             @ ret_type
           )
         ]
       | Record fields ->
-        Html.code [ cstr; Markup.ML.keyword (if is_gadt then " : " else " of ") ]
+        Html.code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
         :: record fields
         @ [ Html.code ret_type ]
 
@@ -322,7 +322,7 @@ struct
           Html.td ~a:[ Html.a_class ["def"; kind ] ] (
             Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]]
               [] ::
-            Html.code [Markup.ML.keyword "| " ] ::
+            Html.code [Markup.keyword "| " ] ::
             constructor id args res
           )
         in
@@ -353,11 +353,11 @@ struct
   let extension (t : Model.Lang.Extension.t) =
     let extension =
       Html.code (
-        Markup.ML.keyword "type " ::
+        Markup.keyword "type " ::
         Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
-        [ Markup.ML.keyword " += " ]
+        [ Markup.keyword " += " ]
       ) ::
-      list_concat_map t.constructors ~sep:(Html.code [Markup.ML.keyword " | "])
+      list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
         ~f:extension_constructor
     in
     extension, t.doc
@@ -366,7 +366,7 @@ struct
 
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
-    let exn = Html.code [ Markup.ML.keyword "exception " ] :: cstr in
+    let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
     exn, t.doc
 
 
@@ -385,8 +385,8 @@ struct
           | _ ->
             [ Html.code (
                 Html.pcdata cstr ::
-                Markup.ML.keyword " of " ::
-                list_concat_map args ~sep:(Markup.ML.keyword " * ")
+                Markup.keyword " of " ::
+                list_concat_map args ~sep:(Markup.keyword " * ")
                   ~f:type_expr
               )
             ]
@@ -399,7 +399,7 @@ struct
           Html.td ~a:[ Html.a_class ["def"; kind] ] (
             Html.a ~a:[
               Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
-            Html.code [Markup.ML.keyword "| " ] ::
+            Html.code [Markup.keyword "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)
@@ -408,7 +408,7 @@ struct
         Printf.eprintf "ERROR: %s\n%!" s;
         Html.tr [
           Html.td ~a:[ Html.a_class ["def"; kind_approx] ] (
-            Html.code [Markup.ML.keyword "| " ] ::
+            Html.code [Markup.keyword "| " ] ::
             cstr
           );
           (* TODO: retrieve doc comments. *)
@@ -463,8 +463,8 @@ struct
     = function
     | [] -> []
     | lst ->
-      Markup.ML.keyword " constraint " ::
-      list_concat_map lst ~sep:(Markup.ML.keyword " and ") ~f:(fun (t1, t2) ->
+      Markup.keyword " constraint " ::
+      list_concat_map lst ~sep:(Markup.keyword " and ") ~f:(fun (t1, t2) ->
         type_expr t1 @ Html.pcdata " = " :: type_expr t2
       )
 
@@ -479,8 +479,8 @@ struct
     | None -> [], private_
     | Some t ->
       let manifest =
-        Markup.ML.keyword " = " ::
-        (if private_ then Markup.ML.keyword "private " else Html.pcdata "") ::
+        Markup.keyword " = " ::
+        (if private_ then Markup.keyword "private " else Html.pcdata "") ::
         type_expr t
       in
       manifest, false
@@ -495,9 +495,9 @@ struct
       match t.equation.manifest with
       | Some (Model.Lang.TypeExpr.Variant variant) ->
         let manifest =
-          Markup.ML.keyword " = " ::
+          Markup.keyword " = " ::
           (if t.equation.private_ then
-            Markup.ML.keyword "private "
+            Markup.keyword "private "
           else
             Html.pcdata "") ::
           polymorphic_variant ~type_ident:t.id variant
@@ -512,17 +512,17 @@ struct
       | None -> []
       | Some repr ->
         Html.code [
-          Markup.ML.keyword " = ";
-          if need_private then Markup.ML.keyword "private " else Html.pcdata ""
+          Markup.keyword " = ";
+          if need_private then Markup.keyword "private " else Html.pcdata ""
         ] ::
         match repr with
-        | Extensible -> [Html.code [Markup.ML.keyword  ".."]]
+        | Extensible -> [Html.code [Markup.keyword  ".."]]
         | Variant cstrs -> [variant cstrs]
         | Record fields -> record fields
     in
     let tdecl_def =
       Html.code [
-        Markup.ML.keyword "type ";
+        Markup.keyword "type ";
         params;
         Html.pcdata tyname;
       ] ::
@@ -545,7 +545,7 @@ struct
   let value (t : Model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
     let value =
-      Markup.ML.keyword "val " ::
+      Markup.keyword "val " ::
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_
@@ -555,7 +555,7 @@ struct
   let external_ (t : Model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
     let external_ =
-      Markup.ML.keyword "external " ::
+      Markup.keyword "external " ::
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_ @
@@ -1001,7 +1001,7 @@ struct
     | Constraint (t1, t2) -> format_constraints [(t1, t2)], []
     | Inherit (Signature _) -> assert false (* Bold. *)
     | Inherit class_type_expression ->
-      (Markup.ML.keyword "inherit " ::
+      (Markup.keyword "inherit " ::
        class_type_expr class_type_expression),
       []
 
@@ -1020,11 +1020,11 @@ struct
   and method_ (t : Model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
-      if t.virtual_ then Markup.ML.keyword "virtual " else Html.pcdata "" in
+      if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let private_ =
-      if t.private_ then Markup.ML.keyword "private " else Html.pcdata "" in
+      if t.private_ then Markup.keyword "private " else Html.pcdata "" in
     let method_ =
-      Markup.ML.keyword "method " ::
+      Markup.keyword "method " ::
       private_ ::
       virtual_ ::
       Html.pcdata name ::
@@ -1036,11 +1036,11 @@ struct
   and instance_variable (t : Model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
-      if t.virtual_ then Markup.ML.keyword "virtual " else Html.pcdata "" in
+      if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let mutable_ =
-      if t.mutable_ then Markup.ML.keyword "mutable " else Html.pcdata "" in
+      if t.mutable_ then Markup.keyword "mutable " else Html.pcdata "" in
     let val_ =
-      Markup.ML.keyword "val " ::
+      Markup.keyword "val " ::
       mutable_ ::
       virtual_ ::
       Html.pcdata name ::
@@ -1058,7 +1058,7 @@ struct
         let link = Html_tree.Relative_link.of_path ~stop_before:false path in
         format_type_path ~delim:(`brackets) args link
       | Signature _ ->
-        [ Markup.ML.keyword "object" ; Html.pcdata " ... " ; Markup.ML.keyword "end" ]
+        [ Markup.keyword "object" ; Html.pcdata " ... " ; Markup.keyword "end" ]
 
   and class_decl
     : 'inner_row 'outer_row. Model.Lang.Class.decl
@@ -1079,7 +1079,7 @@ struct
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
-      if t.virtual_ then Markup.ML.keyword "virtual " else Html.pcdata "" in
+      if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let cd = class_decl t.type_ in
     let cname, subtree =
       match t.expansion with
@@ -1099,7 +1099,7 @@ struct
         Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
     in
     let class_def_content =
-      Markup.ML.keyword "class " ::
+      Markup.keyword "class " ::
       virtual_ ::
       params ::
       cname ::
@@ -1116,7 +1116,7 @@ struct
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
-      if t.virtual_ then Markup.ML.keyword "virtual " else Html.pcdata "" in
+      if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let expr = class_type_expr t.expr in
     let cname, subtree =
       match t.expansion with
@@ -1136,7 +1136,7 @@ struct
         Html.a ~a:[ a_href ~kind:`Cty name ] [Html.pcdata name], [subtree]
     in
     let ctyp =
-      Markup.ML.keyword "class type " ::
+      Markup.keyword "class type " ::
       virtual_ ::
       params ::
       cname ::
@@ -1333,7 +1333,7 @@ struct
         Html_tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
-    let md_def_content = Markup.ML.keyword "module " :: modname :: md in
+    let md_def_content = Markup.keyword "module " :: modname :: md in
     let region =
       [Html.code md_def_content]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
@@ -1410,7 +1410,7 @@ struct
     in
     let mty_def =
       (
-        Markup.ML.keyword "module type " ::
+        Markup.keyword "module type " ::
         modname ::
         mty
       )
@@ -1429,9 +1429,9 @@ struct
     | Path mty_path ->
       Html_tree.Relative_link.of_path ~stop_before:true mty_path
     | Signature _ ->
-      [ Markup.ML.keyword "sig" ; Html.pcdata " ... " ; Markup.ML.keyword "end" ]
+      [ Markup.keyword "sig" ; Html.pcdata " ... " ; Markup.keyword "end" ]
     | Functor (None, expr) ->
-      Markup.ML.keyword "functor" :: Html.pcdata " () " ::
+      Markup.keyword "functor" :: Html.pcdata " () " ::
       mty base expr
     | Functor (Some arg, expr) ->
       let name =
@@ -1444,18 +1444,18 @@ struct
         | exception _ -> to_print
         | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
       in
-      Markup.ML.keyword "functor" ::
+      Markup.keyword "functor" ::
       Html.pcdata " (" :: name :: Html.pcdata " : " ::
       mty base arg.expr @
       Html.pcdata ") -> " ::
       mty base expr
     | With (expr, substitutions) ->
       mty base expr @
-      Markup.ML.keyword " with " ::
-      list_concat_map ~sep:(Markup.ML.keyword " and ") substitutions
+      Markup.keyword " with " ::
+      list_concat_map ~sep:(Markup.keyword " and ") substitutions
         ~f:(substitution base)
     | TypeOf md ->
-      Markup.ML.keyword "module type of " :: module_decl' base md
+      Markup.keyword "module type of " :: module_decl' base md
 
   and substitution
     : 'inner_row 'outer_row. Paths.Identifier.signature ->
@@ -1463,26 +1463,26 @@ struct
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | ModuleEq (frag_mod, md) ->
-      Markup.ML.keyword "module " ::
+      Markup.keyword "module " ::
       Html_tree.Relative_link.of_fragment ~base
         (Paths.Fragment.signature_of_module frag_mod)
       @ Html.pcdata " = " ::
       module_decl' base md
     | TypeEq (frag_typ, td) ->
-      Markup.ML.keyword "type " ::
+      Markup.keyword "type " ::
       format_params td.Model.Lang.TypeDecl.Equation.params ::
       Html_tree.Relative_link.of_fragment
         ~base (Paths.Fragment.any_sort frag_typ) @
       fst (format_manifest td) @
       format_constraints td.Model.Lang.TypeDecl.Equation.constraints
     | ModuleSubst (frag_mod, mod_path) ->
-      Markup.ML.keyword "module " ::
+      Markup.keyword "module " ::
       Html_tree.Relative_link.of_fragment
         ~base (Paths.Fragment.signature_of_module frag_mod) @
       Html.pcdata " := " ::
       Html_tree.Relative_link.of_path ~stop_before:true mod_path
     | TypeSubst (frag_typ, td) ->
-      Markup.ML.keyword "type " ::
+      Markup.keyword "type " ::
       format_params td.Lang.TypeDecl.Equation.params ::
       Html_tree.Relative_link.of_fragment
         ~base (Paths.Fragment.any_sort frag_typ) @
@@ -1516,7 +1516,7 @@ struct
       else
         let incl =
           Html.code (
-            Markup.ML.keyword "include " ::
+            Markup.keyword "include " ::
             module_decl' t.parent t.decl
           )
         in
@@ -1557,7 +1557,7 @@ struct
     |> List.map begin fun x ->
       let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
       let md_def =
-        Markup.ML.keyword "module " ::
+        Markup.keyword "module " ::
         Html.pcdata modname ::
         Html.pcdata " = " ::
         Html_tree.Relative_link.of_path ~stop_before:false x.path

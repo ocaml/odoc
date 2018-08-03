@@ -18,10 +18,10 @@
 
 module Html = Tyxml.Html
 
-module ML = struct
-  let keyword keyword =
-    Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.pcdata keyword ]
+let keyword keyword =
+  Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.pcdata keyword ]
 
+module ML = struct
   module Type = struct
     let path p = Html.span ~a:[ Html.a_class ["type-id"] ] p
     let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.pcdata tv ]

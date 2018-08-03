@@ -19,10 +19,9 @@
 module Html = Tyxml.Html
 
 
+val keyword : string -> [> Html_types.span ] Html.elt
 
 module ML : sig
-  val keyword : string -> [> Html_types.span ] Html.elt
-
   module Type : sig
     val path :
       [< Html_types.span_content_fun ] Html.elt list ->
