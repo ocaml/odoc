@@ -11,6 +11,7 @@ let rec list_concat_map ?sep ~f = function
     | None -> hd @ tl
     | Some sep -> hd @ sep :: tl
 
+(**
 let configure_refmt () =
   let constructorLists = [] in
   Reason_pprint_ast.configure ~assumeExplicitArity:true ~constructorLists ~width:80
@@ -30,3 +31,4 @@ let ocaml_from_reason str =
   (*TODO: Use ocamlformat for better syntax? *)
   Reason_toolchain.ML.print_implementation_with_comments Format.str_formatter ast;
   Format.flush_str_formatter ()
+**)

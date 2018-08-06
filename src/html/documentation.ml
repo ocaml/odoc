@@ -249,6 +249,10 @@ let rec nestable_block_element
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s ->
     let open Html_tree in
+    (**
+    TODO: This will probably be replaced by a proper plugin / PPX system.
+          See: https://discuss.ocaml.org/t/combining-ocamlformat-refmt/2316/10
+
     let transform fn = try (fn s, string_of_lang to_lang) with
       | Reason_syntax_util.Error(_loc, _err) ->
         (s, string_of_lang from_lang)
@@ -263,6 +267,9 @@ let rec nestable_block_element
       | (Reason, OCaml) -> transform Utils.ocaml_from_reason
       | (OCaml, Reason) -> transform Utils.reason_from_ocaml
     in
+    **)
+    let code = s in
+    let classname = string_of_lang from_lang in
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
