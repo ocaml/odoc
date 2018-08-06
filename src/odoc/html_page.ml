@@ -16,17 +16,17 @@
 
 open StdLabels
 
-let to_html_tree_page ~lang v =
+let to_html_tree_page ?theme_uri ~lang v =
   match lang with
-  | Html.Html_tree.Reason -> Html.To_html_tree.RE.page v
-  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.page v
+  | Html.Html_tree.Reason -> Html.To_html_tree.RE.page ?theme_uri v
+  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.page ?theme_uri v
 
-let to_html_tree_compilation_unit ~lang v =
+let to_html_tree_compilation_unit ?theme_uri ~lang v =
   match lang with
-  | Html.Html_tree.Reason -> Html.To_html_tree.RE.compilation_unit v
-  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.compilation_unit v
+  | Html.Html_tree.Reason -> Html.To_html_tree.RE.compilation_unit ?theme_uri v
+  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.compilation_unit ?theme_uri v
 
-let from_odoc ~env ?(lang=Html.Html_tree.OCaml) ~output:root_dir input =
+let from_odoc ~env ?(lang=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir input =
   let root = Root.read input in
   match root.file with
   | Page page_name ->
@@ -36,7 +36,7 @@ let from_odoc ~env ?(lang=Html.Html_tree.OCaml) ~output:root_dir input =
       Xref.resolve_page (Env.resolver resolve_env) page
     in
     let pkg_name = root.package in
-    let pages = to_html_tree_page ~lang odoctree in
+    let pages = to_html_tree_page ?theme_uri ~lang odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
     Html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
@@ -67,7 +67,7 @@ let from_odoc ~env ?(lang=Html.Html_tree.OCaml) ~output:root_dir input =
     let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
-    let pages = to_html_tree_compilation_unit ~lang odoctree in
+    let pages = to_html_tree_compilation_unit ?theme_uri ~lang odoctree in
     Html.Html_tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =

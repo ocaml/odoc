@@ -74,7 +74,8 @@ let () =
 
   let already_failed = ref false in
 
-  let make_html_test : lang:string -> string -> unit Alcotest.test_case = fun ~lang case_filename ->
+  let make_html_test : ?lang:string -> ?theme_uri: string -> string -> unit Alcotest.test_case =
+      fun ?(lang="ml") ?theme_uri case_filename ->
     let build_directory = build_directory // lang in
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
@@ -94,8 +95,14 @@ let () =
     let cmti_file = build_directory // (file_title ^ ".cmti") in
     let odoc_file = build_directory // (file_title ^ ".odoc") in
 
-    (* HTML files to be compared (based on language). *)
+    (* HTML files to be compared. *)
+    let file_title =
+      match theme_uri with
+      | None -> file_title
+      | Some _ -> file_title ^ "-custom_theme"
+    in
     let reference_file = expect_directory // lang // (file_title ^ ".html") in
+
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
@@ -115,8 +122,14 @@ let () =
           command "odoc compile"
             "%s compile --package %s %s" odoc test_package cmti_file;
 
-          command "odoc html"
-            "%s html --lang %s --output-dir %s %s" odoc lang build_directory odoc_file;
+          begin match theme_uri with
+          | None ->
+            command "odoc html"
+              "%s html --lang %s --output-dir %s %s" odoc lang build_directory odoc_file
+          | Some uri ->
+            command "odoc html"
+              "%s html --lang %s --theme-uri=%s --output-dir %s %s" odoc lang uri build_directory odoc_file
+          end
 
       | ".mld" ->
         fun () ->
@@ -192,13 +205,23 @@ let () =
 
   (* let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in *)
 
-  let output_assets : unit Alcotest.test =
+  let output_support_files : unit Alcotest.test =
     let run_test_case () =
-      command "odoc css"
+      command "odoc support-files"
         "%s css --output-dir %s" odoc build_directory
     in
 
-    "assets", ["assets", `Slow, run_test_case]
+    "support-files", ["support-files", `Slow, run_test_case]
   in
 
-  Alcotest.run "html" [output_assets; html_ml_tests(*; html_re_tests*)]
+  (* Custom theme URI tests. *)
+  let theme_uri_tests : unit Alcotest.test =
+    "theme_uri", [
+      make_html_test ~theme_uri:"/a/b/c" "module.mli";
+      make_html_test ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
+      make_html_test ~theme_uri:"../b/c" "include.mli";
+      make_html_test ~theme_uri:"b/c" "section.mli";
+    ]
+  in
+
+  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests(*; html_re_tests*)]
