@@ -986,7 +986,7 @@ struct
     | Comment _ -> None
 
   let class_signature_item_to_spec : Lang.ClassSignature.item -> _ = function
-    | Method _ -> Some "method"
+    | Method _ -> Some "pub"
     | InstanceVariable _ -> Some "instance-variable"
     | Constraint _
     | Inherit _
@@ -1028,9 +1028,9 @@ struct
     let virtual_ =
       if t.virtual_ then Markup.keyword "virtual " else Html.pcdata "" in
     let private_ =
-      if t.private_ then Markup.keyword "private " else Html.pcdata "" in
+      if t.private_ then Markup.keyword "pri " else Html.pcdata "" in
     let method_ =
-      Markup.keyword "method " ::
+      Markup.keyword "pub " ::
       private_ ::
       virtual_ ::
       Html.pcdata name ::
