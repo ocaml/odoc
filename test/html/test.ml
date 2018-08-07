@@ -20,17 +20,17 @@ let command label =
 
 let cases = [
   "val.mli";
-  "markup.mli";
-  "section.mli";
   "module.mli";
-  "interlude.mli";
   "include.mli";
+  "interlude.mli";
   "mld.mld";
   "type.mli";
   "external.mli";
   "functor.mli";
   "class.mli";
   "stop.mli";
+  "markup.mli";
+  "section.mli";
 ]
 
 
@@ -203,7 +203,7 @@ let () =
 
   let html_ml_tests : unit Alcotest.test = "html (ml)", List.map (make_html_test ~lang:"ml") cases in
 
-  (* let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in *)
+  let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in
 
   let output_support_files : unit Alcotest.test =
     let run_test_case () =
@@ -224,4 +224,4 @@ let () =
     ]
   in
 
-  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests(*; html_re_tests*)]
+  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests; html_re_tests]
