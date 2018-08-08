@@ -22,16 +22,34 @@ module Html = Tyxml.Html
 
 val keyword : string -> [> Html_types.span ] Html.elt
 
-module Type : sig
-  val path :
-    [< Html_types.span_content_fun ] Html.elt list ->
-      [> Html_types.span ] Html.elt
-  val var : string -> [> Html_types.span ] Html.elt
+module ML : sig
+  module Type : sig
+    val path :
+      [< Html_types.span_content_fun ] Html.elt list ->
+        [> Html_types.span ] Html.elt
+    val var : string -> [> Html_types.span ] Html.elt
+  end
+
+  val arrow : [> Html_types.span ] Html.elt
+  (** "->" with a non breaking hyphen, styled as a keyword. *)
+
+  val label : Model.Lang.TypeExpr.label -> [> `PCDATA ] Html.elt list
+  (** For optional arguments adds a word joiner between the question mark and the
+      label. *)
 end
 
-val arrow : [> Html_types.span ] Html.elt
-(** "->" with a non breaking hyphen, styled as a keyword. *)
+module RE : sig
+  module Type : sig
+    val path :
+      [< Html_types.span_content_fun ] Html.elt list ->
+      [> Html_types.span ] Html.elt
+    val var : string -> [> Html_types.span ] Html.elt
+  end
 
-val label : Model.Lang.TypeExpr.label -> [> `PCDATA ] Html.elt list
-(** For optional arguments adds a word joiner between the question mark and the
+  val arrow : [> Html_types.span ] Html.elt
+  (** "=>" with a non breaking hyphen, styled as a keyword. *)
+
+  val label : Model.Lang.TypeExpr.label -> [> `PCDATA ] Html.elt list
+  (** For optional arguments adds a word joiner between the question mark and the
     label. *)
+end

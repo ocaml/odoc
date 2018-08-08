@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Leo White <leo@lpw25.net>
+ * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,12 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+val compilation_unit : ?theme_uri:Html_tree.uri -> Model.Lang.Compilation_unit.t -> Html_tree.t
+val page : ?theme_uri:Html_tree.uri -> Model.Lang.Page.t -> Html_tree.t
+(** Convert compilation unit or page models into HTML trees.
 
-(** Produces .html files from a .odoc file. *)
-
-val from_odoc :
-  env:Env.builder -> ?lang:Html.Html_tree.lang -> ?theme_uri:Html.Html_tree.uri -> output:Fs.Directory.t ->
-  Fs.File.t -> unit
-
-val from_mld : env:Env.builder -> ?lang:Html.Html_tree.lang -> package:Model.Root.Package.t ->
-  output:Fs.Directory.t -> Fs.File.t -> unit
+    Optionally [theme_uri] can be provided to locate custom theme files. The
+    HTML output directory will be used by default. *)

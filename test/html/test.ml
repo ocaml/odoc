@@ -69,11 +69,14 @@ let pretty_print_html source_file pretty_printed_file =
 
 let () =
   Unix.mkdir build_directory 0o755;
+  Unix.mkdir (build_directory // "re") 0o755;
+  Unix.mkdir (build_directory // "ml") 0o755;
 
   let already_failed = ref false in
 
-  let make_html_test : ?theme_uri: string -> string -> unit Alcotest.test_case =
-      fun ?theme_uri case_filename ->
+  let make_html_test : ?lang:string -> ?theme_uri: string -> string -> unit Alcotest.test_case =
+      fun ?(lang="ml") ?theme_uri case_filename ->
+    let build_directory = build_directory // lang in
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
     let test_name = file_title in
@@ -98,7 +101,8 @@ let () =
       | None -> file_title
       | Some _ -> file_title ^ "-custom_theme"
     in
-    let reference_file = expect_directory // (file_title ^ ".html") in
+    let reference_file = expect_directory // lang // (file_title ^ ".html") in
+
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
@@ -121,10 +125,10 @@ let () =
           begin match theme_uri with
           | None ->
             command "odoc html"
-              "%s html --output-dir %s %s" odoc build_directory odoc_file
+              "%s html --lang %s --output-dir %s %s" odoc lang build_directory odoc_file
           | Some uri ->
             command "odoc html"
-              "%s html --theme-uri=%s --output-dir %s %s" odoc uri build_directory odoc_file
+              "%s html --lang %s --theme-uri=%s --output-dir %s %s" odoc lang uri build_directory odoc_file
           end
 
       | ".mld" ->
@@ -197,7 +201,9 @@ let () =
     test_name, `Slow, run_test_case
   in
 
-  let html_tests : unit Alcotest.test = "html", List.map make_html_test cases in
+  let html_ml_tests : unit Alcotest.test = "html (ml)", List.map (make_html_test ~lang:"ml") cases in
+
+  let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in
 
   let output_support_files : unit Alcotest.test =
     let run_test_case () =
@@ -218,4 +224,4 @@ let () =
     ]
   in
 
-  Alcotest.run "html" [output_support_files; html_tests; theme_uri_tests]
+  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests; html_re_tests]
