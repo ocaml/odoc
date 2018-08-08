@@ -164,11 +164,10 @@ end
 
 
 let location_to_lang (loc:Model.Location_.span) =
-  match Model.Location_.file_ext loc with
-  | ".rei" -> Html_tree.Reason
-  | ".mli" -> Html_tree.OCaml
-  | _ -> Html_tree.OCaml
-
+  if Filename.check_suffix loc.file ".rei" then
+    Html_tree.Reason
+  else
+    Html_tree.OCaml
 
 let style_to_combinator = function
   | `Bold -> Html.b
