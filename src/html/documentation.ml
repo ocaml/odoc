@@ -23,6 +23,8 @@ type flow = Html_types.flow5_without_header_footer
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
+
+
 module Reference = struct
   module Id = Html_tree.Relative_link.Id
 
@@ -243,13 +245,12 @@ and inline_element_list elements =
 
 let rec nestable_block_element
     : 'a. to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
-  fun ~to_lang ~from_lang element ->
-  match element with
+  fun ~to_lang ~from_lang -> function
   | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s ->
     let open Html_tree in
-    (**
+    (*
     TODO: This will probably be replaced by a proper plugin / PPX system.
           See: https://discuss.ocaml.org/t/combining-ocamlformat-refmt/2316/10
 
@@ -267,7 +268,7 @@ let rec nestable_block_element
       | (Reason, OCaml) -> transform Utils.ocaml_from_reason
       | (OCaml, Reason) -> transform Utils.reason_from_ocaml
     in
-    **)
+    *)
     let code = s in
     let classname = string_of_lang from_lang in
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
@@ -355,39 +356,38 @@ let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> (
 
 let block_element
   : 'a. to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
-  fun ~to_lang ~from_lang block ->
-    match block with
-    | #Comment.nestable_block_element as e ->
-      Some (nestable_block_element ~to_lang ~from_lang e)
+  fun ~to_lang ~from_lang -> function
+  | #Comment.nestable_block_element as e ->
+    Some (nestable_block_element ~to_lang ~from_lang e)
 
-    | `Heading (level, label, content) ->
-      (* TODO Simplify the id/label formatting. *)
-      let attributes =
-        let Model.Paths.Identifier.Label (_, label) = label in
-        [Html.a_id label]
-      in
-      let a = attributes in
+  | `Heading (level, label, content) ->
+    (* TODO Simplify the id/label formatting. *)
+    let attributes =
+      let Model.Paths.Identifier.Label (_, label) = label in
+      [Html.a_id label]
+    in
+    let a = attributes in
 
-      let content =
-        (non_link_inline_element_list content :> (phrasing Html.elt) list) in
-      let content =
-        let Model.Paths.Identifier.Label (_, label) = label in
-        let anchor =
-          Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
-        anchor::content
-      in
+    let content =
+      (non_link_inline_element_list content :> (phrasing Html.elt) list) in
+    let content =
+      let Model.Paths.Identifier.Label (_, label) = label in
+      let anchor =
+        Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
+      anchor::content
+    in
 
-      let element =
-        match level with
-        | `Title -> Html.h1 ~a content
-        | `Section -> Html.h2 ~a content
-        | `Subsection -> Html.h3 ~a content
-        | `Subsubsection -> Html.h4 ~a content
-      in
-      Some element
+    let element =
+      match level with
+      | `Title -> Html.h1 ~a content
+      | `Section -> Html.h2 ~a content
+      | `Subsection -> Html.h3 ~a content
+      | `Subsubsection -> Html.h4 ~a content
+    in
+    Some element
 
-    | `Tag t ->
-      tag ~to_lang ~from_lang t
+  | `Tag t ->
+    tag ~to_lang ~from_lang t
 
 let block_element_list ~to_lang elements =
   List.fold_left (fun html_elements (from_lang, block) ->
@@ -396,6 +396,8 @@ let block_element_list ~to_lang elements =
     | None -> html_elements)
     [] elements
   |> List.rev
+
+
 
 let first_to_html ?lang:(to_lang=Html_tree.OCaml) = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->

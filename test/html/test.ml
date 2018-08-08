@@ -20,17 +20,17 @@ let command label =
 
 let cases = [
   "val.mli";
+  "markup.mli";
+  "section.mli";
   "module.mli";
-  "include.mli";
   "interlude.mli";
+  "include.mli";
   "mld.mld";
   "type.mli";
   "external.mli";
   "functor.mli";
   "class.mli";
   "stop.mli";
-  "markup.mli";
-  "section.mli";
 ]
 
 

@@ -135,7 +135,7 @@ end = struct
       Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $
-          dst_file $ pkg $ input)
+      dst_file $ pkg $ input)
 
   let info =
     Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"

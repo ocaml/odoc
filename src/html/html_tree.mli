@@ -19,7 +19,7 @@
 module Html = Tyxml.Html
 module Paths = Model.Paths
 
-(** Supported languages for printing code parts **)
+(** Supported languages for printing code parts. *)
 
 type lang = OCaml | Reason
 

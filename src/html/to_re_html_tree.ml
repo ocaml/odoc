@@ -1217,7 +1217,7 @@ struct
     | _ -> assert false
 
   and render_nested_signature_or_class
-    : ?theme_uri:Html_tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
+      : ?theme_uri:Html_tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
     match item with
     | Module m -> module_ ?theme_uri m
     | ModuleType m -> module_type ?theme_uri m
@@ -1236,10 +1236,9 @@ struct
       tagged_items
 
   and functor_argument
-    : 'row. ?theme_uri:Html_tree.uri -> Model.Lang.FunctorArgument.t
+     : 'row. ?theme_uri:Html_tree.uri -> Model.Lang.FunctorArgument.t
       -> Html_types.div_content Html.elt list * Html_tree.t list
   = fun ?theme_uri arg ->
-
     let open Model.Lang.FunctorArgument in
     let name = Paths.Identifier.name arg.id in
     let nb = functor_arg_pos arg in
