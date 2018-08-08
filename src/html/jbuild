@@ -3,4 +3,4 @@
 (library
  ((name html)
   (preprocess (pps (bisect_ppx -conditional)))
-  (libraries (model tyxml reason))))
+  (libraries (model tyxml))))
