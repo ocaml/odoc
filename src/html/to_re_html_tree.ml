@@ -372,7 +372,7 @@ struct
 
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
-    let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
+    let exn = Html.code [ Markup.keyword "exception " ] :: cstr @ [ Markup.keyword ";" ] in
     exn, t.doc
 
 
