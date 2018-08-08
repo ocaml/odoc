@@ -363,7 +363,8 @@ struct
         [ Markup.keyword " += " ]
       ) ::
       list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
-        ~f:extension_constructor
+        ~f:extension_constructor @
+      [ Markup.keyword ";" ]
     in
     extension, t.doc
 
@@ -533,7 +534,10 @@ struct
       ] ::
       manifest @
       representation @
-      [Html.code constraints]
+      (match constraints with
+       | [] -> []
+       | c -> [Html.code c]) @
+      [Markup.keyword ";"]
     in
     tdecl_def, t.doc
 end
@@ -554,7 +558,7 @@ struct
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_ @
-      [Html.pcdata ";"]
+      [Markup.keyword ";"]
     in
     [Html.code value], t.doc
 
@@ -566,9 +570,17 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_ @
       Html.pcdata " = " ::
-      List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
+      List.fold_left (fun acc p ->
+          let str = match acc with
+          | [] -> "\"" ^ p ^ "\""
+          | _ -> " \"" ^ p ^ "\""
+          in
+          (Html.pcdata str) :: acc
+        ) [] t.primitives @
+      [Markup.keyword ";"]
     in
     [Html.code external_], t.doc
+
 end
 open Value
 
@@ -1110,7 +1122,8 @@ struct
       params ::
       cname ::
       Html.pcdata " : " ::
-      cd
+      cd @
+      [ Markup.keyword ";" ]
     in
     let region =
       [Html.code class_def_content]
@@ -1341,7 +1354,7 @@ struct
         Html_tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
-    let md_def_content = Markup.keyword "module " :: modname :: md in
+    let md_def_content = Markup.keyword "module " :: modname :: md @ [Markup.keyword ";"] in
     let region =
       [Html.code md_def_content]
         (* ~doc:(relax_docs_type (Documentation.first_to_html ~lang:Html_tree.Reason t.doc)) *)
@@ -1420,7 +1433,8 @@ struct
       (
         Markup.keyword "module type " ::
         modname ::
-        mty
+        mty @
+        [Markup.keyword ";"]
       )
     in
     let region =
@@ -1472,8 +1486,8 @@ struct
     | ModuleEq (frag_mod, md) ->
       Markup.keyword "module " ::
       Html_tree.Relative_link.of_fragment ~base
-        (Paths.Fragment.signature_of_module frag_mod)
-      @ Html.pcdata " = " ::
+        (Paths.Fragment.signature_of_module frag_mod) @
+      Html.pcdata " = " ::
       module_decl' base md
     | TypeEq (frag_typ, td) ->
       Markup.keyword "type " ::
@@ -1524,7 +1538,8 @@ struct
         let incl =
           Html.code (
             Markup.keyword "include " ::
-            module_decl' t.parent t.decl
+            module_decl' t.parent t.decl @
+            [ Markup.keyword ";"]
           )
         in
         (* FIXME: I'd like to add an anchor here, but I don't know what id to
