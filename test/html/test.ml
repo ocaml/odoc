@@ -125,10 +125,10 @@ let () =
           begin match theme_uri with
           | None ->
             command "odoc html"
-              "%s html --lang %s --output-dir %s %s" odoc lang build_directory odoc_file
+              "%s html --syntax %s --output-dir %s %s" odoc lang build_directory odoc_file
           | Some uri ->
             command "odoc html"
-              "%s html --lang %s --theme-uri=%s --output-dir %s %s" odoc lang uri build_directory odoc_file
+              "%s html --syntax %s --theme-uri=%s --output-dir %s %s" odoc lang uri build_directory odoc_file
           end
 
       | ".mld" ->

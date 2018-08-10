@@ -21,9 +21,9 @@ module Paths = Model.Paths
 
 (** Supported languages for printing code parts. *)
 
-type lang = OCaml | Reason
+type syntax = OCaml | Reason
 
-val string_of_lang: lang -> string
+val string_of_syntax: syntax -> string
 
 type t = private {
   name : string;

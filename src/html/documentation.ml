@@ -163,7 +163,7 @@ module Reference = struct
 end
 
 
-let location_to_lang (loc:Model.Location_.span) =
+let location_to_syntax (loc:Model.Location_.span) =
   if Filename.check_suffix loc.file ".rei" then
     Html_tree.Reason
   else
@@ -243,8 +243,8 @@ and inline_element_list elements =
 
 
 let rec nestable_block_element
-    : 'a. to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
-  fun ~to_lang ~from_lang -> function
+    : 'a. to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
+  fun ~to_syntax ~from_syntax -> function
   | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
   | `Paragraph content -> Html.p (inline_element_list content)
   | `Code_block s ->
@@ -253,23 +253,23 @@ let rec nestable_block_element
     TODO: This will probably be replaced by a proper plugin / PPX system.
           See: https://discuss.ocaml.org/t/combining-ocamlformat-refmt/2316/10
 
-    let transform fn = try (fn s, string_of_lang to_lang) with
+    let transform fn = try (fn s, string_of_syntax to_syntax) with
       | Reason_syntax_util.Error(_loc, _err) ->
-        (s, string_of_lang from_lang)
+        (s, string_of_syntax from_syntax)
       | Syntaxerr.Error(_err) ->
         (* TODO: Properly report warnings *)
         (* Syntaxerr.report_error Format.std_formatter err; *)
-        (s, string_of_lang from_lang)
+        (s, string_of_syntax from_syntax)
     in
-    let (code, classname) = match (from_lang, to_lang) with
-      | (OCaml, OCaml) -> (s, string_of_lang OCaml)
-      | (Reason, Reason) -> (s, string_of_lang Reason)
+    let (code, classname) = match (from_syntax, to_syntax) with
+      | (OCaml, OCaml) -> (s, string_of_syntax OCaml)
+      | (Reason, Reason) -> (s, string_of_syntax Reason)
       | (Reason, OCaml) -> transform Utils.ocaml_from_reason
       | (OCaml, Reason) -> transform Utils.reason_from_ocaml
     in
     *)
     let code = s in
-    let classname = string_of_lang from_lang in
+    let classname = string_of_syntax from_syntax in
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
@@ -284,7 +284,7 @@ let rec nestable_block_element
         | [{Model.Location_.value = `Paragraph content; _}] ->
           (inline_element_list content :> (Html_types.li_content Html.elt) list)
         | item ->
-          nested_block_element_list ~to_lang ~from_lang item
+          nested_block_element_list ~to_syntax ~from_syntax item
         end
     in
     let items = List.map Html.li items in
@@ -293,18 +293,18 @@ let rec nestable_block_element
     | `Unordered -> Html.ul items
     | `Ordered -> Html.ol items
 
-and nestable_block_element_list ~to_lang ~from_lang elements =
+and nestable_block_element_list ~to_syntax ~from_syntax elements =
   elements
   |> List.map Model.Location_.value
-  |> List.map (nestable_block_element ~to_lang ~from_lang)
+  |> List.map (nestable_block_element ~to_syntax ~from_syntax)
 
-and nested_block_element_list ~to_lang ~from_lang elements =
-  (nestable_block_element_list ~to_lang ~from_lang elements :> (Html_types.flow5 Html.elt) list)
+and nested_block_element_list ~to_syntax ~from_syntax elements =
+  (nestable_block_element_list ~to_syntax ~from_syntax elements :> (Html_types.flow5 Html.elt) list)
 
 
 
-let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> ([> flow ] Html.elt) option =
-  fun ~to_lang ~from_lang t ->
+let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.tag -> ([> flow ] Html.elt) option =
+  fun ~to_syntax ~from_syntax t ->
     match t with
   | `Author s ->
     Some (Html.(dl [
@@ -313,19 +313,19 @@ let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> (
   | `Deprecated content ->
     Some (Html.(dl [
       dt [pcdata "deprecated"];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `Param (name, content) ->
     Some (Html.(dl [
       dt [pcdata "parameter "; pcdata name];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `Raise (name, content) ->
     Some (Html.(dl [
       dt [pcdata "raises "; pcdata name];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `Return content ->
     Some (Html.(dl [
       dt [pcdata "returns"];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `See (kind, target, content) ->
     let target =
       match kind with
@@ -335,7 +335,7 @@ let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> (
     in
     Some (Html.(dl [
       dt [pcdata "see "; target];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `Since s ->
     Some (Html.(dl [
       dt [pcdata "since"];
@@ -343,7 +343,7 @@ let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> (
   | `Before (version, content) ->
     Some (Html.(dl [
       dt [pcdata "before "; pcdata version];
-      dd (nested_block_element_list ~to_lang ~from_lang content)]))
+      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
   | `Version s ->
     Some (Html.(dl [
       dt [pcdata "version"];
@@ -354,10 +354,10 @@ let tag : to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.tag -> (
 
 
 let block_element
-  : 'a. to_lang:Html_tree.lang -> from_lang:Html_tree.lang -> Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
-  fun ~to_lang ~from_lang -> function
+  : 'a. to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
+  fun ~to_syntax ~from_syntax -> function
   | #Comment.nestable_block_element as e ->
-    Some (nestable_block_element ~to_lang ~from_lang e)
+    Some (nestable_block_element ~to_syntax ~from_syntax e)
 
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
@@ -386,11 +386,11 @@ let block_element
     Some element
 
   | `Tag t ->
-    tag ~to_lang ~from_lang t
+    tag ~to_syntax ~from_syntax t
 
-let block_element_list ~to_lang elements =
-  List.fold_left (fun html_elements (from_lang, block) ->
-    match block_element ~to_lang ~from_lang block with
+let block_element_list ~to_syntax elements =
+  List.fold_left (fun html_elements (from_syntax, block) ->
+    match block_element ~to_syntax ~from_syntax block with
     | Some e -> e::html_elements
     | None -> html_elements)
     [] elements
@@ -398,17 +398,17 @@ let block_element_list ~to_lang elements =
 
 
 
-let first_to_html ?lang:(to_lang=Html_tree.OCaml) = function
+let first_to_html ?syntax:(to_syntax=Html_tree.OCaml) = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->
-    begin match block_element ~to_lang ~from_lang:(location_to_lang location) first_paragraph with
+    begin match block_element ~to_syntax ~from_syntax:(location_to_syntax location) first_paragraph with
     | Some element -> [element]
     | None -> []
     end
   | _ -> []
 
-let to_html ?lang:(to_lang=Html_tree.OCaml) docs =
-  block_element_list ~to_lang
-    (List.map (fun el -> Model.Location_.((location el |> location_to_lang, value el))) docs)
+let to_html ?syntax:(to_syntax=Html_tree.OCaml) docs =
+  block_element_list ~to_syntax
+    (List.map (fun el -> Model.Location_.((location el |> location_to_syntax, value el))) docs)
 
 let has_doc docs =
   docs <> []
