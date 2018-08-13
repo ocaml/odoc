@@ -13,7 +13,6 @@ before_script:
   - sudo apt-get install opam
   - "opam init -y --compiler=$OCAML"
   - eval `opam config env`
-  - opam pin add -y dune 1.0.0
 
 script:
   - opam pin add -y --no-action odoc .
