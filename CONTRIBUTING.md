@@ -74,7 +74,7 @@ To make edits to the HTML generation, run the following commands:
    odoc in your project as normal:
 
     ```
-    jbuilder build @doc
+    dune build @doc
     ```
 
 4. If all looks good, send odoc a PR :)
@@ -279,8 +279,8 @@ on it, and compares the resulting HTML to some [expected HTML][html-expect].
 - [`test/print`][test-print] is converters from odoc datatypes to strings, so
 they can be used in expect tests.
 
-- [`test/jbuilder`][test-jbuilder] is a tiny project for checking that Jbuilder
-drives odoc correctly. It is mainly used in the odoc CI.
+- [`test/dune`][test-dune] is a tiny project for checking that Dune drives odoc
+correctly. It is mainly used in the odoc CI.
 
 - [`test/inactive`][test-inactive] is some old tests that have suffered some bit
 rot, and we haven't gotten around to restoring yet.
@@ -292,5 +292,5 @@ rot, and we haven't gotten around to restoring yet.
 [html-test]: https://github.com/ocaml/odoc/blob/master/test/html/cases/val.mli
 [html-expect]: https://github.com/ocaml/odoc/blob/master/test/html/expect/val.html
 [test-print]: https://github.com/ocaml/odoc/tree/master/test/print
-[test-jbuilder]: https://github.com/ocaml/odoc/tree/master/test/jbuilder
+[test-dune]: https://github.com/ocaml/odoc/tree/master/test/dune
 [test-inactive]: https://github.com/ocaml/odoc/tree/master/test/inactive

@@ -24,8 +24,8 @@ $ git clone http://github.com/ocaml-doc/doc-ock.git
 $ git clone http://github.com/ocaml-doc/doc-ock-html.git
 $ git clone http://github.com/ocaml-doc/doc-ock-xml.git
 $ git clone http://github.com/ocaml-doc/octavius.git
-$ jbuilder build @install
-$ jbuilder install
+$ dune build @install
+$ dune install
 v}
 
 Assuming you have OCaml ≥ 4.03 available and the following set of dependencies
@@ -36,19 +36,19 @@ installed:
 {{:http://gallium.inria.fr/~fpottier/menhir/}menhir},
 {{:http://ocsigen.org/tyxml/}tyxml} and
 {{:http://erratique.ch/software/xmlm}xmlm} as well as
-{{:http://github.com/janestreet/jbuilder}jbuilder} for building. All of which
+{{:http://github.com/janestreet/dune}dune} for building. All of which
 are available from opam.
 
 {1:usage Using odoc}
 
-{{:http://jbuilder.readthedocs.io/en/latest/api-doc.html}Jbuilder} and
+{{:http://jbuilder.readthedocs.io/en/latest/api-doc.html}Dybe} and
 {{:http://erratique.ch/software/odig}Odig} already know how to invoke odoc for
 you on your libraries.
 They are definitely the easiest, and recommended, way to use odoc for
 individuals.
 
 If you want to add support for odoc to your preferred build system, or simply
-don't want to use Jbuilder or Odig, you can always invoke odoc directly.
+don't want to use Dune or Odig, you can always invoke odoc directly.
 Instructions regarding how it should be run are available
 {{!manual_usage}here}.
 

@@ -1,0 +1,3 @@
+(library
+ (name xref)
+ (libraries compiler-libs.common model))

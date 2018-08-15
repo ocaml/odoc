@@ -1,6 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name html)
-  (preprocess (pps (bisect_ppx -conditional)))
-  (libraries (model tyxml))))

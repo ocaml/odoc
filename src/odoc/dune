@@ -1,0 +1,32 @@
+(library
+ (name odoc)
+ (libraries bos compiler-libs.common html fpath loader tyxml unix xref))
+
+(documentation)
+
+(rule
+ (targets css_file.ml)
+ (deps (:css etc/odoc.css))
+ (action
+  (with-stdout-to %{targets}
+   (progn
+    (echo "let content = {css|")
+    (cat %{css})
+    (echo "|css}")))))
+
+(rule
+ (targets highlight_js.ml)
+ (deps (:js ../vendor/highlight.pack.js))
+ (action
+  (with-stdout-to %{targets}
+   (progn
+    (echo "let content = {js|")
+    (cat %{js})
+    (echo "|js}")))))
+
+; Install theme files for odig.
+(install
+ (section share)
+ (files
+  (etc/odoc.css as odoc-theme/default/odoc.css)
+  (../vendor/highlight.pack.js as odoc-theme/default/highlight.pack.js)))

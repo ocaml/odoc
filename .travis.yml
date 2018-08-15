@@ -18,9 +18,8 @@ script:
   - opam pin add -y --no-action odoc .
   - opam install -y --deps-only odoc
   - make test
-  # Disabled while Dune is in the process of having its binary renamed.
-  #- opam pin add -y --dev-repo jbuilder
-  #- make jbuilder-test
+  - opam pin add -y --dev-repo dune
+  - make dune-test
 
 notifications:
   email:

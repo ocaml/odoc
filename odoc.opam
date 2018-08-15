@@ -20,8 +20,8 @@ depends: [
   "bos" {build}
   "cmdliner" {build}
   "cppo" {build}
+  "dune" {build}
   "fpath" {build}
-  "jbuilder" {build & >= "1.0+beta17"}
   "tyxml" {build & >= "4.0.0"}
 
   # Development dependencies. These should be removed in opam files sent to the
@@ -35,6 +35,6 @@ depends: [
 ]
 
 build: [
-  ["jbuilder" "subst" "-n" name] {pinned}
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "subst" "-n" name] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
 ]

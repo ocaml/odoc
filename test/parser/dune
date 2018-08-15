@@ -1,0 +1,8 @@
+(executable
+ (name test)
+ (libraries alcotest lambdasoup parser_ print))
+
+(alias
+ (name runtest)
+ (action (run %{exe:test.exe}))
+ (deps test.exe (source_tree expect)))

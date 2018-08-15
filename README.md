@@ -37,11 +37,11 @@ a work in progress :)
 opam install odoc
 ```
 
-The easiest way to use odoc right now is by having Dune (Jbuilder) drive it.
-This command should work in most Jbuilder projects out of the box:
+The easiest way to use odoc right now is by having Dune drive it. This command
+should work in most Dune projects out of the box:
 
 ```
-jbuilder build @doc
+dune build @doc
 ```
 
 The generated docs can then be found locally at
