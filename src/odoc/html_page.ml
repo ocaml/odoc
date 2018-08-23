@@ -46,7 +46,7 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
         open_out (Fs.File.to_string f)
       in
       let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
     )
   | Compilation_unit {hidden; _} ->
@@ -82,7 +82,7 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
         open_out (Fs.File.to_string file)
       in
       let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
     )
 
@@ -135,6 +135,6 @@ let from_mld ~env ?(syntax=Html.Html_tree.OCaml) ~package ~output:root_dir input
         open_out (Fs.File.to_string f)
       in
       let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "%a" (Tyxml.Html.pp ()) content;
+      Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
     )
