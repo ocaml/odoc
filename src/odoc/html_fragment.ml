@@ -17,7 +17,7 @@ let from_odoc ~env ~output:root_dir input =
       open_out (Fs.File.to_string f)
     in
     let fmt = Format.formatter_of_out_channel oc in
-    List.iter (Format.fprintf fmt "%a" (Tyxml.Html.pp_elt ())) content;
+    Format.fprintf fmt "%a@." (Format.pp_print_list (Tyxml.Html.pp_elt ())) content;
     close_out oc
   | Compilation_unit _ ->
     Printf.eprintf "ERROR: HTML fragments for compilation units are not \
