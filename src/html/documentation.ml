@@ -80,11 +80,12 @@ module Reference = struct
   let rec to_html
       : type a.
         ?text:(non_link_phrasing Html.elt) ->
+        ?root_uri:string ->
         stop_before:bool ->
         a Reference.t ->
           phrasing Html.elt =
 
-    fun ?text ~stop_before ref ->
+    fun ?text ?root_uri ~stop_before ref ->
       let span' (txt : phrasing Html.elt list) : phrasing Html.elt =
         Html.span txt ~a:[ Html.a_class ["xref-unresolved"]
                   ; Html.a_title (Printf.sprintf "unresolved reference to %S"
@@ -99,33 +100,33 @@ module Reference = struct
         | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
         end
       | Dot (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Module (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | ModuleType (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Type (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Constructor (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Field (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Extension (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Exception (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Value (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Class (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | ClassType (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Method (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | InstanceVariable (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Label (parent, s) ->
-        unresolved_parts_to_html ?text span' parent s
+        unresolved_parts_to_html ?root_uri ?text span' parent s
       | Resolved r ->
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
@@ -134,7 +135,7 @@ module Reference = struct
           | None -> Html.code [Html.pcdata (render_resolved r)]
           | Some s -> s
         in
-        begin match Id.href ~stop_before id with
+        begin match Id.href ?root_uri ~stop_before id with
         | exception Id.Not_linkable -> (txt :> phrasing Html.elt)
         | exception exn ->
           (* FIXME: better error message *)
@@ -147,17 +148,18 @@ module Reference = struct
   and unresolved_parts_to_html
       : type a.
         ?text:(non_link_phrasing Html.elt) ->
+        ?root_uri:string ->
         ((phrasing Html.elt list) -> (phrasing Html.elt)) ->
         a Reference.t ->
         string ->
           (phrasing Html.elt) =
-    fun ?text span' parent s ->
+    fun ?text ?root_uri span' parent s ->
       match text with
       | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
       | None ->
         let tail = [ Html.pcdata ("." ^ s) ] in
         span' (
-          match to_html ~stop_before:true parent with
+          match to_html ?root_uri ~stop_before:true parent with
           | content -> content::tail
         )
 end
@@ -208,12 +210,12 @@ let link_content_to_html =
 
 
 
-let rec inline_element : Comment.inline_element -> (phrasing Html.elt) option =
+let rec inline_element ?root_uri : Comment.inline_element -> (phrasing Html.elt) option =
   function
   | #Comment.leaf_inline_element as e ->
     (leaf_inline_element e :> (phrasing Html.elt) option)
   | `Styled (style, content) ->
-    Some ((style_to_combinator style) (inline_element_list content))
+    Some ((style_to_combinator style) (inline_element_list ?root_uri content))
   | `Reference (path, content) ->
     (* TODO Rework that ugly function. *)
     (* TODO References should be set in code style, if they are to code
@@ -223,7 +225,7 @@ let rec inline_element : Comment.inline_element -> (phrasing Html.elt) option =
       | [] -> None
       | _ -> Some (Html.span (non_link_inline_element_list content))
     in
-    Some (Reference.to_html ?text:content ~stop_before:false path)
+    Some (Reference.to_html ?text:content ?root_uri ~stop_before:false path)
   | `Link (target, content) ->
     let content =
       match content with
@@ -232,9 +234,9 @@ let rec inline_element : Comment.inline_element -> (phrasing Html.elt) option =
     in
     Some (Html.a ~a:[Html.a_href target] content)
 
-and inline_element_list elements =
+and inline_element_list ?root_uri elements =
   List.fold_left (fun html_elements ast_element ->
-    match inline_element ast_element.Model.Location_.value with
+    match inline_element ?root_uri ast_element.Model.Location_.value with
     | None -> html_elements
     | Some e -> e::html_elements)
     [] elements
@@ -243,10 +245,12 @@ and inline_element_list elements =
 
 
 let rec nestable_block_element
-    : 'a. to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
-  fun ~to_syntax ~from_syntax -> function
+    : 'a. ?root_uri:string ->
+    to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+    Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
+  fun ?root_uri ~to_syntax ~from_syntax -> function
   | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
-  | `Paragraph content -> Html.p (inline_element_list content)
+  | `Paragraph content -> Html.p (inline_element_list ?root_uri content)
   | `Code_block s ->
     let open Html_tree in
     (*
@@ -273,7 +277,7 @@ let rec nestable_block_element
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
   | `Verbatim s -> Html.pre [Html.pcdata s]
   | `Modules ms ->
-    let items = List.map (Reference.to_html ~stop_before:false) ms in
+    let items = List.map (Reference.to_html ?root_uri ~stop_before:false) ms in
     let items = (items :> (Html_types.li_content Html.elt) list) in
     let items = List.map (fun e -> Html.li [e]) items in
     Html.ul items
@@ -282,9 +286,9 @@ let rec nestable_block_element
       items
       |> List.map begin function
         | [{Model.Location_.value = `Paragraph content; _}] ->
-          (inline_element_list content :> (Html_types.li_content Html.elt) list)
+          (inline_element_list ?root_uri content :> (Html_types.li_content Html.elt) list)
         | item ->
-          nested_block_element_list ~to_syntax ~from_syntax item
+          nested_block_element_list ?root_uri ~to_syntax ~from_syntax item
         end
     in
     let items = List.map Html.li items in
@@ -293,18 +297,20 @@ let rec nestable_block_element
     | `Unordered -> Html.ul items
     | `Ordered -> Html.ol items
 
-and nestable_block_element_list ~to_syntax ~from_syntax elements =
+and nestable_block_element_list ?root_uri ~to_syntax ~from_syntax elements =
   elements
   |> List.map Model.Location_.value
-  |> List.map (nestable_block_element ~to_syntax ~from_syntax)
+  |> List.map (nestable_block_element ?root_uri ~to_syntax ~from_syntax)
 
-and nested_block_element_list ~to_syntax ~from_syntax elements =
-  (nestable_block_element_list ~to_syntax ~from_syntax elements :> (Html_types.flow5 Html.elt) list)
+and nested_block_element_list ?root_uri ~to_syntax ~from_syntax elements =
+  (nestable_block_element_list ?root_uri ~to_syntax ~from_syntax elements :> (Html_types.flow5 Html.elt) list)
 
 
 
-let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.tag -> ([> flow ] Html.elt) option =
-  fun ~to_syntax ~from_syntax t ->
+let tag : ?root_uri:string ->
+  to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+  Comment.tag -> ([> flow ] Html.elt) option =
+  fun ?root_uri ~to_syntax ~from_syntax t ->
     match t with
   | `Author s ->
     Some (Html.(dl [
@@ -313,19 +319,19 @@ let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.
   | `Deprecated content ->
     Some (Html.(dl [
       dt [pcdata "deprecated"];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `Param (name, content) ->
     Some (Html.(dl [
       dt [pcdata "parameter "; pcdata name];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `Raise (name, content) ->
     Some (Html.(dl [
       dt [pcdata "raises "; pcdata name];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `Return content ->
     Some (Html.(dl [
       dt [pcdata "returns"];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `See (kind, target, content) ->
     let target =
       match kind with
@@ -335,7 +341,7 @@ let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.
     in
     Some (Html.(dl [
       dt [pcdata "see "; target];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `Since s ->
     Some (Html.(dl [
       dt [pcdata "since"];
@@ -343,7 +349,7 @@ let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.
   | `Before (version, content) ->
     Some (Html.(dl [
       dt [pcdata "before "; pcdata version];
-      dd (nested_block_element_list ~to_syntax ~from_syntax content)]))
+      dd (nested_block_element_list ?root_uri ~to_syntax ~from_syntax content)]))
   | `Version s ->
     Some (Html.(dl [
       dt [pcdata "version"];
@@ -354,10 +360,11 @@ let tag : to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.
 
 
 let block_element
-  : 'a. to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax -> Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
-  fun ~to_syntax ~from_syntax -> function
+  : 'a. ?root_uri:string -> to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+  Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
+  fun ?root_uri ~to_syntax ~from_syntax -> function
   | #Comment.nestable_block_element as e ->
-    Some (nestable_block_element ~to_syntax ~from_syntax e)
+    Some (nestable_block_element ?root_uri ~to_syntax ~from_syntax e)
 
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
@@ -386,11 +393,11 @@ let block_element
     Some element
 
   | `Tag t ->
-    tag ~to_syntax ~from_syntax t
+    tag ?root_uri ~to_syntax ~from_syntax t
 
-let block_element_list ~to_syntax elements =
+let block_element_list ?root_uri ~to_syntax elements =
   List.fold_left (fun html_elements (from_syntax, block) ->
-    match block_element ~to_syntax ~from_syntax block with
+    match block_element ?root_uri  ~to_syntax ~from_syntax block with
     | Some e -> e::html_elements
     | None -> html_elements)
     [] elements
@@ -398,16 +405,16 @@ let block_element_list ~to_syntax elements =
 
 
 
-let first_to_html ?syntax:(to_syntax=Html_tree.OCaml) = function
+let first_to_html ?root_uri ?syntax:(to_syntax=Html_tree.OCaml) = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->
-    begin match block_element ~to_syntax ~from_syntax:(location_to_syntax location) first_paragraph with
+    begin match block_element ?root_uri ~to_syntax ~from_syntax:(location_to_syntax location) first_paragraph with
     | Some element -> [element]
     | None -> []
     end
   | _ -> []
 
-let to_html ?syntax:(to_syntax=Html_tree.OCaml) docs =
-  block_element_list ~to_syntax
+let to_html ?root_uri ?syntax:(to_syntax=Html_tree.OCaml) docs =
+  block_element_list ?root_uri ~to_syntax
     (List.map (fun el -> Model.Location_.((location el |> location_to_syntax, value el))) docs)
 
 let has_doc docs =

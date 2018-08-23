@@ -27,4 +27,4 @@ val from_odoc : env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
     The program terminates with an error if the input odoc file does not
     contain a page documentation. *)
 
-val from_mld : env:Env.builder -> output:Fs.File.t -> Fs.File.t -> unit
+val from_mld : root_uri:string -> env:Env.builder -> output:Fs.File.t -> Fs.File.t -> unit

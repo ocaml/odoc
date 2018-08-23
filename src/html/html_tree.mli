@@ -72,7 +72,7 @@ module Relative_link : sig
   module Id : sig
     exception Not_linkable
 
-    val href : stop_before:bool -> _ Paths.Identifier.t -> string
+    val href : ?root_uri:string -> stop_before:bool -> _ Paths.Identifier.t -> string
   end
 
   val of_path : stop_before:bool -> _ Paths.Path.t

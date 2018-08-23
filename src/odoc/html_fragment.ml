@@ -35,11 +35,10 @@ let from_odoc ~env ~output:root_dir input =
     exit 1
 
 
-let from_mld ~env ~output input =
-  (* FIXME: Resolve to the root of the docset.
-   * Currently xrefs are resolved to "../other-pkg/...". *)
-  let page_name = "__fragment_page" in
-  let package = "__fragment_package" in
+let from_mld ~root_uri ~env ~output input =
+  (* Internal names, they don't have effect on the output. *)
+  let page_name = "__fragment_page__" in
+  let package = "__fragment_package__" in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
     let file = Model.Root.Odoc_file.create_page page_name in
@@ -74,15 +73,7 @@ let from_mld ~env ~output input =
     let env = Env.build env (`Page page) in
     let resolved = Xref.resolve_page (Env.resolver env) page in
 
-    (* NOTE: URI resolution for fragments.
-     *
-     * Unfortunately URI resolution uses a global stack value located at
-     * [Html.Html_tree.path]. Not [enter]ing with an appropriate packade and
-     * page results in broken references. *)
-    Html.Html_tree.enter package;
-    Html.Html_tree.enter ~kind:`Page page_name;
-
-    let content = Html.Documentation.to_html resolved.content in
+    let content = Html.Documentation.to_html ~root_uri resolved.content in
     let oc = open_out (Fs.File.to_string output) in
     let fmt = Format.formatter_of_out_channel oc in
     Format.fprintf fmt "%a@." (Format.pp_print_list (Tyxml.Html.pp_elt ())) content;
