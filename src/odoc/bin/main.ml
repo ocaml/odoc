@@ -242,6 +242,33 @@ end = struct
     Term.info ~doc:"Generates an html file from an odoc one" "html"
 end
 
+module Html_fragment : sig
+  val cmd : unit Term.t
+  val info: Term.info
+end = struct
+
+  let html_fragment directories output_file input_file =
+    let env = Env.create ~important_digests:false ~directories in
+    let input_file = Fs.File.of_string input_file in
+    let output_file = Fs.File.of_string output_file in
+    Html_fragment.from_mld ~env ~output:output_file input_file
+
+  let cmd =
+    let output =
+      let doc = "Output HTML fragment file" in
+      Arg.(required & opt (some string) None &
+          info ~docs ~docv:"file.html" ~doc ["o"; "output-file"])
+        in
+    let input =
+      let doc = "Input documentation page file" in
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.mld" [])
+    in
+    Term.(const html_fragment $ odoc_file_directories $ output $ input)
+
+  let info =
+    Term.info ~doc:"Generates an html fragment file from an mld one" "html-fragment"
+end
+
 module Depends = struct
   module Compile = struct
     let list_dependencies input_file =
@@ -338,6 +365,7 @@ let () =
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
+    ; Html_fragment.(cmd, info)
     ; Support_files.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
