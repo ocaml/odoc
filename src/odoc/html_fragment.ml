@@ -12,6 +12,15 @@ let from_odoc ~env ~output:root_dir input =
     let pkg_name = root.package in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
+
+    (* NOTE: URI resolution for fragments.
+     *
+     * Unfortunately URI resolution uses a global stack value located at
+     * [Html.Html_tree.path]. Not [enter]ing with an appropriate packade and
+     * page results in broken references. *)
+    Html.Html_tree.enter pkg_name;
+    Html.Html_tree.enter ~kind:`Page page_name;
+
     let content = Html.Documentation.to_html odoctree.content in
     let oc =
       let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".html") in
@@ -67,9 +76,9 @@ let from_mld ~env ~output input =
 
     (* NOTE: URI resolution for fragments.
      *
-     * Unfortunately URI resolution uses a
-     * global stack value located at [Html.Html_tree.path]. Not [enter]ing with
-     * an appropriate packade and page results in broken references. *)
+     * Unfortunately URI resolution uses a global stack value located at
+     * [Html.Html_tree.path]. Not [enter]ing with an appropriate packade and
+     * page results in broken references. *)
     Html.Html_tree.enter package;
     Html.Html_tree.enter ~kind:`Page page_name;
 
