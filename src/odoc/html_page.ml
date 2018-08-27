@@ -49,10 +49,9 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
       Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
     )
-  | Compilation_unit {hidden; _} ->
-    if hidden then
-      Printf.eprintf
-        "odoc should not generate html but will for the time being...\n%!";
+  | Compilation_unit {hidden = _; _} ->
+    (* If hidden, we should not generate HTML. See
+         https://github.com/ocaml/odoc/issues/99. *)
     let unit = Compilation_unit.load input in
     let unit = Xref.Lookup.lookup unit in
     let odoctree =
