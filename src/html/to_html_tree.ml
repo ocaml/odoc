@@ -621,9 +621,9 @@ sig
     item_to_id:('item -> string option) ->
     item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Comment.docs) ->
-    render_nested_article:('item -> rendered_item * Html_tree.t list) ->
+    render_nested_article:('item -> rendered_item * Comment.docs * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
-      rendered_item * toc * Html_tree.t list
+    rendered_item * toc * Html_tree.t list
 
   val render_toc :
     toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
@@ -767,7 +767,7 @@ struct
     item_to_id : 'item -> string option;
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Comment.docs;
-    render_nested_article : 'item -> rendered_item * Html_tree.t list;
+    render_nested_article : 'item -> rendered_item * Comment.docs * Html_tree.t list;
   }
 
   let finish_section state =
@@ -811,12 +811,26 @@ struct
           }
 
       | `Nested_article item ->
-        let html, subpages = state.render_nested_article item in
+        let html, maybe_docs, subpages = state.render_nested_article item in
         let html, maybe_id = add_anchor state.item_to_id item html in
         let a = add_spec state.item_to_spec item maybe_id in
+        let html =
+          match maybe_docs with
+          | [] -> Html.article ~a html
+          | docs ->
+            let docs = Documentation.first_to_html docs in
+            let docs = (docs :> (Html_types.div_content Html.elt) list) in
+            let adoc =
+              [ Html.a_class ["doc"]
+              ; Html.a_style "padding: 0.75em; padding_bottom: 0;" ]
+            in
+            Html.article
+              [ Html.div ~a html
+              ; Html.div ~a:adoc docs ]
+        in
         section_items section_level {state with
             input_items;
-            acc_html = (Html.article ~a html)::state.acc_html;
+            acc_html = html :: state.acc_html;
             acc_subpages = state.acc_subpages @ subpages;
           }
 
@@ -965,11 +979,11 @@ module Class :
 sig
   val class_ :
     ?theme_uri:Html_tree.uri -> Lang.Class.t ->
-      ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
+      ((Html_types.article_content Html.elt) list) * Comment.docs * (Html_tree.t list)
 
   val class_type :
     ?theme_uri:Html_tree.uri -> Lang.ClassType.t ->
-      ((Html_types.article_content Html.elt) list) * (Html_tree.t list)
+      ((Html_types.article_content Html.elt) list) * Comment.docs * (Html_tree.t list)
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1106,11 +1120,8 @@ struct
       Html.pcdata " : " ::
       cd
     in
-    let region =
-      [Html.code class_def_content]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
-    in
-    region, subtree
+    let region = [Html.code class_def_content] in
+    region, t.doc, subtree
 
   and class_type ?theme_uri (t : Model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
@@ -1143,11 +1154,8 @@ struct
       Html.pcdata " = " ::
       expr
     in
-    let region =
-      [Html.code ctyp]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
-    in
-    region, subtree
+    let region = [Html.code ctyp] in
+    region, t.doc, subtree
 end
 open Class
 
@@ -1299,7 +1307,7 @@ struct
 
   and module_
       : ?theme_uri:Html_tree.uri -> Model.Lang.Module.t ->
-          Html_types.article_content Html.elt list * Html_tree.t list
+          Html_types.article_content Html.elt list * Comment.docs * Html_tree.t list
       = fun ?theme_uri t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1336,11 +1344,8 @@ struct
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
     let md_def_content = Markup.keyword "module " :: modname :: md in
-    let region =
-      [Html.code md_def_content]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
-    in
-    region, subtree
+    let region = [Html.code md_def_content] in
+    region, t.doc, subtree
 
   and module_decl (base : Paths.Identifier.signature) md =
     begin match md with
@@ -1417,11 +1422,8 @@ struct
         mty
       )
     in
-    let region =
-      [Html.code mty_def]
-        (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
-    in
-    region, subtree
+    let region = [Html.code mty_def] in
+    region, t.doc, subtree
 
   and mty
     : 'inner_row 'outer_row.
@@ -1537,8 +1539,7 @@ struct
         (Html.div ~a:[Html.a_class ["spec"; "include"]]
           [Html.div ~a:[Html.a_class ["doc"]]
             (docs @ incl)])
-    ],
-    tree
+    ], [], tree
 end
 open Module
 
