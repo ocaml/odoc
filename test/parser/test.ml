@@ -863,7 +863,7 @@ let () =
           let root : Model.Root.t = {
             package = dummy_filename;
             file = Page dummy_filename;
-            digest = ""
+            digest = String.make 16 '\000';
           }
           in
           Model.Paths.Identifier.Page (root, dummy_filename)
