@@ -30,7 +30,7 @@ module ML = struct
   end
 
   let arrow =
-    Html.span [ Html.entity "#8209"; Html.entity "gt" ]
+    Html.span [ Html.entity "#45"; Html.entity "gt" ]
 
   let label = function
     | Model.Lang.TypeExpr.Label s -> [ Html.pcdata s ]
