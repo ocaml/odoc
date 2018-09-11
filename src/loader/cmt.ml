@@ -443,7 +443,11 @@ and read_structure_item env parent item =
         read_value_bindings env parent vbs
     | Tstr_primitive vd ->
         [Cmti.read_value_description env parent vd]
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+    | Tstr_type (decls) ->
+#else
     | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+#endif
         Cmti.read_type_declarations env parent decls
     | Tstr_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
@@ -462,7 +466,14 @@ and read_structure_item env parent item =
     | Tstr_include incl ->
         [Include (read_include env parent incl)]
     | Tstr_class cls ->
-        let cls = List.map (fun (cl, _) -> cl) cls in
+        let cls = List.map
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+          (* NOTE(@ostera): remember the virtual flag was removed post 4.02 *)
+          (fun (cl, _, _) -> cl)
+#else
+          (fun (cl, _) -> cl)
+#endif
+          cls in
           read_class_declarations env parent cls
     | Tstr_class_type cltyps ->
         let cltyps = List.map (fun (_, _, clty) -> clty) cltyps in

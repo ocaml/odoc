@@ -13,10 +13,12 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+type lookup_result_found = Component_table.lookup_result_found =
+  { root : Model.Root.t; hidden : bool }
 
 type lookup_result = Component_table.lookup_unit_result =
   | Forward_reference
-  | Found of { root : Model.Root.t; hidden : bool }
+  | Found of lookup_result_found
   | Not_found
 
 let core_types = Model.Predefined.core_types

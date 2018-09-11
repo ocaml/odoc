@@ -22,10 +22,12 @@ open Paths
 (** The type of tables of components *)
 type t
 
+type lookup_result_found = { root : Model.Root.t; hidden : bool }
+
 (* FIXME: use different types for unit and page lookups. *)
 type lookup_unit_result =
   | Forward_reference
-  | Found of { root : Root.t; hidden : bool }
+  | Found of lookup_result_found
   | Not_found
 
 (** Create a table of the components of units. Optionally provide

@@ -162,10 +162,15 @@ let read_label_declaration env parent ld =
 
 let read_constructor_declaration_arguments env parent arg =
   let open TypeDecl.Constructor in
-    match arg with
-    | Cstr_tuple args -> Tuple (List.map (read_core_type env) args)
-    | Cstr_record lds ->
-        Record (List.map (read_label_declaration env parent) lds)
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+    ignore parent;
+    Tuple (List.map (read_core_type env) arg)
+#else
+  match arg with
+  | Cstr_tuple args -> Tuple (List.map (read_core_type env) args)
+  | Cstr_record lds ->
+      Record (List.map (read_label_declaration env parent) lds)
+#endif
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
@@ -541,7 +546,11 @@ and read_signature_item env parent item =
     match item.sig_desc with
     | Tsig_value vd ->
         [read_value_description env parent vd]
-    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec flag. *)
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+    | Tsig_type decls ->
+#else
+    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+#endif
         read_type_declarations env parent decls
     | Tsig_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]

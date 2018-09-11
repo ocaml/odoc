@@ -26,7 +26,11 @@ val read_interface: Model.Root.t -> string -> Types.signature ->
   Model.Comment.docs *
   Model.Lang.Signature.t
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+val read_label : Asttypes.label -> Model.Lang.TypeExpr.label option
+#else
 val read_label : Asttypes.arg_label -> Model.Lang.TypeExpr.label option
+#endif
 
 val mark_type_expr : Types.type_expr -> unit
 

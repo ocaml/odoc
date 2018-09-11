@@ -96,7 +96,8 @@ let read_cmt ~make_root ~filename =
       let items =
         List.map (fun file ->
           let pref = Misc.chop_extensions file in
-          String.capitalize_ascii (Filename.basename pref))
+          (* NOTE(@ostera): capitalize_ascii was introduced post 4.02 *)
+          String.capitalize (Filename.basename pref))
           files
       in
       let items = List.sort String.compare items in

@@ -57,9 +57,11 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
         let module Tbl = Hashtbl.Make(Hash) in
           make Tbl.create Tbl.find Tbl.add
 
+type lookup_result_found = { root : Model.Root.t; hidden : bool }
+
 type lookup_unit_result =
   | Forward_reference
-  | Found of { root : Root.t; hidden : bool }
+  | Found of lookup_result_found
   | Not_found
 
 type t =

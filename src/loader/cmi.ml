@@ -49,10 +49,21 @@ let parenthesise name =
 
 let read_label lbl =
   let open TypeExpr in
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+  (* NOTE(@ostera): 4.02 does not have an Asttypes variant for whether the
+   * label exists, and is an optional label or not, so I went back to string
+   * manipulation *)
+  if String.length lbl == 0
+  then None
+  else match String.get lbl 0 with
+      | '?' -> Some (Optional (String.sub lbl 1 (String.length lbl - 1)))
+      | _ -> Some (Label lbl)
+#else
   match lbl with
   | Asttypes.Nolabel -> None
   | Asttypes.Labelled s -> Some (Label s)
   | Asttypes.Optional s -> Some (Optional s)
+#endif
 
 (* Handle type variable names *)
 
@@ -251,9 +262,15 @@ let prepare_type_parameters params manifest =
   end;
   params
 
-let mark_constructor_args = function
-  | Cstr_tuple args -> List.iter mark_type args
-  | Cstr_record lds -> List.iter (fun ld -> mark_type ld.ld_type) lds
+(* NOTE(@ostera): constructor with inlined records were introduced post 4.02 *)
+let mark_constructor_args =
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+  List.iter mark_type
+#else
+  function
+   | Cstr_tuple args -> List.iter mark_type args
+   | Cstr_record lds -> List.iter (fun ld -> mark_type ld.ld_type) lds
+#endif
 
 let mark_type_kind = function
   | Type_abstract -> ()
@@ -525,11 +542,18 @@ let read_label_declaration env parent ld =
     {id; doc; mutable_; type_}
 
 let read_constructor_declaration_arguments env parent arg =
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+  (* NOTE(@ostera): constructor with inlined records were introduced post 4.02
+     so it's safe to use Tuple here *)
+  ignore parent;
+  TypeDecl.Constructor.Tuple(List.map (read_type_expr env) arg)
+#else
   let open TypeDecl.Constructor in
     match arg with
     | Cstr_tuple args -> Tuple (List.map (read_type_expr env) args)
     | Cstr_record lds ->
         Record (List.map (read_label_declaration env parent) lds)
+#endif
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
