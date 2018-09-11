@@ -1,3 +1,5 @@
+open Result
+
 module Error = Model.Error
 
 

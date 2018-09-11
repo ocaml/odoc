@@ -1,3 +1,5 @@
+open Result
+
 (*
  * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
  *

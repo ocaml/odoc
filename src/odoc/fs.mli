@@ -1,3 +1,5 @@
+open Result
+
 (*
  * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
  *

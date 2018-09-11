@@ -1,3 +1,5 @@
+open Result
+
 open Model.Paths
 
 type t = {
