@@ -1,3 +1,5 @@
+open Compat
+
 module Location = Model.Location_
 module Error = Model.Error
 module Comment = Model.Comment

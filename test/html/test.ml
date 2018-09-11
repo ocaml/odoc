@@ -1,3 +1,5 @@
+open Compat
+
 let cases_directory = "cases"
 let expect_directory = "expect"
 let build_directory = "_scratch"
@@ -80,6 +82,7 @@ let () =
     (* Titles. *)
     let file_title = Filename.chop_extension case_filename in
     let test_name = file_title in
+
     let module_name = String.capitalize_ascii test_name in
 
     (* Filename.extension is only available on 4.04. *)
