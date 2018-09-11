@@ -27,6 +27,7 @@ type nested_pair = (int * int) * int
 
 type instance = int constructor
 
+(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
 type variant_e = {a : int}
 type variant =
   | A
@@ -35,6 +36,8 @@ type variant =
   | D (** {e bar} *)
   | E of variant_e
 
+
+(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
 type variant_c = {a: int}
 type _ gadt =
   | A : int gadt

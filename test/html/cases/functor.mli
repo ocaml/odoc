@@ -3,7 +3,9 @@ sig
   type t
 end
 
-module type S1 = S -> S
+(* NOTE(@ostera): re-enable this bit after 4.02.x support is dropped *)
+(* module type S1 = S -> S *)
+module type S1 = functor (_ : S) -> S
 
 module F1 : functor (Arg : S) -> S
 
