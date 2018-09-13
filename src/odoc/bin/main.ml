@@ -78,6 +78,12 @@ module Compile : sig
   val info: Term.info
 end = struct
 
+  let has_page_prefix file =
+    file
+    |> Fs.File.basename
+    |> Fs.File.to_string
+    |> Astring.String.is_prefix ~affix:"page-"
+
   let compile hidden directories resolve_fwd_refs output package_name input =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
@@ -87,17 +93,27 @@ end = struct
       match output with
       | Some file ->
         let output = Fs.File.of_string file in
-        if
-          Fs.File.has_ext ".mld" input &&
-          not (Astring.String.is_prefix ~affix:"page-" (Filename.basename file))
+        if Fs.File.has_ext ".mld" input && not (has_page_prefix output)
         then (
           Printf.eprintf "ERROR: the name of the .odoc file produced from a \
                           .mld must start with 'page-'\n%!";
           exit 1
         );
         output
-      | None -> Fs.File.(set_ext ".odoc" input)
+      | None ->
+        let output =
+          if Fs.File.has_ext ".mld" input && not (has_page_prefix input)
+          then
+            let directory = Fs.File.dirname input in
+            let name = Fs.File.basename input in
+            let name = "page-" ^ Fs.File.to_string name in
+            Fs.File.create ~directory ~name
+          else input
+        in
+        Fs.File.(set_ext ".odoc" output)
     in
+    Fmt.epr "Compiling... input=%s output=%s@."
+      (Fs.File.to_string input) (Fs.File.to_string output);
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
       Compile.cmti ~env ~package:package_name ~hidden ~output input
@@ -108,7 +124,7 @@ end = struct
     else if Fs.File.has_ext ".mld" input then
       Compile.mld ~env ~package:package_name ~output input
     else (
-      Printf.eprintf "Unknown extension, expected one of : cmti, cmt, cmi.\n%!";
+      Printf.eprintf "Unknown extension, expected one of: cmti, cmt, cmi or mld.\n%!";
       exit 2
     )
 
@@ -116,13 +132,14 @@ end = struct
     let dst_file =
       let doc = "Output file path. Non-existing intermediate directories are
                  created. If absent outputs a $(i,BASE).odoc file in the same
-                 directory as as the input file where $(i,BASE) is the basename
-                 of the input file."
+                 directory as the input file where $(i,BASE) is the basename
+                 of the input file (for mld files the \"page-\" prefix will be
+                 added if not already present in the input basename)."
       in
       Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
     in
     let input =
-      let doc = "Input file (either .cmti or .cmt)" in
+      let doc = "Input cmti, cmt, cmi or mld file" in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
     in
     let pkg =
@@ -138,7 +155,8 @@ end = struct
       dst_file $ pkg $ input)
 
   let info =
-    Term.info ~doc:"Compile a .cmt[i] file to a .odoc file." "compile"
+    Term.info "compile"
+      ~doc:"Compile a cmti, cmt, cmi or mld file to an odoc file."
 end
 
 module Support_files = struct
