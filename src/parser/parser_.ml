@@ -1,3 +1,5 @@
+open Result
+
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
 

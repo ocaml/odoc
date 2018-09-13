@@ -120,7 +120,11 @@ let rec add_signature_type_items parent items env =
 let add_signature_tree_item parent item env =
   let open Typedtree in
     match item.sig_desc with
-    | Tsig_type (_rec_flag, decls) -> (* TODO: remember rec_flag *)
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+    | Tsig_type decls ->
+#else
+    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+#endif
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id env)
           decls env
@@ -171,7 +175,11 @@ let add_signature_tree_items parent sg env =
 let add_structure_tree_item parent item env =
   let open Typedtree in
     match item.str_desc with
-    | Tstr_type (_rec_flag, decls) -> (* TODO: remember rec_flag *)
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+    | Tstr_type decls ->
+#else
+    | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+#endif
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id env)
           decls env
@@ -186,7 +194,11 @@ let add_structure_tree_item parent item env =
         add_signature_type_items parent incl.incl_type env
     | Tstr_class cls ->
         List.fold_right
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+          (fun (cld, _, _) env ->
+#else
           (fun (cld, _) env ->
+#endif
              add_class parent cld.ci_id_class
                cld.ci_id_class_type cld.ci_id_object
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 04

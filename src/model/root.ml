@@ -38,9 +38,11 @@ end
 
 module Odoc_file =
 struct
+  type compilation_unit = {name : string; hidden : bool}
+
   type t =
     | Page of string
-    | Compilation_unit of {name : string; hidden : bool}
+    | Compilation_unit of compilation_unit 
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || contains_double_underscore name in

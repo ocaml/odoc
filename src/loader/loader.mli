@@ -1,3 +1,5 @@
+open Result
+
 val read_string :
   Model.Paths.Identifier.label_parent ->
   Location.t ->

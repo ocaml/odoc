@@ -1,3 +1,5 @@
+open Result
+
 val ast_to_comment :
   permissive:bool ->
   sections_allowed:Ast.sections_allowed ->

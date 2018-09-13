@@ -1,6 +1,8 @@
 language: generic
 
 env:
+  - OCAML=4.02.3
+  - OCAML=4.02.3+buckle-master
   - OCAML=4.03.0
   - OCAML=4.04.2
   - OCAML=4.05.0

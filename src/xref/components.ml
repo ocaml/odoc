@@ -1634,11 +1634,11 @@ and Element : sig
     | `Exception | `Value | `Class | `ClassType
     | `Method | `InstanceVariable | `Label ]
 
+  type mod_t = { canonical : (Path.module_ * Reference.module_) option
+        ; hidden : bool }
+
   type 'kind t =
-    | Module :
-        { canonical : (Path.module_ * Reference.module_) option
-        ; hidden : bool } ->
-        [< kind > `Module] t
+    | Module : mod_t -> [< kind > `Module] t
     | ModuleType : [< kind > `ModuleType] t
     | Type : [< kind > `Type] t
     | Constructor : string -> [< kind > `Constructor] t

@@ -20,9 +20,11 @@
 
 type resolver
 
+type lookup_result_found = { root : Model.Root.t; hidden : bool }
+
 type lookup_result =
   | Forward_reference
-  | Found of { root : Model.Root.t; hidden : bool }
+  | Found of lookup_result_found
   | Not_found
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)

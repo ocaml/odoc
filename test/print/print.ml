@@ -1,3 +1,5 @@
+open Result
+
 type sexp = Sexplib.Sexp.t =
   | Atom of string
   | List of sexp list

@@ -14,7 +14,7 @@ authors: [
 maintainer: "Anton Bachin <antonbachin@yahoo.com>"
 dev-repo: "http://github.com/ocaml-doc/odoc.git"
 
-available: [ocaml-version >= "4.03.0"]
+available: [ocaml-version >= "4.02.0"]
 depends: [
   "astring" {build}
   "bos" {build}
@@ -23,6 +23,7 @@ depends: [
   "dune" {build}
   "fpath" {build}
   "tyxml" {build & >= "4.0.0"}
+  "result"
 
   # Development dependencies. These should be removed in opam files sent to the
   # opam repo.

@@ -1,3 +1,5 @@
+open Result
+
 type full_location_payload = {
   location : Location_.span;
   message : string;

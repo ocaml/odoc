@@ -27,17 +27,22 @@ type nested_pair = (int * int) * int
 
 type instance = int constructor
 
+(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
+type variant_e = {a : int}
 type variant =
   | A
   | B of int
   | C (** foo *)
   | D (** {e bar} *)
-  | E of {a : int}
+  | E of variant_e
 
+
+(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
+type variant_c = {a: int}
 type _ gadt =
   | A : int gadt
   | B : int -> string gadt
-  | C : {a : int} -> unit gadt
+  | C : variant_c -> unit gadt
 
 type degenerate_gadt =
   | A : degenerate_gadt

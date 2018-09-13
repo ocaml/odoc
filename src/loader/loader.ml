@@ -1,3 +1,6 @@
+open Compat
+open Result
+
 module Error = Model.Error
 
 

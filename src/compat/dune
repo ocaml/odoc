@@ -1,4 +1,4 @@
 (library
- (name model)
+ (name compat)
  (preprocess (action (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
- (libraries result compiler-libs.common))
+ (libraries compiler-libs.common))

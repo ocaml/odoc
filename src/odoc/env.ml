@@ -1,3 +1,5 @@
+open Compat
+
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
  *

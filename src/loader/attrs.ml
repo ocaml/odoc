@@ -1,3 +1,5 @@
+open Result
+
 (*
  * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
  *
@@ -29,7 +31,12 @@ let empty : Model.Comment.docs = empty_body
 let load_payload : Parsetree.payload -> (string * Location.t) option = function
   | PStr [{pstr_desc =
       Pstr_eval ({pexp_desc =
-        Pexp_constant (Pconst_string (text, _)); pexp_loc = loc; _}, _); _}] ->
+#if OCAML_MAJOR = 4 && OCAML_MINOR = 02
+        Pexp_constant (Const_string (text, _))
+#else
+        Pexp_constant (Pconst_string (text, _))
+#endif
+   ; pexp_loc = loc; _}, _); _}] ->
     Some (text, loc)
   | _ ->
     None

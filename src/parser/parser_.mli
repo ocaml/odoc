@@ -1,3 +1,5 @@
+open Result
+
 type sections_allowed = Ast.sections_allowed
 
 val parse_comment :
