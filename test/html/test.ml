@@ -106,7 +106,7 @@ let () =
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
-      | ".mld" -> build_directory // test_package // "index.html"
+      | ".mld" -> build_directory // test_package // file_title ^ ".html"
       | _ -> assert false
     in
 
@@ -135,9 +135,14 @@ let () =
         fun () ->
           prerr_endline (Sys.getcwd ());
           prerr_endline case_filename;
+          let mld_odoc_file = build_directory // ("page-" ^ file_title ^ ".odoc") in
+
+          command "odoc compile"
+            "%s compile --package=%s -o %s %s" odoc test_package mld_odoc_file source_file;
+
           command "odoc html"
-            "%s html --output-dir %s --index-for %s %s"
-            odoc build_directory test_package source_file
+            "%s html --output-dir=%s %s"
+            odoc build_directory mld_odoc_file
 
       | _ ->
         assert false
