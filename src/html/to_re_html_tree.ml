@@ -153,10 +153,7 @@ struct
         list_concat_map lst ~sep:(Markup.keyword ", ")
           ~f:(type_expr ~needs_parentheses:true)
       in
-      if not needs_parentheses then
-        res
-      else
-        Html.pcdata "(" :: res @ [Html.pcdata ")"]
+      Html.pcdata "(" :: res @ [Html.pcdata ")"]
     | Constr (path, args) ->
       let link = Html_tree.Relative_link.of_path ~stop_before:false path in
       format_type_path ~delim:(`parens) args link
