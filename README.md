@@ -47,6 +47,8 @@ dune build @doc
 The generated docs can then be found locally at
 `./_build/default/_doc/_html/index.html`.
 
+<br/>
+
 ## Using `odoc` with BuckleScript/Reason
 
 While the BuckleScript/Reason toolchain relies on `npm`, `odoc` at the moment
@@ -116,6 +118,8 @@ And you can call it like:
 << Generating HTML...
 >> Done!
 ```
+
+<br/>
 
 ## Contact
 
