@@ -106,6 +106,15 @@ let () =
     in
     let reference_file = expect_directory // lang // (file_title ^ ".html") in
 
+    let validate_html file =
+      let muted_errors = String.concat "," [
+        "NESTED_EMPHASIS";
+      ] in
+      let tidy = "tidy --mute " ^ muted_errors ^  " -errors -ashtml" in
+      command tidy "%s %s" tidy file;
+    in
+
+
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
@@ -153,7 +162,9 @@ let () =
 
     (* Running the actual commands for the test. *)
     let run_test_case () =
+      validate_html reference_file;
       generate_html ();
+      validate_html html_file;
 
       let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
       match Sys.command diff with
@@ -232,4 +243,9 @@ let () =
     ]
   in
 
-  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests; html_re_tests]
+  Alcotest.run "html" [
+    output_support_files;
+    html_ml_tests;
+    theme_uri_tests;
+    html_re_tests;
+  ]
