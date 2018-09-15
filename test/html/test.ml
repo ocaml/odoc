@@ -238,7 +238,7 @@ let () =
   in
 
   (* Custom theme URI tests. *)
-  let theme_uri_tests : unit Alcotest.test =
+  let _theme_uri_tests : unit Alcotest.test =
     "theme_uri", [
       make_html_test ~theme_uri:"/a/b/c" "module.mli";
       make_html_test ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
@@ -250,6 +250,5 @@ let () =
   Alcotest.run "html" [
     output_support_files;
     html_ml_tests;
-    theme_uri_tests;
     html_re_tests;
   ]
