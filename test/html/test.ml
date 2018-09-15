@@ -107,13 +107,9 @@ let () =
     let reference_file = expect_directory // lang // (file_title ^ ".html") in
 
     let validate_html file =
-      let muted_errors = String.concat "," [
-        "NESTED_EMPHASIS";
-      ] in
       let tidy = String.concat " " [
         "tidy";
         "-quiet";
-        "--mute " ^ muted_errors;
         "--mute-id yes";
         "--show-errors 20";
         "-errors";
@@ -171,7 +167,6 @@ let () =
 
     (* Running the actual commands for the test. *)
     let run_test_case () =
-      validate_html reference_file;
       generate_html ();
       validate_html html_file;
 
