@@ -110,7 +110,16 @@ let () =
       let muted_errors = String.concat "," [
         "NESTED_EMPHASIS";
       ] in
-      let tidy = "tidy --mute " ^ muted_errors ^  " -errors -ashtml" in
+      let tidy = String.concat " " [
+        "tidy";
+        "-quiet";
+        "--mute " ^ muted_errors;
+        "--mute-id yes";
+        "--show-errors 20";
+        "-errors";
+        "-ashtml"
+      ]
+      in
       command tidy "%s %s" tidy file;
     in
 
