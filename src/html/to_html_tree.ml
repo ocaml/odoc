@@ -668,7 +668,7 @@ struct
       item_to_id item_to_spec render_leaf_item first_item_kind items
       : html * 'item list =
 
-    let rec consume_leaf_items_until_one_is_documented =
+    let consume_leaf_items_until_one_is_documented =
         fun items acc ->
 
       match items with
@@ -684,15 +684,14 @@ struct
         let html = Html.dt ~a html in
         let acc = html::acc in
 
-        begin match maybe_docs with
-        | [] ->
-          consume_leaf_items_until_one_is_documented items acc
-        | docs ->
-          let docs = Documentation.to_html docs in
-          let docs = (docs :> (Html_types.dd_content Html.elt) list) in
-          let docs = Html.dd docs in
-          List.rev (docs::acc), items
-        end
+        let docs = Documentation.to_html maybe_docs in
+        let docs = (docs :> (Html_types.dd_content Html.elt) list) in
+        let docs = match docs with
+        | [] -> Html.dd [ Html.pcdata "" ]
+        | docs -> Html.dd docs
+        in
+
+        List.rev (docs::acc), items
 
       | _ ->
         List.rev acc, items
