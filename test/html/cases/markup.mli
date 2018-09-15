@@ -27,9 +27,9 @@
     {2 Styling}
 
     This paragraph has some styled elements: {b bold} and {i italic},
-    {b {i bold italic}}, {e emphasis}, {e {e emphasis} within emphasis},
-    {b {i bold italic}}, super{^script}, sub{_script}. The line spacing should
-    be enough for superscripts and subscripts not to look odd.
+    {b {i bold italic}}, {e emphasis}, {b {i bold italic}}, super{^script},
+    sub{_script}. The line spacing should be enough for superscripts and
+    subscripts not to look odd.
 
     [code] is a different kind of markup that doesn't allow nested markup.
 
