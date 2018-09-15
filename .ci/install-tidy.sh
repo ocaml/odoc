@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if [ -f `which tidy` ]; then
-  echo "Tidy already installed."
-  tidy --version
-  exit 0
-fi
-
 readonly MIRROR=http://mirrors.kernel.org/ubuntu/pool/universe/t/tidy-html5
 readonly TIDY_VERSION=5.2.0
 readonly TIDY_PKG=tidy_${TIDY_VERSION}-2_amd64.deb
