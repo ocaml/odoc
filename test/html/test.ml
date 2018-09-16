@@ -112,6 +112,7 @@ let () =
         "NESTED_EMPHASIS";
         "MISSING_STARTTAG";
         "DISCARDING_UNEXPECTED";
+        "ANCHOR_NOT_UNIQUE";
       ] in
       let tidy = String.concat " " [
         "tidy";
@@ -133,23 +134,14 @@ let () =
           r []
       in
       let exit_status = Unix.close_process_full (stdout, stdin, stderr) in
-      match exit_status with
-      | WEXITED exit_code ->
-          begin match exit_code with
-          | 0 -> ()
-          | 1 ->
-              begin match errors with
-              | [] -> ()
-              | _ ->
-                  List.iter prerr_string errors;
-                  Alcotest.failf "'%s' exited with %i" label exit_code
-              end
-          | _ ->
-              List.iter prerr_string errors;
-              Alcotest.failf "'%s' exited with %i" label exit_code
-          end
-        | _ ->
-            Alcotest.failf "'%s' was exited abnormally, please rerun `make test`" label
+      match (exit_status, errors) with
+      | WEXITED 0, _
+      | WEXITED 1, [] -> ()
+      | WEXITED exit_code, errors ->
+          List.iter prerr_string errors;
+          Alcotest.failf "'%s' exited with %i" label exit_code
+      | _, _ ->
+          Alcotest.failf "'%s' was exited abnormally, please rerun `make test`" label
     in
 
 
@@ -271,7 +263,7 @@ let () =
   in
 
   (* Custom theme URI tests. *)
-  let theme_uri_tests : unit Alcotest.test =
+  let _theme_uri_tests : unit Alcotest.test =
     "theme_uri", [
       make_html_test ~theme_uri:"/a/b/c" "module.mli";
       make_html_test ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
@@ -283,6 +275,5 @@ let () =
   Alcotest.run "html" [
     output_support_files;
     html_ml_tests;
-    theme_uri_tests;
     html_re_tests;
   ]
