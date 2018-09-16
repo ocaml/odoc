@@ -107,16 +107,49 @@ let () =
     let reference_file = expect_directory // lang // (file_title ^ ".html") in
 
     let validate_html file =
+      let label = "tidy" in
+      let muted_warnings = String.concat "," [
+        "NESTED_EMPHASIS";
+        "MISSING_STARTTAG";
+        "DISCARDING_UNEXPECTED";
+      ] in
       let tidy = String.concat " " [
         "tidy";
         "-quiet";
+        "--mute " ^ muted_warnings;
         "--mute-id yes";
-        "--show-errors 20";
+        "--show-errors 200";
         "-errors";
         "-ashtml"
       ]
       in
-      command tidy "%s %s" tidy file;
+      let cmd = Printf.sprintf "%s %s" tidy file in
+      let (stdout, stdin, stderr) = Unix.open_process_full cmd [||]  in
+      let errors =
+          let rec r acc = match input_line stderr with
+          | s -> r ((s ^ "\n") :: acc)
+          | exception End_of_file -> List.rev acc
+          in
+          r []
+      in
+      let exit_status = Unix.close_process_full (stdout, stdin, stderr) in
+      match exit_status with
+      | WEXITED exit_code ->
+          begin match exit_code with
+          | 0 -> ()
+          | 1 ->
+              begin match errors with
+              | [] -> ()
+              | _ ->
+                  List.iter prerr_string errors;
+                  Alcotest.failf "'%s' exited with %i" label exit_code
+              end
+          | _ ->
+              List.iter prerr_string errors;
+              Alcotest.failf "'%s' exited with %i" label exit_code
+          end
+        | _ ->
+            Alcotest.failf "'%s' was exited abnormally, please rerun `make test`" label
     in
 
 
