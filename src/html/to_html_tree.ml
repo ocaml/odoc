@@ -24,6 +24,8 @@ module Html = Tyxml.Html
 
 open Utils
 
+
+
 type rendered_item = (Html_types.div_content Html.elt) list
 (* [rendered_item] should really be [dt_content], but that is bugged in TyXML
    until https://github.com/ocsigen/tyxml/pull/193 is released. *)
