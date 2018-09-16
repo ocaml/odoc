@@ -106,6 +106,50 @@ let () =
     in
     let reference_file = expect_directory // lang // (file_title ^ ".html") in
 
+    let validate_html file =
+      let label = "tidy" in
+      let muted_warnings = String.concat "," [
+        (* NOTE: see https://github.com/ocaml/odoc/issues/188 *)
+        "NESTED_EMPHASIS";
+
+        (* NOTE: see https://github.com/ocaml/odoc/pull/185#discussion_r217906131 *)
+        "MISSING_STARTTAG";
+        "DISCARDING_UNEXPECTED";
+
+        (* NOTE: see https://github.com/ocaml/odoc/issues/186 *)
+        "ANCHOR_NOT_UNIQUE";
+      ] in
+      let tidy = String.concat " " [
+        "tidy";
+        "-quiet";
+        "--mute " ^ muted_warnings;
+        "--mute-id yes";
+        "--show-errors 200";
+        "-errors";
+        "-ashtml"
+      ]
+      in
+      let cmd = Printf.sprintf "%s %s" tidy file in
+      let (stdout, stdin, stderr) = Unix.open_process_full cmd [||]  in
+      let errors =
+          let rec r acc = match input_line stderr with
+          | s -> r ((s ^ "\n") :: acc)
+          | exception End_of_file -> List.rev acc
+          in
+          r []
+      in
+      let exit_status = Unix.close_process_full (stdout, stdin, stderr) in
+      match (exit_status, errors) with
+      | WEXITED 0, _
+      | WEXITED 1, [] -> ()
+      | WEXITED exit_code, errors ->
+          List.iter prerr_string errors;
+          Alcotest.failf "'%s' exited with %i" label exit_code
+      | _, _ ->
+          Alcotest.failf "'%s' was exited abnormally, please rerun `make test`" label
+    in
+
+
     let html_file =
       match extension with
       | ".mli" -> build_directory // test_package // module_name // "index.html"
@@ -154,6 +198,7 @@ let () =
     (* Running the actual commands for the test. *)
     let run_test_case () =
       generate_html ();
+      validate_html html_file;
 
       let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
       match Sys.command diff with
@@ -232,4 +277,9 @@ let () =
     ]
   in
 
-  Alcotest.run "html" [output_support_files; html_ml_tests; theme_uri_tests; html_re_tests]
+  Alcotest.run "html" [
+    output_support_files;
+    html_ml_tests;
+    theme_uri_tests;
+    html_re_tests;
+  ]

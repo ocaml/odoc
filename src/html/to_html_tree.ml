@@ -505,7 +505,7 @@ struct
         manifest, false
       | _ ->
         let manifest, need_private = format_manifest t.equation in
-        [Html.code manifest], need_private
+        Utils.optional_code manifest, need_private
     in
     let representation =
       match t.representation with
@@ -528,7 +528,7 @@ struct
       ] ::
       manifest @
       representation @
-      [Html.code constraints]
+      Utils.optional_code constraints
     in
     tdecl_def, t.doc
 end
