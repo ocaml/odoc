@@ -24,11 +24,6 @@ module Html = Tyxml.Html
 
 open Utils
 
-let optional_code children =
-  match children with
-  | [] -> []
-  | children -> [ Html.code children ]
-
 type rendered_item = (Html_types.div_content Html.elt) list
 (* [rendered_item] should really be [dt_content], but that is bugged in TyXML
    until https://github.com/ocsigen/tyxml/pull/193 is released. *)
@@ -508,7 +503,7 @@ struct
         manifest, false
       | _ ->
         let manifest, need_private = format_manifest t.equation in
-        optional_code manifest, need_private
+        Utils.optional_code manifest, need_private
     in
     let representation =
       match t.representation with
@@ -531,7 +526,7 @@ struct
       ] ::
       manifest @
       representation @
-      optional_code constraints
+      Utils.optional_code constraints
     in
     tdecl_def, t.doc
 end

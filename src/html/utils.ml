@@ -1,3 +1,4 @@
+module Html = Tyxml.Html
 
 (* Shared utility functions *)
 
@@ -10,6 +11,11 @@ let rec list_concat_map ?sep ~f = function
     match sep with
     | None -> hd @ tl
     | Some sep -> hd @ sep :: tl
+
+let optional_code children =
+  match children with
+  | [] -> []
+  | children -> [ Html.code children ]
 
 (**
 let configure_refmt () =
