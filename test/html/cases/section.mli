@@ -3,7 +3,7 @@
 
 (** This is the module comment. Eventually, sections won't be allowed in it. *)
 
-(** {2 First Empty section} *)
+(** {2 Empty section} *)
 
 (** {2 Text only}
 
@@ -17,7 +17,7 @@
 
 val foo : unit
 
-(** {2 Second Empty section}
+(** {2 Empty section}
 
     {2 within a comment}
 
