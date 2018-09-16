@@ -109,9 +109,14 @@ let () =
     let validate_html file =
       let label = "tidy" in
       let muted_warnings = String.concat "," [
+        (* NOTE: see https://github.com/ocaml/odoc/issues/188 *)
         "NESTED_EMPHASIS";
+
+        (* NOTE: see https://github.com/ocaml/odoc/pull/185#discussion_r217906131 *)
         "MISSING_STARTTAG";
         "DISCARDING_UNEXPECTED";
+
+        (* NOTE: see https://github.com/ocaml/odoc/issues/186 *)
         "ANCHOR_NOT_UNIQUE";
       ] in
       let tidy = String.concat " " [
