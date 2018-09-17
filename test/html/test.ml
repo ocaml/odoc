@@ -23,7 +23,7 @@ let running_in_travis = match Sys.getenv "TRAVIS" with
   | _ -> false
   | exception Not_found -> false
 
-let found_tidy = match Sys.command "which tidy" with
+let found_tidy = match Sys.command "which tidy > /dev/null" with
   | 0 -> true
   | _ -> false
 
