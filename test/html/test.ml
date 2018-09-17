@@ -18,7 +18,14 @@ let command label =
     if exit_code <> 0 then
       Alcotest.failf "'%s' exited with %i" label exit_code)
 
+let running_in_travis = match Sys.getenv "TRAVIS" with
+  | "true" -> true
+  | _ -> false
+  | exception Not_found -> false
 
+let found_tidy = match Sys.command "which tidy > /dev/null" with
+  | 0 -> true
+  | _ -> false
 
 let cases = [
   "val.mli";
@@ -198,7 +205,12 @@ let () =
     (* Running the actual commands for the test. *)
     let run_test_case () =
       generate_html ();
-      validate_html html_file;
+
+      match running_in_travis, found_tidy with
+        | true, false -> Alcotest.fail "Could not find `tidy` in PATH!";
+        | _, true -> validate_html html_file;
+        | _, _ -> ();
+
 
       let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
       match Sys.command diff with
