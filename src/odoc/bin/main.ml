@@ -177,19 +177,13 @@ module Html : sig
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
-        syntax fragment theme_uri input_file =
+        syntax theme_uri input_file =
     Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
     Html.Html_tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
-    | None when fragment ->
-      Html_fragment.from_odoc ~env ~output:output_dir file
     | None -> Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file
-    | Some _ when fragment ->
-      Printf.eprintf "ERROR: The --index-for option cannot be used with --fragment. \
-                      Please compile the mld file first.\n";
-      exit 1
     | Some pkg_name ->
       Html_page.from_mld ~env ~syntax ~output:output_dir ~package:pkg_name file
 
@@ -207,12 +201,6 @@ end = struct
                  be closed by default."
       in
       Arg.(value & flag (info ~doc ["closed-details"]))
-    in
-    let fragment =
-      let doc = "Produce an HTML fragment instead of a full document. \
-                 Currently only works with documentation pages."
-      in
-      Arg.(value & flag (info ~doc ["fragment"]))
     in
     let index_for =
       let doc = "DEPRECATED: you should use 'odoc compile' to process .mld \
@@ -236,7 +224,7 @@ end = struct
       Arg.(value & opt (pconv convert_syntax) (Html.Html_tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
-          odoc_file_directories $ dst $ index_for $ syntax $ fragment $ theme_uri $ input)
+          odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"

@@ -116,8 +116,6 @@ module Relative_link = struct
           in
           List.map stack_elt_to_path_fragment (stack_to_list path)
         in
-        Format.eprintf "?? target = %s@." (String.concat "/" target);
-        Format.eprintf "?? current_loc = %s@." (String.concat "/" current_loc);
         let current_from_common_ancestor, target_from_common_ancestor =
           drop_shared_prefix current_loc target
         in

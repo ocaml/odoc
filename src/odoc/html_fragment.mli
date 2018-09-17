@@ -14,17 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Produces .html fragment files from a .odoc file. *)
-
-val from_odoc : env:Env.builder -> output:Fs.Directory.t -> Fs.File.t -> unit
-(** [from_odoc ~env ~output input] parses the content of the odoc input file
-    containing a documentation page, generates the equivalent HTML
-    representation and writes the result as a file into the output directory.
-
-    The produced file is an HTML fragment that can be embedded into other
-    documents.
-
-    The program terminates with an error if the input odoc file does not
-    contain a page documentation. *)
+(** Produces html fragment files from a mld file. *)
 
 val from_mld : root_uri:string -> env:Env.builder -> output:Fs.File.t -> Fs.File.t -> unit
+(** [from_mld ~root_uri ~env ~output input] parses the content of the [input]
+    file as a documentation page ({e i.e.} the ocamldoc syntax), generates the
+    equivalent HTML representation and writes the result into the [output]
+    file. The produced file is an HTML fragment that can be embedded into other
+    documents.
+
+    Cross-reference resolution uses the provided [root_uri] to locate docset
+    packages. *)
