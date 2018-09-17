@@ -112,8 +112,6 @@ end = struct
         in
         Fs.File.(set_ext ".odoc" output)
     in
-    Fmt.epr "Compiling... input=%s output=%s@."
-      (Fs.File.to_string input) (Fs.File.to_string output);
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
       Compile.cmti ~env ~package:package_name ~hidden ~output input
