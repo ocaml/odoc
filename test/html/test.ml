@@ -77,6 +77,10 @@ let pretty_print_html source_file pretty_printed_file =
   |> Markup.to_file pretty_printed_file
 
 let () =
+  if not found_tidy && running_in_travis then begin
+    Alcotest.fail "Could not find `tidy` in PATH!"
+  end;
+
   Unix.mkdir build_directory 0o755;
   Unix.mkdir (build_directory // "re") 0o755;
   Unix.mkdir (build_directory // "ml") 0o755;
@@ -206,11 +210,9 @@ let () =
     let run_test_case () =
       generate_html ();
 
-      match running_in_travis, found_tidy with
-        | true, false -> Alcotest.fail "Could not find `tidy` in PATH!";
-        | _, true -> validate_html html_file;
-        | _, _ -> ();
-
+      if found_tidy then begin
+        validate_html html_file
+      end;
 
       let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
       match Sys.command diff with
@@ -262,7 +264,6 @@ let () =
       | exit_code ->
         Alcotest.failf "'diff' exited with %i" exit_code
     in
-
     test_name, `Slow, run_test_case
   in
 
