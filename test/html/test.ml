@@ -112,10 +112,9 @@ module Case = struct
   (* Produces an HTML file path for a given case, starting with [dir]. *)
   let html_file dir case =
     let module_name = String.capitalize_ascii case.name in
-    let file_title = case.name in
     match case.kind with
     | `mli -> dir // package case // module_name // "index.html"
-    | `mld -> dir // package case // file_title ^ ".html"
+    | `mld -> dir // package case // case.name ^ ".html"
 
   let actual_html_file   ?from_root = html_file (Env.path ?from_root `scratch)
   let expected_html_file ?from_root = html_file (Env.path ?from_root `expect)
@@ -253,7 +252,6 @@ let make_test_case ?theme_uri ?syntax case_basename =
 
     (* Run HTML validation *)
     if Tidy.is_present_in_path then begin
-      prerr_endline (Case.actual_html_file case);
       let issues = Tidy.validate (Case.actual_html_file case) in
       if issues <> [] then begin
         List.iter prerr_endline issues;
