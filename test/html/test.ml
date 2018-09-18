@@ -180,51 +180,59 @@ let generate_html case =
     command "odoc html" "%s html %s --output-dir=%s %s"
       Env.odoc theme_uri_option (Env.path `scratch) (Case.odoc_file case)
 
+let diff =
+  (* Alcotest will run all tests. We need to know when something fails for the
+     first time to stop diffing and generating promotion files. *)
+  let already_failed = ref false in
+  fun case ->
+    let expected_file = Case.expected_html_file case in
+    let actual_file   = Case.actual_html_file case in
+    let cmd = sprintf "diff -u %s %s" expected_file actual_file in
+    match Sys.command cmd with
+    | 0 -> ()
 
-let diff case =
-  let expected_file = Case.expected_html_file case in
-  let actual_file   = Case.actual_html_file case in
-  let cmd = sprintf "diff -u %s %s" expected_file actual_file in
-  match Sys.command cmd with
-  | 0 -> ()
+    | 1 when !already_failed ->
+      (* Don't run diff for other failing tests as only one at time is shown. *)
+      Alcotest.fail "generated HTML should match expected"
 
-  | 1 ->
-    (* If the diff command exits with 1, the two HTML files are different.
-       diff has already written its output to STDOUT, but depending on the
-       formatting of the HTML files, it might be illegible. To create a
-       legible diff for the human reading the test output, pretty-print both
-       HTML files, and diff the pretty-printed output. *)
-    prerr_endline "\nPretty-printed diff:\n";
+    | 1 ->
+      (* If the diff command exits with 1, the two HTML files are different.
+         diff has already written its output to STDOUT, but depending on the
+         formatting of the HTML files, it might be illegible. To create a
+         legible diff for the human reading the test output, pretty-print both
+         HTML files, and diff the pretty-printed output. *)
+      prerr_endline "\nPretty-printed diff:\n";
 
-    (* The filenames to use. *)
-    let pretty_expected_file = Env.path `scratch // "expected.pretty.html" in
-    let pretty_actual_file   = Env.path `scratch // "actual.pretty.html" in
+      (* The filenames to use. *)
+      let pretty_expected_file = Env.path `scratch // "expected.pretty.html" in
+      let pretty_actual_file   = Env.path `scratch // "actual.pretty.html" in
 
-    (* Do the actual pretty printing. *)
-    pretty_print_html expected_file pretty_expected_file;
-    pretty_print_html actual_file pretty_actual_file;
+      (* Do the actual pretty printing. *)
+      pretty_print_html expected_file pretty_expected_file;
+      pretty_print_html actual_file pretty_actual_file;
 
-    (* The second diff, of pretty-printed HTML output. *)
-    let pretty_cmd = sprintf "diff -u %s %s" pretty_expected_file pretty_actual_file in
-    ignore (Sys.command pretty_cmd);
+      (* The second diff, of pretty-printed HTML output. *)
+      let pretty_cmd = sprintf "diff -u %s %s" pretty_expected_file pretty_actual_file in
+      ignore (Sys.command pretty_cmd);
 
-    (* Also provide the command for overwriting the expected output with the
-       actual output, in case it is the actual output that is correct.
-       The paths are defined relative to the project's root. *)
-    let root_actual_file   = Case.actual_html_file   ~from_root:true case in
-    let root_expected_file = Case.expected_html_file ~from_root:true case in
-    Soup.write_file Env.(path `scratch // "actual") root_actual_file;
-    Soup.write_file Env.(path `scratch // "expected") root_expected_file;
+      (* Also provide the command for overwriting the expected output with the
+         actual output, in case it is the actual output that is correct.
+         The paths are defined relative to the project's root. *)
+      let root_actual_file   = Case.actual_html_file   ~from_root:true case in
+      let root_expected_file = Case.expected_html_file ~from_root:true case in
+      Soup.write_file Env.(path `scratch // "actual") root_actual_file;
+      Soup.write_file Env.(path `scratch // "expected") root_expected_file;
 
-    prerr_endline "\nTo promote the actual output to expected, run:";
-    Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"
-      Env.(path ~from_root:true `scratch // "actual")
-      Env.(path ~from_root:true `scratch // "expected");
+      prerr_endline "\nTo promote the actual output to expected, run:";
+      Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"
+        Env.(path ~from_root:true `scratch // "actual")
+        Env.(path ~from_root:true `scratch // "expected");
 
-    Alcotest.fail "generated HTML should match expected"
+      already_failed := true;
+      Alcotest.fail "generated HTML should match expected"
 
-  | exit_code ->
-    Alcotest.failf "'diff' exited with %i" exit_code
+    | exit_code ->
+      Alcotest.failf "'diff' exited with %i" exit_code
 
 
 (* Actual Tests *)
