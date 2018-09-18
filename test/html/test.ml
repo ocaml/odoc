@@ -239,6 +239,7 @@ let source_files = [
   "interlude.mli";
   "include.mli";
   "mld.mld";
+  "nested.mli";
   "type.mli";
   "external.mli";
   "functor.mli";

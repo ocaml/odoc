@@ -140,7 +140,7 @@ module type Html_generator = sig
          item_to_id:('item -> string option)
       -> item_to_spec:('item -> string option)
       -> render_leaf_item:('item -> rendered_item * Comment.docs)
-      -> render_nested_article:('item -> rendered_item * Html_tree.t list)
+      -> render_nested_article:('item -> rendered_item * Comment.docs * Html_tree.t list)
       -> (_, 'item) tagged_item list
       -> rendered_item * toc * Html_tree.t list
 
@@ -200,12 +200,12 @@ module type Html_generator = sig
     val class_ :
          ?theme_uri:Html_tree.uri
       -> Lang.Class.t
-      -> Html_types.article_content Html.elt list * Html_tree.t list
+      -> rendered_item * Comment.docs * Html_tree.t list
 
     val class_type :
          ?theme_uri:Html_tree.uri
       -> Lang.ClassType.t
-      -> Html_types.article_content Html.elt list * Html_tree.t list
+      -> rendered_item * Comment.docs * Html_tree.t list
   end
 
   module Module : sig
