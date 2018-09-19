@@ -1,16 +1,9 @@
 open Compat
+open Printf
 
-let cases_directory = "cases"
-let expect_directory = "expect"
-let build_directory = "_scratch"
-let test_package = "test_package"
-let odoc = "../../src/odoc/bin/main.exe"
-let test_root = "test/html"
+(* Utils *)
 
 let (//) = Filename.concat
-
-let contains_actual = build_directory // "actual"
-let contains_expected = build_directory // "expected"
 
 let command label =
   Printf.ksprintf (fun s ->
@@ -18,30 +11,112 @@ let command label =
     if exit_code <> 0 then
       Alcotest.failf "'%s' exited with %i" label exit_code)
 
-let running_in_travis = match Sys.getenv "TRAVIS" with
-  | "true" -> true
-  | _ -> false
-  | exception Not_found -> false
+(* Filename.extension is only available on 4.04. *)
+module Filename = struct
+  include Filename
 
-let found_tidy = match Sys.command "which tidy > /dev/null" with
-  | 0 -> true
-  | _ -> false
+  let extension filename =
+    let dot_index = String.rindex filename '.' in
+    String.sub filename dot_index (String.length filename - dot_index)
+end
 
-let cases = [
-  "val.mli";
-  "markup.mli";
-  "section.mli";
-  "module.mli";
-  "interlude.mli";
-  "include.mli";
-  "mld.mld";
-  "type.mli";
-  "external.mli";
-  "functor.mli";
-  "class.mli";
-  "stop.mli";
-]
 
+(* Testing environment *)
+
+module Env = struct
+  let package = "test_package"
+  let odoc = "../../src/odoc/bin/main.exe"
+
+  let path ?(from_root = false) = function
+    | `scratch when from_root -> "_build/default/test/html/_scratch"
+    | `scratch -> "_scratch"
+    | `expect when from_root -> "test/html/expect"
+    | `expect -> "expect"
+    | `cases when from_root -> "test/html/cases"
+    | `cases -> "cases"
+
+  let running_in_travis =
+    match Sys.getenv "TRAVIS" with
+    | "true" -> true
+    | _ -> false
+    | exception Not_found -> false
+
+  let init () = begin
+    if running_in_travis && not Tidy.is_present_in_path then begin
+      Alcotest.failf "Could not find `tidy` in $PATH in a CI environment"
+    end;
+
+    Unix.mkdir (path `scratch) 0o755
+  end
+end
+
+
+(* Test case type and helpers *)
+
+(* A test case is a description of an input source file with a specific set of
+   options to be tested. Each test case results in a unique generated output to
+   be compared with an actually produced one.
+
+   All paths defined in this module are relative to the build directory. *)
+module Case = struct
+  type t = {
+    name: string;
+    kind: [ `mld | `mli ];
+    theme_uri: string option;
+    syntax: [ `ml | `re ];
+  }
+
+  let make ?theme_uri ?(syntax = `ml) basename =
+    let name = Filename.chop_extension basename in
+    let kind =
+      match Filename.extension basename with
+      | ".mli" -> `mli
+      | ".mld" -> `mld
+      | _ -> invalid_arg (sprintf "Expected mli or mld files, got %s" basename)
+    in
+    { name; kind; theme_uri; syntax }
+
+  let name case = case.name
+  let kind case = case.kind
+  let theme_uri case = case.theme_uri
+
+  let string_of_syntax = function
+    | `re -> "re"
+    | `ml -> "ml"
+
+  (* The package name is enriched with test case options. *)
+  let package case =
+    let opts = [string_of_syntax case.syntax] in
+    let opts =
+      match case.theme_uri with
+      | Some _ -> "custom_theme" :: opts
+      | None -> opts in
+    let opts = String.concat "," (List.sort Pervasives.compare opts) in
+    Env.package ^ "+" ^ opts
+
+  let cmi_file case  = Env.path `scratch // (case.name ^ ".cmi")
+  let cmti_file case = Env.path `scratch // (case.name ^ ".cmti")
+
+  let odoc_file case =
+    match case.kind with
+    | `mli -> Env.path `scratch // (case.name ^ ".odoc")
+    | `mld -> Env.path `scratch // ("page-" ^ case.name ^ ".odoc")
+
+  let source_file case =
+    match case.kind with
+    | `mli -> Env.path `cases // case.name ^ ".mli"
+    | `mld -> Env.path `cases // case.name ^ ".mld"
+
+  (* Produces an HTML file path for a given case, starting with [dir]. *)
+  let html_file dir case =
+    let module_name = String.capitalize_ascii case.name in
+    match case.kind with
+    | `mli -> dir // package case // module_name // "index.html"
+    | `mld -> dir // package case // case.name ^ ".html"
+
+  let actual_html_file   ?from_root = html_file (Env.path ?from_root `scratch)
+  let expected_html_file ?from_root = html_file (Env.path ?from_root `expect)
+end
 
 
 let pretty_print_html source_file pretty_printed_file =
@@ -76,223 +151,145 @@ let pretty_print_html source_file pretty_printed_file =
   |> Markup.write_html
   |> Markup.to_file pretty_printed_file
 
-let () =
-  if not found_tidy && running_in_travis then begin
-    Alcotest.fail "Could not find `tidy` in PATH!"
-  end;
 
-  Unix.mkdir build_directory 0o755;
-  Unix.mkdir (build_directory // "re") 0o755;
-  Unix.mkdir (build_directory // "ml") 0o755;
+let generate_html case =
+  let theme_uri_option =
+    match Case.theme_uri case with
+    | Some theme_uri -> "--theme-uri=" ^ theme_uri
+    | None -> ""
+  in
+  match Case.kind case with
+  | `mli ->
+    command "ocamlfind c" "ocamlfind c -bin-annot -o %s -c %s"
+      (Case.cmi_file case) (Case.source_file case);
 
+    command "odoc compile" "%s compile --package=%s %s"
+      Env.odoc (Case.package case) (Case.cmti_file case);
+
+    command "odoc html" "%s html %s --syntax=%s --output-dir=%s %s"
+      Env.odoc theme_uri_option (Case.string_of_syntax case.syntax)
+      (Env.path `scratch) (Case.odoc_file case)
+
+  | `mld ->
+    command "odoc compile" "%s compile --package=%s -o %s %s"
+      Env.odoc (Case.package case) (Case.odoc_file case) (Case.source_file case);
+
+    command "odoc html" "%s html %s --output-dir=%s %s"
+      Env.odoc theme_uri_option (Env.path `scratch) (Case.odoc_file case)
+
+let diff =
+  (* Alcotest will run all tests. We need to know when something fails for the
+     first time to stop diffing and generating promotion files. *)
   let already_failed = ref false in
+  fun case ->
+    let expected_file = Case.expected_html_file case in
+    let actual_file   = Case.actual_html_file case in
+    let cmd = sprintf "diff -u %s %s" expected_file actual_file in
+    match Sys.command cmd with
+    | 0 -> ()
 
-  let make_html_test : ?lang:string -> ?theme_uri: string -> string -> unit Alcotest.test_case =
-      fun ?(lang="ml") ?theme_uri case_filename ->
-    let build_directory = build_directory // lang in
-    (* Titles. *)
-    let file_title = Filename.chop_extension case_filename in
-    let test_name = file_title in
+    | 1 when !already_failed ->
+      (* Don't run diff for other failing tests as only one at time is shown. *)
+      Alcotest.fail "generated HTML should match expected"
 
-    let module_name = String.capitalize_ascii test_name in
+    | 1 ->
+      (* If the diff command exits with 1, the two HTML files are different.
+         diff has already written its output to STDOUT, but depending on the
+         formatting of the HTML files, it might be illegible. To create a
+         legible diff for the human reading the test output, pretty-print both
+         HTML files, and diff the pretty-printed output. *)
+      prerr_endline "\nPretty-printed diff:\n";
 
-    (* Filename.extension is only available on 4.04. *)
-    let extension =
-      let dot_index = String.rindex case_filename '.' in
-      String.sub
-        case_filename dot_index (String.length case_filename - dot_index)
-    in
+      (* The filenames to use. *)
+      let pretty_expected_file = Env.path `scratch // "expected.pretty.html" in
+      let pretty_actual_file   = Env.path `scratch // "actual.pretty.html" in
 
-    (* Source and intermediate files. *)
-    let source_file = cases_directory // case_filename in
-    let cmi_file = build_directory // (file_title ^ ".cmi") in
-    let cmti_file = build_directory // (file_title ^ ".cmti") in
-    let odoc_file = build_directory // (file_title ^ ".odoc") in
+      (* Do the actual pretty printing. *)
+      pretty_print_html expected_file pretty_expected_file;
+      pretty_print_html actual_file pretty_actual_file;
 
-    (* HTML files to be compared. *)
-    let file_title =
-      match theme_uri with
-      | None -> file_title
-      | Some _ -> file_title ^ "-custom_theme"
-    in
-    let reference_file = expect_directory // lang // (file_title ^ ".html") in
+      (* The second diff, of pretty-printed HTML output. *)
+      let pretty_cmd = sprintf "diff -u %s %s" pretty_expected_file pretty_actual_file in
+      ignore (Sys.command pretty_cmd);
 
-    let validate_html file =
-      let label = "tidy" in
-      let muted_warnings = String.concat "," [
-        (* NOTE: see https://github.com/ocaml/odoc/issues/188 *)
-        "NESTED_EMPHASIS";
+      (* Also provide the command for overwriting the expected output with the
+         actual output, in case it is the actual output that is correct.
+         The paths are defined relative to the project's root. *)
+      let root_actual_file   = Case.actual_html_file   ~from_root:true case in
+      let root_expected_file = Case.expected_html_file ~from_root:true case in
+      Soup.write_file Env.(path `scratch // "actual") root_actual_file;
+      Soup.write_file Env.(path `scratch // "expected") root_expected_file;
 
-        (* NOTE: see https://github.com/ocaml/odoc/pull/185#discussion_r217906131 *)
-        "MISSING_STARTTAG";
-        "DISCARDING_UNEXPECTED";
+      prerr_endline "\nTo promote the actual output to expected, run:";
+      Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"
+        Env.(path ~from_root:true `scratch // "actual")
+        Env.(path ~from_root:true `scratch // "expected");
 
-        (* NOTE: see https://github.com/ocaml/odoc/issues/186 *)
-        "ANCHOR_NOT_UNIQUE";
-      ] in
-      let tidy = String.concat " " [
-        "tidy";
-        "-quiet";
-        "--mute " ^ muted_warnings;
-        "--mute-id yes";
-        "--show-errors 200";
-        "-errors";
-        "-ashtml"
-      ]
-      in
-      let cmd = Printf.sprintf "%s %s" tidy file in
-      let (stdout, stdin, stderr) = Unix.open_process_full cmd [||]  in
-      let errors =
-          let rec r acc = match input_line stderr with
-          | s -> r ((s ^ "\n") :: acc)
-          | exception End_of_file -> List.rev acc
-          in
-          r []
-      in
-      let exit_status = Unix.close_process_full (stdout, stdin, stderr) in
-      match (exit_status, errors) with
-      | WEXITED 0, _
-      | WEXITED 1, [] -> ()
-      | WEXITED exit_code, errors ->
-          List.iter prerr_string errors;
-          Alcotest.failf "'%s' exited with %i" label exit_code
-      | _, _ ->
-          Alcotest.failf "'%s' was exited abnormally, please rerun `make test`" label
-    in
+      already_failed := true;
+      Alcotest.fail "generated HTML should match expected"
+
+    | exit_code ->
+      Alcotest.failf "'diff' exited with %i" exit_code
 
 
-    let html_file =
-      match extension with
-      | ".mli" -> build_directory // test_package // module_name // "index.html"
-      | ".mld" -> build_directory // test_package // file_title ^ ".html"
-      | _ -> assert false
-    in
+(* Actual Tests *)
 
-    (* The commands to run differ depending on what kind of source filw we
-       have. *)
-    let generate_html =
-      match extension with
-      | ".mli" ->
-        fun () ->
-          command "ocamlfind c"
-            "ocamlfind c -bin-annot -o %s -c %s" cmi_file source_file;
-
-          command "odoc compile"
-            "%s compile --package %s %s" odoc test_package cmti_file;
-
-          begin match theme_uri with
-          | None ->
-            command "odoc html"
-              "%s html --syntax %s --output-dir %s %s" odoc lang build_directory odoc_file
-          | Some uri ->
-            command "odoc html"
-              "%s html --syntax %s --theme-uri=%s --output-dir %s %s" odoc lang uri build_directory odoc_file
-          end
-
-      | ".mld" ->
-        fun () ->
-          prerr_endline (Sys.getcwd ());
-          prerr_endline case_filename;
-          let mld_odoc_file = build_directory // ("page-" ^ file_title ^ ".odoc") in
-
-          command "odoc compile"
-            "%s compile --package=%s -o %s %s" odoc test_package mld_odoc_file source_file;
-
-          command "odoc html"
-            "%s html --output-dir=%s %s"
-            odoc build_directory mld_odoc_file
-
-      | _ ->
-        assert false
-    in
-
-    (* Running the actual commands for the test. *)
-    let run_test_case () =
-      generate_html ();
-
-      if found_tidy then begin
-        validate_html html_file
-      end;
-
-      let diff = Printf.sprintf "diff -u %s %s" reference_file html_file in
-      match Sys.command diff with
-      | 0 ->
-        ()
-
-      | 1 ->
-        (* If the diff command exits with 1, the two HTML files are different.
-           diff has already written its output to STDOUT, but depending on the
-           formatting of the HTML files, it might be illegible. To create a
-           legible diff for the human reading the test output, pretty-print both
-           HTML files, and diff the pretty-printed output. *)
-        prerr_endline "\nPretty-printed diff:\n";
-
-        (* The filenames to use. *)
-        let pretty_reference_file =
-          build_directory // "reference.pretty.html" in
-        let pretty_actual_file =
-          build_directory // "actual.pretty.html" in
-
-        (* Do the actual pretty printing. *)
-        pretty_print_html reference_file pretty_reference_file;
-        pretty_print_html html_file pretty_actual_file;
-
-        (* The second diff, of pretty-printed HTML output. *)
-        Printf.sprintf "diff -u %s %s" pretty_reference_file pretty_actual_file
-        |> Sys.command
-        |> ignore;
-
-        (* Also provide the command for overwriting the expected output with the
-           actual output, in case it is the actual output that is correct. *)
-        if not !already_failed then begin
-          let actual = "_build/default" // test_root // html_file in
-          let expected = test_root // reference_file in
-          Soup.write_file contains_actual actual;
-          Soup.write_file contains_expected expected;
-
-          let actual = "_build/default" // test_root // contains_actual in
-          let expected = "_build/default" // test_root // contains_expected in
-          prerr_endline "\nTo replace expected output with actual, run";
-          Printf.eprintf
-            "cp `cat %s` `cat %s` && make test\n\n" actual expected;
-
-          already_failed := true
-        end;
-
-        Alcotest.fail "actual HTML output does not match expected"
-
-      | exit_code ->
-        Alcotest.failf "'diff' exited with %i" exit_code
-    in
-    test_name, `Slow, run_test_case
+let output_support_files =
+  let run () =
+    command "odoc support-files" "%s support-files --output-dir %s"
+      Env.odoc (Env.path `scratch)
   in
+  "support-files", `Slow, run
 
-  let html_ml_tests : unit Alcotest.test = "html (ml)", List.map (make_html_test ~lang:"ml") cases in
 
-  let html_re_tests : unit Alcotest.test = "html (re)", List.map (make_html_test ~lang:"re") cases in
+let make_test_case ?theme_uri ?syntax case_basename =
+  let case = Case.make ?theme_uri ?syntax case_basename in
+  let run () =
+    (* Compile the source file and generate HTML. *)
+    generate_html case;
 
-  let output_support_files : unit Alcotest.test =
-    let run_test_case () =
-      command "odoc support-files"
-        "%s css --output-dir %s" odoc build_directory
-    in
+    (* Run HTML validation *)
+    if Tidy.is_present_in_path then begin
+      let issues = Tidy.validate (Case.actual_html_file case) in
+      if issues <> [] then begin
+        List.iter prerr_endline issues;
+        Alcotest.fail "Tidy validation error"
+      end
+    end;
 
-    "support-files", ["support-files", `Slow, run_test_case]
+    (* Diff the actual output with the expected output. *)
+    diff case;
   in
+  Case.name case, `Slow, run
 
-  (* Custom theme URI tests. *)
-  let theme_uri_tests : unit Alcotest.test =
-    "theme_uri", [
-      make_html_test ~theme_uri:"/a/b/c" "module.mli";
-      make_html_test ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
-      make_html_test ~theme_uri:"../b/c" "include.mli";
-      make_html_test ~theme_uri:"b/c" "section.mli";
-    ]
-  in
+
+let source_files = [
+  "val.mli";
+  "markup.mli";
+  "section.mli";
+  "module.mli";
+  "interlude.mli";
+  "include.mli";
+  "mld.mld";
+  "type.mli";
+  "external.mli";
+  "functor.mli";
+  "class.mli";
+  "stop.mli";
+]
+
+
+let () =
+  Env.init ();
 
   Alcotest.run "html" [
-    output_support_files;
-    html_ml_tests;
-    theme_uri_tests;
-    html_re_tests;
+    "support_files", [output_support_files];
+    "html_ml", List.map (make_test_case ~syntax:`ml) source_files;
+    "html_re", List.map (make_test_case ~syntax:`re) source_files;
+    "custom_theme", [
+      make_test_case ~theme_uri:"/a/b/c" "module.mli";
+      make_test_case ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
+      make_test_case ~theme_uri:"../b/c" "include.mli";
+      make_test_case ~theme_uri:"b/c" "section.mli";
+    ];
   ]
