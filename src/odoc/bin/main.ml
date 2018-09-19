@@ -248,7 +248,7 @@ end = struct
   let cmd =
     let output =
       let doc = "Output HTML fragment file" in
-      Arg.(required & opt (some string) None &
+      Arg.(value & opt string "/dev/stdout" &
           info ~docs ~docv:"file.html" ~doc ["o"; "output-file"])
         in
     let input =
@@ -257,8 +257,9 @@ end = struct
     in
     let root_uri =
       let doc = "Root URI used to resolve cross-references. Set this to the \
-                 root of the global docset during local development." in
-      Arg.(value & opt string "./" & info ~docv:"URI" ~doc ["root-uri"])
+                 root of the global docset during local development. By default \
+                 `.' is used." in
+      Arg.(value & opt string "" & info ~docv:"URI" ~doc ["root-uri"])
     in
     Term.(const html_fragment $ odoc_file_directories $ root_uri $ output $ input)
 
