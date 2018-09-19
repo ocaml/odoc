@@ -53,20 +53,18 @@ end
 
 (* Test case type and helpers *)
 
-type case = {
-  name: string;
-  kind: [ `mld | `mli ];
-  theme_uri: string option;
-  syntax: [ `ml | `re ];
-}
-
 (* A test case is a description of an input source file with a specific set of
    options to be tested. Each test case results in a unique generated output to
    be compared with an actually produced one.
 
    All paths defined in this module are relative to the build directory. *)
 module Case = struct
-  type t = case
+  type t = {
+    name: string;
+    kind: [ `mld | `mli ];
+    theme_uri: string option;
+    syntax: [ `ml | `re ];
+  }
 
   let make ?theme_uri ?(syntax = `ml) basename =
     let name = Filename.chop_extension basename in
@@ -156,7 +154,7 @@ let pretty_print_html source_file pretty_printed_file =
 
 let generate_html case =
   let theme_uri_option =
-    match case.theme_uri with
+    match Case.theme_uri case with
     | Some theme_uri -> "--theme-uri=" ^ theme_uri
     | None -> ""
   in
