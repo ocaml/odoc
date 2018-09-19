@@ -53,5 +53,5 @@ let validate file =
     errors_and_warnings
 
   | _ ->
-    Printf.eprintf "Unexpected exit code while running: %s" cmd;
-    exit 1
+    let msg = "Unexpected process termination while running: " ^ cmd in
+    raise (Failure msg)
