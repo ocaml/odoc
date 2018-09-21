@@ -10,7 +10,7 @@ env:
   - OCAML=4.07.0
 
 before_script:
-  - sudo add-apt-repository -y ppa:robert7/nixnote21
+  - sudo add-apt-repository -y ppa:robert7/tidy-html5
   - sudo add-apt-repository -y ppa:avsm/ocaml42+opam12
   - sudo apt-get update
   - sudo apt-get install opam tidy
