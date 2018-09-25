@@ -1,4 +1,5 @@
 (library
  (name html)
+ (modules_without_implementation to_ml_html_tree)
  (preprocess (pps bisect_ppx -conditional))
  (libraries model tyxml))
