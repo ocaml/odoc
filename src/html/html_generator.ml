@@ -45,8 +45,207 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
+type ('item_kind, 'item) tagged_item = [
+  | `Leaf_item of 'item_kind * 'item
+  | `Nested_article of 'item
+  | `Comment of Comment.docs_or_stop
+]
+
+type section = {
+  anchor : string;
+  text : Comment.link_content;
+  children : section list;
+}
+
+type toc = section list
 
 
+
+
+module type Syntax = sig
+  module Obj : sig
+    val close_tag_closed : string
+
+    val close_tag_extendable : string
+
+    val field_separator : string
+
+    val open_tag_closed : string
+
+    val open_tag_extendable : string
+  end
+
+  module Type : sig
+    val handle_constructor_params :
+         ('inner, 'outer) text Html.elt list
+      -> ('inner, 'outer) text Html.elt list
+      -> ('inner, 'outer) text Html.elt list
+
+    val handle_substitution_params :
+         ('inner, 'outer) text Html.elt list
+      -> ('inner, 'outer) text Html.elt list
+      -> ('inner, 'outer) text Html.elt list
+
+    val handle_format_params : string -> string
+
+    val type_def_semicolon : bool
+
+    val private_keyword : string
+
+    val parenthesize_constructor : bool
+
+    module Variant : sig
+      val parenthesize_params : bool
+    end
+
+    module Tuple : sig
+      val element_separator : string
+
+      val always_parenthesize : bool
+    end
+
+    module Record : sig
+      val field_separator : string
+    end
+
+    val var_prefix : string
+
+    val any : string
+
+    val arrow : [> Html_types.span | Html_types.pcdata ] Html.elt
+
+    module Exception : sig
+      val semicolon : bool
+    end
+
+    module GADT : sig
+      val arrow : [> Html_types.span | Html_types.pcdata ] Html.elt
+    end
+
+    module External : sig
+      val semicolon : bool
+
+      val handle_primitives :
+           string list
+        -> [< Html_types.code_content_fun > `A `PCDATA `Span] Tyxml_html.elt
+           list
+    end
+  end
+
+  module Mod : sig
+    val open_tag : string
+
+    val close_tag : string
+
+    val close_tag_semicolon : bool
+
+    val include_semicolon : bool
+
+    val functor_keyword : bool
+  end
+
+  module Class : sig
+    val open_tag : string
+
+    val close_tag : string
+  end
+
+  module Value : sig
+    val variable_keyword : string
+
+    val semicolon : bool
+  end
+end
+
+(**
+   Main module signature.
+ *)
+module type Html_generator = sig
+  module Top_level_markup : sig
+    val lay_out :
+         item_to_id:('item -> string option)
+      -> item_to_spec:('item -> string option)
+      -> render_leaf_item:('item -> rendered_item * Comment.docs)
+      -> render_nested_article:('item -> rendered_item * Html_tree.t list)
+      -> (_, 'item) tagged_item list
+      -> rendered_item * toc * Html_tree.t list
+
+    val render_toc :
+      toc -> [> Html_types.flow5_without_header_footer] Html.elt list
+  end
+
+  module Type_declaration : sig
+    val type_decl : Lang.TypeDecl.t -> rendered_item * Comment.docs
+
+    val extension : Lang.Extension.t -> rendered_item * Comment.docs
+
+    val exn : Lang.Exception.t -> rendered_item * Comment.docs
+
+    val format_params :
+         ?delim:[`parens | `brackets]
+      -> Lang.TypeDecl.param list
+      -> [> `PCDATA] Html.elt
+
+    val format_manifest :
+         ?compact_variants:bool
+      -> Lang.TypeDecl.Equation.t
+      -> ('inner, 'outer) text Html.elt list * bool
+
+    val format_constraints :
+         (Lang.TypeExpr.t * Lang.TypeExpr.t) list
+      -> ('inner, 'outer) text Html.elt list
+  end
+
+  module Type_expression : sig
+    val type_expr :
+         ?needs_parentheses:bool
+      -> Lang.TypeExpr.t
+      -> ('inner, 'outer) text Html.elt list
+
+    val format_type_path :
+         delim:[`parens | `brackets]
+      -> Lang.TypeExpr.t list
+      -> ('inner, 'outer) text Html.elt list
+      -> ('inner, 'outer) text Html.elt list
+  end
+
+  module Value : sig
+    val value : Lang.Value.t -> rendered_item * Comment.docs
+
+    val external_ : Lang.External.t -> rendered_item * Comment.docs
+  end
+
+  module Page : sig
+    val compilation_unit :
+      ?theme_uri:Html_tree.uri -> Lang.Compilation_unit.t -> Html_tree.t
+
+    val page : ?theme_uri:Html_tree.uri -> Lang.Page.t -> Html_tree.t
+  end
+
+  module Class : sig
+    val class_ :
+         ?theme_uri:Html_tree.uri
+      -> Lang.Class.t
+      -> Html_types.article_content Html.elt list * Html_tree.t list
+
+    val class_type :
+         ?theme_uri:Html_tree.uri
+      -> Lang.ClassType.t
+      -> Html_types.article_content Html.elt list * Html_tree.t list
+  end
+
+  module Module : sig
+    val signature :
+         ?theme_uri:Html_tree.uri
+      -> Lang.Signature.t
+      -> Html_types.div_content Html.elt list * toc * Html_tree.t list
+  end
+end
+
+(**
+   Main functor to create an {!To_html_tree.Html_generator}
+ *)
+module Make (Syn : Syntax) = struct
 module Type_expression :
 sig
   val type_expr :
@@ -74,9 +273,11 @@ struct
           | [] -> [ Html.pcdata constr ]
           | _ ->
             let args =
-              list_concat_map args ~sep:(Html.pcdata " * ") ~f:type_expr
+              list_concat_map args ~sep:(Html.pcdata Syn.Type.Tuple.element_separator) ~f:type_expr
             in
-            Html.pcdata (constr ^ " of ") :: args
+            if Syn.Type.Variant.parenthesize_params
+            then Html.pcdata (constr ^ "(") :: args @ [ Html.pcdata ")" ]
+            else Html.pcdata (constr ^ " of ") :: args
       )
     in
     match t.kind with
@@ -93,14 +294,21 @@ struct
   = fun (t : Model.Lang.TypeExpr.Object.t) ->
     let fields =
       list_concat_map t.fields ~f:(function
-        | Model.Lang.TypeExpr.Object.Method { name; type_ } ->
-          Html.pcdata (name ^ " : ") :: type_expr type_ @ [Html.pcdata "; "]
+        | Model.Lang.TypeExpr.Object.Method {name; type_} ->
+            (Html.pcdata (name ^ " : ") :: type_expr type_)
+            @ [Html.pcdata Syn.Obj.field_separator]
         | Inherit type_ ->
-          type_expr type_ @ [Html.pcdata "; "]
-      )
+            type_expr type_ @ [Html.pcdata Syn.Obj.field_separator] )
     in
-    Html.pcdata "< " ::
-      fields @ [Html.pcdata ((if t.open_ then ".. " else "") ^ ">")]
+    let open_tag =
+        if t.open_ then Html.pcdata Syn.Obj.open_tag_extendable
+        else Html.pcdata Syn.Obj.open_tag_closed
+    in
+    let close_tag =
+        if t.open_ then Html.pcdata Syn.Obj.close_tag_extendable
+        else Html.pcdata Syn.Obj.close_tag_closed
+    in
+    (open_tag :: fields) @ [close_tag]
 
   and format_type_path
     : 'inner 'outer. delim:[ `parens | `brackets ]
@@ -110,30 +318,38 @@ struct
     match params with
     | [] -> path
     | [param] ->
-      type_expr ~needs_parentheses:true param @ Html.pcdata " " :: path
+        let param = (type_expr ~needs_parentheses:true param) in
+        let args =
+          if Syn.Type.parenthesize_constructor
+          then  Html.pcdata "(" :: param @ [Html.pcdata ")"]
+          else param
+        in
+      Syn.Type.handle_constructor_params path args
     | params  ->
       let params =
         list_concat_map params ~sep:(Html.pcdata ",\194\160")
           ~f:type_expr
       in
-      match delim with
-      | `parens   -> Html.pcdata "(" :: params @ Html.pcdata ")\194\160" :: path
-      | `brackets -> Html.pcdata "[" :: params @ Html.pcdata "]\194\160" :: path
+      let params = match delim with
+        | `parens   -> Html.pcdata "(" :: params @ [Html.pcdata ")"]
+        | `brackets -> Html.pcdata "[" :: params @ [Html.pcdata "]"]
+      in
+      Syn.Type.handle_constructor_params path params
 
   and type_expr
     : 'inner 'outer. ?needs_parentheses:bool
     -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
   = fun ?(needs_parentheses=false) t ->
     match t with
-    | Var s -> [Markup.ML.Type.var ("'" ^ s)]
-    | Any  -> [Markup.ML.Type.var "_"]
+    | Var s -> [Markup.Type.var (Syn.Type.var_prefix ^ s)]
+    | Any  -> [Markup.Type.var Syn.Type.any]
     | Alias (te, alias) ->
       type_expr ~needs_parentheses:true te @
       Markup.keyword " as " :: [ Html.pcdata alias ]
     | Arrow (None, src, dst) ->
       let res =
         type_expr ~needs_parentheses:true src @
-        Html.pcdata " " :: Markup.ML.arrow :: Html.pcdata " " :: type_expr dst
+        Html.pcdata " " :: Syn.Type.arrow :: Html.pcdata " " :: type_expr dst
       in
       if not needs_parentheses then
         res
@@ -143,7 +359,7 @@ struct
       let res =
         Markup.ML.label lbl @ Html.pcdata ":" ::
         type_expr ~needs_parentheses:true src @
-        Html.pcdata " " :: Markup.ML.arrow :: Html.pcdata " " :: type_expr dst
+        Html.pcdata " " :: Syn.Type.arrow :: Html.pcdata " " :: type_expr dst
       in
       if not needs_parentheses then
         res
@@ -151,13 +367,13 @@ struct
         Html.pcdata "(" :: res @ [Html.pcdata ")"]
     | Tuple lst ->
       let res =
-        list_concat_map lst ~sep:(Markup.keyword " * ")
+        list_concat_map lst ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
           ~f:(type_expr ~needs_parentheses:true)
       in
-      if not needs_parentheses then
-        res
-      else
+      if Syn.Type.Tuple.always_parenthesize || needs_parentheses then
         Html.pcdata "(" :: res @ [Html.pcdata ")"]
+      else
+        res
     | Constr (path, args) ->
       let link = Html_tree.Relative_link.of_path ~stop_before:false path in
       format_type_path ~delim:(`parens) args link
@@ -242,7 +458,7 @@ struct
                 :: (Html.pcdata name)
                 :: (Html.pcdata " : ")
                 :: (type_expr typ)
-                @  [Html.pcdata ";"]
+                @  [Html.pcdata Syn.Type.Record.field_separator]
               )
             ]
         in
@@ -289,7 +505,7 @@ struct
           in
           let ret_type =
             Html.pcdata " " ::
-            (if constant then Markup.keyword ":" else Markup.ML.arrow) ::
+            (if constant then Markup.keyword ":" else Syn.Type.GADT.arrow) ::
             Html.pcdata " " ::
             type_expr te
           in
@@ -298,11 +514,18 @@ struct
       match args with
       | Tuple [] -> [ Html.code (cstr :: ret_type) ]
       | Tuple lst ->
+        let params = list_concat_map lst
+          ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
+          ~f:(type_expr ~needs_parentheses:is_gadt)
+        in
         [ Html.code (
             cstr ::
-            Markup.keyword (if is_gadt then " : " else " of ") ::
-            list_concat_map lst ~sep:(Markup.keyword " * ")
-              ~f:(type_expr ~needs_parentheses:is_gadt)
+            (
+              if Syn.Type.Variant.parenthesize_params
+              then Html.pcdata "(" :: params @ [ Html.pcdata ")" ]
+              else
+                Markup.keyword (if is_gadt then " : " else " of ") :: params
+            )
             @ ret_type
           )
         ]
@@ -359,6 +582,7 @@ struct
       ) ::
       list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
         ~f:extension_constructor
+      @ ( if Syn.Type.type_def_semicolon then [ Markup.keyword ";" ] else [] )
     in
     extension, t.doc
 
@@ -366,7 +590,8 @@ struct
 
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
-    let exn = Html.code [ Markup.keyword "exception " ] :: cstr in
+    let exn = Html.code [ Markup.keyword "exception " ] :: cstr
+      @ ( if Syn.Type.Exception.semicolon then [ Markup.keyword ";" ] else [] ) in
     exn, t.doc
 
 
@@ -383,11 +608,17 @@ struct
           match args with
           | [] -> [Html.code [ Html.pcdata cstr ]]
           | _ ->
+            let params = list_concat_map args
+              ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
+              ~f:type_expr
+            in
             [ Html.code (
                 Html.pcdata cstr ::
-                Markup.keyword " of " ::
-                list_concat_map args ~sep:(Markup.keyword " * ")
-                  ~f:type_expr
+                (
+                if Syn.Type.Variant.parenthesize_params
+                then Html.pcdata "(" :: params @ [ Html.pcdata ")" ]
+                else Markup.keyword " of " :: params
+                )
               )
             ]
       in
@@ -448,12 +679,12 @@ struct
     Html.pcdata (
       match params with
       | [] -> ""
-      | [x] -> format_param x ^ " "
+      | [x] -> format_param x |> Syn.Type.handle_format_params
       | lst ->
         let params = String.concat ", " (List.map format_param lst) in
         (match delim with `parens -> "(" | `brackets -> "[")
         ^ params ^
-        (match delim with `parens -> ") " | `brackets -> "] ")
+        (match delim with `parens -> ")" | `brackets -> "]")
     )
 
   let format_constraints
@@ -480,7 +711,7 @@ struct
     | Some t ->
       let manifest =
         Markup.keyword " = " ::
-        (if private_ then Markup.keyword "private " else Html.pcdata "") ::
+        (if private_ then Markup.keyword (Syn.Type.private_keyword ^ " ") else Html.pcdata "") ::
         type_expr t
       in
       manifest, false
@@ -497,7 +728,7 @@ struct
         let manifest =
           Markup.keyword " = " ::
           (if t.equation.private_ then
-            Markup.keyword "private "
+            Markup.keyword (Syn.Type.private_keyword ^ " ")
           else
             Html.pcdata "") ::
           polymorphic_variant ~type_ident:t.id variant
@@ -513,7 +744,7 @@ struct
       | Some repr ->
         Html.code [
           Markup.keyword " = ";
-          if need_private then Markup.keyword "private " else Html.pcdata ""
+          if need_private then Markup.keyword (Syn.Type.private_keyword ^ " ") else Html.pcdata ""
         ] ::
         match repr with
         | Extensible -> [Html.code [Markup.keyword  ".."]]
@@ -521,14 +752,14 @@ struct
         | Record fields -> record fields
     in
     let tdecl_def =
-      Html.code [
-        Markup.keyword "type ";
-        params;
-        Html.pcdata tyname;
-      ] ::
+      Html.code (
+          [ Markup.keyword "type "]
+          @ ( Syn.Type.handle_constructor_params [Html.pcdata tyname] [params] )
+      ) ::
       manifest @
       representation @
       Utils.optional_code constraints
+      @ ( if Syn.Type.type_def_semicolon then [ Markup.keyword ";" ] else [] )
     in
     tdecl_def, t.doc
 end
@@ -545,10 +776,11 @@ struct
   let value (t : Model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
     let value =
-      Markup.keyword "val " ::
+      Markup.keyword (Syn.Value.variable_keyword ^ " ") ::
       Html.pcdata name ::
       Html.pcdata " : " ::
       type_expr t.type_
+      @ ( if Syn.Value.semicolon then [ Markup.keyword ";" ] else [] )
     in
     [Html.code value], t.doc
 
@@ -560,7 +792,8 @@ struct
       Html.pcdata " : " ::
       type_expr t.type_ @
       Html.pcdata " = " ::
-      List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) t.primitives
+      Syn.Type.External.handle_primitives t.primitives
+      @ ( if Syn.Type.External.semicolon then [ Markup.keyword ";" ] else [] )
     in
     [Html.code external_], t.doc
 end
@@ -600,20 +833,6 @@ type async
    Nested signatures are currently marked up with <article> tags. The top-level
    layout code is eventually indirectly triggered recursively for laying them
    out, as well. *)
-
-type ('item_kind, 'item) tagged_item = [
-  | `Leaf_item of 'item_kind * 'item
-  | `Nested_article of 'item
-  | `Comment of Comment.docs_or_stop
-]
-
-type section = {
-  anchor : string;
-  text : Comment.link_content;
-  children : section list;
-}
-
-type toc = section list
 
 module Top_level_markup :
 sig
@@ -1058,7 +1277,7 @@ struct
         let link = Html_tree.Relative_link.of_path ~stop_before:false path in
         format_type_path ~delim:(`brackets) args link
       | Signature _ ->
-        [ Markup.keyword "object" ; Html.pcdata " ... " ; Markup.keyword "end" ]
+        [ Markup.keyword Syn.Class.open_tag ; Html.pcdata " ... " ; Markup.keyword Syn.Class.close_tag ]
 
   and class_decl
     : 'inner_row 'outer_row. Model.Lang.Class.decl
@@ -1069,11 +1288,11 @@ struct
       (* TODO: factorize the following with [type_expr] *)
       | Arrow (None, src, dst) ->
         type_expr ~needs_parentheses:true src @
-        Html.pcdata " " :: Markup.ML.arrow :: Html.pcdata " " :: class_decl dst
+        Html.pcdata " " :: Syn.Type.arrow :: Html.pcdata " " :: class_decl dst
       | Arrow (Some lbl, src, dst) ->
         Markup.ML.label lbl @ Html.pcdata ":" ::
         type_expr ~needs_parentheses:true src @
-        Html.pcdata " " :: Markup.ML.arrow :: Html.pcdata " " :: class_decl dst
+        Html.pcdata " " :: Syn.Type.arrow :: Html.pcdata " " :: class_decl dst
 
   and class_ ?theme_uri (t : Model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
@@ -1335,7 +1554,7 @@ struct
         Html_tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
-    let md_def_content = Markup.keyword "module " :: modname :: md in
+    let md_def_content = Markup.keyword "module " :: modname :: md @ ( if Syn.Mod.close_tag_semicolon then [ Markup.keyword ";" ] else [] ) in
     let region =
       [Html.code md_def_content]
         (* ~doc:(relax_docs_type (Documentation.first_to_html t.doc)) *)
@@ -1415,6 +1634,7 @@ struct
         Markup.keyword "module type " ::
         modname ::
         mty
+        @ ( if Syn.Mod.close_tag_semicolon then [ Markup.keyword ";" ] else [] )
       )
     in
     let region =
@@ -1431,9 +1651,9 @@ struct
     | Path mty_path ->
       Html_tree.Relative_link.of_path ~stop_before:true mty_path
     | Signature _ ->
-      [ Markup.keyword "sig" ; Html.pcdata " ... " ; Markup.keyword "end" ]
+      [ Markup.keyword Syn.Mod.open_tag ; Html.pcdata " ... " ; Markup.keyword Syn.Mod.close_tag ]
     | Functor (None, expr) ->
-      Markup.keyword "functor" :: Html.pcdata " () " ::
+        ( if Syn.Mod.functor_keyword then [ Markup.keyword "functor" ] else [] ) @ Html.pcdata " () " ::
       mty base expr
     | Functor (Some arg, expr) ->
       let name =
@@ -1446,10 +1666,10 @@ struct
         | exception _ -> to_print
         | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
       in
-      Markup.keyword "functor" ::
+      ( if Syn.Mod.functor_keyword then [ Markup.keyword "functor" ] else [] ) @
       Html.pcdata " (" :: name :: Html.pcdata " : " ::
       mty base arg.expr @
-      Html.pcdata ") -> " ::
+      [Html.pcdata ")"; Html.pcdata " "] @ Syn.Type.arrow :: Html.pcdata " " ::
       mty base expr
     | With (expr, substitutions) ->
       mty base expr @
@@ -1472,9 +1692,11 @@ struct
       module_decl' base md
     | TypeEq (frag_typ, td) ->
       Markup.keyword "type " ::
-      format_params td.Model.Lang.TypeDecl.Equation.params ::
-      Html_tree.Relative_link.of_fragment
-        ~base (Paths.Fragment.any_sort frag_typ) @
+      (Syn.Type.handle_substitution_params
+        (Html_tree.Relative_link.of_fragment
+          ~base (Paths.Fragment.any_sort frag_typ))
+        [format_params td.Lang.TypeDecl.Equation.params]
+      ) @
       fst (format_manifest td) @
       format_constraints td.Model.Lang.TypeDecl.Equation.constraints
     | ModuleSubst (frag_mod, mod_path) ->
@@ -1485,9 +1707,11 @@ struct
       Html_tree.Relative_link.of_path ~stop_before:true mod_path
     | TypeSubst (frag_typ, td) ->
       Markup.keyword "type " ::
-      format_params td.Lang.TypeDecl.Equation.params ::
-      Html_tree.Relative_link.of_fragment
-        ~base (Paths.Fragment.any_sort frag_typ) @
+      (Syn.Type.handle_substitution_params
+        (Html_tree.Relative_link.of_fragment
+          ~base (Paths.Fragment.any_sort frag_typ))
+        [format_params td.Lang.TypeDecl.Equation.params]
+      ) @
       Html.pcdata " := " ::
       match td.Lang.TypeDecl.Equation.manifest with
       | None -> assert false (* cf loader/cmti *)
@@ -1520,6 +1744,7 @@ struct
           Html.code (
             Markup.keyword "include " ::
             module_decl' t.parent t.decl
+            @ ( if Syn.Mod.include_semicolon then [ Markup.keyword ";" ] else [] )
           )
         in
         (* FIXME: I'd like to add an anchor here, but I don't know what id to
@@ -1610,3 +1835,4 @@ struct
     Html_tree.make ?theme_uri html []
 end
 include Page
+end
