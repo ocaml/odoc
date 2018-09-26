@@ -119,37 +119,20 @@ module Case = struct
 end
 
 
-let pretty_print_html source_file pretty_printed_file =
-  Markup.file source_file
-  |> fst
+let pretty_print_html_in_place html_file =
+  let temporary_pretty_printed_file = html_file ^ ".pretty" in
+  let html_stream, close_html_file = Markup.file html_file in
+
+  html_stream
   |> Markup.parse_html
   |> Markup.signals
-  |> Markup.transform begin fun (at_start_of_line, after_markup) signal ->
-    match signal with
-    | `Text ss ->
-      (* Markup.ml gives a "normalized" signal stream, so no empty text
-         signals. *)
-      let s = String.concat "" ss in
-      let at_start_of_line = s.[String.length s - 1] = '\n' in
-      let s =
-        if after_markup && s.[0] = '\n' then
-          String.sub s 1 (String.length s - 1)
-        else
-          s
-      in
-      [`Text [s]], Some (at_start_of_line, false)
-
-    | _ ->
-      let signals =
-        if at_start_of_line then
-          [signal; `Text ["\n"]]
-        else
-          [`Text ["\n"]; signal; `Text ["\n"]]
-      in
-      signals, Some (true, true)
-  end (true, false)
+  |> Markup.pretty_print
   |> Markup.write_html
-  |> Markup.to_file pretty_printed_file
+  |> Markup.to_file temporary_pretty_printed_file;
+
+  close_html_file ();
+
+  Sys.rename temporary_pretty_printed_file html_file
 
 
 let generate_html case =
@@ -194,25 +177,9 @@ let diff =
 
     | 1 ->
       (* If the diff command exits with 1, the two HTML files are different.
-         diff has already written its output to STDOUT, but depending on the
-         formatting of the HTML files, it might be illegible. To create a
-         legible diff for the human reading the test output, pretty-print both
-         HTML files, and diff the pretty-printed output. *)
-      prerr_endline "\nPretty-printed diff:\n";
+         diff has already written its output to STDOUT.
 
-      (* The filenames to use. *)
-      let pretty_expected_file = Env.path `scratch // "expected.pretty.html" in
-      let pretty_actual_file   = Env.path `scratch // "actual.pretty.html" in
-
-      (* Do the actual pretty printing. *)
-      pretty_print_html expected_file pretty_expected_file;
-      pretty_print_html actual_file pretty_actual_file;
-
-      (* The second diff, of pretty-printed HTML output. *)
-      let pretty_cmd = sprintf "diff -u %s %s" pretty_expected_file pretty_actual_file in
-      ignore (Sys.command pretty_cmd);
-
-      (* Also provide the command for overwriting the expected output with the
+         Also provide the command for overwriting the expected output with the
          actual output, in case it is the actual output that is correct.
          The paths are defined relative to the project's root. *)
       let root_actual_file   = Case.actual_html_file   ~from_root:true case in
@@ -247,6 +214,7 @@ let make_test_case ?theme_uri ?syntax case_basename =
   let run () =
     (* Compile the source file and generate HTML. *)
     generate_html case;
+    pretty_print_html_in_place (Case.actual_html_file case);
 
     (* Run HTML validation *)
     if Tidy.is_present_in_path then begin
