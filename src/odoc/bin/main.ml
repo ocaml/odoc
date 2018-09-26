@@ -240,10 +240,47 @@ end = struct
       Arg.(value & opt (pconv convert_syntax) (Html.Html_tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
-      odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)
+          odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
+end
+
+module Html_fragment : sig
+  val cmd : unit Term.t
+  val info: Term.info
+end = struct
+
+  let html_fragment directories root_uri output_file input_file =
+    let env = Env.create ~important_digests:false ~directories in
+    let input_file = Fs.File.of_string input_file in
+    let output_file = Fs.File.of_string output_file in
+    let root_uri =
+      let last_char = String.get root_uri (String.length root_uri - 1) in
+      if last_char <> '/' then root_uri ^ "/" else root_uri
+    in
+    Html_fragment.from_mld ~env ~root_uri ~output:output_file input_file
+
+  let cmd =
+    let output =
+      let doc = "Output HTML fragment file" in
+      Arg.(value & opt string "/dev/stdout" &
+          info ~docs ~docv:"file.html" ~doc ["o"; "output-file"])
+        in
+    let input =
+      let doc = "Input documentation page file" in
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.mld" [])
+    in
+    let root_uri =
+      let doc = "Root URI used to resolve cross-references. Set this to the \
+                 root of the global docset during local development. By default \
+                 `.' is used." in
+      Arg.(value & opt string "" & info ~docv:"URI" ~doc ["root-uri"])
+    in
+    Term.(const html_fragment $ odoc_file_directories $ root_uri $ output $ input)
+
+  let info =
+    Term.info ~doc:"Generates an html fragment file from an mld one" "html-fragment"
 end
 
 module Depends = struct
@@ -342,6 +379,7 @@ let () =
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
+    ; Html_fragment.(cmd, info)
     ; Support_files.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)

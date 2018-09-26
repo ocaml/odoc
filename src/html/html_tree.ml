@@ -66,7 +66,7 @@ module Relative_link = struct
     exception Not_linkable
     exception Can't_stop_before
 
-    val href : stop_before:bool -> _ Identifier.t -> string
+    val href : ?root_uri:string -> stop_before:bool -> _ Identifier.t -> string
   end = struct
     exception Not_linkable
 
@@ -78,9 +78,24 @@ module Relative_link = struct
 
     exception Can't_stop_before
 
-    let href ~stop_before id =
-      match Url.from_identifier ~stop_before id with
-      | Ok { Url. page; anchor; kind } ->
+    let href ?root_uri ~stop_before id =
+      match root_uri, Url.from_identifier ~stop_before id with
+      (* If root_uri is defined, do not perform relative URI resolution. *)
+      | Some root_uri, Ok { Url. page; anchor; kind } ->
+        let absolute_target =
+          List.rev (
+            if !semantic_uris || kind = "page" then
+              page
+            else
+              "index.html" :: page
+          )
+        in
+        let page = root_uri ^ String.concat "/" absolute_target in
+        begin match anchor with
+        | "" -> page
+        | anchor -> page ^ "#" ^ anchor
+        end
+      | None, Ok { Url. page; anchor; kind } ->
         let target =
           List.rev (
             if !semantic_uris || kind = "page" then
@@ -113,7 +128,7 @@ module Relative_link = struct
         | "" -> page
         | anchor -> page ^ "#" ^ anchor
         end
-      | Error e ->
+      | _, Error e ->
         (* TODO: handle errors better, perhaps by returning a [result] *)
         match e with
         | Not_linkable _ -> raise Not_linkable
