@@ -48,6 +48,8 @@ module type Syntax = sig
   end
 
   module Type : sig
+    val annotation_separator : string
+
     val handle_constructor_params :
          ('inner, 'outer) text Html.elt list
       -> ('inner, 'outer) text Html.elt list
@@ -78,8 +80,6 @@ module type Syntax = sig
 
     module Record : sig
       val field_separator : string
-
-      val label_value_separator : string
     end
 
     val var_prefix : string

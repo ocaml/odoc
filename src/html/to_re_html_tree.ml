@@ -15,6 +15,8 @@ module RE = Html_generator.Make (struct
   end
 
   module Type = struct
+    let annotation_separator = ": "
+
     let handle_constructor_params name args = name @ args
 
     let handle_substitution_params name args = name @ args
@@ -39,8 +41,6 @@ module RE = Html_generator.Make (struct
 
     module Record = struct
       let field_separator = ","
-
-      let label_value_separator = ": "
     end
 
     let var_prefix = "'"

@@ -15,6 +15,8 @@ module ML = Html_generator.Make (struct
   end
 
   module Type = struct
+    let annotation_separator = " : "
+
     let handle_params name args =
       if args <> [ Html.pcdata "" ]
       then args @ [ Html.pcdata " " ] @ name
@@ -43,8 +45,6 @@ module ML = Html_generator.Make (struct
 
     module Record = struct
       let field_separator = ";"
-
-      let label_value_separator = " : "
     end
 
     let var_prefix = "'"
