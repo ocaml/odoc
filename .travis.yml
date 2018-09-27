@@ -11,11 +11,15 @@ env:
 
 before_script:
   - sudo add-apt-repository -y ppa:robert7/tidy-html5
-  - sudo add-apt-repository -y ppa:avsm/ocaml42+opam12
   - sudo apt-get update
-  - sudo apt-get install opam tidy
-  - "opam init -y --compiler=$OCAML"
+  - sudo apt-get install tidy
+  - wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
+  - sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
+  - sudo chmod a+x /usr/local/bin/opam
+  - "opam init -y --compiler=$OCAML --disable-sandboxing"
   - eval `opam config env`
+  - opam --version
+  - ocaml -version
 
 script:
   - opam pin add -y --no-action odoc .
