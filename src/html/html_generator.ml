@@ -63,6 +63,9 @@ type toc = section list
 
 
 module type Syntax = sig
+
+  val label_separator : string
+
   module Obj : sig
     val close_tag_closed : string
 
@@ -297,7 +300,7 @@ struct
     let fields =
       list_concat_map t.fields ~f:(function
         | Model.Lang.TypeExpr.Object.Method {name; type_} ->
-            (Html.pcdata (name ^ " : ") :: type_expr type_)
+            (Html.pcdata (name ^ Syn.label_separator) :: type_expr type_)
             @ [Html.pcdata Syn.Obj.field_separator]
         | Inherit type_ ->
             type_expr type_ @ [Html.pcdata Syn.Obj.field_separator] )
@@ -526,13 +529,13 @@ struct
               if Syn.Type.Variant.parenthesize_params
               then Html.pcdata "(" :: params @ [ Html.pcdata ")" ]
               else
-                Markup.keyword (if is_gadt then " : " else " of ") :: params
+                Markup.keyword (if is_gadt then Syn.label_separator else " of ") :: params
             )
             @ ret_type
           )
         ]
       | Record fields ->
-        Html.code [ cstr; Markup.keyword (if is_gadt then " : " else " of ") ]
+        Html.code [ cstr; Markup.keyword (if is_gadt then Syn.label_separator else " of ") ]
         :: record fields
         @ [ Html.code ret_type ]
 
@@ -780,7 +783,7 @@ struct
     let value =
       Markup.keyword (Syn.Value.variable_keyword ^ " ") ::
       Html.pcdata name ::
-      Html.pcdata " : " ::
+      Html.pcdata Syn.label_separator ::
       type_expr t.type_
       @ ( if Syn.Value.semicolon then [ Markup.keyword ";" ] else [] )
     in
@@ -791,7 +794,7 @@ struct
     let external_ =
       Markup.keyword "external " ::
       Html.pcdata name ::
-      Html.pcdata " : " ::
+      Html.pcdata Syn.label_separator ::
       type_expr t.type_ @
       Html.pcdata " = " ::
       Syn.Type.External.handle_primitives t.primitives
@@ -1249,7 +1252,7 @@ struct
       private_ ::
       virtual_ ::
       Html.pcdata name ::
-      Html.pcdata " : " ::
+      Html.pcdata Syn.label_separator ::
       type_expr t.type_
     in
     [Html.code method_], t.doc
@@ -1265,7 +1268,7 @@ struct
       mutable_ ::
       virtual_ ::
       Html.pcdata name ::
-      Html.pcdata " : " ::
+      Html.pcdata Syn.label_separator ::
       type_expr t.type_
     in
     [Html.code val_], t.doc
@@ -1324,7 +1327,7 @@ struct
       virtual_ ::
       params ::
       cname ::
-      Html.pcdata " : " ::
+      Html.pcdata Syn.label_separator ::
       cd
     in
     let region =
@@ -1463,7 +1466,7 @@ struct
       | None ->
         (
           Html.pcdata (Paths.Identifier.name arg.id) ::
-          Html.pcdata " : " ::
+          Html.pcdata Syn.label_separator ::
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), []
       | Some expansion ->
@@ -1482,7 +1485,7 @@ struct
         Html_tree.leave ();
         (
           Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.pcdata name] ::
-          Html.pcdata " : " ::
+          Html.pcdata Syn.label_separator ::
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), [subtree]
     in
@@ -1566,7 +1569,7 @@ struct
   and module_decl (base : Paths.Identifier.signature) md =
     begin match md with
     | Alias _ -> Html.pcdata " = "
-    | ModuleType _ -> Html.pcdata " : "
+    | ModuleType _ -> Html.pcdata Syn.label_separator
     end ::
     module_decl' base md
 
@@ -1601,7 +1604,7 @@ struct
         begin match expr with
         | Signature _
         | Path _ -> Html.pcdata " = "
-        | _ -> Html.pcdata " : "
+        | _ -> Html.pcdata Syn.label_separator
         end ::
         mty (Paths.Identifier.signature_of_module_type t.id) expr
     in
@@ -1669,7 +1672,7 @@ struct
         | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
       in
       ( if Syn.Mod.functor_keyword then [ Markup.keyword "functor" ] else [] ) @
-      Html.pcdata " (" :: name :: Html.pcdata " : " ::
+      Html.pcdata " (" :: name :: Html.pcdata Syn.label_separator ::
       mty base arg.expr @
       [Html.pcdata ")"; Html.pcdata " "] @ Syn.Type.arrow :: Html.pcdata " " ::
       mty base expr

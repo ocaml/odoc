@@ -35,6 +35,9 @@ type toc = section list
   @see {!To_re_html_tree} and {!To_ml_html_tree}
   *)
 module type Syntax = sig
+
+  val label_separator : string
+
   module Obj : sig
     val close_tag_closed : string
 
