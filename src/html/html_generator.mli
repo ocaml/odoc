@@ -81,8 +81,6 @@ module type Syntax = sig
 
     module Record : sig
       val field_separator : string
-
-      val label_value_separator : string
     end
 
     val var_prefix : string

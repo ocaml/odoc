@@ -109,8 +109,6 @@ module type Syntax = sig
 
     module Record : sig
       val field_separator : string
-
-      val label_value_separator : string
     end
 
     val var_prefix : string
@@ -461,7 +459,7 @@ struct
             ; Html.code (
                 (if mutable_ then Markup.keyword "mutable " else Html.pcdata "")
                 :: (Html.pcdata name)
-                :: (Html.pcdata Syn.Type.Record.label_value_separator)
+                :: (Html.pcdata Syn.label_separator)
                 :: (type_expr typ)
                 @  [Html.pcdata Syn.Type.Record.field_separator]
               )
