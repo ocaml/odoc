@@ -2,8 +2,6 @@ module Html = Tyxml.Html
 open Utils
 
 module RE = Html_generator.Make (struct
-  let label_separator = ": "
-
   module Obj = struct
     let close_tag_closed = "}"
 
@@ -17,6 +15,8 @@ module RE = Html_generator.Make (struct
   end
 
   module Type = struct
+    let annotation_separator = ": "
+
     let handle_constructor_params name args = name @ args
 
     let handle_substitution_params name args = name @ args
