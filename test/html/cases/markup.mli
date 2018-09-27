@@ -114,7 +114,9 @@ v}
       {li
         {ul
           {li lists}
-          {li can be nested.}}}}
+          {li can be nested}
+          {li and can include references}
+          {li {!foo}}}}}
 
 
     {2 Unicode}

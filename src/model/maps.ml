@@ -892,6 +892,12 @@ class virtual documentation = object (self)
         (list_map (Location_.map self#documentation_inline_element) elements)
     | `Modules modules ->
       `Modules (List.map self#documentation_special_modules modules)
+    | `List (tag, elements) ->
+        `List (tag,
+          (List.map
+            (List.map
+              (Location_.map self#documentation_nestable_block_element))
+            elements))
     | element ->
       element
 
