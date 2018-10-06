@@ -254,6 +254,7 @@ pre {
   padding: 0.1em;
   border: 1px solid #eee;
   border-radius: 5px;
+  overflow-x: auto;
 }
 
 p code {
