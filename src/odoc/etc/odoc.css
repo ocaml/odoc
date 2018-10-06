@@ -310,7 +310,7 @@ dd> :first-child {
   margin-top: 0;
 }
 
-dl, article, .doc, aside {
+dl, article, div.spec, .doc, aside {
   margin-bottom: 25px;
 }
 
