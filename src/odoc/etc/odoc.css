@@ -296,7 +296,7 @@ pre code {
 
 /* Indent the second line in multiline spec definitions. */
 .spec:not(.type) > code {
-  display: inline-block;
+  display: block;
   padding-left: 4ex;
   text-indent: -4ex;
 }
