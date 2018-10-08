@@ -60,12 +60,12 @@ This means we follow the same installation than above, but using the
 ```sh
 λ opam switch 4.02.3+buckle-master
 λ eval `opam config env`
-λ opam install odoc
+λ opam pin add odoc.dev git+https://github.com/ocaml/odoc
 λ odoc --version
 1.2.0
 ```
 
-> if you have problem with installing odoc by `opam install odoc` the try to use `opam pin add odoc.dev git+https://github.com/ocaml/odoc`
+> BuckleScript support currently requires the latest development version of odoc.
 
 Now with that working, we can point `odoc` to the path where BuckleScript saves
 the compiled code that we can use to generate our documentation. This path is
