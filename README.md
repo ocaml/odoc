@@ -1,6 +1,6 @@
 # odoc
 
-**odoc** is a documentation generator for OCaml. It reads *doc comments*,
+**odoc** is a documentation generator for OCaml. It reads _doc comments_,
 delimited with `(** ... *)`, and outputs HTML. See example output at
 [docs.mirage.io][mirage-docs].
 
@@ -64,6 +64,8 @@ This means we follow the same installation than above, but using the
 λ odoc --version
 1.2.0
 ```
+
+> if you have problem with installing odoc by `opam install odoc` the try to use `opam pin add odoc.dev git+https://github.com/ocaml/odoc`
 
 Now with that working, we can point `odoc` to the path where BuckleScript saves
 the compiled code that we can use to generate our documentation. This path is
