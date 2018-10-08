@@ -51,6 +51,8 @@ The generated docs can then be found locally at
 
 ## Using `odoc` with BuckleScript/Reason
 
+> BuckleScript support currently requires the latest development version of odoc.
+
 While the BuckleScript/Reason toolchain relies on `npm`, `odoc` at the moment
 needs to be used from a working OCaml toolchain.
 
@@ -63,8 +65,6 @@ This means we follow the same installation than above, but using the
 λ opam pin add odoc.dev git+https://github.com/ocaml/odoc
 
 ```
-
-> BuckleScript support currently requires the latest development version of odoc.
 
 Now with that working, we can point `odoc` to the path where BuckleScript saves
 the compiled code that we can use to generate our documentation. This path is
