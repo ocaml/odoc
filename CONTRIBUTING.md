@@ -18,6 +18,7 @@ find the information in this file helpful.
   - [Debug prints](#Debug_prints)
   - [Expect tests](#Expect_tests)
   - [Coverage analysis](#Coverage_analysis)
+- [Roadmap](#Roadmap)
 - [Project structure](#Project_structure)
 
 <br/>
@@ -200,10 +201,22 @@ writing new tests, and want to know what they are actually touching. To use it,
 
 <br/>
 
+<a id="Roadmap"></a>
+## Roadmap
+
+1. We use [GitHub projects][projects] for grouping issues into overall topics. If you'd like to find an issue that isn't being worked on, try picking one up from the *To do* column of any of the projects!
+
+2. We use [milestones][milestones] to keep track of issues that we want to finish before the next release.
+
+[projects]: https://github.com/ocaml/odoc/projects
+[milestones]: https://github.com/ocaml/odoc/milestones
+
+<br/>
+
 <a id="Project_structure"></a>
 ## Project structure
 
-The project is divided into several sub-libraries, each of which is a directory
+odoc is divided into several sub-libraries, each of which is a directory
 under `src/`. Most of these have a *main file*, which has the same name as the
 directory. That main file is the interface for the entire sub-library directory.
 For example, [`src/parser`][parser-dir] has
