@@ -139,4 +139,4 @@ please don't hesitate to [reach out](#contact) for help.
 
 [discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
-[contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md
+[contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#readme
