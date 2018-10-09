@@ -34,32 +34,32 @@ table {
 }
 
 html {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 body {
   font-family: "Fira Sans", Helvetica, Arial, sans-serif;
-  font-weight: 300;
-  line-height: 1.5;
   text-align: left;
   color: #333;
   background: #FFFFFF;
 }
 
 .content {
-  max-width: 80ex;
+  max-width: 90ex;
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
   margin-top: 20px;
   margin-bottom: 50px;
+  font-family: "Noticia Text", Georgia, serif;
+  line-height: 1.5;
 }
 
 .content>header {
   margin-bottom: 30px;
 }
 
-.content p, .content ul {
-  font-family: "Noticia Text", Georgia, serif;
+.content>header nav {
+  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
 }
 
 /* Basic markup elements */
@@ -86,21 +86,17 @@ sup, sub {
   margin-left: 0.2ex;
 }
 
-p {
-  margin-bottom: 0.5em;
-}
 pre {
-  margin: 1.0em 0;
+  margin-top: 0.8em;
+  margin-bottom: 1.2em;
 }
 
+p, ul, ol {
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+}
 ul, ol {
-  margin-top: 10px;
-  margin-bottom: 10px;
   list-style-position: outside
-}
-
-ul {
-  list-style-type: square
 }
 
 ul>li {
@@ -144,6 +140,7 @@ a:hover {
 *:target {
   background-color: rgba(187,239,253,0.3) !important;
   box-shadow: 0 0px 0 1px rgba(187,239,253,0.8) !important;
+  border-radius: 1px;
 }
 
 *:hover>a.anchor {
@@ -191,8 +188,10 @@ a.anchor {
    we restart the sequence there like h2  */
 
 h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
+  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
   font-weight: 400;
-  margin: 1em 0 0.5em;
+  margin: 0.5em 0 0.5em 0;
+  padding-top: 0.1em;
   line-height: 1.2;
   overflow-wrap: break-word;
 }
@@ -207,7 +206,6 @@ h2 {
   font-weight: 500;
   font-size: 1.953em;
   box-shadow: 0 1px 0 0 #ddd;
-  padding-bottom: 0.2em;
 }
 
 h3 {
@@ -256,11 +254,11 @@ pre {
   overflow-x: auto;
 }
 
-p code {
+p code, li code {
   background-color: #f6f8fa;
   color: #0d2b3e;
-  border-radius: 5px;
-  padding: 0 0.5ex;
+  border-radius: 3px;
+  padding: 0 0.3ex;
 }
 
 p a > code {
@@ -282,7 +280,6 @@ pre code {
 /* Module member specification */
 
 .spec:not(.include), .spec.include details summary {
-  font-size: 1rem;
   background-color: #f6f8fa;
   border-radius: 3px;
   border-left: 4px solid #5c9cf5;
@@ -294,6 +291,10 @@ pre code {
   background-color: #ebeff2;
 }
 
+dl, div.spec, .doc, aside {
+  margin-bottom: 20px;
+}
+
 /* Indent the second line in multiline spec definitions. */
 .spec:not(.type) > code {
   display: block;
@@ -301,33 +302,28 @@ pre code {
   text-indent: -4ex;
 }
 
+.spec.exception > code {
+  display: inline-block;
+}
+
 dl > dd {
   padding: 0.5em;
-  padding-bottom: 0;
 }
 
 dd> :first-child {
   margin-top: 0;
 }
 
-dl, article, div.spec, .doc, aside {
-  margin-bottom: 25px;
-}
-
-section {
-  margin-bottom: 30px;
-}
-
-section > header {
-  margin-bottom: 25px;
-}
-
-dl:last-child, aside:last-child, article:last-child {
+dl:last-child, dd> :last-child, aside:last-child, article:last-child {
   margin-bottom: 0;
 }
 
 dt+dt {
-  margin-top: 30px;
+  margin-top: 15px;
+}
+
+section+section, section > header + dl {
+  margin-top: 25px;
 }
 
 .spec.type .variant {
@@ -371,15 +367,16 @@ div.doc>*:first-child {
   position: absolute;
   border-radius: 0 1ex 1ex 0;
   right: -20px;
-  top: 0;
-  bottom: 0;
+  top: 1px;
+  bottom: 1px;
   width: 15px;
   background: rgba(0, 4, 15, 0.05);
+  box-shadow: 0 0px 0 1px rgba(204, 204, 204, 0.53);
 }
 
 .spec.include details summary {
   position: relative;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   cursor: pointer;
   outline: none;
 }
