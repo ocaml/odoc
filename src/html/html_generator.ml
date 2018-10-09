@@ -1550,14 +1550,8 @@ struct
         in
         Html_tree.enter ~kind:(`Mod) modname;
         let doc = Documentation.to_html t.doc in
-        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion ?theme_uri expansion in
-        let expansion =
-          match doc with
-          | [] -> expansion
-          | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
-        in
-        let subtree = Html_tree.make ?theme_uri expansion subpages in
+        let subtree = Html_tree.make ~header_docs:doc ?theme_uri expansion subpages in
         Html_tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
