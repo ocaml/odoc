@@ -32,7 +32,7 @@ depends: [
   "markup" {>= "0.8.0"}
   "lambdasoup"
   "ocamlfind"
-  "sexplib"
+  "sexplib" {>= "113.33.00"}
 ]
 
 build: [
