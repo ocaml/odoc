@@ -22,8 +22,8 @@ depends: [
   "cppo" {build}
   "dune" {build}
   "fpath" {build}
+  "result" {build}
   "tyxml" {build & >= "4.0.0"}
-  "result"
 
   # Development dependencies. These should be removed in opam files sent to the
   # opam repo.
