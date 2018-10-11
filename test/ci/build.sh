@@ -8,4 +8,5 @@ else
   make test
   opam pin add -y --dev-repo dune
   make dune-test
+  make docs
 fi
