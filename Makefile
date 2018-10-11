@@ -2,6 +2,19 @@
 build :
 	dune build
 
+.PHONY : npm-package
+npm-package : npm-build
+	esy release
+
+.PHONY : npm-build
+npm-build :
+	esy install
+	esy build
+
+.PHONY : npm-test
+npm-test :
+	esy make test
+
 .PHONY : test
 test : build
 	dune build @test/parser/runtest --no-buffer -j 1
