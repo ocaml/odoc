@@ -1,4 +1,6 @@
-language: generic
+language: node_js
+node_js:
+  - "10"
 
 env:
   - OCAML=4.02.3
@@ -8,25 +10,19 @@ env:
   - OCAML=4.05.0
   - OCAML=4.06.1
   - OCAML=4.07.0
+  - ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
-before_script:
-  - sudo add-apt-repository -y ppa:robert7/tidy-html5
-  - sudo apt-get update
-  - sudo apt-get install tidy
-  - wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
-  - sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
-  - sudo chmod a+x /usr/local/bin/opam
-  - "opam init -y --compiler=$OCAML --disable-sandboxing"
-  - eval `opam config env`
-  - opam --version
-  - ocaml -version
+cache:
+  directories:
+  - /home/travis/.esy
+  - /home/travis/.nvm
 
-script:
-  - opam pin add -y --no-action odoc .
-  - opam install -y --deps-only odoc
-  - make test
-  - opam pin add -y --dev-repo dune
-  - make dune-test
+install:
+  - ./test/ci/install-deps.sh
+  - "if [[ $OCAML ]]; then eval `opam config env`; fi"
+  - ./test/ci/print-versions.sh
+
+script: ./test/ci/build.sh
 
 notifications:
   email:
