@@ -14,13 +14,18 @@ env:
 
 cache:
   directories:
+  - /home/travis/.opam
   - /home/travis/.esy
   - /home/travis/.nvm
+  - ./_build/default
 
 install:
   - ./test/ci/install-deps.sh
   - "if [[ $OCAML ]]; then eval `opam config env`; fi"
   - ./test/ci/print-versions.sh
+
+before_script:
+  - ./test/ci/clean-scratch.sh
 
 script: ./test/ci/build.sh
 
