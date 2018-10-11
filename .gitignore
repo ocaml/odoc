@@ -1,5 +1,5 @@
 # Jbuilder output.
-_build/
+_build
 *.install
 *.merlin
 
@@ -11,3 +11,7 @@ scratch/
 
 # opam v2
 _opam/
+
+# Esy outputs
+_release
+_esy
