@@ -17,7 +17,7 @@ npm-test :
 
 .PHONY : docs
 docs :
-	mkdir docs
+	mkdir -p docs
 	dune build @doc
 	cp -R _build/default/_doc/_html/* docs
 
