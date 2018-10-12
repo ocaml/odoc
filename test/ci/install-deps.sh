@@ -37,8 +37,8 @@ else
 
   "osx")
     wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-darwin
-    sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
-    sudo chmod a+x /usr/local/bin/opam
+    sudo mv ${OPAM_PKG}-linux /usr/bin/opam
+    sudo chmod a+x /usr/bin/opam
   ;;
   esac
 
