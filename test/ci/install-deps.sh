@@ -36,6 +36,7 @@ else
     sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
     sudo chmod a+x /usr/local/bin/opam
   ;;
+  esac
 
   opam init -y --compiler=$OCAML --disable-sandboxing
 fi
