@@ -7,9 +7,29 @@ sudo apt-get install tidy
 if [[ $ESY_BUILD == YES ]]; then
   npm --global install esy@0.3.x
 else
-  wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux
-  sudo mv opam-2.0.0-x86_64-linux /usr/local/bin/opam
-  sudo chmod a+x /usr/local/bin/opam
+
+  OPAM_RELEASES=https://github.com/ocaml/opam/releases/
+  OPAM_VERSION=2.0.0
+  OPAM_PKG=opam-${OPAM_VERSION}-x86_64
+
+  case $TRAVIS_OS_NAME in
+  "windows")
+    wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-linux
+    mv ${OPAM_PKG}-linux /usr/local/bin/opam
+    chmod a+x /usr/local/bin/opam
+  ;;
+
+  "linux")
+    wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-linux
+    sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
+    sudo chmod a+x /usr/local/bin/opam
+  ;;
+
+  "osx")
+    wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-darwin
+    sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
+    sudo chmod a+x /usr/local/bin/opam
+  ;;
 
   opam init -y --compiler=$OCAML --disable-sandboxing
 fi
