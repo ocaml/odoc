@@ -31,6 +31,7 @@ matrix:
 
 cache:
   directories:
+  - /usr/local/Cellar
   - /home/travis/.opam
   - /home/travis/.esy
   - /home/travis/.nvm
