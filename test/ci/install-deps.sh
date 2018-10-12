@@ -1,9 +1,5 @@
 #!/bin/bash
 
-sudo add-apt-repository -y ppa:robert7/tidy-html5
-sudo apt-get update
-sudo apt-get install tidy
-
 if [[ $ESY_BUILD == YES ]]; then
   npm --global install esy@0.3.x
 else
@@ -14,18 +10,28 @@ else
 
   case $TRAVIS_OS_NAME in
   "windows")
+    add-apt-repository -y ppa:robert7/tidy-html5
+    apt-get update
+    apt-get install tidy
+
     wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-linux
     mv ${OPAM_PKG}-linux /usr/local/bin/opam
     chmod a+x /usr/local/bin/opam
   ;;
 
   "linux")
+    sudo add-apt-repository -y ppa:robert7/tidy-html5
+    sudo apt-get update
+    sudo apt-get install tidy
+
     wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-linux
     sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
     sudo chmod a+x /usr/local/bin/opam
   ;;
 
   "osx")
+    brew install tidy-html5
+
     wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-darwin
     sudo mv ${OPAM_PKG}-linux /usr/local/bin/opam
     sudo chmod a+x /usr/local/bin/opam
