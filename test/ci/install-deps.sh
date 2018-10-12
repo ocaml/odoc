@@ -2,7 +2,7 @@
 
 # Install Tidy everywhere
 case $TRAVIS_OS_NAME in
-"windows") choco install html-tidy ;;
+"windows") choco install html-tidy make;;
 
 "linux")
   sudo add-apt-repository -y ppa:robert7/tidy-html5
