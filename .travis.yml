@@ -2,20 +2,32 @@ language: node_js
 node_js:
   - "10"
 
-os:
-  - windows
-  - linux
-  - osx
-
-env:
-  - OCAML=4.02.3
-  - OCAML=4.02.3+buckle-master
-  - OCAML=4.03.0
-  - OCAML=4.04.2
-  - OCAML=4.05.0
-  - OCAML=4.06.1
-  - OCAML=4.07.0
-  - ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+matrix:
+  include:
+    - os: linux
+      env: OCAML=4.02.3
+    - os: linux
+      env: OCAML=4.02.3+buckle-master
+    - os: linux
+      env: OCAML=4.03.0
+    - os: linux
+      env: OCAML=4.04.2
+    - os: linux
+      env: OCAML=4.05.0
+    - os: linux
+      env: OCAML=4.06.1
+    - os: linux
+      env: OCAML=4.07.0
+    - os : linux
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+    - os: osx
+      env: OCAML=4.07.0
+    - os: osx
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+    - os: windows
+      env: OCAML=4.07.0
+    - os: windows
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
 cache:
   directories:
