@@ -1,0 +1,17 @@
+{1:top Using [odoc]}
+
+This manual describes the features that are available and recommended for users
+to write great documentation using [odoc].
+
++ {{:#cookbook} Cookbook}
++ {{:#interfaces} Documenting your Interfaces}
++ {{:#custom-pages} Writing Custom Pages}
++ {{:#examples} Examples of Great [odoc] Usage}
+
+{2:cookbook Cookbook}
+
+{2:interfaces Documenting your Interfaces}
+
+{2:custom-pages Writing Custom Pages}
+
+{2:examples Examples of Great [odoc] Usage}

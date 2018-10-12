@@ -15,3 +15,6 @@ _opam/
 # Esy outputs
 _release
 _esy
+
+# Generated docs
+docs/

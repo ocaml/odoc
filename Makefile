@@ -15,6 +15,16 @@ npm-build :
 npm-test :
 	esy make test
 
+.PHONY : docs
+docs :
+	mkdir -p docs
+	dune build @doc
+	cp -R _build/default/_doc/_html/* docs
+
+.PHONY : docs
+serve :
+	python -m SimpleHTTPServer $(PORT)
+
 .PHONY : test
 test : build
 	dune build @test/parser/runtest --no-buffer -j 1
