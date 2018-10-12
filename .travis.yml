@@ -2,6 +2,11 @@ language: node_js
 node_js:
   - "10"
 
+os:
+  - windows
+  - linux
+  - osx
+
 env:
   - OCAML=4.02.3
   - OCAML=4.02.3+buckle-master
