@@ -25,8 +25,8 @@ else
   case $TRAVIS_OS_NAME in
   "windows")
     wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-linux
-    mv ${OPAM_PKG}-linux /usr/local/bin/opam
-    chmod a+x /usr/local/bin/opam
+    mv ${OPAM_PKG}-linux /usr/bin/opam
+    chmod a+x /usr/bin/opam
   ;;
 
   "linux")
