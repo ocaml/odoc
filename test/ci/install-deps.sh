@@ -2,9 +2,7 @@
 
 # Install Tidy everywhere
 case $TRAVIS_OS_NAME in
-"windows")
-  choco install html-tidy
-;;
+"windows") choco install html-tidy ;;
 
 "linux")
   sudo add-apt-repository -y ppa:robert7/tidy-html5
@@ -36,9 +34,7 @@ else
   ;;
 
   "osx")
-    wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}-darwin
-    sudo mv ${OPAM_PKG}-linux /usr/bin/opam
-    sudo chmod a+x /usr/bin/opam
+    brew install opam
   ;;
   esac
 
