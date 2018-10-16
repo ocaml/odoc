@@ -36,6 +36,16 @@
           </li>
           <li>
            <a href="#anchors">Anchors</a>
+           <ul>
+            <li>
+             <a href="#paragraph">Paragraph</a>
+             <ul>
+              <li>
+               <a href="#subparagraph">Subparagraph</a>
+              </li>
+             </ul>
+            </li>
+           </ul>
           </li>
          </ul>
         </li>
@@ -67,9 +77,9 @@
    </header>
    <section>
     <header>
-     <h2 id="sections">
+     <h1 id="sections">
       <a href="#sections" class="anchor"></a>Sections
-     </h2>
+     </h1>
      <p>
       Let's get these done first, because sections will be used to break up the rest of this test.
      </p>
@@ -79,18 +89,18 @@
     </header>
     <section>
      <header>
-      <h3 id="subsection-headings">
+      <h2 id="subsection-headings">
        <a href="#subsection-headings" class="anchor"></a>Subsection headings
-      </h3>
+      </h2>
       <p>
        and
       </p>
      </header>
      <section>
       <header>
-       <h4 id="sub-subsection-headings">
+       <h3 id="sub-subsection-headings">
         <a href="#sub-subsection-headings" class="anchor"></a>Sub-subsection headings
-       </h4>
+       </h3>
        <p>
         but odoc has banned deeper headings. There are also title headings, but they are only allowed in mld files.
        </p>
@@ -98,21 +108,41 @@
      </section>
      <section>
       <header>
-       <h4 id="anchors">
+       <h3 id="anchors">
         <a href="#anchors" class="anchor"></a>Anchors
-       </h4>
+       </h3>
        <p>
         Sections can have attached <a href="index.html#anchors"><span>Anchors</span></a>, and it is possible to <a href="index.html#anchors"><span>link</span></a> to them. Links to section headers should not be set in source code style.
        </p>
       </header>
+      <section>
+       <header>
+        <h4 id="paragraph">
+         <a href="#paragraph" class="anchor"></a>Paragraph
+        </h4>
+        <p>
+         Individual paragraphs can have a heading.
+        </p>
+       </header>
+       <section>
+        <header>
+         <h5 id="subparagraph">
+          <a href="#subparagraph" class="anchor"></a>Subparagraph
+         </h5>
+         <p>
+          Parts of a longer paragraph that can be considered alone can also have headings.
+         </p>
+        </header>
+       </section>
+      </section>
      </section>
     </section>
    </section>
    <section>
     <header>
-     <h2 id="styling">
+     <h1 id="styling">
       <a href="#styling" class="anchor"></a>Styling
-     </h2>
+     </h1>
      <p>
       This paragraph has some styled elements: <b>bold</b> and <i>italic</i>, <b><i>bold italic</i></b>, <em>emphasis</em>, <em><em>emphasis</em> within emphasis</em>, <b><i>bold italic</i></b>, super<sup>script</sup>, sub<sub>script</sub>. The line spacing should be enough for superscripts and subscripts not to look odd.
      </p>
@@ -129,9 +159,9 @@
    </section>
    <section>
     <header>
-     <h2 id="links-and-references">
+     <h1 id="links-and-references">
       <a href="#links-and-references" class="anchor"></a>Links and references
-     </h2>
+     </h1>
      <p>
       This is a <a href="#">link</a>. It sends you to the top of this page. Links can have markup inside them: <a href="#"><b>bold</b></a>, <a href="#"><i>italics</i></a>, <a href="#"><em>emphasis</em></a>, <a href="#">super<sup>script</sup></a>, <a href="#">sub<sub>script</sub></a>, and <a href="#"><code>code</code></a>. Links can also be nested <em><a href="#">inside</a></em> markup. Links cannot be nested inside each other. This link has no replacement text: <a href="#">#</a>. The text is filled in by odoc. This is a shorthand link: <a href="#">#</a>. The text is also filled in by odoc in this case.
      </p>
@@ -142,9 +172,9 @@
    </section>
    <section>
     <header>
-     <h2 id="preformatted-text">
+     <h1 id="preformatted-text">
       <a href="#preformatted-text" class="anchor"></a>Preformatted text
-     </h2>
+     </h1>
      <p>
       This is a code block:
      </p>
@@ -163,9 +193,9 @@ let bar =
    </section>
    <section>
     <header>
-     <h2 id="lists">
+     <h1 id="lists">
       <a href="#lists" class="anchor"></a>Lists
-     </h2>
+     </h1>
      <ul>
       <li>
        This is a
@@ -243,9 +273,9 @@ let bar =
    </section>
    <section>
     <header>
-     <h2 id="unicode">
+     <h1 id="unicode">
       <a href="#unicode" class="anchor"></a>Unicode
-     </h2>
+     </h1>
      <p>
       The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
      </p>
@@ -253,9 +283,9 @@ let bar =
    </section>
    <section>
     <header>
-     <h2 id="raw-html">
+     <h1 id="raw-html">
       <a href="#raw-html" class="anchor"></a>Raw HTML
-     </h2>
+     </h1>
      <p>
       Raw HTML can be <input type="text" placeholder="inserted"> as inline elements into sentences.
      </p>
@@ -267,9 +297,9 @@ let bar =
    </section>
    <section>
     <header>
-     <h2 id="tags">
+     <h1 id="tags">
       <a href="#tags" class="anchor"></a>Tags
-     </h2>
+     </h1>
      <p>
       Each comment can end with zero or more tags. Here are some examples:
      </p>

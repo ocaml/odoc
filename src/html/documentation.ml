@@ -385,10 +385,12 @@ let block_element
 
     let element =
       match level with
-      | `Title -> Html.h1 ~a content
-      | `Section -> Html.h2 ~a content
-      | `Subsection -> Html.h3 ~a content
-      | `Subsubsection -> Html.h4 ~a content
+      | `Title -> Html.h1 ~a:(Html.a_class ["title"]::a) content
+      | `Section -> Html.h1 ~a content
+      | `Subsection -> Html.h2 ~a content
+      | `Subsubsection -> Html.h3 ~a content
+      | `Paragraph -> Html.h4 ~a content
+      | `Subparagraph -> Html.h5 ~a content
     in
     Some element
 

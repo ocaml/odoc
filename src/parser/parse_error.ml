@@ -6,8 +6,8 @@ module Error = Model.Error
 let bad_markup : string -> Location.span -> Error.t =
   Error.format "'%s': bad markup"
 
-let bad_section_level : string -> Location.span -> Error.t =
-  Error.format "'%s': bad section level (2-4 allowed)"
+let bad_heading_level : int -> Location.span -> Error.t =
+  Error.format "'%d': bad heading level (0-5 allowed)"
 
 let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
   Error.format "%s cannot be empty" what
@@ -41,8 +41,14 @@ let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
 let only_one_title_allowed : Location.span -> Error.t =
   Error.make "only one title-level heading is allowed"
 
+let page_title_required : string -> Error.t =
+  Error.filename_only "page title is required, add one with {0 ...}"
+
 let sections_not_allowed : Location.span -> Error.t =
   Error.make "sections not allowed in this comment"
+
+let titles_not_allowed : Location.span -> Error.t =
+  Error.make "titles not allowed"
 
 let stray_at : Location.span -> Error.t =
   Error.make "stray '@'"

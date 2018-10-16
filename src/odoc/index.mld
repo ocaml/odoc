@@ -1,4 +1,4 @@
-{1:top odoc}
+{0:top odoc}
 
 The documentation compiler for OCaml and Reason.
 
@@ -10,7 +10,7 @@ The documentation compiler for OCaml and Reason.
 + {{:odoc-internals.html} Understanding [odoc] Internals}
 + {{:contributing.html} Contributing to [odoc]}
 
-{2:overview What is [odoc]?}
+{1:overview What is [odoc]?}
 
 [odoc] is not your ordinary documentation tool.
 
@@ -36,7 +36,7 @@ in turn will become [intro.html].
 Similarly, a [Game.cmti] will be compiled to [Game.odoc] which in turn will become
 [Game/index.html].
 
-{2:getting-started Getting Started with [odoc]}
+{1:getting-started Getting Started with [odoc]}
 
 You can install [odoc] today through [opam]:
 
@@ -44,7 +44,7 @@ You can install [odoc] today through [opam]:
 $ opam install odoc
 ]}
 
-{3:usage-ocaml ...using OCaml}
+{2:usage-ocaml ...using OCaml}
 
 The easiest way to use odoc right now is by having Dune drive it. This command
 should work in most Dune projects out of the box:
@@ -55,7 +55,7 @@ dune build @doc
 
 The generated docs can be found at [./_build/default/_doc/_html/index.html].
 
-{3:usage-bucklescript ...using BuckleScript}
+{2:usage-bucklescript ...using BuckleScript}
 
 While the BuckleScript/Reason toolchain relies on [npm], [odoc] at the moment
 needs to be used from a working OCaml toolchain.

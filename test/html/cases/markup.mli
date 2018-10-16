@@ -1,30 +1,38 @@
 (** Here, we test the rendering of comment markup. *)
 
 
-(** {2 Sections}
+(** {1 Sections}
 
     Let's get these done first, because sections will be used to break up the
     rest of this test.
 
     Besides the section heading above, there are also
 
-    {3 Subsection headings}
+    {2 Subsection headings}
 
     and
 
-    {4 Sub-subsection headings}
+    {3 Sub-subsection headings}
 
     but odoc has banned deeper headings. There are also title headings, but they
     are only allowed in mld files.
 
-    {4:anchors Anchors}
+    {3:anchors Anchors}
 
     Sections can have attached {!anchors}, and it is possible to {{!anchors}
     link} to them. Links to section headers should not be set in source code
     style.
 
+    {4 Paragraph}
 
-    {2 Styling}
+    Individual paragraphs can have a heading.
+
+    {5 Subparagraph}
+
+    Parts of a longer paragraph that can be considered alone can also have headings.
+
+
+    {1 Styling}
 
     This paragraph has some styled elements: {b bold} and {i italic},
     {b {i bold italic}}, {e emphasis}, {e {e emphasis} within emphasis},
@@ -43,7 +51,7 @@
     affected.
 
 
-    {2 Links and references}
+    {1 Links and references}
 
     This is a {{:#} link}. It sends you to the top of this page. Links can have
     markup inside them: {{:#} {b bold}}, {{:#} {i italics}},
@@ -63,7 +71,7 @@
     inside each other.
 
 
-    {2 Preformatted text}
+    {1 Preformatted text}
 
     This is a code block:
 
@@ -84,7 +92,7 @@ The main difference is these don't get syntax highlighting.
 v}
 
 
-    {2 Lists}
+    {1 Lists}
 
     - This is a
     - shorthand bulleted list,
@@ -119,12 +127,12 @@ v}
           {li {!foo}}}}}
 
 
-    {2 Unicode}
+    {1 Unicode}
 
     The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
 
 
-    {2 Raw HTML}
+    {1 Raw HTML}
 
     Raw HTML can be {%html:<input type="text" placeholder="inserted">%} as
     inline elements into sentences.
@@ -137,7 +145,7 @@ v}
     %}
 
 
-    {2 Tags}
+    {1 Tags}
 
     Each comment can end with zero or more tags. Here are some examples:
 

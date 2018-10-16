@@ -49,7 +49,7 @@ body {
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
   margin-top: 20px;
-  margin-bottom: 50px;
+  margin-bottom: 80px;
   font-family: "Noticia Text", Georgia, serif;
   line-height: 1.5;
 }
@@ -196,23 +196,23 @@ h1, h2, h3, h4, h5, h6, .h7, .h8, .h9, .h10 {
   overflow-wrap: break-word;
 }
 
-h1 {
+h1.title {
   font-weight: 500;
   font-size: 2.441em;
   margin-top: 1.214em;
 }
 
-h2 {
+h1 {
   font-weight: 500;
   font-size: 1.953em;
   box-shadow: 0 1px 0 0 #ddd;
 }
 
-h3 {
+h2 {
   font-size: 1.563em;
 }
 
-h4 {
+h3 {
   font-size: 1.25em;
 }
 
@@ -235,10 +235,15 @@ h3 code, h3 tt {
   font-weight: inherit;
 }
 
-h4 code, h4 tt {
+h3 code, h3 tt {
   font-size: inherit;
   font-weight: inherit;
 }
+
+h4 {
+  font-size: 1.12em;
+}
+
 
 /* Preformatted and code */
 

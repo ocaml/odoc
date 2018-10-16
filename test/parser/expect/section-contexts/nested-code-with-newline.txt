@@ -1,7 +1,7 @@
 ((output
   (ok
    (((f.ml (1 0) (3 5))
-     (2
+     (1
       (label
        ((root (f.ml (page f.ml) 00000000000000000000000000000000) f.ml)
         (label foo-bar--baz)))

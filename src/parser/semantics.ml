@@ -246,7 +246,7 @@ let section_heading
   in
 
   match status.sections_allowed, level with
-  | `None, _ ->
+  | `None, _any_level ->
     warning status (Parse_error.sections_not_allowed location);
     let content = (content :> (Comment.inline_element with_location) list) in
     let element =
@@ -256,39 +256,34 @@ let section_heading
     in
     parsed_a_title, element
 
-  | `All, 1 ->
-    if parsed_a_title then
-      warning status (Parse_error.only_one_title_allowed location);
-
-    (* The `Title level is lowered to `Section if:
-       - this is not a page, or
-       - it is a page but a title was already parsed. *)
-    let level =
-      if is_page && not parsed_a_title then
-        `Title
-      else begin
-        Parse_error.bad_section_level (string_of_int level) location
-        |> warning status;
-        `Section
-      end
-    in
-    let element = `Heading (level, label, content) in
+  | `No_titles, 0 ->
+    warning status (Parse_error.titles_not_allowed location);
+    let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
     true, element
 
-  | _ ->
+  | _, 0 ->
+    (* Duplicate title in API ref or in a page. Warn, but do not promote. *)
+    if not is_page || (is_page && parsed_a_title) then begin
+      warning status (Parse_error.only_one_title_allowed location)
+    end;
+    let element = `Heading (`Title, label, content) in
+    let element = Location.at location element in
+    true, element
+
+  | _, non_title_level ->
     let level =
-      match level with
-      | 2 -> `Section
-      | 3 -> `Subsection
-      | 4 -> `Subsubsection
+      match non_title_level with
+      | 0 -> assert false (* Already handled *)
+      | 1 -> `Section
+      | 2 -> `Subsection
+      | 3 -> `Subsubsection
+      | 4 -> `Paragraph
+      | 5 -> `Subparagraph
       | _ ->
-        Parse_error.bad_section_level (string_of_int level) location
-        |> warning status;
-        if level < 2 then
-          `Section
-        else
-          `Subsubsection
+        warning status (Parse_error.bad_heading_level level location);
+        (* Implicitly promote to level-5. *)
+        `Subparagraph
     in
     let element = `Heading (level, label, content) in
     let element = Location.at location element in
@@ -310,6 +305,14 @@ let top_level_block_elements
 
     match ast_elements with
     | [] ->
+      (* At least one title is required for a mld pages that allow titles. *)
+      if status.sections_allowed = `All && not parsed_a_title then begin
+        match status.parent_of_sections with
+        | Model.Paths.Identifier.Page ({file; _}, _) ->
+          let filename = Model.Root.Odoc_file.name file ^ ".mld" in
+          warning status (Parse_error.page_title_required filename)
+        | _not_a_page -> ()
+      end;
       List.rev comment_elements_acc
 
     | ast_element::ast_elements ->

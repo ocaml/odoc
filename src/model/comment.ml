@@ -76,6 +76,8 @@ type heading_level = [
   | `Section
   | `Subsection
   | `Subsubsection
+  | `Paragraph
+  | `Subparagraph
 ]
 
 type block_element = [

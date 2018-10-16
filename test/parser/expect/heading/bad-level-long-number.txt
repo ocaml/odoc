@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-3:\
-   \n'22': bad section level (2-4 allowed)"))
+   \n'22': bad heading level (0-5 allowed)"))
  (warnings ()))
