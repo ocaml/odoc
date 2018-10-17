@@ -1,6 +1,6 @@
-{1:top Contributing to odoc}
+{0:top Contributing to odoc}
 
-{3:issues Reporting issues}
+{1:issues Reporting issues}
 
 The easiest way to contribute is to report any issue you encounter
 {{:http://github.com/ocaml/odoc/issues}here}.
