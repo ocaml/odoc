@@ -48,7 +48,7 @@ let sections_not_allowed : Location.span -> Error.t =
   Error.make "sections not allowed in this comment"
 
 let titles_not_allowed : Location.span -> Error.t =
-  Error.make "titles not allowed"
+  Error.make "level-0 headings (titles) are only allowed in pages"
 
 let stray_at : Location.span -> Error.t =
   Error.make "stray '@'"
