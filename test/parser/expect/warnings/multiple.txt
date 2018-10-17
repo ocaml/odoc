@@ -14,6 +14,6 @@
       (((f.ml (2 3) (2 6)) (word Foo))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-7:\
-   \ntitles not allowed"
+   \nlevel-0 headings (titles) are only allowed in pages"
     "File \"f.ml\", line 2, characters 0-7:\
-   \ntitles not allowed")))
+   \nlevel-0 headings (titles) are only allowed in pages")))

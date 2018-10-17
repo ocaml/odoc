@@ -1,4 +1,5 @@
 ((output
-  (error  "File \"f.ml\", line 1, characters 0-7:\
-         \ntitles not allowed"))
+  (error
+    "File \"f.ml\", line 1, characters 0-7:\
+   \nlevel-0 headings (titles) are only allowed in pages"))
  (warnings ()))
