@@ -305,14 +305,6 @@ let top_level_block_elements
 
     match ast_elements with
     | [] ->
-      (* At least one title is required for a mld pages that allow titles. *)
-      if status.sections_allowed = `All && not parsed_a_title then begin
-        match status.parent_of_sections with
-        | Model.Paths.Identifier.Page ({file; _}, _) ->
-          let filename = Model.Root.Odoc_file.name file ^ ".mld" in
-          warning status (Parse_error.page_title_required filename)
-        | _not_a_page -> ()
-      end;
       List.rev comment_elements_acc
 
     | ast_element::ast_elements ->
