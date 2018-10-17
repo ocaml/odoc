@@ -137,9 +137,11 @@ Please also don't hesitate to [open an issue][issues].
 Any [question asked](#contact), [issue opened][issues], feedback offered, is a
 contribution to odoc, and the project and all its users are thankful :) If
 you'd like to contribute code specifically, you may find the guide in
-[`CONTRIBUTING.md`][contributing.md] helpful. If anything is missing from it,
-please don't hesitate to [reach out](#contact) for help.
+[`CONTRIBUTING.md`][contributing.md] helpful. Also see the [roadmap][roadmap]
+there. If anything is missing from it, please don't hesitate to
+[reach out](#contact).
 
 [discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
 [contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#readme
+[roadmap]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#Roadmap
