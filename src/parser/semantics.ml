@@ -264,7 +264,7 @@ let section_heading
 
   | _, 0 ->
     (* Duplicate title in API ref or in a page. Warn, but do not promote. *)
-    if not is_page || (is_page && parsed_a_title) then begin
+    if not is_page || parsed_a_title then begin
       warning status (Parse_error.only_one_title_allowed location)
     end;
     let element = `Heading (`Title, label, content) in
