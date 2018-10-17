@@ -64,5 +64,5 @@ your documentation.
 {2 Manual usage}
 
 Generic [odoc] build instructions apply to documentation pages. You can compile
-[mld] files manually with [odoc compile] (this is described in detaild in
-{{:manual_usage.html} Invoking [odoc] manually}).
+[mld] files manually with [odoc compile] (this is described in details in
+{{:system-integrations.html#manual-usage} Invoking [odoc] manually}).
