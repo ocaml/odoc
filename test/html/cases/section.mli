@@ -3,27 +3,27 @@
 
 (** This is the module comment. Eventually, sections won't be allowed in it. *)
 
-(** {2 Empty section} *)
+(** {1 Empty section} *)
 
-(** {2 Text only}
+(** {1 Text only}
 
     Foo bar. *)
 
-(** {2 Aside only} *)
+(** {1 Aside only} *)
 
 (** Foo bar. *)
 
-(** {2 Value only} *)
+(** {1 Value only} *)
 
 val foo : unit
 
-(** {2 Empty section}
+(** {1 Empty section}
 
-    {2 within a comment}
+    {1 within a comment}
 
-    {3 and one with a nested section} *)
+    {2 and one with a nested section} *)
 
-(** {2 {e This} [section] {b title} {_has} {^markup}}
+(** {1 {e This} [section] {b title} {_has} {^markup}}
 
     But links are impossible thanks to the parser, so we never have trouble
     rendering a section title in a table of contents – no link will be nested
