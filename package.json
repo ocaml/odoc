@@ -45,15 +45,15 @@
     "@opam/result": "1.3",
     "@opam/sexplib": "*",
     "@opam/tyxml": "4.2.0",
-    "ocaml": "4.2.3006"
+    "ocaml": "~4.2.0"
   },
   "resolutions": {
     "@opam/markup": "aantron/markup.ml:markup.opam#9f8e77",
-    "@opam/sexplib": "janestreet/sexplib#9e6e44e"
+    "@opam/sexplib": "bryphe/sexplib#548f94d"
   },
   "devDependencies": {
     "@opam/merlin": "^3.0.3",
-    "ocaml": "4.2.3006"
+    "ocaml": "~4.2.0"
   },
   "license": "ISC",
   "private": false
