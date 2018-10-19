@@ -308,7 +308,7 @@ let validate_first_page_heading status ast_element =
   match status.parent_of_sections with
   | Model.Paths.Identifier.Page ({file; _}, _) ->
     begin match ast_element with
-      | Location.{value = `Heading (_, _, _); _} -> ()
+      | {Location.value = `Heading (_, _, _); _} -> ()
       | _invalid_ast_element ->
         let filename = Model.Root.Odoc_file.name file ^ ".mld" in
         warning status (Parse_error.page_heading_required filename)
