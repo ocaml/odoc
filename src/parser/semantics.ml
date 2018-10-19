@@ -290,6 +290,17 @@ let section_heading
     parsed_a_title, element
 
 
+let validate_first_page_heading status ast_element =
+  match status.parent_of_sections with
+  | Model.Paths.Identifier.Page ({file; _}, _) ->
+    begin match ast_element with
+      | Location.{value = `Heading (l, _, _); _} when l >= 0 && l < 4 -> ()
+      | _invalid_ast_element ->
+        let filename = Model.Root.Odoc_file.name file ^ ".mld" in
+        warning status (Parse_error.page_heading_required filename)
+    end
+  | _not_a_page -> ()
+
 
 let top_level_block_elements
     : status -> (Ast.block_element with_location) list ->
@@ -308,6 +319,11 @@ let top_level_block_elements
       List.rev comment_elements_acc
 
     | ast_element::ast_elements ->
+      (* The first [ast_element] in pages must be a title or section heading. *)
+      if status.sections_allowed = `All && not parsed_a_title then begin
+        validate_first_page_heading status ast_element
+      end;
+
       match ast_element with
       | {value = #Ast.nestable_block_element; _} as element ->
         let element = nestable_block_element status element in
@@ -330,7 +346,6 @@ let top_level_block_elements
         in
         traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
   in
-
   traverse ~parsed_a_title:false [] ast_elements
 
 

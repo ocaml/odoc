@@ -41,14 +41,15 @@ let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
 let only_one_title_allowed : Location.span -> Error.t =
   Error.make "only one title-level heading is allowed"
 
-let page_title_required : string -> Error.t =
-  Error.filename_only "page title is required, add one with {0 ...}"
+let page_heading_required : string -> Error.t =
+  Error.filename_only "pages must start with a title or a section heading (levels 0-3)"
 
 let sections_not_allowed : Location.span -> Error.t =
   Error.make "sections not allowed in this comment"
 
 let titles_not_allowed : Location.span -> Error.t =
   Error.make "level-0 headings (titles) are only allowed in pages"
+  (* TODO: reword to "title headings {0 ...} are only allowed in pages" *)
 
 let stray_at : Location.span -> Error.t =
   Error.make "stray '@'"
