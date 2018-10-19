@@ -391,7 +391,7 @@ rule token input = parse
 
 
   | '{' (['0'-'9'] ['0'-'9']+ as level)
-    { raise_error input (Parse_error.bad_section_level level) }
+    { raise_error input (Parse_error.bad_heading_level (int_of_string level)) }
 
   | ('{' ['0'-'9'] as prefix) ':'
     { raise_error

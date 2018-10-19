@@ -202,17 +202,17 @@ h1 {
   margin-top: 1.214em;
 }
 
-h2 {
+h1 {
   font-weight: 500;
   font-size: 1.953em;
   box-shadow: 0 1px 0 0 #ddd;
 }
 
-h3 {
+h2 {
   font-size: 1.563em;
 }
 
-h4 {
+h3 {
   font-size: 1.25em;
 }
 
@@ -235,10 +235,15 @@ h3 code, h3 tt {
   font-weight: inherit;
 }
 
-h4 code, h4 tt {
+h3 code, h3 tt {
   font-size: inherit;
   font-weight: inherit;
 }
+
+h4 {
+  font-size: 1.12em;
+}
+
 
 /* Preformatted and code */
 

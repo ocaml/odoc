@@ -1,4 +1,4 @@
-{1:top Hows does [odoc] work?}
+{0:top Hows does [odoc] work?}
 
 [odoc] is built in a very modular fashion, with several modules that take care
 of mostly orthogonal concerns.
@@ -18,7 +18,7 @@ We will begin the flow with an [odoc] command that compiles a single [cmti] file
 Off we go!
 
 
-{4:step-1 1 — Compiling Player.cmti to Player.odoc}
+{3:step-1 1 — Compiling Player.cmti to Player.odoc}
 
 Superficially, what we need to do is straighforward.
 
@@ -45,7 +45,7 @@ happened?
   unit into the [Player.odoc] file in marshalled format.
 
 
-{4:step-2 2 — Compiling Player.odoc to Player/index.html}
+{3:step-2 2 — Compiling Player.odoc to Player/index.html}
 
 Now we can compile this to an HTML file:
 
@@ -71,7 +71,7 @@ In this case, what happened was
 + Lastly, this tree will be traversed, the [Game/Player] folder created, and
   the [index.html] file written to disk.
 
-{4:step-3 3 — Compiling page-intro.mld to page-intro.odoc}
+{3:step-3 3 — Compiling page-intro.mld to page-intro.odoc}
 
 We will begin by invoking [odoc] similarly than we did in the {{:#step-1}first
 step}.
@@ -90,7 +90,7 @@ page-intro.mld page-intro.odoc
   resolving found references
 + Lastly, the resulting page will be written down to disk by {!Page.save}
 
-{4:step-4 4 — Compiling page-intro.odoc to intro.html}
+{3:step-4 4 — Compiling page-intro.odoc to intro.html}
 
 {[
 $ odoc html -I src -o . ./src/page-intro.odoc

@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-7:\
-   \n'1': bad section level (2-4 allowed)"))
+   \ntitle-level headings {0 ...} are only allowed in pages"))
  (warnings ()))

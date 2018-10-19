@@ -467,43 +467,49 @@ let tests : test_suite list = [
     t "preceded-by-shorthand-list" "- foo\n{2 Bar}";
     t "nested-in-two-lists" "{ul {li - foo\n{2 Bar}}}";
     t "bad-level-long-number" "{22 Foo}";
-    t "bad-level-title" "{1 Foo}";
-    t "bad-level-too-deep" "{5 Foo}";
+    t "bad-level-title" "{0 Foo}";
+    t "bad-level-too-deep" "{6 Foo}";
     t "link-in-markup" "{2 {{:foo}}}";
     t "reference-in-markup" "{2 {!foo}}";
   ];
 
   "section-contexts", [
-    t "titles-allowed" "{1 Foo}"
+    t "titles-allowed" "{0 Foo}"
       ~sections_allowed:`All;
-    t "titles-zero-not-allowed" "{0 Foo}"
+    t "titles-no-high-levels" "{6 Foo}"
       ~sections_allowed:`All;
-    t "titles-no-high-levels" "{5 Foo}"
+    t "two-titles" "{0 Foo}\n{0 Bar}"
       ~sections_allowed:`All;
-    t "two-titles" "{1 Foo}\n{1 Bar}"
+    t "no-heading" "foo"
       ~sections_allowed:`All;
-    t "none" "{2 Foo}"
+    t "heading-after-paragraph" "foo\n{0 Bar}"
+      ~sections_allowed:`All;
+    t "two-top-level-section-headings" "{1 Foo}\n{1 Bar}"
+      ~permissive:true ~sections_allowed:`All;
+    t "two-headings-second-higher" "{1 Foo}\n{0 Bar}"
+      ~permissive:true ~sections_allowed:`All;
+    t "three-headings-last-two-higher" "{3 Foo}\n{1 Bar}\n{2 Baz}"
+      ~permissive:true ~sections_allowed:`All;
+    t "none" "{1 Foo}"
       ~sections_allowed:`None;
-    t "permissive" "{1 Foo}"
+    t "permissive" "{0 Foo}"
       ~permissive:true;
-    t "titles-allowed-permissive" "{1 Foo}"
+    t "titles-allowed-permissive" "{0 Foo}"
       ~permissive:true ~sections_allowed:`All;
-    t "titles-zero-not-allowed-permissive" "{0 Foo}"
+    t "titles-no-high-levels-permissive" "{6 Foo}"
       ~permissive:true ~sections_allowed:`All;
-    t "titles-no-high-levels-permissive" "{5 Foo}"
+    t "two-titles-permissive" "{0 Foo}\n{0 Bar}"
       ~permissive:true ~sections_allowed:`All;
-    t "two-titles-permissive" "{1 Foo}\n{1 Bar}"
-      ~permissive:true ~sections_allowed:`All;
-    t "none-permissive" "{2 Foo}"
+    t "none-permissive" "{1 Foo}"
       ~permissive:true ~sections_allowed:`None;
-    t "nested-code-with-newline" "{2 [foo\nbar\r\nbaz]}"
+    t "nested-code-with-newline" "{1 [foo\nbar\r\nbaz]}"
       ~permissive:true;
   ];
 
   "warnings", [
-    t "multiple" "{1 Foo}\n{1 Foo}"
-      ~permissive:true;
-    t "multiple-with-bad-section" "{0 Foo}\n{1 Foo}\n{1 Foo}"
+    t "multiple" "{0 Foo}\n{0 Foo}"
+      ~permissive:true ~sections_allowed:`No_titles;
+    t "multiple-with-bad-section" "{0 Foo}\n{0 Foo}\n{6 Foo}"
       ~permissive:true ~sections_allowed:`All;
   ];
 
@@ -857,7 +863,7 @@ let () =
       let actual =
         let {permissive; sections_allowed; location; parser_input; _} = case in
 
-        let dummy_filename = "f.ml" in
+        let dummy_filename = "f.ml" in (* FIXME: the .ml extension is not needed here. *)
 
         let dummy_page =
           let root : Model.Root.t = {

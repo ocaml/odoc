@@ -1,4 +1,4 @@
-{1:top Understanding odoc Internals}
+{0:top Understanding odoc Internals}
 
 This manual page describes the constituents of the compilation process and
 their relationships in the different compilation phases.
@@ -6,9 +6,10 @@ their relationships in the different compilation phases.
 + {{:#constituents} Constituents}
 + {{:#phases} Compilation Phases}
 
-{2:constituents Constituents}
+{1:constituents Constituents}
+...
 
-{2:phases Compilation Phases}
+{1:phases Compilation Phases}
 
 Whenever [odoc] attempts to compile a new [.odoc] file from a compiler output,
 it will go through 3 distinct compilation phases:
@@ -22,7 +23,7 @@ In the case of HTML generation, an additional 2 phases happen:
 + Tree building, and
 + Printing.
 
-{3:prepping-phase Prepping}
+{2:prepping-phase Prepping}
 
 Every compilation step will begin by building an {!Env.t} (environment) by
 looking into the import directories (specified with [-I]), and acquiring a
@@ -34,7 +35,7 @@ Output directories will be made sure exist and are writeable too.
 Once this is all done, dispatching based on the file extension will happen and
 {{:#loading-phase} loading will begin}.
 
-{3:loading-phase Loading}
+{2:loading-phase Loading}
 
 It always begins by creating a {!Model.Root.Odoc_file.t} file representation.
 This happens equally for all formats, including [.mld] files where
@@ -64,7 +65,7 @@ of modules that need to be imported (and tag them as Unresolved), and finally
 build {!Compilation_unit.t} out of them. This list will be important later on,
 as we attempt to {{:#xref-phase} resolve all references}.
 
-{3:xref-phase Cross Referencing}
+{2:xref-phase Cross Referencing}
 
 Now that we have a brand new compilation unit, we need to make sure that the
 things it references (such as functions or types in other modules) are properly
@@ -86,7 +87,7 @@ these references, which we can use for saving our [.odoc] file.
 We expand the cross-referencing environment one more time, and hand it over to
 {!Compilation_unit.save} so it will be marshalled and saved.
 
-{3:tree-phase Tree Building}
+{2:tree-phase Tree Building}
 
 In case we are compiling an [.odoc] file to [.html], we will continue the
 process after cross-referencing by delegating to one of the [To_html_tree]
@@ -95,7 +96,7 @@ used, otherwise {!Html.To_html_tree.ML}.
 
 [TODO(@ostera): explain how Html.To_html_tree.ML.compilation_unit works]
 
-{3:printing-phase Printing}
+{2:printing-phase Printing}
 
 After the HTML tree is fully built, we can just ask {!Tyxml.Html} to print it
 into a string for us. So folders will be created to make sure the output can be

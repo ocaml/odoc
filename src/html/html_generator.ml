@@ -999,10 +999,12 @@ struct
 
   let is_deeper_section_level =
     let level_to_int = function
-      | `Title -> 1
-      | `Section -> 2
-      | `Subsection -> 3
-      | `Subsubsection -> 4
+      | `Title -> 0
+      | `Section -> 1
+      | `Subsection -> 2
+      | `Subsubsection -> 3
+      | `Paragraph -> 4
+      | `Subparagraph -> 5
     in
     fun other_level ~than ->
       level_to_int other_level > level_to_int than
