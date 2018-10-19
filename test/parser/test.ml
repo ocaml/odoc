@@ -480,6 +480,12 @@ let tests : test_suite list = [
       ~sections_allowed:`All;
     t "two-titles" "{0 Foo}\n{0 Bar}"
       ~sections_allowed:`All;
+    t "two-top-level-section-headings" "{1 Foo}\n{1 Bar}"
+      ~permissive:true ~sections_allowed:`All;
+    t "two-headings-second-higher" "{1 Foo}\n{0 Bar}"
+      ~permissive:true ~sections_allowed:`All;
+    t "three-headings-last-two-higher" "{3 Foo}\n{1 Bar}\n{2 Baz}"
+      ~permissive:true ~sections_allowed:`All;
     t "none" "{1 Foo}"
       ~sections_allowed:`None;
     t "permissive" "{0 Foo}"
@@ -498,7 +504,7 @@ let tests : test_suite list = [
 
   "warnings", [
     t "multiple" "{0 Foo}\n{0 Foo}"
-      ~permissive:true;
+      ~permissive:true ~sections_allowed:`No_titles;
     t "multiple-with-bad-section" "{0 Foo}\n{0 Foo}\n{6 Foo}"
       ~permissive:true ~sections_allowed:`All;
   ];

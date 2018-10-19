@@ -219,13 +219,13 @@ let generate_heading_label : Comment.link_content -> string = fun content ->
 
 let section_heading
     : status ->
-      parsed_a_title:bool ->
+      top_heading_level:int option ->
       Location.span ->
       int ->
       string option ->
       (Ast.inline_element with_location) list ->
-        bool * (Comment.block_element with_location) =
-    fun status ~parsed_a_title location level label content ->
+      int option * (Comment.block_element with_location) =
+    fun status ~top_heading_level location level label content ->
 
   let content =
     non_link_inline_elements
@@ -245,36 +245,46 @@ let section_heading
     | _ -> false
   in
 
+  (* Validate heading levels. *)
+  begin match top_heading_level with
+  (* Duplicate title in page or  *)
+  | Some top when level = top && top = 0 && is_page ->
+    warning status (Parse_error.only_one_title_allowed location)
+  | Some top when level = top && top = 0 ->
+    warning status (Parse_error.titles_not_allowed location);
+  | Some top when level = top ->
+    warning status (Parse_error.duplicate_top_level_heading level location)
+  | Some top when level < top ->
+    warning status (Parse_error.level_higher_than_top_level ~top level location)
+  | _no_top_heading -> ()
+  end;
+
   match status.sections_allowed, level with
   | `None, _any_level ->
-    warning status (Parse_error.sections_not_allowed location);
+    warning status (Parse_error.headings_not_allowed location);
     let content = (content :> (Comment.inline_element with_location) list) in
     let element =
       Location.at location
         (`Paragraph [Location.at location
           (`Styled (`Bold, content))])
     in
-    parsed_a_title, element
+    top_heading_level, element
 
   | `No_titles, 0 ->
     warning status (Parse_error.titles_not_allowed location);
     let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
-    true, element
+    let top_heading_level =
+      match top_heading_level with
+      | None -> Some level
+      | some -> some
+    in
+    top_heading_level, element
 
-  | _, 0 ->
-    (* Duplicate title in API ref or in a page. Warn, but do not promote. *)
-    if not is_page || parsed_a_title then begin
-      warning status (Parse_error.only_one_title_allowed location)
-    end;
-    let element = `Heading (`Title, label, content) in
-    let element = Location.at location element in
-    true, element
-
-  | _, non_title_level ->
-    let level =
-      match non_title_level with
-      | 0 -> assert false (* Already handled *)
+  | _, level ->
+    let level' =
+      match level with
+      | 0 -> `Title
       | 1 -> `Section
       | 2 -> `Subsection
       | 3 -> `Subsubsection
@@ -285,9 +295,14 @@ let section_heading
         (* Implicitly promote to level-5. *)
         `Subparagraph
     in
-    let element = `Heading (level, label, content) in
+    let element = `Heading (level', label, content) in
     let element = Location.at location element in
-    parsed_a_title, element
+    let top_heading_level =
+      match top_heading_level with
+      | None -> Some level
+      | some -> some
+    in
+    top_heading_level, element
 
 
 let validate_first_page_heading status ast_element =
@@ -308,11 +323,11 @@ let top_level_block_elements
     fun status ast_elements ->
 
   let rec traverse
-      : parsed_a_title:bool ->
+      : top_heading_level:int option ->
         (Comment.block_element with_location) list ->
         (Ast.block_element with_location) list ->
           (Comment.block_element with_location) list =
-      fun ~parsed_a_title comment_elements_acc ast_elements ->
+      fun ~top_heading_level comment_elements_acc ast_elements ->
 
     match ast_elements with
     | [] ->
@@ -320,7 +335,7 @@ let top_level_block_elements
 
     | ast_element::ast_elements ->
       (* The first [ast_element] in pages must be a title or section heading. *)
-      if status.sections_allowed = `All && not parsed_a_title then begin
+      if status.sections_allowed = `All && top_heading_level = None then begin
         validate_first_page_heading status ast_element
       end;
 
@@ -328,25 +343,31 @@ let top_level_block_elements
       | {value = #Ast.nestable_block_element; _} as element ->
         let element = nestable_block_element status element in
         let element = (element :> Comment.block_element with_location) in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
       | {value = `Tag the_tag; _} ->
         let element = Location.same ast_element (`Tag (tag status the_tag)) in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
       | {value = `Heading (level, label, content); _} ->
-        let parsed_a_title, element =
+        let top_heading_level, element =
           section_heading
             status
-            ~parsed_a_title
+            ~top_heading_level
             ast_element.Location.location
             level
             label
             content
         in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
   in
-  traverse ~parsed_a_title:false [] ast_elements
+  let top_heading_level =
+    (* Non-page documents have a generated title. *)
+    match status.parent_of_sections with
+    | Model.Paths.Identifier.Page _ -> None
+    | _parent_with_generated_title -> Some 0
+  in
+  traverse ~top_heading_level [] ast_elements
 
 
 

@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 2, characters 0-7:\
-   \nonly one title-level heading is allowed"))
+   \nonly one title-level heading {0 ...} is allowed"))
  (warnings ()))
