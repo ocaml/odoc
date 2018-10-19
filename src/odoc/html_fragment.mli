@@ -16,12 +16,12 @@
 
 (** Produces html fragment files from a mld file. *)
 
-val from_mld : root_uri:string -> env:Env.builder -> output:Fs.File.t -> Fs.File.t -> unit
-(** [from_mld ~root_uri ~env ~output input] parses the content of the [input]
+val from_mld : xref_base_uri:string -> env:Env.builder -> output:Fs.File.t -> Fs.File.t -> unit
+(** [from_mld ~xref_base_uri ~env ~output input] parses the content of the [input]
     file as a documentation page ({e i.e.} the ocamldoc syntax), generates the
     equivalent HTML representation and writes the result into the [output]
     file. The produced file is an HTML fragment that can be embedded into other
     documents.
 
-    Cross-reference resolution uses the provided [root_uri] to locate docset
+    Cross-reference resolution uses the provided [xref_base_uri] to locate docset
     packages. *)
