@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"f.ml.mld\":\
-   \npages must start with a title or a section heading (levels 0-3)"))
+    "File \"f.ml\", line 1, characters 0-7:\
+   \n'6': bad heading level (0-5 allowed)"))
  (warnings ()))

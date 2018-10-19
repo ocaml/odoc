@@ -42,7 +42,7 @@ let only_one_title_allowed : Location.span -> Error.t =
   Error.make "only one title-level heading {0 ...} is allowed"
 
 let page_heading_required : string -> Error.t =
-  Error.filename_only "pages must start with a title or a section heading (levels 0-3)"
+  Error.filename_only "pages must start with a heading"
 
 let duplicate_top_level_heading : int -> Location.span -> Error.t =
   Error.format "duplicate {%d ...} top level heading not allowed"
