@@ -1,7 +1,9 @@
 #!/bin/bash
 
 if [[ $ESY_BUILD == YES ]]; then
-  make npm-build npm-test
+	esy --verbose install
+	esy --verbose build
+	esy make test
 else
   opam pin add -y --no-action odoc .
   opam install -y --deps-only odoc

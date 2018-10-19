@@ -46,7 +46,7 @@ install:
 before_script:
   - ./test/ci/clean-scratch.sh
 
-script: travis_wait 20 ./test/ci/build.sh
+script: ./test/ci/build.sh
 
 notifications:
   email:
