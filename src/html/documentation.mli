@@ -1,13 +1,13 @@
 module Html = Tyxml.Html
 
 val to_html :
-  ?root_uri:string ->
+  ?xref_base_uri:string ->
   ?syntax:Html_tree.syntax ->
   Model.Comment.docs ->
     ([> Html_types.flow5_without_header_footer ] Html.elt) list
 
 val first_to_html :
-  ?root_uri:string ->
+  ?xref_base_uri:string ->
   ?syntax:Html_tree.syntax ->
   Model.Comment.docs ->
     ([> Html_types.flow5_without_header_footer ] Html.elt) list
