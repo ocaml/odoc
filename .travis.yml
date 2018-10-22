@@ -33,9 +33,9 @@ cache:
   directories:
   - /usr/local/Cellar/opam
   - /usr/local/Cellar/tidy-html5
-  - /home/travis/.opam
-  - /home/travis/.esy
-  - /home/travis/.nvm
+  - $HOME/travis/.opam
+  - $HOME/travis/.esy
+  - $HOME/travis/.nvm
   - ./_build/default
 
 install:
