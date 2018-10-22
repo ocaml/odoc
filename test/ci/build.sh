@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [[ $ESY_BUILD == YES ]]; then
-	esy install --verbose
-	esy build --verbose
-	esy make test
+  esy install --verbose
+  esy build --verbose
+  esy make test
 else
   opam pin add -y --no-action odoc .
   opam install -y --deps-only odoc
