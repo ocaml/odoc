@@ -10,9 +10,13 @@ case $TRAVIS_OS_NAME in
   sudo apt-get install tidy
 ;;
 
-"osx") brew install tidy-html5 ;;
+"osx")
+  brew install tidy-html5
+  brew link tidy-html5
+;;
 esac
 
+# Install esy or opam
 if [[ $ESY_BUILD == YES ]]; then
   npm --global install esy@0.3.x
 else
@@ -35,6 +39,7 @@ else
 
   "osx")
     brew install opam
+    brew link opam
   ;;
   esac
 
