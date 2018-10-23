@@ -3,6 +3,7 @@ open Result
 
 module Error = Model.Error
 
+module Attrs = Attrs
 
 
 let read_string parent_definition location text =

@@ -1,0 +1,19 @@
+
+(rule
+	(deps (:input cases/ast.mli))
+  (targets ast.output)
+  (action (with-stderr-to ast.output
+		        (run %{workspace_root}/src/odoc/bin/main.exe lint %{input}))))
+(alias
+  (name runtest)
+  (action (diff expect/ast.expected ast.output)))
+
+
+(rule
+	(deps (:input cases/parser_errors.mli))
+  (targets parser_errors.output)
+  (action (with-stderr-to parser_errors.output
+		        (run %{workspace_root}/src/odoc/bin/main.exe lint %{input}))))
+(alias
+  (name runtest)
+  (action (diff expect/parser_errors.expected parser_errors.output)))

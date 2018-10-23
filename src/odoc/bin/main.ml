@@ -377,6 +377,33 @@ module Targets = struct
   end
 end
 
+
+module Lint : sig
+  val cmd : unit Term.t
+  val info: Term.info
+end = struct
+  let main input_file =
+    let input_file = Fs.File.of_string input_file in
+    if Fs.File.has_ext "mli" input_file then
+      Lint.mli input_file
+    else
+    if Fs.File.has_ext "mld" input_file then
+      Lint.mld input_file
+    else begin
+      Printf.eprintf "Unknown extension, expected one of: mli or mld.\n%!";
+      exit 2
+    end
+  let cmd =
+    let input =
+      let doc = "Input mld or mli file" in
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
+    in
+    Term.(const main $ input)
+  let info =
+    Term.info ~doc:"Validate odoc comment syntax in mli and mld files" "lint"
+end
+
+
 let () =
   let subcommands =
     [ Compile.(cmd, info)
@@ -388,6 +415,7 @@ let () =
     ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Html.(cmd, info)
+    ; Lint.(cmd, info)
     ]
   in
   let default =

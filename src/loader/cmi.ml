@@ -512,7 +512,7 @@ let read_value_description env parent id vd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id vd.val_attributes in
+  let doc = read_attributes container vd.val_attributes in
     mark_value_description vd;
     let type_ = read_type_expr env vd.val_type in
     match vd.val_kind with
@@ -534,8 +534,7 @@ let read_label_declaration env parent ld =
   let name = parenthesise (Ident.name ld.ld_id) in
   let id = Identifier.Field(parent, name) in
   let doc =
-    read_attributes (Identifier.label_parent_of_parent parent) id
-      ld.ld_attributes
+    read_attributes (Identifier.label_parent_of_parent parent) ld.ld_attributes
   in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_type_expr env ld.ld_type in
@@ -562,7 +561,7 @@ let read_constructor_declaration env parent cd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_datatype parent)
   in
-  let doc = read_attributes container id cd.cd_attributes in
+  let doc = read_attributes container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments env
       (Identifier.parent_of_datatype parent) cd.cd_args
@@ -623,7 +622,7 @@ let read_type_declaration env parent id decl =
   let container = Identifier.label_parent_of_parent
                     (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id decl.type_attributes in
+  let doc = read_attributes container decl.type_attributes in
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
@@ -654,7 +653,7 @@ let read_extension_constructor env parent id ext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id ext.ext_attributes in
+  let doc = read_attributes container ext.ext_attributes in
   let args =
     read_constructor_declaration_arguments env
       (Identifier.parent_of_signature parent) ext.ext_args
@@ -689,7 +688,7 @@ let read_exception env parent id ext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id ext.ext_attributes in
+  let doc = read_attributes container ext.ext_attributes in
     mark_exception ext;
     let args =
       read_constructor_declaration_arguments env
@@ -792,7 +791,7 @@ let read_class_type_declaration env parent id cltd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id cltd.clty_attributes in
+  let doc = read_attributes container cltd.clty_attributes in
     mark_class_type_declaration cltd;
     let params =
       List.map2
@@ -830,7 +829,7 @@ let read_class_declaration env parent id cld =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id cld.cty_attributes in
+  let doc = read_attributes container cld.cty_attributes in
     mark_class_declaration cld;
     let params =
       List.map2
@@ -875,7 +874,7 @@ and read_module_type_declaration env parent id mtd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id mtd.mtd_attributes in
+  let doc = read_attributes container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
   let expansion =
     match expr with
@@ -891,7 +890,7 @@ and read_module_declaration env parent ident md =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id md.md_attributes in
+  let doc = read_attributes container md.md_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with

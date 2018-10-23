@@ -1,5 +1,7 @@
 open Result
 
+module Attrs = Attrs
+
 val read_string :
   Model.Paths.Identifier.label_parent ->
   Location.t ->

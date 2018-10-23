@@ -11,16 +11,6 @@ let command label =
     if exit_code <> 0 then
       Alcotest.failf "'%s' exited with %i" label exit_code)
 
-(* Filename.extension is only available on 4.04. *)
-module Filename = struct
-  include Filename
-
-  let extension filename =
-    let dot_index = String.rindex filename '.' in
-    String.sub filename dot_index (String.length filename - dot_index)
-end
-
-
 (* Testing environment *)
 
 module Env = struct

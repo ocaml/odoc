@@ -41,7 +41,7 @@ let load_payload : Parsetree.payload -> (string * Location.t) option = function
   | _ ->
     None
 
-let read_attributes parent _id attrs =
+let read_attributes parent attrs =
   let ocaml_deprecated = ref None in
   let rec loop first nb_deprecated acc
       : _ -> (Model.Comment.docs, Model.Error.t) result =

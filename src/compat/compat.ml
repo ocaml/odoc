@@ -29,3 +29,17 @@ struct
 #endif
 
 end
+
+module Filename = struct
+  include Filename
+
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+  let extension filename =
+    let dot_index = String.rindex filename '.' in
+    String.sub filename dot_index (String.length filename - dot_index)
+
+  let remove_extension filename =
+    let dot_index = String.index filename '.' in
+    String.sub filename 0 dot_index
+#endif
+end
