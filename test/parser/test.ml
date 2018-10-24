@@ -501,17 +501,20 @@ let tests : test_suite list = [
       ~permissive:true ~sections_allowed:`All;
     t "two-titles-permissive" "{0 Foo}\n{0 Bar}"
       ~permissive:true ~sections_allowed:`All;
+    t "two-titles-none-allowed-permissive" "{0 Foo}\n{0 Bar}"
+      ~permissive:true ~sections_allowed:`No_titles;
+    t "two-headings-none-allowed-permissive" "{1 Foo}\n{1 Bar}"
+      ~permissive:true ~sections_allowed:`None;
+    t "multiple-with-bad-section" "{0 Foo}\n{0 Foo}\n{6 Foo}"
+      ~permissive:true ~sections_allowed:`All;
+    t "promoted-duplicates" "{6 Foo}\n{6 Bar}"
+      ~permissive:true ~sections_allowed:`All;
+    t "section-promoted-to-duplicate" "{5 Foo}\n{6 Bar}"
+      ~permissive:true ~sections_allowed:`All;
     t "none-permissive" "{1 Foo}"
       ~permissive:true ~sections_allowed:`None;
     t "nested-code-with-newline" "{1 [foo\nbar\r\nbaz]}"
       ~permissive:true;
-  ];
-
-  "warnings", [
-    t "multiple" "{0 Foo}\n{0 Foo}"
-      ~permissive:true ~sections_allowed:`No_titles;
-    t "multiple-with-bad-section" "{0 Foo}\n{0 Foo}\n{6 Foo}"
-      ~permissive:true ~sections_allowed:`All;
   ];
 
   "author", [
