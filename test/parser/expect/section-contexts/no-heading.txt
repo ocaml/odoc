@@ -1,3 +1,5 @@
-((output (error  "File \"f.ml.mld\":\
-                \npages must start with a heading"))
+((output
+  (error
+    "File \"f.ml.mld\":\
+   \npages (.mld files) must start with a heading"))
  (warnings ()))

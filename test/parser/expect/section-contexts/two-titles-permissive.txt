@@ -14,4 +14,4 @@
       (((f.ml (2 3) (2 6)) (word Bar))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-7:\
-   \nonly one title-level heading {0 ...} is allowed")))
+   \n'{0': heading level must be lower than top heading level '0'")))
