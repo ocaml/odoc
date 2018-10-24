@@ -119,12 +119,6 @@ module Error = Model.Error
 
 
 
-(* Assuming an ASCII-compatible input encoding here. *)
-let heading_level level =
-  Char.code level - Char.code '0'
-
-
-
 type input = {
   file : string;
   offset_to_location : int -> Location.point;
@@ -336,11 +330,11 @@ rule token input = parse
   | "{-"
     { emit input (`Begin_list_item `Dash) }
 
-  | '{' (['0'-'9'] as level) ':' (([^ '}'] # space_char)+ as label)
-    { emit input (`Begin_section_heading (heading_level level, Some label)) }
+  | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)+ as label)
+    { emit input (`Begin_section_heading (int_of_string level, Some label)) }
 
-  | '{' (['0'-'9'] as level)
-    { emit input (`Begin_section_heading (heading_level level, None)) }
+  | '{' (['0'-'9']+ as level)
+    { emit input (`Begin_section_heading (int_of_string level, None)) }
 
   | "@author" horizontal_space+ ([^ '\r' '\n']* as author)
     { emit input (`Tag (`Author author)) }
@@ -389,9 +383,6 @@ rule token input = parse
 
 
 
-
-  | '{' (['0'-'9'] ['0'-'9']+ as level)
-    { raise_error input (Parse_error.bad_heading_level (int_of_string level)) }
 
   | ('{' ['0'-'9'] as prefix) ':'
     { raise_error
