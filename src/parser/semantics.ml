@@ -221,16 +221,13 @@ let section_heading
     : status ->
       top_heading_level:int option ->
       Location.span ->
-      int ->
-      string option ->
-      (Ast.inline_element with_location) list ->
-      int option * (Comment.block_element with_location) =
-    fun status ~top_heading_level location level label content ->
+      [ `Heading of _ ] ->
+        int option * (Comment.block_element with_location) =
+    fun status ~top_heading_level location heading ->
 
-  let content =
-    non_link_inline_elements
-      status ~surrounding:(`Heading (level, label, content)) content
-  in
+  let `Heading (level, label, content) = heading in
+
+  let content = non_link_inline_elements status ~surrounding:heading content in
 
   let label =
     match label with
@@ -348,15 +345,13 @@ let top_level_block_elements
         let element = Location.same ast_element (`Tag (tag status the_tag)) in
         traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
-      | {value = `Heading (level, label, content); _} ->
+      | {value = `Heading _ as heading; _} ->
         let top_heading_level, element =
           section_heading
             status
             ~top_heading_level
             ast_element.Location.location
-            level
-            label
-            content
+            heading
         in
         traverse ~top_heading_level (element::comment_elements_acc) ast_elements
   in
