@@ -236,15 +236,6 @@ let section_heading
   in
   let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
 
-  (* Validate heading levels. *)
-  begin match top_heading_level with
-  | Some top_level when level <= top_level ->
-    warning status
-      (Parse_error.heading_level_must_be_lower_than_top_level
-        level top_level location)
-  | _ -> ()
-  end;
-
   match status.sections_allowed, level with
   | `None, _any_level ->
     warning status (Parse_error.headings_not_allowed location);
@@ -281,6 +272,13 @@ let section_heading
         (* Implicitly promote to level-5. *)
         `Subparagraph
     in
+    begin match top_heading_level with
+    | Some top_level when level <= top_level && level <= 5 ->
+      warning status
+        (Parse_error.heading_level_must_be_lower_than_top_level
+          level top_level location)
+    | _ -> ()
+    end;
     let element = `Heading (level', label, content) in
     let element = Location.at location element in
     let top_heading_level =
