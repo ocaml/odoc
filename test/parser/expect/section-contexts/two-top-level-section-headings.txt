@@ -14,4 +14,4 @@
       (((f.ml (2 3) (2 6)) (word Bar))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-7:\
-   \nduplicate {1 ...} top level heading not allowed")))
+   \n'{1': heading level must be lower than top heading level '1'")))

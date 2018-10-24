@@ -38,17 +38,16 @@ let no_leading_whitespace_in_verbatim : Location.span -> Error.t =
 let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
   Error.make "'v}' must be preceded by whitespace"
 
-let only_one_title_allowed : Location.span -> Error.t =
-  Error.make "only one title-level heading {0 ...} is allowed"
-
 let page_heading_required : string -> Error.t =
-  Error.filename_only "pages must start with a heading"
+  Error.filename_only "pages (.mld files) must start with a heading"
 
-let duplicate_top_level_heading : int -> Location.span -> Error.t =
-  Error.format "duplicate {%d ...} top level heading not allowed"
-
-let level_higher_than_top_level : int -> top:int -> Location.span -> Error.t = fun level ~top ->
-  Error.format "heading level %d is higher than top level %d" level top
+let heading_level_must_be_lower_than_top_level
+    : int -> int -> Location.span -> Error.t =
+    fun this_heading_level top_heading_level ->
+  Error.format
+    "%s: heading level must be lower than top heading level '%d'"
+    (Token.print (`Begin_section_heading (this_heading_level, None)))
+    top_heading_level
 
 let headings_not_allowed : Location.span -> Error.t =
   Error.make "headings not allowed in this comment"

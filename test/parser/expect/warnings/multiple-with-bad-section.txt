@@ -20,6 +20,6 @@
       (((f.ml (3 3) (3 6)) (word Foo))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-7:\
-   \nonly one title-level heading {0 ...} is allowed"
+   \n'{0': heading level must be lower than top heading level '0'"
     "File \"f.ml\", line 3, characters 0-7:\
    \n'6': bad heading level (0-5 allowed)")))

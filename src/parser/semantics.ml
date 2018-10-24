@@ -236,23 +236,13 @@ let section_heading
   in
   let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
 
-  let is_page =
-    match status.parent_of_sections with
-    | Model.Paths.Identifier.Page _ -> true
-    | _ -> false
-  in
-
   (* Validate heading levels. *)
   begin match top_heading_level with
-  | Some top when level = top && top = 0 && is_page ->
-    warning status (Parse_error.only_one_title_allowed location)
-  | Some top when level = top && top = 0 ->
-    warning status (Parse_error.titles_not_allowed location);
-  | Some top when level = top ->
-    warning status (Parse_error.duplicate_top_level_heading level location)
-  | Some top when level < top ->
-    warning status (Parse_error.level_higher_than_top_level ~top level location)
-  | _no_top_heading -> ()
+  | Some top_level when level <= top_level ->
+    warning status
+      (Parse_error.heading_level_must_be_lower_than_top_level
+        level top_level location)
+  | _ -> ()
   end;
 
   match status.sections_allowed, level with
