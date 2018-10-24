@@ -469,6 +469,7 @@ let tests : test_suite list = [
     t "preceded-by-shorthand-list" "- foo\n{2 Bar}";
     t "nested-in-two-lists" "{ul {li - foo\n{2 Bar}}}";
     t "bad-level-long-number" "{22 Foo}";
+    t "bad-level-long-number-with-label" "{22:foo Bar}";
     t "bad-level-title" "{0 Foo}";
     t "bad-level-too-deep" "{6 Foo}";
     t "link-in-markup" "{2 {{:foo}}}";
