@@ -378,6 +378,8 @@ module Targets = struct
 end
 
 let () =
+  Printexc.record_backtrace true;
+
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
