@@ -27,12 +27,29 @@ let read_qualifier :
   | Some ("page") -> TPage
   | Some s -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
 
+let rightmost_dash_index s =
+  let rec scan_string index open_parenthesis_count =
+    if index <= 0 then
+      None
+    else
+      match s.[index] with
+      | '-' when open_parenthesis_count = 0 ->
+        Some index
+      | ')' ->
+        scan_string (index - 1) (open_parenthesis_count + 1)
+      | '(' when open_parenthesis_count > 0 ->
+        scan_string (index - 1) (open_parenthesis_count - 1)
+      | _ ->
+        scan_string (index - 1) open_parenthesis_count
+  in
+  scan_string (String.length s - 1) 0
+
 let read_longident s =
   let open Paths.Reference in
   let split_qualifier str =
-    match String.rindex str '-' with
-    | exception Not_found -> (None, str)
-    | idx ->
+    match rightmost_dash_index str with
+    | None -> (None, str)
+    | Some idx ->
       let qualifier = String.sub str 0 idx in
       let name = String.sub str (idx + 1) (String.length str - idx - 1) in
       (Some qualifier, name)

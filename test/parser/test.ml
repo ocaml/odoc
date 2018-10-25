@@ -206,6 +206,8 @@ let tests : test_suite list = [
     t "space-before-colon" "{!val :foo}";
     t "space-after-colon" "{!val: foo}";
     t "unterminated-after-kind" "{!val:foo";
+    t "operator" "{!(>>=)}";
+    t "operator-with-dash" "{!(@->)}";
   ];
 
   "reference-with-text", [
