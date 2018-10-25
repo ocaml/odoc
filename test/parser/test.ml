@@ -472,6 +472,8 @@ let tests : test_suite list = [
     t "bad-level-too-deep" "{6 Foo}";
     t "link-in-markup" "{2 {{:foo}}}";
     t "reference-in-markup" "{2 {!foo}}";
+    t "two" "{2 Foo}\n{2 Bar}";
+    t "greater" "{2 Foo}\n{3 Bar}";
   ];
 
   "section-contexts", [
