@@ -208,6 +208,15 @@ let trim_trailing_space_or_accept_whitespace input text =
       ~start_offset:(Lexing.lexeme_end input.lexbuf - 2)
       Parse_error.no_trailing_whitespace_in_verbatim
 
+
+
+let heading_level input level =
+  if String.length level >= 2 && level.[0] = '0' then
+    raise_error
+      input ~start_offset:1 (Parse_error.leading_zero_in_heading_level level)
+  else
+    int_of_string level
+
 }
 
 
@@ -331,10 +340,11 @@ rule token input = parse
     { emit input (`Begin_list_item `Dash) }
 
   | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)+ as label)
-    { emit input (`Begin_section_heading (int_of_string level, Some label)) }
+    { emit
+        input (`Begin_section_heading (heading_level input level, Some label)) }
 
   | '{' (['0'-'9']+ as level)
-    { emit input (`Begin_section_heading (int_of_string level, None)) }
+    { emit input (`Begin_section_heading (heading_level input level, None)) }
 
   | "@author" horizontal_space+ ([^ '\r' '\n']* as author)
     { emit input (`Tag (`Author author)) }
