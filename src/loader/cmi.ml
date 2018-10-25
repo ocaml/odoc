@@ -368,7 +368,7 @@ let rec read_type_expr env typ =
           let arg =
             if Btype.is_optional lbl then
               match (Btype.repr arg).desc with
-              | Tconstr(_path, [arg], _) -> read_type_expr env arg
+              | Tconstr(_option, [arg], _) -> read_type_expr env arg
               | _ -> assert false
             else read_type_expr env arg
           in
