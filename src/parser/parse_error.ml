@@ -9,6 +9,9 @@ let bad_markup : string -> Location.span -> Error.t =
 let bad_heading_level : int -> Location.span -> Error.t =
   Error.format "'%d': bad heading level (0-5 allowed)"
 
+let leading_zero_in_heading_level : string -> Location.span -> Error.t =
+  Error.format "'%s': leading zero in heading level"
+
 let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
   Error.format "%s cannot be empty" what
 

@@ -470,6 +470,8 @@ let tests : test_suite list = [
     t "nested-in-two-lists" "{ul {li - foo\n{2 Bar}}}";
     t "bad-level-long-number" "{22 Foo}";
     t "bad-level-long-number-with-label" "{22:foo Bar}";
+    t "bad-level-leading-zero" "{02 Foo}";
+    t "bad-level-leading-zero-with-label" "{02:foo Bar}";
     t "bad-level-title" "{0 Foo}";
     t "bad-level-too-deep" "{6 Foo}";
     t "link-in-markup" "{2 {{:foo}}}";
