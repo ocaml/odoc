@@ -29,7 +29,8 @@
 
     {5 Subparagraph}
 
-    Parts of a longer paragraph that can be considered alone can also have headings.
+    Parts of a longer paragraph that can be considered alone can also have
+    headings.
 
 
     {1 Styling}
