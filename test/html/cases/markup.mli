@@ -48,6 +48,8 @@
     sentence, it was two space characters. And in this one, there is {b a}
     {i newline}.
 
+    This is also true between {e non-}[code] markup {e and} [code].
+
     Code can appear {b inside [other] markup}. Its display shouldn't be
     affected.
 
