@@ -363,6 +363,7 @@ let tests : test_suite list = [
     t "leading-newline-with-trash" "{v \nfoo v}";
     t "nested-opener" "{v {v v}";
     t "nested-closer" "{v foo v} v}";
+    t "nested-closer-with-word" "{v {dev} v}";
     t "nested-v" "{v v v}";
     t "two-nested-vs" "{v vv v}";
     t "nested-v-at-end" "{v vv}";

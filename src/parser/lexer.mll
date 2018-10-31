@@ -186,7 +186,7 @@ let emit_reference input start target =
 
 
 
-let trim_leading_space_or_accept_whitespace input text =
+let trim_leading_space_or_accept_whitespace input start_offset text =
   match text.[0] with
   | ' ' -> String.sub text 1 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
@@ -194,19 +194,15 @@ let trim_leading_space_or_accept_whitespace input text =
   | _ ->
     raise_error
       input
-      ~end_offset:(Lexing.lexeme_start input.lexbuf + 2)
+      ~start_offset
+      ~end_offset:(start_offset + 2)
       Parse_error.no_leading_whitespace_in_verbatim
 
-let trim_trailing_space_or_accept_whitespace input text =
+let trim_trailing_space_or_accept_whitespace text =
   match text.[String.length text - 1] with
   | ' ' -> String.sub text 0 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
-  | exception Invalid_argument _ -> ""
-  | _ ->
-    raise_error
-      input
-      ~start_offset:(Lexing.lexeme_end input.lexbuf - 2)
-      Parse_error.no_trailing_whitespace_in_verbatim
+  | _ -> assert false
 
 
 
@@ -241,8 +237,6 @@ let reference_start =
 
 let code_block_text =
   ([^ ']'] | ']'+ [^ ']' '}'])* ']'*
-let verbatim_text =
-  ([^ 'v'] | 'v'+ [^ 'v' '}'])* 'v'*
 let raw_markup =
   ([^ '%'] | '%'+ [^ '%' '}'])* '%'*
 let raw_markup_target =
@@ -308,12 +302,9 @@ rule token input = parse
       let c = trim_leading_whitespace c in
       emit input (`Code_block c) }
 
-  | "{v" (verbatim_text as t) "v}"
-    { let t = trim_leading_space_or_accept_whitespace input t in
-      let t = trim_trailing_space_or_accept_whitespace input t in
-      let t = trim_leading_blank_lines t in
-      let t = trim_trailing_blank_lines t in
-      emit input (`Verbatim t) }
+  | "{v"
+    { verbatim
+        (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s) "%}"
     { let target =
@@ -457,14 +448,6 @@ rule token input = parse
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Code_block ""))) }
 
-  | "{v" verbatim_text eof
-    { raise_error
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Verbatim ""))) }
-
   | "{%" raw_markup eof
     { raise_error
         input
@@ -509,3 +492,39 @@ and code_span buffer nesting_level start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       code_span buffer nesting_level start_offset input lexbuf }
+
+
+
+and verbatim buffer last_false_terminator start_offset input = parse
+  | (space_char as c) "v}"
+    { Buffer.add_char buffer c;
+      let t = Buffer.contents buffer in
+      let t = trim_trailing_space_or_accept_whitespace t in
+      let t = trim_leading_space_or_accept_whitespace input start_offset t in
+      let t = trim_leading_blank_lines t in
+      let t = trim_trailing_blank_lines t in
+      emit input (`Verbatim t) ~start_offset }
+
+  | "v}"
+    { Buffer.add_string buffer "v}";
+      verbatim
+        buffer (Some (Lexing.lexeme_start lexbuf)) start_offset input lexbuf }
+
+  | eof
+    { match last_false_terminator with
+      | None ->
+        raise_error
+          input
+          (Parse_error.not_allowed
+            ~what:(Token.describe `End)
+            ~in_what:(Token.describe (`Verbatim "")))
+      | Some location ->
+        raise_error
+          input
+          ~start_offset:location
+          ~end_offset:(location + 2)
+          Parse_error.no_trailing_whitespace_in_verbatim }
+
+  | _ as c
+    { Buffer.add_char buffer c;
+      verbatim buffer last_false_terminator start_offset input lexbuf }

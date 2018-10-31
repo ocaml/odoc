@@ -1,5 +1,5 @@
 ((output
   (error
-    "File \"f.ml\", line 1, characters 0-4:\
-   \n'{v ... v}' (verbatim text) cannot be empty"))
+    "File \"f.ml\", line 1, characters 2-4:\
+   \n'v}' must be preceded by whitespace"))
  (warnings ()))
