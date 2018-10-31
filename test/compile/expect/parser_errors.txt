@@ -1,0 +1,31 @@
+File "cases/parser_errors.mli", line 1, characters 1-3:
+'{x': bad markup
+File "cases/parser_errors.mli", line 4, characters 1-21:
+'9': bad heading level (0-5 allowed)
+File "cases/parser_errors.mli", line 10, characters 5-8:
+'{li ...}' must be followed by space, a tab, or a new line
+File "cases/parser_errors.mli", line 13, characters 1-4:
+'{li ...}' (list item) is not allowed in top-level text
+Suggestion: move '{li ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item)
+File "cases/parser_errors.mli", line 16, characters 1-3:
+'{v' must be followed by whitespace
+File "cases/parser_errors.mli", line 19, characters 34-36:
+'v}' must be preceded by whitespace
+File "cases/parser_errors.mli", line 22, characters 1-2:
+stray '@'
+File "cases/parser_errors.mli", line 28, characters 1-8:
+'@before' expects version number on the same line
+File "cases/parser_errors.mli", line 31, characters 1-7:
+'@param' expects parameter name on the same line
+File "cases/parser_errors.mli", line 34, characters 1-7:
+'@raise' expects exception constructor on the same line
+File "cases/parser_errors.mli", line 37, characters 1-5:
+'@see' must be followed by <url>, 'file', or "document title"
+File "cases/parser_errors.mli", line 40, characters 1-12:
+unknown tag '@UnknownTag'
+File "cases/parser_errors.mli", line 43, characters 1-2:
+unpaired '}' (end of markup)
+File "cases/parser_errors.mli", line 46, characters 1-2:
+unpaired ']' (end of code)
+File "cases/parser_errors.mli", line 49, characters 1-32:
+'{%invalid:': bad raw markup target
