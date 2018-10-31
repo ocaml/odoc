@@ -53,7 +53,6 @@ let read_attributes parent _id attrs =
             let start_pos = loc.Location.loc_start in
             let parsed =
               Parser_.parse_comment
-                ~permissive:true
                 ~sections_allowed:`All
                 ~containing_definition:parent
                 ~location:start_pos
@@ -83,7 +82,6 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
   let start_pos = loc.Location.loc_start in
   let doc : Model.Comment.docs =
     Parser_.parse_comment
-      ~permissive:true
       ~sections_allowed:`All
       ~containing_definition:parent
       ~location:start_pos

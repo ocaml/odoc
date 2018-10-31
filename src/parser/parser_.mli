@@ -3,7 +3,6 @@ open Result
 type sections_allowed = Ast.sections_allowed
 
 val parse_comment :
-  permissive:bool ->
   sections_allowed:sections_allowed ->
   containing_definition:Model.Paths.Identifier.label_parent ->
   location:Lexing.position ->

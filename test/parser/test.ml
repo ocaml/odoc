@@ -1,18 +1,16 @@
 type test_case = {
   name : string;
   parser_input : string;
-  permissive : bool;
   sections_allowed : Parser_.sections_allowed;
   location : Model.Location_.point;
 }
 
 let make_test_case
-    ?(permissive = false)
     ?(sections_allowed = `No_titles)
     ?(location = {Model.Location_.line = 1; column = 0})
     name
     parser_input =
-  {name; parser_input; permissive; sections_allowed; location}
+  {name; parser_input; sections_allowed; location}
 
 let t = make_test_case
 
@@ -110,15 +108,6 @@ let tests : test_suite list = [
     t "not-merged" "[foo][bar]";
     t "explicit-space" "[foo] [bar]";
     t "unterminated" "[foo";
-  ];
-
-  "code-span-warnings", [
-    t "newline" "[foo\nbar]"
-      ~permissive:true;
-    t "cr-lf" "[foo\r\nbar]"
-      ~permissive:true;
-    t "no-double-newline" "[foo\n\nbar]"
-      ~permissive:true;
   ];
 
   "bold", [
@@ -453,6 +442,7 @@ let tests : test_suite list = [
     t "nested-markup" "{2 [foo]}";
     t "nested-code-with-uppercase" "{2 [Foo]}";
     t "nested-code-with-spaces" "{2 [ foo bar  baz  \t]}";
+    t "nested-code-with-newline" "{2 [foo\nbar\r\nbaz]}";
     t "nested-style" "{2 {e foo bar}}";
     t "words" "{2 foo bar}";
     t "nested-heading" "{2 {2 Foo}}";
@@ -493,35 +483,25 @@ let tests : test_suite list = [
     t "heading-after-paragraph" "foo\n{0 Bar}"
       ~sections_allowed:`All;
     t "two-top-level-section-headings" "{1 Foo}\n{1 Bar}"
-      ~permissive:true ~sections_allowed:`All;
+      ~sections_allowed:`All;
     t "two-headings-second-higher" "{1 Foo}\n{0 Bar}"
-      ~permissive:true ~sections_allowed:`All;
+      ~sections_allowed:`All;
     t "three-headings-last-two-higher" "{3 Foo}\n{1 Bar}\n{2 Baz}"
-      ~permissive:true ~sections_allowed:`All;
+      ~sections_allowed:`All;
     t "none" "{1 Foo}"
       ~sections_allowed:`None;
-    t "permissive" "{0 Foo}"
-      ~permissive:true;
-    t "titles-allowed-permissive" "{0 Foo}"
-      ~permissive:true ~sections_allowed:`All;
-    t "titles-no-high-levels-permissive" "{6 Foo}"
-      ~permissive:true ~sections_allowed:`All;
-    t "two-titles-permissive" "{0 Foo}\n{0 Bar}"
-      ~permissive:true ~sections_allowed:`All;
-    t "two-titles-none-allowed-permissive" "{0 Foo}\n{0 Bar}"
-      ~permissive:true ~sections_allowed:`No_titles;
-    t "two-headings-none-allowed-permissive" "{1 Foo}\n{1 Bar}"
-      ~permissive:true ~sections_allowed:`None;
+    t "title-no-titles-allowed" "{0 Foo}"
+      ~sections_allowed:`No_titles;
+    t "two-titles-none-allowed" "{0 Foo}\n{0 Bar}"
+      ~sections_allowed:`No_titles;
+    t "two-headings-none-allowed" "{1 Foo}\n{1 Bar}"
+      ~sections_allowed:`None;
     t "multiple-with-bad-section" "{0 Foo}\n{0 Foo}\n{6 Foo}"
-      ~permissive:true ~sections_allowed:`All;
+      ~sections_allowed:`All;
     t "promoted-duplicates" "{6 Foo}\n{6 Bar}"
-      ~permissive:true ~sections_allowed:`All;
+      ~sections_allowed:`All;
     t "section-promoted-to-duplicate" "{5 Foo}\n{6 Bar}"
-      ~permissive:true ~sections_allowed:`All;
-    t "none-permissive" "{1 Foo}"
-      ~permissive:true ~sections_allowed:`None;
-    t "nested-code-with-newline" "{1 [foo\nbar\r\nbaz]}"
-      ~permissive:true;
+      ~sections_allowed:`All;
   ];
 
   "author", [
@@ -872,7 +852,7 @@ let () =
       let actual_file = actual_suite_directory // (file_title ^ ".txt") in
 
       let actual =
-        let {permissive; sections_allowed; location; parser_input; _} = case in
+        let {sections_allowed; location; parser_input; _} = case in
 
         let dummy_filename = "f.ml" in
 
@@ -896,7 +876,6 @@ let () =
         in
 
         Parser_.parse_comment
-          ~permissive
           ~sections_allowed
           ~containing_definition:dummy_page
           ~location

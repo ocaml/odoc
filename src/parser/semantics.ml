@@ -9,17 +9,13 @@ type 'a with_location = 'a Location.with_location
 
 
 type status = {
-  permissive : bool;
   mutable warnings : Error.t list;
   sections_allowed : Ast.sections_allowed;
   parent_of_sections : Model.Paths.Identifier.label_parent;
 }
 
 let warning status message =
-  if status.permissive then
-    status.warnings <- message::status.warnings
-  else
-    Error.raise_exception message
+  status.warnings <- message::status.warnings
 
 
 
@@ -354,10 +350,9 @@ let top_level_block_elements
 
 
 
-let ast_to_comment ~permissive ~sections_allowed ~parent_of_sections ast =
+let ast_to_comment ~sections_allowed ~parent_of_sections ast =
   let status =
     {
-      permissive;
       warnings = [];
       sections_allowed;
       parent_of_sections;

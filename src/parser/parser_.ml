@@ -70,9 +70,7 @@ let offset_to_location
 
 
 
-let parse_comment
-    ~permissive ~sections_allowed ~containing_definition ~location ~text =
-
+let parse_comment ~sections_allowed ~containing_definition ~location ~text =
   let token_stream =
     let lexbuf = Lexing.from_string text in
     let offset_to_location =
@@ -92,7 +90,6 @@ let parse_comment
     {Model.Error.result = Error error; warnings = []}
   | Ok ast ->
     Semantics.ast_to_comment
-      ~permissive
       ~sections_allowed
       ~parent_of_sections:containing_definition
       ast
