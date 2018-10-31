@@ -361,16 +361,16 @@ end
 
 
 
-let parser_output formatter {Model.Error.result; warnings} =
-  let result =
-    match result with
+let parser_output formatter {Model.Error.value; warnings} =
+  let value =
+    match value with
     | Ok comment -> List [Atom "ok"; Comment_to_sexp.comment comment]
     | Error error -> List [Atom "error"; Error_to_sexp.error error]
   in
   let warnings = List (List.map Error_to_sexp.error warnings) in
   let output =
     List [
-      List [Atom "output"; result];
+      List [Atom "output"; value];
       List [Atom "warnings"; warnings];
     ]
   in

@@ -87,7 +87,7 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
 
   match Syntax.parse token_stream with
   | Error error ->
-    {Model.Error.result = Error error; warnings = []}
+    {Model.Error.value = Error error; warnings = []}
   | Ok ast ->
     Semantics.ast_to_comment
       ~sections_allowed
@@ -95,14 +95,14 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
       ast
 
 let errors_to_warnings parsed =
-  match Model.Error.(parsed.result) with
+  match Model.Error.(parsed.value) with
   | Ok _ ->
     parsed
 
   | Error fatal_error ->
     {
-      result = Ok [];
-      warnings = fatal_error::parsed.warnings;
+      value = Ok [];
+      warnings = parsed.warnings @ [fatal_error];
     }
 
 

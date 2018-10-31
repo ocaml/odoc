@@ -9,13 +9,10 @@ type 'a with_location = 'a Location.with_location
 
 
 type status = {
-  mutable warnings : Error.t list;
+  warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
   parent_of_sections : Model.Paths.Identifier.label_parent;
 }
-
-let warning status message =
-  status.warnings <- message::status.warnings
 
 
 
@@ -46,7 +43,7 @@ let leaf_inline_element
         ~what:(Token.describe `Single_newline)
         ~in_what:(Token.describe token)
         element.location
-      |> warning status
+      |> Error.warning status.warnings
     end
   | _ -> ()
   end;
@@ -234,7 +231,7 @@ let section_heading
 
   match status.sections_allowed, level with
   | `None, _any_level ->
-    warning status (Parse_error.headings_not_allowed location);
+    Error.warning status.warnings (Parse_error.headings_not_allowed location);
     let content = (content :> (Comment.inline_element with_location) list) in
     let element =
       Location.at location
@@ -244,7 +241,7 @@ let section_heading
     top_heading_level, element
 
   | `No_titles, 0 ->
-    warning status (Parse_error.titles_not_allowed location);
+    Error.warning status.warnings (Parse_error.titles_not_allowed location);
     let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
     let top_heading_level =
@@ -264,14 +261,15 @@ let section_heading
       | 4 -> `Paragraph
       | 5 -> `Subparagraph
       | _ ->
-        warning status (Parse_error.bad_heading_level level location);
+        Error.warning status.warnings
+          (Parse_error.bad_heading_level level location);
         (* Implicitly promote to level-5. *)
         `Subparagraph
     in
     begin match top_heading_level with
     | Some top_level when
         status.sections_allowed = `All && level <= top_level && level <= 5 ->
-      warning status
+      Error.warning status.warnings
         (Parse_error.heading_level_must_be_lower_than_top_level
           level top_level location)
     | _ -> ()
@@ -293,7 +291,8 @@ let validate_first_page_heading status ast_element =
       | {Location.value = `Heading (_, _, _); _} -> ()
       | _invalid_ast_element ->
         let filename = Model.Root.Odoc_file.name file ^ ".mld" in
-        warning status (Parse_error.page_heading_required filename)
+        Error.warning status.warnings
+          (Parse_error.page_heading_required filename)
     end
   | _not_a_page -> ()
 
@@ -353,13 +352,11 @@ let top_level_block_elements
 let ast_to_comment ~sections_allowed ~parent_of_sections ast =
   let status =
     {
-      warnings = [];
+      warnings = Error.make_warning_accumulator ();
       sections_allowed;
       parent_of_sections;
     }
   in
 
   let result = Error.catch (fun () -> top_level_block_elements status ast) in
-  let warnings = List.rev status.warnings in
-
-  {Error.result; warnings}
+  Error.attach_accumulated_warnings status.warnings result

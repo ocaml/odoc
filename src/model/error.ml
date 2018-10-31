@@ -1,5 +1,7 @@
 open Result
 
+
+
 type full_location_payload = {
   location : Location_.span;
   message : string;
@@ -14,11 +16,6 @@ type t = [
   | `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload
 ]
-
-type 'a with_warnings = {
-  result : 'a;
-  warnings : t list;
-}
 
 let make message location =
   `With_full_location {location; message}
@@ -49,6 +46,8 @@ let to_string = function
   | `With_filename_only {file; message} ->
     Printf.sprintf "File \"%s\":\n%s" file message
 
+
+
 exception Conveyed_by_exception of t
 
 let raise_exception error =
@@ -62,9 +61,28 @@ let catch f =
   try Ok (f ())
   with Conveyed_by_exception error -> Error error
 
+
+
+type 'a with_warnings = {
+  value : 'a;
+  warnings : t list;
+}
+
+type warning_accumulator = t list ref
+
+let make_warning_accumulator () = ref []
+
+let warning accumulator error =
+  accumulator := error::!accumulator
+
+let attach_accumulated_warnings accumulator value =
+  let with_warnings = {value; warnings = List.rev !accumulator} in
+  accumulator := [];
+  with_warnings
+
 (* TODO This is a temporary measure until odoc is ported to handle warnings
    throughout. *)
 let shed_warnings with_warnings =
   with_warnings.warnings
   |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
-  with_warnings.result
+  with_warnings.value
