@@ -161,11 +161,11 @@ module Support_files_command = struct
   let support_files without_theme output_dir =
     Support_files.write ~without_theme output_dir
 
+  let without_theme =
+    let doc = "Don't copy the default theme to output directory." in
+    Arg.(value & flag & info ~doc ["without-theme"])
+
   let cmd =
-    let without_theme =
-      let doc = "Don't copy the default theme to output directory." in
-      Arg.(value & flag & info ~doc ["without-theme"])
-    in
     Term.(const support_files $ without_theme $ dst)
 
   let info =
@@ -378,11 +378,11 @@ module Targets = struct
 
   module Support_files =
   struct
-    let list_targets () =
-      List.iter Support_files.filenames ~f:print_endline
+    let list_targets without_theme output_directory =
+      Support_files.print_filenames ~without_theme output_directory
 
     let cmd =
-      Term.(const list_targets $ const ())
+      Term.(const list_targets $ Support_files_command.without_theme $ dst)
 
     let info =
       Term.info "support-files-targets"
