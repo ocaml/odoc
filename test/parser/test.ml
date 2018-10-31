@@ -831,6 +831,7 @@ let tests : test_suite list = [
 let expect_directory = "expect"
 let actual_root_directory = "_actual"
 let test_root = "test/parser"
+let promote_script = "promote.sh"
 
 let (//) = Filename.concat
 
@@ -845,19 +846,18 @@ let mkdir directory =
 let suggest_commands script_directory commands =
   let commands = String.concat "\n" commands in
 
-  let script_file = script_directory // "replace.sh" in
+  let script_file = script_directory // promote_script in
 
   if not (Sys.file_exists script_file) then
     write_file script_file commands;
 
   Printf.eprintf "\nbash %s\n\n"
-    ("_build/default" // test_root // script_directory // "replace.sh")
+    ("_build/default" // test_root // script_directory // promote_script)
 
 let () =
   mkdir actual_root_directory;
-  (* TODO Proper factoring. *)
   begin
-    try Unix.unlink (actual_root_directory // "replace.sh");
+    try Unix.unlink (actual_root_directory // promote_script);
     with _ -> ()
   end;
 
@@ -874,7 +874,7 @@ let () =
       let actual =
         let {permissive; sections_allowed; location; parser_input; _} = case in
 
-        let dummy_filename = "f.ml" in (* FIXME: the .ml extension is not needed here. *)
+        let dummy_filename = "f.ml" in
 
         let dummy_page =
           let root : Model.Root.t = {
@@ -959,6 +959,41 @@ let () =
 
     case.name, `Quick, run_test_case
   in
+
+  let scan_for_stale_tests () =
+    let directories = Sys.readdir expect_directory in
+    directories |> Array.iter begin fun directory ->
+      let source_directory = test_root // expect_directory // directory in
+
+      let (_, tests) =
+        try List.find (fun (suite_name, _) -> suite_name = directory) tests
+        with Not_found ->
+          Printf.eprintf
+            "\n\nDirectory '%s' does not correspond to a test suite.\n"
+            source_directory;
+          prerr_endline "To remove it, run";
+          suggest_commands actual_root_directory
+            [Printf.sprintf "rm -r %s" source_directory];
+          exit 1
+      in
+
+      let files = Sys.readdir (expect_directory // directory) in
+      files |> Array.iter begin fun file ->
+        let source_file = source_directory // file in
+        let title = String.sub file 0 (String.length file - 4) in
+
+        try List.find (fun {name; _} -> name = title) tests |> ignore
+        with Not_found ->
+          Printf.eprintf
+            "\n\nExpect file '%s' does not correspond to a test.\n" source_file;
+          prerr_endline "To remove it, run";
+          suggest_commands actual_root_directory
+            [Printf.sprintf "rm %s" source_file];
+          exit 1
+      end
+    end
+  in
+  scan_for_stale_tests ();
 
   let tests : (unit Alcotest.test) list =
     tests |> List.map (fun (suite_name, test_cases) ->
