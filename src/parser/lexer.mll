@@ -125,8 +125,9 @@ type input = {
   lexbuf : Lexing.lexbuf;
 }
 
-let offset_span_to_location
-    ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by input =
+let with_location_adjustments
+    k input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by value =
+
   let start =
     match start_offset with
     | None -> Lexing.lexeme_start input.lexbuf
@@ -147,26 +148,20 @@ let offset_span_to_location
     | None -> end_
     | Some s -> end_ - String.length s
   in
-  {
+  let location = {
     Model.Location_.file = input.file;
     start = input.offset_to_location start;
     end_ = input.offset_to_location end_;
   }
-
-let emit input ?start_offset ?adjust_start_by ?adjust_end_by token =
-  let location =
-    offset_span_to_location
-      ?start_offset ?adjust_start_by ?adjust_end_by input
   in
-  Location.at location token
+  k input location value
 
-let raise_error
-    input ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by error =
-  let location =
-    offset_span_to_location
-      ?start_offset ?adjust_start_by ?end_offset ?adjust_end_by input
-  in
-  Error.raise_exception (error location)
+let emit =
+  with_location_adjustments (fun _ -> Location.at)
+
+let raise_error =
+  with_location_adjustments (fun _ location error ->
+    Error.raise_exception (error location))
 
 let reference_token start target =
   match start with
@@ -381,7 +376,6 @@ rule token input = parse
 
   | "@closed"
     { emit input (`Tag `Closed) }
-
 
 
 
