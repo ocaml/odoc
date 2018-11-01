@@ -122,6 +122,7 @@ module Error = Model.Error
 type input = {
   file : string;
   offset_to_location : int -> Location.point;
+  warnings : Error.warning_accumulator;
   lexbuf : Lexing.lexbuf;
 }
 
@@ -162,6 +163,10 @@ let emit =
 let raise_error =
   with_location_adjustments (fun _ location error ->
     Error.raise_exception (error location))
+
+let _warning =
+  with_location_adjustments (fun input location error ->
+    Error.warning input.warnings (error location))
 
 let reference_token start target =
   match start with

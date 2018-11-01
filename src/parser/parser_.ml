@@ -74,6 +74,8 @@ let offset_to_location
 
 
 let parse_comment ~sections_allowed ~containing_definition ~location ~text =
+  let warnings = Model.Error.make_warning_accumulator () in
+
   let token_stream =
     let lexbuf = Lexing.from_string text in
     let offset_to_location =
@@ -82,20 +84,21 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
       {
         file = location.Lexing.pos_fname;
         offset_to_location;
+        warnings;
         lexbuf;
       }
     in
     Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
   in
 
-  match Syntax.parse token_stream with
-  | Error error ->
-    {Model.Error.value = Error error; warnings = []}
-  | Ok ast ->
+  let result =
+    let (>>=) = Rresult.R.(>>=) in
+    Syntax.parse token_stream >>=
     Semantics.ast_to_comment
-      ~sections_allowed
-      ~parent_of_sections:containing_definition
-      ast
+      warnings ~sections_allowed ~parent_of_sections:containing_definition
+  in
+
+  Model.Error.attach_accumulated_warnings warnings result
 
 let errors_to_warnings parsed =
   match Model.Error.(parsed.value) with

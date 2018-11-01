@@ -349,14 +349,12 @@ let top_level_block_elements
 
 
 
-let ast_to_comment ~sections_allowed ~parent_of_sections ast =
+let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
   let status =
     {
-      warnings = Error.make_warning_accumulator ();
+      warnings;
       sections_allowed;
       parent_of_sections;
     }
   in
-
-  let result = Error.catch (fun () -> top_level_block_elements status ast) in
-  Error.attach_accumulated_warnings status.warnings result
+  Error.catch (fun () -> top_level_block_elements status ast)
