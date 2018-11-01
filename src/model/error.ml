@@ -70,15 +70,13 @@ type 'a with_warnings = {
 
 type warning_accumulator = t list ref
 
-let make_warning_accumulator () = ref []
+let accumulate_warnings f =
+  let warnings = ref [] in
+  let value = f warnings in
+  {value; warnings = List.rev !warnings}
 
 let warning accumulator error =
   accumulator := error::!accumulator
-
-let attach_accumulated_warnings accumulator value =
-  let with_warnings = {value; warnings = List.rev !accumulator} in
-  accumulator := [];
-  with_warnings
 
 (* TODO This is a temporary measure until odoc is ported to handle warnings
    throughout. *)

@@ -17,7 +17,6 @@ type 'a with_warnings = {
 
 type warning_accumulator
 
-val make_warning_accumulator : unit -> warning_accumulator
+val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 val warning : warning_accumulator -> t -> unit
-val attach_accumulated_warnings : warning_accumulator -> 'a -> 'a with_warnings
 val shed_warnings : 'a with_warnings -> 'a
