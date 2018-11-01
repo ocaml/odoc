@@ -17,18 +17,18 @@ type t = [
   | `With_filename_only of filename_only_payload
 ]
 
-let make message location =
+let full message location =
   `With_full_location {location; message}
 
 let filename_only message file =
   `With_filename_only {file; message}
 
-let format ?suggestion format =
+let make ?suggestion format =
   format |>
   Printf.ksprintf (fun message ->
     match suggestion with
-    | None -> make message
-    | Some suggestion -> make (message ^ "\nSuggestion: " ^ suggestion))
+    | None -> full message
+    | Some suggestion -> full (message ^ "\nSuggestion: " ^ suggestion))
 
 let to_string = function
   | `With_full_location {location; message} ->
