@@ -23,8 +23,12 @@ let make message location =
 let filename_only message file =
   `With_filename_only {file; message}
 
-let format format =
-  (Printf.ksprintf make) format
+let format ?suggestion format =
+  format |>
+  Printf.ksprintf (fun message ->
+    match suggestion with
+    | None -> make message
+    | Some suggestion -> make (message ^ "\nSuggestion: " ^ suggestion))
 
 let to_string = function
   | `With_full_location {location; message} ->

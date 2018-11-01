@@ -2,7 +2,8 @@ type t
 
 val make : string -> Location_.span -> t
 val filename_only : string -> string -> t
-val format : ('a, unit, string, Location_.span -> t) format4 -> 'a
+val format :
+  ?suggestion:string -> ('a, unit, string, Location_.span -> t) format4 -> 'a
 
 val to_string : t -> string
 

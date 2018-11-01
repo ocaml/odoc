@@ -26,14 +26,8 @@ let must_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
 let not_allowed
     : ?suggestion:string -> what:string -> in_what:string -> Location.span ->
         Error.t =
-    fun ?suggestion ~what ~in_what location ->
-  let message = Printf.sprintf "%s is not allowed in %s" what in_what in
-  let message =
-    match suggestion with
-    | None -> message
-    | Some suggestion -> Printf.sprintf "%s\nSuggestion: %s" message suggestion
-  in
-  Error.make message location
+    fun ?suggestion ~what ~in_what ->
+  Error.format ?suggestion "%s is not allowed in %s" what in_what
 
 let no_leading_whitespace_in_verbatim : Location.span -> Error.t =
   Error.make "'{v' must be followed by whitespace"
