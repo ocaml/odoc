@@ -994,6 +994,11 @@ let tests : test_suite list = [
   "bad-markup", [
     t "left-brace" "{";
     t "left-brace-with-letter" "{g";
+    t "left-brace-with-letters" "{gg";
+    t "empty-braces" "{}";
+    t "left-space" "{ foo}";
+    t "left-spaces" "{  foo}";
+    t "left-space-eof" "{ ";
     t "braces-instead-of-brackets" "{foo}";
     t "right-brace" "}";
     t "right-brace-in-paragraph" "foo}";

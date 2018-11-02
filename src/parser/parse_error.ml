@@ -3,8 +3,9 @@ module Error = Model.Error
 
 
 
-let bad_markup : string -> Location.span -> Error.t =
-  Error.make "'%s': bad markup"
+let bad_markup : ?suggestion:string -> string -> Location.span -> Error.t =
+    fun ?suggestion ->
+  Error.make ?suggestion "'%s': bad markup"
 
 let bad_heading_level : int -> Location.span -> Error.t =
   Error.make "'%d': bad heading level (0-5 allowed)"

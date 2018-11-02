@@ -1,5 +1,6 @@
-File "cases/parser_errors.mli", line 1, characters 1-3:
-'{x': bad markup
+File "cases/parser_errors.mli", line 1, characters 1-23:
+'{x This is bad markup}': bad markup
+Suggestion: did you mean '{!x This is bad markup}' or '[x This is bad markup]'?
 File "cases/parser_errors.mli", line 4, characters 1-21:
 '9': bad heading level (0-5 allowed)
 File "cases/parser_errors.mli", line 10, characters 5-8:

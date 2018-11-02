@@ -164,7 +164,7 @@ let raise_error =
   with_location_adjustments (fun _ location error ->
     Error.raise_exception (error location))
 
-let _warning =
+let warning =
   with_location_adjustments (fun input location error ->
     Error.warning input.warnings (error location))
 
@@ -390,8 +390,14 @@ rule token input = parse
         ~adjust_start_by:prefix
         (Parse_error.cannot_be_empty ~what:"heading label") }
 
-  | '{' _? as markup
-    { raise_error input (Parse_error.bad_markup markup) }
+  | '{'
+    { try bad_markup_recovery (Lexing.lexeme_start lexbuf) input lexbuf
+      with Failure _ ->
+        warning
+          input
+          (Parse_error.bad_markup
+            "{" ~suggestion:"escape the brace with '\\{'.");
+        emit input (`Word "{") }
 
   | ']'
     { raise_error input Parse_error.unpaired_right_bracket }
@@ -527,3 +533,15 @@ and verbatim buffer last_false_terminator start_offset input = parse
   | _ as c
     { Buffer.add_char buffer c;
       verbatim buffer last_false_terminator start_offset input lexbuf }
+
+
+
+and bad_markup_recovery start_offset input = parse
+  | [^ '}']+ as text '}' as rest
+    { let suggestion =
+        Printf.sprintf "did you mean '{!%s}' or '[%s]'?" text text in
+      warning
+        input
+        ~start_offset
+        (Parse_error.bad_markup ("{" ^ rest) ~suggestion);
+      emit input (`Code_span text) ~start_offset}

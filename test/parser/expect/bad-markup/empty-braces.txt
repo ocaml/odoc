@@ -1,5 +1,7 @@
 ((output
-  (ok (((f.ml (1 0) (1 1)) (paragraph (((f.ml (1 0) (1 1)) (word {))))))))
+  (error
+    "File \"f.ml\", line 1, characters 1-2:\
+   \nunpaired '}' (end of markup)"))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-1:\
    \n'{': bad markup\
