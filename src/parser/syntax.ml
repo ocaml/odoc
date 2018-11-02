@@ -194,8 +194,10 @@ let rec inline_element
    space in any amount are allowed. Blank lines are not, as these are separators
    for {e block} elements.
 
-   The first and last elements emitted will not be [`Space], i.e. [`Space]
-   appears only between other non-link inline elements.
+   In correct input, the first and last elements emitted will not be [`Space],
+   i.e. [`Space] appears only between other non-link inline elements. In
+   incorrect input, there might be [`Space] followed immediately by something
+   like an @author tag.
 
    The [~parent_markup] and [~parent_markup_location] arguments are used for
    generating error messages. *)
@@ -501,13 +503,14 @@ let accepted_in_all_contexts
    - section headings. *)
 let rec block_element_list
     : type block stops_at_which_tokens.
+      Error.warning_accumulator ->
       (block, stops_at_which_tokens) context ->
       parent_markup:[< Token.t | `Comment ] ->
       input ->
         (block with_location) list *
         stops_at_which_tokens with_location *
         where_in_line =
-    fun context ~parent_markup input ->
+    fun warnings context ~parent_markup input ->
 
   let rec consume_block_elements
       : parsed_a_tag:bool ->
@@ -526,7 +529,7 @@ let rec block_element_list
 
     let raise_if_after_text {Location.location; value = token} =
       if where_in_line = `After_text then
-        Parse_error.must_begin_on_its_own_line ~what:(describe token) location
+        Parse_error.should_begin_on_its_own_line ~what:(describe token) location
         |> Error.raise_exception
     in
 
@@ -649,9 +652,9 @@ let rec block_element_list
          tag. *)
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Parse_error.must_begin_on_its_own_line
+          Parse_error.should_begin_on_its_own_line
             ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          |> Error.warning warnings;
 
         junk input;
 
@@ -676,7 +679,7 @@ let rec block_element_list
 
         | `Deprecated | `Return as tag ->
           let content, _stream_head, where_in_line =
-            block_element_list In_tag ~parent_markup:token input in
+            block_element_list warnings In_tag ~parent_markup:token input in
           let tag =
             match tag with
             | `Deprecated -> `Deprecated content
@@ -691,7 +694,7 @@ let rec block_element_list
 
         | `Param _ | `Raise _ | `Before _ as tag ->
           let content, _stream_head, where_in_line =
-            block_element_list In_tag ~parent_markup:token input in
+            block_element_list warnings In_tag ~parent_markup:token input in
           let tag =
             match tag with
             | `Param s -> `Param (s, content)
@@ -707,7 +710,7 @@ let rec block_element_list
 
         | `See (kind, target) ->
           let content, _next_token, where_in_line =
-            block_element_list In_tag ~parent_markup:token input in
+            block_element_list warnings In_tag ~parent_markup:token input in
           let location =
             location::(List.map Location.location content)
             |> Location.span
@@ -809,7 +812,7 @@ let rec block_element_list
       junk input;
 
       let items, brace_location =
-        explicit_list_items ~parent_markup:token input in
+        explicit_list_items warnings ~parent_markup:token input in
       if items = [] then
         Parse_error.cannot_be_empty ~what:(Token.describe token) location
         |> Error.raise_exception;
@@ -826,7 +829,7 @@ let rec block_element_list
     | {value = `Minus | `Plus as token; location} as next_token ->
       begin match where_in_line with
       | `After_text | `After_shorthand_bullet ->
-        Parse_error.must_begin_on_its_own_line
+        Parse_error.should_begin_on_its_own_line
           ~what:(Token.describe token) location
         |> Error.raise_exception
       | _ ->
@@ -840,7 +843,7 @@ let rec block_element_list
         List.rev acc, next_token, where_in_line
       | _ ->
         let items, where_in_line =
-          shorthand_list_items next_token where_in_line input in
+          shorthand_list_items warnings next_token where_in_line input in
         let kind =
           match token with
           | `Minus -> `Unordered
@@ -877,7 +880,7 @@ let rec block_element_list
 
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Parse_error.must_begin_on_its_own_line
+          Parse_error.should_begin_on_its_own_line
             ~what:(Token.describe token) location
           |> Error.raise_exception;
 
@@ -925,12 +928,13 @@ let rec block_element_list
    above). That parser returns to [implicit_list_items] only on [`Blank_line],
    [`End], [`Minus] or [`Plus] at the start of a line, or [`Right_brace]. *)
 and shorthand_list_items
-    : [ `Minus | `Plus ] with_location ->
+    : Error.warning_accumulator ->
+      [ `Minus | `Plus ] with_location ->
       where_in_line ->
       input ->
         ((Ast.nestable_block_element with_location) list) list *
         where_in_line =
-    fun first_token where_in_line input ->
+    fun warnings first_token where_in_line input ->
 
   let bullet_token = first_token.value in
 
@@ -956,7 +960,9 @@ and shorthand_list_items
         junk input;
 
         let content, stream_head, where_in_line =
-          block_element_list In_shorthand_list ~parent_markup:bullet input in
+          block_element_list
+            warnings In_shorthand_list ~parent_markup:bullet input
+        in
         if content = [] then
           Parse_error.cannot_be_empty
             ~what:(Token.describe bullet) next_token.location
@@ -983,11 +989,12 @@ and shorthand_list_items
    parsing function consumes all of it. Otherwise, only list item start tokens
    are accepted. Everything else is an error. *)
 and explicit_list_items
-    : parent_markup:[< Token.t ] ->
+    : Error.warning_accumulator ->
+      parent_markup:[< Token.t ] ->
       input ->
         ((Ast.nestable_block_element with_location) list) list *
         Location.span =
-    fun ~parent_markup input ->
+    fun warnings ~parent_markup input ->
 
   let rec consume_list_items
       : ((Ast.nestable_block_element with_location) list) list ->
@@ -1042,7 +1049,9 @@ and explicit_list_items
       end;
 
       let content, token_after_list_item, _where_in_line =
-        block_element_list In_explicit_list ~parent_markup:token input in
+        block_element_list
+          warnings In_explicit_list ~parent_markup:token input
+      in
 
       if content = [] then
         Parse_error.cannot_be_empty
@@ -1089,10 +1098,11 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let parse token_stream =
+let parse warnings token_stream =
   Error.catch begin fun () ->
     let elements, last_token, _where_in_line =
-      block_element_list Top_level ~parent_markup:`Comment token_stream in
+      block_element_list
+        warnings Top_level ~parent_markup:`Comment token_stream in
 
     match last_token.value with
     | `End ->

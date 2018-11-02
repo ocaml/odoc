@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 8-15:\
-   \n'{[...]}' (code block) must begin on its own line"))
+   \n'{[...]}' (code block) should begin on its own line"))
  (warnings ()))

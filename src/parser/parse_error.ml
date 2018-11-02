@@ -16,9 +16,9 @@ let leading_zero_in_heading_level : string -> Location.span -> Error.t =
 let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
   Error.make "%s cannot be empty" what
 
-let must_begin_on_its_own_line : what:string -> Location.span -> Error.t =
+let should_begin_on_its_own_line : what:string -> Location.span -> Error.t =
     fun ~what ->
-  Error.make "%s must begin on its own line" what
+  Error.make "%s should begin on its own line" what
 
 let must_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
     fun ~what ->

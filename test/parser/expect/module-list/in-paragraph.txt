@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 4-18:\
-   \n'{!modules ...}' must begin on its own line"))
+   \n'{!modules ...}' should begin on its own line"))
  (warnings ()))

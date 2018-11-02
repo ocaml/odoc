@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 4-13:\
-   \n'{v ... v}' (verbatim text) must begin on its own line"))
+   \n'{v ... v}' (verbatim text) should begin on its own line"))
  (warnings ()))

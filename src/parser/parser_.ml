@@ -91,7 +91,7 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
     in
 
     let (>>=) = Rresult.R.(>>=) in
-    Syntax.parse token_stream >>=
+    Syntax.parse warnings token_stream >>=
     Semantics.ast_to_comment
       warnings ~sections_allowed ~parent_of_sections:containing_definition
   end
