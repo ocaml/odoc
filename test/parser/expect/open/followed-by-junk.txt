@@ -1,5 +1,6 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 6-9:\
-   \nparagraph should begin on its own line"))
+   \nparagraph is not allowed in the tags section\
+   \nSuggestion: move 'foo' before any tags"))
  (warnings ()))
