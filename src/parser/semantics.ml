@@ -29,29 +29,6 @@ let describe_element = function
 
 
 
-let leaf_inline_element
-    : status -> Comment.leaf_inline_element with_location ->
-        Comment.leaf_inline_element with_location =
-  fun status element ->
-
-  begin match element.value with
-  | `Code_span c as token ->
-    begin match String.index c '\n' with
-    | exception Not_found -> ()
-    | _ ->
-      Parse_error.not_allowed
-        ~what:(Token.describe `Single_newline)
-        ~in_what:(Token.describe token)
-        element.location
-      |> Error.warning status.warnings
-    end
-  | _ -> ()
-  end;
-
-  element
-
-
-
 let rec non_link_inline_element
     : status -> surrounding:_ -> Ast.inline_element with_location ->
         Comment.non_link_inline_element with_location =
@@ -59,8 +36,7 @@ let rec non_link_inline_element
 
   match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    let element = leaf_inline_element status element in
-    (element :> Comment.non_link_inline_element with_location)
+    element
 
   | {value = `Styled (style, content); _} ->
     `Styled (style, non_link_inline_elements status ~surrounding content)
@@ -86,7 +62,7 @@ let rec inline_element
 
   match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    (leaf_inline_element status element :> Comment.inline_element with_location)
+    element
 
   | {value = `Styled (style, content); location} ->
     `Styled (style, inline_elements status content)
