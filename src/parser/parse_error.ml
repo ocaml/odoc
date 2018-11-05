@@ -81,10 +81,14 @@ let unpaired_right_bracket : Location.span -> Error.t =
   Error.make "unpaired ']' (end of code)"
 
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
-  Error.make "'{%%%s:': bad raw markup target"
+  Error.make
+    ~suggestion:
+      (Printf.sprintf "try %s." (Token.print (`Raw_markup (`Html, ""))))
+      "'{%%%s:': bad raw markup target"
 
 let default_raw_markup_target_not_supported : Location.span -> Error.t =
   Error.make
-    "%s needs a target language, try %s"
+    ~suggestion:
+      (Printf.sprintf "try %s." (Token.print (`Raw_markup (`Html, ""))))
+    "%s needs a target language"
     (Token.describe (`Raw_markup (`Html, "")))
-    "'{%html:...%}'"

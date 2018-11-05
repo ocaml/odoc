@@ -307,16 +307,20 @@ rule token input = parse
         (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s) "%}"
-    { let target =
+    { let target_is_valid =
         match target with
-        | Some "html" -> `Html
+        | Some "html" -> true
         | Some invalid_target ->
-          raise_error input
-            (Parse_error.invalid_raw_markup_target invalid_target)
+          warning input (Parse_error.invalid_raw_markup_target invalid_target);
+          false
         | None ->
-          raise_error input Parse_error.default_raw_markup_target_not_supported
+          warning input Parse_error.default_raw_markup_target_not_supported;
+          false
       in
-      emit input (`Raw_markup (target, s)) }
+      if target_is_valid then
+        emit input (`Raw_markup (`Html, s))
+      else
+        emit input (`Code_span s) }
 
   | "{ul"
     { emit input (`Begin_list `Unordered) }
