@@ -965,7 +965,7 @@ and shorthand_list_items
         if content = [] then
           Parse_error.cannot_be_empty
             ~what:(Token.describe bullet) next_token.location
-          |> Error.raise_exception;
+          |> Error.warning input.warnings;
 
         let acc = content::acc in
         consume_list_items stream_head where_in_line acc
