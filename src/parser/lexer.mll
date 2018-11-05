@@ -359,10 +359,10 @@ rule token input = parse
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
     { emit input (`Tag (`See (`Url, url))) }
 
-  | "@see" horizontal_space* '\'' ([^ '>']* as filename) '\''
+  | "@see" horizontal_space* '\'' ([^ '\'']* as filename) '\''
     { emit input (`Tag (`See (`File, filename))) }
 
-  | "@see" horizontal_space* '"' ([^ '>']* as name) '"'
+  | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
     { emit input (`Tag (`See (`Document, name))) }
 
   | "@since" horizontal_space+ ([^ '\r' '\n']* as version)

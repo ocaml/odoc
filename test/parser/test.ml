@@ -619,6 +619,9 @@ let tests : test_suite list = [
     t "words" "@see <foo> bar";
     t "prefix" "@seefoo";
     t "after-code-block" "{[foo]} @see <foo>";
+    t "url-attempted-nested-closer" "@see <foo>bar>";
+    t "file-attempted-nested-closer" "@see 'foo'bar'";
+    t "document-attempted-nested-closer" "@see \"foo\"bar\"";
   ];
 
   "since", [
