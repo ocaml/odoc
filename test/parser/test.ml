@@ -202,6 +202,7 @@ let tests : test_suite list = [
     t "unterminated-after-kind" "{!val:foo";
     t "operator" "{!(>>=)}";
     t "operator-with-dash" "{!(@->)}";
+    t "operator-with-dot" "{!(*.)}";
   ];
 
   "reference-with-text", [
