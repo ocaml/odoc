@@ -306,7 +306,7 @@ and delimited_inline_element_list
   | _ ->
     if requires_leading_whitespace then begin
       Parse_error.must_be_followed_by_whitespace
-        ~what:(Token.describe parent_markup) parent_markup_location
+        ~what:(Token.print parent_markup) parent_markup_location
       |> Error.warning input.warnings
     end;
     consume_elements ~at_start_of_line:false []
