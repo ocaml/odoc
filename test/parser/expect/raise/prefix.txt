@@ -1,4 +1,6 @@
 ((output
-  (error  "File \"f.ml\", line 1, characters 0-9:\
-         \nunknown tag '@raisefoo'"))
- (warnings ()))
+  (ok
+   (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word @raisefoo))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-9:\
+   \nunknown tag '@raisefoo'")))

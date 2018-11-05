@@ -425,7 +425,8 @@ rule token input = parse
     { raise_error input Parse_error.truncated_see }
 
   | '@' ['a'-'z' 'A'-'Z']+ as tag
-    { raise_error input (Parse_error.unknown_tag tag) }
+    { warning input (Parse_error.unknown_tag tag);
+      emit input (`Word tag) }
 
   | '@'
     { raise_error input Parse_error.stray_at }
