@@ -140,7 +140,7 @@ let rec inline_element
 
   | `Simple_reference r ->
     junk input;
-    Location.at location (`Reference (`Simple, Helpers.read_reference r, []))
+    Location.at location (`Reference (`Simple, Reference.read_reference r, []))
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
@@ -159,7 +159,7 @@ let rec inline_element
       Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
-    `Reference (`With_text, Helpers.read_reference r, content)
+    `Reference (`With_text, Reference.read_reference r, content)
     |> Location.at location
 
   | `Simple_link u ->
@@ -668,8 +668,8 @@ let rec block_element_list
             | `Since _ -> `Since s
             | `Version _ -> `Version s
             | `Canonical _ ->
-              let path = Helpers.read_path_longident s in
-              let module_ = Helpers.read_mod_longident s in
+              let path = Reference.read_path_longident s in
+              let module_ = Reference.read_mod_longident s in
               `Canonical (path, module_)
           in
           let tag = Location.at location (`Tag tag) in
@@ -789,7 +789,7 @@ let rec block_element_list
 
       let modules =
         split_string " \t\r\n" s
-        |> List.map Helpers.read_mod_longident
+        |> List.map Reference.read_mod_longident
       in
 
       if modules = [] then
