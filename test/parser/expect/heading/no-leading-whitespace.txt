@@ -8,4 +8,4 @@
       (((f.ml (1 2) (1 5)) (word Foo))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-2:\
-   \n'{2' must be followed by space, a tab, or a new line")))
+   \n'{2' should be followed by space, a tab, or a new line")))

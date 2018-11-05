@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-6:\
-   \n'{2 ...}' (section heading) cannot be empty"))
+   \n'{2 ...}' (section heading) should not be empty"))
  (warnings ()))

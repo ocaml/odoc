@@ -1,7 +1,7 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-1:\
-   \n'-' (bulleted list item) cannot be empty"))
+   \n'-' (bulleted list item) should not be empty"))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-3:\
    \n'-' (bulleted list item) should begin on its own line")))

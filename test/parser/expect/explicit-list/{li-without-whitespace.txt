@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 4-7:\
-   \n'{li ...}' must be followed by space, a tab, or a new line"))
+   \n'{li ...}' should be followed by space, a tab, or a new line"))
  (warnings ()))

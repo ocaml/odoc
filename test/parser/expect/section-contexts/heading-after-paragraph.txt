@@ -9,4 +9,4 @@
       (((f.ml (2 3) (2 6)) (word Bar))))))))
  (warnings
   ( "File \"f.ml.mld\":\
-   \npages (.mld files) must start with a heading")))
+   \npages (.mld files) should start with a heading")))

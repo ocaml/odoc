@@ -20,6 +20,6 @@
       (((f.ml (3 3) (3 6)) (word Baz))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-7:\
-   \n'{1': heading level must be lower than top heading level '3'"
+   \n'{1': heading level should be lower than top heading level '3'"
     "File \"f.ml\", line 3, characters 0-7:\
-   \n'{2': heading level must be lower than top heading level '3'")))
+   \n'{2': heading level should be lower than top heading level '3'")))

@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-3:\
-   \n'{b ...}' (boldface text) cannot be empty"))
+   \n'{b ...}' (boldface text) should not be empty"))
  (warnings ()))

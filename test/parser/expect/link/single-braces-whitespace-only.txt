@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-4:\
-   \n'{:...} (external link)' cannot be empty"))
+   \n'{:...} (external link)' should not be empty"))
  (warnings ()))

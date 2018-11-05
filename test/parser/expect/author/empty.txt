@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-7:\
-   \n'@author' cannot be empty"))
+   \n'@author' should not be empty"))
  (warnings ()))

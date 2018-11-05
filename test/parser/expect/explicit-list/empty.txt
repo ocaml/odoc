@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 0-3:\
-   \n'{ul ...}' (bulleted list) cannot be empty"))
+   \n'{ul ...}' (bulleted list) should not be empty"))
  (warnings ()))

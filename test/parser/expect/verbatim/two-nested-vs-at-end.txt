@@ -1,5 +1,5 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 5-7:\
-   \n'v}' must be preceded by whitespace"))
+   \n'v}' should be preceded by whitespace"))
  (warnings ()))

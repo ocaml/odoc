@@ -2,4 +2,4 @@
   (ok (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (word foo))))))))
  (warnings
   ( "File \"f.ml.mld\":\
-   \npages (.mld files) must start with a heading")))
+   \npages (.mld files) should start with a heading")))
