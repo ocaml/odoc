@@ -831,7 +831,7 @@ let rec block_element_list
       | `After_text | `After_shorthand_bullet ->
         Parse_error.should_begin_on_its_own_line
           ~what:(Token.describe token) location
-        |> Error.raise_exception
+        |> Error.warning warnings
       | _ ->
         ()
       end;
@@ -882,7 +882,7 @@ let rec block_element_list
         if where_in_line <> `At_start_of_line then
           Parse_error.should_begin_on_its_own_line
             ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          |> Error.warning warnings;
 
         junk input;
 

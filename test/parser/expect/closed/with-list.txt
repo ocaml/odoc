@@ -1,5 +1,8 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 8-9:\
-   \n'-' (bulleted list item) should begin on its own line"))
- (warnings ()))
+   \n'-' (bulleted list item) is not allowed in the tags section\
+   \nSuggestion: move '-' (bulleted list item) before any tags"))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-9:\
+   \n'-' (bulleted list item) should begin on its own line")))
