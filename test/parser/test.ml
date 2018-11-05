@@ -189,6 +189,11 @@ let tests : test_suite list = [
        be caught by a good resolver and resolver error messages. *)
     (* t "expression" *)
     t "unterminated" "{!foo";
+    t "empty-kind" "{!:foo}";
+    t "whitespace-kind" "{!:foo}";
+    t "with-kind-but-empty" "{!val:}";
+    t "with-kind-but-whitespace" "{!val: }";
+    t "leading-whitespace-in-kind" "{! val:foo}";
     t "internal-whitespace-in-kind" "{!va l:foo}";
     t "internal-whitespace-in-referent" "{!val:( * )}";
     t "two-colons" "{!val:foo:bar}";
@@ -995,60 +1000,9 @@ let tests : test_suite list = [
     t "right-alignment" "{R foo}";
     t "custom-style" "{c foo}";
     t "custom-tag" "@custom";
-    (* test "custom reference kind"
-      "{!custom:foo}"
-      (Ok []); *)
+    t "custom-reference-kind" "{!custom:foo}";
     t "html-tag" "<b>foo</b>";
   ];
-
-  (*
-  "reference-target", [
-    test "empty kind"
-      "{!:foo}"
-      (error 1 0 1 3 ["'{!...:' (reference kind) cannot be empty"]);
-
-    test "with kind but empty"
-      "{!val:}"
-      (error 1 5 1 7 ["':...}' (reference target) cannot be empty"]);
-
-    test "whitespace kind"
-      "{! :foo}"
-      (error 1 0 1 4 ["'{!...:' (reference kind) cannot be empty"]);
-
-    test "with kind but whitespace"
-      "{!val: }"
-      (error 1 5 1 8 ["':...}' (reference target) cannot be empty"]);
-
-    test "internal whitespace in kind"
-      "{!va l:foo}"
-      (error 1 4 1 5
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "internal whitespace in referent"
-      "{!val:foo bar}"
-      (error 1 9 1 10
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "two colons"
-      "{!val:foo:bar}"
-      (Ok [`Paragraph [`Reference (Root ("foo:bar", TUnknown), [])]]);
-
-    test "space before colon"
-      "{!val :foo}"
-      (error 1 5 1 6
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "space after colon"
-      "{!val: foo}"
-      (error 1 6 1 7
-        ["internal whitespace is not allowed in '{!...}' (cross-reference)"]);
-
-    test "unterminated after kind"
-      "{!val:foo"
-      (error 1 9 1 9
-        ["end of text is not allowed in '{!...}' (cross-reference)"]);
-  ];
-  *)
 ]
 
 
