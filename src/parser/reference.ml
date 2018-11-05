@@ -29,7 +29,7 @@ let read_qualifier :
 
 let rightmost_dash_index s =
   let rec scan_string index open_parenthesis_count =
-    if index <= 0 then
+    if index < 0 then
       None
     else
       match s.[index] with

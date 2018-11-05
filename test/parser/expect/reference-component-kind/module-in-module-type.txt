@@ -1,0 +1,7 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 29))
+     (paragraph
+      (((f.ml (1 0) (1 29))
+        (reference (module Bar (root Foo module_type)) ()))))))))
+ (warnings ()))

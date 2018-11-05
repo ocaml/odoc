@@ -1,0 +1,6 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 17))
+     (paragraph
+      (((f.ml (1 0) (1 17)) (reference (module Bar (root Foo unknown)) ()))))))))
+ (warnings ()))

@@ -1,0 +1,5 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 18))
+     (@canonical (dot Bar (root Foo)) (dot Bar (root Foo unknown)))))))
+ (warnings ()))

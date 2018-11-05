@@ -1,0 +1,4 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 21)) (@canonical (root module-Foo) (root Foo module))))))
+ (warnings ()))

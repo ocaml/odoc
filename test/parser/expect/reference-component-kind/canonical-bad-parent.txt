@@ -1,0 +1,5 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 23))
+     (@canonical (dot Bar (root page-foo)) (dot Bar (root foo page)))))))
+ (warnings ()))

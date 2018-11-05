@@ -683,6 +683,251 @@ let tests : test_suite list = [
     t "with-list" "@closed - foo";
   ];
 
+  "reference-component-kind", [
+    t "no-kind" "{!foo}";
+    t "class" "{!class-foo}";
+    t "class-type" "{!classtype-foo}";
+    t "class-type-alt" "{!class-type-foo}";
+    t "constructor" "{!const-Foo}";
+    t "constructor-alt" "{!constructor-Foo}";
+    t "exception" "{!exn-Foo}";
+    t "exception-alt" "{!exception-Foo}";
+    t "extension" "{!extension-Foo}";
+    t "field" "{!recfield-foo}";
+    t "field-alt" "{!field-foo}";
+    t "heading" "{!section-foo}";
+    t "heading-alt" "{!label-foo}";
+    t "instance-variable" "{!instance-variable-foo}";
+    t "method" "{!method-foo}";
+    t "module" "{!module-Foo}";
+    t "module-type" "{!module-type-Foo}";
+    t "page" "{!page-foo}";
+    t "type" "{!type-foo}";
+    t "val" "{!val-foo}";
+    t "val-alt" "{!value-foo}";
+    t "longident" "{!module-Foo.type-bar}";
+    t "hyphenated-kind-longident" "{!module-type-Foo.module-type-Bar.type-baz}";
+    t "empty" "{!}";
+    t "empty-qualifier" "{!-foo}";
+    t "empty-identifier" "{!val-}";
+    t "invalid-qualifier" "{!foo-bar}";
+    t "empty-first-component" "{!.foo}";
+    t "empty-second-component" "{!Foo.}";
+    t "second-component-empty-qualifier" "{!Foo.-bar}";
+    t "second-component-empty-identifier" "{!Foo.val-}";
+    t "something-in-invalid" "{!foo-bar.baz}";
+    t "something-in-something" "{!foo.bar}";
+    t "something-in-module" "{!module-Foo.bar}";
+    t "something-in-module-type" "{!module-type-Foo.bar}";
+    t "something-in-type" "{!type-foo.bar}";
+    t "something-in-class" "{!class-foo.bar}";
+    t "something-in-class-type" "{!class-type-foo.bar}";
+    t "something-in-page" "{!page-foo.bar}";
+    t "something-in-constructor" "{!constructor-Foo.bar}";
+    t "something-in-exception" "{!exception-Foo.bar}";
+    t "something-in-extension" "{!extension-Foo.bar}";
+    t "something-in-field" "{!field-foo.bar}";
+    t "something-in-section" "{!section-foo.bar}";
+    t "something-in-instance-variable" "{!instance-variable-foo.bar}";
+    t "something-in-method" "{!method-foo.bar}";
+    t "something-in-val" "{!val-foo.bar}";
+    t "something-in-something-nested" "{!foo.bar.baz}";
+    t "something-in-module-nested" "{!Foo.module-Bar.baz}";
+    t "something-in-module-type-nested" "{!Foo.module-type-Bar.baz}";
+    t "something-in-type-nested" "{!Foo.type-bar.baz}";
+    t "something-in-class-nested" "{!Foo.class-bar.baz}";
+    t "something-in-class-type-nested" "{!foo.class-type-bar.baz}";
+    t "something-in-page-nested" "{!foo.page-bar.baz}";
+    t "something-in-constructor-nested" "{!Foo.constructor-Bar.baz}";
+    t "something-in-exception.nested" "{!Foo.exception-bar.baz}";
+    t "something-in-extension-nested" "{!Foo.extension-bar.baz}";
+    t "something-in-field-nested" "{!foo.field-bar.baz}";
+    t "something-in-section-nested" "{!foo.section-bar.baz}";
+    t "something-in-instance-variable-nested"
+      "{!foo.instance-variable-bar.baz}";
+    t "something-in-method-nested" "{!foo.method-bar.baz}";
+    t "something-in-val-nested" "{!Foo.val-bar.baz}";
+    t "module-in-empty" "{!.module-Foo}";
+    t "module-in-something" "{!Foo.module-Bar}";
+    t "module-in-module" "{!module-Foo.module-Bar}";
+    t "module-in-module-type" "{!module-type-Foo.module-Bar}";
+    t "module-in-class" "{!class-foo.module-Bar}";
+    t "module-in-class-type" "{!class-type-foo.module-Bar}";
+    t "module-in-constructor" "{!constructor-Foo.module-Bar}";
+    t "module-in-exception" "{!exception-Foo.module-Bar}";
+    t "module-in-extension" "{!extension-Foo.module-Bar}";
+    t "module-in-field" "{!field-foo.module-Bar}";
+    t "module-in-section" "{!section-foo.module-Bar}";
+    t "module-in-instance-variable" "{!instance-variable-foo.module-Bar}";
+    t "module-in-method" "{!method-foo.module-Bar}";
+    t "module-in-page" "{!page-foo.module-Bar}";
+    t "module-in-type" "{!type-foo.module-Bar}";
+    t "module-in-val" "{!val-foo.module-Bar}";
+    t "module-in-something-nested" "{!Foo.Bar.module-Baz}";
+    t "module-in-module-nested" "{!Foo.module-Bar.module-Baz}";
+    t "module-in-module-type-nested" "{!Foo.module-type-Bar.module-Baz}";
+    t "module-in-class-nested" "{!Foo.class-bar.module-Baz}";
+    t "module-in-class-type-nested" "{!Foo.class-type-bar.module-Baz}";
+    t "module-in-constructor-nested" "{!Foo.constructor-Bar.module-Baz}";
+    t "module-in-exception-nested" "{!Foo.exception-Bar.module-Baz}";
+    t "module-in-extension-nested" "{!Foo.extension-Bar.module-Baz}";
+    t "module-in-field-nested" "{!foo.field-bar.module-Baz}";
+    t "module-in-section-nested" "{!foo.section-bar.module-Baz}";
+    t "module-in-instance-variable-nested"
+      "{!foo.instance-variable-bar.module-Baz}";
+    t "module-in-method-nested" "{!foo.method-bar.module-Baz}";
+    t "module-in-page-nested" "{!foo.page-bar.module-Baz}";
+    t "module-in-type-nested" "{!Foo.type-bar.module-Baz}";
+    t "module-in-val-nested" "{!Foo.val-bar.module-Baz}";
+    t "module-type-in-something" "{!Foo.module-type-Bar}";
+    t "module-type-in-module" "{!module-Foo.module-type-Bar}";
+    t "module-type-in-module-type" "{!module-type-Foo.module-type-Bar}";
+    t "module-type-in-class" "{!class-foo.module-type-Bar}";
+    t "module-type-in-page" "{!page-foo.module-type-Bar}";
+    t "type-in-something" "{!Foo.type-bar}";
+    t "type-in-module" "{!module-Foo.type-bar}";
+    t "type-in-module-type" "{!module-type-Foo.type-bar}";
+    t "type-in-class" "{!class-foo.type-bar}";
+    t "type-in-page" "{!page-foo.type-bar}";
+    t "constructor-in-empty" "{!.constructor-Foo}";
+    t "constructor-in-something" "{!foo.constructor-Bar}";
+    t "constructor-in-type" "{!type-foo.constructor-Bar}";
+    t "constructor-in-class" "{!class-foo.constructor-Bar}";
+    t "constructor-in-class-type" "{!class-type-foo.constructor-Bar}";
+    t "constructor-in-constructor" "{!constructor-Foo.constructor-Bar}";
+    t "constructor-in-exception" "{!exception-Foo.constructor-Bar}";
+    t "constructor-in-extension" "{!extension-Foo.constructor-Bar}";
+    t "constructor-in-field" "{!field-foo.constructor-Bar}";
+    t "constructor-in-section" "{!section-foo.constructor-Bar}";
+    t "constructor-in-instance-variable"
+      "{!instance-variable-foo.constructor-Bar}";
+    t "constructor-in-method" "{!method-foo.constructor-Bar}";
+    t "constructor-in-module" "{!module-Foo.constructor-Bar}";
+    t "constructor-in-module-type" "{!module-type-Foo.constructor-Bar}";
+    t "constructor-in-page" "{!page-foo.constructor-Bar}";
+    t "constructor-in-val" "{!val-foo.constructor-Bar}";
+    t "constructor-in-something-nested" "{!foo.bar.constructor-Baz}";
+    t "constructor-in-type-nested" "{!foo.type-bar.constructor-Baz}";
+    t "constructor-in-class-nested" "{!Foo.class-bar.constructor-Baz}";
+    t "constructor-in-class-type-nested"
+      "{!Foo.class-type-bar.constructor-Baz}";
+    t "constructor-in-constructor-nested"
+      "{!Foo.constructor-Bar.constructor-Baz}";
+    t "constructor-in-exception-nested" "{!Foo.exception-Bar.constructor-Baz}";
+    t "constructor-in-extension-nested" "{!Foo.extension-Bar.constructor-Baz}";
+    t "constructor-in-field-nested" "{!foo.field-bar.constructor-Baz}";
+    t "constructor-in-section-nested" "{!foo.section-bar.constructor-Baz}";
+    t "constructor-in-instance-variable-nested"
+      "{!foo.instance-variable-bar.constructor-Baz}";
+    t "constructor-in-method-nested" "{!foo.method-bar.constructor-Baz}";
+    t "constructor-in-module-nested" "{!Foo.module-Bar.constructor-Baz}";
+    t "constructor-in-module-type-nested"
+      "{!Foo.module-type-Bar.constructor-Baz}";
+    t "constructor-in-page-nested" "{!foo.page-bar.constructor-Baz}";
+    t "constructor-in-val-nested" "{!Foo.val-bar.constructor-Baz}";
+    t "field-in-empty" "{!.field-foo}";
+    t "field-in-something" "{!foo.field-bar}";
+    t "field-in-module" "{!module-Foo.field-bar}";
+    t "field-in-module-type" "{!module-type-Foo.field-bar}";
+    t "field-in-type" "{!type-foo.field-bar}";
+    t "field-in-class" "{!class-foo.field-bar}";
+    t "field-in-class-type" "{!class-type-foo.field-bar}";
+    t "field-in-constructor" "{!constructor-Foo.field-bar}";
+    t "field-in-exception" "{!exception-Foo.field-bar}";
+    t "field-in-extension" "{!extension-Foo.field-bar}";
+    t "field-in-field" "{!field-foo.field-bar}";
+    t "field-in-section" "{!section-foo.field-bar}";
+    t "field-in-instance-variable" "{!instance-variable-foo.field-bar}";
+    t "field-in-method" "{!method-foo.field-bar}";
+    t "field-in-page" "{!page-foo.field-bar}";
+    t "field-in-val" "{!val-foo.field-bar}";
+    t "field-in-something-nested" "{!foo.bar.field-baz}";
+    t "field-in-module-nested" "{!Foo.module-Bar.field-baz}";
+    t "field-in-module-type-nested" "{!Foo.module-type-Bar.field-baz}";
+    t "field-in-type-nested" "{!Foo.type-bar.field-baz}";
+    t "field-in-class-nested" "{!Foo.class-bar.field-baz}";
+    t "field-in-class-type-nested" "{!Foo.class-type-bar.field-baz}";
+    t "field-in-constructor-nested" "{!Foo.constructor-bar.field-baz}";
+    t "field-in-exception-nested" "{!Foo.exception-Bar.field-baz}";
+    t "field-in-extension-nested" "{!Foo.extension-Bar.field-baz}";
+    t "field-in-field-nested" "{!Foo.field-bar.field-baz}";
+    t "field-in-section-nested" "{!foo.section-bar.field-baz}";
+    t "field-in-instance-variable-nested"
+      "{!foo.instance-variable-bar.field-baz}";
+    t "field-in-method-nested" "{!foo.method-bar.field-baz}";
+    t "field-in-page-nested" "{!foo.page-bar.field-baz}";
+    t "field-in-val-nested" "{!Foo.val-bar.field-baz}";
+    t "exception-in-something" "{!Foo.exception-Bar}";
+    t "exception-in-module" "{!module-Foo.exception-Bar}";
+    t "exception-in-class" "{!class-foo.exception-Bar}";
+    t "exception-in-page" "{!page-foo.exception-Bar}";
+    t "extension-in-something" "{!Foo.extension-Bar}";
+    t "extension-in-module" "{!module-Foo.extension-Bar}";
+    t "extension-in-class" "{!class-foo.extension-Bar}";
+    t "extension-in-page" "{!page-foo.extension-Bar}";
+    t "val-in-something" "{!Foo.val-bar}";
+    t "val-in-module" "{!module-Foo.val-bar}";
+    t "val-in-class" "{!class-foo.val-bar}";
+    t "val-in-page" "{!page-foo.val-bar}";
+    t "class-in-something" "{!Foo.class-bar}";
+    t "class-in-module" "{!module-Foo.class-bar}";
+    t "class-in-class" "{!class-foo.class-bar}";
+    t "class-in-page" "{!page-foo.class-bar}";
+    t "class-type-in-something" "{!Foo.class-type-bar}";
+    t "class-type-in-module" "{!module-Foo.class-type-bar}";
+    t "class-type-in-class" "{!class-foo.class-type-bar}";
+    t "class-type-in-page" "{!page-foo.class-type-bar}";
+    t "method-in-empty" "{!.method-foo}";
+    t "method-in-something" "{!foo.method-bar}";
+    t "method-in-class" "{!class-foo.method-bar}";
+    t "method-in-class-type" "{!class-type-foo.method-bar}";
+    t "method-in-constructor" "{!constructor-Foo.method-bar}";
+    t "method-in-exception" "{!exception-Foo.method-bar}";
+    t "method-in-extension" "{!extension-Foo.method-bar}";
+    t "method-in-field" "{!field-foo.method-bar}";
+    t "method-in-section" "{!section-foo.method-bar}";
+    t "method-in-instance-variable" "{!instance-variable-foo.method-bar}";
+    t "method-in-method" "{!method-foo.method-bar}";
+    t "method-in-module" "{!module-Foo.method-bar}";
+    t "method-in-module-type" "{!module-type-Foo.method-bar}";
+    t "method-in-page" "{!page-foo.method-bar}";
+    t "method-in-type" "{!type-foo.method-bar}";
+    t "method-in-val" "{!val-foo.method-bar}";
+    t "method-in-something-nested" "{!foo.bar.method-baz}";
+    t "method-in-class-nested" "{!Foo.class-bar.method-baz}";
+    t "method-in-class-type-nested" "{!Foo.class-type-bar.method-baz}";
+    t "method-in-constructor-nested" "{!foo.constructor-Bar.method-baz}";
+    t "method-in-exception-nested" "{!Foo.exception-Bar.method-baz}";
+    t "method-in-extension-nested" "{!Foo.extension-Bar.method-baz}";
+    t "method-in-field-nested" "{!foo.field-bar.method-baz}";
+    t "method-in-section-nested" "{!foo.section-bar.method-baz}";
+    t "method-in-instance-variable-nested"
+      "{!foo.instance-variable-bar.method-baz}";
+    t "method-in-method-nested" "{!foo.method-bar.method-baz}";
+    t "method-in-module-nested" "{!Foo.module-Bar.method-baz}";
+    t "method-in-module-type-nested" "{!Foo.module-type-Bar.method-baz}";
+    t "method-in-page-nested" "{!foo.page-bar.method-baz}";
+    t "method-in-type-nested" "{!Foo.type-bar.method-baz}";
+    t "method-in-val-nested" "{!Foo.val-bar.method-baz}";
+    t "instance-variable-in-something" "{!Foo.instance-variable-bar}";
+    t "instance-variable-in-module" "{!module-Foo.instance-variable-bar}";
+    t "instance-variable-in-class" "{!class-foo.instance-variable-bar}";
+    t "instance-variable-in-page" "{!page-foo.instance-variable-bar}";
+    t "section-in-something" "{!Foo.section-bar}";
+    t "section-in-module" "{!module-Foo.section-bar}";
+    t "section-in-class" "{!class-foo.section-bar}";
+    t "section-in-page" "{!page-foo.section-bar}";
+    t "page-in-something" "{!foo.page-bar}";
+    t "kind-conflict" "{!val:type-foo}";
+    t "canonical-something" "@canonical Foo";
+    t "canonical-module" "@canonical module-Foo";
+    t "canonical-path" "@canonical Foo.Bar";
+    t "canonical-val" "@canonical val-foo";
+    t "canonical-bad-parent" "@canonical page-foo.Bar";
+    t "canonical-empty-component" "@canonical .Foo";
+    t "canonical-empty-name" "@canonical Foo.";
+  ];
+
   "bad-markup", [
     t "left-brace" "{";
     t "left-brace-with-letter" "{g";
@@ -875,15 +1120,28 @@ let () =
           }
         in
 
-        Parser_.parse_comment
-          ~sections_allowed
-          ~containing_definition:dummy_page
-          ~location
-          ~text:parser_input
-        |> fun parser_output ->
-          let buffer = Buffer.create 1024 in
-          Print.parser_output (Format.formatter_of_buffer buffer) parser_output;
-          Buffer.contents buffer
+        try
+          Parser_.parse_comment
+            ~sections_allowed
+            ~containing_definition:dummy_page
+            ~location
+            ~text:parser_input
+          |> fun parser_output ->
+            let buffer = Buffer.create 1024 in
+            Print.parser_output
+              (Format.formatter_of_buffer buffer) parser_output;
+            Buffer.contents buffer
+
+        with
+        | Parser_.Reference.InvalidReference s ->
+          Printf.sprintf
+            "Exception Parser_.Reference.InvalidReference \"%s\"\n" s
+
+        | Parser_.Reference.Expected_reference_to_a_module_but_got s ->
+          Printf.sprintf
+            "Exception %s \"%s\"\n"
+            "Parser_.Reference.Expected_reference_to_a_module_but_got"
+            s
       in
 
       let expected =

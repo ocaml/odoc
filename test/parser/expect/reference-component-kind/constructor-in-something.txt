@@ -1,0 +1,7 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 22))
+     (paragraph
+      (((f.ml (1 0) (1 22))
+        (reference (constructor Bar (root foo unknown)) ()))))))))
+ (warnings ()))

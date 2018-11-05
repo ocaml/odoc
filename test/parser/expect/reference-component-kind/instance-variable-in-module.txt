@@ -1,0 +1,1 @@
+Exception Parser_.Reference.InvalidReference "module-Foo.instance-variable-bar"
