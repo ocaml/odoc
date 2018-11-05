@@ -140,7 +140,7 @@ let rec inline_element
 
   | `Simple_reference r ->
     junk input;
-    Location.at location (`Reference (`Simple, Reference.read_reference r, []))
+    Location.at location (`Reference (`Simple, Reference.parse r, []))
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
@@ -159,8 +159,7 @@ let rec inline_element
       Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
-    `Reference (`With_text, Reference.read_reference r, content)
-    |> Location.at location
+    Location.at location (`Reference (`With_text, Reference.parse r, content))
 
   | `Simple_link u ->
     junk input;

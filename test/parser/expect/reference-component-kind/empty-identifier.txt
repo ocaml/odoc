@@ -1,5 +1,1 @@
-((output
-  (ok
-   (((f.ml (1 0) (1 7))
-     (paragraph (((f.ml (1 0) (1 7)) (reference (root "" value) ()))))))))
- (warnings ()))
+Exception Parser_.Reference.InvalidReference "val-"

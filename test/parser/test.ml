@@ -721,6 +721,7 @@ let tests : test_suite list = [
     t "empty-second-component" "{!Foo.}";
     t "second-component-empty-qualifier" "{!Foo.-bar}";
     t "second-component-empty-identifier" "{!Foo.val-}";
+    t "first-component-empty-identifier" "{!module-.foo}";
     t "something-in-invalid" "{!foo-bar.baz}";
     t "something-in-something" "{!foo.bar}";
     t "something-in-module" "{!module-Foo.bar}";
@@ -987,6 +988,7 @@ let tests : test_suite list = [
     t "canonical-bad-parent" "@canonical page-foo.Bar";
     t "canonical-empty-component" "@canonical .Foo";
     t "canonical-empty-name" "@canonical Foo.";
+    t "internal-whitespace" "{!foo. bar .baz}";
   ];
 
   "bad-markup", [

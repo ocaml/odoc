@@ -1,368 +1,256 @@
-(* This file contains mostly functions from the former [model/attrs.ml]. It
-   should be reorganized in the future. *)
+exception InvalidReference of string
 
 module Paths = Model.Paths
 
-(* This should be merged into [Parse_error] above. *)
-exception InvalidReference of string
+(* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
+let match_ocamldoc_reference_kind s : (_ Paths.Reference.tag) option =
+  match s with
+  | Some "module" -> Some TModule
+  | Some "modtype" -> Some TModuleType
+  | Some "class" -> Some TClass
+  | Some "classtype" -> Some TClassType
+  | Some "val" -> Some TValue
+  | Some "type" -> Some TType
+  | Some "exception" -> Some TException
+  | Some "attribute" -> None
+  | Some "method" -> Some TMethod
+  | Some "section" -> Some TLabel
+  | Some "const" -> Some TConstructor
+  | Some "recfield" -> Some TField
+  | _ -> None
 
-let read_qualifier :
-  string option ->
-  [< Paths.Reference.kind ] Paths.Reference.tag
-  = function
+let match_extra_odoc_reference_kind s : (_ Paths.Reference.tag) option =
+  match s with
+  | Some "class-type" -> Some TClassType
+  | Some "constructor" -> Some TConstructor
+  | Some "exn" -> Some TException
+  | Some "extension" -> Some TExtension
+  | Some "field" -> Some TField
+  | Some "instance-variable" -> Some TInstanceVariable
+  | Some "label" -> Some TLabel
+  | Some "module-type" -> Some TModuleType
+  | Some "page" -> Some TPage
+  | Some "value" -> Some TValue
+  | _ -> None
+
+(* Ideally, the parser would call this on every reference kind annotation during
+   tokenization. However, that constraints the phantom tag type to be the same
+   for all tokens in the resulting token list (because lists are homogeneous).
+   So, the parser stores kinds as strings in the token list instead, and this
+   function is called on each string at the latest possible time. *)
+let match_reference_kind s : _ Paths.Reference.tag =
+  match s with
   | None -> TUnknown
-  | Some "module" -> TModule
-  | Some "module-type" -> TModuleType
-  | Some "type" -> TType
-  | Some ("const" | "constructor") -> TConstructor
-  | Some ("recfield" | "field") -> TField
-  | Some "extension" -> TExtension
-  | Some ("exn" | "exception") -> TException
-  | Some ("val" | "value") -> TValue
-  | Some "class" -> TClass
-  | Some ("classtype" | "class-type") -> TClassType
-  | Some "method" -> TMethod
-  | Some "instance-variable" -> TInstanceVariable
-  | Some ("section" | "label") -> TLabel
-  | Some ("page") -> TPage
-  | Some s -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
+  | Some s as wrapped ->
+    let result =
+      match match_ocamldoc_reference_kind wrapped with
+      | Some kind -> Some kind
+      | None -> match_extra_odoc_reference_kind wrapped
+    in
+    match result with
+    | Some kind -> kind
+    | None -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
 
-let rightmost_dash_index s =
-  let rec scan_string index open_parenthesis_count =
+(* The string is scanned right-to-left, because we are interested in right-most
+   hyphens. The tokens are also returned in right-to-left order, because the
+   traversals that consume them prefer to look at the deepest identifier
+   first. *)
+let tokenize s =
+  let rec scan_identifier started_at open_parenthesis_count index tokens =
+    match s.[index] with
+    | exception Invalid_argument _ ->
+      identifier_ended started_at index tokens
+    | '-' | '.' when open_parenthesis_count = 0 ->
+      identifier_ended started_at index tokens
+    | ')' ->
+      scan_identifier
+        started_at (open_parenthesis_count + 1) (index - 1) tokens
+    | '(' when open_parenthesis_count > 0 ->
+      scan_identifier
+        started_at (open_parenthesis_count - 1) (index - 1) tokens
+    | _ ->
+      scan_identifier
+        started_at open_parenthesis_count (index - 1) tokens
+
+  and identifier_ended started_at index tokens =
+    let identifier =
+      String.sub s (index + 1) (started_at - index - 1)
+      |> String.trim
+    in
+    if identifier = "" then
+      raise (InvalidReference s);
+    match s.[index] with
+    | exception Invalid_argument _ ->
+      (None, identifier)::tokens
+    | '.' ->
+      scan_identifier index 0 (index - 1) ((None, identifier)::tokens)
+    | '-' ->
+      scan_kind identifier index (index - 1) tokens
+    | _ ->
+      assert false
+
+  and scan_kind identifier started_at index tokens =
+    match s.[index] with
+    | exception Invalid_argument _ ->
+      kind_ended identifier started_at index tokens
+    | '.' ->
+      kind_ended identifier started_at index tokens
+    | _ ->
+      scan_kind identifier started_at (index - 1) tokens
+
+  and kind_ended identifier started_at index tokens =
+    let kind = Some (String.sub s (index + 1) (started_at - index - 1)) in
     if index < 0 then
-      None
+      (kind, identifier)::tokens
     else
       match s.[index] with
-      | '-' when open_parenthesis_count = 0 ->
-        Some index
-      | ')' ->
-        scan_string (index - 1) (open_parenthesis_count + 1)
-      | '(' when open_parenthesis_count > 0 ->
-        scan_string (index - 1) (open_parenthesis_count - 1)
+      | '.' ->
+        scan_identifier index 0 (index - 1) ((kind, identifier)::tokens)
       | _ ->
-        scan_string (index - 1) open_parenthesis_count
-  in
-  scan_string (String.length s - 1) 0
+        assert false
 
-let read_longident s =
+  in
+
+  scan_identifier (String.length s) 0 (String.length s - 1) []
+  |> List.rev
+
+let parse s =
   let open Paths.Reference in
-  let split_qualifier str =
-    match rightmost_dash_index str with
-    | None -> (None, str)
-    | Some idx ->
-      let qualifier = String.sub str 0 idx in
-      let name = String.sub str (idx + 1) (String.length str - idx - 1) in
-      (Some qualifier, name)
-  in
-  let rec loop_datatype : string -> int -> datatype option =
-    fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          begin match read_qualifier kind with
-          | TUnknown | TType as tag -> Some (Root(name, tag))
-          | _ -> None
-          end
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
-            end
-          | TType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Type(parent, name))
-            end
-          | _ -> None
-  and loop_signature : string -> int -> signature option = fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          begin match read_qualifier kind with
-          | TUnknown | TModule | TModuleType as tag -> Some (Root(name, tag))
-          | _ -> None
-          end
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
-            end
-          | TModule -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Module(parent, name))
-            end
-          | TModuleType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ModuleType(parent, name))
-            end
-          | _ -> None
-  and loop_class_signature : string -> int -> class_signature option =
-    fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          begin match read_qualifier kind with
-          | TUnknown | TClass | TClassType as tag -> Some (Root(name, tag))
-          | _ -> None
-          end
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
-            end
-          | TClass -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Class(parent, name))
-            end
-          | TClassType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ClassType(parent, name))
-            end
-          | _ -> None
-  and loop_label_parent : string -> int -> label_parent option =
-    fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          begin match read_qualifier kind with
-          | TUnknown | TModule | TModuleType
-          | TType | TClass | TClassType | TPage as tag ->
-            Some (Root(name, tag))
-          | _ -> None
-          end
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_label_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(parent, name))
-            end
-          | TModule -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Module(parent, name))
-            end
-          | TModuleType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ModuleType(parent, name))
-            end
-          | TType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Type(parent, name))
-            end
-          | TClass -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Class(parent, name))
-            end
-          | TClassType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ClassType(parent, name))
-            end
-          | _ -> None
-  and loop_parent : string -> int -> parent option =
-    fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          begin match read_qualifier kind with
-          | TUnknown
-          | TModule | TModuleType | TType | TClass | TClassType as tag ->
-            Some (Root(name, tag))
-          | _ -> None
-          end
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(label_parent_of_parent parent, name))
-            end
-          | TModule -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Module(parent, name))
-            end
-          | TModuleType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ModuleType(parent, name))
-            end
-          | TType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Type(parent, name))
-            end
-          | TClass -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Class(parent, name))
-            end
-          | TClassType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ClassType(parent, name))
-            end
-          | _ -> None
-  in
-  let loop : 'k. string -> int -> kind t option =
-    fun s pos ->
-      match String.rindex_from s pos '.' with
-      | exception Not_found ->
-        let maybe_qualified = String.sub s 0 (pos + 1) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (kind, name) = split_qualifier maybe_qualified in
-          Some (Root (name, read_qualifier kind))
-      | idx ->
-        let maybe_qualified = String.sub s (idx + 1) (pos - idx) in
-        if String.length maybe_qualified = 0 then
-          None
-        else
-          let (qualifier, name) = split_qualifier maybe_qualified in
-          match read_qualifier qualifier with
-          | TUnknown -> begin
-              match loop_label_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Dot(parent, name))
-            end
-          | TModule -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Module(parent, name))
-            end
-          | TModuleType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ModuleType(parent, name))
-            end
-          | TType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Type(parent, name))
-            end
-          | TConstructor -> begin
-              match loop_datatype s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Constructor(parent, name))
-            end
-          | TField -> begin
-              match loop_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Field(parent, name))
-            end
-          | TExtension -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Extension(parent, name))
-            end
-          | TException -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Exception(parent, name))
-            end
-          | TValue -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Value(parent, name))
-            end
-          | TClass -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Class(parent, name))
-            end
-          | TClassType -> begin
-              match loop_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (ClassType(parent, name))
-            end
-          | TMethod -> begin
-              match loop_class_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Method(parent, name))
-            end
-          | TInstanceVariable -> begin
-              match loop_class_signature s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (InstanceVariable(parent, name))
-            end
-          | TLabel -> begin
-              match loop_label_parent s (idx - 1) with
-              | None -> None
-              | Some parent -> Some (Label(parent, name))
-            end
-          | TPage -> None
-  in
-    match loop s (String.length s - 1) with
-    | None -> raise (InvalidReference s)
-    | Some r -> r
 
-let read_reference (s : string) : Model.Paths.Reference.any =
+  let rec signature (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] ->
+      begin match kind with
+      | TUnknown | TModule | TModuleType as kind -> Root (identifier, kind)
+      | _ -> raise Exit
+      end
+    | next_token::tokens ->
+      begin match kind with
+      | TUnknown ->
+        Dot (label_parent_of_parent (parent next_token tokens), identifier)
+      | TModule -> Module (signature next_token tokens, identifier)
+      | TModuleType -> ModuleType (signature next_token tokens, identifier)
+      | _ -> raise Exit
+      end
+
+  and parent (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] ->
+      begin match kind with
+      | TUnknown | TModule | TModuleType | TType | TClass
+      | TClassType as kind -> Root (identifier, kind)
+      | _ -> raise Exit
+      end
+    | next_token::tokens ->
+      begin match kind with
+      | TUnknown ->
+        Dot (label_parent_of_parent (parent next_token tokens), identifier)
+      | TModule -> Module (signature next_token tokens, identifier)
+      | TModuleType -> ModuleType (signature next_token tokens, identifier)
+      | TType -> Type (signature next_token tokens, identifier)
+      | TClass -> Class (signature next_token tokens, identifier)
+      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | _ -> raise Exit
+      end
+
+  in
+
+  let class_signature (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] ->
+      begin match kind with
+      | TUnknown | TClass | TClassType as kind -> Root (identifier, kind)
+      | _ -> raise Exit
+      end
+    | next_token::tokens ->
+      begin match kind with
+      | TUnknown ->
+        Dot (label_parent_of_parent (parent next_token tokens), identifier)
+      | TClass -> Class (signature next_token tokens, identifier)
+      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | _ -> raise Exit
+      end
+  in
+
+  let datatype (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] ->
+      begin match kind with
+      | TUnknown | TType as kind -> Root (identifier, kind)
+      | _ -> raise Exit
+      end
+    | next_token::tokens ->
+      begin match kind with
+      | TUnknown ->
+        Dot (label_parent_of_parent (parent next_token tokens), identifier)
+      | TType -> Type (signature next_token tokens, identifier)
+      | _ -> raise Exit
+      end
+  in
+
+  let rec label_parent (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] ->
+      begin match kind with
+      | TUnknown | TModule | TModuleType | TType | TClass | TClassType
+      | TPage as kind -> Root (identifier, kind)
+      | _ -> raise Exit
+      end
+    | next_token::tokens ->
+      begin match kind with
+      | TUnknown -> Dot (label_parent next_token tokens, identifier)
+      | TModule -> Module (signature next_token tokens, identifier)
+      | TModuleType -> ModuleType (signature next_token tokens, identifier)
+      | TType -> Type (signature next_token tokens, identifier)
+      | TClass -> Class (signature next_token tokens, identifier)
+      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | _ -> raise Exit
+      end
+  in
+
+  let start_from_last_component (kind, identifier) tokens =
+    let kind = match_reference_kind kind in
+    match tokens with
+    | [] -> Root (identifier, kind)
+    | next_token::tokens ->
+      match kind with
+      | TUnknown -> Dot (label_parent next_token tokens, identifier)
+      | TModule -> Module (signature next_token tokens, identifier)
+      | TModuleType -> ModuleType (signature next_token tokens, identifier)
+      | TType -> Type (signature next_token tokens, identifier)
+      | TConstructor -> Constructor (datatype next_token tokens, identifier)
+      | TField -> Field (parent next_token tokens, identifier)
+      | TExtension -> Extension (signature next_token tokens, identifier)
+      | TException -> Exception (signature next_token tokens, identifier)
+      | TValue -> Value (signature next_token tokens, identifier)
+      | TClass -> Class (signature next_token tokens, identifier)
+      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | TMethod -> Method (class_signature next_token tokens, identifier)
+      | TInstanceVariable ->
+        InstanceVariable (class_signature next_token tokens, identifier)
+      | TLabel -> Label (label_parent next_token tokens, identifier)
+      | TPage -> raise Exit
+  in
+
   let s =
     match String.rindex s ':' with
     | index -> String.sub s (index + 1) (String.length s - (index + 1))
     | exception Not_found -> s
   in
-  read_longident s
+
+  let tokens = tokenize s in
+
+  try
+    match tokens with
+    | [] -> raise Exit
+    | last_token::tokens -> start_from_last_component last_token tokens
+  with Exit ->
+    raise (InvalidReference s)
 
 let read_path_longident s =
   let open Paths.Path in
@@ -389,7 +277,7 @@ exception Expected_reference_to_a_module_but_got of string
 
 let read_mod_longident lid : Paths.Reference.module_ =
   let open Paths.Reference in
-  match read_longident lid with
+  match parse lid with
   | Root (_, (TUnknown | TModule))
   | Dot (_, _)
   | Module (_,_) as r -> r
