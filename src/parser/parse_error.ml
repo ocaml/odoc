@@ -13,14 +13,14 @@ let bad_heading_level : int -> Location.span -> Error.t =
 let leading_zero_in_heading_level : string -> Location.span -> Error.t =
   Error.make "'%s': leading zero in heading level"
 
-let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
+let should_not_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
   Error.make "%s should not be empty" what
 
 let should_begin_on_its_own_line : what:string -> Location.span -> Error.t =
     fun ~what ->
   Error.make "%s should begin on its own line" what
 
-let must_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
+let should_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
     fun ~what ->
   Error.make "%s should be followed by space, a tab, or a new line" what
 
@@ -39,7 +39,7 @@ let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
 let page_heading_required : string -> Error.t =
   Error.filename_only "pages (.mld files) should start with a heading"
 
-let heading_level_must_be_lower_than_top_level
+let heading_level_should_be_lower_than_top_level
     : int -> int -> Location.span -> Error.t =
     fun this_heading_level top_heading_level ->
   Error.make

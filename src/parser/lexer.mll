@@ -180,7 +180,8 @@ let emit_reference input start target =
   let target = String.trim target in
   let token = reference_token start target in
   if target = "" then
-    raise_error input (Parse_error.cannot_be_empty ~what:(Token.describe token))
+    raise_error
+      input (Parse_error.should_not_be_empty ~what:(Token.describe token))
   else
     emit input token
 
@@ -392,7 +393,7 @@ rule token input = parse
     { raise_error
         input
         ~adjust_start_by:prefix
-        (Parse_error.cannot_be_empty ~what:"heading label") }
+        (Parse_error.should_not_be_empty ~what:"heading label") }
 
   | '{'
     { try bad_markup_recovery (Lexing.lexeme_start lexbuf) input lexbuf
@@ -409,7 +410,7 @@ rule token input = parse
   | '@' ("author" | "since" | "version" | "canonical")
     { raise_error
         input
-        (Parse_error.cannot_be_empty
+        (Parse_error.should_not_be_empty
           ~what:(Printf.sprintf "'%s'" (Lexing.lexeme lexbuf))) }
 
   | "@param"

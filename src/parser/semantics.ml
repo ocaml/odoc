@@ -246,7 +246,7 @@ let section_heading
     | Some top_level when
         status.sections_allowed = `All && level <= top_level && level <= 5 ->
       Error.warning status.warnings
-        (Parse_error.heading_level_must_be_lower_than_top_level
+        (Parse_error.heading_level_should_be_lower_than_top_level
           level top_level location)
     | _ -> ()
     end;

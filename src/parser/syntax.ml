@@ -136,7 +136,8 @@ let rec inline_element
     let location = Location.span [location; brace_location] in
 
     if content = [] then
-      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
     Location.at location (`Styled (s, content))
@@ -159,7 +160,8 @@ let rec inline_element
     let location = Location.span [location; brace_location] in
 
     if content = [] then
-      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
     Location.at location (`Reference (`With_text, Reference.parse r, content))
@@ -305,7 +307,7 @@ and delimited_inline_element_list
 
   | _ ->
     if requires_leading_whitespace then begin
-      Parse_error.must_be_followed_by_whitespace
+      Parse_error.should_be_followed_by_whitespace
         ~what:(Token.print parent_markup) parent_markup_location
       |> Error.warning input.warnings
     end;
@@ -664,7 +666,8 @@ let rec block_element_list
         | `Author s | `Since s | `Version s | `Canonical s as tag ->
           let s = String.trim s in
           if s = "" then
-            Parse_error.cannot_be_empty ~what:(Token.describe token) location
+            Parse_error.should_not_be_empty
+              ~what:(Token.describe token) location
             |> Error.raise_exception;
           let tag =
             match tag with
@@ -743,7 +746,7 @@ let rec block_element_list
       raise_if_after_tags next_token;
       warn_if_after_text next_token;
       if s = "" then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
         |> Error.raise_exception;
 
       junk input;
@@ -797,7 +800,7 @@ let rec block_element_list
       in
 
       if modules = [] then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
         |> Error.raise_exception;
 
       let block = accepted_in_all_contexts context (`Modules modules) in
@@ -816,7 +819,7 @@ let rec block_element_list
       let items, brace_location =
         explicit_list_items ~parent_markup:token input in
       if items = [] then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
         |> Error.raise_exception;
 
       let location = Location.span [location; brace_location] in
@@ -896,7 +899,7 @@ let rec block_element_list
             input
         in
         if content = [] then
-          Parse_error.cannot_be_empty ~what:(Token.describe token) location
+          Parse_error.should_not_be_empty ~what:(Token.describe token) location
           |> Error.raise_exception;
 
         let location = Location.span [location; brace_location] in
@@ -963,7 +966,7 @@ and shorthand_list_items
         let content, stream_head, where_in_line =
           block_element_list In_shorthand_list ~parent_markup:bullet input in
         if content = [] then
-          Parse_error.cannot_be_empty
+          Parse_error.should_not_be_empty
             ~what:(Token.describe bullet) next_token.location
           |> Error.warning input.warnings;
 
@@ -1041,7 +1044,7 @@ and explicit_list_items
                it is not represented as [`Space], [`Single_newline], or
                [`Blank_line]. *)
         | _ ->
-          Parse_error.must_be_followed_by_whitespace
+          Parse_error.should_be_followed_by_whitespace
             next_token.location ~what:(Token.print token)
           |> Error.raise_exception
       end;
@@ -1050,7 +1053,7 @@ and explicit_list_items
         block_element_list In_explicit_list ~parent_markup:token input in
 
       if content = [] then
-        Parse_error.cannot_be_empty
+        Parse_error.should_not_be_empty
           next_token.location ~what:(Token.describe token)
         |> Error.raise_exception;
 
