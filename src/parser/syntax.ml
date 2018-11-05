@@ -304,12 +304,12 @@ and delimited_inline_element_list
     [], first_token.location
 
   | _ ->
-    if requires_leading_whitespace then
+    if requires_leading_whitespace then begin
       Parse_error.must_be_followed_by_whitespace
         ~what:(Token.describe parent_markup) parent_markup_location
-      |> Error.raise_exception
-    else
-      consume_elements ~at_start_of_line:false []
+      |> Error.warning input.warnings
+    end;
+    consume_elements ~at_start_of_line:false []
 
 
 
