@@ -954,6 +954,16 @@ let rec block_element_list
             ~what:(Token.describe token) location
           |> Error.warning input.warnings;
 
+        let label =
+          match label with
+          | Some "" ->
+            Parse_error.should_not_be_empty ~what:"heading label" location
+            |> Error.warning input.warnings;
+            None
+          | _ ->
+            label
+        in
+
         junk input;
 
         let content, brace_location =

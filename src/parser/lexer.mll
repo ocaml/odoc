@@ -327,7 +327,7 @@ rule token input = parse
   | "{-"
     { emit input (`Begin_list_item `Dash) }
 
-  | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)+ as label)
+  | '{' (['0'-'9']+ as level) ':' (([^ '}'] # space_char)* as label)
     { emit
         input (`Begin_section_heading (heading_level input level, Some label)) }
 
@@ -380,12 +380,6 @@ rule token input = parse
     { emit input (`Tag `Closed) }
 
 
-
-  | ('{' ['0'-'9'] as prefix) ':'
-    { raise_error
-        input
-        ~adjust_start_by:prefix
-        (Parse_error.should_not_be_empty ~what:"heading label") }
 
   | '{'
     { try bad_markup_recovery (Lexing.lexeme_start lexbuf) input lexbuf
