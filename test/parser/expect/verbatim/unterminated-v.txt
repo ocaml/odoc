@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 8-8:\
-   \nend of text is not allowed in '{v ... v}' (verbatim text)"))
- (warnings ()))
+((output (ok (((f.ml (1 0) (1 8)) (verbatim "foo v")))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-8:\
+   \nend of text is not allowed in '{v ... v}' (verbatim text)")))

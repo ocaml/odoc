@@ -160,10 +160,6 @@ let with_location_adjustments
 let emit =
   with_location_adjustments (fun _ -> Location.at)
 
-let raise_error =
-  with_location_adjustments (fun _ location error ->
-    Error.raise_exception (error location))
-
 let warning =
   with_location_adjustments (fun input location error ->
     Error.warning input.warnings (error location))
@@ -195,7 +191,15 @@ let trim_trailing_space_or_accept_whitespace text =
   match text.[String.length text - 1] with
   | ' ' -> String.sub text 0 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
-  | _ -> assert false
+  | _ -> text
+
+let emit_verbatim input start_offset buffer =
+  let t = Buffer.contents buffer in
+  let t = trim_trailing_space_or_accept_whitespace t in
+  let t = trim_leading_space_or_accept_whitespace input start_offset t in
+  let t = trim_leading_blank_lines t in
+  let t = trim_trailing_blank_lines t in
+  emit input (`Verbatim t) ~start_offset
 
 let code_block c =
   let c = trim_leading_blank_lines c in
@@ -505,12 +509,7 @@ and code_span buffer nesting_level start_offset input = parse
 and verbatim buffer last_false_terminator start_offset input = parse
   | (space_char as c) "v}"
     { Buffer.add_char buffer c;
-      let t = Buffer.contents buffer in
-      let t = trim_trailing_space_or_accept_whitespace t in
-      let t = trim_leading_space_or_accept_whitespace input start_offset t in
-      let t = trim_leading_blank_lines t in
-      let t = trim_trailing_blank_lines t in
-      emit input (`Verbatim t) ~start_offset }
+      emit_verbatim input start_offset buffer }
 
   | "v}"
     { Buffer.add_string buffer "v}";
@@ -518,19 +517,21 @@ and verbatim buffer last_false_terminator start_offset input = parse
         buffer (Some (Lexing.lexeme_start lexbuf)) start_offset input lexbuf }
 
   | eof
-    { match last_false_terminator with
+    { begin match last_false_terminator with
       | None ->
-        raise_error
+        warning
           input
           (Parse_error.not_allowed
             ~what:(Token.describe `End)
             ~in_what:(Token.describe (`Verbatim "")))
       | Some location ->
-        raise_error
+        warning
           input
           ~start_offset:location
           ~end_offset:(location + 2)
-          Parse_error.no_trailing_whitespace_in_verbatim }
+          Parse_error.no_trailing_whitespace_in_verbatim
+      end;
+      emit_verbatim input start_offset buffer }
 
   | _ as c
     { Buffer.add_char buffer c;
