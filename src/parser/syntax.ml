@@ -288,10 +288,7 @@ and delimited_inline_element_list
 
     | `Minus
     | `Plus as bullet ->
-      if not at_start_of_line then
-        let acc = (inline_element input next_token.location bullet)::acc in
-        consume_elements ~at_start_of_line:false acc
-      else
+      if at_start_of_line then begin
         let suggestion =
           Printf.sprintf
             "move %s so it isn't the first thing on the line"
@@ -302,7 +299,11 @@ and delimited_inline_element_list
           ~in_what:(Token.describe parent_markup)
           ~suggestion
           next_token.location
-        |> Error.raise_exception
+        |> Error.warning input.warnings
+      end;
+
+      let acc = (inline_element input next_token.location bullet)::acc in
+      consume_elements ~at_start_of_line:false acc
 
     | other_token ->
       Parse_error.not_allowed
