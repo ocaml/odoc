@@ -321,7 +321,15 @@ and delimited_inline_element_list
         ~what:(Token.describe other_token)
         ~in_what:(Token.describe parent_markup)
         next_token.location
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      let last_location =
+        match acc with
+        | last_token::_ -> last_token.location
+        | [] -> parent_markup_location
+      in
+
+      List.rev acc, last_location
   in
 
   let first_token = peek input in
