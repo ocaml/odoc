@@ -1230,7 +1230,10 @@ and explicit_list_items
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      junk input;
+      consume_list_items acc
   in
 
   consume_list_items []

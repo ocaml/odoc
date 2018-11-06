@@ -1,6 +1,13 @@
 ((output
   (error
-    "File \"f.ml\", line 1, characters 4-6:\
+    "File \"f.ml\", line 1, characters 11-12:\
+   \nunpaired '}' (end of markup)"))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-6:\
    \n'{2 ...}' (section heading) is not allowed in '{ul ...}' (bulleted list)\
-   \nSuggestion: move '{2 ...}' (section heading) outside the list"))
- (warnings ()))
+   \nSuggestion: move '{2 ...}' (section heading) outside the list"
+    "File \"f.ml\", line 1, characters 7-10:\
+   \n'Foo' is not allowed in '{ul ...}' (bulleted list)\
+   \nSuggestion: move 'Foo' into a list item, '{li ...}' or '{- ...}'"
+    "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty")))
