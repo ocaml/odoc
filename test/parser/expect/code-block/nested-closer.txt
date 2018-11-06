@@ -1,5 +1,10 @@
 ((output
   (error
+    "File \"f.ml\", line 1, characters 8-9:\
+   \nunpaired '}' (end of markup)"))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 7-8:\
+   \nunpaired ']' (end of code)\
+   \nSuggestion: try '\\]'."
     "File \"f.ml\", line 1, characters 7-8:\
-   \nunpaired ']' (end of code)"))
- (warnings ()))
+   \nparagraph should begin on its own line")))

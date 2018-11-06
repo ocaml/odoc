@@ -391,7 +391,8 @@ rule token input = parse
         emit input (`Word "{") }
 
   | ']'
-    { raise_error input Parse_error.unpaired_right_bracket }
+    { warning input Parse_error.unpaired_right_bracket;
+      emit input (`Word "]") }
 
   | '@' ("author" | "since" | "version" | "canonical")
     { raise_error

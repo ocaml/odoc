@@ -28,6 +28,7 @@ File "cases/parser_errors.mli", line 43, characters 1-2:
 unpaired '}' (end of markup)
 File "cases/parser_errors.mli", line 46, characters 1-2:
 unpaired ']' (end of code)
+Suggestion: try '\]'.
 File "cases/parser_errors.mli", line 49, characters 1-32:
 '{%invalid:': bad raw markup target
 Suggestion: try '{%html:...%}'.
