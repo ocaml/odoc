@@ -395,13 +395,16 @@ rule token input = parse
       emit input (`Word "]") }
 
   | "@param"
-    { raise_error input Parse_error.truncated_param }
+    { warning input Parse_error.truncated_param;
+      emit input (`Tag (`Param "")) }
 
   | "@raise"
-    { raise_error input Parse_error.truncated_raise }
+    { warning input Parse_error.truncated_raise;
+      emit input (`Tag (`Raise "")) }
 
   | "@before"
-    { raise_error input Parse_error.truncated_before }
+    { warning input Parse_error.truncated_before;
+      emit input (`Tag (`Before "")) }
 
   | "@see"
     { warning input Parse_error.truncated_see;
