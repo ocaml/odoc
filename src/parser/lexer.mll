@@ -197,6 +197,12 @@ let trim_trailing_space_or_accept_whitespace text =
   | '\t' | '\r' | '\n' -> text
   | _ -> assert false
 
+let code_block c =
+  let c = trim_leading_blank_lines c in
+  let c = trim_trailing_blank_lines c in
+  let c = trim_leading_whitespace c in
+  `Code_block c
+
 
 
 let heading_level input level =
@@ -290,10 +296,7 @@ rule token input = parse
     { emit input (reference_token start target) }
 
   | "{[" (code_block_text as c) "]}"
-    { let c = trim_leading_blank_lines c in
-      let c = trim_trailing_blank_lines c in
-      let c = trim_leading_whitespace c in
-      emit input (`Code_block c) }
+    { emit input (code_block c) }
 
   | "{v"
     { verbatim
@@ -440,13 +443,14 @@ rule token input = parse
           ~in_what:(Token.describe (reference_token start "")));
       emit input (reference_token start target) }
 
-  | "{[" code_block_text eof
-    { raise_error
+  | "{[" (code_block_text as c) eof
+    { warning
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Code_block ""))) }
+          ~in_what:(Token.describe (`Code_block "")));
+      emit input (code_block c) }
 
   | "{%" raw_markup eof
     { raise_error
