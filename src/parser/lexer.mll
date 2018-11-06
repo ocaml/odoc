@@ -334,7 +334,7 @@ rule token input = parse
   | '{' (['0'-'9']+ as level)
     { emit input (`Begin_section_heading (heading_level input level, None)) }
 
-  | "@author" horizontal_space+ ([^ '\r' '\n']* as author)
+  | "@author" ((horizontal_space+ [^ '\r' '\n']*)? as author)
     { emit input (`Tag (`Author author)) }
 
   | "@deprecated"
@@ -358,16 +358,16 @@ rule token input = parse
   | "@see" horizontal_space* '"' ([^ '"']* as name) '"'
     { emit input (`Tag (`See (`Document, name))) }
 
-  | "@since" horizontal_space+ ([^ '\r' '\n']* as version)
+  | "@since" ((horizontal_space+ [^ '\r' '\n']*)? as version)
     { emit input (`Tag (`Since version)) }
 
   | "@before" horizontal_space+ ((_ # space_char)+ as version)
     { emit input (`Tag (`Before version)) }
 
-  | "@version" horizontal_space+ ([^ '\r' '\n']* as version)
+  | "@version" ((horizontal_space+ [^ '\r' '\n']*)? as version)
     { emit input (`Tag (`Version version)) }
 
-  | "@canonical" horizontal_space+ ([^ '\r' '\n']* as identifier)
+  | "@canonical" ((horizontal_space+ [^ '\r' '\n']*)? as identifier)
     { emit input (`Tag (`Canonical identifier)) }
 
   | "@inline"
@@ -393,12 +393,6 @@ rule token input = parse
   | ']'
     { warning input Parse_error.unpaired_right_bracket;
       emit input (`Word "]") }
-
-  | '@' ("author" | "since" | "version" | "canonical")
-    { raise_error
-        input
-        (Parse_error.should_not_be_empty
-          ~what:(Printf.sprintf "'%s'" (Lexing.lexeme lexbuf))) }
 
   | "@param"
     { raise_error input Parse_error.truncated_param }
