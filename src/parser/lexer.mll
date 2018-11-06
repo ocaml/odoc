@@ -422,13 +422,14 @@ rule token input = parse
     { warning input Parse_error.stray_cr;
       token input lexbuf }
 
-  | "{!modules:" [^ '}']* eof
-    { raise_error
+  | "{!modules:" ([^ '}']* as modules) eof
+    { warning
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Modules ""))) }
+          ~in_what:(Token.describe (`Modules "")));
+      emit input (`Modules modules) }
 
   | (reference_start as start) [^ '}']* eof
     { raise_error
