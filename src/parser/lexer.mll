@@ -302,8 +302,16 @@ rule token input = parse
     { verbatim
         (Buffer.create 1024) None (Lexing.lexeme_start lexbuf) input lexbuf }
 
-  | "{%" ((raw_markup_target as target) ':')? (raw_markup as s) "%}"
-    { let target_is_valid =
+  | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
+    ("%}" | eof as e)
+    { if e <> "%}" then
+        warning
+          input
+          ~start_offset:(Lexing.lexeme_end lexbuf)
+          (Parse_error.not_allowed
+            ~what:(Token.describe `End)
+            ~in_what:(Token.describe (`Raw_markup (`Html, ""))));
+      let target_is_valid =
         match target with
         | Some "html" -> true
         | Some invalid_target ->
@@ -451,14 +459,6 @@ rule token input = parse
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Code_block "")));
       emit input (code_block c) }
-
-  | "{%" raw_markup eof
-    { raise_error
-        input
-        ~start_offset:(Lexing.lexeme_end lexbuf)
-        (Parse_error.not_allowed
-          ~what:(Token.describe `End)
-          ~in_what:(Token.describe (`Raw_markup (`Html, "")))) }
 
 
 
