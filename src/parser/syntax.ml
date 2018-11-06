@@ -286,6 +286,17 @@ and delimited_inline_element_list
       let element = Location.same next_token `Space in
       consume_elements ~at_start_of_line:true (element::acc)
 
+    | `Blank_line ->
+      Parse_error.not_allowed
+        ~what:(Token.describe `Blank_line)
+        ~in_what:(Token.describe parent_markup)
+        next_token.location
+      |> Error.warning input.warnings;
+
+      junk input;
+      let element = Location.same next_token `Space in
+      consume_elements ~at_start_of_line:true (element::acc)
+
     | `Minus
     | `Plus as bullet ->
       if at_start_of_line then begin
@@ -336,7 +347,10 @@ and delimited_inline_element_list
       ~what:(Token.describe `Blank_line)
       ~in_what:(Token.describe parent_markup)
       first_token.location
-    |> Error.raise_exception
+    |> Error.warning input.warnings;
+
+    junk input;
+    consume_elements ~at_start_of_line:true []
 
   | `Right_brace ->
     junk input;

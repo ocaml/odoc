@@ -1,5 +1,7 @@
 ((output
   (error
-    "File \"f.ml\", line 2, characters 0-0:\
-   \nblank line is not allowed in '{b ...}' (boldface text)"))
- (warnings ()))
+    "File \"f.ml\", line 3, characters 0-0:\
+   \nend of text is not allowed in '{b ...}' (boldface text)"))
+ (warnings
+  ( "File \"f.ml\", line 2, characters 0-0:\
+   \nblank line is not allowed in '{b ...}' (boldface text)")))
