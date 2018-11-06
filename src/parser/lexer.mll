@@ -480,11 +480,13 @@ and code_span buffer nesting_level start_offset input = parse
       code_span buffer nesting_level start_offset input lexbuf }
 
   | newline newline
-    { raise_error
+    { warning
         input
         (Parse_error.not_allowed
           ~what:(Token.describe `Blank_line)
-          ~in_what:(Token.describe (`Code_span ""))) }
+          ~in_what:(Token.describe (`Code_span "")));
+      Buffer.add_char buffer '\n';
+      code_span buffer nesting_level start_offset input lexbuf }
 
   | eof
     { raise_error
