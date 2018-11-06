@@ -1,1 +1,1 @@
-((output (ok ())) (warnings ()))
+((output ()) (warnings ()))

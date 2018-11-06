@@ -1,8 +1,7 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 7)) (code_block foo))
-    ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word ])))))
-    ((f.ml (1 8) (1 9)) (paragraph (((f.ml (1 8) (1 9)) (word }))))))))
+  (((f.ml (1 0) (1 7)) (code_block foo))
+   ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word ])))))
+   ((f.ml (1 8) (1 9)) (paragraph (((f.ml (1 8) (1 9)) (word })))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 7-8:\
    \nunpaired ']' (end of code)\

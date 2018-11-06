@@ -1,5 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 14))
-     (paragraph (((f.ml (1 0) (1 14)) (reference (root foo label) ()))))))))
+  (((f.ml (1 0) (1 14))
+    (paragraph (((f.ml (1 0) (1 14)) (reference (root foo label) ())))))))
  (warnings ()))

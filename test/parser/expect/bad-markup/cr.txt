@@ -1,4 +1,4 @@
-((output (ok ()))
+((output ())
  (warnings
   ( "File \"f.ml\", line 1, characters 0-1:\
    \nstray '\\r' (carriage return character)")))

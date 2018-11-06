@@ -1253,28 +1253,26 @@ and explicit_list_items
 let parse warnings tokens =
   let input = {tokens; warnings} in
 
-  Error.catch begin fun () ->
-    let rec parse_block_elements () =
-      let elements, last_token, _where_in_line =
-        block_element_list
-          Top_level ~parent_markup:`Comment input
+  let rec parse_block_elements () =
+    let elements, last_token, _where_in_line =
+      block_element_list
+        Top_level ~parent_markup:`Comment input
+    in
+
+    match last_token.value with
+    | `End ->
+      elements
+
+    | `Right_brace ->
+      Parse_error.unpaired_right_brace last_token.location
+      |> Error.warning input.warnings;
+
+      let block =
+        Location.same last_token
+          (`Paragraph [Location.same last_token (`Word "}")])
       in
 
-      match last_token.value with
-      | `End ->
-        elements
-
-      | `Right_brace ->
-        Parse_error.unpaired_right_brace last_token.location
-        |> Error.warning input.warnings;
-
-        let block =
-          Location.same last_token
-            (`Paragraph [Location.same last_token (`Word "}")])
-        in
-
-        junk input;
-        elements @ (block::(parse_block_elements ()))
-    in
-    parse_block_elements ()
-  end
+      junk input;
+      elements @ (block::(parse_block_elements ()))
+  in
+  parse_block_elements ()

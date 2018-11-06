@@ -1,7 +1,7 @@
 type test_case = {
   name : string;
   parser_input : string;
-  sections_allowed : Parser_.sections_allowed;
+  sections_allowed : [ `All | `No_titles | `None ];
   location : Model.Location_.point;
 }
 

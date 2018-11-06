@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 8))
-     (paragraph (((f.ml (1 0) (1 8)) (reference (root foo unknown) ()))))))))
+  (((f.ml (1 0) (1 8))
+    (paragraph (((f.ml (1 0) (1 8)) (reference (root foo unknown) ())))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-8:\
    \n'{{!...} ...}' (cross-reference) should not be empty")))

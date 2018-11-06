@@ -1,2 +1,2 @@
-((output (ok (((f.ml (1 0) (2 6)) (verbatim  "foo\
-                                            \nbar"))))) (warnings ()))
+((output (((f.ml (1 0) (2 6)) (verbatim  "foo\
+                                        \nbar")))) (warnings ()))

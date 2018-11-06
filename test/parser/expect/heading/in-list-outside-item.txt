@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 11)) (unordered ()))
-    ((f.ml (1 11) (1 12)) (paragraph (((f.ml (1 11) (1 12)) (word }))))))))
+  (((f.ml (1 0) (1 11)) (unordered ()))
+   ((f.ml (1 11) (1 12)) (paragraph (((f.ml (1 11) (1 12)) (word })))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-6:\
    \n'{2 ...}' (section heading) is not allowed in '{ul ...}' (bulleted list)\

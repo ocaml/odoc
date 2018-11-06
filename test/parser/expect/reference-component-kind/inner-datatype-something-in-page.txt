@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 25))
-     (paragraph (((f.ml (1 0) (1 25)) (code_span page-foo.bar.const-Baz))))))))
+  (((f.ml (1 0) (1 25))
+    (paragraph (((f.ml (1 0) (1 25)) (code_span page-foo.bar.const-Baz)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-10:\
    \nExpected 'module-', 'modtype-', 'type-', 'class-', 'classtype-', or an unqualified reference")))

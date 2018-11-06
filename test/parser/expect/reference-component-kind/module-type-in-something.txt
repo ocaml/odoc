@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 22))
-     (paragraph
-      (((f.ml (1 0) (1 22))
-        (reference (module_type Bar (root Foo unknown)) ()))))))))
+  (((f.ml (1 0) (1 22))
+    (paragraph
+     (((f.ml (1 0) (1 22))
+       (reference (module_type Bar (root Foo unknown)) ())))))))
  (warnings ()))

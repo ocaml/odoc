@@ -1,4 +1,3 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word {@author))))))))
+  (((f.ml (1 0) (1 9)) (paragraph (((f.ml (1 0) (1 9)) (word {@author)))))))
  (warnings ()))

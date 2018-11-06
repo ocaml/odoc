@@ -1,4 +1,3 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span foo}))))))))
+  (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (code_span foo})))))))
  (warnings ()))

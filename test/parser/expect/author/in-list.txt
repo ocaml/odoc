@@ -1,4 +1,4 @@
-((output (ok (((f.ml (1 0) (1 16)) (unordered ())))))
+((output (((f.ml (1 0) (1 16)) (unordered ()))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-16:\
    \n'@author' is not allowed in '{ul ...}' (bulleted list)\

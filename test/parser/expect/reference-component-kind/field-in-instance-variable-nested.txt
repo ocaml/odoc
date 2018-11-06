@@ -1,8 +1,7 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 38))
-     (paragraph
-      (((f.ml (1 0) (1 38)) (code_span foo.instance-variable-bar.field-baz))))))))
+  (((f.ml (1 0) (1 38))
+    (paragraph
+     (((f.ml (1 0) (1 38)) (code_span foo.instance-variable-bar.field-baz)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 6-27:\
    \nExpected 'module-', 'modtype-', 'type-', 'class-', 'classtype-', or an unqualified reference")))

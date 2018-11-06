@@ -1,4 +1,4 @@
-((output (ok (((f.ml (1 0) (1 7)) (unordered ())))))
+((output (((f.ml (1 0) (1 7)) (unordered ()))))
  (warnings
   ( "File \"f.ml\", line 1, characters 3-6:\
    \n'foo' is not allowed in '{ul ...}' (bulleted list)\

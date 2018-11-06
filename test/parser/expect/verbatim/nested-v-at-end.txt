@@ -1,4 +1,4 @@
-((output (ok (((f.ml (1 0) (1 6)) (verbatim vv})))))
+((output (((f.ml (1 0) (1 6)) (verbatim vv}))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-6:\
    \n'v}' should be preceded by whitespace")))

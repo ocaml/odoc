@@ -1,4 +1,3 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (2 0) (2 9)) (verbatim bar)))))
+  (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (2 0) (2 9)) (verbatim bar))))
  (warnings ()))

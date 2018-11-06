@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 5))
-     (paragraph (((f.ml (1 0) (1 5)) (reference (root foo unknown) ()))))))))
+  (((f.ml (1 0) (1 5))
+    (paragraph (((f.ml (1 0) (1 5)) (reference (root foo unknown) ())))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 5-5:\
    \nend of text is not allowed in '{!...}' (cross-reference)")))

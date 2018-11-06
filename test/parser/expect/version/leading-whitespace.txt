@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 13)) (@version foo))))) (warnings ()))
+((output (((f.ml (1 0) (1 13)) (@version foo)))) (warnings ()))

@@ -57,14 +57,9 @@ let read_attributes parent _id attrs =
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
-              |> Parser_.errors_to_warnings
               |> Model.Error.shed_warnings
             in
-            match parsed with
-            | Ok comment -> begin
-                loop false 0 (acc @ comment) rest
-              end
-            | Error err -> Error err
+            loop false 0 (acc @ parsed) rest
           end
         | None -> (* TODO *) assert false
       end
@@ -86,9 +81,7 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
       ~containing_definition:parent
       ~location:start_pos
       ~text:str
-    |> Parser_.errors_to_warnings
     |> Model.Error.shed_warnings
-    |> Model.Error.to_exception
   in
   `Docs doc
 

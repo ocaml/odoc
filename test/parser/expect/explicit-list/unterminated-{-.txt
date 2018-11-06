@@ -1,8 +1,7 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 10))
-     (unordered
-      ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo))))))))))))
+  (((f.ml (1 0) (1 10))
+    (unordered
+     ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 10-10:\
    \nend of text is not allowed in '{- ...}' (list item)"

@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 14)) (modules ((root Foo unknown))))
-    ((f.ml (1 15) (1 18)) (paragraph (((f.ml (1 15) (1 18)) (word foo))))))))
+  (((f.ml (1 0) (1 14)) (modules ((root Foo unknown))))
+   ((f.ml (1 15) (1 18)) (paragraph (((f.ml (1 15) (1 18)) (word foo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 15-18:\
    \nparagraph should begin on its own line")))

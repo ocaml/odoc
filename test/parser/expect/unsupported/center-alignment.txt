@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 7))
-     (paragraph (((f.ml (1 0) (1 7)) (code_span "C foo"))))))))
+  (((f.ml (1 0) (1 7))
+    (paragraph (((f.ml (1 0) (1 7)) (code_span "C foo")))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-7:\
    \n'{C foo}': bad markup\

@@ -1,8 +1,7 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 29))
-     (paragraph
-      (((f.ml (1 0) (1 29)) (code_span constructor-Foo.method-bar))))))))
+  (((f.ml (1 0) (1 29))
+    (paragraph
+     (((f.ml (1 0) (1 29)) (code_span constructor-Foo.method-bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-17:\
    \nExpected 'class-', 'classtype-', or an unqualified reference")))

@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 25))
-     (paragraph
-      (((f.ml (1 0) (1 25))
-        (reference (field baz (type bar (root Foo unknown))) ()))))))))
+  (((f.ml (1 0) (1 25))
+    (paragraph
+     (((f.ml (1 0) (1 25))
+       (reference (field baz (type bar (root Foo unknown))) ())))))))
  (warnings ()))

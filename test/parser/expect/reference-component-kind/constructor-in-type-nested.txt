@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 31))
-     (paragraph
-      (((f.ml (1 0) (1 31))
-        (reference (constructor Baz (type bar (root foo unknown))) ()))))))))
+  (((f.ml (1 0) (1 31))
+    (paragraph
+     (((f.ml (1 0) (1 31))
+       (reference (constructor Baz (type bar (root foo unknown))) ())))))))
  (warnings ()))

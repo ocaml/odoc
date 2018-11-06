@@ -1,5 +1,3 @@
-open Result
-
 type sexp = Sexplib.Sexp.t =
   | Atom of string
   | List of sexp list
@@ -362,11 +360,7 @@ end
 
 
 let parser_output formatter {Model.Error.value; warnings} =
-  let value =
-    match value with
-    | Ok comment -> List [Atom "ok"; Comment_to_sexp.comment comment]
-    | Error error -> List [Atom "error"; Error_to_sexp.error error]
-  in
+  let value = Comment_to_sexp.comment value in
   let warnings = List (List.map Error_to_sexp.error warnings) in
   let output =
     List [

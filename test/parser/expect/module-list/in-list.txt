@@ -1,5 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 16))
-     (unordered ((((f.ml (1 2) (1 16)) (modules ((root Foo unknown)))))))))))
+  (((f.ml (1 0) (1 16))
+    (unordered ((((f.ml (1 2) (1 16)) (modules ((root Foo unknown))))))))))
  (warnings ()))

@@ -1,4 +1,4 @@
-((output (ok (((f.ml (1 0) (1 10)) (modules ())))))
+((output (((f.ml (1 0) (1 10)) (modules ()))))
  (warnings
   ( "File \"f.ml\", line 1, characters 10-10:\
    \nend of text is not allowed in '{!modules ...}'"

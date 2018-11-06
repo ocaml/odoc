@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 13))
-     (paragraph (((f.ml (1 0) (1 13)) (word @canonicalfoo))))))))
+  (((f.ml (1 0) (1 13))
+    (paragraph (((f.ml (1 0) (1 13)) (word @canonicalfoo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-13:\
    \nunknown tag '@canonicalfoo'")))

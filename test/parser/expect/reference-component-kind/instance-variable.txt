@@ -1,6 +1,5 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 24))
-     (paragraph
-      (((f.ml (1 0) (1 24)) (reference (root foo instance_variable) ()))))))))
+  (((f.ml (1 0) (1 24))
+    (paragraph
+     (((f.ml (1 0) (1 24)) (reference (root foo instance_variable) ())))))))
  (warnings ()))

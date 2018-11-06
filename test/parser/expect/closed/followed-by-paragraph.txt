@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 7)) @closed)
-    ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo))))))))
+  (((f.ml (1 0) (1 7)) @closed)
+   ((f.ml (2 0) (2 3)) (paragraph (((f.ml (2 0) (2 3)) (word foo)))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-3:\
    \nparagraph is not allowed in the tags section\

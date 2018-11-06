@@ -1,6 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 12))
-     (paragraph
-      (((f.ml (1 0) (1 12)) (reference (root Foo constructor) ()))))))))
+  (((f.ml (1 0) (1 12))
+    (paragraph (((f.ml (1 0) (1 12)) (reference (root Foo constructor) ())))))))
  (warnings ()))

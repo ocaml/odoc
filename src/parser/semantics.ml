@@ -336,4 +336,4 @@ let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
       parent_of_sections;
     }
   in
-  Error.catch (fun () -> top_level_block_elements status ast)
+  top_level_block_elements status ast

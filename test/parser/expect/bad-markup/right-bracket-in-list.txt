@@ -1,4 +1,4 @@
-((output (ok (((f.ml (1 0) (1 6)) (unordered ())))))
+((output (((f.ml (1 0) (1 6)) (unordered ()))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-5:\
    \nunpaired ']' (end of code)\

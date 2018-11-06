@@ -1,6 +1,5 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span foo))))))))
+  (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (code_span foo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-4:\
    \nend of text is not allowed in '[...]' (code)")))

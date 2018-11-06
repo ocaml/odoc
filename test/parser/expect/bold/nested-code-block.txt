@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))
-    ((f.ml (1 3) (1 10)) (code_block foo)))))
+  (((f.ml (1 0) (1 2)) (paragraph (((f.ml (1 0) (1 2)) (bold ())))))
+   ((f.ml (1 3) (1 10)) (code_block foo))))
  (warnings
   ( "File \"f.ml\", line 1, characters 3-10:\
    \n'{[...]}' (code block) is not allowed in '{b ...}' (boldface text)"

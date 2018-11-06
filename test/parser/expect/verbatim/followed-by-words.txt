@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 9)) (verbatim foo))
-    ((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar))))))))
+  (((f.ml (1 0) (1 9)) (verbatim foo))
+   ((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 10-13:\
    \nparagraph should begin on its own line")))

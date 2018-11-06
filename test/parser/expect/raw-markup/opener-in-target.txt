@@ -1,6 +1,5 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 10)) (paragraph (((f.ml (1 0) (1 10)) (code_span foo))))))))
+  (((f.ml (1 0) (1 10)) (paragraph (((f.ml (1 0) (1 10)) (code_span foo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-10:\
    \n'{%{%:': bad raw markup target\

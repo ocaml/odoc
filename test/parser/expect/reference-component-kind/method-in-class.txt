@@ -1,6 +1,5 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 23))
-     (paragraph
-      (((f.ml (1 0) (1 23)) (reference (method bar (root foo class)) ()))))))))
+  (((f.ml (1 0) (1 23))
+    (paragraph
+     (((f.ml (1 0) (1 23)) (reference (method bar (root foo class)) ())))))))
  (warnings ()))

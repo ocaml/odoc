@@ -1,8 +1,3 @@
-(* TODO Temporary. *)
-module Reference = Reference
-
-open Result
-
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
 
@@ -90,23 +85,7 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
       Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
     in
 
-    let (>>=) = Rresult.R.(>>=) in
-    Syntax.parse warnings token_stream >>=
-    Semantics.ast_to_comment
+    Syntax.parse warnings token_stream
+    |> Semantics.ast_to_comment
       warnings ~sections_allowed ~parent_of_sections:containing_definition
   end
-
-let errors_to_warnings parsed =
-  match Model.Error.(parsed.value) with
-  | Ok _ ->
-    parsed
-
-  | Error fatal_error ->
-    {
-      value = Ok [];
-      warnings = parsed.warnings @ [fatal_error];
-    }
-
-
-
-type sections_allowed = Ast.sections_allowed

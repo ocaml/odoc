@@ -1,7 +1,6 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 22))
-     (paragraph (((f.ml (1 0) (1 22)) (code_span type-foo.module-Bar))))))))
+  (((f.ml (1 0) (1 22))
+    (paragraph (((f.ml (1 0) (1 22)) (code_span type-foo.module-Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-10:\
    \nExpected 'module-', 'modtype-', or an unqualified reference")))
