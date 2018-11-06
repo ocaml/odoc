@@ -14,23 +14,22 @@ type +'a with_location = {
   value : 'a;
 }
 
-let at : span -> 'a -> 'a with_location = fun location value ->
+let at location value =
   {location; value}
 
-let location : 'a with_location -> span = fun {location; _} ->
+let location {location; _} =
   location
 
-let value : 'a with_location -> 'a = fun {value; _} ->
+let value {value; _} =
   value
 
-let map : ('a -> 'b) -> 'a with_location -> 'b with_location =
-    fun f annotated ->
+let map f annotated =
   {annotated with value = f annotated.value}
 
-let same : _ with_location -> 'b -> 'b with_location = fun annotated value ->
+let same annotated value =
   {annotated with value}
 
-let span : span list -> span = fun spans ->
+let span spans =
   match spans with
   | [] ->
     {
