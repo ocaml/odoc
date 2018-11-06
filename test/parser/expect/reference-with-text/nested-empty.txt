@@ -1,5 +1,7 @@
 ((output
   (error
     "File \"f.ml\", line 1, characters 8-16:\
-   \n'{{!...} ...}' (cross-reference) should not be empty"))
- (warnings ()))
+   \n'{{!...} ...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)"))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-16:\
+   \n'{{!...} ...}' (cross-reference) should not be empty")))

@@ -138,7 +138,7 @@ let rec inline_element
     if content = [] then
       Parse_error.should_not_be_empty
         ~what:(Token.describe parent_markup) location
-      |> Error.raise_exception;
+      |> Error.warning input.warnings;
 
     Location.at location (`Styled (s, content))
 
@@ -184,7 +184,7 @@ let rec inline_element
     if content = [] then
       Parse_error.should_not_be_empty
         ~what:(Token.describe parent_markup) location
-      |> Error.raise_exception;
+      |> Error.warning input.warnings;
 
     Location.at location (make_element content)
 
@@ -804,7 +804,7 @@ let rec block_element_list
       warn_if_after_text next_token;
       if s = "" then
         Parse_error.should_not_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        |> Error.warning input.warnings;
 
       junk input;
       let block =
@@ -866,7 +866,7 @@ let rec block_element_list
 
       if modules = [] then
         Parse_error.should_not_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        |> Error.warning input.warnings;
 
       let block = accepted_in_all_contexts context (`Modules modules) in
       let block = Location.at location block in
@@ -885,7 +885,7 @@ let rec block_element_list
         explicit_list_items ~parent_markup:token input in
       if items = [] then
         Parse_error.should_not_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        |> Error.warning input.warnings;
 
       let location = Location.span [location; brace_location] in
       let block = `List (kind, items) in
@@ -975,7 +975,7 @@ let rec block_element_list
         in
         if content = [] then
           Parse_error.should_not_be_empty ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          |> Error.warning input.warnings;
 
         let location = Location.span [location; brace_location] in
         let heading = `Heading (level, label, content) in
@@ -1130,7 +1130,7 @@ and explicit_list_items
       if content = [] then
         Parse_error.should_not_be_empty
           next_token.location ~what:(Token.describe token)
-        |> Error.raise_exception;
+        |> Error.warning input.warnings;
 
       begin match token_after_list_item.value with
       | `Right_brace ->

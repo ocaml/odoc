@@ -1,5 +1,7 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 0-9:\
-   \n'{{!...} ...}' (cross-reference) should not be empty"))
- (warnings ()))
+  (ok
+   (((f.ml (1 0) (1 9))
+     (paragraph (((f.ml (1 0) (1 9)) (reference (root foo unknown) ()))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-9:\
+   \n'{{!...} ...}' (cross-reference) should not be empty")))

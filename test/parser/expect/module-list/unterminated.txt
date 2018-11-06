@@ -1,7 +1,6 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 0-10:\
-   \n'{!modules ...}' should not be empty"))
+((output (ok (((f.ml (1 0) (1 10)) (modules ())))))
  (warnings
   ( "File \"f.ml\", line 1, characters 10-10:\
-   \nend of text is not allowed in '{!modules ...}'")))
+   \nend of text is not allowed in '{!modules ...}'"
+    "File \"f.ml\", line 1, characters 0-10:\
+   \n'{!modules ...}' should not be empty")))
