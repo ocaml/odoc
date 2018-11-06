@@ -1151,7 +1151,8 @@ and explicit_list_items
         next_token.location
         ~what:(Token.describe `End)
         ~in_what:(Token.describe parent_markup)
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+      List.rev acc, next_token.location
 
     | `Right_brace ->
       junk input;
@@ -1206,7 +1207,7 @@ and explicit_list_items
           token_after_list_item.location
           ~what:(Token.describe `End)
           ~in_what:(Token.describe token)
-        |> Error.raise_exception
+        |> Error.warning input.warnings
       end;
 
       let acc = content::acc in
