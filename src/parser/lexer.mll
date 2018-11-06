@@ -431,13 +431,14 @@ rule token input = parse
           ~in_what:(Token.describe (`Modules "")));
       emit input (`Modules modules) }
 
-  | (reference_start as start) [^ '}']* eof
-    { raise_error
+  | (reference_start as start) ([^ '}']* as target) eof
+    { warning
         input
         ~start_offset:(Lexing.lexeme_end lexbuf)
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
-          ~in_what:(Token.describe (reference_token start ""))) }
+          ~in_what:(Token.describe (reference_token start "")));
+      emit input (reference_token start target) }
 
   | "{[" code_block_text eof
     { raise_error

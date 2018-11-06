@@ -2,4 +2,6 @@
   (error
     "File \"f.ml\", line 1, characters 6-6:\
    \nend of text is not allowed in '{{:...} ...}' (external link)"))
- (warnings ()))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 6-6:\
+   \nend of text is not allowed in '{{:...} ...}' (external link)")))
