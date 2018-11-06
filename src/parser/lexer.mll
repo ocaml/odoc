@@ -419,7 +419,8 @@ rule token input = parse
       emit input (`Word "@") }
 
   | '\r'
-    { raise_error input Parse_error.stray_cr }
+    { warning input Parse_error.stray_cr;
+      token input lexbuf }
 
   | "{!modules:" [^ '}']* eof
     { raise_error
