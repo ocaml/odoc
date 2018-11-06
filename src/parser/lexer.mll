@@ -200,11 +200,11 @@ let trim_trailing_space_or_accept_whitespace text =
 
 
 let heading_level input level =
-  if String.length level >= 2 && level.[0] = '0' then
-    raise_error
+  if String.length level >= 2 && level.[0] = '0' then begin
+    warning
       input ~start_offset:1 (Parse_error.leading_zero_in_heading_level level)
-  else
-    int_of_string level
+  end;
+  int_of_string level
 
 }
 
