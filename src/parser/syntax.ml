@@ -588,7 +588,7 @@ let rec block_element_list
         |> Error.warning input.warnings
     in
 
-    let raise_if_after_tags {Location.location; value = token} =
+    let warn_if_after_tags {Location.location; value = token} =
       if parsed_a_tag then
         let suggestion =
           Printf.sprintf
@@ -599,7 +599,7 @@ let rec block_element_list
           ~in_what:"the tags section"
           ~suggestion
           location
-        |> Error.raise_exception
+        |> Error.warning input.warnings
     in
 
     let raise_because_not_at_top_level {Location.location; value = token} =
@@ -805,7 +805,7 @@ let rec block_element_list
 
 
     | {value = #token_that_always_begins_an_inline_element; _} as next_token ->
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
       warn_if_after_text next_token;
 
       let block = paragraph input in
@@ -815,7 +815,7 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Code_block s | `Verbatim s as token; location} as next_token ->
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
       warn_if_after_text next_token;
       if s = "" then
         Parse_error.should_not_be_empty ~what:(Token.describe token) location
@@ -833,7 +833,7 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Modules s as token; location} as next_token ->
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
       warn_if_after_text next_token;
 
       junk input;
@@ -891,7 +891,7 @@ let rec block_element_list
 
 
     | {value = `Begin_list kind as token; location} as next_token ->
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
       warn_if_after_text next_token;
 
       junk input;
@@ -921,7 +921,7 @@ let rec block_element_list
         ()
       end;
 
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
 
       begin match context with
       | In_shorthand_list ->
@@ -950,7 +950,7 @@ let rec block_element_list
     | {value = `Begin_section_heading (level, label) as token; location}
         as next_token ->
 
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
 
       begin match context with
       | In_shorthand_list ->
