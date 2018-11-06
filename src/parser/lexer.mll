@@ -184,11 +184,12 @@ let trim_leading_space_or_accept_whitespace input start_offset text =
   | '\t' | '\r' | '\n' -> text
   | exception Invalid_argument _ -> ""
   | _ ->
-    raise_error
+    warning
       input
       ~start_offset
       ~end_offset:(start_offset + 2)
-      Parse_error.no_leading_whitespace_in_verbatim
+      Parse_error.no_leading_whitespace_in_verbatim;
+    text
 
 let trim_trailing_space_or_accept_whitespace text =
   match text.[String.length text - 1] with
