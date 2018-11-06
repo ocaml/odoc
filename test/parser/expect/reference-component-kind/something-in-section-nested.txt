@@ -1,1 +1,7 @@
-Exception Parser_.Reference.InvalidReference "foo.section-bar.baz"
+((output
+  (ok
+   (((f.ml (1 0) (1 22))
+     (paragraph (((f.ml (1 0) (1 22)) (code_span foo.section-bar.baz))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 6-17:\
+   \nExpected 'module-', 'modtype-', 'type-', 'class-', 'classtype-', or an unqualified reference")))

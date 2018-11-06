@@ -176,15 +176,6 @@ let reference_token start target =
   | "{{:" -> `Begin_link_with_replacement_text target
   | _ -> assert false
 
-let emit_reference input start target =
-  let target = String.trim target in
-  let token = reference_token start target in
-  if target = "" then
-    raise_error
-      input (Parse_error.should_not_be_empty ~what:(Token.describe token))
-  else
-    emit input token
-
 
 
 let trim_leading_space_or_accept_whitespace input start_offset text =
@@ -295,7 +286,7 @@ rule token input = parse
     { emit input (`Modules modules) }
 
   | (reference_start as start) ([^ '}']* as target) '}'
-    { emit_reference input start target }
+    { emit input (reference_token start target) }
 
   | "{[" (code_block_text as c) "]}"
     { let c = trim_leading_blank_lines c in

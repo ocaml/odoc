@@ -144,10 +144,32 @@ let rec inline_element
 
   | `Simple_reference r ->
     junk input;
-    Location.at location (`Reference (`Simple, Reference.parse r, []))
+
+    let r_location = Location.nudge_start (String.length "{!") location in
+
+    begin match Reference.parse r_location r with
+    | Result.Ok r ->
+      Location.at location (`Reference (`Simple, r, []))
+    | Result.Error error ->
+      Error.warning input.warnings error;
+      Location.at location (`Code_span r)
+    end
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
+
+    let r_location = Location.nudge_start (String.length "{{!") location in
+
+    (* Parse the reference target immediately, so that any warnings from it are
+       triggered before warnings from the content. *)
+    let make_element =
+      match Reference.parse r_location r with
+      | Result.Ok r ->
+        fun content -> `Reference (`With_text, r, content)
+      | Result.Error error ->
+        Error.warning input.warnings error;
+        fun content -> `Styled (`Emphasis, content)
+    in
 
     let content, brace_location =
       delimited_inline_element_list
@@ -164,14 +186,28 @@ let rec inline_element
         ~what:(Token.describe parent_markup) location
       |> Error.raise_exception;
 
-    Location.at location (`Reference (`With_text, Reference.parse r, content))
+    Location.at location (make_element content)
 
   | `Simple_link u ->
     junk input;
+
+    let u = String.trim u in
+
+    if u = "" then
+      Parse_error.should_not_be_empty ~what:(Token.describe next_token) location
+      |> Error.warning input.warnings;
+
     Location.at location (`Link (u, []))
 
   | `Begin_link_with_replacement_text u as parent_markup ->
     junk input;
+
+    let u = String.trim u in
+
+    if u = "" then
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
+      |> Error.warning input.warnings;
 
     let content, brace_location =
       delimited_inline_element_list
@@ -671,15 +707,36 @@ let rec block_element_list
             |> Error.raise_exception;
           let tag =
             match tag with
-            | `Author _ -> `Author s
-            | `Since _ -> `Since s
-            | `Version _ -> `Version s
+            | `Author _ -> Result.Ok (`Author s)
+            | `Since _ -> Result.Ok (`Since s)
+            | `Version _ -> Result.Ok (`Version s)
             | `Canonical _ ->
-              let path = Reference.read_path_longident s in
-              let module_ = Reference.read_mod_longident s in
-              `Canonical (path, module_)
+              (* TODO The location is only approximate, as we need lexer
+                 cooperation to get the real location. *)
+              let r_location =
+                Location.nudge_start (String.length "@canonical ") location in
+
+              let (>>=) = Rresult.(>>=) in
+              let result =
+                Reference.read_path_longident r_location s >>= fun path ->
+                Reference.read_mod_longident r_location s >>= fun module_ ->
+                Result.Ok (`Canonical (path, module_))
+              in
+              match result with
+              | Result.Ok _ as result -> result
+              | Result.Error error ->
+                Error.warning input.warnings error;
+                Result.Error [`Word "@canonical"; `Space; `Code_span s]
           in
-          let tag = Location.at location (`Tag tag) in
+
+          let tag =
+            match tag with
+            | Result.Ok tag -> Location.at location (`Tag tag)
+            | Result.Error text ->
+              Location.at location (`Paragraph
+                (List.map (Location.at location) text))
+          in
+
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
@@ -794,9 +851,17 @@ let rec block_element_list
         scan_delimiters [] 0
       in
 
+      (* TODO Correct locations await a full implementation of {!modules}
+         parsing. *)
       let modules =
         split_string " \t\r\n" s
-        |> List.map Reference.read_mod_longident
+        |> List.fold_left (fun acc r ->
+          match Reference.read_mod_longident location r with
+          | Result.Ok r -> r::acc
+          | Result.Error error ->
+            Error.warning input.warnings error;
+            acc) []
+        |> List.rev
       in
 
       if modules = [] then

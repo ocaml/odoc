@@ -1,6 +1,3 @@
-(* TODO Temporary; needed for testing during refactoring. *)
-module Reference = Reference
-
 open Result
 
 type sections_allowed = Ast.sections_allowed

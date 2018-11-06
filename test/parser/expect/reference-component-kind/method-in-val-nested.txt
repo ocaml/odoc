@@ -1,1 +1,7 @@
-Exception Parser_.Reference.InvalidReference "Foo.val-bar.method-baz"
+((output
+  (ok
+   (((f.ml (1 0) (1 25))
+     (paragraph (((f.ml (1 0) (1 25)) (code_span Foo.val-bar.method-baz))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 6-13:\
+   \nExpected 'class-', 'classtype-', or an unqualified reference")))

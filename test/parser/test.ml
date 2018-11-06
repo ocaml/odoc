@@ -988,10 +988,11 @@ let tests : test_suite list = [
     t "canonical-module" "@canonical module-Foo";
     t "canonical-path" "@canonical Foo.Bar";
     t "canonical-val" "@canonical val-foo";
-    t "canonical-bad-parent" "@canonical page-foo.Bar";
+    t "canonical-bad-parent" "@canonical bar.page-foo";
     t "canonical-empty-component" "@canonical .Foo";
     t "canonical-empty-name" "@canonical Foo.";
     t "internal-whitespace" "{!foo. bar .baz}";
+    t "replacement-text-empty-identifier" "{{!val-} foo}";
   ];
 
   "bad-markup", [
@@ -1140,28 +1141,16 @@ let () =
           }
         in
 
-        try
-          Parser_.parse_comment
-            ~sections_allowed
-            ~containing_definition:dummy_page
-            ~location
-            ~text:parser_input
-          |> fun parser_output ->
-            let buffer = Buffer.create 1024 in
-            Print.parser_output
-              (Format.formatter_of_buffer buffer) parser_output;
-            Buffer.contents buffer
-
-        with
-        | Parser_.Reference.InvalidReference s ->
-          Printf.sprintf
-            "Exception Parser_.Reference.InvalidReference \"%s\"\n" s
-
-        | Parser_.Reference.Expected_reference_to_a_module_but_got s ->
-          Printf.sprintf
-            "Exception %s \"%s\"\n"
-            "Parser_.Reference.Expected_reference_to_a_module_but_got"
-            s
+        Parser_.parse_comment
+          ~sections_allowed
+          ~containing_definition:dummy_page
+          ~location
+          ~text:parser_input
+        |> fun parser_output ->
+          let buffer = Buffer.create 1024 in
+          Print.parser_output
+            (Format.formatter_of_buffer buffer) parser_output;
+          Buffer.contents buffer
       in
 
       let expected =

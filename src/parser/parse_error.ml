@@ -92,3 +92,9 @@ let default_raw_markup_target_not_supported : Location.span -> Error.t =
       (Printf.sprintf "try %s." (Token.print (`Raw_markup (`Html, ""))))
     "%s needs a target language"
     (Token.describe (`Raw_markup (`Html, "")))
+
+let expected : string -> Location.span -> Error.t =
+  Error.make "Expected %s"
+
+let unknown_reference_qualifier : string -> Location.span -> Error.t =
+  Error.make "Unknown reference qualifier '%s'"

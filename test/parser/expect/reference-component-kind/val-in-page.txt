@@ -1,1 +1,7 @@
-Exception Parser_.Reference.InvalidReference "page-foo.val-bar"
+((output
+  (ok
+   (((f.ml (1 0) (1 19))
+     (paragraph (((f.ml (1 0) (1 19)) (code_span page-foo.val-bar))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 2-10:\
+   \nExpected 'module-', 'modtype-', or an unqualified reference")))

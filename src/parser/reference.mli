@@ -1,9 +1,15 @@
-(* TODO Remove; this is needed for testing in the meantime. *)
-exception InvalidReference of string
-exception Expected_reference_to_a_module_but_got of string
-
+module Error = Model.Error
+module Location_ = Model.Location_
 module Paths = Model.Paths
 
-val parse : string -> Paths.Reference.any
-val read_path_longident : string -> [< Paths.Path.kind > `Module ] Paths.Path.t
-val read_mod_longident : string -> Paths.Reference.module_
+val parse :
+  Location_.span -> string ->
+    (Paths.Reference.any, Error.t) Result.result
+
+val read_path_longident :
+  Location_.span -> string ->
+    ([< Paths.Path.kind > `Module ] Paths.Path.t, Error.t) Result.result
+
+val read_mod_longident :
+  Location_.span -> string ->
+    (Paths.Reference.module_, Error.t) Result.result

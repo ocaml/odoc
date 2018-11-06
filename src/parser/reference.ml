@@ -1,5 +1,5 @@
-exception InvalidReference of string
-
+module Error = Model.Error
+module Location_ = Model.Location_
 module Paths = Model.Paths
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
@@ -38,7 +38,7 @@ let match_extra_odoc_reference_kind s : (_ Paths.Reference.tag) option =
    for all tokens in the resulting token list (because lists are homogeneous).
    So, the parser stores kinds as strings in the token list instead, and this
    function is called on each string at the latest possible time. *)
-let match_reference_kind s : _ Paths.Reference.tag =
+let match_reference_kind location s : _ Paths.Reference.tag =
   match s with
   | None -> TUnknown
   | Some s as wrapped ->
@@ -49,13 +49,15 @@ let match_reference_kind s : _ Paths.Reference.tag =
     in
     match result with
     | Some kind -> kind
-    | None -> raise (InvalidReference ("unknown qualifier `" ^ s ^ "'"))
+    | None ->
+      Parse_error.unknown_reference_qualifier s location
+      |> Error.raise_exception
 
 (* The string is scanned right-to-left, because we are interested in right-most
    hyphens. The tokens are also returned in right-to-left order, because the
    traversals that consume them prefer to look at the deepest identifier
    first. *)
-let tokenize s =
+let tokenize location s =
   let rec scan_identifier started_at open_parenthesis_count index tokens =
     match s.[index] with
     | exception Invalid_argument _ ->
@@ -73,57 +75,77 @@ let tokenize s =
         started_at open_parenthesis_count (index - 1) tokens
 
   and identifier_ended started_at index tokens =
-    let identifier =
-      String.sub s (index + 1) (started_at - index - 1)
-      |> String.trim
-    in
-    if identifier = "" then
-      raise (InvalidReference s);
+    let offset = index + 1 in
+    let length = started_at - offset in
+    let identifier = String.trim (String.sub s offset length) in
+    let location = Location_.in_string s ~offset ~length location in
+
+    if identifier = "" then begin
+      Parse_error.should_not_be_empty ~what:"Identifier in reference" location
+      |> Error.raise_exception
+    end;
+
     match s.[index] with
     | exception Invalid_argument _ ->
-      (None, identifier)::tokens
+      (None, identifier, location)::tokens
     | '.' ->
-      scan_identifier index 0 (index - 1) ((None, identifier)::tokens)
+      scan_identifier index 0 (index - 1) ((None, identifier, location)::tokens)
     | '-' ->
-      scan_kind identifier index (index - 1) tokens
+      scan_kind identifier location index (index - 1) tokens
     | _ ->
       assert false
 
-  and scan_kind identifier started_at index tokens =
+  and scan_kind identifier identifier_location started_at index tokens =
     match s.[index] with
     | exception Invalid_argument _ ->
-      kind_ended identifier started_at index tokens
+      kind_ended identifier identifier_location started_at index tokens
     | '.' ->
-      kind_ended identifier started_at index tokens
+      kind_ended identifier identifier_location started_at index tokens
     | _ ->
-      scan_kind identifier started_at (index - 1) tokens
+      scan_kind identifier identifier_location started_at (index - 1) tokens
 
-  and kind_ended identifier started_at index tokens =
-    let kind = Some (String.sub s (index + 1) (started_at - index - 1)) in
-    if index < 0 then
-      (kind, identifier)::tokens
-    else
-      match s.[index] with
-      | '.' ->
-        scan_identifier index 0 (index - 1) ((kind, identifier)::tokens)
-      | _ ->
-        assert false
+  and kind_ended identifier identifier_location started_at index tokens =
+    let offset = index + 1 in
+    let length = started_at - offset in
+    let kind = Some (String.sub s offset length) in
+    let location = Location_.in_string s ~offset ~length location in
+    let location = Location_.span [location; identifier_location] in
+
+    match s.[index] with
+    | exception Invalid_argument _ ->
+      (kind, identifier, location)::tokens
+    | '.' ->
+      scan_identifier index 0 (index - 1) ((kind, identifier, location)::tokens)
+    | _ ->
+      assert false
 
   in
 
   scan_identifier (String.length s) 0 (String.length s - 1) []
   |> List.rev
 
-let parse s =
+let expected allowed location =
+  let unqualified = "or an unqualified reference" in
+  let allowed =
+    match allowed with
+    | [one] ->
+      Printf.sprintf "'%s-' %s" one unqualified
+    | _ ->
+      String.concat
+        ", " ((List.map (Printf.sprintf "'%s-'") allowed) @ [unqualified])
+  in
+  Parse_error.expected allowed location
+
+let parse location s =
   let open Paths.Reference in
 
-  let rec signature (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  let rec signature (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] ->
       begin match kind with
       | TUnknown | TModule | TModuleType as kind -> Root (identifier, kind)
-      | _ -> raise Exit
+      | _ -> expected ["module"; "modtype"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -131,17 +153,19 @@ let parse s =
         Dot (label_parent_of_parent (parent next_token tokens), identifier)
       | TModule -> Module (signature next_token tokens, identifier)
       | TModuleType -> ModuleType (signature next_token tokens, identifier)
-      | _ -> raise Exit
+      | _ -> expected ["module"; "modtype"] location |> Error.raise_exception
       end
 
-  and parent (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  and parent (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] ->
       begin match kind with
       | TUnknown | TModule | TModuleType | TType | TClass
       | TClassType as kind -> Root (identifier, kind)
-      | _ -> raise Exit
+      | _ ->
+        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -152,18 +176,20 @@ let parse s =
       | TType -> Type (signature next_token tokens, identifier)
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
-      | _ -> raise Exit
+      | _ ->
+        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        |> Error.raise_exception
       end
 
   in
 
-  let class_signature (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  let class_signature (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] ->
       begin match kind with
       | TUnknown | TClass | TClassType as kind -> Root (identifier, kind)
-      | _ -> raise Exit
+      | _ -> expected ["class"; "classtype"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -171,35 +197,38 @@ let parse s =
         Dot (label_parent_of_parent (parent next_token tokens), identifier)
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
-      | _ -> raise Exit
+      | _ -> expected ["class"; "classtype"] location |> Error.raise_exception
       end
   in
 
-  let datatype (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  let datatype (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] ->
       begin match kind with
       | TUnknown | TType as kind -> Root (identifier, kind)
-      | _ -> raise Exit
+      | _ -> expected ["type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
       | TUnknown ->
         Dot (label_parent_of_parent (parent next_token tokens), identifier)
       | TType -> Type (signature next_token tokens, identifier)
-      | _ -> raise Exit
+      | _ -> expected ["type"] location |> Error.raise_exception
       end
   in
 
-  let rec label_parent (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  let rec label_parent (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] ->
       begin match kind with
       | TUnknown | TModule | TModuleType | TType | TClass | TClassType
       | TPage as kind -> Root (identifier, kind)
-      | _ -> raise Exit
+      | _ ->
+        expected
+          ["module"; "modtype"; "type"; "class"; "classtype"; "page"] location
+        |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -209,12 +238,14 @@ let parse s =
       | TType -> Type (signature next_token tokens, identifier)
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
-      | _ -> raise Exit
+      | _ ->
+        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        |> Error.raise_exception
       end
   in
 
-  let start_from_last_component (kind, identifier) tokens =
-    let kind = match_reference_kind kind in
+  let start_from_last_component (kind, identifier, location) tokens =
+    let kind = match_reference_kind location kind in
     match tokens with
     | [] -> Root (identifier, kind)
     | next_token::tokens ->
@@ -234,25 +265,34 @@ let parse s =
       | TInstanceVariable ->
         InstanceVariable (class_signature next_token tokens, identifier)
       | TLabel -> Label (label_parent next_token tokens, identifier)
-      | TPage -> raise Exit
+      | TPage ->
+        let suggestion =
+          Printf.sprintf "'page-%s' should be first." identifier in
+        Parse_error.not_allowed
+          ~what:"Page label"
+          ~in_what:"the last component of a reference path"
+          ~suggestion
+          location
+        |> Error.raise_exception
   in
 
-  let s =
+  let s, location =
     match String.rindex s ':' with
-    | index -> String.sub s (index + 1) (String.length s - (index + 1))
-    | exception Not_found -> s
+    | index ->
+      let s = String.sub s (index + 1) (String.length s - (index + 1)) in
+      let location = Location_.nudge_start (index + 1) location in
+      (s, location)
+    | exception Not_found ->
+      (s, location)
   in
 
-  let tokens = tokenize s in
-
-  try
-    match tokens with
-    | [] -> raise Exit
+  Error.catch begin fun () ->
+    match tokenize location s with
+    | [] -> assert false
     | last_token::tokens -> start_from_last_component last_token tokens
-  with Exit ->
-    raise (InvalidReference s)
+  end
 
-let read_path_longident s =
+let read_path_longident location s =
   let open Paths.Path in
   let rec loop : 'k. string -> int -> ([< kind > `Module ] as 'k) t option =
     fun s pos ->
@@ -269,18 +309,17 @@ let read_path_longident s =
         if String.length name = 0 then None
         else Some (Root name)
   in
-    match loop s (String.length s - 1) with
-    | None -> raise (InvalidReference s)
-    | Some r -> r
+  match loop s (String.length s - 1) with
+  | Some r -> Result.Ok r
+  | None -> Result.Error (Parse_error.expected "a valid path" location)
 
-exception Expected_reference_to_a_module_but_got of string
-
-let read_mod_longident lid : Paths.Reference.module_ =
+let read_mod_longident location lid =
   let open Paths.Reference in
-  match parse lid with
+  let (>>=) = Rresult.(>>=) in
+
+  parse location lid >>=
+  function
   | Root (_, (TUnknown | TModule))
   | Dot (_, _)
-  | Module (_,_) as r -> r
-  | _ ->
-      (* FIXME: propagate location *)
-      raise (Expected_reference_to_a_module_but_got lid)
+  | Module (_, _) as r -> Result.Ok r
+  | _ -> Result.Error (Parse_error.expected "a reference to a module" location)
