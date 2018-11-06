@@ -75,7 +75,7 @@ let unknown_tag : string -> Location.span -> Error.t =
   Error.make "unknown tag '%s'"
 
 let unpaired_right_brace : Location.span -> Error.t =
-  Error.make "unpaired '}' (end of markup)"
+  Error.make ~suggestion:"try '\\}'." "unpaired '}' (end of markup)"
 
 let unpaired_right_bracket : Location.span -> Error.t =
   Error.make ~suggestion:"try '\\]'." "unpaired ']' (end of code)"

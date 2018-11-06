@@ -1,7 +1,7 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 11-12:\
-   \nunpaired '}' (end of markup)"))
+  (ok
+   (((f.ml (1 0) (1 11)) (unordered ()))
+    ((f.ml (1 11) (1 12)) (paragraph (((f.ml (1 11) (1 12)) (word }))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-6:\
    \n'{2 ...}' (section heading) is not allowed in '{ul ...}' (bulleted list)\
@@ -10,4 +10,7 @@
    \n'Foo' is not allowed in '{ul ...}' (bulleted list)\
    \nSuggestion: move 'Foo' into a list item, '{li ...}' or '{- ...}'"
     "File \"f.ml\", line 1, characters 0-3:\
-   \n'{ul ...}' (bulleted list) should not be empty")))
+   \n'{ul ...}' (bulleted list) should not be empty"
+    "File \"f.ml\", line 1, characters 11-12:\
+   \nunpaired '}' (end of markup)\
+   \nSuggestion: try '\\}'.")))

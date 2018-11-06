@@ -1006,6 +1006,7 @@ let tests : test_suite list = [
     t "braces-instead-of-brackets" "{foo}";
     t "right-brace" "}";
     t "right-brace-in-paragraph" "foo}";
+    t "multiple-right-brace" "foo } bar } baz";
     t "right-brace-in-list-item" "- foo}";
     t "right-brace-in-code-span" "[foo}]";
     t "right-brace-in-code-block" "{[foo}]}";

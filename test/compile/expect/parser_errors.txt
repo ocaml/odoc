@@ -10,6 +10,7 @@ File "cases/parser_errors.mli", line 13, characters 1-4:
 Suggestion: move '{li ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item)
 File "cases/parser_errors.mli", line 13, characters 16-17:
 unpaired '}' (end of markup)
+Suggestion: try '\}'.
 File "cases/parser_errors.mli", line 16, characters 1-3:
 '{v' should be followed by whitespace
 File "cases/parser_errors.mli", line 19, characters 34-36:
@@ -28,6 +29,7 @@ File "cases/parser_errors.mli", line 40, characters 1-12:
 unknown tag '@UnknownTag'
 File "cases/parser_errors.mli", line 43, characters 1-2:
 unpaired '}' (end of markup)
+Suggestion: try '\}'.
 File "cases/parser_errors.mli", line 46, characters 1-2:
 unpaired ']' (end of code)
 Suggestion: try '\]'.
