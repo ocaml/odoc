@@ -1188,7 +1188,7 @@ and explicit_list_items
         | _ ->
           Parse_error.should_be_followed_by_whitespace
             next_token.location ~what:(Token.print token)
-          |> Error.raise_exception
+          |> Error.warning input.warnings
       end;
 
       let content, token_after_list_item, _where_in_line =
