@@ -415,7 +415,8 @@ rule token input = parse
       emit input (`Word tag) }
 
   | '@'
-    { raise_error input Parse_error.stray_at }
+    { warning input Parse_error.stray_at;
+      emit input (`Word "@") }
 
   | '\r'
     { raise_error input Parse_error.stray_cr }
