@@ -695,7 +695,10 @@ let rec block_element_list
         ~in_what:(Token.describe parent_markup)
         ~suggestion
         location
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      junk input;
+      consume_block_elements ~parsed_a_tag where_in_line acc
 
 
 
