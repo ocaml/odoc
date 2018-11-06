@@ -924,6 +924,61 @@ let tests : test_suite list = [
     t "section-in-class" "{!class-foo.section-bar}";
     t "section-in-page" "{!page-foo.section-bar}";
     t "page-in-something" "{!foo.page-bar}";
+    t "inner-parent-something-in-something" "{!foo.bar.field-baz}";
+    t "inner-parent-something-in-module" "{!module-Foo.bar.field-baz}";
+    t "inner-parent-something-in-class" "{!class-foo.bar.field-baz}";
+    t "inner-parent-something-in-page" "{!page-foo.bar.field-baz}";
+    t "inner-parent-module-in-module" "{!module-Foo.module-Bar.field-baz}";
+    t "inner-parent-module-in-class" "{!class-foo.module-Bar.field-baz}";
+    t "inner-parent-module-type-in-module"
+      "{!module-Foo.module-type-Bar.field-baz}";
+    t "inner-parent-module-type-in-class"
+      "{!class-foo.module-type-Bar.field-baz}";
+    t "inner-parent-type-in-module" "{!module-Foo.type-bar.field-baz}";
+    t "inner-parent-type-in-class" "{!class-foo.type-bar.field-baz}";
+    t "inner-parent-class-in-module" "{!module-Foo.class-bar.field-baz}";
+    t "inner-parent-class-in-class" "{!class-foo.class-bar.field-baz}";
+    t "inner-parent-class-type-in-module"
+      "{!module-Foo.class-type-bar.field-baz}";
+    t "inner-parent-class-type-in-class"
+      "{!class-foo.class-type-bar.field-baz}";
+    t "inner-label-parent-something-in-something" "{!foo.bar.baz}";
+    t "inner-label-parent-something-in-page" "{!page-foo.bar.baz}";
+    t "inner-label-parent-module-in-module" "{!module-Foo.module-Bar.baz}";
+    t "inner-label-parent-module-in-class" "{!class-foo.module-Bar.baz}";
+    t "inner-label-parent-module-type-in-module"
+      "{!module-Foo.module-type-Bar.baz}";
+    t "inner-label-parent-module-type-in-class"
+      "{!class-foo.module-type-Bar.baz}";
+    t "inner-label-parent-type-in-module" "{!module-Foo.type-bar.baz}";
+    t "inner-label-parent-type-in-class" "{!class-foo.type-bar.baz}";
+    t "inner-label-parent-class-in-module" "{!module-Foo.class-bar.baz}";
+    t "inner-label-parent-class-in-class" "{!class-foo.class-bar.baz}";
+    t "inner-label-parent-class-type-in-module" "{!module-Foo.class-bar.baz}";
+    t "inner-label-parent-class-type-in-class" "{!class-foo.class-bar.baz}";
+    t "inner-page-in-something" "{!foo.page-bar.baz}";
+    t "inner-class-signature-something-in-something" "{!foo.bar.method-baz}";
+    t "inner-class-signature-something-in-page" "{!page-foo.bar.method-baz}";
+    t "inner-class-signature-class-in-module"
+      "{!module-Foo.class-bar.method-baz}";
+    t "inner-class-signature-class-in-class"
+      "{!class-foo.class-bar.method-baz}";
+    t "inner-class-signature-class-type-in-module"
+      "{!module-Foo.class-type-bar.method-baz}";
+    t "inner-class-signature-class-type-in-class"
+      "{!class-foo.class-type-bar.method-baz}";
+    t "inner-signature-something-in-something" "{!foo.bar.type-baz}";
+    t "inner-signature-something-in-page" "{!page-foo.bar.type-baz}";
+    t "inner-signature-module-in-module" "{!module-Foo.module-Bar.type-baz}";
+    t "inner-signature-module-in-class" "{!class-foo.module-Bar.type-baz}";
+    t "inner-signature-module-type-in-module"
+      "{!module-Foo.module-type-Bar.type-baz}";
+    t "inner-signature-module-type-in-class"
+      "{!class-foo.module-type-Bar.type-baz}";
+    t "inner-datatype-something-in-something" "{!foo.bar.const-Baz}";
+    t "inner-datatype-something-in-page" "{!page-foo.bar.const-Baz}";
+    t "inner-datatype-type-in-module" "{!module-Foo.type-bar.const-Baz}";
+    t "inner-datatype-type-in-class" "{!class-foo.type-bar.const-Baz}";
     t "kind-conflict" "{!val:type-foo}";
     t "canonical-something" "@canonical Foo";
     t "canonical-module" "@canonical module-Foo";

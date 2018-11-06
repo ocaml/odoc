@@ -1,0 +1,7 @@
+((output
+  (ok
+   (((f.ml (1 0) (1 27))
+     (paragraph
+      (((f.ml (1 0) (1 27))
+        (reference (field baz (dot bar (root Foo module))) ()))))))))
+ (warnings ()))
