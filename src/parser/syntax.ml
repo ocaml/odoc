@@ -546,9 +546,26 @@ let accepted_in_all_contexts
   | In_explicit_list -> block
   | In_tag -> block
 
-(* {3 The block element loop} *)
+(* Converts a tag to a series of words. This is used in error recovery, when a
+   tag cannot be generated. *)
+let tag_to_words = function
+  | `Author s -> [`Word "@author"; `Space; `Word s]
+  | `Before s -> [`Word "@before"; `Space; `Word s]
+  | `Canonical s -> [`Word "@canonical"; `Space; `Word s]
+  | `Deprecated -> [`Word "@deprecated"]
+  | `Inline -> [`Word "@inline"]
+  | `Open -> [`Word "@open"]
+  | `Closed -> [`Word "@closed"]
+  | `Param s -> [`Word "@param"; `Space; `Word s]
+  | `Raise s -> [`Word "@raise"; `Space; `Word s]
+  | `Return -> [`Word "@return"]
+  | `See (`Document, s) -> [`Word "@see"; `Space; `Word ("\"" ^ s ^ "\"")]
+  | `See (`File, s) -> [`Word "@see"; `Space; `Word ("'" ^ s ^ "'")]
+  | `See (`Url, s) -> [`Word "@see"; `Space; `Word ("<" ^ s ^ ">")]
+  | `Since s -> [`Word "@since"; `Space; `Word s]
+  | `Version s -> [`Word "@version"; `Space; `Word s]
 
-(* {2 Block element lists} *)
+(* {3 Block element lists} *)
 
 (* Consumes tokens making up a sequence of block elements. These are:
 
@@ -602,7 +619,7 @@ let rec block_element_list
         |> Error.warning input.warnings
     in
 
-    let raise_because_not_at_top_level {Location.location; value = token} =
+    let warn_because_not_at_top_level {Location.location; value = token} =
       let suggestion =
         Printf.sprintf
           "move %s outside of any other markup" (Token.print token)
@@ -612,7 +629,7 @@ let rec block_element_list
         ~in_what:(Token.describe parent_markup)
         ~suggestion
         location
-      |> Error.raise_exception
+      |> Error.warning input.warnings
     in
 
 
@@ -685,10 +702,22 @@ let rec block_element_list
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
     | {value = `Tag tag as token; location} as next_token ->
+      let recover_when_not_at_top_level context =
+        warn_because_not_at_top_level next_token;
+        junk input;
+        let words = List.map (Location.at location) (tag_to_words tag) in
+        let paragraph =
+          `Paragraph words
+          |> accepted_in_all_contexts context
+          |> Location.at location
+        in
+        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph::acc)
+      in
+
       begin match context with
       (* Tags cannot make sense in an explicit list ([{ul {li ...}}]). *)
       | In_explicit_list ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
       (* If a tag starts at the beginning of a line, it terminates the preceding
          tag and/or the current shorthand list. In this case, return to the
          caller, and let the caller decide how to interpret the tag token. *)
@@ -696,12 +725,12 @@ let rec block_element_list
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
       | In_tag ->
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
 
       (* If this is the top-level call to [block_element_list], parse the
          tag. *)
@@ -952,16 +981,35 @@ let rec block_element_list
 
       warn_if_after_tags next_token;
 
+      let recover_when_not_at_top_level context =
+        warn_because_not_at_top_level next_token;
+        junk input;
+        let content, brace_location =
+          delimited_inline_element_list
+            ~parent_markup:token
+            ~parent_markup_location:location
+            ~requires_leading_whitespace:true
+            input
+        in
+        let location = Location.span [location; brace_location] in
+        let paragraph =
+          `Paragraph content
+          |> accepted_in_all_contexts context
+          |> Location.at location
+        in
+        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph::acc)
+      in
+
       begin match context with
       | In_shorthand_list ->
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
       | In_explicit_list ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
       | In_tag ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
 
       | Top_level ->
         if where_in_line <> `At_start_of_line then
