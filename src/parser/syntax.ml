@@ -704,7 +704,7 @@ let rec block_element_list
           if s = "" then
             Parse_error.should_not_be_empty
               ~what:(Token.describe token) location
-            |> Error.raise_exception;
+            |> Error.warning input.warnings;
           let tag =
             match tag with
             | `Author _ -> Result.Ok (`Author s)
