@@ -42,13 +42,16 @@ let rec non_link_inline_element
     `Styled (style, non_link_inline_elements status ~surrounding content)
     |> Location.same element
 
-  | {value = `Reference _; _}
-  | {value = `Link _; _} as element ->
+  | {value = `Reference (_, _, content); _}
+  | {value = `Link (_, content); _} as element ->
     Parse_error.not_allowed
       ~what:(describe_element element.value)
       ~in_what:(describe_element surrounding)
       element.location
-    |> Error.raise_exception
+    |> Error.warning status.warnings;
+
+    `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
+    |> Location.same element
 
 and non_link_inline_elements status ~surrounding elements =
   List.map (non_link_inline_element status ~surrounding) elements
