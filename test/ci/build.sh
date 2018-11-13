@@ -3,7 +3,7 @@
 case $TRAVIS_OS_NAME in
 "windows")
   # this is brittle
-  ESY=/c/ProgramData/nvs/node/10.12.0/x64/node_modules/esy/_build/default/esy/bin/esyCommand.exe
+  ESY=/c/ProgramData/nvs/node/10.13.0/x64/node_modules/esy/_build/default/esy/bin/esyCommand.exe
 ;;
 *)
   ESY=$(npm bin --global)/esy
