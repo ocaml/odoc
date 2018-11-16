@@ -300,17 +300,6 @@ dl, div.spec, .doc, aside {
   margin-bottom: 20px;
 }
 
-/* Indent the second line in multiline spec definitions. */
-.spec:not(.type) > code {
-  display: block;
-  padding-left: 4ex;
-  text-indent: -4ex;
-}
-
-.spec.exception > code {
-  display: inline-block;
-}
-
 dl > dd {
   padding: 0.5em;
 }
