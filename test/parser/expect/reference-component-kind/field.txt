@@ -1,4 +1,4 @@
 ((output
-  (((f.ml (1 0) (1 15))
-    (paragraph (((f.ml (1 0) (1 15)) (reference (root foo field) ())))))))
+  (((f.ml (1 0) (1 12))
+    (paragraph (((f.ml (1 0) (1 12)) (reference (root foo field) ())))))))
  (warnings ()))
