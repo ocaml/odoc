@@ -98,3 +98,6 @@ let expected : string -> Location.span -> Error.t =
 
 let unknown_reference_qualifier : string -> Location.span -> Error.t =
   Error.make "Unknown reference qualifier '%s'"
+
+let deprecated_reference_kind : string -> string -> Location.span -> Error.t =
+  Error.make "'%s' is deprecated, use '%s' instead"

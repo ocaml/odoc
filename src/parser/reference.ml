@@ -2,37 +2,43 @@ module Error = Model.Error
 module Location_ = Model.Location_
 module Paths = Model.Paths
 
+let deprecated_reference_kind warnings location kind replacement =
+  Parse_error.deprecated_reference_kind kind replacement location
+  |> Error.warning warnings
+
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
-let match_ocamldoc_reference_kind _warnings s
+let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s
     : (_ Paths.Reference.tag) option =
+  let d = deprecated_reference_kind in
   match s with
   | Some "module" -> Some TModule
-  | Some "modtype" -> Some TModuleType
+  | Some "modtype" -> d w loc "modtype" "module-type"; Some TModuleType
   | Some "class" -> Some TClass
-  | Some "classtype" -> Some TClassType
+  | Some "classtype" -> d w loc "classtype" "class-type"; Some TClassType
   | Some "val" -> Some TValue
   | Some "type" -> Some TType
   | Some "exception" -> Some TException
   | Some "attribute" -> None
   | Some "method" -> Some TMethod
   | Some "section" -> Some TLabel
-  | Some "const" -> Some TConstructor
-  | Some "recfield" -> Some TField
+  | Some "const" -> d w loc "const" "constructor"; Some TConstructor
+  | Some "recfield" -> d w loc "recfield" "field"; Some TField
   | _ -> None
 
-let match_extra_odoc_reference_kind _warnings s
+let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
     : (_ Paths.Reference.tag) option =
+  let d = deprecated_reference_kind in
   match s with
   | Some "class-type" -> Some TClassType
   | Some "constructor" -> Some TConstructor
-  | Some "exn" -> Some TException
+  | Some "exn" -> d w loc "exn" "exception"; Some TException
   | Some "extension" -> Some TExtension
   | Some "field" -> Some TField
   | Some "instance-variable" -> Some TInstanceVariable
-  | Some "label" -> Some TLabel
+  | Some "label" -> d w loc "label" "section"; Some TLabel
   | Some "module-type" -> Some TModuleType
   | Some "page" -> Some TPage
-  | Some "value" -> Some TValue
+  | Some "value" -> d w loc "value" "val"; Some TValue
   | _ -> None
 
 (* Ideally, the parser would call this on every reference kind annotation during
@@ -45,9 +51,9 @@ let match_reference_kind warnings location s : _ Paths.Reference.tag =
   | None -> TUnknown
   | Some s as wrapped ->
     let result =
-      match match_ocamldoc_reference_kind warnings wrapped with
+      match match_ocamldoc_reference_kind warnings location wrapped with
       | Some kind -> Some kind
-      | None -> match_extra_odoc_reference_kind warnings wrapped
+      | None -> match_extra_odoc_reference_kind warnings location wrapped
     in
     match result with
     | Some kind -> kind
