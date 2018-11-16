@@ -3,4 +3,4 @@
     (paragraph (((f.ml (1 0) (1 22)) (code_span page-foo.method-bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-10:\
-   \nExpected 'class-', 'classtype-', or an unqualified reference")))
+   \nExpected 'class-', 'class-type-', or an unqualified reference")))

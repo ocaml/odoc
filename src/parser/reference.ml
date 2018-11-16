@@ -153,7 +153,8 @@ let parse warnings location s =
     | [] ->
       begin match kind with
       | TUnknown | TModule | TModuleType as kind -> Root (identifier, kind)
-      | _ -> expected ["module"; "modtype"] location |> Error.raise_exception
+      | _ ->
+        expected ["module"; "module-type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -161,7 +162,8 @@ let parse warnings location s =
         Dot (label_parent_of_parent (parent next_token tokens), identifier)
       | TModule -> Module (signature next_token tokens, identifier)
       | TModuleType -> ModuleType (signature next_token tokens, identifier)
-      | _ -> expected ["module"; "modtype"] location |> Error.raise_exception
+      | _ ->
+        expected ["module"; "module-type"] location |> Error.raise_exception
       end
 
   and parent (kind, identifier, location) tokens =
@@ -172,7 +174,8 @@ let parse warnings location s =
       | TUnknown | TModule | TModuleType | TType | TClass
       | TClassType as kind -> Root (identifier, kind)
       | _ ->
-        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        expected
+          ["module"; "module-type"; "type"; "class"; "class-type"] location
         |> Error.raise_exception
       end
     | next_token::tokens ->
@@ -185,7 +188,8 @@ let parse warnings location s =
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
       | _ ->
-        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        expected
+          ["module"; "module-type"; "type"; "class"; "class-type"] location
         |> Error.raise_exception
       end
 
@@ -197,7 +201,7 @@ let parse warnings location s =
     | [] ->
       begin match kind with
       | TUnknown | TClass | TClassType as kind -> Root (identifier, kind)
-      | _ -> expected ["class"; "classtype"] location |> Error.raise_exception
+      | _ -> expected ["class"; "class-type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
@@ -205,7 +209,7 @@ let parse warnings location s =
         Dot (label_parent_of_parent (parent next_token tokens), identifier)
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
-      | _ -> expected ["class"; "classtype"] location |> Error.raise_exception
+      | _ -> expected ["class"; "class-type"] location |> Error.raise_exception
       end
   in
 
@@ -235,7 +239,8 @@ let parse warnings location s =
       | TPage as kind -> Root (identifier, kind)
       | _ ->
         expected
-          ["module"; "modtype"; "type"; "class"; "classtype"; "page"] location
+          ["module"; "module-type"; "type"; "class"; "class-type"; "page"]
+          location
         |> Error.raise_exception
       end
     | next_token::tokens ->
@@ -247,7 +252,8 @@ let parse warnings location s =
       | TClass -> Class (signature next_token tokens, identifier)
       | TClassType -> ClassType (signature next_token tokens, identifier)
       | _ ->
-        expected ["module"; "modtype"; "type"; "class"; "classtype"] location
+        expected
+          ["module"; "module-type"; "type"; "class"; "class-type"] location
         |> Error.raise_exception
       end
   in
