@@ -980,10 +980,10 @@ let tests : test_suite list = [
       "{!module-Foo.module-type-Bar.type-baz}";
     t "inner-signature-module-type-in-class"
       "{!class-foo.module-type-Bar.type-baz}";
-    t "inner-datatype-something-in-something" "{!foo.bar.const-Baz}";
-    t "inner-datatype-something-in-page" "{!page-foo.bar.const-Baz}";
-    t "inner-datatype-type-in-module" "{!module-Foo.type-bar.const-Baz}";
-    t "inner-datatype-type-in-class" "{!class-foo.type-bar.const-Baz}";
+    t "inner-datatype-something-in-something" "{!foo.bar.constructor-Baz}";
+    t "inner-datatype-something-in-page" "{!page-foo.bar.constructor-Baz}";
+    t "inner-datatype-type-in-module" "{!module-Foo.type-bar.constructor-Baz}";
+    t "inner-datatype-type-in-class" "{!class-foo.type-bar.constructor-Baz}";
     t "kind-conflict" "{!val:type-foo}";
     t "canonical-something" "@canonical Foo";
     t "canonical-module" "@canonical module-Foo";
