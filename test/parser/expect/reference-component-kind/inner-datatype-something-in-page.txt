@@ -4,4 +4,4 @@
      (((f.ml (1 0) (1 31)) (code_span page-foo.bar.constructor-Baz)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-10:\
-   \nExpected 'module-', 'modtype-', 'type-', 'class-', 'classtype-', or an unqualified reference")))
+   \nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference")))
