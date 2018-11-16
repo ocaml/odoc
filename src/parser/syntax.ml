@@ -147,7 +147,7 @@ let rec inline_element
 
     let r_location = Location.nudge_start (String.length "{!") location in
 
-    begin match Reference.parse r_location r with
+    begin match Reference.parse input.warnings r_location r with
     | Result.Ok r ->
       Location.at location (`Reference (`Simple, r, []))
     | Result.Error error ->
@@ -163,7 +163,7 @@ let rec inline_element
     (* Parse the reference target immediately, so that any warnings from it are
        triggered before warnings from the content. *)
     let make_element =
-      match Reference.parse r_location r with
+      match Reference.parse input.warnings r_location r with
       | Result.Ok r ->
         fun content -> `Reference (`With_text, r, content)
       | Result.Error error ->
@@ -774,7 +774,8 @@ let rec block_element_list
               let (>>=) = Rresult.(>>=) in
               let result =
                 Reference.read_path_longident r_location s >>= fun path ->
-                Reference.read_mod_longident r_location s >>= fun module_ ->
+                Reference.read_mod_longident
+                  input.warnings r_location s >>= fun module_ ->
                 Result.Ok (`Canonical (path, module_))
               in
               match result with
@@ -911,7 +912,7 @@ let rec block_element_list
       let modules =
         split_string " \t\r\n" s
         |> List.fold_left (fun acc r ->
-          match Reference.read_mod_longident location r with
+          match Reference.read_mod_longident input.warnings location r with
           | Result.Ok r -> r::acc
           | Result.Error error ->
             Error.warning input.warnings error;
