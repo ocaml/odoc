@@ -279,7 +279,7 @@ pre code {
 /* Code lexemes */
 
 .keyword {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* Module member specification */
@@ -679,10 +679,6 @@ h1+.modules, h1+.sel {
 }
 
 /* Syntax highlighting (based on github-gist) */
-
-.keyword {
-  font-weight: 500;
-}
 
 .hljs {
   display: block;
