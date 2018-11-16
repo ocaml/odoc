@@ -3,7 +3,8 @@ module Location_ = Model.Location_
 module Paths = Model.Paths
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
-let match_ocamldoc_reference_kind s : (_ Paths.Reference.tag) option =
+let match_ocamldoc_reference_kind _warnings s
+    : (_ Paths.Reference.tag) option =
   match s with
   | Some "module" -> Some TModule
   | Some "modtype" -> Some TModuleType
@@ -19,7 +20,8 @@ let match_ocamldoc_reference_kind s : (_ Paths.Reference.tag) option =
   | Some "recfield" -> Some TField
   | _ -> None
 
-let match_extra_odoc_reference_kind s : (_ Paths.Reference.tag) option =
+let match_extra_odoc_reference_kind _warnings s
+    : (_ Paths.Reference.tag) option =
   match s with
   | Some "class-type" -> Some TClassType
   | Some "constructor" -> Some TConstructor
@@ -38,14 +40,14 @@ let match_extra_odoc_reference_kind s : (_ Paths.Reference.tag) option =
    for all tokens in the resulting token list (because lists are homogeneous).
    So, the parser stores kinds as strings in the token list instead, and this
    function is called on each string at the latest possible time. *)
-let match_reference_kind location s : _ Paths.Reference.tag =
+let match_reference_kind warnings location s : _ Paths.Reference.tag =
   match s with
   | None -> TUnknown
   | Some s as wrapped ->
     let result =
-      match match_ocamldoc_reference_kind wrapped with
+      match match_ocamldoc_reference_kind warnings wrapped with
       | Some kind -> Some kind
-      | None -> match_extra_odoc_reference_kind wrapped
+      | None -> match_extra_odoc_reference_kind warnings wrapped
     in
     match result with
     | Some kind -> kind
@@ -136,11 +138,11 @@ let expected allowed location =
   in
   Parse_error.expected allowed location
 
-let parse location s =
+let parse warnings location s =
   let open Paths.Reference in
 
   let rec signature (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
@@ -157,7 +159,7 @@ let parse location s =
       end
 
   and parent (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
@@ -184,7 +186,7 @@ let parse location s =
   in
 
   let class_signature (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
@@ -202,7 +204,7 @@ let parse location s =
   in
 
   let datatype (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
@@ -219,7 +221,7 @@ let parse location s =
   in
 
   let rec label_parent (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
@@ -245,7 +247,7 @@ let parse location s =
   in
 
   let start_from_last_component (kind, identifier, location) tokens =
-    let kind = match_reference_kind location kind in
+    let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] -> Root (identifier, kind)
     | next_token::tokens ->
@@ -313,12 +315,11 @@ let read_path_longident location s =
   | Some r -> Result.Ok r
   | None -> Result.Error (Parse_error.expected "a valid path" location)
 
-let read_mod_longident location lid =
+let read_mod_longident warnings location lid =
   let open Paths.Reference in
   let (>>=) = Rresult.(>>=) in
 
-  parse location lid >>=
-  function
+  parse warnings location lid >>= function
   | Root (_, (TUnknown | TModule))
   | Dot (_, _)
   | Module (_, _) as r -> Result.Ok r
