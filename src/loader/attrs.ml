@@ -51,6 +51,8 @@ let read_attributes parent _id attrs =
         match load_payload payload with
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
+            let start_pos =
+              {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
             let parsed =
               Parser_.parse_comment
                 ~sections_allowed:`All

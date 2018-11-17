@@ -48,3 +48,7 @@ val x : int
 
 (** {%invalid: raw markup target %} *)
 val x : int
+
+(** This comment has bad
+    } markup on the second line. *)
+val x : int

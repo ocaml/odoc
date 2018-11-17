@@ -1,64 +1,64 @@
 File "cases/ast.mli", line 1, characters 1-14:
 unknown tag '@TxtAttribute'
-File "cases/ast.mli", line 4, characters 1-18:
+File "cases/ast.mli", line 4, characters 4-21:
 unknown tag '@ValueDeclaration'
-File "cases/ast.mli", line 6, characters 1-18:
+File "cases/ast.mli", line 6, characters 4-21:
 unknown tag '@ValueDeclaration'
-File "cases/ast.mli", line 8, characters 1-18:
+File "cases/ast.mli", line 8, characters 4-21:
 unknown tag '@ValueDeclaration'
-File "cases/ast.mli", line 11, characters 1-17:
+File "cases/ast.mli", line 11, characters 4-20:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 13, characters 1-17:
+File "cases/ast.mli", line 13, characters 4-20:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 14, characters 13-36:
+File "cases/ast.mli", line 14, characters 16-39:
 unknown tag '@ConstructorDeclaration'
-File "cases/ast.mli", line 15, characters 13-36:
+File "cases/ast.mli", line 15, characters 16-39:
 unknown tag '@ConstructorDeclaration'
-File "cases/ast.mli", line 22, characters 1-17:
+File "cases/ast.mli", line 22, characters 4-20:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 24, characters 12-29:
+File "cases/ast.mli", line 24, characters 15-32:
 unknown tag '@LabelDeclaration'
-File "cases/ast.mli", line 25, characters 13-30:
+File "cases/ast.mli", line 25, characters 16-33:
 unknown tag '@LabelDeclaration'
-File "cases/ast.mli", line 29, characters 1-17:
+File "cases/ast.mli", line 29, characters 4-20:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 31, characters 1-15:
+File "cases/ast.mli", line 31, characters 4-18:
 unknown tag '@TypeExtension'
-File "cases/ast.mli", line 32, characters 14-24:
+File "cases/ast.mli", line 32, characters 17-27:
 unknown tag '@Extension'
-File "cases/ast.mli", line 33, characters 14-24:
+File "cases/ast.mli", line 33, characters 17-27:
 unknown tag '@Extension'
-File "cases/ast.mli", line 35, characters 1-23:
+File "cases/ast.mli", line 35, characters 4-26:
 unknown tag '@ModuleTypeDeclaration'
 File "cases/ast.mli", line 37, characters 3-16:
 unknown tag '@TxtAttribute'
-File "cases/ast.mli", line 40, characters 3-19:
+File "cases/ast.mli", line 40, characters 6-22:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 43, characters 1-19:
+File "cases/ast.mli", line 43, characters 4-22:
 unknown tag '@ModuleDeclaration'
 File "cases/ast.mli", line 45, characters 3-16:
 unknown tag '@TxtAttribute'
-File "cases/ast.mli", line 47, characters 3-21:
+File "cases/ast.mli", line 47, characters 6-24:
 unknown tag '@ModuleDeclaration'
 File "cases/ast.mli", line 49, characters 5-18:
 unknown tag '@TxtAttribute'
-File "cases/ast.mli", line 52, characters 5-21:
+File "cases/ast.mli", line 52, characters 8-24:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 57, characters 1-11:
+File "cases/ast.mli", line 57, characters 4-14:
 unknown tag '@Exception'
 File "cases/ast.mli", line 60, characters 1-8:
 unknown tag '@Hidden'
-File "cases/ast.mli", line 63, characters 1-9:
+File "cases/ast.mli", line 63, characters 4-12:
 unknown tag '@Functor'
-File "cases/ast.mli", line 66, characters 1-20:
+File "cases/ast.mli", line 66, characters 4-23:
 unknown tag '@IncludeDescription'
 File "cases/ast.mli", line 68, characters 3-16:
 unknown tag '@TxtAttribute'
-File "cases/ast.mli", line 71, characters 3-19:
+File "cases/ast.mli", line 71, characters 6-22:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 71, characters 3-19:
+File "cases/ast.mli", line 71, characters 6-22:
 unknown tag '@TypeDeclaration'
-File "cases/ast.mli", line 74, characters 1-7:
+File "cases/ast.mli", line 74, characters 4-10:
 unknown tag '@Class'
-File "cases/ast.mli", line 77, characters 3-10:
+File "cases/ast.mli", line 77, characters 6-13:
 unknown tag '@Method'
