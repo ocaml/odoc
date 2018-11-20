@@ -149,7 +149,8 @@ module type Html_generator = sig
   end
 
   module Type_declaration : sig
-    val type_decl : Lang.TypeDecl.t -> rendered_item * Comment.docs
+    val type_decl :
+      Lang.Signature.recursive * Lang.TypeDecl.t -> rendered_item * Comment.docs
 
     val extension : Lang.Extension.t -> rendered_item * Comment.docs
 

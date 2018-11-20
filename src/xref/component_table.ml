@@ -480,7 +480,7 @@ and signature_items local =
         let sg = signature_items local rest in
         let sg = add_documentation mty.doc sg in
           add_module_type name expr sg
-    | Type decl :: rest ->
+    | Type (_, decl) :: rest ->
         let open TypeDecl in
         let sg = signature_items local rest in
         let sg = add_documentation decl.doc sg in

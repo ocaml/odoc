@@ -177,7 +177,8 @@ module type Html_generator = sig
   end
 
   module Type_declaration : sig
-    val type_decl : Lang.TypeDecl.t -> rendered_item * Comment.docs
+    val type_decl :
+      Lang.Signature.recursive * Lang.TypeDecl.t -> rendered_item * Comment.docs
 
     val extension : Lang.Extension.t -> rendered_item * Comment.docs
 
@@ -427,7 +428,8 @@ open Type_expression
    constraints. *)
 module Type_declaration :
 sig
-  val type_decl : Lang.TypeDecl.t -> rendered_item * Comment.docs
+  val type_decl :
+    Lang.Signature.recursive * Lang.TypeDecl.t -> rendered_item * Comment.docs
   val extension : Lang.Extension.t -> rendered_item * Comment.docs
   val exn : Lang.Exception.t -> rendered_item * Comment.docs
 
@@ -720,7 +722,7 @@ struct
 
 
 
-  let type_decl (t : Lang.TypeDecl.t) =
+  let type_decl ((recursive, t) : Lang.Signature.recursive * Lang.TypeDecl.t) =
     let tyname = Paths.Identifier.name t.id in
     let params = format_params t.equation.params in
     let constraints = format_constraints t.equation.constraints in
@@ -754,8 +756,14 @@ struct
         | Record fields -> record fields
     in
     let tdecl_def =
+      let keyword =
+        match recursive with
+        | Ordinary -> "type"
+        | And -> "and"
+      in
+
       Html.code (
-          [ Markup.keyword "type "]
+          [ Markup.keyword (keyword ^ " ")]
           @ ( Syn.Type.handle_constructor_params [Html.pcdata tyname] [params] )
       ) ::
       manifest @
@@ -1389,7 +1397,7 @@ sig
 end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
-    | Type {id; _} -> path_to_id id
+    | Type (_, {id; _}) -> path_to_id id
     | Exception {id; _} -> path_to_id id
     | Value {id; _} -> path_to_id id
     | External {id; _} -> path_to_id id
@@ -1431,7 +1439,7 @@ struct
     | Comment comment -> `Comment comment
 
   let rec render_leaf_signature_item : Lang.Signature.item -> _ = function
-    | Type t -> type_decl t
+    | Type (r, t) -> type_decl (r, t)
     | TypExt e -> extension e
     | Exception e -> exn e
     | Value v -> value v

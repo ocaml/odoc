@@ -1202,9 +1202,9 @@ class virtual signature = object (self)
           let ve' = self#external_ ve in
             if ve != ve' then External ve'
             else item
-      | Type decl ->
+      | Type (recursive, decl) ->
           let decl' = self#type_decl decl in
-            if decl != decl' then Type decl'
+            if decl != decl' then Type (recursive, decl')
             else item
       | TypExt ext ->
           let ext' = self#extension ext in

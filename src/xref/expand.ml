@@ -82,9 +82,9 @@ let map_type name ex f =
       | [] ->
         List.rev acc
         (* raise Not_found *)
-      | Type decl :: rest when Identifier.name decl.id = name ->
+      | Type (recursive, decl) :: rest when Identifier.name decl.id = name ->
         let decl' = f decl in
-        List.rev_append acc ((Type decl') :: rest)
+        List.rev_append acc ((Type (recursive, decl')) :: rest)
       | item :: rest -> loop name rest f (item :: acc)
   in
     match ex with

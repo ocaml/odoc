@@ -918,6 +918,12 @@ and read_module_declaration env parent ident md =
   in
     {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
+and read_rec_status rec_status =
+  let open Signature in
+  match rec_status with
+  | Trec_next -> And
+  | _ -> Ordinary
+
 and read_signature env parent items =
   let env = Env.add_signature_type_items parent items env in
   let rec loop acc items =
@@ -928,9 +934,9 @@ and read_signature env parent items =
           loop (vd :: acc) rest
     | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
         loop acc rest
-    | Sig_type(id, decl, _) :: rest ->
+    | Sig_type(id, decl, rec_status)::rest ->
         let decl = read_type_declaration env parent id decl in
-          loop (Type decl :: acc) rest
+      loop (Type (read_rec_status rec_status, decl)::acc) rest
     | Sig_typext (id, ext, Text_first) :: rest ->
         let rec inner_loop inner_acc = function
           | Sig_typext(id, ext, Text_next) :: rest ->

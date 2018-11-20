@@ -239,14 +239,15 @@ let read_type_declarations env parent decls =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
   let items =
+    let open Signature in
     List.fold_left
-      (fun acc decl ->
-         let open Signature in
+      (fun (acc, recursive) decl ->
          let comments = read_comments container decl.typ_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let decl = read_type_declaration env parent decl in
-           (Type decl) :: (List.rev_append comments acc))
-      [] decls
+         ((Type (recursive, decl)) :: (List.rev_append comments acc), And))
+      ([], Ordinary) decls
+    |> fst
   in
     List.rev items
 
