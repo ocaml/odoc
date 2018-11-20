@@ -41,11 +41,17 @@ let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
   | Some "value" -> d w loc "value" "val"; Some TValue
   | _ -> None
 
-(* Ideally, the parser would call this on every reference kind annotation during
-   tokenization. However, that constraints the phantom tag type to be the same
-   for all tokens in the resulting token list (because lists are homogeneous).
-   So, the parser stores kinds as strings in the token list instead, and this
-   function is called on each string at the latest possible time. *)
+
+
+(* Ideally, [tokenize] would call this on every reference kind annotation during
+   tokenization, when generating the token list. However, that constrains the
+   phantom tag type to be the same for all tokens in the list (because lists are
+   homogeneous). So, the parser stores kinds as strings in the token list
+   instead, and this function is called on each string at the latest possible
+   time to prevent typing issues.
+
+   A secondary reason to delay parsing, and store strings in the token list, is
+   that we need the strings for user-friendly error reporting. *)
 let match_reference_kind warnings location s : _ Paths.Reference.tag =
   match s with
   | None -> TUnknown
@@ -69,20 +75,30 @@ let tokenize location s =
   let rec scan_identifier started_at open_parenthesis_count index tokens =
     match s.[index] with
     | exception Invalid_argument _ ->
-      identifier_ended started_at index tokens
-    | '-' | '.' when open_parenthesis_count = 0 ->
-      identifier_ended started_at index tokens
+      let identifier, location = identifier_ended started_at index in
+      (None, identifier, location)::tokens
+
+    | '-' when open_parenthesis_count = 0 ->
+      let identifier, location = identifier_ended started_at index in
+      scan_kind identifier location index (index - 1) tokens
+
+    | '.' when open_parenthesis_count = 0 ->
+      let identifier, location = identifier_ended started_at index in
+      scan_identifier index 0 (index - 1) ((None, identifier, location)::tokens)
+
     | ')' ->
       scan_identifier
         started_at (open_parenthesis_count + 1) (index - 1) tokens
+
     | '(' when open_parenthesis_count > 0 ->
       scan_identifier
         started_at (open_parenthesis_count - 1) (index - 1) tokens
+
     | _ ->
       scan_identifier
         started_at open_parenthesis_count (index - 1) tokens
 
-  and identifier_ended started_at index tokens =
+  and identifier_ended started_at index =
     let offset = index + 1 in
     let length = started_at - offset in
     let identifier = String.trim (String.sub s offset length) in
@@ -93,39 +109,28 @@ let tokenize location s =
       |> Error.raise_exception
     end;
 
-    match s.[index] with
-    | exception Invalid_argument _ ->
-      (None, identifier, location)::tokens
-    | '.' ->
-      scan_identifier index 0 (index - 1) ((None, identifier, location)::tokens)
-    | '-' ->
-      scan_kind identifier location index (index - 1) tokens
-    | _ ->
-      assert false
+    (identifier, location)
 
   and scan_kind identifier identifier_location started_at index tokens =
     match s.[index] with
     | exception Invalid_argument _ ->
-      kind_ended identifier identifier_location started_at index tokens
+      let kind, location = kind_ended identifier_location started_at index in
+      (kind, identifier, location)::tokens
+
     | '.' ->
-      kind_ended identifier identifier_location started_at index tokens
+      let kind, location = kind_ended identifier_location started_at index in
+      scan_identifier index 0 (index - 1) ((kind, identifier, location)::tokens)
+
     | _ ->
       scan_kind identifier identifier_location started_at (index - 1) tokens
 
-  and kind_ended identifier identifier_location started_at index tokens =
+  and kind_ended identifier_location started_at index =
     let offset = index + 1 in
     let length = started_at - offset in
     let kind = Some (String.sub s offset length) in
     let location = Location_.in_string s ~offset ~length location in
     let location = Location_.span [location; identifier_location] in
-
-    match s.[index] with
-    | exception Invalid_argument _ ->
-      (kind, identifier, location)::tokens
-    | '.' ->
-      scan_identifier index 0 (index - 1) ((kind, identifier, location)::tokens)
-    | _ ->
-      assert false
+    (kind, location)
 
   in
 
@@ -275,7 +280,7 @@ let parse warnings whole_reference_location s =
             let new_kind_string =
               match kind with
               | Some s -> s
-              | None -> assert false
+              | None -> ""
             in
             Parse_error.reference_kinds_do_not_match
               old_kind_string new_kind_string whole_reference_location
@@ -330,8 +335,11 @@ let parse warnings whole_reference_location s =
 
   Error.catch begin fun () ->
     match tokenize location s with
-    | [] -> assert false
     | last_token::tokens -> start_from_last_component last_token old_kind tokens
+    | [] ->
+      Parse_error.should_not_be_empty
+        ~what:"reference target" whole_reference_location
+      |> Error.raise_exception
   end
 
 let read_path_longident location s =
