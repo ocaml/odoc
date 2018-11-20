@@ -7,15 +7,14 @@ open Odoc
 open Cmdliner
 
 let convert_syntax : Html.Html_tree.syntax Arg.converter =
-  let open Html.Html_tree in
   let syntax_parser str =
     match str with
-  | "ml" | "ocaml" -> `Ok OCaml
-  | "re" | "reason" -> `Ok Reason
+  | "ml" | "ocaml" -> `Ok Html.Html_tree.OCaml
+  | "re" | "reason" -> `Ok Html.Html_tree.Reason
   | s -> `Error (Printf.sprintf "Unknown syntax '%s'" s)
   in
   let syntax_printer fmt syntax =
-    Format.pp_print_string fmt (Html__.Html_tree.string_of_syntax syntax)
+    Format.pp_print_string fmt (Html.Html_tree.string_of_syntax syntax)
   in
   (syntax_parser, syntax_printer)
 

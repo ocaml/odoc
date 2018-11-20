@@ -1,4 +1,5 @@
 (library
- (name model)
+ (name odoc__model)
+ (public_name odoc.model)
  (preprocess (action (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
  (libraries result compiler-libs.common))
