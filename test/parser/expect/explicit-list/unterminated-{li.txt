@@ -4,6 +4,6 @@
      ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 11-11:\
-   \nend of text is not allowed in '{li ...}' (list item)"
+   \nEnd of text is not allowed in '{li ...}' (list item)."
     "File \"f.ml\", line 1, characters 11-11:\
-   \nend of text is not allowed in '{ul ...}' (bulleted list)")))
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).")))

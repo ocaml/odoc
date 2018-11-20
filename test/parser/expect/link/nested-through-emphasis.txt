@@ -9,4 +9,4 @@
              (emphasis (((f.ml (1 19) (1 22)) (word baz))))))))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 11-23:\
-   \n'{{:...} ...}' (external link) is not allowed in '{{:...} ...}' (external link)")))
+   \n'{{:...} ...}' (external link) is not allowed in '{{:...} ...}' (external link).")))

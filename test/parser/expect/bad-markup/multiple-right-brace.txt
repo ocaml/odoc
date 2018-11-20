@@ -6,8 +6,8 @@
    ((f.ml (1 12) (1 15)) (paragraph (((f.ml (1 12) (1 15)) (word baz)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-5:\
-   \nunpaired '}' (end of markup)\
+   \nUnpaired '}' (end of markup).\
    \nSuggestion: try '\\}'."
     "File \"f.ml\", line 1, characters 10-11:\
-   \nunpaired '}' (end of markup)\
+   \nUnpaired '}' (end of markup).\
    \nSuggestion: try '\\}'.")))

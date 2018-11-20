@@ -9,5 +9,5 @@
      ((f.ml (1 28) (1 31)) (paragraph (((f.ml (1 28) (1 31)) (word bar)))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 16-27:\
-   \n'@deprecated' is not allowed in '@deprecated'\
-   \nSuggestion: move '@deprecated' outside of any other markup")))
+   \n'@deprecated' is not allowed in '@deprecated'.\
+   \nSuggestion: move '@deprecated' outside of any other markup.")))

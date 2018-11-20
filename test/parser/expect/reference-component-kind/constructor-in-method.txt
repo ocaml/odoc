@@ -4,4 +4,4 @@
      (((f.ml (1 0) (1 29)) (code_span method-foo.constructor-Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-12:\
-   \nExpected 'type-' or an unqualified reference")))
+   \nExpected 'type-' or an unqualified reference.")))

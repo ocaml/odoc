@@ -4,4 +4,4 @@
    ((f.ml (1 4) (1 11)) (code_block bar))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-11:\
-   \n'{[...]}' (code block) should begin on its own line")))
+   \n'{[...]}' (code block) should begin on its own line.")))

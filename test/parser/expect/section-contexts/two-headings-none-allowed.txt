@@ -7,6 +7,6 @@
      (((f.ml (2 0) (2 7)) (bold (((f.ml (2 3) (2 6)) (word Bar))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-7:\
-   \nheadings not allowed in this comment"
+   \nHeadings not allowed in this comment."
     "File \"f.ml\", line 2, characters 0-7:\
-   \nheadings not allowed in this comment")))
+   \nHeadings not allowed in this comment.")))

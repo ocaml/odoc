@@ -5,4 +5,4 @@
      ((((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 8-9:\
-   \n'-' (bulleted list item) should begin on its own line")))
+   \n'-' (bulleted list item) should begin on its own line.")))

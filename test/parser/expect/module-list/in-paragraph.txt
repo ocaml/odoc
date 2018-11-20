@@ -4,4 +4,4 @@
    ((f.ml (1 4) (1 18)) (modules ((root Foo unknown))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-18:\
-   \n'{!modules ...}' should begin on its own line")))
+   \n'{!modules ...}' should begin on its own line.")))

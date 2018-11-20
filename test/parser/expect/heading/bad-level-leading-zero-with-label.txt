@@ -7,4 +7,4 @@
      (((f.ml (1 8) (1 11)) (word Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 1-7:\
-   \n'02': leading zero in heading level")))
+   \n'02': leading zero in heading level.")))

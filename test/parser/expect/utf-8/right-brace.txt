@@ -3,5 +3,5 @@
    ((f.ml (1 2) (1 3)) (paragraph (((f.ml (1 2) (1 3)) (word })))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-3:\
-   \nunpaired '}' (end of markup)\
+   \nUnpaired '}' (end of markup).\
    \nSuggestion: try '\\}'.")))

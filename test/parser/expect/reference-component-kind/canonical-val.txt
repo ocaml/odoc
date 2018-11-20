@@ -5,4 +5,4 @@
       ((f.ml (1 0) (1 18)) (code_span val-foo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 11-18:\
-   \nExpected a reference to a module")))
+   \nExpected a reference to a module.")))

@@ -5,5 +5,5 @@
      ((((f.ml (2 2) (2 5)) (paragraph (((f.ml (2 2) (2 5)) (word bar)))))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-1:\
-   \n'-' (bulleted list item) is not allowed in the tags section\
-   \nSuggestion: move '-' (bulleted list item) before any tags")))
+   \n'-' (bulleted list item) is not allowed in the tags section.\
+   \nSuggestion: move '-' (bulleted list item) before any tags.")))

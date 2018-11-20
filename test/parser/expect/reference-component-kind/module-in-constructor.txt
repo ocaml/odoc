@@ -4,4 +4,4 @@
      (((f.ml (1 0) (1 29)) (code_span constructor-Foo.module-Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-17:\
-   \nExpected 'module-', 'module-type-', or an unqualified reference")))
+   \nExpected 'module-', 'module-type-', or an unqualified reference.")))

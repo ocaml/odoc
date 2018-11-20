@@ -3,8 +3,8 @@
    ((f.ml (1 3) (1 15)) (@author Foo}))))
  (warnings
   ( "File \"f.ml\", line 1, characters 3-15:\
-   \n'@author' is not allowed in '{b ...}' (boldface text)"
+   \n'@author' is not allowed in '{b ...}' (boldface text)."
     "File \"f.ml\", line 1, characters 0-2:\
-   \n'{b ...}' (boldface text) should not be empty"
+   \n'{b ...}' (boldface text) should not be empty."
     "File \"f.ml\", line 1, characters 3-15:\
-   \n'@author' should begin on its own line")))
+   \n'@author' should begin on its own line.")))

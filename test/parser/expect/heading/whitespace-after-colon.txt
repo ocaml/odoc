@@ -8,4 +8,4 @@
       ((f.ml (1 8) (1 11)) (word Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-3:\
-   \nheading label should not be empty")))
+   \nHeading label should not be empty.")))

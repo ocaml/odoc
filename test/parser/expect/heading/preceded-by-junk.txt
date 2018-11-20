@@ -9,4 +9,4 @@
      (((f.ml (1 7) (1 10)) (word Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-6:\
-   \n'{2 ...}' (section heading) should begin on its own line")))
+   \n'{2 ...}' (section heading) should begin on its own line.")))

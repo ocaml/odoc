@@ -5,6 +5,6 @@
       ((f.ml (1 0) (1 11)) (code_span "")))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-11:\
-   \n'@canonical' should not be empty"
+   \n'@canonical' should not be empty."
     "File \"f.ml\", line 1, characters 11-11:\
-   \nExpected a valid path")))
+   \nExpected a valid path.")))

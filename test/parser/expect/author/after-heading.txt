@@ -8,4 +8,4 @@
    ((f.ml (1 8) (1 19)) (@author Bar))))
  (warnings
   ( "File \"f.ml\", line 1, characters 8-19:\
-   \n'@author' should begin on its own line")))
+   \n'@author' should begin on its own line.")))

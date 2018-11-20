@@ -3,4 +3,4 @@
     (paragraph (((f.ml (1 0) (1 10)) (word @closedfoo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-10:\
-   \nunknown tag '@closedfoo'")))
+   \nUnknown tag '@closedfoo'.")))

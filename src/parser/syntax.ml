@@ -302,7 +302,7 @@ and delimited_inline_element_list
       if at_start_of_line then begin
         let suggestion =
           Printf.sprintf
-            "move %s so it isn't the first thing on the line"
+            "move %s so it isn't the first thing on the line."
             (Token.print bullet)
         in
         Parse_error.not_allowed
@@ -617,7 +617,7 @@ let rec block_element_list
       if parsed_a_tag then
         let suggestion =
           Printf.sprintf
-            "move %s before any tags" (Token.describe token)
+            "move %s before any tags." (Token.describe token)
         in
         Parse_error.not_allowed
           ~what:(describe token)
@@ -630,7 +630,7 @@ let rec block_element_list
     let warn_because_not_at_top_level {Location.location; value = token} =
       let suggestion =
         Printf.sprintf
-          "move %s outside of any other markup" (Token.print token)
+          "move %s outside of any other markup." (Token.print token)
       in
       Parse_error.not_allowed
         ~what:(Token.describe token)
@@ -693,7 +693,7 @@ let rec block_element_list
     | {value = `Begin_list_item _ as token; location} ->
       let suggestion =
         Printf.sprintf
-          "move %s into %s, or use %s"
+          "move %s into %s, or use %s."
           (Token.print token)
           (Token.describe (`Begin_list `Unordered))
           (Token.describe (`Minus))
@@ -1226,10 +1226,10 @@ and explicit_list_items
       let suggestion =
         match token with
         | `Begin_section_heading _ | `Tag _ ->
-          Printf.sprintf "move %s outside the list" (Token.describe token)
+          Printf.sprintf "move %s outside the list." (Token.describe token)
         | _ ->
           Printf.sprintf
-            "move %s into a list item, %s or %s"
+            "move %s into a list item, %s or %s."
             (Token.describe token)
             (Token.print (`Begin_list_item `Li))
             (Token.print (`Begin_list_item `Dash))

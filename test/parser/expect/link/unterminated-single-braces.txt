@@ -2,4 +2,4 @@
   (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (link foo ())))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 5-5:\
-   \nend of text is not allowed in '{:...} (external link)'")))
+   \nEnd of text is not allowed in '{:...} (external link)'.")))

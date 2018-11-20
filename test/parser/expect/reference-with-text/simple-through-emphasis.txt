@@ -7,4 +7,4 @@
           (emphasis (((f.ml (1 11) (1 17)) (emphasis ())))))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 11-17:\
-   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)")))
+   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference).")))

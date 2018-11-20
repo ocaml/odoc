@@ -5,6 +5,6 @@
        (reference (root foo unknown) (((f.ml (1 8) (1 16)) (emphasis ()))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 8-16:\
-   \n'{{!...} ...}' (cross-reference) should not be empty"
+   \n'{{!...} ...}' (cross-reference) should not be empty."
     "File \"f.ml\", line 1, characters 8-16:\
-   \n'{{!...} ...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)")))
+   \n'{{!...} ...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference).")))

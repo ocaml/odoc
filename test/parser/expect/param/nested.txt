@@ -7,5 +7,5 @@
         ((f.ml (1 11) (1 21)) (word bar)))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 11-21:\
-   \n'@param' is not allowed in '@param'\
-   \nSuggestion: move '@param' outside of any other markup")))
+   \n'@param' is not allowed in '@param'.\
+   \nSuggestion: move '@param' outside of any other markup.")))

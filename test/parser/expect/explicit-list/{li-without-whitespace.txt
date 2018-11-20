@@ -4,4 +4,4 @@
      ((((f.ml (1 7) (1 10)) (paragraph (((f.ml (1 7) (1 10)) (word foo)))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 4-7:\
-   \n'{li ...}' should be followed by space, a tab, or a new line")))
+   \n'{li ...}' should be followed by space, a tab, or a new line.")))

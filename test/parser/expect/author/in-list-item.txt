@@ -10,9 +10,9 @@
           ((f.ml (1 12) (1 25)) (word " Bar}}")))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 12-25:\
-   \n'@author' is not allowed in '{li ...}' (list item)\
-   \nSuggestion: move '@author' outside of any other markup"
+   \n'@author' is not allowed in '{li ...}' (list item).\
+   \nSuggestion: move '@author' outside of any other markup."
     "File \"f.ml\", line 1, characters 25-25:\
-   \nend of text is not allowed in '{li ...}' (list item)"
+   \nEnd of text is not allowed in '{li ...}' (list item)."
     "File \"f.ml\", line 1, characters 25-25:\
-   \nend of text is not allowed in '{ul ...}' (bulleted list)")))
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).")))

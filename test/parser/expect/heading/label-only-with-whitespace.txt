@@ -7,4 +7,4 @@
      ()))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-6:\
-   \n'{2 ...}' (section heading) should not be empty")))
+   \n'{2 ...}' (section heading) should not be empty.")))

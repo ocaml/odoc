@@ -3,4 +3,4 @@
     (paragraph (((f.ml (1 0) (1 14)) (word @deprecatedfoo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-14:\
-   \nunknown tag '@deprecatedfoo'")))
+   \nUnknown tag '@deprecatedfoo'.")))

@@ -13,6 +13,6 @@
      (((f.ml (2 3) (2 6)) (word Bar)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-7:\
-   \ntitle-level headings {0 ...} are only allowed in pages"
+   \nTitle-level headings {0 ...} are only allowed in pages."
     "File \"f.ml\", line 2, characters 0-7:\
-   \ntitle-level headings {0 ...} are only allowed in pages")))
+   \nTitle-level headings {0 ...} are only allowed in pages.")))

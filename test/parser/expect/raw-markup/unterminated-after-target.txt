@@ -3,4 +3,4 @@
     (paragraph (((f.ml (1 0) (1 7)) (raw_markup html "")))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 7-7:\
-   \nend of text is not allowed in '{%...%}' (raw markup)")))
+   \nEnd of text is not allowed in '{%...%}' (raw markup).")))

@@ -5,7 +5,7 @@
      ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 6-7:\
-   \n'-' (bulleted list item) should begin on its own line"
+   \n'-' (bulleted list item) should begin on its own line."
     "File \"f.ml\", line 1, characters 6-7:\
-   \n'-' (bulleted list item) is not allowed in the tags section\
-   \nSuggestion: move '-' (bulleted list item) before any tags")))
+   \n'-' (bulleted list item) is not allowed in the tags section.\
+   \nSuggestion: move '-' (bulleted list item) before any tags.")))

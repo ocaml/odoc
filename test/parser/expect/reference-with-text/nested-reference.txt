@@ -5,4 +5,4 @@
        (reference (root foo unknown) (((f.ml (1 8) (1 14)) (emphasis ()))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 8-14:\
-   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)")))
+   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference).")))

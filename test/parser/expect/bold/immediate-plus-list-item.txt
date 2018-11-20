@@ -7,5 +7,5 @@
          ((f.ml (2 2) (2 5)) (word foo))))))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-1:\
-   \n'+' (numbered list item) is not allowed in '{b ...}' (boldface text)\
-   \nSuggestion: move '+' so it isn't the first thing on the line")))
+   \n'+' (numbered list item) is not allowed in '{b ...}' (boldface text).\
+   \nSuggestion: move '+' so it isn't the first thing on the line.")))

@@ -5,5 +5,5 @@
       ((f.ml (1 0) (1 23)) (code_span bar.page-foo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 15-23:\
-   \nPage label is not allowed in the last component of a reference path\
+   \nPage label is not allowed in the last component of a reference path.\
    \nSuggestion: 'page-foo' should be first.")))

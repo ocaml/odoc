@@ -3,5 +3,5 @@
    ((f.ml (2 0) (2 14)) (modules ((root Foo unknown))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-14:\
-   \n'{!modules ...}' is not allowed in the tags section\
-   \nSuggestion: move '{!modules ...}' before any tags")))
+   \n'{!modules ...}' is not allowed in the tags section.\
+   \nSuggestion: move '{!modules ...}' before any tags.")))

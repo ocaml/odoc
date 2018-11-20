@@ -2,6 +2,6 @@
   (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (link foo ())))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 6-6:\
-   \nend of text is not allowed in '{{:...} ...}' (external link)"
+   \nEnd of text is not allowed in '{{:...} ...}' (external link)."
     "File \"f.ml\", line 1, characters 6-6:\
-   \nend of text is not allowed in '{{:...} ...}' (external link)")))
+   \nEnd of text is not allowed in '{{:...} ...}' (external link).")))

@@ -3,4 +3,4 @@
     (paragraph (((f.ml (1 0) (1 8)) (code_span "val: ")))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 6-7:\
-   \nIdentifier in reference should not be empty")))
+   \nIdentifier in reference should not be empty.")))

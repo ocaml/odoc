@@ -19,6 +19,6 @@
      (((f.ml (3 3) (3 6)) (word Foo)))))))
  (warnings
   ( "File \"f.ml\", line 2, characters 0-7:\
-   \n'{0': heading level should be lower than top heading level '0'"
+   \n'{0': heading level should be lower than top heading level '0'."
     "File \"f.ml\", line 3, characters 0-7:\
-   \n'6': bad heading level (0-5 allowed)")))
+   \n'6': bad heading level (0-5 allowed).")))

@@ -2,4 +2,4 @@
   (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @openfoo)))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-8:\
-   \nunknown tag '@openfoo'")))
+   \nUnknown tag '@openfoo'.")))

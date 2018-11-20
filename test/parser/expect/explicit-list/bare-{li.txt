@@ -3,8 +3,8 @@
    ((f.ml (1 7) (1 8)) (paragraph (((f.ml (1 7) (1 8)) (word })))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 0-3:\
-   \n'{li ...}' (list item) is not allowed in top-level text\
-   \nSuggestion: move '{li ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item)"
+   \n'{li ...}' (list item) is not allowed in top-level text.\
+   \nSuggestion: move '{li ...}' into '{ul ...}' (bulleted list), or use '-' (bulleted list item)."
     "File \"f.ml\", line 1, characters 7-8:\
-   \nunpaired '}' (end of markup)\
+   \nUnpaired '}' (end of markup).\
    \nSuggestion: try '\\}'.")))

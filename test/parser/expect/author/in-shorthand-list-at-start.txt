@@ -7,5 +7,5 @@
           ((f.ml (1 2) (1 13)) (word " Foo")))))))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 2-13:\
-   \n'@author' is not allowed in '-' (bulleted list item)\
-   \nSuggestion: move '@author' outside of any other markup")))
+   \n'@author' is not allowed in '-' (bulleted list item).\
+   \nSuggestion: move '@author' outside of any other markup.")))

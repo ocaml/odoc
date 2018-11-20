@@ -4,10 +4,10 @@
    ((f.ml (1 8) (1 9)) (paragraph (((f.ml (1 8) (1 9)) (word })))))))
  (warnings
   ( "File \"f.ml\", line 1, characters 7-8:\
-   \nunpaired ']' (end of code)\
+   \nUnpaired ']' (end of code).\
    \nSuggestion: try '\\]'."
     "File \"f.ml\", line 1, characters 7-8:\
-   \nparagraph should begin on its own line"
+   \nParagraph should begin on its own line."
     "File \"f.ml\", line 1, characters 8-9:\
-   \nunpaired '}' (end of markup)\
+   \nUnpaired '}' (end of markup).\
    \nSuggestion: try '\\}'.")))
