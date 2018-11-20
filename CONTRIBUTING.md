@@ -209,41 +209,50 @@ writing new tests, and want to know what they are actually touching. To use it,
 ## Project structure
 
 odoc is divided into several sub-libraries, each of which is a directory
-under `src/`. Most of these have a *main file*, which has the same name as the
-directory. That main file is the interface for the entire sub-library directory.
-For example, [`src/parser`][parser-dir] has
-[`src/parser/parser_.mli`][parser-api], and everything in `src/parser` is
+under `src/`. Most of these have a *main file*, whose name is the directory
+name prefixed with "`odoc__`". That main file is the interface for the entire
+sub-library directory. For example, [`src/parser`][parser-dir] has
+[`src/parser/odoc__parser.mli`][parser-api], and everything in `src/parser` is
 hidden behind that interface.
 
-The `jbuild` files in each directory can be used to figure out how the
+We use an alias module, in [`src/alias/odoc__alias.ml`][alias] to shorten these
+names in odoc's own code. For example, as you can see in the alias module, we
+`Odoc__parser` is shortened to `Parser_`. The underscore is there to avoid
+needlessly shadowing OCaml's module `Parser`, which is part of `compiler-libs`.
+
+The `dune` files in each directory can be used to figure out how the
 directories depend on each other. Mostly, however, everything depends on
 `model`, and `odoc` depends on everything.
 
 The directories are:
 
+- [`src/compat`][compat-api] &mdash; backports of functions to old versions of
+OCaml.
+
 - [`src/model`][model-dir] &mdash; datatypes representing the OCaml
 language ([`src/model/lang.ml`][lang]), error-handling
 ([`src/model/error.ml`][error]), cross-references
 ([`src/model/paths-types.ml`][paths]), etc. This directory actually has no main
-file :) It is a collection of the datatypes that the rest of the odoc
+file. It is a collection of the datatypes that the rest of the odoc
 sub-libraries use to communicate with each other, so everything else depends on
 `model`.
 
 - [`src/loader`][loader-dir] &mdash; functions from `cmt`, `cmti`, `cmi` files
 to `model`. You can see the three functions' signatures in the main file,
-[`src/loader/loader.mli`][loader-api].
+[`src/loader/odoc__loader.mli`][loader-api].
 
 - [`src/parser`][parser-dir] &mdash; a single function from strings to comment
 ASTs. You can see its signature in the main file,
-[`src/parser/parser_.mli`][parser-api].
+[`src/parser/odoc__parser.mli`][parser-api].
 
 - [`src/xref`][xref-dir] &mdash; functions for resolving cross-references. These
 consume things from `model`, and return transformed instances. The signature, in
-[`src/xref/xref.mli`][xref-api] is not very pretty, but the usage of `xref` is
-pretty isolated in the rest of odoc, and can be found by grepping for `Xref`.
+[`src/xref/odoc__xref.mli`][xref-api] is not very pretty, but the usage of
+`xref` is pretty isolated in the rest of odoc, and can be found by grepping for
+`Xref`.
 
-- [`src/html`][html-dir] &mdash; the HTML generator. A neat main file for this
-is still a [work in progress][html-api].
+- [`src/html`][html-dir] &mdash; the HTML generator. The main file is
+[`src/html/odoc__html.mli`][html-api].
 
 - [`src/odoc`][odoc-dir] &mdash; the overall `odoc` command-line tool that ties
 the other parts together. This doesn't have the same kind of main file, because
@@ -254,18 +263,19 @@ point for the executable is [`src/odoc/bin/main.ml`][main].
 but aren't part of the regular build, and [`src/vendor`][vendor-dir] is for
 third-party software.
 
+[compat-api]: https://github.com/ocaml/odoc/blob/master/src/compat/odoc__compat.ml
 [model-dir]: https://github.com/ocaml/odoc/tree/master/src/model
 [lang]: https://github.com/ocaml/odoc/blob/master/src/model/lang.ml
 [error]: https://github.com/ocaml/odoc/blob/master/src/model/error.ml
 [paths]: https://github.com/ocaml/odoc/blob/master/src/model/paths_types.ml
 [parser-dir]: https://github.com/ocaml/odoc/tree/master/src/parser
-[parser-api]: https://github.com/ocaml/odoc/blob/master/src/parser/parser_.mli
+[parser-api]: https://github.com/ocaml/odoc/blob/master/src/parser/odoc__parser.mli
 [loader-dir]: https://github.com/ocaml/odoc/tree/master/src/loader
-[loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/loader.mli
+[loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/odoc__loader.mli
 [xref-dir]: https://github.com/ocaml/odoc/tree/master/src/xref
-[xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/xref.mli
+[xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/odoc__xref.mli
 [html-dir]: https://github.com/ocaml/odoc/tree/master/src/html
-[html-api]: https://github.com/ocaml/odoc/blob/master/src/html/html.ml
+[html-api]: https://github.com/ocaml/odoc/blob/master/src/html/odoc__html.ml
 [odoc-dir]: https://github.com/ocaml/odoc/tree/master/src/odoc
 [main]: https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml
 [util-dir]: https://github.com/ocaml/odoc/tree/master/src/util
