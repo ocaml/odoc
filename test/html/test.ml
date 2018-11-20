@@ -201,8 +201,10 @@ let diff =
          The paths are defined relative to the project's root. *)
       let root_actual_file   = Case.actual_html_file   ~from_root:true case in
       let root_expected_file = Case.expected_html_file ~from_root:true case in
-      Soup.write_file Env.(path `scratch // "actual") root_actual_file;
-      Soup.write_file Env.(path `scratch // "expected") root_expected_file;
+      let write_file filename data =
+        Markup.string data |> Markup.to_file filename in
+      write_file Env.(path `scratch // "actual") root_actual_file;
+      write_file Env.(path `scratch // "expected") root_expected_file;
 
       prerr_endline "\nTo promote the actual output to expected, run:";
       Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"

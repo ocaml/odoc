@@ -31,7 +31,6 @@ depends: [
   "alcotest" {>= "0.8.3"}
   "bisect_ppx"  {>= "1.3.0"}
   "markup" {>= "0.8.0"}
-  "lambdasoup"
   "ocamlfind"
   "sexplib" {>= "113.33.00"}
 ]

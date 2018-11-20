@@ -1,6 +1,6 @@
 (executable
  (name test)
- (libraries alcotest lambdasoup markup odoc__alias odoc__compat)
+ (libraries alcotest markup odoc__alias odoc__compat)
  (flags (:standard -open Odoc__alias)))
 
 (alias

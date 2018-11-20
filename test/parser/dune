@@ -1,6 +1,6 @@
 (executable
  (name test)
- (libraries alcotest lambdasoup odoc__alias odoc__model odoc__parser print)
+ (libraries alcotest markup odoc__alias odoc__model odoc__parser print)
  (flags (:standard -open Odoc__alias)))
 
 (alias

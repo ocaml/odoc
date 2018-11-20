@@ -1085,9 +1085,8 @@ let promote_script = "promote.sh"
 
 let (//) = Filename.concat
 
-(* We are temporarily using Lambda Soup, so take advantage of it. *)
-let read_file = Soup.read_file
-let write_file = Soup.write_file
+let read_file filename = Markup.file filename |> fst |> Markup.to_string
+let write_file filename data = Markup.string data |> Markup.to_file filename
 
 let mkdir directory =
   try Unix.mkdir directory 0o755
