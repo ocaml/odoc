@@ -157,15 +157,15 @@ end = struct
       ~doc:"Compile a cmti, cmt, cmi or mld file to an odoc file."
 end
 
-module Support_files = struct
+module Support_files_command = struct
   let support_files without_theme output_dir =
     Support_files.write ~without_theme output_dir
 
+  let without_theme =
+    let doc = "Don't copy the default theme to output directory." in
+    Arg.(value & flag & info ~doc ["without-theme"])
+
   let cmd =
-    let without_theme =
-      let doc = "Don't copy the default theme to output directory." in
-      Arg.(value & flag & info ~doc ["without-theme"])
-    in
     Term.(const support_files $ without_theme $ dst)
 
   let info =
@@ -177,7 +177,7 @@ module Support_files = struct
 end
 
 module Css = struct
-  let cmd = Support_files.cmd
+  let cmd = Support_files_command.cmd
 
   let info =
     let doc =
@@ -375,6 +375,19 @@ module Targets = struct
     let info =
       Term.info "html-targets" ~doc:"TODO: Fill in."
   end
+
+  module Support_files =
+  struct
+    let list_targets without_theme output_directory =
+      Support_files.print_filenames ~without_theme output_directory
+
+    let cmd =
+      Term.(const list_targets $ Support_files_command.without_theme $ dst)
+
+    let info =
+      Term.info "support-files-targets"
+        ~doc:"Lists the names of the files that 'odoc support-files' outputs."
+  end
 end
 
 let () =
@@ -384,12 +397,13 @@ let () =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
     ; Html_fragment.(cmd, info)
-    ; Support_files.(cmd, info)
+    ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Html.(cmd, info)
+    ; Targets.Support_files.(cmd, info)
     ]
   in
   let default =
