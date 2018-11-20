@@ -85,10 +85,14 @@ end = ModuleType
 
 and Signature : sig
 
+  type recursive =
+    | Ordinary
+    | And
+
   type item =
     | Module of Module.t
     | ModuleType of ModuleType.t
-    | Type of TypeDecl.t
+    | Type of recursive * TypeDecl.t
     | TypExt of Extension.t
     | Exception of Exception.t
     | Value of Value.t

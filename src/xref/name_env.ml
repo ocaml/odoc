@@ -409,7 +409,7 @@ and add_signature_item item env =
   match item with
   | Module md -> add_module md env
   | ModuleType mtyp -> add_module_type mtyp env
-  | Type decl -> add_type_decl decl env
+  | Type (_, decl) -> add_type_decl decl env
   | TypExt tyext -> add_extension tyext env
   | Exception exn -> add_exception exn env
   | Value vl -> add_value vl env
