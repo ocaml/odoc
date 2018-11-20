@@ -101,3 +101,7 @@ let unknown_reference_qualifier : string -> Location.span -> Error.t =
 
 let deprecated_reference_kind : string -> string -> Location.span -> Error.t =
   Error.make "'%s' is deprecated, use '%s' instead"
+
+let reference_kinds_do_not_match
+    : string -> string -> Location.span -> Error.t =
+  Error.make "Old-style reference kind ('%s:') does not match new ('%s-')"

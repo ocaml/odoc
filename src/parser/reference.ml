@@ -144,7 +144,7 @@ let expected allowed location =
   in
   Parse_error.expected allowed location
 
-let parse warnings location s =
+let parse warnings whole_reference_location s =
   let open Paths.Reference in
 
   let rec signature (kind, identifier, location) tokens =
@@ -258,8 +258,32 @@ let parse warnings location s =
       end
   in
 
-  let start_from_last_component (kind, identifier, location) tokens =
-    let kind = match_reference_kind warnings location kind in
+  let start_from_last_component (kind, identifier, location) old_kind tokens =
+    let new_kind = match_reference_kind warnings location kind in
+    let kind =
+      match old_kind with
+      | None -> new_kind
+      | Some (old_kind_string, old_kind_location) ->
+        let old_kind =
+          match_reference_kind
+            warnings old_kind_location (Some old_kind_string)
+        in
+        match new_kind with
+        | TUnknown -> old_kind
+        | _ ->
+          if old_kind <> new_kind then begin
+            let new_kind_string =
+              match kind with
+              | Some s -> s
+              | None -> assert false
+            in
+            Parse_error.reference_kinds_do_not_match
+              old_kind_string new_kind_string whole_reference_location
+            |> Error.warning warnings
+          end;
+          new_kind
+    in
+
     match tokens with
     | [] -> Root (identifier, kind)
     | next_token::tokens ->
@@ -290,20 +314,24 @@ let parse warnings location s =
         |> Error.raise_exception
   in
 
-  let s, location =
+  let old_kind, s, location =
     match String.rindex s ':' with
     | index ->
+      let old_kind = String.trim (String.sub s 0 index) in
+      let old_kind_location =
+        Location_.set_end_as_offset_from_start index whole_reference_location in
       let s = String.sub s (index + 1) (String.length s - (index + 1)) in
-      let location = Location_.nudge_start (index + 1) location in
-      (s, location)
+      let location =
+        Location_.nudge_start (index + 1) whole_reference_location in
+      (Some (old_kind, old_kind_location), s, location)
     | exception Not_found ->
-      (s, location)
+      (None, s, whole_reference_location)
   in
 
   Error.catch begin fun () ->
     match tokenize location s with
     | [] -> assert false
-    | last_token::tokens -> start_from_last_component last_token tokens
+    | last_token::tokens -> start_from_last_component last_token old_kind tokens
   end
 
 let read_path_longident location s =

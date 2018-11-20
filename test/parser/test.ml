@@ -190,7 +190,7 @@ let tests : test_suite list = [
     (* t "expression" *)
     t "unterminated" "{!foo";
     t "empty-kind" "{!:foo}";
-    t "whitespace-kind" "{!:foo}";
+    t "whitespace-kind" "{! :foo}";
     t "with-kind-but-empty" "{!val:}";
     t "with-kind-but-whitespace" "{!val: }";
     t "leading-whitespace-in-kind" "{! val:foo}";
@@ -985,6 +985,8 @@ let tests : test_suite list = [
     t "inner-datatype-type-in-module" "{!module-Foo.type-bar.constructor-Baz}";
     t "inner-datatype-type-in-class" "{!class-foo.type-bar.constructor-Baz}";
     t "kind-conflict" "{!val:type-foo}";
+    t "kind-agreement" "{!val:val-foo}";
+    t "kind-agreement-alt" "{!value:val-foo}";
     t "canonical-something" "@canonical Foo";
     t "canonical-module" "@canonical module-Foo";
     t "canonical-path" "@canonical Foo.Bar";
