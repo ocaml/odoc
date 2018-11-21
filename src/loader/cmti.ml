@@ -540,17 +540,16 @@ and read_module_declarations env parent mds =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc md ->
-         let open Signature in
-         let comments = read_comments container md.md_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let md = read_module_declaration env parent md in
-           (Module md) :: (List.rev_append comments acc))
-      [] mds
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left
+    (fun (acc, recursive) md ->
+      let comments = read_comments container md.md_attributes in
+      let comments = List.map (fun com -> Comment com) comments in
+      let md = read_module_declaration env parent md in
+      ((Module (recursive, md))::(List.rev_append comments acc), And))
+    ([], Rec) mds
+  |> fst
+  |> List.rev
 
 and read_module_equation env p =
   let open Module in
@@ -578,7 +577,7 @@ and read_signature_item env parent item =
     | Tsig_exception ext ->
         [Exception (read_exception env parent ext)]
     | Tsig_module md ->
-        [Module (read_module_declaration env parent md)]
+        [Module (Ordinary, read_module_declaration env parent md)]
     | Tsig_recmodule mds ->
         read_module_declarations env parent mds
     | Tsig_modtype mtd ->

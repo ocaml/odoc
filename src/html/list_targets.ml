@@ -37,7 +37,7 @@ let rec unit ~package (t : Model.Lang.Compilation_unit.t) : string list =
 and signature ~prefix (t : Model.Lang.Signature.t) =
   List.concat (
     List.map t ~f:(function
-      | Model.Lang.Signature.Module md -> module_ ~prefix md
+      | Model.Lang.Signature.Module (_, md) -> module_ ~prefix md
       | ModuleType mty -> module_type ~prefix mty
       | Type _ -> []
       | TypExt _ -> []

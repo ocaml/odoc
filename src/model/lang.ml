@@ -89,9 +89,10 @@ and Signature : sig
     | Ordinary
     | And
     | Nonrec
+    | Rec
 
   type item =
-    | Module of Module.t
+    | Module of recursive * Module.t
     | ModuleType of ModuleType.t
     | Type of recursive * TypeDecl.t
     | TypExt of Extension.t

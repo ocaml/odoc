@@ -458,7 +458,7 @@ and class_decl local =
 and signature_items local =
   let open Sig in
   let open Signature in function
-    | Module md :: rest ->
+    | Module (_, md) :: rest ->
         let open Module in
         let name = Identifier.name md.id in
         let decl = module_decl local md.type_ in

@@ -423,17 +423,16 @@ and read_module_bindings env parent mbs =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc mb ->
-         let open Signature in
-         let comments = read_comments container mb.mb_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let mb = read_module_binding env parent mb in
-           (Module mb) :: (List.rev_append comments acc))
-      [] mbs
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left
+    (fun (acc, recursive) mb ->
+      let comments = read_comments container mb.mb_attributes in
+      let comments = List.map (fun com -> Comment com) comments in
+      let mb = read_module_binding env parent mb in
+      ((Module (recursive, mb))::(List.rev_append comments acc), And))
+    ([], Rec) mbs
+  |> fst
+  |> List.rev
 
 and read_structure_item env parent item =
   let open Signature in
@@ -463,7 +462,7 @@ and read_structure_item env parent item =
         in
           [Exception ext]
     | Tstr_module mb ->
-        [Module (read_module_binding env parent mb)]
+        [Module (Ordinary, read_module_binding env parent mb)]
     | Tstr_recmodule mbs ->
         read_module_bindings env parent mbs
     | Tstr_modtype mtd ->

@@ -64,9 +64,9 @@ let map_module name ex f =
       | [] ->
         List.rev acc
         (* raise Not_found *)
-      | Module md :: rest when Identifier.name md.id = name ->
+      | Module (recursive, md)::rest when Identifier.name md.id = name ->
         let md' = f md in
-        List.rev_append acc ((Module md') :: rest)
+        List.rev_append acc ((Module (recursive, md'))::rest)
       | item :: rest -> loop name rest f (item :: acc)
   in
     match ex with
@@ -370,7 +370,7 @@ let find_module t root name ex =
     let open Module in
       match items with
       | [] -> raise Not_found
-      | Module md :: _ when Identifier.name md.id = name -> md
+      | Module (_, md) :: _ when Identifier.name md.id = name -> md
       | Include incl :: rest -> begin
           match expand_include t root incl with
           | To_functor -> inner_loop name rest
@@ -596,7 +596,7 @@ and expand_unit ({equal; hash;_} as t) root unit =
           let rec loop ids mds = function
             | [] ->
               let open Signature in
-              let sg = List.rev_map (fun md -> Module md) mds in
+              let sg = List.rev_map (fun md -> Module (Ordinary, md)) mds in
               ids, Some sg
             | item :: rest ->
                 match item.path with

@@ -918,12 +918,19 @@ and read_module_declaration env parent ident md =
   in
     {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
-and read_rec_status rec_status =
+and read_type_rec_status rec_status =
   let open Signature in
   match rec_status with
   | Trec_first -> Ordinary
   | Trec_next -> And
   | Trec_not -> Nonrec
+
+and read_module_rec_status rec_status =
+  let open Signature in
+  match rec_status with
+  | Trec_not -> Ordinary
+  | Trec_first -> Rec
+  | Trec_next -> And
 
 and read_signature env parent items =
   let env = Env.add_signature_type_items parent items env in
@@ -937,7 +944,7 @@ and read_signature env parent items =
         loop acc rest
     | Sig_type(id, decl, rec_status)::rest ->
         let decl = read_type_declaration env parent id decl in
-      loop (Type (read_rec_status rec_status, decl)::acc) rest
+      loop (Type (read_type_rec_status rec_status, decl)::acc) rest
     | Sig_typext (id, ext, Text_first) :: rest ->
         let rec inner_loop inner_acc = function
           | Sig_typext(id, ext, Text_next) :: rest ->
@@ -955,9 +962,9 @@ and read_signature env parent items =
     | Sig_typext (id, ext, Text_exception) :: rest ->
         let exn = read_exception env parent id ext in
           loop (Exception exn :: acc) rest
-    | Sig_module(id, md, _) :: rest ->
+    | Sig_module (id, md, rec_status)::rest ->
         let md = read_module_declaration env parent id md in
-          loop (Module md :: acc) rest
+      loop (Module (read_module_rec_status rec_status, md)::acc) rest
     | Sig_modtype(id, mtd) :: rest ->
         let mtd = read_module_type_declaration env parent id mtd in
           loop (ModuleType mtd :: acc) rest

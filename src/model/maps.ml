@@ -1222,9 +1222,9 @@ class virtual signature = object (self)
           let clty' = self#class_type clty in
             if clty != clty' then ClassType clty'
             else item
-      | Module md ->
+      | Module (recursive, md) ->
           let md' = self#module_ md in
-            if md != md' then Module md'
+            if md != md' then Module (recursive, md')
             else item
       | ModuleType mty ->
           let mty' = self#module_type mty in

@@ -758,7 +758,7 @@ struct
     let tdecl_def =
       let keyword =
         match recursive with
-        | Ordinary -> "type"
+        | Ordinary | Rec -> "type"
         | And -> "and"
         | Nonrec -> "type nonrec"
       in
@@ -1402,7 +1402,7 @@ struct
     | Exception {id; _} -> path_to_id id
     | Value {id; _} -> path_to_id id
     | External {id; _} -> path_to_id id
-    | Module {id; _} -> path_to_id id
+    | Module (_, {id; _}) -> path_to_id id
     | ModuleType {id; _} -> path_to_id id
     | Class {id; _} -> path_to_id id
     | ClassType {id; _} -> path_to_id id
@@ -1450,7 +1450,7 @@ struct
   and render_nested_signature_or_class
       : ?theme_uri:Html_tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
     match item with
-    | Module m -> module_ ?theme_uri m
+    | Module (recursive, m) -> module_ ?theme_uri recursive m
     | ModuleType m -> module_type ?theme_uri m
     | Class c -> class_ ?theme_uri c
     | ClassType c -> class_type ?theme_uri c
@@ -1535,9 +1535,10 @@ struct
       html, params_subpages @ subpages
 
   and module_
-      : ?theme_uri:Html_tree.uri -> Model.Lang.Module.t ->
+      : ?theme_uri:Html_tree.uri -> Model.Lang.Signature.recursive ->
+        Model.Lang.Module.t ->
           rendered_item * Comment.docs * Html_tree.t list
-      = fun ?theme_uri t ->
+      = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
       module_decl (Paths.Identifier.signature_of_module t.id)
@@ -1567,7 +1568,14 @@ struct
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
     let md_def_content =
-      Markup.keyword "module " :: modname :: md @
+      let keyword =
+        match recursive with
+        | Ordinary | Nonrec -> "module"
+        | Rec -> "module rec"
+        | And -> "and"
+      in
+
+      Markup.keyword (keyword ^ " ") :: modname :: md @
       (if Syn.Mod.close_tag_semicolon then [Markup.keyword ";"] else []) in
     let region = [Html.code md_def_content] in
     region, t.doc, subtree

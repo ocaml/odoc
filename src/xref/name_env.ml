@@ -407,7 +407,7 @@ let rec add_include incl env =
 and add_signature_item item env =
   let open Signature in
   match item with
-  | Module md -> add_module md env
+  | Module (_, md) -> add_module md env
   | ModuleType mtyp -> add_module_type mtyp env
   | Type (_, decl) -> add_type_decl decl env
   | TypExt tyext -> add_extension tyext env
