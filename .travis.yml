@@ -21,7 +21,7 @@ cache:
 
 install:
   - ./test/ci/install-deps.sh
-  - "if [[ $OCAML ]]; then eval `opam config env`; fi"
+  - "if [[ $OCAML ]]; then eval `opam env`; fi"
   - ./test/ci/print-versions.sh
 
 before_script:
