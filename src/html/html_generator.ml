@@ -760,6 +760,7 @@ struct
         match recursive with
         | Ordinary -> "type"
         | And -> "and"
+        | Nonrec -> "type nonrec"
       in
 
       Html.code (

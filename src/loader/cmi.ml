@@ -921,8 +921,9 @@ and read_module_declaration env parent ident md =
 and read_rec_status rec_status =
   let open Signature in
   match rec_status with
+  | Trec_first -> Ordinary
   | Trec_next -> And
-  | _ -> Ordinary
+  | Trec_not -> Nonrec
 
 and read_signature env parent items =
   let env = Env.add_signature_type_items parent items env in

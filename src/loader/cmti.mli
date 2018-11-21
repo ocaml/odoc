@@ -36,6 +36,7 @@ val read_value_description : Ident_env.t ->
 
 val read_type_declarations : Ident_env.t ->
   Paths.Identifier.signature ->
+  Model.Lang.Signature.recursive ->
   Typedtree.type_declaration list ->
   Model.Lang.Signature.item list
 

@@ -234,7 +234,7 @@ let read_type_declaration env parent decl =
   let representation = read_type_kind env id decl.typ_kind in
     {id; doc; equation; representation}
 
-let read_type_declarations env parent decls =
+let read_type_declarations env parent rec_flag decls =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
@@ -246,7 +246,7 @@ let read_type_declarations env parent decls =
          let comments = List.map (fun com -> Comment com) comments in
          let decl = read_type_declaration env parent decl in
          ((Type (recursive, decl)) :: (List.rev_append comments acc), And))
-      ([], Ordinary) decls
+      ([], rec_flag) decls
     |> fst
   in
     List.rev items
@@ -563,10 +563,16 @@ and read_signature_item env parent item =
         [read_value_description env parent vd]
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
     | Tsig_type decls ->
+      let rec_flag = Ordinary in
 #else
-    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+    | Tsig_type (rec_flag, decls) ->
+      let rec_flag =
+        match rec_flag with
+        | Recursive -> Ordinary
+        | Nonrecursive -> Nonrec
+      in
 #endif
-        read_type_declarations env parent decls
+      read_type_declarations env parent rec_flag decls
     | Tsig_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
     | Tsig_exception ext ->

@@ -88,6 +88,7 @@ and Signature : sig
   type recursive =
     | Ordinary
     | And
+    | Nonrec
 
   type item =
     | Module of Module.t

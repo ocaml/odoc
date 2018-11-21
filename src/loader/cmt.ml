@@ -445,10 +445,16 @@ and read_structure_item env parent item =
         [Cmti.read_value_description env parent vd]
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
     | Tstr_type (decls) ->
+      let rec_flag = Ordinary in
 #else
-    | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+    | Tstr_type (rec_flag, decls) ->
+      let rec_flag =
+        match rec_flag with
+        | Recursive -> Ordinary
+        | Nonrecursive -> Nonrec
+      in
 #endif
-        Cmti.read_type_declarations env parent decls
+      Cmti.read_type_declarations env parent rec_flag decls
     | Tstr_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
     | Tstr_exception ext ->
