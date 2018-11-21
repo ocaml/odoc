@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [[ $ESY_BUILD == YES ]]; then
   make npm-build npm-test
 else
