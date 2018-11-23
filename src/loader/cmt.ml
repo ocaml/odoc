@@ -337,17 +337,15 @@ let read_class_declarations env parent clds =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc cld ->
-         let open Signature in
-         let comments = read_comments container cld.ci_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let cld = read_class_declaration env parent cld in
-           (Class cld) :: (List.rev_append comments acc))
-      [] clds
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left begin fun (acc, recursive) cld ->
+    let comments = read_comments container cld.ci_attributes in
+    let comments = List.map (fun com -> Comment com) comments in
+    let cld = read_class_declaration env parent cld in
+    ((Class (recursive, cld))::(List.rev_append comments acc), And)
+  end ([], Ordinary) clds
+  |> fst
+  |> List.rev
 
 let rec read_module_expr env parent pos mexpr =
   let open ModuleType in

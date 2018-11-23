@@ -99,8 +99,8 @@ and Signature : sig
     | Exception of Exception.t
     | Value of Value.t
     | External of External.t
-    | Class of Class.t
-    | ClassType of ClassType.t
+    | Class of recursive * Class.t
+    | ClassType of recursive * ClassType.t
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 

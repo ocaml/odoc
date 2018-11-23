@@ -414,8 +414,8 @@ and add_signature_item item env =
   | Exception exn -> add_exception exn env
   | Value vl -> add_value vl env
   | External ext -> add_external ext env
-  | Class cl -> add_class cl env
-  | ClassType cltyp -> add_class_type cltyp env
+  | Class (_, cl) -> add_class cl env
+  | ClassType (_, cltyp) -> add_class_type cltyp env
   | Include incl -> add_include incl env
   | Comment com -> add_comment com env
 

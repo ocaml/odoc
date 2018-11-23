@@ -372,17 +372,15 @@ let read_class_type_declarations env parent cltds =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc cltd ->
-         let open Signature in
-         let comments = read_comments container cltd.ci_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let cltd = read_class_type_declaration env parent cltd in
-           (ClassType cltd) :: (List.rev_append comments acc))
-      [] cltds
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left begin fun (acc,recursive) cltd ->
+    let comments = read_comments container cltd.ci_attributes in
+    let comments = List.map (fun com -> Comment com) comments in
+    let cltd = read_class_type_declaration env parent cltd in
+    ((ClassType (recursive, cltd))::(List.rev_append comments acc), And)
+  end ([], Ordinary) cltds
+  |> fst
+  |> List.rev
 
 let rec read_class_type env parent cty =
   let open Class in
@@ -415,17 +413,15 @@ let read_class_descriptions env parent clds =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc cld ->
-         let open Signature in
-         let comments = read_comments container cld.ci_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let cld = read_class_description env parent cld in
-           (Class cld) :: (List.rev_append comments acc))
-      [] clds
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left begin fun (acc, recursive) cld ->
+    let comments = read_comments container cld.ci_attributes in
+    let comments = List.map (fun com -> Comment com) comments in
+    let cld = read_class_description env parent cld in
+    ((Class (recursive, cld))::(List.rev_append comments acc), And)
+  end ([], Ordinary) clds
+  |> fst
+  |> List.rev
 
 let rec read_with_constraint env (_, frag, constr) =
   let open ModuleType in

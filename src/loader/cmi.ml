@@ -968,14 +968,14 @@ and read_signature env parent items =
     | Sig_modtype(id, mtd) :: rest ->
         let mtd = read_module_type_declaration env parent id mtd in
           loop (ModuleType mtd :: acc) rest
-    | Sig_class(id, cl, _) :: Sig_class_type _
+    | Sig_class(id, cl, rec_status) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
         let cl = read_class_declaration env parent id cl in
-          loop (Class cl :: acc) rest
+      loop (Class (read_type_rec_status rec_status, cl)::acc) rest
     | Sig_class _ :: _ -> assert false
-    | Sig_class_type(id, cltyp, _) :: Sig_type _ :: Sig_type _ :: rest ->
+    | Sig_class_type(id, cltyp, rec_status)::Sig_type _::Sig_type _::rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
-          loop (ClassType cltyp :: acc) rest
+      loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
     | Sig_class_type _ :: _ -> assert false
     | [] -> List.rev acc
   in

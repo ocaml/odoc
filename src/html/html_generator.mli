@@ -200,11 +200,13 @@ module type Html_generator = sig
   module Class : sig
     val class_ :
          ?theme_uri:Html_tree.uri
+      -> Lang.Signature.recursive
       -> Lang.Class.t
       -> rendered_item * Comment.docs * Html_tree.t list
 
     val class_type :
          ?theme_uri:Html_tree.uri
+      -> Lang.Signature.recursive
       -> Lang.ClassType.t
       -> rendered_item * Comment.docs * Html_tree.t list
   end

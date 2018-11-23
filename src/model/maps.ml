@@ -1214,13 +1214,13 @@ class virtual signature = object (self)
           let exn' = self#exception_ exn in
             if exn != exn' then Exception exn'
             else item
-      | Class cls ->
+      | Class (recursive, cls) ->
           let cls' = self#class_ cls in
-            if cls != cls' then Class cls'
+            if cls != cls' then Class (recursive, cls')
             else item
-      | ClassType clty ->
+      | ClassType (recursive, clty) ->
           let clty' = self#class_type clty in
-            if clty != clty' then ClassType clty'
+            if clty != clty' then ClassType (recursive, clty')
             else item
       | Module (recursive, md) ->
           let md' = self#module_ md in

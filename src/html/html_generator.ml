@@ -228,11 +228,13 @@ module type Html_generator = sig
   module Class : sig
     val class_ :
          ?theme_uri:Html_tree.uri
+      -> Lang.Signature.recursive
       -> Lang.Class.t
       -> rendered_item * Comment.docs * Html_tree.t list
 
     val class_type :
          ?theme_uri:Html_tree.uri
+      -> Lang.Signature.recursive
       -> Lang.ClassType.t
       -> rendered_item * Comment.docs * Html_tree.t list
   end
@@ -1207,11 +1209,11 @@ let path_to_id path =
 module Class :
 sig
   val class_ :
-    ?theme_uri:Html_tree.uri -> Lang.Class.t ->
+    ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
       rendered_item * Comment.docs * Html_tree.t list
 
   val class_type :
-    ?theme_uri:Html_tree.uri -> Lang.ClassType.t ->
+    ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
       rendered_item * Comment.docs * Html_tree.t list
 end =
 struct
@@ -1318,7 +1320,7 @@ struct
         type_expr ~needs_parentheses:true src @
         Html.pcdata " " :: Syn.Type.arrow :: Html.pcdata " " :: class_decl dst
 
-  and class_ ?theme_uri (t : Model.Lang.Class.t) =
+  and class_ ?theme_uri recursive (t : Model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1342,7 +1344,13 @@ struct
         Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
     in
     let class_def_content =
-      Markup.keyword "class " ::
+      let open Lang.Signature in
+      let keyword =
+        match recursive with
+        | Ordinary | Nonrec | Rec -> "class"
+        | And -> "and"
+      in
+      Markup.keyword (keyword ^ " ") ::
       virtual_ ::
       params ::
       cname ::
@@ -1353,7 +1361,7 @@ struct
     region, t.doc, subtree
 
 
-  and class_type ?theme_uri (t : Model.Lang.ClassType.t) =
+  and class_type ?theme_uri recursive (t : Model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1377,7 +1385,13 @@ struct
         Html.a ~a:[ a_href ~kind:`Cty name ] [Html.pcdata name], [subtree]
     in
     let ctyp =
-      Markup.keyword "class type " ::
+      let open Lang.Signature in
+      let keyword =
+        match recursive with
+        | Ordinary | Nonrec | Rec -> "class type"
+        | And -> "and"
+      in
+      Markup.keyword (keyword ^ " ") ::
       virtual_ ::
       params ::
       cname ::
@@ -1404,8 +1418,8 @@ struct
     | External {id; _} -> path_to_id id
     | Module (_, {id; _}) -> path_to_id id
     | ModuleType {id; _} -> path_to_id id
-    | Class {id; _} -> path_to_id id
-    | ClassType {id; _} -> path_to_id id
+    | Class (_, {id; _}) -> path_to_id id
+    | ClassType (_, {id; _}) -> path_to_id id
     | TypExt _
     | Include _
     | Comment _ -> None
@@ -1452,8 +1466,8 @@ struct
     match item with
     | Module (recursive, m) -> module_ ?theme_uri recursive m
     | ModuleType m -> module_type ?theme_uri m
-    | Class c -> class_ ?theme_uri c
-    | ClassType c -> class_type ?theme_uri c
+    | Class (recursive, c) -> class_ ?theme_uri recursive c
+    | ClassType (recursive, c) -> class_type ?theme_uri recursive c
     | Include m -> include_ m
     | _ -> assert false
 

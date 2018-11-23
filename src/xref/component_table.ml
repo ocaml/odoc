@@ -516,14 +516,14 @@ and signature_items local =
         let sg = add_documentation ev.doc sg in
         let name = Identifier.name ev.id in
           add_element name Element.Value sg
-    | Class cl :: rest ->
+    | Class (_, cl)::rest ->
         let open Class in
         let sg = signature_items local rest in
         let sg = add_documentation cl.doc sg in
         let name = Identifier.name cl.id in
         let expr = class_decl local cl.type_ in
           add_class name expr sg
-    | ClassType clty :: rest ->
+    | ClassType (_, clty)::rest ->
         let open ClassType in
         let sg = signature_items local rest in
         let sg = add_documentation clty.doc sg in

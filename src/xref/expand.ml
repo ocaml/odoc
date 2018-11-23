@@ -393,7 +393,7 @@ let find_class_type t root name ex =
     let open ClassType in
       match items with
       | [] -> raise Not_found
-      | ClassType cd :: _ when Identifier.name cd.id = name -> cd
+      | ClassType (_, cd) :: _ when Identifier.name cd.id = name -> cd
       | Include incl :: rest -> begin
           match expand_include t root incl with
           | To_functor -> inner_loop name rest
