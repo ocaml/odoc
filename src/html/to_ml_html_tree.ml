@@ -2,7 +2,7 @@ module Html = Tyxml.Html
 
 open Utils
 
-module ML = Html_generator.Make (struct
+module ML = Generator.Make (struct
   module Obj =
   struct
     let close_tag_closed = ">"
