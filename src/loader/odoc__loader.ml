@@ -7,7 +7,7 @@ module Error = Model.Error
 
 let read_string parent_definition location text =
   Error.catch (fun () ->
-    Doc_attr.read_string parent_definition location text)
+    Doc_attr.page parent_definition location text)
 
 
 

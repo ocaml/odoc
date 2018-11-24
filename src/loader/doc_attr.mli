@@ -22,13 +22,13 @@ module Paths = Model.Paths
 
 val empty : Model.Comment.docs
 
-val read_attributes :
+val attached :
   Paths.Identifier.label_parent ->
   'kind Paths.Identifier.t ->
   Parsetree.attributes ->
     Model.Comment.docs
 
-val read_string :
+val page :
   Paths.Identifier.label_parent ->
   Location.t ->
   string ->
@@ -40,12 +40,12 @@ val read_string :
     This function is meant to be used to read arbitrary files containing text in
     the ocamldoc syntax. *)
 
-val read_comment :
+val standalone :
   Paths.Identifier.label_parent ->
   Parsetree.attribute ->
     Model.Comment.docs_or_stop option
 
-val read_comments :
+val standalone_multiple :
   Paths.Identifier.label_parent ->
   Parsetree.attributes ->
     Model.Comment.docs_or_stop list

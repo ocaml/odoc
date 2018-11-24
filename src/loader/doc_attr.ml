@@ -41,7 +41,7 @@ let load_payload : Parsetree.payload -> (string * Location.t) option = function
   | _ ->
     None
 
-let read_attributes parent _id attrs =
+let attached parent _id attrs =
   let ocaml_deprecated = ref None in
   let rec loop first nb_deprecated acc
       : _ -> (Model.Comment.docs, Model.Error.t) result =
@@ -87,7 +87,9 @@ let read_string parent loc str : Model.Comment.docs_or_stop =
   in
   `Docs doc
 
-let read_comment parent
+let page = read_string
+
+let standalone parent
     : Parsetree.attribute -> Model.Comment.docs_or_stop option =
 
   function
@@ -105,11 +107,11 @@ let read_comment parent
     end
   | _ -> None
 
-let read_comments parent attrs =
+let standalone_multiple parent attrs =
   let coms =
     List.fold_left
       (fun acc attr ->
-         match read_comment parent attr  with
+        match standalone parent attr  with
          | None -> acc
          | Some com -> com :: acc)
       [] attrs

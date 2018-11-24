@@ -140,7 +140,7 @@ let read_value_description env parent vd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id vd.val_attributes in
+  let doc = Doc_attr.attached container id vd.val_attributes in
   let type_ = read_core_type env vd.val_desc in
   match vd.val_prim with
   | [] -> Value {Value.id; doc; type_}
@@ -167,7 +167,7 @@ let read_label_declaration env parent ld =
   let name = parenthesise (Ident.name ld.ld_id) in
   let id = Identifier.Field(parent, name) in
   let doc =
-    Doc_attr.read_attributes
+    Doc_attr.attached
       (Identifier.label_parent_of_parent parent) id ld.ld_attributes
   in
   let mutable_ = (ld.ld_mutable = Mutable) in
@@ -192,7 +192,7 @@ let read_constructor_declaration env parent cd =
   let id = Identifier.Constructor(parent, name) in
   let container = Identifier.parent_of_datatype parent in
   let doc =
-    Doc_attr.read_attributes
+    Doc_attr.attached
       (Identifier.label_parent_of_parent container) id cd.cd_attributes
   in
   let args = read_constructor_declaration_arguments env container cd.cd_args in
@@ -232,7 +232,7 @@ let read_type_declaration env parent decl =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id decl.typ_attributes in
+  let doc = Doc_attr.attached container id decl.typ_attributes in
   let equation = read_type_equation env decl in
   let representation = read_type_kind env id decl.typ_kind in
     {id; doc; equation; representation}
@@ -245,7 +245,8 @@ let read_type_declarations env parent rec_flag decls =
     let open Signature in
     List.fold_left
       (fun (acc, recursive) decl ->
-        let comments = Doc_attr.read_comments container decl.typ_attributes in
+        let comments =
+          Doc_attr.standalone_multiple container decl.typ_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let decl = read_type_declaration env parent decl in
          ((Type (recursive, decl)) :: (List.rev_append comments acc), And))
@@ -260,7 +261,7 @@ let read_extension_constructor env parent ext =
   let id = Identifier.Extension(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc =
-    Doc_attr.read_attributes
+    Doc_attr.attached
       (Identifier.label_parent_of_parent container) id ext.ext_attributes
   in
   match ext.ext_kind with
@@ -276,7 +277,7 @@ let read_type_extension env parent tyext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container parent tyext.tyext_attributes in
+  let doc = Doc_attr.attached container parent tyext.tyext_attributes in
   let type_params = List.map read_type_parameter tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
@@ -290,7 +291,7 @@ let read_exception env parent ext =
   let id = Identifier.Exception(parent, name) in
   let container = Identifier.parent_of_signature parent in
   let doc =
-    Doc_attr.read_attributes
+    Doc_attr.attached
       (Identifier.label_parent_of_parent container) id ext.ext_attributes
   in
   match ext.ext_kind with
@@ -306,7 +307,7 @@ let rec read_class_type_field env parent ctf =
     Identifier.label_parent_of_parent
       (Identifier.parent_of_class_signature parent)
   in
-  let doc = Doc_attr.read_attributes container parent ctf.ctf_attributes in
+  let doc = Doc_attr.attached container parent ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -331,7 +332,7 @@ let rec read_class_type_field env parent ctf =
   | Tctf_inherit cltyp ->
       Some (Inherit (read_class_signature env parent cltyp))
   | Tctf_attribute attr ->
-      match Doc_attr.read_comment container attr with
+      match Doc_attr.standalone container attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -371,7 +372,7 @@ let read_class_type_declaration env parent cltd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id cltd.ci_attributes in
+  let doc = Doc_attr.attached container id cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env id cltd.ci_expr in
@@ -383,7 +384,7 @@ let read_class_type_declarations env parent cltds =
   in
   let open Signature in
   List.fold_left begin fun (acc,recursive) cltd ->
-    let comments = Doc_attr.read_comments container cltd.ci_attributes in
+    let comments = Doc_attr.standalone_multiple container cltd.ci_attributes in
     let comments = List.map (fun com -> Comment com) comments in
     let cltd = read_class_type_declaration env parent cltd in
     ((ClassType (recursive, cltd))::(List.rev_append comments acc), And)
@@ -412,7 +413,7 @@ let read_class_description env parent cld =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id cld.ci_attributes in
+  let doc = Doc_attr.attached container id cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env id cld.ci_expr in
@@ -424,7 +425,7 @@ let read_class_descriptions env parent clds =
   in
   let open Signature in
   List.fold_left begin fun (acc, recursive) cld ->
-    let comments = Doc_attr.read_comments container cld.ci_attributes in
+    let comments = Doc_attr.standalone_multiple container cld.ci_attributes in
     let comments = List.map (fun com -> Comment com) comments in
     let cld = read_class_description env parent cld in
     ((Class (recursive, cld))::(List.rev_append comments acc), And)
@@ -500,7 +501,7 @@ and read_module_type_declaration env parent mtd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id mtd.mtd_attributes in
+  let doc = Doc_attr.attached container id mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
   let expansion =
     match expr with
@@ -516,7 +517,7 @@ and read_module_declaration env parent md =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container id md.md_attributes in
+  let doc = Doc_attr.attached container id md.md_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
@@ -548,7 +549,7 @@ and read_module_declarations env parent mds =
   let open Signature in
   List.fold_left
     (fun (acc, recursive) md ->
-      let comments = Doc_attr.read_comments container md.md_attributes in
+      let comments = Doc_attr.standalone_multiple container md.md_attributes in
       let comments = List.map (fun com -> Comment com) comments in
       let md = read_module_declaration env parent md in
       ((Module (recursive, md))::(List.rev_append comments acc), And))
@@ -598,7 +599,7 @@ and read_signature_item env parent item =
       let container =
         Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
       in
-          match Doc_attr.read_comment container attr with
+          match Doc_attr.standalone container attr with
           | None -> []
           | Some doc -> [Comment doc]
 
@@ -607,7 +608,7 @@ and read_include env parent incl =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.read_attributes container parent incl.incl_attributes in
+  let doc = Doc_attr.attached container parent incl.incl_attributes in
   let expr = read_module_type env parent 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
   let content = Cmi.read_signature env parent incl.incl_type in
