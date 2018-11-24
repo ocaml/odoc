@@ -52,3 +52,5 @@ val x : int
 (** This comment has bad
     } markup on the second line. *)
 val x : int
+
+(** {x bad markup} in a standalone comment. *)
