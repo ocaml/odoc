@@ -23,7 +23,7 @@ open Utils
 
 
 
-let a_href = Html_tree.Relative_link.to_sub_element
+let a_href = Tree.Relative_link.to_sub_element
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
@@ -170,18 +170,18 @@ struct
       else
         res
     | Constr (path, args) ->
-      let link = Html_tree.Relative_link.of_path ~stop_before:false path in
+      let link = Tree.Relative_link.of_path ~stop_before:false path in
       format_type_path ~delim:(`parens) args link
     | Variant v -> te_variant v
     | Object o -> te_object o
     | Class (path, args) ->
       format_type_path ~delim:(`brackets) args
-        (Html_tree.Relative_link.of_path ~stop_before:false path)
+        (Tree.Relative_link.of_path ~stop_before:false path)
     | Poly (polyvars, t) ->
       Html.pcdata (String.concat " " polyvars ^ ". ") :: type_expr t
     | Package pkg ->
       Html.pcdata "(" :: Markup.keyword "module " ::
-      Html_tree.Relative_link.of_path ~stop_before:false pkg.path @
+      Tree.Relative_link.of_path ~stop_before:false pkg.path @
       begin match pkg.substitutions with
       | [] -> []
       | lst ->
@@ -203,11 +203,11 @@ struct
         Paths.Identifier.signature_of_module_type
           (Paths.Path.Resolved.identifier rp)
       in
-      Html_tree.Relative_link.of_fragment ~base
+      Tree.Relative_link.of_fragment ~base
         (Paths.Fragment.any_sort frag_typ)
     | _ ->
       [Html.pcdata
-        (Html_tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
+        (Tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
     Html.pcdata " " :: Markup.keyword "=" :: Html.pcdata " " ::
     type_expr te
 end
@@ -374,7 +374,7 @@ struct
     let extension =
       Html.code (
         Markup.keyword "type " ::
-        Html_tree.Relative_link.of_path ~stop_before:false t.type_path @
+        Tree.Relative_link.of_path ~stop_before:false t.type_path @
         [ Markup.keyword " += " ]
       ) ::
       list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
@@ -645,9 +645,9 @@ sig
     item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
     render_nested_article:
-      ('item -> rendered_item * Model.Comment.docs * Html_tree.t list) ->
+      ('item -> rendered_item * Model.Comment.docs * Tree.t list) ->
     ((_, 'item) tagged_item) list ->
-      rendered_item * toc * Html_tree.t list
+      rendered_item * toc * Tree.t list
 
   val render_toc :
     toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
@@ -787,13 +787,13 @@ struct
 
     acc_html : html list;
     acc_toc : toc;
-    acc_subpages : Html_tree.t list;
+    acc_subpages : Tree.t list;
 
     item_to_id : 'item -> string option;
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Model.Comment.docs;
     render_nested_article :
-      'item -> rendered_item * Model.Comment.docs * Html_tree.t list;
+      'item -> rendered_item * Model.Comment.docs * Tree.t list;
   }
 
   let finish_section state =
@@ -1003,12 +1003,12 @@ let path_to_id path =
 module Class :
 sig
   val class_ :
-    ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
-      rendered_item * Model.Comment.docs * Html_tree.t list
+    ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
+      rendered_item * Model.Comment.docs * Tree.t list
 
   val class_type :
-    ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
-      rendered_item * Model.Comment.docs * Html_tree.t list
+    ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
+      rendered_item * Model.Comment.docs * Tree.t list
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1094,7 +1094,7 @@ struct
     = fun (cte : Model.Lang.ClassType.expr) ->
       match cte with
       | Constr (path, args) ->
-        let link = Html_tree.Relative_link.of_path ~stop_before:false path in
+        let link = Tree.Relative_link.of_path ~stop_before:false path in
         format_type_path ~delim:(`brackets) args link
       | Signature _ ->
         [ Markup.keyword Syn.Class.open_tag ; Html.pcdata " ... " ; Markup.keyword Syn.Class.close_tag ]
@@ -1124,7 +1124,7 @@ struct
       match t.expansion with
       | None -> Html.pcdata name, []
       | Some csig ->
-        Html_tree.enter ~kind:(`Class) name;
+        Tree.enter ~kind:(`Class) name;
         let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
@@ -1133,8 +1133,8 @@ struct
           | [] -> expansion
           | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
         in
-        let subtree = Html_tree.make ?theme_uri expansion [] in
-        Html_tree.leave ();
+        let subtree = Tree.make ?theme_uri expansion [] in
+        Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Class name ] [Html.pcdata name], [subtree]
     in
     let class_def_content =
@@ -1165,7 +1165,7 @@ struct
       match t.expansion with
       | None -> Html.pcdata name, []
       | Some csig ->
-        Html_tree.enter ~kind:(`Cty) name;
+        Tree.enter ~kind:(`Cty) name;
         let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
@@ -1174,8 +1174,8 @@ struct
           | [] -> expansion
           | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
         in
-        let subtree = Html_tree.make ?theme_uri expansion [] in
-        Html_tree.leave ();
+        let subtree = Tree.make ?theme_uri expansion [] in
+        Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Cty name ] [Html.pcdata name], [subtree]
     in
     let ctyp =
@@ -1201,8 +1201,8 @@ open Class
 
 module Module :
 sig
-  val signature : ?theme_uri:Html_tree.uri -> Lang.Signature.t ->
-    rendered_item * toc * Html_tree.t list
+  val signature : ?theme_uri:Tree.uri -> Lang.Signature.t ->
+    rendered_item * toc * Tree.t list
 end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
@@ -1256,7 +1256,7 @@ struct
     | _ -> assert false
 
   and render_nested_signature_or_class
-      : ?theme_uri:Html_tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
+      : ?theme_uri:Tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
     match item with
     | Module (recursive, m) -> module_ ?theme_uri recursive m
     | ModuleType m -> module_type ?theme_uri m
@@ -1275,8 +1275,8 @@ struct
       tagged_items
 
   and functor_argument
-    : 'row. ?theme_uri:Html_tree.uri -> Model.Lang.FunctorArgument.t
-    -> Html_types.div_content Html.elt list * Html_tree.t list
+    : 'row. ?theme_uri:Tree.uri -> Model.Lang.FunctorArgument.t
+    -> Html_types.div_content Html.elt list * Tree.t list
   = fun ?theme_uri arg ->
     let open Model.Lang.FunctorArgument in
     let name = Paths.Identifier.name arg.id in
@@ -1300,10 +1300,10 @@ struct
             end
           | e -> e
         in
-        Html_tree.enter ~kind:(`Arg) link_name;
+        Tree.enter ~kind:(`Arg) link_name;
         let (docs, subpages) = module_expansion expansion in
-        let subtree = Html_tree.make ?theme_uri docs subpages in
-        Html_tree.leave ();
+        let subtree = Tree.make ?theme_uri docs subpages in
+        Tree.leave ();
         (
           Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.pcdata name] ::
           Html.pcdata Syn.Type.annotation_separator ::
@@ -1314,8 +1314,8 @@ struct
     region, subtree
 
   and module_expansion
-    : ?theme_uri:Html_tree.uri -> Model.Lang.Module.expansion
-    -> Html_types.div_content_fun Html.elt list * Html_tree.t list
+    : ?theme_uri:Tree.uri -> Model.Lang.Module.expansion
+    -> Html_types.div_content_fun Html.elt list * Tree.t list
   = fun ?theme_uri t ->
     match t with
     | AlreadyASig -> assert false
@@ -1343,9 +1343,9 @@ struct
       html, params_subpages @ subpages
 
   and module_
-      : ?theme_uri:Html_tree.uri -> Model.Lang.Signature.recursive ->
+      : ?theme_uri:Tree.uri -> Model.Lang.Signature.recursive ->
         Model.Lang.Module.t ->
-          rendered_item * Model.Comment.docs * Html_tree.t list
+          rendered_item * Model.Comment.docs * Tree.t list
       = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1368,11 +1368,11 @@ struct
             end
           | e -> e
         in
-        Html_tree.enter ~kind:(`Mod) modname;
+        Tree.enter ~kind:(`Mod) modname;
         let doc = Comment.to_html t.doc in
         let expansion, subpages = module_expansion ?theme_uri expansion in
-        let subtree = Html_tree.make ~header_docs:doc ?theme_uri expansion subpages in
-        Html_tree.leave ();
+        let subtree = Tree.make ~header_docs:doc ?theme_uri expansion subpages in
+        Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.pcdata modname], [subtree]
     in
     let md_def_content =
@@ -1414,7 +1414,7 @@ struct
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | Alias mod_path ->
-      Html_tree.Relative_link.of_path ~stop_before:true mod_path
+      Tree.Relative_link.of_path ~stop_before:true mod_path
     | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
   and module_type ?theme_uri (t : Model.Lang.ModuleType.t) =
@@ -1443,7 +1443,7 @@ struct
             end
           | e -> e
         in
-        Html_tree.enter ~kind:(`Mty) modname;
+        Tree.enter ~kind:(`Mty) modname;
         let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
@@ -1452,8 +1452,8 @@ struct
           | [] -> expansion
           | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
         in
-        let subtree = Html_tree.make ?theme_uri expansion subpages in
-        Html_tree.leave ();
+        let subtree = Tree.make ?theme_uri expansion subpages in
+        Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mty modname ] [Html.pcdata modname], [subtree]
     in
     let mty_def =
@@ -1473,7 +1473,7 @@ struct
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun (base : Paths.Identifier.signature) -> function
     | Path mty_path ->
-      Html_tree.Relative_link.of_path ~stop_before:true mty_path
+      Tree.Relative_link.of_path ~stop_before:true mty_path
     | Signature _ ->
       [ Markup.keyword Syn.Mod.open_tag ; Html.pcdata " ... " ; Markup.keyword Syn.Mod.close_tag ]
     | Functor (None, expr) ->
@@ -1484,7 +1484,7 @@ struct
         let open Model.Lang.FunctorArgument in
         let to_print = Html.pcdata @@ Paths.Identifier.name arg.id in
         match
-          Html_tree.Relative_link.Id.href
+          Tree.Relative_link.Id.href
             ~stop_before:(arg.expansion = None) arg.id
         with
         | exception _ -> to_print
@@ -1510,14 +1510,14 @@ struct
   = fun base -> function
     | ModuleEq (frag_mod, md) ->
       Markup.keyword "module " ::
-      Html_tree.Relative_link.of_fragment ~base
+      Tree.Relative_link.of_fragment ~base
         (Paths.Fragment.signature_of_module frag_mod)
       @ Html.pcdata " = " ::
       module_decl' base md
     | TypeEq (frag_typ, td) ->
       Markup.keyword "type " ::
       (Syn.Type.handle_substitution_params
-        (Html_tree.Relative_link.of_fragment
+        (Tree.Relative_link.of_fragment
           ~base (Paths.Fragment.any_sort frag_typ))
         [format_params td.Lang.TypeDecl.Equation.params]
       ) @
@@ -1525,14 +1525,14 @@ struct
       format_constraints td.Model.Lang.TypeDecl.Equation.constraints
     | ModuleSubst (frag_mod, mod_path) ->
       Markup.keyword "module " ::
-      Html_tree.Relative_link.of_fragment
+      Tree.Relative_link.of_fragment
         ~base (Paths.Fragment.signature_of_module frag_mod) @
       Html.pcdata " := " ::
-      Html_tree.Relative_link.of_path ~stop_before:true mod_path
+      Tree.Relative_link.of_path ~stop_before:true mod_path
     | TypeSubst (frag_typ, td) ->
       Markup.keyword "type " ::
       (Syn.Type.handle_substitution_params
-        (Html_tree.Relative_link.of_fragment
+        (Tree.Relative_link.of_fragment
           ~base (Paths.Fragment.any_sort frag_typ))
         [format_params td.Lang.TypeDecl.Equation.params]
       ) @
@@ -1558,7 +1558,7 @@ struct
       if List.exists is_open_tag t.doc then
         true
       else
-        !Html_tree.open_details && not (List.exists is_closed_tag t.doc)
+        !Tree.open_details && not (List.exists is_closed_tag t.doc)
     in
     let incl =
       if should_be_inlined then
@@ -1596,8 +1596,8 @@ open Module
 
 module Page :
 sig
-  val compilation_unit : ?theme_uri:Html_tree.uri -> Lang.Compilation_unit.t -> Html_tree.t
-  val page : ?theme_uri:Html_tree.uri -> Lang.Page.t -> Html_tree.t
+  val compilation_unit : ?theme_uri:Tree.uri -> Lang.Compilation_unit.t -> Tree.t
+  val page : ?theme_uri:Tree.uri -> Lang.Page.t -> Tree.t
 end =
 struct
   let pack
@@ -1612,7 +1612,7 @@ struct
         Markup.keyword "module " ::
         Html.pcdata modname ::
         Html.pcdata " = " ::
-        Html_tree.Relative_link.of_path ~stop_before:false x.path
+        Tree.Relative_link.of_path ~stop_before:false x.path
       in
       [Html.code md_def]
     end
@@ -1622,14 +1622,14 @@ struct
 
 
 
-  let compilation_unit ?theme_uri (t : Model.Lang.Compilation_unit.t) : Html_tree.t =
+  let compilation_unit ?theme_uri (t : Model.Lang.Compilation_unit.t) : Tree.t =
     let package =
       match t.id with
       | Model.Paths.Identifier.Root (a, _) -> a.package
       | _ -> assert false
     in
-    Html_tree.enter package;
-    Html_tree.enter (Paths.Identifier.name t.id);
+    Tree.enter package;
+    Tree.enter (Paths.Identifier.name t.id);
     let header_docs = Comment.to_html t.doc in
     let header_docs, html, subtree =
       match t.content with
@@ -1644,20 +1644,20 @@ struct
       | Pack packed ->
         header_docs, pack packed, []
     in
-    Html_tree.make ~header_docs ?theme_uri html subtree
+    Tree.make ~header_docs ?theme_uri html subtree
 
 
 
-  let page ?theme_uri (t : Model.Lang.Page.t) : Html_tree.t =
+  let page ?theme_uri (t : Model.Lang.Page.t) : Tree.t =
     let package, name =
       match t.name with
       | Model.Paths.Identifier.Page (a, name) -> a.package, name
     in
-    Html_tree.enter package;
-    Html_tree.enter ~kind:`Page name;
+    Tree.enter package;
+    Tree.enter ~kind:`Page name;
     let html = Comment.to_html t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
-    Html_tree.make ?theme_uri html []
+    Tree.make ?theme_uri html []
 end
 include Page
 end

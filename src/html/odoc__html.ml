@@ -1,4 +1,4 @@
-module Html_tree = Html_tree
+module Tree = Tree
 module Comment = Comment
 module To_html_tree = struct
   module ML = To_ml_html_tree

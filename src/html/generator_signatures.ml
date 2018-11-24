@@ -132,17 +132,18 @@ sig
       item_to_spec:('item -> string option) ->
       render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
       render_nested_article:
-        ('item -> rendered_item * Model.Comment.docs * (Html_tree.t list)) ->
+        ('item -> rendered_item * Model.Comment.docs * (Tree.t list)) ->
       (_, 'item) tagged_item list ->
-        rendered_item * toc * (Html_tree.t list)
+        rendered_item * toc * (Tree.t list)
 
     val render_toc :
       toc -> [> Html_types.flow5_without_header_footer] Html.elt list
   end
 
-  module Page : sig
+  module Page :
+  sig
     val compilation_unit :
-      ?theme_uri:Html_tree.uri -> Lang.Compilation_unit.t -> Html_tree.t
-    val page : ?theme_uri:Html_tree.uri -> Lang.Page.t -> Html_tree.t
+      ?theme_uri:Tree.uri -> Lang.Compilation_unit.t -> Tree.t
+    val page : ?theme_uri:Tree.uri -> Lang.Page.t -> Tree.t
   end
 end

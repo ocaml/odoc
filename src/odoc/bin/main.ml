@@ -6,15 +6,15 @@
 open Odoc
 open Cmdliner
 
-let convert_syntax : Html.Html_tree.syntax Arg.converter =
+let convert_syntax : Html.Tree.syntax Arg.converter =
   let syntax_parser str =
     match str with
-  | "ml" | "ocaml" -> `Ok Html.Html_tree.OCaml
-  | "re" | "reason" -> `Ok Html.Html_tree.Reason
+  | "ml" | "ocaml" -> `Ok Html.Tree.OCaml
+  | "re" | "reason" -> `Ok Html.Tree.Reason
   | s -> `Error (Printf.sprintf "Unknown syntax '%s'" s)
   in
   let syntax_printer fmt syntax =
-    Format.pp_print_string fmt (Html.Html_tree.string_of_syntax syntax)
+    Format.pp_print_string fmt (Html.Tree.string_of_syntax syntax)
   in
   (syntax_parser, syntax_printer)
 
@@ -29,7 +29,7 @@ let convert_directory : Fs.Directory.t Arg.converter =
   (odoc_dir_parser, odoc_dir_printer)
 
 (* Very basic validation and normalization for URI paths. *)
-let convert_uri : Html.Html_tree.uri Arg.converter =
+let convert_uri : Html.Tree.uri Arg.converter =
   let parser str =
     if String.length str = 0 then
       `Error "invalid URI"
@@ -42,11 +42,11 @@ let convert_uri : Html.Html_tree.uri Arg.converter =
       in
       let last_char = String.get str (String.length str - 1) in
       let str = if last_char <> '/' then str ^ "/" else str in
-      `Ok Html.Html_tree.(if is_absolute then Absolute str else Relative str)
+      `Ok Html.Tree.(if is_absolute then Absolute str else Relative str)
   in
   let printer ppf = function
-    | Html.Html_tree.Absolute uri
-    | Html.Html_tree.Relative uri -> Format.pp_print_string ppf uri
+    | Html.Tree.Absolute uri
+    | Html.Tree.Relative uri -> Format.pp_print_string ppf uri
   in
   (parser, printer)
 
@@ -193,8 +193,8 @@ end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
         syntax theme_uri input_file =
-    Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
-    Html.Html_tree.open_details := not closed_details;
+    Html.Tree.Relative_link.semantic_uris := semantic_uris;
+    Html.Tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
@@ -230,13 +230,13 @@ end = struct
     let theme_uri =
       let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
-      let default = Html.Html_tree.Relative "./" in
+      let default = Html.Tree.Relative "./" in
       Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
     in
     let syntax =
       let doc = "Available options: ml | re"
       in
-      Arg.(value & opt (pconv convert_syntax) (Html.Html_tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
+      Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)

@@ -26,7 +26,7 @@ type non_link_phrasing = Html_types.phrasing_without_interactive
 
 
 module Reference = struct
-  module Id = Html_tree.Relative_link.Id
+  module Id = Tree.Relative_link.Id
 
   open Model.Paths
 
@@ -167,9 +167,9 @@ end
 
 let location_to_syntax (loc:Model.Location_.span) =
   if Filename.check_suffix loc.file ".rei" then
-    Html_tree.Reason
+    Tree.Reason
   else
-    Html_tree.OCaml
+    Tree.OCaml
 
 let style_to_combinator = function
   | `Bold -> Html.b
@@ -246,13 +246,13 @@ and inline_element_list ?xref_base_uri elements =
 
 let rec nestable_block_element
     : 'a. ?xref_base_uri:string ->
-    to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+    to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
     Comment.nestable_block_element -> ([> flow ] as 'a) Html.elt =
   fun ?xref_base_uri ~to_syntax ~from_syntax -> function
   | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> Html.Unsafe.data s
   | `Paragraph content -> Html.p (inline_element_list ?xref_base_uri content)
   | `Code_block s ->
-    let open Html_tree in
+    let open Tree in
     (*
     TODO: This will probably be replaced by a proper plugin / PPX system.
           See: https://discuss.ocaml.org/t/combining-ocamlformat-refmt/2316/10
@@ -308,7 +308,7 @@ and nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax elements =
 
 
 let tag : ?xref_base_uri:string ->
-  to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+  to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
   Comment.tag -> ([> flow ] Html.elt) option =
   fun ?xref_base_uri ~to_syntax ~from_syntax t ->
     match t with
@@ -360,7 +360,7 @@ let tag : ?xref_base_uri:string ->
 
 
 let block_element
-  : 'a. ?xref_base_uri:string -> to_syntax:Html_tree.syntax -> from_syntax:Html_tree.syntax ->
+  : 'a. ?xref_base_uri:string -> to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
   Comment.block_element -> (([> flow ] as 'a) Html.elt) option =
   fun ?xref_base_uri ~to_syntax ~from_syntax -> function
   | #Comment.nestable_block_element as e ->
@@ -407,7 +407,7 @@ let block_element_list ?xref_base_uri ~to_syntax elements =
 
 
 
-let first_to_html ?xref_base_uri ?syntax:(to_syntax=Html_tree.OCaml) = function
+let first_to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) = function
   | {Model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->
     begin match block_element ?xref_base_uri ~to_syntax ~from_syntax:(location_to_syntax location) first_paragraph with
     | Some element -> [element]
@@ -415,7 +415,7 @@ let first_to_html ?xref_base_uri ?syntax:(to_syntax=Html_tree.OCaml) = function
     end
   | _ -> []
 
-let to_html ?xref_base_uri ?syntax:(to_syntax=Html_tree.OCaml) docs =
+let to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) docs =
   block_element_list ?xref_base_uri ~to_syntax
     (List.map (fun el -> Model.Location_.((location el |> location_to_syntax, value el))) docs)
 
