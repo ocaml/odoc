@@ -142,70 +142,9 @@ sig
       toc -> [> Html_types.flow5_without_header_footer] Html.elt list
   end
 
-  module Type_declaration :
-  sig
-    val type_decl :
-      Lang.Signature.recursive * Lang.TypeDecl.t -> rendered_item * Comment.docs
-    val extension : Lang.Extension.t -> rendered_item * Comment.docs
-    val exn : Lang.Exception.t -> rendered_item * Comment.docs
-
-    val format_params :
-      ?delim:[`parens | `brackets] ->
-      Lang.TypeDecl.param list ->
-        [> `PCDATA] Html.elt
-
-    val format_manifest :
-      ?compact_variants:bool ->
-      Lang.TypeDecl.Equation.t ->
-        ('inner, 'outer) text Html.elt list * bool
-
-    val format_constraints :
-      (Lang.TypeExpr.t * Lang.TypeExpr.t) list ->
-        ('inner, 'outer) text Html.elt list
-  end
-
-  module Type_expression : sig
-    val type_expr :
-      ?needs_parentheses:bool ->
-      Lang.TypeExpr.t ->
-        ('inner, 'outer) text Html.elt list
-
-    val format_type_path :
-      delim:[`parens | `brackets] ->
-      Lang.TypeExpr.t list ->
-      ('inner, 'outer) text Html.elt list ->
-        ('inner, 'outer) text Html.elt list
-  end
-
-  module Value : sig
-    val value : Lang.Value.t -> rendered_item * Comment.docs
-    val external_ : Lang.External.t -> rendered_item * Comment.docs
-  end
-
   module Page : sig
     val compilation_unit :
       ?theme_uri:Html_tree.uri -> Lang.Compilation_unit.t -> Html_tree.t
     val page : ?theme_uri:Html_tree.uri -> Lang.Page.t -> Html_tree.t
-  end
-
-  module Class : sig
-    val class_ :
-      ?theme_uri:Html_tree.uri ->
-      Lang.Signature.recursive ->
-      Lang.Class.t ->
-        rendered_item * Comment.docs * Html_tree.t list
-
-    val class_type :
-      ?theme_uri:Html_tree.uri ->
-      Lang.Signature.recursive ->
-      Lang.ClassType.t ->
-        rendered_item * Comment.docs * Html_tree.t list
-  end
-
-  module Module : sig
-    val signature :
-      ?theme_uri:Html_tree.uri ->
-      Lang.Signature.t ->
-        Html_types.div_content Html.elt list * toc * Html_tree.t list
   end
 end
