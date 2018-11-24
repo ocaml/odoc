@@ -221,9 +221,10 @@ open Type_expression
 module Type_declaration :
 sig
   val type_decl :
-    Lang.Signature.recursive * Lang.TypeDecl.t -> rendered_item * Comment.docs
-  val extension : Lang.Extension.t -> rendered_item * Comment.docs
-  val exn : Lang.Exception.t -> rendered_item * Comment.docs
+    Lang.Signature.recursive * Lang.TypeDecl.t ->
+      rendered_item * Model.Comment.docs
+  val extension : Lang.Extension.t -> rendered_item * Model.Comment.docs
+  val exn : Lang.Exception.t -> rendered_item * Model.Comment.docs
 
   val format_params :
     ?delim:[ `parens | `brackets ] ->
@@ -264,11 +265,11 @@ struct
       fields |> List.map (fun fld ->
         let open Model.Lang.TypeDecl.Field in
         let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
-        let rhs = Documentation.to_html fld.doc in
+        let rhs = Comment.to_html fld.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
-          if not (Documentation.has_doc fld.doc) then [] else [
+          if not (Comment.has_doc fld.doc) then [] else [
             Html.td ~a:[ Html.a_class ["doc"] ] rhs
           ]
         )
@@ -351,11 +352,11 @@ struct
       cstrs |> List.map (fun cstr ->
         let open Model.Lang.TypeDecl.Constructor in
         let anchor, lhs = constructor cstr.id cstr.args cstr.res in
-        let rhs = Documentation.to_html cstr.doc in
+        let rhs = Comment.to_html cstr.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
           lhs ::
-          if not (Documentation.has_doc cstr.doc) then [] else [
+          if not (Comment.has_doc cstr.doc) then [] else [
             Html.td ~a:[ Html.a_class ["doc"] ] rhs
           ]
         )
@@ -572,8 +573,8 @@ open Type_declaration
 
 module Value :
 sig
-  val value : Lang.Value.t -> rendered_item * Comment.docs
-  val external_ : Lang.External.t -> rendered_item * Comment.docs
+  val value : Lang.Value.t -> rendered_item * Model.Comment.docs
+  val external_ : Lang.External.t -> rendered_item * Model.Comment.docs
 end =
 struct
   let value (t : Model.Lang.Value.t) =
@@ -642,8 +643,9 @@ sig
   val lay_out :
     item_to_id:('item -> string option) ->
     item_to_spec:('item -> string option) ->
-    render_leaf_item:('item -> rendered_item * Comment.docs) ->
-    render_nested_article:('item -> rendered_item * Comment.docs * Html_tree.t list) ->
+    render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
+    render_nested_article:
+      ('item -> rendered_item * Model.Comment.docs * Html_tree.t list) ->
     ((_, 'item) tagged_item) list ->
       rendered_item * toc * Html_tree.t list
 
@@ -707,7 +709,7 @@ struct
         | [] ->
           consume_leaf_items_until_one_is_documented items acc
         | docs ->
-          let docs = Documentation.to_html docs in
+          let docs = Comment.to_html docs in
           let docs = (docs :> (Html_types.dd_content Html.elt) list) in
           let docs = Html.dd docs in
           List.rev (docs::acc), items
@@ -743,7 +745,8 @@ struct
      comment, which will either start with the next section heading in the
      comment, or be empty if there are no section headings. *)
   let render_comment_until_heading_or_end
-      : Comment.docs -> comment_html list * Comment.docs = fun docs ->
+      : Model.Comment.docs -> comment_html list * Model.Comment.docs =
+      fun docs ->
 
     let rec scan_comment acc docs =
       match docs with
@@ -754,7 +757,7 @@ struct
         | _ -> scan_comment (block::acc) rest
     in
     let included, remaining = scan_comment [] docs in
-    let docs = Documentation.to_html included in
+    let docs = Comment.to_html included in
     docs, remaining
 
 
@@ -780,7 +783,7 @@ struct
      functions. *)
   type ('kind, 'item) sectioning_state = {
     input_items : (('kind, 'item) tagged_item) list;
-    input_comment : Comment.docs;
+    input_comment : Model.Comment.docs;
 
     acc_html : html list;
     acc_toc : toc;
@@ -788,8 +791,9 @@ struct
 
     item_to_id : 'item -> string option;
     item_to_spec : 'item -> string option;
-    render_leaf_item : 'item -> rendered_item * Comment.docs;
-    render_nested_article : 'item -> rendered_item * Comment.docs * Html_tree.t list;
+    render_leaf_item : 'item -> rendered_item * Model.Comment.docs;
+    render_nested_article :
+      'item -> rendered_item * Model.Comment.docs * Html_tree.t list;
   }
 
   let finish_section state =
@@ -842,7 +846,7 @@ struct
           match maybe_docs with
           | [] -> Html.div ~a html
           | docs ->
-            let docs = Documentation.first_to_html docs in
+            let docs = Comment.first_to_html docs in
             let docs = (docs :> (Html_types.dd_content Html.elt) list) in
             (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
                is released in TyXML; see also type [rendered_item]. *)
@@ -889,7 +893,7 @@ struct
              comment matter goes into a <header> element. The nested HTML will
              then be extended recursively by parsing more structure items,
              including, perhaps, additional comments in <aside> elements. *)
-          let heading_html = Documentation.to_html [element] in
+          let heading_html = Comment.to_html [element] in
           let more_comment_html, input_comment =
             render_comment_until_heading_or_end input_comment in
           let html = Html.header (heading_html @ more_comment_html) in
@@ -959,7 +963,7 @@ struct
 
   let render_toc toc =
     let rec section the_section : Html_types.li_content Html.elt list =
-      let text = Documentation.link_content_to_html the_section.text in
+      let text = Comment.link_content_to_html the_section.text in
       let text =
         (text
           : Html_types.phrasing_without_interactive Html.elt list
@@ -1000,11 +1004,11 @@ module Class :
 sig
   val class_ :
     ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
-      rendered_item * Comment.docs * Html_tree.t list
+      rendered_item * Model.Comment.docs * Html_tree.t list
 
   val class_type :
     ?theme_uri:Html_tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
-      rendered_item * Comment.docs * Html_tree.t list
+      rendered_item * Model.Comment.docs * Html_tree.t list
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1121,7 +1125,7 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Class) name;
-        let doc = Documentation.to_html t.doc in
+        let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
@@ -1162,7 +1166,7 @@ struct
       | None -> Html.pcdata name, []
       | Some csig ->
         Html_tree.enter ~kind:(`Cty) name;
-        let doc = Documentation.to_html t.doc in
+        let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
         let expansion =
@@ -1341,7 +1345,7 @@ struct
   and module_
       : ?theme_uri:Html_tree.uri -> Model.Lang.Signature.recursive ->
         Model.Lang.Module.t ->
-          rendered_item * Comment.docs * Html_tree.t list
+          rendered_item * Model.Comment.docs * Html_tree.t list
       = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1365,7 +1369,7 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mod) modname;
-        let doc = Documentation.to_html t.doc in
+        let doc = Comment.to_html t.doc in
         let expansion, subpages = module_expansion ?theme_uri expansion in
         let subtree = Html_tree.make ~header_docs:doc ?theme_uri expansion subpages in
         Html_tree.leave ();
@@ -1440,7 +1444,7 @@ struct
           | e -> e
         in
         Html_tree.enter ~kind:(`Mty) modname;
-        let doc = Documentation.to_html t.doc in
+        let doc = Comment.to_html t.doc in
         let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, subpages = module_expansion expansion in
         let expansion =
@@ -1539,7 +1543,7 @@ struct
         type_expr te
 
   and include_ (t : Model.Lang.Include.t) =
-    let docs = Documentation.to_html t.doc in
+    let docs = Comment.to_html t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
     let included_html, _, tree = signature t.expansion.content in
     let should_be_inlined =
@@ -1626,7 +1630,7 @@ struct
     in
     Html_tree.enter package;
     Html_tree.enter (Paths.Identifier.name t.id);
-    let header_docs = Documentation.to_html t.doc in
+    let header_docs = Comment.to_html t.doc in
     let header_docs, html, subtree =
       match t.content with
       | Module sign ->
@@ -1651,7 +1655,7 @@ struct
     in
     Html_tree.enter package;
     Html_tree.enter ~kind:`Page name;
-    let html = Documentation.to_html t.content in
+    let html = Comment.to_html t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
     Html_tree.make ?theme_uri html []
 end

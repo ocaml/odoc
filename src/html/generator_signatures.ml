@@ -1,6 +1,4 @@
 module Html = Tyxml.Html
-
-module Comment = Model.Comment
 module Lang = Model.Lang
 
 
@@ -15,12 +13,12 @@ type ('inner, 'outer) text =
 type ('item_kind, 'item) tagged_item = [
   | `Leaf_item of 'item_kind * 'item
   | `Nested_article of 'item
-  | `Comment of Comment.docs_or_stop
+  | `Comment of Model.Comment.docs_or_stop
 ]
 
 type section = {
   anchor : string;
-  text : Comment.link_content;
+  text : Model.Comment.link_content;
   children : section list
 }
 
@@ -132,9 +130,9 @@ sig
     val lay_out :
       item_to_id:('item -> string option) ->
       item_to_spec:('item -> string option) ->
-      render_leaf_item:('item -> rendered_item * Comment.docs) ->
+      render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
       render_nested_article:
-        ('item -> rendered_item * Comment.docs * (Html_tree.t list)) ->
+        ('item -> rendered_item * Model.Comment.docs * (Html_tree.t list)) ->
       (_, 'item) tagged_item list ->
         rendered_item * toc * (Html_tree.t list)
 
