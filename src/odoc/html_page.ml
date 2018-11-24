@@ -18,13 +18,13 @@ open StdLabels
 
 let to_html_tree_page ?theme_uri ~syntax v =
   match syntax with
-  | Html.Tree.Reason -> Html.To_html_tree.RE.page ?theme_uri v
-  | Html.Tree.OCaml -> Html.To_html_tree.ML.page ?theme_uri v
+  | Html.Tree.Reason -> Html.Generator.Reason.page ?theme_uri v
+  | Html.Tree.OCaml -> Html.Generator.ML.page ?theme_uri v
 
 let to_html_tree_compilation_unit ?theme_uri ~syntax v =
   match syntax with
-  | Html.Tree.Reason -> Html.To_html_tree.RE.compilation_unit ?theme_uri v
-  | Html.Tree.OCaml -> Html.To_html_tree.ML.compilation_unit ?theme_uri v
+  | Html.Tree.Reason -> Html.Generator.Reason.compilation_unit ?theme_uri v
+  | Html.Tree.OCaml -> Html.Generator.ML.compilation_unit ?theme_uri v
 
 let from_odoc ~env ?(syntax=Html.Tree.OCaml) ?theme_uri ~output:root_dir input =
   let root = Root.read input in

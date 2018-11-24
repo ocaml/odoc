@@ -1,8 +1,9 @@
 module Tree = Tree
 module Comment = Comment
-module To_html_tree = struct
-  module ML = To_ml_html_tree
-  module RE = To_re_html_tree
+module Generator =
+struct
+  module ML = ML
+  module Reason = Reason
 end
 module List_targets = List_targets
 
