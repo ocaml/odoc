@@ -7,7 +7,7 @@ module Error = Model.Error
 
 let read_string parent_definition location text =
   Error.catch (fun () ->
-    Attrs.read_string parent_definition location text)
+    Doc_attr.read_string parent_definition location text)
 
 
 
@@ -114,7 +114,7 @@ let read_cmt ~make_root ~filename =
         List.map (fun (s, d) ->
           Model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
-      let doc = Attrs.empty in
+      let doc = Doc_attr.empty in
       let source = None in
       let content = Model.Lang.Compilation_unit.Pack items in
       Ok {Model.Lang.Compilation_unit.id; doc; digest; imports;
