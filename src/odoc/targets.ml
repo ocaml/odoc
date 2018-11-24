@@ -32,7 +32,7 @@ let unit ~env ~output:_root_dir input =
   let odoctree = Xref.expand (Env.expander env) odoctree in
   let root = Compilation_unit.root odoctree in
   let package = root.package in
-  let targets = Html.List_targets.unit ~package odoctree in
+  let targets = Html.Targets.unit ~package odoctree in
   (* CR-someday trefis: have [List_targets] return a tree instead of
      postprocessing. *)
   List.map targets ~f:(fun path ->
