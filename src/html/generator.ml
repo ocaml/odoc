@@ -56,12 +56,12 @@ sig
 end =
 struct
   let rec te_variant
-    : 'inner 'outer. Model.Lang.TypeExpr.Variant.t ->
+    : 'inner 'outer. Model.Lang.TypeExpr.Polymorphic_variant.t ->
         ('inner, 'outer) text Html.elt list
-  = fun (t : Model.Lang.TypeExpr.Variant.t) ->
+  = fun (t : Model.Lang.TypeExpr.Polymorphic_variant.t) ->
     let elements =
       list_concat_map t.elements ~sep:(Markup.keyword " | ") ~f:(function
-        | Model.Lang.TypeExpr.Variant.Type te -> type_expr te
+        | Model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
         | Constructor (name, _bool, args) ->
           let constr = "`" ^ name in
           match args with
@@ -172,7 +172,7 @@ struct
     | Constr (path, args) ->
       let link = Tree.Relative_link.of_path ~stop_before:false path in
       format_type_path ~delim:(`parens) args link
-    | Variant v -> te_variant v
+    | Polymorphic_variant v -> te_variant v
     | Object o -> te_object o
     | Class (path, args) ->
       format_type_path ~delim:(`brackets) args
@@ -393,11 +393,13 @@ struct
 
 
 
-  let polymorphic_variant ~type_ident (t : Model.Lang.TypeExpr.Variant.t) =
+  let polymorphic_variant
+      ~type_ident (t : Model.Lang.TypeExpr.Polymorphic_variant.t) =
+
     let row item =
       let kind_approx, cstr =
         match item with
-        | Model.Lang.TypeExpr.Variant.Type te ->
+        | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           "unknown", [Html.code (type_expr te)]
         | Constructor (name, _bool, args) ->
           let cstr = "`" ^ name in
@@ -521,7 +523,7 @@ struct
     let constraints = format_constraints t.equation.constraints in
     let manifest, need_private =
       match t.equation.manifest with
-      | Some (Model.Lang.TypeExpr.Variant variant) ->
+      | Some (Model.Lang.TypeExpr.Polymorphic_variant variant) ->
         let manifest =
           Markup.keyword " = " ::
           (if t.equation.private_ then

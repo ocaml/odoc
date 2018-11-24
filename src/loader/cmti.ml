@@ -99,7 +99,7 @@ let rec read_core_type env ctyp =
         let typ = read_core_type env typ in
           Alias(typ, var)
     | Ttyp_variant(fields, closed, present) ->
-        let open TypeExpr.Variant in
+        let open TypeExpr.Polymorphic_variant in
         let elements =
           List.map
             (function
@@ -118,7 +118,7 @@ let rec read_core_type env ctyp =
             | None -> Fixed
             | Some names -> Closed names
         in
-          Variant {kind; elements}
+          Polymorphic_variant {kind; elements}
     | Ttyp_poly([], typ) -> read_core_type env typ
     | Ttyp_poly(vars, typ) -> Poly(vars, read_core_type env typ)
     | Ttyp_package {pack_path; pack_fields; _} ->

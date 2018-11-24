@@ -1785,7 +1785,7 @@ class virtual type_expr = object (self)
   method type_expr_variant_kind kind = kind
 
   method type_expr_variant_element elem =
-    let open TypeExpr.Variant in
+    let open TypeExpr.Polymorphic_variant in
       match elem with
       | Type typ ->
           let typ' = self#type_expr typ in
@@ -1804,7 +1804,7 @@ class virtual type_expr = object (self)
   method type_expr_variant_constructor_const const = const
 
   method type_expr_variant var =
-    let open TypeExpr.Variant in
+    let open TypeExpr.Polymorphic_variant in
     let {kind; elements} = var in
     let kind' = self#type_expr_variant_kind kind in
     let elements' = list_map self#type_expr_variant_element elements in
@@ -1902,9 +1902,9 @@ class virtual type_expr = object (self)
           let params' = list_map self#type_expr params in
             if p != p' || params != params' then Constr(p', params')
             else typ
-      | Variant var ->
+      | Polymorphic_variant var ->
           let var' = self#type_expr_variant var in
-            if var != var' then Variant var'
+            if var != var' then Polymorphic_variant var'
             else typ
       | Object obj ->
           let obj' = self#type_expr_object obj in

@@ -415,7 +415,7 @@ let rec read_type_expr env typ =
 
 and read_row env _px row =
   let open TypeExpr in
-  let open TypeExpr.Variant in
+  let open TypeExpr.Polymorphic_variant in
   let row = Btype.row_repr row in
   let fields =
     if row.row_closed then
@@ -441,7 +441,7 @@ and read_row env _px row =
         let kind =
           if all_present then Open else Closed (List.map fst present)
         in
-        Variant {kind; elements = [Type (Constr (p, params))]}
+        Polymorphic_variant {kind; elements = [Type (Constr (p, params))]}
   | _ ->
       let elements =
         List.map
@@ -465,7 +465,7 @@ and read_row env _px row =
           else Open
         else Closed (List.map fst present)
       in
-      Variant {kind; elements}
+      Polymorphic_variant {kind; elements}
 
 and read_object env fi nm =
   let open TypeExpr in

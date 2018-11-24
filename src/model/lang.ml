@@ -330,7 +330,7 @@ end = InstanceVariable
 
 and TypeExpr : sig
 
-  module Variant : sig
+  module Polymorphic_variant : sig
 
     type kind =
       | Fixed
@@ -384,7 +384,7 @@ and TypeExpr : sig
     | Arrow of label option * t * t
     | Tuple of t list
     | Constr of Path.type_ * t list
-    | Variant of TypeExpr.Variant.t
+    | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Path.class_type * t list
     | Poly of string list * t
