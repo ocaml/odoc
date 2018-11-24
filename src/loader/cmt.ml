@@ -82,7 +82,7 @@ let read_value_binding env parent vb =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container parent vb.vb_attributes in
+  let doc = Doc_attr.attached container vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
 
 let read_value_bindings env parent vbs =
@@ -108,7 +108,7 @@ let read_type_extension env parent tyext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container parent tyext.tyext_attributes in
+  let doc = Doc_attr.attached container tyext.tyext_attributes in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
@@ -138,7 +138,7 @@ let rec read_class_type_field env parent ctf =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_class_signature parent)
   in
-  let doc = Doc_attr.attached container parent ctf.ctf_attributes in
+  let doc = Doc_attr.attached container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -218,7 +218,7 @@ let rec read_class_field env parent cf =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_class_signature parent)
   in
-  let doc = Doc_attr.attached container parent (cf.cf_attributes) in
+  let doc = Doc_attr.attached container (cf.cf_attributes) in
   match cf.cf_desc with
   | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
@@ -319,7 +319,7 @@ let read_class_declaration env parent cld =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id cld.ci_attributes in
+  let doc = Doc_attr.attached container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
     let virtual_ = (cld.ci_virt = Virtual) in
     let clparams =
@@ -392,7 +392,7 @@ and read_module_binding env parent mb =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id mb.mb_attributes in
+  let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
@@ -494,7 +494,7 @@ and read_include env parent incl =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container parent incl.incl_attributes in
+  let doc = Doc_attr.attached container incl.incl_attributes in
   let decl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with

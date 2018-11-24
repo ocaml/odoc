@@ -24,7 +24,6 @@ val empty : Model.Comment.docs
 
 val attached :
   Paths.Identifier.label_parent ->
-  'kind Paths.Identifier.t ->
   Parsetree.attributes ->
     Model.Comment.docs
 

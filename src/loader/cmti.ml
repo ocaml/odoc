@@ -140,7 +140,7 @@ let read_value_description env parent vd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id vd.val_attributes in
+  let doc = Doc_attr.attached container vd.val_attributes in
   let type_ = read_core_type env vd.val_desc in
   match vd.val_prim with
   | [] -> Value {Value.id; doc; type_}
@@ -168,7 +168,7 @@ let read_label_declaration env parent ld =
   let id = Identifier.Field(parent, name) in
   let doc =
     Doc_attr.attached
-      (Identifier.label_parent_of_parent parent) id ld.ld_attributes
+      (Identifier.label_parent_of_parent parent) ld.ld_attributes
   in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_core_type env ld.ld_type in
@@ -193,7 +193,7 @@ let read_constructor_declaration env parent cd =
   let container = Identifier.parent_of_datatype parent in
   let doc =
     Doc_attr.attached
-      (Identifier.label_parent_of_parent container) id cd.cd_attributes
+      (Identifier.label_parent_of_parent container) cd.cd_attributes
   in
   let args = read_constructor_declaration_arguments env container cd.cd_args in
   let res = opt_map (read_core_type env) cd.cd_res in
@@ -232,7 +232,7 @@ let read_type_declaration env parent decl =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id decl.typ_attributes in
+  let doc = Doc_attr.attached container decl.typ_attributes in
   let equation = read_type_equation env decl in
   let representation = read_type_kind env id decl.typ_kind in
     {id; doc; equation; representation}
@@ -262,7 +262,7 @@ let read_extension_constructor env parent ext =
   let container = Identifier.parent_of_signature parent in
   let doc =
     Doc_attr.attached
-      (Identifier.label_parent_of_parent container) id ext.ext_attributes
+      (Identifier.label_parent_of_parent container) ext.ext_attributes
   in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -277,7 +277,7 @@ let read_type_extension env parent tyext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container parent tyext.tyext_attributes in
+  let doc = Doc_attr.attached container tyext.tyext_attributes in
   let type_params = List.map read_type_parameter tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
@@ -292,7 +292,7 @@ let read_exception env parent ext =
   let container = Identifier.parent_of_signature parent in
   let doc =
     Doc_attr.attached
-      (Identifier.label_parent_of_parent container) id ext.ext_attributes
+      (Identifier.label_parent_of_parent container) ext.ext_attributes
   in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -307,7 +307,7 @@ let rec read_class_type_field env parent ctf =
     Identifier.label_parent_of_parent
       (Identifier.parent_of_class_signature parent)
   in
-  let doc = Doc_attr.attached container parent ctf.ctf_attributes in
+  let doc = Doc_attr.attached container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -372,7 +372,7 @@ let read_class_type_declaration env parent cltd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id cltd.ci_attributes in
+  let doc = Doc_attr.attached container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env id cltd.ci_expr in
@@ -413,7 +413,7 @@ let read_class_description env parent cld =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id cld.ci_attributes in
+  let doc = Doc_attr.attached container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env id cld.ci_expr in
@@ -501,7 +501,7 @@ and read_module_type_declaration env parent mtd =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id mtd.mtd_attributes in
+  let doc = Doc_attr.attached container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
   let expansion =
     match expr with
@@ -517,7 +517,7 @@ and read_module_declaration env parent md =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container id md.md_attributes in
+  let doc = Doc_attr.attached container md.md_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
@@ -608,7 +608,7 @@ and read_include env parent incl =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = Doc_attr.attached container parent incl.incl_attributes in
+  let doc = Doc_attr.attached container incl.incl_attributes in
   let expr = read_module_type env parent 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
   let content = Cmi.read_signature env parent incl.incl_type in
