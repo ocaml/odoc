@@ -327,9 +327,12 @@ struct
           )
         ]
       | Record fields ->
-        Html.code [ cstr; Markup.keyword (if is_gadt then Syn.Type.annotation_separator else " of ") ]
-        :: record fields
-        @ [ Html.code ret_type ]
+        if is_gadt then
+          (Html.code [cstr; Markup.keyword Syn.Type.annotation_separator])
+          ::(record fields)
+          @ [Html.code ret_type]
+        else
+          (Html.code [cstr; Markup.keyword " of "])::(record fields)
 
 
 
