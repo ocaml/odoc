@@ -242,7 +242,7 @@ module Anchor = struct
         | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           { kind = "type"
           ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
-        | Constructor (name, _, _) ->
+        | Constructor {name; _} ->
           { kind = "constructor"
           ; name = Printf.sprintf "%s.%s" anchor name }
   end

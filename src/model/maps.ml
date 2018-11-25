@@ -1782,6 +1782,9 @@ class virtual type_expr = object (self)
   method virtual fragment_type :
     Fragment.type_ -> Fragment.type_
 
+  method virtual documentation :
+    Comment.docs -> Comment.docs
+
   method type_expr_variant_kind kind = kind
 
   method type_expr_variant_element elem =
@@ -1791,13 +1794,23 @@ class virtual type_expr = object (self)
           let typ' = self#type_expr typ in
             if typ != typ' then Type typ'
             else elem
-      | Constructor(name, const, args) ->
-          let name' = self#type_expr_variant_constructor_name name in
-          let const' = self#type_expr_variant_constructor_const const in
-          let args' = list_map self#type_expr args in
-            if name != name' || const != const' || args != args' then
-              Constructor(name', const', args')
-            else elem
+      | Constructor {name; constant; arguments; doc} ->
+        let name' = self#type_expr_variant_constructor_name name in
+        let constant' = self#type_expr_variant_constructor_const constant in
+        let arguments' = list_map self#type_expr arguments in
+        let doc' = self#documentation doc in
+        if name != name' ||
+           constant != constant' ||
+           arguments != arguments' ||
+           doc' != doc then
+          Constructor {
+            name = name';
+            constant = constant';
+            arguments = arguments';
+            doc = doc';
+          }
+        else
+          elem
 
   method type_expr_variant_constructor_name name = name
 

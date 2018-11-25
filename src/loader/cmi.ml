@@ -444,17 +444,22 @@ and read_row env _px row =
   | _ ->
       let elements =
         List.map
-          (fun (l, f) ->
+          (fun (name, f) ->
             match Btype.row_field_repr f with
               | Rpresent None ->
-                  Constructor(l, true, [])
+                Constructor {name; constant = true; arguments = []; doc = []}
               | Rpresent (Some typ) ->
-                  Constructor(l, false, [read_type_expr env typ])
-              | Reither(c, typs, _, _) ->
-                  let typs =
+                Constructor {
+                  name;
+                  constant = false;
+                  arguments = [read_type_expr env typ];
+                  doc = [];
+                }
+              | Reither(constant, typs, _, _) ->
+                  let arguments =
                     List.map (read_type_expr env) typs
                   in
-                    Constructor(l, c, typs)
+                Constructor {name; constant; arguments; doc = []}
               | Rabsent -> assert false)
           sorted_fields
       in

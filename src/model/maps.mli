@@ -724,6 +724,8 @@ class virtual type_expr : object
 
   method virtual fragment_type : Fragment.type_ -> Fragment.type_
 
+  method virtual documentation : Comment.docs -> Comment.docs
+
   method type_expr_variant_kind : TypeExpr.Polymorphic_variant.kind ->
     TypeExpr.Polymorphic_variant.kind
 

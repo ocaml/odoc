@@ -57,11 +57,14 @@ type record = {
   e : 'a. 'a;
 }
 
+(* 4.02 doesn't preserve doc comments on polymorphic variant constructors, but
+   they should be restored if 4.02 support is dropped, or if creating a test
+   that won't run on 4.02. *)
 type polymorphic_variant = [
   | `A
   | `B of int
-  | `C (** foo *)
-  | `D (** {e bar} *)
+  | `C
+  | `D
 ]
 
 type polymorphic_variant_extension = [

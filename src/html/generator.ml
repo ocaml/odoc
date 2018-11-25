@@ -62,17 +62,17 @@ struct
     let elements =
       list_concat_map t.elements ~sep:(Markup.keyword " | ") ~f:(function
         | Model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
-        | Constructor (name, _bool, args) ->
+        | Constructor {name; arguments; _} ->
           let constr = "`" ^ name in
-          match args with
+          match arguments with
           | [] -> [ Html.pcdata constr ]
           | _ ->
-            let args =
-              list_concat_map args ~sep:(Html.pcdata Syn.Type.Tuple.element_separator) ~f:type_expr
+            let arguments =
+              list_concat_map arguments ~sep:(Html.pcdata Syn.Type.Tuple.element_separator) ~f:type_expr
             in
             if Syn.Type.Variant.parenthesize_params
-            then Html.pcdata (constr ^ "(") :: args @ [ Html.pcdata ")" ]
-            else Html.pcdata (constr ^ " of ") :: args
+            then Html.pcdata (constr ^ "(") :: arguments @ [ Html.pcdata ")" ]
+            else Html.pcdata (constr ^ " of ") :: arguments
       )
     in
     match t.kind with
@@ -397,17 +397,17 @@ struct
       ~type_ident (t : Model.Lang.TypeExpr.Polymorphic_variant.t) =
 
     let row item =
-      let kind_approx, cstr =
+      let kind_approx, cstr, doc =
         match item with
         | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
-          "unknown", [Html.code (type_expr te)]
-        | Constructor (name, _bool, args) ->
+          "unknown", [Html.code (type_expr te)], None
+        | Constructor {name; arguments; doc; _} ->
           let cstr = "`" ^ name in
           "constructor",
-          match args with
+          begin match arguments with
           | [] -> [Html.code [ Html.pcdata cstr ]]
           | _ ->
-            let params = list_concat_map args
+            let params = list_concat_map arguments
               ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
               ~f:type_expr
             in
@@ -420,20 +420,32 @@ struct
                 )
               )
             ]
+          end,
+          match doc with
+          | [] ->
+            None
+          | _ ->
+            Some (Comment.to_html doc :> (Html_types.td_content Html.elt) list)
       in
       try
         let { Url.Anchor. name = anchor; kind } =
           Url.Anchor.Polymorphic_variant_decl.from_element ~type_ident item
         in
-        Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] [
+        let constructor_column =
           Html.td ~a:[ Html.a_class ["def"; kind] ] (
             Html.a ~a:[
               Tyxml.Html.a_href ("#" ^ anchor); Html.a_class ["anchor"] ] [] ::
             Html.code [Markup.keyword "| " ] ::
-            cstr
-          );
-          (* TODO: retrieve doc comments. *)
-        ]
+            cstr)
+        in
+        let columns =
+          match doc with
+          | None ->
+            [constructor_column]
+          | Some doc ->
+            [constructor_column; Html.td ~a:[Html.a_class ["doc"]] doc]
+        in
+        Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] columns
       with Failure s ->
         Printf.eprintf "ERROR: %s\n%!" s;
         Html.tr [
@@ -441,7 +453,6 @@ struct
             Html.code [Markup.keyword "| " ] ::
             cstr
           );
-          (* TODO: retrieve doc comments. *)
         ]
     in
     let table =

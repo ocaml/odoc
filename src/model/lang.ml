@@ -337,9 +337,19 @@ and TypeExpr : sig
       | Closed of string list
       | Open
 
+    module Constructor :
+    sig
+      type t = {
+        name : string;
+        constant : bool;
+        arguments : TypeExpr.t list;
+        doc : Comment.docs;
+      }
+    end
+
     type element =
       | Type of TypeExpr.t
-      | Constructor of string * bool * TypeExpr.t list
+      | Constructor of Constructor.t
 
     type t =
       { kind: kind;

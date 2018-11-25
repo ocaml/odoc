@@ -347,7 +347,7 @@ let read_class_declarations env parent clds =
   |> fst
   |> List.rev
 
-let rec read_module_expr env parent pos mexpr =
+let rec read_module_expr env parent label_parent pos mexpr =
   let open ModuleType in
     match mexpr.mod_desc with
     | Tmod_ident _ ->
@@ -360,7 +360,7 @@ let rec read_module_expr env parent pos mexpr =
           | Some arg ->
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
-              let arg = Cmti.read_module_type env id 1 arg in
+          let arg = Cmti.read_module_type env id label_parent 1 arg in
               let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
@@ -369,14 +369,14 @@ let rec read_module_expr env parent pos mexpr =
                 Some { FunctorArgument. id; expr = arg; expansion }
         in
         let env = Env.add_argument parent pos id env in
-        let res = read_module_expr env parent (pos + 1) res in
+      let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmod_apply _ ->
         Cmi.read_module_type env parent pos mexpr.mod_type
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
-        Cmti.read_module_type env parent pos mty
+        Cmti.read_module_type env parent label_parent pos mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
-        read_module_expr env parent pos mexpr
+        read_module_expr env parent label_parent pos mexpr
     | Tmod_unpack(_, mty) ->
         Cmi.read_module_type env parent pos mty
 
@@ -390,8 +390,7 @@ and read_module_binding env parent mb =
   let name = parenthesise (Ident.name mb.mb_id) in
   let id = Identifier.Module(parent, name) in
   let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
   let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
@@ -403,7 +402,7 @@ and read_module_binding env parent mb =
   let type_ =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env id 1 mb.mb_expr)
+    | _ -> ModuleType (read_module_expr env id container 1 mb.mb_expr)
   in
   let hidden =
     match canonical with
@@ -492,14 +491,13 @@ and read_structure_item env parent item =
 and read_include env parent incl =
   let open Include in
   let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
   let doc = Doc_attr.attached container incl.incl_attributes in
   let decl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env parent 1 incl.incl_mod)
+    | _ -> ModuleType (read_module_expr env parent container 1 incl.incl_mod)
   in
   let content = Cmi.read_signature env parent incl.incl_type in
   let expansion = { content; resolved = false } in

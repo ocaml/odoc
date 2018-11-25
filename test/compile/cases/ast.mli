@@ -15,8 +15,8 @@ type t2 = A (** @ConstructorDeclaration *)
         | B (** @ConstructorDeclaration *)
 
 type t3 = [
-| `A (** @Tag *)
-| `B (** @Tag *)
+| `A
+| `B
 ]
 
 (** @TypeDeclaration *)
