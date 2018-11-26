@@ -28,6 +28,8 @@ matrix:
   allow_failures:
     - env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
+  fast_finish: true
+
 cache:
   directories:
   - /usr/local/Cellar/opam
