@@ -96,7 +96,7 @@ module Reference = struct
       match ref with
       | Root (s, _) ->
         begin match text with
-        | None -> Html.code [Html.pcdata s]
+        | None -> Html.code [Html.txt s]
         | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
         end
       | Dot (parent, s) ->
@@ -132,7 +132,7 @@ module Reference = struct
         let id = Reference.Resolved.identifier r in
         let txt : non_link_phrasing Html.elt =
           match text with
-          | None -> Html.code [Html.pcdata (render_resolved r)]
+          | None -> Html.code [Html.txt (render_resolved r)]
           | Some s -> s
         in
         begin match Id.href ?xref_base_uri ~stop_before id with
@@ -157,7 +157,7 @@ module Reference = struct
       match text with
       | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
       | None ->
-        let tail = [ Html.pcdata ("." ^ s) ] in
+        let tail = [ Html.txt ("." ^ s) ] in
         span' (
           match to_html ?xref_base_uri ~stop_before:true parent with
           | content -> content::tail
@@ -183,9 +183,9 @@ let style_to_combinator = function
 let leaf_inline_element
     : Comment.leaf_inline_element -> ([> non_link_phrasing ] Html.elt) option =
   function
-  | `Space -> Some (Html.pcdata " ")
-  | `Word s -> Some (Html.pcdata s)
-  | `Code_span s -> Some (Html.code [Html.pcdata s])
+  | `Space -> Some (Html.txt " ")
+  | `Word s -> Some (Html.txt s)
+  | `Code_span s -> Some (Html.code [Html.txt s])
   | `Raw_markup (`Html, s) -> Some (Html.Unsafe.data s)
 
 let rec non_link_inline_element
@@ -229,7 +229,7 @@ let rec inline_element ?xref_base_uri : Comment.inline_element -> (phrasing Html
   | `Link (target, content) ->
     let content =
       match content with
-      | [] -> [Html.pcdata target]
+      | [] -> [Html.txt target]
       | _ -> non_link_inline_element_list content
     in
     Some (Html.a ~a:[Html.a_href target] content)
@@ -274,8 +274,8 @@ let rec nestable_block_element
     *)
     let code = s in
     let classname = string_of_syntax from_syntax in
-    Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.pcdata code]]
-  | `Verbatim s -> Html.pre [Html.pcdata s]
+    Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.txt code]]
+  | `Verbatim s -> Html.pre [Html.txt s]
   | `Modules ms ->
     let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) ms in
     let items = (items :> (Html_types.li_content Html.elt) list) in
@@ -314,46 +314,46 @@ let tag : ?xref_base_uri:string ->
     match t with
   | `Author s ->
     Some (Html.(dl [
-      dt [pcdata "author"];
-      dd [pcdata s]]))
+      dt [txt "author"];
+      dd [txt s]]))
   | `Deprecated content ->
     Some (Html.(dl [
-      dt [pcdata "deprecated"];
+      dt [txt "deprecated"];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `Param (name, content) ->
     Some (Html.(dl [
-      dt [pcdata "parameter "; pcdata name];
+      dt [txt "parameter "; txt name];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `Raise (name, content) ->
     Some (Html.(dl [
-      dt [pcdata "raises "; pcdata name];
+      dt [txt "raises "; txt name];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `Return content ->
     Some (Html.(dl [
-      dt [pcdata "returns"];
+      dt [txt "returns"];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `See (kind, target, content) ->
     let target =
       match kind with
-      | `Url -> Html.a ~a:[Html.a_href target] [Html.pcdata target]
-      | `File -> Html.code [Html.pcdata target]
-      | `Document -> Html.pcdata target
+      | `Url -> Html.a ~a:[Html.a_href target] [Html.txt target]
+      | `File -> Html.code [Html.txt target]
+      | `Document -> Html.txt target
     in
     Some (Html.(dl [
-      dt [pcdata "see "; target];
+      dt [txt "see "; target];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `Since s ->
     Some (Html.(dl [
-      dt [pcdata "since"];
-      dd [pcdata s]]))
+      dt [txt "since"];
+      dd [txt s]]))
   | `Before (version, content) ->
     Some (Html.(dl [
-      dt [pcdata "before "; pcdata version];
+      dt [txt "before "; txt version];
       dd (nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax content)]))
   | `Version s ->
     Some (Html.(dl [
-      dt [pcdata "version"];
-      dd [pcdata s]]))
+      dt [txt "version"];
+      dd [txt s]]))
   | `Canonical _ | `Inline | `Open | `Closed ->
     None
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 set -e
 
 ESY=$(npm bin --global)/esy

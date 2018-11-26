@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 # Install Tidy everywhere
 case $TRAVIS_OS_NAME in
 "linux")

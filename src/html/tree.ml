@@ -142,24 +142,24 @@ module Relative_link = struct
       fun ~stop_before path ->
         let open Path in
         match path with
-        | Root root -> [ Html.pcdata root ]
-        | Forward root -> [ Html.pcdata root ] (* FIXME *)
+        | Root root -> [ Html.txt root ]
+        | Forward root -> [ Html.txt root ] (* FIXME *)
         | Dot (prefix, suffix) ->
           let link = to_html ~stop_before:true prefix in
-          link @ [ Html.pcdata ("." ^ suffix) ]
+          link @ [ Html.txt ("." ^ suffix) ]
         | Apply (p1, p2) ->
           let link1 = to_html ~stop_before p1 in
           let link2 = to_html ~stop_before p2 in
-          link1 @ Html.pcdata "(":: link2 @ [ Html.pcdata ")" ]
+          link1 @ Html.txt "(":: link2 @ [ Html.txt ")" ]
         | Resolved rp ->
           let id = Path.Resolved.identifier rp in
           let txt = Url.render_path path in
           begin match Id.href ~stop_before id with
-          | href -> [ Html.a ~a:[ Html.a_href href ] [ Html.pcdata txt ] ]
-          | exception Id.Not_linkable -> [ Html.pcdata txt ]
+          | href -> [ Html.a ~a:[ Html.a_href href ] [ Html.txt txt ] ]
+          | exception Id.Not_linkable -> [ Html.txt txt ]
           | exception exn ->
             Printf.eprintf "Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ Html.pcdata txt ]
+            [ Html.txt txt ]
           end
   end
 
@@ -196,26 +196,26 @@ module Relative_link = struct
         | Resolved Resolved.Root ->
           begin match Id.href ~stop_before:true id with
           | href ->
-            [Html.a ~a:[Html.a_href href] [Html.pcdata (Identifier.name id)]]
-          | exception Id.Not_linkable -> [ Html.pcdata (Identifier.name id) ]
+            [Html.a ~a:[Html.a_href href] [Html.txt (Identifier.name id)]]
+          | exception Id.Not_linkable -> [ Html.txt (Identifier.name id) ]
           | exception exn ->
             Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ Html.pcdata (Identifier.name id) ]
+            [ Html.txt (Identifier.name id) ]
           end
         | Resolved rr ->
           let id = Resolved.identifier id (Obj.magic rr : a Resolved.t) in
           let txt = render_resolved rr in
           begin match Id.href ~stop_before id with
           | href ->
-            [ Html.a ~a:[ Html.a_href href ] [ Html.pcdata txt ] ]
-          | exception Id.Not_linkable -> [ Html.pcdata txt ]
+            [ Html.a ~a:[ Html.a_href href ] [ Html.txt txt ] ]
+          | exception Id.Not_linkable -> [ Html.txt txt ]
           | exception exn ->
             Printf.eprintf "[FRAG] Id.href failed: %S\n%!" (Printexc.to_string exn);
-            [ Html.pcdata txt ]
+            [ Html.txt txt ]
           end
         | Dot (prefix, suffix) ->
           let link = to_html ~stop_before:true id prefix in
-          link @ [ Html.pcdata ("." ^ suffix) ]
+          link @ [ Html.txt ("." ^ suffix) ]
   end
 
   let of_path ~stop_before p =
@@ -280,13 +280,13 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
     let odoc_css_uri = theme_uri ^ "odoc.css" in
     let highlight_js_uri = support_files_uri ^ "highlight.pack.js" in
 
-    Html.head (Html.title (Html.pcdata title_string)) [
+    Html.head (Html.title (Html.txt title_string)) [
       Html.link ~rel:[`Stylesheet] ~href:odoc_css_uri () ;
       Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
       Html.meta ~a:[ Html.a_name "viewport";
                   Html.a_content "width=device-width,initial-scale=1.0"; ] ();
-      Html.script ~a:[Html.a_src highlight_js_uri] (Html.pcdata "");
-      Html.script (Html.pcdata "hljs.initHighlightingOnLoad();");
+      Html.script ~a:[Html.a_src highlight_js_uri] (Html.txt "");
+      Html.script (Html.txt "hljs.initHighlightingOnLoad();");
     ]
   in
 
@@ -312,13 +312,13 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
       | Some prefix ->
         let title_heading =
           Html.h1 [
-            Html.pcdata @@ prefix ^ " ";
+            Html.txt @@ prefix ^ " ";
             Html.code [
               (* Shorten path to at most 2 levels *)
               match List.tl path |> List.rev with
-              | y :: x :: _ -> Html.pcdata @@ x ^ "." ^ y
-              | x :: _ -> Html.pcdata x
-              | _ -> Html.pcdata "" (* error *)
+              | y :: x :: _ -> Html.txt @@ x ^ "." ^ y
+              | x :: _ -> Html.txt x
+              | _ -> Html.txt "" (* error *)
             ]
           ]
         in
@@ -331,12 +331,12 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
         let nav =
           Html.nav @@ [
             Html.a ~a:[Html.a_href up_href] [
-              Html.pcdata "Up"
+              Html.txt "Up"
             ];
-            Html.pcdata " – "
+            Html.txt " – "
           ] @
             (* Create breadcrumbs *)
-            let space = Html.pcdata " " in
+            let space = Html.txt " " in
             let init =
               if !Relative_link.semantic_uris then "" else "index.html"
             in
@@ -346,9 +346,9 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
             Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
               ~f:(fun (n, addr, lbl) ->
                 if n > 0 then
-                  [[Html.a ~a:[Html.a_href addr] [Html.pcdata lbl]]]
+                  [[Html.a ~a:[Html.a_href addr] [Html.txt lbl]]]
                 else
-                  [[Html.pcdata lbl]]
+                  [[Html.txt lbl]]
                 ) |>
             List.flatten
         in

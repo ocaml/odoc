@@ -41,7 +41,7 @@ module Reason = Generator.Make (struct
 
     let var_prefix = "'"
     let any = "_"
-    let arrow = Html.span [Html.pcdata "="; Html.entity "gt"]
+    let arrow = Html.span [Html.txt "="; Html.entity "gt"]
 
     module Exception =
     struct
@@ -50,7 +50,7 @@ module Reason = Generator.Make (struct
 
     module GADT =
     struct
-      let arrow = Html.pcdata ":"
+      let arrow = Html.txt ":"
     end
 
     module External =
@@ -62,7 +62,7 @@ module Reason = Generator.Make (struct
             let str =
               match acc with [] -> "\"" ^ p ^ "\"" | _ -> " \"" ^ p ^ "\""
             in
-            Html.pcdata str :: acc )
+            Html.txt str :: acc )
           [] prims
     end
   end
