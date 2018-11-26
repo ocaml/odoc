@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 14)) (verbatim foovvbar))))) (warnings ()))
+((output (((f.ml (1 0) (1 14)) (verbatim foovvbar)))) (warnings ()))

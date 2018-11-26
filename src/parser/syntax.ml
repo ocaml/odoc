@@ -29,18 +29,21 @@ type 'a with_location = 'a Location.with_location
 
 (* {2 Input} *)
 
-type input = (Token.t Location.with_location) Stream.t
+type input = {
+  tokens : (Token.t Location.with_location) Stream.t;
+  warnings : Error.warning_accumulator;
+}
 
-let junk = Stream.junk
+let junk input = Stream.junk input.tokens
 
 let peek input =
-  match Stream.peek input with
+  match Stream.peek input.tokens with
   | Some token -> token
   | None -> assert false
   (* The last token in the stream is always [`End], and it is never consumed by
      the parser, so the [None] case is impossible. *)
 
-let npeek = Stream.npeek
+let npeek n input = Stream.npeek n input.tokens
 
 
 
@@ -133,17 +136,40 @@ let rec inline_element
     let location = Location.span [location; brace_location] in
 
     if content = [] then
-      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
-      |> Error.raise_exception;
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
+      |> Error.warning input.warnings;
 
     Location.at location (`Styled (s, content))
 
   | `Simple_reference r ->
     junk input;
-    Location.at location (`Reference (`Simple, Helpers.read_reference r, []))
+
+    let r_location = Location.nudge_start (String.length "{!") location in
+
+    begin match Reference.parse input.warnings r_location r with
+    | Result.Ok r ->
+      Location.at location (`Reference (`Simple, r, []))
+    | Result.Error error ->
+      Error.warning input.warnings error;
+      Location.at location (`Code_span r)
+    end
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
+
+    let r_location = Location.nudge_start (String.length "{{!") location in
+
+    (* Parse the reference target immediately, so that any warnings from it are
+       triggered before warnings from the content. *)
+    let make_element =
+      match Reference.parse input.warnings r_location r with
+      | Result.Ok r ->
+        fun content -> `Reference (`With_text, r, content)
+      | Result.Error error ->
+        Error.warning input.warnings error;
+        fun content -> `Styled (`Emphasis, content)
+    in
 
     let content, brace_location =
       delimited_inline_element_list
@@ -156,18 +182,32 @@ let rec inline_element
     let location = Location.span [location; brace_location] in
 
     if content = [] then
-      Parse_error.cannot_be_empty ~what:(Token.describe parent_markup) location
-      |> Error.raise_exception;
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
+      |> Error.warning input.warnings;
 
-    `Reference (`With_text, Helpers.read_reference r, content)
-    |> Location.at location
+    Location.at location (make_element content)
 
   | `Simple_link u ->
     junk input;
+
+    let u = String.trim u in
+
+    if u = "" then
+      Parse_error.should_not_be_empty ~what:(Token.describe next_token) location
+      |> Error.warning input.warnings;
+
     Location.at location (`Link (u, []))
 
   | `Begin_link_with_replacement_text u as parent_markup ->
     junk input;
+
+    let u = String.trim u in
+
+    if u = "" then
+      Parse_error.should_not_be_empty
+        ~what:(Token.describe parent_markup) location
+      |> Error.warning input.warnings;
 
     let content, brace_location =
       delimited_inline_element_list
@@ -195,8 +235,10 @@ let rec inline_element
    space in any amount are allowed. Blank lines are not, as these are separators
    for {e block} elements.
 
-   The first and last elements emitted will not be [`Space], i.e. [`Space]
-   appears only between other non-link inline elements.
+   In correct input, the first and last elements emitted will not be [`Space],
+   i.e. [`Space] appears only between other non-link inline elements. In
+   incorrect input, there might be [`Space] followed immediately by something
+   like an @author tag.
 
    The [~parent_markup] and [~parent_markup_location] arguments are used for
    generating error messages. *)
@@ -244,15 +286,23 @@ and delimited_inline_element_list
       let element = Location.same next_token `Space in
       consume_elements ~at_start_of_line:true (element::acc)
 
+    | `Blank_line ->
+      Parse_error.not_allowed
+        ~what:(Token.describe `Blank_line)
+        ~in_what:(Token.describe parent_markup)
+        next_token.location
+      |> Error.warning input.warnings;
+
+      junk input;
+      let element = Location.same next_token `Space in
+      consume_elements ~at_start_of_line:true (element::acc)
+
     | `Minus
     | `Plus as bullet ->
-      if not at_start_of_line then
-        let acc = (inline_element input next_token.location bullet)::acc in
-        consume_elements ~at_start_of_line:false acc
-      else
+      if at_start_of_line then begin
         let suggestion =
           Printf.sprintf
-            "move %s so it isn't the first thing on the line"
+            "move %s so it isn't the first thing on the line."
             (Token.print bullet)
         in
         Parse_error.not_allowed
@@ -260,14 +310,26 @@ and delimited_inline_element_list
           ~in_what:(Token.describe parent_markup)
           ~suggestion
           next_token.location
-        |> Error.raise_exception
+        |> Error.warning input.warnings
+      end;
+
+      let acc = (inline_element input next_token.location bullet)::acc in
+      consume_elements ~at_start_of_line:false acc
 
     | other_token ->
       Parse_error.not_allowed
         ~what:(Token.describe other_token)
         ~in_what:(Token.describe parent_markup)
         next_token.location
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      let last_location =
+        match acc with
+        | last_token::_ -> last_token.location
+        | [] -> parent_markup_location
+      in
+
+      List.rev acc, last_location
   in
 
   let first_token = peek input in
@@ -293,19 +355,22 @@ and delimited_inline_element_list
       ~what:(Token.describe `Blank_line)
       ~in_what:(Token.describe parent_markup)
       first_token.location
-    |> Error.raise_exception
+    |> Error.warning input.warnings;
+
+    junk input;
+    consume_elements ~at_start_of_line:true []
 
   | `Right_brace ->
     junk input;
     [], first_token.location
 
   | _ ->
-    if requires_leading_whitespace then
-      Parse_error.must_be_followed_by_whitespace
-        ~what:(Token.describe parent_markup) parent_markup_location
-      |> Error.raise_exception
-    else
-      consume_elements ~at_start_of_line:false []
+    if requires_leading_whitespace then begin
+      Parse_error.should_be_followed_by_whitespace
+        ~what:(Token.print parent_markup) parent_markup_location
+      |> Error.warning input.warnings
+    end;
+    consume_elements ~at_start_of_line:false []
 
 
 
@@ -489,9 +554,26 @@ let accepted_in_all_contexts
   | In_explicit_list -> block
   | In_tag -> block
 
-(* {3 The block element loop} *)
+(* Converts a tag to a series of words. This is used in error recovery, when a
+   tag cannot be generated. *)
+let tag_to_words = function
+  | `Author s -> [`Word "@author"; `Space; `Word s]
+  | `Before s -> [`Word "@before"; `Space; `Word s]
+  | `Canonical s -> [`Word "@canonical"; `Space; `Word s]
+  | `Deprecated -> [`Word "@deprecated"]
+  | `Inline -> [`Word "@inline"]
+  | `Open -> [`Word "@open"]
+  | `Closed -> [`Word "@closed"]
+  | `Param s -> [`Word "@param"; `Space; `Word s]
+  | `Raise s -> [`Word "@raise"; `Space; `Word s]
+  | `Return -> [`Word "@return"]
+  | `See (`Document, s) -> [`Word "@see"; `Space; `Word ("\"" ^ s ^ "\"")]
+  | `See (`File, s) -> [`Word "@see"; `Space; `Word ("'" ^ s ^ "'")]
+  | `See (`Url, s) -> [`Word "@see"; `Space; `Word ("<" ^ s ^ ">")]
+  | `Since s -> [`Word "@since"; `Space; `Word s]
+  | `Version s -> [`Word "@version"; `Space; `Word s]
 
-(* {2 Block element lists} *)
+(* {3 Block element lists} *)
 
 (* Consumes tokens making up a sequence of block elements. These are:
 
@@ -525,37 +607,37 @@ let rec block_element_list
       | _ -> Token.describe token
     in
 
-    let raise_if_after_text {Location.location; value = token} =
+    let warn_if_after_text {Location.location; value = token} =
       if where_in_line = `After_text then
-        Parse_error.must_begin_on_its_own_line ~what:(describe token) location
-        |> Error.raise_exception
+        Parse_error.should_begin_on_its_own_line ~what:(describe token) location
+        |> Error.warning input.warnings
     in
 
-    let raise_if_after_tags {Location.location; value = token} =
+    let warn_if_after_tags {Location.location; value = token} =
       if parsed_a_tag then
         let suggestion =
           Printf.sprintf
-            "move %s before any tags" (Token.describe token)
+            "move %s before any tags." (Token.describe token)
         in
         Parse_error.not_allowed
           ~what:(describe token)
           ~in_what:"the tags section"
           ~suggestion
           location
-        |> Error.raise_exception
+        |> Error.warning input.warnings
     in
 
-    let raise_because_not_at_top_level {Location.location; value = token} =
+    let warn_because_not_at_top_level {Location.location; value = token} =
       let suggestion =
         Printf.sprintf
-          "move %s outside of any other markup" (Token.print token)
+          "move %s outside of any other markup." (Token.print token)
       in
       Parse_error.not_allowed
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
         location
-      |> Error.raise_exception
+      |> Error.warning input.warnings
     in
 
 
@@ -611,7 +693,7 @@ let rec block_element_list
     | {value = `Begin_list_item _ as token; location} ->
       let suggestion =
         Printf.sprintf
-          "move %s into %s, or use %s"
+          "move %s into %s, or use %s."
           (Token.print token)
           (Token.describe (`Begin_list `Unordered))
           (Token.describe (`Minus))
@@ -621,17 +703,32 @@ let rec block_element_list
         ~in_what:(Token.describe parent_markup)
         ~suggestion
         location
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      junk input;
+      consume_block_elements ~parsed_a_tag where_in_line acc
 
 
 
     (* Tags. These can appear at the top level only. Also, once one tag is seen,
        the only top-level elements allowed are more tags. *)
     | {value = `Tag tag as token; location} as next_token ->
+      let recover_when_not_at_top_level context =
+        warn_because_not_at_top_level next_token;
+        junk input;
+        let words = List.map (Location.at location) (tag_to_words tag) in
+        let paragraph =
+          `Paragraph words
+          |> accepted_in_all_contexts context
+          |> Location.at location
+        in
+        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph::acc)
+      in
+
       begin match context with
       (* Tags cannot make sense in an explicit list ([{ul {li ...}}]). *)
       | In_explicit_list ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
       (* If a tag starts at the beginning of a line, it terminates the preceding
          tag and/or the current shorthand list. In this case, return to the
          caller, and let the caller decide how to interpret the tag token. *)
@@ -639,20 +736,20 @@ let rec block_element_list
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
       | In_tag ->
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
 
       (* If this is the top-level call to [block_element_list], parse the
          tag. *)
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Parse_error.must_begin_on_its_own_line
+          Parse_error.should_begin_on_its_own_line
             ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          |> Error.warning input.warnings;
 
         junk input;
 
@@ -660,19 +757,42 @@ let rec block_element_list
         | `Author s | `Since s | `Version s | `Canonical s as tag ->
           let s = String.trim s in
           if s = "" then
-            Parse_error.cannot_be_empty ~what:(Token.describe token) location
-            |> Error.raise_exception;
+            Parse_error.should_not_be_empty
+              ~what:(Token.describe token) location
+            |> Error.warning input.warnings;
           let tag =
             match tag with
-            | `Author _ -> `Author s
-            | `Since _ -> `Since s
-            | `Version _ -> `Version s
+            | `Author _ -> Result.Ok (`Author s)
+            | `Since _ -> Result.Ok (`Since s)
+            | `Version _ -> Result.Ok (`Version s)
             | `Canonical _ ->
-              let path = Helpers.read_path_longident s in
-              let module_ = Helpers.read_mod_longident s in
-              `Canonical (path, module_)
+              (* TODO The location is only approximate, as we need lexer
+                 cooperation to get the real location. *)
+              let r_location =
+                Location.nudge_start (String.length "@canonical ") location in
+
+              let (>>=) = Rresult.(>>=) in
+              let result =
+                Reference.read_path_longident r_location s >>= fun path ->
+                Reference.read_mod_longident
+                  input.warnings r_location s >>= fun module_ ->
+                Result.Ok (`Canonical (path, module_))
+              in
+              match result with
+              | Result.Ok _ as result -> result
+              | Result.Error error ->
+                Error.warning input.warnings error;
+                Result.Error [`Word "@canonical"; `Space; `Code_span s]
           in
-          let tag = Location.at location (`Tag tag) in
+
+          let tag =
+            match tag with
+            | Result.Ok tag -> Location.at location (`Tag tag)
+            | Result.Error text ->
+              Location.at location (`Paragraph
+                (List.map (Location.at location) text))
+          in
+
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
@@ -726,8 +846,8 @@ let rec block_element_list
 
 
     | {value = #token_that_always_begins_an_inline_element; _} as next_token ->
-      raise_if_after_text next_token;
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
+      warn_if_after_text next_token;
 
       let block = paragraph input in
       let block =
@@ -736,11 +856,11 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Code_block s | `Verbatim s as token; location} as next_token ->
-      raise_if_after_text next_token;
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
+      warn_if_after_text next_token;
       if s = "" then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
+        |> Error.warning input.warnings;
 
       junk input;
       let block =
@@ -754,8 +874,8 @@ let rec block_element_list
       consume_block_elements ~parsed_a_tag `After_text acc
 
     | {value = `Modules s as token; location} as next_token ->
-      raise_if_after_text next_token;
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
+      warn_if_after_text next_token;
 
       junk input;
 
@@ -787,14 +907,22 @@ let rec block_element_list
         scan_delimiters [] 0
       in
 
+      (* TODO Correct locations await a full implementation of {!modules}
+         parsing. *)
       let modules =
         split_string " \t\r\n" s
-        |> List.map Helpers.read_mod_longident
+        |> List.fold_left (fun acc r ->
+          match Reference.read_mod_longident input.warnings location r with
+          | Result.Ok r -> r::acc
+          | Result.Error error ->
+            Error.warning input.warnings error;
+            acc) []
+        |> List.rev
       in
 
       if modules = [] then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
+        |> Error.warning input.warnings;
 
       let block = accepted_in_all_contexts context (`Modules modules) in
       let block = Location.at location block in
@@ -804,16 +932,16 @@ let rec block_element_list
 
 
     | {value = `Begin_list kind as token; location} as next_token ->
-      raise_if_after_text next_token;
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
+      warn_if_after_text next_token;
 
       junk input;
 
       let items, brace_location =
         explicit_list_items ~parent_markup:token input in
       if items = [] then
-        Parse_error.cannot_be_empty ~what:(Token.describe token) location
-        |> Error.raise_exception;
+        Parse_error.should_not_be_empty ~what:(Token.describe token) location
+        |> Error.warning input.warnings;
 
       let location = Location.span [location; brace_location] in
       let block = `List (kind, items) in
@@ -827,14 +955,14 @@ let rec block_element_list
     | {value = `Minus | `Plus as token; location} as next_token ->
       begin match where_in_line with
       | `After_text | `After_shorthand_bullet ->
-        Parse_error.must_begin_on_its_own_line
+        Parse_error.should_begin_on_its_own_line
           ~what:(Token.describe token) location
-        |> Error.raise_exception
+        |> Error.warning input.warnings
       | _ ->
         ()
       end;
 
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
 
       begin match context with
       | In_shorthand_list ->
@@ -863,24 +991,53 @@ let rec block_element_list
     | {value = `Begin_section_heading (level, label) as token; location}
         as next_token ->
 
-      raise_if_after_tags next_token;
+      warn_if_after_tags next_token;
+
+      let recover_when_not_at_top_level context =
+        warn_because_not_at_top_level next_token;
+        junk input;
+        let content, brace_location =
+          delimited_inline_element_list
+            ~parent_markup:token
+            ~parent_markup_location:location
+            ~requires_leading_whitespace:true
+            input
+        in
+        let location = Location.span [location; brace_location] in
+        let paragraph =
+          `Paragraph content
+          |> accepted_in_all_contexts context
+          |> Location.at location
+        in
+        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph::acc)
+      in
 
       begin match context with
       | In_shorthand_list ->
         if where_in_line = `At_start_of_line then
           List.rev acc, next_token, where_in_line
         else
-          raise_because_not_at_top_level next_token
+          recover_when_not_at_top_level context
       | In_explicit_list ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
       | In_tag ->
-        raise_because_not_at_top_level next_token
+        recover_when_not_at_top_level context
 
       | Top_level ->
         if where_in_line <> `At_start_of_line then
-          Parse_error.must_begin_on_its_own_line
+          Parse_error.should_begin_on_its_own_line
             ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          |> Error.warning input.warnings;
+
+        let label =
+          match label with
+          | Some "" ->
+            Parse_error.should_not_be_empty ~what:"heading label" location
+            |> Error.warning input.warnings;
+            None
+          | _ ->
+            label
+        in
 
         junk input;
 
@@ -892,8 +1049,8 @@ let rec block_element_list
             input
         in
         if content = [] then
-          Parse_error.cannot_be_empty ~what:(Token.describe token) location
-          |> Error.raise_exception;
+          Parse_error.should_not_be_empty ~what:(Token.describe token) location
+          |> Error.warning input.warnings;
 
         let location = Location.span [location; brace_location] in
         let heading = `Heading (level, label, content) in
@@ -959,9 +1116,9 @@ and shorthand_list_items
         let content, stream_head, where_in_line =
           block_element_list In_shorthand_list ~parent_markup:bullet input in
         if content = [] then
-          Parse_error.cannot_be_empty
+          Parse_error.should_not_be_empty
             ~what:(Token.describe bullet) next_token.location
-          |> Error.raise_exception;
+          |> Error.warning input.warnings;
 
         let acc = content::acc in
         consume_list_items stream_head where_in_line acc
@@ -1003,7 +1160,8 @@ and explicit_list_items
         next_token.location
         ~what:(Token.describe `End)
         ~in_what:(Token.describe parent_markup)
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+      List.rev acc, next_token.location
 
     | `Right_brace ->
       junk input;
@@ -1037,18 +1195,18 @@ and explicit_list_items
                it is not represented as [`Space], [`Single_newline], or
                [`Blank_line]. *)
         | _ ->
-          Parse_error.must_be_followed_by_whitespace
+          Parse_error.should_be_followed_by_whitespace
             next_token.location ~what:(Token.print token)
-          |> Error.raise_exception
+          |> Error.warning input.warnings
       end;
 
       let content, token_after_list_item, _where_in_line =
         block_element_list In_explicit_list ~parent_markup:token input in
 
       if content = [] then
-        Parse_error.cannot_be_empty
+        Parse_error.should_not_be_empty
           next_token.location ~what:(Token.describe token)
-        |> Error.raise_exception;
+        |> Error.warning input.warnings;
 
       begin match token_after_list_item.value with
       | `Right_brace ->
@@ -1058,7 +1216,7 @@ and explicit_list_items
           token_after_list_item.location
           ~what:(Token.describe `End)
           ~in_what:(Token.describe token)
-        |> Error.raise_exception
+        |> Error.warning input.warnings
       end;
 
       let acc = content::acc in
@@ -1068,10 +1226,10 @@ and explicit_list_items
       let suggestion =
         match token with
         | `Begin_section_heading _ | `Tag _ ->
-          Printf.sprintf "move %s outside the list" (Token.describe token)
+          Printf.sprintf "move %s outside the list." (Token.describe token)
         | _ ->
           Printf.sprintf
-            "move %s into a list item, %s or %s"
+            "move %s into a list item, %s or %s."
             (Token.describe token)
             (Token.print (`Begin_list_item `Li))
             (Token.print (`Begin_list_item `Dash))
@@ -1081,7 +1239,10 @@ and explicit_list_items
         ~what:(Token.describe token)
         ~in_what:(Token.describe parent_markup)
         ~suggestion
-      |> Error.raise_exception
+      |> Error.warning input.warnings;
+
+      junk input;
+      consume_list_items acc
   in
 
   consume_list_items []
@@ -1090,15 +1251,29 @@ and explicit_list_items
 
 (* {2 Entry point} *)
 
-let parse token_stream =
-  Error.catch begin fun () ->
+let parse warnings tokens =
+  let input = {tokens; warnings} in
+
+  let rec parse_block_elements () =
     let elements, last_token, _where_in_line =
-      block_element_list Top_level ~parent_markup:`Comment token_stream in
+      block_element_list
+        Top_level ~parent_markup:`Comment input
+    in
 
     match last_token.value with
     | `End ->
       elements
+
     | `Right_brace ->
       Parse_error.unpaired_right_brace last_token.location
-      |> Error.raise_exception
-  end
+      |> Error.warning input.warnings;
+
+      let block =
+        Location.same last_token
+          (`Paragraph [Location.same last_token (`Word "}")])
+      in
+
+      junk input;
+      elements @ (block::(parse_block_elements ()))
+  in
+  parse_block_elements ()

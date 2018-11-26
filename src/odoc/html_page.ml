@@ -18,15 +18,15 @@ open StdLabels
 
 let to_html_tree_page ?theme_uri ~syntax v =
   match syntax with
-  | Html.Html_tree.Reason -> Html.To_html_tree.RE.page ?theme_uri v
-  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.page ?theme_uri v
+  | Html.Tree.Reason -> Html.Generator.Reason.page ?theme_uri v
+  | Html.Tree.OCaml -> Html.Generator.ML.page ?theme_uri v
 
 let to_html_tree_compilation_unit ?theme_uri ~syntax v =
   match syntax with
-  | Html.Html_tree.Reason -> Html.To_html_tree.RE.compilation_unit ?theme_uri v
-  | Html.Html_tree.OCaml -> Html.To_html_tree.ML.compilation_unit ?theme_uri v
+  | Html.Tree.Reason -> Html.Generator.Reason.compilation_unit ?theme_uri v
+  | Html.Tree.OCaml -> Html.Generator.ML.compilation_unit ?theme_uri v
 
-let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir input =
+let from_odoc ~env ?(syntax=Html.Tree.OCaml) ?theme_uri ~output:root_dir input =
   let root = Root.read input in
   match root.file with
   | Page page_name ->
@@ -39,7 +39,7 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
     let pages = to_html_tree_page ?theme_uri ~syntax odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
     Fs.Directory.mkdir_p pkg_dir;
-    Html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
+    Html.Tree.traverse pages ~f:(fun ~parents _pkg_name content ->
       assert (parents = []);
       let oc =
         let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".html") in
@@ -67,7 +67,7 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
     let pages = to_html_tree_compilation_unit ?theme_uri ~syntax odoctree in
-    Html.Html_tree.traverse pages ~f:(fun ~parents name content ->
+    Html.Tree.traverse pages ~f:(fun ~parents name content ->
       let directory =
         let dir =
           List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
@@ -87,7 +87,7 @@ let from_odoc ~env ?(syntax=Html.Html_tree.OCaml) ?theme_uri ~output:root_dir in
 
 (* Used only for [--index-for] which is deprecated and available only for
    backward compatibility. It should be removed whenever. *)
-let from_mld ~env ?(syntax=Html.Html_tree.OCaml) ~package ~output:root_dir input =
+let from_mld ~env ?(syntax=Html.Tree.OCaml) ~package ~output:root_dir input =
   let root_name =
     Filename.chop_extension (Fs.File.(to_string @@ basename input))
   in
@@ -127,7 +127,7 @@ let from_mld ~env ?(syntax=Html.Html_tree.OCaml) ~package ~output:root_dir input
     let pages = to_html_tree_page ~syntax resolved in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
-    Html.Html_tree.traverse pages ~f:(fun ~parents _pkg_name content ->
+    Html.Tree.traverse pages ~f:(fun ~parents _pkg_name content ->
       assert (parents = []);
       let oc =
         let f = Fs.File.create ~directory:pkg_dir ~name:"index.html" in

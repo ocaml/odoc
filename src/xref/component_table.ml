@@ -458,7 +458,7 @@ and class_decl local =
 and signature_items local =
   let open Sig in
   let open Signature in function
-    | Module md :: rest ->
+    | Module (_, md) :: rest ->
         let open Module in
         let name = Identifier.name md.id in
         let decl = module_decl local md.type_ in
@@ -480,7 +480,7 @@ and signature_items local =
         let sg = signature_items local rest in
         let sg = add_documentation mty.doc sg in
           add_module_type name expr sg
-    | Type decl :: rest ->
+    | Type (_, decl) :: rest ->
         let open TypeDecl in
         let sg = signature_items local rest in
         let sg = add_documentation decl.doc sg in
@@ -516,14 +516,14 @@ and signature_items local =
         let sg = add_documentation ev.doc sg in
         let name = Identifier.name ev.id in
           add_element name Element.Value sg
-    | Class cl :: rest ->
+    | Class (_, cl)::rest ->
         let open Class in
         let sg = signature_items local rest in
         let sg = add_documentation cl.doc sg in
         let name = Identifier.name cl.id in
         let expr = class_decl local cl.type_ in
           add_class name expr sg
-    | ClassType clty :: rest ->
+    | ClassType (_, clty)::rest ->
         let open ClassType in
         let sg = signature_items local rest in
         let sg = add_documentation clty.doc sg in

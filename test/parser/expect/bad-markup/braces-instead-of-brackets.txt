@@ -1,4 +1,6 @@
 ((output
-  (error  "File \"f.ml\", line 1, characters 0-2:\
-         \n'{f': bad markup"))
- (warnings ()))
+  (((f.ml (1 0) (1 5)) (paragraph (((f.ml (1 0) (1 5)) (code_span foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-5:\
+   \n'{foo}': bad markup.\
+   \nSuggestion: did you mean '{!foo}' or '[foo]'?")))

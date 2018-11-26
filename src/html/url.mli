@@ -52,7 +52,7 @@ module Anchor : sig
   module Polymorphic_variant_decl : sig
     val from_element
       : type_ident:_ Identifier.t
-      -> Model.Lang.TypeExpr.Variant.element
+      -> Model.Lang.TypeExpr.Polymorphic_variant.element
       -> t
   end
 

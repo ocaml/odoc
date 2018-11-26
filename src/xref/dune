@@ -1,3 +1,5 @@
 (library
- (name xref)
- (libraries compiler-libs.common model))
+ (name odoc__xref)
+ (public_name odoc.xref)
+ (libraries compiler-libs.common odoc__alias odoc__model)
+ (flags (:standard -open Odoc__alias)))

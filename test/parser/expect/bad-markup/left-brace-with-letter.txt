@@ -1,4 +1,7 @@
 ((output
-  (error  "File \"f.ml\", line 1, characters 0-2:\
-         \n'{g': bad markup"))
- (warnings ()))
+  (((f.ml (1 0) (1 2))
+    (paragraph (((f.ml (1 0) (1 1)) (word {)) ((f.ml (1 1) (1 2)) (word g)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-1:\
+   \n'{': bad markup.\
+   \nSuggestion: escape the brace with '\\{'.")))

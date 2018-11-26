@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 4-7:\
-   \n'{li ...}' (list item) cannot be empty"))
- (warnings ()))
+((output (((f.ml (1 0) (1 10)) (unordered (())))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 4-7:\
+   \n'{li ...}' (list item) should not be empty.")))

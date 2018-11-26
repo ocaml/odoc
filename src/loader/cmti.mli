@@ -26,9 +26,13 @@ val read_interface: Model.Root.t -> string -> Typedtree.signature ->
   Model.Comment.docs *
   Model.Lang.Signature.t
 
-val read_module_type : Ident_env.t ->
-  Paths.Identifier.signature -> int ->
-  Typedtree.module_type -> Model.Lang.ModuleType.expr
+val read_module_type :
+  Ident_env.t ->
+  Paths.Identifier.signature ->
+  Paths.Identifier.label_parent ->
+  int ->
+  Typedtree.module_type ->
+    Model.Lang.ModuleType.expr
 
 val read_value_description : Ident_env.t ->
   Paths.Identifier.signature ->
@@ -36,6 +40,7 @@ val read_value_description : Ident_env.t ->
 
 val read_type_declarations : Ident_env.t ->
   Paths.Identifier.signature ->
+  Model.Lang.Signature.recursive ->
   Typedtree.type_declaration list ->
   Model.Lang.Signature.item list
 

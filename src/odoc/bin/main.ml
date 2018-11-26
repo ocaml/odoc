@@ -6,16 +6,15 @@
 open Odoc
 open Cmdliner
 
-let convert_syntax : Html.Html_tree.syntax Arg.converter =
-  let open Html.Html_tree in
+let convert_syntax : Html.Tree.syntax Arg.converter =
   let syntax_parser str =
     match str with
-  | "ml" | "ocaml" -> `Ok OCaml
-  | "re" | "reason" -> `Ok Reason
+  | "ml" | "ocaml" -> `Ok Html.Tree.OCaml
+  | "re" | "reason" -> `Ok Html.Tree.Reason
   | s -> `Error (Printf.sprintf "Unknown syntax '%s'" s)
   in
   let syntax_printer fmt syntax =
-    Format.pp_print_string fmt (Html__.Html_tree.string_of_syntax syntax)
+    Format.pp_print_string fmt (Html.Tree.string_of_syntax syntax)
   in
   (syntax_parser, syntax_printer)
 
@@ -30,7 +29,7 @@ let convert_directory : Fs.Directory.t Arg.converter =
   (odoc_dir_parser, odoc_dir_printer)
 
 (* Very basic validation and normalization for URI paths. *)
-let convert_uri : Html.Html_tree.uri Arg.converter =
+let convert_uri : Html.Tree.uri Arg.converter =
   let parser str =
     if String.length str = 0 then
       `Error "invalid URI"
@@ -43,11 +42,11 @@ let convert_uri : Html.Html_tree.uri Arg.converter =
       in
       let last_char = String.get str (String.length str - 1) in
       let str = if last_char <> '/' then str ^ "/" else str in
-      `Ok Html.Html_tree.(if is_absolute then Absolute str else Relative str)
+      `Ok Html.Tree.(if is_absolute then Absolute str else Relative str)
   in
   let printer ppf = function
-    | Html.Html_tree.Absolute uri
-    | Html.Html_tree.Relative uri -> Format.pp_print_string ppf uri
+    | Html.Tree.Absolute uri
+    | Html.Tree.Relative uri -> Format.pp_print_string ppf uri
   in
   (parser, printer)
 
@@ -157,15 +156,15 @@ end = struct
       ~doc:"Compile a cmti, cmt, cmi or mld file to an odoc file."
 end
 
-module Support_files = struct
+module Support_files_command = struct
   let support_files without_theme output_dir =
     Support_files.write ~without_theme output_dir
 
+  let without_theme =
+    let doc = "Don't copy the default theme to output directory." in
+    Arg.(value & flag & info ~doc ["without-theme"])
+
   let cmd =
-    let without_theme =
-      let doc = "Don't copy the default theme to output directory." in
-      Arg.(value & flag & info ~doc ["without-theme"])
-    in
     Term.(const support_files $ without_theme $ dst)
 
   let info =
@@ -177,7 +176,7 @@ module Support_files = struct
 end
 
 module Css = struct
-  let cmd = Support_files.cmd
+  let cmd = Support_files_command.cmd
 
   let info =
     let doc =
@@ -194,8 +193,8 @@ end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
         syntax theme_uri input_file =
-    Html.Html_tree.Relative_link.semantic_uris := semantic_uris;
-    Html.Html_tree.open_details := not closed_details;
+    Html.Tree.Relative_link.semantic_uris := semantic_uris;
+    Html.Tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
@@ -231,13 +230,13 @@ end = struct
     let theme_uri =
       let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
-      let default = Html.Html_tree.Relative "./" in
+      let default = Html.Tree.Relative "./" in
       Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
     in
     let syntax =
       let doc = "Available options: ml | re"
       in
-      Arg.(value & opt (pconv convert_syntax) (Html.Html_tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
+      Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)
@@ -251,15 +250,17 @@ module Html_fragment : sig
   val info: Term.info
 end = struct
 
-  let html_fragment directories root_uri output_file input_file =
+  let html_fragment directories xref_base_uri output_file input_file =
     let env = Env.create ~important_digests:false ~directories in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in
-    let root_uri =
-      let last_char = String.get root_uri (String.length root_uri - 1) in
-      if last_char <> '/' then root_uri ^ "/" else root_uri
+    let xref_base_uri =
+      if xref_base_uri = "" then xref_base_uri
+      else
+        let last_char = String.get xref_base_uri (String.length xref_base_uri - 1) in
+        if last_char <> '/' then xref_base_uri ^ "/" else xref_base_uri
     in
-    Html_fragment.from_mld ~env ~root_uri ~output:output_file input_file
+    Html_fragment.from_mld ~env ~xref_base_uri ~output:output_file input_file
 
   let cmd =
     let output =
@@ -271,13 +272,13 @@ end = struct
       let doc = "Input documentation page file" in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.mld" [])
     in
-    let root_uri =
-      let doc = "Root URI used to resolve cross-references. Set this to the \
+    let xref_base_uri =
+      let doc = "Base URI used to resolve cross-references. Set this to the \
                  root of the global docset during local development. By default \
                  `.' is used." in
-      Arg.(value & opt string "" & info ~docv:"URI" ~doc ["root-uri"])
+      Arg.(value & opt string "" & info ~docv:"URI" ~doc ["xref-base-uri"])
     in
-    Term.(const html_fragment $ odoc_file_directories $ root_uri $ output $ input)
+    Term.(const html_fragment $ odoc_file_directories $ xref_base_uri $ output $ input)
 
   let info =
     Term.info ~doc:"Generates an html fragment file from an mld one" "html-fragment"
@@ -373,19 +374,35 @@ module Targets = struct
     let info =
       Term.info "html-targets" ~doc:"TODO: Fill in."
   end
+
+  module Support_files =
+  struct
+    let list_targets without_theme output_directory =
+      Support_files.print_filenames ~without_theme output_directory
+
+    let cmd =
+      Term.(const list_targets $ Support_files_command.without_theme $ dst)
+
+    let info =
+      Term.info "support-files-targets"
+        ~doc:"Lists the names of the files that 'odoc support-files' outputs."
+  end
 end
 
 let () =
+  Printexc.record_backtrace true;
+
   let subcommands =
     [ Compile.(cmd, info)
     ; Html.(cmd, info)
     ; Html_fragment.(cmd, info)
-    ; Support_files.(cmd, info)
+    ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Html.(cmd, info)
+    ; Targets.Support_files.(cmd, info)
     ]
   in
   let default =

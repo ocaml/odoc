@@ -137,6 +137,8 @@ let print : [< t ] -> string = function
     "'@open'"
   | `Tag `Closed ->
     "'@closed'"
+  | `Raw_markup (`Html, _) ->
+    "'{%html:...%}'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted

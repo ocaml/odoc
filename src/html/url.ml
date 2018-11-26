@@ -239,10 +239,10 @@ module Anchor = struct
       | Error e -> failwith (Error.to_string e)
       | Ok { anchor; _ } ->
         match elt with
-        | Model.Lang.TypeExpr.Variant.Type te ->
+        | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           { kind = "type"
           ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
-        | Constructor (name, _, _) ->
+        | Constructor {name; _} ->
           { kind = "constructor"
           ; name = Printf.sprintf "%s.%s" anchor name }
   end

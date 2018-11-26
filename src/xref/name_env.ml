@@ -407,15 +407,15 @@ let rec add_include incl env =
 and add_signature_item item env =
   let open Signature in
   match item with
-  | Module md -> add_module md env
+  | Module (_, md) -> add_module md env
   | ModuleType mtyp -> add_module_type mtyp env
-  | Type decl -> add_type_decl decl env
+  | Type (_, decl) -> add_type_decl decl env
   | TypExt tyext -> add_extension tyext env
   | Exception exn -> add_exception exn env
   | Value vl -> add_value vl env
   | External ext -> add_external ext env
-  | Class cl -> add_class cl env
-  | ClassType cltyp -> add_class_type cltyp env
+  | Class (_, cl) -> add_class cl env
+  | ClassType (_, cltyp) -> add_class_type cltyp env
   | Include incl -> add_include incl env
   | Comment com -> add_comment com env
 

@@ -363,6 +363,34 @@
     </dt>
    </dl>
    <dl>
+    <dt class="spec type" id="type-mutually">
+     <a href="#type-mutually" class="anchor"></a><code><span class="keyword">type </span>mutually</code><code><span class="keyword"> = </span></code>
+     <table class="variant">
+      <tbody>
+       <tr id="type-mutually.A" class="anchored">
+        <td class="def constructor">
+         <a href="#type-mutually.A" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">A</span>(<a href="index.html#type-recursive">recursive</a>)</code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <span class="keyword">;</span>
+    </dt>
+    <dt class="spec type" id="type-recursive">
+     <a href="#type-recursive" class="anchor"></a><code><span class="keyword">and </span>recursive</code><code><span class="keyword"> = </span></code>
+     <table class="variant">
+      <tbody>
+       <tr id="type-recursive.B" class="anchored">
+        <td class="def constructor">
+         <a href="#type-recursive.B" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">B</span>(<a href="index.html#type-mutually">mutually</a>)</code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <span class="keyword">;</span>
+    </dt>
+   </dl>
+   <dl>
     <dt class="spec exception" id="exception-Foo">
      <a href="#exception-Foo" class="anchor"></a><code><span class="keyword">exception </span></code><code><span class="exception">Foo</span>(int<span class="keyword">, </span>int)</code><span class="keyword">;</span>
     </dt>

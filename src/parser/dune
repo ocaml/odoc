@@ -1,6 +1,8 @@
 (ocamllex lexer)
 
 (library
- (name parser_)
+ (name odoc__parser)
+ (public_name odoc.parser)
  (preprocess (pps bisect_ppx -conditional))
- (libraries model compat astring))
+ (libraries astring odoc__alias odoc__compat odoc__model rresult)
+ (flags (:standard -open Odoc__alias)))

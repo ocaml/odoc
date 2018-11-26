@@ -62,7 +62,7 @@ module Accessible_paths = struct
       begin match digest with
       | Some d when Digest.compare d root.digest <> 0 ->
         Printf.eprintf
-          "WARNING: digest of %s doesn't match the one excepted for file %s\n%!"
+          "WARNING: digest of %s doesn't match the one expected for file %s\n%!"
           (Fs.File.to_string path) filename
       | _ -> ()
       end;

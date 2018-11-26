@@ -27,7 +27,6 @@ type nested_pair = (int * int) * int
 
 type instance = int constructor
 
-(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
 type variant_e = {a : int}
 type variant =
   | A
@@ -36,8 +35,6 @@ type variant =
   | D (** {e bar} *)
   | E of variant_e
 
-
-(* NOTE(@ostera): inline this type after 4.02.x support is dropped *)
 type variant_c = {a: int}
 type _ gadt =
   | A : int gadt
@@ -57,11 +54,14 @@ type record = {
   e : 'a. 'a;
 }
 
+(* 4.02 doesn't preserve doc comments on polymorphic variant constructors, but
+   they should be restored if 4.02 support is dropped, or if creating a test
+   that won't run on 4.02. *)
 type polymorphic_variant = [
   | `A
   | `B of int
-  | `C (** foo *)
-  | `D (** {e bar} *)
+  | `C
+  | `D
 ]
 
 type polymorphic_variant_extension = [
@@ -120,6 +120,9 @@ type as_ = (int as 'a) * 'a
 type extensible = ..
 
 type extensible += Extension
+
+type mutually = A of recursive
+and recursive = B of mutually
 
 (* Not a type, but analogous to extensions. *)
 exception Foo of int * int

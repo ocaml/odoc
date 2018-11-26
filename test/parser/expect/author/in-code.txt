@@ -1,5 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 13))
-     (paragraph (((f.ml (1 0) (1 13)) (code_span "@author Foo"))))))))
+  (((f.ml (1 0) (1 13))
+    (paragraph (((f.ml (1 0) (1 13)) (code_span "@author Foo")))))))
  (warnings ()))

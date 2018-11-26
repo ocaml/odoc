@@ -1,14 +1,8 @@
 #!/bin/bash
 
-case $TRAVIS_OS_NAME in
-"windows")
-  # this is brittle
-  ESY=/c/ProgramData/nvs/node/10.13.0/x64/node_modules/esy/_build/default/esy/bin/esyCommand.exe
-;;
-*)
-  ESY=$(npm bin --global)/esy
-;;
-esac
+set -e
+
+ESY=$(npm bin --global)/esy
 
 if [[ $ESY_BUILD == YES ]]; then
   $ESY install --verbose
@@ -20,4 +14,5 @@ else
   make test
   opam pin add -y --dev-repo dune
   make dune-test
+  make docs
 fi

@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 10)) (verbatim " foo"))))) (warnings ()))
+((output (((f.ml (1 0) (1 10)) (verbatim " foo")))) (warnings ()))

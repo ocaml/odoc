@@ -1,5 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 18))
-     (paragraph (((f.ml (1 0) (1 18)) (raw_markup html " foo bar "))))))))
+  (((f.ml (1 0) (1 18))
+    (paragraph (((f.ml (1 0) (1 18)) (raw_markup html " foo bar ")))))))
  (warnings ()))

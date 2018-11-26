@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 14)) (@since "foo bar"))))) (warnings ()))
+((output (((f.ml (1 0) (1 14)) (@since "foo bar")))) (warnings ()))

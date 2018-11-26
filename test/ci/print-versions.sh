@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 if [[ $ESY_BUILD == YES ]]; then
   case $TRAVIS_OS_NAME in
   "windows")
@@ -14,3 +16,5 @@ else
   opam --version
   ocaml -version
 fi
+
+tidy --version

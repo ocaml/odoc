@@ -22,7 +22,6 @@ module OCamlPath = Path
 
 open Model.Paths
 open Model.Lang
-open Attrs
 
 module Env = Model.Ident_env
 
@@ -83,7 +82,7 @@ let read_value_binding env parent vb =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container parent vb.vb_attributes in
+  let doc = Doc_attr.attached container vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
 
 let read_value_bindings env parent vbs =
@@ -94,7 +93,8 @@ let read_value_bindings env parent vbs =
     List.fold_left
       (fun acc vb ->
          let open Signature in
-         let comments = read_comments container vb.vb_attributes in
+        let comments =
+          Doc_attr.standalone_multiple container vb.vb_attributes in
          let comments = List.map (fun com -> Comment com) comments in
          let vb = read_value_binding env parent vb in
           List.rev_append vb (List.rev_append comments acc))
@@ -108,7 +108,7 @@ let read_type_extension env parent tyext =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container parent tyext.tyext_attributes in
+  let doc = Doc_attr.attached container tyext.tyext_attributes in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
@@ -138,7 +138,7 @@ let rec read_class_type_field env parent ctf =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_class_signature parent)
   in
-  let doc = read_attributes container parent ctf.ctf_attributes in
+  let doc = Doc_attr.attached container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -160,7 +160,7 @@ let rec read_class_type_field env parent ctf =
   | Tctf_inherit cltyp ->
       Some (Inherit (read_class_signature env parent [] cltyp))
   | Tctf_attribute attr ->
-      match read_comment container attr with
+      match Doc_attr.standalone container attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -218,7 +218,7 @@ let rec read_class_field env parent cf =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_class_signature parent)
   in
-  let doc = read_attributes container parent (cf.cf_attributes) in
+  let doc = Doc_attr.attached container (cf.cf_attributes) in
   match cf.cf_desc with
   | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
@@ -251,7 +251,7 @@ let rec read_class_field env parent cf =
       Some (Inherit (read_class_structure env parent [] cl))
   | Tcf_initializer _ -> None
   | Tcf_attribute attr ->
-      match read_comment container attr with
+      match Doc_attr.standalone container attr with
       | None -> None
       | Some doc -> Some (Comment doc)
 
@@ -319,7 +319,7 @@ let read_class_declaration env parent cld =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let doc = read_attributes container id cld.ci_attributes in
+  let doc = Doc_attr.attached container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
     let virtual_ = (cld.ci_virt = Virtual) in
     let clparams =
@@ -337,19 +337,17 @@ let read_class_declarations env parent clds =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc cld ->
-         let open Signature in
-         let comments = read_comments container cld.ci_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let cld = read_class_declaration env parent cld in
-           (Class cld) :: (List.rev_append comments acc))
-      [] clds
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left begin fun (acc, recursive) cld ->
+    let comments = Doc_attr.standalone_multiple container cld.ci_attributes in
+    let comments = List.map (fun com -> Comment com) comments in
+    let cld = read_class_declaration env parent cld in
+    ((Class (recursive, cld))::(List.rev_append comments acc), And)
+  end ([], Ordinary) clds
+  |> fst
+  |> List.rev
 
-let rec read_module_expr env parent pos mexpr =
+let rec read_module_expr env parent label_parent pos mexpr =
   let open ModuleType in
     match mexpr.mod_desc with
     | Tmod_ident _ ->
@@ -362,7 +360,7 @@ let rec read_module_expr env parent pos mexpr =
           | Some arg ->
               let name = parenthesise (Ident.name id) in
               let id = Identifier.Argument(parent, pos, name) in
-              let arg = Cmti.read_module_type env id 1 arg in
+          let arg = Cmti.read_module_type env id label_parent 1 arg in
               let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
@@ -371,14 +369,14 @@ let rec read_module_expr env parent pos mexpr =
                 Some { FunctorArgument. id; expr = arg; expansion }
         in
         let env = Env.add_argument parent pos id env in
-        let res = read_module_expr env parent (pos + 1) res in
+      let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmod_apply _ ->
         Cmi.read_module_type env parent pos mexpr.mod_type
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
-        Cmti.read_module_type env parent pos mty
+        Cmti.read_module_type env parent label_parent pos mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
-        read_module_expr env parent pos mexpr
+        read_module_expr env parent label_parent pos mexpr
     | Tmod_unpack(_, mty) ->
         Cmi.read_module_type env parent pos mty
 
@@ -392,9 +390,8 @@ and read_module_binding env parent mb =
   let name = parenthesise (Ident.name mb.mb_id) in
   let id = Identifier.Module(parent, name) in
   let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
-  let doc = read_attributes container id mb.mb_attributes in
+    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
+  let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
@@ -405,7 +402,7 @@ and read_module_binding env parent mb =
   let type_ =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env id 1 mb.mb_expr)
+    | _ -> ModuleType (read_module_expr env id container 1 mb.mb_expr)
   in
   let hidden =
     match canonical with
@@ -423,17 +420,16 @@ and read_module_bindings env parent mbs =
   let container =
     Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
   in
-  let items =
-    List.fold_left
-      (fun acc mb ->
-         let open Signature in
-         let comments = read_comments container mb.mb_attributes in
-         let comments = List.map (fun com -> Comment com) comments in
-         let mb = read_module_binding env parent mb in
-           (Module mb) :: (List.rev_append comments acc))
-      [] mbs
-  in
-    List.rev items
+  let open Signature in
+  List.fold_left
+    (fun (acc, recursive) mb ->
+      let comments = Doc_attr.standalone_multiple container mb.mb_attributes in
+      let comments = List.map (fun com -> Comment com) comments in
+      let mb = read_module_binding env parent mb in
+      ((Module (recursive, mb))::(List.rev_append comments acc), And))
+    ([], Rec) mbs
+  |> fst
+  |> List.rev
 
 and read_structure_item env parent item =
   let open Signature in
@@ -445,10 +441,16 @@ and read_structure_item env parent item =
         [Cmti.read_value_description env parent vd]
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
     | Tstr_type (decls) ->
+      let rec_flag = Ordinary in
 #else
-    | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+    | Tstr_type (rec_flag, decls) ->
+      let rec_flag =
+        match rec_flag with
+        | Recursive -> Ordinary
+        | Nonrecursive -> Nonrec
+      in
 #endif
-        Cmti.read_type_declarations env parent decls
+      Cmti.read_type_declarations env parent rec_flag decls
     | Tstr_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
     | Tstr_exception ext ->
@@ -457,7 +459,7 @@ and read_structure_item env parent item =
         in
           [Exception ext]
     | Tstr_module mb ->
-        [Module (read_module_binding env parent mb)]
+        [Module (Ordinary, read_module_binding env parent mb)]
     | Tstr_recmodule mbs ->
         read_module_bindings env parent mbs
     | Tstr_modtype mtd ->
@@ -482,21 +484,20 @@ and read_structure_item env parent item =
       let container =
         Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
       in
-          match read_comment container attr with
+          match Doc_attr.standalone container attr with
           | None -> []
           | Some doc -> [Comment doc]
 
 and read_include env parent incl =
   let open Include in
   let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
-  let doc = read_attributes container parent incl.incl_attributes in
+    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
+  let doc = Doc_attr.attached container incl.incl_attributes in
   let decl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env parent 1 incl.incl_mod)
+    | _ -> ModuleType (read_module_expr env parent container 1 incl.incl_mod)
   in
   let content = Cmi.read_signature env parent incl.incl_type in
   let expansion = { content; resolved = false } in
@@ -519,6 +520,6 @@ let read_implementation root name impl =
     let open Signature in
     match items with
     | Comment (`Docs doc) :: items -> doc, items
-    | _ -> empty, items
+    | _ -> Doc_attr.empty, items
   in
     (id, doc, items)

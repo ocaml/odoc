@@ -9,17 +9,10 @@ type 'a with_location = 'a Location.with_location
 
 
 type status = {
-  permissive : bool;
-  mutable warnings : Error.t list;
+  warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
   parent_of_sections : Model.Paths.Identifier.label_parent;
 }
-
-let warning status message =
-  if status.permissive then
-    status.warnings <- message::status.warnings
-  else
-    Error.raise_exception message
 
 
 
@@ -36,29 +29,6 @@ let describe_element = function
 
 
 
-let leaf_inline_element
-    : status -> Comment.leaf_inline_element with_location ->
-        Comment.leaf_inline_element with_location =
-  fun status element ->
-
-  begin match element.value with
-  | `Code_span c as token ->
-    begin match String.index c '\n' with
-    | exception Not_found -> ()
-    | _ ->
-      Parse_error.not_allowed
-        ~what:(Token.describe `Single_newline)
-        ~in_what:(Token.describe token)
-        element.location
-      |> warning status
-    end
-  | _ -> ()
-  end;
-
-  element
-
-
-
 let rec non_link_inline_element
     : status -> surrounding:_ -> Ast.inline_element with_location ->
         Comment.non_link_inline_element with_location =
@@ -66,20 +36,22 @@ let rec non_link_inline_element
 
   match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    let element = leaf_inline_element status element in
-    (element :> Comment.non_link_inline_element with_location)
+    element
 
   | {value = `Styled (style, content); _} ->
     `Styled (style, non_link_inline_elements status ~surrounding content)
     |> Location.same element
 
-  | {value = `Reference _; _}
-  | {value = `Link _; _} as element ->
+  | {value = `Reference (_, _, content); _}
+  | {value = `Link (_, content); _} as element ->
     Parse_error.not_allowed
       ~what:(describe_element element.value)
       ~in_what:(describe_element surrounding)
       element.location
-    |> Error.raise_exception
+    |> Error.warning status.warnings;
+
+    `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
+    |> Location.same element
 
 and non_link_inline_elements status ~surrounding elements =
   List.map (non_link_inline_element status ~surrounding) elements
@@ -93,7 +65,7 @@ let rec inline_element
 
   match element with
   | {value = #Comment.leaf_inline_element; _} as element ->
-    (leaf_inline_element status element :> Comment.inline_element with_location)
+    element
 
   | {value = `Styled (style, content); location} ->
     `Styled (style, inline_elements status content)
@@ -219,18 +191,15 @@ let generate_heading_label : Comment.link_content -> string = fun content ->
 
 let section_heading
     : status ->
-      parsed_a_title:bool ->
+      top_heading_level:int option ->
       Location.span ->
-      int ->
-      string option ->
-      (Ast.inline_element with_location) list ->
-        bool * (Comment.block_element with_location) =
-    fun status ~parsed_a_title location level label content ->
+      [ `Heading of _ ] ->
+        int option * (Comment.block_element with_location) =
+    fun status ~top_heading_level location heading ->
 
-  let content =
-    non_link_inline_elements
-      status ~surrounding:(`Heading (level, label, content)) content
-  in
+  let `Heading (level, label, content) = heading in
+
+  let content = non_link_inline_elements status ~surrounding:heading content in
 
   let label =
     match label with
@@ -239,61 +208,72 @@ let section_heading
   in
   let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
 
-  let is_page =
-    match status.parent_of_sections with
-    | Model.Paths.Identifier.Page _ -> true
-    | _ -> false
-  in
-
   match status.sections_allowed, level with
-  | `None, _ ->
-    warning status (Parse_error.sections_not_allowed location);
+  | `None, _any_level ->
+    Error.warning status.warnings (Parse_error.headings_not_allowed location);
     let content = (content :> (Comment.inline_element with_location) list) in
     let element =
       Location.at location
         (`Paragraph [Location.at location
           (`Styled (`Bold, content))])
     in
-    parsed_a_title, element
+    top_heading_level, element
 
-  | `All, 1 ->
-    if parsed_a_title then
-      warning status (Parse_error.only_one_title_allowed location);
-
-    (* The `Title level is lowered to `Section if:
-       - this is not a page, or
-       - it is a page but a title was already parsed. *)
-    let level =
-      if is_page && not parsed_a_title then
-        `Title
-      else begin
-        Parse_error.bad_section_level (string_of_int level) location
-        |> warning status;
-        `Section
-      end
-    in
-    let element = `Heading (level, label, content) in
+  | `No_titles, 0 ->
+    Error.warning status.warnings (Parse_error.titles_not_allowed location);
+    let element = `Heading (`Title, label, content) in
     let element = Location.at location element in
-    true, element
+    let top_heading_level =
+      match top_heading_level with
+      | None -> Some level
+      | some -> some
+    in
+    top_heading_level, element
 
-  | _ ->
-    let level =
+  | _, level ->
+    let level' =
       match level with
-      | 2 -> `Section
-      | 3 -> `Subsection
-      | 4 -> `Subsubsection
+      | 0 -> `Title
+      | 1 -> `Section
+      | 2 -> `Subsection
+      | 3 -> `Subsubsection
+      | 4 -> `Paragraph
+      | 5 -> `Subparagraph
       | _ ->
-        Parse_error.bad_section_level (string_of_int level) location
-        |> warning status;
-        if level < 2 then
-          `Section
-        else
-          `Subsubsection
+        Error.warning status.warnings
+          (Parse_error.bad_heading_level level location);
+        (* Implicitly promote to level-5. *)
+        `Subparagraph
     in
-    let element = `Heading (level, label, content) in
+    begin match top_heading_level with
+    | Some top_level when
+        status.sections_allowed = `All && level <= top_level && level <= 5 ->
+      Error.warning status.warnings
+        (Parse_error.heading_level_should_be_lower_than_top_level
+          level top_level location)
+    | _ -> ()
+    end;
+    let element = `Heading (level', label, content) in
     let element = Location.at location element in
-    parsed_a_title, element
+    let top_heading_level =
+      match top_heading_level with
+      | None -> Some level
+      | some -> some
+    in
+    top_heading_level, element
 
+
+let validate_first_page_heading status ast_element =
+  match status.parent_of_sections with
+  | Model.Paths.Identifier.Page ({file; _}, _) ->
+    begin match ast_element with
+      | {Location.value = `Heading (_, _, _); _} -> ()
+      | _invalid_ast_element ->
+        let filename = Model.Root.Odoc_file.name file ^ ".mld" in
+        Error.warning status.warnings
+          (Parse_error.page_heading_required filename)
+    end
+  | _not_a_page -> ()
 
 
 let top_level_block_elements
@@ -302,55 +282,58 @@ let top_level_block_elements
     fun status ast_elements ->
 
   let rec traverse
-      : parsed_a_title:bool ->
+      : top_heading_level:int option ->
         (Comment.block_element with_location) list ->
         (Ast.block_element with_location) list ->
           (Comment.block_element with_location) list =
-      fun ~parsed_a_title comment_elements_acc ast_elements ->
+      fun ~top_heading_level comment_elements_acc ast_elements ->
 
     match ast_elements with
     | [] ->
       List.rev comment_elements_acc
 
     | ast_element::ast_elements ->
+      (* The first [ast_element] in pages must be a title or section heading. *)
+      if status.sections_allowed = `All && top_heading_level = None then begin
+        validate_first_page_heading status ast_element
+      end;
+
       match ast_element with
       | {value = #Ast.nestable_block_element; _} as element ->
         let element = nestable_block_element status element in
         let element = (element :> Comment.block_element with_location) in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
       | {value = `Tag the_tag; _} ->
         let element = Location.same ast_element (`Tag (tag status the_tag)) in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
-      | {value = `Heading (level, label, content); _} ->
-        let parsed_a_title, element =
+      | {value = `Heading _ as heading; _} ->
+        let top_heading_level, element =
           section_heading
             status
-            ~parsed_a_title
+            ~top_heading_level
             ast_element.Location.location
-            level
-            label
-            content
+            heading
         in
-        traverse ~parsed_a_title (element::comment_elements_acc) ast_elements
+        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
   in
+  let top_heading_level =
+    (* Non-page documents have a generated title. *)
+    match status.parent_of_sections with
+    | Model.Paths.Identifier.Page _ -> None
+    | _parent_with_generated_title -> Some 0
+  in
+  traverse ~top_heading_level [] ast_elements
 
-  traverse ~parsed_a_title:false [] ast_elements
 
 
-
-let ast_to_comment ~permissive ~sections_allowed ~parent_of_sections ast =
+let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
   let status =
     {
-      permissive;
-      warnings = [];
+      warnings;
       sections_allowed;
       parent_of_sections;
     }
   in
-
-  let result = Error.catch (fun () -> top_level_block_elements status ast) in
-  let warnings = List.rev status.warnings in
-
-  {Error.result; warnings}
+  top_level_block_elements status ast

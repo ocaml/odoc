@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 15)) (@author "Foo Bar"))))) (warnings ()))
+((output (((f.ml (1 0) (1 15)) (@author "Foo Bar")))) (warnings ()))

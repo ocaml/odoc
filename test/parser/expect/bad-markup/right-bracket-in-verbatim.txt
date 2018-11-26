@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 7)) (verbatim ]))))) (warnings ()))
+((output (((f.ml (1 0) (1 7)) (verbatim ])))) (warnings ()))

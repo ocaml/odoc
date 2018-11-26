@@ -1,4 +1,3 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (link foo ()))))))))
+  (((f.ml (1 0) (1 6)) (paragraph (((f.ml (1 0) (1 6)) (link foo ())))))))
  (warnings ()))

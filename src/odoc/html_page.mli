@@ -18,8 +18,8 @@
 (** Produces .html files from a .odoc file. *)
 
 val from_odoc :
-  env:Env.builder -> ?syntax:Html.Html_tree.syntax -> ?theme_uri:Html.Html_tree.uri -> output:Fs.Directory.t ->
+  env:Env.builder -> ?syntax:Html.Tree.syntax -> ?theme_uri:Html.Tree.uri -> output:Fs.Directory.t ->
   Fs.File.t -> unit
 
-val from_mld : env:Env.builder -> ?syntax:Html.Html_tree.syntax -> package:Model.Root.Package.t ->
+val from_mld : env:Env.builder -> ?syntax:Html.Tree.syntax -> package:Model.Root.Package.t ->
   output:Fs.Directory.t -> Fs.File.t -> unit

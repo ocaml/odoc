@@ -61,7 +61,7 @@ end
 module Case = struct
   type t = {
     name: string;
-    kind: [ `mld | `mli ];
+    kind: [ `mli | `mld | `ml ];
     theme_uri: string option;
     syntax: [ `ml | `re ];
   }
@@ -72,7 +72,9 @@ module Case = struct
       match Filename.extension basename with
       | ".mli" -> `mli
       | ".mld" -> `mld
-      | _ -> invalid_arg (sprintf "Expected mli or mld files, got %s" basename)
+      | ".ml" -> `ml
+      | _ ->
+        invalid_arg (sprintf "Expected mli, mld, or ml files, got %s" basename)
     in
     { name; kind; theme_uri; syntax }
 
@@ -96,22 +98,25 @@ module Case = struct
 
   let cmi_file case  = Env.path `scratch // (case.name ^ ".cmi")
   let cmti_file case = Env.path `scratch // (case.name ^ ".cmti")
+  let cmo_file case = Env.path `scratch // (case.name ^ ".cmo")
+  let cmt_file case = Env.path `scratch // (case.name ^ ".cmt")
 
   let odoc_file case =
     match case.kind with
-    | `mli -> Env.path `scratch // (case.name ^ ".odoc")
+    | `mli | `ml -> Env.path `scratch // (case.name ^ ".odoc")
     | `mld -> Env.path `scratch // ("page-" ^ case.name ^ ".odoc")
 
   let source_file case =
     match case.kind with
     | `mli -> Env.path `cases // case.name ^ ".mli"
     | `mld -> Env.path `cases // case.name ^ ".mld"
+    | `ml -> Env.path `cases // case.name ^ ".ml"
 
   (* Produces an HTML file path for a given case, starting with [dir]. *)
   let html_file dir case =
     let module_name = String.capitalize_ascii case.name in
     match case.kind with
-    | `mli -> dir // package case // module_name // "index.html"
+    | `mli | `ml -> dir // package case // module_name // "index.html"
     | `mld -> dir // package case // case.name ^ ".html"
 
   let actual_html_file   ?from_root = html_file (Env.path ?from_root `scratch)
@@ -155,10 +160,22 @@ let generate_html case =
 
   | `mld ->
     command "odoc compile" "%s compile --package=%s -o %s %s"
-      Env.odoc (Case.package case) (Case.odoc_file case) (Case.source_file case);
+      Env.odoc
+      (Case.package case) (Case.odoc_file case) (Case.source_file case);
 
     command "odoc html" "%s html %s --output-dir=%s %s"
       Env.odoc theme_uri_option (Env.path `scratch) (Case.odoc_file case)
+
+  | `ml ->
+    command "ocamlfind c" "ocamlfind c -bin-annot -o %s -c %s"
+      (Case.cmo_file case) (Case.source_file case);
+
+    command "odoc compile" "%s compile --package=%s %s"
+      Env.odoc (Case.package case) (Case.cmt_file case);
+
+    command "odoc html" "%s html %s --syntax=%s --output-dir=%s %s"
+      Env.odoc theme_uri_option (Case.string_of_syntax case.syntax)
+      (Env.path `scratch) (Case.odoc_file case)
 
 let diff =
   (* Alcotest will run all tests. We need to know when something fails for the
@@ -184,8 +201,10 @@ let diff =
          The paths are defined relative to the project's root. *)
       let root_actual_file   = Case.actual_html_file   ~from_root:true case in
       let root_expected_file = Case.expected_html_file ~from_root:true case in
-      Soup.write_file Env.(path `scratch // "actual") root_actual_file;
-      Soup.write_file Env.(path `scratch // "expected") root_expected_file;
+      let write_file filename data =
+        Markup.string data |> Markup.to_file filename in
+      write_file Env.(path `scratch // "actual") root_actual_file;
+      write_file Env.(path `scratch // "expected") root_expected_file;
 
       prerr_endline "\nTo promote the actual output to expected, run:";
       Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"
@@ -245,7 +264,15 @@ let source_files = [
   "functor.mli";
   "class.mli";
   "stop.mli";
+  "bugs.ml";
 ]
+
+let source_files =
+  let latest_supported = "4.07." in
+  match String.sub (Sys.ocaml_version) 0 (String.length latest_supported) with
+  | s when s = latest_supported -> source_files @ ["recent.mli"]
+  | _ -> source_files
+  | exception _ -> source_files
 
 
 let () =

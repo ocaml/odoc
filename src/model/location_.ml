@@ -14,23 +14,22 @@ type +'a with_location = {
   value : 'a;
 }
 
-let at : span -> 'a -> 'a with_location = fun location value ->
+let at location value =
   {location; value}
 
-let location : 'a with_location -> span = fun {location; _} ->
+let location {location; _} =
   location
 
-let value : 'a with_location -> 'a = fun {value; _} ->
+let value {value; _} =
   value
 
-let map : ('a -> 'b) -> 'a with_location -> 'b with_location =
-    fun f annotated ->
+let map f annotated =
   {annotated with value = f annotated.value}
 
-let same : _ with_location -> 'b -> 'b with_location = fun annotated value ->
+let same annotated value =
   {annotated with value}
 
-let span : span list -> span = fun spans ->
+let span spans =
   match spans with
   | [] ->
     {
@@ -51,3 +50,32 @@ let span : span list -> span = fun spans ->
       start = first.start;
       end_ = last.end_;
     }
+
+let nudge_start offset span =
+  {span with start = {span.start with column = span.start.column + offset}}
+
+let set_end_as_offset_from_start offset span =
+  {span with end_ = {span.start with column = span.start.column + offset}}
+
+let point_in_string s offset point =
+  let rec scan_string line column index =
+    if index >= offset then
+      (line, column)
+    else if index >= String.length s then
+      (line, column)
+    else
+      match s.[index] with
+      | '\n' -> scan_string (line + 1) 0 (index + 1)
+      | _ -> scan_string line (column + 1) (index + 1)
+  in
+
+  let line, column = scan_string 0 0 0 in
+
+  {line = point.line + line; column = point.column + column}
+
+(* Calling this repeatedly on the same string can be optimized, but there is no
+   evidence yet that performance of this is a problem. *)
+let in_string s ~offset ~length s_span =
+  {s_span with
+    start = point_in_string s offset s_span.start;
+    end_ = point_in_string s (offset + length) s_span.start}

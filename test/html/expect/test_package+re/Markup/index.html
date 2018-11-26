@@ -36,6 +36,16 @@
           </li>
           <li>
            <a href="#anchors">Anchors</a>
+           <ul>
+            <li>
+             <a href="#paragraph">Paragraph</a>
+             <ul>
+              <li>
+               <a href="#subparagraph">Subparagraph</a>
+              </li>
+             </ul>
+            </li>
+           </ul>
           </li>
          </ul>
         </li>
@@ -105,6 +115,26 @@
         Sections can have attached <a href="index.html#anchors"><span>Anchors</span></a>, and it is possible to <a href="index.html#anchors"><span>link</span></a> to them. Links to section headers should not be set in source code style.
        </p>
       </header>
+      <section>
+       <header>
+        <h5 id="paragraph">
+         <a href="#paragraph" class="anchor"></a>Paragraph
+        </h5>
+        <p>
+         Individual paragraphs can have a heading.
+        </p>
+       </header>
+       <section>
+        <header>
+         <h6 id="subparagraph">
+          <a href="#subparagraph" class="anchor"></a>Subparagraph
+         </h6>
+         <p>
+          Parts of a longer paragraph that can be considered alone can also have headings.
+         </p>
+        </header>
+       </section>
+      </section>
      </section>
     </section>
    </section>
@@ -121,6 +151,9 @@
      </p>
      <p>
       It's possible for two markup elements to appear <b>next</b> <i>to</i> each other and have a space, and appear <b>next</b><i>to</i> each other with no space. It doesn't matter <b>how</b> <i>much</i> space it was in the source: in this sentence, it was two space characters. And in this one, there is <b>a</b> <i>newline</i>.
+     </p>
+     <p>
+      This is also true between <em>non-</em><code>code</code> markup <em>and</em> <code>code</code>.
      </p>
      <p>
       Code can appear <b>inside <code>other</code> markup</b>. Its display shouldn't be affected.

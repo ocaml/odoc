@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 0-11:\
-   \n'{!modules ...}' cannot be empty"))
- (warnings ()))
+((output (((f.ml (1 0) (1 11)) (modules ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-11:\
+   \n'{!modules ...}' should not be empty.")))

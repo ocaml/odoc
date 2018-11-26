@@ -1,5 +1,9 @@
 ((output
-  (error
+  (((f.ml (1 0) (1 11))
+    (unordered
+     ((((f.ml (1 8) (1 11)) (paragraph (((f.ml (1 8) (1 11)) (word foo)))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 11-11:\
+   \nEnd of text is not allowed in '{li ...}' (list item)."
     "File \"f.ml\", line 1, characters 11-11:\
-   \nend of text is not allowed in '{li ...}' (list item)"))
- (warnings ()))
+   \nEnd of text is not allowed in '{ul ...}' (bulleted list).")))

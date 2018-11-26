@@ -6,7 +6,6 @@ Please ask any questions you have about odoc, [open any issues][issues],
 If you'd like specifically to work on the code of odoc, we hope that you will
 find the information in this file helpful.
 
-[issues]: https://github.com/ocaml/odoc/issues
 [contact]: https://github.com/ocaml/odoc#contact
 
 <br/>
@@ -18,8 +17,13 @@ find the information in this file helpful.
   - [Debug prints](#Debug_prints)
   - [Expect tests](#Expect_tests)
   - [Coverage analysis](#Coverage_analysis)
-- [Roadmap](#Roadmap)
 - [Project structure](#Project_structure)
+- [Roadmap](#Roadmap)
+  - [Project status](#Project_status)
+  - [General direction](#General_direction)
+  - [Not supported in the near term](#Not_supported_in_the_near_term)
+  - [Releases](#Releases)
+  - [Issue organization](#Issue_organization)
 
 <br/>
 
@@ -201,57 +205,54 @@ writing new tests, and want to know what they are actually touching. To use it,
 
 <br/>
 
-<a id="Roadmap"></a>
-## Roadmap
-
-1. We use [GitHub projects][projects] for grouping issues into overall topics. If you'd like to find an issue that isn't being worked on, try picking one up from the *To do* column of any of the projects!
-
-2. We use [milestones][milestones] to keep track of issues that we want to finish before the next release.
-
-[projects]: https://github.com/ocaml/odoc/projects
-[milestones]: https://github.com/ocaml/odoc/milestones
-
-<br/>
-
 <a id="Project_structure"></a>
 ## Project structure
 
 odoc is divided into several sub-libraries, each of which is a directory
-under `src/`. Most of these have a *main file*, which has the same name as the
-directory. That main file is the interface for the entire sub-library directory.
-For example, [`src/parser`][parser-dir] has
-[`src/parser/parser_.mli`][parser-api], and everything in `src/parser` is
+under `src/`. Most of these have a *main file*, whose name is the directory
+name prefixed with "`odoc__`". That main file is the interface for the entire
+sub-library directory. For example, [`src/parser`][parser-dir] has
+[`src/parser/odoc__parser.mli`][parser-api], and everything in `src/parser` is
 hidden behind that interface.
 
-The `jbuild` files in each directory can be used to figure out how the
+We use an alias module, in [`src/alias/odoc__alias.ml`][alias] to shorten these
+names in odoc's own code. For example, as you can see in the alias module, we
+`Odoc__parser` is shortened to `Parser_`. The underscore is there to avoid
+needlessly shadowing OCaml's module `Parser`, which is part of `compiler-libs`.
+
+The `dune` files in each directory can be used to figure out how the
 directories depend on each other. Mostly, however, everything depends on
 `model`, and `odoc` depends on everything.
 
 The directories are:
 
+- [`src/compat`][compat-api] &mdash; backports of functions to old versions of
+OCaml.
+
 - [`src/model`][model-dir] &mdash; datatypes representing the OCaml
 language ([`src/model/lang.ml`][lang]), error-handling
 ([`src/model/error.ml`][error]), cross-references
 ([`src/model/paths-types.ml`][paths]), etc. This directory actually has no main
-file :) It is a collection of the datatypes that the rest of the odoc
+file. It is a collection of the datatypes that the rest of the odoc
 sub-libraries use to communicate with each other, so everything else depends on
 `model`.
 
 - [`src/loader`][loader-dir] &mdash; functions from `cmt`, `cmti`, `cmi` files
 to `model`. You can see the three functions' signatures in the main file,
-[`src/loader/loader.mli`][loader-api].
+[`src/loader/odoc__loader.mli`][loader-api].
 
 - [`src/parser`][parser-dir] &mdash; a single function from strings to comment
 ASTs. You can see its signature in the main file,
-[`src/parser/parser_.mli`][parser-api].
+[`src/parser/odoc__parser.mli`][parser-api].
 
 - [`src/xref`][xref-dir] &mdash; functions for resolving cross-references. These
 consume things from `model`, and return transformed instances. The signature, in
-[`src/xref/xref.mli`][xref-api] is not very pretty, but the usage of `xref` is
-pretty isolated in the rest of odoc, and can be found by grepping for `Xref`.
+[`src/xref/odoc__xref.mli`][xref-api] is not very pretty, but the usage of
+`xref` is pretty isolated in the rest of odoc, and can be found by grepping for
+`Xref`.
 
-- [`src/html`][html-dir] &mdash; the HTML generator. A neat main file for this
-is still a [work in progress][html-api].
+- [`src/html`][html-dir] &mdash; the HTML generator. The main file is
+[`src/html/odoc__html.mli`][html-api].
 
 - [`src/odoc`][odoc-dir] &mdash; the overall `odoc` command-line tool that ties
 the other parts together. This doesn't have the same kind of main file, because
@@ -262,18 +263,19 @@ point for the executable is [`src/odoc/bin/main.ml`][main].
 but aren't part of the regular build, and [`src/vendor`][vendor-dir] is for
 third-party software.
 
+[compat-api]: https://github.com/ocaml/odoc/blob/master/src/compat/odoc__compat.ml
 [model-dir]: https://github.com/ocaml/odoc/tree/master/src/model
 [lang]: https://github.com/ocaml/odoc/blob/master/src/model/lang.ml
 [error]: https://github.com/ocaml/odoc/blob/master/src/model/error.ml
 [paths]: https://github.com/ocaml/odoc/blob/master/src/model/paths_types.ml
 [parser-dir]: https://github.com/ocaml/odoc/tree/master/src/parser
-[parser-api]: https://github.com/ocaml/odoc/blob/master/src/parser/parser_.mli
+[parser-api]: https://github.com/ocaml/odoc/blob/master/src/parser/odoc__parser.mli
 [loader-dir]: https://github.com/ocaml/odoc/tree/master/src/loader
-[loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/loader.mli
+[loader-api]: https://github.com/ocaml/odoc/blob/master/src/loader/odoc__loader.mli
 [xref-dir]: https://github.com/ocaml/odoc/tree/master/src/xref
-[xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/xref.mli
+[xref-api]: https://github.com/ocaml/odoc/blob/master/src/xref/odoc__xref.mli
 [html-dir]: https://github.com/ocaml/odoc/tree/master/src/html
-[html-api]: https://github.com/ocaml/odoc/blob/master/src/html/html.ml
+[html-api]: https://github.com/ocaml/odoc/blob/master/src/html/odoc__html.ml
 [odoc-dir]: https://github.com/ocaml/odoc/tree/master/src/odoc
 [main]: https://github.com/ocaml/odoc/blob/master/src/odoc/bin/main.ml
 [util-dir]: https://github.com/ocaml/odoc/tree/master/src/util
@@ -307,3 +309,95 @@ rot, and we haven't gotten around to restoring yet.
 [test-print]: https://github.com/ocaml/odoc/tree/master/test/print
 [test-dune]: https://github.com/ocaml/odoc/tree/master/test/dune
 [test-inactive]: https://github.com/ocaml/odoc/tree/master/test/inactive
+
+<br/>
+
+<a id="Roadmap"></a>
+## Roadmap
+
+Everything here is subject to your input. Please discuss the roadmap in [#210, the roadmap issue][roadmap-issue].
+
+[roadmap-issue]: https://github.com/ocaml/odoc/issues/210
+
+<br/>
+
+<a id="Project_status"></a>
+### Project status
+
+odoc is currently in **beta**. We aim for odoc to be good for diverse use cases
+*in the future*, but for now we are focused on fast development satisfying
+limited goals.
+
+<br/>
+
+<a id="General_direction"></a>
+### General direction
+
+The current goal of odoc is to become more useful for single projects. This
+includes:
+
+- **Quality of output** &mdash; Emitting good HTML, with usability features such
+as whole-project search, etc. See the
+[**Usability project**][usability-project].
+- **Build integration** &mdash; Good interop with Dune for the OCaml and Reason
+native ecosystems, and BuckleScript for the Reason/BuckleScript ecosystem. See
+the [**Reason and BuckleScript project**][re-bs-project]. The Dune integration
+is handled in the [Dune repo][dune].
+
+Eventually, we want to start generating centralized docs for the entire OCaml
+(and/or Reason) ecosystem, and hosting them at docs.ocaml.org. We are not
+focused on this right now.
+
+[usability-project]: https://github.com/ocaml/odoc/projects/1
+[re-bs-project]: https://github.com/ocaml/odoc/projects/2
+[dune]: https://github.com/ocaml/dune
+
+<br/>
+
+<a id="Not_supported_in_the_near_term"></a>
+### Not supported in the near term
+
+We'd like to support most of these things *eventually*, but the code base is
+not ready for them, or we don't have enough time to implement them in the near
+term. They are:
+
+- The ability to emit HTML fragments.
+- Compatibility with odig or other tools that drive odoc, besides the build
+  systems Dune and bsb.
+- Stable markup at the HTML level.
+- Explicit custom themes.
+
+<br/>
+
+<a id="Releases"></a>
+### Releases
+
+We plan to release features fairly regularly (perhaps at most every 1-3 months).
+
+odoc uses [**milestones**][milestones] for planned releases, with lists of
+outstanding issues that they are to include. Note that many issues that have
+already been resolved might not have been assigned to a milestone, but will
+still be released.
+
+If you'd like an issue to be added, please comment in it!
+
+<br/>
+
+<a id="Issue_organization"></a>
+### Issue organization
+
+- [**Milestones**][milestones] keep track of outstanding issues that definitely
+  need to be done for a certain release.
+- [**Projects**][projects] are long-term categories of issues. Visit each one,
+  and you can see progress at a glance.
+- We use several **labels** to give developers an idea of what each issue
+  involves at a glance. See the [list of labels][labels], but they are really
+  meant just to appear in the [issues list][issues] and be clickable.
+- The [**good first issue**][easy-issues] label is meant to help new
+  contributors find something they can get started with.
+
+[milestones]: https://github.com/ocaml/odoc/milestones
+[projects]: https://github.com/ocaml/odoc/projects
+[labels]: https://github.com/ocaml/odoc/labels
+[issues]: https://github.com/ocaml/odoc/issues
+[easy-issues]: https://github.com/ocaml/odoc/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22

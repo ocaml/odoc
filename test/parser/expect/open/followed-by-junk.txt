@@ -1,5 +1,9 @@
 ((output
-  (error
+  (((f.ml (1 0) (1 5)) @open)
+   ((f.ml (1 6) (1 9)) (paragraph (((f.ml (1 6) (1 9)) (word foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 6-9:\
+   \nParagraph is not allowed in the tags section.\
+   \nSuggestion: move 'foo' before any tags."
     "File \"f.ml\", line 1, characters 6-9:\
-   \nparagraph must begin on its own line"))
- (warnings ()))
+   \nParagraph should begin on its own line.")))

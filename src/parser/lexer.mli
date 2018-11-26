@@ -1,6 +1,7 @@
 type input = {
   file : string;
   offset_to_location : int -> Model.Location_.point;
+  warnings : Model.Error.warning_accumulator;
   lexbuf : Lexing.lexbuf;
 }
 

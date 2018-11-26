@@ -1,0 +1,18 @@
+{0:top Build System Integration}
+
+This manual page is intended to help you integrate [odoc] into your current
+build system by describing the constituents of the compilation process and
+their relationships.
+
++ {{:#dune} Dune}
++ {{:#bucklescript} BuckleScript}
++ {{:#manual-usage} Manual Usage}
+
+{1:dune Dune}
+...
+
+{1:bucklescript BuckleScript}
+...
+
+{1:manual-usage Manual Usage}
+...

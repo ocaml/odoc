@@ -1,5 +1,6 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 0-11:\
-   \n'{%xml:': bad raw markup target"))
- (warnings ()))
+  (((f.ml (1 0) (1 11)) (paragraph (((f.ml (1 0) (1 11)) (code_span foo)))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-11:\
+   \n'{%xml:': bad raw markup target.\
+   \nSuggestion: try '{%html:...%}'.")))

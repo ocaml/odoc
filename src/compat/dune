@@ -1,4 +1,5 @@
 (library
- (name compat)
+ (name odoc__compat)
+ (public_name odoc.compat)
  (preprocess (action (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
  (libraries compiler-libs.common))

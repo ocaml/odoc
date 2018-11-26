@@ -1,5 +1,5 @@
 
-let from_mld ~root_uri ~env ~output input =
+let from_mld ~xref_base_uri ~env ~output input =
   (* Internal names, they don't have effect on the output. *)
   let page_name = "__fragment_page__" in
   let package = "__fragment_package__" in
@@ -37,7 +37,7 @@ let from_mld ~root_uri ~env ~output input =
     let env = Env.build env (`Page page) in
     let resolved = Xref.resolve_page (Env.resolver env) page in
 
-    let content = Html.Documentation.to_html ~root_uri resolved.content in
+    let content = Html.Comment.to_html ~xref_base_uri resolved.content in
     let oc = open_out (Fs.File.to_string output) in
     let fmt = Format.formatter_of_out_channel oc in
     Format.fprintf fmt "%a@." (Format.pp_print_list (Tyxml.Html.pp_elt ())) content;

@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 0-7:\
-   \n'@since' cannot be empty"))
- (warnings ()))
+((output (((f.ml (1 0) (1 7)) (@since ""))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-7:\
+   \n'@since' should not be empty.")))

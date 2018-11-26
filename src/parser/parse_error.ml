@@ -1,81 +1,115 @@
 module Location = Model.Location_
 module Error = Model.Error
 
+open Compat
 
 
-let bad_markup : string -> Location.span -> Error.t =
-  Error.format "'%s': bad markup"
 
-let bad_section_level : string -> Location.span -> Error.t =
-  Error.format "'%s': bad section level (2-4 allowed)"
+let bad_markup : ?suggestion:string -> string -> Location.span -> Error.t =
+    fun ?suggestion ->
+  Error.make ?suggestion "'%s': bad markup."
 
-let cannot_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
-  Error.format "%s cannot be empty" what
+let bad_heading_level : int -> Location.span -> Error.t =
+  Error.make "'%d': bad heading level (0-5 allowed)."
 
-let must_begin_on_its_own_line : what:string -> Location.span -> Error.t =
+let leading_zero_in_heading_level : string -> Location.span -> Error.t =
+  Error.make "'%s': leading zero in heading level."
+
+let should_not_be_empty : what:string -> Location.span -> Error.t = fun ~what ->
+  Error.make "%s should not be empty." (String.capitalize_ascii what)
+
+let should_begin_on_its_own_line : what:string -> Location.span -> Error.t =
     fun ~what ->
-  Error.format "%s must begin on its own line" what
+  Error.make "%s should begin on its own line." (String.capitalize_ascii what)
 
-let must_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
+let should_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
     fun ~what ->
-  Error.format "%s must be followed by space, a tab, or a new line" what
+  Error.make
+    "%s should be followed by space, a tab, or a new line."
+    (String.capitalize_ascii what)
 
 let not_allowed
     : ?suggestion:string -> what:string -> in_what:string -> Location.span ->
         Error.t =
-    fun ?suggestion ~what ~in_what location ->
-  let message = Printf.sprintf "%s is not allowed in %s" what in_what in
-  let message =
-    match suggestion with
-    | None -> message
-    | Some suggestion -> Printf.sprintf "%s\nSuggestion: %s" message suggestion
-  in
-  Error.make message location
+    fun ?suggestion ~what ~in_what ->
+  Error.make
+    ?suggestion "%s is not allowed in %s."
+    (String.capitalize_ascii what) in_what
 
 let no_leading_whitespace_in_verbatim : Location.span -> Error.t =
-  Error.make "'{v' must be followed by whitespace"
+  Error.make "'{v' should be followed by whitespace."
 
 let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
-  Error.make "'v}' must be preceded by whitespace"
+  Error.make "'v}' should be preceded by whitespace."
 
-let only_one_title_allowed : Location.span -> Error.t =
-  Error.make "only one title-level heading is allowed"
+let page_heading_required : string -> Error.t =
+  Error.filename_only "Pages (.mld files) should start with a heading."
 
-let sections_not_allowed : Location.span -> Error.t =
-  Error.make "sections not allowed in this comment"
+let heading_level_should_be_lower_than_top_level
+    : int -> int -> Location.span -> Error.t =
+    fun this_heading_level top_heading_level ->
+  Error.make
+    "%s: heading level should be lower than top heading level '%d'."
+    (String.capitalize_ascii
+      (Token.print (`Begin_section_heading (this_heading_level, None))))
+    top_heading_level
+
+let headings_not_allowed : Location.span -> Error.t =
+  Error.make "Headings not allowed in this comment."
+
+let titles_not_allowed : Location.span -> Error.t =
+  Error.make "Title-level headings {0 ...} are only allowed in pages."
 
 let stray_at : Location.span -> Error.t =
-  Error.make "stray '@'"
+  Error.make "Stray '@'."
 
 let stray_cr : Location.span -> Error.t =
-  Error.make "stray '\\r' (carriage return character)"
+  Error.make "Stray '\\r' (carriage return character)."
 
 let truncated_before : Location.span -> Error.t =
-  Error.make "'@before' expects version number on the same line"
+  Error.make "'@before' expects version number on the same line."
 
 let truncated_param : Location.span -> Error.t =
-  Error.make "'@param' expects parameter name on the same line"
+  Error.make "'@param' expects parameter name on the same line."
 
 let truncated_raise : Location.span -> Error.t =
-  Error.make "'@raise' expects exception constructor on the same line"
+  Error.make "'@raise' expects exception constructor on the same line."
 
 let truncated_see : Location.span -> Error.t =
-  Error.make "'@see' must be followed by <url>, 'file', or \"document title\""
+  Error.make
+    "'@see' should be followed by <url>, 'file', or \"document title\"."
 
 let unknown_tag : string -> Location.span -> Error.t =
-  Error.format "unknown tag '%s'"
+  Error.make "Unknown tag '%s'."
 
 let unpaired_right_brace : Location.span -> Error.t =
-  Error.make "unpaired '}' (end of markup)"
+  Error.make ~suggestion:"try '\\}'." "Unpaired '}' (end of markup)."
 
 let unpaired_right_bracket : Location.span -> Error.t =
-  Error.make "unpaired ']' (end of code)"
+  Error.make ~suggestion:"try '\\]'." "Unpaired ']' (end of code)."
 
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
-  Error.format "'{%%%s:': bad raw markup target"
+  Error.make
+    ~suggestion:
+      (Printf.sprintf "try %s." (Token.print (`Raw_markup (`Html, ""))))
+      "'{%%%s:': bad raw markup target."
 
 let default_raw_markup_target_not_supported : Location.span -> Error.t =
-  Error.format
-    "%s needs a target language, try %s"
+  Error.make
+    ~suggestion:
+      (Printf.sprintf "try %s." (Token.print (`Raw_markup (`Html, ""))))
+    "%s needs a target language."
     (Token.describe (`Raw_markup (`Html, "")))
-    "'{%html:...%}'"
+
+let expected : string -> Location.span -> Error.t =
+  Error.make "Expected %s."
+
+let unknown_reference_qualifier : string -> Location.span -> Error.t =
+  Error.make "Unknown reference qualifier '%s'."
+
+let deprecated_reference_kind : string -> string -> Location.span -> Error.t =
+  Error.make "'%s' is deprecated, use '%s' instead."
+
+let reference_kinds_do_not_match
+    : string -> string -> Location.span -> Error.t =
+  Error.make "Old-style reference kind ('%s:') does not match new ('%s-')."

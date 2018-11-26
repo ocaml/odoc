@@ -1,5 +1,5 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 0-3:\
-   \n'{:...} (external link)' cannot be empty"))
- (warnings ()))
+  (((f.ml (1 0) (1 3)) (paragraph (((f.ml (1 0) (1 3)) (link "" ())))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-3:\
+   \n'{:...} (external link)' should not be empty.")))

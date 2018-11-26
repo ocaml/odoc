@@ -1,1 +1,1 @@
-((output (ok (((f.ml (1 0) (1 9)) (verbatim "\tfoo"))))) (warnings ()))
+((output (((f.ml (1 0) (1 9)) (verbatim "\tfoo")))) (warnings ()))

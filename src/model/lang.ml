@@ -85,16 +85,22 @@ end = ModuleType
 
 and Signature : sig
 
+  type recursive =
+    | Ordinary
+    | And
+    | Nonrec
+    | Rec
+
   type item =
-    | Module of Module.t
+    | Module of recursive * Module.t
     | ModuleType of ModuleType.t
-    | Type of TypeDecl.t
+    | Type of recursive * TypeDecl.t
     | TypExt of Extension.t
     | Exception of Exception.t
     | Value of Value.t
     | External of External.t
-    | Class of Class.t
-    | ClassType of ClassType.t
+    | Class of recursive * Class.t
+    | ClassType of recursive * ClassType.t
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 
@@ -324,16 +330,26 @@ end = InstanceVariable
 
 and TypeExpr : sig
 
-  module Variant : sig
+  module Polymorphic_variant : sig
 
     type kind =
       | Fixed
       | Closed of string list
       | Open
 
+    module Constructor :
+    sig
+      type t = {
+        name : string;
+        constant : bool;
+        arguments : TypeExpr.t list;
+        doc : Comment.docs;
+      }
+    end
+
     type element =
       | Type of TypeExpr.t
-      | Constructor of string * bool * TypeExpr.t list
+      | Constructor of Constructor.t
 
     type t =
       { kind: kind;
@@ -378,7 +394,7 @@ and TypeExpr : sig
     | Arrow of label option * t * t
     | Tuple of t list
     | Constr of Path.type_ * t list
-    | Variant of TypeExpr.Variant.t
+    | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
     | Class of Path.class_type * t list
     | Poly of string list * t

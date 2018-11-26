@@ -1,5 +1,8 @@
 ((output
-  (error
-    "File \"f.ml\", line 1, characters 8-14:\
-   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference)"))
- (warnings ()))
+  (((f.ml (1 0) (1 15))
+    (paragraph
+     (((f.ml (1 0) (1 15))
+       (reference (root foo unknown) (((f.ml (1 8) (1 14)) (emphasis ()))))))))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 8-14:\
+   \n'{!...}' (cross-reference) is not allowed in '{{!...} ...}' (cross-reference).")))

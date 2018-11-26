@@ -1,5 +1,7 @@
 open Result
 
+
+
 type full_location_payload = {
   location : Location_.span;
   message : string;
@@ -15,21 +17,20 @@ type t = [
   | `With_filename_only of filename_only_payload
 ]
 
-type 'a with_warnings = {
-  result : 'a;
-  warnings : t list;
-}
-
-let make : string -> Location_.span -> t = fun message location ->
+let full message location =
   `With_full_location {location; message}
 
-let filename_only : string -> string -> t = fun message file ->
+let filename_only message file =
   `With_filename_only {file; message}
 
-let format = fun format ->
-  (Printf.ksprintf make) format
+let make ?suggestion format =
+  format |>
+  Printf.ksprintf (fun message ->
+    match suggestion with
+    | None -> full message
+    | Some suggestion -> full (message ^ "\nSuggestion: " ^ suggestion))
 
-let to_string : t -> string = function
+let to_string = function
   | `With_full_location {location; message} ->
     let location_string =
       if location.start.line = location.end_.line then
@@ -49,22 +50,41 @@ let to_string : t -> string = function
   | `With_filename_only {file; message} ->
     Printf.sprintf "File \"%s\":\n%s" file message
 
+
+
 exception Conveyed_by_exception of t
 
-let raise_exception : t -> _ = fun error ->
+let raise_exception error =
   raise (Conveyed_by_exception error)
 
-let to_exception : ('a, t) result -> 'a = function
+let to_exception = function
   | Ok v -> v
   | Error error -> raise_exception error
 
-let catch : (unit -> 'a) -> ('a, t) result = fun f ->
+let catch f =
   try Ok (f ())
   with Conveyed_by_exception error -> Error error
 
+
+
+type 'a with_warnings = {
+  value : 'a;
+  warnings : t list;
+}
+
+type warning_accumulator = t list ref
+
+let accumulate_warnings f =
+  let warnings = ref [] in
+  let value = f warnings in
+  {value; warnings = List.rev !warnings}
+
+let warning accumulator error =
+  accumulator := error::!accumulator
+
 (* TODO This is a temporary measure until odoc is ported to handle warnings
    throughout. *)
-let shed_warnings : 'a with_warnings -> 'a = fun with_warnings ->
+let shed_warnings with_warnings =
   with_warnings.warnings
   |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
-  with_warnings.result
+  with_warnings.value

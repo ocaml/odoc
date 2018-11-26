@@ -1,4 +1,7 @@
-# odoc [![Build Status](https://api.travis-ci.org/ocaml/odoc.svg?branch=master)](https://travis-ci.org/ocaml/odoc/)
+# odoc &nbsp; [![Build Status][travis-img]][travis]
+
+[travis]: https://travis-ci.org/ocaml/odoc/branches
+[travis-img]: https://api.travis-ci.org/ocaml/odoc.svg?branch=master
 
 **odoc** is a documentation generator for OCaml. It reads *doc comments* ,
 delimited with `(** ... *)`, and outputs HTML. See example output at
@@ -19,8 +22,8 @@ The syntax reference is [here][comment-syntax]. There is also an
 [explanation][comment-location] of how to attach comments to specific types,
 values, and other elements in your program.
 
-[comment-syntax]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec354
-[comment-location]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec350
+[comment-syntax]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec357
+[comment-location]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec352
 
 <br/>
 
@@ -134,9 +137,11 @@ Please also don't hesitate to [open an issue][issues].
 Any [question asked](#contact), [issue opened][issues], feedback offered, is a
 contribution to odoc, and the project and all its users are thankful :) If
 you'd like to contribute code specifically, you may find the guide in
-[`CONTRIBUTING.md`][contributing.md] helpful. If anything is missing from it,
-please don't hesitate to [reach out](#contact) for help.
+[`CONTRIBUTING.md`][contributing.md] helpful. Also see the [roadmap][roadmap]
+there. If anything is missing from it, please don't hesitate to
+[reach out](#contact).
 
 [discourse]: https://discuss.ocaml.org/c/eco
 [issues]: https://github.com/ocaml/odoc/issues/new
 [contributing.md]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#readme
+[roadmap]: https://github.com/ocaml/odoc/blob/master/CONTRIBUTING.md#Roadmap

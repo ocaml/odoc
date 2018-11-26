@@ -1,5 +1,4 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 4))
-     (paragraph (((f.ml (1 0) (1 4)) (code_span "\206\187"))))))))
+  (((f.ml (1 0) (1 4))
+    (paragraph (((f.ml (1 0) (1 4)) (code_span "\206\187")))))))
  (warnings ()))

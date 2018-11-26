@@ -724,17 +724,20 @@ class virtual type_expr : object
 
   method virtual fragment_type : Fragment.type_ -> Fragment.type_
 
-  method type_expr_variant_kind : TypeExpr.Variant.kind ->
-    TypeExpr.Variant.kind
+  method virtual documentation : Comment.docs -> Comment.docs
 
-  method type_expr_variant_element : TypeExpr.Variant.element ->
-    TypeExpr.Variant.element
+  method type_expr_variant_kind : TypeExpr.Polymorphic_variant.kind ->
+    TypeExpr.Polymorphic_variant.kind
+
+  method type_expr_variant_element : TypeExpr.Polymorphic_variant.element ->
+    TypeExpr.Polymorphic_variant.element
 
   method type_expr_variant_constructor_name : string -> string
 
   method type_expr_variant_constructor_const : bool -> bool
 
-  method type_expr_variant : TypeExpr.Variant.t -> TypeExpr.Variant.t
+  method type_expr_variant :
+    TypeExpr.Polymorphic_variant.t -> TypeExpr.Polymorphic_variant.t
 
   method type_expr_object_method : TypeExpr.Object.method_ ->
     TypeExpr.Object.method_

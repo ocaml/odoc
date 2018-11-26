@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 6-8:\
-   \n'v}' must be preceded by whitespace"))
- (warnings ()))
+((output (((f.ml (1 0) (1 8)) (verbatim foov}))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 6-8:\
+   \n'v}' should be preceded by whitespace.")))

@@ -1,6 +1,5 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 5))
-     (unordered
-      ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo))))))))))))
+  (((f.ml (1 0) (1 5))
+    (unordered
+     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))))
  (warnings ()))

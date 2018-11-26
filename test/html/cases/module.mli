@@ -39,3 +39,6 @@ module type S9 = module type of M'
 open M'
 
 open! M'
+
+module rec Mutually : sig end
+and Recursive : sig end

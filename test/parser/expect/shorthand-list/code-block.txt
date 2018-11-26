@@ -1,5 +1,3 @@
 ((output
-  (ok
-   (((f.ml (1 0) (1 9))
-     (unordered ((((f.ml (1 2) (1 9)) (code_block foo)))))))))
+  (((f.ml (1 0) (1 9)) (unordered ((((f.ml (1 2) (1 9)) (code_block foo))))))))
  (warnings ()))

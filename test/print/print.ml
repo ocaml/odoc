@@ -1,5 +1,3 @@
-open Result
-
 type sexp = Sexplib.Sexp.t =
   | Atom of string
   | List of sexp list
@@ -337,10 +335,12 @@ struct
       let label = List [Atom "label"; Identifier_to_sexp.identifier label] in
       let level =
         match level with
-        | `Title -> "1"
-        | `Section -> "2"
-        | `Subsection -> "3"
-        | `Subsubsection -> "4"
+        | `Title -> "0"
+        | `Section -> "1"
+        | `Subsection -> "2"
+        | `Subsubsection -> "3"
+        | `Paragraph -> "4"
+        | `Subparagraph -> "5"
       in
       List [Atom level; label; List (List.map (at non_link_inline_element) es)]
     | `Tag t -> tag t
@@ -359,16 +359,12 @@ end
 
 
 
-let parser_output formatter {Model.Error.result; warnings} =
-  let result =
-    match result with
-    | Ok comment -> List [Atom "ok"; Comment_to_sexp.comment comment]
-    | Error error -> List [Atom "error"; Error_to_sexp.error error]
-  in
+let parser_output formatter {Model.Error.value; warnings} =
+  let value = Comment_to_sexp.comment value in
   let warnings = List (List.map Error_to_sexp.error warnings) in
   let output =
     List [
-      List [Atom "output"; result];
+      List [Atom "output"; value];
       List [Atom "warnings"; warnings];
     ]
   in

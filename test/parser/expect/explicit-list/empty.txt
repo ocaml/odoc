@@ -1,5 +1,4 @@
-((output
-  (error
-    "File \"f.ml\", line 1, characters 0-3:\
-   \n'{ul ...}' (bulleted list) cannot be empty"))
- (warnings ()))
+((output (((f.ml (1 0) (1 4)) (unordered ()))))
+ (warnings
+  ( "File \"f.ml\", line 1, characters 0-3:\
+   \n'{ul ...}' (bulleted list) should not be empty.")))
