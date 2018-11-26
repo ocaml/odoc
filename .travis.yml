@@ -8,8 +8,6 @@ matrix:
       env: OCAML=4.07.0
     - os: osx
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
-    - os: windows
-      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
     - os: linux
       env: OCAML=4.02.3
     - os: linux
