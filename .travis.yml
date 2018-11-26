@@ -28,7 +28,6 @@ matrix:
     - os : linux
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
-matrix:
   allow_failures:
     - env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
