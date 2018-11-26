@@ -17,8 +17,8 @@ module ML = Generator.Make (struct
     let annotation_separator = " : "
 
     let handle_params name args =
-      if args <> [ Html.pcdata "" ]
-      then args @ [ Html.pcdata " " ] @ name
+      if args <> [ Html.txt "" ]
+      then args @ [ Html.txt " " ] @ name
       else name
 
     let handle_constructor_params = handle_params
@@ -62,7 +62,7 @@ module ML = Generator.Make (struct
     struct
       let semicolon = false
       let handle_primitives prims =
-        List.map (fun p -> Html.pcdata ("\"" ^ p ^ "\" ")) prims
+        List.map (fun p -> Html.txt ("\"" ^ p ^ "\" ")) prims
     end
   end
 

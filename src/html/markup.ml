@@ -21,31 +21,31 @@ module Html = Tyxml.Html
 
 
 let keyword keyword =
-  Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.pcdata keyword ]
+  Html.span ~a:[ Html.a_class ["keyword"] ] [ Html.txt keyword ]
 
 module Type = struct
   let path p = Html.span ~a:[ Html.a_class ["type-id"] ] p
-  let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.pcdata tv ]
+  let var tv = Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.txt tv ]
 end
 
 module ML = struct
-  module Type = Type 
+  module Type = Type
 
   let arrow =
     Html.span [ Html.entity "#45"; Html.entity "gt" ]
 
   let label = function
-    | Model.Lang.TypeExpr.Label s -> [ Html.pcdata s ]
-    | Optional s -> [ Html.pcdata "?"; Html.entity "#8288"; Html.pcdata s ]
+    | Model.Lang.TypeExpr.Label s -> [ Html.txt s ]
+    | Optional s -> [ Html.txt "?"; Html.entity "#8288"; Html.txt s ]
 end
 
 module RE = struct
   include ML
 
   let arrow =
-    Html.span [ Html.pcdata "="; Html.entity "gt" ]
+    Html.span [ Html.txt "="; Html.entity "gt" ]
 
   let label = function
-    | Model.Lang.TypeExpr.Label s -> [ Html.pcdata s ]
-    | Optional s -> [ Html.pcdata "?"; Html.entity "#8288"; Html.pcdata s ]
+    | Model.Lang.TypeExpr.Label s -> [ Html.txt s ]
+    | Optional s -> [ Html.txt "?"; Html.entity "#8288"; Html.txt s ]
 end
