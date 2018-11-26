@@ -3,9 +3,7 @@ module Lang = Model.Lang
 
 
 
-type rendered_item = Html_types.div_content Html.elt list
-(* [rendered_item] should really be [dt_content], but that is bugged in TyXML
-   until https://github.com/ocsigen/tyxml/pull/193 is released. *)
+type rendered_item = (Html_types.dt_content Html.elt) list
 
 type ('inner, 'outer) text =
   [> `PCDATA | `Span | `A of ([> `PCDATA] as 'inner)] as 'outer
@@ -134,7 +132,7 @@ sig
       render_nested_article:
         ('item -> rendered_item * Model.Comment.docs * (Tree.t list)) ->
       (_, 'item) tagged_item list ->
-        rendered_item * toc * (Tree.t list)
+        (Html_types.div_content Html.elt) list * toc * (Tree.t list)
 
     val render_toc :
       toc -> [> Html_types.flow5_without_header_footer] Html.elt list

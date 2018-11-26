@@ -663,7 +663,7 @@ sig
     render_nested_article:
       ('item -> rendered_item * Model.Comment.docs * Tree.t list) ->
     ((_, 'item) tagged_item) list ->
-      rendered_item * toc * Tree.t list
+      (Html_types.div_content Html.elt) list * toc * Tree.t list
 
   val render_toc :
     toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
@@ -713,9 +713,6 @@ struct
           when this_item_kind = first_item_kind ->
 
         let html, maybe_docs = render_leaf_item item in
-        (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
-           is released in TyXML; see also type [rendered_item]. *)
-        let html = List.map Html.Unsafe.coerce_elt html in
         let html, maybe_id = add_anchor item_to_id item html in
         let a = add_spec item_to_spec item maybe_id in
         let html = Html.dt ~a html in
@@ -838,7 +835,6 @@ struct
       finish_section state
 
     | tagged_item::input_items ->
-
       match tagged_item with
       | `Leaf_item (kind, _) ->
         let html, input_items =
@@ -864,9 +860,6 @@ struct
           | docs ->
             let docs = Comment.first_to_html docs in
             let docs = (docs :> (Html_types.dd_content Html.elt) list) in
-            (* Temporary coercion until https://github.com/ocsigen/tyxml/pull/193
-               is released in TyXML; see also type [rendered_item]. *)
-            let html = List.map Html.Unsafe.coerce_elt html in
             Html.dl [Html.dt ~a html; Html.dd docs]
         in
         section_items section_level { state with
@@ -1218,7 +1211,7 @@ open Class
 module Module :
 sig
   val signature : ?theme_uri:Tree.uri -> Lang.Signature.t ->
-    rendered_item * toc * Tree.t list
+    (Html_types.div_content Html.elt) list * toc * Tree.t list
 end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
@@ -1596,12 +1589,9 @@ struct
         ]
     in
     [
-      (* TODO The coercion is temporary until TyXML with
-         https://github.com/ocsigen/tyxml/pull/193 is available. *)
-      Html.Unsafe.coerce_elt
-        (Html.div ~a:[Html.a_class ["spec"; "include"]]
-          [Html.div ~a:[Html.a_class ["doc"]]
-            (docs @ incl)])
+      Html.div ~a:[Html.a_class ["spec"; "include"]]
+        [Html.div ~a:[Html.a_class ["doc"]]
+          (docs @ incl)]
     ],
     [],
     tree

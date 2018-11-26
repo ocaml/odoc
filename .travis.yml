@@ -12,6 +12,10 @@ env:
   - OCAML=4.07.0
   - ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
+matrix:
+  allow_failures:
+    - env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+
 cache:
   directories:
   - /home/travis/.opam
