@@ -3,7 +3,7 @@
 set -x
 
 if [[ $ESY_BUILD == YES ]]; then
-  esy --version
+  $(npm bin --global)/esy --version
 else
   opam --version
   ocaml -version

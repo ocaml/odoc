@@ -1,26 +1,42 @@
 language: node_js
 node_js:
-  - "10"
-
-env:
-  - OCAML=4.02.3
-  - OCAML=4.02.3+buckle-master
-  - OCAML=4.03.0
-  - OCAML=4.04.2
-  - OCAML=4.05.0
-  - OCAML=4.06.1
-  - OCAML=4.07.0
-  - ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+  - "10.13.0"
 
 matrix:
+  include:
+    - os: osx
+      env: OCAML=4.07.0
+    - os: osx
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+    - os: linux
+      env: OCAML=4.02.3
+    - os: linux
+      env: OCAML=4.02.3+buckle-master
+    - os: linux
+      env: OCAML=4.03.0
+    - os: linux
+      env: OCAML=4.04.2
+    - os: linux
+      env: OCAML=4.05.0
+    - os: linux
+      env: OCAML=4.06.1
+    - os: linux
+      env: OCAML=4.07.0
+    - os : linux
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+
   allow_failures:
     - env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
+  fast_finish: true
+
 cache:
   directories:
-  - /home/travis/.opam
-  - /home/travis/.esy
-  - /home/travis/.nvm
+  - /usr/local/Cellar/opam
+  - /usr/local/Cellar/tidy-html5
+  - $HOME/travis/.opam
+  - $HOME/travis/.esy
+  - $HOME/travis/.nvm
   - ./_build/default
 
 install:
@@ -31,7 +47,7 @@ install:
 before_script:
   - ./test/ci/clean-scratch.sh
 
-script: ./test/ci/build.sh
+script: travis_wait 20 ./test/ci/build.sh
 
 notifications:
   email:
