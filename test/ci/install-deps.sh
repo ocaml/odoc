@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 sudo add-apt-repository -y ppa:robert7/tidy-html5
 sudo apt-get update
 sudo apt-get install tidy

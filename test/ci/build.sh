@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 set -e
 
 if [[ $ESY_BUILD == YES ]]; then
