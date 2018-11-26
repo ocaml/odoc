@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 
 version: "dev"
 homepage: "http://github.com/ocaml-doc/odoc"
@@ -12,9 +12,10 @@ authors: [
   "Leo White <leo@lpw25.net>"
 ]
 maintainer: "Anton Bachin <antonbachin@yahoo.com>"
-dev-repo: "http://github.com/ocaml-doc/odoc.git"
+dev-repo: "git+https://github.com/ocaml-doc/odoc.git"
 
-available: [ocaml-version >= "4.02.0"]
+synopsis: "OCaml documentation generator"
+
 depends: [
   "astring" {build}
   "bos" {build}
@@ -22,17 +23,16 @@ depends: [
   "cppo" {build}
   "dune" {build}
   "fpath" {build}
+  "ocaml" {>= "4.02.0"}
   "result" {build}
   "rresult" {build & >= "0.3.0"}
   "tyxml" {build & >= "4.0.0"}
 
-  # Development dependencies. These should be removed in opam files sent to the
-  # opam repo.
-  "alcotest" {>= "0.8.3"}
-  "bisect_ppx"  {>= "1.3.0"}
-  "markup" {>= "0.8.0"}
-  "ocamlfind"
-  "sexplib" {>= "113.33.00"}
+  "alcotest" {dev & >= "0.8.3"}
+  "bisect_ppx"  {dev & >= "1.3.0"}
+  "markup" {dev & >= "0.8.0"}
+  "ocamlfind" {dev}
+  "sexplib" {dev & >= "113.33.00"}
 ]
 
 build: [
