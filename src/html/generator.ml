@@ -40,7 +40,7 @@ include Generator_signatures
 (**
    Main functor to create an {!To_html_tree.Html_generator}
  *)
-module Make (Syn : SYNTAX) = struct
+module Make (Syntax : SYNTAX) = struct
 module Type_expression :
 sig
   val type_expr :
@@ -68,9 +68,12 @@ struct
           | [] -> [ Html.txt constr ]
           | _ ->
             let arguments =
-              list_concat_map arguments ~sep:(Html.txt Syn.Type.Tuple.element_separator) ~f:type_expr
+              list_concat_map
+                arguments
+                ~sep:(Html.txt Syntax.Type.Tuple.element_separator)
+                ~f:type_expr
             in
-            if Syn.Type.Variant.parenthesize_params
+            if Syntax.Type.Variant.parenthesize_params
             then Html.txt (constr ^ "(") :: arguments @ [ Html.txt ")" ]
             else Html.txt (constr ^ " of ") :: arguments
       )
@@ -90,18 +93,18 @@ struct
     let fields =
       list_concat_map t.fields ~f:(function
         | Model.Lang.TypeExpr.Object.Method {name; type_} ->
-            (Html.txt (name ^ Syn.Type.annotation_separator) :: type_expr type_)
-            @ [Html.txt Syn.Obj.field_separator]
+          (Html.txt (name ^ Syntax.Type.annotation_separator)::type_expr type_)
+            @ [Html.txt Syntax.Obj.field_separator]
         | Inherit type_ ->
-            type_expr type_ @ [Html.txt Syn.Obj.field_separator] )
+            type_expr type_ @ [Html.txt Syntax.Obj.field_separator])
     in
     let open_tag =
-        if t.open_ then Html.txt Syn.Obj.open_tag_extendable
-        else Html.txt Syn.Obj.open_tag_closed
+        if t.open_ then Html.txt Syntax.Obj.open_tag_extendable
+        else Html.txt Syntax.Obj.open_tag_closed
     in
     let close_tag =
-        if t.open_ then Html.txt Syn.Obj.close_tag_extendable
-        else Html.txt Syn.Obj.close_tag_closed
+        if t.open_ then Html.txt Syntax.Obj.close_tag_extendable
+        else Html.txt Syntax.Obj.close_tag_closed
     in
     (open_tag :: fields) @ [close_tag]
 
@@ -115,11 +118,11 @@ struct
     | [param] ->
         let param = (type_expr ~needs_parentheses:true param) in
         let args =
-          if Syn.Type.parenthesize_constructor
+          if Syntax.Type.parenthesize_constructor
           then  Html.txt "(" :: param @ [Html.txt ")"]
           else param
         in
-      Syn.Type.handle_constructor_params path args
+      Syntax.Type.handle_constructor_params path args
     | params  ->
       let params =
         list_concat_map params ~sep:(Html.txt ",\194\160")
@@ -129,22 +132,22 @@ struct
         | `parens   -> Html.txt "(" :: params @ [Html.txt ")"]
         | `brackets -> Html.txt "[" :: params @ [Html.txt "]"]
       in
-      Syn.Type.handle_constructor_params path params
+      Syntax.Type.handle_constructor_params path params
 
   and type_expr
     : 'inner 'outer. ?needs_parentheses:bool
     -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
   = fun ?(needs_parentheses=false) t ->
     match t with
-    | Var s -> [Markup.Type.var (Syn.Type.var_prefix ^ s)]
-    | Any  -> [Markup.Type.var Syn.Type.any]
+    | Var s -> [Markup.Type.var (Syntax.Type.var_prefix ^ s)]
+    | Any  -> [Markup.Type.var Syntax.Type.any]
     | Alias (te, alias) ->
       type_expr ~needs_parentheses:true te @
       Markup.keyword " as " :: [ Html.txt alias ]
     | Arrow (None, src, dst) ->
       let res =
         type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syn.Type.arrow :: Html.txt " " :: type_expr dst
+        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
       if not needs_parentheses then
         res
@@ -154,7 +157,7 @@ struct
       let res =
         Markup.ML.label lbl @ Html.txt ":" ::
         type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syn.Type.arrow :: Html.txt " " :: type_expr dst
+        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
       if not needs_parentheses then
         res
@@ -162,10 +165,12 @@ struct
         Html.txt "(" :: res @ [Html.txt ")"]
     | Tuple lst ->
       let res =
-        list_concat_map lst ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
+        list_concat_map
+          lst
+          ~sep:(Markup.keyword Syntax.Type.Tuple.element_separator)
           ~f:(type_expr ~needs_parentheses:true)
       in
-      if Syn.Type.Tuple.always_parenthesize || needs_parentheses then
+      if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
         Html.txt "(" :: res @ [Html.txt ")"]
       else
         res
@@ -253,9 +258,9 @@ struct
             ; Html.code (
                 (if mutable_ then Markup.keyword "mutable " else Html.txt "")
                 :: (Html.txt name)
-                :: (Html.txt Syn.Type.annotation_separator)
+                :: (Html.txt Syntax.Type.annotation_separator)
                 :: (type_expr typ)
-                @  [Html.txt Syn.Type.Record.field_separator]
+                @  [Html.txt Syntax.Type.Record.field_separator]
               )
             ]
         in
@@ -302,7 +307,7 @@ struct
           in
           let ret_type =
             Html.txt " " ::
-            (if constant then Markup.keyword ":" else Syn.Type.GADT.arrow) ::
+            (if constant then Markup.keyword ":" else Syntax.Type.GADT.arrow) ::
             Html.txt " " ::
             type_expr te
           in
@@ -312,23 +317,26 @@ struct
       | Tuple [] -> [ Html.code (cstr :: ret_type) ]
       | Tuple lst ->
         let params = list_concat_map lst
-          ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
+          ~sep:(Markup.keyword Syntax.Type.Tuple.element_separator)
           ~f:(type_expr ~needs_parentheses:is_gadt)
         in
         [ Html.code (
             cstr ::
             (
-              if Syn.Type.Variant.parenthesize_params
+              if Syntax.Type.Variant.parenthesize_params
               then Html.txt "(" :: params @ [ Html.txt ")" ]
               else
-                Markup.keyword (if is_gadt then Syn.Type.annotation_separator else " of ") :: params
+                Markup.keyword
+                  (if is_gadt then
+                    Syntax.Type.annotation_separator
+                  else " of ") :: params
             )
             @ ret_type
           )
         ]
       | Record fields ->
         if is_gadt then
-          (Html.code [cstr; Markup.keyword Syn.Type.annotation_separator])
+          (Html.code [cstr; Markup.keyword Syntax.Type.annotation_separator])
           ::(record fields)
           @ [Html.code ret_type]
         else
@@ -382,7 +390,7 @@ struct
       ) ::
       list_concat_map t.constructors ~sep:(Html.code [Markup.keyword " | "])
         ~f:extension_constructor
-      @ ( if Syn.Type.type_def_semicolon then [ Markup.keyword ";" ] else [] )
+      @ (if Syntax.Type.type_def_semicolon then [ Markup.keyword ";" ] else [])
     in
     extension, t.doc
 
@@ -391,7 +399,8 @@ struct
   let exn (t : Model.Lang.Exception.t) =
     let cstr = constructor t.id t.args t.res in
     let exn = Html.code [ Markup.keyword "exception " ] :: cstr
-      @ ( if Syn.Type.Exception.semicolon then [ Markup.keyword ";" ] else [] ) in
+      @ (if Syntax.Type.Exception.semicolon then [ Markup.keyword ";" ] else [])
+    in
     exn, t.doc
 
 
@@ -411,13 +420,13 @@ struct
           | [] -> [Html.code [ Html.txt cstr ]]
           | _ ->
             let params = list_concat_map arguments
-              ~sep:(Markup.keyword Syn.Type.Tuple.element_separator)
+              ~sep:(Markup.keyword Syntax.Type.Tuple.element_separator)
               ~f:type_expr
             in
             [ Html.code (
                 Html.txt cstr ::
                 (
-                if Syn.Type.Variant.parenthesize_params
+                if Syntax.Type.Variant.parenthesize_params
                 then Html.txt "(" :: params @ [ Html.txt ")" ]
                 else Markup.keyword " of " :: params
                 )
@@ -492,7 +501,7 @@ struct
     Html.txt (
       match params with
       | [] -> ""
-      | [x] -> format_param x |> Syn.Type.handle_format_params
+      | [x] -> format_param x |> Syntax.Type.handle_format_params
       | lst ->
         let params = String.concat ", " (List.map format_param lst) in
         (match delim with `parens -> "(" | `brackets -> "[")
@@ -524,7 +533,9 @@ struct
     | Some t ->
       let manifest =
         Markup.keyword " = " ::
-        (if private_ then Markup.keyword (Syn.Type.private_keyword ^ " ") else Html.txt "") ::
+        (if private_ then
+          Markup.keyword (Syntax.Type.private_keyword ^ " ")
+        else Html.txt "") ::
         type_expr t
       in
       manifest, false
@@ -541,7 +552,7 @@ struct
         let manifest =
           Markup.keyword " = " ::
           (if t.equation.private_ then
-            Markup.keyword (Syn.Type.private_keyword ^ " ")
+            Markup.keyword (Syntax.Type.private_keyword ^ " ")
           else
             Html.txt "") ::
           polymorphic_variant ~type_ident:t.id variant
@@ -557,7 +568,10 @@ struct
       | Some repr ->
         Html.code [
           Markup.keyword " = ";
-          if need_private then Markup.keyword (Syn.Type.private_keyword ^ " ") else Html.txt ""
+          if need_private then
+            Markup.keyword (Syntax.Type.private_keyword ^ " ")
+          else
+            Html.txt ""
         ] ::
         match repr with
         | Extensible -> [Html.code [Markup.keyword  ".."]]
@@ -574,12 +588,12 @@ struct
 
       Html.code (
           [ Markup.keyword (keyword ^ " ")]
-          @ ( Syn.Type.handle_constructor_params [Html.txt tyname] [params] )
+          @ (Syntax.Type.handle_constructor_params [Html.txt tyname] [params])
       ) ::
       manifest @
       representation @
       Utils.optional_code constraints
-      @ ( if Syn.Type.type_def_semicolon then [ Markup.keyword ";" ] else [] )
+      @ (if Syntax.Type.type_def_semicolon then [ Markup.keyword ";" ] else [])
     in
     tdecl_def, t.doc
 end
@@ -596,11 +610,11 @@ struct
   let value (t : Model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
     let value =
-      Markup.keyword (Syn.Value.variable_keyword ^ " ") ::
+      Markup.keyword (Syntax.Value.variable_keyword ^ " ") ::
       Html.txt name ::
-      Html.txt Syn.Type.annotation_separator ::
+      Html.txt Syntax.Type.annotation_separator ::
       type_expr t.type_
-      @ ( if Syn.Value.semicolon then [ Markup.keyword ";" ] else [] )
+      @ (if Syntax.Value.semicolon then [ Markup.keyword ";" ] else [])
     in
     [Html.code value], t.doc
 
@@ -609,11 +623,11 @@ struct
     let external_ =
       Markup.keyword "external " ::
       Html.txt name ::
-      Html.txt Syn.Type.annotation_separator ::
+      Html.txt Syntax.Type.annotation_separator ::
       type_expr t.type_ @
       Html.txt " = " ::
-      Syn.Type.External.handle_primitives t.primitives
-      @ ( if Syn.Type.External.semicolon then [ Markup.keyword ";" ] else [] )
+      Syntax.Type.External.handle_primitives t.primitives
+      @ (if Syntax.Type.External.semicolon then [ Markup.keyword ";" ] else [])
     in
     [Html.code external_], t.doc
 end
@@ -1076,7 +1090,7 @@ struct
       private_ ::
       virtual_ ::
       Html.txt name ::
-      Html.txt Syn.Type.annotation_separator ::
+      Html.txt Syntax.Type.annotation_separator ::
       type_expr t.type_
     in
     [Html.code method_], t.doc
@@ -1092,7 +1106,7 @@ struct
       mutable_ ::
       virtual_ ::
       Html.txt name ::
-      Html.txt Syn.Type.annotation_separator ::
+      Html.txt Syntax.Type.annotation_separator ::
       type_expr t.type_
     in
     [Html.code val_], t.doc
@@ -1106,7 +1120,11 @@ struct
         let link = Tree.Relative_link.of_path ~stop_before:false path in
         format_type_path ~delim:(`brackets) args link
       | Signature _ ->
-        [ Markup.keyword Syn.Class.open_tag ; Html.txt " ... " ; Markup.keyword Syn.Class.close_tag ]
+        [
+          Markup.keyword Syntax.Class.open_tag;
+          Html.txt " ... ";
+          Markup.keyword Syntax.Class.close_tag
+        ]
 
   and class_decl
     : 'inner_row 'outer_row. Model.Lang.Class.decl
@@ -1117,11 +1135,11 @@ struct
       (* TODO: factorize the following with [type_expr] *)
       | Arrow (None, src, dst) ->
         type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syn.Type.arrow :: Html.txt " " :: class_decl dst
+        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
       | Arrow (Some lbl, src, dst) ->
         Markup.ML.label lbl @ Html.txt ":" ::
         type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syn.Type.arrow :: Html.txt " " :: class_decl dst
+        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
 
   and class_ ?theme_uri recursive (t : Model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
@@ -1157,7 +1175,7 @@ struct
       virtual_ ::
       params ::
       cname ::
-      Html.txt Syn.Type.annotation_separator ::
+      Html.txt Syntax.Type.annotation_separator ::
       cd
     in
     let region = [Html.code class_def_content] in
@@ -1296,7 +1314,7 @@ struct
       | None ->
         (
           Html.txt (Paths.Identifier.name arg.id) ::
-          Html.txt Syn.Type.annotation_separator ::
+          Html.txt Syntax.Type.annotation_separator ::
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), []
       | Some expansion ->
@@ -1315,7 +1333,7 @@ struct
         Tree.leave ();
         (
           Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.txt name] ::
-          Html.txt Syn.Type.annotation_separator ::
+          Html.txt Syntax.Type.annotation_separator ::
           mty (Paths.Identifier.signature_of_module arg.id) arg.expr
         ), [subtree]
     in
@@ -1393,14 +1411,14 @@ struct
       in
 
       Markup.keyword (keyword ^ " ") :: modname :: md @
-      (if Syn.Mod.close_tag_semicolon then [Markup.keyword ";"] else []) in
+      (if Syntax.Mod.close_tag_semicolon then [Markup.keyword ";"] else []) in
     let region = [Html.code md_def_content] in
     region, t.doc, subtree
 
   and module_decl (base : Paths.Identifier.signature) md =
     begin match md with
     | Alias _ -> Html.txt " = "
-    | ModuleType _ -> Html.txt Syn.Type.annotation_separator
+    | ModuleType _ -> Html.txt Syntax.Type.annotation_separator
     end ::
     module_decl' base md
 
@@ -1435,7 +1453,7 @@ struct
         begin match expr with
         | Signature _
         | Path _ -> Html.txt " = "
-        | _ -> Html.txt Syn.Type.annotation_separator
+        | _ -> Html.txt Syntax.Type.annotation_separator
         end ::
         mty (Paths.Identifier.signature_of_module_type t.id) expr
     in
@@ -1470,7 +1488,7 @@ struct
         Markup.keyword "module type " ::
         modname ::
         mty
-        @ ( if Syn.Mod.close_tag_semicolon then [ Markup.keyword ";" ] else [] )
+        @ (if Syntax.Mod.close_tag_semicolon then [Markup.keyword ";"] else [])
       )
     in
     let region = [Html.code mty_def] in
@@ -1484,9 +1502,14 @@ struct
     | Path mty_path ->
       Tree.Relative_link.of_path ~stop_before:true mty_path
     | Signature _ ->
-      [ Markup.keyword Syn.Mod.open_tag ; Html.txt " ... " ; Markup.keyword Syn.Mod.close_tag ]
+      [
+        Markup.keyword Syntax.Mod.open_tag;
+        Html.txt " ... ";
+        Markup.keyword Syntax.Mod.close_tag;
+      ]
     | Functor (None, expr) ->
-        ( if Syn.Mod.functor_keyword then [ Markup.keyword "functor" ] else [] ) @ Html.txt " () " ::
+      (if Syntax.Mod.functor_keyword then [Markup.keyword "functor"] else []) @
+      Html.txt " () " ::
       mty base expr
     | Functor (Some arg, expr) ->
       let name =
@@ -1499,10 +1522,10 @@ struct
         | exception _ -> to_print
         | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
       in
-      ( if Syn.Mod.functor_keyword then [ Markup.keyword "functor" ] else [] ) @
-      Html.txt " (" :: name :: Html.txt Syn.Type.annotation_separator ::
+      (if Syntax.Mod.functor_keyword then [Markup.keyword "functor"] else []) @
+      Html.txt " (" :: name :: Html.txt Syntax.Type.annotation_separator ::
       mty base arg.expr @
-      [Html.txt ")"; Html.txt " "] @ Syn.Type.arrow :: Html.txt " " ::
+      [Html.txt ")"; Html.txt " "] @ Syntax.Type.arrow :: Html.txt " " ::
       mty base expr
     | With (expr, substitutions) ->
       mty base expr @
@@ -1525,7 +1548,7 @@ struct
       module_decl' base md
     | TypeEq (frag_typ, td) ->
       Markup.keyword "type " ::
-      (Syn.Type.handle_substitution_params
+      (Syntax.Type.handle_substitution_params
         (Tree.Relative_link.of_fragment
           ~base (Paths.Fragment.any_sort frag_typ))
         [format_params td.Lang.TypeDecl.Equation.params]
@@ -1540,7 +1563,7 @@ struct
       Tree.Relative_link.of_path ~stop_before:true mod_path
     | TypeSubst (frag_typ, td) ->
       Markup.keyword "type " ::
-      (Syn.Type.handle_substitution_params
+      (Syntax.Type.handle_substitution_params
         (Tree.Relative_link.of_fragment
           ~base (Paths.Fragment.any_sort frag_typ))
         [format_params td.Lang.TypeDecl.Equation.params]
@@ -1577,7 +1600,8 @@ struct
           Html.code (
             Markup.keyword "include " ::
             module_decl' t.parent t.decl
-            @ ( if Syn.Mod.include_semicolon then [ Markup.keyword ";" ] else [] )
+            @
+            (if Syntax.Mod.include_semicolon then [Markup.keyword ";"] else [])
           )
         in
         (* FIXME: I'd like to add an anchor here, but I don't know what id to
