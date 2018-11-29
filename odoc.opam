@@ -1,9 +1,9 @@
 opam-version: "2.0"
 
 version: "dev"
-homepage: "http://github.com/ocaml-doc/odoc"
+homepage: "http://github.com/ocaml/odoc"
 doc: "https://github.com/ocaml/odoc#readme"
-bug-reports: "https://github.com/ocaml-doc/odoc/issues"
+bug-reports: "https://github.com/ocaml/odoc/issues"
 license: "ISC"
 
 authors: [
@@ -12,7 +12,7 @@ authors: [
   "Leo White <leo@lpw25.net>"
 ]
 maintainer: "Anton Bachin <antonbachin@yahoo.com>"
-dev-repo: "git+https://github.com/ocaml-doc/odoc.git"
+dev-repo: "git+https://github.com/ocaml/odoc.git"
 
 synopsis: "OCaml documentation generator"
 
