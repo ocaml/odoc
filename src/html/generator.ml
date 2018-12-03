@@ -1161,8 +1161,13 @@ struct
       | Some csig ->
         Tree.enter ~kind:(`Class) name;
         let doc = Comment.to_html t.doc in
-        let expansion, _, _ = class_signature csig in
-        let subtree = Tree.make ~header_docs:doc ?theme_uri expansion [] in
+        let expansion, toc, _ = class_signature csig in
+        let header_docs =
+          match toc with
+          | [] -> doc
+          | _ -> doc @ (Top_level_markup.render_toc toc)
+        in
+        let subtree = Tree.make ~header_docs ?theme_uri expansion [] in
         Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Class name ] [Html.txt name], [subtree]
     in
@@ -1324,8 +1329,9 @@ struct
           | e -> e
         in
         Tree.enter ~kind:(`Arg) link_name;
-        let (docs, subpages) = module_expansion expansion in
-        let subtree = Tree.make ?theme_uri docs subpages in
+        let (doc, toc, subpages) = module_expansion expansion in
+        let header_docs = Top_level_markup.render_toc toc in
+        let subtree = Tree.make ~header_docs ?theme_uri doc subpages in
         Tree.leave ();
         (
           Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.txt name] ::
@@ -1338,15 +1344,15 @@ struct
 
   and module_expansion
     : ?theme_uri:Tree.uri -> Model.Lang.Module.expansion
-    -> Html_types.div_content_fun Html.elt list * Tree.t list
+    -> Html_types.div_content_fun Html.elt list * toc * Tree.t list
   = fun ?theme_uri t ->
     match t with
     | AlreadyASig -> assert false
     | Signature sg ->
-      let expansion, _, subpages = signature sg in
-      expansion, subpages
+      let expansion, toc, subpages = signature sg in
+      expansion, toc, subpages
     | Functor (args, sg) ->
-      let sig_html, _, subpages = signature sg in
+      let sig_html, toc, subpages = signature sg in
       let params, params_subpages =
         List.fold_left (fun (args, subpages as acc) arg ->
           match arg with
@@ -1364,7 +1370,7 @@ struct
         Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.txt "Signature" ] ::
         sig_html
       in
-      html, params_subpages @ subpages
+      html, toc, params_subpages @ subpages
 
   and module_
       : ?theme_uri:Tree.uri -> Model.Lang.Signature.recursive ->
@@ -1394,8 +1400,13 @@ struct
         in
         Tree.enter ~kind:(`Mod) modname;
         let doc = Comment.to_html t.doc in
-        let expansion, subpages = module_expansion ?theme_uri expansion in
-        let subtree = Tree.make ~header_docs:doc ?theme_uri expansion subpages in
+        let expansion, toc, subpages = module_expansion ?theme_uri expansion in
+        let header_docs =
+          match toc with
+          | [] -> doc
+          | _ -> doc @ (Top_level_markup.render_toc toc)
+        in
+        let subtree = Tree.make ~header_docs ?theme_uri expansion subpages in
         Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mod modname ] [Html.txt modname], [subtree]
     in
@@ -1469,14 +1480,13 @@ struct
         in
         Tree.enter ~kind:(`Mty) modname;
         let doc = Comment.to_html t.doc in
-        let doc = (doc :> (Html_types.div_content Html.elt) list) in
-        let expansion, subpages = module_expansion expansion in
-        let expansion =
-          match doc with
-          | [] -> expansion
-          | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
+        let expansion, toc, subpages = module_expansion expansion in
+        let header_docs =
+          match toc with
+          | [] -> doc
+          | _ -> doc @ (Top_level_markup.render_toc toc)
         in
-        let subtree = Tree.make ?theme_uri expansion subpages in
+        let subtree = Tree.make ~header_docs ?theme_uri expansion subpages in
         Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Mty modname ] [Html.txt modname], [subtree]
     in
