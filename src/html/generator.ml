@@ -1355,13 +1355,14 @@ struct
           | None -> acc
           | Some arg ->
             let arg, arg_subpages = functor_argument ?theme_uri arg in
-            (args @ arg, subpages @ arg_subpages)
+            let arg = Html.li arg in
+            (args @ [arg], subpages @ arg_subpages)
         )
         ([], []) args
       in
       let html =
         Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.txt "Parameters" ] ::
-        Html.dl (List.map Html.Unsafe.coerce_elt params) ::
+        Html.ul (List.map Html.Unsafe.coerce_elt params) ::
         Html.h3 ~a:[ Html.a_class ["heading"] ] [ Html.txt "Signature" ] ::
         sig_html
       in
