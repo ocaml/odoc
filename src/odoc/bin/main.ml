@@ -18,9 +18,10 @@ let convert_syntax : Html.Tree.syntax Arg.converter =
   in
   (syntax_parser, syntax_printer)
 
-let convert_directory : Fs.Directory.t Arg.converter =
+let convert_directory ?(create=false) () : Fs.Directory.t Arg.converter =
   let (dir_parser, dir_printer) = Arg.dir in
   let odoc_dir_parser str =
+    let () = if create then Fs.Directory.(mkdir_p (of_string str)) in
     match dir_parser str with
     | `Ok res  -> `Ok (Fs.Directory.of_string res)
     | `Error e -> `Error e
@@ -57,7 +58,7 @@ let odoc_file_directories =
     "Where to look for required .odoc files. \
      (Can be present several times)."
   in
-  Arg.(value & opt_all convert_directory [] &
+  Arg.(value & opt_all (convert_directory ()) [] &
     info ~docs ~docv:"DIR" ~doc ["I"])
 
 let hidden =
@@ -68,8 +69,9 @@ let hidden =
   Arg.(value & flag & info ~docs ~doc ["hidden"])
 
 let dst =
-  let doc = "Output directory where the HTML tree is expected to be saved." in
-  Arg.(required & opt (some convert_directory) None &
+  let doc = "Output directory where the HTML tree is expected to be saved. \
+             Will be created if it doesn't exist." in
+  Arg.(required & opt (some (convert_directory ~create:true ())) None &
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
 module Compile : sig
