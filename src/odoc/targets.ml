@@ -25,7 +25,7 @@ let for_compile_step ~output input =
   in
   [Fs.File.create ~directory:output ~name]
 
-let unit ~env ~output:_root_dir input =
+let unit ~env ~output:root_dir input =
   let unit = Compilation_unit.load input in
   let env = Env.build env (`Unit unit) in
   let odoctree = Xref.resolve (Env.resolver env) unit in
@@ -36,7 +36,7 @@ let unit ~env ~output:_root_dir input =
   (* CR-someday trefis: have [List_targets] return a tree instead of
      postprocessing. *)
   List.map targets ~f:(fun path ->
-    let directory = Fs.Directory.of_string path in
+    let directory = Fs.Directory.(append root_dir (of_string path)) in
     Fs.File.create ~directory ~name:"index.html"
   )
 

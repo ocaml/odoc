@@ -54,6 +54,8 @@ module Directory = struct
   let dirname = Fpath.parent
   let basename = Fpath.base
 
+  let append = Fpath.append
+
   let make_path p name =
     match Fpath.of_string name with
     | Error _ as e -> e

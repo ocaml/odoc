@@ -29,6 +29,8 @@ module Directory : sig
   val dirname : t -> t
   val basename : t -> t
 
+  val append : t -> t -> t
+
   val reach_from : dir:t -> string -> t
   (** @raises [Invalid_arg _] if [parent/name] exists but is not a directory. *)
 
