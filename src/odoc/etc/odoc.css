@@ -448,7 +448,7 @@ span.at-tag {
 
 .heading {
   margin-top: 10px;
-  border-top: solid;
+  border-bottom: solid;
   border-width: 1px;
   border-color: #DDD;
   text-align: right;
