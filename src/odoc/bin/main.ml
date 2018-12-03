@@ -68,10 +68,10 @@ let hidden =
   in
   Arg.(value & flag & info ~docs ~doc ["hidden"])
 
-let dst =
+let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved. \
              Will be created if it doesn't exist." in
-  Arg.(required & opt (some (convert_directory ~create:true ())) None &
+  Arg.(required & opt (some (convert_directory ?create ())) None &
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
 module Compile : sig
@@ -167,7 +167,7 @@ module Support_files_command = struct
     Arg.(value & flag & info ~doc ["without-theme"])
 
   let cmd =
-    Term.(const support_files $ without_theme $ dst)
+    Term.(const support_files $ without_theme $ dst ~create:true ())
 
   let info =
     let doc =
@@ -241,7 +241,7 @@ end = struct
       Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
-          odoc_file_directories $ dst $ index_for $ syntax $ theme_uri $ input)
+          odoc_file_directories $ dst ~create:true () $ index_for $ syntax $ theme_uri $ input)
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -350,7 +350,7 @@ module Targets = struct
         let doc = "Input file" in
         Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.cm{i,t,ti}" [])
       in
-      Term.(const list_targets $ dst $ input)
+      Term.(const list_targets $ dst () $ input)
 
     let info =
       Term.info "compile-targets" ~doc:"TODO: Fill in."
@@ -371,7 +371,7 @@ module Targets = struct
         let doc = "Input file" in
         Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
       in
-      Term.(const list_targets $ odoc_file_directories $ dst $ input)
+      Term.(const list_targets $ odoc_file_directories $ dst () $ input)
 
     let info =
       Term.info "html-targets" ~doc:"TODO: Fill in."
@@ -383,7 +383,7 @@ module Targets = struct
       Support_files.print_filenames ~without_theme output_directory
 
     let cmd =
-      Term.(const list_targets $ Support_files_command.without_theme $ dst)
+      Term.(const list_targets $ Support_files_command.without_theme $ dst ())
 
     let info =
       Term.info "support-files-targets"
