@@ -1163,14 +1163,8 @@ struct
       | Some csig ->
         Tree.enter ~kind:(`Class) name;
         let doc = Comment.to_html t.doc in
-        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
-        let expansion =
-          match doc with
-          | [] -> expansion
-          | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
-        in
-        let subtree = Tree.make ?theme_uri expansion [] in
+        let subtree = Tree.make ~header_docs:doc ?theme_uri expansion [] in
         Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Class name ] [Html.txt name], [subtree]
     in
@@ -1204,14 +1198,8 @@ struct
       | Some csig ->
         Tree.enter ~kind:(`Cty) name;
         let doc = Comment.to_html t.doc in
-        let doc = (doc :> (Html_types.div_content Html.elt) list) in
         let expansion, _, _ = class_signature csig in
-        let expansion =
-          match doc with
-          | [] -> expansion
-          | _ -> Html.div ~a:[ Html.a_class ["doc"] ] doc :: expansion
-        in
-        let subtree = Tree.make ?theme_uri expansion [] in
+        let subtree = Tree.make ~header_docs:doc ?theme_uri expansion [] in
         Tree.leave ();
         Html.a ~a:[ a_href ~kind:`Cty name ] [Html.txt name], [subtree]
     in
