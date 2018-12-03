@@ -1365,7 +1365,7 @@ struct
           | None -> acc
           | Some arg ->
             let arg, arg_subpages = functor_argument ?theme_uri arg in
-            (arg @ args, arg_subpages @ subpages)
+            (args @ arg, subpages @ arg_subpages)
         )
         ([], []) args
       in
