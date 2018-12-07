@@ -53,6 +53,13 @@ let convert_uri : Html.Tree.uri Arg.converter =
 
 let docs = "ARGUMENTS"
 
+let handle_fatal_err f =
+  match Model.Error.catch f with
+  | Ok x -> x
+  | Error y ->
+    Printf.eprintf "FATAL: %s\n%!" (Model.Error.to_string y);
+    exit 2
+
 let odoc_file_directories =
   let doc =
     "Where to look for required .odoc files. \
@@ -85,8 +92,8 @@ end = struct
     |> Astring.String.is_prefix ~affix:"page-"
 
   let compile hidden directories resolve_fwd_refs output package_name input =
-    let env =
-      Env.create ~important_digests:(not resolve_fwd_refs) ~directories
+    let env = handle_fatal_err (fun () ->
+      Env.create ~important_digests:(not resolve_fwd_refs) ~directories)
     in
     let input = Fs.File.of_string input in
     let output =
@@ -196,7 +203,7 @@ end = struct
         syntax theme_uri input_file =
     Html.Tree.Relative_link.semantic_uris := semantic_uris;
     Html.Tree.open_details := not closed_details;
-    let env = Env.create ~important_digests:false ~directories in
+    let env = handle_fatal_err (fun () -> Env.create ~important_digests:false ~directories) in
     let file = Fs.File.of_string input_file in
     match index_for with
     | None -> Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file
@@ -252,7 +259,7 @@ module Html_fragment : sig
 end = struct
 
   let html_fragment directories xref_base_uri output_file input_file =
-    let env = Env.create ~important_digests:false ~directories in
+    let env = handle_fatal_err (fun () -> Env.create ~important_digests:false ~directories) in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in
     let xref_base_uri =
@@ -357,7 +364,7 @@ module Targets = struct
 
   module Html = struct
     let list_targets directories output_dir odoc_file =
-      let env = Env.create ~important_digests:false ~directories in
+      let env = handle_fatal_err (fun () -> Env.create ~important_digests:false ~directories) in
       let odoc_file = Fs.File.of_string odoc_file in
       let targets =
         Targets.unit ~env ~output:output_dir odoc_file
