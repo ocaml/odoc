@@ -1,5 +1,3 @@
-open Compat
-
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
  *
@@ -35,54 +33,18 @@ module Accessible_paths = struct
     ; file_map = Hashtbl.create 42
     ; directories }
 
-  let find_file_by_name t name =
-    let uname = name ^ ".odoc" in
-    let lname = String.uncapitalize_ascii name ^ ".odoc" in
-    let rec loop = function
-      | [] -> raise Not_found
-      | directory :: dirs ->
-        let lfile = Fs.File.create ~directory ~name:lname in
-        match Unix.stat (Fs.File.to_string lfile) with
-        | _ -> lfile
-        | exception Unix.Unix_error _ ->
-          let ufile = Fs.File.create ~directory ~name:uname in
-          match Unix.stat (Fs.File.to_string ufile) with
-          | _ -> ufile
-          | exception Unix.Unix_error _ ->
-            loop dirs
-    in
-    loop t.directories
-
   let find_root ?digest t ~filename =
-    match Hashtbl.find t.file_map filename with
-    | root -> root
-    | exception Not_found ->
-      let path = find_file_by_name t filename in
-      let root = Root.read path in
-      begin match digest with
-      | Some d when Digest.compare d root.digest <> 0 ->
-        Printf.eprintf
-          "WARNING: digest of %s doesn't match the one expected for file %s\n%!"
-          (Fs.File.to_string path) filename
-      | _ -> ()
-      end;
-      Hashtbl.add t.file_map filename root;
-      Model.Root.Hash_table.add t.root_map root path;
+    let root = Hashtbl.find t.file_map filename in
+    match digest with
+    | Some d when Digest.compare d root.digest <> 0 ->
+      Printf.eprintf "WARNING: digest of %s doesn't match the one expected for file %s\n%!"
+          (Model.Root.Hash_table.find t.root_map root |> Fs.File.to_string) filename;
+      root
+    | _ ->
       root
 
   let file_of_root t root =
-    try Model.Root.Hash_table.find t.root_map root
-    with Not_found ->
-      let r =
-        match root.file with
-        | Page page_name ->
-          let filename = "page-" ^ page_name in
-          find_root ~digest:root.digest t ~filename
-        | Compilation_unit { name; _ } ->
-          find_root ~digest:root.digest t ~filename:name
-      in
-      assert (Model.Root.equal root r);
-      Model.Root.Hash_table.find t.root_map r
+    Model.Root.Hash_table.find t.root_map root
 
   let scan_directories t =
     let scan_directory d =
