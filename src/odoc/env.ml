@@ -83,6 +83,33 @@ module Accessible_paths = struct
       in
       assert (Model.Root.equal root r);
       Model.Root.Hash_table.find t.root_map r
+
+  let scan_directories t =
+    let scan_directory d =
+      let odoc_files =
+        Fs.Directory.ls d
+        |> List.filter (Fs.File.has_ext ".odoc")
+      in
+      List.iter
+        (fun path ->
+          let root = Root.read path in
+          let filename =
+            match root.file with
+            | Page page_name -> "page-" ^ page_name
+            | Compilation_unit { name; _ } -> name
+          in
+          if Hashtbl.mem t.file_map filename then begin
+            let other = Hashtbl.find t.file_map filename in
+            let other_path = Model.Root.Hash_table.find t.root_map other in
+            Printf.eprintf
+              "Error: Duplicate root name found in include path: %s (also at %s)"
+              (Fs.File.to_string path) (Fs.File.to_string other_path);
+          end;
+          Hashtbl.add t.file_map filename root;
+          Model.Root.Hash_table.add t.root_map root path)
+        odoc_files
+    in
+    List.iter scan_directory t.directories
 end
 
 let rec lookup_unit ~important_digests ap target_name =
@@ -137,6 +164,7 @@ type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 
 let create ?(important_digests=true) ~directories : builder =
   let ap = Accessible_paths.create ~directories in
+  Accessible_paths.scan_directories ap;
   fun unit_or_page ->
     let lookup_unit target_name : Xref.lookup_result =
       match unit_or_page with
