@@ -54,74 +54,50 @@ The generated docs can then be found locally at
 
 ## Using `odoc` with BuckleScript/Reason
 
-> BuckleScript support currently requires the latest development version of odoc.
-
-While the BuckleScript/Reason toolchain relies on `npm`, `odoc` at the moment
-needs to be used from a working OCaml toolchain.
-
-This means we follow the same installation than above, but using the
-`4.02.3+buckle-master` version of the OCaml compiler.
+You can use the [`bsdoc`](https://ostera.github.io/bsdoc) npm package to use
+`odoc` in your BuckleScript projects.
 
 ```sh
-λ opam switch 4.02.3+buckle-master
-λ eval `opam config env`
-λ opam pin add odoc.dev git+https://github.com/ocaml/odoc
+$ cd MyProject
+MyProject $ yarn add bsdoc --dev
+MyProject $ yarn build
 
+MyProject $ yarn run bsdoc support-files 
+yarn run v1.12.3
+$ ./node_modules/.bin/bsdoc support-files
+info: Copying support files (CSS, JS) into ./docs
+info: Done ✅
+✨  Done in 0.60s.
+
+MyProject $ yarn run bsdoc build MyProject
+yarn run v1.12.3
+$ ./node_modules/.bin/bsdoc build MyProject
+info: Compiling documentation for package "MyProject"...
+info: Generating .html files...
+info: Done ✅
+✨  Done in 0.45s.
 ```
 
-Now with that working, we can point `odoc` to the path where BuckleScript saves
-the compiled code that we can use to generate our documentation. This path is
-`$root/lib/bs/src`.
+Make sure to also add `bsdoc` to your `bsconfig.json`, and have a `commonjs`
+package spec that compiles out of source folders:
 
-In there you'll find your `.cmt` and `.cmti` files.
-
-You can now compile each one of them from `.cmt[i]` to `.odoc` and from `.odoc`
-to `.html`.
-
-The following script can help you get started:
-
-```bash
-#!/bin/bash
-
-readonly PKG=$1
-readonly DOCS=$2
-
-readonly ODOC=$(which odoc)
-readonly LIB=./lib/bs/src
-
-readonly CMT_FILES=$(find ${LIB} -name "*.cmti")
-readonly ODOC_FILES=$(echo ${CMT_FILES} | sed "s/cmti/odoc/g")
-
-echo "<< Compiling docs..."
-for file in ${CMT_FILES}; do
-  ${ODOC} compile \
-    -I ${LIB} \
-    --pkg=${PKG} \
-    ${file}
-done
-echo ">> Done!"
-
-echo "<< Generating HTML..."
-for file in ${ODOC_FILES}; do
-  ${ODOC} html \
-    -I ${LIB} \
-    -o ${DOCS} \
-    --syntax=re \
-    --semantic-uris \
-    ${file}
-done
-echo ">> Done!"
+```js
+//...
+  "package-specs": [
+    // ...
+    { "module": "commonjs", "in-source": false },
+  ],
+  "bs-dependencies": [
+    // ...
+    "bsdoc",
+  ],
+// ...
 ```
 
-And you can call it like:
-
-```sh
-λ ./mk-docs.sh MyPackageName ${path_to_docs_folder}
-<< Compiling docs...
->> Done!
-<< Generating HTML...
->> Done!
-```
+**Note**: While the BuckleScript/Reason toolchain relies on `npm`, `odoc` at
+the moment needs to be used from a working OCaml toolchain. `bsdoc` will check
+that you have everything it needs and it will prompt you to install whatever is
+missing.
 
 <br/>
 
