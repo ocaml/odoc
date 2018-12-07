@@ -52,11 +52,16 @@ module Accessible_paths = struct
         Fs.Directory.ls d
         |> List.filter (Fs.File.has_ext ".odoc")
       in
+      let valid_odocs =
+        List.fold_left (fun acc path ->
+          try (path, Root.read path)::acc
+          with End_of_file -> acc) 
+          [] odoc_files
+      in
       List.iter
-        (fun path ->
-          let root = Root.read path in
+        (fun (path,root) ->
           let filename =
-            match root.file with
+            match root.Model.Root.file with
             | Page page_name -> "page-" ^ page_name
             | Compilation_unit { name; _ } -> name
           in
@@ -68,7 +73,7 @@ module Accessible_paths = struct
           end;
           Hashtbl.add t.file_map filename root;
           Model.Root.Hash_table.add t.root_map root path)
-        odoc_files
+        valid_odocs
     in
     List.iter scan_directory t.directories
 end
