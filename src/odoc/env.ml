@@ -61,11 +61,10 @@ module Accessible_paths = struct
             | Compilation_unit { name; _ } -> name
           in
           if Hashtbl.mem t.file_map filename then begin
-            let other = Hashtbl.find t.file_map filename in
-            let other_path = Model.Root.Hash_table.find t.root_map other in
-            Printf.eprintf
-              "Error: Duplicate root name found in include path: %s (also at %s)"
-              (Fs.File.to_string path) (Fs.File.to_string other_path);
+            let err = Model.Error.filename_only
+              "Duplicate root name found in include path"
+              (Fs.File.to_string path) in
+            Model.Error.raise_exception err
           end;
           Hashtbl.add t.file_map filename root;
           Model.Root.Hash_table.add t.root_map root path)
