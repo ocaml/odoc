@@ -64,19 +64,20 @@ module Case = struct
     kind: [ `mli | `mld | `ml ];
     theme_uri: string option;
     syntax: [ `ml | `re ];
+    outputs: string list;
   }
 
-  let make ?theme_uri ?(syntax = `ml) basename =
-    let name = Filename.chop_extension basename in
+  let make ?theme_uri ?(syntax = `ml) (input, outputs) =
+    let name = Filename.chop_extension input in
     let kind =
-      match Filename.extension basename with
+      match Filename.extension input with
       | ".mli" -> `mli
       | ".mld" -> `mld
       | ".ml" -> `ml
       | _ ->
-        invalid_arg (sprintf "Expected mli, mld, or ml files, got %s" basename)
+        invalid_arg (sprintf "Expected mli, mld, or ml files, got %s" input)
     in
-    { name; kind; theme_uri; syntax }
+    { name; kind; theme_uri; syntax; outputs }
 
   let name case = case.name
   let kind case = case.kind
@@ -112,15 +113,8 @@ module Case = struct
     | `mld -> Env.path `cases // case.name ^ ".mld"
     | `ml -> Env.path `cases // case.name ^ ".ml"
 
-  (* Produces an HTML file path for a given case, starting with [dir]. *)
-  let html_file dir case =
-    let module_name = String.capitalize_ascii case.name in
-    match case.kind with
-    | `mli | `ml -> dir // package case // module_name // "index.html"
-    | `mld -> dir // package case // case.name ^ ".html"
-
-  let actual_html_file   ?from_root = html_file (Env.path ?from_root `scratch)
-  let expected_html_file ?from_root = html_file (Env.path ?from_root `expect)
+  let outputs case =
+    List.map (fun o -> package case // o) case.outputs
 end
 
 
@@ -181,9 +175,9 @@ let diff =
   (* Alcotest will run all tests. We need to know when something fails for the
      first time to stop diffing and generating promotion files. *)
   let already_failed = ref false in
-  fun case ->
-    let expected_file = Case.expected_html_file case in
-    let actual_file   = Case.actual_html_file case in
+  fun output ->
+    let actual_file   = Env.path `scratch // output in
+    let expected_file = Env.path `expect  // output in
     let cmd = sprintf "diff -u %s %s" expected_file actual_file in
     match Sys.command cmd with
     | 0 -> ()
@@ -199,8 +193,8 @@ let diff =
          Also provide the command for overwriting the expected output with the
          actual output, in case it is the actual output that is correct.
          The paths are defined relative to the project's root. *)
-      let root_actual_file   = Case.actual_html_file   ~from_root:true case in
-      let root_expected_file = Case.expected_html_file ~from_root:true case in
+      let root_actual_file   = Env.path `scratch ~from_root:true // output in
+      let root_expected_file = Env.path `expect  ~from_root:true // output in
       let write_file filename data =
         Markup.string data |> Markup.to_file filename in
       write_file Env.(path `scratch // "actual") root_actual_file;
@@ -228,49 +222,56 @@ let output_support_files =
   "support-files", `Slow, run
 
 
-let make_test_case ?theme_uri ?syntax case_basename =
-  let case = Case.make ?theme_uri ?syntax case_basename in
+let make_test_case ?theme_uri ?syntax case =
+  let case = Case.make ?theme_uri ?syntax case in
   let run () =
     (* Compile the source file and generate HTML. *)
     generate_html case;
-    pretty_print_html_in_place (Case.actual_html_file case);
 
-    (* Run HTML validation *)
-    if Tidy.is_present_in_path then begin
-      let issues = Tidy.validate (Case.actual_html_file case) in
-      if issues <> [] then begin
-        List.iter prerr_endline issues;
-        Alcotest.fail "Tidy validation error"
-      end
-    end;
+    List.iter begin fun output ->
+      let actual_file = Env.path `scratch // output in
 
-    (* Diff the actual output with the expected output. *)
-    diff case;
+      (* Pretty-print output HTML for better diffing. *)
+      pretty_print_html_in_place actual_file;
+
+      (* Run HTML validation on output files. *)
+      if Tidy.is_present_in_path then begin
+        let issues = Tidy.validate actual_file in
+        if issues <> [] then begin
+          List.iter prerr_endline issues;
+          Alcotest.fail "Tidy validation error"
+        end
+      end;
+
+      (* Diff the actual outputs with the expected outputs. *)
+      diff output
+    end
+      (Case.outputs case)
   in
   Case.name case, `Slow, run
 
 
 let source_files = [
-  "val.mli";
-  "markup.mli";
-  "section.mli";
-  "module.mli";
-  "interlude.mli";
-  "include.mli";
-  "mld.mld";
-  "nested.mli";
-  "type.mli";
-  "external.mli";
-  "functor.mli";
-  "class.mli";
-  "stop.mli";
-  "bugs.ml";
+  ("val.mli", ["Val/index.html"]);
+  ("markup.mli", ["Markup/index.html"]);
+  ("section.mli", ["Section/index.html"]);
+  ("module.mli", ["Module/index.html"]);
+  ("interlude.mli", ["Interlude/index.html"]);
+  ("include.mli", ["Include/index.html"]);
+  ("mld.mld", ["mld.html"]);
+  ("nested.mli", ["Nested/index.html"]);
+  ("type.mli", ["Type/index.html"]);
+  ("external.mli", ["External/index.html"]);
+  ("functor.mli", ["Functor/index.html"]);
+  ("class.mli", ["Class/index.html"]);
+  ("stop.mli", ["Stop/index.html"]);
+  ("bugs.ml", ["Bugs/index.html"]);
 ]
 
 let source_files =
   let latest_supported = "4.07." in
   match String.sub (Sys.ocaml_version) 0 (String.length latest_supported) with
-  | s when s = latest_supported -> source_files @ ["recent.mli"]
+  | s when s = latest_supported -> source_files @ [("recent.mli", ["Recent/index.html"])]
   | _ -> source_files
   | exception _ -> source_files
 
@@ -283,9 +284,9 @@ let () =
     "html_ml", List.map (make_test_case ~syntax:`ml) source_files;
     "html_re", List.map (make_test_case ~syntax:`re) source_files;
     "custom_theme", [
-      make_test_case ~theme_uri:"/a/b/c" "module.mli";
-      make_test_case ~theme_uri:"https://foo.com/a/b/c/" "val.mli";
-      make_test_case ~theme_uri:"../b/c" "include.mli";
-      make_test_case ~theme_uri:"b/c" "section.mli";
+      make_test_case ~theme_uri:"/a/b/c" ("module.mli", ["Module/index.html"]);
+      make_test_case ~theme_uri:"https://foo.com/a/b/c/" ("val.mli", ["Val/index.html"]);
+      make_test_case ~theme_uri:"../b/c" ("include.mli", ["Include/index.html"]);
+      make_test_case ~theme_uri:"b/c" ("section.mli", ["Section/index.html"]);
     ];
   ]
