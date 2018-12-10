@@ -259,7 +259,15 @@ let source_files = [
   ("interlude.mli", ["Interlude/index.html"]);
   ("include.mli", ["Include/index.html"]);
   ("mld.mld", ["mld.html"]);
-  ("nested.mli", ["Nested/index.html"]);
+  ("nested.mli", [
+      "Nested/index.html";
+      "Nested/F/index.html";
+      "Nested/F/argument-1-Arg1/index.html";
+      "Nested/F/argument-2-Arg2/index.html";
+      "Nested/X/index.html";
+      "Nested/class-z/index.html";
+      "Nested/module-type-Y/index.html";
+    ]);
   ("type.mli", ["Type/index.html"]);
   ("external.mli", ["External/index.html"]);
   ("functor.mli", ["Functor/index.html"]);
