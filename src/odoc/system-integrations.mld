@@ -16,47 +16,5 @@ their relationships.
 You can use the {{:https://ostera.github.io/bsdoc}[bsdoc]} npm package to use
 `odoc` in your BuckleScript projects.
 
-{[
-$ cd MyProject
-MyProject $ yarn add bsdoc --dev
-MyProject $ yarn build
-
-MyProject $ yarn run bsdoc support-files 
-yarn run v1.12.3
-$ ./node_modules/.bin/bsdoc support-files
-info: Copying support files (CSS, JS) into ./docs
-info: Done ✅
-✨  Done in 0.60s.
-
-MyProject $ yarn run bsdoc build MyProject
-yarn run v1.12.3
-$ ./node_modules/.bin/bsdoc build MyProject
-info: Compiling documentation for package "MyProject"...
-info: Generating .html files...
-info: Done ✅
-✨  Done in 0.45s.
-]}
-
-Make sure to also add [bsdoc] to your [bsconfig.json], and have a [commonjs]
-package spec that compiles out of source folders:
-
-{[
-//...
-  "package-specs": [
-    // ...
-    { "module": "commonjs", "in-source": false },
-  ],
-  "bs-dependencies": [
-    // ...
-    "bsdoc",
-  ],
-// ...
-]}
-
-{b Note}: While the BuckleScript/Reason toolchain relies on [npm], [odoc] at
-the moment needs to be used from a working OCaml toolchain. [bsdoc] will check
-that you have everything it needs and it will prompt you to install whatever is
-missing.
-
 {1:manual-usage Manual Usage}
 ...
