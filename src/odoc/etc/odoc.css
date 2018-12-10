@@ -327,6 +327,13 @@ section+section, section > header + dl {
   margin: 0;
   font-style: italic;
 }
+.spec.type .record {
+  margin-left: 2ch;
+}
+.spec.type .record p {
+  margin: 0;
+  font-style: italic;
+}
 
 div.def {
   margin-top: 0;

@@ -69,8 +69,7 @@ let hidden =
   Arg.(value & flag & info ~docs ~doc ["hidden"])
 
 let dst ?create () =
-  let doc = "Output directory where the HTML tree is expected to be saved. \
-             Will be created if it doesn't exist." in
+  let doc = "Output directory where the HTML tree is expected to be saved." in
   Arg.(required & opt (some (convert_directory ?create ())) None &
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
