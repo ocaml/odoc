@@ -87,7 +87,18 @@ module Accessible_paths = struct
     | exception Not_found ->
       let paths = find_file_by_name t filename in
       (* This could be the empty list *)
-      let roots = List.map Root.read paths in
+      let filter_map f l =
+        List.fold_right (fun x acc -> match f x with | Some y -> y::acc | None -> acc) l []
+      in
+      let safe_read file =
+        try Some (Root.read file)
+        with
+        | End_of_file ->
+          let warning = Model.Error.filename_only "End_of_file while reading" (Fs.File.to_string file) in
+          prerr_endline (Model.Error.to_string warning);
+          None
+      in
+      let roots = filter_map safe_read paths in
       Hashtbl.add t.file_map filename roots;
       List.iter2 (fun root path ->
         Model.Root.Hash_table.add t.root_map root path) roots paths;
