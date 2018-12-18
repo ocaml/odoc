@@ -306,7 +306,8 @@ module Depends = struct
   let info =
     Term.info "compile-deps"
       ~doc:"List units (with their digest) which needs to be compiled in order \
-            to compile this one."
+            to compile this one. The unit itself and its digest is also \
+            reported in the output."
   end
 
   module Html = struct

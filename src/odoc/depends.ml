@@ -26,14 +26,21 @@ module Compile = struct
   let digest t = t.digest
 end
 
-let for_compile_step file =
-  let input = Fs.File.to_string file in
-  let cmi_infos = Cmi_format.read_cmi input in
-  List.fold_left ~f:(fun acc -> function
-    | _, None -> acc
-    | unit_name, Some digest -> { Compile. unit_name; digest } :: acc
-  ) ~init:[] cmi_infos.Cmi_format.cmi_crcs
+let add_dep acc = function
+| _, None -> acc (* drop module aliases *)
+| unit_name, Some digest ->  { Compile.unit_name; digest } :: acc
 
+let for_compile_step_cmt file =
+  let cmt_infos = Cmt_format.read_cmt (Fs.File.to_string file) in
+  List.fold_left ~f:add_dep ~init:[] cmt_infos.Cmt_format.cmt_imports
+
+let for_compile_step_cmi_or_cmti file =
+  let cmi_infos = Cmi_format.read_cmi (Fs.File.to_string file) in
+  List.fold_left ~f:add_dep ~init:[] cmi_infos.Cmi_format.cmi_crcs
+
+let for_compile_step file = match Fs.File.has_ext "cmt" file with
+| true -> for_compile_step_cmt file
+| false -> for_compile_step_cmi_or_cmti file
 
 module Hash_set : sig
   type t
