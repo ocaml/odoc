@@ -14,9 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val for_compile_step :
-  output:Fs.Directory.t -> Fs.File.t -> Fs.File.t list
-
 val unit :
   env:Env.builder -> output:Fs.Directory.t ->
   Fs.File.t -> Fs.File.t list

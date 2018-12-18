@@ -16,15 +16,6 @@
 
 open StdLabels
 
-let for_compile_step ~output input =
-  let name =
-    Fs.File.to_string input
-    |> Filename.basename
-    |> Filename.chop_extension
-    |> fun s -> s ^ ".odoc"
-  in
-  [Fs.File.create ~directory:output ~name]
-
 let unit ~env ~output:root_dir input =
   let unit = Compilation_unit.load input in
   let env = Env.build env (`Unit unit) in
