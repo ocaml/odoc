@@ -19,7 +19,7 @@ let convert_syntax : Html.Tree.syntax Arg.converter =
   (syntax_parser, syntax_printer)
 
 let convert_directory ?(create=false) () : Fs.Directory.t Arg.converter =
-  let (dir_parser, dir_printer) = Arg.dir in
+  let (dir_parser, dir_printer) = Arg.string in
   let odoc_dir_parser str =
     let () = if create then Fs.Directory.(mkdir_p (of_string str)) in
     match dir_parser str with
