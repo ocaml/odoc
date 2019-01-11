@@ -74,44 +74,46 @@ let dst ?create () =
        info ~docs ~docv:"DIR" ~doc ["o"; "output-dir"])
 
 module Compile : sig
+  val output_file : dst:string option -> input:Fs.file -> Fs.file
+  val input : string Term.t
+  val dst : string option Term.t
   val cmd : unit Term.t
   val info: Term.info
 end = struct
-
   let has_page_prefix file =
     file
     |> Fs.File.basename
     |> Fs.File.to_string
     |> Astring.String.is_prefix ~affix:"page-"
 
-  let compile hidden directories resolve_fwd_refs output package_name input =
+  let output_file ~dst ~input = match dst with
+  | Some file ->
+      let output = Fs.File.of_string file in
+      if Fs.File.has_ext ".mld" input && not (has_page_prefix output)
+      then (
+        Printf.eprintf "ERROR: the name of the .odoc file produced from a \
+                        .mld must start with 'page-'\n%!";
+        exit 1
+      );
+      output
+  | None ->
+      let output =
+        if Fs.File.has_ext ".mld" input && not (has_page_prefix input)
+        then
+          let directory = Fs.File.dirname input in
+          let name = Fs.File.basename input in
+          let name = "page-" ^ Fs.File.to_string name in
+          Fs.File.create ~directory ~name
+        else input
+      in
+      Fs.File.(set_ext ".odoc" output)
+
+  let compile hidden directories resolve_fwd_refs dst package_name input =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
     let input = Fs.File.of_string input in
-    let output =
-      match output with
-      | Some file ->
-        let output = Fs.File.of_string file in
-        if Fs.File.has_ext ".mld" input && not (has_page_prefix output)
-        then (
-          Printf.eprintf "ERROR: the name of the .odoc file produced from a \
-                          .mld must start with 'page-'\n%!";
-          exit 1
-        );
-        output
-      | None ->
-        let output =
-          if Fs.File.has_ext ".mld" input && not (has_page_prefix input)
-          then
-            let directory = Fs.File.dirname input in
-            let name = Fs.File.basename input in
-            let name = "page-" ^ Fs.File.to_string name in
-            Fs.File.create ~directory ~name
-          else input
-        in
-        Fs.File.(set_ext ".odoc" output)
-    in
+    let output = output_file ~dst ~input in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
       Compile.cmti ~env ~package:package_name ~hidden ~output input
@@ -126,20 +128,20 @@ end = struct
       exit 2
     )
 
-  let cmd =
-    let dst_file =
-      let doc = "Output file path. Non-existing intermediate directories are
+  let input =
+    let doc = "Input cmti, cmt, cmi or mld file" in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
+
+  let dst =
+    let doc = "Output file path. Non-existing intermediate directories are
                  created. If absent outputs a $(i,BASE).odoc file in the same
                  directory as the input file where $(i,BASE) is the basename
                  of the input file (for mld files the \"page-\" prefix will be
                  added if not already present in the input basename)."
-      in
-      Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
     in
-    let input =
-      let doc = "Input cmti, cmt, cmi or mld file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
-    in
+    Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
+
+  let cmd =
     let pkg =
       let doc = "Package the input is part of" in
       Arg.(required & opt (some string) None &
@@ -150,7 +152,7 @@ end = struct
       Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $
-      dst_file $ pkg $ input)
+          dst $ pkg $ input)
 
   let info =
     Term.info "compile"
@@ -335,21 +337,14 @@ end
 
 module Targets = struct
   module Compile = struct
-    let list_targets output_dir input_file =
-      let input = Fs.File.of_string input_file in
-      let targets =
-        Targets.for_compile_step ~output:output_dir input
-        |> List.map ~f:Fs.File.to_string
-      in
-      List.iter ~f:(Printf.printf "%s\n") targets;
+    let list_targets dst input =
+      let input = Fs.File.of_string input in
+      let output = Compile.output_file ~dst ~input in
+      Printf.printf "%s\n" (Fs.File.to_string output);
       flush stdout
 
     let cmd =
-      let input =
-        let doc = "Input file" in
-        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.cm{i,t,ti}" [])
-      in
-      Term.(const list_targets $ dst () $ input)
+      Term.(const list_targets $ Compile.dst $ Compile.input)
 
     let info =
       Term.info "compile-targets" ~doc:"TODO: Fill in."
