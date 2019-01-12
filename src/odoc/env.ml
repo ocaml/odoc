@@ -17,6 +17,22 @@ open Compat
  *)
 
 
+(* We are slightly more flexible here than OCaml usually is, and allow
+   'linking' of modules that have the same name. This is because we do
+   documentation at a package level - it's perfectly acceptable to have
+   libraries within a package that are never meant to be linked into the same
+   binary, however package-level documents such as module and type indexes
+   effectively have to link those libraries together. Hence we may find
+   ourselves in the unfortunate situation where there are multiple modules with the same
+   name in our include path. We therefore maintain a mapping of module/page
+   name to Root _list_. Where we've already made a judgement about which module
+   we're looking for we have a digest, and can pick the correct module. When we
+   don't (for example, when handling package-level mld files), we pick the
+   first right now. The ocamldoc syntax doesn't currently allow for specifying
+   more accurately than just the module name anyway.
+
+   Where we notice this ambiguity we warn the user to wrap their libraries,
+   which will generally fix this issue. *)
 
 type t = {
   expander : Xref.expander ;
@@ -26,7 +42,7 @@ type t = {
 module Accessible_paths = struct
   type t = {
     root_map : Fs.File.t Model.Root.Hash_table.t;
-    file_map : (string, Model.Root.t) Hashtbl.t;
+    file_map : (string, Model.Root.t list) Hashtbl.t;
     directories : Fs.Directory.t list;
   }
 
@@ -38,61 +54,94 @@ module Accessible_paths = struct
   let find_file_by_name t name =
     let uname = name ^ ".odoc" in
     let lname = String.uncapitalize_ascii name ^ ".odoc" in
-    let rec loop = function
-      | [] -> raise Not_found
+    let rec loop acc = function
+      | [] -> acc
       | directory :: dirs ->
         let lfile = Fs.File.create ~directory ~name:lname in
         match Unix.stat (Fs.File.to_string lfile) with
-        | _ -> lfile
+        | _ -> loop (lfile::acc) dirs
         | exception Unix.Unix_error _ ->
           let ufile = Fs.File.create ~directory ~name:uname in
           match Unix.stat (Fs.File.to_string ufile) with
-          | _ -> ufile
+          | _ -> loop (ufile::acc) dirs
           | exception Unix.Unix_error _ ->
-            loop dirs
+            loop acc dirs
     in
-    loop t.directories
+    loop [] t.directories
 
-  let find_root ?digest t ~filename =
+  (* If there's only one possible file we've discovered in the search path
+     we can check the digest right now. If there's more than one, we defer
+     until further up the call stack *)
+  let check_optional_digest ?digest filename (roots : Model.Root.t list) =
+    match roots, digest with
+    | [root], Some d when Digest.compare d root.digest <> 0 ->
+      let warning = Model.Error.filename_only "Digest mismatch" filename in
+      prerr_endline (Model.Error.to_string warning);
+      roots
+    | _ ->
+      roots
+
+  let find_root t ~filename =
     match Hashtbl.find t.file_map filename with
-    | root -> root
+    | roots -> roots
     | exception Not_found ->
-      let path = find_file_by_name t filename in
-      let root = Root.read path in
-      begin match digest with
-      | Some d when Digest.compare d root.digest <> 0 ->
-        Printf.eprintf
-          "WARNING: digest of %s doesn't match the one expected for file %s\n%!"
-          (Fs.File.to_string path) filename
-      | _ -> ()
-      end;
-      Hashtbl.add t.file_map filename root;
-      Model.Root.Hash_table.add t.root_map root path;
-      root
+      let paths = find_file_by_name t filename in
+      (* This could be the empty list *)
+      let filter_map f l =
+        List.fold_right (fun x acc -> match f x with | Some y -> y::acc | None -> acc) l []
+      in
+      let safe_read file =
+        try Some (Root.read file)
+        with
+        | End_of_file ->
+          let warning = Model.Error.filename_only "End_of_file while reading" (Fs.File.to_string file) in
+          prerr_endline (Model.Error.to_string warning);
+          None
+      in
+      let roots = filter_map safe_read paths in
+      Hashtbl.add t.file_map filename roots;
+      List.iter2 (fun root path ->
+        Model.Root.Hash_table.add t.root_map root path) roots paths;
+      roots
 
   let file_of_root t root =
     try Model.Root.Hash_table.find t.root_map root
     with Not_found ->
-      let r =
+      let _roots =
         match root.file with
         | Page page_name ->
           let filename = "page-" ^ page_name in
-          find_root ~digest:root.digest t ~filename
+          check_optional_digest ~digest:root.digest filename @@ find_root t ~filename
         | Compilation_unit { name; _ } ->
-          find_root ~digest:root.digest t ~filename:name
+          check_optional_digest ~digest:root.digest name @@ find_root t ~filename:name
       in
-      assert (Model.Root.equal root r);
-      Model.Root.Hash_table.find t.root_map r
+      Model.Root.Hash_table.find t.root_map root
 end
 
 let rec lookup_unit ~important_digests ap target_name =
+  let handle_root (root : Model.Root.t) = match root.file with
+    | Compilation_unit {hidden; _} -> Xref.Found {root; hidden}
+    | Page _ -> assert false
+  in
   let find_root ~digest =
-    match Accessible_paths.find_root ap ~filename:target_name ?digest with
-    | exception Not_found -> Not_found
-    | root ->
-      match root.file with
-      | Compilation_unit {hidden; _} -> Xref.Found {root; hidden}
-      | Page _ -> assert false
+    match Accessible_paths.find_root ap ~filename:target_name, digest with
+    | [], _ -> Xref.Not_found
+    | [r], _ -> handle_root r (* Already checked the digest, if one's been specified *)
+    | r :: rs, None ->
+      Printf.fprintf stderr "Warning, ambiguous lookup. Please wrap your libraries. Possible files:\n%!";
+      let files_strs =
+        List.map (fun root ->
+          Accessible_paths.file_of_root ap root
+          |> Fs.File.to_string
+          |> Printf.sprintf "  %s") (r::rs)
+      in
+      prerr_endline (String.concat "\n" files_strs);
+      (* We've not specified a digest, let's try the first one *)
+      handle_root r
+    | roots, Some d ->
+      (* If we can't find a module that matches the digest, return Not_found *)
+      try handle_root @@ List.find (fun root -> root.Model.Root.digest = d) roots
+      with Not_found -> Xref.Not_found
   in
   function
   | [] when important_digests -> Xref.Not_found
@@ -116,8 +165,9 @@ let rec lookup_unit ~important_digests ap target_name =
 
 let lookup_page ap target_name =
   match Accessible_paths.find_root ap ~filename:("page-" ^ target_name) with
-  | root -> Some root
-  | exception Not_found -> None
+  | [] -> None
+  | [root] -> Some root
+  | root :: _roots -> Some root
 
 let fetch_page ap root =
   match Accessible_paths.file_of_root ap root with
