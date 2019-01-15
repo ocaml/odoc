@@ -631,12 +631,10 @@ struct
   let external_ (t : Model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
     let external_ =
-      keyword "external " ::
+      keyword (Syntax.Value.variable_keyword ^ " ") ::
       Html.txt name ::
       Html.txt Syntax.Type.annotation_separator ::
-      type_expr t.type_ @
-      Html.txt " = " ::
-      Syntax.Type.External.handle_primitives t.primitives
+      type_expr t.type_
       @ (if Syntax.Type.External.semicolon then [ keyword ";" ] else [])
     in
     [Html.code external_], t.doc
