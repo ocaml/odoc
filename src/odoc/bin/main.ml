@@ -237,9 +237,10 @@ end = struct
       Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
     in
     let syntax =
-      let doc = "Available options: ml | re"
+      let doc = "Available options: ml | re" in
+      let env = Arg.env_var "ODOC_SYNTAX"
       in
-      Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ["syntax"])
+      Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst ~create:true () $ index_for $ syntax $ theme_uri $ input)
