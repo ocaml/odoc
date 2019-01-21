@@ -1,3 +1,4 @@
+open Model.Names
 type sexp = Sexplib.Sexp.t =
   | Atom of string
   | List of sexp list
@@ -25,46 +26,46 @@ module Identifier_to_sexp =
 struct
   module Identifier = Model.Paths.Identifier
 
-  let identifier : _ Identifier.t -> sexp =
-    let rec traverse : type k. sexp list -> k Identifier.t -> sexp =
+  let identifier : Identifier.t -> sexp =
+    let rec traverse : sexp list -> Identifier.t -> sexp =
         fun acc -> function
-      | Identifier.Root (root, s) ->
-        List ((List [Atom "root"; Root_to_sexp.root root; Atom s])::acc)
-      | Identifier.Page (root, s) ->
-        List ((List [Atom "root"; Root_to_sexp.root root; Atom s])::acc)
-      | Identifier.Module (parent, s) ->
-        traverse ((List [Atom "module"; Atom s])::acc) parent
-      | Identifier.Argument (parent, i, s) ->
+      | `Root (root, s) ->
+        List ((List [Atom "root"; Root_to_sexp.root root; Atom (UnitName.to_string s)])::acc)
+      | `Page (root, s) ->
+        List ((List [Atom "root"; Root_to_sexp.root root; Atom (PageName.to_string s)])::acc)
+      | `Module (parent, s) ->
+        traverse ((List [Atom "module"; Atom (ModuleName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Argument (parent, i, s) ->
         traverse
-          ((List [Atom "argument"; Atom (string_of_int i); Atom s])::acc) parent
-      | Identifier.ModuleType (parent, s) ->
-        traverse ((List [Atom "module_type"; Atom s])::acc) parent
-      | Identifier.Type (parent, s) ->
-        traverse ((List [Atom "type"; Atom s])::acc) parent
-      | Identifier.CoreType s ->
-        List ((List [Atom "core_type"; Atom s])::acc)
-      | Identifier.Constructor (parent, s) ->
-        traverse ((List [Atom "constructor"; Atom s])::acc) parent
-      | Identifier.Field (parent, s) ->
-        traverse ((List [Atom "field"; Atom s])::acc) parent
-      | Identifier.Extension (parent, s) ->
-        traverse ((List [Atom "extension"; Atom s])::acc) parent
-      | Identifier.Exception (parent, s) ->
-        traverse ((List [Atom "exception"; Atom s])::acc) parent
-      | Identifier.CoreException s ->
-        List ((List [Atom "core_exception"; Atom s])::acc)
-      | Identifier.Value (parent, s) ->
-        traverse ((List [Atom "value"; Atom s])::acc) parent
-      | Identifier.Class (parent, s) ->
-        traverse ((List [Atom "class"; Atom s])::acc) parent
-      | Identifier.ClassType (parent, s) ->
-        traverse ((List [Atom "class_type"; Atom s])::acc) parent
-      | Identifier.Method (parent, s) ->
-        traverse ((List [Atom "method"; Atom s])::acc) parent
-      | Identifier.InstanceVariable (parent, s) ->
-        traverse ((List [Atom "instance_variable"; Atom s])::acc) parent
-      | Identifier.Label (parent, s) ->
-        traverse ((List [Atom "label"; Atom s])::acc) parent
+          ((List [Atom "argument"; Atom (string_of_int i); Atom (ArgumentName.to_string s)])::acc) (parent :> Identifier.t)
+      | `ModuleType (parent, s) ->
+        traverse ((List [Atom "module_type"; Atom (ModuleTypeName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Type (parent, s) ->
+        traverse ((List [Atom "type"; Atom (TypeName.to_string s)])::acc) (parent :> Identifier.t)
+      | `CoreType s ->
+        List ((List [Atom "core_type"; Atom (TypeName.to_string s)])::acc)
+      | `Constructor (parent, s) ->
+        traverse ((List [Atom "constructor"; Atom (ConstructorName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Field (parent, s) ->
+        traverse ((List [Atom "field"; Atom (FieldName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Extension (parent, s) ->
+        traverse ((List [Atom "extension"; Atom (ExtensionName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Exception (parent, s) ->
+        traverse ((List [Atom "exception"; Atom (ExceptionName.to_string s)])::acc) (parent :> Identifier.t)
+      | `CoreException s ->
+        List ((List [Atom "core_exception"; Atom (ExceptionName.to_string s)])::acc)
+      | `Value (parent, s) ->
+        traverse ((List [Atom "value"; Atom (ValueName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Class (parent, s) ->
+        traverse ((List [Atom "class"; Atom (ClassName.to_string s)])::acc) (parent :> Identifier.t)
+      | `ClassType (parent, s) ->
+        traverse ((List [Atom "class_type"; Atom (ClassTypeName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Method (parent, s) ->
+        traverse ((List [Atom "method"; Atom (MethodName.to_string s)])::acc) (parent :> Identifier.t)
+      | `InstanceVariable (parent, s) ->
+        traverse ((List [Atom "instance_variable"; Atom (InstanceVariableName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Label (parent, s) ->
+        traverse ((List [Atom "label"; Atom (LabelName.to_string s)])::acc) (parent :> Identifier.t)
     in
     fun path ->
       traverse [] path
@@ -77,41 +78,41 @@ struct
   module Path = Model.Paths.Path
   module Resolved = Model.Paths.Path.Resolved
 
-  let rec path : type k. k Path.t -> sexp = function
-    | Path.Resolved parent ->
+  let rec path : Path.t -> sexp = function
+    | `Resolved parent ->
       List [Atom "resolved"; resolved parent]
-    | Path.Root s ->
+    | `Root s ->
       List [Atom "root"; Atom s]
-    | Path.Forward s ->
+    | `Forward s ->
       List [Atom "forward"; Atom s]
-    | Path.Dot (parent, s) ->
-      List [Atom "dot"; Atom s; path parent]
-    | Path.Apply (m, m') ->
-      List [Atom "apply"; path m; path m']
+    | `Dot (parent, s) ->
+      List [Atom "dot"; Atom s; path (parent :> Path.t)]
+    | `Apply (m, m') ->
+      List [Atom "apply"; path (m :> Path.t); path (m' :> Path.t)]
 
-  and resolved : type k. k Resolved.t -> sexp = function
-    | Resolved.Identifier i ->
+  and resolved : Resolved.t -> sexp = function
+    |`Identifier i ->
       List [Atom "identifier"; Identifier_to_sexp.identifier i]
-    | Resolved.Subst (mt, m) ->
-      List [Atom "subst"; resolved mt; resolved m]
-    | Resolved.SubstAlias (m, m') ->
-      List [Atom "subst_alias"; resolved m; resolved m']
-    | Resolved.Hidden m ->
-      List [Atom "hidden"; resolved m]
-    | Resolved.Module (m, s) ->
-      List [Atom "module"; Atom s; resolved m]
-    | Resolved.Canonical (m, p) ->
-      List [Atom "canonical"; resolved m; path p]
-    | Resolved.Apply (m, p) ->
-      List [Atom "apply"; resolved m; path p]
-    | Resolved.ModuleType (m, s) ->
-      List [Atom "module_type"; Atom s; resolved m]
-    | Resolved.Type (m, s) ->
-      List [Atom "type"; Atom s; resolved m]
-    | Resolved.Class (m, s) ->
-      List [Atom "class"; Atom s; resolved m]
-    | Resolved.ClassType (m, s) ->
-      List [Atom "class_type"; Atom s; resolved m]
+    |`Subst (mt, m) ->
+      List [Atom "subst"; resolved (mt :> Resolved.t); resolved (m :> Resolved.t)]
+    |`SubstAlias (m, m') ->
+      List [Atom "subst_alias"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
+    |`Hidden m ->
+      List [Atom "hidden"; resolved (m :> Resolved.t)]
+    |`Module (m, s) ->
+      List [Atom "module"; Atom (ModuleName.to_string s); resolved (m :> Resolved.t)]
+    |`Canonical (m, p) ->
+      List [Atom "canonical"; resolved (m :> Resolved.t); path (p :> Path.t)]
+    |`Apply (m, p) ->
+      List [Atom "apply"; resolved (m :> Resolved.t); path (p :> Path.t)]
+    |`ModuleType (m, s) ->
+      List [Atom "module_type"; Atom (ModuleTypeName.to_string s); resolved (m :> Resolved.t)]
+    |`Type (m, s) ->
+      List [Atom "type"; Atom (TypeName.to_string s); resolved (m :> Resolved.t)]
+    |`Class (m, s) ->
+      List [Atom "class"; Atom (ClassName.to_string s); resolved (m :> Resolved.t)]
+    |`ClassType (m, s) ->
+      List [Atom "class_type"; Atom (ClassTypeName.to_string s); resolved (m :> Resolved.t)]
 end
 
 
@@ -121,90 +122,90 @@ struct
   module Reference = Model.Paths.Reference
   module Resolved = Model.Paths.Reference.Resolved
 
-  let tag : type k. k Reference.tag -> sexp = function
-    | Reference.TUnknown -> Atom "unknown"
-    | Reference.TModule -> Atom "module"
-    | Reference.TModuleType -> Atom "module_type"
-    | Reference.TType -> Atom "type"
-    | Reference.TConstructor -> Atom "constructor"
-    | Reference.TField -> Atom "field"
-    | Reference.TExtension -> Atom "extension"
-    | Reference.TException -> Atom "exception"
-    | Reference.TValue -> Atom "value"
-    | Reference.TClass -> Atom "class"
-    | Reference.TClassType -> Atom "class_type"
-    | Reference.TMethod -> Atom "method"
-    | Reference.TInstanceVariable -> Atom "instance_variable"
-    | Reference.TLabel -> Atom "label"
-    | Reference.TPage -> Atom "page"
+  let tag : Model.Paths_types.Reference.tag_any -> sexp = function
+    | `TUnknown -> Atom "unknown"
+    | `TModule -> Atom "module"
+    | `TModuleType -> Atom "module_type"
+    | `TType -> Atom "type"
+    | `TConstructor -> Atom "constructor"
+    | `TField -> Atom "field"
+    | `TExtension -> Atom "extension"
+    | `TException -> Atom "exception"
+    | `TValue -> Atom "value"
+    | `TClass -> Atom "class"
+    | `TClassType -> Atom "class_type"
+    | `TMethod -> Atom "method"
+    | `TInstanceVariable -> Atom "instance_variable"
+    | `TLabel -> Atom "label"
+    | `TPage -> Atom "page"
 
-  let rec reference : type k. k Reference.t -> sexp = function
-    | Reference.Resolved parent ->
-      List [Atom "resolved"; resolved parent]
-    | Reference.Root (s, k) ->
-      List [Atom "root"; Atom s; tag k]
-    | Reference.Dot (parent, s) ->
-      List [Atom "dot"; Atom s; reference parent]
-    | Reference.Module (parent, s) ->
-      List [Atom "module"; Atom s; reference parent]
-    | Reference.ModuleType (parent, s) ->
-      List [Atom "module_type"; Atom s; reference parent]
-    | Reference.Type (parent, s) ->
-      List [Atom "type"; Atom s; reference parent]
-    | Reference.Constructor (parent, s) ->
-      List [Atom "constructor"; Atom s; reference parent]
-    | Reference.Field (parent, s) ->
-      List [Atom "field"; Atom s; reference parent]
-    | Reference.Extension (parent, s) ->
-      List [Atom "extension"; Atom s; reference parent]
-    | Reference.Exception (parent, s) ->
-      List [Atom "exception"; Atom s; reference parent]
-    | Reference.Value (parent, s) ->
-      List [Atom "value"; Atom s; reference parent]
-    | Reference.Class (parent, s) ->
-      List [Atom "class"; Atom s; reference parent]
-    | Reference.ClassType (parent, s) ->
-      List [Atom "class_type"; Atom s; reference parent]
-    | Reference.Method (parent, s) ->
-      List [Atom "method"; Atom s; reference parent]
-    | Reference.InstanceVariable (parent, s) ->
-      List [Atom "instance_variable"; Atom s; reference parent]
-    | Reference.Label (parent, s) ->
-      List [Atom "label"; Atom s; reference parent]
+  let rec reference : Reference.t -> sexp = function
+    | `Resolved parent ->
+      List [Atom "resolved"; resolved (parent :> Reference.Resolved.t)]
+    | `Root (s, k) ->
+      List [Atom "root"; Atom (UnitName.to_string s); tag k]
+    | `Dot (parent, s) ->
+      List [Atom "dot"; Atom (s); reference (parent :> Reference.t)]
+    | `Module (parent, s) ->
+      List [Atom "module"; Atom (ModuleName.to_string s); reference (parent :> Reference.t)]
+    | `ModuleType (parent, s) ->
+      List [Atom "module_type"; Atom (ModuleTypeName.to_string s); reference (parent :> Reference.t)]
+    | `Type (parent, s) ->
+      List [Atom "type"; Atom (TypeName.to_string s); reference (parent :> Reference.t)]
+    | `Constructor (parent, s) ->
+      List [Atom "constructor"; Atom (ConstructorName.to_string s); reference (parent :> Reference.t)]
+    | `Field (parent, s) ->
+      List [Atom "field"; Atom (FieldName.to_string s); reference (parent :> Reference.t)]
+    | `Extension (parent, s) ->
+      List [Atom "extension"; Atom (ExtensionName.to_string s); reference (parent :> Reference.t)]
+    | `Exception (parent, s) ->
+      List [Atom "exception"; Atom (ExceptionName.to_string s); reference (parent :> Reference.t)]
+    | `Value (parent, s) ->
+      List [Atom "value"; Atom (ValueName.to_string s); reference (parent :> Reference.t)]
+    | `Class (parent, s) ->
+      List [Atom "class"; Atom (ClassName.to_string s); reference (parent :> Reference.t)]
+    | `ClassType (parent, s) ->
+      List [Atom "class_type"; Atom (ClassTypeName.to_string s); reference (parent :> Reference.t)]
+    | `Method (parent, s) ->
+      List [Atom "method"; Atom (MethodName.to_string s); reference (parent :> Reference.t)]
+    | `InstanceVariable (parent, s) ->
+      List [Atom "instance_variable"; Atom (InstanceVariableName.to_string s); reference (parent :> Reference.t)]
+    | `Label (parent, s) ->
+      List [Atom "label"; Atom (LabelName.to_string s); reference (parent :> Reference.t)]
 
-  and resolved : type k. k Resolved.t -> sexp = function
-    | Resolved.Identifier parent ->
+  and resolved : Resolved.t -> sexp = function
+    | `Identifier parent ->
       List [Atom "identifier"; Identifier_to_sexp.identifier parent]
-    | Resolved.SubstAlias (m, m') ->
-      List [Atom "subst_alias"; Path_to_sexp.resolved m; resolved m']
-    | Resolved.Module (parent, s) ->
-      List [Atom "module"; Atom s; resolved parent]
-    | Resolved.Canonical (m, m') ->
-      List [Atom "canonical"; resolved m; reference m']
-    | Resolved.ModuleType (parent, s) ->
-      List [Atom "module_type"; Atom s; resolved parent]
-    | Resolved.Type (parent, s) ->
-      List [Atom "type"; Atom s; resolved parent]
-    | Resolved.Constructor (parent, s) ->
-      List [Atom "constructor"; Atom s; resolved parent]
-    | Resolved.Field (parent, s) ->
-      List [Atom "field"; Atom s; resolved parent]
-    | Resolved.Extension (parent, s) ->
-      List [Atom "extension"; Atom s; resolved parent]
-    | Resolved.Exception (parent, s) ->
-      List [Atom "exception"; Atom s; resolved parent]
-    | Resolved.Value (parent, s) ->
-      List [Atom "value"; Atom s; resolved parent]
-    | Resolved.Class (parent, s) ->
-      List [Atom "class"; Atom s; resolved parent]
-    | Resolved.ClassType (parent, s) ->
-      List [Atom "class_type"; Atom s; resolved parent]
-    | Resolved.Method (parent, s) ->
-      List [Atom "method"; Atom s; resolved parent]
-    | Resolved.InstanceVariable (parent, s) ->
-      List [Atom "instance_variable"; Atom s; resolved parent]
-    | Resolved.Label (parent, s) ->
-      List [Atom "label"; Atom s; resolved parent]
+    | `SubstAlias (m, m') ->
+      List [Atom "subst_alias"; Path_to_sexp.resolved (m :> Model.Paths.Path.Resolved.t); resolved (m' :> Resolved.t)]
+    | `Module (parent, s) ->
+      List [Atom "module"; Atom (ModuleName.to_string s); resolved (parent :> Resolved.t)]
+    | `Canonical (m, m') ->
+      List [Atom "canonical"; resolved (m :> Resolved.t); reference (m' :> Reference.t)]
+    | `ModuleType (parent, s) ->
+      List [Atom "module_type"; Atom (ModuleTypeName.to_string s); resolved (parent :> Resolved.t)]
+    | `Type (parent, s) ->
+      List [Atom "type"; Atom (TypeName.to_string s); resolved (parent :> Resolved.t)]
+    | `Constructor (parent, s) ->
+      List [Atom "constructor"; Atom (ConstructorName.to_string s); resolved (parent :> Resolved.t)]
+    | `Field (parent, s) ->
+      List [Atom "field"; Atom (FieldName.to_string s); resolved (parent :> Resolved.t)]
+    | `Extension (parent, s) ->
+      List [Atom "extension"; Atom (ExtensionName.to_string s); resolved (parent :> Resolved.t)]
+    | `Exception (parent, s) ->
+      List [Atom "exception"; Atom (ExceptionName.to_string s); resolved (parent :> Resolved.t)]
+    | `Value (parent, s) ->
+      List [Atom "value"; Atom (ValueName.to_string s); resolved (parent :> Resolved.t)]
+    | `Class (parent, s) ->
+      List [Atom "class"; Atom (ClassName.to_string s); resolved (parent :> Resolved.t)]
+    | `ClassType (parent, s) ->
+      List [Atom "class_type"; Atom (ClassTypeName.to_string s); resolved (parent :> Resolved.t)]
+    | `Method (parent, s) ->
+      List [Atom "method"; Atom (MethodName.to_string s); resolved (parent :> Resolved.t)]
+    | `InstanceVariable (parent, s) ->
+      List [Atom "instance_variable"; Atom (InstanceVariableName.to_string s); resolved (parent :> Resolved.t)]
+    | `Label (parent, s) ->
+      List [Atom "label"; Atom (LabelName.to_string s); resolved (parent :> Resolved.t)]
 end
 
 
@@ -278,7 +279,7 @@ struct
     | `Code_block c -> List [Atom "code_block"; Atom c]
     | `Verbatim t -> List [Atom "verbatim"; Atom t]
     | `Modules ps ->
-      List [Atom "modules"; List (List.map Reference_to_sexp.reference ps)]
+      List [Atom "modules"; List (List.map Reference_to_sexp.reference (ps :> Model.Paths.Reference.t list))]
     | `List (kind, items) ->
       let kind =
         match kind with
@@ -321,7 +322,7 @@ struct
     | `Version s -> List [Atom "@version"; Atom s]
     | `Canonical (p, r) ->
       List
-        [Atom "@canonical"; Path_to_sexp.path p; Reference_to_sexp.reference r]
+        [Atom "@canonical"; Path_to_sexp.path (p :> Model.Paths.Path.t); Reference_to_sexp.reference (r :> Model.Paths.Reference.t)]
     | `Inline ->
       Atom "@inline"
     | `Open ->
@@ -332,7 +333,7 @@ struct
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e
     | `Heading (level, label, es) ->
-      let label = List [Atom "label"; Identifier_to_sexp.identifier label] in
+      let label = List [Atom "label"; Identifier_to_sexp.identifier (label :> Model.Paths.Identifier.t)] in
       let level =
         match level with
         | `Title -> "0"

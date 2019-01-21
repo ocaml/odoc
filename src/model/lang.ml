@@ -26,14 +26,14 @@ module rec Module : sig
     | Functor of FunctorArgument.t option list * Signature.t
 
   type decl =
-    | Alias of Path.module_
+    | Alias of Path.Module.t
     | ModuleType of ModuleType.expr
 
   type t =
-    { id: Identifier.module_;
+    { id: Identifier.Module.t;
       doc: Comment.docs;
       type_: decl;
-      canonical : (Path.module_ * Reference.module_) option;
+      canonical : (Path.Module.t * Reference.Module.t) option;
       hidden : bool;
       display_type : decl option;
       expansion: expansion option;
@@ -49,7 +49,7 @@ end = Module
 
 and FunctorArgument : sig
   type t = {
-    id : Identifier.module_;
+    id : Identifier.Module.t;
     expr : ModuleType.expr;
     expansion: Module.expansion option;
   }
@@ -60,20 +60,20 @@ end = FunctorArgument
 and ModuleType : sig
 
   type substitution =
-    | ModuleEq of Fragment.module_ * Module.Equation.t
-    | TypeEq of Fragment.type_ * TypeDecl.Equation.t
-    | ModuleSubst of Fragment.module_ * Path.module_
-    | TypeSubst of Fragment.type_ * TypeDecl.Equation.t
+    | ModuleEq of Fragment.Module.t * Module.Equation.t
+    | TypeEq of Fragment.Type.t * TypeDecl.Equation.t
+    | ModuleSubst of Fragment.Module.t * Path.Module.t
+    | TypeSubst of Fragment.Type.t * TypeDecl.Equation.t
 
   type expr =
-    | Path of Path.module_type
+    | Path of Path.ModuleType.t
     | Signature of Signature.t
     | Functor of FunctorArgument.t option * expr
     | With of expr * substitution list
     | TypeOf of Module.decl
 
   type t =
-    { id: Identifier.module_type;
+    { id: Identifier.ModuleType.t;
       doc: Comment.docs;
       expr: expr option;
       expansion: Module.expansion option;
@@ -117,7 +117,7 @@ and Include : sig
   }
 
   type t =
-    { parent: Identifier.signature;
+    { parent: Identifier.Signature.t;
       doc: Comment.docs;
       decl: Module.decl;
       expansion: expansion; }
@@ -131,7 +131,7 @@ and TypeDecl : sig
   module Field : sig
 
     type t =
-      { id: Identifier.field;
+      { id: Identifier.Field.t;
         doc: Comment.docs;
         mutable_ : bool;
         type_: TypeExpr.t; }
@@ -144,7 +144,7 @@ and TypeDecl : sig
       | Record of Field.t list
 
     type t =
-      { id: Identifier.constructor;
+      { id: Identifier.Constructor.t;
         doc: Comment.docs;
         args: argument;
         res: TypeExpr.t option; }
@@ -182,7 +182,7 @@ and TypeDecl : sig
   end
 
   type t =
-    { id: Identifier.type_;
+    { id: Identifier.Type.t;
       doc: Comment.docs;
       equation: Equation.t;
       representation: Representation.t option; }
@@ -196,7 +196,7 @@ and Extension : sig
   module Constructor : sig
 
     type t =
-      { id: Identifier.extension;
+      { id: Identifier.Extension.t;
         doc: Comment.docs;
         args: TypeDecl.Constructor.argument;
         res: TypeExpr.t option; }
@@ -204,7 +204,7 @@ and Extension : sig
   end
 
   type t =
-    { type_path: Path.type_;
+    { type_path: Path.Type.t;
       doc: Comment.docs;
       type_params: TypeDecl.param list;
       private_: bool;
@@ -216,7 +216,7 @@ end = Extension
 and Exception : sig
 
   type t =
-    { id: Identifier.exception_;
+    { id: Identifier.Exception.t;
       doc: Comment.docs;
       args: TypeDecl.Constructor.argument;
       res: TypeExpr.t option; }
@@ -229,7 +229,7 @@ end = Exception
 and Value : sig
 
   type t =
-    { id: Identifier.value;
+    { id: Identifier.Value.t;
       doc: Comment.docs;
       type_: TypeExpr.t; }
 
@@ -240,7 +240,7 @@ end = Value
 and External : sig
 
   type t =
-    { id: Identifier.value;
+    { id: Identifier.Value.t;
       doc: Comment.docs;
       type_: TypeExpr.t;
       primitives: string list; }
@@ -256,7 +256,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t =
-    { id: Identifier.class_;
+    { id: Identifier.Class.t;
       doc: Comment.docs;
       virtual_: bool;
       params: TypeDecl.param list;
@@ -270,11 +270,11 @@ end = Class
 and ClassType : sig
 
   type expr =
-    | Constr of Path.class_type * TypeExpr.t list
+    | Constr of Path.ClassType.t * TypeExpr.t list
     | Signature of ClassSignature.t
 
   type t =
-    { id: Identifier.class_type;
+    { id: Identifier.ClassType.t;
       doc: Comment.docs;
       virtual_: bool;
       params: TypeDecl.param list;
@@ -305,7 +305,7 @@ end = ClassSignature
 and Method : sig
 
   type t =
-    { id: Identifier.method_;
+    { id: Identifier.Method.t;
       doc: Comment.docs;
       private_: bool;
       virtual_: bool;
@@ -318,7 +318,7 @@ end = Method
 and InstanceVariable : sig
 
   type t =
-    { id: Identifier.instance_variable;
+    { id: Identifier.InstanceVariable.t;
       doc: Comment.docs;
       mutable_: bool;
       virtual_: bool;
@@ -375,10 +375,10 @@ and TypeExpr : sig
 
   module Package : sig
 
-    type substitution = Fragment.type_ * TypeExpr.t
+    type substitution = Fragment.Type.t * TypeExpr.t
 
     type t =
-      { path: Path.module_type;
+      { path: Path.ModuleType.t;
         substitutions: substitution list; }
 
   end
@@ -393,10 +393,10 @@ and TypeExpr : sig
     | Alias of t * string
     | Arrow of label option * t * t
     | Tuple of t list
-    | Constr of Path.type_ * t list
+    | Constr of Path.Type.t * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t
     | Object of TypeExpr.Object.t
-    | Class of Path.class_type * t list
+    | Class of Path.ClassType.t * t list
     | Poly of string list * t
     | Package of TypeExpr.Package.t
 
@@ -426,8 +426,8 @@ module rec Compilation_unit : sig
   module Packed : sig
 
     type item =
-      { id: Identifier.module_;
-        path: Path.module_; }
+      { id: Identifier.Module.t;
+        path: Path.Module.t; }
 
     type t = item list
 
@@ -438,7 +438,7 @@ module rec Compilation_unit : sig
     | Pack of Packed.t
 
   type t =
-    { id: Identifier.module_;
+    { id: Identifier.Module.t;
       doc: Comment.docs;
       digest: Digest.t;
       imports: Import.t list;
@@ -452,7 +452,7 @@ end = Compilation_unit
 
 module rec Page : sig
   type t =
-    { name: Identifier.page;
+    { name: Identifier.Page.t;
       content: Comment.docs;
       digest: Digest.t; }
 end = Page

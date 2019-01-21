@@ -16,7 +16,7 @@ type inline_element = [
   | `Raw_markup of Comment.raw_markup_target * string
   | `Styled of Comment.style * (inline_element with_location) list
   | `Reference of
-      reference_kind * Reference.any * (inline_element with_location) list
+      reference_kind * Reference.t * (inline_element with_location) list
   | `Link of string * (inline_element with_location) list
 ]
 
@@ -24,7 +24,7 @@ type nestable_block_element = [
   | `Paragraph of (inline_element with_location) list
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Reference.module_ list
+  | `Modules of Reference.Module.t list
   | `List of
     [ `Unordered | `Ordered ] *
     ((nestable_block_element with_location) list) list
@@ -43,7 +43,7 @@ type tag = [
   | `Since of string
   | `Before of string * (nestable_block_element with_location) list
   | `Version of string
-  | `Canonical of Path.module_ * Reference.module_
+  | `Canonical of Path.Module.t * Reference.Module.t
   | `Inline
   | `Open
   | `Closed

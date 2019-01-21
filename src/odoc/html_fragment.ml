@@ -8,7 +8,7 @@ let from_mld ~xref_base_uri ~env ~output input =
     let file = Model.Root.Odoc_file.create_page page_name in
     {Model.Root.package; file; digest}
   in
-  let name = Model.Paths.Identifier.Page (root, page_name) in
+  let name = `Page (root, Model.Names.PageName.of_string page_name) in
   let location =
     let pos =
       Lexing.{

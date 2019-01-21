@@ -30,18 +30,18 @@ end
 
 val from_identifier
   : stop_before:bool
-  -> _ Identifier.t
+  -> Identifier.t
   -> (t, Error.t) result
 
 val anchor_of_id_exn
-  : _ Identifier.t
+  : Identifier.t
   -> string
 
 val kind_of_id_exn
-  : _ Identifier.t
+  : Identifier.t
   -> string
 
-val render_path : _ Path.t -> string
+val render_path : Path.t -> string
 
 module Anchor : sig
   type t = {
@@ -51,12 +51,12 @@ module Anchor : sig
 
   module Polymorphic_variant_decl : sig
     val from_element
-      : type_ident:_ Identifier.t
+      : type_ident:Identifier.t
       -> Model.Lang.TypeExpr.Polymorphic_variant.element
       -> t
   end
 
   module Module_listing : sig
-    val from_reference : Reference.module_ -> t
+    val from_reference : Reference.t -> t
   end
 end

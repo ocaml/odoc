@@ -23,12 +23,12 @@ module Paths = Model.Paths
 val empty : Model.Comment.docs
 
 val attached :
-  Paths.Identifier.label_parent ->
+  Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
     Model.Comment.docs
 
 val page :
-  Paths.Identifier.label_parent ->
+  Paths.Identifier.LabelParent.t ->
   Location.t ->
   string ->
     Model.Comment.docs_or_stop
@@ -40,11 +40,11 @@ val page :
     the ocamldoc syntax. *)
 
 val standalone :
-  Paths.Identifier.label_parent ->
+  Paths.Identifier.LabelParent.t ->
   Parsetree.attribute ->
     Model.Comment.docs_or_stop option
 
 val standalone_multiple :
-  Paths.Identifier.label_parent ->
+  Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
     Model.Comment.docs_or_stop list

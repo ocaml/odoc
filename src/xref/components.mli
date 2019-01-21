@@ -25,7 +25,7 @@ module rec Sig : sig
 
   val find_parent_module : string -> t -> Parent.module_
 
-  val find_parent_apply : (Path.module_ -> t) -> Path.module_ ->
+  val find_parent_apply : (Path.Module.t -> t) -> Path.Module.t ->
         t -> Parent.module_
 
   val find_parent_module_type : string -> t -> Parent.module_type
@@ -78,7 +78,7 @@ module rec Sig : sig
 
   val lookup_argument : int -> t -> t
 
-  val lookup_apply : (Path.module_ -> t) -> Path.module_ -> t -> t
+  val lookup_apply : (Path.Module.t -> t) -> Path.Module.t -> t -> t
 
   val lookup_module_type  : string -> t -> t
 
@@ -110,18 +110,18 @@ module rec Sig : sig
 
   val include_ : t -> signature -> signature
 
-  val modules : t -> (string * t) list
+  val modules : t -> (Model.Names.ModuleName.t * t) list
 
-  val module_types : t -> (string * t) list
+  val module_types : t -> (Model.Names.ModuleTypeName.t * t) list
 
-  val path : (Path.module_type -> t) -> Path.module_type -> t
+  val path : (Path.ModuleType.t -> t) -> Path.ModuleType.t -> t
 
-  val alias : (Path.module_ -> t) -> Path.module_ -> t
+  val alias : (Path.Module.t -> t) -> Path.Module.t -> t
 
   val signature : ('b -> signature) -> 'b -> t
 
   val functor_ : (Root.t -> Root.t -> bool) option -> (Root.t -> int) option ->
-                 Identifier.module_ -> t -> t -> t
+                 Identifier.Module.t -> t -> t -> t
 
   val generative : t -> t
 
@@ -129,19 +129,19 @@ module rec Sig : sig
 
   val unresolved : t
 
-  val with_module : Fragment.module_ -> t -> t -> t
+  val with_module : Fragment.Module.t -> t -> t -> t
 
-  val with_module_subst : Fragment.module_ -> t -> t
+  val with_module_subst : Fragment.Module.t -> t -> t
 
-  val with_type_subst : Fragment.type_ -> t -> t
+  val with_type_subst : Fragment.Type.t -> t -> t
 
   (** {3 Aliases handling} *)
 
   val set_canonical :
-    t -> (Path.module_ * Reference.module_) option -> t
+    t -> (Path.Module.t * Reference.Module.t) option -> t
 
   val get_canonical :
-    t -> (Path.module_ * Reference.module_) option
+    t -> (Path.Module.t * Reference.Module.t) option
 
   (** {3 Hidding} *)
 
@@ -210,7 +210,7 @@ and ClassSig : sig
 
   val inherit_ : t -> signature -> signature
 
-  val constr : (Path.class_type -> t) -> Path.class_type -> t
+  val constr : (Path.ClassType.t -> t) -> Path.ClassType.t -> t
 
   val signature : ('b -> signature) -> 'b -> t
 
@@ -220,32 +220,48 @@ end
 
 and Parent : sig
 
-  type kind = Kind.parent
+  type t = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+    | `Datatype of Datatype.t
+    | `Class of ClassSig.t
+    | `ClassType of ClassSig.t
+  ]
 
-  type 'kind t =
-    | Module : Sig.t -> [< kind > `Module] t
-    | ModuleType : Sig.t -> [< kind > `ModuleType] t
-    | Datatype : Datatype.t -> [< kind > `Type] t
-    | Class : ClassSig.t -> [< kind > `Class] t
-    | ClassType : ClassSig.t -> [< kind > `ClassType] t
+  type signature = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+  ]
 
-  type signature = [`Module | `ModuleType] t
+  type class_signature = [
+    | `Class of ClassSig.t
+    | `ClassType of ClassSig.t
+  ]
 
-  type class_signature = [`Class |` ClassType] t
 
-  type datatype = [`Type] t
+  type datatype = [
+    | `Datatype of Datatype.t
+  ]
 
-  type module_ = [`Module] t
+  type module_ = [
+    | `Module of Sig.t
+  ]
 
-  type module_type = [`ModuleType] t
+  type module_type = [
+    | `ModuleType of Sig.t
+  ]
 
-  type sig_or_type = [`Module | `ModuleType | `Type] t
+  type sig_or_type = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+    | `Datatype of Datatype.t
+  ]
 
-  type any = kind t
+  type any = t
 
   type subst =
-    | Subst of Path.module_type
-    | SubstAlias of Path.module_
+    | Subst of Path.ModuleType.t
+    | SubstAlias of Path.Module.t
 
 end
 
@@ -266,72 +282,108 @@ end
 
 and Element : sig
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
-
-  type mod_t = { canonical : (Path.module_ * Reference.module_) option
+  type mod_t = { canonical : (Path.Module.t * Reference.Module.t) option
         ; hidden : bool }
 
-  type 'kind t =
-    | Module : mod_t -> [< kind > `Module] t
-    | ModuleType : [< kind > `ModuleType] t
-    | Type : [< kind > `Type] t
-    | Constructor : string -> [< kind > `Constructor] t
-    | Field : string -> [< kind > `Field] t
-    | Extension : [< kind > `Extension] t
-    | Exception : [< kind > `Exception] t
-    | Value : [< kind > `Value] t
-    | Class : [< kind > `Class] t
-    | ClassType : [< kind > `ClassType] t
-    | Method : [< kind > `Method] t
-    | InstanceVariable : [< kind > `InstanceVariable] t
-    | Label : string option -> [< kind > `Label] t
+  type s_module = [
+    | `Module of mod_t
+  ]
 
-  type signature_module = [`Module] t
+  type s_module_type = [
+    | `ModuleType
+  ]
 
-  type signature_module_type = [`ModuleType] t
+  type s_type = [
+    | `Type
+  ]
 
-  type signature_type = [`Type | `Class | `ClassType] t
+  type s_constructor = [
+    | `Constructor of string
+  ]
 
-  type signature_constructor = [`Constructor | `Extension | `Exception] t
+  type s_field = [
+    | `Field of string
+  ]
 
-  type signature_field = [`Field] t
+  type s_extension = [
+    | `Extension
+  ]
 
-  type signature_extension = [`Extension | `Exception] t
+  type s_exception = [
+    | `Exception
+  ]
 
-  type signature_exception = [`Exception] t
+  type s_value = [
+    | `Value
+  ]
 
-  type signature_value = [`Value] t
+  type s_class = [
+    | `Class
+  ]
 
-  type signature_class = [`Class] t
+  type s_class_type = [
+    | `ClassType
+  ]
 
-  type signature_class_type = [`Class | `ClassType] t
+  type s_method = [
+    | `Method
+  ]
 
-  type signature_label = [`Label] t
+  type s_instance_variable = [
+    | `InstanceVariable
+  ]
+
+  type s_label = [
+    | `Label of string option
+  ]
+
+  type t = [
+    | s_module | s_module_type | s_type | s_constructor
+    | s_field | s_extension | s_exception | s_value | s_class
+    | s_class_type | s_method | s_instance_variable | s_label
+  ]
+
+  type signature_module = s_module
+
+  type signature_module_type = s_module_type
+
+  type signature_type = [ s_type | s_class | s_class_type ]
+
+  type signature_constructor = [s_constructor | s_extension | s_exception]
+
+  type signature_field = s_field
+
+  type signature_extension = [s_extension | s_exception ]
+
+  type signature_exception = s_exception
+
+  type signature_value = s_value
+  type signature_class = s_class
+
+  type signature_class_type = [ s_class | s_class_type ]
+
+  type signature_label = s_label
 
   type signature =
-    [ `Module | `ModuleType | `Type
-         | `Constructor | `Field | `Extension
-         | `Exception | `Value | `Class | `ClassType | `Label ] t
+    [ s_module | s_module_type | s_type
+         | s_constructor | s_field | s_extension
+         | s_exception | s_value | s_class | s_class_type | s_label ]
 
-  type datatype_constructor = [`Constructor] t
+  type datatype_constructor = s_constructor
 
-  type datatype_field = [`Field] t
+  type datatype_field = s_field
 
-  type datatype_label = [`Label] t
+  type datatype_label = s_label
 
-  type datatype = [ `Constructor | `Field | `Label] t
+  type datatype = [ s_constructor | s_field | s_label]
 
-  type class_signature_method = [`Method] t
+  type class_signature_method = s_method
 
-  type class_signature_instance_variable = [`InstanceVariable] t
+  type class_signature_instance_variable = s_instance_variable
 
-  type class_signature_label = [`Label] t
+  type class_signature_label = s_label
 
-  type class_signature = [ `Method | `InstanceVariable | `Label ] t
+  type class_signature = [ s_method | s_instance_variable | s_label ]
 
-  type page_label = [`Label] t
+  type page_label = s_label
 end

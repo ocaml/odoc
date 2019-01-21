@@ -16,6 +16,7 @@
 
 open Paths
 open Lang
+open Names
 
 val option_map : ('a -> 'a) -> 'a option -> 'a option
 
@@ -27,297 +28,323 @@ class virtual identifier : object
 
   method virtual root : Root.t -> Root.t
 
-  method identifier : 'k. 'k Identifier.t -> 'k Identifier.t
+  method identifier : Identifier.t -> Identifier.t
 
-  method identifier_root_name : string -> string
+  method identifier_root_name : UnitName.t -> UnitName.t
 
-  method identifier_page_name : string -> string
+  method identifier_page_name : PageName.t -> PageName.t
 
-  method identifier_module_name : string -> string
+  method identifier_module_name : ModuleName.t -> ModuleName.t
 
   method identifier_argument_position : int -> int
 
-  method identifier_argument_name : string -> string
+  method identifier_argument_name : ArgumentName.t -> ArgumentName.t
 
-  method identifier_module_type_name : string -> string
+  method identifier_module_type_name : ModuleTypeName.t -> ModuleTypeName.t
 
-  method identifier_type_name : string -> string
+  method identifier_type_name : TypeName.t -> TypeName.t
 
-  method identifier_core_type_name : string -> string
+  method identifier_core_type_name : TypeName.t -> TypeName.t
 
-  method identifier_constructor_name : string -> string
+  method identifier_constructor_name : ConstructorName.t -> ConstructorName.t
 
-  method identifier_field_name : string -> string
+  method identifier_field_name : FieldName.t -> FieldName.t
 
-  method identifier_extension_name : string -> string
+  method identifier_extension_name : ExtensionName.t -> ExtensionName.t
 
-  method identifier_exception_name : string -> string
+  method identifier_exception_name : ExceptionName.t -> ExceptionName.t
 
-  method identifier_core_exception_name : string -> string
+  method identifier_core_exception_name : ExceptionName.t -> ExceptionName.t
 
-  method identifier_value_name : string -> string
+  method identifier_value_name : ValueName.t -> ValueName.t
 
-  method identifier_class_name : string -> string
+  method identifier_class_name : ClassName.t -> ClassName.t
 
-  method identifier_class_type_name : string -> string
+  method identifier_class_type_name : ClassTypeName.t -> ClassTypeName.t
 
-  method identifier_method_name : string -> string
+  method identifier_method_name : MethodName.t -> MethodName.t
 
-  method identifier_instance_variable_name : string -> string
+  method identifier_instance_variable_name : InstanceVariableName.t -> InstanceVariableName.t
 
-  method identifier_label_name : string -> string
+  method identifier_label_name : LabelName.t -> LabelName.t
 
-  method identifier_page : Identifier.page -> Identifier.page
+  method identifier_page : Identifier.Page.t -> Identifier.Page.t
 
-  method identifier_signature : Identifier.signature -> Identifier.signature
+  method identifier_signature : Identifier.Signature.t -> Identifier.Signature.t
 
-  method identifier_class_signature : Identifier.class_signature ->
-    Identifier.class_signature
+  method identifier_class_signature : Identifier.ClassSignature.t ->
+    Identifier.ClassSignature.t
 
-  method identifier_datatype : Identifier.datatype -> Identifier.datatype
+  method identifier_datatype : Identifier.DataType.t -> Identifier.DataType.t
 
-  method identifier_module : Identifier.module_ -> Identifier.module_
+  method identifier_module : Identifier.Module.t -> Identifier.Module.t
 
-  method identifier_module_type : Identifier.module_type ->
-    Identifier.module_type
+  method identifier_module_type : Identifier.ModuleType.t ->
+    Identifier.ModuleType.t
 
-  method identifier_type : Identifier.type_ -> Identifier.type_
+  method identifier_type : Identifier.Type.t -> Identifier.Type.t
 
-  method identifier_constructor : Identifier.constructor ->
-    Identifier.constructor
+  method identifier_constructor : Identifier.Constructor.t ->
+    Identifier.Constructor.t
 
-  method identifier_field : Identifier.field -> Identifier.field
+  method identifier_parent : Identifier.Parent.t -> Identifier.Parent.t
 
-  method identifier_extension : Identifier.extension -> Identifier.extension
+  method identifier_field : Identifier.Field.t -> Identifier.Field.t
 
-  method identifier_exception : Identifier.exception_ -> Identifier.exception_
+  method identifier_extension : Identifier.Extension.t -> Identifier.Extension.t
 
-  method identifier_value : Identifier.value -> Identifier.value
+  method identifier_exception : Identifier.Exception.t -> Identifier.Exception.t
 
-  method identifier_class : Identifier.class_ -> Identifier.class_
+  method identifier_value : Identifier.Value.t -> Identifier.Value.t
 
-  method identifier_class_type : Identifier.class_type -> Identifier.class_type
+  method identifier_class : Identifier.Class.t -> Identifier.Class.t
 
-  method identifier_method : Identifier.method_ -> Identifier.method_
+  method identifier_class_type : Identifier.ClassType.t -> Identifier.ClassType.t
 
-  method identifier_instance_variable : Identifier.instance_variable ->
-    Identifier.instance_variable
+  method identifier_method : Identifier.Method.t -> Identifier.Method.t
 
-  method identifier_label : Identifier.label -> Identifier.label
+  method identifier_instance_variable : Identifier.InstanceVariable.t ->
+    Identifier.InstanceVariable.t
+
+  method identifier_label : Identifier.Label.t -> Identifier.Label.t
 
 end
 
 class virtual path : object
 
-  method virtual identifier : 'k. 'k Identifier.t -> 'k Identifier.t
+  method virtual identifier : Identifier.t -> Identifier.t
 
-  method path_resolved : 'k. 'k Path.Resolved.t -> 'k Path.Resolved.t
+  method path_resolved : Path.Resolved.t -> Path.Resolved.t
 
-  method path_resolved_module_name : string -> string
+  method path_resolved_module_name : ModuleName.t -> ModuleName.t
 
-  method path_resolved_module_type_name : string -> string
+  method path_resolved_module_type_name : ModuleTypeName.t -> ModuleTypeName.t
 
-  method path_resolved_type_name : string -> string
+  method path_resolved_type_name : TypeName.t -> TypeName.t
 
-  method path_resolved_class_name : string -> string
+  method path_resolved_class_name : ClassName.t -> ClassName.t
 
-  method path_resolved_class_type_name : string -> string
+  method path_resolved_class_type_name : ClassTypeName.t -> ClassTypeName.t
 
-  method path_resolved_module : Path.Resolved.module_ -> Path.Resolved.module_
+  method path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t
 
-  method path_resolved_module_type : Path.Resolved.module_type ->
-    Path.Resolved.module_type
+  method path_resolved_module_type : Path.Resolved.ModuleType.t ->
+    Path.Resolved.ModuleType.t
 
-  method path_resolved_type : Path.Resolved.type_ -> Path.Resolved.type_
+  method path_resolved_type : Path.Resolved.Type.t -> Path.Resolved.Type.t
 
-  method path_resolved_class_type : Path.Resolved.class_type ->
-    Path.Resolved.class_type
+  method path_resolved_class_type : Path.Resolved.ClassType.t ->
+    Path.Resolved.ClassType.t
 
-  method path : 'k . 'k Path.t -> 'k Path.t
+  method path : Path.t -> Path.t
 
   method path_root_name : string -> string
 
   method path_dot_name : string -> string
 
-  method path_module : Path.module_ -> Path.module_
+  method path_module : Path.Module.t -> Path.Module.t
 
-  method path_module_type : Path.module_type -> Path.module_type
+  method path_module_type : Path.ModuleType.t -> Path.ModuleType.t
 
-  method path_type : Path.type_ -> Path.type_
+  method path_type : Path.Type.t -> Path.Type.t
 
-  method path_class_type : Path.class_type -> Path.class_type
+  method path_class_type : Path.ClassType.t -> Path.ClassType.t
 
 end
 
 class virtual fragment : object
 
-  method virtual path_resolved : 'k. 'k Path.Resolved.t -> 'k Path.Resolved.t
+  method virtual path_resolved : Path.Resolved.t -> Path.Resolved.t
 
-  method fragment_resolved : 'k 's. ('k, 's) Fragment.Resolved.raw ->
-    ('k, 's) Fragment.Resolved.raw
+  method virtual path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t
 
-  method fragment_resolved_module_name : string -> string
+  method virtual path_resolved_module_type : Path.Resolved.ModuleType.t -> Path.Resolved.ModuleType.t
 
-  method fragment_resolved_type_name : string -> string
+  method fragment_resolved : Fragment.Resolved.t ->
+    Fragment.Resolved.t
 
-  method fragment_resolved_class_name : string -> string
+  method fragment_resolved_signature : Fragment.Resolved.Signature.t -> Fragment.Resolved.Signature.t 
 
-  method fragment_resolved_class_type_name : string -> string
+  method fragment_resolved_module_name : ModuleName.t -> ModuleName.t
 
-  method fragment_resolved_module : Fragment.Resolved.module_ ->
-    Fragment.Resolved.module_
+  method fragment_resolved_type_name : TypeName.t -> TypeName.t
 
-  method fragment_resolved_type : Fragment.Resolved.type_ ->
-    Fragment.Resolved.type_
+  method fragment_resolved_class_name : ClassName.t -> ClassName.t
 
-  method fragment : 'k 's. ('k, 's) Fragment.raw -> ('k, 's) Fragment.raw
+  method fragment_resolved_class_type_name : ClassTypeName.t -> ClassTypeName.t
+
+  method fragment_resolved_module : Fragment.Resolved.Module.t ->
+    Fragment.Resolved.Module.t
+
+  method fragment_resolved_type : Fragment.Resolved.Type.t ->
+    Fragment.Resolved.Type.t
+
+  method fragment : Fragment.t -> Fragment.t
 
   method fragment_name : string -> string
 
-  method fragment_module : Fragment.module_ -> Fragment.module_
+  method fragment_module : Fragment.Module.t -> Fragment.Module.t
 
-  method fragment_type : Fragment.type_ -> Fragment.type_
+  method fragment_type : Fragment.Type.t -> Fragment.Type.t
 
+  method fragment_signature : Fragment.Signature.t -> Fragment.Signature.t
 end
 
 class virtual reference : object
 
-  method virtual identifier : 'k. 'k Identifier.t -> 'k Identifier.t
+  method virtual identifier : Identifier.t -> Identifier.t
 
-  method virtual path_resolved : 'k. 'k Path.Resolved.t -> 'k Path.Resolved.t
+  method virtual path_resolved : Path.Resolved.t -> Path.Resolved.t
 
-  method reference_resolved : 'k. 'k Reference.Resolved.t ->
-    'k Reference.Resolved.t
+  method virtual path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t
 
-  method reference_resolved_module_name : string -> string
+  method reference_resolved : Reference.Resolved.t ->
+    Reference.Resolved.t
 
-  method reference_resolved_module_type_name : string -> string
+  method reference_resolved_module_name : ModuleName.t -> ModuleName.t
 
-  method reference_resolved_type_name : string -> string
+  method reference_resolved_module_type_name : ModuleTypeName.t -> ModuleTypeName.t
 
-  method reference_resolved_class_name : string -> string
+  method reference_resolved_type_name : TypeName.t -> TypeName.t
 
-  method reference_resolved_class_type_name : string -> string
+  method reference_resolved_class_name : ClassName.t -> ClassName.t
 
-  method reference_resolved_constructor_name : string -> string
+  method reference_resolved_class_type_name : ClassTypeName.t -> ClassTypeName.t
 
-  method reference_resolved_extension_name : string -> string
+  method reference_resolved_constructor_name : ConstructorName.t -> ConstructorName.t
 
-  method reference_resolved_exception_name : string -> string
+  method reference_resolved_extension_name : ExtensionName.t -> ExtensionName.t
 
-  method reference_resolved_field_name : string -> string
+  method reference_resolved_exception_name : ExceptionName.t -> ExceptionName.t
 
-  method reference_resolved_value_name : string -> string
+  method reference_resolved_field_name : FieldName.t -> FieldName.t
 
-  method reference_resolved_method_name : string -> string
+  method reference_resolved_value_name : ValueName.t -> ValueName.t
 
-  method reference_resolved_instance_variable_name : string -> string
+  method reference_resolved_method_name : MethodName.t -> MethodName.t
 
-  method reference_resolved_label_name : string -> string
+  method reference_resolved_instance_variable_name : InstanceVariableName.t -> InstanceVariableName.t
 
-  method reference_resolved_module : Reference.Resolved.module_ ->
-    Reference.Resolved.module_
+  method reference_resolved_label_name : LabelName.t -> LabelName.t
 
-  method reference_resolved_module_type : Reference.Resolved.module_type ->
-    Reference.Resolved.module_type
+  method reference_resolved_signature : Reference.Resolved.Signature.t -> Reference.Resolved.Signature.t
 
-  method reference_resolved_type : Reference.Resolved.type_ ->
-    Reference.Resolved.type_
+  method reference_resolved_class_signature : Reference.Resolved.ClassSignature.t -> Reference.Resolved.ClassSignature.t
 
-  method reference_resolved_constructor : Reference.Resolved.constructor ->
-    Reference.Resolved.constructor
+  method reference_resolved_parent : Reference.Resolved.Parent.t -> Reference.Resolved.Parent.t
 
-  method reference_resolved_field : Reference.Resolved.field ->
-    Reference.Resolved.field
+  method reference_resolved_label_parent : Reference.Resolved.LabelParent.t -> Reference.Resolved.LabelParent.t
 
-  method reference_resolved_extension : Reference.Resolved.extension ->
-    Reference.Resolved.extension
+  method reference_resolved_module : Reference.Resolved.Module.t ->
+    Reference.Resolved.Module.t
 
-  method reference_resolved_exception : Reference.Resolved.exception_ ->
-    Reference.Resolved.exception_
+  method reference_resolved_datatype : Reference.Resolved.DataType.t -> Reference.Resolved.DataType.t
 
-  method reference_resolved_value : Reference.Resolved.value ->
-    Reference.Resolved.value
+  method reference_resolved_module_type : Reference.Resolved.ModuleType.t ->
+    Reference.Resolved.ModuleType.t
 
-  method reference_resolved_class : Reference.Resolved.class_ ->
-    Reference.Resolved.class_
+  method reference_resolved_type : Reference.Resolved.Type.t ->
+    Reference.Resolved.Type.t
 
-  method reference_resolved_class_type : Reference.Resolved.class_type ->
-    Reference.Resolved.class_type
+  method reference_resolved_constructor : Reference.Resolved.Constructor.t ->
+    Reference.Resolved.Constructor.t
 
-  method reference_resolved_method : Reference.Resolved.method_ ->
-    Reference.Resolved.method_
+  method reference_resolved_field : Reference.Resolved.Field.t ->
+    Reference.Resolved.Field.t
+
+  method reference_resolved_extension : Reference.Resolved.Extension.t ->
+    Reference.Resolved.Extension.t
+
+  method reference_resolved_exception : Reference.Resolved.Exception.t ->
+    Reference.Resolved.Exception.t
+
+  method reference_resolved_value : Reference.Resolved.Value.t ->
+    Reference.Resolved.Value.t
+
+  method reference_resolved_class : Reference.Resolved.Class.t ->
+    Reference.Resolved.Class.t
+
+  method reference_resolved_class_type : Reference.Resolved.ClassType.t ->
+    Reference.Resolved.ClassType.t
+
+  method reference_resolved_method : Reference.Resolved.Method.t ->
+    Reference.Resolved.Method.t
 
   method reference_resolved_instance_variable :
-    Reference.Resolved.instance_variable ->
-    Reference.Resolved.instance_variable
+    Reference.Resolved.InstanceVariable.t ->
+    Reference.Resolved.InstanceVariable.t
 
-  method reference_resolved_label : Reference.Resolved.label ->
-    Reference.Resolved.label
+  method reference_resolved_label : Reference.Resolved.Label.t ->
+    Reference.Resolved.Label.t
 
-  method reference_resolved_any : Reference.Resolved.any ->
-    Reference.Resolved.any
-
-  method reference : 'k. 'k Reference.t -> 'k Reference.t
-
-  method reference_root_name : string -> string
+  method reference_root_name : UnitName.t -> UnitName.t
 
   method reference_dot_name : string -> string
 
-  method reference_module_name : string -> string
+  method reference_module_name : ModuleName.t -> ModuleName.t
 
-  method reference_module_type_name : string -> string
+  method reference_module_type_name : ModuleTypeName.t -> ModuleTypeName.t
 
-  method reference_type_name : string -> string
+  method reference_type_name : TypeName.t -> TypeName.t
 
-  method reference_constructor_name : string -> string
+  method reference_constructor_name : ConstructorName.t -> ConstructorName.t
 
-  method reference_field_name : string -> string
+  method reference_field_name : FieldName.t -> FieldName.t
 
-  method reference_extension_name : string -> string
+  method reference_extension_name : ExtensionName.t -> ExtensionName.t
 
-  method reference_exception_name : string -> string
+  method reference_exception_name : ExceptionName.t -> ExceptionName.t
 
-  method reference_value_name : string -> string
+  method reference_value_name : ValueName.t -> ValueName.t
 
-  method reference_class_name : string -> string
+  method reference_class_name : ClassName.t -> ClassName.t
 
-  method reference_class_type_name : string -> string
+  method reference_class_type_name : ClassTypeName.t -> ClassTypeName.t
 
-  method reference_method_name : string -> string
+  method reference_method_name : MethodName.t -> MethodName.t
 
-  method reference_instance_variable_name : string -> string
+  method reference_instance_variable_name : InstanceVariableName.t -> InstanceVariableName.t
 
-  method reference_label_name : string -> string
+  method reference_label_name : LabelName.t -> LabelName.t
 
-  method reference_module : Reference.module_ -> Reference.module_
+  method reference_signature : Reference.Signature.t -> Reference.Signature.t 
 
-  method reference_module_type : Reference.module_type -> Reference.module_type
+  method reference_label_parent : Reference.LabelParent.t -> Reference.LabelParent.t 
 
-  method reference_type : Reference.type_ -> Reference.type_
+  method reference_parent : Reference.Parent.t -> Reference.Parent.t
 
-  method reference_constructor : Reference.constructor -> Reference.constructor
+  method reference_module : Reference.Module.t -> Reference.Module.t
 
-  method reference_field : Reference.field -> Reference.field
+  method reference_datatype : Reference.DataType.t -> Reference.DataType.t
 
-  method reference_extension : Reference.extension -> Reference.extension
+  method reference_module_type : Reference.ModuleType.t -> Reference.ModuleType.t
 
-  method reference_exception : Reference.exception_ -> Reference.exception_
+  method reference_type : Reference.Type.t -> Reference.Type.t
 
-  method reference_value : Reference.value -> Reference.value
+  method reference_constructor : Reference.Constructor.t -> Reference.Constructor.t
 
-  method reference_class : Reference.class_ -> Reference.class_
+  method reference_field : Reference.Field.t -> Reference.Field.t
 
-  method reference_class_type : Reference.class_type -> Reference.class_type
+  method reference_extension : Reference.Extension.t -> Reference.Extension.t
 
-  method reference_method : Reference.method_ -> Reference.method_
+  method reference_exception : Reference.Exception.t -> Reference.Exception.t
 
-  method reference_instance_variable : Reference.instance_variable ->
-    Reference.instance_variable
+  method reference_value : Reference.Value.t -> Reference.Value.t
 
-  method reference_label : Reference.label -> Reference.label
+  method reference_class : Reference.Class.t -> Reference.Class.t
 
-  method reference_any : Reference.any -> Reference.any
+  method reference_class_type : Reference.ClassType.t -> Reference.ClassType.t
+
+  method reference_class_signature : Reference.ClassSignature.t -> Reference.ClassSignature.t 
+
+  method reference_method : Reference.Method.t -> Reference.Method.t
+
+  method reference_instance_variable : Reference.InstanceVariable.t ->
+    Reference.InstanceVariable.t
+
+  method reference_label : Reference.Label.t -> Reference.Label.t
+
+  method reference_any : Reference.t -> Reference.t
 
 end
 
@@ -330,49 +357,49 @@ end
 
 class virtual documentation : object
 
-  method virtual identifier_label : Identifier.label -> Identifier.label
+  method virtual identifier_label : Identifier.Label.t -> Identifier.Label.t
 
-  method virtual identifier : 'k. 'k Identifier.t -> 'k Identifier.t
+  method virtual identifier : Identifier.t -> Identifier.t
 
-  method virtual path_module : Path.module_ -> Path.module_
+  method virtual path_module : Path.Module.t -> Path.Module.t
 
-  method virtual reference_module : Reference.module_ -> Reference.module_
+  method virtual reference_module : Reference.Module.t -> Reference.Module.t
 
-  method virtual reference_module_type : Reference.module_type ->
-    Reference.module_type
+  method virtual reference_module_type : Reference.ModuleType.t ->
+    Reference.ModuleType.t
 
-  method virtual reference_type : Reference.type_ -> Reference.type_
+  method virtual reference_type : Reference.Type.t -> Reference.Type.t
 
-  method virtual reference_constructor : Reference.constructor ->
-    Reference.constructor
+  method virtual reference_constructor : Reference.Constructor.t ->
+    Reference.Constructor.t
 
-  method virtual reference_field : Reference.field -> Reference.field
+  method virtual reference_field : Reference.Field.t -> Reference.Field.t
 
-  method virtual reference_extension : Reference.extension ->
-    Reference.extension
+  method virtual reference_extension : Reference.Extension.t ->
+    Reference.Extension.t
 
-  method virtual reference_exception : Reference.exception_ ->
-    Reference.exception_
+  method virtual reference_exception : Reference.Exception.t ->
+    Reference.Exception.t
 
-  method virtual reference_value : Reference.value -> Reference.value
+  method virtual reference_value : Reference.Value.t -> Reference.Value.t
 
-  method virtual reference_class : Reference.class_ -> Reference.class_
+  method virtual reference_class : Reference.Class.t -> Reference.Class.t
 
-  method virtual reference_class_type : Reference.class_type ->
-    Reference.class_type
+  method virtual reference_class_type : Reference.ClassType.t ->
+    Reference.ClassType.t
 
-  method virtual reference_method : Reference.method_ -> Reference.method_
+  method virtual reference_method : Reference.Method.t -> Reference.Method.t
 
-  method virtual reference_instance_variable : Reference.instance_variable ->
-    Reference.instance_variable
+  method virtual reference_instance_variable : Reference.InstanceVariable.t ->
+    Reference.InstanceVariable.t
 
-  method virtual reference_label : Reference.label -> Reference.label
+  method virtual reference_label : Reference.Label.t -> Reference.Label.t
 
-  method virtual reference_any : Reference.any -> Reference.any
+  method virtual reference_any : Reference.t -> Reference.t
 
   method documentation_reference :
-    Paths.Reference.any * Comment.link_content ->
-      Paths.Reference.any * Comment.link_content
+    Paths.Reference.t * Comment.link_content ->
+      Paths.Reference.t * Comment.link_content
 
   method documentation : Comment.docs -> Comment.docs
 
@@ -382,11 +409,11 @@ end
 
 class virtual module_ : object
 
-  method virtual identifier_module : Identifier.module_ -> Identifier.module_
+  method virtual identifier_module : Identifier.Module.t -> Identifier.Module.t
 
-  method virtual path_module : Path.module_ -> Path.module_
+  method virtual path_module : Path.Module.t -> Path.Module.t
 
-  method virtual reference_module : Reference.module_ -> Reference.module_
+  method virtual reference_module : Reference.Module.t -> Reference.Module.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -410,20 +437,20 @@ end
 
 class virtual module_type : object
 
-  method virtual identifier_module : Identifier.module_ -> Identifier.module_
+  method virtual identifier_module : Identifier.Module.t -> Identifier.Module.t
 
-  method virtual identifier_module_type : Identifier.module_type ->
-    Identifier.module_type
+  method virtual identifier_module_type : Identifier.ModuleType.t ->
+    Identifier.ModuleType.t
 
-  method virtual path_module : Path.module_ -> Path.module_
+  method virtual path_module : Path.Module.t -> Path.Module.t
 
-  method virtual path_module_type : Path.module_type -> Path.module_type
+  method virtual path_module_type : Path.ModuleType.t -> Path.ModuleType.t
 
-  method virtual path_type : Path.type_ -> Path.type_
+  method virtual path_type : Path.Type.t -> Path.Type.t
 
-  method virtual fragment_module : Fragment.module_ -> Fragment.module_
+  method virtual fragment_module : Fragment.Module.t -> Fragment.Module.t
 
-  method virtual fragment_type : Fragment.type_ -> Fragment.type_
+  method virtual fragment_type : Fragment.Type.t -> Fragment.Type.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -486,8 +513,8 @@ class virtual include_ : object
 
   method virtual module_decl : Module.decl -> Module.decl
 
-  method virtual identifier_signature : Identifier.signature ->
-                                        Identifier.signature
+  method virtual identifier_signature : Identifier.Signature.t ->
+                                        Identifier.Signature.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -503,12 +530,12 @@ end
 
 class virtual type_decl : object
 
-  method virtual identifier_type : Identifier.type_ -> Identifier.type_
+  method virtual identifier_type : Identifier.Type.t -> Identifier.Type.t
 
-  method virtual identifier_constructor : Identifier.constructor ->
-    Identifier.constructor
+  method virtual identifier_constructor : Identifier.Constructor.t ->
+    Identifier.Constructor.t
 
-  method virtual identifier_field : Identifier.field -> Identifier.field
+  method virtual identifier_field : Identifier.Field.t -> Identifier.Field.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -548,10 +575,10 @@ end
 
 class virtual extension : object
 
-  method virtual identifier_extension : Identifier.extension ->
-    Identifier.extension
+  method virtual identifier_extension : Identifier.Extension.t ->
+    Identifier.Extension.t
 
-  method virtual path_type : Path.type_ -> Path.type_
+  method virtual path_type : Path.Type.t -> Path.Type.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -573,8 +600,8 @@ end
 
 class virtual exception_ : object
 
-  method virtual identifier_exception : Identifier.exception_ ->
-    Identifier.exception_
+  method virtual identifier_exception : Identifier.Exception.t ->
+    Identifier.Exception.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -589,7 +616,7 @@ end
 
 class virtual value : object
 
-  method virtual identifier_value : Identifier.value -> Identifier.value
+  method virtual identifier_value : Identifier.Value.t -> Identifier.Value.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -600,7 +627,7 @@ end
 
 class virtual external_ : object
 
-  method virtual identifier_value : Identifier.value -> Identifier.value
+  method virtual identifier_value : Identifier.Value.t -> Identifier.Value.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -614,7 +641,7 @@ end
 
 class virtual class_ : object
 
-  method virtual identifier_class : Identifier.class_ -> Identifier.class_
+  method virtual identifier_class : Identifier.Class.t -> Identifier.Class.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -638,10 +665,10 @@ end
 
 class virtual class_type : object
 
-  method virtual identifier_class_type : Identifier.class_type ->
-    Identifier.class_type
+  method virtual identifier_class_type : Identifier.ClassType.t ->
+    Identifier.ClassType.t
 
-  method virtual path_class_type : Path.class_type -> Path.class_type
+  method virtual path_class_type : Path.ClassType.t -> Path.ClassType.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -682,8 +709,8 @@ end
 
 class virtual method_ : object
 
-  method virtual identifier_method : Identifier.method_ ->
-    Identifier.method_
+  method virtual identifier_method : Identifier.Method.t ->
+    Identifier.Method.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -700,7 +727,7 @@ end
 class virtual instance_variable : object
 
   method virtual identifier_instance_variable :
-    Identifier.instance_variable -> Identifier.instance_variable
+    Identifier.InstanceVariable.t -> Identifier.InstanceVariable.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -716,13 +743,13 @@ end
 
 class virtual type_expr : object
 
-  method virtual path_module_type : Path.module_type -> Path.module_type
+  method virtual path_module_type : Path.ModuleType.t -> Path.ModuleType.t
 
-  method virtual path_type : Path.type_ -> Path.type_
+  method virtual path_type : Path.Type.t -> Path.Type.t
 
-  method virtual path_class_type : Path.class_type -> Path.class_type
+  method virtual path_class_type : Path.ClassType.t -> Path.ClassType.t
 
-  method virtual fragment_type : Fragment.type_ -> Fragment.type_
+  method virtual fragment_type : Fragment.Type.t -> Fragment.Type.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -770,11 +797,11 @@ class virtual unit : object
 
   method virtual root : Root.t -> Root.t
 
-  method virtual identifier_module : Identifier.module_ ->
-    Identifier.module_
+  method virtual identifier_module : Identifier.Module.t ->
+    Identifier.Module.t
 
   method virtual path_module :
-    Path.module_ -> Path.module_
+    Path.Module.t -> Path.Module.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 
@@ -817,7 +844,7 @@ end
 
 class virtual page : object
 
-  method virtual identifier_page : Identifier.page -> Identifier.page
+  method virtual identifier_page : Identifier.Page.t -> Identifier.Page.t
 
   method virtual documentation : Comment.docs -> Comment.docs
 

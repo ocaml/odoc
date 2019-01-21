@@ -22,7 +22,7 @@ module Ident_env = Model.Ident_env
 
 
 val read_interface: Model.Root.t -> string -> Types.signature ->
-  Paths.Identifier.module_ *
+  Paths.Identifier.Module.t *
   Model.Comment.docs *
   Model.Lang.Signature.t
 
@@ -53,28 +53,28 @@ val read_type_constraints : Ident_env.t -> Types.type_expr list ->
                              * Model.Lang.TypeExpr.t) list
 
 val read_class_signature : Ident_env.t ->
-                           Paths.Identifier.class_signature ->
+                           Paths.Identifier.ClassSignature.t ->
                            Types.type_expr list -> Types.class_type ->
                            Model.Lang.ClassType.expr
 
 val read_class_type : Ident_env.t ->
-                      Paths.Identifier.class_signature ->
+                      Paths.Identifier.ClassSignature.t ->
                       Types.type_expr list -> Types.class_type ->
                       Model.Lang.Class.decl
 
 val read_module_type : Ident_env.t ->
-                       Paths.Identifier.signature -> int ->
+                       Paths.Identifier.Signature.t -> int ->
                        Types.module_type -> Model.Lang.ModuleType.expr
 
 val read_signature : Ident_env.t ->
-                     Paths.Identifier.signature ->
+                     Paths.Identifier.Signature.t ->
                      Types.signature -> Model.Lang.Signature.t
 
 val read_extension_constructor : Ident_env.t ->
-                       Paths.Identifier.signature ->
+                       Paths.Identifier.Signature.t ->
                        Ident.t -> Types.extension_constructor ->
                        Model.Lang.Extension.Constructor.t
 
 val read_exception : Ident_env.t ->
-  Paths.Identifier.signature -> Ident.t ->
+  Paths.Identifier.Signature.t -> Ident.t ->
   Types.extension_constructor -> Model.Lang.Exception.t

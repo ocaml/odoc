@@ -56,40 +56,40 @@ val comment : t -> Model.Comment.docs_or_stop -> Model.Comment.docs_or_stop
 
 val documentation : t -> Model.Comment.docs -> Model.Comment.docs
 
-val identifier_module : t -> Identifier.module_ ->
-                        Identifier.module_
+val identifier_module : t -> Identifier.Module.t ->
+                        Identifier.Module.t
 
-val identifier_signature : t -> Identifier.signature ->
-                        Identifier.signature
+val identifier_signature : t -> Identifier.Signature.t ->
+                        Identifier.Signature.t
 
-val offset_identifier_signature : t -> Identifier.signature * int ->
-                                  Identifier.signature * int
+val offset_identifier_signature : t -> Identifier.Signature.t * int ->
+                                  Identifier.Signature.t * int
 
 val module_type_expr : t -> Lang.ModuleType.expr -> Lang.ModuleType.expr
 
 val module_expansion : t -> Lang.Module.expansion -> Lang.Module.expansion
 
 val rename_signature : equal:(Root.t -> Root.t -> bool) ->
-                       Identifier.signature ->
-                       Identifier.signature ->
+                       Identifier.Signature.t ->
+                       Identifier.Signature.t ->
                        int -> t
 
 val rename_class_signature : equal:(Root.t -> Root.t -> bool) ->
-                             Identifier.class_signature ->
-                             Identifier.class_signature ->
+                             Identifier.ClassSignature.t ->
+                             Identifier.ClassSignature.t ->
                              t
 
 val rename_datatype : equal:(Root.t -> Root.t -> bool) ->
-                      Identifier.datatype ->
-                      Identifier.datatype ->
+                      Identifier.DataType.t ->
+                      Identifier.DataType.t ->
                       t
 
 val prefix : equal:(Root.t -> Root.t -> bool) ->
-             canonical:(Path.module_ * Reference.module_) option ->
-             Identifier.module_ ->
+             canonical:(Path.Module.t * Reference.Module.t) option ->
+             Identifier.Module.t ->
              t
 
-val strengthen : Path.Resolved.module_ -> t
+val strengthen : Path.Resolved.Module.t -> t
 
 val pack : equal:(Root.t -> Root.t -> bool) -> hash:(Root.t -> int) ->
-           (Identifier.module_ * Identifier.module_) list -> t
+           (Identifier.Module.t * Identifier.Module.t) list -> t

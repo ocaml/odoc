@@ -16,13 +16,13 @@
 
 open Model
 open Paths
-
+open Names
 
 class type t = object
   method root : Root.t -> Root.t
   inherit Maps.paths
   method offset_identifier_signature :
-    Identifier.signature * int -> Identifier.signature * int
+    Identifier.Signature.t * int -> Identifier.Signature.t * int
   inherit Maps.types
 end
 
@@ -93,28 +93,28 @@ let module_type_expr s expr =
 let module_expansion s expr =
   s#module_expansion expr
 
-class rename_signature ~equal:_ (x : Identifier.signature)
-        (y : Identifier.signature) offset : t = object
+class rename_signature ~equal:_ (x : Identifier.Signature.t)
+        (y : Identifier.Signature.t) offset : t = object
 
   inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_signature id =
-    if Identifier.equal id x then y
+    if Identifier.Signature.equal id x then y
     else super#identifier_signature id
 
-  method! identifier (type k) (id : k Identifier.t)
-         : k Identifier.t =
+  method! identifier (id : Identifier.t)
+         : Identifier.t =
     match id with
-    | Identifier.Argument(parent, pos, name) ->
-        if Identifier.equal parent x then
-          Identifier.Argument(y, pos + offset, name)
+    | `Argument(parent, pos, name) ->
+        if Identifier.Signature.equal parent x then
+          `Argument(y, pos + offset, name)
         else super#identifier id
     | id -> super#identifier id
 
   method offset_identifier_signature (id, offset') =
-    if Identifier.equal id x then (y, offset + offset')
+    if Identifier.Signature.equal id x then (y, offset + offset')
     else (super#identifier_signature id, offset')
 
   inherit Maps.types
@@ -125,15 +125,15 @@ let rename_signature ~equal x y offset =
   new rename_signature ~equal x y offset
 
 class rename_class_signature ~equal:_
-           (x : Identifier.class_signature)
-           (y : Identifier.class_signature) : t = object (self)
+           (x : Identifier.ClassSignature.t)
+           (y : Identifier.ClassSignature.t) : t = object (self)
 
   inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_class_signature id =
-    if Identifier.equal id x then y
+    if Identifier.ClassSignature.equal id x then y
     else super#identifier_class_signature id
 
   inherit Maps.types
@@ -146,15 +146,15 @@ end
 let rename_class_signature ~equal x y =
   new rename_class_signature ~equal x y
 
-class rename_datatype ~equal:_ (x : Identifier.datatype)
-        (y : Identifier.datatype) : t = object (self)
+class rename_datatype ~equal:_ (x : Identifier.DataType.t)
+        (y : Identifier.DataType.t) : t = object (self)
 
   inherit Maps.paths as super
 
   method root x = x
 
   method! identifier_datatype id =
-    if Identifier.equal id x then y
+    if Identifier.DataType.equal id x then y
     else super#identifier_datatype id
 
   inherit Maps.types
@@ -178,82 +178,79 @@ class prefix ~equal:_ ~canonical id : t = object (self)
 
   method root x = x
 
-  (* OCaml can't type-check this method yet, so we use magic*)
-  method! path_resolved : type k. k Path.Resolved.t -> k Path.Resolved.t =
+  method! path_resolved : Path.Resolved.t -> Path.Resolved.t =
     fun p ->
       let matches id' =
-        Identifier.equal (Identifier.signature_of_module id) id'
+        Identifier.Signature.equal (id :> Identifier.Signature.t) id'
       in
-      let open Path.Resolved in
       let replacement =
         match canonical with
-        | None -> Identifier id
-        | Some(path, _) -> Canonical(Identifier id, path)
+        | None -> `Identifier id
+        | Some(path, _) -> `Canonical(`Identifier id, path)
       in
         match p with
-        | Identifier (Identifier.Module(parent, name)) ->
-            if matches parent then Obj.magic (Module(replacement, name))
+        | `Identifier (`Module(parent, name)) ->
+            if matches parent then `Module(replacement, name)
             else super#path_resolved p
-        | Identifier (Identifier.ModuleType(parent, name)) ->
-            if matches parent then Obj.magic (ModuleType(replacement, name))
+        | `Identifier (`ModuleType(parent, name)) ->
+            if matches parent then (`ModuleType(replacement, name))
             else super#path_resolved p
-        | Identifier (Identifier.Type(parent, name)) ->
-            if matches parent then Obj.magic (Type(replacement, name))
+        | `Identifier (`Type(parent, name)) ->
+            if matches parent then (`Type(replacement, name))
             else super#path_resolved p
-        | Identifier (Identifier.Class(parent, name)) ->
-            if matches parent then Obj.magic (Class(replacement, name))
+        | `Identifier (`Class(parent, name)) ->
+            if matches parent then (`Class(replacement, name))
             else super#path_resolved p
-        | Identifier (Identifier.ClassType(parent, name)) ->
-            if matches parent then Obj.magic (ClassType(replacement, name))
+        | `Identifier (`ClassType(parent, name)) ->
+            if matches parent then (`ClassType(replacement, name))
             else super#path_resolved p
         | _ -> super#path_resolved p
 
-  method! reference_resolved : type k. k Reference.Resolved.t ->
-                              k Reference.Resolved.t =
+  method! reference_resolved : Reference.Resolved.t ->
+                              Reference.Resolved.t =
     fun r ->
-      let sid = Identifier.signature_of_module id in
+      let sid = (id :> Identifier.Signature.t) in
       let matches id' =
-        Identifier.equal sid id'
+        Identifier.Signature.equal sid id'
       in
       let open Reference.Resolved in
       let replacement =
         match canonical with
-        | None -> Identifier id
-        | Some(_, reference) -> Canonical(Identifier id, reference)
+        | None -> `Identifier id
+        | Some(_, reference) -> `Canonical(`Identifier id, reference)
       in
-      let sreplacement = signature_of_module replacement in
-      let preplacement = parent_of_signature sreplacement in
-      let lreplacement = label_parent_of_parent preplacement in
+      let sreplacement = (replacement :> Signature.t) in
+      let lreplacement = (replacement :> LabelParent.t) in
       match r with
-      | Identifier (Identifier.Module(parent, name)) ->
-          if matches parent then Module(sreplacement, name)
+      | `Identifier (`Module(parent, name)) ->
+          if matches parent then `Module(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.ModuleType(parent, name)) ->
-          if matches parent then ModuleType(sreplacement, name)
+      | `Identifier (`ModuleType(parent, name)) ->
+          if matches parent then `ModuleType(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Type(parent, name)) ->
-          if matches parent then Type(sreplacement, name)
+      | `Identifier (`Type(parent, name)) ->
+          if matches parent then `Type(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Extension(parent, name)) ->
-          if matches parent then Extension(sreplacement, name)
+      | `Identifier (`Extension(parent, name)) ->
+          if matches parent then `Extension(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Exception(parent, name)) ->
-          if matches parent then Exception(sreplacement, name)
+      | `Identifier (`Exception(parent, name)) ->
+          if matches parent then `Exception(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Value(parent, name)) ->
-          if matches parent then Value(sreplacement, name)
+      | `Identifier (`Value(parent, name)) ->
+          if matches parent then `Value(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Class(parent, name)) ->
-          if matches parent then Class(sreplacement, name)
+      | `Identifier (`Class(parent, name)) ->
+          if matches parent then `Class(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.ClassType(parent, name)) ->
-          if matches parent then ClassType(sreplacement, name)
+      | `Identifier (`ClassType(parent, name)) ->
+          if matches parent then `ClassType(sreplacement, name)
           else super#reference_resolved r
-      | Identifier (Identifier.Label(parent, name)) -> begin
+      | `Identifier (`Label(parent, name)) -> begin
           match parent with
-          | Identifier.Root _ | Identifier.Argument _
-          | Identifier.Module _ | Identifier.ModuleType _ as parent ->
-                if matches parent then Label(lreplacement, name)
+          | `Root _ | `Argument _
+          | `Module _ | `ModuleType _ as parent ->
+                if matches parent then `Label(lreplacement, name)
                 else super#reference_resolved r
           | _ -> super#reference_resolved r
         end
@@ -278,14 +275,14 @@ class strengthen path : t = object
   method! documentation_comment x = x
 
   method! module_ md =
-    if Path.Resolved.is_hidden path then md
+    if Path.Resolved.Module.is_hidden path then md
     else begin
       let open Lang.Module in
       match md.type_ with
-      | Alias p when not (Path.is_hidden p) -> md
+      | Alias p when not (Path.Module.is_hidden p) -> md
       | _ ->
           let name = Identifier.name md.id in
-          let path = Path.Resolved(Path.Resolved.Module(path, name)) in
+          let path = `Resolved(`Module(path, ModuleName.of_string name)) in
           let type_ = Alias path in
           let expansion = None in
           { md with type_; expansion }
@@ -321,11 +318,11 @@ let strengthen path =
   new strengthen path
 
 let make_lookup ~equal:_ ~hash:_
-                (items : (Identifier.module_ * Identifier.module_) list) =
+                (items : (Identifier.Module.t * Identifier.Module.t) list) =
   let module Hash = struct
-    type t = Identifier.module_
-    let equal = Identifier.equal
-    let hash = Identifier.hash
+    type t = Identifier.Module.t
+    let equal = Identifier.Module.equal
+    let hash = Identifier.Module.hash
   end in
   let module Tbl = Hashtbl.Make(Hash) in
   let tbl = Tbl.create 13 in
@@ -336,8 +333,8 @@ let make_lookup ~equal:_ ~hash:_
         | exception Not_found -> None
 
 class pack ~equal ~hash
-           (items : (Identifier.module_
-                     * Identifier.module_) list) : t = object (self)
+           (items : (Identifier.Module.t
+                     * Identifier.Module.t) list) : t = object (self)
 
   val lookup = make_lookup ~equal ~hash items
 
@@ -345,23 +342,22 @@ class pack ~equal ~hash
 
   inherit Maps.paths as super
 
-  method! identifier : type k. k Identifier.t -> k Identifier.t =
+  method! identifier : Identifier.t -> Identifier.t =
     fun id ->
-      let open Identifier in
         match id with
-        | Root _ as id -> begin
+        | `Root _ as id -> begin
             match lookup id with
-            | Some (Root _ | Module _ | Argument _ as id) -> id
+            | Some (`Root _ | `Module _ | `Argument _ as id) -> id
             | None -> super#identifier id
           end
-        | Module _ as id -> begin
+        | `Module _ as id -> begin
             match lookup id with
-            | Some (Root _ | Module _ | Argument _ as id) -> id
+            | Some (`Root _ | `Module _ | `Argument _ as id) -> id
             | None -> super#identifier id
           end
-        | Argument _ as id -> begin
+        | `Argument _ as id -> begin
             match lookup id with
-            | Some (Root _ | Module _ | Argument _ as id) -> id
+            | Some (`Root _ | `Module _ | `Argument _ as id) -> id
             | None -> super#identifier id
           end
         | _ -> super#identifier id

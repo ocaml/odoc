@@ -37,34 +37,34 @@ val add_class_type_expr_items : Lang.ClassType.expr -> t -> t
 
 val add_class_decl_items : Lang.Class.decl -> t -> t
 
-val lookup_module : t -> Reference.module_ -> Reference.module_
+val lookup_module : t -> Reference.Module.t -> Reference.Module.t
 
-val lookup_module_type : t -> Reference.module_type -> Reference.module_type
+val lookup_module_type : t -> Reference.ModuleType.t -> Reference.ModuleType.t
 
-val lookup_type : t -> Reference.type_ -> Reference.type_
+val lookup_type : t -> Reference.Type.t -> Reference.Type.t
 
-val lookup_constructor : t -> Reference.constructor -> Reference.constructor
+val lookup_constructor : t -> Reference.Constructor.t -> Reference.Constructor.t
 
-val lookup_field : t -> Reference.field -> Reference.field
+val lookup_field : t -> Reference.Field.t -> Reference.Field.t
 
-val lookup_extension : t -> Reference.extension -> Reference.extension
+val lookup_extension : t -> Reference.Extension.t -> Reference.Extension.t
 
-val lookup_exception : t -> Reference.exception_ -> Reference.exception_
+val lookup_exception : t -> Reference.Exception.t -> Reference.Exception.t
 
-val lookup_value : t -> Reference.value -> Reference.value
+val lookup_value : t -> Reference.Value.t -> Reference.Value.t
 
-val lookup_class : t -> Reference.class_ -> Reference.class_
+val lookup_class : t -> Reference.Class.t -> Reference.Class.t
 
-val lookup_class_type : t -> Reference.class_type -> Reference.class_type
+val lookup_class_type : t -> Reference.ClassType.t -> Reference.ClassType.t
 
-val lookup_method : t -> Reference.method_ -> Reference.method_
+val lookup_method : t -> Reference.Method.t -> Reference.Method.t
 
-val lookup_instance_variable : t -> Reference.instance_variable ->
-  Reference.instance_variable
+val lookup_instance_variable : t -> Reference.InstanceVariable.t ->
+  Reference.InstanceVariable.t
 
-val lookup_label : t -> Reference.label -> Reference.label
+val lookup_label : t -> Reference.Label.t -> Reference.Label.t
 
-val lookup_element : t -> Reference.any -> Reference.any
+val lookup_element : t -> Reference.t -> Reference.t
 
-val lookup_section_title : t -> Reference.Resolved.label ->
+val lookup_section_title : t -> Reference.Resolved.Label.t ->
   Model.Comment.link_content option

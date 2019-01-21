@@ -76,7 +76,7 @@ let mld ~env ~package ~output input =
     let file = Model.Root.Odoc_file.create_page root_name in
     {Model.Root.package; file; digest}
   in
-  let name = Model.Paths.Identifier.Page (root, root_name) in
+  let name = `Page (root, Model.Names.PageName.of_string root_name) in
   let location =
     let pos =
       Lexing.{

@@ -27,7 +27,7 @@ let a_href = Tree.Relative_link.to_sub_element
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
-  | Paths.Identifier.Argument (_, nb, _) -> nb
+  | `Argument (_, nb, _) -> nb
   | _ ->
     failwith "TODO"
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
@@ -185,18 +185,18 @@ struct
       else
         res
     | Constr (path, args) ->
-      let link = Tree.Relative_link.of_path ~stop_before:false path in
+      let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
       format_type_path ~delim:(`parens) args link
     | Polymorphic_variant v -> te_variant v
     | Object o -> te_object o
     | Class (path, args) ->
       format_type_path ~delim:(`brackets) args
-        (Tree.Relative_link.of_path ~stop_before:false path)
+        (Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t))
     | Poly (polyvars, t) ->
       Html.txt (String.concat " " polyvars ^ ". ") :: type_expr t
     | Package pkg ->
       Html.txt "(" :: keyword "module " ::
-      Tree.Relative_link.of_path ~stop_before:false pkg.path @
+      Tree.Relative_link.of_path ~stop_before:false (pkg.path :> Paths.Path.t) @
       begin match pkg.substitutions with
       | [] -> []
       | lst ->
@@ -208,21 +208,18 @@ struct
 
   and package_subst
     : 'inner 'outer.
-      Paths.Path.module_type -> Paths.Fragment.type_ * Model.Lang.TypeExpr.t
+      Paths.Path.ModuleType.t -> Paths.Fragment.Type.t * Model.Lang.TypeExpr.t
     -> ('inner, 'outer) text Html.elt list
     = fun pkg_path (frag_typ, te) ->
     keyword "type " ::
     (match pkg_path with
-    | Paths.Path.Resolved rp ->
-      let base =
-        Paths.Identifier.signature_of_module_type
-          (Paths.Path.Resolved.identifier rp)
-      in
+    | `Resolved rp ->
+      let base = (Paths.Path.Resolved.ModuleType.identifier rp :> Paths.Identifier.Signature.t) in
       Tree.Relative_link.of_fragment ~base
-        (Paths.Fragment.any_sort frag_typ)
+        (frag_typ :> Paths.Fragment.t)
     | _ ->
       [Html.txt
-        (Tree.render_fragment (Paths.Fragment.any_sort frag_typ))]) @
+        (Tree.render_fragment (frag_typ :> Paths.Fragment.t))]) @
     Html.txt " " :: keyword "=" :: Html.txt " " ::
     type_expr te
 end
@@ -279,7 +276,7 @@ struct
     let rows =
       fields |> List.map (fun fld ->
         let open Model.Lang.TypeDecl.Field in
-        let anchor, lhs = field fld.mutable_ fld.id fld.type_ in
+        let anchor, lhs = field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_ in
         let rhs = Comment.to_html fld.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
@@ -297,7 +294,7 @@ struct
 
 
   let constructor
-    : 'b. 'b Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
+    : Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
     -> Model.Lang.TypeExpr.t option
     -> [> `Code | `PCDATA | `Table ] Html.elt list
   = fun id args ret_type ->
@@ -372,7 +369,7 @@ struct
     let rows =
       cstrs |> List.map (fun cstr ->
         let open Model.Lang.TypeDecl.Constructor in
-        let anchor, lhs = constructor cstr.id cstr.args cstr.res in
+        let anchor, lhs = constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res in
         let rhs = Comment.to_html cstr.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
         Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
@@ -389,13 +386,13 @@ struct
 
   let extension_constructor (t : Model.Lang.Extension.Constructor.t) =
     (* TODO doc *)
-    constructor t.id t.args t.res
+    constructor (t.id :> Paths.Identifier.t) t.args t.res
 
   let extension (t : Model.Lang.Extension.t) =
     let extension =
       Html.code (
         keyword "type " ::
-        Tree.Relative_link.of_path ~stop_before:false t.type_path @
+        Tree.Relative_link.of_path ~stop_before:false (t.type_path :> Paths.Path.t) @
         [ keyword " += " ]
       ) ::
       list_concat_map t.constructors ~sep:(Html.code [keyword " | "])
@@ -407,7 +404,7 @@ struct
 
 
   let exn (t : Model.Lang.Exception.t) =
-    let cstr = constructor t.id t.args t.res in
+    let cstr = constructor (t.id :> Paths.Identifier.t) t.args t.res in
     let exn = Html.code [ keyword "exception " ] :: cstr
       @ (if Syntax.Type.Exception.semicolon then [ keyword ";" ] else [])
     in
@@ -565,7 +562,7 @@ struct
             keyword (Syntax.Type.private_keyword ^ " ")
           else
             Html.txt "") ::
-          polymorphic_variant ~type_ident:t.id variant
+          polymorphic_variant ~type_ident:(t.id :> Paths.Identifier.t) variant
         in
         manifest, false
       | _ ->
@@ -942,10 +939,10 @@ struct
              table of contents. *)
           let html = Html.section nested_section_state.acc_html in
 
-          let Paths.Identifier.Label (_, label) = label in
+          let `Label (_, label) = label in
           let toc_entry =
             {
-              anchor = label;
+              anchor = Model.Names.LabelName.to_string label;
               text = content;
               children = nested_section_state.acc_toc;
             }
@@ -1043,8 +1040,8 @@ sig
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
-    | Method {id; _} -> path_to_id id
-    | InstanceVariable {id; _} -> path_to_id id
+    | Method {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | InstanceVariable {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | Constraint _
     | Inherit _
     | Comment _ -> None
@@ -1125,7 +1122,7 @@ struct
     = fun (cte : Model.Lang.ClassType.expr) ->
       match cte with
       | Constr (path, args) ->
-        let link = Tree.Relative_link.of_path ~stop_before:false path in
+        let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
         format_type_path ~delim:(`brackets) args link
       | Signature _ ->
         [
@@ -1241,14 +1238,14 @@ sig
 end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
-    | Type (_, {id; _}) -> path_to_id id
-    | Exception {id; _} -> path_to_id id
-    | Value {id; _} -> path_to_id id
-    | External {id; _} -> path_to_id id
-    | Module (_, {id; _}) -> path_to_id id
-    | ModuleType {id; _} -> path_to_id id
-    | Class (_, {id; _}) -> path_to_id id
-    | ClassType (_, {id; _}) -> path_to_id id
+    | Type (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
+    | Exception {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | Value {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | External {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | Module (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
+    | ModuleType {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | Class (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
+    | ClassType (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
     | TypExt _
     | Include _
     | Comment _ -> None
@@ -1323,7 +1320,7 @@ struct
         (
           Html.txt (Paths.Identifier.name arg.id) ::
           Html.txt Syntax.Type.annotation_separator ::
-          mty (Paths.Identifier.signature_of_module arg.id) arg.expr
+          mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
         ), []
       | Some expansion ->
         let expansion =
@@ -1342,7 +1339,7 @@ struct
         (
           Html.a ~a:[ a_href ~kind:`Arg link_name ] [Html.txt name] ::
           Html.txt Syntax.Type.annotation_separator ::
-          mty (Paths.Identifier.signature_of_module arg.id) arg.expr
+          mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
         ), [subtree]
     in
     let region = [Html.code def_div] in
@@ -1384,7 +1381,7 @@ struct
       = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
-      module_decl (Paths.Identifier.signature_of_module t.id)
+      module_decl (t.id :> Paths.Identifier.Signature.t)
         (match t.display_type with
         | None -> t.type_
         | Some t -> t)
@@ -1423,33 +1420,32 @@ struct
     let region = [Html.code md_def_content] in
     region, t.doc, subtree
 
-  and module_decl (base : Paths.Identifier.signature) md =
+  and module_decl (base : Paths.Identifier.Signature.t) md =
     begin match md with
     | Alias _ -> Html.txt " = "
     | ModuleType _ -> Html.txt Syntax.Type.annotation_separator
     end ::
     module_decl' base md
 
-  and extract_path_from_mt ~(default: Paths.Identifier.signature) =
+  and extract_path_from_mt ~(default: Paths.Identifier.Signature.t) =
     let open Model.Lang.ModuleType in
     function
-    | Path (Paths.Path.Resolved r) ->
-      Paths.Identifier.signature_of_module_type
-        (Paths.Path.Resolved.identifier r)
+    | Path (`Resolved r) ->
+      (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
     | With (mt, _) -> extract_path_from_mt ~default mt
-    | TypeOf (Model.Lang.Module.Alias (Paths.Path.Resolved r)) ->
-      Paths.Identifier.signature_of_module (Paths.Path.Resolved.identifier r)
+    | TypeOf (Model.Lang.Module.Alias (`Resolved r)) ->
+      (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | TypeOf (Model.Lang.Module.ModuleType mt) ->
       extract_path_from_mt ~default mt
     | _ -> default
 
   and module_decl'
-    : 'inner_row 'outer_row. Paths.Identifier.signature
+    : 'inner_row 'outer_row. Paths.Identifier.Signature.t
     -> Model.Lang.Module.decl
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | Alias mod_path ->
-      Tree.Relative_link.of_path ~stop_before:true mod_path
+      Tree.Relative_link.of_path ~stop_before:true (mod_path :> Paths.Path.t)
     | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
   and module_type ?theme_uri (t : Model.Lang.ModuleType.t) =
@@ -1463,7 +1459,7 @@ struct
         | Path _ -> Html.txt " = "
         | _ -> Html.txt Syntax.Type.annotation_separator
         end ::
-        mty (Paths.Identifier.signature_of_module_type t.id) expr
+        mty (t.id :> Paths.Identifier.Signature.t) expr
     in
     let modname, subtree =
       match t.expansion with
@@ -1504,11 +1500,11 @@ struct
 
   and mty
     : 'inner_row 'outer_row.
-      Paths.Identifier.signature -> Model.Lang.ModuleType.expr
+      Paths.Identifier.Signature.t -> Model.Lang.ModuleType.expr
     -> ('inner_row, 'outer_row) text Html.elt list
-  = fun (base : Paths.Identifier.signature) -> function
+  = fun (base : Paths.Identifier.Signature.t) -> function
     | Path mty_path ->
-      Tree.Relative_link.of_path ~stop_before:true mty_path
+      Tree.Relative_link.of_path ~stop_before:true (mty_path :> Paths.Path.t)
     | Signature _ ->
       [
         keyword Syntax.Mod.open_tag;
@@ -1525,7 +1521,7 @@ struct
         let to_print = Html.txt @@ Paths.Identifier.name arg.id in
         match
           Tree.Relative_link.Id.href
-            ~stop_before:(arg.expansion = None) arg.id
+            ~stop_before:(arg.expansion = None) (arg.id :> Paths.Identifier.t)
         with
         | exception _ -> to_print
         | href -> Html.a ~a:[ Html.a_href href ] [ to_print ]
@@ -1544,21 +1540,20 @@ struct
       keyword "module type of " :: module_decl' base md
 
   and substitution
-    : 'inner_row 'outer_row. Paths.Identifier.signature ->
+    : 'inner_row 'outer_row. Paths.Identifier.Signature.t ->
         Model.Lang.ModuleType.substitution
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | ModuleEq (frag_mod, md) ->
       keyword "module " ::
-      Tree.Relative_link.of_fragment ~base
-        (Paths.Fragment.signature_of_module frag_mod)
+      Tree.Relative_link.of_fragment ~base (frag_mod :> Paths.Fragment.t)
       @ Html.txt " = " ::
       module_decl' base md
     | TypeEq (frag_typ, td) ->
       keyword "type " ::
       (Syntax.Type.handle_substitution_params
         (Tree.Relative_link.of_fragment
-          ~base (Paths.Fragment.any_sort frag_typ))
+          ~base (frag_typ :> Paths.Fragment.t))
         [format_params td.Lang.TypeDecl.Equation.params]
       ) @
       fst (format_manifest td) @
@@ -1566,14 +1561,14 @@ struct
     | ModuleSubst (frag_mod, mod_path) ->
       keyword "module " ::
       Tree.Relative_link.of_fragment
-        ~base (Paths.Fragment.signature_of_module frag_mod) @
+        ~base (frag_mod :> Paths.Fragment.t) @
       Html.txt " := " ::
-      Tree.Relative_link.of_path ~stop_before:true mod_path
+      Tree.Relative_link.of_path ~stop_before:true (mod_path :> Paths.Path.t)
     | TypeSubst (frag_typ, td) ->
       keyword "type " ::
       (Syntax.Type.handle_substitution_params
         (Tree.Relative_link.of_fragment
-          ~base (Paths.Fragment.any_sort frag_typ))
+          ~base (frag_typ :> Paths.Fragment.t))
         [format_params td.Lang.TypeDecl.Equation.params]
       ) @
       Html.txt " := " ::
@@ -1650,7 +1645,7 @@ struct
         keyword "module " ::
         Html.txt modname ::
         Html.txt " = " ::
-        Tree.Relative_link.of_path ~stop_before:false x.path
+        Tree.Relative_link.of_path ~stop_before:false (x.path :> Paths.Path.t)
       in
       [Html.code md_def]
     end
@@ -1663,7 +1658,7 @@ struct
   let compilation_unit ?theme_uri (t : Model.Lang.Compilation_unit.t) : Tree.t =
     let package =
       match t.id with
-      | Model.Paths.Identifier.Root (a, _) -> a.package
+      | `Root (a, _) -> a.package
       | _ -> assert false
     in
     Tree.enter package;
@@ -1689,10 +1684,10 @@ struct
   let page ?theme_uri (t : Model.Lang.Page.t) : Tree.t =
     let package, name =
       match t.name with
-      | Model.Paths.Identifier.Page (a, name) -> a.package, name
+      | `Page (a, name) -> a.package, name
     in
     Tree.enter package;
-    Tree.enter ~kind:`Page name;
+    Tree.enter ~kind:`Page (Model.Names.PageName.to_string name);
     let html = Comment.to_html t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
     Tree.make ?theme_uri html []

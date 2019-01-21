@@ -17,91 +17,40 @@
 open Model.Paths
 open Model.Lang
 open Model.Predefined
+open Model.Names
 
 open Identifier
 
 module StringTbl = Map.Make(String)
 
-type type_ident =
-  [`Type | `Class | `ClassType] t
+type type_ident = Model.Paths_types.Identifier.path_type
 
-type constructor_ident =
-  [`Constructor|`Extension|`Exception] t
+type constructor_ident = Model.Paths_types.Identifier.reference_constructor
 
-type extension_ident =
-  [`Extension|`Exception] t
+type extension_ident = Model.Paths_types.Identifier.reference_extension
 
-type class_type_ident =
-  [`Class|`ClassType] t
+type class_type_ident = Model.Paths_types.Identifier.reference_class_type
 
-type parent_ident =
-  [`Module|`ModuleType|`Type|`Class|`ClassType|`Page] t
+type parent_ident = [Model.Paths_types.Identifier.path_any | Model.Paths_types.Identifier.page]
 
-type signature_ident =
-  [`Module|`ModuleType] t
-
-let widen_module : module_ -> _ = function
-  | Root _ as id -> id
-  | Module _ as id -> id
-  | Argument _ as id -> id
-
-let widen_module_type : module_type -> _ = function
-  | ModuleType _ as id -> id
-
-let widen_type : type_ -> _ = function
-  | Type _ as id -> id
-  | CoreType _ as id -> id
-
-let widen_constructor : constructor -> _ = function
-  | Constructor _ as id -> id
-
-let widen_field : field -> _ = function
-  | Field _ as id -> id
-
-let widen_extension : extension -> _ = function
-  | Extension _ as id -> id
-
-let widen_exception : exception_ -> _ = function
-  | Exception _ as id -> id
-  | CoreException _ as id -> id
-
-let widen_value : value -> _ = function
-  | Value _ as id -> id
-
-let widen_class : class_ -> _ = function
-  | Class _ as id -> id
-
-let widen_class_type : class_type -> _ = function
-  | ClassType _ as id -> id
-
-let widen_method : method_ -> _ = function
-  | Method _ as id -> id
-
-let widen_instance_variable : instance_variable -> _ = function
-  | InstanceVariable _ as id -> id
-
-let widen_label : label -> _ = function
-  | Label _ as id -> id
-
-let widen_page : page -> _ = function
-  | Page _ as id -> id
+type signature_ident = [Model.Paths_types.Identifier.reference_module | Model.Paths_types.Identifier.reference_module_type]
 
 type t =
-  { modules : module_ StringTbl.t;
-    module_types : module_type StringTbl.t;
+  { modules : Module.t StringTbl.t;
+    module_types : ModuleType.t StringTbl.t;
     types : type_ident StringTbl.t;
     constructors : constructor_ident StringTbl.t;
-    fields : field StringTbl.t;
+    fields : Field.t StringTbl.t;
     extensions : extension_ident StringTbl.t;
-    exceptions : exception_ StringTbl.t;
-    values : value StringTbl.t;
-    classes : class_ StringTbl.t;
+    exceptions : Exception.t StringTbl.t;
+    values : Value.t StringTbl.t;
+    classes : Class.t StringTbl.t;
     class_types : class_type_ident StringTbl.t;
-    methods : method_ StringTbl.t;
-    instance_variables : instance_variable StringTbl.t;
-    labels : label StringTbl.t;
+    methods : Method.t StringTbl.t;
+    instance_variables : InstanceVariable.t StringTbl.t;
+    labels : Label.t StringTbl.t;
     parents : parent_ident StringTbl.t;
-    elements : any StringTbl.t;
+    elements : Identifier.t StringTbl.t;
     titles : Model.Comment.link_content StringTbl.t; (* Hack *)
     signatures : signature_ident StringTbl.t;
   }
@@ -129,7 +78,7 @@ let empty =
 let add_label_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_label id) env.elements
+    StringTbl.add name (id : Identifier.Label.t :> Identifier.t) env.elements
   in
   let labels =
     StringTbl.add name id env.labels
@@ -139,7 +88,7 @@ let add_label_ident id env =
 let add_value_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_value id) env.elements
+    StringTbl.add name (id : Identifier.Value.t :> Identifier.t) env.elements
   in
   let values =
     StringTbl.add name id env.values
@@ -149,7 +98,7 @@ let add_value_ident id env =
 let add_external_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_value id) env.elements
+    StringTbl.add name (id : Identifier.Value.t :> Identifier.t) env.elements
   in
   let values =
     StringTbl.add name id env.values
@@ -159,17 +108,17 @@ let add_external_ident id env =
 let add_constructor_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_constructor id) env.elements
+    StringTbl.add name (id : Identifier.Constructor.t :> Identifier.t) env.elements
   in
   let constructors =
-    StringTbl.add name (widen_constructor id) env.constructors
+    StringTbl.add name (id :> constructor_ident) env.constructors
   in
     { env with elements; constructors }
 
 let add_field_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_field id) env.elements
+    StringTbl.add name (id : Identifier.Field.t :> Identifier.t) env.elements
   in
   let fields =
     StringTbl.add name id env.fields
@@ -179,39 +128,39 @@ let add_field_ident id env =
 let add_type_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_type id) env.elements
+    StringTbl.add name (id : Identifier.Type.t :> Identifier.t) env.elements
   in
   let parents =
-    StringTbl.add name (widen_type id) env.parents
+    StringTbl.add name (id :> parent_ident) env.parents
   in
   let types =
-    StringTbl.add name (widen_type id) env.types
+    StringTbl.add name (id :> type_ident) env.types
   in
     { env with elements; parents; types }
 
 let add_extension_constructor_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_extension id) env.elements
+    StringTbl.add name (id : Extension.t :> Identifier.t) env.elements
   in
   let constructors =
-    StringTbl.add name (widen_extension id) env.constructors
+    StringTbl.add name (id :> constructor_ident) env.constructors
   in
   let extensions =
-    StringTbl.add name (widen_extension id) env.extensions
+    StringTbl.add name (id :> extension_ident) env.extensions
   in
     { env with elements; constructors; extensions }
 
 let add_exception_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_exception id) env.elements
+    StringTbl.add name (id : Exception.t :> Identifier.t) env.elements
   in
   let constructors =
-    StringTbl.add name (widen_exception id) env.constructors
+    StringTbl.add name (id :> constructor_ident) env.constructors
   in
   let extensions =
-    StringTbl.add name (widen_exception id) env.extensions
+    StringTbl.add name (id :> extension_ident) env.extensions
   in
   let exceptions =
     StringTbl.add name id env.exceptions
@@ -221,73 +170,73 @@ let add_exception_ident id env =
 let add_class_type_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_class_type id) env.elements
+    StringTbl.add name (id : ClassType.t :> Identifier.t) env.elements
   in
   let parents =
-    StringTbl.add name (widen_class_type id) env.parents
+    StringTbl.add name (id :> parent_ident) env.parents
   in
   let types =
-    StringTbl.add name (widen_class_type id) env.types
+    StringTbl.add name (id :> type_ident) env.types
   in
   let class_types =
-    StringTbl.add name (widen_class_type id) env.class_types
+    StringTbl.add name (id :> class_type_ident) env.class_types
   in
     { env with elements; parents; types; class_types }
 
 let add_class_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_class id) env.elements
+    StringTbl.add name (id : Class.t :> Identifier.t) env.elements
   in
   let parents =
-    StringTbl.add name (widen_class id) env.parents
+    StringTbl.add name (id :> parent_ident) env.parents
   in
   let types =
-    StringTbl.add name (widen_class id) env.types
+    StringTbl.add name (id :> type_ident) env.types
   in
   let class_types =
-    StringTbl.add name (widen_class id) env.class_types
+    StringTbl.add name (id :> class_type_ident) env.class_types
   in
   let classes =
-    StringTbl.add name (widen_class id) env.classes
+    StringTbl.add name id env.classes
   in
     { env with elements; parents; types; class_types; classes }
 
 let add_module_type_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_module_type id) env.elements
+    StringTbl.add name (id : ModuleType.t :> Identifier.t) env.elements
   in
   let parents =
-    StringTbl.add name (widen_module_type id) env.parents
+    StringTbl.add name (id :> parent_ident) env.parents
   in
   let module_types =
-    StringTbl.add name (widen_module_type id) env.module_types
+    StringTbl.add name id env.module_types
   in
   let signatures =
-    StringTbl.add name (widen_module_type id) env.signatures
+    StringTbl.add name (id :> signature_ident) env.signatures
   in
     { env with elements; parents; module_types; signatures }
 
 let add_module_ident id env =
   let name = Identifier.name id in
   let elements =
-    StringTbl.add name (widen_module id) env.elements
+    StringTbl.add name (id : Module.t :> Identifier.t) env.elements
   in
   let parents =
-    StringTbl.add name (widen_module id) env.parents
+    StringTbl.add name (id :> parent_ident) env.parents
   in
   let modules =
-    StringTbl.add name (widen_module id) env.modules
+    StringTbl.add name (id :> Module.t) env.modules
   in
   let signatures =
-    StringTbl.add name (widen_module id) env.signatures
+    StringTbl.add name (id :> signature_ident) env.signatures
   in
     { env with elements; parents; modules; signatures }
 
 let add_page_ident id env =
   let name = Identifier.name id in
-  let parents = StringTbl.add name (widen_page id) env.parents in
+  let parents = StringTbl.add name (id : Page.t :> parent_ident) env.parents in
     { env with parents }
 
 let opt_fold f o acc =
@@ -318,7 +267,7 @@ let add_comment com env =
   | `Stop -> env
 
 let add_value vl env =
-  let open Value in
+  let open Model.Lang.Value in
   let env = add_documentation vl.doc env in
     add_value_ident vl.id env
 
@@ -351,12 +300,12 @@ let add_type_decl decl env =
     add_type_ident decl.id env
 
 let add_extension_constructor ext env =
-  let open Extension.Constructor in
+  let open Model.Lang.Extension.Constructor in
   let env = add_documentation ext.doc env in
     add_extension_constructor_ident ext.id env
 
 let add_extension tyext env =
-  let open Extension in
+  let open Model.Lang.Extension in
   let env = add_documentation tyext.doc env in
   let env =
     List.fold_right add_extension_constructor
@@ -365,27 +314,27 @@ let add_extension tyext env =
     env
 
 let add_exception exn env =
-  let open Exception in
+  let open Model.Lang.Exception in
   let env = add_documentation exn.doc env in
     add_exception_ident exn.id env
 
 let add_class_type cltyp env =
-  let open ClassType in
+  let open Model.Lang.ClassType in
   let env = add_documentation cltyp.doc env in
     add_class_type_ident cltyp.id env
 
 let add_class cl env =
-  let open Class in
+  let open Model.Lang.Class in
   let env = add_documentation cl.doc env in
     add_class_ident cl.id env
 
 let add_module_type mtyp env =
-  let open ModuleType in
+  let open Model.Lang.ModuleType in
   let env = add_documentation mtyp.doc env in
     add_module_type_ident mtyp.id env
 
 let add_module md env =
-  let open Module in
+  let open Model.Lang.Module in
   let env = add_documentation md.doc env in
     add_module_ident md.id env
 
@@ -395,7 +344,7 @@ let add_unit unit env =
     add_module_ident unit.id env
 
 let add_page page env =
-  let open Page in
+  let open Model.Lang.Page in
   let env = add_documentation page.content env in
     add_page_ident page.name env
 
@@ -405,7 +354,7 @@ let rec add_include incl env =
   add_signature_items incl.expansion.content env
 
 and add_signature_item item env =
-  let open Signature in
+  let open Model.Lang.Signature in
   match item with
   | Module (_, md) -> add_module md env
   | ModuleType mtyp -> add_module_type mtyp env
@@ -423,7 +372,7 @@ and add_signature_items sg env =
   List.fold_right add_signature_item sg env
 
 let rec add_module_type_expr_items expr env =
-  let open ModuleType in
+  let open Model.Lang.ModuleType in
     match expr with
     | Path _ -> env
     | Signature sg -> add_signature_items sg env
@@ -435,38 +384,37 @@ let rec add_module_type_expr_items expr env =
     | TypeOf decl -> add_module_decl_items decl env
 
 and add_module_decl_items decl env =
-  let open Module in
+  let open Model.Lang.Module in
     match decl with
     | Alias _ -> env
     | ModuleType expr -> add_module_type_expr_items expr env
 
 let add_method meth env =
-  let open Method in
+  let open Model.Lang.Method in
   let env = add_documentation meth.doc env in
   let name = Identifier.name meth.id in
   let elements =
-    StringTbl.add name (widen_method meth.id) env.elements
+    StringTbl.add name (meth.id :> Identifier.t) env.elements
   in
   let methods =
-    StringTbl.add name (widen_method meth.id) env.methods
+    StringTbl.add name meth.id env.methods
   in
     { env with elements; methods }
 
 let add_instance_variable inst env =
-  let open InstanceVariable in
+  let open Model.Lang.InstanceVariable in
   let env = add_documentation inst.doc env in
   let name = Identifier.name inst.id in
   let elements =
-    StringTbl.add name (widen_instance_variable inst.id) env.elements
+    StringTbl.add name (inst.id :> Identifier.t) env.elements
   in
   let instance_variables =
-    StringTbl.add name (widen_instance_variable inst.id)
-      env.instance_variables
+    StringTbl.add name inst.id env.instance_variables
   in
     { env with elements; instance_variables }
 
 let add_class_signature_item item env =
-  let open ClassSignature in
+  let open Model.Lang.ClassSignature in
     match item with
     | Method meth -> add_method meth env
     | InstanceVariable inst -> add_instance_variable inst env
@@ -475,391 +423,368 @@ let add_class_signature_item item env =
     | Comment com -> add_comment com env
 
 let add_class_signature_items clsig env =
-  let open ClassSignature in
+  let open Model.Lang.ClassSignature in
     List.fold_right
       add_class_signature_item
       clsig.items env
 
 let add_class_type_expr_items expr env =
-  let open ClassType in
+  let open Model.Lang.ClassType in
     match expr with
     | Constr _ -> env
     | Signature clsig -> add_class_signature_items clsig env
 
 let rec add_class_decl_items decl env =
-  let open Class in
+  let open Model.Lang.Class in
     match decl with
     | ClassType expr -> add_class_type_expr_items expr env
     | Arrow(_, _, decl) -> add_class_decl_items decl env
 
-open Model.Paths.Reference.Resolved
 open Model.Paths.Reference
 
-let lookup_signature_ident env name =
+let lookup_signature_ident env name : Signature.t =
   try
     let id = StringTbl.find name env.signatures in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TUnknown)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TUnknown)
 
-let lookup_module_ident env name =
+let lookup_module_ident env name : Module.t =
   try
     let id = StringTbl.find name env.modules in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TModule)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TModule)
 
-let lookup_module_type_ident env name =
+let lookup_module_type_ident env name : ModuleType.t =
   try
     let id = StringTbl.find name env.module_types in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TModuleType)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TModuleType)
 
-let lookup_type_ident env name =
+let lookup_type_ident env name : Type.t =
   try
     let id = StringTbl.find name env.types in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_type_identifier name with
-    | Some id -> Resolved (Identifier id)
-    | None -> Root (name, TType)
+    | Some id -> `Resolved (`Identifier (id :> type_ident))
+    | None -> `Root (UnitName.of_string name, `TType)
 
-let lookup_constructor_ident env name =
+let lookup_constructor_ident env name : Constructor.t =
   try
     let id = StringTbl.find name env.constructors in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_constructor_identifier name with
-    | Some id -> Resolved (Identifier id)
+    | Some id -> `Resolved (`Identifier (id :> Model.Paths_types.Identifier.reference_constructor))
     | None ->
         match core_exception_identifier name with
-        | Some id -> Resolved (Identifier id)
-        | None -> Root (name, TConstructor)
+        | Some id -> `Resolved (`Identifier (id :> Model.Paths_types.Identifier.reference_constructor))
+        | None -> `Root (UnitName.of_string name, `TConstructor)
 
-let lookup_field_ident env name =
+let lookup_field_ident env name : Field.t =
   try
     let id = StringTbl.find name env.fields in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TField)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TField)
 
-let lookup_extension_ident env name =
+let lookup_extension_ident env name : Extension.t =
   try
     let id = StringTbl.find name env.extensions in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_exception_identifier name with
-    | Some id -> Resolved (Identifier id)
-    | None -> Root (name, TExtension)
+    | Some id -> `Resolved (`Identifier (id :> extension_ident))
+    | None -> `Root (UnitName.of_string name, `TExtension)
 
-let lookup_exception_ident env name =
+let lookup_exception_ident env name : Exception.t =
   try
     let id = StringTbl.find name env.exceptions in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_exception_identifier name with
-    | Some id -> Resolved (Identifier id)
-    | None -> Root (name, TException)
+    | Some id -> `Resolved (`Identifier id)
+    | None -> `Root (UnitName.of_string name, `TException)
 
-let lookup_value_ident env name =
+let lookup_value_ident env name : Value.t =
   try
     let id = StringTbl.find name env.values in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TValue)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TValue)
 
-let lookup_class_ident env name =
+let lookup_class_ident env name : Class.t =
   try
     let id = StringTbl.find name env.classes in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TClass)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TClass)
 
-let lookup_class_type_ident env name =
+let lookup_class_type_ident env name : ClassType.t =
   try
     let id = StringTbl.find name env.class_types in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TClassType)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TClassType)
 
-let lookup_method_ident env name =
+let lookup_method_ident env name : Method.t =
   try
     let id = StringTbl.find name env.methods in
-    Resolved (Identifier id)
-  with Not_found -> Root (name, TMethod)
+    `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TMethod)
 
-let lookup_instance_variable_ident env name =
+let lookup_instance_variable_ident env name : InstanceVariable.t =
   try
     let id = StringTbl.find name env.instance_variables in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TInstanceVariable)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TInstanceVariable)
 
-let lookup_label_ident env name =
+let lookup_label_ident env name : Label.t =
   try
     let id = StringTbl.find name env.labels in
-      Resolved (Identifier id)
-  with Not_found -> Root (name, TLabel)
+      `Resolved (`Identifier id)
+  with Not_found -> `Root (UnitName.of_string name, `TLabel)
 
-let lookup_parent_ident env name : Reference.parent =
+let lookup_parent_ident env name : Reference.Parent.t =
   match StringTbl.find name env.parents with
-  | Page _ ->
+  | `Page _ ->
     assert false
-  | Root _ | Module _ | Argument _ | ModuleType _ | Type _ | CoreType _
-  | Class _ | ClassType _ as id ->
-    Resolved (Identifier id)
+  | `Root _ | `Module _ | `Argument _ | `ModuleType _ | `Type _ | `CoreType _
+  | `Class _ | `ClassType _ as id ->
+    `Resolved (`Identifier id)
   | exception Not_found ->
     match core_type_identifier name with
-    | Some id -> Resolved (Identifier id)
-    | None -> Root (name, TUnknown)
+    | Some id -> `Resolved (`Identifier (id :> Identifier.Parent.t))
+    | None -> `Root (UnitName.of_string name, `TUnknown)
 
-let lookup_label_parent_ident env name : Reference.label_parent =
+let lookup_label_parent_ident env name : Reference.LabelParent.t =
   try
     let id = StringTbl.find name env.parents in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_type_identifier name with
-    | Some id -> Resolved (Identifier id)
-    | None -> Root (name, TUnknown)
+    | Some id -> `Resolved (`Identifier (id :> Identifier.LabelParent.t))
+    | None -> `Root (UnitName.of_string name, `TUnknown)
 
 let lookup_element_ident env name =
   try
     let id = StringTbl.find name env.elements in
-      Resolved (Identifier id)
+      `Resolved (`Identifier id)
   with Not_found ->
     match core_type_identifier name with
-    | Some id -> Resolved (Identifier id)
+    | Some id -> `Resolved (`Identifier (id :> Identifier.t))
     | None ->
         match core_constructor_identifier name with
-        | Some id -> Resolved (Identifier id)
+        | Some id -> `Resolved (`Identifier (id :> Identifier.t))
         | None ->
             match core_exception_identifier name with
-            | Some id -> Resolved (Identifier id)
-            | None -> Root (name, TUnknown)
+            | Some id -> `Resolved (`Identifier (id :> Identifier.t))
+            | None -> `Root (UnitName.of_string name, `TUnknown)
 
-let rec lookup_parent env : Reference.parent -> Reference.parent =
+let rec lookup_parent env : Reference.Parent.t -> Reference.Parent.t =
   function
-  | Resolved _ as r -> r
-  | Root (s, TUnknown) -> lookup_parent_ident env s
-  | Root (s, TModule) ->
-    lookup_module_ident env s
-    |> signature_of_module
-    |> parent_of_signature
-  | Root (s,TModuleType) ->
-    lookup_module_type_ident env s
-    |> signature_of_module_type
-    |> parent_of_signature
-  | Root (s,TType) as r ->
-    begin match lookup_type_ident env s with
-    | Type _ | Class _ | ClassType _ | Dot _ ->
+  | `Resolved _ as r -> r
+  | `Root (s, `TUnknown) -> lookup_parent_ident env (UnitName.to_string s)
+  | `Root (s, `TModule) ->
+    (lookup_module_ident env (UnitName.to_string s) :> Reference.Parent.t)
+  | `Root (s, `TModuleType) ->
+    (lookup_module_type_ident env (UnitName.to_string s) :> Reference.Parent.t)
+  | `Root (s, `TType) as r ->
+    begin match lookup_type_ident env (UnitName.to_string s) with
+    | `Type _ | `Class _ | `ClassType _ | `Dot _ ->
       (* can't go from Root to any of these. *)
       assert false
-    | Root _ -> r
-    | Resolved (Identifier (CoreType _ | Type _) | Type _) as resolved ->
-      parent_of_datatype resolved
-    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _) as r
-      -> parent_of_class_signature r
+    | `Root _ -> r
+    | `Resolved (`Identifier (`CoreType _ | `Type _) | `Type _) as resolved ->
+      (resolved :> Reference.Parent.t)
+    | `Resolved (`Identifier (`Class _ | `ClassType _) | `Class _ | `ClassType _) as r
+      -> r
     end
-  | Root (s,TClass) ->
-    lookup_class_ident env s
-    |> class_signature_of_class
-    |> parent_of_class_signature
-  | Root (s,TClassType) ->
-    lookup_class_type_ident env s
-    |> class_signature_of_class_type
-    |> parent_of_class_signature
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Module(r, s) -> Module(lookup_signature env r, s)
-  | ModuleType(r, s) -> ModuleType(lookup_signature env r, s)
-  | Type(r, s) -> Type(lookup_signature env r, s)
-  | Class(r, s) -> Class(lookup_signature env r, s)
-  | ClassType(r, s) -> ClassType(lookup_signature env r, s)
+  | `Root (s, `TClass) ->
+    (lookup_class_ident env (UnitName.to_string s) :> Reference.Parent.t)
+  | `Root (s, `TClassType) ->
+    (lookup_class_type_ident env (UnitName.to_string s) :> Reference.Parent.t)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Module(r, s) -> `Module(lookup_signature env r, s)
+  | `ModuleType(r, s) -> `ModuleType(lookup_signature env r, s)
+  | `Type(r, s) -> `Type(lookup_signature env r, s)
+  | `Class(r, s) -> `Class(lookup_signature env r, s)
+  | `ClassType(r, s) -> `ClassType(lookup_signature env r, s)
 
 and lookup_label_parent env :
-  Reference.label_parent -> Reference.label_parent =
+  Reference.LabelParent.t -> Reference.LabelParent.t =
   function
-  | Resolved _ as r -> r
-  | Root (s, TUnknown) -> lookup_label_parent_ident env s
-  | Root (_, TPage) as r -> r (* there are no local pages. *)
-  | Root (s, TModule) ->
-    lookup_module_ident env s
-    |> signature_of_module
-    |> parent_of_signature
-    |> label_parent_of_parent
-  | Root (s,TModuleType) ->
-    lookup_module_type_ident env s
-    |> signature_of_module_type
-    |> parent_of_signature
-    |> label_parent_of_parent
-  | Root (s,TType) as r ->
-    begin match lookup_type_ident env s with
-    | Type _ | Class _ | ClassType _ | Dot _ ->
+  | `Resolved _ as r -> r
+  | `Root (s, `TUnknown) -> lookup_label_parent_ident env (UnitName.to_string s)
+  | `Root (_, `TPage) as r -> r (* there are no local pages. *)
+  | `Root (s, `TModule) ->
+    (lookup_module_ident env (UnitName.to_string s) :> LabelParent.t)
+  | `Root (s, `TModuleType) ->
+    (lookup_module_type_ident env (UnitName.to_string s) :> LabelParent.t)
+  | `Root (s, `TType) as r ->
+    begin match lookup_type_ident env (UnitName.to_string s) with
+    | `Type _ | `Class _ | `ClassType _ | `Dot _ ->
       (* can't go from Root to any of these. *)
       assert false
-    | Root _ -> r
-    | Resolved (Identifier (CoreType _ | Type _) | Type _) as resolved ->
-      parent_of_datatype resolved
-    | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _) as r
-      -> parent_of_class_signature r
+    | `Root _ -> r
+    | `Resolved (`Identifier (`CoreType _ | `Type _ | `Class _ | `ClassType _) | `Type _ | `Class _ | `ClassType _ ) as resolved ->
+      (resolved :> LabelParent.t)
     end
-    |> label_parent_of_parent
-  | Root (s,TClass) ->
-    lookup_class_ident env s
-    |> class_signature_of_class
-    |> parent_of_class_signature
-    |> label_parent_of_parent
-  | Root (s,TClassType) ->
-    lookup_class_type_ident env s
-    |> class_signature_of_class_type
-    |> parent_of_class_signature
-    |> label_parent_of_parent
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Module(r, s) -> Module(lookup_signature env r, s)
-  | ModuleType(r, s) -> ModuleType(lookup_signature env r, s)
-  | Type(r, s) -> Type(lookup_signature env r, s)
-  | Class(r, s) -> Class(lookup_signature env r, s)
-  | ClassType(r, s) -> ClassType(lookup_signature env r, s)
+  | `Root (s, `TClass) ->
+    (lookup_class_ident env (UnitName.to_string s) :> LabelParent.t)
+  | `Root (s, `TClassType) ->
+    (lookup_class_type_ident env (UnitName.to_string s) :> LabelParent.t)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Module(r, s) -> `Module(lookup_signature env r, s)
+  | `ModuleType(r, s) -> `ModuleType(lookup_signature env r, s)
+  | `Type(r, s) -> `Type(lookup_signature env r, s)
+  | `Class(r, s) -> `Class(lookup_signature env r, s)
+  | `ClassType(r, s) -> `ClassType(lookup_signature env r, s)
 
 and lookup_signature env :
-  Reference.signature -> Reference.signature = function
-  | Resolved _ as r -> r
-  | Root (s, TUnknown)    -> lookup_signature_ident env s
-  | Root (s, TModule)     -> signature_of_module (lookup_module_ident env s)
-  | Root (s, TModuleType) ->
-    signature_of_module_type (lookup_module_type_ident env s)
-  | Dot (p, s) -> Dot (lookup_label_parent env p, s)
-  | Module (p,s) -> Module (lookup_signature env p, s)
-  | ModuleType (p,s) -> ModuleType(lookup_signature env p, s)
+  Reference.Signature.t -> Reference.Signature.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, `TUnknown) -> lookup_signature_ident env (UnitName.to_string s)
+  | `Root (s, `TModule) ->
+    (lookup_module_ident env (UnitName.to_string s) :> Reference.Signature.t)
+  | `Root (s, `TModuleType) ->
+    (lookup_module_type_ident env (UnitName.to_string s) :> Reference.Signature.t)
+  | `Dot (p, s) -> `Dot (lookup_label_parent env p, s)
+  | `Module (p,s) -> `Module (lookup_signature env p, s)
+  | `ModuleType (p,s) -> `ModuleType(lookup_signature env p, s)
 
-let lookup_module env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_module_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Module(p, s) -> Module(lookup_signature env p, s)
+let lookup_module env : Reference.Module.t -> Reference.Module.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_module_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Module(p, s) -> `Module(lookup_signature env p, s)
 
-let lookup_module_type env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_module_type_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | ModuleType(p, s) -> ModuleType(lookup_signature env p, s)
+let lookup_module_type env : Reference.ModuleType.t -> Reference.ModuleType.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_module_type_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `ModuleType(p, s) -> `ModuleType(lookup_signature env p, s)
 
-let lookup_type env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_type_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Type(r, s) -> Type(lookup_signature env r, s)
-  | Class(r, s) -> Class(lookup_signature env r, s)
-  | ClassType(r, s) -> ClassType(lookup_signature env r, s)
+let lookup_type env : Reference.Type.t -> Reference.Type.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_type_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Type(r, s) -> `Type(lookup_signature env r, s)
+  | `Class(r, s) -> `Class(lookup_signature env r, s)
+  | `ClassType(r, s) -> `ClassType(lookup_signature env r, s)
 
-let lookup_datatype env : Reference.datatype -> Reference.datatype = function
-  | Resolved _ as r -> r
-  | Root (s, _) as r -> begin
-      match lookup_type_ident env s with
-      | Type _ | Class _ | ClassType _ | Dot _ ->
+let lookup_datatype env : Reference.DataType.t -> Reference.DataType.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) as r -> begin
+      match lookup_type_ident env (UnitName.to_string s) with
+      | `Type _ | `Class _ | `ClassType _ | `Dot _ ->
         (* can't go from Root to any of these. *)
         assert false
-      | Root _ -> r
-      | Resolved (Identifier (CoreType _ | Type _) | Type _) as resolved ->
+      | `Root _ -> r
+      | `Resolved (`Identifier (`CoreType _ | `Type _) | `Type _) as resolved ->
         resolved
-      | Resolved (Identifier (Class _ | ClassType _) | Class _ | ClassType _) ->
+      | `Resolved (`Identifier (`Class _ | `ClassType _) | `Class _ | `ClassType _) ->
         r
     end
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Type(r, s) -> Type(lookup_signature env r, s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Type(r, s) -> `Type(lookup_signature env r, s)
 
-let lookup_constructor env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_constructor_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Constructor(r, s) -> Constructor(lookup_datatype env r, s)
-  | Extension(r, s) -> Extension(lookup_signature env r, s)
-  | Exception(r, s) -> Exception(lookup_signature env r, s)
+let lookup_constructor env : Reference.Constructor.t -> Reference.Constructor.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_constructor_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Constructor(r, s) -> `Constructor(lookup_datatype env r, s)
+  | `Extension(r, s) -> `Extension(lookup_signature env r, s)
+  | `Exception(r, s) -> `Exception(lookup_signature env r, s)
 
-let lookup_field env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_field_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Field(r, s) -> Field(lookup_parent env r, s)
+let lookup_field env : Reference.Field.t -> Reference.Field.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_field_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Field(r, s) -> `Field(lookup_parent env r, s)
 
-let lookup_extension env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_extension_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Extension(r, s) -> Extension(lookup_signature env r, s)
-  | Exception(r, s) -> Exception(lookup_signature env r, s)
+let lookup_extension env : Reference.Extension.t -> Reference.Extension.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_extension_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Extension(r, s) -> `Extension(lookup_signature env r, s)
+  | `Exception(r, s) -> `Exception(lookup_signature env r, s)
 
-let lookup_exception env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_exception_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Exception(r, s) -> Exception(lookup_signature env r, s)
+let lookup_exception env : Reference.Exception.t -> Reference.Exception.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_exception_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Exception(r, s) -> `Exception(lookup_signature env r, s)
 
-let lookup_value env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_value_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Value(r, s) -> Value(lookup_signature env r, s)
+let lookup_value env : Reference.Value.t -> Reference.Value.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_value_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Value(r, s) -> `Value(lookup_signature env r, s)
 
-let lookup_class env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_class_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Class(r, s) -> Class(lookup_signature env r, s)
+let lookup_class env : Reference.Class.t -> Reference.Class.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_class_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Class(r, s) -> `Class(lookup_signature env r, s)
 
-let lookup_class_type env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_class_type_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Class(r, s) -> Class(lookup_signature env r, s)
-  | ClassType(r, s) -> ClassType(lookup_signature env r, s)
+let lookup_class_type env : Reference.ClassType.t -> Reference.ClassType.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_class_type_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Class(r, s) -> `Class(lookup_signature env r, s)
+  | `ClassType(r, s) -> `ClassType(lookup_signature env r, s)
 
-let lookup_method env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_method_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Method(r, s) -> Method(lookup_class_type env r, s)
+let lookup_method env : Reference.Method.t -> Reference.Method.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_method_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Method(r, s) -> `Method(lookup_class_type env r, s)
 
-let lookup_instance_variable env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_instance_variable_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | InstanceVariable(r, s) -> InstanceVariable(lookup_class_type env r, s)
+let lookup_instance_variable env : Reference.InstanceVariable.t -> Reference.InstanceVariable.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_instance_variable_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `InstanceVariable(r, s) -> `InstanceVariable(lookup_class_type env r, s)
 
-let lookup_label env = function
-  | Resolved _ as r -> r
-  | Root (s, _) -> lookup_label_ident env s
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Label(r, s) -> Label(lookup_label_parent env r, s)
+let lookup_label env : Reference.Label.t -> Reference.Label.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, _) -> lookup_label_ident env (UnitName.to_string s)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Label(r, s) -> `Label(lookup_label_parent env r, s)
 
-let lookup_element env = function
-  | Resolved _ as r -> r
-  | Root (s, TUnknown) -> Reference.any (lookup_element_ident env s)
-  | Root (_, TPage) as r -> r (* there are no local pages. *)
-  | Root (s, TModule) -> Reference.any (lookup_module_ident env s)
-  | Root (s, TModuleType) -> Reference.any (lookup_module_type_ident env s)
-  | Root (s, TType) -> Reference.any (lookup_type_ident env s)
-  | Root (s, TConstructor) -> Reference.any (lookup_constructor_ident env s)
-  | Root (s, TField) -> Reference.any (lookup_field_ident env s)
-  | Root (s, TExtension) -> Reference.any (lookup_extension_ident env s)
-  | Root (s, TException) -> Reference.any (lookup_exception_ident env s)
-  | Root (s, TValue) -> Reference.any (lookup_value_ident env s)
-  | Root (s, TClass) -> Reference.any (lookup_class_ident env s)
-  | Root (s, TClassType) -> Reference.any (lookup_class_type_ident env s)
-  | Root (s, TMethod) -> Reference.any (lookup_method_ident env s)
-  | Root (s, TInstanceVariable) -> Reference.any (lookup_instance_variable_ident env s)
-  | Root (s, TLabel) -> Reference.any (lookup_label_ident env s)
-  | Dot(r, s) -> Dot(lookup_label_parent env r, s)
-  | Module _ as r -> Reference.any @@ lookup_module env r
-  | ModuleType _ as r -> Reference.any @@ lookup_module_type env r
-  | Type _ as r -> Reference.any @@ lookup_type env r
-  | Constructor _ as r -> Reference.any @@ lookup_constructor env r
-  | Field _ as r -> Reference.any @@ lookup_field env r
-  | Extension _ as r -> Reference.any @@ lookup_extension env r
-  | Exception _ as r -> Reference.any @@ lookup_exception env r
-  | Value _ as r -> Reference.any @@ lookup_value env r
-  | Class _ as r -> Reference.any @@ lookup_class env r
-  | ClassType _ as r -> Reference.any @@ lookup_class_type env r
-  | Method _ as r -> Reference.any @@ lookup_method env r
-  | InstanceVariable _ as r -> Reference.any @@ lookup_instance_variable env r
-  | Label _ as r -> Reference.any @@ lookup_label env r
+let lookup_element env : Reference.t -> Reference.t = function
+  | `Resolved _ as r -> r
+  | `Root (s, `TUnknown) -> (lookup_element_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (_, `TPage) as r -> r (* there are no local pages. *)
+  | `Root (s, `TModule) -> (lookup_module_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TModuleType) -> (lookup_module_type_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TType) -> (lookup_type_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TConstructor) -> (lookup_constructor_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TField) -> (lookup_field_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TExtension) -> (lookup_extension_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TException) -> (lookup_exception_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TValue) -> (lookup_value_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TClass) -> (lookup_class_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TClassType) -> (lookup_class_type_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TMethod) -> (lookup_method_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TInstanceVariable) -> (lookup_instance_variable_ident env (UnitName.to_string s) :> Reference.t)
+  | `Root (s, `TLabel) -> (lookup_label_ident env (UnitName.to_string s) :> Reference.t)
+  | `Dot(r, s) -> `Dot(lookup_label_parent env r, s)
+  | `Module _ as r -> (lookup_module env r :> Reference.t)
+  | `ModuleType _ as r -> (lookup_module_type env r :> Reference.t)
+  | `Type _ as r -> (lookup_type env r :> Reference.t)
+  | `Constructor _ as r -> (lookup_constructor env r :> Reference.t)
+  | `Field _ as r -> (lookup_field env r :> Reference.t)
+  | `Extension _ as r -> (lookup_extension env r :> Reference.t)
+  | `Exception _ as r -> (lookup_exception env r :> Reference.t)
+  | `Value _ as r -> (lookup_value env r :> Reference.t)
+  | `Class _ as r -> (lookup_class env r :> Reference.t)
+  | `ClassType _ as r -> (lookup_class_type env r :> Reference.t)
+  | `Method _ as r -> (lookup_method env r :> Reference.t)
+  | `InstanceVariable _ as r -> (lookup_instance_variable env r :> Reference.t)
+  | `Label _ as r -> (lookup_label env r :> Reference.t)
 
 
 let lookup_section_title env lbl =
   match lbl with
-  | Identifier id ->
+  | `Identifier id ->
     let lbl = Identifier.name id in
     begin match StringTbl.find lbl env.titles with
     | txt -> Some txt

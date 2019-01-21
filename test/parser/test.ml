@@ -1132,7 +1132,7 @@ let () =
             digest = String.make 16 '\000';
           }
           in
-          Model.Paths.Identifier.Page (root, dummy_filename)
+          `Page (root, Model.Names.PageName.of_string dummy_filename)
         in
 
         let location =

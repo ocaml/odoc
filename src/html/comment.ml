@@ -19,6 +19,8 @@
 module Comment = Model.Comment
 module Html = Tyxml.Html
 
+open Model.Names
+
 type flow = Html_types.flow5_without_header_footer
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
@@ -30,60 +32,61 @@ module Reference = struct
 
   open Model.Paths
 
-  let rec render_resolved : type a. a Reference.Resolved.t -> string =
+  let rec render_resolved : Reference.Resolved.t -> string =
     fun r ->
       let open Reference.Resolved in
       match r with
-      | Identifier id -> Identifier.name id
-      | SubstAlias(_, r) -> render_resolved r
-      | Module (r, s) -> render_resolved r ^ "." ^ s
-      | Canonical (_, Reference.Resolved r) -> render_resolved r
-      | Canonical (p, _) -> render_resolved p
-      | ModuleType (r, s) -> render_resolved r ^ "." ^ s
-      | Type (r, s) -> render_resolved r ^ "." ^ s
-      | Constructor (r, s) -> render_resolved r ^ "." ^ s
-      | Field (r, s) -> render_resolved r ^ "." ^ s
-      | Extension (r, s) -> render_resolved r ^ "." ^ s
-      | Exception (r, s) -> render_resolved r ^ "." ^ s
-      | Value (r, s) -> render_resolved r ^ "." ^ s
-      | Class (r, s) -> render_resolved r ^ "." ^ s
-      | ClassType (r, s) -> render_resolved r ^ "." ^ s
-      | Method (r, s) ->
+      | `Identifier id -> Identifier.name id
+      | `SubstAlias(_, r) -> render_resolved (r :> t)
+      | `Module (r, s) -> render_resolved (r :> t) ^ "." ^ (ModuleName.to_string s)
+      | `Canonical (_, `Resolved r) -> render_resolved (r :> t)
+      | `Canonical (p, _) -> render_resolved (p :> t)
+      | `ModuleType (r, s) -> render_resolved (r :> t) ^ "." ^ (ModuleTypeName.to_string s)
+      | `Type (r, s) -> render_resolved (r :> t) ^ "." ^ (TypeName.to_string s)
+      | `Constructor (r, s) -> render_resolved (r :> t) ^ "." ^ (ConstructorName.to_string s)
+      | `Field (r, s) -> render_resolved (r :> t) ^ "." ^ (FieldName.to_string s)
+      | `Extension (r, s) -> render_resolved (r :> t) ^ "." ^ (ExtensionName.to_string s)
+      | `Exception (r, s) -> render_resolved (r :> t) ^ "." ^ (ExceptionName.to_string s)
+      | `Value (r, s) -> render_resolved (r :> t) ^ "." ^ (ValueName.to_string s)
+      | `Class (r, s) -> render_resolved (r :> t) ^ "." ^ (ClassName.to_string s)
+      | `ClassType (r, s) -> render_resolved (r :> t) ^ "." ^ (ClassTypeName.to_string s)
+      | `Method (r, s) ->
         (* CR trefis: do we really want to print anything more than [s] here?  *)
-        render_resolved r ^ "." ^ s
-      | InstanceVariable (r, s) ->
+        render_resolved (r :> t) ^ "." ^ (MethodName.to_string s)
+      | `InstanceVariable (r, s) ->
         (* CR trefis: the following makes no sense to me... *)
-        render_resolved r ^ "." ^ s
-      | Label (r, s) -> render_resolved r ^ ":" ^ s
+        render_resolved (r :> t) ^ "." ^ (InstanceVariableName.to_string s)
+      | `Label (r, s) -> render_resolved (r :> t) ^ ":" ^ (LabelName.to_string s)
 
-  let rec ref_to_string : type a. a Reference.t -> string = function
-    | Reference.Root (s, _) -> s
-    | Reference.Dot (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Module (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.ModuleType (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Type (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Constructor (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Field (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Extension (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Exception (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Value (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Class (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.ClassType (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Method (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.InstanceVariable (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Label (parent, s) -> ref_to_string parent ^ "." ^ s
-    | Reference.Resolved r -> render_resolved r
+  let rec ref_to_string : Reference.t -> string =
+    let open Reference in
+    function
+    | `Root (s, _) -> UnitName.to_string s
+    | `Dot (parent, s) -> ref_to_string (parent :> t) ^ "." ^ s
+    | `Module (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ModuleName.to_string s)
+    | `ModuleType (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ModuleTypeName.to_string s)
+    | `Type (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (TypeName.to_string s)
+    | `Constructor (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ConstructorName.to_string s)
+    | `Field (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (FieldName.to_string s)
+    | `Extension (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ExtensionName.to_string s)
+    | `Exception (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ExceptionName.to_string s)
+    | `Value (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ValueName.to_string s)
+    | `Class (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ClassName.to_string s)
+    | `ClassType (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ClassTypeName.to_string s)
+    | `Method (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (MethodName.to_string s)
+    | `InstanceVariable (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (InstanceVariableName.to_string s)
+    | `Label (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (LabelName.to_string s)
+    | `Resolved r -> render_resolved r
 
 
   (* This is the entry point. stop_before is false on entry, true on recursive
      call. *)
   let rec to_html
-      : type a.
-        ?text:(non_link_phrasing Html.elt) ->
+      : ?text:(non_link_phrasing Html.elt) ->
         ?xref_base_uri:string ->
         stop_before:bool ->
-        a Reference.t ->
-          phrasing Html.elt =
+        Reference.t ->
+        phrasing Html.elt =
 
     fun ?text ?xref_base_uri ~stop_before ref ->
       let span' (txt : phrasing Html.elt list) : phrasing Html.elt =
@@ -94,40 +97,40 @@ module Reference = struct
       in
       let open Reference in
       match ref with
-      | Root (s, _) ->
+      | `Root (s, _) ->
         begin match text with
-        | None -> Html.code [Html.txt s]
+        | None -> Html.code [Html.txt (Model.Names.UnitName.to_string s)]
         | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
         end
-      | Dot (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Module (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | ModuleType (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Type (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Constructor (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Field (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Extension (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Exception (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Value (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Class (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | ClassType (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Method (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | InstanceVariable (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Label (parent, s) ->
-        unresolved_parts_to_html ?xref_base_uri ?text span' parent s
-      | Resolved r ->
+      | `Dot (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) s
+      | `Module (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ModuleName.to_string s)
+      | `ModuleType (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ModuleTypeName.to_string s)
+      | `Type (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (TypeName.to_string s)
+      | `Constructor (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ConstructorName.to_string s)
+      | `Field (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (FieldName.to_string s)
+      | `Extension (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ExtensionName.to_string s)
+      | `Exception (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ExceptionName.to_string s)
+      | `Value (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ValueName.to_string s)
+      | `Class (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ClassName.to_string s)
+      | `ClassType (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (ClassTypeName.to_string s)
+      | `Method (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (MethodName.to_string s)
+      | `InstanceVariable (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (InstanceVariableName.to_string s)
+      | `Label (parent, s) ->
+        unresolved_parts_to_html ?xref_base_uri ?text span' (parent :> t) (LabelName.to_string s)
+      | `Resolved r ->
         (* IDENTIFIER MUST BE RENAMED TO DEFINITION. *)
         let id = Reference.Resolved.identifier r in
         let txt : non_link_phrasing Html.elt =
@@ -146,11 +149,10 @@ module Reference = struct
         end
 
   and unresolved_parts_to_html
-      : type a.
-        ?text:(non_link_phrasing Html.elt) ->
+      : ?text:(non_link_phrasing Html.elt) ->
         ?xref_base_uri:string ->
         ((phrasing Html.elt list) -> (phrasing Html.elt)) ->
-        a Reference.t ->
+        Reference.t ->
         string ->
           (phrasing Html.elt) =
     fun ?text ?xref_base_uri span' parent s ->
@@ -277,7 +279,7 @@ let rec nestable_block_element
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.txt code]]
   | `Verbatim s -> Html.pre [Html.txt s]
   | `Modules ms ->
-    let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) ms in
+    let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) (ms :> Model.Paths.Reference.t list)  in
     let items = (items :> (Html_types.li_content Html.elt) list) in
     let items = List.map (fun e -> Html.li [e]) items in
     Html.ul items
@@ -369,17 +371,17 @@ let block_element
   | `Heading (level, label, content) ->
     (* TODO Simplify the id/label formatting. *)
     let attributes =
-      let Model.Paths.Identifier.Label (_, label) = label in
-      [Html.a_id label]
+      let `Label (_, label) = label in
+      [Html.a_id (Model.Names.LabelName.to_string label)]
     in
     let a = attributes in
 
     let content =
       (non_link_inline_element_list content :> (phrasing Html.elt) list) in
     let content =
-      let Model.Paths.Identifier.Label (_, label) = label in
+      let `Label (_, label) = label in
       let anchor =
-        Html.a ~a:[Html.a_href ("#" ^ label); Html.a_class ["anchor"]] [] in
+        Html.a ~a:[Html.a_href ("#" ^ (Model.Names.LabelName.to_string label)); Html.a_class ["anchor"]] [] in
       anchor::content
     in
 

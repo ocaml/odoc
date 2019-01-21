@@ -8,37 +8,37 @@ let deprecated_reference_kind warnings location kind replacement =
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
 let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s
-    : (_ Paths.Reference.tag) option =
+    : (Model.Paths_types.Reference.tag_any) option =
   let d = deprecated_reference_kind in
   match s with
-  | Some "module" -> Some TModule
-  | Some "modtype" -> d w loc "modtype" "module-type"; Some TModuleType
-  | Some "class" -> Some TClass
-  | Some "classtype" -> d w loc "classtype" "class-type"; Some TClassType
-  | Some "val" -> Some TValue
-  | Some "type" -> Some TType
-  | Some "exception" -> Some TException
+  | Some "module" -> Some `TModule
+  | Some "modtype" -> d w loc "modtype" "module-type"; Some `TModuleType
+  | Some "class" -> Some `TClass
+  | Some "classtype" -> d w loc "classtype" "class-type"; Some `TClassType
+  | Some "val" -> Some `TValue
+  | Some "type" -> Some `TType
+  | Some "exception" -> Some `TException
   | Some "attribute" -> None
-  | Some "method" -> Some TMethod
-  | Some "section" -> Some TLabel
-  | Some "const" -> d w loc "const" "constructor"; Some TConstructor
-  | Some "recfield" -> d w loc "recfield" "field"; Some TField
+  | Some "method" -> Some `TMethod
+  | Some "section" -> Some `TLabel
+  | Some "const" -> d w loc "const" "constructor"; Some `TConstructor
+  | Some "recfield" -> d w loc "recfield" "field"; Some `TField
   | _ -> None
 
 let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
-    : (_ Paths.Reference.tag) option =
+    : (Model.Paths_types.Reference.tag_any) option =
   let d = deprecated_reference_kind in
   match s with
-  | Some "class-type" -> Some TClassType
-  | Some "constructor" -> Some TConstructor
-  | Some "exn" -> d w loc "exn" "exception"; Some TException
-  | Some "extension" -> Some TExtension
-  | Some "field" -> Some TField
-  | Some "instance-variable" -> Some TInstanceVariable
-  | Some "label" -> d w loc "label" "section"; Some TLabel
-  | Some "module-type" -> Some TModuleType
-  | Some "page" -> Some TPage
-  | Some "value" -> d w loc "value" "val"; Some TValue
+  | Some "class-type" -> Some `TClassType
+  | Some "constructor" -> Some `TConstructor
+  | Some "exn" -> d w loc "exn" "exception"; Some `TException
+  | Some "extension" -> Some `TExtension
+  | Some "field" -> Some `TField
+  | Some "instance-variable" -> Some `TInstanceVariable
+  | Some "label" -> d w loc "label" "section"; Some `TLabel
+  | Some "module-type" -> Some `TModuleType
+  | Some "page" -> Some `TPage
+  | Some "value" -> d w loc "value" "val"; Some `TValue
   | _ -> None
 
 
@@ -52,9 +52,9 @@ let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
 
    A secondary reason to delay parsing, and store strings in the token list, is
    that we need the strings for user-friendly error reporting. *)
-let match_reference_kind warnings location s : _ Paths.Reference.tag =
+let match_reference_kind warnings location s : Model.Paths_types.Reference.tag_any =
   match s with
-  | None -> TUnknown
+  | None -> `TUnknown
   | Some s as wrapped ->
     let result =
       match match_ocamldoc_reference_kind warnings location wrapped with
@@ -149,35 +149,36 @@ let expected allowed location =
   in
   Parse_error.expected allowed location
 
-let parse warnings whole_reference_location s =
+let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Result.result =
   let open Paths.Reference in
+  let open Model.Names in
 
-  let rec signature (kind, identifier, location) tokens =
+  let rec signature (kind, identifier, location) tokens : Signature.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
-      | TUnknown | TModule | TModuleType as kind -> Root (identifier, kind)
+      | `TUnknown | `TModule | `TModuleType as kind -> `Root (UnitName.of_string identifier, kind)
       | _ ->
         expected ["module"; "module-type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
-      | TUnknown ->
-        Dot (label_parent_of_parent (parent next_token tokens), identifier)
-      | TModule -> Module (signature next_token tokens, identifier)
-      | TModuleType -> ModuleType (signature next_token tokens, identifier)
+      | `TUnknown ->
+        `Dot ((parent next_token tokens :> LabelParent.t), identifier)
+      | `TModule -> `Module (signature next_token tokens, ModuleName.of_string identifier)
+      | `TModuleType -> `ModuleType (signature next_token tokens, ModuleTypeName.of_string identifier)
       | _ ->
         expected ["module"; "module-type"] location |> Error.raise_exception
       end
 
-  and parent (kind, identifier, location) tokens =
+  and parent (kind, identifier, location) tokens : Parent.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
-      | TUnknown | TModule | TModuleType | TType | TClass
-      | TClassType as kind -> Root (identifier, kind)
+      | `TUnknown | `TModule | `TModuleType | `TType | `TClass
+      | `TClassType as kind -> `Root (UnitName.of_string identifier, kind)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"] location
@@ -185,13 +186,13 @@ let parse warnings whole_reference_location s =
       end
     | next_token::tokens ->
       begin match kind with
-      | TUnknown ->
-        Dot (label_parent_of_parent (parent next_token tokens), identifier)
-      | TModule -> Module (signature next_token tokens, identifier)
-      | TModuleType -> ModuleType (signature next_token tokens, identifier)
-      | TType -> Type (signature next_token tokens, identifier)
-      | TClass -> Class (signature next_token tokens, identifier)
-      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | `TUnknown ->
+        `Dot ((parent next_token tokens :> LabelParent.t), identifier)
+      | `TModule -> `Module (signature next_token tokens, ModuleName.of_string identifier)
+      | `TModuleType -> `ModuleType (signature next_token tokens, ModuleTypeName.of_string identifier)
+      | `TType -> `Type (signature next_token tokens, TypeName.of_string identifier)
+      | `TClass -> `Class (signature next_token tokens, ClassName.of_string identifier)
+      | `TClassType -> `ClassType (signature next_token tokens, ClassTypeName.of_string identifier)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"] location
@@ -200,48 +201,48 @@ let parse warnings whole_reference_location s =
 
   in
 
-  let class_signature (kind, identifier, location) tokens =
+  let class_signature (kind, identifier, location) tokens : ClassSignature.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
-      | TUnknown | TClass | TClassType as kind -> Root (identifier, kind)
+      | `TUnknown | `TClass | `TClassType as kind -> `Root (UnitName.of_string identifier, kind)
       | _ -> expected ["class"; "class-type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
-      | TUnknown ->
-        Dot (label_parent_of_parent (parent next_token tokens), identifier)
-      | TClass -> Class (signature next_token tokens, identifier)
-      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | `TUnknown ->
+        `Dot ((parent next_token tokens :> LabelParent.t), identifier)
+      | `TClass -> `Class (signature next_token tokens, ClassName.of_string identifier)
+      | `TClassType -> `ClassType (signature next_token tokens, ClassTypeName.of_string identifier)
       | _ -> expected ["class"; "class-type"] location |> Error.raise_exception
       end
   in
 
-  let datatype (kind, identifier, location) tokens =
+  let datatype (kind, identifier, location) tokens : DataType.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
-      | TUnknown | TType as kind -> Root (identifier, kind)
+      | `TUnknown | `TType as kind -> `Root (UnitName.of_string identifier, kind)
       | _ -> expected ["type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
       begin match kind with
-      | TUnknown ->
-        Dot (label_parent_of_parent (parent next_token tokens), identifier)
-      | TType -> Type (signature next_token tokens, identifier)
+      | `TUnknown ->
+        `Dot ((parent next_token tokens :> LabelParent.t), identifier)
+      | `TType -> `Type (signature next_token tokens, TypeName.of_string identifier)
       | _ -> expected ["type"] location |> Error.raise_exception
       end
   in
 
-  let rec label_parent (kind, identifier, location) tokens =
+  let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
     | [] ->
       begin match kind with
-      | TUnknown | TModule | TModuleType | TType | TClass | TClassType
-      | TPage as kind -> Root (identifier, kind)
+      | `TUnknown | `TModule | `TModuleType | `TType | `TClass | `TClassType
+      | `TPage as kind -> `Root (UnitName.of_string identifier, kind)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"; "page"]
@@ -250,12 +251,12 @@ let parse warnings whole_reference_location s =
       end
     | next_token::tokens ->
       begin match kind with
-      | TUnknown -> Dot (label_parent next_token tokens, identifier)
-      | TModule -> Module (signature next_token tokens, identifier)
-      | TModuleType -> ModuleType (signature next_token tokens, identifier)
-      | TType -> Type (signature next_token tokens, identifier)
-      | TClass -> Class (signature next_token tokens, identifier)
-      | TClassType -> ClassType (signature next_token tokens, identifier)
+      | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
+      | `TModule -> `Module (signature next_token tokens, ModuleName.of_string identifier)
+      | `TModuleType -> `ModuleType (signature next_token tokens, ModuleTypeName.of_string identifier)
+      | `TType -> `Type (signature next_token tokens, TypeName.of_string identifier)
+      | `TClass -> `Class (signature next_token tokens, ClassName.of_string identifier)
+      | `TClassType -> `ClassType (signature next_token tokens, ClassTypeName.of_string identifier)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"] location
@@ -274,7 +275,7 @@ let parse warnings whole_reference_location s =
             warnings old_kind_location (Some old_kind_string)
         in
         match new_kind with
-        | TUnknown -> old_kind
+        | `TUnknown -> old_kind
         | _ ->
           if old_kind <> new_kind then begin
             let new_kind_string =
@@ -290,25 +291,25 @@ let parse warnings whole_reference_location s =
     in
 
     match tokens with
-    | [] -> Root (identifier, kind)
+    | [] -> `Root (UnitName.of_string identifier, kind)
     | next_token::tokens ->
       match kind with
-      | TUnknown -> Dot (label_parent next_token tokens, identifier)
-      | TModule -> Module (signature next_token tokens, identifier)
-      | TModuleType -> ModuleType (signature next_token tokens, identifier)
-      | TType -> Type (signature next_token tokens, identifier)
-      | TConstructor -> Constructor (datatype next_token tokens, identifier)
-      | TField -> Field (parent next_token tokens, identifier)
-      | TExtension -> Extension (signature next_token tokens, identifier)
-      | TException -> Exception (signature next_token tokens, identifier)
-      | TValue -> Value (signature next_token tokens, identifier)
-      | TClass -> Class (signature next_token tokens, identifier)
-      | TClassType -> ClassType (signature next_token tokens, identifier)
-      | TMethod -> Method (class_signature next_token tokens, identifier)
-      | TInstanceVariable ->
-        InstanceVariable (class_signature next_token tokens, identifier)
-      | TLabel -> Label (label_parent next_token tokens, identifier)
-      | TPage ->
+      | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
+      | `TModule -> `Module (signature next_token tokens, ModuleName.of_string identifier)
+      | `TModuleType -> `ModuleType (signature next_token tokens, ModuleTypeName.of_string identifier)
+      | `TType -> `Type (signature next_token tokens, TypeName.of_string identifier)
+      | `TConstructor -> `Constructor (datatype next_token tokens, ConstructorName.of_string identifier)
+      | `TField -> `Field (parent next_token tokens, FieldName.of_string identifier)
+      | `TExtension -> `Extension (signature next_token tokens, ExtensionName.of_string identifier)
+      | `TException -> `Exception (signature next_token tokens, ExceptionName.of_string identifier)
+      | `TValue -> `Value (signature next_token tokens, ValueName.of_string identifier)
+      | `TClass -> `Class (signature next_token tokens, ClassName.of_string identifier)
+      | `TClassType -> `ClassType (signature next_token tokens, ClassTypeName.of_string identifier)
+      | `TMethod -> `Method (class_signature next_token tokens, MethodName.of_string identifier)
+      | `TInstanceVariable ->
+        `InstanceVariable (class_signature next_token tokens, InstanceVariableName.of_string identifier)
+      | `TLabel -> `Label (label_parent next_token tokens, LabelName.of_string identifier)
+      | `TPage ->
         let suggestion =
           Printf.sprintf "'page-%s' should be first." identifier in
         Parse_error.not_allowed
@@ -344,7 +345,7 @@ let parse warnings whole_reference_location s =
 
 let read_path_longident location s =
   let open Paths.Path in
-  let rec loop : 'k. string -> int -> ([< kind > `Module ] as 'k) t option =
+  let rec loop : string -> int -> Module.t option =
     fun s pos ->
       try
         let idx = String.rindex_from s pos '.' in
@@ -353,22 +354,21 @@ let read_path_longident location s =
         else
           match loop s (idx - 1) with
           | None -> None
-          | Some parent -> Some (Dot(parent, name))
+          | Some parent -> Some (`Dot(parent, name))
       with Not_found ->
         let name = String.sub s 0 (pos + 1) in
         if String.length name = 0 then None
-        else Some (Root name)
+        else Some (`Root name)
   in
   match loop s (String.length s - 1) with
   | Some r -> Result.Ok r
   | None -> Result.Error (Parse_error.expected "a valid path" location)
 
-let read_mod_longident warnings location lid =
-  let open Paths.Reference in
+let read_mod_longident warnings location lid : (Paths.Reference.Module.t, Error.t) result =
   let (>>=) = Rresult.(>>=) in
 
   parse warnings location lid >>= function
-  | Root (_, (TUnknown | TModule))
-  | Dot (_, _)
-  | Module (_, _) as r -> Result.Ok r
+  | `Root (_, (`TUnknown | `TModule))
+  | `Dot (_, _)
+  | `Module (_, _) as r -> Result.Ok r
   | _ -> Result.Error (Parse_error.expected "a reference to a module" location)

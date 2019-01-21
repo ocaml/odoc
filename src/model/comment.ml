@@ -38,7 +38,7 @@ type link_content = (non_link_inline_element with_location) list
 type inline_element = [
   | leaf_inline_element
   | `Styled of style * (inline_element with_location) list
-  | `Reference of Reference.any * link_content
+  | `Reference of Reference.t * link_content
   | `Link of string * link_content
 ]
 
@@ -46,7 +46,7 @@ type nestable_block_element = [
   | `Paragraph of (inline_element with_location) list
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Reference.module_ list
+  | `Modules of Reference.Module.t list
   | `List of
     [ `Unordered | `Ordered ] *
     ((nestable_block_element with_location) list) list
@@ -65,7 +65,7 @@ type tag = [
   | `Since of string
   | `Before of string * (nestable_block_element with_location) list
   | `Version of string
-  | `Canonical of Path.module_ * Reference.module_
+  | `Canonical of Path.Module.t * Reference.Module.t
   | `Inline
   | `Open
   | `Closed
@@ -82,7 +82,7 @@ type heading_level = [
 
 type block_element = [
   | nestable_block_element
-  | `Heading of heading_level * Identifier.label * link_content
+  | `Heading of heading_level * Identifier.Label.t * link_content
   | `Tag of tag
 ]
 
