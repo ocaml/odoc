@@ -35,22 +35,30 @@ let rec unit ~package (t : Model.Lang.Compilation_unit.t) : string list =
   name :: rest
 
 and signature ~prefix (t : Model.Lang.Signature.t) =
-  List.concat (
-    List.map t ~f:(function
-      | Model.Lang.Signature.Module (_, md) -> module_ ~prefix md
-      | ModuleType mty -> module_type ~prefix mty
-      | Type _ -> []
-      | TypExt _ -> []
-      | Exception _ -> []
-      | Value _ -> []
-      | External _ -> []
-      | Class _ -> []
-      | ClassType _ -> []
-      | Include incl -> include_ ~prefix incl
-      | Comment (`Docs _) -> []
-      | Comment `Stop -> []
-    )
-  )
+  let rec add_items ~don't acc = function
+  | [] -> List.concat (List.rev acc)
+  | i :: is ->
+      match i with
+      | Model.Lang.Signature.Comment `Stop ->
+          add_items ~don't:(not don't) acc is
+      | _ when don't ->
+          add_items ~don't acc is
+      | Module (_, md) ->
+          add_items ~don't (module_ ~prefix md :: acc) is
+      | ModuleType mty ->
+          add_items ~don't (module_type ~prefix mty :: acc) is
+      | Include incl ->
+          add_items ~don't (include_ ~prefix incl :: acc) is
+      | Type _
+      | TypExt _
+      | Exception _
+      | Value _
+      | External _
+      | Class _
+      | ClassType _
+      | Comment (`Docs _) -> add_items ~don't acc is
+  in
+  add_items ~don't:false [] t
 
 and functor_argument ~prefix arg =
   let open Model.Lang.FunctorArgument in
