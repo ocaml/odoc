@@ -34,7 +34,7 @@ let save oc t =
 
 let read file =
   let file = Fs.File.to_string file in
-  let ic = open_in file in
+  let ic = open_in_bin file in
   let root = load file ic in
   close_in ic;
   root
