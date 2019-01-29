@@ -32,7 +32,7 @@ let save file t =
       Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
   Fs.Directory.mkdir_p dir;
-  let oc = open_out (Fs.File.to_string file) in
+  let oc = open_out_bin (Fs.File.to_string file) in
   Root.save oc (root t);
   Marshal.to_channel oc t [];
   close_out oc
@@ -45,7 +45,7 @@ let load =
     | page -> page
     | exception Not_found ->
       try
-        let ic = open_in file in
+        let ic = open_in_bin file in
         let _root = Root.load file ic in
         let res = Marshal.from_channel ic in
         close_in ic;
