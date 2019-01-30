@@ -64,18 +64,21 @@ end = struct
   let elements t = Model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
 end
 
-let deps_of_unit ~deps input =
-  let odoctree = Compilation_unit.load input in
-  List.iter odoctree.Model.Lang.Compilation_unit.imports ~f:(fun import ->
-    match import with
-    | Model.Lang.Compilation_unit.Import.Resolved root -> Hash_set.add deps root
-    | Model.Lang.Compilation_unit.Import.Unresolved _  -> ()
-  )
+let deps_of_odoc_file ~deps input = match (Root.read input).file with
+| Page _ -> () (* XXX something should certainly be done here *)
+| Compilation_unit _ ->
+    let odoctree = Compilation_unit.load input in
+    List.iter odoctree.Model.Lang.Compilation_unit.imports ~f:(fun import ->
+        match import with
+        | Model.Lang.Compilation_unit.Import.Unresolved _  -> ()
+        | Model.Lang.Compilation_unit.Import.Resolved root ->
+            Hash_set.add deps root
+      )
 
 let for_html_step pkg_dir =
   let deps = Hash_set.create () in
   List.iter (Fs.Directory.ls pkg_dir) ~f:(fun file ->
     if Fs.File.has_ext "odoc" file then
-      deps_of_unit ~deps file
+      deps_of_odoc_file ~deps file
   );
   Hash_set.elements deps
