@@ -357,7 +357,7 @@ module Targets = struct
       let env = Env.create ~important_digests:false ~directories in
       let odoc_file = Fs.File.of_string odoc_file in
       let targets =
-        Targets.unit ~env ~output:output_dir odoc_file
+        Targets.of_odoc_file ~env ~output:output_dir odoc_file
         |> List.map ~f:Fs.File.to_string
       in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets)
