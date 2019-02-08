@@ -49,6 +49,17 @@ To make edits to the HTML generation, run the following commands:
     opam install --deps-only odoc
     ```
 
+    Also make sure to install a recent version of
+    [tidy](http://www.html-tidy.org/) (used for HTML validity testing):
+
+    ```
+    # On MacOS (should be version 5.6.0 by the date of this writing)
+    brew install tidy-html5
+
+    # Debian / Ubuntu
+    sudo apt-get install tidy
+    ```
+
 2. Make changes to the code. To compile it,
 
     ```
