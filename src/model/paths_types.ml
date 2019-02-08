@@ -330,59 +330,59 @@ end = Resolved_fragment
 module rec Reference :
 sig
 
-  type tag_module = [
+  type tag_only_module = [
     | `TModule
    ]
 
-  type tag_module_type = [
+  type tag_only_module_type = [
     | `TModuleType
   ]
 
-  type tag_type = [
+  type tag_only_type = [
     | `TType
   ]
 
-  type tag_constructor = [
+  type tag_only_constructor = [
     | `TConstructor
   ]
 
-  type tag_field = [
+  type tag_only_field = [
     | `TField
   ]
 
-  type tag_extension = [
+  type tag_only_extension = [
     | `TExtension
   ]
 
-  type tag_exception = [
+  type tag_only_exception = [
     | `TException
   ]
 
-  type tag_value = [
+  type tag_only_value = [
     | `TValue
   ]
 
-  type tag_class = [
+  type tag_only_class = [
     | `TClass
   ]
 
-  type tag_class_type = [
+  type tag_only_class_type = [
     | `TClassType
   ]
 
-  type tag_method = [
+  type tag_only_method = [
     | `TMethod
   ]
 
-  type tag_instance_variable = [
+  type tag_only_instance_variable = [
     | `TInstanceVariable
   ]
 
-  type tag_label = [
+  type tag_only_label = [
     | `TLabel
   ]
 
-  type tag_page = [
+  type tag_only_page = [
     | `TPage
   ]
 
@@ -391,57 +391,57 @@ sig
   ]
 
   type tag_any = [
-    | tag_module
-    | tag_module_type
-    | tag_type
-    | tag_constructor
-    | tag_field
-    | tag_extension
-    | tag_exception
-    | tag_value
-    | tag_class
-    | tag_class_type
-    | tag_method
-    | tag_instance_variable
-    | tag_label
-    | tag_page
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_type
+    | tag_only_constructor
+    | tag_only_field
+    | tag_only_extension
+    | tag_only_exception
+    | tag_only_value 
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_method
+    | tag_only_instance_variable
+    | tag_only_label
+    | tag_only_page
     | tag_unknown
   ]
 
   type tag_signature = [
     | tag_unknown
-    | tag_module
-    | tag_module_type
+    | tag_only_module
+    | tag_only_module_type
   ]
 
   type tag_class_signature = [
     | tag_unknown
-    | tag_class
-    | tag_class_type
+    | tag_only_class
+    | tag_only_class_type
   ]
 
   type tag_datatype = [
     | tag_unknown
-    | tag_type
+    | tag_only_type
   ]
 
   type tag_parent = [
     | tag_unknown
-    | tag_module
-    | tag_module_type
-    | tag_class
-    | tag_class_type
-    | tag_type
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_type
   ]
 
   type tag_label_parent = [
     | tag_unknown
-    | tag_module
-    | tag_module_type
-    | tag_class
-    | tag_class_type
-    | tag_type
-    | tag_page
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_type
+    | tag_only_page
   ]
 
   type signature = [
@@ -489,106 +489,180 @@ sig
     | `Type of signature * TypeName.t
   ]
 
+  type tag_module = [
+    | tag_only_module
+    | tag_unknown
+  ]
+
   type module_ = [
     | `Resolved of Resolved_reference.module_
-    | `Root of UnitName.t * [ tag_module | tag_unknown ]
+    | `Root of UnitName.t * tag_module
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
   ]
 
+  type tag_module_type = [
+    | tag_only_module_type
+    | tag_unknown
+  ]
   type module_type = [
     | `Resolved of Resolved_reference.module_type
-    | `Root of UnitName.t * [tag_module_type | tag_unknown ]
+    | `Root of UnitName.t * tag_module_type
     | `Dot of label_parent * string
     | `ModuleType of signature * ModuleTypeName.t
   ]
 
+  type tag_type = [
+    | tag_only_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_unknown
+  ]
+
   type type_ = [
     | `Resolved of Resolved_reference.type_
-    | `Root of UnitName.t * [ tag_type | tag_class | tag_class_type | tag_unknown ]
+    | `Root of UnitName.t * tag_type
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t
   ]
 
+  type tag_constructor = [
+    | tag_only_constructor
+    | tag_only_extension
+    | tag_only_exception
+    | tag_unknown
+  ]
+
   type constructor = [
     | `Resolved of Resolved_reference.constructor
-    | `Root of UnitName.t * [ tag_constructor | tag_extension | tag_exception | tag_unknown ]
+    | `Root of UnitName.t * tag_constructor
     | `Dot of label_parent * string
     | `Constructor of datatype * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
   ]
 
+  type tag_field = [
+    | tag_only_field
+    | tag_unknown
+  ]
+
   type field = [
     | `Resolved of Resolved_reference.field
-    | `Root of UnitName.t * [ tag_field | tag_unknown ]
+    | `Root of UnitName.t * tag_field
     | `Dot of label_parent * string
     | `Field of parent * FieldName.t
   ]
 
+  type tag_extension = [
+    | tag_only_extension
+    | tag_only_exception
+    | tag_unknown
+  ]
   type extension = [
     | `Resolved of Resolved_reference.extension
-    | `Root of UnitName.t * [ tag_extension | tag_exception | tag_unknown ]
+    | `Root of UnitName.t * tag_extension
     | `Dot of label_parent * string
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
   ]
 
+  type tag_exception = [
+    | tag_only_exception
+    | tag_unknown
+  ]
+
   type exception_ = [
     | `Resolved of Resolved_reference.exception_
-    | `Root of UnitName.t * [ tag_exception | tag_unknown ]
+    | `Root of UnitName.t * tag_exception
     | `Dot of label_parent * string
     | `Exception of signature * ExceptionName.t
   ]
 
+  type tag_value = [
+    | tag_only_value
+    | tag_unknown
+  ]
+
   type value = [
     | `Resolved of Resolved_reference.value
-    | `Root of UnitName.t * [ tag_value | tag_unknown ]
+    | `Root of UnitName.t * tag_value
     | `Dot of label_parent * string
     | `Value of signature * ValueName.t
   ]
 
+  type tag_class = [
+    | tag_only_class
+    | tag_unknown
+  ]
+
   type class_ = [
     | `Resolved of Resolved_reference.class_
-    | `Root of UnitName.t * [ tag_class | tag_unknown ]
+    | `Root of UnitName.t * tag_class
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
   ]
 
+  type tag_class_type = [
+    | tag_only_class
+    | tag_only_class_type
+    | tag_unknown
+  ]
+
   type class_type = [
     | `Resolved of Resolved_reference.class_type
-    | `Root of UnitName.t * [ tag_class | tag_class_type | tag_unknown ]
+    | `Root of UnitName.t * tag_class_type
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
   ]
 
+  type tag_method = [
+    | tag_only_method
+    | tag_unknown
+  ]
+
   type method_ = [
     | `Resolved of Resolved_reference.method_
-    | `Root of UnitName.t * [ tag_method | tag_unknown ]
+    | `Root of UnitName.t * tag_method
     | `Dot of label_parent * string
     | `Method of class_signature * MethodName.t
   ]
 
+  type tag_instance_variable = [
+    | tag_only_instance_variable
+    | tag_unknown
+  ]
+
   type instance_variable = [
     | `Resolved of Resolved_reference.instance_variable
-    | `Root of UnitName.t * [ tag_instance_variable | tag_unknown ]
+    | `Root of UnitName.t * tag_instance_variable
     | `Dot of label_parent * string
     | `InstanceVariable of class_signature * InstanceVariableName.t
   ]
 
+  type tag_label = [
+    | tag_only_label
+    | tag_unknown
+  ]
+
   type label = [
     | `Resolved of Resolved_reference.label
-    | `Root of UnitName.t * [ tag_label | tag_unknown ]
+    | `Root of UnitName.t * tag_label
     | `Dot of label_parent * string
     | `Label of label_parent * LabelName.t
   ]
 
+  type tag_page = [
+    | tag_only_page
+    | tag_unknown
+  ]
+
   type page = [
     | `Resolved of Resolved_reference.page
-    | `Root of UnitName.t * [ tag_page | tag_unknown ]
+    | `Root of UnitName.t * tag_page
     | `Dot of label_parent * string
   ]
 
