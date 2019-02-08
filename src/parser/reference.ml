@@ -364,7 +364,7 @@ let read_path_longident location s =
   | Some r -> Result.Ok r
   | None -> Result.Error (Parse_error.expected "a valid path" location)
 
-let read_mod_longident warnings location lid : (Paths.Reference.Module.t, Error.t) result =
+let read_mod_longident warnings location lid : (Paths.Reference.Module.t, Error.t) Result.result =
   let (>>=) = Rresult.(>>=) in
 
   parse warnings location lid >>= function
