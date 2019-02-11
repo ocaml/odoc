@@ -22,25 +22,13 @@ struct
   ]
 
   type parent = [
-    | `Root of Root.t * UnitName.t
-    | `Module of signature * ModuleName.t
-    | `Argument of signature * int * ArgumentName.t
-    | `ModuleType of signature * ModuleTypeName.t
-    | `Type of signature * TypeName.t
-    | `CoreType of TypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | signature
+    | datatype
+    | class_signature
   ]
 
   type label_parent = [
-    | `Root of Root.t * UnitName.t
-    | `Module of signature * ModuleName.t
-    | `Argument of signature * int * ArgumentName.t
-    | `ModuleType of signature * ModuleTypeName.t
-    | `Type of signature * TypeName.t
-    | `CoreType of TypeName.t
-    | `Class of signature * ClassName.t
-    | `ClassType of signature * ClassTypeName.t
+    | parent
     | `Page of Root.t * PageName.t
   ]
 
