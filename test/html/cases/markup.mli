@@ -148,6 +148,13 @@ v}
     %}
 
 
+    {1 Modules}
+
+    {!modules: }
+    {!modules: X}
+    {!modules: X Y Z}
+
+
     {1 Tags}
 
     Each comment can end with zero or more tags. Here are some examples:
