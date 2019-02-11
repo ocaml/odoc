@@ -97,7 +97,12 @@ let standalone parent
         ("text" | "ocaml.text"); loc = _loc}, payload) -> begin
       match load_payload payload with
       | Some ("/*", _loc) -> Some `Stop
-      | Some (str, loc) -> Some (read_string parent loc str)
+      | Some (str, loc) ->
+        let loc' =
+          { loc with
+            loc_start = { loc.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 } }
+        in
+        Some (read_string parent loc' str)
       | None ->
         (* TODO *)
         assert false
