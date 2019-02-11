@@ -238,28 +238,25 @@ sig
     | `ModuleType of module_ * ModuleTypeName.t
   ]
 
-  type type_ = [
-    | `Identifier of Identifier.path_type
-    | `Type of module_ * TypeName.t
-    | `Class of module_ * ClassName.t
-    | `ClassType of module_ * ClassTypeName.t
-  ]
-
   type type_no_id = [
     | `Type of module_ * TypeName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t
   ]
 
-  type class_type = [
-    | `Identifier of Identifier.path_class_type
-    | `Class of module_ * ClassName.t
-    | `ClassType of module_ * ClassTypeName.t
+  type type_ = [
+    | `Identifier of Identifier.path_type
+    | type_no_id
   ]
 
   type class_type_no_id = [
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t
+  ]
+
+  type class_type = [
+    | `Identifier of Identifier.path_class_type
+    | class_type_no_id
   ]
 
   type any = [
@@ -709,7 +706,7 @@ sig
     | `Canonical of module_ * Reference.module_
   ]
 
-  (* Signature is [ module | datatype] *)
+  (* Signature is [ module | moduletype ] *)
   and signature = [
     | `Identifier of Identifier.signature
 

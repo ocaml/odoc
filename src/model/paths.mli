@@ -19,33 +19,6 @@
 open Names
 
 module Identifier : sig
-
-  (** {2 Explicit coercions} *)
-
-  (*
-  val signature_of_module : module_ -> signature
-
-  val signature_of_module_type : module_type -> signature
-
-  val class_signature_of_class : class_ -> class_signature
-
-  val class_signature_of_class_type : class_type -> class_signature
-
-  val datatype_of_type : type_ -> datatype
-
-  val parent_of_signature : signature -> parent
-
-  val parent_of_class_signature : class_signature -> parent
-
-  val parent_of_datatype : datatype -> parent
-
-  val label_parent_of_parent : parent -> label_parent
-
-  val label_parent_of_page : page -> label_parent
-
-  val any : 'kind t -> any
-*)
-
   (** {2 Generic operations} *)
 
   module Signature : sig

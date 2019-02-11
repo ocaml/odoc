@@ -28,9 +28,6 @@ let pair_map f g p =
     if a != a' || b != b' then (a', b')
     else p
 
-(* It would be much nicer not to have to have these functions *)
-
-
 
 class virtual identifier = object (self)
 

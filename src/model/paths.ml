@@ -438,6 +438,8 @@ module Identifier = struct
 
   let signature_of_module m = (m : Module.t :> Signature.t)
 
+  (* It would be much nicer not to have to have these functions *)
+
   let page_of_t : t -> Page.t = function
     | #Page.t as result -> result
     | _ -> assert false
