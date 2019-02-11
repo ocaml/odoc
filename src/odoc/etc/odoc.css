@@ -579,7 +579,7 @@ h1+.modules, h1+.sel {
 
 .toc:before {
   display: block;
-  content: "Topics";
+  content: "Contents";
   text-transform: uppercase;
   font-size: 1em;
   margin: 1.414em 0 0.5em;
