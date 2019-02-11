@@ -280,7 +280,7 @@ let rec nestable_block_element
     let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) ms in
     let items = (items :> (Html_types.li_content Html.elt) list) in
     let items = List.map (fun e -> Html.li [e]) items in
-    Html.ul items
+    Html.ul ~a:[Html.a_class ["modules"]] items
   | `List (kind, items) ->
     let items =
       items
