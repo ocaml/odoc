@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Paths
 open Lang
+open Names
 
 let predefined_location =
   let point =
@@ -59,48 +59,46 @@ let invariant_equation =
   let constraints = [] in
     {params; private_; manifest; constraints}
 
-open Identifier
-
-let bool_identifier = CoreType "bool"
-let int_identifier = CoreType "int"
-let char_identifier = CoreType "char"
-let bytes_identifier = CoreType "bytes"
-let string_identifier = CoreType "string"
-let float_identifier = CoreType "float"
-let unit_identifier = CoreType "unit"
-let exn_identifier = CoreType "exn"
-let array_identifier = CoreType "array"
-let list_identifier = CoreType "list"
-let option_identifier = CoreType "option"
-let int32_identifier = CoreType "int32"
-let int64_identifier = CoreType "int64"
-let nativeint_identifier = CoreType "nativeint"
-let lazy_t_identifier = CoreType "lazy_t"
-let extension_constructor_identifier = CoreType "extension_constructor"
-let floatarray_identifier = CoreType "floatarray"
+let bool_identifier = `CoreType (TypeName.of_string "bool")
+let int_identifier = `CoreType (TypeName.of_string "int")
+let char_identifier = `CoreType (TypeName.of_string "char")
+let bytes_identifier = `CoreType (TypeName.of_string "bytes")
+let string_identifier = `CoreType (TypeName.of_string "string")
+let float_identifier = `CoreType (TypeName.of_string "float")
+let unit_identifier = `CoreType (TypeName.of_string "unit")
+let exn_identifier = `CoreType (TypeName.of_string "exn")
+let array_identifier = `CoreType (TypeName.of_string "array")
+let list_identifier = `CoreType (TypeName.of_string "list")
+let option_identifier = `CoreType (TypeName.of_string "option")
+let int32_identifier = `CoreType (TypeName.of_string "int32")
+let int64_identifier = `CoreType (TypeName.of_string "int64")
+let nativeint_identifier = `CoreType (TypeName.of_string "nativeint")
+let lazy_t_identifier = `CoreType (TypeName.of_string "lazy_t")
+let extension_constructor_identifier = `CoreType (TypeName.of_string "extension_constructor")
+let floatarray_identifier = `CoreType (TypeName.of_string "floatarray")
 
 
-let false_identifier = Constructor(bool_identifier, "false")
-let true_identifier = Constructor(bool_identifier, "true")
-let void_identifier = Constructor(unit_identifier, "()")
-let nil_identifier = Constructor(list_identifier, "([])")
-let cons_identifier = Constructor(list_identifier, "(::)")
-let none_identifier = Constructor(option_identifier, "None")
-let some_identifier = Constructor(option_identifier, "Some")
+let false_identifier = `Constructor(bool_identifier, ConstructorName.of_string "false")
+let true_identifier = `Constructor(bool_identifier, ConstructorName.of_string "true")
+let void_identifier = `Constructor(unit_identifier, ConstructorName.of_string "()")
+let nil_identifier = `Constructor(list_identifier, ConstructorName.of_string "([])")
+let cons_identifier = `Constructor(list_identifier, ConstructorName.of_string "(::)")
+let none_identifier = `Constructor(option_identifier, ConstructorName.of_string "None")
+let some_identifier = `Constructor(option_identifier, ConstructorName.of_string "Some")
 
-let match_failure_identifier = CoreException "Match_failure"
-let assert_failure_identifier = CoreException "Assert_failure"
-let invalid_argument_identifier = CoreException "Invalid_argument"
-let failure_identifier = CoreException "Failure"
-let not_found_identifier = CoreException "Not_found"
-let out_of_memory_identifier = CoreException "Out_of_memory"
-let stack_overflow_identifier = CoreException "Stack_overflow"
-let sys_error_identifier = CoreException "Sys_error"
-let end_of_file_identifier = CoreException "End_of_file"
-let division_by_zero_identifier = CoreException "Division_by_zero"
-let sys_blocked_io_identifier = CoreException "Sys_blocked_io"
+let match_failure_identifier = `CoreException (ExceptionName.of_string "Match_failure")
+let assert_failure_identifier = `CoreException (ExceptionName.of_string "Assert_failure")
+let invalid_argument_identifier = `CoreException (ExceptionName.of_string "Invalid_argument")
+let failure_identifier = `CoreException (ExceptionName.of_string "Failure")
+let not_found_identifier = `CoreException (ExceptionName.of_string "Not_found")
+let out_of_memory_identifier = `CoreException (ExceptionName.of_string "Out_of_memory")
+let stack_overflow_identifier = `CoreException (ExceptionName.of_string "Stack_overflow")
+let sys_error_identifier = `CoreException (ExceptionName.of_string "Sys_error")
+let end_of_file_identifier = `CoreException (ExceptionName.of_string "End_of_file")
+let division_by_zero_identifier = `CoreException (ExceptionName.of_string "Division_by_zero")
+let sys_blocked_io_identifier = `CoreException (ExceptionName.of_string "Sys_blocked_io")
 let undefined_recursive_module_identifier =
-  CoreException "Undefined_recursive_module"
+  `CoreException (ExceptionName.of_string "Undefined_recursive_module")
 
 let core_type_identifier = function
   | "int" -> Some int_identifier
@@ -149,71 +147,66 @@ let core_constructor_identifier = function
   | "Some" -> Some some_identifier
   | _ -> None
 
-open Path.Resolved
-open Path
 
-let bool_path = Resolved (Identifier bool_identifier)
-let int_path = Resolved (Identifier int_identifier)
-let char_path = Resolved (Identifier char_identifier)
-let bytes_path = Resolved (Identifier bytes_identifier)
-let string_path = Resolved (Identifier string_identifier)
-let float_path = Resolved (Identifier float_identifier)
-let unit_path = Resolved (Identifier unit_identifier)
-let exn_path = Resolved (Identifier exn_identifier)
-let array_path = Resolved (Identifier array_identifier)
-let list_path = Resolved (Identifier list_identifier)
-let option_path = Resolved (Identifier option_identifier)
-let int32_path = Resolved (Identifier int32_identifier)
-let int64_path = Resolved (Identifier int64_identifier)
-let nativeint_path = Resolved (Identifier nativeint_identifier)
-let lazy_t_path = Resolved (Identifier lazy_t_identifier)
+let bool_path = `Resolved (`Identifier bool_identifier)
+let int_path = `Resolved (`Identifier int_identifier)
+let char_path = `Resolved (`Identifier char_identifier)
+let bytes_path = `Resolved (`Identifier bytes_identifier)
+let string_path = `Resolved (`Identifier string_identifier)
+let float_path = `Resolved (`Identifier float_identifier)
+let unit_path = `Resolved (`Identifier unit_identifier)
+let exn_path = `Resolved (`Identifier exn_identifier)
+let array_path = `Resolved (`Identifier array_identifier)
+let list_path = `Resolved (`Identifier list_identifier)
+let option_path = `Resolved (`Identifier option_identifier)
+let int32_path = `Resolved (`Identifier int32_identifier)
+let int64_path = `Resolved (`Identifier int64_identifier)
+let nativeint_path = `Resolved (`Identifier nativeint_identifier)
+let lazy_t_path = `Resolved (`Identifier lazy_t_identifier)
 let extension_constructor_path =
-  Resolved (Identifier extension_constructor_identifier)
-let _floatarray_path = Resolved (Identifier floatarray_identifier)
+  `Resolved (`Identifier extension_constructor_identifier)
+let _floatarray_path = `Resolved (`Identifier floatarray_identifier)
 
-open Reference.Resolved
-open Reference
-
-let bool_reference = Resolved (Identifier bool_identifier)
-let int_reference = Resolved (Identifier int_identifier)
-let char_reference = Resolved (Identifier char_identifier)
-let bytes_reference = Resolved (Identifier bytes_identifier)
-let string_reference = Resolved (Identifier string_identifier)
-let float_reference = Resolved (Identifier float_identifier)
-let unit_reference = Resolved (Identifier unit_identifier)
-let exn_reference = Resolved (Identifier exn_identifier)
-let array_reference = Resolved (Identifier array_identifier)
-let list_reference = Resolved (Identifier list_identifier)
-let option_reference = Resolved (Identifier option_identifier)
-let int32_reference = Resolved (Identifier int32_identifier)
-let int64_reference = Resolved (Identifier int64_identifier)
-let nativeint_reference = Resolved (Identifier nativeint_identifier)
-let lazy_t_reference = Resolved (Identifier lazy_t_identifier)
+let bool_reference = `Resolved (`Identifier bool_identifier)
+let int_reference = `Resolved (`Identifier int_identifier)
+let char_reference = `Resolved (`Identifier char_identifier)
+let bytes_reference = `Resolved (`Identifier bytes_identifier)
+let string_reference = `Resolved (`Identifier string_identifier)
+let float_reference = `Resolved (`Identifier float_identifier)
+let unit_reference = `Resolved (`Identifier unit_identifier)
+let exn_reference = `Resolved (`Identifier exn_identifier)
+let array_reference = `Resolved (`Identifier array_identifier)
+let list_reference = `Resolved (`Identifier list_identifier)
+let option_reference = `Resolved (`Identifier option_identifier)
+let int32_reference = `Resolved (`Identifier int32_identifier)
+let int64_reference = `Resolved (`Identifier int64_identifier)
+let nativeint_reference = `Resolved (`Identifier nativeint_identifier)
+let lazy_t_reference = `Resolved (`Identifier lazy_t_identifier)
 let extension_constructor_reference =
-  Resolved (Identifier extension_constructor_identifier)
-let _floatarray_reference = Resolved (Identifier floatarray_identifier)
+  `Resolved (`Identifier extension_constructor_identifier)
+let _floatarray_reference = `Resolved (`Identifier floatarray_identifier)
 
-let false_reference = Resolved (Identifier false_identifier)
-let true_reference = Resolved (Identifier true_identifier)
-let void_reference = Resolved (Identifier void_identifier)
-let nil_reference = Resolved (Identifier nil_identifier)
-let cons_reference = Resolved (Identifier cons_identifier)
-let none_reference = Resolved (Identifier none_identifier)
-let some_reference = Resolved (Identifier some_identifier)
+let false_reference = `Resolved (`Identifier false_identifier)
+let true_reference = `Resolved (`Identifier true_identifier)
+let void_reference = `Resolved (`Identifier void_identifier)
+let nil_reference = `Resolved (`Identifier nil_identifier)
+let cons_reference = `Resolved (`Identifier cons_identifier)
+let none_reference = `Resolved (`Identifier none_identifier)
+let some_reference = `Resolved (`Identifier some_identifier)
 
-let match_failure_reference = Resolved(Identifier match_failure_identifier)
-let assert_failure_reference = Resolved(Identifier assert_failure_identifier)
-let invalid_argument_reference = Resolved(Identifier invalid_argument_identifier)
-let failure_reference = Resolved(Identifier failure_identifier)
-let not_found_reference = Resolved(Identifier not_found_identifier)
-let out_of_memory_reference = Resolved(Identifier out_of_memory_identifier)
-let stack_overflow_reference = Resolved(Identifier stack_overflow_identifier)
-let sys_error_reference = Resolved(Identifier sys_error_identifier)
-let end_of_file_reference = Resolved(Identifier end_of_file_identifier)
-let division_by_zero_reference = Resolved(Identifier division_by_zero_identifier)
-let sys_blocked_io_reference = Resolved(Identifier sys_blocked_io_identifier)
+let match_failure_reference = `Resolved (`Identifier match_failure_identifier)
+let assert_failure_reference = `Resolved (`Identifier assert_failure_identifier)
+let invalid_argument_reference = `Resolved (`Identifier invalid_argument_identifier)
+let failure_reference = `Resolved (`Identifier failure_identifier)
+let not_found_reference = `Resolved (`Identifier not_found_identifier)
+let out_of_memory_reference = `Resolved (`Identifier out_of_memory_identifier)
+let stack_overflow_reference = `Resolved (`Identifier stack_overflow_identifier)
+let sys_error_reference = `Resolved (`Identifier sys_error_identifier)
+let end_of_file_reference = `Resolved (`Identifier end_of_file_identifier)
+let division_by_zero_reference = `Resolved (`Identifier division_by_zero_identifier)
+let sys_blocked_io_reference = `Resolved (`Identifier sys_blocked_io_identifier)
 let undefined_recursive_module_reference =
-  Resolved(Identifier undefined_recursive_module_identifier)
+  `Resolved (`Identifier undefined_recursive_module_identifier)
 
 let false_decl =
   let open TypeDecl.Constructor in
@@ -498,7 +491,7 @@ let floatarray_decl =
     [`Paragraph (
       words ["This"; "type"; "is"; "used"; "to"; "implement"; "the"] @
       [`Space;
-       `Reference (Module (Root ("Array", TModule), "Floatarray"), []);
+       `Reference (`Module (`Root (UnitName.of_string "Array", `TModule), ModuleName.of_string "Floatarray"), []);
        `Space] @
       words ["module."; "It"; "should"; "not"; "be"; "used"; "directly."]
       |> List.map (Location_.at predefined_location)
@@ -510,7 +503,7 @@ let floatarray_decl =
     {id; doc; equation; representation}
 
 let match_failure_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = match_failure_identifier in
   (* let text =
@@ -530,7 +523,7 @@ let match_failure_decl =
     {id; doc; args; res}
 
 let assert_failure_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = assert_failure_identifier in
   (* let text =
@@ -550,7 +543,7 @@ let assert_failure_decl =
     {id; doc; args; res}
 
 let invalid_argument_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = invalid_argument_identifier in
   (* let text =
@@ -564,7 +557,7 @@ let invalid_argument_decl =
     {id; doc; args; res}
 
 let failure_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = failure_identifier in
   (* let text =
@@ -578,7 +571,7 @@ let failure_decl =
     {id; doc; args; res}
 
 let not_found_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = not_found_identifier in
   (* let text =
@@ -592,7 +585,7 @@ let not_found_decl =
     {id; doc; args; res}
 
 let out_of_memory_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = out_of_memory_identifier in
   (* let text =
@@ -607,7 +600,7 @@ let out_of_memory_decl =
 
 (* TODO: Provide reference to the OCaml manual *)
 let stack_overflow_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = stack_overflow_identifier in
   (* let text =
@@ -624,7 +617,7 @@ let stack_overflow_decl =
     {id; doc; args; res}
 
 let sys_error_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = sys_error_identifier in
   (* let text =
@@ -638,7 +631,7 @@ let sys_error_decl =
     {id; doc; args; res}
 
 let end_of_file_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = end_of_file_identifier in
   (* let text =
@@ -652,7 +645,7 @@ let end_of_file_decl =
     {id; doc; args; res}
 
 let division_by_zero_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = division_by_zero_identifier in
   (* let text =
@@ -666,7 +659,7 @@ let division_by_zero_decl =
     {id; doc; args; res}
 
 let sys_blocked_io_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = sys_blocked_io_identifier in
   (* let text =
@@ -682,7 +675,7 @@ let sys_blocked_io_decl =
 
 (* TODO: Provide reference to the OCaml manual *)
 let undefined_recursive_module_decl =
-  let open Exception in
+  let open Lang.Exception in
   (* let open Model.Comment in *)
   let id = undefined_recursive_module_identifier in
   (* let text =

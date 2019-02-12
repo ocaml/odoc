@@ -141,11 +141,10 @@ let rec read_core_type env container ctyp =
 
 let read_value_description env parent vd =
   let open Signature in
+  let open Model.Names in
   let name = parenthesise (Ident.name vd.val_id) in
-  let id = Identifier.Value(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let id = `Value(parent, ValueName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
   match vd.val_prim with
@@ -170,8 +169,9 @@ let read_type_parameter (ctyp, var) =
 
 let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
+  let open Model.Names in
   let name = parenthesise (Ident.name ld.ld_id) in
-  let id = Identifier.Field(parent, name) in
+  let id = `Field(parent, FieldName.of_string name) in
   let doc = Doc_attr.attached label_parent ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_core_type env label_parent ld.ld_type in
@@ -191,10 +191,11 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
+  let open Model.Names in
   let name = parenthesise (Ident.name cd.cd_id) in
-  let id = Identifier.Constructor(parent, name) in
-  let container = Identifier.parent_of_datatype parent in
-  let label_container = Identifier.label_parent_of_parent container in
+  let id = `Constructor(parent, ConstructorName.of_string name) in
+  let container = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
+  let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached label_container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments
@@ -210,8 +211,8 @@ let read_type_kind env parent =
         let cstrs = List.map (read_constructor_declaration env parent) cstrs in
           Some (Variant cstrs)
     | Ttype_record lbls ->
-        let parent = Identifier.parent_of_datatype parent in
-      let label_parent = Identifier.label_parent_of_parent parent in
+        let parent = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
+      let label_parent = (parent :> Identifier.LabelParent.t) in
       let lbls =
         List.map (read_label_declaration env parent label_parent) lbls in
           Some (Record lbls)
@@ -233,20 +234,17 @@ let read_type_equation env container decl =
 
 let read_type_declaration env parent decl =
   let open TypeDecl in
+  let open Model.Names in
   let name = parenthesise (Ident.name decl.typ_id) in
-  let id = Identifier.Type(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let id = `Type(parent, TypeName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.typ_attributes in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env id decl.typ_kind in
     {id; doc; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let items =
     let open Signature in
     List.fold_left
@@ -263,10 +261,11 @@ let read_type_declarations env parent rec_flag decls =
 
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
+  let open Model.Names in
   let name = parenthesise (Ident.name ext.ext_id) in
-  let id = Identifier.Extension(parent, name) in
-  let container = Identifier.parent_of_signature parent in
-  let label_container = Identifier.label_parent_of_parent container in
+  let id = `Extension(parent, ExtensionName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
+  let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -281,9 +280,7 @@ let read_extension_constructor env parent ext =
 let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env tyext.tyext_path in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container tyext.tyext_attributes in
   let type_params = List.map read_type_parameter tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
@@ -294,10 +291,11 @@ let read_type_extension env parent tyext =
 
 let read_exception env parent ext =
   let open Exception in
+  let open Model.Names in
   let name = parenthesise (Ident.name ext.ext_id) in
-  let id = Identifier.Exception(parent, name) in
-  let container = Identifier.parent_of_signature parent in
-  let label_container = Identifier.label_parent_of_parent container in
+  let id = `Exception(parent, ExceptionName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
+  let label_container = (container :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
@@ -311,16 +309,15 @@ let read_exception env parent ext =
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
-  let container =
-    Identifier.label_parent_of_parent
-      (Identifier.parent_of_class_signature parent)
-  in
+  let open Model.Names in
+
+  let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
       let name = parenthesise name in
-      let id = Identifier.InstanceVariable(parent, name) in
+      let id = `InstanceVariable(parent, InstanceVariableName.of_string name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_ = (virtual_ = Virtual) in
     let type_ = read_core_type env container typ in
@@ -328,7 +325,7 @@ let rec read_class_type_field env parent ctf =
   | Tctf_method(name, private_, virtual_, typ) ->
       let open Method in
       let name = parenthesise name in
-      let id = Identifier.Method(parent, name) in
+      let id = `Method(parent, MethodName.of_string name) in
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
     let type_ = read_core_type env container typ in
@@ -376,10 +373,8 @@ and read_class_signature env parent label_parent cltyp =
 let read_class_type_declaration env parent cltd =
   let open ClassType in
   let name = parenthesise (Ident.name cltd.ci_id_class_type) in
-  let id = Identifier.ClassType(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let id = `ClassType(parent, Model.Names.ClassTypeName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
@@ -387,9 +382,7 @@ let read_class_type_declaration env parent cltd =
   { id; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let open Signature in
   List.fold_left begin fun (acc,recursive) cltd ->
     let comments = Doc_attr.standalone_multiple container cltd.ci_attributes in
@@ -417,10 +410,8 @@ let rec read_class_type env parent label_parent cty =
 let read_class_description env parent cld =
   let open Class in
   let name = parenthesise (Ident.name cld.ci_id_class) in
-  let id = Identifier.Class(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let id = `Class(parent, Model.Names.ClassName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
@@ -428,9 +419,7 @@ let read_class_description env parent cld =
   { id; doc; virtual_; params; type_; expansion = None }
 
 let read_class_descriptions env parent clds =
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let open Signature in
   List.fold_left begin fun (acc, recursive) cld ->
     let comments = Doc_attr.standalone_multiple container cld.ci_attributes in
@@ -472,7 +461,7 @@ and read_module_type env parent label_parent pos mty =
           | None -> None
           | Some arg ->
               let name = parenthesise (Ident.name id) in
-              let id = Identifier.Argument(parent, pos, name) in
+              let id = `Argument(parent, pos, Model.Names.ArgumentName.of_string name) in
           let arg = read_module_type env id label_parent 1 arg in
               let expansion =
                 match arg with
@@ -505,9 +494,8 @@ and read_module_type env parent label_parent pos mty =
 and read_module_type_declaration env parent mtd =
   let open ModuleType in
   let name = parenthesise (Ident.name mtd.mtd_id) in
-  let id = Identifier.ModuleType(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
+  let id = `ModuleType(parent, (Model.Names.ModuleTypeName.of_string name)) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env id container 1) mtd.mtd_type in
   let expansion =
@@ -520,9 +508,8 @@ and read_module_type_declaration env parent mtd =
 and read_module_declaration env parent md =
   let open Module in
   let name = parenthesise (Ident.name md.md_id) in
-  let id = Identifier.Module(parent, name) in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
+  let id = `Module(parent, Model.Names.ModuleName.of_string name) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in
   let canonical =
     let doc = List.map Model.Location_.value doc in
@@ -549,9 +536,7 @@ and read_module_declaration env parent md =
     {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
 and read_module_declarations env parent mds =
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-  in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let open Signature in
   List.fold_left
     (fun (acc, recursive) md ->
@@ -602,17 +587,14 @@ and read_signature_item env parent item =
     | Tsig_class_type cltyps ->
         read_class_type_declarations env parent cltyps
     | Tsig_attribute attr ->
-      let container =
-        Identifier.label_parent_of_parent (Identifier.parent_of_signature parent)
-      in
+        let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
           match Doc_attr.standalone container attr with
           | None -> []
           | Some doc -> [Comment doc]
 
 and read_include env parent incl =
   let open Include in
-  let container =
-    Identifier.label_parent_of_parent (Identifier.parent_of_signature parent) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container incl.incl_attributes in
   let expr = read_module_type env parent container 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
@@ -633,7 +615,7 @@ and read_signature env parent sg =
     List.rev items
 
 let read_interface root name intf =
-  let id = Identifier.Root(root, name) in
+  let id = `Root(root, Model.Names.UnitName.of_string name) in
   let items = read_signature Env.empty id intf in
   let doc, items =
     let open Signature in

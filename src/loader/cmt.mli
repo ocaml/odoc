@@ -15,6 +15,6 @@
  *)
 
 val read_implementation: Model.Root.t -> string -> Typedtree.structure ->
-  Model.Paths.Identifier.module_ *
+  Model.Paths.Identifier.Module.t *
   Model.Comment.docs *
   Model.Lang.Signature.t

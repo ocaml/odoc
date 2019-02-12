@@ -18,109 +18,106 @@ open Paths
 
 (** {3 Identifiers} *)
 
-val bool_identifier : Identifier.type_
-val int_identifier : Identifier.type_
-val char_identifier : Identifier.type_
-val bytes_identifier : Identifier.type_
-val string_identifier : Identifier.type_
-val float_identifier : Identifier.type_
-val unit_identifier : Identifier.type_
-val exn_identifier : Identifier.type_
-val array_identifier : Identifier.type_
-val list_identifier : Identifier.type_
-val option_identifier : Identifier.type_
-val int32_identifier : Identifier.type_
-val int64_identifier : Identifier.type_
-val nativeint_identifier : Identifier.type_
-val lazy_t_identifier : Identifier.type_
-val extension_constructor_identifier : Identifier.type_
+val bool_identifier : Identifier.Type.t
+val int_identifier : Identifier.Type.t
+val char_identifier : Identifier.Type.t
+val bytes_identifier : Identifier.Type.t
+val string_identifier : Identifier.Type.t
+val float_identifier : Identifier.Type.t
+val unit_identifier : Identifier.Type.t
+val exn_identifier : Identifier.Type.t
+val array_identifier : Identifier.Type.t
+val list_identifier : Identifier.Type.t
+val option_identifier : Identifier.Type.t
+val int32_identifier : Identifier.Type.t
+val int64_identifier : Identifier.Type.t
+val nativeint_identifier : Identifier.Type.t
+val lazy_t_identifier : Identifier.Type.t
+val extension_constructor_identifier : Identifier.Type.t
 
-val false_identifier : Identifier.constructor
-val true_identifier : Identifier.constructor
-val void_identifier : Identifier.constructor
-val nil_identifier : Identifier.constructor
-val cons_identifier : Identifier.constructor
-val none_identifier : Identifier.constructor
-val some_identifier : Identifier.constructor
+val false_identifier : Identifier.Constructor.t
+val true_identifier : Identifier.Constructor.t
+val void_identifier : Identifier.Constructor.t
+val nil_identifier : Identifier.Constructor.t
+val cons_identifier : Identifier.Constructor.t
+val none_identifier : Identifier.Constructor.t
+val some_identifier : Identifier.Constructor.t
 
-val match_failure_identifier : Identifier.exception_
-val assert_failure_identifier : Identifier.exception_
-val invalid_argument_identifier : Identifier.exception_
-val failure_identifier : Identifier.exception_
-val not_found_identifier : Identifier.exception_
-val out_of_memory_identifier : Identifier.exception_
-val stack_overflow_identifier : Identifier.exception_
-val sys_error_identifier : Identifier.exception_
-val end_of_file_identifier : Identifier.exception_
-val division_by_zero_identifier : Identifier.exception_
-val sys_blocked_io_identifier : Identifier.exception_
-val undefined_recursive_module_identifier : Identifier.exception_
+val match_failure_identifier : Identifier.Exception.t
+val assert_failure_identifier : Identifier.Exception.t
+val invalid_argument_identifier : Identifier.Exception.t
+val failure_identifier : Identifier.Exception.t
+val not_found_identifier : Identifier.Exception.t
+val out_of_memory_identifier : Identifier.Exception.t
+val stack_overflow_identifier : Identifier.Exception.t
+val sys_error_identifier : Identifier.Exception.t
+val end_of_file_identifier : Identifier.Exception.t
+val division_by_zero_identifier : Identifier.Exception.t
+val sys_blocked_io_identifier : Identifier.Exception.t
+val undefined_recursive_module_identifier : Identifier.Exception.t
 
-val core_type_identifier : string ->
-      [< Identifier.kind > `Type] Identifier.t option
-val core_exception_identifier : string ->
-      [< Identifier.kind > `Exception] Identifier.t option
-val core_constructor_identifier : string ->
-      [< Identifier.kind > `Constructor] Identifier.t option
+val core_type_identifier : string -> Identifier.Type.t option
+val core_exception_identifier : string -> Identifier.Exception.t option
+val core_constructor_identifier : string -> Identifier.Constructor.t option
 
 (** {3 Paths} *)
 
-val bool_path : Path.type_
-val int_path : Path.type_
-val char_path : Path.type_
-val bytes_path : Path.type_
-val string_path : Path.type_
-val float_path : Path.type_
-val unit_path : Path.type_
-val exn_path : Path.type_
-val array_path : Path.type_
-val list_path : Path.type_
-val option_path : Path.type_
-val int32_path : Path.type_
-val int64_path : Path.type_
-val nativeint_path : Path.type_
-val lazy_t_path : Path.type_
-val extension_constructor_path : Path.type_
+val bool_path : Path.Type.t
+val int_path : Path.Type.t
+val char_path : Path.Type.t
+val bytes_path : Path.Type.t
+val string_path : Path.Type.t
+val float_path : Path.Type.t
+val unit_path : Path.Type.t
+val exn_path : Path.Type.t
+val array_path : Path.Type.t
+val list_path : Path.Type.t
+val option_path : Path.Type.t
+val int32_path : Path.Type.t
+val int64_path : Path.Type.t
+val nativeint_path : Path.Type.t
+val lazy_t_path : Path.Type.t
+val extension_constructor_path : Path.Type.t
 
 (** {3 References} *)
 
-val bool_reference : Reference.type_
-val int_reference : Reference.type_
-val char_reference : Reference.type_
-val bytes_reference : Reference.type_
-val string_reference : Reference.type_
-val float_reference : Reference.type_
-val unit_reference : Reference.type_
-val exn_reference : Reference.type_
-val array_reference : Reference.type_
-val list_reference : Reference.type_
-val option_reference : Reference.type_
-val int32_reference : Reference.type_
-val int64_reference : Reference.type_
-val nativeint_reference : Reference.type_
-val lazy_t_reference : Reference.type_
-val extension_constructor_reference : Reference.type_
+val bool_reference : Reference.Type.t
+val int_reference : Reference.Type.t
+val char_reference : Reference.Type.t
+val bytes_reference : Reference.Type.t
+val string_reference : Reference.Type.t
+val float_reference : Reference.Type.t
+val unit_reference : Reference.Type.t
+val exn_reference : Reference.Type.t
+val array_reference : Reference.Type.t
+val list_reference : Reference.Type.t
+val option_reference : Reference.Type.t
+val int32_reference : Reference.Type.t
+val int64_reference : Reference.Type.t
+val nativeint_reference : Reference.Type.t
+val lazy_t_reference : Reference.Type.t
+val extension_constructor_reference : Reference.Type.t
 
-val false_reference : Reference.constructor
-val true_reference : Reference.constructor
-val void_reference : Reference.constructor
-val nil_reference : Reference.constructor
-val cons_reference : Reference.constructor
-val none_reference : Reference.constructor
-val some_reference : Reference.constructor
+val false_reference : Reference.Constructor.t
+val true_reference : Reference.Constructor.t
+val void_reference : Reference.Constructor.t
+val nil_reference : Reference.Constructor.t
+val cons_reference : Reference.Constructor.t
+val none_reference : Reference.Constructor.t
+val some_reference : Reference.Constructor.t
 
-val match_failure_reference : Reference.exception_
-val assert_failure_reference : Reference.exception_
-val invalid_argument_reference : Reference.exception_
-val failure_reference : Reference.exception_
-val not_found_reference : Reference.exception_
-val out_of_memory_reference : Reference.exception_
-val stack_overflow_reference : Reference.exception_
-val sys_error_reference : Reference.exception_
-val end_of_file_reference : Reference.exception_
-val division_by_zero_reference : Reference.exception_
-val sys_blocked_io_reference : Reference.exception_
-val undefined_recursive_module_reference : Reference.exception_
+val match_failure_reference : Reference.Exception.t
+val assert_failure_reference : Reference.Exception.t
+val invalid_argument_reference : Reference.Exception.t
+val failure_reference : Reference.Exception.t
+val not_found_reference : Reference.Exception.t
+val out_of_memory_reference : Reference.Exception.t
+val stack_overflow_reference : Reference.Exception.t
+val sys_error_reference : Reference.Exception.t
+val end_of_file_reference : Reference.Exception.t
+val division_by_zero_reference : Reference.Exception.t
+val sys_blocked_io_reference : Reference.Exception.t
+val undefined_recursive_module_reference : Reference.Exception.t
 
 (** {3 Declarations} *)
 

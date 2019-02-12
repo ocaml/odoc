@@ -1,383 +1,894 @@
 (** {1 Paths} *)
-
-(** Every path is annotated with its kind. *)
-module Kind =
-struct
-  (** {4 General purpose kinds} *)
-
-  (** Any possible referent *)
-  type any =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label | `Page ]
-
-  (** A referent that can contain signature items *)
-  type signature = [ `Module | `ModuleType ]
-
-  (** A referent that can contain class signature items *)
-  type class_signature = [ `Class | `ClassType ]
-
-  (** A referent that can contain datatype items *)
-  type datatype = [ `Type ]
-
-  (** A referent that can contain page items *)
-  type page = [ `Page ]
-
-  (** A referent that can contain other items *)
-  type parent = [ signature | class_signature | datatype ]
-
-  type label_parent = [ parent | page ]
-
-  (** {4 Identifier kinds}
-
-      The kind of an identifier directly corresponds to the kind of its
-      referent. *)
-
-  type identifier = any
-
-  type identifier_module = [ `Module ]
-  type identifier_module_type = [ `ModuleType ]
-  type identifier_type =  [ `Type ]
-  type identifier_constructor = [ `Constructor ]
-  type identifier_field = [ `Field ]
-  type identifier_extension = [ `Extension ]
-  type identifier_exception = [ `Exception ]
-  type identifier_value = [ `Value ]
-  type identifier_class = [ `Class ]
-  type identifier_class_type = [ `ClassType ]
-  type identifier_method = [ `Method ]
-  type identifier_instance_variable = [ `InstanceVariable ]
-  type identifier_label = [ `Label ]
-  type identifier_page = [ `Page ]
-
-  (** {4 Path kinds}
-
-      There are four kinds of OCaml path:
-
-        - module
-        - module type
-        - type
-        - class type
-
-      These kinds do not directly correspond to the kind of their
-      referent (e.g. a type path may refer to a class definition). *)
-
-  type path = [ `Module | `ModuleType | `Type | `Class | `ClassType ]
-
-  type path_module = [ `Module ]
-  type path_module_type = [ `ModuleType ]
-  type path_type = [ `Type | `Class | `ClassType ]
-  type path_class_type = [ `Class | `ClassType ]
-
-  (** {4 Fragment kinds}
-
-      There are two kinds of OCaml path fragment:
-
-        - module
-        - type
-
-      These kinds do not directly correspond to the kind of their
-      referent (e.g. a type path fragment may refer to a class
-      definition). *)
-
-  type fragment = [ `Module | `Type | `Class | `ClassType ]
-
-  type fragment_module = [ `Module ]
-  type fragment_type = [ `Type | `Class | `ClassType ]
-
-  (** {4 Reference kinds}
-
-      There is one reference kind for each kind of referent. However,
-      the kind of a reference does not refer to the kind of its
-      referent, but to the kind with which the reference was annotated.
-
-      This means that reference kinds do not correspond directly to the
-      kind of their referent because we used more relaxed rules when
-      resolving a reference. For example, a reference annotated as being
-      to a constructor can be resolved to the definition of an exception
-      (which is a sort of constructor). *)
-
-  type reference = any
-
-  type reference_module = [ `Module ]
-  type reference_module_type = [ `ModuleType ]
-  type reference_type = [ `Type | `Class | `ClassType ]
-  type reference_constructor = [ `Constructor | `Extension | `Exception ]
-  type reference_field = [ `Field ]
-  type reference_extension = [ `Extension | `Exception ]
-  type reference_exception = [ `Exception ]
-  type reference_value = [ `Value ]
-  type reference_class = [ `Class ]
-  type reference_class_type = [ `Class | `ClassType ]
-  type reference_method = [ `Method ]
-  type reference_instance_variable = [ `InstanceVariable ]
-  type reference_label = [ `Label ]
-  type reference_page = [ `Page ]
-end
+open Names
 
 module Identifier =
 struct
-  type kind = Kind.identifier
 
-  type 'kind t =
-    | Root : Root.t * string -> [< kind > `Module] t
-    | Page : Root.t * string -> [< kind > `Page] t
-    | Module : signature * string -> [< kind > `Module] t
-    | Argument : signature * int * string -> [< kind > `Module] t
-    | ModuleType : signature * string -> [< kind > `ModuleType] t
-    | Type : signature * string -> [< kind > `Type] t
-    | CoreType : string -> [< kind > `Type] t
-    | Constructor : datatype * string -> [< kind > `Constructor] t
-    | Field : parent * string -> [< kind > `Field] t
-    | Extension : signature * string -> [< kind > `Extension] t
-    | Exception : signature * string -> [< kind > `Exception] t
-    | CoreException : string -> [< kind > `Exception] t
-    | Value : signature * string -> [< kind > `Value] t
-    | Class : signature * string -> [< kind > `Class] t
-    | ClassType : signature * string -> [< kind > `ClassType] t
-    | Method : class_signature * string -> [< kind > `Method] t
-    | InstanceVariable : class_signature * string ->
-        [< kind > `InstanceVariable] t
-    | Label : label_parent * string -> [< kind > `Label] t
+  type signature = [
+    | `Root of Root.t * UnitName.t
+    | `Module of signature * ModuleName.t
+    | `Argument of signature * int * ArgumentName.t
+    | `ModuleType of signature * ModuleTypeName.t
+  ]
 
-  and any = kind t
-  and signature = Kind.signature t
-  and class_signature = Kind.class_signature t
-  and datatype = Kind.datatype t
-  and parent = Kind.parent t
-  and label_parent = Kind.label_parent t
+  type class_signature = [
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
 
-  type module_ = Kind.identifier_module t
-  type module_type = Kind.identifier_module_type t
-  type type_ = Kind.identifier_type t
-  type constructor = Kind.identifier_constructor t
-  type field = Kind.identifier_field t
-  type extension = Kind.identifier_extension t
-  type exception_ = Kind.identifier_exception t
-  type value = Kind.identifier_value t
-  type class_ = Kind.identifier_class t
-  type class_type = Kind.identifier_class_type t
-  type method_ = Kind.identifier_method t
-  type instance_variable = Kind.identifier_instance_variable t
-  type label = Kind.identifier_label t
-  type page = Kind.identifier_page t
+  type datatype = [
+    | `Type of signature * TypeName.t
+    | `CoreType of TypeName.t
+  ]
 
-  type path_module = Kind.path_module t
-  type path_module_type = Kind.path_module_type t
-  type path_type = Kind.path_type t
-  type path_class_type = Kind.path_class_type t
+  type parent = [
+    | signature
+    | datatype
+    | class_signature
+  ]
 
-  type fragment_module = Kind.fragment_module t
-  type fragment_type = Kind.fragment_type t
+  type label_parent = [
+    | parent
+    | `Page of Root.t * PageName.t
+  ]
 
-  type reference_module = Kind.reference_module t
-  type reference_module_type = Kind.reference_module_type t
-  type reference_type =  Kind.reference_type t
-  type reference_constructor = Kind.reference_constructor t
-  type reference_field = Kind.reference_field t
-  type reference_extension = Kind.reference_extension t
-  type reference_exception = Kind.reference_exception t
-  type reference_value = Kind.reference_value t
-  type reference_class = Kind.reference_class t
-  type reference_class_type = Kind.reference_class_type t
-  type reference_method = Kind.reference_method t
-  type reference_instance_variable = Kind.reference_instance_variable t
-  type reference_label = Kind.reference_label t
-  type reference_page = Kind.reference_page t
+  type module_ = [
+    | `Root of Root.t * UnitName.t
+    | `Module of signature * ModuleName.t
+    | `Argument of signature * int * ArgumentName.t
+  ]
+
+  type module_type = [
+    | `ModuleType of signature * ModuleTypeName.t
+  ]
+
+  type type_ = [
+    | `Type of signature * TypeName.t
+    | `CoreType of TypeName.t
+  ]
+
+  type constructor = [
+    | `Constructor of type_ * ConstructorName.t
+  ]
+
+  type field = [
+    | `Field of parent * FieldName.t
+  ]
+
+  type extension = [
+    | `Extension of signature * ExtensionName.t
+  ]
+
+  type exception_ = [
+    | `Exception of signature * ExceptionName.t
+    | `CoreException of ExceptionName.t
+  ]
+
+  type value = [
+    | `Value of signature * ValueName.t
+  ]
+
+  type class_ = [
+    | `Class of signature * ClassName.t
+  ]
+
+  type class_type = [
+    | `ClassType of signature * ClassTypeName.t
+  ]
+
+  type method_ = [
+    | `Method of class_signature * MethodName.t
+  ]
+
+  type instance_variable = [
+    | `InstanceVariable of class_signature * InstanceVariableName.t
+  ]
+
+  type label = [
+    | `Label of label_parent * LabelName.t
+  ]
+
+  type page = [
+    | `Page of Root.t * PageName.t
+  ]
+
+  type any = [
+    | signature
+    | class_signature
+    | datatype
+    | parent
+    | label_parent
+    | module_
+    | module_type
+    | type_
+    | constructor
+    | field
+    | extension
+    | exception_
+    | value
+    | class_
+    | class_type
+    | method_
+    | instance_variable
+    | label
+    | page
+  ]
+
+  type path_module = module_
+
+  type path_module_type = module_type
+
+  type path_type = [
+    | type_
+    | class_
+    | class_type
+  ]
+
+  type path_class_type = [
+    | class_
+    | class_type
+  ]
+
+  type path_any = [
+    | path_module
+    | path_module_type
+    | path_type
+    | path_class_type
+  ]
+
+  type fragment_module = path_module
+  type fragment_type = path_type
+
+  type reference_module = path_module
+  type reference_module_type = path_module_type
+  type reference_type = path_type
+  type reference_constructor = [
+    | constructor
+    | extension
+    | exception_
+  ]
+  type reference_field = field
+  type reference_extension = [
+    | extension
+    | exception_
+  ]
+  type reference_exception = exception_
+  type reference_value = value
+  type reference_class = class_
+  type reference_class_type = [
+    | class_
+    | class_type
+  ]
+  type reference_method = method_
+  type reference_instance_variable = instance_variable
+  type reference_label = label
+  type reference_page = page
 end
 
 module rec Path :
 sig
-  type kind = Kind.path
-
-  type 'kind t =
-    | Resolved : 'kind Resolved_path.t -> 'kind t
-    | Root : string -> [< kind > `Module] t
-    | Forward : string -> [< kind > `Module] t
-    | Dot : module_ * string -> [< kind] t
-    | Apply : module_ * module_ -> [< kind > `Module] t
-
-  and any = kind t
-  and module_ = Kind.path_module t
-  and module_type = Kind.path_module_type t
-  and type_ = Kind.path_type t
-  and class_type = Kind.path_class_type t
+  type module_ = [
+    | `Resolved of Resolved_path.module_
+    | `Root of string
+    | `Forward of string
+    | `Dot of module_ * string
+    | `Apply of module_ * module_
+  ]
+  type module_type = [
+    | `Resolved of Resolved_path.module_type
+    | `Dot of module_ * string
+  ]
+  type type_ = [
+    | `Resolved of Resolved_path.type_
+    | `Dot of module_ * string
+  ]
+  type class_type = [
+    | `Resolved of Resolved_path.class_type
+    | `Dot of module_ * string
+  ]
+  type any = [
+    | `Resolved of Resolved_path.any
+    | `Root of string
+    | `Forward of string
+    | `Dot of module_ * string
+    | `Apply of module_ * module_
+  ]
 end = Path
 
 and Resolved_path :
 sig
-  type kind = Kind.path
+  type module_ = [
+    | `Identifier of Identifier.path_module
+    | `Subst of module_type * module_
+    | `SubstAlias of module_ * module_
+    | `Hidden of module_
+    | `Module of module_ * ModuleName.t
+    (* TODO: The canonical path should be a reference not a path *)
+    | `Canonical of module_ * Path.module_
+    | `Apply of module_ * Path.module_
+    ]
 
-  type 'kind t =
-    | Identifier : 'kind Identifier.t -> ([< kind] as 'kind) t
-    | Subst : module_type * module_ -> [< kind > `Module] t
-    | SubstAlias : module_ * module_ -> [< kind > `Module] t
-    | Hidden : module_ -> [< kind > `Module ] t
-    | Module : module_ * string -> [< kind > `Module] t
-      (* TODO: The canonical path should be a reference not a path *)
-    | Canonical : module_ * Path.module_ -> [< kind > `Module] t
-    | Apply : module_ * Path.module_ -> [< kind > `Module] t
-    | ModuleType : module_ * string -> [< kind > `ModuleType] t
-    | Type : module_ * string -> [< kind > `Type] t
-    | Class : module_ * string -> [< kind > `Class] t
-    | ClassType : module_ * string -> [< kind > `ClassType] t
+  and module_type = [
+    | `Identifier of Identifier.path_module_type
+    | `ModuleType of module_ * ModuleTypeName.t
+  ]
 
-  and any = kind t
-  and module_ = Kind.path_module t
-  and module_type = Kind.path_module_type t
-  and type_ = Kind.path_type t
-  and class_type = Kind.path_class_type t
+  type module_no_id = [
+    | `Subst of module_type * module_
+    | `SubstAlias of module_ * module_
+    | `Hidden of module_
+    | `Module of module_ * ModuleName.t
+    | `Canonical of module_ * Path.module_
+    | `Apply of module_ * Path.module_
+    ]
+
+  type module_type_no_id = [
+    | `ModuleType of module_ * ModuleTypeName.t
+  ]
+
+  type type_no_id = [
+    | `Type of module_ * TypeName.t
+    | `Class of module_ * ClassName.t
+    | `ClassType of module_ * ClassTypeName.t
+  ]
+
+  type type_ = [
+    | `Identifier of Identifier.path_type
+    | type_no_id
+  ]
+
+  type class_type_no_id = [
+    | `Class of module_ * ClassName.t
+    | `ClassType of module_ * ClassTypeName.t
+  ]
+
+  type class_type = [
+    | `Identifier of Identifier.path_class_type
+    | class_type_no_id
+  ]
+
+  type any = [
+    | `Identifier of Identifier.any
+    | module_no_id
+    | module_type_no_id
+    | type_no_id
+    | class_type_no_id
+  ]
 end = Resolved_path
 
 module rec Fragment :
 sig
-  type kind = Kind.fragment
+  type signature = [
+    | `Resolved of Resolved_fragment.signature
+    | `Dot of signature * string
+  ]
 
-  type sort = [ `Root | `Branch ]
+  type module_ = [
+    | `Resolved of Resolved_fragment.module_
+    | `Dot of signature * string
+  ]
 
-  type ('b, 'c) raw =
-    | Resolved : ('b, 'c) Resolved_fragment.raw -> ('b, 'c) raw
-    | Dot : signature * string -> ([< kind], [< sort > `Branch]) raw
+  type type_ = [
+    | `Resolved of Resolved_fragment.type_
+    | `Dot of signature * string
+  ]
 
-  and 'b t = ('b, [`Branch]) raw
-  and any = kind t
-  and signature = (Kind.fragment_module, [`Root | `Branch]) raw
-
-  type module_ = Kind.fragment_module t
-  type type_ = Kind.fragment_type t
+  type any = [
+    | `Resolved of Resolved_fragment.any
+    | `Dot of signature * string
+  ]
 end = Fragment
 
 and Resolved_fragment :
 sig
-  type kind = Kind.fragment
 
-  type sort = [ `Root | `Branch ]
+  type signature = [
+    | `Root
+    | `Subst of Resolved_path.module_type * module_
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+  ]
+  and module_ = [
+    | `Subst of Resolved_path.module_type * module_
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+  ]
 
-  type ('b, 'c) raw =
-    | Root : ('b, [< sort > `Root]) raw
-    | Subst : Resolved_path.module_type * module_ ->
-              ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-    | SubstAlias : Resolved_path.module_ * module_ ->
-              ([< kind > `Module] as 'b, [< sort > `Branch] as 'c) raw
-    | Module : signature * string -> ([< kind > `Module], [< sort > `Branch]) raw
-    | Type : signature * string -> ([< kind > `Type], [< sort > `Branch]) raw
-    | Class : signature * string -> ([< kind > `Class], [< sort > `Branch]) raw
-    | ClassType : signature * string -> ([< kind > `ClassType], [< sort > `Branch]) raw
+  type type_ = [
+    | `Type of signature * TypeName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
 
-  and 'b t = ('b, [`Branch]) raw
-  and any = kind t
-  and signature = (Kind.fragment_module, [`Root | `Branch]) raw
-  and module_ = Kind.fragment_module t
-
-  type type_ = Kind.fragment_type t
+  (* Absence of `Root here might make coersions annoying *)
+  type any = [
+    | `Root
+    | `Subst of Resolved_path.module_type * module_
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+    | `Type of signature * TypeName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
 end = Resolved_fragment
 
 module rec Reference :
 sig
-  type kind = Kind.reference
 
-  type _ tag =
-    | TUnknown : [< kind ] tag
-    | TModule : [< kind > `Module ] tag
-    | TModuleType : [< kind > `ModuleType ] tag
-    | TType : [< kind > `Type ] tag
-    | TConstructor : [< kind > `Constructor ] tag
-    | TField : [< kind > `Field ] tag
-    | TExtension : [< kind > `Extension ] tag
-    | TException : [< kind > `Exception ] tag
-    | TValue : [< kind > `Value ] tag
-    | TClass : [< kind > `Class ] tag
-    | TClassType : [< kind > `ClassType ] tag
-    | TMethod : [< kind > `Method ] tag
-    | TInstanceVariable : [< kind > `InstanceVariable ] tag
-    | TLabel : [< kind > `Label ] tag
-    | TPage : [< kind > `Page ] tag
+  type tag_only_module = [
+    | `TModule
+   ]
 
-  type 'kind t =
-    | Resolved : 'kind Resolved_reference.t -> 'kind t
-    | Root : string * 'kind tag -> 'kind t
-    | Dot : label_parent * string -> [< kind ] t
-    | Module : signature * string -> [< kind > `Module] t
-    | ModuleType : signature * string -> [< kind > `ModuleType] t
-    | Type : signature * string -> [< kind > `Type] t
-    | Constructor : datatype * string -> [< kind > `Constructor] t
-    | Field : parent * string -> [< kind > `Field] t
-    | Extension : signature * string -> [< kind > `Extension] t
-    | Exception : signature * string -> [< kind > `Exception] t
-    | Value : signature * string -> [< kind > `Value] t
-    | Class : signature * string -> [< kind > `Class] t
-    | ClassType : signature * string -> [< kind > `ClassType] t
-    | Method : class_signature * string -> [< kind > `Method] t
-    | InstanceVariable : class_signature * string ->
-        [< kind > `InstanceVariable] t
-    | Label : label_parent * string -> [< kind > `Label] t
+  type tag_only_module_type = [
+    | `TModuleType
+  ]
 
-  and any = kind t
-  and signature = Kind.signature t
-  and class_signature = Kind.class_signature t
-  and datatype = Kind.datatype t
-  and parent = Kind.parent t
-  and label_parent = [ Kind.parent | Kind.page ] t
+  type tag_only_type = [
+    | `TType
+  ]
 
-  type module_ = Kind.reference_module t
-  type module_type = Kind.reference_module_type t
-  type type_ = Kind.reference_type t
-  type constructor = Kind.reference_constructor t
-  type field = Kind.reference_field t
-  type extension = Kind.reference_extension t
-  type exception_ = Kind.reference_exception t
-  type value = Kind.reference_value t
-  type class_ = Kind.reference_class t
-  type class_type = Kind.reference_class_type t
-  type method_ = Kind.reference_method t
-  type instance_variable = Kind.reference_instance_variable t
-  type label = Kind.reference_label t
-  type page = Kind.reference_page t
+  type tag_only_constructor = [
+    | `TConstructor
+  ]
+
+  type tag_only_field = [
+    | `TField
+  ]
+
+  type tag_only_extension = [
+    | `TExtension
+  ]
+
+  type tag_only_exception = [
+    | `TException
+  ]
+
+  type tag_only_value = [
+    | `TValue
+  ]
+
+  type tag_only_class = [
+    | `TClass
+  ]
+
+  type tag_only_class_type = [
+    | `TClassType
+  ]
+
+  type tag_only_method = [
+    | `TMethod
+  ]
+
+  type tag_only_instance_variable = [
+    | `TInstanceVariable
+  ]
+
+  type tag_only_label = [
+    | `TLabel
+  ]
+
+  type tag_only_page = [
+    | `TPage
+  ]
+
+  type tag_unknown = [
+    `TUnknown
+  ]
+
+  type tag_any = [
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_type
+    | tag_only_constructor
+    | tag_only_field
+    | tag_only_extension
+    | tag_only_exception
+    | tag_only_value 
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_method
+    | tag_only_instance_variable
+    | tag_only_label
+    | tag_only_page
+    | tag_unknown
+  ]
+
+  type tag_signature = [
+    | tag_unknown
+    | tag_only_module
+    | tag_only_module_type
+  ]
+
+  type tag_class_signature = [
+    | tag_unknown
+    | tag_only_class
+    | tag_only_class_type
+  ]
+
+  type tag_datatype = [
+    | tag_unknown
+    | tag_only_type
+  ]
+
+  type tag_parent = [
+    | tag_unknown
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_type
+  ]
+
+  type tag_label_parent = [
+    | tag_unknown
+    | tag_only_module
+    | tag_only_module_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_only_type
+    | tag_only_page
+  ]
+
+  type signature = [
+    | `Resolved of Resolved_reference.signature
+    | `Root of UnitName.t * tag_signature
+    | `Dot of label_parent * string
+    | `Module of signature * ModuleName.t
+    | `ModuleType of signature * ModuleTypeName.t
+  ]
+
+  and class_signature = [
+    | `Resolved of Resolved_reference.class_signature
+    | `Root of UnitName.t * tag_class_signature
+    | `Dot of label_parent * string
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
+
+  and datatype = [
+    | `Resolved of Resolved_reference.datatype
+    | `Root of UnitName.t * tag_datatype
+    | `Dot of label_parent * string
+    | `Type of signature * TypeName.t
+  ]
+
+  and parent = [
+    | `Resolved of Resolved_reference.parent
+    | `Root of UnitName.t * tag_parent
+    | `Dot of label_parent * string
+    | `Module of signature * ModuleName.t
+    | `ModuleType of signature * ModuleTypeName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+    | `Type of signature * TypeName.t
+  ]
+
+  and label_parent = [
+    | `Resolved of Resolved_reference.label_parent
+    | `Root of UnitName.t * tag_label_parent
+    | `Dot of label_parent * string
+    | `Module of signature * ModuleName.t
+    | `ModuleType of signature * ModuleTypeName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+    | `Type of signature * TypeName.t
+  ]
+
+  type tag_module = [
+    | tag_only_module
+    | tag_unknown
+  ]
+
+  type module_ = [
+    | `Resolved of Resolved_reference.module_
+    | `Root of UnitName.t * tag_module
+    | `Dot of label_parent * string
+    | `Module of signature * ModuleName.t
+  ]
+
+  type tag_module_type = [
+    | tag_only_module_type
+    | tag_unknown
+  ]
+  type module_type = [
+    | `Resolved of Resolved_reference.module_type
+    | `Root of UnitName.t * tag_module_type
+    | `Dot of label_parent * string
+    | `ModuleType of signature * ModuleTypeName.t
+  ]
+
+  type tag_type = [
+    | tag_only_type
+    | tag_only_class
+    | tag_only_class_type
+    | tag_unknown
+  ]
+
+  type type_ = [
+    | `Resolved of Resolved_reference.type_
+    | `Root of UnitName.t * tag_type
+    | `Dot of label_parent * string
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+    | `Type of signature * TypeName.t
+  ]
+
+  type tag_constructor = [
+    | tag_only_constructor
+    | tag_only_extension
+    | tag_only_exception
+    | tag_unknown
+  ]
+
+  type constructor = [
+    | `Resolved of Resolved_reference.constructor
+    | `Root of UnitName.t * tag_constructor
+    | `Dot of label_parent * string
+    | `Constructor of datatype * ConstructorName.t
+    | `Extension of signature * ExtensionName.t
+    | `Exception of signature * ExceptionName.t
+  ]
+
+  type tag_field = [
+    | tag_only_field
+    | tag_unknown
+  ]
+
+  type field = [
+    | `Resolved of Resolved_reference.field
+    | `Root of UnitName.t * tag_field
+    | `Dot of label_parent * string
+    | `Field of parent * FieldName.t
+  ]
+
+  type tag_extension = [
+    | tag_only_extension
+    | tag_only_exception
+    | tag_unknown
+  ]
+  type extension = [
+    | `Resolved of Resolved_reference.extension
+    | `Root of UnitName.t * tag_extension
+    | `Dot of label_parent * string
+    | `Extension of signature * ExtensionName.t
+    | `Exception of signature * ExceptionName.t
+  ]
+
+  type tag_exception = [
+    | tag_only_exception
+    | tag_unknown
+  ]
+
+  type exception_ = [
+    | `Resolved of Resolved_reference.exception_
+    | `Root of UnitName.t * tag_exception
+    | `Dot of label_parent * string
+    | `Exception of signature * ExceptionName.t
+  ]
+
+  type tag_value = [
+    | tag_only_value
+    | tag_unknown
+  ]
+
+  type value = [
+    | `Resolved of Resolved_reference.value
+    | `Root of UnitName.t * tag_value
+    | `Dot of label_parent * string
+    | `Value of signature * ValueName.t
+  ]
+
+  type tag_class = [
+    | tag_only_class
+    | tag_unknown
+  ]
+
+  type class_ = [
+    | `Resolved of Resolved_reference.class_
+    | `Root of UnitName.t * tag_class
+    | `Dot of label_parent * string
+    | `Class of signature * ClassName.t
+  ]
+
+  type tag_class_type = [
+    | tag_only_class
+    | tag_only_class_type
+    | tag_unknown
+  ]
+
+  type class_type = [
+    | `Resolved of Resolved_reference.class_type
+    | `Root of UnitName.t * tag_class_type
+    | `Dot of label_parent * string
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
+
+  type tag_method = [
+    | tag_only_method
+    | tag_unknown
+  ]
+
+  type method_ = [
+    | `Resolved of Resolved_reference.method_
+    | `Root of UnitName.t * tag_method
+    | `Dot of label_parent * string
+    | `Method of class_signature * MethodName.t
+  ]
+
+  type tag_instance_variable = [
+    | tag_only_instance_variable
+    | tag_unknown
+  ]
+
+  type instance_variable = [
+    | `Resolved of Resolved_reference.instance_variable
+    | `Root of UnitName.t * tag_instance_variable
+    | `Dot of label_parent * string
+    | `InstanceVariable of class_signature * InstanceVariableName.t
+  ]
+
+  type tag_label = [
+    | tag_only_label
+    | tag_unknown
+  ]
+
+  type label = [
+    | `Resolved of Resolved_reference.label
+    | `Root of UnitName.t * tag_label
+    | `Dot of label_parent * string
+    | `Label of label_parent * LabelName.t
+  ]
+
+  type tag_page = [
+    | tag_only_page
+    | tag_unknown
+  ]
+
+  type page = [
+    | `Resolved of Resolved_reference.page
+    | `Root of UnitName.t * tag_page
+    | `Dot of label_parent * string
+  ]
+
+  type any = [
+    | `Resolved of Resolved_reference.any
+    | `Root of UnitName.t * tag_any
+    | `Dot of label_parent * string
+    | `Module of signature * ModuleName.t
+    | `ModuleType of signature * ModuleTypeName.t
+    | `Type of signature * TypeName.t
+    | `Constructor of datatype * ConstructorName.t
+    | `Field of parent * FieldName.t
+    | `Extension of signature * ExtensionName.t
+    | `Exception of signature * ExceptionName.t
+    | `Value of signature * ValueName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+    | `Method of class_signature * MethodName.t
+    | `InstanceVariable of class_signature * InstanceVariableName.t
+    | `Label of label_parent * LabelName.t
+  ]
 end = Reference
 
 and Resolved_reference :
 sig
-  type kind = Kind.reference
 
-  type 'kind t =
-    | Identifier : 'kind Identifier.t -> 'kind t
-    | SubstAlias : Resolved_path.module_ * module_ -> [< kind > `Module ] t
-    | Module : signature * string -> [< kind > `Module] t
-    | Canonical : module_ * Reference.module_ -> [< kind > `Module] t
-    | ModuleType : signature * string -> [< kind > `ModuleType] t
-    | Type : signature * string -> [< kind > `Type] t
-    | Constructor : datatype * string -> [< kind > `Constructor] t
-    | Field : parent * string -> [< kind > `Field] t
-    | Extension : signature * string -> [< kind > `Extension] t
-    | Exception : signature * string -> [< kind > `Exception] t
-    | Value : signature * string -> [< kind > `Value] t
-    | Class : signature * string -> [< kind > `Class] t
-    | ClassType : signature * string -> [< kind > `ClassType] t
-    | Method : class_signature * string -> [< kind > `Method] t
-    | InstanceVariable : class_signature * string ->
-        [< kind > `InstanceVariable] t
-    | Label : label_parent * string -> [< kind > `Label] t
+  (* Note - many of these are effectively unions of previous types,
+    but they are declared here explicitly because OCaml isn't yet
+    smart enough to accept the more natural expression of this. Hence
+    we define here all those types that ever appear on the right hand
+    side of the constructors and then below we redefine many with
+    the actual hierarchy made more explicit. *)
+  type datatype = [
+    | `Identifier of Identifier.datatype
 
-  and any = kind t
-  and signature = Kind.signature t
-  and class_signature = Kind.class_signature t
-  and datatype = Kind.datatype t
-  and parent = Kind.parent t
-  and module_ = Kind.reference_module t
-  and label_parent = Kind.label_parent t
+    | `Type of signature * TypeName.t
+  ]
 
-  type module_type = Kind.reference_module_type t
-  type type_ = Kind.reference_type t
-  type constructor = Kind.reference_constructor t
-  type field = Kind.reference_field t
-  type extension = Kind.reference_extension t
-  type exception_ = Kind.reference_exception t
-  type value = Kind.reference_value t
-  type class_ = Kind.reference_class t
-  type class_type = Kind.reference_class_type t
-  type method_ = Kind.reference_method t
-  type instance_variable = Kind.reference_instance_variable t
-  type label = Kind.reference_label t
-  type page = Kind.reference_page t
+  and module_ = [
+    | `Identifier of Identifier.module_
+
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+    | `Canonical of module_ * Reference.module_
+  ]
+
+  (* Signature is [ module | moduletype ] *)
+  and signature = [
+    | `Identifier of Identifier.signature
+
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+    | `Canonical of module_ * Reference.module_
+
+    | `ModuleType of signature * ModuleTypeName.t
+  ]
+
+  and class_signature = [
+    | `Identifier of Identifier.class_signature
+
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+  ]
+
+  (* parent is [ signature | class_signature ] *)
+  and parent = [
+    | `Identifier of Identifier.parent
+
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+    | `Canonical of module_ * Reference.module_
+
+    | `ModuleType of signature * ModuleTypeName.t
+
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+
+    | `Type of signature * TypeName.t
+  ]
+
+  (* The only difference between parent and label_parent
+     is that the Identifier allows more types *)
+  and label_parent = [
+    | `Identifier of Identifier.label_parent
+
+    | `SubstAlias of Resolved_path.module_ * module_
+    | `Module of signature * ModuleName.t
+    | `Canonical of module_ * Reference.module_
+
+    | `ModuleType of signature * ModuleTypeName.t
+
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+
+    | `Type of signature * TypeName.t
+  ]
+
+  type s_substalias = [ `SubstAlias of Resolved_path.module_ * module_ ]
+  type s_module = [ `Module of signature * ModuleName.t ]
+  type s_canonical = [ `Canonical of module_ * Reference.module_ ]
+  type s_module_type = [ `ModuleType of signature * ModuleTypeName.t ]
+  type s_type =[ `Type of signature * TypeName.t ]
+  type s_constructor = [ `Constructor of datatype * ConstructorName.t ]
+  type s_field = [ `Field of parent * FieldName.t ]
+  type s_extension = [ `Extension of signature * ExtensionName.t ]
+  type s_exception = [ `Exception of signature * ExceptionName.t ]
+  type s_value = [ `Value of signature * ValueName.t ]
+  type s_class = [ `Class of signature * ClassName.t ]
+  type s_class_type = [ `ClassType of signature * ClassTypeName.t ]
+  type s_method = [ `Method of class_signature * MethodName.t ]
+  type s_instance_variable = [ `InstanceVariable of class_signature * InstanceVariableName.t ]
+  type s_label = [ `Label of label_parent * LabelName.t ]
+
+  type module_no_id = [
+    | s_substalias
+    | s_module
+    | s_canonical
+  ]
+
+  type signature_no_id = [
+    | module_no_id
+    | s_module_type
+  ]
+
+  type class_signature_no_id = [
+    | s_class
+    | s_class_type
+  ]
+
+  type datatype_no_id = [
+    | s_type
+  ]
+
+  type parent_no_id = [
+    | signature_no_id
+    | class_signature_no_id
+    | datatype_no_id
+  ]
+
+  type module_type = [
+    | `Identifier of Identifier.reference_module_type
+    | s_module_type
+  ]
+
+  type type_ = [
+    | `Identifier of Identifier.reference_type
+    | s_type
+    | s_class
+    | s_class_type
+  ]
+
+  type constructor = [
+    | `Identifier of Identifier.reference_constructor
+    | s_constructor
+    | s_extension
+    | s_exception
+  ]
+
+  type constructor_no_id = [
+    | s_constructor
+    | s_extension
+    | s_exception
+  ]
+
+  type field = [
+    | `Identifier of Identifier.reference_field
+    | s_field
+  ]
+
+  type extension = [
+    | `Identifier of Identifier.reference_extension
+    | s_exception
+    | s_extension
+  ]
+
+  type extension_no_id = [
+    | s_exception
+    | s_extension
+  ]
+
+  type exception_ = [
+    | `Identifier of Identifier.reference_exception
+    | s_exception
+  ]
+
+  type value = [
+    | `Identifier of Identifier.reference_value
+    | s_value
+  ]
+
+  type class_ = [
+    | `Identifier of Identifier.reference_class
+    | s_class
+  ]
+
+  type class_type = [
+    | `Identifier of Identifier.reference_class_type
+    | s_class
+    | s_class_type
+  ]
+
+  type class_type_no_id = [
+    | s_class
+    | s_class_type
+  ]
+
+  type method_ = [
+    | `Identifier of Identifier.reference_method
+    | s_method
+  ]
+
+  type instance_variable = [
+    | `Identifier of Identifier.reference_instance_variable
+    | s_instance_variable
+  ]
+
+  type label = [
+    | `Identifier of Identifier.reference_label
+    | s_label
+  ]
+
+  type page = [
+    | `Identifier of Identifier.reference_page
+  ]
+
+  type any = [
+    | `Identifier of Identifier.any
+    | s_substalias
+    | s_module
+    | s_canonical
+    | s_module_type
+    | s_type
+    | s_constructor
+    | s_field
+    | s_extension
+    | s_exception
+    | s_value
+    | s_class
+    | s_class_type
+    | s_method
+    | s_instance_variable
+    | s_label
+  ]
 end = Resolved_reference

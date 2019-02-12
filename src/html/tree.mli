@@ -72,20 +72,20 @@ module Relative_link : sig
   module Id : sig
     exception Not_linkable
 
-    val href : ?xref_base_uri:string -> stop_before:bool -> _ Paths.Identifier.t -> string
+    val href : ?xref_base_uri:string -> stop_before:bool -> Paths.Identifier.t -> string
   end
 
-  val of_path : stop_before:bool -> _ Paths.Path.t
+  val of_path : stop_before:bool -> Paths.Path.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
 
-  val of_fragment : base:Paths.Identifier.signature
-    -> (_, Paths.Fragment.sort) Paths.Fragment.raw
+  val of_fragment : base:Paths.Identifier.Signature.t
+    -> Paths.Fragment.t
     -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
 
   val to_sub_element : kind:kind -> string -> [> `Href ] Html.attrib
 end
 
-val render_fragment : (_, Paths.Fragment.sort) Paths.Fragment.raw -> string
+val render_fragment : Paths.Fragment.t -> string
 
 (* TODO: move to a centralized [State] module or something. Along with
    Relative_link.semantic_uris. *)

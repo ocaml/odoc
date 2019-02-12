@@ -19,7 +19,7 @@ open Model.Paths
 
 let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
   match id with
-  | Identifier.Argument (_, nb, _) -> nb
+  | `Argument (_, nb, _) -> nb
   | _ ->
     failwith "TODO"
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in

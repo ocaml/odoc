@@ -1,7 +1,7 @@
 open Result
 open StdLabels
 open Model.Paths
-open Identifier
+open Model.Names
 
 type t = {
   page : string list;
@@ -44,12 +44,12 @@ let (>>=) x f =
   | Ok x -> f x
   | Error _ as e -> e
 
-let rec from_identifier : type a. stop_before:bool ->
-  a Identifier.t -> (t, Error.t) result =
+let rec from_identifier : stop_before:bool ->
+  Identifier.t -> (t, Error.t) result =
   fun ~stop_before ->
     let open Error in
     function
-    | Root (abstr, unit_name) ->
+    | `Root (abstr, unit_name) ->
       begin try Ok abstr.package
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
@@ -62,112 +62,115 @@ let rec from_identifier : type a. stop_before:bool ->
         { page; anchor = unit_name; kind }
       else
       *)
-      { page = unit_name :: page; anchor = ""; kind }
-    | Page (abstr, page_name) ->
+      { page = UnitName.to_string unit_name :: page; anchor = ""; kind }
+    | `Page (abstr, page_name) ->
       begin try Ok abstr.package
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))
       end >>| fun pkg_name ->
-      let page = [ page_name ^ ".html"; pkg_name ] in
+      let page = [ PageName.to_string page_name ^ ".html"; pkg_name ] in
       let kind = "page" in
       { page; anchor = ""; kind }
-    | Module (parent, mod_name) ->
-      from_identifier_no_anchor parent ("module " ^ mod_name)
+    | `Module (parent, mod_name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("module " ^ ModuleName.to_string mod_name)
       >>| fun parent ->
       let kind = "module" in
       if stop_before then
-        { page = parent; anchor = Printf.sprintf "%s-%s" kind mod_name; kind }
+        { page = parent; anchor = Printf.sprintf "%s-%s" kind (ModuleName.to_string mod_name); kind }
       else
-        { page = mod_name :: parent; anchor = ""; kind }
-    | Argument (functor_id, arg_num, arg_name) ->
-      from_identifier_no_anchor functor_id ("arg " ^ arg_name)
+        { page = (ModuleName.to_string mod_name) :: parent; anchor = ""; kind }
+    | `Argument (functor_id, arg_num, arg_name) ->
+      from_identifier_no_anchor (functor_id :> Identifier.t) ("arg " ^ ArgumentName.to_string arg_name)
       >>| fun parent ->
       let kind = "argument" in
-      let suffix = Printf.sprintf "%s-%d-%s" kind arg_num arg_name in
+      let suffix = Printf.sprintf "%s-%d-%s" kind arg_num (ArgumentName.to_string arg_name) in
       if stop_before then
         { page = parent; anchor = suffix; kind }
       else
         { page = suffix :: parent; anchor = ""; kind }
-    | ModuleType (parent, modt_name) ->
-      from_identifier_no_anchor parent ("module type " ^ modt_name)
+    | `ModuleType (parent, modt_name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("module type " ^ ModuleTypeName.to_string modt_name)
       >>| fun parent ->
       let kind = "module-type" in
-      let suffix = Printf.sprintf "%s-%s" kind modt_name in
+      let suffix = Printf.sprintf "%s-%s" kind (ModuleTypeName.to_string modt_name) in
       if stop_before then
         { page = parent; anchor = suffix; kind }
       else
         { page = suffix :: parent; anchor = ""; kind }
-    | Type (parent, type_name) ->
-      from_identifier_no_anchor parent ("type " ^ type_name)
+    | `Type (parent, type_name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("type " ^ (TypeName.to_string type_name))
       >>| fun page ->
       let kind = "type" in
-      { page; anchor = Printf.sprintf "%s-%s" kind type_name; kind }
-    | CoreType ty_name ->
-      Error (Not_linkable ("core_type:"^ty_name))
-    | Constructor (parent, name) ->
-      from_identifier ~stop_before:false parent
+      { page; anchor = Printf.sprintf "%s-%s" kind (TypeName.to_string type_name); kind }
+    | `CoreType ty_name ->
+      Error (Not_linkable ("core_type:"^ (TypeName.to_string ty_name)))
+    | `Constructor (parent, name) ->
+      from_identifier ~stop_before:false (parent :> Identifier.t)
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
       | { page; anchor; _ } ->
         let kind = "constructor" in
-        Ok { page; anchor = anchor ^ "." ^ name; kind }
+        Ok { page; anchor = anchor ^ "." ^ (ConstructorName.to_string name); kind }
       end
-    | Field (parent, name) ->
-      from_identifier ~stop_before:false parent
+    | `Field (parent, name) ->
+      from_identifier ~stop_before:false (parent :> Identifier.t)
       >>= begin function
       (* FIXME: update doc-ock. *)
 (*       | { anchor = ""; _ } as t -> Error (Missing_anchor (t, name)) *)
       | { page; anchor; _ } ->
         let kind = "field" in
-        Ok { page; anchor = anchor ^ "." ^ name; kind }
+        Ok { page; anchor = anchor ^ "." ^ (FieldName.to_string name); kind }
       end
-    | Extension (parent, name) ->
-      from_identifier_no_anchor parent ("extension " ^ name)
+    | `Extension (parent, name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("extension " ^ (ExtensionName.to_string name))
       >>| fun parent ->
       let kind = "extension" in
-      { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
-    | Exception (parent, name) ->
-      from_identifier_no_anchor parent ("exception " ^ name)
+      { page = parent; anchor = Printf.sprintf "%s-%s" kind (ExtensionName.to_string name); kind }
+    | `Exception (parent, name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("exception " ^ (ExceptionName.to_string name))
       >>| fun parent ->
       let kind = "exception" in
-      { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
-    | CoreException name ->
-      Error (Not_linkable ("core_exception:" ^ name))
-    | Value (parent, name) ->
-      from_identifier_no_anchor parent ("val " ^ name)
+      { page = parent; anchor = Printf.sprintf "%s-%s" kind (ExceptionName.to_string name); kind }
+    | `CoreException name ->
+      Error (Not_linkable ("core_exception:" ^ (ExceptionName.to_string name)))
+    | `Value (parent, name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("val " ^ (ValueName.to_string name))
       >>| fun parent ->
       let kind = "val" in
-      { page = parent; anchor = Printf.sprintf "%s-%s" kind name; kind }
-    | Class (parent, name) ->
-      from_identifier_no_anchor parent ("class " ^ name)
+      { page = parent; anchor = Printf.sprintf "%s-%s" kind (ValueName.to_string name); kind }
+    | `Class (parent, name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("class " ^ (ClassName.to_string name))
       >>| fun parent ->
       let kind = "class" in
-      let suffix = Printf.sprintf "%s-%s" kind name in
+      let suffix = Printf.sprintf "%s-%s" kind (ClassName.to_string name) in
       if stop_before then
         { page = parent; anchor = suffix; kind }
       else
         { page = suffix :: parent; anchor = ""; kind }
-    | ClassType (parent, name) ->
-      from_identifier_no_anchor parent ("class type " ^ name)
+    | `ClassType (parent, name) ->
+      from_identifier_no_anchor (parent :> Identifier.t) ("class type " ^ (ClassTypeName.to_string name))
       >>| fun parent ->
       let kind = "class-type" in
-      let suffix = Printf.sprintf "%s-%s" kind name in
+      let suffix = Printf.sprintf "%s-%s" kind (ClassTypeName.to_string name) in
       if stop_before then
         { page = parent; anchor = suffix; kind }
       else
         { page = suffix :: parent; anchor = ""; kind }
-    | Method (parent, name) ->
-      from_identifier_no_anchor parent ("method " ^ name)
+    | `Method (parent, name) ->
+      let str_name = MethodName.to_string name in
+      from_identifier_no_anchor (parent :> Identifier.t) ("method " ^ str_name)
       >>| fun page ->
       let kind = "method" in
-      { page; anchor = Printf.sprintf "%s-%s" kind name; kind }
-    | InstanceVariable (parent, name) ->
-      from_identifier_no_anchor parent ("val " ^ name)
+      { page; anchor = Printf.sprintf "%s-%s" kind str_name; kind }
+    | `InstanceVariable (parent, name) ->
+      let str_name = InstanceVariableName.to_string name in
+      from_identifier_no_anchor (parent :> Identifier.t) ("val " ^ str_name)
       >>| fun page ->
       let kind = "val" in
-      { page; anchor = Printf.sprintf "%s-%s" kind name; kind }
-    | Label (parent, anchor) ->
-      from_identifier ~stop_before:false parent
+      { page; anchor = Printf.sprintf "%s-%s" kind str_name; kind }
+    | `Label (parent, anchor') ->
+      let anchor = LabelName.to_string anchor' in
+      from_identifier ~stop_before:false (parent :> Identifier.t)
       >>= function
       | { page; anchor = ""; kind } ->
         (* Really ad-hoc and shitty, but it works. *)
@@ -176,8 +179,8 @@ let rec from_identifier : type a. stop_before:bool ->
       | otherwise ->
         Error (Unexpected_anchor (otherwise, "label " ^ anchor))
 
-and from_identifier_no_anchor : type a.
-  a Identifier.t -> string -> (string list, Error.t) result =
+and from_identifier_no_anchor :
+  Identifier.t -> string -> (string list, Error.t) result =
   fun id child ->
     from_identifier ~stop_before:false id
     >>= function
@@ -194,30 +197,30 @@ let kind_of_id_exn id =
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
 
-let render_path : type a. a Path.t -> string =
-  let rec render_resolved : type a. a Path.Resolved.t -> string =
-    let open Path.Resolved in
+let render_path : Model.Paths.Path.t -> string =
+  let open Model.Paths.Path in
+  let rec render_resolved : Model.Paths.Path.Resolved.t -> string =
+    let open Resolved in
     function
-    | Identifier id -> Identifier.name id
-    | Subst (_, p) -> render_resolved p
-    | SubstAlias (_, p) -> render_resolved p
-    | Hidden p -> render_resolved p
-    | Module (p, s) -> render_resolved p ^ "." ^ s
-    | Canonical (_, Path.Resolved p) -> render_resolved p
-    | Canonical (p, _) -> render_resolved p
-    | Apply (rp, p) -> render_resolved rp ^ "(" ^ render_path p ^ ")"
-    | ModuleType (p, s) -> render_resolved p ^ "." ^ s
-    | Type (p, s) -> render_resolved p ^ "." ^ s
-    | Class (p, s) -> render_resolved p ^ "." ^ s
-    | ClassType (p, s) -> render_resolved p ^ "." ^ s
-  and render_path : type a. a Path.t -> string =
-    let open Path in
+    | `Identifier id -> Identifier.name id
+    | `Subst (_, p) -> render_resolved (p :> t)
+    | `SubstAlias (_, p) -> render_resolved (p :> t)
+    | `Hidden p -> render_resolved (p :> t)
+    | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)
+    | `Canonical (_, `Resolved p) -> render_resolved (p :> t)
+    | `Canonical (p, _) -> render_resolved (p :> t)
+    | `Apply (rp, p) -> render_resolved (rp :> t) ^ "(" ^ render_path (p :> Model.Paths.Path.t) ^ ")"
+    | `ModuleType (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleTypeName.to_string s)
+    | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ (TypeName.to_string s)
+    | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ (ClassName.to_string s)
+    | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ (ClassTypeName.to_string s)
+  and render_path : Model.Paths.Path.t -> string =
     function
-    | Root root -> root
-    | Forward root -> root
-    | Dot (prefix, suffix) -> render_path prefix ^ "." ^ suffix
-    | Apply (p1, p2) -> render_path p1 ^ "(" ^ render_path p2 ^ ")"
-    | Resolved rp -> render_resolved rp
+    | `Root root -> root
+    | `Forward root -> root
+    | `Dot (prefix, suffix) -> render_path (prefix :> t) ^ "." ^ suffix
+    | `Apply (p1, p2) -> render_path (p1 :> t) ^ "(" ^ render_path (p2 :> t) ^ ")"
+    | `Resolved rp -> render_resolved rp
   in
   render_path
 
@@ -230,7 +233,7 @@ module Anchor = struct
   module Polymorphic_variant_decl = struct
     let name_of_type_constr te =
       match te with
-      | Model.Lang.TypeExpr.Constr (path, _) -> render_path path
+      | Model.Lang.TypeExpr.Constr (path, _) -> render_path (path :> Model.Paths.Path.t)
       | _ ->
         invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
@@ -253,26 +256,25 @@ module Anchor = struct
     (* TODO: better error message. *)
     let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
-    let rec from_reference : type a. a Reference.t -> t = function
-      | Reference.Root (name, _) -> { kind = "xref-unresolved"; name }
-      | Reference.Dot (parent, suffix) ->
-        let { name; _ } = from_reference parent in
+    let rec from_reference : Reference.t -> t = function
+      | `Root (name, _) -> { kind = "xref-unresolved"; name = Model.Names.UnitName.to_string name }
+      | `Dot (parent, suffix) ->
+        let { name; _ } = from_reference (parent :> Reference.t) in
         { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
-      | Reference.Module (parent, suffix) ->
-        let { name; _ } = from_reference parent in
-        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
-      | Reference.ModuleType (parent, suffix) ->
-        let { name; _ } = from_reference parent in
-        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
-      | Reference.Resolved r ->
+      | `Module (parent, suffix) ->
+        let { name; _ } = from_reference (parent :> Reference.t) in
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleName.to_string suffix) }
+      | `ModuleType (parent, suffix) ->
+        let { name; _ } = from_reference (parent :> Reference.t) in
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleTypeName.to_string suffix) }
+      | `Resolved r ->
         from_resolved r
       | _ ->
         fail ()
 
-    and from_resolved : type a. a Reference.Resolved.t -> t =
-      let open Reference.Resolved in
+    and from_resolved : Reference.Resolved.t -> t =
       function
-      | Identifier id ->
+      | `Identifier id ->
         let name = Identifier.name id in
         let kind =
           match from_identifier ~stop_before:false id with
@@ -280,12 +282,12 @@ module Anchor = struct
           | Error _ -> fail ()
         in
         { name; kind }
-      | Module (parent, s) ->
-        let { name; _ } = from_resolved parent in
-        { kind = "module"; name = Printf.sprintf "%s.%s" name s }
-      | ModuleType (parent, s) ->
-        let { name; _ } = from_resolved parent in
-        { kind = "module-type"; name = Printf.sprintf "%s.%s" name s }
+      | `Module (parent, s) ->
+        let { name; _ } = from_resolved (parent :> Reference.Resolved.t) in
+        { kind = "module"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleName.to_string s) }
+      | `ModuleType (parent, s) ->
+        let { name; _ } = from_resolved (parent :> Reference.Resolved.t) in
+        { kind = "module-type"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleTypeName.to_string s) }
       | _ ->
         fail ()
   end

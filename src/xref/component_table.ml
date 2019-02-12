@@ -18,6 +18,7 @@ open Model
 open Paths
 open Model.Lang
 open Components
+open Model.Names
 
 type ('a, 'b) tbl =
   { fresh: int -> ('a, 'b) tbl;
@@ -81,19 +82,19 @@ let create ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
 
 type local =
   { t : t;
-    local : (Identifier.signature, Sig.t) tbl option;
-    base : Identifier.signature option; }
+    local : (Identifier.Signature.t, Sig.t) tbl option;
+    base : Identifier.Signature.t option; }
 
 let create_local t base =
   let equal =
     match t.equal with
     | None -> None
-    | Some _equal -> Some Identifier.equal
+    | Some _equal -> Some Identifier.Signature.equal
   in
   let hash =
     match t.hash with
     | None -> None
-    | Some _hash -> Some Identifier.hash
+    | Some _hash -> Some Identifier.Signature.hash
   in
   let local =
     match base with
@@ -103,86 +104,79 @@ let create_local t base =
     { t; local; base; }
 
 let add_local_module_identifier (local : local) id sg =
-  let open Identifier in
     match local.local with
     | None -> ()
-    | Some tbl -> tbl.add (signature_of_module id) sg
+    | Some tbl -> tbl.add (id : Identifier.Module.t :> Identifier.Signature.t) sg
 
 let add_local_module_type_identifier (local : local) id sg =
-  let open Identifier in
     match local.local with
     | None -> ()
-    | Some tbl -> tbl.add (signature_of_module_type id) sg
+    | Some tbl -> tbl.add (id : Identifier.ModuleType.t :> Identifier.Signature.t) sg
 
 let add_local_modules (local : local) id mds =
-  let open Identifier in
     match local.local with
     | None -> ()
     | Some tbl ->
         List.iter
-          (fun (name, sg) -> tbl.add (Module(id, name)) sg)
+          (fun (name, sg) -> tbl.add (`Module(id, name)) sg)
           mds
 
 let add_local_module_types (local : local) id mtys =
-  let open Identifier in
     match local.local with
     | None -> ()
     | Some tbl ->
         List.iter
-          (fun (name, sg) -> tbl.add (ModuleType(id, name)) sg)
+          (fun (name, sg) -> tbl.add (`ModuleType(id, name)) sg)
           mtys
 
-let equals_signature (type k) _eq
-      (base : Identifier.signature) (id : k Identifier.t) =
-  let open Identifier in
+let equals_signature _eq (base : Identifier.Signature.t) (id : Identifier.t) =
     match id with
-    | Root _ as id ->
-        Identifier.equal base id
-    | Module _ as id ->
-        Identifier.equal base id
-    | Argument _ as id ->
-        Identifier.equal base id
-    | ModuleType _ as id ->
-        Identifier.equal base id
-    | Page _ -> false
-    | Type _ -> false
-    | CoreType _ -> false
-    | Constructor _ -> false
-    | Field _ -> false
-    | Extension _ -> false
-    | Exception _ -> false
-    | CoreException _ -> false
-    | Value _ -> false
-    | Class _ -> false
-    | ClassType _ -> false
-    | Method _ -> false
-    | InstanceVariable _ -> false
-    | Label _ -> false
+    | `Root _ as id ->
+        Identifier.Signature.equal base id
+    | `Module _ as id ->
+        Identifier.Signature.equal base id
+    | `Argument _ as id ->
+        Identifier.Signature.equal base (id :> Identifier.Signature.t)
+    | `ModuleType _ as id ->
+        Identifier.Signature.equal base (id :> Identifier.Signature.t)
+    | `Page _ -> false
+    | `Type _ -> false
+    | `CoreType _ -> false
+    | `Constructor _ -> false
+    | `Field _ -> false
+    | `Extension _ -> false
+    | `Exception _ -> false
+    | `CoreException _ -> false
+    | `Value _ -> false
+    | `Class _ -> false
+    | `ClassType _ -> false
+    | `Method _ -> false
+    | `InstanceVariable _ -> false
+    | `Label _ -> false
 
-let rec is_parent_local : type k . _ -> _ -> k Identifier.t -> bool =
+let rec is_parent_local : _ -> _ -> Identifier.t -> bool =
   fun eq base id ->
-    let open Identifier in
       match id with
-      | Root _  -> false
-      | Page _ -> false
-      | Module(parent, _) -> is_local eq base parent
-      | Argument(parent, _, _) -> is_local eq base parent
-      | ModuleType(parent, _) -> is_local eq base parent
-      | Type(parent, _) -> is_local eq base parent
-      | CoreType _ -> false
-      | Constructor(parent, _) -> is_local eq base parent
-      | Field(parent, _) -> is_local eq base parent
-      | Extension(parent, _) -> is_local eq base parent
-      | Exception(parent, _) -> is_local eq base parent
-      | CoreException _ -> false
-      | Value(parent, _) -> is_local eq base parent
-      | Class(parent, _) -> is_local eq base parent
-      | ClassType(parent, _) -> is_local eq base parent
-      | Method(parent, _) -> is_local eq base parent
-      | InstanceVariable(parent, _) -> is_local eq base parent
-      | Label(parent, _) -> is_local eq base parent
+      | `Root _  -> false
+      | `Page _ -> false
+      | `Module(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Argument(parent, _, _) -> is_local eq base (parent :> Identifier.t)
+      | `ModuleType(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Type(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `CoreType _ -> false
+      | `Constructor(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Field(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Extension(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Exception(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `CoreException _ -> false
+      | `Value(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Class(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `ClassType(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Method(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `InstanceVariable(parent, _) -> is_local eq base (parent :> Identifier.t)
+      | `Label(parent, _) -> is_local eq base (parent :> Identifier.t)
 
-and is_local : type k ._ -> _ -> k Identifier.t -> bool =
+and is_local : _ -> _ -> Identifier.t -> bool =
   fun eq base id ->
     is_parent_local eq base id
     || equals_signature eq base id
@@ -199,21 +193,19 @@ let is_local local id =
     is_local eq base id
 
 let local_module_identifier (local : local) id =
-  let open Identifier in
     match local.local with
     | None -> Sig.unresolved
     | Some tbl ->
         try
-          tbl.find (signature_of_module id)
+          tbl.find (id : Identifier.Module.t :> Identifier.Signature.t)
         with Not_found -> Sig.unresolved
 
 let local_module_type_identifier (local : local) id =
-  let open Identifier in
     match local.local with
     | None -> Sig.unresolved
     | Some tbl ->
         try
-          tbl.find (signature_of_module_type id)
+          tbl.find (id : Identifier.ModuleType.t :> Identifier.Signature.t)
         with Not_found -> Sig.unresolved
 
 let datatype decl =
@@ -266,9 +258,8 @@ let page tbl base =
     tbl.page_tbl.add base t;
     t
 
-let page_identifier tbl : Identifier.page -> _ =
-  let open Identifier in function
-  | Page(base, _) -> page tbl base
+let page_identifier tbl : Identifier.Page.t -> _ = function
+  | `Page(base, _) -> page tbl base
 
 let rec unit tbl base =
     try
@@ -276,7 +267,7 @@ let rec unit tbl base =
     with Not_found ->
       let open Compilation_unit in
       let unt = tbl.fetch_unit base in
-      let id = Identifier.signature_of_module unt.id in
+      let id = (unt.id : Identifier.Module.t :> Identifier.Signature.t) in
       let local = create_local tbl (Some id) in
       let t =
         match unt.content with
@@ -297,83 +288,89 @@ let rec unit tbl base =
         tbl.tbl.add base t;
         t
 
-and signature_identifier tbl =
-  let open Identifier in function
-  | (Root(base, _) : signature) -> unit tbl base
-  | Module(id, name) ->
+and signature_identifier tbl (i : Identifier.Signature.t) =
+  match i with 
+  | `Root(base, _) -> unit tbl base
+  | `Module(id, name) ->
       let parent = signature_identifier tbl id in
-        Sig.lookup_module name parent
-  | Argument(id, pos, _) ->
-      let parent = signature_identifier tbl id in
-        Sig.lookup_argument pos parent
-  | ModuleType(id, name) ->
-      let parent = signature_identifier tbl id in
-        Sig.lookup_module_type name parent
-
-and module_identifier tbl =
-  let open Identifier in function
-  | (Root(base, _) : module_) -> unit tbl base
-  | Module(id, name) ->
-      let parent = signature_identifier tbl id in
-        Sig.lookup_module name parent
-  | Argument(id, pos, _) ->
+        Sig.lookup_module (ModuleName.to_string name) parent
+  | `Argument(id, pos, _) ->
       let parent = signature_identifier tbl id in
         Sig.lookup_argument pos parent
-
-and module_type_identifier tbl =
-  let open Identifier in function
-  | (ModuleType(id, name) : module_type) ->
+  | `ModuleType(id, name) ->
       let parent = signature_identifier tbl id in
-        Sig.lookup_module_type name parent
+        Sig.lookup_module_type (ModuleTypeName.to_string name) parent
 
-and datatype_identifier tbl =
-  let open Identifier in function
-  | (Type(id, name) : Identifier.type_)->
+and module_identifier tbl (i : Identifier.Module.t) =
+  match i with
+  | `Root(base, _) -> unit tbl base
+  | `Module(id, name) ->
       let parent = signature_identifier tbl id in
-        Sig.lookup_datatype name parent
-  | CoreType name -> List.assoc name core_types
+        Sig.lookup_module (ModuleName.to_string name) parent
+  | `Argument(id, pos, _) ->
+      let parent = signature_identifier tbl id in
+        Sig.lookup_argument pos parent
 
-and class_signature_identifier tbl =
-  let open Identifier in function
-    | (Class(id, name) | ClassType(id, name) : path_class_type) ->
+and module_type_identifier tbl (i : Identifier.ModuleType.t) =
+  match i with
+    | `ModuleType(id, name) ->
+      let parent = signature_identifier tbl id in
+        Sig.lookup_module_type (ModuleTypeName.to_string name) parent
+
+and datatype_identifier tbl (i : Identifier.DataType.t) =
+  match i with
+  | (`Type(id, name) : Identifier.Type.t)->
+      let parent = signature_identifier tbl id in
+        Sig.lookup_datatype (TypeName.to_string name) parent
+  | `CoreType name -> List.assoc (TypeName.to_string name) core_types
+
+and class_signature_identifier tbl (p : Identifier.ClassSignature.t) =
+  match p with
+    | `Class(id, name) ->
         let parent = signature_identifier tbl id in
-          Sig.lookup_class_type name parent
+          Sig.lookup_class_type (ClassName.to_string name) parent
+    | `ClassType(id, name) ->
+        let parent = signature_identifier tbl id in
+          Sig.lookup_class_type (ClassTypeName.to_string name) parent
 
-and resolved_module_path local =
-  let open Path.Resolved in function
-  | Identifier (id : Identifier.module_) ->
-      if is_local local id then local_module_identifier local id
+and resolved_module_path local (p : Path.Resolved.Module.t) =
+  match p with
+  | `Identifier (id : Identifier.Module.t) ->
+      if is_local local (id :> Identifier.t) then local_module_identifier local id
       else module_identifier local.t id
-  | Subst(sub, _) -> resolved_module_type_path local sub
-  | SubstAlias(sub, _) -> resolved_module_path local sub
-  | Hidden p -> resolved_module_path local p
-  | Module(p, name) ->
+  | `Subst(sub, _) -> resolved_module_type_path local sub
+  | `SubstAlias(sub, _) -> resolved_module_path local sub
+  | `Hidden p -> resolved_module_path local p
+  | `Module(p, name) ->
       let parent = resolved_module_path local p in
-        Sig.lookup_module name parent
-  | Canonical (p, _) -> resolved_module_path local p
-  | Apply(p, arg) ->
+        Sig.lookup_module (ModuleName.to_string name) parent
+  | `Canonical (p, _) -> resolved_module_path local p
+  | `Apply(p, arg) ->
       let parent = resolved_module_path local p in
         Sig.lookup_apply (module_path local) arg parent
 
-and resolved_module_type_path local =
-  let open Path.Resolved in function
-  | Identifier (id : Identifier.module_type) ->
-      if is_local local id then local_module_type_identifier local id
+and resolved_module_type_path local (p : Path.Resolved.ModuleType.t) =
+  match p with
+  | `Identifier (id : Identifier.ModuleType.t) ->
+      if is_local local (id :> Identifier.t) then local_module_type_identifier local id
       else module_type_identifier local.t id
-  | ModuleType(p, name) ->
+  | `ModuleType(p, name) ->
       let parent = resolved_module_path local p in
-        Sig.lookup_module_type name parent
+        Sig.lookup_module_type (ModuleTypeName.to_string name) parent
 
-and resolved_class_type_path local =
-  let open Path.Resolved in function
-    | Identifier id -> class_signature_identifier local.t id
-    | Class(p, name) | ClassType(p, name) ->
+and resolved_class_type_path local (p : Path.Resolved.ClassType.t) =
+    match p with
+    | `Identifier id -> class_signature_identifier local.t id
+    | `Class(p, name) ->
         let parent = resolved_module_path local p in
-          Sig.lookup_class_type name parent
+          Sig.lookup_class_type (ClassName.to_string name) parent
+    | `ClassType(p, name) ->
+        let parent = resolved_module_path local p in
+          Sig.lookup_class_type (ClassTypeName.to_string name) parent
 
-and module_path local =
-  let open Path in function
-  | Root s -> begin
+and module_path local (p : Path.Module.t) =
+  match p with
+  | `Root s -> begin
       match local.t.lookup_unit s with
       | Not_found ->
         let sg = Sig.unresolved in
@@ -383,7 +380,7 @@ and module_path local =
         let sg = Sig.abstract in
         Sig.set_hidden sg (Root.contains_double_underscore s)
     end
-  | Forward s -> begin (* FIXME? *)
+  | `Forward s -> begin (* FIXME? *)
       match local.t.lookup_unit s with
       | Not_found ->
         let sg = Sig.unresolved in
@@ -393,25 +390,23 @@ and module_path local =
         let sg = Sig.abstract in
         Sig.set_hidden sg (Root.contains_double_underscore s)
     end
-  | Resolved r -> resolved_module_path local r
-  | Dot(p, name) ->
+  | `Resolved r -> resolved_module_path local r
+  | `Dot(p, name) ->
       let parent = module_path local p in
         Sig.lookup_module name parent
-  | Apply(p, arg) ->
+  | `Apply(p, arg) ->
       let parent = module_path local p in
         Sig.lookup_apply (module_path local) arg parent
 
-and module_type_path local =
-  let open Path in function
-  | Resolved r -> resolved_module_type_path local r
-  | Dot(p, name) ->
+and module_type_path local = function
+  | `Resolved r -> resolved_module_type_path local r
+  | `Dot(p, name) ->
       let parent = module_path local p in
         Sig.lookup_module_type name parent
 
-and class_signature_path local =
-  let open Path in function
-    | Resolved p -> resolved_class_type_path local p
-    | Dot(p, name) ->
+and class_signature_path local = function
+    | `Resolved p -> resolved_class_type_path local p
+    | `Dot(p, name) ->
         let parent = module_path local p in
           Sig.lookup_class_type name parent
 
@@ -423,13 +418,13 @@ and class_signature_items local =
         let csig = class_signature_items local rest in
         let csig = add_documentation ivar.doc csig in
         let name = Identifier.name ivar.id in
-          add_element name Element.InstanceVariable csig
+          add_element name `InstanceVariable csig
     | Method meth :: rest ->
         let open Method in
         let csig = class_signature_items local rest in
         let csig = add_documentation meth.doc csig in
         let name = Identifier.name meth.id in
-          add_element name Element.Method csig
+          add_element name `Method csig
     | Constraint _ :: rest ->
         class_signature_items local rest
     | Inherit expr :: rest ->
@@ -496,26 +491,26 @@ and signature_items local =
                let open Constructor in
                let name = Identifier.name cstr.id in
                let acc = add_documentation cstr.doc acc in
-                 add_element name Element.Extension acc)
+                 add_element name `Extension acc)
             ext.constructors sg
     | Exception exn :: rest ->
         let open Exception in
         let sg = signature_items local rest in
         let sg = add_documentation exn.doc sg in
         let name = Identifier.name exn.id in
-          add_element name Element.Exception sg
+          add_element name `Exception sg
     | Value v :: rest ->
         let open Value in
         let sg = signature_items local rest in
         let sg = add_documentation v.doc sg in
         let name = Identifier.name v.id in
-          add_element name Element.Value sg
+          add_element name `Value sg
     | External ev :: rest ->
         let open External in
         let sg = signature_items local rest in
         let sg = add_documentation ev.doc sg in
         let name = Identifier.name ev.id in
-          add_element name Element.Value sg
+          add_element name `Value sg
     | Class (_, cl)::rest ->
         let open Class in
         let sg = signature_items local rest in
@@ -623,48 +618,50 @@ let module_type_path_with tbl path =
   let base = module_type_path local path in
     { base; tbl }
 
-let rec resolved_signature_fragment wth =
-  let open Fragment.Resolved in function
-  | Root -> wth.base
-  | Subst(sub, _) -> resolved_module_type_path wth.tbl sub
-  | SubstAlias(sub, _) -> resolved_module_path wth.tbl sub
-  | Module(p, name) ->
+let rec resolved_signature_fragment wth (f : Fragment.Resolved.Signature.t) =
+  match f with
+  | `Root -> wth.base
+  | `Subst(sub, _) -> resolved_module_type_path wth.tbl sub
+  | `SubstAlias(sub, _) -> resolved_module_path wth.tbl sub
+  | `Module(p, name) ->
       let parent = resolved_signature_fragment wth p in
-        Sig.lookup_module name parent
+        Sig.lookup_module (ModuleName.to_string name) parent
 
-let rec resolved_signature_reference tbl =
-  let open Reference.Resolved in function
-  | Identifier (id : Identifier.signature) ->
+let rec resolved_signature_reference tbl (r : Reference.Resolved.Signature.t) =
+  match r with 
+  | `Identifier id ->
       signature_identifier tbl id
-  | SubstAlias(sub, _) ->
+  | `SubstAlias(sub, _) ->
       resolved_module_path tbl sub
-  | Module(p, name) ->
+  | `Module(p, name) ->
       let parent = resolved_signature_reference tbl p in
-        Sig.lookup_module name parent
-  | Canonical (p, _) ->
-    resolved_signature_reference tbl (signature_of_module p)
-  | ModuleType(p, name) ->
+        Sig.lookup_module (ModuleName.to_string name) parent
+  | `Canonical (p, _) ->
+    resolved_signature_reference tbl (p : Reference.Resolved.Module.t :> Reference.Resolved.Signature.t)
+  | `ModuleType(p, name) ->
       let parent = resolved_signature_reference tbl p in
-        Sig.lookup_module_type name parent
+        Sig.lookup_module_type (ModuleTypeName.to_string name) parent
 
-and resolved_class_signature_reference tbl =
-  let open Reference.Resolved in function
-    | Identifier id -> class_signature_identifier tbl id
-    | Class(p, name) | ClassType(p, name) ->
+and resolved_class_signature_reference tbl (r : Reference.Resolved.ClassSignature.t) =
+  match r with
+    | `Identifier id -> class_signature_identifier tbl id
+    | `Class(p, name) ->
         let parent = resolved_signature_reference tbl p in
-          Sig.lookup_class_type name parent
-
-and resolved_datatype_reference tbl =
-  let open Reference.Resolved in function
-    | Identifier id -> datatype_identifier tbl id
-    | Type(p, name) ->
+          Sig.lookup_class_type (ClassName.to_string name) parent
+    | `ClassType(p, name) ->
         let parent = resolved_signature_reference tbl p in
-          Sig.lookup_datatype name parent
+          Sig.lookup_class_type (ClassTypeName.to_string name) parent
 
-and resolved_page_reference tbl : Reference.Resolved.page -> _ =
-  let open Reference.Resolved in function
-    | Identifier id -> page_identifier tbl id
+and resolved_datatype_reference tbl (r : Reference.Resolved.DataType.t) =
+  match r with
+    | `Identifier id -> datatype_identifier tbl id
+    | `Type(p, name) ->
+        let parent = resolved_signature_reference tbl p in
+          Sig.lookup_datatype (TypeName.to_string name) parent
 
-let base tbl s = tbl.lookup_unit s
+and resolved_page_reference tbl : Reference.Resolved.Page.t -> _ = function
+    | `Identifier id -> page_identifier tbl id
+
+let base tbl s = tbl.lookup_unit s  
 
 let page_base tbl s = tbl.lookup_page s

@@ -16,6 +16,7 @@
 
 open Model
 open Paths
+open Names
 
 (* Sets and maps for components *)
 
@@ -158,9 +159,9 @@ module rec Sig : sig
 
   type t
 
-  val set_canonical : t -> (Path.module_ * Reference.module_) option -> t
+  val set_canonical : t -> (Path.Module.t * Reference.Module.t) option -> t
 
-  val get_canonical : t -> (Path.module_ * Reference.module_) option
+  val get_canonical : t -> (Path.Module.t * Reference.Module.t) option
 
   val set_hidden : t -> bool -> t
 
@@ -168,7 +169,7 @@ module rec Sig : sig
 
   val find_parent_module : string -> t -> Parent.module_
 
-  val find_parent_apply : (Path.module_ -> t) -> Path.module_ ->
+  val find_parent_apply : (Path.Module.t -> t) -> Path.Module.t ->
         t -> Parent.module_
 
   val find_parent_module_type : string -> t -> Parent.module_type
@@ -217,7 +218,7 @@ module rec Sig : sig
 
   val lookup_argument : int -> t -> t
 
-  val lookup_apply : (Path.module_ -> t) -> Path.module_ ->
+  val lookup_apply : (Path.Module.t -> t) -> Path.Module.t ->
         t -> t
 
   val lookup_module_type  : string -> t -> t
@@ -248,18 +249,18 @@ module rec Sig : sig
 
   val include_ : t -> signature -> signature
 
-  val modules : t -> (string * t) list
+  val modules : t -> (ModuleName.t * t) list
 
-  val module_types : t -> (string * t) list
+  val module_types : t -> (ModuleTypeName.t * t) list
 
-  val path : (Path.module_type -> t) -> Path.module_type -> t
+  val path : (Path.ModuleType.t -> t) -> Path.ModuleType.t -> t
 
-  val alias : (Path.module_ -> t) -> Path.module_ -> t
+  val alias : (Path.Module.t -> t) -> Path.Module.t -> t
 
   val signature : ('b -> signature) -> 'b -> t
 
   val functor_ : (Root.t -> Root.t -> bool) option -> (Root.t -> int) option ->
-                 Identifier.module_ -> t -> t -> t
+                 Identifier.Module.t -> t -> t -> t
 
   val generative : t -> t
 
@@ -267,30 +268,30 @@ module rec Sig : sig
 
   val unresolved : t
 
-  val with_module : Fragment.module_ -> t -> t -> t
+  val with_module : Fragment.Module.t -> t -> t -> t
 
-  val with_module_subst : Fragment.module_ -> t -> t
+  val with_module_subst : Fragment.Module.t -> t -> t
 
-  val with_type_subst : Fragment.type_ -> t -> t
+  val with_type_subst : Fragment.Type.t -> t -> t
 
 end = struct
 
   type term =
-    | Path of Path.module_type * bool
-    | Alias of Path.module_ * bool
-    | WithModule of expr * Fragment.module_ * t
-    | WithModuleSubst of expr * Fragment.module_
-    | WithTypeSubst of expr * Fragment.type_
+    | Path of Path.ModuleType.t * bool
+    | Alias of Path.Module.t * bool
+    | WithModule of expr * Fragment.Module.t * t
+    | WithModuleSubst of expr * Fragment.Module.t
+    | WithTypeSubst of expr * Fragment.Type.t
 
   and expr =
     { term : term;
       expansion : t Lazy.t; }
 
   and functor_ =
-    { id : Identifier.module_;
+    { id : Identifier.Module.t;
       arg : t;
       res : t;
-      cache : (Path.module_, t) tbl; }
+      cache : (Path.Module.t, t) tbl; }
 
   and signature =
     { modules: t SMap.t;
@@ -310,7 +311,7 @@ end = struct
     | Unresolved
 
   and t =
-    { canonical : (Path.module_ * Reference.module_) option;
+    { canonical : (Path.Module.t * Reference.Module.t) option;
       hidden : bool;
       body : body }
 
@@ -356,13 +357,13 @@ end = struct
 
   let find_parent_module name t =
     let find name sg =
-      Parent.Module (SMap.find name sg.modules)
+      `Module (SMap.find name sg.modules)
     in
       lift_find find name t
 
   let find_parent_module_type name t =
     let find name sg =
-      Parent.ModuleType (SMap.find name sg.module_types)
+      `ModuleType (SMap.find name sg.module_types)
     in
       lift_find find name t
 
@@ -370,8 +371,8 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Parent.Module _ as x -> Some x
-          | Parent.ModuleType _ as x -> Some x
+          | `Module _ as x -> Some x
+          | `ModuleType _ as x -> Some x
           | _ -> None)
         sg.parents
     in
@@ -381,8 +382,8 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Parent.Class _ as x -> Some x
-          | Parent.ClassType _ as x -> Some x
+          | `Class _ as x -> Some x
+          | `ClassType _ as x -> Some x
           | _ -> None)
         sg.parents
     in
@@ -392,7 +393,7 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Parent.Datatype _ as x -> Some x
+          | `Datatype _ as x -> Some x
           | _ -> None)
         sg.parents
     in
@@ -402,24 +403,24 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Parent.Module _ as x -> Some x
-          | Parent.ModuleType _ as x -> Some x
-          | Parent.Datatype _ as x -> Some x
+          | `Module _ as x -> Some x
+          | `ModuleType _ as x -> Some x
+          | `Datatype _ as x -> Some x
           | _ -> None)
         sg.parents
     in
       lift_find find name t
 
-  let rec find_parent_subst t =
+  let rec find_parent_subst : t -> Parent.subst = fun t ->
     match t.body with
     | Expr expr -> begin
         match expr.term with
-        | Path(p, true) -> Parent.Subst p
-        | Alias(p, true) -> Parent.SubstAlias p
+        | Path(p, true) -> Subst p
+        | Alias(p, true) -> SubstAlias p
         | Alias(p, false) -> begin
             let t' = Lazy.force expr.expansion in
             match t'.hidden with
-            | false -> Parent.SubstAlias p
+            | false -> SubstAlias p
             | true -> find_parent_subst t'
           end
         | _ -> find_parent_subst (Lazy.force expr.expansion)
@@ -437,8 +438,8 @@ end = struct
   let find_module_element name t =
     let find name sg =
       let t = SMap.find name sg.modules in
-      Element.Module {
-        canonical = t.canonical;
+      `Module {
+        Element.canonical = t.canonical;
         hidden = t.hidden;
       }
     in
@@ -458,14 +459,14 @@ end = struct
         | _ -> find_apply_element (Lazy.force expr.expansion)
       end
     | Sig _ -> raise Not_found
-    | Functor _ -> Element.Module { canonical = None; hidden = false }
+    | Functor _ -> `Module { Element.canonical = None; hidden = false }
     | Generative _ -> raise Not_found
     | Abstract -> raise Not_found
     | Unresolved -> raise Not_found
 
   let find_module_type_element name t =
     let find name sg =
-      if SMap.mem name sg.module_types then Element.ModuleType
+      if SMap.mem name sg.module_types then `ModuleType
       else raise Not_found
     in
       lift_find find name t
@@ -478,9 +479,9 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Constructor _ as x -> Some x
-          | Element.Extension as x -> Some x
-          | Element.Exception as x -> Some x
+          | `Constructor _ as x -> Some x
+          | `Extension as x -> Some x
+          | `Exception as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -490,7 +491,7 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Field _ as x -> Some x
+          | `Field _ as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -500,8 +501,8 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Extension as x -> Some x
-          | Element.Exception as x -> Some x
+          | `Extension as x -> Some x
+          | `Exception as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -511,7 +512,7 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Exception as x -> Some x
+          | `Exception as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -521,7 +522,7 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Value as x -> Some x
+          | `Value as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -530,7 +531,7 @@ end = struct
   let find_class_element name t =
     let find name sg =
       match SMap.find name sg.types with
-      | Element.Class as x -> x
+      | `Class as x -> x
       | _ -> raise Not_found
     in
       lift_find find name t
@@ -538,8 +539,8 @@ end = struct
   let find_class_type_element name t =
     let find name sg =
       match SMap.find name sg.types with
-      | Element.Class as x -> x
-      | Element.ClassType as x -> x
+      | `Class as x -> x
+      | `ClassType as x -> x
       | _ -> raise Not_found
     in
       lift_find find name t
@@ -548,7 +549,7 @@ end = struct
     let find name sg =
       LMap.map_find name
         (function
-          | Element.Label _ as x -> Some x
+          | `Label _ as x -> Some x
           | _ -> None)
         sg.elements
     in
@@ -621,7 +622,7 @@ end = struct
           try
             LMap.map_find name
               (function
-                | Parent.Datatype t -> Some t
+                | `Datatype t -> Some t
                 | _ -> None)
               (Lazy.force sg).parents
           with Not_found -> Datatype.unresolved
@@ -642,45 +643,44 @@ end = struct
 
   let add_module name md sg =
     let modules = SMap.add name md sg.modules in
-    let parents = LMap.add name (Parent.Module md) sg.parents in
+    let parents = LMap.add name (`Module md) sg.parents in
     let elements =
-      let md = Element.Module { canonical=md.canonical; hidden=md.hidden } in
+      let md = `Module Element.{ canonical=md.canonical; hidden=md.hidden } in
       LMap.add name md sg.elements
     in
       {sg with modules; parents; elements}
 
   let add_module_type name mty sg =
     let module_types = SMap.add name mty sg.module_types in
-    let parents = LMap.add name (Parent.ModuleType mty) sg.parents in
-    let elements = LMap.add name Element.ModuleType sg.elements in
+    let parents = LMap.add name (`ModuleType mty) sg.parents in
+    let elements = LMap.add name `ModuleType sg.elements in
       {sg with module_types; parents; elements}
 
   let add_datatype name decl sg =
-    let types = SMap.add name Element.Type sg.types in
-    let parents = LMap.add name (Parent.Datatype decl) sg.parents in
+    let types = SMap.add name `Type sg.types in
+    let parents = LMap.add name (`Datatype decl) sg.parents in
     let elements =
       let add_element name (elem : Element.datatype) acc =
-        let open Element in
-        let (Constructor _ | Field _ | Label _ as elem) = elem in
+        let (`Constructor _ | `Field _ | `Label _ as elem) = elem in
           LMap.add name elem acc
       in
         LMap.fold add_element (Datatype.elements decl) sg.elements
     in
-    let elements = LMap.add name Element.Type elements in
+    let elements = LMap.add name `Type elements in
       {sg with types; parents; elements}
 
   let add_class name cl sg =
-    let types = SMap.add name Element.Class sg.types in
+    let types = SMap.add name `Class sg.types in
     let class_signatures = SMap.add name cl sg.class_signatures in
-    let parents = LMap.add name (Parent.Class cl) sg.parents in
-    let elements = LMap.add name Element.Class sg.elements in
+    let parents = LMap.add name (`Class cl) sg.parents in
+    let elements = LMap.add name `Class sg.elements in
       {sg with types; class_signatures; parents; elements}
 
   let add_class_type name clty sg =
-    let types = SMap.add name Element.ClassType sg.types in
+    let types = SMap.add name `ClassType sg.types in
     let class_signatures = SMap.add name clty sg.class_signatures in
-    let parents = LMap.add name (Parent.ClassType clty) sg.parents in
-    let elements = LMap.add name Element.ClassType sg.elements in
+    let parents = LMap.add name (`ClassType clty) sg.parents in
+    let elements = LMap.add name `ClassType sg.elements in
       {sg with types; class_signatures; parents; elements}
 
   let add_element name element sg =
@@ -690,7 +690,7 @@ end = struct
   let add_documentation doc sg =
     let labels = documentation_labels [] doc in
     let add_label sg (label, txt) =
-      let sg = add_element label (Element.Label None) sg in
+      let sg = add_element label (`Label None) sg in
       let section_titles = SMap.add label txt sg.section_titles in
       {sg with section_titles}
     in
@@ -699,7 +699,7 @@ end = struct
   let add_comment comment sg =
     let labels = comment_labels [] comment in
     let add_label sg (label, txt) =
-      let sg = add_element label (Element.Label None) sg in
+      let sg = add_element label (`Label None) sg in
       let section_titles = SMap.add label txt sg.section_titles in
       {sg with section_titles}
     in
@@ -708,15 +708,15 @@ end = struct
   let strengthen_submodule path expansion name t =
     match t.body with
     | Unresolved -> t
-    | Expr { term = Alias(p, b); _ } when b || not (Path.is_hidden p) -> t
+    | Expr { term = Alias(p, b); _ } when b || not (Path.is_hidden (p :> Path.t)) -> t
     | _ ->
         let path = Path.module_ path name in
         let term = Alias(path, false) in
-        let expansion = lazy (lookup_module name (Lazy.force expansion)) in
+        let expansion = lazy (lookup_module (ModuleName.to_string name) (Lazy.force expansion)) in
         { t with body = Expr {term; expansion} }
 
   let rec strengthen_module path expansion t =
-    if Path.is_hidden path then t else
+    if Path.is_hidden (path : Path.Module.t :> Path.t) then t else
     match t.body with
     | Expr { term; expansion = ex } -> begin
         let ex' = lazy (strengthen_module path expansion (Lazy.force ex)) in
@@ -726,7 +726,7 @@ end = struct
       let sg =
         lazy (
           let sg = Lazy.force sg in
-          let modules = SMap.mapi (strengthen_submodule path expansion) sg.modules in
+          let modules = SMap.mapi (fun n -> strengthen_submodule path expansion (ModuleName.of_string n)) sg.modules in
           { sg with modules }
         )
       in
@@ -768,7 +768,8 @@ end = struct
     | Expr expr -> modules (Lazy.force expr.expansion)
     | Sig sg ->
         let sg = Lazy.force sg in
-          SMap.bindings sg.modules
+          SMap.bindings sg.modules |>
+          List.map (fun (x,y) -> ModuleName.of_string x, y)
     | Functor _ | Generative _ | Abstract | Unresolved -> []
 
   let rec module_types t =
@@ -776,7 +777,8 @@ end = struct
     | Expr expr -> module_types (Lazy.force expr.expansion)
     | Sig sg ->
         let sg = Lazy.force sg in
-          SMap.bindings sg.module_types
+          SMap.bindings sg.module_types |>
+          List.map (fun (x,y) -> ModuleTypeName.of_string x, y)
     | Functor _ | Generative _ | Abstract | Unresolved -> []
 
   let path lookup p =
@@ -800,12 +802,12 @@ end = struct
     let equal =
       match equal with
       | None -> None
-      | Some _equal -> Some Path.equal
+      | Some _equal -> Some Path.Module.equal
     in
     let hash =
       match hash with
       | None -> None
-      | Some _hash -> Some Path.hash
+      | Some _hash -> Some Path.Module.hash
     in
     let cache = make_tbl equal hash 3 in
       mkFunctor {id; arg; res; cache}
@@ -815,7 +817,7 @@ end = struct
     let parents =
       LMap.map_item name
         (function
-          | Parent.Module _ -> Parent.Module t
+          | `Module _ -> `Module t
           | item -> item)
         sg.parents
     in
@@ -826,7 +828,7 @@ end = struct
     let parents =
       LMap.map_item name
         (function
-          | Parent.Module t -> Parent.Module (f t)
+          | `Module t -> `Module (f t)
           | item -> item)
         sg.parents
     in
@@ -837,26 +839,26 @@ end = struct
     let parents =
       LMap.filter_item name
         (function
-          | Parent.Module _ -> true
+          | `Module _ -> true
           | _ -> false)
         sg.parents
     in
     let elements =
       LMap.filter_item name
-        (function Element.Module _ -> false | _ -> true) sg.elements
+        (function `Module _ -> false | _ -> true) sg.elements
     in
       {sg with modules; parents; elements}
 
   let remove_datatype name sg =
-    let types = SMap.filter_item name ((<>) Element.Type) sg.types in
+    let types = SMap.filter_item name ((<>) `Type) sg.types in
     let parents =
       LMap.filter_item name
         (function
-          | Parent.Datatype _ -> true
+          | `Datatype _ -> true
           | _ -> false)
         sg.parents
     in
-    let elements = LMap.filter_item name ((<>) Element.Type) sg.elements in
+    let elements = LMap.filter_item name ((<>) `Type) sg.elements in
       {sg with types; parents; elements}
 
   let rec with_module frag eq t =
@@ -871,7 +873,7 @@ end = struct
         let sg =
           lazy
             ( let sg = Lazy.force sg in
-              let name, frag = Fragment.split frag in
+              let name, frag = Fragment.Module.split frag in
                 match frag with
                 | None -> replace_module name eq sg
                 | Some frag -> map_module name (with_module frag eq) sg )
@@ -891,7 +893,7 @@ end = struct
         let sg =
           lazy
             ( let sg = Lazy.force sg in
-              let name, frag = Fragment.split frag in
+              let name, frag = Fragment.Module.split frag in
                 match frag with
                 | None -> remove_module name sg
                 | Some frag -> map_module name (with_module_subst frag) sg )
@@ -911,7 +913,7 @@ end = struct
         let sg =
           lazy
             ( let sg = Lazy.force sg in
-              let name, frag = Fragment.split frag in
+              let name, frag = Fragment.Type.split frag in
                 match frag with
                 | None -> remove_datatype name sg
                 | Some frag -> map_module name (with_type_subst frag) sg )
@@ -936,7 +938,7 @@ end = struct
               let modules =
                 SMap.mapi
                   (fun name body ->
-                     let path = Path.module_ path name in
+                     let path = Path.module_ path (ModuleName.of_string name) in
                      let expansion =
                        lazy (lookup_module name (Lazy.force expansion))
                      in
@@ -946,7 +948,7 @@ end = struct
               let module_types =
                 SMap.mapi
                   (fun name body ->
-                     let path = Path.module_type path name in
+                     let path = Path.module_type path (ModuleTypeName.of_string name) in
                      let expansion =
                        lazy (lookup_module_type name (Lazy.force expansion))
                      in
@@ -968,151 +970,148 @@ end = struct
           mkExpr {term; expansion}
     | Unresolved -> t
 
-  let rec reduce_signature_ident id path =
-    let open Identifier in function
-      | Root _ -> None
-      | Module(p, name) -> begin
+  let rec reduce_signature_ident id path = function
+      | `Root _ -> None
+      | `Module(p, name) -> begin
           match reduce_signature_ident id path p with
           | Some p -> Some (Path.module_ p name)
           | None -> None
         end
-      | Argument _ as id' -> if id = id' then Some path else None
-      | ModuleType _ -> None
+      | `Argument _ as id' -> if id = id' then Some path else None
+      | `ModuleType _ -> None
 
-  and reduce_module_ident id path =
-    let open Identifier in function
-      | (Root _ : module_) -> None
-      | Module(p, name) -> begin
+  and reduce_module_ident id path (m : Identifier.Module.t) =
+    match m with
+      | `Root _ -> None
+      | `Module(p, name) -> begin
           match reduce_signature_ident id path p with
           | Some p -> Some (Path.module_ p name)
           | None -> None
         end
-      | Argument _ as id' -> if id = id' then Some path else None
+      | `Argument _ as id' -> if id = id' then Some path else None
 
-  and reduce_resolved_module_path in_arg id path =
-    let open Path.Resolved in function
-    | Identifier id' ->
+  and reduce_resolved_module_path in_arg id path (p : Path.Resolved.Module.t) =
+    match p with
+    | `Identifier id' ->
         if in_arg then reduce_module_ident id path id' else None
-    | Subst(_, p) ->
+    | `Subst(_, p) ->
         reduce_resolved_module_path in_arg id path p
-    | SubstAlias(_, p) ->
+    | `SubstAlias(_, p) ->
         reduce_resolved_module_path in_arg id path p
-    | Hidden p ->
+    | `Hidden p ->
         reduce_resolved_module_path in_arg id path p
-    | Module(p, name) -> begin
+    | `Module(p, name) -> begin
         match reduce_resolved_module_path in_arg id path p with
         | Some p -> Some (Path.module_ p name)
         | None -> None
       end
-    | Canonical (p, _) ->
+    | `Canonical (p, _) ->
         reduce_resolved_module_path in_arg id path p
-    | Apply(p, arg) -> begin
+    | `Apply(p, arg) -> begin
         let rp = reduce_resolved_module_path in_arg id path p in
         let rarg = reduce_module_path true id path arg in
           match rp, rarg with
           | None, None -> None
-          | None, Some arg -> Some(Path.Resolved(Apply(p, arg)))
+          | None, Some arg -> Some(`Resolved(`Apply(p, arg)))
           | Some p, None -> Some(Path.apply p arg)
           | Some p, Some arg -> Some(Path.apply p arg)
       end
 
-  and reduce_resolved_module_type_path id path =
-    let open Path.Resolved in function
-    | (Identifier _ : module_type) -> None
-    | ModuleType(p, name) -> begin
+  and reduce_resolved_module_type_path id path (p : Path.Resolved.ModuleType.t) =
+    match p with
+    | `Identifier _ -> None
+    | `ModuleType(p, name) -> begin
         match reduce_resolved_module_path false id path p with
         | Some p -> Some (Path.module_type p name)
         | None -> None
       end
 
-  and reduce_module_path in_arg id path =
-    let open Path in function
-    | Resolved r -> reduce_resolved_module_path in_arg id path r
-    | Root _ -> None
-    | Forward _ -> None
-    | Dot(p, name) -> begin
+  and reduce_module_path in_arg id path (p : Path.Module.t) =
+    match p with
+    | `Resolved r -> reduce_resolved_module_path in_arg id path r
+    | `Root _ -> None
+    | `Forward _ -> None
+    | `Dot(p, name) -> begin
         match reduce_module_path in_arg id path p with
-        | Some p -> Some (Dot(p, name))
+        | Some p -> Some (`Dot(p, name))
         | None -> None
       end
-    | Apply(p, arg) -> begin
+    | `Apply(p, arg) -> begin
         let rp = reduce_module_path in_arg id path p in
         let rarg = reduce_module_path true id path arg in
           match rp, rarg with
           | None, None -> None
-          | None, Some arg -> Some(Apply(p, arg))
-          | Some p, None -> Some(Apply(p, arg))
-          | Some p, Some arg -> Some(Apply(p, arg))
+          | None, Some arg -> Some(`Apply(p, arg))
+          | Some p, None -> Some(`Apply(p, arg))
+          | Some p, Some arg -> Some(`Apply(p, arg))
       end
 
-  and reduce_module_type_path id path =
-    let open Path in function
-    | Resolved r -> reduce_resolved_module_type_path id path r
-    | Dot(p, name) -> begin
+  and reduce_module_type_path id path (m : Path.ModuleType.t) =
+    match m with
+    | `Resolved r -> reduce_resolved_module_type_path id path r
+    | `Dot(p, name) -> begin
         match reduce_module_path false id path p with
-        | Some p -> Some (Dot(p, name))
+        | Some p -> Some (`Dot(p, name))
         | None -> None
       end
 
-  let rec subst_signature_ident id lookup path =
-    let open Identifier in function
-      | Root _ -> None
-      | Module(p, name) -> begin
+  let rec subst_signature_ident id lookup path (s : Identifier.Signature.t) =
+    match s with
+      | `Root _ -> None
+      | `Module(p, name) -> begin
           match subst_signature_ident id lookup path p with
           | Some (p, t) ->
               let p = Path.module_ p name in
-              let t = lazy (lookup_module name (Lazy.force t)) in
+              let t = lazy (lookup_module (ModuleName.to_string name) (Lazy.force t)) in
                 Some (p, t)
           | None -> None
         end
-      | Argument _ as id' ->
+      | `Argument _ as id' ->
           if id = id' then Some (path, lazy (lookup path))
           else None
-      | ModuleType _ -> None
+      | `ModuleType _ -> None
 
-  and subst_module_ident id lookup path id' =
-    let open Identifier in
+  and subst_module_ident id lookup path (id' : Identifier.Module.t) =
     if id = id' then Some (path, lazy (lookup path))
     else match id' with
-      | (Root _ : Identifier.module_) -> None
-      | Module(p, name) -> begin
+      | (`Root _ : Identifier.Module.t) -> None
+      | `Module(p, name) -> begin
           match subst_signature_ident id lookup path p with
           | Some (p, t) ->
               let p = Path.module_ p name in
-              let t = lazy (lookup_module name (Lazy.force t)) in
+              let t = lazy (lookup_module (ModuleName.to_string name) (Lazy.force t)) in
                 Some (p, t)
           | None -> None
         end
-      | Argument _ -> None
+      | `Argument _ -> None
 
-  and subst_module_type_ident id lookup (path : Path.module_) id' =
-    let open Identifier in
+  and subst_module_type_ident id lookup (path : Path.Module.t) (id' : Identifier.ModuleType.t) =
       match id' with
-      | (ModuleType(p, name) : Identifier.module_type) -> begin
+      | `ModuleType(p, name) -> begin
           match subst_signature_ident id lookup path p with
           | Some (p, t) ->
               let p = Path.module_type p name in
-              let t = lazy (lookup_module_type name (Lazy.force t)) in
+              let t = lazy (lookup_module_type (ModuleTypeName.to_string name) (Lazy.force t)) in
                 Some (p, t)
           | None -> None
         end
 
-  and subst_resolved_module_path id lookup path =
-    let open Path.Resolved in function
-    | Identifier id' -> subst_module_ident id lookup path id'
-    | Subst(_, p) -> subst_resolved_module_path id lookup path p
-    | SubstAlias(sub, _) -> subst_resolved_module_path id lookup path sub
-    | Hidden p -> subst_resolved_module_path id lookup path p
-    | Module(p, name) -> begin
+  and subst_resolved_module_path id lookup path (p : Path.Resolved.Module.t) =
+    match p with
+    | `Identifier id' -> subst_module_ident id lookup path id'
+    | `Subst(_, p) -> subst_resolved_module_path id lookup path p
+    | `SubstAlias(sub, _) -> subst_resolved_module_path id lookup path sub
+    | `Hidden p -> subst_resolved_module_path id lookup path p
+    | `Module(p, name) -> begin
         match subst_resolved_module_path id lookup path p with
         | Some (p, t) ->
             let p = Path.module_ p name in
-            let t = lazy (lookup_module name (Lazy.force t)) in
+            let t = lazy (lookup_module (ModuleName.to_string name) (Lazy.force t)) in
               Some (p, t)
         | None -> None
       end
-    | Canonical (p, _) -> subst_resolved_module_path id lookup path p
-    | Apply(p, arg) -> begin
+    | `Canonical (p, _) -> subst_resolved_module_path id lookup path p
+    | `Apply(p, arg) -> begin
         match subst_resolved_module_path id lookup path p with
         | Some (p, t) ->
             let p = Path.apply p arg in
@@ -1121,47 +1120,47 @@ end = struct
         | None -> None
       end
 
-  and subst_resolved_module_type_path id lookup (path : Path.module_) =
-    let open Path.Resolved in function
-    | Identifier id' -> subst_module_type_ident id lookup path id'
-    | ModuleType(p, name) -> begin
+  and subst_resolved_module_type_path id lookup (path : Path.Module.t) (p : Path.Resolved.ModuleType.t) =
+    match p with
+    | `Identifier id' -> subst_module_type_ident id lookup path id'
+    | `ModuleType(p, name) -> begin
         match subst_resolved_module_path id lookup path p with
         | Some (p, t) ->
             let p = Path.module_type p name in
-            let t = lazy (lookup_module_type name (Lazy.force t)) in
+            let t = lazy (lookup_module_type (ModuleTypeName.to_string name) (Lazy.force t)) in
               Some (p, t)
         | None -> None
       end
 
-  and subst_module_path id lookup path =
-    let open Path in function
-    | Resolved r -> subst_resolved_module_path id lookup path r
-    | Root _ -> None
-    | Forward _ -> None
-    | Dot(p, name) -> begin
+  and subst_module_path id lookup path (p : Path.Module.t) =
+    match p with
+    | `Resolved r -> subst_resolved_module_path id lookup path r
+    | `Root _ -> None
+    | `Forward _ -> None
+    | `Dot(p, name) -> begin
         match subst_module_path id lookup path p with
         | Some (p, t) ->
-            let p = Dot(p, name) in
+            let p = `Dot(p, name) in
             let t = lazy (lookup_module name (Lazy.force t)) in
               Some (p, t)
         | None -> None
       end
-    | Apply(p, arg) -> begin
+    | `Apply(p, arg) -> begin
         match subst_module_path id lookup path p with
         | Some (p, t) ->
-            let p = Apply(p, arg) in
+            let p = `Apply(p, arg) in
             let t = lazy (lookup_apply lookup arg (Lazy.force t)) in
               Some (p, t)
         | None -> None
       end
 
-  and subst_module_type_path id lookup (path : Path.module_) =
-    let open Path in function
-    | Resolved r -> subst_resolved_module_type_path id lookup path r
-    | Dot(p, name) -> begin
+  and subst_module_type_path id lookup (path : Path.Module.t) (p : Path.ModuleType.t) =
+    match p with
+    | `Resolved r -> subst_resolved_module_type_path id lookup path r
+    | `Dot(p, name) -> begin
         match subst_module_path id lookup path p with
         | Some (p, t) ->
-            let p = Dot(p, name) in
+            let p = `Dot(p, name) in
             let t = lazy (lookup_module_type name (Lazy.force t)) in
               Some (p, t)
         | None -> None
@@ -1259,7 +1258,8 @@ end = struct
     | Abstract -> abstract
     | Unresolved -> unresolved
 
-  and lookup_apply lookup arg t =
+  and lookup_apply : (Paths_types.Path.module_ -> t) ->
+           Paths_types.Path.module_ -> t -> t = fun lookup arg t ->
     match t.body with
     | Expr expr -> lookup_apply lookup arg (Lazy.force expr.expansion)
     | Sig _ -> unresolved
@@ -1275,7 +1275,8 @@ end = struct
     | Abstract -> unresolved
     | Unresolved -> unresolved
 
-  let rec find_parent_apply lookup arg t =
+  let rec find_parent_apply : (Paths_types.Path.module_ -> t) ->
+           Paths_types.Path.module_ -> t -> Parent.module_ = fun lookup arg t ->
     match t.body with
     | Expr expr -> begin
         match expr.term with
@@ -1291,11 +1292,11 @@ end = struct
     | Sig _ -> raise Not_found
     | Functor fn -> begin
         try
-          Parent.Module (fn.cache.find arg)
+          `Module (fn.cache.find arg)
         with Not_found ->
           let res = subst fn.id lookup arg fn.res in
             fn.cache.add arg res;
-            Parent.Module res
+            `Module res
       end
     | Generative _ -> raise Not_found
     | Abstract -> raise Not_found
@@ -1327,7 +1328,7 @@ and Datatype : sig
 
   val unresolved : t
 
-  val elements : t -> [ `Constructor | `Field | `Label] Element.t LMap.t
+  val elements : t -> Element.datatype LMap.t
 
 end = struct
 
@@ -1348,33 +1349,33 @@ end = struct
 
   let find_constructor_element name = function
     | Variant v ->
-        if SSet.mem name v.constructors then Element.Constructor v.type_name
+        if SSet.mem name v.constructors then `Constructor v.type_name
         else raise Not_found
     | _ -> raise Not_found
 
   let find_field_element name = function
     | Record r ->
-        if SSet.mem name r.fields then Element.Field r.type_name
+        if SSet.mem name r.fields then `Field r.type_name
         else raise Not_found
     | _ -> raise Not_found
 
   let find_label_element name = function
     | Variant v ->
-        if SSet.mem name v.labels then Element.Label (Some v.type_name)
+        if SSet.mem name v.labels then `Label (Some v.type_name)
         else raise Not_found
     | Record r ->
-        if SSet.mem name r.labels then Element.Label (Some r.type_name)
+        if SSet.mem name r.labels then `Label (Some r.type_name)
         else raise Not_found
     | _ -> raise Not_found
 
   let find_element name = function
     | Variant v ->
-        if SSet.mem name v.constructors then Element.Constructor v.type_name
-        else if SSet.mem name v.labels then Element.Label (Some v.type_name)
+        if SSet.mem name v.constructors then `Constructor v.type_name
+        else if SSet.mem name v.labels then `Label (Some v.type_name)
         else raise Not_found
     | Record r ->
-        if SSet.mem name r.fields then Element.Field r.type_name
-        else if SSet.mem name r.labels then Element.Label (Some r.type_name)
+        if SSet.mem name r.fields then `Field r.type_name
+        else if SSet.mem name r.labels then `Label (Some r.type_name)
         else raise Not_found
     | _ -> raise Not_found
 
@@ -1420,13 +1421,13 @@ end = struct
         let elements =
           SSet.fold
             (fun name acc ->
-               LMap.add name (Element.Constructor v.type_name) acc)
+               LMap.add name (`Constructor v.type_name) acc)
               v.constructors LMap.empty
         in
         let elements =
           SSet.fold
             (fun name acc ->
-               LMap.add name (Element.Label (Some v.type_name)) acc)
+               LMap.add name (`Label (Some v.type_name)) acc)
             v.labels elements
         in
           elements
@@ -1434,13 +1435,13 @@ end = struct
           let elements =
             SSet.fold
               (fun name acc ->
-                 LMap.add name (Element.Field r.type_name) acc)
+                 LMap.add name (`Field r.type_name) acc)
               r.fields LMap.empty
           in
           let elements =
             SSet.fold
               (fun name acc ->
-                 LMap.add name (Element.Label (Some r.type_name)) acc)
+                 LMap.add name (`Label (Some r.type_name)) acc)
               r.labels elements
           in
             elements
@@ -1474,7 +1475,7 @@ and ClassSig : sig
 
   val inherit_ : t -> signature -> signature
 
-  val constr : (Path.class_type -> t) -> Path.class_type -> t
+  val constr : (Path.ClassType.t -> t) -> Path.ClassType.t -> t
 
   val signature : ('b -> signature) -> 'b -> t
 
@@ -1490,15 +1491,13 @@ end = struct
 
   type t = desc Lazy.t
 
-  open Element
-
   let find_method_element name t =
     let desc = Lazy.force t in
       match desc with
       | Sig csig ->
           LMap.map_find name
             (function
-              | Method as x -> Some x
+              | `Method as x -> Some x
               | _ -> None)
             csig
       | Unresolved -> raise Not_found
@@ -1509,7 +1508,7 @@ end = struct
       | Sig csig ->
           LMap.map_find name
             (function
-              | InstanceVariable as x -> Some x
+              | `InstanceVariable as x -> Some x
               | _ -> None)
             csig
       | Unresolved -> raise Not_found
@@ -1520,7 +1519,7 @@ end = struct
       | Sig csig ->
           LMap.map_find name
             (function
-              | Label _ as x -> Some x
+              | `Label _ as x -> Some x
               | _ -> None)
             csig
       | Unresolved -> raise Not_found
@@ -1538,12 +1537,12 @@ end = struct
 
   let add_documentation doc csig =
     let labels = documentation_labels [] doc in
-    let add_label csig (label, _) = add_element label (Element.Label None) csig in
+    let add_label csig (label, _) = add_element label (`Label None) csig in
       List.fold_left add_label csig labels
 
   let add_comment comment sg =
     let labels = comment_labels [] comment in
-    let add_label sg (label, _) = add_element label (Element.Label None) sg in
+    let add_label sg (label, _) = add_element label (`Label None) sg in
       List.fold_left add_label sg labels
 
   let inherit_ t csig =
@@ -1586,7 +1585,7 @@ end = struct
   let of_doc doc =
     let labels = documentation_labels [] doc in
     let add_label t (label, txt) =
-      let labels = LMap.add label (Element.Label None) t.labels in
+      let labels = LMap.add label (`Label None) t.labels in
       let section_titles = SMap.add label txt t.section_titles in
       {labels; section_titles}
     in
@@ -1597,103 +1596,156 @@ end
 
 and Parent : sig
 
-  type kind = Kind.parent
+  type t = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+    | `Datatype of Datatype.t
+    | `Class of ClassSig.t
+    | `ClassType of ClassSig.t
+  ]
 
-  type 'kind t =
-    | Module : Sig.t -> [< kind > `Module] t
-    | ModuleType : Sig.t -> [< kind > `ModuleType] t
-    | Datatype : Datatype.t -> [< kind > `Type] t
-    | Class : ClassSig.t -> [< kind > `Class] t
-    | ClassType : ClassSig.t -> [< kind > `ClassType] t
+  type signature = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+  ]
 
-  type signature = [`Module | `ModuleType] t
+  type class_signature = [
+    | `Class of ClassSig.t
+    | `ClassType of ClassSig.t
+  ]
 
-  type class_signature = [`Class |` ClassType] t
 
-  type datatype = [`Type] t
+  type datatype = [
+    | `Datatype of Datatype.t
+  ]
 
-  type module_ = [`Module] t
+  type module_ = [
+    | `Module of Sig.t
+  ]
 
-  type module_type = [`ModuleType] t
+  type module_type = [
+    | `ModuleType of Sig.t
+  ]
 
-  type sig_or_type = [`Module | `ModuleType | `Type] t
+  type sig_or_type = [
+    | `Module of Sig.t
+    | `ModuleType of Sig.t
+    | `Datatype of Datatype.t
+  ]
 
-  type any = kind t
+  type any = t
 
   type subst =
-    | Subst of Path.module_type
-    | SubstAlias of Path.module_
+    | Subst of Path.ModuleType.t
+    | SubstAlias of Path.Module.t
 
 end = Parent
 
 and Element : sig
 
-  type kind =
-    [ `Module | `ModuleType | `Type
-    | `Constructor | `Field | `Extension
-    | `Exception | `Value | `Class | `ClassType
-    | `Method | `InstanceVariable | `Label ]
-
-  type mod_t = { canonical : (Path.module_ * Reference.module_) option
+  type mod_t = { canonical : (Path.Module.t * Reference.Module.t) option
         ; hidden : bool }
 
-  type 'kind t =
-    | Module : mod_t -> [< kind > `Module] t
-    | ModuleType : [< kind > `ModuleType] t
-    | Type : [< kind > `Type] t
-    | Constructor : string -> [< kind > `Constructor] t
-    | Field : string -> [< kind > `Field] t
-    | Extension : [< kind > `Extension] t
-    | Exception : [< kind > `Exception] t
-    | Value : [< kind > `Value] t
-    | Class : [< kind > `Class] t
-    | ClassType : [< kind > `ClassType] t
-    | Method : [< kind > `Method] t
-    | InstanceVariable : [< kind > `InstanceVariable] t
-    | Label : string option -> [< kind > `Label] t
+  type s_module = [
+    | `Module of mod_t
+  ]
 
-  type signature_module = [`Module] t
+  type s_module_type = [
+    | `ModuleType
+  ]
 
-  type signature_module_type = [`ModuleType] t
+  type s_type = [
+    | `Type
+  ]
 
-  type signature_type = [`Type | `Class | `ClassType] t
+  type s_constructor = [
+    | `Constructor of string
+  ]
 
-  type signature_constructor = [`Constructor | `Extension | `Exception] t
+  type s_field = [
+    | `Field of string
+  ]
 
-  type signature_field = [`Field] t
+  type s_extension = [
+    | `Extension
+  ]
 
-  type signature_extension = [`Extension | `Exception] t
+  type s_exception = [
+    | `Exception
+  ]
 
-  type signature_exception = [`Exception] t
+  type s_value = [
+    | `Value
+  ]
 
-  type signature_value = [`Value] t
+  type s_class = [
+    | `Class
+  ]
 
-  type signature_class = [`Class] t
+  type s_class_type = [
+    | `ClassType
+  ]
 
-  type signature_class_type = [`Class | `ClassType] t
+  type s_method = [
+    | `Method
+  ]
 
-  type signature_label = [`Label] t
+  type s_instance_variable = [
+    | `InstanceVariable
+  ]
 
-  type datatype_constructor = [`Constructor] t
+  type s_label = [
+    | `Label of string option
+  ]
 
-  type datatype_field = [`Field] t
+  type t = [
+    | s_module | s_module_type | s_type | s_constructor
+    | s_field | s_extension | s_exception | s_value | s_class
+    | s_class_type | s_method | s_instance_variable | s_label
+  ]
 
-  type datatype_label = [`Label] t
+  type signature_module = s_module
 
-  type class_signature_method = [`Method] t
+  type signature_module_type = s_module_type
 
-  type class_signature_instance_variable = [`InstanceVariable] t
+  type signature_type = [ s_type | s_class | s_class_type ]
 
-  type class_signature_label = [`Label] t
+  type signature_constructor = [s_constructor | s_extension | s_exception]
+
+  type signature_field = s_field
+
+  type signature_extension = [s_extension | s_exception ]
+
+  type signature_exception = s_exception
+
+  type signature_value = s_value
+  type signature_class = s_class
+
+  type signature_class_type = [ s_class | s_class_type ]
+
+  type signature_label = s_label
 
   type signature =
-         [ `Module | `ModuleType | `Type
-         | `Constructor | `Field | `Extension
-         | `Exception | `Value | `Class | `ClassType | `Label ] t
+    [ s_module | s_module_type | s_type
+         | s_constructor | s_field | s_extension
+         | s_exception | s_value | s_class | s_class_type | s_label ]
 
-  type class_signature = [ `Method | `InstanceVariable | `Label ] t
+  type datatype_constructor = s_constructor
 
-  type datatype = [ `Constructor | `Field | `Label ] t
+  type datatype_field = s_field
 
-  type page_label = [`Label] t
+  type datatype_label = s_label
+
+  type datatype = [ s_constructor | s_field | s_label]
+
+  type class_signature_method = s_method
+
+  type class_signature_instance_variable = s_instance_variable
+
+  type class_signature_label = s_label
+
+  type class_signature = [ s_method | s_instance_variable | s_label ]
+
+  type page_label = s_label
+
 end = Element

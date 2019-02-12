@@ -11,7 +11,7 @@ type 'a with_location = 'a Location.with_location
 type status = {
   warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
-  parent_of_sections : Model.Paths.Identifier.label_parent;
+  parent_of_sections : Model.Paths.Identifier.LabelParent.t;
 }
 
 
@@ -206,7 +206,7 @@ let section_heading
     | Some label -> label
     | None -> generate_heading_label content
   in
-  let label = Model.Paths.Identifier.Label (status.parent_of_sections, label) in
+  let label = `Label (status.parent_of_sections, Model.Names.LabelName.of_string label) in
 
   match status.sections_allowed, level with
   | `None, _any_level ->
@@ -265,7 +265,7 @@ let section_heading
 
 let validate_first_page_heading status ast_element =
   match status.parent_of_sections with
-  | Model.Paths.Identifier.Page ({file; _}, _) ->
+  | `Page ({file; _}, _) ->
     begin match ast_element with
       | {Location.value = `Heading (_, _, _); _} -> ()
       | _invalid_ast_element ->
@@ -321,7 +321,7 @@ let top_level_block_elements
   let top_heading_level =
     (* Non-page documents have a generated title. *)
     match status.parent_of_sections with
-    | Model.Paths.Identifier.Page _ -> None
+    | `Page _ -> None
     | _parent_with_generated_title -> Some 0
   in
   traverse ~top_heading_level [] ast_elements

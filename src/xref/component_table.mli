@@ -42,30 +42,30 @@ open Components
 (** {3 Identifier Lookup} *)
 
 (** Lookup the components of a signature identifier *)
-val signature_identifier : t -> Identifier.signature -> Sig.t
+val signature_identifier : t -> Identifier.Signature.t -> Sig.t
 
 (** Lookup the components of a class signature identifier *)
-val class_signature_identifier : t -> Identifier.class_signature ->
+val class_signature_identifier : t -> Identifier.ClassSignature.t ->
       ClassSig.t
 
 (** Lookup the components of a datatype identifier *)
-val datatype_identifier : t -> Identifier.type_ -> Datatype.t
+val datatype_identifier : t -> Identifier.Type.t -> Datatype.t
 
 (** {3 Path Lookup} *)
 
 (** Lookup the components of a resolved module path *)
-val resolved_module_path : t -> Path.Resolved.module_ -> Sig.t
+val resolved_module_path : t -> Path.Resolved.Module.t -> Sig.t
 
 (** Lookup the components of a resolved module type path *)
-val resolved_module_type_path : t -> Path.Resolved.module_type -> Sig.t
+val resolved_module_type_path : t -> Path.Resolved.ModuleType.t -> Sig.t
 
 (** Lookup the components of a resolved class type path *)
 val resolved_class_type_path : t ->
-      Path.Resolved.class_type -> ClassSig.t
+      Path.Resolved.ClassType.t -> ClassSig.t
 
 (** Lookup the components of a module path, needed for module
     applications. *)
-val module_path : t -> Path.module_ -> Sig.t
+val module_path : t -> Path.Module.t -> Sig.t
 
 (** {3 Fragment Lookup} *)
 
@@ -75,31 +75,31 @@ type with_
 
 (** Create specialised fragment table for a module type expression *)
 val module_type_expr_with : t ->
-      Identifier.signature -> Lang.ModuleType.expr -> with_
+      Identifier.Signature.t -> Lang.ModuleType.expr -> with_
 
 (** Create specialised fragment table for a module path *)
 val module_type_path_with : t ->
-      Path.module_type -> with_
+      Path.ModuleType.t -> with_
 
 (** Lookup the components of a resolved module fragment *)
 val resolved_signature_fragment : with_ ->
-      Fragment.Resolved.signature -> Sig.t
+      Fragment.Resolved.Signature.t -> Sig.t
 
 (** {3 Reference Lookup} *)
 
 (** Lookup the components of a resolved signature reference *)
 val resolved_signature_reference : t ->
-      Reference.Resolved.signature -> Sig.t
+      Reference.Resolved.Signature.t -> Sig.t
 
 (** Lookup the components of a resolved class signature reference *)
 val resolved_class_signature_reference : t ->
-      Reference.Resolved.class_signature -> ClassSig.t
+      Reference.Resolved.ClassSignature.t -> ClassSig.t
 
 (** Lookup the components of a resolved datatype reference *)
 val resolved_datatype_reference : t ->
-  Reference.Resolved.datatype -> Datatype.t
+  Reference.Resolved.DataType.t -> Datatype.t
 
-val resolved_page_reference : t -> Reference.Resolved.page -> Page.t
+val resolved_page_reference : t -> Reference.Resolved.Page.t -> Page.t
 
 (** {3 Root lookup} *)
 

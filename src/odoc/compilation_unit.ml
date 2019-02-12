@@ -20,7 +20,7 @@ type t = Model.Lang.Compilation_unit.t
 
 let root (t : Model.Lang.Compilation_unit.t) =
   match t.Model.Lang.Compilation_unit.id with
-  | Model.Paths.Identifier.Root (root, _) -> root
+  | `Root (root, _) -> root
   | _ -> assert false
 
 let save file t =

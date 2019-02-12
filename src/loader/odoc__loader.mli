@@ -1,7 +1,7 @@
 open Result
 
 val read_string :
-  Model.Paths.Identifier.label_parent ->
+  Model.Paths.Identifier.LabelParent.t ->
   Location.t ->
   string ->
     (Model.Comment.docs_or_stop, Model.Error.t) result

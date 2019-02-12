@@ -22,33 +22,33 @@ module Ident_env = Model.Ident_env
 
 
 val read_interface: Model.Root.t -> string -> Typedtree.signature ->
-  Paths.Identifier.module_ *
+  Paths.Identifier.Module.t *
   Model.Comment.docs *
   Model.Lang.Signature.t
 
 val read_module_type :
   Ident_env.t ->
-  Paths.Identifier.signature ->
-  Paths.Identifier.label_parent ->
+  Paths.Identifier.Signature.t ->
+  Paths.Identifier.LabelParent.t ->
   int ->
   Typedtree.module_type ->
     Model.Lang.ModuleType.expr
 
 val read_value_description : Ident_env.t ->
-  Paths.Identifier.signature ->
+  Paths.Identifier.Signature.t ->
   Typedtree.value_description -> Model.Lang.Signature.item
 
 val read_type_declarations : Ident_env.t ->
-  Paths.Identifier.signature ->
+  Paths.Identifier.Signature.t ->
   Model.Lang.Signature.recursive ->
   Typedtree.type_declaration list ->
   Model.Lang.Signature.item list
 
 val read_module_type_declaration : Ident_env.t ->
-  Paths.Identifier.signature ->
+  Paths.Identifier.Signature.t ->
   Typedtree.module_type_declaration -> Model.Lang.ModuleType.t
 
 val read_class_type_declarations : Ident_env.t ->
-  Paths.Identifier.signature ->
+  Paths.Identifier.Signature.t ->
   Typedtree.class_type Typedtree.class_infos list ->
   Model.Lang.Signature.item list

@@ -28,133 +28,126 @@ let pair_map f g p =
     if a != a' || b != b' then (a', b')
     else p
 
+
 class virtual identifier = object (self)
 
   method virtual root : Root.t -> Root.t
 
-  method identifier : type k . k Identifier.t -> k Identifier.t =
+  method identifier : Identifier.t -> Identifier.t =
     fun id ->
-      let open Identifier in
         match id with
-        | Root(root, name) ->
+        | `Root(root, name) ->
             let root' = self#root root in
             let name' = self#identifier_root_name name in
-              if root != root' || name != name' then Root(root', name')
+              if root != root' || name != name' then `Root(root', name')
               else id
-        | Page(root, name) ->
+        | `Page(root, name) ->
             let root' = self#root root in
             let name' = self#identifier_page_name name in
-              if root != root' || name != name' then Page(root', name')
+              if root != root' || name != name' then `Page(root', name')
               else id
-        | Module(parent, name) ->
+        | `Module(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_module_name name in
               if parent != parent' || name != name' then
-                Module(parent', name')
+                `Module(parent', name')
               else id
-        | Argument(parent, pos, name) ->
+        | `Argument(parent, pos, name) ->
             let parent' = self#identifier_signature parent in
             let pos' = self#identifier_argument_position pos in
             let name' = self#identifier_argument_name name in
               if parent != parent' || pos != pos' || name != name' then
-                Argument(parent', pos', name')
+                `Argument(parent', pos', name')
               else id
-        | ModuleType(parent, name) ->
+        | `ModuleType(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_module_type_name name in
               if parent != parent' || name != name' then
-                ModuleType(parent', name')
+                `ModuleType(parent', name')
               else id
-        | Type(parent, name) ->
+        | `Type(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_type_name name in
               if parent != parent' || name != name' then
-                Type(parent', name')
+                `Type(parent', name')
               else id
-        | CoreType name ->
+        | `CoreType name ->
             let name' = self#identifier_core_type_name name in
-              if name != name' then CoreType name'
+              if name != name' then `CoreType name'
               else id
-        | Constructor(parent, name) ->
-            let parent' = self#identifier parent in
+        | `Constructor(parent, name) ->
+            let parent' = self#identifier_type parent in
             let name' = self#identifier_constructor_name name in
               if parent != parent' || name != name' then
-                Constructor(parent', name')
+                `Constructor(parent', name')
               else id
-        | Field(parent, name) ->
-            let parent' = self#identifier parent in
+        | `Field(parent, name) ->
+            let parent' = self#identifier_parent parent in
             let name' = self#identifier_field_name name in
               if parent != parent' || name != name' then
-                Field(parent', name')
+                `Field(parent', name')
               else id
-        | Extension(parent, name) ->
+        | `Extension(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_extension_name name in
               if parent != parent' || name != name' then
-                Extension(parent', name')
+                `Extension(parent', name')
               else id
-        | Exception(parent, name) ->
+        | `Exception(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_exception_name name in
               if parent != parent' || name != name' then
-                Exception(parent', name')
+                `Exception(parent', name')
               else id
-        | CoreException name ->
+        | `CoreException name ->
             let name' = self#identifier_core_exception_name name in
-              if name != name' then CoreException name'
+              if name != name' then `CoreException name'
               else id
-        | Value(parent, name) ->
+        | `Value(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_value_name name in
               if parent != parent' || name != name' then
-                Value(parent', name')
+                `Value(parent', name')
               else id
-        | Class(parent, name) ->
+        | `Class(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_class_name name in
               if parent != parent' || name != name' then
-                Class(parent', name')
+                `Class(parent', name')
               else id
-        | ClassType(parent, name) ->
+        | `ClassType(parent, name) ->
             let parent' = self#identifier_signature parent in
             let name' = self#identifier_class_type_name name in
               if parent != parent' || name != name' then
-                ClassType(parent', name')
+                `ClassType(parent', name')
               else id
-        | Method(parent, name) ->
+        | `Method(parent, name) ->
             let parent' = self#identifier_class_signature parent in
             let name' = self#identifier_method_name name in
               if parent != parent' || name != name' then
-                Method(parent', name')
+                `Method(parent', name')
               else id
-        | InstanceVariable(parent, name) ->
+        | `InstanceVariable(parent, name) ->
             let parent' = self#identifier_class_signature parent in
             let name' = self#identifier_instance_variable_name name in
               if parent != parent' || name != name' then
-                InstanceVariable(parent', name')
+                `InstanceVariable(parent', name')
               else id
-        | Label(parent, name) ->
+        | `Label(parent, name) ->
             let parent' =
               match parent with
-              | (Root _ | Module _ | Argument _ | ModuleType _) as parent ->
-                label_parent_of_parent
-                  (parent_of_signature
-                     (self#identifier_signature parent))
-              | (Class _ | ClassType _) as parent ->
-                label_parent_of_parent
-                  (parent_of_class_signature
-                     (self#identifier_class_signature parent))
-              | Type _ | CoreType _ as parent ->
-                label_parent_of_parent
-                  (parent_of_datatype
-                    (self#identifier_datatype parent))
-              | Page _ as parent ->
-                label_parent_of_page
-                  (self#identifier_page parent)
+              | (`Root _ | `Module _ | `Argument _ | `ModuleType _) as parent ->
+                  (self#identifier_signature parent :> Identifier.LabelParent.t)
+              | (`Class _ | `ClassType _) as parent ->
+                  (self#identifier_class_signature parent :> Identifier.LabelParent.t)
+              | (`Type _ | `CoreType _) as parent ->
+                  (self#identifier_datatype parent :> Identifier.LabelParent.t)
+              | `Page _ as parent ->
+                  (self#identifier_page parent :> Identifier.LabelParent.t)
             in
             let name' = self#identifier_label_name name in
               if parent != parent' || name != name' then
-                Label(parent', name')
+                `Label(parent', name')
               else id
 
   method identifier_root_name name = name
@@ -195,122 +188,142 @@ class virtual identifier = object (self)
 
   method identifier_label_name name = name
 
-  method identifier_page (id : Identifier.page) =
-    self#identifier id
+  method identifier_parent : Identifier.Parent.t -> Identifier.Parent.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.parent_of_t
 
-  method identifier_signature (id : Identifier.signature) =
-    self#identifier id
+  method identifier_page : Identifier.Page.t -> Identifier.Page.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.page_of_t
 
-  method identifier_class_signature (id : Identifier.class_signature) =
-    self#identifier id
+  method identifier_signature : Identifier.Signature.t -> Identifier.Signature.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.signature_of_t
 
-  method identifier_datatype (id : Identifier.datatype) =
-    self#identifier id
-
-  method identifier_module (id : Identifier.module_) =
-    self#identifier id
-
-  method identifier_module_type (id : Identifier.module_type) =
-    self#identifier id
-
-  method identifier_type (id : Identifier.type_) =
-    self#identifier id
-
-  method identifier_constructor (id : Identifier.constructor) =
-    self#identifier id
-
-  method identifier_field (id : Identifier.field) =
-    self#identifier id
-
-  method identifier_extension (id : Identifier.extension) =
-    self#identifier id
-
-  method identifier_exception (id : Identifier.exception_) =
-    self#identifier id
-
-  method identifier_value (id : Identifier.value) =
-    self#identifier id
-
-  method identifier_class (id : Identifier.class_) =
-    self#identifier id
-
-  method identifier_class_type (id : Identifier.class_type) =
-    self#identifier id
-
-  method identifier_method (id : Identifier.method_) =
-    self#identifier id
-
-  method identifier_instance_variable (id : Identifier.instance_variable) =
-    self#identifier id
-
-  method identifier_label (id : Identifier.label) =
-    self#identifier id
-
+  method identifier_class_signature : Identifier.ClassSignature.t -> Identifier.ClassSignature.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.class_signature_of_t
+    
+  method identifier_datatype : Identifier.DataType.t -> Identifier.DataType.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.datatype_of_t
+  
+  method identifier_module : Identifier.Module.t -> Identifier.Module.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.module_of_t
+    
+  method identifier_module_type : Identifier.ModuleType.t -> Identifier.ModuleType.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.module_type_of_t
+    
+  method identifier_type : Identifier.Type.t -> Identifier.Type.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.type_of_t
+    
+  method identifier_constructor : Identifier.Constructor.t -> Identifier.Constructor.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.constructor_of_t
+    
+  method identifier_field : Identifier.Field.t -> Identifier.Field.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.field_of_t
+    
+  method identifier_extension : Identifier.Extension.t -> Identifier.Extension.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.extension_of_t
+    
+  method identifier_exception : Identifier.Exception.t -> Identifier.Exception.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.exception_of_t
+    
+  method identifier_value : Identifier.Value.t -> Identifier.Value.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.value_of_t
+    
+  method identifier_class : Identifier.Class.t -> Identifier.Class.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.class_of_t
+    
+  method identifier_class_type : Identifier.ClassType.t -> Identifier.ClassType.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.class_type_of_t
+    
+  method identifier_method : Identifier.Method.t -> Identifier.Method.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.method_of_t
+    
+  method identifier_instance_variable : Identifier.InstanceVariable.t -> Identifier.InstanceVariable.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.instance_variable_of_t
+  
+  method identifier_label : Identifier.Label.t -> Identifier.Label.t = fun id ->
+    self#identifier (id :> Identifier.t) |>
+    Identifier.label_of_t
+    
 end
 
 class virtual path = object (self)
 
-  method virtual identifier : 'k . 'k Identifier.t -> 'k Identifier.t
+  method virtual identifier : Identifier.t -> Identifier.t
 
-  method path_resolved : type k. k Path.Resolved.t -> k Path.Resolved.t =
+  method path_resolved : Path.Resolved.t -> Path.Resolved.t =
     fun p ->
-      let open Path.Resolved in
         match p with
-        | Identifier id ->
+        | `Identifier id ->
             let id' = self#identifier id in
-              if id != id' then Identifier id'
+              if id != id' then `Identifier id'
               else p
-        | Subst(sub, orig) ->
-            let sub' = self#path_resolved sub in
-            let orig' = self#path_resolved orig in
-              if sub != sub' || orig != orig' then Subst(sub', orig')
+        | `Subst(sub, orig) ->
+            let sub' = self#path_resolved_module_type sub in
+            let orig' = self#path_resolved_module orig in
+              if sub != sub' || orig != orig' then `Subst(sub', orig')
               else p
-        | SubstAlias(sub, orig) ->
-            let sub' = self#path_resolved sub in
-            let orig' = self#path_resolved orig in
-              if sub != sub' || orig != orig' then SubstAlias(sub', orig')
+        | `SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved_module sub in
+            let orig' = self#path_resolved_module orig in
+              if sub != sub' || orig != orig' then `SubstAlias(sub', orig')
               else p
-        | Hidden hp ->
-            let hp' = self#path_resolved hp in
-              if hp != hp' then Hidden hp'
+        | `Hidden hp ->
+            let hp' = self#path_resolved_module hp in
+              if hp != hp' then `Hidden hp'
               else p
-        | Module(parent, name) ->
-            let parent' = self#path_resolved parent in
+        | `Module(parent, name) ->
+            let parent' = self#path_resolved_module parent in
             let name' = self#path_resolved_module_name name in
               if parent != parent' || name != name' then
-                Module(parent', name')
+                `Module(parent', name')
               else p
-        | Canonical(orig, cano) ->
-            let orig' = self#path_resolved orig in
-            let cano' = self#path cano in
-              if orig != orig' || cano != cano' then Canonical(orig', cano')
+        | `Canonical(orig, cano) ->
+            let orig' = self#path_resolved_module orig in
+            let cano' = self#path_module cano in
+              if orig != orig' || cano != cano' then `Canonical(orig', cano')
               else p
-        | Apply(fn, arg) ->
-            let fn' = self#path_resolved fn in
-            let arg' = self#path arg in
-              if fn != fn' || arg != arg' then Apply(fn', arg')
+        | `Apply(fn, arg) ->
+            let fn' = self#path_resolved_module fn in
+            let arg' = self#path_module arg in
+              if fn != fn' || arg != arg' then `Apply(fn', arg')
               else p
-        | ModuleType(parent, name) ->
-            let parent' = self#path_resolved parent in
+        | `ModuleType(parent, name) ->
+            let parent' = self#path_resolved_module parent in
             let name' = self#path_resolved_module_type_name name in
               if parent != parent' || name != name' then
-                ModuleType(parent', name')
+                `ModuleType(parent', name')
               else p
-        | Type(parent, name) ->
-            let parent' = self#path_resolved parent in
+        | `Type(parent, name) ->
+            let parent' = self#path_resolved_module parent in
             let name' = self#path_resolved_type_name name in
-              if parent != parent' || name != name' then Type(parent', name')
+              if parent != parent' || name != name' then `Type(parent', name')
               else p
-        | Class(parent, name) ->
-            let parent' = self#path_resolved parent in
+        | `Class(parent, name) ->
+            let parent' = self#path_resolved_module parent in
             let name' = self#path_resolved_class_name name in
-              if parent != parent' || name != name' then Class(parent', name')
+              if parent != parent' || name != name' then `Class(parent', name')
               else p
-        | ClassType(parent, name) ->
-            let parent' = self#path_resolved parent in
+        | `ClassType(parent, name) ->
+            let parent' = self#path_resolved_module parent in
             let name' = self#path_resolved_class_type_name name in
               if parent != parent' || name != name' then
-                ClassType(parent', name')
+                `ClassType(parent', name')
               else p
 
   method path_resolved_module_name name = name
@@ -323,104 +336,113 @@ class virtual path = object (self)
 
   method path_resolved_class_type_name name = name
 
-  method path_resolved_module (p : Path.Resolved.module_) =
-    self#path_resolved p
+  method path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t = fun p ->
+    self#path_resolved (p :> Path.Resolved.t) |>
+    Path.Resolved.module_of_t
 
-  method path_resolved_module_type (p : Path.Resolved.module_type) =
-    self#path_resolved p
+  method path_resolved_module_type : Path.Resolved.ModuleType.t -> Path.Resolved.ModuleType.t = fun p ->
+    self#path_resolved (p :> Path.Resolved.t) |>
+    Path.Resolved.module_type_of_t
 
-  method path_resolved_type (p : Path.Resolved.type_) =
-    self#path_resolved p
+  method path_resolved_type : Path.Resolved.Type.t -> Path.Resolved.Type.t = fun p ->
+    self#path_resolved (p :> Path.Resolved.t) |>
+    Path.Resolved.type_of_t
 
-  method path_resolved_class_type (p : Path.Resolved.class_type) =
-    self#path_resolved p
+  method path_resolved_class_type : Path.Resolved.ClassType.t -> Path.Resolved.ClassType.t = fun p ->
+    self#path_resolved (p :> Path.Resolved.t) |>
+    Path.Resolved.class_type_of_t
 
-  method path : type k . k Path.t -> k Path.t =
+  method path : Path.t -> Path.t =
     fun p ->
-      let open Path in
         match p with
-        | Resolved res ->
+        | `Resolved res ->
             let res' = self#path_resolved res in
-              if res != res' then Resolved res'
+              if res != res' then `Resolved res'
               else p
-        | Root name ->
+        | `Root name ->
             let name' = self#path_root_name name in
-              if name != name' then Root name'
+              if name != name' then `Root name'
               else p
-        | Forward name ->
+        | `Forward name ->
             let name' = self#path_root_name name in
-              if name != name' then Forward name'
+              if name != name' then `Forward name'
               else p
-        | Dot(parent, name) ->
-            let parent' = self#path parent in
+        | `Dot(parent, name) ->
+            let parent' = self#path_module parent in
             let name' = self#path_dot_name name in
-              if parent != parent' || name != name' then Dot(parent', name')
+              if parent != parent' || name != name' then `Dot(parent', name')
               else p
-        | Apply(fn, arg) ->
-            let fn' = self#path fn in
-            let arg' = self#path arg in
-              if fn != fn' || arg != arg' then Apply(fn', arg')
+        | `Apply(fn, arg) ->
+            let fn' = self#path_module fn in
+            let arg' = self#path_module arg in
+              if fn != fn' || arg != arg' then `Apply(fn', arg')
               else p
 
   method path_root_name name = name
 
   method path_dot_name name = name
 
-  method path_module (p : Path.module_) =
-    self#path p
+  method path_module : Path.Module.t -> Path.Module.t = fun p ->
+    self#path (p :> Path.t) |> 
+    Path.module_of_t
 
-  method path_module_type (p : Path.module_type) =
-    self#path p
+  method path_module_type : Path.ModuleType.t -> Path.ModuleType.t = fun p ->
+    self#path (p :> Path.t) |>
+    Path.module_type_of_t
 
-  method path_type (p : Path.type_) =
-    self#path p
+  method path_type : Path.Type.t -> Path.Type.t = fun p ->
+    self#path (p :> Path.t) |>
+    Path.type_of_t
 
-  method path_class_type (p : Path.class_type) =
-    self#path p
+  method path_class_type : Path.ClassType.t -> Path.ClassType.t = fun p ->
+    self#path (p :> Path.t) |>
+    Path.class_type_of_t
 
 end
 
 class virtual fragment = object (self)
 
-  method virtual path_resolved : 'k. 'k Path.Resolved.t ->
-                                   'k Path.Resolved.t
+  method virtual path_resolved : Path.Resolved.t ->
+                                   Path.Resolved.t
 
-  method fragment_resolved : type k s. (k, s) Fragment.Resolved.raw ->
-                                         (k, s) Fragment.Resolved.raw =
+  method virtual path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t
+
+  method virtual path_resolved_module_type : Path.Resolved.ModuleType.t -> Path.Resolved.ModuleType.t
+
+  method fragment_resolved : Fragment.Resolved.t -> Fragment.Resolved.t =
     fun p ->
-      let open Fragment.Resolved in
         match p with
-        | Root -> p
-        | Subst(sub, orig) ->
-            let sub' = self#path_resolved sub in
-            let orig' = self#fragment_resolved orig in
-              if sub != sub' || orig != orig' then Subst(sub', orig')
+        | `Root -> p
+        | `Subst(sub, orig) ->
+            let sub' = self#path_resolved_module_type sub in
+            let orig' = self#fragment_resolved_module orig in
+              if sub != sub' || orig != orig' then `Subst(sub', orig')
               else p
-        | SubstAlias(sub, orig) ->
-            let sub' = self#path_resolved sub in
-            let orig' = self#fragment_resolved orig in
-              if sub != sub' || orig != orig' then SubstAlias(sub', orig')
+        | `SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved_module sub in
+            let orig' = self#fragment_resolved_module orig in
+              if sub != sub' || orig != orig' then `SubstAlias(sub', orig')
               else p
-        | Module(parent, name) ->
-            let parent' = self#fragment_resolved parent in
+        | `Module(parent, name) ->
+            let parent' = self#fragment_resolved_signature parent in
             let name' = self#fragment_resolved_module_name name in
-              if parent != parent' || name != name' then Module(parent', name')
+              if parent != parent' || name != name' then `Module(parent', name')
               else p
-        | Type(parent, name) ->
-            let parent' = self#fragment_resolved parent in
+        | `Type(parent, name) ->
+            let parent' = self#fragment_resolved_signature parent in
             let name' = self#fragment_resolved_type_name name in
-              if parent != parent' || name != name' then Type(parent', name')
+              if parent != parent' || name != name' then `Type(parent', name')
               else p
-        | Class(parent, name) ->
-            let parent' = self#fragment_resolved parent in
+        | `Class(parent, name) ->
+            let parent' = self#fragment_resolved_signature parent in
             let name' = self#fragment_resolved_class_name name in
-              if parent != parent' || name != name' then Class(parent', name')
+              if parent != parent' || name != name' then `Class(parent', name')
               else p
-        | ClassType(parent, name) ->
-            let parent' = self#fragment_resolved parent in
+        | `ClassType(parent, name) ->
+            let parent' = self#fragment_resolved_signature parent in
             let name' = self#fragment_resolved_class_type_name name in
               if parent != parent' || name != name' then
-                ClassType(parent', name')
+                `ClassType(parent', name')
               else p
 
   method fragment_resolved_module_name name = name
@@ -431,140 +453,151 @@ class virtual fragment = object (self)
 
   method fragment_resolved_class_type_name name = name
 
-  method fragment_resolved_module (p : Fragment.Resolved.module_) =
-    self#fragment_resolved p
+  method fragment_resolved_signature : Fragment.Resolved.Signature.t -> Fragment.Resolved.Signature.t = fun p ->
+    self#fragment_resolved (p :> Fragment.Resolved.t) |>
+    Fragment.Resolved.signature_of_t
+     
+  method fragment_resolved_module : Fragment.Resolved.Module.t -> Fragment.Resolved.Module.t = fun p ->
+    self#fragment_resolved (p :> Fragment.Resolved.t) |>
+    Fragment.Resolved.module_of_t
 
-  method fragment_resolved_type (p : Fragment.Resolved.type_) =
-    self#fragment_resolved p
+  method fragment_resolved_type : Fragment.Resolved.Type.t -> Fragment.Resolved.Type.t = fun p ->
+    self#fragment_resolved (p :> Fragment.Resolved.t) |>
+    Fragment.Resolved.type_of_t
 
-  method fragment : type k s. (k, s) Fragment.raw -> (k, s) Fragment.raw =
+  method fragment : Fragment.t -> Fragment.t =
     fun p ->
-      let open Fragment in
         match p with
-        | Resolved res ->
+        | `Resolved res ->
             let res' = self#fragment_resolved res in
-              if res != res' then Resolved res'
+              if res != res' then `Resolved res'
               else p
-        | Dot(parent, name) ->
-            let parent' = self#fragment parent in
+        | `Dot(parent, name) ->
+            let parent' = self#fragment_signature parent in
             let name' = self#fragment_name name in
-              if parent != parent' || name != name' then Dot(parent', name')
+              if parent != parent' || name != name' then `Dot(parent', name')
               else p
 
   method fragment_name name = name
 
-  method fragment_module (p : Fragment.module_) =
-    self#fragment p
+  method fragment_signature : Fragment.Signature.t -> Fragment.Signature.t = fun p ->
+    self#fragment (p :> Fragment.t) |>
+    Fragment.signature_of_t
 
-  method fragment_type (p : Fragment.type_) =
-    self#fragment p
+  method fragment_module : Fragment.Module.t -> Fragment.Module.t = fun p ->
+    self#fragment (p :> Fragment.t) |>
+    Fragment.module_of_t
+
+  method fragment_type : Fragment.Type.t -> Fragment.Type.t = fun p ->
+    self#fragment (p :> Fragment.t) |>
+    Fragment.type_of_t
 
 end
 
 class virtual reference = object (self)
 
-  method virtual identifier : 'k . 'k Identifier.t -> 'k Identifier.t
+  method virtual identifier : Identifier.t -> Identifier.t
 
-  method virtual path_resolved : 'k. 'k Path.Resolved.t -> 'k Path.Resolved.t
+  method virtual path_resolved : Path.Resolved.t -> Path.Resolved.t
 
-  method reference_resolved : type k. k Reference.Resolved.t ->
-                                        k Reference.Resolved.t =
+  method virtual path_resolved_module : Path.Resolved.Module.t -> Path.Resolved.Module.t
+
+  method reference_resolved : Reference.Resolved.t -> Reference.Resolved.t =
     fun r ->
-      let open Reference.Resolved in
         match r with
-        | Identifier id ->
+        | `Identifier id ->
             let id' = self#identifier id in
-              if id != id' then Identifier id'
+              if id != id' then `Identifier id'
               else r
-        | SubstAlias(sub, orig) ->
-            let sub' = self#path_resolved sub in
-            let orig' = self#reference_resolved orig in
+        | `SubstAlias(sub, orig) ->
+            let sub' = self#path_resolved_module sub in
+            let orig' = self#reference_resolved_module orig in
               if sub != sub' || orig != orig' then
-                SubstAlias(sub', orig')
+                `SubstAlias(sub', orig')
               else r
-        | Module(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Module(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_module_name name in
               if parent != parent' || name != name' then
-                Module(parent', name')
+                `Module(parent', name')
               else r
-        | Canonical(orig, cano) ->
-            let orig' = self#reference_resolved orig in
-            let cano' = self#reference cano in
+        | `Canonical(orig, cano) ->
+            let orig' = self#reference_resolved_module orig in
+            let cano' = self#reference_module cano in
               if orig != orig' || cano != cano' then
-                Canonical(orig', cano')
+                `Canonical(orig', cano')
               else r
-        | ModuleType(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `ModuleType(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_module_type_name name in
               if parent != parent' || name != name' then
-                ModuleType(parent', name')
+                `ModuleType(parent', name')
               else r
-        | Type(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Type(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_type_name name in
               if parent != parent' || name != name' then
-                Type(parent', name')
+                `Type(parent', name')
               else r
-        | Constructor(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Constructor(parent, name) ->
+            let parent' = self#reference_resolved_datatype parent in
             let name' = self#reference_resolved_constructor_name name in
               if parent != parent' || name != name' then
-                Constructor(parent', name')
+                `Constructor(parent', name')
               else r
-        | Field(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Field(parent, name) ->
+            let parent' = self#reference_resolved_parent parent in
             let name' = self#reference_resolved_field_name name in
               if parent != parent' || name != name' then
-                Field(parent', name')
+                `Field(parent', name')
               else r
-        | Extension(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Extension(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_extension_name name in
               if parent != parent' || name != name' then
-                Extension(parent', name')
+                `Extension(parent', name')
               else r
-        | Exception(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Exception(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_exception_name name in
               if parent != parent' || name != name' then
-                Exception(parent', name')
+                `Exception(parent', name')
               else r
-        | Value(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Value(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_value_name name in
               if parent != parent' || name != name' then
-                Value(parent', name')
+                `Value(parent', name')
               else r
-        | Class(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Class(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_class_name name in
               if parent != parent' || name != name' then
-                Class(parent', name')
+                `Class(parent', name')
               else r
-        | ClassType(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `ClassType(parent, name) ->
+            let parent' = self#reference_resolved_signature parent in
             let name' = self#reference_resolved_class_type_name name in
               if parent != parent' || name != name' then
-                ClassType(parent', name')
+                `ClassType(parent', name')
               else r
-        | Method(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Method(parent, name) ->
+            let parent' = self#reference_resolved_class_signature parent in
             let name' = self#reference_resolved_method_name name in
               if parent != parent' || name != name' then
-                Method(parent', name')
+                `Method(parent', name')
               else r
-        | InstanceVariable(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `InstanceVariable(parent, name) ->
+            let parent' = self#reference_resolved_class_signature parent in
             let name' = self#reference_resolved_instance_variable_name name in
               if parent != parent' || name != name' then
-                InstanceVariable(parent', name')
+                `InstanceVariable(parent', name')
               else r
-        | Label(parent, name) ->
-            let parent' = self#reference_resolved parent in
+        | `Label(parent, name) ->
+            let parent' = self#reference_resolved_label_parent parent in
             let name' = self#reference_resolved_label_name name in
               if parent != parent' || name != name' then
-                Label(parent', name')
+                `Label(parent', name')
               else r
 
   method reference_resolved_module_name name = name
@@ -593,131 +626,160 @@ class virtual reference = object (self)
 
   method reference_resolved_label_name name = name
 
-  method reference_resolved_module (r : Reference.Resolved.module_) =
-    self#reference_resolved r
+  method reference_resolved_signature : Reference.Resolved.Signature.t -> Reference.Resolved.Signature.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.signature_of_t
+
+  method reference_resolved_class_signature : Reference.Resolved.ClassSignature.t -> Reference.Resolved.ClassSignature.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.class_signature_of_t
+
+  method reference_resolved_module : Reference.Resolved.Module.t -> Reference.Resolved.Module.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.module_of_t
+
+  method reference_resolved_parent : Reference.Resolved.Parent.t -> Reference.Resolved.Parent.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.parent_of_t
+
+  method reference_resolved_label_parent : Reference.Resolved.LabelParent.t -> Reference.Resolved.LabelParent.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.label_parent_of_t
 
   method reference_resolved_module_type
-           (r : Reference.Resolved.module_type) =
-    self#reference_resolved r
+           : Reference.Resolved.ModuleType.t -> Reference.Resolved.ModuleType.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.module_type_of_t
 
-  method reference_resolved_type (r : Reference.Resolved.type_) =
-    self#reference_resolved r
+  method reference_resolved_type : Reference.Resolved.Type.t -> Reference.Resolved.Type.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.type_of_t
 
-  method reference_resolved_constructor (r : Reference.Resolved.constructor) =
-    self#reference_resolved r
+  method reference_resolved_datatype : Reference.Resolved.DataType.t -> Reference.Resolved.DataType.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.datatype_of_t
 
-  method reference_resolved_field (r : Reference.Resolved.field) =
-    self#reference_resolved r
+  method reference_resolved_constructor : Reference.Resolved.Constructor.t -> Reference.Resolved.Constructor.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.constructor_of_t
 
-  method reference_resolved_extension (r : Reference.Resolved.extension) =
-    self#reference_resolved r
+  method reference_resolved_field : Reference.Resolved.Field.t -> Reference.Resolved.Field.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.field_of_t
 
-  method reference_resolved_exception (r : Reference.Resolved.exception_) =
-    self#reference_resolved r
+  method reference_resolved_extension : Reference.Resolved.Extension.t -> Reference.Resolved.Extension.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.extension_of_t
 
-  method reference_resolved_value (r : Reference.Resolved.value) =
-    self#reference_resolved r
+  method reference_resolved_exception : Reference.Resolved.Exception.t -> Reference.Resolved.Exception.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.exception_of_t
 
-  method reference_resolved_class (r : Reference.Resolved.class_) =
-    self#reference_resolved r
+  method reference_resolved_value : Reference.Resolved.Value.t -> Reference.Resolved.Value.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.value_of_t
 
-  method reference_resolved_class_type (r : Reference.Resolved.class_type) =
-    self#reference_resolved r
+  method reference_resolved_class : Reference.Resolved.Class.t -> Reference.Resolved.Class.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.class_of_t
 
-  method reference_resolved_method (r : Reference.Resolved.method_) =
-    self#reference_resolved r
+  method reference_resolved_class_type : Reference.Resolved.ClassType.t -> Reference.Resolved.ClassType.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.class_type_of_t
+
+  method reference_resolved_method : Reference.Resolved.Method.t -> Reference.Resolved.Method.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.method_of_t
 
   method reference_resolved_instance_variable
-           (r : Reference.Resolved.instance_variable) =
-    self#reference_resolved r
+           : Reference.Resolved.InstanceVariable.t -> Reference.Resolved.InstanceVariable.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.instance_variable_of_t
 
-  method reference_resolved_label (r : Reference.Resolved.label) =
-    self#reference_resolved r
+  method reference_resolved_label : Reference.Resolved.Label.t -> Reference.Resolved.Label.t = fun r ->
+    self#reference_resolved (r :> Reference.Resolved.t) |>
+    Reference.Resolved.label_of_t
 
-  method reference_resolved_any (r : Reference.Resolved.any) =
-    self#reference_resolved r
-
-  method reference : type k . k Reference.t -> k Reference.t =
+  method reference_any : Reference.t -> Reference.t =
     fun r ->
-      let open Reference in
         match r with
-        | Resolved res ->
-            let res' = self#reference_resolved res in
-              if res != res' then Resolved res'
+        | `Resolved res ->
+            let res' = self#reference_resolved (res :> Reference.Resolved.t) in
+              if res != res' then `Resolved res'
               else r
-        | Root (name, kind) ->
+        | `Root (name, kind) ->
             let name' = self#reference_root_name name in
-              if name != name' then Root (name', kind)
+              if name != name' then `Root (name', kind)
               else r
-        | Dot(parent, name) ->
-            let parent' = self#reference parent in
+        | `Dot(parent, name) ->
+            let parent' = self#reference_label_parent parent in
             let name' = self#reference_dot_name name in
-              if parent != parent' || name != name' then Dot(parent', name')
+              if parent != parent' || name != name' then `Dot(parent', name')
               else r
-        | Module(parent, name) ->
-            let parent' = self#reference parent in
+        | `Module(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_module_name name in
-              if parent != parent' || name != name' then Module(parent', name')
+              if parent != parent' || name != name' then `Module(parent', name')
               else r
-        | ModuleType(parent, name) ->
-            let parent' = self#reference parent in
+        | `ModuleType(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_module_type_name name in
-              if parent != parent' || name != name' then ModuleType(parent', name')
+              if parent != parent' || name != name' then `ModuleType(parent', name')
               else r
-        | Type(parent, name) ->
-            let parent' = self#reference parent in
+        | `Type(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_type_name name in
-              if parent != parent' || name != name' then Type(parent', name')
+              if parent != parent' || name != name' then `Type(parent', name')
               else r
-        | Constructor(parent, name) ->
-            let parent' = self#reference parent in
+        | `Constructor(parent, name) ->
+            let parent' = self#reference_datatype parent in
             let name' = self#reference_constructor_name name in
-              if parent != parent' || name != name' then Constructor(parent', name')
+              if parent != parent' || name != name' then `Constructor(parent', name')
               else r
-        | Extension(parent, name) ->
-            let parent' = self#reference parent in
+        | `Extension(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_extension_name name in
-              if parent != parent' || name != name' then Extension(parent', name')
+              if parent != parent' || name != name' then `Extension(parent', name')
               else r
-        | Exception(parent, name) ->
-            let parent' = self#reference parent in
+        | `Exception(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_exception_name name in
-              if parent != parent' || name != name' then Exception(parent', name')
+              if parent != parent' || name != name' then `Exception(parent', name')
               else r
-        | Field(parent, name) ->
-            let parent' = self#reference parent in
+        | `Field(parent, name) ->
+            let parent' = self#reference_parent parent in
             let name' = self#reference_field_name name in
-              if parent != parent' || name != name' then Field(parent', name')
+              if parent != parent' || name != name' then `Field(parent', name')
               else r
-        | Value(parent, name) ->
-            let parent' = self#reference parent in
+        | `Value(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_value_name name in
-              if parent != parent' || name != name' then Value(parent', name')
+              if parent != parent' || name != name' then `Value(parent', name')
               else r
-        | Class(parent, name) ->
-            let parent' = self#reference parent in
+        | `Class(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_class_name name in
-              if parent != parent' || name != name' then Class(parent', name')
+              if parent != parent' || name != name' then `Class(parent', name')
               else r
-        | ClassType(parent, name) ->
-            let parent' = self#reference parent in
+        | `ClassType(parent, name) ->
+            let parent' = self#reference_signature parent in
             let name' = self#reference_class_type_name name in
-              if parent != parent' || name != name' then ClassType(parent', name')
+              if parent != parent' || name != name' then `ClassType(parent', name')
               else r
-        | Method(parent, name) ->
-            let parent' = self#reference parent in
+        | `Method(parent, name) ->
+            let parent' = self#reference_class_signature parent in
             let name' = self#reference_method_name name in
-              if parent != parent' || name != name' then Method(parent', name')
+              if parent != parent' || name != name' then `Method(parent', name')
               else r
-        | InstanceVariable(parent, name) ->
-            let parent' = self#reference parent in
+        | `InstanceVariable(parent, name) ->
+            let parent' = self#reference_class_signature parent in
             let name' = self#reference_instance_variable_name name in
-              if parent != parent' || name != name' then InstanceVariable(parent', name')
+              if parent != parent' || name != name' then `InstanceVariable(parent', name')
               else r
-        | Label(parent, name) ->
-            let parent' = self#reference parent in
+        | `Label(parent, name) ->
+            let parent' = self#reference_label_parent parent in
             let name' = self#reference_label_name name in
-              if parent != parent' || name != name' then Label(parent', name')
+              if parent != parent' || name != name' then `Label(parent', name')
               else r
 
   method reference_root_name name = name
@@ -750,47 +812,77 @@ class virtual reference = object (self)
 
   method reference_label_name name = name
 
-  method reference_module (r : Reference.module_) =
-    self#reference r
+  method reference_signature : Reference.Signature.t -> Reference.Signature.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.signature_of_t
 
-  method reference_module_type (r : Reference.module_type) =
-    self#reference r
+  method reference_class_signature : Reference.ClassSignature.t -> Reference.ClassSignature.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.class_signature_of_t
 
-  method reference_type (r : Reference.type_) =
-    self#reference r
+  method reference_label_parent : Reference.LabelParent.t -> Reference.LabelParent.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.label_parent_of_t
 
-  method reference_constructor (r : Reference.constructor) =
-    self#reference r
+  method reference_parent : Reference.Parent.t -> Reference.Parent.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.parent_of_t
 
-  method reference_field (r : Reference.field) =
-    self#reference r
+  method reference_datatype : Reference.DataType.t -> Reference.DataType.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.datatype_of_t
 
-  method reference_extension (r : Reference.extension) =
-    self#reference r
+  method reference_module : Reference.Module.t -> Reference.Module.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.module_of_t
 
-  method reference_exception (r : Reference.exception_) =
-    self#reference r
+  method reference_module_type : Reference.ModuleType.t -> Reference.ModuleType.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.module_type_of_t
 
-  method reference_value (r : Reference.value) =
-    self#reference r
+  method reference_type : Reference.Type.t -> Reference.Type.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.type_of_t
 
-  method reference_class (r : Reference.class_) =
-    self#reference r
+  method reference_constructor : Reference.Constructor.t -> Reference.Constructor.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.constructor_of_t
 
-  method reference_class_type (r : Reference.class_type) =
-    self#reference r
+  method reference_field : Reference.Field.t -> Reference.Field.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.field_of_t
 
-  method reference_method (r : Reference.method_) =
-    self#reference r
+  method reference_extension : Reference.Extension.t -> Reference.Extension.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.extension_of_t
 
-  method reference_instance_variable (r : Reference.instance_variable) =
-    self#reference r
+  method reference_exception : Reference.Exception.t -> Reference.Exception.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.exception_of_t
 
-  method reference_label (r : Reference.label) =
-    self#reference r
+  method reference_value : Reference.Value.t -> Reference.Value.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.value_of_t
 
-  method reference_any (r : Reference.any) =
-    self#reference r
+  method reference_class : Reference.Class.t -> Reference.Class.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.class_of_t
+
+  method reference_class_type : Reference.ClassType.t -> Reference.ClassType.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.class_type_of_t
+
+  method reference_method : Reference.Method.t -> Reference.Method.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.method_of_t
+
+  method reference_instance_variable : Reference.InstanceVariable.t -> Reference.InstanceVariable.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.instance_variable_of_t
+
+  method reference_label : Reference.Label.t -> Reference.Label.t = fun r ->
+    self#reference_any (r :> Reference.t) |>
+    Reference.label_of_t
 
 end
 
@@ -804,55 +896,55 @@ end
 class virtual documentation = object (self)
 
   method virtual identifier_label :
-    Identifier.label -> Identifier.label
+    Identifier.Label.t -> Identifier.Label.t
 
   method virtual identifier :
-    'k. 'k Identifier.t -> 'k Identifier.t
+    Identifier.t -> Identifier.t
 
   method virtual path_module :
-    Path.module_ -> Path.module_
+    Path.Module.t -> Path.Module.t
 
   method virtual reference_module :
-    Reference.module_ -> Reference.module_
+    Reference.Module.t -> Reference.Module.t
 
   method virtual reference_module_type :
-    Reference.module_type -> Reference.module_type
+    Reference.ModuleType.t -> Reference.ModuleType.t
 
   method virtual reference_type :
-    Reference.type_ -> Reference.type_
+    Reference.Type.t -> Reference.Type.t
 
   method virtual reference_constructor :
-    Reference.constructor -> Reference.constructor
+    Reference.Constructor.t -> Reference.Constructor.t
 
   method virtual reference_field :
-    Reference.field -> Reference.field
+    Reference.Field.t -> Reference.Field.t
 
   method virtual reference_extension :
-    Reference.extension -> Reference.extension
+    Reference.Extension.t -> Reference.Extension.t
 
   method virtual reference_exception :
-    Reference.exception_ -> Reference.exception_
+    Reference.Exception.t -> Reference.Exception.t
 
   method virtual reference_value :
-    Reference.value -> Reference.value
+    Reference.Value.t -> Reference.Value.t
 
   method virtual reference_class :
-    Reference.class_ -> Reference.class_
+    Reference.Class.t -> Reference.Class.t
 
   method virtual reference_class_type :
-    Reference.class_type -> Reference.class_type
+    Reference.ClassType.t -> Reference.ClassType.t
 
   method virtual reference_method :
-    Reference.method_ -> Reference.method_
+    Reference.Method.t -> Reference.Method.t
 
   method virtual reference_instance_variable :
-    Reference.instance_variable -> Reference.instance_variable
+    Reference.InstanceVariable.t -> Reference.InstanceVariable.t
 
   method virtual reference_label :
-    Reference.label -> Reference.label
+    Reference.Label.t -> Reference.Label.t
 
   method virtual reference_any :
-    Reference.any -> Reference.any
+    Reference.t -> Reference.t
 
   method documentation_reference ((path, content) as r) =
     let path' = self#reference_any path in
@@ -966,13 +1058,13 @@ end
 class virtual module_ = object (self)
 
   method virtual identifier_module :
-    Identifier.module_ -> Identifier.module_
+    Identifier.Module.t -> Identifier.Module.t
 
   method virtual path_module :
-    Path.module_ -> Path.module_
+    Path.Module.t -> Path.Module.t
 
   method virtual reference_module :
-    Reference.module_ -> Reference.module_
+    Reference.Module.t -> Reference.Module.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1041,25 +1133,25 @@ end
 class virtual module_type = object (self)
 
   method virtual identifier_module :
-    Identifier.module_ -> Identifier.module_
+    Identifier.Module.t -> Identifier.Module.t
 
   method virtual identifier_module_type :
-    Identifier.module_type -> Identifier.module_type
+    Identifier.ModuleType.t -> Identifier.ModuleType.t
 
   method virtual path_module :
-    Path.module_ -> Path.module_
+    Path.Module.t -> Path.Module.t
 
   method virtual path_module_type :
-    Path.module_type -> Path.module_type
+    Path.ModuleType.t -> Path.ModuleType.t
 
   method virtual path_type :
-    Path.type_ -> Path.type_
+    Path.Type.t -> Path.Type.t
 
   method virtual fragment_module :
-    Fragment.module_ -> Fragment.module_
+    Fragment.Module.t -> Fragment.Module.t
 
   method virtual fragment_type :
-    Fragment.type_ -> Fragment.type_
+    Fragment.Type.t -> Fragment.Type.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1250,7 +1342,7 @@ class virtual include_ = object (self)
     Module.decl -> Module.decl
 
   method virtual identifier_signature :
-    Identifier.signature -> Identifier.signature
+    Identifier.Signature.t -> Identifier.Signature.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1285,13 +1377,13 @@ end
 class virtual type_decl = object (self)
 
   method virtual identifier_type :
-    Identifier.type_ -> Identifier.type_
+    Identifier.Type.t -> Identifier.Type.t
 
   method virtual identifier_constructor :
-    Identifier.constructor -> Identifier.constructor
+    Identifier.Constructor.t -> Identifier.Constructor.t
 
   method virtual identifier_field :
-    Identifier.field -> Identifier.field
+    Identifier.Field.t -> Identifier.Field.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1414,10 +1506,10 @@ end
 class virtual extension = object (self)
 
   method virtual identifier_extension :
-    Identifier.extension -> Identifier.extension
+    Identifier.Extension.t -> Identifier.Extension.t
 
   method virtual path_type :
-    Path.type_ -> Path.type_
+    Path.Type.t -> Path.Type.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1465,7 +1557,7 @@ end
 class virtual exception_ = object (self)
 
   method virtual identifier_exception :
-    Identifier.exception_ -> Identifier.exception_
+    Identifier.Exception.t -> Identifier.Exception.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1492,7 +1584,7 @@ end
 class virtual value = object (self)
 
   method virtual identifier_value :
-    Identifier.value -> Identifier.value
+    Identifier.Value.t -> Identifier.Value.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1515,7 +1607,7 @@ end
 class virtual external_ = object (self)
 
   method virtual identifier_value :
-    Identifier.value -> Identifier.value
+    Identifier.Value.t -> Identifier.Value.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1543,7 +1635,7 @@ end
 class virtual class_ = object (self)
 
   method virtual identifier_class :
-    Identifier.class_ -> Identifier.class_
+    Identifier.Class.t -> Identifier.Class.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1601,10 +1693,10 @@ end
 class virtual class_type = object (self)
 
   method virtual identifier_class_type :
-    Identifier.class_type -> Identifier.class_type
+    Identifier.ClassType.t -> Identifier.ClassType.t
 
   method virtual path_class_type :
-    Path.class_type -> Path.class_type
+    Path.ClassType.t -> Path.ClassType.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1707,7 +1799,7 @@ end
 class virtual method_ = object (self)
 
   method virtual identifier_method :
-    Identifier.method_ -> Identifier.method_
+    Identifier.Method.t -> Identifier.Method.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1739,7 +1831,7 @@ end
 class virtual instance_variable = object (self)
 
   method virtual identifier_instance_variable :
-    Identifier.instance_variable -> Identifier.instance_variable
+    Identifier.InstanceVariable.t -> Identifier.InstanceVariable.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1771,16 +1863,16 @@ end
 class virtual type_expr = object (self)
 
   method virtual path_module_type :
-    Path.module_type -> Path.module_type
+    Path.ModuleType.t -> Path.ModuleType.t
 
   method virtual path_type :
-    Path.type_ -> Path.type_
+    Path.Type.t -> Path.Type.t
 
   method virtual path_class_type :
-    Path.class_type -> Path.class_type
+    Path.ClassType.t -> Path.ClassType.t
 
   method virtual fragment_type :
-    Fragment.type_ -> Fragment.type_
+    Fragment.Type.t -> Fragment.Type.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -1947,10 +2039,10 @@ class virtual unit = object (self)
   method virtual root : Root.t -> Root.t
 
   method virtual identifier_module :
-    Identifier.module_ -> Identifier.module_
+    Identifier.Module.t -> Identifier.Module.t
 
   method virtual path_module :
-    Path.module_ -> Path.module_
+    Path.Module.t -> Path.Module.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
@@ -2051,7 +2143,7 @@ end
 class virtual page = object (self)
 
   method virtual identifier_page :
-    Identifier.page -> Identifier.page
+    Identifier.Page.t -> Identifier.Page.t
 
   method virtual documentation :
     Comment.docs -> Comment.docs
