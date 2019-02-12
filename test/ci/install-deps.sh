@@ -36,5 +36,12 @@ else
   sudo mv ${OPAM_PKG} /usr/local/bin/opam
   sudo chmod a+x /usr/local/bin/opam
 
-  opam init -y --compiler=$OCAML --disable-sandboxing
+  opam init -y --bare --disable-sandboxing
+  opam switch create . $OCAML $REPOSITORIES --no-install
+
+  # Until https://github.com/ocaml/ocamlbuild/issues/294 is resolved.
+  if [[ "$OCAML" == ocaml-variants.4.08.0+beta1 ]]
+  then
+    opam pin add -yn ocamlbuild --dev-repo
+  fi
 fi
