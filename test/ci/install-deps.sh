@@ -19,7 +19,7 @@ esac
 
 # Install esy or opam
 if [[ $ESY_BUILD == YES ]]; then
-  npm --global install esy@0.3.x
+  npm --global install esy@0.5.x
 else
   OPAM_RELEASES=https://github.com/ocaml/opam/releases/
   OPAM_VERSION=2.0.1

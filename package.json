@@ -49,7 +49,7 @@
   },
   "resolutions": {
     "@opam/markup": "aantron/markup.ml:markup.opam#9f8e77",
-    "@opam/sexplib": "bryphe/sexplib#548f94d"
+    "@opam/sexplib": "bryphe/sexplib:opam#548f94d"
   },
   "devDependencies": {
     "@opam/merlin": "^3.0.3",
