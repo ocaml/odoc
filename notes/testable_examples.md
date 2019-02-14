@@ -58,9 +58,9 @@ The file names used to annotated code blocks are also used by odoc to decide
 what language should be used for syntax highlighting in the generated HTML. The
 language is decided based on the file name’s extension.
 
-**Warning:** code blocks without a file name will not have syntax highlighting.
-Once this feature is implemented, the currently used automatic language
-inference should be disabled.
+**Note:** code blocks without a file name will be assumed to be in OCaml for
+syntax highlighting purposes. To completely disable syntax highlighting,
+verbatim blocks should be used (`{v ... v}`).
 
 
 ## Command-line interface
