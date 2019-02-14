@@ -2,15 +2,15 @@
 
 Library authors are encouraged to include examples and short snippets of code
 in documentation to demonstrate how to effectively use their library. Such code
-snippets are included in docstrings as code blocks and therefor cannot be
+snippets are included in docstrings as code blocks and therefore cannot be
 executed and tested in the same way regular source files are. This leads to
 code duplication for library authors who want to make sure their examples can
-be correctly executed, and to out of date examples when they forget to update
+be correctly executed, and to out-of-date examples when they forget to update
 them, as the library’s API changes.
 
 To address this problem odoc implements the ability to extract code blocks from
 documented interfaces and documentation pages (`mli` and `mld` files
-respectively) into source code files. With this build systems can implement
+respectively) into source code files. With this, build systems can implement
 user-friendly workflows for execution, testing and even promotion of corrected
 examples. In addition, the extracted examples can be installed as documentation
 assets and thus avoid the need to duplicate them as separate files for
@@ -18,7 +18,7 @@ distribution.
 
 ## Named code blocks
 
-In the new version of odoc code blocks can be annotated with a file name. This
+In the new version of odoc, code blocks can be annotated with a file name. This
 file name is used by odoc to group related code blocks for extraction, and also
 to correctly annotate the markup for syntax highlighting.
 
@@ -36,7 +36,7 @@ blocks.
 Both named and anonymous code blocks can be extracted by odoc via the
 command-line interface. Code blocks with the same file name in a given
 documentation file will be concatenated and written into a file with that name.
-Optionally a different output file name for a given group can be provided.
+Optionally, a different output file name for a given group can be provided.
 Users are always required to provide an output file name for extraction of
 anonymous code blocks.
 
@@ -168,6 +168,11 @@ support these options.
 
 ## Requirements
 
+- In the common case users should be able to execute all the code blocks in a
+  single environment. This behaviour should be the default.
+- It should be possible to assign different environments to code blocks. Code
+  blocks with the same environment will be executed in the same toplevel
+  session.
 - Allow the errors to be highlighted in examples in the original file. Might require
   https://github.com/ocaml/odoc/issues/147
 - Produce `.corrected` files to allow dune (or other build systems) to support
