@@ -14,9 +14,9 @@ let iter_files f ?(without_theme = false) output_directory =
 
 let write =
   iter_files begin fun name content ->
-    let channel = Pervasives.open_out name in
-    Pervasives.output_string channel content;
-    Pervasives.close_out channel
+    let channel = open_out name in
+    output_string channel content;
+    close_out channel
   end
 
 let print_filenames =

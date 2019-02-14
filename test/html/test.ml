@@ -94,7 +94,7 @@ module Case = struct
       match case.theme_uri with
       | Some _ -> "custom_theme" :: opts
       | None -> opts in
-    let opts = String.concat "," (List.sort Pervasives.compare opts) in
+    let opts = String.concat "," (List.sort compare opts) in
     Env.package ^ "+" ^ opts
 
   let cmi_file case  = Env.path `scratch // (case.name ^ ".cmi")
