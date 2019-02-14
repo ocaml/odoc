@@ -40,6 +40,17 @@ Optionally, a different output file name for a given group can be provided.
 Users are always required to provide an output file name for extraction of
 anonymous code blocks.
 
+#### Hidden code blocks
+
+In some cases it might be useful to execute code blocks that contain
+configuration or setup logic. If those code blocks are not essential for
+documentation, they can be hidden by placing them between the special stop
+comment (see [The Stop special
+comment](https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec355) in
+the OCaml manual). Note that hidden code blocks will still be executed, to
+prevent the execution of a code block `execute=false` can be added to the
+annotation. ([TODO] Not currently covered by the proposal.)
+
 To facilitate debugging and allow the tooling to implement expect-style
 promotions, popularized by cram and dune, the extracted examples can be
 optionally annotated with line numbers and the source file name (see [Line
@@ -65,7 +76,8 @@ verbatim blocks should be used (`{v ... v}`).
 
 ## Command-line interface
 
-The following simplified manual page defines the command-line interface:
+The following simplified manual page defines the command-line interface for
+code extraction:
 
 
     odoc-extract-code(1)              Odoc Manual             odoc-extract-code(1)
@@ -81,13 +93,20 @@ The following simplified manual page defines the command-line interface:
            --name=NAME
                The name of the code block to extract.
 
-           -o PATH, --output=PATH
-               Output file path. If omitted, the provided NAME will be used.
-               Required for extraction of anonymous code blocks.
-
            --anonymous
                Extract code blocks without name. Cannot be used with the `--name'
                option.
+
+           --all
+               Extract all code blocks from the input file (including anonymous
+               code blocks). The output PATH will be treated as a dirctory when
+               invoking this option.
+
+           -o PATH, --output=PATH
+               Output path. If omitted and the `--name=NAME' option is
+               provided, NAME will be used as an outupt file path. Required for
+               extraction of anonymous code blocks. Must be a directory path
+               when `--all' code blocks are extracted.
 
            --with-line-numbers
                Include line number and file name of the extracted code blocks.
@@ -97,6 +116,10 @@ The following simplified manual page defines the command-line interface:
 
 
     Odoc 11VERSION11                                          odoc-extract-code(1)
+
+Similar to other odoc commands that produce output, a complementary `odoc
+extract-code-targets` command will be added to list all code block names
+present in the input file.
 
 
 ## Dune integration
