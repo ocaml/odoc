@@ -126,12 +126,25 @@ module Directory = struct
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
     | Result.Ok p -> Fpath.to_dir_path p
 
-  let ls t =
-    let elts = Sys.readdir (to_string t) |> Array.to_list in
-    List.fold_left elts ~init:[] ~f:(fun acc elt ->
-      let file = File.create ~directory:t ~name:elt in
-      if Fpath.is_file_path file then file :: acc else acc
-    )
+  let fold_files_rec ?(ext = "") f acc d =
+    let fold_non_dirs ext f acc files =
+      let is_dir d = try Sys.is_directory d with Sys_error _ -> false in
+      let has_ext ext file = Filename.check_suffix file ext in
+      let dirs, files = List.partition ~f:is_dir files in
+      let files = List.find_all ~f:(has_ext ext) files in
+      let f acc fn = f acc (Fpath.v fn) in
+      List.fold_left ~f ~init:acc files, dirs
+    in
+    let rec loop ext f acc = function
+    | (d :: ds) :: up ->
+        let rdir d = try Array.to_list (Sys.readdir d) with Sys_error _ -> [] in
+        let files = List.rev (List.rev_map ~f:(Filename.concat d) (rdir d)) in
+        let acc, dirs = fold_non_dirs ext f acc files in
+        loop ext f acc (dirs :: ds :: up)
+    | [] :: up -> loop ext f acc up
+    | [] -> acc
+    in
+    loop ext f acc ([Fpath.to_string d] :: []);;
 
   module Table = Hashtbl.Make(struct
       type nonrec t = t
