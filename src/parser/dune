@@ -4,5 +4,5 @@
  (name odoc__parser)
  (public_name odoc.parser)
  (preprocess (pps bisect_ppx -conditional))
- (libraries astring odoc__alias odoc__compat odoc__model rresult)
+ (libraries astring odoc__alias odoc__compat odoc__model)
  (flags (:standard -open Odoc__alias)))

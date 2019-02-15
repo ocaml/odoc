@@ -364,11 +364,15 @@ let read_path_longident location s =
   | Some r -> Result.Ok r
   | None -> Result.Error (Parse_error.expected "a valid path" location)
 
-let read_mod_longident warnings location lid : (Paths.Reference.Module.t, Error.t) Result.result =
-  let (>>=) = Rresult.(>>=) in
-
-  parse warnings location lid >>= function
-  | `Root (_, (`TUnknown | `TModule))
-  | `Dot (_, _)
-  | `Module (_, _) as r -> Result.Ok r
-  | _ -> Result.Error (Parse_error.expected "a reference to a module" location)
+let read_mod_longident
+    warnings location lid : (Paths.Reference.Module.t, Error.t) Result.result
+  =
+  match parse warnings location lid with
+  | Error _ as e -> e
+  | Ok p ->
+      match p with
+      | `Root (_, (`TUnknown | `TModule))
+      | `Dot (_, _)
+      | `Module (_, _) as r -> Result.Ok r
+      | _ ->
+          Result.Error (Parse_error.expected "a reference to a module" location)
