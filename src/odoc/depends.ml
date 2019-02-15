@@ -77,8 +77,6 @@ let deps_of_odoc_file ~deps input = match (Root.read input).file with
 
 let for_html_step pkg_dir =
   let deps = Hash_set.create () in
-  List.iter (Fs.Directory.ls pkg_dir) ~f:(fun file ->
-    if Fs.File.has_ext "odoc" file then
-      deps_of_odoc_file ~deps file
-  );
+  let add_deps () file = deps_of_odoc_file ~deps file in
+  Fs.Directory.fold_files_rec ~ext:".odoc" add_deps () pkg_dir;
   Hash_set.elements deps
