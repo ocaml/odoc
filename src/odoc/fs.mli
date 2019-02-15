@@ -59,7 +59,7 @@ module File : sig
   val of_string : string -> t
   val to_string : t -> string
 
-  val read : t -> (string, [> Rresult.R.msg ]) result
+  val read : t -> (string, [> `Msg of string ]) result
 
   module Table : Hashtbl.S with type key = t
 end

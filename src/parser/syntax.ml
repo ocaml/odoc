@@ -770,13 +770,14 @@ let rec block_element_list
                  cooperation to get the real location. *)
               let r_location =
                 Location.nudge_start (String.length "@canonical ") location in
-
-              let (>>=) = Rresult.(>>=) in
-              let result =
-                Reference.read_path_longident r_location s >>= fun path ->
-                Reference.read_mod_longident
-                  input.warnings r_location s >>= fun module_ ->
-                Result.Ok (`Canonical (path, module_))
+              let result = match Reference.read_path_longident r_location s with
+              | Error _ as e -> e
+              | Ok path ->
+                  match
+                    Reference.read_mod_longident input.warnings r_location s
+                  with
+                  | Error _ as e -> e
+                  | Ok module_ ->  Result.Ok (`Canonical (path, module_))
               in
               match result with
               | Result.Ok _ as result -> result
