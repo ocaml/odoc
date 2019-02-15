@@ -2,7 +2,6 @@
  (name odoc__odoc)
  (public_name odoc.odoc)
  (libraries
-  bos
   compiler-libs.common
   fpath
   odoc__alias

@@ -18,7 +18,6 @@ synopsis: "OCaml documentation generator"
 
 depends: [
   "astring" {build}
-  "bos" {build}
   "cmdliner" {build & >= "1.0.0"}
   "cppo" {build}
   "dune" {build}
