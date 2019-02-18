@@ -168,7 +168,7 @@ let read_cmi ~make_root ~filename =
     | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
       Error.catch begin fun () ->
         let root = make_root ~module_name:name ~digest:digest in
-        let (id, doc, items) = Cmi.read_interface root name cmi_info.cmi_sign in
+        let (id, doc, items) = Cmi.read_interface root name (Model.Compat.signature cmi_info.cmi_sign) in
         let imports =
           List.map (fun (s, d) ->
             Model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports

@@ -30,7 +30,7 @@ val add_class : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t ->
 
 val add_class_type : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> t -> t
 
-val add_signature_type_items : Paths.Identifier.Signature.t -> Types.signature -> t -> t
+val add_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 
 val add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t
 

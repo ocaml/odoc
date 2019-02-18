@@ -92,30 +92,41 @@ let add_class_type parent id obj_id cl_id env =
     { env with types; class_types }
 
 let rec add_signature_type_items parent items env =
-  let open Types in
+  let open Compat in
     match items with
-    | Sig_type(id, _, _) :: rest ->
+    | Sig_type(id, _, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
           if Btype.is_row_name (Ident.name id) then env
           else add_type parent id env
-    | Sig_module(id, _, _) :: rest ->
+    | Sig_module(id, _, _, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
           add_module parent id env
-    | Sig_modtype(id, _) :: rest ->
+    | Sig_modtype(id, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
           add_module_type parent id env
-    | Sig_class(id, _, _) :: Sig_class_type(ty_id, _, _)
-        :: Sig_type(obj_id, _, _) :: Sig_type(cl_id, _, _) :: rest ->
+    | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
         let env = add_signature_type_items parent rest env in
           add_class parent id ty_id obj_id cl_id env
-    | Sig_class _ :: _ -> assert false
-    | Sig_class_type(id, _, _) :: Sig_type(obj_id, _, _)
-      :: Sig_type(cl_id, _, _) :: rest ->
+    | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)
+      :: Sig_type(cl_id, _, _, _) :: rest ->
         let env = add_signature_type_items parent rest env in
           add_class_type parent id obj_id cl_id env
-    | Sig_class_type _ :: _ -> assert false
     | (Sig_value _ | Sig_typext _) :: rest ->
         add_signature_type_items parent rest env
+
+    | Sig_class_type(_, _, _, Hidden) :: Sig_type(_, _, _, _)
+      :: Sig_type(_, _, _, _) :: rest
+    | Sig_class(_, _, _, Hidden) :: Sig_class_type(_, _, _, _)
+        :: Sig_type(_, _, _, _) :: Sig_type(_, _, _, _) :: rest
+    | Sig_modtype(_, _, Hidden) :: rest
+    | Sig_module(_, _, _, _, Hidden) :: rest
+    | Sig_type(_, _, _, Hidden) :: rest ->
+        add_signature_type_items parent rest env
+
+    | Sig_class _ :: _
+    | Sig_class_type _ :: _ -> assert false
+
     | [] -> env
 
 let add_signature_tree_item parent item env =
@@ -138,7 +149,7 @@ let add_signature_tree_item parent item env =
     | Tsig_modtype mtd ->
         add_module_type parent mtd.mtd_id env
     | Tsig_include incl ->
-        add_signature_type_items parent incl.incl_type env
+        add_signature_type_items parent (Compat.signature incl.incl_type) env
     | Tsig_class cls ->
         List.fold_right
           (fun cld env ->
@@ -163,6 +174,9 @@ let add_signature_tree_item parent item env =
 #endif
                env)
           cltyps env
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tsig_typesubst _ | Tsig_modsubst _
+#endif
     | Tsig_value _ | Tsig_typext _
     | Tsig_exception _ | Tsig_open _
     | Tsig_attribute _ -> env
@@ -192,7 +206,7 @@ let add_structure_tree_item parent item env =
     | Tstr_modtype mtd ->
         add_module_type parent mtd.mtd_id env
     | Tstr_include incl ->
-        add_signature_type_items parent incl.incl_type env
+        add_signature_type_items parent (Compat.signature incl.incl_type) env
     | Tstr_class cls ->
         List.fold_right
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
@@ -279,22 +293,38 @@ module Path = struct
 
   let rec read_module : t -> Path.t -> Paths.Path.Module.t = fun env -> function
     | Path.Pident id -> read_module_ident env id
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+#else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+#endif
     | Path.Papply(p, arg) -> `Apply(read_module env p, read_module env arg)
 
   let read_module_type env = function
     | Path.Pident id -> read_module_type_ident env id
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+#else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+#endif
     | Path.Papply(_, _)-> assert false
 
   let read_class_type env = function
     | Path.Pident id -> read_class_type_ident env id
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+#else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+#endif
     | Path.Papply(_, _)-> assert false
 
   let read_type env = function
     | Path.Pident id -> read_type_ident env id
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Path.Pdot(p, s) -> `Dot(read_module env p, s)
+#else
     | Path.Pdot(p, s, _) -> `Dot(read_module env p, s)
+#endif
     | Path.Papply(_, _)-> assert false
 
 end
