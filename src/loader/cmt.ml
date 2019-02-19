@@ -78,6 +78,10 @@ let rec read_pattern env parent doc pat =
         read_pattern env parent doc pat
     | Tpat_lazy pat ->
         read_pattern env parent doc pat
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tpat_exception pat ->
+        read_pattern env parent doc pat
+#endif
 
 let read_value_binding env parent vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -204,9 +208,12 @@ let rec read_class_type env parent params cty =
       let arg = read_core_type env arg in
       let res = read_class_type env parent params res in
         Arrow(lbl, arg, res)
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
   | Tcty_open (_, _, _, _, cty) -> read_class_type env parent params cty
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+  | Tcty_open (_, cty) -> read_class_type env parent params cty
 #endif
+
 
 let rec read_class_field env parent cf =
   let open ClassSignature in
@@ -280,9 +287,12 @@ and read_class_structure env parent params cl =
     | Tcl_constraint(cl, None, _, _, _) -> read_class_structure env parent params cl
     | Tcl_constraint(_, Some cltyp, _, _, _) ->
         read_class_signature env parent params cltyp
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
     | Tcl_open (_, _, _, _, cl) -> read_class_structure env parent params cl
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tcl_open (_, cl) -> read_class_structure env parent params cl
 #endif
+
 
 let rec read_class_expr env parent params cl =
   let open Class in
@@ -302,8 +312,10 @@ let rec read_class_expr env parent params cl =
       read_class_expr env parent params cl
   | Tcl_constraint(_, Some cltyp, _, _, _) ->
       read_class_type env parent params cltyp
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
     | Tcl_open (_, _, _, _, cl) -> read_class_expr env parent params cl
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tcl_open (_, cl) -> read_class_expr env parent params cl
 #endif
 
 let read_class_declaration env parent cld =
@@ -343,7 +355,7 @@ let rec read_module_expr env parent label_parent pos mexpr =
   let open Model.Names in
     match mexpr.mod_desc with
     | Tmod_ident _ ->
-        Cmi.read_module_type env parent pos mexpr.mod_type
+        Cmi.read_module_type env parent pos (Model.Compat.module_type mexpr.mod_type)
     | Tmod_structure str -> Signature (read_structure env parent str)
     | Tmod_functor(id, _, arg, res) ->
         let arg =
@@ -364,13 +376,13 @@ let rec read_module_expr env parent label_parent pos mexpr =
       let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmod_apply _ ->
-        Cmi.read_module_type env parent pos mexpr.mod_type
+        Cmi.read_module_type env parent pos (Model.Compat.module_type mexpr.mod_type)
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
         Cmti.read_module_type env parent label_parent pos mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
         read_module_expr env parent label_parent pos mexpr
     | Tmod_unpack(_, mty) ->
-        Cmi.read_module_type env parent pos mty
+        Cmi.read_module_type env parent pos (Model.Compat.module_type mty)
 
 and unwrap_module_expr_desc = function
   | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
@@ -446,7 +458,11 @@ and read_structure_item env parent item =
         [TypExt (read_type_extension env parent tyext)]
     | Tstr_exception ext ->
         let ext =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+          Cmi.read_exception env parent ext.tyexn_constructor.ext_id ext.tyexn_constructor.ext_type
+#else
           Cmi.read_exception env parent ext.ext_id ext.ext_type
+#endif
         in
           [Exception ext]
     | Tstr_module mb ->
@@ -487,7 +503,7 @@ and read_include env parent incl =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent container 1 incl.incl_mod)
   in
-  let content = Cmi.read_signature env parent incl.incl_type in
+  let content = Cmi.read_signature env parent (Model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false } in
     {parent; doc; decl; expansion}
 

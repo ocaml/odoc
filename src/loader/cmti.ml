@@ -82,7 +82,7 @@ let rec read_core_type env container ctyp =
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 06
             (fun (name, _, typ) ->
               Method {name; type_ = read_core_type env container typ})
-#else
+#elif OCAML_MAJOR = 4 && OCAML_MINOR < 08
             (function
               | OTtag (name, _, typ) ->
                 Method {
@@ -90,6 +90,14 @@ let rec read_core_type env container ctyp =
                   type_ = read_core_type env container typ;
                 }
               | OTinherit typ -> Inherit (read_core_type env container typ))
+#else
+            (function
+              | {of_desc=OTtag (name, typ); _} ->
+                Method {
+                  name = name.txt;
+                  type_ = read_core_type env container typ;
+                }
+              | {of_desc=OTinherit typ; _} -> Inherit (read_core_type env container typ))
 #endif
             methods
         in
@@ -105,8 +113,14 @@ let rec read_core_type env container ctyp =
         let open TypeExpr.Polymorphic_variant in
         let elements =
           fields |> List.map begin fun field ->
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+            match field.rf_desc with
+              | Ttag(name, constant, arguments) ->
+                let attributes = field.rf_attributes in
+#else
             match field with
               | Ttag(name, attributes, constant, arguments) ->
+#endif
                 let arguments =
                   List.map (read_core_type env container) arguments in
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
@@ -289,7 +303,7 @@ let read_type_extension env parent tyext =
   in
     { type_path; doc; type_params; private_; constructors; }
 
-let read_exception env parent ext =
+let read_exception env parent (ext : extension_constructor) =
   let open Exception in
   let open Model.Names in
   let name = parenthesise (Ident.name ext.ext_id) in
@@ -403,8 +417,10 @@ let rec read_class_type env parent label_parent cty =
     let arg = read_core_type env label_parent arg in
     let res = read_class_type env parent label_parent res in
         Arrow(lbl, arg, res)
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
   | Tcty_open (_, _, _, _, cty) -> read_class_type env parent label_parent cty
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+  | Tcty_open (_, cty) -> read_class_type env parent label_parent cty
 #endif
 
 let read_class_description env parent cld =
@@ -484,7 +500,7 @@ and read_module_type env parent label_parent pos mty =
           | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
           | _ ->
               let mty =
-                Cmi.read_module_type env parent pos mexpr.mod_type
+                Cmi.read_module_type env parent pos (Model.Compat.module_type mexpr.mod_type)
               in
                 ModuleType mty
         in
@@ -572,7 +588,11 @@ and read_signature_item env parent item =
     | Tsig_typext tyext ->
         [TypExt (read_type_extension env parent tyext)]
     | Tsig_exception ext ->
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+        [Exception (read_exception env parent ext.tyexn_constructor)]
+#else
         [Exception (read_exception env parent ext)]
+#endif
     | Tsig_module md ->
         [Module (Ordinary, read_module_declaration env parent md)]
     | Tsig_recmodule mds ->
@@ -586,11 +606,16 @@ and read_signature_item env parent item =
         read_class_descriptions env parent cls
     | Tsig_class_type cltyps ->
         read_class_type_declarations env parent cltyps
-    | Tsig_attribute attr ->
+    | Tsig_attribute attr -> begin
         let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
           match Doc_attr.standalone container attr with
           | None -> []
           | Some doc -> [Comment doc]
+      end
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tsig_typesubst _
+    | Tsig_modsubst _ -> []
+#endif
 
 and read_include env parent incl =
   let open Include in
@@ -598,7 +623,7 @@ and read_include env parent incl =
   let doc = Doc_attr.attached container incl.incl_attributes in
   let expr = read_module_type env parent container 1 incl.incl_mod in
   let decl = Module.ModuleType expr in
-  let content = Cmi.read_signature env parent incl.incl_type in
+  let content = Cmi.read_signature env parent (Model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false} in
     {parent; doc; decl; expansion}
 

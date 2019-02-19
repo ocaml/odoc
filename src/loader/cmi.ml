@@ -831,7 +831,7 @@ let read_class_declaration env parent id cld =
     let virtual_ = cld.cty_new = None in
     { id; doc; virtual_; params; type_; expansion = None }
 
-let rec read_module_type env parent pos mty =
+let rec read_module_type env parent pos (mty : Model.Compat.module_type) =
   let open ModuleType in
     match mty with
     | Mty_ident p -> Path (Env.Path.read_module_type env p)
@@ -856,7 +856,7 @@ let rec read_module_type env parent pos mty =
           Functor(arg, res)
     | Mty_alias _ -> assert false
 
-and read_module_type_declaration env parent id mtd =
+and read_module_type_declaration env parent id (mtd : Model.Compat.modtype_declaration) =
   let open ModuleType in
   let name = parenthesise (Ident.name id) in
   let id = `ModuleType(parent, Model.Names.ModuleTypeName.of_string name) in
@@ -870,7 +870,7 @@ and read_module_type_declaration env parent id mtd =
   in
     {id; doc; expr; expansion}
 
-and read_module_declaration env parent ident md =
+and read_module_declaration env parent ident (md : Model.Compat.module_declaration) =
   let open Module in
   let name = parenthesise (Ident.name ident) in
   let id = `Module(parent, Model.Names.ModuleName.of_string name) in
@@ -885,11 +885,7 @@ and read_module_declaration env parent ident md =
   in
   let type_ =
     match md.md_type with
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
     | Mty_alias p -> Alias (Env.Path.read_module env p)
-#else
-    | Mty_alias (_, p) -> Alias (Env.Path.read_module env p)
-#endif
     | _ -> ModuleType (read_module_type env id 1 md.md_type)
   in
   let hidden =
@@ -918,22 +914,24 @@ and read_module_rec_status rec_status =
   | Trec_first -> Rec
   | Trec_next -> And
 
-and read_signature env parent items =
+and read_signature env parent (items : Model.Compat.signature) =
   let env = Env.add_signature_type_items parent items env in
   let rec loop acc items =
     let open Signature in
+    let open Model.Compat in
     match items with
-    | Sig_value(id, v) :: rest ->
+    | Sig_value(id, v, Exported) :: rest ->
         let vd = read_value_description env parent id v in
           loop (vd :: acc) rest
-    | Sig_type(id, _, _) :: rest when Btype.is_row_name (Ident.name id) ->
+    | Sig_type(id, _, _, Exported) :: rest
+        when Btype.is_row_name (Ident.name id) ->
         loop acc rest
-    | Sig_type(id, decl, rec_status)::rest ->
+    | Sig_type(id, decl, rec_status, Exported)::rest ->
         let decl = read_type_declaration env parent id decl in
       loop (Type (read_type_rec_status rec_status, decl)::acc) rest
-    | Sig_typext (id, ext, Text_first) :: rest ->
+    | Sig_typext (id, ext, Text_first, Exported) :: rest ->
         let rec inner_loop inner_acc = function
-          | Sig_typext(id, ext, Text_next) :: rest ->
+          | Sig_typext(id, ext, Text_next, _) :: rest ->
               inner_loop ((id, ext) :: inner_acc) rest
           | rest ->
               let ext =
@@ -942,27 +940,43 @@ and read_signature env parent items =
                 loop (TypExt ext :: acc) rest
         in
           inner_loop [] rest
-    | Sig_typext (id, ext, Text_next) :: rest ->
+    | Sig_typext (id, ext, Text_next, Exported) :: rest ->
         let ext = read_type_extension env parent id ext [] in
           loop (TypExt ext :: acc) rest
-    | Sig_typext (id, ext, Text_exception) :: rest ->
+    | Sig_typext (id, ext, Text_exception, Exported) :: rest ->
         let exn = read_exception env parent id ext in
           loop (Exception exn :: acc) rest
-    | Sig_module (id, md, rec_status)::rest ->
-        let md = read_module_declaration env parent id md in
-      loop (Module (read_module_rec_status rec_status, md)::acc) rest
-    | Sig_modtype(id, mtd) :: rest ->
-        let mtd = read_module_type_declaration env parent id mtd in
+    | Sig_module (id, _, md, rec_status, Exported)::rest ->
+          let md = read_module_declaration env parent id md in
+          loop (Module (read_module_rec_status rec_status, md)::acc) rest
+    | Sig_modtype(id, mtd, Exported) :: rest ->
+          let mtd = read_module_type_declaration env parent id mtd in
           loop (ModuleType mtd :: acc) rest
-    | Sig_class(id, cl, rec_status) :: Sig_class_type _
+    | Sig_class(id, cl, rec_status, Exported) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
-        let cl = read_class_declaration env parent id cl in
-      loop (Class (read_type_rec_status rec_status, cl)::acc) rest
-    | Sig_class _ :: _ -> assert false
-    | Sig_class_type(id, cltyp, rec_status)::Sig_type _::Sig_type _::rest ->
+          let cl = read_class_declaration env parent id cl in
+          loop (Class (read_type_rec_status rec_status, cl)::acc) rest
+    | Sig_class_type(id, cltyp, rec_status, Exported)::Sig_type _::Sig_type _::rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
-      loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
-    | Sig_class_type _ :: _ -> assert false
+        loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
+
+(* Skip all of the hidden sig items *)
+    | Sig_class_type(_, _, _, Hidden)::Sig_type _::Sig_type _::rest
+    | Sig_class(_, _, _, Hidden) :: Sig_class_type _
+      :: Sig_type _ :: Sig_type _ :: rest
+    | Sig_modtype(_, _, Hidden) :: rest
+    | Sig_module (_, _, _, _, Hidden)::rest
+    | Sig_typext (_, _, Text_exception, Hidden) :: rest
+    | Sig_typext (_, _, _, Hidden) :: rest
+    | Sig_type(_, _, _, Hidden) :: rest
+    | Sig_value(_, _, Hidden) :: rest ->
+      loop acc rest
+
+(* Bad - we expect Sig_class and Sig_class_type to be matched above
+   with subsequent Sig_type items *)
+    | Sig_class_type _ :: _
+    | Sig_class _ :: _ -> assert false
+
     | [] -> List.rev acc
   in
     loop [] items

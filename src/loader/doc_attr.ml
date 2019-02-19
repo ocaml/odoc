@@ -46,9 +46,14 @@ let attached parent attrs =
   let rec loop first nb_deprecated acc
       : _ -> (Model.Comment.docs, Model.Error.t) result =
     function
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | {Parsetree.attr_name = { Location.txt =
+          ("doc" | "ocaml.doc"); loc = _loc}; attr_payload; _ } :: rest -> begin
+#else
     | ({Location.txt =
-          ("doc" | "ocaml.doc"); loc = _loc}, payload) :: rest -> begin
-        match load_payload payload with
+          ("doc" | "ocaml.doc"); loc = _loc}, attr_payload) :: rest -> begin
+#endif
+        match load_payload attr_payload with
         | Some (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let start_pos =
@@ -93,9 +98,14 @@ let standalone parent
     : Parsetree.attribute -> Model.Comment.docs_or_stop option =
 
   function
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+  | { attr_name = { Location.txt =
+        ("text" | "ocaml.text"); loc = _loc}; attr_payload; _ } -> begin
+#else
   | ({Location.txt =
-        ("text" | "ocaml.text"); loc = _loc}, payload) -> begin
-      match load_payload payload with
+        ("text" | "ocaml.text"); loc = _loc}, attr_payload) -> begin
+#endif
+      match load_payload attr_payload with
       | Some ("/*", _loc) -> Some `Stop
       | Some (str, loc) ->
         let loc' =

@@ -21,7 +21,7 @@ module Ident_env = Model.Ident_env
 
 
 
-val read_interface: Model.Root.t -> string -> Types.signature ->
+val read_interface: Model.Root.t -> string -> Model.Compat.signature ->
   Paths.Identifier.Module.t *
   Model.Comment.docs *
   Model.Lang.Signature.t
@@ -64,11 +64,11 @@ val read_class_type : Ident_env.t ->
 
 val read_module_type : Ident_env.t ->
                        Paths.Identifier.Signature.t -> int ->
-                       Types.module_type -> Model.Lang.ModuleType.expr
+                       Model.Compat.module_type -> Model.Lang.ModuleType.expr
 
 val read_signature : Ident_env.t ->
                      Paths.Identifier.Signature.t ->
-                     Types.signature -> Model.Lang.Signature.t
+                     Model.Compat.signature -> Model.Lang.Signature.t
 
 val read_extension_constructor : Ident_env.t ->
                        Paths.Identifier.Signature.t ->
