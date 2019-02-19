@@ -265,8 +265,8 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
     add_dotdot uri ~n
   in
 
+  let name = List.hd @@ List.rev path in
   let head : Html_types.head Html.elt =
-    let name = List.hd @@ List.rev path in
     let title_string = Printf.sprintf "%s (%s)" name (String.concat "." path) in
 
     let theme_uri =
@@ -291,9 +291,6 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
   in
 
   let wrapped_content : (Html_types.div_content Html.elt) list =
-    let up_href =
-      if !Relative_link.semantic_uris then ".." else "../index.html" in
-
     let title_prefix =
       match kind with
       | None
@@ -326,6 +323,12 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
     in
 
     let header_content =
+      let dot = if !Relative_link.semantic_uris then "" else "index.html" in
+      let dotdot = add_dotdot ~n:1 dot in
+      let up_href = match kind with
+      | Some `Page when name <> "index" -> dot
+      | _ -> dotdot
+      in
       let has_parent = List.length path > 1 in
       if has_parent then
         let nav =
@@ -337,11 +340,16 @@ let page_creator ?kind ?(theme_uri = Relative "./") ~path header_docs content =
           ] @
             (* Create breadcrumbs *)
             let space = Html.txt " " in
-            let init =
-              if !Relative_link.semantic_uris then "" else "index.html"
+            let breadcrumb_spec = match kind with
+            | Some `Page -> (fun n x -> n, dot, x)
+            | _ -> (fun n x -> n, add_dotdot ~n dot, x)
             in
-            List.rev path |>
-            List.mapi (fun n x -> n, add_dotdot ~n init, x) |>
+            let rev_path = match kind with
+            | Some `Page when name = "index" -> List.tl (List.rev path)
+            | _ -> List.rev path
+            in
+            rev_path |>
+            List.mapi breadcrumb_spec |>
             List.rev |>
             Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
               ~f:(fun (n, addr, lbl) ->
