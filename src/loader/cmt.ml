@@ -79,8 +79,8 @@ let rec read_pattern env parent doc pat =
     | Tpat_lazy pat ->
         read_pattern env parent doc pat
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-    | Tpat_exception _ ->
-      []
+    | Tpat_exception pat ->
+        read_pattern env parent doc pat
 #endif
 
 let read_value_binding env parent vb =
