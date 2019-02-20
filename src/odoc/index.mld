@@ -40,18 +40,27 @@ Similarly, a [Game.cmti] will be compiled to [Game.odoc] which in turn will beco
 
 You can install [odoc] today through [opam]:
 
-{[
-$ opam install odoc
-]}
+{v
+opam install odoc
+v}
 
 {2:usage-ocaml ...using OCaml}
 
-The easiest way to use odoc right now is by having Dune drive it. This command
-should work in most Dune projects out of the box:
+If you want to use odoc on the packages you have installed in your
+opam switch type:
 
-{[
+{v
+opam install ocaml-manual odig
+odig doc
+v}
+
+When you are developing the easiest way to use odoc right now is by
+having Dune drive it. This command should work in most Dune projects
+out of the box:
+
+{v
 dune build @doc
-]}
+v}
 
 The generated docs can be found at [./_build/default/_doc/_html/index.html].
 

@@ -36,12 +36,23 @@ a work in progress :)
 
 ## Using `odoc` with OCaml
 
+To install odoc with opam:
+
 ```
 opam install odoc
 ```
 
-The easiest way to use odoc right now is by having Dune drive it. This command
-should work in most Dune projects out of the box:
+If you want to use odoc on the packages you have installed in your
+opam switch type:
+
+```
+opam install ocaml-manual odig
+odig doc
+```
+
+When you are developing the easiest way to use odoc right now is by
+having Dune drive it. This command should work in most Dune projects
+out of the box:
 
 ```
 dune build @doc
