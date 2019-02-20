@@ -4,10 +4,10 @@
 [travis-img]: https://api.travis-ci.org/ocaml/odoc.svg?branch=master
 
 **odoc** is a documentation generator for OCaml. It reads *doc comments* ,
-delimited with `(** ... *)`, and outputs HTML. See example output at
-[docs.mirage.io][mirage-docs].
+delimited with `(** ... *)`, and outputs HTML.
+See [example output][odig-sample].
 
-[mirage-docs]: http://docs.mirage.io/
+[odig-sample]: https://b0-system.github.io/odig/doc/index.html
 
 Text inside doc comments is marked up in ocamldoc syntax:
 
