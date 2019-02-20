@@ -71,9 +71,9 @@ Dune's configuration instructions} for more details.
 Currently the generated HTML pages are not be automatically referenced in the
 index page, you must manually add links to point to the pages in your document.
 
-For example, if you have a page called [my_page.mld], you can create a link to
-it with [{{:my_page.html} My page}] in your [index.mld] or anywhere else in
-your documentation.
+For example, if you have a page called [my_page.mld], you can create a
+link to it with [{{!page-my_page}My page}] in your [index.mld] or
+anywhere else in your documentation.
 
 {2 Manual usage}
 
