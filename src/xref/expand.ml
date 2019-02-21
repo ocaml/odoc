@@ -914,13 +914,21 @@ let expand_module_type t mty =
         let expansion = force_expansion t root (expand_module_type t root mty) in
           { mty with expansion }
 
+let remove_docs_from_signature =
+  (* Remove bare doc comments from a signature *)
+  let open Signature in
+  function
+  | Comment (`Docs _) :: xs -> xs
+  | xs -> xs
+
 let expand_include t incl =
   let open Include in
     if incl.expansion.resolved then incl
     else begin
       let root = Identifier.Signature.root incl.parent in
         match expand_include t root incl with
-        | Expanded content ->
+        | Expanded content' ->
+            let content = remove_docs_from_signature content' in
             let expansion = {content;resolved=true} in
               { incl with expansion }
         | _ -> incl
