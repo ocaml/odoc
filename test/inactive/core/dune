@@ -1,13 +1,11 @@
-(jbuild_version 1)
-
 (library
- ((name ocamlary)
-  (modules (ocamlary))))
+ (name ocamlary)
+ (modules ocamlary))
 
 (executables
- ((names (testCmi testCmti testCmt))
-  (modules (testCmi testCmti testCmt testCommon))
-  (libraries (doc_model))))
+ (names testCmi testCmti testCmt)
+ (modules testCmi testCmti testCmt testCommon)
+ (libraries doc_model))
 
 ; (alias
 ;  ((name   runtest)
