@@ -1,6 +1,18 @@
+(* -*- tuareg -*- *)
+
+let preprocess =
+  match Sys.getenv "BISECT_ENABLE" with
+  | "yes" -> "(preprocess (pps bisect_ppx))"
+  | _ -> ""
+  | exception Not_found -> ""
+
+let () =
+  Jbuild_plugin.V1.send @@
+    {|
 (library
  (name odoc__html)
  (public_name odoc.html)
- (preprocess (pps bisect_ppx -conditional))
+    |} ^ preprocess ^ {|
  (libraries odoc__alias odoc__model tyxml)
  (flags (:standard -open Odoc__alias)))
+    |}
