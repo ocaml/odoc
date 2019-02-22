@@ -258,6 +258,7 @@ let source_files = [
   ("module.mli", ["Module/index.html"]);
   ("interlude.mli", ["Interlude/index.html"]);
   ("include.mli", ["Include/index.html"]);
+  ("include2.ml", ["Include2/index.html"]);
   ("mld.mld", ["mld.html"]);
   ("nested.mli", [
       "Nested/index.html";
@@ -274,6 +275,10 @@ let source_files = [
   ("class.mli", ["Class/index.html"]);
   ("stop.mli", ["Stop/index.html"]);
   ("bugs.ml", ["Bugs/index.html"]);
+  ("alias.ml", [
+      "Alias/index.html";
+      "Alias/X/index.html";
+    ]);
 ]
 
 let source_files =
