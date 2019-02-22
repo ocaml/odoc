@@ -22,7 +22,7 @@ if [[ $ESY_BUILD == YES ]]; then
   npm --global install esy@0.5.x
 else
   OPAM_RELEASES=https://github.com/ocaml/opam/releases/
-  OPAM_VERSION=2.0.1
+  OPAM_VERSION=2.0.3
 
   case $TRAVIS_OS_NAME in
   "linux") OPAM_OS=linux;;
