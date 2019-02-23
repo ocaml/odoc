@@ -267,6 +267,7 @@ let source_files = [
       "Nested/F/argument-2-Arg2/index.html";
       "Nested/X/index.html";
       "Nested/class-z/index.html";
+      "Nested/class-inherits/index.html";
       "Nested/module-type-Y/index.html";
     ]);
   ("type.mli", ["Type/index.html"]);
