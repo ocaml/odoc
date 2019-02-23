@@ -60,7 +60,7 @@ type record = {
 type polymorphic_variant = [
   | `A
   | `B of int
-  | `C
+  | `C of int * unit
   | `D
 ]
 
@@ -73,17 +73,19 @@ type nested_polymorphic_variant = [
   | `A of [ `B | `C ]
 ]
 
+type private_extenion = private [> polymorphic_variant ]
+
 type object_ = <
   a : int;
   b : int; (** foo *)
   c : int; (** {e bar} *)
 >
 
-module type X = sig type t end
+module type X = sig type t type u end
 
 type module_ = (module X)
 
-type module_substitution = (module X with type t = int)
+type module_substitution = (module X with type t = int and type u = unit)
 
 type +'a covariant
 
@@ -115,11 +117,15 @@ type 'a lower_object = 'a constraint 'a = <a : int; b : int; ..>
 
 type 'a poly_object = 'a constraint 'a = <a : 'a. 'a>
 
+type ('a, 'b) double_constrained = 'a * 'b
+  constraint 'a = int
+  constraint 'b = unit
+
 type as_ = (int as 'a) * 'a
 
 type extensible = ..
 
-type extensible += Extension
+type extensible += Extension | Another_extension
 
 type mutually = A of recursive
 and recursive = B of mutually

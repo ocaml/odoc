@@ -24,3 +24,5 @@ type polymorphic_variant = [
   | `C (** foo *)
   | `D (** bar *)
 ]
+
+type nonrec nonrec_ = int

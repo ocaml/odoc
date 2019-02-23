@@ -63,11 +63,22 @@ end
 (** This is class z.
 
     Some additional comments. *)
-class z : object
+class virtual z : object
+
+  val y : int
+  (** Some value. *)
+
+  val mutable virtual y' : int
 
   (** {1 Methods} *)
 
   method z : int
   (** Some method. *)
+
+  method private virtual z' : int
 end
 
+
+class virtual inherits : object
+  inherit z
+end

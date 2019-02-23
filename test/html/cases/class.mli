@@ -12,3 +12,9 @@ end
 
 class mutually' : mutually
 and recursive' : recursive
+
+class type virtual empty_virtual =
+object
+end
+
+class virtual empty_virtual' : empty
