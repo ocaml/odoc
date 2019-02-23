@@ -22,29 +22,29 @@
     </h1>
    </header>
    <div class="spec module-type" id="module-type-S">
-    <a href="#module-type-S" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S/index.html">S</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
+    <a href="#module-type-S" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S/index.html">S</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
    </div>
    <div class="spec module-type" id="module-type-S1">
-    <a href="#module-type-S1" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S1/index.html">S1</a> : <span class="keyword">functor</span> (<a href="module-type-S1/argument-1-_/index.html">_</a> : <a href="index.html#module-type-S">S</a>) <span>-&gt;</span> <a href="index.html#module-type-S">S</a></code>
+    <a href="#module-type-S1" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S1/index.html">S1</a> : <span class="keyword">functor</span> (<a href="module-type-S1/argument-1-_/index.html">_</a> : <a href="index.html#module-type-S">S</a>) <span>-&gt;</span> <a href="index.html#module-type-S">S</a></code>
    </div>
    <dl>
     <dt class="spec type" id="type-variant">
-     <a href="#type-variant" class="anchor"></a><code><span class="keyword">type </span>variant</code><code><span class="keyword"> = </span></code>
+     <a href="#type-variant" class="anchor"></a><code><span class="keyword">type</span> variant</code><code> = </code>
      <table class="variant">
       <tbody>
        <tr id="type-variant.A" class="anchored">
         <td class="def constructor">
-         <a href="#type-variant.A" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">A</span></code>
+         <a href="#type-variant.A" class="anchor"></a><code>| </code><code><span class="constructor">A</span></code>
         </td>
        </tr>
        <tr id="type-variant.B" class="anchored">
         <td class="def constructor">
-         <a href="#type-variant.B" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">B</span><span class="keyword"> of </span>int</code>
+         <a href="#type-variant.B" class="anchor"></a><code>| </code><code><span class="constructor">B</span> <span class="keyword">of</span> int</code>
         </td>
        </tr>
        <tr id="type-variant.C" class="anchored">
         <td class="def constructor">
-         <a href="#type-variant.C" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">C</span></code>
+         <a href="#type-variant.C" class="anchor"></a><code>| </code><code><span class="constructor">C</span></code>
         </td>
         <td class="doc">
          <p>
@@ -54,7 +54,7 @@
        </tr>
        <tr id="type-variant.D" class="anchored">
         <td class="def constructor">
-         <a href="#type-variant.D" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">D</span></code>
+         <a href="#type-variant.D" class="anchor"></a><code>| </code><code><span class="constructor">D</span></code>
         </td>
         <td class="doc">
          <p>
@@ -64,7 +64,7 @@
        </tr>
        <tr id="type-variant.E" class="anchored">
         <td class="def constructor">
-         <a href="#type-variant.E" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">E</span><span class="keyword"> of </span></code><code>{</code>
+         <a href="#type-variant.E" class="anchor"></a><code>| </code><code><span class="constructor">E</span> <span class="keyword">of</span> </code><code>{</code>
          <table class="record">
           <tbody>
            <tr id="type-variant.a" class="anchored">
@@ -81,17 +81,17 @@
      </table>
     </dt>
     <dt class="spec type" id="type-gadt">
-     <a href="#type-gadt" class="anchor"></a><code><span class="keyword">type </span>_ gadt</code><code><span class="keyword"> = </span></code>
+     <a href="#type-gadt" class="anchor"></a><code><span class="keyword">type</span> _ gadt</code><code> = </code>
      <table class="variant">
       <tbody>
        <tr id="type-gadt.A" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.A" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">A</span> <span class="keyword">:</span> int <a href="index.html#type-gadt">gadt</a></code>
+         <a href="#type-gadt.A" class="anchor"></a><code>| </code><code><span class="constructor">A</span> : int <a href="index.html#type-gadt">gadt</a></code>
         </td>
        </tr>
        <tr id="type-gadt.B" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.B" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">B</span><span class="keyword"> : </span>int <span>-&gt;</span> string <a href="index.html#type-gadt">gadt</a></code>
+         <a href="#type-gadt.B" class="anchor"></a><code>| </code><code><span class="constructor">B</span> : int <span>-&gt;</span> string <a href="index.html#type-gadt">gadt</a></code>
         </td>
         <td class="doc">
          <p>
@@ -101,7 +101,7 @@
        </tr>
        <tr id="type-gadt.C" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.C" class="anchor"></a><code><span class="keyword">| </span></code><code><span class="constructor">C</span><span class="keyword"> : </span></code><code>{</code>
+         <a href="#type-gadt.C" class="anchor"></a><code>| </code><code><span class="constructor">C</span> : </code><code>{</code>
          <table class="record">
           <tbody>
            <tr id="type-gadt.a" class="anchored">
@@ -118,22 +118,22 @@
      </table>
     </dt>
     <dt class="spec type" id="type-polymorphic_variant">
-     <a href="#type-polymorphic_variant" class="anchor"></a><code><span class="keyword">type </span>polymorphic_variant</code><span class="keyword"> = </span><code>[ </code>
+     <a href="#type-polymorphic_variant" class="anchor"></a><code><span class="keyword">type</span> polymorphic_variant</code> = <code>[ </code>
      <table class="variant">
       <tbody>
        <tr id="type-polymorphic_variant.A" class="anchored">
         <td class="def constructor">
-         <a href="#type-polymorphic_variant.A" class="anchor"></a><code><span class="keyword">| </span></code><code>`A</code>
+         <a href="#type-polymorphic_variant.A" class="anchor"></a><code>| </code><code>`A</code>
         </td>
        </tr>
        <tr id="type-polymorphic_variant.B" class="anchored">
         <td class="def constructor">
-         <a href="#type-polymorphic_variant.B" class="anchor"></a><code><span class="keyword">| </span></code><code>`B<span class="keyword"> of </span>int</code>
+         <a href="#type-polymorphic_variant.B" class="anchor"></a><code>| </code><code>`B <span class="keyword">of</span> int</code>
         </td>
        </tr>
        <tr id="type-polymorphic_variant.C" class="anchored">
         <td class="def constructor">
-         <a href="#type-polymorphic_variant.C" class="anchor"></a><code><span class="keyword">| </span></code><code>`C</code>
+         <a href="#type-polymorphic_variant.C" class="anchor"></a><code>| </code><code>`C</code>
         </td>
         <td class="doc">
          <p>
@@ -143,7 +143,7 @@
        </tr>
        <tr id="type-polymorphic_variant.D" class="anchored">
         <td class="def constructor">
-         <a href="#type-polymorphic_variant.D" class="anchor"></a><code><span class="keyword">| </span></code><code>`D</code>
+         <a href="#type-polymorphic_variant.D" class="anchor"></a><code>| </code><code>`D</code>
         </td>
         <td class="doc">
          <p>
@@ -156,7 +156,7 @@
      <code> ]</code>
     </dt>
     <dt class="spec type" id="type-nonrec_">
-     <a href="#type-nonrec_" class="anchor"></a><code><span class="keyword">type nonrec </span>nonrec_</code><code><span class="keyword"> = </span>int</code>
+     <a href="#type-nonrec_" class="anchor"></a><code><span class="keyword">type</span> <span class="keyword">nonrec</span> nonrec_</code><code> = int</code>
     </dt>
    </dl>
   </div>

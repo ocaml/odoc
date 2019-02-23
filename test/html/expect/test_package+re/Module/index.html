@@ -26,7 +26,7 @@
    </header>
    <dl>
     <dt class="spec value" id="val-foo">
-     <a href="#val-foo" class="anchor"></a><code><span class="keyword">let </span>foo: unit<span class="keyword">;</span></code>
+     <a href="#val-foo" class="anchor"></a><code><span class="keyword">let</span> foo: unit;</code>
     </dt>
     <dd>
      <p>
@@ -35,48 +35,48 @@
     </dd>
    </dl>
    <div class="spec module-type" id="module-type-S">
-    <a href="#module-type-S" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S/index.html">S</a> = <span class="keyword">{</span> ... <span class="keyword">}</span><span class="keyword">;</span></code>
+    <a href="#module-type-S" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S/index.html">S</a> = { ... };</code>
    </div>
    <div class="spec module-type" id="module-type-S1">
-    <a href="#module-type-S1" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S1/index.html">S1</a><span class="keyword">;</span></code>
+    <a href="#module-type-S1" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S1/index.html">S1</a>;</code>
    </div>
    <div class="spec module-type" id="module-type-S2">
-    <a href="#module-type-S2" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S2/index.html">S2</a> = <a href="index.html#module-type-S">S</a><span class="keyword">;</span></code>
+    <a href="#module-type-S2" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S2/index.html">S2</a> = <a href="index.html#module-type-S">S</a>;</code>
    </div>
    <div class="spec module-type" id="module-type-S3">
-    <a href="#module-type-S3" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S3/index.html">S3</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">type </span><a href="module-type-S3/index.html#type-t">t</a><span class="keyword"> = </span>int<span class="keyword"> and </span><span class="keyword">type </span><a href="module-type-S3/index.html#type-u">u</a><span class="keyword"> = </span>string<span class="keyword">;</span></code>
+    <a href="#module-type-S3" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S3/index.html">S3</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-S3/index.html#type-t">t</a> = int <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-S3/index.html#type-u">u</a> = string;</code>
    </div>
    <div class="spec module-type" id="module-type-S4">
-    <a href="#module-type-S4" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S4/index.html">S4</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">type </span><a href="module-type-S4/index.html#type-t">t</a> := int<span class="keyword">;</span></code>
+    <a href="#module-type-S4" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S4/index.html">S4</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-S4/index.html#type-t">t</a> := int;</code>
    </div>
    <div class="spec module-type" id="module-type-S5">
-    <a href="#module-type-S5" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S5/index.html">S5</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">type </span><a href="module-type-S5/index.html#type-v">v</a>('a) := list(<span class="type-var">'a</span>)<span class="keyword">;</span></code>
+    <a href="#module-type-S5" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S5/index.html">S5</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-S5/index.html#type-v">v</a>('a) := list(<span class="type-var">'a</span>);</code>
    </div>
    <dl>
     <dt class="spec type" id="type-result">
-     <a href="#type-result" class="anchor"></a><code><span class="keyword">type </span>result('a, 'b)</code><span class="keyword">;</span>
+     <a href="#type-result" class="anchor"></a><code><span class="keyword">type</span> result('a, 'b)</code>;
     </dt>
    </dl>
    <div class="spec module-type" id="module-type-S6">
-    <a href="#module-type-S6" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S6/index.html">S6</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">type </span><a href="module-type-S6/index.html#type-w">w</a>('a, 'b) := <a href="index.html#type-result">result</a>(<span class="type-var">'a</span>,&nbsp;<span class="type-var">'b</span>)<span class="keyword">;</span></code>
+    <a href="#module-type-S6" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S6/index.html">S6</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-S6/index.html#type-w">w</a>('a, 'b) := <a href="index.html#type-result">result</a>(<span class="type-var">'a</span>,&nbsp;<span class="type-var">'b</span>);</code>
    </div>
    <div class="spec module" id="module-M'">
-    <a href="#module-M'" class="anchor"></a><code><span class="keyword">module </span><a href="M'/index.html">M'</a>: <span class="keyword">{</span> ... <span class="keyword">}</span><span class="keyword">;</span></code>
+    <a href="#module-M'" class="anchor"></a><code><span class="keyword">module</span> <a href="M'/index.html">M'</a>: { ... };</code>
    </div>
    <div class="spec module-type" id="module-type-S7">
-    <a href="#module-type-S7" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S7/index.html">S7</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">module </span><a href="module-type-S7/M/index.html">M</a> = <a href="index.html#module-M'">M'</a><span class="keyword">;</span></code>
+    <a href="#module-type-S7" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S7/index.html">S7</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-S7/M/index.html">M</a> = <a href="index.html#module-M'">M'</a>;</code>
    </div>
    <div class="spec module-type" id="module-type-S8">
-    <a href="#module-type-S8" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S8/index.html">S8</a>: <a href="index.html#module-type-S">S</a><span class="keyword"> with </span><span class="keyword">module </span><a href="module-type-S8/M/index.html">M</a> := <a href="index.html#module-M'">M'</a><span class="keyword">;</span></code>
+    <a href="#module-type-S8" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S8/index.html">S8</a>: <a href="index.html#module-type-S">S</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-S8/M/index.html">M</a> := <a href="index.html#module-M'">M'</a>;</code>
    </div>
    <div class="spec module-type" id="module-type-S9">
-    <a href="#module-type-S9" class="anchor"></a><code><span class="keyword">module type </span><a href="module-type-S9/index.html">S9</a>: <span class="keyword">module type of </span><a href="index.html#module-M'">M'</a><span class="keyword">;</span></code>
+    <a href="#module-type-S9" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S9/index.html">S9</a>: <span class="keyword">module</span> <span class="keyword">type</span> <span class="keyword">of</span> <a href="index.html#module-M'">M'</a>;</code>
    </div>
    <div class="spec module" id="module-Mutually">
-    <a href="#module-Mutually" class="anchor"></a><code><span class="keyword">module rec </span><a href="Mutually/index.html">Mutually</a>: <span class="keyword">{</span> ... <span class="keyword">}</span><span class="keyword">;</span></code>
+    <a href="#module-Mutually" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">rec</span> <a href="Mutually/index.html">Mutually</a>: { ... };</code>
    </div>
    <div class="spec module" id="module-Recursive">
-    <a href="#module-Recursive" class="anchor"></a><code><span class="keyword">and </span><a href="Recursive/index.html">Recursive</a>: <span class="keyword">{</span> ... <span class="keyword">}</span><span class="keyword">;</span></code>
+    <a href="#module-Recursive" class="anchor"></a><code><span class="keyword">and</span> <a href="Recursive/index.html">Recursive</a>: { ... };</code>
    </div>
   </div>
  </body>

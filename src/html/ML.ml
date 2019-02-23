@@ -68,8 +68,8 @@ module ML = Generator.Make (struct
 
   module Mod =
   struct
-    let open_tag = "sig"
-    let close_tag = "end"
+    let open_tag = Generator.keyword "sig"
+    let close_tag = Generator.keyword "end"
     let close_tag_semicolon = false
     let include_semicolon = false
     let functor_keyword = true
@@ -77,8 +77,8 @@ module ML = Generator.Make (struct
 
   module Class =
   struct
-    let open_tag = "object"
-    let close_tag = "end"
+    let open_tag = Generator.keyword "object"
+    let close_tag = Generator.keyword "end"
   end
 
   module Value =

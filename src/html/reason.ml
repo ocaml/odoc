@@ -69,8 +69,8 @@ module Reason = Generator.Make (struct
 
   module Mod =
   struct
-    let open_tag = "{"
-    let close_tag = "}"
+    let open_tag = Html.txt "{"
+    let close_tag = Html.txt "}"
     let close_tag_semicolon = true
     let include_semicolon = true
     let functor_keyword = false
@@ -78,8 +78,8 @@ module Reason = Generator.Make (struct
 
   module Class =
   struct
-    let open_tag = "{"
-    let close_tag = "}"
+    let open_tag = Html.txt "{"
+    let close_tag = Html.txt "}"
   end
 
   module Value =

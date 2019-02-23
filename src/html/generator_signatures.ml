@@ -99,8 +99,8 @@ sig
 
   module Mod :
   sig
-    val open_tag : string
-    val close_tag : string
+    val open_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
+    val close_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
     val close_tag_semicolon : bool
     val include_semicolon : bool
     val functor_keyword : bool
@@ -108,8 +108,8 @@ sig
 
   module Class :
   sig
-    val open_tag : string
-    val close_tag : string
+    val open_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
+    val close_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
   end
 
   module Value :
