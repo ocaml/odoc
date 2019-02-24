@@ -283,7 +283,7 @@ let source_files = [
 ]
 
 let source_files =
-  let latest_supported = "4.07." in
+  let latest_supported = "4.08." in
   match String.sub (Sys.ocaml_version) 0 (String.length latest_supported) with
   | s when s = latest_supported -> source_files @ [("recent.mli", ["Recent/index.html"])]
   | _ -> source_files
