@@ -363,7 +363,7 @@
      <a href="#type-poly_object" class="anchor"></a><code><span class="keyword">type</span> 'a poly_object</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : a. <span class="type-var">'a</span>; &gt;</code>
     </dt>
     <dt class="spec type" id="type-double_constrained">
-     <a href="#type-double_constrained" class="anchor"></a><code><span class="keyword">type</span> ('a, 'b) double_constrained</code><code> = <span class="type-var">'a</span> * <span class="type-var">'b</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int <span class="keyword">and</span> <span class="type-var">'b</span> = unit</code>
+     <a href="#type-double_constrained" class="anchor"></a><code><span class="keyword">type</span> ('a, 'b) double_constrained</code><code> = <span class="type-var">'a</span> * <span class="type-var">'b</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int <span class="keyword">constraint</span> <span class="type-var">'b</span> = unit</code>
     </dt>
     <dt class="spec type" id="type-as_">
      <a href="#type-as_" class="anchor"></a><code><span class="keyword">type</span> as_</code><code> = int <span class="keyword">as</span> a * <span class="type-var">'a</span></code>
