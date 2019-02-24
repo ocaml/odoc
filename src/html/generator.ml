@@ -525,17 +525,17 @@ struct
   let format_constraints
     : 'inner_row 'outer_row. (_ * _) list ->
     ([> `PCDATA | `Span
-    | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list
-    = function
-    | [] -> []
-    | lst ->
+    | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list =
+      fun constraints ->
+
+    list_concat_map constraints ~f:begin fun (t1, t2) ->
       Html.txt " " ::
       keyword "constraint" ::
       Html.txt " " ::
-      list_concat_map_list_sep ~sep:[Html.txt " "; keyword "and"; Html.txt " "]
-          lst ~f:(fun (t1, t2) ->
-        type_expr t1 @ Html.txt " = " :: type_expr t2
-      )
+      type_expr t1 @
+      Html.txt " = " ::
+      type_expr t2
+    end
 
   let format_manifest
     : 'inner_row 'outer_row. ?compact_variants:bool
