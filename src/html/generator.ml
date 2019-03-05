@@ -1305,7 +1305,7 @@ struct
     | ModuleType m -> module_type ?theme_uri m
     | Class (recursive, c) -> class_ ?theme_uri recursive c
     | ClassType (recursive, c) -> class_type ?theme_uri recursive c
-    | Include m -> include_ m
+    | Include m -> include_ ?theme_uri m
     | _ -> assert false
 
   and signature ?theme_uri s =
@@ -1344,7 +1344,7 @@ struct
           | e -> e
         in
         Tree.enter ~kind:(`Arg) link_name;
-        let (doc, toc, subpages) = module_expansion expansion in
+        let (doc, toc, subpages) = module_expansion ?theme_uri expansion in
         let header_docs = Top_level_markup.render_toc toc in
         let subtree = Tree.make ~header_docs ?theme_uri doc subpages in
         Tree.leave ();
@@ -1364,10 +1364,10 @@ struct
     match t with
     | AlreadyASig -> assert false
     | Signature sg ->
-      let expansion, toc, subpages = signature sg in
+      let expansion, toc, subpages = signature ?theme_uri sg in
       expansion, toc, subpages
     | Functor (args, sg) ->
-      let sig_html, toc, subpages = signature sg in
+      let sig_html, toc, subpages = signature ?theme_uri sg in
       let params, params_subpages =
         List.fold_left (fun (args, subpages as acc) arg ->
           match arg with
@@ -1494,7 +1494,7 @@ struct
         in
         Tree.enter ~kind:(`Mty) modname;
         let doc = Comment.to_html t.doc in
-        let expansion, toc, subpages = module_expansion expansion in
+        let expansion, toc, subpages = module_expansion ?theme_uri expansion in
         let header_docs =
           match toc with
           | [] -> doc
@@ -1611,10 +1611,10 @@ struct
       | Some te ->
         type_expr te
 
-  and include_ (t : Model.Lang.Include.t) =
+  and include_ ?theme_uri (t : Model.Lang.Include.t) =
     let docs = Comment.to_html t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
-    let included_html, _, tree = signature t.expansion.content in
+    let included_html, _, tree = signature ?theme_uri t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
         element.Model.Location_.value = `Tag `Inline in
