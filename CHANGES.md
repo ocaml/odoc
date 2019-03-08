@@ -1,3 +1,87 @@
+1.4.0
+-----
+
+Changes
+
+- All parsing errors are now recoverable warnings (#238).
+- Page titles are now level-0 headings (`{0 ...}`), and top-level sections
+  within a page are level-1 headings (`{1 ...}`) (#217, Rizo Isrof).
+- Don't render definitions of externals (#275, Nik Graf).
+- Disable programming ligatures (#248).
+- Rename `--root-uri` option to `--xref-base-uri` (#223, Rizo Isrof).
+- Deprecate redundant reference kind annotations (#246).
+
+Additions
+
+- Preliminary compatibility with the current 4.08 beta releases (#309, Jon
+  Ludlam).
+- Paragraph headings (`{4 ...}`) and subparagraph headings (`{5 ...}`) (#217,
+  Rizo Isrof).
+- `odoc support-files-targets` command (#232).
+- Recommend [`bsdoc`](https://ostera.github.io/bsdoc/docs/BsDoc/) for using
+  odoc with BuckleScript (#269, Leandro Ostera).
+
+Bugs fixed
+
+- Improve breadcrumbs on `.mld` pages (#293, Daniel Buenzli).
+- Display tables of contents in nested module and class pages (#261, Rizo
+  Isrof).
+- Uncaught exception when parsing references to operators with `-` in them,
+  such as `@->` (#178).
+- Incorrect parsing of references to operators with `.` in them, such as `*.`
+  (#237).
+- Assertion failure when processing optional arguments in an `.ml` file with a
+  type annotation, when that type annotation uses an alias of `'a option`
+  (#101).
+- Assertion failure when two modules with the same name are found by odoc (#148,
+  Jon Ludlam).
+- Verbatim blocks (`{v ... v}`) can now only be terminated if the `v}` is
+  immediately preceded by whitespace (#71, reported Daniel Buenzli).
+- Wrong column numbers for errors reported in comments (#227, #253).
+- Restore parsing of ocamldoc-style reference kind annotations (#244).
+- Ordinary `type` keyword instead of `and` rendered in HTML for
+  mutually-recursive types (#105, reported @Fourchaux).
+- `nonrec` keyword not rendered (#249).
+- `and` not rendered for mutually-recursive modules, classes, and class types
+  (#251).
+- Outer comment attached to a module rendered when the module is included (#87,
+  Jon Ludlam).
+- Polymorphic variant constructor documentation not rendered (#176, reported
+  @steinuil).
+- Variant constructor and record field documentation styled differently (#260,
+  Jon Ludlam).
+- Sloppy keyword markup in HTML output (#319).
+- Rendering of multiple `constraint` clauses (#321).
+- Incorrect order of functor arguments (#261, Rizo Isrof).
+- `odoc html` option `-o` now creates the output directory if it does not exist
+  #171, #264 Rizo Isrof).
+- `odoc html-targets` output now includes path prefix given through `-o` option
+  (#173, Rizo Isrof).
+- Allow `-I` and `-o` options to refer to non-existent directories (#32, #170,
+  Daniel Buenzli).
+- Make `odoc compile-targets` match `odoc compile` (#273, Daniel Buenzli).
+- `odoc compile-deps` does not work on `.cmt` files (#162, Daniel Buenzli).
+- `odoc html-deps` now scans for `.odoc` files recursively (#307, Daniel
+  Buenzli).
+- `odoc html-targets` ignores stop comments (#276, Daniel Buenzli).
+- `odoc html-targets` and `odoc html-deps` segfault on `.mld` pages (#277, #282,
+  Daneil Buenzli).
+- `--theme-uri` option not propagated to some subpages (#318, Thomas Refis).
+- Binary files not opened in binary mode (#281, Ulrik Strid).
+
+Build and development
+
+- Always print backtraces for unhandled exceptions (3d10feb).
+- CI on macOS (#216, Leandro Ostera).
+- Test runner improvements (#266, Rizo Isrof).
+- Fix esy builds in Travis (#301, Jon Ludlam).
+- Don't require `make` in the esy build (#308, Leandro Ostera).
+- Get rid of some large GADTs (#292, Jon Ludlam).
+- Remove dependency on `bos` (#305, Daniel Buenzli).
+- Remove dependency on `rresult` (#306, Daniel Buenzli).
+- Remove dependency on `bisect_ppx`, previously present in development
+  checkouts (#316).
+
 1.3.0
 -----
 
