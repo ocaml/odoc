@@ -46,10 +46,7 @@ body {
 
 .content {
   max-width: 90ex;
-  margin-left: calc(10vw + 20ex);
-  margin-right: 4ex;
-  margin-top: 20px;
-  margin-bottom: 50px;
+  margin: 20px auto 50px;
   font-family: "Noticia Text", Georgia, serif;
   line-height: 1.5;
 }
