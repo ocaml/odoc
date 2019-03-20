@@ -1194,6 +1194,7 @@ struct
       Html.txt " " ::
       virtual_ @
       params ::
+      Html.txt " " ::
       cname ::
       Html.txt Syntax.Type.annotation_separator ::
       cd
@@ -1231,6 +1232,7 @@ struct
       [Html.txt " "] @
       virtual_ @
       params ::
+      Html.txt " " ::
       cname ::
       Html.txt " = " ::
       expr

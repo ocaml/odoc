@@ -18,3 +18,9 @@ object
 end
 
 class virtual empty_virtual' : empty
+
+class type ['a] polymorphic =
+object
+end
+
+class ['a] polymorphic' : ['a] polymorphic
