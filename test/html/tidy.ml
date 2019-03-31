@@ -13,7 +13,7 @@ let muted_warnings = [
 
 
 let is_present_in_path =
-  Sys.command "which tidy > /dev/null" = 0
+  Sys.command "which tidy > /dev/null" = 0 && Sys.command "tidy -show-config < /dev/null | grep '^mute' > /dev/null" = 0
 
 
 (* Returns a list of errors and warnings. *)
