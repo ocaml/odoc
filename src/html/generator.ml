@@ -1474,12 +1474,7 @@ struct
       match t.expr with
       | None -> []
       | Some expr ->
-        begin match expr with
-        | Signature _
-        | Path _ -> Html.txt " = "
-        | _ -> Html.txt Syntax.Type.annotation_separator
-        end ::
-        mty (t.id :> Paths.Identifier.Signature.t) expr
+        Html.txt " = " :: mty (t.id :> Paths.Identifier.Signature.t) expr
     in
     let modname, subtree =
       match t.expansion with
