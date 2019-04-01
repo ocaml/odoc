@@ -280,6 +280,7 @@ let source_files = [
       "Alias/index.html";
       "Alias/X/index.html";
     ]);
+  ("subst.mli", ["Subst/index.html"]);
 ]
 
 let source_files =

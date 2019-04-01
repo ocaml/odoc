@@ -371,3 +371,86 @@ end
 
 let pack ~equal ~hash items =
   new pack ~equal ~hash items
+
+class type_var_subst (substs : (string * Lang.TypeExpr.t) list) = object
+  inherit Maps.type_expr as super
+
+  method! type_expr e = match e with
+    | Var v -> begin
+        try List.assoc v substs 
+        with Not_found -> e
+      end
+    | _ -> super#type_expr e
+
+  method path_module_type x = x
+
+  method path_type x = x
+
+  method path_class_type x = x
+
+  method fragment_type x = x
+    
+  method documentation x = x
+end
+
+class subst_type ~equal:_ (x : Path.Resolved.Type.t) (y : Lang.TypeDecl.Equation.t) : t = object (self)
+
+  inherit Maps.types as super
+
+  method! type_expr expr = 
+    let open Lang.TypeExpr in
+    match expr with
+    | Constr (`Resolved p, args) when Path.Resolved.Type.equal p x -> begin
+        Printf.printf "Visiting type_expr Constr(`Resolved %s, _)\n" (Dump.Path.Resolved.Type.dump p);
+        let args = Maps.list_map self#type_expr args in
+        match y with
+        | { params; manifest = Some manifest; _ } ->
+          let var_substs = List.fold_left2 (fun acc arg param ->
+              match param with
+              | (Lang.TypeDecl.Var v, _) -> (v, arg) :: acc
+              | (Lang.TypeDecl.Any, _) -> acc) [] args params
+          in
+          (new type_var_subst var_substs)#type_expr manifest
+        | _ -> Printf.printf "equation doesn't match\n"; super#type_expr expr
+      end
+    | _ -> super#type_expr expr
+
+  method! extension ext =
+    let open Lang.Extension in
+    match ext with
+    | { type_path = `Resolved p; type_params; _ } when Path.Resolved.Type.equal p x -> begin
+        match y with
+        | { params=_; manifest = Some (Constr (sub_path, sub_args)); _ } ->
+          (* FIXME params might be used to reorder parameters maybe *)
+          if List.length sub_args = List.length type_params then
+            { (super#extension ext) with type_path = sub_path }
+          else
+            super#extension ext
+        | _ -> super#extension ext
+      end
+    | _ -> super#extension ext
+
+  method! type_decl d =
+    Printf.printf "Visiting type_decl with ident %s\n" (Dump.Identifier.Type.dump d.Lang.TypeDecl.id);
+    super#type_decl d
+
+  method! signature s =
+    let open Lang.Signature in
+    List.fold_right (fun item items ->
+        match item with
+        | Type (_, Lang.TypeDecl.{id; _}) when Path.Resolved.Type.equal_identifier (id:>Identifier.Path.Type.t) x ->
+          items
+        | _ ->
+          let item' = self#signature_item item in
+          item' :: items) s []
+
+  inherit Maps.paths
+
+  method root x = x
+
+  method offset_identifier_signature x = x
+
+end
+
+let subst_type ~equal x y =
+  new subst_type ~equal x y

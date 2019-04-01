@@ -93,3 +93,6 @@ val strengthen : Path.Resolved.Module.t -> t
 
 val pack : equal:(Root.t -> Root.t -> bool) -> hash:(Root.t -> int) ->
            (Identifier.Module.t * Identifier.Module.t) list -> t
+
+val subst_type : equal:(Root.t -> Root.t -> bool) -> 
+                 Path.Resolved.Type.t -> Lang.TypeDecl.Equation.t -> t
