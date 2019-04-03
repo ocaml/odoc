@@ -1272,7 +1272,7 @@ struct
     | ModuleType _ -> Some "module-type"
     | Class _ -> Some "class"
     | ClassType _ -> Some "class-type"
-    | TypExt _
+    | TypExt _ -> Some "extension"
     | Include _
     | Comment _ -> None
 
