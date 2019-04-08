@@ -96,3 +96,6 @@ val pack : equal:(Root.t -> Root.t -> bool) -> hash:(Root.t -> int) ->
 
 val subst_type : equal:(Root.t -> Root.t -> bool) -> 
                  Path.Resolved.Type.t -> Lang.TypeDecl.Equation.t -> t
+
+val subst_module : equal:(Root.t -> Root.t -> bool) ->
+                   Path.Resolved.Module.t -> Path.Module.t -> t

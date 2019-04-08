@@ -454,3 +454,78 @@ end
 
 let subst_type ~equal x y =
   new subst_type ~equal x y
+
+class subst_module ~equal:_ (x:Path.Resolved.Module.t) (_y:Path.Module.t) : t = object (self)
+
+  inherit Maps.types
+
+  method! signature s =
+    List.fold_right (fun item items ->
+        match item with
+        | Lang.Signature.Module (_, Lang.Module.{ id; _}) when Path.Resolved.Module.equal_identifier (id:>Identifier.Path.Module.t) x ->
+          items
+        | _ ->
+          (match item with
+           | Lang.Signature.Value Lang.Value.{ id; type_=Lang.TypeExpr.Constr(tp, _); _ } ->
+             Printf.printf "Visiting value %s : _ %s\n" (Dump.Identifier.Value.dump id) (Dump.Path.Type.dump tp)
+           | _ -> ()
+          );
+          let item' = self#signature_item item in
+          item' :: items) s []
+
+  inherit Maps.paths as _super
+
+  method! path_module m =
+    match m with
+    | `Resolved m when Path.Resolved.Module.equal m x -> _y
+    | m -> _super#path_module m
+
+  method! path_type p =
+    match p with
+    | `Resolved (`Type (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`Type (m', name))
+        | m' -> `Dot (m', TypeName.to_string name)
+      end
+    | `Resolved (`Class (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`Class (m', name))
+        | m' -> `Dot (m', ClassName.to_string name)
+      end
+    | `Resolved (`ClassType (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`ClassType (m', name))
+        | m' -> `Dot (m', ClassTypeName.to_string name)
+      end
+    | p -> _super#path_type p
+
+  method! path_module_type p =
+    match p with
+    | `Resolved (`ModuleType (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`ModuleType (m', name))
+        | m' -> `Dot (m', ModuleTypeName.to_string name)
+      end
+    | p -> _super#path_module_type p
+
+  method! path_class_type p =
+    match p with
+    | `Resolved (`Class (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`Class (m', name))
+        | m' -> `Dot (m', ClassName.to_string name)
+      end
+    | `Resolved (`ClassType (m, name)) -> begin
+        match self#path_module (`Resolved m) with
+        | `Resolved m' -> `Resolved (`ClassType (m', name))
+        | m' -> `Dot (m', ClassTypeName.to_string name)
+      end
+    | p -> _super#path_class_type p
+
+  method root x = x
+
+  method offset_identifier_signature x = x
+end
+
+let subst_module ~equal x y =
+  new subst_module ~equal x y

@@ -176,6 +176,21 @@ let refine_module ex (frag : Fragment.Module.t) equation =
           with Not_found -> None (* TODO should be an error *)
         end
 
+let replace_module ~equal ex dest (frag : Fragment.Module.t) mp =
+  match frag with
+  | `Dot _ -> None
+  | `Resolved frag -> begin
+      let mod_ident = Fragment.Resolved.Module.identifier dest frag in
+      let mod_path = Path.Resolved.Module.of_ident mod_ident in
+      Printf.printf "Substituting for %s (%s)\n" (Dump.Fragment.Resolved.Module.dump frag) (Dump.Path.Resolved.Module.dump mod_path);
+      match ex with
+      | Some (Signature items) ->
+        let sub = Subst.subst_module ~equal mod_path mp in
+        let items = Subst.signature sub items in
+        Some (Signature items)
+      | _ -> None
+    end
+
 type intermediate_module_expansion =
   Identifier.Module.t * Model.Comment.docs
   * (Path.Module.t * Reference.Module.t) option
@@ -330,7 +345,7 @@ and expand_module_type_expr ({equal; _ } as t) root dest offset expr =
                | TypeEq(frag, eq) -> refine_type ex frag eq
                | ModuleEq(frag, eq) -> refine_module ex frag eq
                | TypeSubst(frag, eq) -> replace_type ~equal ex dest frag eq
-               | ModuleSubst _ -> ex (* TODO perform substitution *))
+               | ModuleSubst(frag, mp) -> replace_module ~equal ex dest frag mp)
             ex substs
     | TypeOf decl ->
         expand_module_decl t root dest offset decl (* TODO perform weakening *)
