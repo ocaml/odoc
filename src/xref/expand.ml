@@ -128,7 +128,7 @@ let refine_type ex (frag : Fragment.Type.t) equation =
           with Not_found -> None (* TODO should be an error *)
         end
 
-let subst_type ~equal ex dest (frag : Fragment.Type.t) _equation =
+let replace_type ~equal ex dest (frag : Fragment.Type.t) equation =
   match frag with
   | `Dot _ -> None
   | `Resolved frag -> begin
@@ -145,7 +145,7 @@ let subst_type ~equal ex dest (frag : Fragment.Type.t) _equation =
     | _ -> ());
     match ex with
     | Some (Signature items) ->
-        let sub = Subst.subst_type ~equal type_path _equation in
+        let sub = Subst.subst_type ~equal type_path equation in
         let items = Subst.signature sub items in
         Some (Signature items)
     | _ -> None
@@ -329,7 +329,7 @@ and expand_module_type_expr ({equal; _ } as t) root dest offset expr =
                match subst with
                | TypeEq(frag, eq) -> refine_type ex frag eq
                | ModuleEq(frag, eq) -> refine_module ex frag eq
-               | TypeSubst(frag, eq) -> subst_type ~equal ex dest frag eq
+               | TypeSubst(frag, eq) -> replace_type ~equal ex dest frag eq
                | ModuleSubst _ -> ex (* TODO perform substitution *))
             ex substs
     | TypeOf decl ->
