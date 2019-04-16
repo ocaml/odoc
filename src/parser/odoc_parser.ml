@@ -1,3 +1,6 @@
+module Ast = Ast
+
+
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
 
@@ -68,7 +71,7 @@ let offset_to_location
 
 
 
-let parse_comment ~sections_allowed ~containing_definition ~location ~text =
+let make_parser ~location ~text parse =
   Odoc_model.Error.accumulate_warnings begin fun warnings ->
     let token_stream =
       let lexbuf = Lexing.from_string text in
@@ -84,8 +87,17 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
       in
       Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
     in
-
-    Syntax.parse warnings token_stream
-    |> Semantics.ast_to_comment
-      warnings ~sections_allowed ~parent_of_sections:containing_definition
+    parse warnings token_stream
   end
+
+
+let parse_comment_raw ~location ~text =
+  make_parser ~location ~text Syntax.parse
+
+
+let parse_comment ~sections_allowed ~containing_definition ~location ~text =
+  make_parser ~location ~text (fun warnings token_stream ->
+      Syntax.parse warnings token_stream
+      |> Semantics.ast_to_comment
+         warnings ~sections_allowed ~parent_of_sections:containing_definition
+    )
