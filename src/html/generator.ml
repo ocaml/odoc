@@ -72,19 +72,33 @@ struct
     let elements =
       list_concat_map t.elements ~sep:(Html.txt " | ") ~f:(function
         | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
-        | Constructor {name; arguments; _} ->
+        | Constructor {constant; name; arguments; _} ->
           let constr = "`" ^ name in
           match arguments with
           | [] -> [ Html.txt constr ]
           | _ ->
+            (* Multiple arguments in a polymorphic variant constructor correspond
+               to a conjunction of types, not a product: [`Lbl int&float].
+               If constant is [true], the conjunction starts with an empty type,
+               for instance [`Lbl &int].
+            *)
+            let wrapped_type_expr =
+              (* type conjunction in Reason is printed as `Lbl (t1)&(t2)` *)
+              if Syntax.Type.Variant.parenthesize_params then
+                fun x -> Html.txt "(" :: type_expr x @ [Html.txt ")"]
+              else
+                fun x -> type_expr x
+            in
             let arguments =
               list_concat_map
                 arguments
-                ~sep:(Html.txt Syntax.Type.Tuple.element_separator)
-                ~f:type_expr
+                ~sep:(Html.txt " & ")
+                ~f:wrapped_type_expr
             in
+            let arguments =
+              if constant then Html.txt "& " :: arguments else arguments in
             if Syntax.Type.Variant.parenthesize_params
-            then Html.txt (constr ^ "(") :: arguments @ [ Html.txt ")" ]
+            then Html.txt constr :: arguments
             else Html.txt (constr ^ " of ") :: arguments
       )
     in
@@ -426,21 +440,35 @@ struct
         match item with
         | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           "unknown", [Html.code (type_expr te)], None
-        | Constructor {name; arguments; doc; _} ->
+        | Constructor {constant; name; arguments; doc; _} ->
           let cstr = "`" ^ name in
           "constructor",
           begin match arguments with
           | [] -> [Html.code [ Html.txt cstr ]]
           | _ ->
-            let params = list_concat_map arguments
-              ~sep:(Html.txt Syntax.Type.Tuple.element_separator)
-              ~f:type_expr
+            (* Multiple arguments in a polymorphic variant constructor correspond
+               to a conjunction of types, not a product: [`Lbl int&float].
+               If constant is [true], the conjunction starts with an empty type,
+               for instance [`Lbl &int].
+            *)
+            let wrapped_type_expr =
+              (* type conjunction in Reason is printed as `Lbl (t1)&(t2)` *)
+              if Syntax.Type.Variant.parenthesize_params then
+                fun x -> Html.txt "(" :: type_expr x @ [Html.txt ")"]
+              else
+                fun x -> type_expr x
             in
+            let params = list_concat_map arguments
+              ~sep:(Html.txt " & ")
+              ~f:wrapped_type_expr
+            in
+            let params =
+              if constant then Html.txt "& " :: params else params in
             [ Html.code (
                 Html.txt cstr ::
                 (
                 if Syntax.Type.Variant.parenthesize_params
-                then Html.txt "(" :: params @ [ Html.txt ")" ]
+                then params
                 else Html.txt " " :: keyword "of" :: Html.txt " " :: params
                 )
               )
