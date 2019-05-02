@@ -26,8 +26,10 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
   match root.file with
   | Page page_name ->
     Page.load input >>= fun page ->
-    let resolve_env = Env.build env (`Page page) in
-    Odoc_xref.resolve_page (Env.resolver resolve_env) page >>= fun odoctree ->
+    let odoctree =
+      let resolve_env = Env.build env (`Page page) in
+      Odoc_xref2.Resolve2.resolve_page resolve_env page
+    in
     let pkg_name = root.package in
     let pages = mk_page ~syntax odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
@@ -47,16 +49,11 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
     (* If hidden, we should not generate HTML. See
          https://github.com/ocaml/odoc/issues/99. *)
     Compilation_unit.load input >>= fun unit ->
-    let unit = Odoc_xref.Lookup.lookup unit in
-    begin
-      (* See comment in compile for explanation regarding the env duplication. *)
-      let resolve_env = Env.build env (`Unit unit) in
-      Odoc_xref.resolve (Env.resolver resolve_env) unit >>= fun resolved ->
-      let expand_env = Env.build env (`Unit resolved) in
-      Odoc_xref.expand (Env.expander expand_env) resolved >>= fun expanded ->
-      Odoc_xref.Lookup.lookup expanded
-      |> Odoc_xref.resolve (Env.resolver expand_env) (* Yes, again. *)
-    end >>= fun odoctree ->
+    let odoctree =
+      let env = Env.build env (`Unit unit) in
+      let resolved = Odoc_xref2.Resolve2.resolve env unit in
+      Odoc_xref2.Expand.expand2 env resolved
+    in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
     let pages = mk_compilation_unit ~syntax odoctree in

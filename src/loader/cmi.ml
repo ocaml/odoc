@@ -832,7 +832,7 @@ let read_class_declaration env parent id cld =
     let virtual_ = cld.cty_new = None in
     { id; doc; virtual_; params; type_; expansion = None }
 
-let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
+let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
     match mty with
     | Mty_ident p -> Path (Env.Path.read_module_type env p)
@@ -843,11 +843,11 @@ let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
           | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
           | Named (id_opt, arg) ->
               let name, env = match id_opt with
-                | Some id -> parenthesise (Ident.name id), Env.add_argument parent pos id (ArgumentName.of_ident id) env
+                | Some id -> parenthesise (Ident.name id),  Env.add_parameter parent id (ParameterName.of_ident id) env
                 | None -> "_", env
               in
-              let id = `Argument(parent, pos, Odoc_model.Names.ArgumentName.of_string name) in
-              let arg = read_module_type env id 1 arg in
+              let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
+              let arg = read_module_type env id arg in
               let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
@@ -855,7 +855,7 @@ let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
               in
               Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg; expansion }), env
         in
-        let res = read_module_type env parent (pos+1) res in
+        let res = read_module_type env (`Result parent) res in
         Functor(parameter, res)
     | Mty_alias _ -> assert false
 
@@ -865,7 +865,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let id = `ModuleType(parent, Odoc_model.Names.ModuleTypeName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
-  let expr = opt_map (read_module_type env id 1) mtd.mtd_type in
+  let expr = opt_map (read_module_type env id) mtd.mtd_type in
   let expansion =
     match expr with
     | Some (Signature _) -> Some Module.AlreadyASig
@@ -875,8 +875,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
-  let name = parenthesise (Ident.name ident) in
-  let id = `Module(parent, Odoc_model.Names.ModuleName.of_string name) in
+  let id = Env.find_module_identifier env ident in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in
   let canonical =
@@ -889,7 +888,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
   let type_ =
     match md.md_type with
     | Mty_alias p -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_type env id 1 md.md_type)
+    | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) md.md_type)
   in
   let hidden =
     match canonical with
@@ -917,8 +916,7 @@ and read_module_rec_status rec_status =
   | Trec_first -> Rec
   | Trec_next -> And
 
-and read_signature env parent (items : Odoc_model.Compat.signature) =
-  let env = Env.add_signature_type_items parent items env in
+and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
   let rec loop acc items =
     let open Signature in
     let open Odoc_model.Compat in
@@ -962,27 +960,31 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type(id, cltyp, rec_status, Exported)::Sig_type _::Sig_type _::rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
         loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
-
-(* Skip all of the hidden sig items *)
-    | Sig_class_type(_, _, _, Hidden)::Sig_type _::Sig_type _::rest
-    | Sig_class(_, _, _, Hidden) :: Sig_class_type _
+    (* Skip all of the hidden sig items *)
+    | Sig_class_type(_id, _, _, Hidden)::Sig_type _::Sig_type _::rest
+    | Sig_class(_id, _, _, Hidden) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest
-    | Sig_modtype(_, _, Hidden) :: rest
-    | Sig_module (_, _, _, _, Hidden)::rest
-    | Sig_typext (_, _, Text_exception, Hidden) :: rest
-    | Sig_typext (_, _, _, Hidden) :: rest
-    | Sig_type(_, _, _, Hidden) :: rest
-    | Sig_value(_, _, Hidden) :: rest ->
+    | Sig_modtype(_id, _, Hidden) :: rest
+    | Sig_module (_id, _, _, _, Hidden)::rest
+    | Sig_typext (_id, _, Text_exception, Hidden) :: rest
+    | Sig_typext (_id, _, _, Hidden) :: rest
+    | Sig_type(_id, _, _, Hidden) :: rest
+    | Sig_value(_id, _, Hidden) :: rest ->
       loop acc rest
 
-(* Bad - we expect Sig_class and Sig_class_type to be matched above
-   with subsequent Sig_type items *)
+  (* Bad - we expect Sig_class and Sig_class_type to be matched above
+    with subsequent Sig_type items *)
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
     | [] -> List.rev acc
   in
     loop [] items
+
+and read_signature env parent (items : Odoc_model.Compat.signature) =
+  let env = Env.add_signature_type_items parent items env in
+  read_signature_noenv env parent items
+
 
 let read_interface root name intf =
   let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in

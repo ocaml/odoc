@@ -26,7 +26,7 @@ val module_name_of_open : 'a Typedtree.open_infos -> string
 
 val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
 
-val add_argument : Paths.Identifier.Signature.t -> int -> Ident.t -> ArgumentName.t -> t -> t
+val add_parameter : Paths.Identifier.Signature.t -> Ident.t -> ParameterName.t -> t -> t
 
 val add_module_type : Paths.Identifier.Signature.t -> Ident.t -> ModuleTypeName.t -> t -> t
 
@@ -54,6 +54,9 @@ module Path : sig
 
 end
 
+val find_module : t -> Ident.t -> Paths.Path.Resolved.Module.t
+
+val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 
 module Fragment : sig
 

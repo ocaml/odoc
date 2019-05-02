@@ -26,12 +26,14 @@ type class_type_ident = Paths_types.Identifier.path_class_type
 
 type t =
   { modules : Rp.Module.t Ident.tbl;
+    module_ids : Id.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : type_ident Ident.tbl;
     class_types : class_type_ident Ident.tbl; }
 
 let empty =
   { modules = Ident.empty;
+    module_ids = Ident.empty;
     module_types = Ident.empty;
     types = Ident.empty;
     class_types = Ident.empty; }
@@ -45,14 +47,33 @@ let module_name_of_open o =
 #endif
 
 let add_module parent id name env =
-  let ident = `Identifier (`Module(parent, name)) in
-  let module_ = if ModuleName.is_hidden name then `Hidden ident else ident in
-  let modules = Ident.add id module_ env.modules in
-    { env with modules }
+  let ident = `Module(parent, name) in
+  let module_ = if ModuleName.is_hidden name then `Hidden (`Identifier ident) else `Identifier ident in
+  let all = Ident.find_all (ModuleName.to_string name) env.module_ids in
+  let shadowing =
+    List.filter (fun (_,ident') -> ident' = ident) all
+  in
+  match shadowing with
+  | [] ->
+    (* Format.fprintf Format.err_formatter "Adding module: %a\n%!" Ident.print_with_scope id; *)
+    let modules = Ident.add id module_ env.modules in
+    let module_ids = Ident.add id ident env.module_ids in
+    { env with modules; module_ids }
+  | [(id',_)] ->
+    (* Format.fprintf Format.err_formatter "Renaming module: %a\n%!" Ident.print_with_scope id; *)
+    let new_ident = `Module(parent, ModuleName.of_string (Printf.sprintf "%s/hidden" (ModuleName.to_string name))) in
+    let new_module = `Hidden (`Identifier new_ident) in
+    let module_ids = Ident.add id' new_ident (Ident.remove id' env.module_ids) in
+    let module_ids = Ident.add id ident module_ids in
+    let modules = Ident.add id' new_module (Ident.remove id' env.modules) in
+    let modules = Ident.add id module_ modules in
+    { env with modules; module_ids }
+  | (id1', _) :: (id2', _) :: _ ->
+    failwith (Format.asprintf "This shouldn't happen...! %a %a %a" Ident.print_with_scope id1' Ident.print_with_scope id2' Ident.print_with_scope id)
 
-let add_argument parent arg id name env =
-  let ident = `Identifier (`Argument(parent, arg, name)) in
-  let module_ = if ArgumentName.is_hidden name then `Hidden ident else ident in
+let add_parameter parent id name env =
+  let ident = `Identifier (`Parameter(parent, name)) in
+  let module_ = if ParameterName.is_hidden name then `Hidden ident else ident in
   let modules = Ident.add id module_ env.modules in
     { env with modules }
 
@@ -285,7 +306,10 @@ let add_structure_tree_item parent item env =
     | Tstr_modtype mtd ->
         add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tstr_include incl ->
-        add_signature_type_items parent (Compat.signature incl.incl_type) env
+        Format.fprintf Format.err_formatter "Adding Tstr_include items\n%!";
+        let res = add_signature_type_items parent (Compat.signature incl.incl_type) env in
+        Format.fprintf Format.err_formatter "Finished adding Tstr_include items\n%!";
+        res
     | Tstr_class cls ->
         List.fold_right
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
@@ -329,12 +353,17 @@ let add_structure_tree_item parent item env =
 
 let add_structure_tree_items parent str env =
   let open Typedtree in
-    List.fold_right
-      (add_structure_tree_item parent)
-      str.str_items env
+    List.fold_left
+      (fun acc item -> add_structure_tree_item parent item acc)
+      env (List.rev str.str_items)
 
 let find_module env id =
+  (* Format.fprintf Format.err_formatter "Finding module path: %a\n%!" (Ident.print_with_scope) id; *)
   Ident.find_same id env.modules
+
+let find_module_identifier env id =
+  (* Format.fprintf Format.err_formatter "Finding module identifier: %a\n%!" (Ident.print_with_scope) id; *)
+  Ident.find_same id env.module_ids
 
 let find_module_type env id =
   Ident.find_same id env.module_types

@@ -34,6 +34,7 @@ val int64_identifier : Identifier.Type.t
 val nativeint_identifier : Identifier.Type.t
 val lazy_t_identifier : Identifier.Type.t
 val extension_constructor_identifier : Identifier.Type.t
+val floatarray_identifier: Identifier.Type.t
 
 val false_identifier : Identifier.Constructor.t
 val true_identifier : Identifier.Constructor.t

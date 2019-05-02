@@ -25,9 +25,8 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   let to_html content =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
-    let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
+    let resolved = Odoc_xref2.Resolve.resolve_page env page in
 
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in

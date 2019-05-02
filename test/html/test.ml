@@ -273,6 +273,7 @@ let source_files_all = [
       "Nested/class-inherits/index.html";
       "Nested/module-type-Y/index.html";
     ]);
+  ("ocamlary.mli", ["Ocamlary/index.html"]);
   ("type.mli", ["Type/index.html"]);
   ("external.mli", ["External/index.html"]);
   ("functor.mli", ["Functor/index.html"]);

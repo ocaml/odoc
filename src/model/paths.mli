@@ -283,6 +283,8 @@ module rec Path : sig
 
       val identifier : t -> Identifier.Path.Module.t
 
+      val canonical_ident : t -> Identifier.Path.Module.t option
+
       val rebase : Identifier.Signature.t -> t -> t
 
       val equal_identifier : Identifier.Path.Module.t -> t -> bool
@@ -959,8 +961,6 @@ module rec Reference : sig
     end
 
     type t = Paths_types.Reference.any
-
-    val module_of_t : t -> Module.t
 
     val module_type_of_t : t -> ModuleType.t
 

@@ -350,12 +350,12 @@ let read_class_declarations env parent clds =
   |> fst
   |> List.rev
 
-let rec read_module_expr env parent label_parent pos mexpr =
+let rec read_module_expr env parent label_parent mexpr =
   let open ModuleType in
   let open Odoc_model.Names in
     match mexpr.mod_desc with
     | Tmod_ident _ ->
-        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
+        Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_structure str -> Signature (read_structure env parent str)
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     | Tmod_functor(parameter, res) ->
@@ -365,11 +365,11 @@ let rec read_module_expr env parent label_parent pos mexpr =
           | Named (id_opt, _, arg) ->
               let name, env =
                 match id_opt with
-                | Some id -> parenthesise (Ident.name id), Env.add_argument parent pos id (ArgumentName.of_ident id) env
+                | Some id -> parenthesise (Ident.name id), Env.add_parameter parent id (ParameterName.of_ident id) env
                 | None -> "_", env
               in
-              let id = `Argument(parent, pos, Odoc_model.Names.ArgumentName.of_string name) in
-              let arg = Cmti.read_module_type env id label_parent 1 arg in
+              let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
+              let arg = Cmti.read_module_type env id label_parent arg in
               let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
@@ -377,7 +377,7 @@ let rec read_module_expr env parent label_parent pos mexpr =
               in
               Named { id; expr=arg; expansion}, env
           in
-        let res = read_module_expr env parent label_parent (pos + 1) res in
+        let res = read_module_expr env (`Result parent) label_parent res in
         Functor(parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
@@ -386,27 +386,27 @@ let rec read_module_expr env parent label_parent pos mexpr =
           | None -> FunctorParameter.Unit
           | Some arg ->
               let name = parenthesise (Ident.name id) in
-              let id = `Argument(parent, pos, ArgumentName.of_string name) in
-          let arg = Cmti.read_module_type env id label_parent 1 arg in
+              let id = `Parameter(parent, ParameterName.of_string name) in
+          let arg = Cmti.read_module_type env id label_parent arg in
           let expansion =
             match arg with
             | Signature _ -> Some Module.AlreadyASig
             | _ -> None
           in
-                Named { FunctorParameter. id; expr = arg; expansion }
+          Named { FunctorParameter. id; expr = arg; expansion }
         in
-        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
-      let res = read_module_expr env parent label_parent (pos + 1) res in
-          Functor(arg, res)
+        let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
+        let res = read_module_expr env (`Result parent) label_parent res in
+        Functor(arg, res)
 #endif
     | Tmod_apply _ ->
-        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
+        Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
-        Cmti.read_module_type env parent label_parent pos mty
+        Cmti.read_module_type env parent label_parent mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
-        read_module_expr env parent label_parent pos mexpr
+        read_module_expr env parent label_parent mexpr
     | Tmod_unpack(_, mty) ->
-        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mty)
+        Cmi.read_module_type env parent (Odoc_model.Compat.module_type mty)
 
 and unwrap_module_expr_desc = function
   | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
@@ -415,16 +415,13 @@ and unwrap_module_expr_desc = function
 
 and read_module_binding env parent mb =
   let open Module in
-  let open Odoc_model.Names in
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
       match mb.mb_id with
       | None -> None
       | Some id ->
-        let name = parenthesise (Ident.name id) in
-        let id = `Module(parent, ModuleName.of_string name) in
+        let id = Env.find_module_identifier env id in
 #else
-    let name = parenthesise (Ident.name mb.mb_id) in
-    let id = `Module(parent, ModuleName.of_string name) in
+  let id = Env.find_module_identifier env mb.mb_id in
 #endif
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
@@ -438,7 +435,7 @@ and read_module_binding env parent mb =
   let type_ =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env id container 1 mb.mb_expr)
+    | _ -> ModuleType (read_module_expr env (id :> Identifier.Signature.t) container mb.mb_expr)
   in
   let hidden =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
@@ -482,7 +479,7 @@ and module_of_extended_open env parent o =
   let type_ =
     match unwrap_module_expr_desc o.open_expr.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env id container 1 o.open_expr)
+    | _ -> ModuleType (read_module_expr env id container o.open_expr)
   in
   { id
   ; doc = []
@@ -569,14 +566,16 @@ and read_include env parent incl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env parent container 1 incl.incl_mod)
+    | _ -> ModuleType (read_module_expr env parent container incl.incl_mod)
   in
-  let content = Cmi.read_signature env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false } in
     {parent; doc; decl; expansion}
 
 and read_structure env parent str =
+  Format.fprintf Format.err_formatter "Cmt.read_structure\n%!";
   let env = Env.add_structure_tree_items parent str env in
+  Format.fprintf Format.err_formatter "Cmt.read_structure: added all structure_tree_items\n%!";
   let items =
     List.fold_left
       (fun items item ->

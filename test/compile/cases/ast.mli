@@ -61,7 +61,7 @@ exception Kaboom
 (**/**)
 
 (** @Functor *)
-module F : functor (M : Map.OrderedType) -> Map.S
+module F : functor (M : sig type t end) -> Map.S
 
 (** @IncludeDescription *)
 include sig

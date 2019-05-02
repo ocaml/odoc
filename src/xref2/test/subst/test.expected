@@ -1,0 +1,22 @@
+Module substitution
+
+This test substitutes one module for another. We substitute
+SubTargets in place of SubstituteMe, so the result expected is that
+the equations for t, u and v point to SubTargets rather than SubstituteMe
+
+BEFORE
+======
+S: sig
+type tt/33 = resolved(local(SubstituteMe/24)).t
+type uu/34 = resolved(local(SubstituteMe/24)).u
+type vv/35 = resolved(local(SubstituteMe/24)).v
+end
+
+AFTER 
+======
+S: sig
+type tt/36 = resolved(local(SubTargets/25)).t
+type uu/37 = resolved(local(SubTargets/25)).u
+type vv/38 = resolved(local(SubTargets/25)).v
+end
+
