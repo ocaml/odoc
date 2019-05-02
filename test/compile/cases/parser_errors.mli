@@ -1,56 +1,56 @@
 (** {x This is bad markup} *)
-val x : int
+val a : int
 
 (** {9 Bad hading level} *)
-val x : int
+val b : int
 
 (* {4 Heading} this should be on it's own line *)
-val x : int
+val c : int
 
 (** {ul {limust be followed by whitespace}} *)
-val x : int
+val d : int
 
 (** {limust in a ul} *)
-val x : int
+val e : int
 
 (** {vmust be followed by whitespace v} *)
-val x : int
+val f : int
 
 (** {v must be preceded by whitespacev} *)
-val x : int
+val g : int
 
 (** @ stray *)
-val x : int
+val h : int
 
 (** Expect something on the same line: *)
-val x : int
+val i : int
 
 (** @before *)
-val x : int
+val j : int
 
 (** @param *)
-val x : int
+val k : int
 
 (** @raise *)
-val x : int
+val l : int
 
 (** @see *)
-val x : int
+val m : int
 
 (** @UnknownTag *)
-val x : int
+val n : int
 
 (** } unpaired *)
-val x : int
+val o : int
 
 (** ] unpaired *)
-val x : int
+val p : int
 
 (** {%invalid: raw markup target %} *)
-val x : int
+val q : int
 
 (** This comment has bad
     } markup on the second line. *)
-val x : int
+val r : int
 
 (** {x bad markup} in a standalone comment. *)

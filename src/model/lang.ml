@@ -45,7 +45,7 @@ module rec Module : sig
 
   end
 
-end = Module
+end = Module 
 
 and FunctorParameter : sig
   type parameter = {
@@ -101,7 +101,7 @@ and Signature : sig
     | Ordinary
     | And
     | Nonrec
-    | Rec
+    | Rec 
 
   type item =
     | Module of recursive * Module.t

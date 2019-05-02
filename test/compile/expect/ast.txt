@@ -62,3 +62,11 @@ File "cases/ast.mli", line 74, characters 4-10:
 Unknown tag '@Class'.
 File "cases/ast.mli", line 77, characters 6-13:
 Unknown tag '@Method'.
+Failed during expansion: Failure("Couldn't find signature: root(Stdlib).Map.S") (of module F)
+backtrace:
+Raised at file "stdlib.ml", line 29, characters 17-33
+Called from file "src/xref2/expand.ml", line 190, characters 45-90
+Called from file "src/xref2/expand.ml", line 193, characters 37-65
+Called from file "src/xref2/expand.ml" (inlined), line 197, characters 4-72
+Called from file "src/xref2/expand.ml", line 271, characters 12-119
+

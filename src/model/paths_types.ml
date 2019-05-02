@@ -7,7 +7,8 @@ struct
   type signature = [
     | `Root of Root.t * UnitName.t
     | `Module of signature * ModuleName.t
-    | `Argument of signature * int * ArgumentName.t
+    | `Parameter of signature * ParameterName.t
+    | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t
   ]
 
@@ -35,7 +36,8 @@ struct
   type module_ = [
     | `Root of Root.t * UnitName.t
     | `Module of signature * ModuleName.t
-    | `Argument of signature * int * ArgumentName.t
+    | `Parameter of signature * ParameterName.t
+    | `Result of signature
   ]
 
   type module_type = [
@@ -206,6 +208,7 @@ sig
     (* TODO: The canonical path should be a reference not a path *)
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * Path.module_
+    | `Alias of module_ * module_
     ]
 
   and module_type = [
@@ -220,6 +223,7 @@ sig
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * Path.module_
+    | `Alias of module_ * module_
     ]
 
   type module_type_no_id = [

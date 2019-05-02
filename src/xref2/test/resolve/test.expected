@@ -1,0 +1,567 @@
+Basic resolution 1
+Simplest possible resolution
+CODE
+====
+
+type t
+type u = t
+    
+BEFORE
+======
+type t
+type u = resolved[global(t)]
+
+AFTER 
+===== 
+type t
+type u = resolved[global(t)]
+
+Basic resolution 2
+Environment lookup
+CODE
+====
+
+module M : sig
+    type t
+end
+type u = M.t
+    
+BEFORE
+======
+module M : sig
+  type M.t
+  end
+type u = resolved[global(M)].t
+
+AFTER 
+===== 
+module M : sig
+  type M.t
+  end
+type u = resolved[global(M).t]
+
+Basic resolution 3
+Module type
+CODE
+====
+
+module type M = sig
+    type t
+end
+module N : M
+type u = N.t
+    
+BEFORE
+======
+module type M = sig
+  type M.t
+  end
+module N : resolved[global(M)]
+type u = resolved[global(N)].t
+
+AFTER 
+===== 
+module type M = sig
+  type M.t
+  end
+module N : resolved[global(M)]
+type u = resolved[global(N).t]
+
+Basic resolution 4
+Module type
+CODE
+====
+
+module type M = sig
+    module N : sig
+        type t
+    end
+end
+module A : M
+type u = A.N.t
+    
+BEFORE
+======
+module type M = sig
+  module M.N : sig
+    type M.N.t
+    end
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A)].N.t
+
+AFTER 
+===== 
+module type M = sig
+  module M.N : sig
+    type M.N.t
+    end
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A).N.t]
+
+Basic resolution 4
+Module type
+CODE
+====
+
+module type M = sig
+    module type N = sig
+        type t
+    end
+    module B : N
+end
+module A : M
+type u = A.B.t
+    
+BEFORE
+======
+module type M = sig
+  module type M.N = sig
+    type M.N.t
+    end
+  module M.B : resolved[global(M.N)]
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A)].B.t
+
+AFTER 
+===== 
+module type M = sig
+  module type M.N = sig
+    type M.N.t
+    end
+  module M.B : resolved[global(M.N)]
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A).B.t]
+
+Basic resolution 4
+Module type
+CODE
+====
+
+module type M = sig
+    module type N = sig
+        type t
+    end
+    module X : sig
+        module B : N
+    end
+end
+module A : M
+type u = A.X.B.t
+    
+BEFORE
+======
+module type M = sig
+  module type M.N = sig
+    type M.N.t
+    end
+  module M.X : sig
+    module M.X.B : resolved[global(M.N)]
+    end
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A)].X.B.t
+
+AFTER 
+===== 
+module type M = sig
+  module type M.N = sig
+    type M.N.t
+    end
+  module M.X : sig
+    module M.X.B : resolved[global(M.N)]
+    end
+  end
+module A : resolved[global(M)]
+type u = resolved[global(A).X.B.t]
+
+Module substitution
+Ensure a substitution is taken into account during resolution
+CODE
+====
+
+module type A = sig
+module M : sig module type S end
+module N : M.S
+end
+
+module B : sig module type S = sig type t end end
+
+module C : A with module M = B
+
+type t = C.N.t
+    
+BEFORE
+======
+module type A = sig
+  module A.M : sig
+    module type A.M.S
+    end
+  module A.N : resolved[global(A.M)].S
+  end
+module B : sig
+  module type B.S = sig
+    type B.S.t
+    end
+  end
+module C : resolved[global(A)] with [*.M = = resolved[global(B)]]
+type t = resolved[global(C)].N.t
+
+AFTER 
+===== 
+module type A = sig
+  module A.M : sig
+    module type A.M.S
+    end
+  module A.N : resolved[global(A.M).S]
+  end
+module B : sig
+  module type B.S = sig
+    type B.S.t
+    end
+  end
+module C : resolved[global(A)] with [.M = = resolved[global(B)]]
+type t = resolved[global(C).N.t]
+
+Module substitution2
+Ensure a destructive substitution is taken into account during resolution
+CODE
+====
+
+module type A = sig
+module M : sig module type S end
+module N : M.S
+end
+
+module B : sig module type S = sig type t end end
+
+module C : A with module M := B
+
+type t = C.N.t
+    
+BEFORE
+======
+module type A = sig
+  module A.M : sig
+    module type A.M.S
+    end
+  module A.N : resolved[global(A.M)].S
+  end
+module B : sig
+  module type B.S = sig
+    type B.S.t
+    end
+  end
+module C : resolved[global(A)] with [*.M := resolved[global(B)]]
+type t = resolved[global(C)].N.t
+
+AFTER 
+===== 
+module type A = sig
+  module A.M : sig
+    module type A.M.S
+    end
+  module A.N : resolved[global(A.M).S]
+  end
+module B : sig
+  module type B.S = sig
+    type B.S.t
+    end
+  end
+module C : resolved[global(A)] with [.M := resolved[global(B)]]
+type t = resolved[global(C).N.t]
+
+Module alias
+Resolve a module alias
+CODE
+====
+
+module A : sig
+    type t
+end
+module B = A
+type t = B.t
+
+BEFORE
+======
+module A : sig
+  type A.t
+  end
+module B = resolved[global(A)]
+type t = resolved[global(B)].t
+
+AFTER 
+===== 
+module A : sig
+  type A.t
+  end
+module B = resolved[global(A)]
+type t = resolved[(global(A) -> global(B)).t]
+
+Module alias
+Resolve a module alias
+CODE
+====
+
+module A : sig
+    type t
+end
+module B = A
+module C = B
+type t = C.t
+
+BEFORE
+======
+module A : sig
+  type A.t
+  end
+module B = resolved[global(A)]
+module C = resolved[global(B)]
+type t = resolved[global(C)].t
+
+AFTER 
+===== 
+module A : sig
+  type A.t
+  end
+module B = resolved[global(A)]
+module C = resolved[global(B)]
+type t = resolved[(global(A) -> global(C)).t]
+
+Functor
+Resolve a functor
+CODE
+====
+
+module type S = sig
+  type t
+end
+
+module F ( X : S ) ( Y : S ) : sig
+  type x_t = X.t
+  type y_t = Y.t
+  type f_t = x_t
+end
+
+BEFORE
+======
+module type S = sig
+  type S.t
+  end
+module F : ((param F X) : resolved[global(S)]) -> ((param F.result Y) : resolved[global(S)]) -> sig
+  type F.result.result.x_t = resolved[global((param F X))].t
+  type F.result.result.y_t = resolved[global((param F.result Y))].t
+  type F.result.result.f_t = resolved[global(F.result.result.x_t)]
+  end
+
+AFTER 
+===== 
+module type S = sig
+  type S.t
+  end
+module F : ((param F X) : resolved[global(S)]) -> ((param F.result Y) : resolved[global(S)]) -> sig
+  type F.result.result.x_t = resolved[global((param F X)).t]
+  type F.result.result.y_t = resolved[global((param F.result Y)).t]
+  type F.result.result.f_t = resolved[global(F.result.result.x_t)]
+  end
+
+Functor
+Resolve a functor
+CODE
+====
+
+module type S =
+sig
+  type t
+end
+
+module type S1 = functor (_ : S) -> S
+
+module F1 : functor (Arg : S) -> S
+
+module F2 : functor (Arg : S) -> (S with type t = Arg.t)
+
+module F3 : functor (Arg : S) ->
+sig
+  type t = Arg.t
+end
+
+module F4 (Arg : S) : S
+
+module F5 (Arg1 : S) (Arg2 : S) (Arg3 : S) : sig
+        type t = Arg1.t
+        type u = Arg2.t
+        type v = Arg3.t
+        type z = t
+end
+
+module F6 : S1
+
+module type F7 = functor (Arg : S) -> sig
+  type t = Arg.t
+  type u = t
+end
+BEFORE
+======
+module type S = sig
+  type S.t
+  end
+module type S1 = ((param S1 _) : resolved[global(S)]) -> resolved[global(S)]
+module F1 : ((param F1 Arg) : resolved[global(S)]) -> resolved[global(S)]
+module F2 : ((param F2 Arg) : resolved[global(S)]) -> resolved[global(S)] with [*.t = resolved[global((param F2 Arg))].t]
+module F3 : ((param F3 Arg) : resolved[global(S)]) -> sig
+  type F3.result.t = resolved[global((param F3 Arg))].t
+  end
+module F4 : ((param F4 Arg) : resolved[global(S)]) -> resolved[global(S)]
+module F5 : ((param F5 Arg1) : resolved[global(S)]) -> ((param F5.result Arg2) : resolved[global(S)]) -> ((param F5.result.result Arg3) : resolved[global(S)]) -> sig
+  type F5.result.result.result.t = resolved[global((param F5 Arg1))].t
+  type F5.result.result.result.u = resolved[global((param F5.result Arg2))].t
+  type F5.result.result.result.v = resolved[global((param F5.result.result Arg3))].t
+  type F5.result.result.result.z = resolved[global(F5.result.result.result.t)]
+  end
+module F6 : resolved[global(S1)]
+module type F7 = ((param F7 Arg) : resolved[global(S)]) -> sig
+  type F7.result.t = resolved[global((param F7 Arg))].t
+  type F7.result.u = resolved[global(F7.result.t)]
+  end
+
+AFTER 
+===== 
+module type S = sig
+  type S.t
+  end
+module type S1 = ((param S1 _) : resolved[global(S)]) -> resolved[global(S)]
+module F1 : ((param F1 Arg) : resolved[global(S)]) -> resolved[global(S)]
+module F2 : ((param F2 Arg) : resolved[global(S)]) -> resolved[global(S)] with [.t = resolved[global((param F2 Arg)).t]]
+module F3 : ((param F3 Arg) : resolved[global(S)]) -> sig
+  type F3.result.t = resolved[global((param F3 Arg)).t]
+  end
+module F4 : ((param F4 Arg) : resolved[global(S)]) -> resolved[global(S)]
+module F5 : ((param F5 Arg1) : resolved[global(S)]) -> ((param F5.result Arg2) : resolved[global(S)]) -> ((param F5.result.result Arg3) : resolved[global(S)]) -> sig
+  type F5.result.result.result.t = resolved[global((param F5 Arg1)).t]
+  type F5.result.result.result.u = resolved[global((param F5.result Arg2)).t]
+  type F5.result.result.result.v = resolved[global((param F5.result.result Arg3)).t]
+  type F5.result.result.result.z = resolved[global(F5.result.result.result.t)]
+  end
+module F6 : resolved[global(S1)]
+module type F7 = ((param F7 Arg) : resolved[global(S)]) -> sig
+  type F7.result.t = resolved[global((param F7 Arg)).t]
+  type F7.result.u = resolved[global(F7.result.t)]
+  end
+
+Functor
+Resolve a functor
+CODE
+====
+
+module type ARG = sig
+  module type S
+end
+
+module F : functor (X : ARG) -> sig
+  module N : X.S 
+end
+
+module M : sig
+  module type S = sig
+    type t
+  end
+end
+
+type t = F(M).N.t
+
+BEFORE
+======
+module type ARG = sig
+  module type ARG.S
+  end
+module F : ((param F X) : resolved[global(ARG)]) -> sig
+  module F.result.N : resolved[global((param F X))].S
+  end
+module M : sig
+  module type M.S = sig
+    type M.S.t
+    end
+  end
+type t = resolved[global(F)](resolved[global(M)]).N.t
+
+AFTER 
+===== 
+module type ARG = sig
+  module type ARG.S
+  end
+module F : ((param F X) : resolved[global(ARG)]) -> sig
+  module F.result.N : resolved[global((param F X)).S]
+  end
+module M : sig
+  module type M.S = sig
+    type M.S.t
+    end
+  end
+type t = resolved[(global(M).S subst-> global(F)(resolved[global(M)]).N).t]
+
+Functor app nightmare
+Horrible
+CODE
+====
+
+module type Type = sig module type T end
+module App : functor (T : Type) (F : Type -> Type) (M : F(T).T) -> F(T).T
+module Bar : sig module type T = sig type bar end end
+module Foo :
+  functor (T : Type) -> sig module type T = sig module Foo : T.T end end
+module FooBarInt : sig module Foo : sig type bar = int end end
+type t = App(Bar)(Foo)(FooBarInt).Foo.bar
+(* Note: I think correct result is:
+type t = resolved[(global(Bar).T subst-> global(App)(resolved[global(Bar)])(resolved[global(Foo)])(resolved[global(FooBarInt)]).Foo).bar]
+*)
+
+BEFORE
+======
+module type Type = sig
+  module type Type.T
+  end
+module App : ((param App T) : resolved[global(Type)]) -> ((param App.result F) : ((param (param App.result F) _) : resolved[global(Type)]) -> resolved[global(Type)]) -> ((param App.result.result M) : resolved[global((param App.result F))](resolved[global((param App T))]).T) -> resolved[global((param App.result F))](resolved[global((param App T))]).T
+module Bar : sig
+  module type Bar.T = sig
+    type Bar.T.bar
+    end
+  end
+module Foo : ((param Foo T) : resolved[global(Type)]) -> sig
+  module type Foo.result.T = sig
+    module Foo.result.T.Foo : resolved[global((param Foo T))].T
+    end
+  end
+module FooBarInt : sig
+  module FooBarInt.Foo : sig
+    type FooBarInt.Foo.bar = resolved[global(int)]
+    end
+  end
+type t = resolved[global(App)](resolved[global(Bar)])(resolved[global(Foo)])(resolved[global(FooBarInt)]).Foo.bar
+
+AFTER 
+===== 
+module type Type = sig
+  module type Type.T
+  end
+module App : ((param App T) : resolved[global(Type)]) -> ((param App.result F) : ((param (param App.result F) _) : resolved[global(Type)]) -> resolved[global(Type)]) -> ((param App.result.result M) : resolved[global((param App.result F))(resolved[global((param App T))]).T]) -> resolved[global((param App.result F))(resolved[global((param App T))]).T]
+module Bar : sig
+  module type Bar.T = sig
+    type Bar.T.bar
+    end
+  end
+module Foo : ((param Foo T) : resolved[global(Type)]) -> sig
+  module type Foo.result.T = sig
+    module Foo.result.T.Foo : resolved[global((param Foo T)).T]
+    end
+  end
+module FooBarInt : sig
+  module FooBarInt.Foo : sig
+    type FooBarInt.Foo.bar = resolved[global(int)]
+    end
+  end
+type t = resolved[(global(Bar).T subst-> (global(Foo)(resolved[global(Bar)]).T subst-> global(App)(resolved[global(Bar)])(resolved[global(Foo)])(resolved[global(FooBarInt)])).Foo).bar]
+

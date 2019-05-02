@@ -30,7 +30,6 @@ val read_module_type :
   Ident_env.t ->
   Paths.Identifier.Signature.t ->
   Paths.Identifier.LabelParent.t ->
-  int ->
   Typedtree.module_type ->
     Odoc_model.Lang.ModuleType.expr
 

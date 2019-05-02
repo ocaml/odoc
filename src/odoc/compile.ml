@@ -24,7 +24,6 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
   match read_file ~filename:filename with
   | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
   | Ok unit ->
-    let unit = Odoc_xref.Lookup.lookup unit in
     if not unit.Odoc_model.Lang.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
         (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
@@ -33,14 +32,16 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let resolve_env = Env.build env (`Unit unit) in
-    Odoc_xref.resolve (Env.resolver resolve_env) unit >>= fun resolved ->
+    let resolved = Odoc_xref2.Resolve.resolve resolve_env unit in
+    let expanded = Odoc_xref2.Expand.expand resolve_env resolved in
+
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
        Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
-    let expand_env = Env.build env (`Unit resolved) in
-    Odoc_xref.expand (Env.expander expand_env) resolved >>= fun expanded ->
+(*    let expand_env = Env.build env (`Unit resolved) in*)
+(*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
     Compilation_unit.save output expanded;
     Ok ()
 
@@ -94,9 +95,8 @@ let mld ~env ~package ~output ~warn_error input =
   let resolve content =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
-    let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
+    let resolved = Odoc_xref2.Resolve.resolve_page env page in
     Page.save output resolved;
     Ok ()
   in

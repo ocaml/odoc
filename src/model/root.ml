@@ -61,6 +61,7 @@ type t = {
   digest : Digest.t;
 }
 
+
 let equal : t -> t -> bool = (=)
 let hash : t -> int = Hashtbl.hash
 

@@ -63,7 +63,7 @@ end
 
 module ModuleName : Name
 
-module ArgumentName : Name
+module ParameterName : Name
 
 module ModuleTypeName : Name
 

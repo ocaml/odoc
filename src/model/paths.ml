@@ -21,7 +21,8 @@ module Reversed = struct
     | Root of UnitName.t
     | Module of ModuleName.t
     | ModuleType of ModuleTypeName.t
-    | Argument of int * ArgumentName.t
+    | Parameter of ParameterName.t
+    | Result
 
   type t = elt list
 
@@ -36,11 +37,12 @@ module Identifier = struct
 
   type t = Paths_types.Identifier.any
 
-  let name : [< t] -> string = function
+  let rec name_aux : t -> string = function
     | `Root(_, name) -> UnitName.to_string name
     | `Page(_, name) -> PageName.to_string name
     | `Module(_, name) -> ModuleName.to_string name
-    | `Argument(_, _, name) -> ArgumentName.to_string name
+    | `Parameter(_, name) -> ParameterName.to_string name
+    | `Result x -> name_aux (x :> t)
     | `ModuleType(_, name) -> ModuleTypeName.to_string name
     | `Type(_, name) -> TypeName.to_string name
     | `CoreType name -> TypeName.to_string name
@@ -56,6 +58,8 @@ module Identifier = struct
     | `InstanceVariable(_, name) -> InstanceVariableName.to_string name
     | `Label(_, name) -> LabelName.to_string name
 
+  let name : [< t] -> string = fun n -> name_aux (n :> t)
+
   let rec equal : t -> t -> bool =
     let open Paths_types.Identifier in
     fun p1 p2 ->
@@ -63,9 +67,9 @@ module Identifier = struct
       | `Root (r1, n1), `Root (r2, n2) ->
         UnitName.equal n1 n2 && Root.equal r1 r2
       | `Module (s1,n1), `Module (s2,n2) ->
-        ModuleName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
-      | `Argument (s1,i1,n1), `Argument (s2,i2,n2) ->
-        i1=i2 && ArgumentName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
+        ModuleName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any) 
+      | `Parameter (s1,n1), `Parameter (s2,n2) ->
+        ParameterName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
       | `ModuleType (s1,n1), `ModuleType (s2,n2) ->
         ModuleTypeName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
       | `Type (s1, n1), `Type (s2, n2) ->
@@ -107,8 +111,10 @@ module Identifier = struct
       Hashtbl.hash (2, Root.hash r, s)
     | `Module(id, s) ->
       Hashtbl.hash (3, hash (id : signature :> any), s)
-    | `Argument(id, n, s) ->
-      Hashtbl.hash (4, hash (id : signature :> any), n, s)
+    | `Parameter(id, s) ->
+      Hashtbl.hash (4, hash (id : signature :> any), s)
+    | `Result(s) ->
+      Hashtbl.hash (1001, hash (s : signature :> any))
     | `ModuleType(id, s) ->
       Hashtbl.hash (5, hash (id : signature :> any), s)
     | `Type(id, s) ->
@@ -151,7 +157,8 @@ module Identifier = struct
     let rec root = function
       | `Root(r, _) -> r
       | `Module(id, _)
-      | `Argument(id, _, _)
+      | `Parameter(id, _)
+      | `Result(id)
       | `ModuleType(id, _) -> root id
   end
 
@@ -205,7 +212,8 @@ module Identifier = struct
     let root : t -> Root.t = function
       | `Root(r, _) -> r
       | `Module(id, _)
-      | `Argument(id, _, _)
+      | `Parameter(id, _)
+      | `Result(id)
       | `ModuleType(id, _) -> Signature.root id
       | `Type(id,_) -> Signature.root id
       | `CoreType _ -> assert false
@@ -227,6 +235,8 @@ module Identifier = struct
     let root = function
       | `Root(r, _) -> r
       | `Module(id, _)
+      | `Parameter(id, _)
+      | `Result(id)
       | `Argument(id, _, _) -> Signature.root id
 
   end
@@ -432,7 +442,8 @@ module Identifier = struct
       | `Root (_, s) -> Reversed.Root s :: acc
       | `Module (i, s) -> loop (Reversed.Module s :: acc) i
       | `ModuleType (i, s) -> loop (Reversed.ModuleType s :: acc) i
-      | `Argument (i, d, s) -> loop (Reversed.Argument (d, s) :: acc) i
+      | `Parameter (i, s) -> loop (Reversed.Parameter s :: acc) i
+      | `Result i -> loop (Reversed.Result :: acc) i
     in
     loop [] i
 
@@ -529,6 +540,9 @@ module Path = struct
       | `Subst(sub1, p1), `Subst(sub2, p2) ->
         equal_resolved_path (p1 : module_ :> any) (p2 : module_ :> any)
         && equal_resolved_path (sub1 : module_type :> any) (sub2 : module_type :> any)
+      | `Alias(sub1, p1), `Alias(sub2, p2) ->
+        equal_resolved_path (p1 : module_ :> any) (p2 : module_ :> any)
+        && equal_resolved_path (sub1 : module_ :> any) (sub2 : module_ :> any)
       | `SubstAlias(sub1, p1), `SubstAlias(sub2, p2) ->
         equal_resolved_path (p1 : module_ :> any) (p2 : module_ :> any)
         && equal_resolved_path (sub1 : module_ :> any) (sub2 : module_ :> any)
@@ -593,6 +607,8 @@ module Path = struct
       Hashtbl.hash (27, hash_resolved_path (p : module_ :> any), s)
     | `ClassType(p, s) ->
       Hashtbl.hash (28, hash_resolved_path (p : module_ :> any), s)
+    | `Alias(m1, m2) ->
+      Hashtbl.hash (20, hash_resolved_path (m1 : module_ :> any), hash_resolved_path (m2 : module_ :> any))
 
   and hash_path : Paths_types.Path.any -> int =
     fun p ->
@@ -622,6 +638,7 @@ module Path = struct
     | `Type (p, _) -> is_resolved_hidden (p : module_ :> any)
     | `Class (p, _) -> is_resolved_hidden (p : module_ :> any)
     | `ClassType (p, _) -> is_resolved_hidden (p : module_ :> any)
+    | `Alias (p1, p2) -> is_resolved_hidden (p1 : module_ :> any) || is_resolved_hidden (p2 : module_ :> any)
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
@@ -650,6 +667,7 @@ module Path = struct
       | `Canonical(_, `Resolved p) -> parent_module_identifier p
       | `Canonical(p, _) -> parent_module_identifier p
       | `Apply(m, _) -> parent_module_identifier m
+      | `Alias(sub, _) -> parent_module_identifier sub
 
     let equal p1 p2 = equal_resolved_path p1 p2
 
@@ -699,6 +717,7 @@ module Path = struct
             Stop t
         end
       | `Apply _ -> Stop t
+      | `Alias _ -> failwith "Alias"
     (* TODO: rewrite which side? *)
 
     let rec equal_identifier :
@@ -738,6 +757,20 @@ module Path = struct
         | `Canonical(_, `Resolved p) -> identifier p
         | `Canonical(p, _) -> identifier p
         | `Apply(m, _) -> identifier m
+        | `Alias(_,p) -> identifier p
+
+      let rec canonical_ident = function
+        | `Identifier _id -> None
+        | `Subst(_,_) -> None
+        | `SubstAlias(_,_) -> None
+        | `Hidden p -> canonical_ident p
+        | `Module(p, n) -> begin
+            match canonical_ident p with | Some x -> Some (`Module((x :>Identifier.Signature.t), n)) | None -> None
+        end 
+        | `Canonical(_, `Resolved p) -> Some (identifier p)
+        | `Canonical(_, _) -> None
+        | `Apply(_,_) -> None
+        | `Alias(_,_) -> None
 
       let rebase : Reversed.t -> t -> t =
         fun new_base t ->
@@ -777,6 +810,7 @@ module Path = struct
             | Continue (id, _) -> `Apply (`Identifier id, arg)
             | Stop mp' -> `Apply (mp', arg)
           end
+        | `Alias _ -> failwith "Alias"
 
       let rebase id t =
         let rev = Identifier.to_reversed id in
@@ -963,6 +997,7 @@ module Path = struct
       | `ModuleType(m, n) -> `ModuleType(parent_module_identifier m, n)
       | `Class(m, n) -> `Class(parent_module_identifier m, n)
       | `ClassType(m, n) -> `ClassType(parent_module_identifier m, n)
+      | `Alias(_, p) -> identifier (p :> t)
 
   end
 
@@ -2662,14 +2697,6 @@ module Reference = struct
     let equal : t -> t -> bool = fun t1 t2 -> equal (t1 :> Paths_types.Reference.any) (t2 :> Paths_types.Reference.any)
     let hash : t -> int = fun t -> hash (t :> Paths_types.Reference.any)
   end
-
-  let module_of_t : t -> Module.t = function
-  | `Resolved (`Identifier (#Paths_types.Identifier.module_))
-  | `Resolved (#Paths_types.Resolved_reference.module_no_id)
-  | `Root (_,#Paths_types.Reference.tag_module)
-  | `Dot (_,_)
-  | `Module (_, _) as x -> x
-  | _ -> assert false
 
 let module_type_of_t : t -> ModuleType.t = function
   | `Resolved (`Identifier (#Paths_types.Identifier.module_type))

@@ -11,6 +11,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Identifier id -> Identifier.name id
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstAlias (_, p) -> render_resolved (p :> t)
+    | `Alias (_, p) -> render_resolved (p :> t)
     | `Hidden p -> render_resolved (p :> t)
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)
     | `Canonical (_, `Resolved p) -> render_resolved (p :> t)
@@ -84,11 +85,19 @@ module Path = struct
       let kind = "module" in
       let page = ModuleName.to_string mod_name in
       mk ~parent kind page
-    | `Argument (functor_id, arg_num, arg_name) ->
+    | `Parameter (functor_id, arg_name) ->
       let parent = from_identifier (functor_id :> source) in
       let kind = "argument" in
+      let rec argument_number i =
+        function
+        | `Result x -> argument_number (i+1) x
+        | `Module _ -> i
+        | `ModuleType _ -> i
+        | _ -> failwith "Invalid assumptions!"
+      in
+      let arg_num = argument_number 1 functor_id in
       let page =
-        Printf.sprintf "%d-%s" arg_num (ArgumentName.to_string arg_name)
+        Printf.sprintf "%d-%s" arg_num (ParameterName.to_string arg_name)
       in
       mk ~parent kind page
     | `ModuleType (parent, modt_name) ->
@@ -106,6 +115,7 @@ module Path = struct
       let kind = "class-type" in
       let page = ClassTypeName.to_string name in
       mk ~parent kind page
+    | `Result p -> from_identifier (p :> source)
 
   let from_identifier p = from_identifier (p : [< source] :> source)
 
@@ -145,7 +155,8 @@ module Anchor = struct
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page ; kind = "page" ; anchor = "" }
       (* For all these identifiers, page names and anchors are the same *)
-      | `Argument _
+      | `Parameter _
+      | `Result _
       | `ModuleType _
       | `Class _
       | `ClassType _ as p ->

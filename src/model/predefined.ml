@@ -697,7 +697,7 @@ let undefined_recursive_module_decl =
 let core_types =
   [int_decl; char_decl; bytes_decl; string_decl; float_decl; bool_decl;
    unit_decl; exn_decl; array_decl; list_decl; option_decl; int32_decl;
-   int64_decl; nativeint_decl; lazy_t_decl; floatarray_decl]
+   int64_decl; nativeint_decl; lazy_t_decl; extension_constructor_decl; floatarray_decl]
 
 let core_exceptions =
   [match_failure_decl; assert_failure_decl; invalid_argument_decl;

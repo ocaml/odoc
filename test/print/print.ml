@@ -35,9 +35,12 @@ struct
         List ((List [Atom "root"; Root_to_sexp.root root; Atom (PageName.to_string s)])::acc)
       | `Module (parent, s) ->
         traverse ((List [Atom "module"; Atom (ModuleName.to_string s)])::acc) (parent :> Identifier.t)
-      | `Argument (parent, i, s) ->
+      | `Parameter (parent, s) ->
         traverse
-          ((List [Atom "argument"; Atom (string_of_int i); Atom (ArgumentName.to_string s)])::acc) (parent :> Identifier.t)
+          ((List [Atom "parameter"; Atom (ParameterName.to_string s)])::acc) (parent :> Identifier.t)
+      | `Result parent ->
+        traverse
+          ((List [Atom "parent"])::acc) (parent :> Identifier.t)
       | `ModuleType (parent, s) ->
         traverse ((List [Atom "module_type"; Atom (ModuleTypeName.to_string s)])::acc) (parent :> Identifier.t)
       | `Type (parent, s) ->
@@ -113,6 +116,8 @@ struct
       List [Atom "class"; Atom (ClassName.to_string s); resolved (m :> Resolved.t)]
     |`ClassType (m, s) ->
       List [Atom "class_type"; Atom (ClassTypeName.to_string s); resolved (m :> Resolved.t)]
+    |`Alias (m, m') ->
+      List [Atom "alias"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
 end
 
 
