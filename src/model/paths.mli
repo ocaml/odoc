@@ -998,6 +998,7 @@ module rec Reference : sig
 
     val label_of_t : t -> Label.t
 
+    (** Returns the string representation of a reference and it's kind *)
     val deconstruct : t -> string * Paths_types.Reference.tag_any
 
     val hash : t -> int
