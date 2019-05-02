@@ -801,6 +801,8 @@ module rec Reference : sig
     val label_of_t : t -> Label.t
 
     val identifier : t -> Identifier.t
+
+    val deconstruct : t -> string * Paths_types.Reference.tag_any
   end
 
 
@@ -995,6 +997,8 @@ module rec Reference : sig
     val instance_variable_of_t : t -> InstanceVariable.t
 
     val label_of_t : t -> Label.t
+
+    val deconstruct : t -> string * Paths_types.Reference.tag_any
 
     val hash : t -> int
 

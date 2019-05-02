@@ -2523,6 +2523,41 @@ module Reference = struct
       | #Paths_types.Resolved_reference.s_label as x -> x
       | _ -> assert false
 
+    let rec deconstruct_ acc : t -> _ =
+      let dot t s =
+        let ds, _ = deconstruct_ (s :: acc) t in
+        ds
+      in
+      function
+      | `Identifier id -> Identifier.name id :: acc, `TUnknown
+      | `SubstAlias (_, r) -> deconstruct_ acc (r :> t)
+      | `Module (r, s) -> dot (r :> t) (ModuleName.to_string s), `TModule
+      | `Canonical (_, `Resolved r) -> deconstruct_ acc (r :> t)
+      | `Canonical (p, _) -> deconstruct_ acc (p :> t)
+      | `ModuleType (r, s) -> dot (r :> t) (ModuleTypeName.to_string s), `TModuleType
+      | `Type (r, s) -> dot (r :> t) (TypeName.to_string s), `TType
+      | `Constructor (r, s) -> dot (r :> t) (ConstructorName.to_string s), `TConstructor
+      | `Field (r, s) -> dot (r :> t) (FieldName.to_string s), `TField
+      | `Extension (r, s) -> dot (r :> t) (ExtensionName.to_string s), `TExtension
+      | `Exception (r, s) -> dot (r :> t) (ExceptionName.to_string s), `TException
+      | `Value (r, s) -> dot (r :> t) (ValueName.to_string s), `TValue
+      | `Class (r, s) -> dot (r :> t) (ClassName.to_string s), `TClass
+      | `ClassType (r, s) -> dot (r :> t) (ClassTypeName.to_string s), `TClassType
+      | `Method (r, s) -> dot (r :> t) (MethodName.to_string s), `TMethod
+      | `InstanceVariable (r, s) -> dot (r :> t) (InstanceVariableName.to_string s), `TInstanceVariable
+      | `Label _ -> assert false
+
+    let deconstruct =
+      let deconstruct t =
+        let ds, dt = deconstruct_ [] t in
+        String.concat "." ds, dt
+      in
+      function
+      | `Label (r, s) ->
+        let ds, dt = deconstruct (r :> t) in
+        ds ^ (":" ^ LabelName.to_string s), dt
+      | t -> deconstruct (t :> t)
+
   end
   type t = Paths_types.Reference.any
 
@@ -2820,4 +2855,32 @@ let label_of_t : t -> Label.t = function
   | `Dot (_,_)
   | `Label (_,_) as x -> x 
   | _ -> assert false
+
+let rec deconstruct_ acc : t -> _ =
+  let dot t s =
+    let ds, _ = deconstruct_ (s :: acc) t in
+    ds
+  in
+  function
+  | `Root (s, kind) -> UnitName.to_string s :: acc, kind
+  | `Dot (p, s) -> dot (p :> t) s, `TUnknown
+  | `Module (p, s) -> dot (p :> t) (ModuleName.to_string s), `TModule
+  | `ModuleType (p, s) -> dot (p :> t) (ModuleTypeName.to_string s), `TModuleType
+  | `Type (p, s) -> dot (p :> t) (TypeName.to_string s), `TType
+  | `Constructor (p, s) -> dot (p :> t) (ConstructorName.to_string s), `TConstructor
+  | `Field (p, s) -> dot (p :> t) (FieldName.to_string s), `TField
+  | `Extension (p, s) -> dot (p :> t) (ExtensionName.to_string s), `TExtension
+  | `Exception (p, s) -> dot (p :> t) (ExceptionName.to_string s), `TException
+  | `Value (p, s) -> dot (p :> t) (ValueName.to_string s), `TValue
+  | `Class (p, s) -> dot (p :> t) (ClassName.to_string s), `TClass
+  | `ClassType (p, s) -> dot (p :> t) (ClassTypeName.to_string s), `TClassType
+  | `Method (p, s) -> dot (p :> t) (MethodName.to_string s), `TMethod
+  | `InstanceVariable (p, s) -> dot (p :> t) (InstanceVariableName.to_string s), `TInstanceVariable
+  | `Label (p, s) -> dot (p :> t) (LabelName.to_string s), `TLabel
+  | `Resolved r -> Resolved.deconstruct_ acc r
+
+let deconstruct t =
+  let ds, dt = deconstruct_ [] t in
+  String.concat "." ds, dt
+
 end
