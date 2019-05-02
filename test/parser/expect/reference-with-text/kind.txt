@@ -2,5 +2,6 @@
   (((f.ml (1 0) (1 16))
     (paragraph
      (((f.ml (1 0) (1 16))
-       (reference (root foo value) (((f.ml (1 12) (1 15)) (word bar))))))))))
+       (reference ((root foo value) (foo value))
+        (((f.ml (1 12) (1 15)) (word bar))))))))))
  (warnings ()))

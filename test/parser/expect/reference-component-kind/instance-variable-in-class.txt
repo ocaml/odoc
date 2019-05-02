@@ -2,5 +2,8 @@
   (((f.ml (1 0) (1 34))
     (paragraph
      (((f.ml (1 0) (1 34))
-       (reference (instance_variable bar (root foo class)) ())))))))
+       (reference
+        ((instance_variable bar (root foo class))
+         (foo.bar instance_variable))
+        ())))))))
  (warnings ()))

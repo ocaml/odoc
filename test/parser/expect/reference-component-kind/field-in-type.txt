@@ -1,5 +1,6 @@
 ((output
   (((f.ml (1 0) (1 21))
     (paragraph
-     (((f.ml (1 0) (1 21)) (reference (field bar (root foo type)) ())))))))
+     (((f.ml (1 0) (1 21))
+       (reference ((field bar (root foo type)) (foo.bar field)) ())))))))
  (warnings ()))

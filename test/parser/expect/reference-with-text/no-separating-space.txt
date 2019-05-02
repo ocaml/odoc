@@ -2,5 +2,6 @@
   (((f.ml (1 0) (1 11))
     (paragraph
      (((f.ml (1 0) (1 11))
-       (reference (root foo unknown) (((f.ml (1 7) (1 10)) (word bar))))))))))
+       (reference ((root foo unknown) (foo unknown))
+        (((f.ml (1 7) (1 10)) (word bar))))))))))
  (warnings ()))

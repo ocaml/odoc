@@ -1,5 +1,6 @@
 ((output
   (((f.ml (1 0) (1 16))
     (paragraph
-     (((f.ml (1 0) (1 16)) (reference (dot bar (root foo class)) ())))))))
+     (((f.ml (1 0) (1 16))
+       (reference ((dot bar (root foo class)) (foo.bar unknown)) ())))))))
  (warnings ()))

@@ -2,5 +2,7 @@
   (((f.ml (1 0) (1 27))
     (paragraph
      (((f.ml (1 0) (1 27))
-       (reference (method baz (class bar (root Foo unknown))) ())))))))
+       (reference
+        ((method baz (class bar (root Foo unknown))) (Foo.bar.baz method))
+        ())))))))
  (warnings ()))

@@ -2,5 +2,7 @@
   (((f.ml (1 0) (1 25))
     (paragraph
      (((f.ml (1 0) (1 25))
-       (reference (dot baz (class_type bar (root foo unknown))) ())))))))
+       (reference
+        ((dot baz (class_type bar (root foo unknown))) (foo.bar.baz unknown))
+        ())))))))
  (warnings ()))

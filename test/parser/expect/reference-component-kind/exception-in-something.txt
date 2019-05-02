@@ -1,5 +1,7 @@
 ((output
   (((f.ml (1 0) (1 20))
     (paragraph
-     (((f.ml (1 0) (1 20)) (reference (exception Bar (root Foo unknown)) ())))))))
+     (((f.ml (1 0) (1 20))
+       (reference ((exception Bar (root Foo unknown)) (Foo.Bar exception))
+        ())))))))
  (warnings ()))

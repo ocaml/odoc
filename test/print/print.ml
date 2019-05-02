@@ -206,6 +206,10 @@ struct
       List [Atom "instance_variable"; Atom (InstanceVariableName.to_string s); resolved (parent :> Resolved.t)]
     | `Label (parent, s) ->
       List [Atom "label"; Atom (LabelName.to_string s); resolved (parent :> Resolved.t)]
+
+  let reference t =
+    let ds, dt = Reference.deconstruct t in
+    List [reference t; List [Atom ds; tag dt]]
 end
 
 

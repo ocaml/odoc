@@ -2,5 +2,6 @@
   (((f.ml (1 0) (1 21))
     (paragraph
      (((f.ml (1 0) (1 21))
-       (reference (module Baz (dot Bar (root Foo unknown))) ())))))))
+       (reference
+        ((module Baz (dot Bar (root Foo unknown))) (Foo.Bar.Baz module)) ())))))))
  (warnings ()))

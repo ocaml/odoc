@@ -1,5 +1,7 @@
 ((output
   (((f.ml (1 0) (1 27))
     (paragraph
-     (((f.ml (1 0) (1 27)) (reference (constructor Bar (root foo type)) ())))))))
+     (((f.ml (1 0) (1 27))
+       (reference ((constructor Bar (root foo type)) (foo.Bar constructor))
+        ())))))))
  (warnings ()))

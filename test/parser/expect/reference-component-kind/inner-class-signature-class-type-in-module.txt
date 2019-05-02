@@ -2,5 +2,8 @@
   (((f.ml (1 0) (1 39))
     (paragraph
      (((f.ml (1 0) (1 39))
-       (reference (method baz (class_type bar (root Foo module))) ())))))))
+       (reference
+        ((method baz (class_type bar (root Foo module)))
+         (Foo.bar.baz method))
+        ())))))))
  (warnings ()))
