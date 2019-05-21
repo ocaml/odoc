@@ -1,8 +1,8 @@
-open Compat
+open Odoc_compat
 
-module Location = Model.Location_
-module Error = Model.Error
-module Comment = Model.Comment
+module Location = Odoc_model.Location_
+module Error = Odoc_model.Error
+module Comment = Odoc_model.Comment
 
 type 'a with_location = 'a Location.with_location
 
@@ -11,7 +11,7 @@ type 'a with_location = 'a Location.with_location
 type status = {
   warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
-  parent_of_sections : Model.Paths.Identifier.LabelParent.t;
+  parent_of_sections : Odoc_model.Paths.Identifier.LabelParent.t;
 }
 
 
@@ -206,7 +206,7 @@ let section_heading
     | Some label -> label
     | None -> generate_heading_label content
   in
-  let label = `Label (status.parent_of_sections, Model.Names.LabelName.of_string label) in
+  let label = `Label (status.parent_of_sections, Odoc_model.Names.LabelName.of_string label) in
 
   match status.sections_allowed, level with
   | `None, _any_level ->
@@ -269,7 +269,7 @@ let validate_first_page_heading status ast_element =
     begin match ast_element with
       | {Location.value = `Heading (_, _, _); _} -> ()
       | _invalid_ast_element ->
-        let filename = Model.Root.Odoc_file.name file ^ ".mld" in
+        let filename = Odoc_model.Root.Odoc_file.name file ^ ".mld" in
         Error.warning status.warnings
           (Parse_error.page_heading_required filename)
     end

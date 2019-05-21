@@ -1,6 +1,6 @@
-module Error = Model.Error
-module Location_ = Model.Location_
-module Paths = Model.Paths
+module Error = Odoc_model.Error
+module Location_ = Odoc_model.Location_
+module Paths = Odoc_model.Paths
 
 let deprecated_reference_kind warnings location kind replacement =
   Parse_error.deprecated_reference_kind kind replacement location
@@ -8,7 +8,7 @@ let deprecated_reference_kind warnings location kind replacement =
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
 let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s
-    : (Model.Paths_types.Reference.tag_any) option =
+    : (Odoc_model.Paths_types.Reference.tag_any) option =
   let d = deprecated_reference_kind in
   match s with
   | Some "module" -> Some `TModule
@@ -26,7 +26,7 @@ let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s
   | _ -> None
 
 let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
-    : (Model.Paths_types.Reference.tag_any) option =
+    : (Odoc_model.Paths_types.Reference.tag_any) option =
   let d = deprecated_reference_kind in
   match s with
   | Some "class-type" -> Some `TClassType
@@ -52,7 +52,7 @@ let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
 
    A secondary reason to delay parsing, and store strings in the token list, is
    that we need the strings for user-friendly error reporting. *)
-let match_reference_kind warnings location s : Model.Paths_types.Reference.tag_any =
+let match_reference_kind warnings location s : Odoc_model.Paths_types.Reference.tag_any =
   match s with
   | None -> `TUnknown
   | Some s as wrapped ->
@@ -151,7 +151,7 @@ let expected allowed location =
 
 let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Result.result =
   let open Paths.Reference in
-  let open Model.Names in
+  let open Odoc_model.Names in
 
   let rec signature (kind, identifier, location) tokens : Signature.t =
     let kind = match_reference_kind warnings location kind in

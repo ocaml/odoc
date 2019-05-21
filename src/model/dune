@@ -20,7 +20,7 @@ let () =
   (action (chdir %{workspace_root} (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
 
 (library
- (name odoc__model)
+ (name odoc_model)
  (public_name odoc.model)
     |} ^ preprocess ^ {|
  (libraries result compiler-libs.common))

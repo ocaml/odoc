@@ -21,10 +21,10 @@ open Result
 let resolve_and_substitute ~env ~output input_file read_file =
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
-  | Error e -> failwith (Model.Error.to_string e)
+  | Error e -> failwith (Odoc_model.Error.to_string e)
   | Ok unit ->
-    let unit = Xref.Lookup.lookup unit in
-    if not unit.Model.Lang.Compilation_unit.interface then (
+    let unit = Odoc_xref.Lookup.lookup unit in
+    if not unit.Odoc_model.Lang.Compilation_unit.interface then (
       Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
         (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
          else
@@ -32,34 +32,34 @@ let resolve_and_substitute ~env ~output input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let resolve_env = Env.build env (`Unit unit) in
-    let resolved = Xref.resolve (Env.resolver resolve_env) unit in
+    let resolved = Odoc_xref.resolve (Env.resolver resolve_env) unit in
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
        Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
-    let expanded = Xref.expand (Env.expander expand_env) resolved in
+    let expanded = Odoc_xref.expand (Env.expander expand_env) resolved in
     Compilation_unit.save output expanded
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
-  let file_representation : Model.Root.Odoc_file.t =
-    Model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  {Model.Root.package; file = file_representation; digest}
+  let file_representation : Odoc_model.Root.Odoc_file.t =
+    Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
+  {Odoc_model.Root.package; file = file_representation; digest}
 
 let cmti ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Loader.read_cmti ~make_root in
+  let read_file = Odoc_loader.read_cmti ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmt ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Loader.read_cmt ~make_root in
+  let read_file = Odoc_loader.read_cmt ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 let cmi ~env ~package ~hidden ~output input =
   let make_root = root_of_compilation_unit ~package ~hidden in
-  let read_file = Loader.read_cmi ~make_root in
+  let read_file = Odoc_loader.read_cmi ~make_root in
   resolve_and_substitute ~env ~output input read_file
 
 (* TODO: move most of this to doc-ock. *)
@@ -73,10 +73,10 @@ let mld ~env ~package ~output input =
   in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
-    let file = Model.Root.Odoc_file.create_page root_name in
-    {Model.Root.package; file; digest}
+    let file = Odoc_model.Root.Odoc_file.create_page root_name in
+    {Odoc_model.Root.package; file; digest}
   in
-  let name = `Page (root, Model.Names.PageName.of_string root_name) in
+  let name = `Page (root, Odoc_model.Names.PageName.of_string root_name) in
   let location =
     let pos =
       Lexing.{
@@ -94,14 +94,14 @@ let mld ~env ~package ~output input =
     exit 1
   | Ok str ->
     let content =
-      match Loader.read_string name location str with
-      | Error e -> failwith (Model.Error.to_string e)
+      match Odoc_loader.read_string name location str with
+      | Error e -> failwith (Odoc_model.Error.to_string e)
       | Ok (`Docs content) -> content
       | Ok `Stop -> [] (* TODO: Error? *)
     in
     (* This is a mess. *)
-    let page = Model.Lang.Page.{ name; content; digest } in
-    let page = Xref.Lookup.lookup_page page in
+    let page = Odoc_model.Lang.Page.{ name; content; digest } in
+    let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Xref.resolve_page (Env.resolver env) page in
+    let resolved = Odoc_xref.resolve_page (Env.resolver env) page in
     Page.save output resolved

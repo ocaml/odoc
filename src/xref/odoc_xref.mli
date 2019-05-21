@@ -20,7 +20,7 @@
 
 type resolver
 
-type lookup_result_found = { root : Model.Root.t; hidden : bool }
+type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
 
 type lookup_result =
   | Forward_reference
@@ -29,16 +29,16 @@ type lookup_result =
 
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
 val build_resolver :
-  ?equal:(Model.Root.t -> Model.Root.t -> bool) -> ?hash:(Model.Root.t -> int)
+  ?equal:(Odoc_model.Root.t -> Odoc_model.Root.t -> bool) -> ?hash:(Odoc_model.Root.t -> int)
   -> (string -> lookup_result)
-  -> (Model.Root.t -> Model.Lang.Compilation_unit.t)
-  -> (string -> Model.Root.t option) -> (Model.Root.t -> Model.Lang.Page.t)
+  -> (Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t)
+  -> (string -> Odoc_model.Root.t option) -> (Odoc_model.Root.t -> Odoc_model.Lang.Page.t)
   -> resolver
 
 val resolve :
-  resolver -> Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
+  resolver -> Odoc_model.Lang.Compilation_unit.t -> Odoc_model.Lang.Compilation_unit.t
 
-val resolve_page : resolver -> Model.Lang.Page.t -> Model.Lang.Page.t
+val resolve_page : resolver -> Odoc_model.Lang.Page.t -> Odoc_model.Lang.Page.t
 
 (** {2:expansion Expansion}
 
@@ -50,20 +50,20 @@ type expander
 (** Build an expander. Assumes that it is safe to use {!Hashtbl.hash} and
     structural equality (=) on ['a]. *)
 val build_expander :
-  ?equal:(Model.Root.t -> Model.Root.t -> bool) -> ?hash:(Model.Root.t -> int)
+  ?equal:(Odoc_model.Root.t -> Odoc_model.Root.t -> bool) -> ?hash:(Odoc_model.Root.t -> int)
   -> (string -> lookup_result)
-  -> (root:Model.Root.t -> Model.Root.t -> Model.Lang.Compilation_unit.t)
+  -> (root:Odoc_model.Root.t -> Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t)
   -> expander
 
 val expand :
-  expander -> Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
+  expander -> Odoc_model.Lang.Compilation_unit.t -> Odoc_model.Lang.Compilation_unit.t
 
 (** {2 Misc.}
 
     OCaml's predefined types and exceptions. *)
 
-val core_types : Model.Lang.TypeDecl.t list
+val core_types : Odoc_model.Lang.TypeDecl.t list
 
-val core_exceptions : Model.Lang.Exception.t list
+val core_exceptions : Odoc_model.Lang.Exception.t list
 
 module Lookup = Lookup

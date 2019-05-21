@@ -18,7 +18,7 @@ open StdLabels
 
 let of_odoc_file ~env ~output:root_dir input =
   let root = Root.read input in
-  match root.Model.Root.file with
+  match root.Odoc_model.Root.file with
   | Page page_name ->
       let pkg_dir = Fs.Directory.of_string root.package in
       let directory = Fs.Directory.append root_dir pkg_dir in
@@ -27,11 +27,11 @@ let of_odoc_file ~env ~output:root_dir input =
   | Compilation_unit _ ->
       let unit = Compilation_unit.load input in
       let env = Env.build env (`Unit unit) in
-      let odoctree = Xref.resolve (Env.resolver env) unit in
-      let odoctree = Xref.expand (Env.expander env) odoctree in
+      let odoctree = Odoc_xref.resolve (Env.resolver env) unit in
+      let odoctree = Odoc_xref.expand (Env.expander env) odoctree in
       let root = Compilation_unit.root odoctree in
       let package = root.package in
-      let targets = Html.Targets.unit ~package odoctree in
+      let targets = Odoc_html.Targets.unit ~package odoctree in
       (* CR-someday trefis: have [List_targets] return a tree instead of
          postprocessing. *)
       List.map targets ~f:(fun path ->

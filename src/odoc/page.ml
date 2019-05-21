@@ -16,10 +16,10 @@
 
 
 
-type t = Model.Lang.Page.t
+type t = Odoc_model.Lang.Page.t
 
-let root (t : Model.Lang.Page.t) =
-  match t.Model.Lang.Page.name with
+let root (t : Odoc_model.Lang.Page.t) =
+  match t.Odoc_model.Lang.Page.name with
   | `Page (root, _) -> root
 
 let save file t =

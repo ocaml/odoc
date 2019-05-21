@@ -14,4 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val unit : package:string -> Model.Lang.Compilation_unit.t -> string list
+val unit : package:string -> Odoc_model.Lang.Compilation_unit.t -> string list

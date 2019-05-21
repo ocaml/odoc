@@ -14,11 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
-open Model.Lang
+open Odoc_model.Lang
 open Components
-open Model.Names
+open Odoc_model.Names
 
 type ('a, 'b) tbl =
   { fresh: int -> ('a, 'b) tbl;
@@ -58,7 +58,7 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
         let module Tbl = Hashtbl.Make(Hash) in
           make Tbl.create Tbl.find Tbl.add
 
-type lookup_result_found = { root : Model.Root.t; hidden : bool }
+type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
 
 type lookup_unit_result =
   | Forward_reference
@@ -71,7 +71,7 @@ type t =
     lookup_unit : string -> lookup_unit_result;
     lookup_page : string -> Root.t option;
     fetch_unit : Root.t -> Compilation_unit.t;
-    fetch_page : Root.t -> Model.Lang.Page.t;
+    fetch_page : Root.t -> Odoc_model.Lang.Page.t;
     tbl : (Root.t, Sig.t) tbl;
     page_tbl: (Root.t, Page.t) tbl; }
 
@@ -254,7 +254,7 @@ let page tbl base =
     tbl.page_tbl.find base
   with Not_found ->
     let page = tbl.fetch_page base in
-    let t = Page.of_doc page.Model.Lang.Page.content in
+    let t = Page.of_doc page.Odoc_model.Lang.Page.content in
     tbl.page_tbl.add base t;
     t
 

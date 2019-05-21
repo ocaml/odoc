@@ -55,8 +55,8 @@ type t = [
      bullets. *)
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Model.Comment.raw_markup_target * string
-  | `Begin_style of Model.Comment.style
+  | `Raw_markup of Odoc_model.Comment.raw_markup_target * string
+  | `Begin_style of Odoc_model.Comment.style
 
   (* Other inline element markup. *)
   | `Simple_reference of string

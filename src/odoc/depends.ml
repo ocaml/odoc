@@ -47,31 +47,31 @@ module Hash_set : sig
 
   val create : unit -> t
 
-  val add : t -> Model.Root.t -> unit
+  val add : t -> Odoc_model.Root.t -> unit
 
-  val elements : t -> Model.Root.t list
+  val elements : t -> Odoc_model.Root.t list
 end = struct
-  type t = unit Model.Root.Hash_table.t
+  type t = unit Odoc_model.Root.Hash_table.t
 
   let add t elt =
-    if Model.Root.Hash_table.mem t elt then
+    if Odoc_model.Root.Hash_table.mem t elt then
       ()
     else
-      Model.Root.Hash_table.add t elt ()
+      Odoc_model.Root.Hash_table.add t elt ()
 
-  let create () = Model.Root.Hash_table.create 42
+  let create () = Odoc_model.Root.Hash_table.create 42
 
-  let elements t = Model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
+  let elements t = Odoc_model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
 end
 
 let deps_of_odoc_file ~deps input = match (Root.read input).file with
 | Page _ -> () (* XXX something should certainly be done here *)
 | Compilation_unit _ ->
     let odoctree = Compilation_unit.load input in
-    List.iter odoctree.Model.Lang.Compilation_unit.imports ~f:(fun import ->
+    List.iter odoctree.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
         match import with
-        | Model.Lang.Compilation_unit.Import.Unresolved _  -> ()
-        | Model.Lang.Compilation_unit.Import.Resolved root ->
+        | Odoc_model.Lang.Compilation_unit.Import.Unresolved _  -> ()
+        | Odoc_model.Lang.Compilation_unit.Import.Resolved root ->
             Hash_set.add deps root
       )
 

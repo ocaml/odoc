@@ -16,13 +16,13 @@
 
 
 
-val load : string -> in_channel -> Model.Root.t
+val load : string -> in_channel -> Odoc_model.Root.t
 (** [load fn ic] reads a {!t} from [ic].
     [fn] is the name of the file [ic] is "watching", and is used for error
     reporting. *)
 
-val read : Fs.File.t -> Model.Root.t
+val read : Fs.File.t -> Odoc_model.Root.t
 (** [read f] opens [f] for reading and then calls {!load}. *)
 
-val save : out_channel -> Model.Root.t -> unit
+val save : out_channel -> Odoc_model.Root.t -> unit
 (** [save oc t] marshalls [t] to [oc]. *)

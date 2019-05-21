@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
 
 (** {3 Tables} *)
@@ -22,7 +22,7 @@ open Paths
 (** The type of tables of components *)
 type t
 
-type lookup_result_found = { root : Model.Root.t; hidden : bool }
+type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
 
 (* FIXME: use different types for unit and page lookups. *)
 type lookup_unit_result =

@@ -17,9 +17,9 @@
 
 
 module Html = Tyxml.Html
-module Paths = Model.Paths
+module Paths = Odoc_model.Paths
 
-open Model.Names
+open Odoc_model.Names
 
 type syntax = OCaml | Reason
 
@@ -60,7 +60,7 @@ let stack_elt_to_path_fragment = function
   | (name, Some `Cty) -> "class-type-" ^ name
 
 module Relative_link = struct
-  open Model.Paths
+  open Odoc_model.Paths
 
   let semantic_uris = ref false
 

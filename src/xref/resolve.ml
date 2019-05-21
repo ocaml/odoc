@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Names
 open Paths
 open Components
@@ -2062,7 +2062,7 @@ let splice_section_title tbl path elements =
       | _ -> None
   in
   let find_section_title :
-    Reference.Resolved.Label.t -> Model.Comment.link_content option =
+    Reference.Resolved.Label.t -> Odoc_model.Comment.link_content option =
     function
     | `Identifier `Label (parent, str) ->
       let parent_ref = `Identifier parent in

@@ -14,5 +14,5 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val lookup : Model.Lang.Compilation_unit.t -> Model.Lang.Compilation_unit.t
-val lookup_page : Model.Lang.Page.t -> Model.Lang.Page.t
+val lookup : Odoc_model.Lang.Compilation_unit.t -> Odoc_model.Lang.Compilation_unit.t
+val lookup_page : Odoc_model.Lang.Page.t -> Odoc_model.Lang.Page.t

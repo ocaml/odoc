@@ -20,10 +20,10 @@ open Typedtree
 
 module OCamlPath = Path
 
-open Model.Paths
-open Model.Lang
+open Odoc_model.Paths
+open Odoc_model.Lang
 
-module Env = Model.Ident_env
+module Env = Odoc_model.Ident_env
 
 let parenthesise name =
   match name with
@@ -41,7 +41,7 @@ let read_core_type env ctyp =
   Cmi.read_type_expr env ctyp.ctyp_type
 
 let rec read_pattern env parent doc pat =
-  let open Model.Names in
+  let open Odoc_model.Names in
   let open Signature in
     match pat.pat_desc with
     | Tpat_any -> []
@@ -134,7 +134,7 @@ let read_type_extension env parent tyext =
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
-  let open Model.Names in
+  let open Odoc_model.Names in
 
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container ctf.ctf_attributes in
@@ -217,7 +217,7 @@ let rec read_class_type env parent params cty =
 
 let rec read_class_field env parent cf =
   let open ClassSignature in
-  let open Model.Names in
+  let open Odoc_model.Names in
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container (cf.cf_attributes) in
   match cf.cf_desc with
@@ -320,7 +320,7 @@ let rec read_class_expr env parent params cl =
 
 let read_class_declaration env parent cld =
   let open Class in
-  let open Model.Names in
+  let open Odoc_model.Names in
   let name = parenthesise (Ident.name cld.ci_id_class) in
   let id = `Class(parent, ClassName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -352,10 +352,10 @@ let read_class_declarations env parent clds =
 
 let rec read_module_expr env parent label_parent pos mexpr =
   let open ModuleType in
-  let open Model.Names in
+  let open Odoc_model.Names in
     match mexpr.mod_desc with
     | Tmod_ident _ ->
-        Cmi.read_module_type env parent pos (Model.Compat.module_type mexpr.mod_type)
+        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_structure str -> Signature (read_structure env parent str)
     | Tmod_functor(id, _, arg, res) ->
         let arg =
@@ -376,13 +376,13 @@ let rec read_module_expr env parent label_parent pos mexpr =
       let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmod_apply _ ->
-        Cmi.read_module_type env parent pos (Model.Compat.module_type mexpr.mod_type)
+        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
         Cmti.read_module_type env parent label_parent pos mty
     | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
         read_module_expr env parent label_parent pos mexpr
     | Tmod_unpack(_, mty) ->
-        Cmi.read_module_type env parent pos (Model.Compat.module_type mty)
+        Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mty)
 
 and unwrap_module_expr_desc = function
   | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
@@ -391,13 +391,13 @@ and unwrap_module_expr_desc = function
 
 and read_module_binding env parent mb =
   let open Module in
-  let open Model.Names in
+  let open Odoc_model.Names in
   let name = parenthesise (Ident.name mb.mb_id) in
   let id = `Module(parent, ModuleName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
-    let doc = List.map Model.Location_.value doc in
+    let doc = List.map Odoc_model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
     | exception Not_found -> None
     | `Tag (`Canonical (p, r)) -> Some (p, r)
@@ -411,7 +411,7 @@ and read_module_binding env parent mb =
   let hidden =
     match canonical with
     | Some _ -> false
-    | None -> Model.Root.contains_double_underscore (Ident.name mb.mb_id)
+    | None -> Odoc_model.Root.contains_double_underscore (Ident.name mb.mb_id)
   in
   let expansion =
     match type_ with
@@ -503,7 +503,7 @@ and read_include env parent incl =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent container 1 incl.incl_mod)
   in
-  let content = Cmi.read_signature env parent (Model.Compat.signature incl.incl_type) in
+  let content = Cmi.read_signature env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false } in
     {parent; doc; decl; expansion}
 
@@ -518,7 +518,7 @@ and read_structure env parent str =
     List.rev items
 
 let read_implementation root name impl =
-  let id = `Root(root, Model.Names.UnitName.of_string name) in
+  let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
   let items = read_structure Env.empty id impl in
   let doc, items =
     let open Signature in

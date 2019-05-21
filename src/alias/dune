@@ -1,4 +1,0 @@
-(library
- (name odoc__alias)
- (public_name odoc.alias)
- (flags (:standard -w -49)))

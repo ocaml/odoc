@@ -15,9 +15,9 @@
  *)
 
 val compilation_unit :
-  ?theme_uri:Tree.uri -> Model.Lang.Compilation_unit.t -> Tree.t
+  ?theme_uri:Tree.uri -> Odoc_model.Lang.Compilation_unit.t -> Tree.t
 
-val page : ?theme_uri:Tree.uri -> Model.Lang.Page.t -> Tree.t
+val page : ?theme_uri:Tree.uri -> Odoc_model.Lang.Page.t -> Tree.t
 (** Convert compilation unit or page models into HTML trees.
 
     Optionally [theme_uri] can be provided to locate custom theme files. The

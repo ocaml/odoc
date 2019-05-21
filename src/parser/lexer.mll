@@ -114,8 +114,8 @@ let trim_leading_whitespace : string -> string = fun s ->
 
 
 
-module Location = Model.Location_
-module Error = Model.Error
+module Location = Odoc_model.Location_
+module Error = Odoc_model.Error
 
 
 
@@ -150,7 +150,7 @@ let with_location_adjustments
     | Some s -> end_ - String.length s
   in
   let location = {
-    Model.Location_.file = input.file;
+    Odoc_model.Location_.file = input.file;
     start = input.offset_to_location start;
     end_ = input.offset_to_location end_;
   }

@@ -16,10 +16,10 @@
 
 
 
-module Comment = Model.Comment
+module Comment = Odoc_model.Comment
 module Html = Tyxml.Html
 
-open Model.Names
+open Odoc_model.Names
 
 type flow = Html_types.flow5_without_header_footer
 type phrasing = Html_types.phrasing
@@ -30,7 +30,7 @@ type non_link_phrasing = Html_types.phrasing_without_interactive
 module Reference = struct
   module Id = Tree.Relative_link.Id
 
-  open Model.Paths
+  open Odoc_model.Paths
 
   let rec render_resolved : Reference.Resolved.t -> string =
     fun r ->
@@ -99,7 +99,7 @@ module Reference = struct
       match ref with
       | `Root (s, _) ->
         begin match text with
-        | None -> Html.code [Html.txt (Model.Names.UnitName.to_string s)]
+        | None -> Html.code [Html.txt (Odoc_model.Names.UnitName.to_string s)]
         | Some s -> (span' [(s :> phrasing Html.elt)] :> phrasing Html.elt)
         end
       | `Dot (parent, s) ->
@@ -167,7 +167,7 @@ module Reference = struct
 end
 
 
-let location_to_syntax (loc:Model.Location_.span) =
+let location_to_syntax (loc:Odoc_model.Location_.span) =
   if Filename.check_suffix loc.file ".rei" then
     Tree.Reason
   else
@@ -201,7 +201,7 @@ let rec non_link_inline_element
 and non_link_inline_element_list :
     'a. _ -> ([> non_link_phrasing ] as 'a) Html.elt list = fun elements ->
   List.fold_left (fun html_elements ast_element ->
-    match non_link_inline_element ast_element.Model.Location_.value with
+    match non_link_inline_element ast_element.Odoc_model.Location_.value with
     | None -> html_elements
     | Some e -> e::html_elements)
     [] elements
@@ -238,7 +238,7 @@ let rec inline_element ?xref_base_uri : Comment.inline_element -> (phrasing Html
 
 and inline_element_list ?xref_base_uri elements =
   List.fold_left (fun html_elements ast_element ->
-    match inline_element ?xref_base_uri ast_element.Model.Location_.value with
+    match inline_element ?xref_base_uri ast_element.Odoc_model.Location_.value with
     | None -> html_elements
     | Some e -> e::html_elements)
     [] elements
@@ -279,7 +279,7 @@ let rec nestable_block_element
     Html.pre [Html.code ~a:[Html.a_class [classname]] [Html.txt code]]
   | `Verbatim s -> Html.pre [Html.txt s]
   | `Modules ms ->
-    let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) (ms :> Model.Paths.Reference.t list)  in
+    let items = List.map (Reference.to_html ?xref_base_uri ~stop_before:false) (ms :> Odoc_model.Paths.Reference.t list)  in
     let items = (items :> (Html_types.li_content Html.elt) list) in
     let items = List.map (fun e -> Html.li [e]) items in
     Html.ul ~a:[Html.a_class ["modules"]] items
@@ -287,7 +287,7 @@ let rec nestable_block_element
     let items =
       items
       |> List.map begin function
-        | [{Model.Location_.value = `Paragraph content; _}] ->
+        | [{Odoc_model.Location_.value = `Paragraph content; _}] ->
           (inline_element_list ?xref_base_uri content :> (Html_types.li_content Html.elt) list)
         | item ->
           nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax item
@@ -301,7 +301,7 @@ let rec nestable_block_element
 
 and nestable_block_element_list ?xref_base_uri ~to_syntax ~from_syntax elements =
   elements
-  |> List.map Model.Location_.value
+  |> List.map Odoc_model.Location_.value
   |> List.map (nestable_block_element ?xref_base_uri ~to_syntax ~from_syntax)
 
 and nested_block_element_list ?xref_base_uri ~to_syntax ~from_syntax elements =
@@ -372,7 +372,7 @@ let block_element
     (* TODO Simplify the id/label formatting. *)
     let attributes =
       let `Label (_, label) = label in
-      [Html.a_id (Model.Names.LabelName.to_string label)]
+      [Html.a_id (Odoc_model.Names.LabelName.to_string label)]
     in
     let a = attributes in
 
@@ -381,7 +381,7 @@ let block_element
     let content =
       let `Label (_, label) = label in
       let anchor =
-        Html.a ~a:[Html.a_href ("#" ^ (Model.Names.LabelName.to_string label)); Html.a_class ["anchor"]] [] in
+        Html.a ~a:[Html.a_href ("#" ^ (Odoc_model.Names.LabelName.to_string label)); Html.a_class ["anchor"]] [] in
       anchor::content
     in
 
@@ -410,7 +410,7 @@ let block_element_list ?xref_base_uri ~to_syntax elements =
 
 
 let first_to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) = function
-  | {Model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->
+  | {Odoc_model.Location_.value = `Paragraph _ as first_paragraph; location} ::_ ->
     begin match block_element ?xref_base_uri ~to_syntax ~from_syntax:(location_to_syntax location) first_paragraph with
     | Some element -> [element]
     | None -> []
@@ -419,7 +419,7 @@ let first_to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) = function
 
 let to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) docs =
   block_element_list ?xref_base_uri ~to_syntax
-    (List.map (fun el -> Model.Location_.((location el |> location_to_syntax, value el))) docs)
+    (List.map (fun el -> Odoc_model.Location_.((location el |> location_to_syntax, value el))) docs)
 
 let has_doc docs =
   docs <> []

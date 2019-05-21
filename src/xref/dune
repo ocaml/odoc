@@ -10,9 +10,8 @@ let () =
   Jbuild_plugin.V1.send @@
     {|
 (library
- (name odoc__xref)
+ (name odoc_xref)
  (public_name odoc.xref)
     |} ^ preprocess ^ {|
- (libraries compiler-libs.common odoc__alias odoc__model)
- (flags (:standard -open Odoc__alias)))
+ (libraries compiler-libs.common odoc_model))
     |}

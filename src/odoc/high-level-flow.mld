@@ -37,7 +37,7 @@ happened?
 + Compilation is orchestrated by {!Main.Compile.compile}, that based on the
   input extension will delegate to one of many {!Compile} functions. In this
   case {!Compile.cmti}
-+ The [cmti] file is read by {!Loader.read_cmti} into a {!Model.Root.t} and a
++ The [cmti] file is read by {!Odoc_loader.read_cmti} into a {!Odoc_model.Root.t} and a
   {!Compilation_unit.t} is created
 + This compilation unit is then turned into an {!Env.t} (environment),
   expanding all found references between modules
@@ -59,15 +59,15 @@ In this case, what happened was
 
 + In {!Main} the command is parsed as well, and it decides to {i compile} the
   input into an [html] file.
-+ Compilation is orchestrated by {!Main.Html.html}, that will make sure some
++ Compilation is orchestrated by {!Main.Odoc_html.html}, that will make sure some
   global flags are set up (depending on command flags), and delegate to
   {!Html_page.from_odoc}
-+ The [odoc] file is read into a {!Model.Root.t}
-+ Since it contains a {!Model.Root.Odoc_file.Compilation_unit}, an {!Env.t}
++ The [odoc] file is read into a {!Odoc_model.Root.t}
++ Since it contains a {!Odoc_model.Root.Odoc_file.Compilation_unit}, an {!Env.t}
   (environment) will be built, with its references expanded, just like in the
   first step
-+ An {!Html.Html_tree.t} will be built, depending on the syntax chosen (in
-  this case the default is OCaml) by {!Html.To_html_tree.ML.compilation_unit}
++ An {!Odoc_html.Html_tree.t} will be built, depending on the syntax chosen (in
+  this case the default is OCaml) by {!Odoc_html.To_html_tree.ML.compilation_unit}
 + Lastly, this tree will be traversed, the [Game/Player] folder created, and
   the [index.html] file written to disk.
 
@@ -86,7 +86,7 @@ page-intro.mld page-intro.odoc
   this file into an [odoc] file
 + Compilation is orchestrated by {!Main.Compile.compile}, and it delegates
   compilation to {!Compile.mld} based on the extension of the input
-+ A {!Model.Lang.Page.t} will be created from it, and an {!Env.t} will be built
++ A {!Odoc_model.Lang.Page.t} will be created from it, and an {!Env.t} will be built
   resolving found references
 + Lastly, the resulting page will be written down to disk by {!Page.save}
 
@@ -101,6 +101,6 @@ $ cat Game/intro.html
 This process is in fact almost the same as in {{:#step-2} the last html
 compilation}. The main differences are that:
 
-+ the read {!Model.Root.t} contains a {!Model.Root.Odoc_file.Page} instead,
++ the read {!Odoc_model.Root.t} contains a {!Odoc_model.Root.Odoc_file.Page} instead,
 + the output file name will drop the [page-] prefix,
-+ the {!Html.Html_tree.t} is built by {!Html.To_html_tree.ML.page}
++ the {!Odoc_html.Html_tree.t} is built by {!Odoc_html.To_html_tree.ML.page}

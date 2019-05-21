@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
 
 type t
@@ -67,4 +67,4 @@ val lookup_label : t -> Reference.Label.t -> Reference.Label.t
 val lookup_element : t -> Reference.t -> Reference.t
 
 val lookup_section_title : t -> Reference.Resolved.Label.t ->
-  Model.Comment.link_content option
+  Odoc_model.Comment.link_content option
