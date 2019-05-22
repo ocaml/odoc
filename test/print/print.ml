@@ -1,4 +1,4 @@
-open Model.Names
+open Odoc_model.Names
 type sexp = Sexplib.Sexp.t =
   | Atom of string
   | List of sexp list
@@ -7,7 +7,7 @@ type sexp = Sexplib.Sexp.t =
 
 module Root_to_sexp =
 struct
-  module Root = Model.Root
+  module Root = Odoc_model.Root
 
   let odoc_file : Root.Odoc_file.t -> sexp = function
     | Page p ->
@@ -24,7 +24,7 @@ end
 
 module Identifier_to_sexp =
 struct
-  module Identifier = Model.Paths.Identifier
+  module Identifier = Odoc_model.Paths.Identifier
 
   let identifier : Identifier.t -> sexp =
     let rec traverse : sexp list -> Identifier.t -> sexp =
@@ -75,8 +75,8 @@ end
 
 module Path_to_sexp =
 struct
-  module Path = Model.Paths.Path
-  module Resolved = Model.Paths.Path.Resolved
+  module Path = Odoc_model.Paths.Path
+  module Resolved = Odoc_model.Paths.Path.Resolved
 
   let rec path : Path.t -> sexp = function
     | `Resolved parent ->
@@ -119,10 +119,10 @@ end
 
 module Reference_to_sexp =
 struct
-  module Reference = Model.Paths.Reference
-  module Resolved = Model.Paths.Reference.Resolved
+  module Reference = Odoc_model.Paths.Reference
+  module Resolved = Odoc_model.Paths.Reference.Resolved
 
-  let tag : Model.Paths_types.Reference.tag_any -> sexp = function
+  let tag : Odoc_model.Paths_types.Reference.tag_any -> sexp = function
     | `TUnknown -> Atom "unknown"
     | `TModule -> Atom "module"
     | `TModuleType -> Atom "module_type"
@@ -177,7 +177,7 @@ struct
     | `Identifier parent ->
       List [Atom "identifier"; Identifier_to_sexp.identifier parent]
     | `SubstAlias (m, m') ->
-      List [Atom "subst_alias"; Path_to_sexp.resolved (m :> Model.Paths.Path.Resolved.t); resolved (m' :> Resolved.t)]
+      List [Atom "subst_alias"; Path_to_sexp.resolved (m :> Odoc_model.Paths.Path.Resolved.t); resolved (m' :> Resolved.t)]
     | `Module (parent, s) ->
       List [Atom "module"; Atom (ModuleName.to_string s); resolved (parent :> Resolved.t)]
     | `Canonical (m, m') ->
@@ -212,7 +212,7 @@ end
 
 module Location_to_sexp =
 struct
-  module Location_ = Model.Location_
+  module Location_ = Odoc_model.Location_
 
   let point : Location_.point -> sexp = fun {line; column} ->
     List [Atom (string_of_int line); Atom (string_of_int column)]
@@ -229,7 +229,7 @@ end
 
 module Comment_to_sexp =
 struct
-  module Comment = Model.Comment
+  module Comment = Odoc_model.Comment
   let at = Location_to_sexp.at
 
   let style : Comment.style -> sexp = function
@@ -279,7 +279,7 @@ struct
     | `Code_block c -> List [Atom "code_block"; Atom c]
     | `Verbatim t -> List [Atom "verbatim"; Atom t]
     | `Modules ps ->
-      List [Atom "modules"; List (List.map Reference_to_sexp.reference (ps :> Model.Paths.Reference.t list))]
+      List [Atom "modules"; List (List.map Reference_to_sexp.reference (ps :> Odoc_model.Paths.Reference.t list))]
     | `List (kind, items) ->
       let kind =
         match kind with
@@ -322,7 +322,7 @@ struct
     | `Version s -> List [Atom "@version"; Atom s]
     | `Canonical (p, r) ->
       List
-        [Atom "@canonical"; Path_to_sexp.path (p :> Model.Paths.Path.t); Reference_to_sexp.reference (r :> Model.Paths.Reference.t)]
+        [Atom "@canonical"; Path_to_sexp.path (p :> Odoc_model.Paths.Path.t); Reference_to_sexp.reference (r :> Odoc_model.Paths.Reference.t)]
     | `Inline ->
       Atom "@inline"
     | `Open ->
@@ -333,7 +333,7 @@ struct
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e
     | `Heading (level, label, es) ->
-      let label = List [Atom "label"; Identifier_to_sexp.identifier (label :> Model.Paths.Identifier.t)] in
+      let label = List [Atom "label"; Identifier_to_sexp.identifier (label :> Odoc_model.Paths.Identifier.t)] in
       let level =
         match level with
         | `Title -> "0"
@@ -354,13 +354,13 @@ end
 
 module Error_to_sexp =
 struct
-  let error : Model.Error.t -> sexp = fun error ->
-    Atom (Model.Error.to_string error)
+  let error : Odoc_model.Error.t -> sexp = fun error ->
+    Atom (Odoc_model.Error.to_string error)
 end
 
 
 
-let parser_output formatter {Model.Error.value; warnings} =
+let parser_output formatter {Odoc_model.Error.value; warnings} =
   let value = Comment_to_sexp.comment value in
   let warnings = List (List.map Error_to_sexp.error warnings) in
   let output =

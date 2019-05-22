@@ -2,12 +2,12 @@ type test_case = {
   name : string;
   parser_input : string;
   sections_allowed : [ `All | `No_titles | `None ];
-  location : Model.Location_.point;
+  location : Odoc_model.Location_.point;
 }
 
 let make_test_case
     ?(sections_allowed = `No_titles)
-    ?(location = {Model.Location_.line = 1; column = 0})
+    ?(location = {Odoc_model.Location_.line = 1; column = 0})
     name
     parser_input =
   {name; parser_input; sections_allowed; location}
@@ -1126,13 +1126,13 @@ let () =
         let dummy_filename = "f.ml" in
 
         let dummy_page =
-          let root : Model.Root.t = {
+          let root : Odoc_model.Root.t = {
             package = dummy_filename;
             file = Page dummy_filename;
             digest = String.make 16 '\000';
           }
           in
-          `Page (root, Model.Names.PageName.of_string dummy_filename)
+          `Page (root, Odoc_model.Names.PageName.of_string dummy_filename)
         in
 
         let location =
@@ -1144,7 +1144,7 @@ let () =
           }
         in
 
-        Parser_.parse_comment
+        Odoc_parser.parse_comment
           ~sections_allowed
           ~containing_definition:dummy_page
           ~location
