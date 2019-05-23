@@ -1,18 +1,16 @@
 (library
- (name odoc__odoc)
+ (name odoc_odoc)
  (public_name odoc.odoc)
  (libraries
   compiler-libs.common
   fpath
-  odoc__alias
-  odoc__compat
-  odoc__html
-  odoc__loader
-  odoc__model
-  odoc__xref
+  odoc_compat
+  odoc_html
+  odoc_loader
+  odoc_model
+  odoc_xref
   tyxml
-  unix)
- (flags (:standard -open Odoc__alias)))
+  unix))
 
 (documentation)
 

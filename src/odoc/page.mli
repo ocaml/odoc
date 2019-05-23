@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type t = Model.Lang.Page.t
+type t = Odoc_model.Lang.Page.t
 
-val root : t -> Model.Root.t
+val root : t -> Odoc_model.Root.t
 
 (** {2 Serialization} *)
 

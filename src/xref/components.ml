@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
 open Names
 
@@ -143,7 +143,7 @@ let make_tbl (type a) (equal : (a -> a -> bool) option)
 
 let documentation_labels acc doc =
   List.fold_left (fun acc element ->
-    match element.Model.Location_.value with
+    match element.Odoc_model.Location_.value with
     | `Heading (_, label, nested_text) ->
       let name = Identifier.name label in
       (name, nested_text)::acc
@@ -212,7 +212,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> t -> Model.Comment.link_content
+  val find_section_title : string -> t -> Odoc_model.Comment.link_content
 
   val lookup_module : string -> t -> t
 
@@ -243,9 +243,9 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : Model.Comment.docs -> signature -> signature
+  val add_documentation : Odoc_model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
+  val add_comment : Odoc_model.Comment.docs_or_stop -> signature -> signature
 
   val include_ : t -> signature -> signature
 
@@ -300,7 +300,7 @@ end = struct
       types: Element.signature_type SMap.t;
       parents: Parent.any LMap.t;
       elements: Element.signature LMap.t;
-      section_titles: Model.Comment.link_content SMap.t; }
+      section_titles: Odoc_model.Comment.link_content SMap.t; }
 
   and body =
     | Expr of expr
@@ -1316,7 +1316,7 @@ and Datatype : sig
 
   val find_element : string -> t -> Element.datatype
 
-  val add_documentation : Model.Comment.docs -> t -> t
+  val add_documentation : Odoc_model.Comment.docs -> t -> t
 
   val abstract : t
 
@@ -1469,9 +1469,9 @@ and ClassSig : sig
   val add_element : string -> Element.class_signature ->
     signature -> signature
 
-  val add_documentation : Model.Comment.docs -> signature -> signature
+  val add_documentation : Odoc_model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
+  val add_comment : Odoc_model.Comment.docs_or_stop -> signature -> signature
 
   val inherit_ : t -> signature -> signature
 
@@ -1565,15 +1565,15 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> t -> Model.Comment.link_content
+  val find_section_title : string -> t -> Odoc_model.Comment.link_content
 
-  val of_doc : Model.Comment.docs -> t
+  val of_doc : Odoc_model.Comment.docs -> t
 
 end = struct
 
   type t = {
     labels : Element.page_label LMap.t;
-    section_titles : Model.Comment.link_content SMap.t;
+    section_titles : Odoc_model.Comment.link_content SMap.t;
   }
 
   let find_label_element name t =

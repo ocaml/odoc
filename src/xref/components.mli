@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
 
 module rec Sig : sig
@@ -70,7 +70,7 @@ module rec Sig : sig
 
   val find_element : string -> t -> Element.signature
 
-  val find_section_title : string -> t -> Model.Comment.link_content
+  val find_section_title : string -> t -> Odoc_model.Comment.link_content
 
   (** {3 Lookup} *)
 
@@ -104,15 +104,15 @@ module rec Sig : sig
 
   val add_element : string -> Element.signature -> signature -> signature
 
-  val add_documentation : Model.Comment.docs -> signature -> signature
+  val add_documentation : Odoc_model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
+  val add_comment : Odoc_model.Comment.docs_or_stop -> signature -> signature
 
   val include_ : t -> signature -> signature
 
-  val modules : t -> (Model.Names.ModuleName.t * t) list
+  val modules : t -> (Odoc_model.Names.ModuleName.t * t) list
 
-  val module_types : t -> (Model.Names.ModuleTypeName.t * t) list
+  val module_types : t -> (Odoc_model.Names.ModuleTypeName.t * t) list
 
   val path : (Path.ModuleType.t -> t) -> Path.ModuleType.t -> t
 
@@ -167,7 +167,7 @@ and Datatype : sig
 
   (** {3 Constructors} *)
 
-  val add_documentation : Model.Comment.docs -> t -> t
+  val add_documentation : Odoc_model.Comment.docs -> t -> t
 
   val abstract : t
 
@@ -204,9 +204,9 @@ and ClassSig : sig
 
   val add_element : string -> Element.class_signature -> signature -> signature
 
-  val add_documentation : Model.Comment.docs -> signature -> signature
+  val add_documentation : Odoc_model.Comment.docs -> signature -> signature
 
-  val add_comment : Model.Comment.docs_or_stop -> signature -> signature
+  val add_comment : Odoc_model.Comment.docs_or_stop -> signature -> signature
 
   val inherit_ : t -> signature -> signature
 
@@ -273,11 +273,11 @@ and Page : sig
 
   val find_label_element : string -> t -> Element.page_label
 
-  val find_section_title : string -> t -> Model.Comment.link_content
+  val find_section_title : string -> t -> Odoc_model.Comment.link_content
 
   (** {3 Constructor} *)
 
-  val of_doc : Model.Comment.docs -> t
+  val of_doc : Odoc_model.Comment.docs -> t
 end
 
 and Element : sig

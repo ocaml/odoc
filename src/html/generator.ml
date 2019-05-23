@@ -16,8 +16,8 @@
 
 
 
-module Location = Model.Location_
-module Paths = Model.Paths
+module Location = Odoc_model.Location_
+module Paths = Odoc_model.Paths
 
 open Utils
 
@@ -25,7 +25,7 @@ open Utils
 
 let a_href = Tree.Relative_link.to_sub_element
 
-let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
+let functor_arg_pos { Odoc_model.Lang.FunctorArgument.id ; _ } =
   match id with
   | `Argument (_, nb, _) -> nb
   | _ ->
@@ -34,7 +34,7 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
 let label = function
-  | Model.Lang.TypeExpr.Label s -> [ Html.txt s ]
+  | Odoc_model.Lang.TypeExpr.Label s -> [ Html.txt s ]
   | Optional s -> [ Html.txt "?"; Html.entity "#8288"; Html.txt s ]
 
 let keyword keyword =
@@ -66,12 +66,12 @@ sig
 end =
 struct
   let rec te_variant
-    : 'inner 'outer. Model.Lang.TypeExpr.Polymorphic_variant.t ->
+    : 'inner 'outer. Odoc_model.Lang.TypeExpr.Polymorphic_variant.t ->
         ('inner, 'outer) text Html.elt list
-  = fun (t : Model.Lang.TypeExpr.Polymorphic_variant.t) ->
+  = fun (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) ->
     let elements =
       list_concat_map t.elements ~sep:(Html.txt " | ") ~f:(function
-        | Model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
+        | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
         | Constructor {name; arguments; _} ->
           let constr = "`" ^ name in
           match arguments with
@@ -97,12 +97,12 @@ struct
       Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
 
   and te_object
-    : 'inner 'outer. Model.Lang.TypeExpr.Object.t ->
+    : 'inner 'outer. Odoc_model.Lang.TypeExpr.Object.t ->
         ('inner, 'outer) text Html.elt list
-  = fun (t : Model.Lang.TypeExpr.Object.t) ->
+  = fun (t : Odoc_model.Lang.TypeExpr.Object.t) ->
     let fields =
       list_concat_map t.fields ~f:(function
-        | Model.Lang.TypeExpr.Object.Method {name; type_} ->
+        | Odoc_model.Lang.TypeExpr.Object.Method {name; type_} ->
           (Html.txt (name ^ Syntax.Type.annotation_separator)::type_expr type_)
             @ [Html.txt Syntax.Obj.field_separator]
         | Inherit type_ ->
@@ -120,7 +120,7 @@ struct
 
   and format_type_path
     : 'inner 'outer. delim:[ `parens | `brackets ]
-    -> Model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
+    -> Odoc_model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
     -> ('inner, 'outer) text Html.elt list
   = fun ~delim params path ->
     match params with
@@ -146,7 +146,7 @@ struct
 
   and type_expr
     : 'inner 'outer. ?needs_parentheses:bool
-    -> Model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
+    -> Odoc_model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
   = fun ?(needs_parentheses=false) t ->
     match t with
     | Var s -> [type_var (Syntax.Type.var_prefix ^ s)]
@@ -210,7 +210,7 @@ struct
 
   and package_subst
     : 'inner 'outer.
-      Paths.Path.ModuleType.t -> Paths.Fragment.Type.t * Model.Lang.TypeExpr.t
+      Paths.Path.ModuleType.t -> Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t
     -> ('inner, 'outer) text Html.elt list
     = fun pkg_path (frag_typ, te) ->
     keyword "type" ::
@@ -237,9 +237,9 @@ module Type_declaration :
 sig
   val type_decl :
     Lang.Signature.recursive * Lang.TypeDecl.t ->
-      rendered_item * Model.Comment.docs
-  val extension : Lang.Extension.t -> rendered_item * Model.Comment.docs
-  val exn : Lang.Exception.t -> rendered_item * Model.Comment.docs
+      rendered_item * Odoc_model.Comment.docs
+  val extension : Lang.Extension.t -> rendered_item * Odoc_model.Comment.docs
+  val exn : Lang.Exception.t -> rendered_item * Odoc_model.Comment.docs
 
   val format_params :
     ?delim:[ `parens | `brackets ] ->
@@ -278,7 +278,7 @@ struct
     in
     let rows =
       fields |> List.map (fun fld ->
-        let open Model.Lang.TypeDecl.Field in
+        let open Odoc_model.Lang.TypeDecl.Field in
         let anchor, lhs = field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_ in
         let rhs = Comment.to_html fld.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
@@ -297,8 +297,8 @@ struct
 
 
   let constructor
-    : Paths.Identifier.t -> Model.Lang.TypeDecl.Constructor.argument
-    -> Model.Lang.TypeExpr.t option
+    : Paths.Identifier.t -> Odoc_model.Lang.TypeDecl.Constructor.argument
+    -> Odoc_model.Lang.TypeExpr.t option
     -> [> `Code | `PCDATA | `Table ] Html.elt list
   = fun id args ret_type ->
       let name = Paths.Identifier.name id in
@@ -373,7 +373,7 @@ struct
     in
     let rows =
       cstrs |> List.map (fun cstr ->
-        let open Model.Lang.TypeDecl.Constructor in
+        let open Odoc_model.Lang.TypeDecl.Constructor in
         let anchor, lhs = constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res in
         let rhs = Comment.to_html cstr.doc in
         let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
@@ -389,11 +389,11 @@ struct
 
 
 
-  let extension_constructor (t : Model.Lang.Extension.Constructor.t) =
+  let extension_constructor (t : Odoc_model.Lang.Extension.Constructor.t) =
     (* TODO doc *)
     constructor (t.id :> Paths.Identifier.t) t.args t.res
 
-  let extension (t : Model.Lang.Extension.t) =
+  let extension (t : Odoc_model.Lang.Extension.t) =
     let extension =
       Html.code (
         keyword "type" ::
@@ -409,7 +409,7 @@ struct
 
 
 
-  let exn (t : Model.Lang.Exception.t) =
+  let exn (t : Odoc_model.Lang.Exception.t) =
     let cstr = constructor (t.id :> Paths.Identifier.t) t.args t.res in
     let exn = Html.code [ keyword "exception"; Html.txt " " ] :: cstr
       @ (if Syntax.Type.Exception.semicolon then [ Html.txt ";" ] else [])
@@ -419,12 +419,12 @@ struct
 
 
   let polymorphic_variant
-      ~type_ident (t : Model.Lang.TypeExpr.Polymorphic_variant.t) =
+      ~type_ident (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) =
 
     let row item =
       let kind_approx, cstr, doc =
         match item with
-        | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
+        | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           "unknown", [Html.code (type_expr te)], None
         | Constructor {name; arguments; doc; _} ->
           let cstr = "`" ^ name in
@@ -497,19 +497,19 @@ struct
 
 
   let format_params
-    : 'row. ?delim:[`parens | `brackets] -> Model.Lang.TypeDecl.param list
+    : 'row. ?delim:[`parens | `brackets] -> Odoc_model.Lang.TypeDecl.param list
     -> ([> `PCDATA ] as 'row) Html.elt
   = fun ?(delim=`parens) params ->
     let format_param (desc, variance_opt) =
       let param_desc =
         match desc with
-        | Model.Lang.TypeDecl.Any -> "_"
+        | Odoc_model.Lang.TypeDecl.Any -> "_"
         | Var s -> "'" ^ s
       in
       match variance_opt with
       | None -> param_desc
-      | Some Model.Lang.TypeDecl.Pos -> "+" ^ param_desc
-      | Some Model.Lang.TypeDecl.Neg -> "-" ^ param_desc
+      | Some Odoc_model.Lang.TypeDecl.Pos -> "+" ^ param_desc
+      | Some Odoc_model.Lang.TypeDecl.Neg -> "-" ^ param_desc
     in
     Html.txt (
       match params with
@@ -539,7 +539,7 @@ struct
 
   let format_manifest
     : 'inner_row 'outer_row. ?compact_variants:bool
-    -> Model.Lang.TypeDecl.Equation.t
+    -> Odoc_model.Lang.TypeDecl.Equation.t
     -> ('inner_row, 'outer_row) text Html.elt list * bool
   = fun ?(compact_variants=true) equation ->
     let _ = compact_variants in (* TODO *)
@@ -564,7 +564,7 @@ struct
     let constraints = format_constraints t.equation.constraints in
     let manifest, need_private =
       match t.equation.manifest with
-      | Some (Model.Lang.TypeExpr.Polymorphic_variant variant) ->
+      | Some (Odoc_model.Lang.TypeExpr.Polymorphic_variant variant) ->
         let manifest =
           (Html.txt " = " ::
           if t.equation.private_ then
@@ -619,11 +619,11 @@ open Type_declaration
 
 module Value :
 sig
-  val value : Lang.Value.t -> rendered_item * Model.Comment.docs
-  val external_ : Lang.External.t -> rendered_item * Model.Comment.docs
+  val value : Lang.Value.t -> rendered_item * Odoc_model.Comment.docs
+  val external_ : Lang.External.t -> rendered_item * Odoc_model.Comment.docs
 end =
 struct
-  let value (t : Model.Lang.Value.t) =
+  let value (t : Odoc_model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
     let value =
       keyword Syntax.Value.variable_keyword ::
@@ -635,7 +635,7 @@ struct
     in
     [Html.code value], t.doc
 
-  let external_ (t : Model.Lang.External.t) =
+  let external_ (t : Odoc_model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
     let external_ =
       keyword Syntax.Value.variable_keyword ::
@@ -689,9 +689,9 @@ sig
   val lay_out :
     item_to_id:('item -> string option) ->
     item_to_spec:('item -> string option) ->
-    render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
+    render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
     render_nested_article:
-      ('item -> rendered_item * Model.Comment.docs * Tree.t list) ->
+      ('item -> rendered_item * Odoc_model.Comment.docs * Tree.t list) ->
     ((_, 'item) tagged_item) list ->
       (Html_types.div_content Html.elt) list * toc * Tree.t list
 
@@ -788,7 +788,7 @@ struct
      comment, which will either start with the next section heading in the
      comment, or be empty if there are no section headings. *)
   let render_comment_until_heading_or_end
-      : Model.Comment.docs -> comment_html list * Model.Comment.docs =
+      : Odoc_model.Comment.docs -> comment_html list * Odoc_model.Comment.docs =
       fun docs ->
 
     let rec scan_comment acc docs =
@@ -826,7 +826,7 @@ struct
      functions. *)
   type ('kind, 'item) sectioning_state = {
     input_items : (('kind, 'item) tagged_item) list;
-    input_comment : Model.Comment.docs;
+    input_comment : Odoc_model.Comment.docs;
 
     acc_html : html list;
     acc_toc : toc;
@@ -834,9 +834,9 @@ struct
 
     item_to_id : 'item -> string option;
     item_to_spec : 'item -> string option;
-    render_leaf_item : 'item -> rendered_item * Model.Comment.docs;
+    render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
     render_nested_article :
-      'item -> rendered_item * Model.Comment.docs * Tree.t list;
+      'item -> rendered_item * Odoc_model.Comment.docs * Tree.t list;
   }
 
   let finish_section state =
@@ -953,7 +953,7 @@ struct
           let `Label (_, label) = label in
           let toc_entry =
             {
-              anchor = Model.Names.LabelName.to_string label;
+              anchor = Odoc_model.Names.LabelName.to_string label;
               text = content;
               children = nested_section_state.acc_toc;
             }
@@ -1043,11 +1043,11 @@ module Class :
 sig
   val class_ :
     ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
-      rendered_item * Model.Comment.docs * Tree.t list
+      rendered_item * Odoc_model.Comment.docs * Tree.t list
 
   val class_type :
     ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
-      rendered_item * Model.Comment.docs * Tree.t list
+      rendered_item * Odoc_model.Comment.docs * Tree.t list
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1097,7 +1097,7 @@ struct
       ~render_nested_article:(fun _ -> assert false)
       tagged_items
 
-  and method_ (t : Model.Lang.Method.t) =
+  and method_ (t : Odoc_model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
       if t.virtual_ then [keyword "virtual"; Html.txt " "] else [] in
@@ -1114,7 +1114,7 @@ struct
     in
     [Html.code method_], t.doc
 
-  and instance_variable (t : Model.Lang.InstanceVariable.t) =
+  and instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
       if t.virtual_ then [keyword "virtual"; Html.txt " "] else [] in
@@ -1132,9 +1132,9 @@ struct
     [Html.code val_], t.doc
 
   and class_type_expr
-    : 'inner_row 'outer_row. Model.Lang.ClassType.expr
+    : 'inner_row 'outer_row. Odoc_model.Lang.ClassType.expr
     -> ('inner_row, 'outer_row) text Html.elt list
-    = fun (cte : Model.Lang.ClassType.expr) ->
+    = fun (cte : Odoc_model.Lang.ClassType.expr) ->
       match cte with
       | Constr (path, args) ->
         let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
@@ -1147,9 +1147,9 @@ struct
         ]
 
   and class_decl
-    : 'inner_row 'outer_row. Model.Lang.Class.decl
+    : 'inner_row 'outer_row. Odoc_model.Lang.Class.decl
     -> ('inner_row, 'outer_row) text Html.elt list
-    = fun (cd : Model.Lang.Class.decl) ->
+    = fun (cd : Odoc_model.Lang.Class.decl) ->
       match cd with
       | ClassType expr -> class_type_expr expr
       (* TODO: factorize the following with [type_expr] *)
@@ -1161,7 +1161,7 @@ struct
         type_expr ~needs_parentheses:true src @
         Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
 
-  and class_ ?theme_uri recursive (t : Model.Lang.Class.t) =
+  and class_ ?theme_uri recursive (t : Odoc_model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1203,7 +1203,7 @@ struct
     region, t.doc, subtree
 
 
-  and class_type ?theme_uri recursive (t : Model.Lang.ClassType.t) =
+  and class_type ?theme_uri recursive (t : Odoc_model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1320,10 +1320,10 @@ struct
       tagged_items
 
   and functor_argument
-    : 'row. ?theme_uri:Tree.uri -> Model.Lang.FunctorArgument.t
+    : 'row. ?theme_uri:Tree.uri -> Odoc_model.Lang.FunctorArgument.t
     -> Html_types.div_content Html.elt list * Tree.t list
   = fun ?theme_uri arg ->
-    let open Model.Lang.FunctorArgument in
+    let open Odoc_model.Lang.FunctorArgument in
     let name = Paths.Identifier.name arg.id in
     let nb = functor_arg_pos arg in
     let link_name = Printf.sprintf "%d-%s" nb name in
@@ -1340,7 +1340,7 @@ struct
           match expansion with
           | AlreadyASig ->
             begin match arg.expr with
-            | Signature sg -> Model.Lang.Module.Signature sg
+            | Signature sg -> Odoc_model.Lang.Module.Signature sg
             | _ -> assert false
             end
           | e -> e
@@ -1360,7 +1360,7 @@ struct
     region, subtree
 
   and module_expansion
-    : ?theme_uri:Tree.uri -> Model.Lang.Module.expansion
+    : ?theme_uri:Tree.uri -> Odoc_model.Lang.Module.expansion
     -> Html_types.div_content_fun Html.elt list * toc * Tree.t list
   = fun ?theme_uri t ->
     match t with
@@ -1390,9 +1390,9 @@ struct
       html, toc, params_subpages @ subpages
 
   and module_
-      : ?theme_uri:Tree.uri -> Model.Lang.Signature.recursive ->
-        Model.Lang.Module.t ->
-          rendered_item * Model.Comment.docs * Tree.t list
+      : ?theme_uri:Tree.uri -> Odoc_model.Lang.Signature.recursive ->
+        Odoc_model.Lang.Module.t ->
+          rendered_item * Odoc_model.Comment.docs * Tree.t list
       = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1409,8 +1409,8 @@ struct
           match expansion with
           | AlreadyASig ->
             begin match t.type_ with
-            | ModuleType (Model.Lang.ModuleType.Signature sg) ->
-              Model.Lang.Module.Signature sg
+            | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
+              Odoc_model.Lang.Module.Signature sg
             | _ -> assert false
             end
           | e -> e
@@ -1448,27 +1448,27 @@ struct
     module_decl' base md
 
   and extract_path_from_mt ~(default: Paths.Identifier.Signature.t) =
-    let open Model.Lang.ModuleType in
+    let open Odoc_model.Lang.ModuleType in
     function
     | Path (`Resolved r) ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
     | With (mt, _) -> extract_path_from_mt ~default mt
-    | TypeOf (Model.Lang.Module.Alias (`Resolved r)) ->
+    | TypeOf (Odoc_model.Lang.Module.Alias (`Resolved r)) ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
-    | TypeOf (Model.Lang.Module.ModuleType mt) ->
+    | TypeOf (Odoc_model.Lang.Module.ModuleType mt) ->
       extract_path_from_mt ~default mt
     | _ -> default
 
   and module_decl'
     : 'inner_row 'outer_row. Paths.Identifier.Signature.t
-    -> Model.Lang.Module.decl
+    -> Odoc_model.Lang.Module.decl
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | Alias mod_path ->
       Tree.Relative_link.of_path ~stop_before:true (mod_path :> Paths.Path.t)
     | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
-  and module_type ?theme_uri (t : Model.Lang.ModuleType.t) =
+  and module_type ?theme_uri (t : Odoc_model.Lang.ModuleType.t) =
     let modname = Paths.Identifier.name t.id in
     let mty =
       match t.expr with
@@ -1484,7 +1484,7 @@ struct
           match expansion with
           | AlreadyASig ->
             begin match t.expr with
-            | Some (Signature sg) -> Model.Lang.Module.Signature sg
+            | Some (Signature sg) -> Odoc_model.Lang.Module.Signature sg
             | _ -> assert false
             end
           | e -> e
@@ -1517,7 +1517,7 @@ struct
 
   and mty
     : 'inner_row 'outer_row.
-      Paths.Identifier.Signature.t -> Model.Lang.ModuleType.expr
+      Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun (base : Paths.Identifier.Signature.t) -> function
     | Path mty_path ->
@@ -1534,7 +1534,7 @@ struct
       mty base expr
     | Functor (Some arg, expr) ->
       let name =
-        let open Model.Lang.FunctorArgument in
+        let open Odoc_model.Lang.FunctorArgument in
         let to_print = Html.txt @@ Paths.Identifier.name arg.id in
         match
           Tree.Relative_link.Id.href
@@ -1568,7 +1568,7 @@ struct
 
   and substitution
     : 'inner_row 'outer_row. Paths.Identifier.Signature.t ->
-        Model.Lang.ModuleType.substitution
+        Odoc_model.Lang.ModuleType.substitution
     -> ('inner_row, 'outer_row) text Html.elt list
   = fun base -> function
     | ModuleEq (frag_mod, md) ->
@@ -1586,7 +1586,7 @@ struct
         [format_params td.Lang.TypeDecl.Equation.params]
       ) @
       fst (format_manifest td) @
-      format_constraints td.Model.Lang.TypeDecl.Equation.constraints
+      format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
     | ModuleSubst (frag_mod, mod_path) ->
       keyword "module" ::
       Html.txt " " ::
@@ -1608,19 +1608,19 @@ struct
       | Some te ->
         type_expr te
 
-  and include_ ?theme_uri (t : Model.Lang.Include.t) =
+  and include_ ?theme_uri (t : Odoc_model.Lang.Include.t) =
     let docs = Comment.to_html t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
     let included_html, _, tree = signature ?theme_uri t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
-        element.Model.Location_.value = `Tag `Inline in
+        element.Odoc_model.Location_.value = `Tag `Inline in
       List.exists is_inline_tag t.doc
     in
     let should_be_open =
-      let is_open_tag element = element.Model.Location_.value = `Tag `Open in
+      let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element =
-        element.Model.Location_.value = `Tag `Closed in
+        element.Odoc_model.Location_.value = `Tag `Closed in
       if List.exists is_open_tag t.doc then
         true
       else
@@ -1666,10 +1666,10 @@ sig
 end =
 struct
   let pack
-    : Model.Lang.Compilation_unit.Packed.t ->
+    : Odoc_model.Lang.Compilation_unit.Packed.t ->
         Html_types.div_content Html.elt list
   = fun t ->
-    let open Model.Lang in
+    let open Odoc_model.Lang in
     t
     |> List.map begin fun x ->
       let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
@@ -1688,7 +1688,7 @@ struct
 
 
 
-  let compilation_unit ?theme_uri (t : Model.Lang.Compilation_unit.t) : Tree.t =
+  let compilation_unit ?theme_uri (t : Odoc_model.Lang.Compilation_unit.t) : Tree.t =
     let package =
       match t.id with
       | `Root (a, _) -> a.package
@@ -1714,13 +1714,13 @@ struct
 
 
 
-  let page ?theme_uri (t : Model.Lang.Page.t) : Tree.t =
+  let page ?theme_uri (t : Odoc_model.Lang.Page.t) : Tree.t =
     let package, name =
       match t.name with
       | `Page (a, name) -> a.package, name
     in
     Tree.enter package;
-    Tree.enter ~kind:`Page (Model.Names.PageName.to_string name);
+    Tree.enter ~kind:`Page (Odoc_model.Names.PageName.to_string name);
     let html = Comment.to_html t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
     Tree.make ?theme_uri html []

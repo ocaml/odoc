@@ -3,18 +3,18 @@
    It would make the interaction with jenga nicer if we could specify a file to
    output the result to. *)
 
-open Odoc
+open Odoc_odoc
 open Cmdliner
 
-let convert_syntax : Html.Tree.syntax Arg.converter =
+let convert_syntax : Odoc_html.Tree.syntax Arg.converter =
   let syntax_parser str =
     match str with
-  | "ml" | "ocaml" -> `Ok Html.Tree.OCaml
-  | "re" | "reason" -> `Ok Html.Tree.Reason
+  | "ml" | "ocaml" -> `Ok Odoc_html.Tree.OCaml
+  | "re" | "reason" -> `Ok Odoc_html.Tree.Reason
   | s -> `Error (Printf.sprintf "Unknown syntax '%s'" s)
   in
   let syntax_printer fmt syntax =
-    Format.pp_print_string fmt (Html.Tree.string_of_syntax syntax)
+    Format.pp_print_string fmt (Odoc_html.Tree.string_of_syntax syntax)
   in
   (syntax_parser, syntax_printer)
 
@@ -30,7 +30,7 @@ let convert_directory ?(create=false) () : Fs.Directory.t Arg.converter =
   (odoc_dir_parser, odoc_dir_printer)
 
 (* Very basic validation and normalization for URI paths. *)
-let convert_uri : Html.Tree.uri Arg.converter =
+let convert_uri : Odoc_html.Tree.uri Arg.converter =
   let parser str =
     if String.length str = 0 then
       `Error "invalid URI"
@@ -43,11 +43,11 @@ let convert_uri : Html.Tree.uri Arg.converter =
       in
       let last_char = String.get str (String.length str - 1) in
       let str = if last_char <> '/' then str ^ "/" else str in
-      `Ok Html.Tree.(if is_absolute then Absolute str else Relative str)
+      `Ok Odoc_html.Tree.(if is_absolute then Absolute str else Relative str)
   in
   let printer ppf = function
-    | Html.Tree.Absolute uri
-    | Html.Tree.Relative uri -> Format.pp_print_string ppf uri
+    | Odoc_html.Tree.Absolute uri
+    | Odoc_html.Tree.Relative uri -> Format.pp_print_string ppf uri
   in
   (parser, printer)
 
@@ -189,15 +189,15 @@ module Css = struct
     Term.info ~doc "css"
 end
 
-module Html : sig
+module Odoc_html : sig
   val cmd : unit Term.t
   val info: Term.info
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
         syntax theme_uri input_file =
-    Html.Tree.Relative_link.semantic_uris := semantic_uris;
-    Html.Tree.open_details := not closed_details;
+    Odoc_html.Tree.Relative_link.semantic_uris := semantic_uris;
+    Odoc_html.Tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in
     match index_for with
@@ -233,14 +233,14 @@ end = struct
     let theme_uri =
       let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
-      let default = Html.Tree.Relative "./" in
+      let default = Odoc_html.Tree.Relative "./" in
       Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
     in
     let syntax =
       let doc = "Available options: ml | re" in
       let env = Arg.env_var "ODOC_SYNTAX"
       in
-      Arg.(value & opt (pconv convert_syntax) (Html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
+      Arg.(value & opt (pconv convert_syntax) (Odoc_html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
     in
     Term.(const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst ~create:true () $ index_for $ syntax $ theme_uri $ input)
@@ -313,13 +313,13 @@ module Depends = struct
             reported in the output."
   end
 
-  module Html = struct
+  module Odoc_html = struct
     let list_dependencies input_file =
       List.iter (Depends.for_html_step (Fs.Directory.of_string input_file))
-        ~f:(fun (root : Model.Root.t) ->
+        ~f:(fun (root : Odoc_model.Root.t) ->
           Printf.printf "%s %s %s\n"
             root.package
-            (Model.Root.Odoc_file.name root.file)
+            (Odoc_model.Root.Odoc_file.name root.file)
             (Digest.to_hex root.digest)
         )
 
@@ -352,7 +352,7 @@ module Targets = struct
       Term.info "compile-targets" ~doc:"TODO: Fill in."
   end
 
-  module Html = struct
+  module Odoc_html = struct
     let list_targets directories output_dir odoc_file =
       let env = Env.create ~important_digests:false ~directories in
       let odoc_file = Fs.File.of_string odoc_file in
@@ -392,14 +392,14 @@ let () =
 
   let subcommands =
     [ Compile.(cmd, info)
-    ; Html.(cmd, info)
+    ; Odoc_html.(cmd, info)
     ; Html_fragment.(cmd, info)
     ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
-    ; Depends.Html.(cmd, info)
+    ; Depends.Odoc_html.(cmd, info)
     ; Targets.Compile.(cmd, info)
-    ; Targets.Html.(cmd, info)
+    ; Targets.Odoc_html.(cmd, info)
     ; Targets.Support_files.(cmd, info)
     ]
   in

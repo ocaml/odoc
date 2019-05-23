@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
-open Model.Lang
+open Odoc_model.Lang
 open Names
 
 type partial_expansion =
@@ -153,16 +153,16 @@ let refine_module ex (frag : Fragment.Module.t) equation =
         end
 
 type intermediate_module_expansion =
-  Identifier.Module.t * Model.Comment.docs
+  Identifier.Module.t * Odoc_model.Comment.docs
   * (Path.Module.t * Reference.Module.t) option
   * partial_expansion option * Subst.t list
 
 type intermediate_module_type_expansion =
-  Identifier.ModuleType.t * Model.Comment.docs
+  Identifier.ModuleType.t * Odoc_model.Comment.docs
   * partial_expansion option * Subst.t list
 
 type intermediate_class_type_expansion =
-  Identifier.ClassType.t * Model.Comment.docs
+  Identifier.ClassType.t * Odoc_model.Comment.docs
   * ClassSignature.t option * Subst.t list
 
 type expander =
@@ -841,7 +841,7 @@ let should_expand _t _id decl =
 
 let is_canonical_tag doc =
   match doc with
-  | [{Model.Location_.value = `Tag (`Canonical _); _}] -> true
+  | [{Odoc_model.Location_.value = `Tag (`Canonical _); _}] -> true
   | _ -> false
 
 (** For module aliases where the binding site doesn't have any doc comment
@@ -1027,7 +1027,7 @@ class t ?equal ?hash lookup fetch = object
         match t.fetch_unit_from_ref rf' with
         | None -> txt
         | Some u ->
-          let open Model.Comment in
+          let open Odoc_model.Comment in
           match u.Compilation_unit.doc with
           | Ok { text; _ } ->
             begin match text with

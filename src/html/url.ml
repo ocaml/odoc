@@ -1,7 +1,7 @@
 open Result
 open StdLabels
-open Model.Paths
-open Model.Names
+open Odoc_model.Paths
+open Odoc_model.Names
 
 type t = {
   page : string list;
@@ -197,9 +197,9 @@ let kind_of_id_exn id =
   | Error e -> failwith (Error.to_string e)
   | Ok { kind; _ } -> kind
 
-let render_path : Model.Paths.Path.t -> string =
-  let open Model.Paths.Path in
-  let rec render_resolved : Model.Paths.Path.Resolved.t -> string =
+let render_path : Odoc_model.Paths.Path.t -> string =
+  let open Odoc_model.Paths.Path in
+  let rec render_resolved : Odoc_model.Paths.Path.Resolved.t -> string =
     let open Resolved in
     function
     | `Identifier id -> Identifier.name id
@@ -209,12 +209,12 @@ let render_path : Model.Paths.Path.t -> string =
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)
     | `Canonical (_, `Resolved p) -> render_resolved (p :> t)
     | `Canonical (p, _) -> render_resolved (p :> t)
-    | `Apply (rp, p) -> render_resolved (rp :> t) ^ "(" ^ render_path (p :> Model.Paths.Path.t) ^ ")"
+    | `Apply (rp, p) -> render_resolved (rp :> t) ^ "(" ^ render_path (p :> Odoc_model.Paths.Path.t) ^ ")"
     | `ModuleType (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleTypeName.to_string s)
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ (TypeName.to_string s)
     | `Class (p, s) -> render_resolved (p :> t) ^ "." ^ (ClassName.to_string s)
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ (ClassTypeName.to_string s)
-  and render_path : Model.Paths.Path.t -> string =
+  and render_path : Odoc_model.Paths.Path.t -> string =
     function
     | `Root root -> root
     | `Forward root -> root
@@ -233,7 +233,7 @@ module Anchor = struct
   module Polymorphic_variant_decl = struct
     let name_of_type_constr te =
       match te with
-      | Model.Lang.TypeExpr.Constr (path, _) -> render_path (path :> Model.Paths.Path.t)
+      | Odoc_model.Lang.TypeExpr.Constr (path, _) -> render_path (path :> Odoc_model.Paths.Path.t)
       | _ ->
         invalid_arg "DocOckHtml.Url.Polymorphic_variant_decl.name_of_type_constr"
 
@@ -242,7 +242,7 @@ module Anchor = struct
       | Error e -> failwith (Error.to_string e)
       | Ok { anchor; _ } ->
         match elt with
-        | Model.Lang.TypeExpr.Polymorphic_variant.Type te ->
+        | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
           { kind = "type"
           ; name = Printf.sprintf "%s.%s" anchor (name_of_type_constr te) }
         | Constructor {name; _} ->
@@ -251,22 +251,22 @@ module Anchor = struct
   end
 
   module Module_listing = struct
-    module Reference = Model.Paths.Reference
+    module Reference = Odoc_model.Paths.Reference
 
     (* TODO: better error message. *)
     let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
     let rec from_reference : Reference.t -> t = function
-      | `Root (name, _) -> { kind = "xref-unresolved"; name = Model.Names.UnitName.to_string name }
+      | `Root (name, _) -> { kind = "xref-unresolved"; name = Odoc_model.Names.UnitName.to_string name }
       | `Dot (parent, suffix) ->
         let { name; _ } = from_reference (parent :> Reference.t) in
         { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }
       | `Module (parent, suffix) ->
         let { name; _ } = from_reference (parent :> Reference.t) in
-        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleName.to_string suffix) }
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Odoc_model.Names.ModuleName.to_string suffix) }
       | `ModuleType (parent, suffix) ->
         let { name; _ } = from_reference (parent :> Reference.t) in
-        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleTypeName.to_string suffix) }
+        { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name (Odoc_model.Names.ModuleTypeName.to_string suffix) }
       | `Resolved r ->
         from_resolved r
       | _ ->
@@ -284,10 +284,10 @@ module Anchor = struct
         { name; kind }
       | `Module (parent, s) ->
         let { name; _ } = from_resolved (parent :> Reference.Resolved.t) in
-        { kind = "module"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleName.to_string s) }
+        { kind = "module"; name = Printf.sprintf "%s.%s" name (Odoc_model.Names.ModuleName.to_string s) }
       | `ModuleType (parent, s) ->
         let { name; _ } = from_resolved (parent :> Reference.Resolved.t) in
-        { kind = "module-type"; name = Printf.sprintf "%s.%s" name (Model.Names.ModuleTypeName.to_string s) }
+        { kind = "module-type"; name = Printf.sprintf "%s.%s" name (Odoc_model.Names.ModuleTypeName.to_string s) }
       | _ ->
         fail ()
   end

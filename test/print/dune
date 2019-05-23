@@ -1,4 +1,3 @@
 (library
  (name print)
- (libraries odoc__alias odoc__model sexplib)
- (flags (:standard -open Odoc__alias)))
+ (libraries odoc_model sexplib))

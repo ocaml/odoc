@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val read_implementation: Model.Root.t -> string -> Typedtree.structure ->
-  Model.Paths.Identifier.Module.t *
-  Model.Comment.docs *
-  Model.Lang.Signature.t
+val read_implementation: Odoc_model.Root.t -> string -> Typedtree.structure ->
+  Odoc_model.Paths.Identifier.Module.t *
+  Odoc_model.Comment.docs *
+  Odoc_model.Lang.Signature.t

@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Model
+open Odoc_model
 open Paths
 
 type t
@@ -52,9 +52,9 @@ val method_ : t -> Lang.Method.t -> Lang.Method.t
 val instance_variable : t -> Lang.InstanceVariable.t ->
                         Lang.InstanceVariable.t
 
-val comment : t -> Model.Comment.docs_or_stop -> Model.Comment.docs_or_stop
+val comment : t -> Odoc_model.Comment.docs_or_stop -> Odoc_model.Comment.docs_or_stop
 
-val documentation : t -> Model.Comment.docs -> Model.Comment.docs
+val documentation : t -> Odoc_model.Comment.docs -> Odoc_model.Comment.docs
 
 val identifier_module : t -> Identifier.Module.t ->
                         Identifier.Module.t

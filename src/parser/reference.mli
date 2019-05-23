@@ -1,6 +1,6 @@
-module Error = Model.Error
-module Location_ = Model.Location_
-module Paths = Model.Paths
+module Error = Odoc_model.Error
+module Location_ = Odoc_model.Location_
+module Paths = Odoc_model.Paths
 
 val parse :
   Error.warning_accumulator -> Location_.span -> string ->

@@ -16,10 +16,10 @@
 
 
 
-type t = Model.Lang.Compilation_unit.t
+type t = Odoc_model.Lang.Compilation_unit.t
 
-let root (t : Model.Lang.Compilation_unit.t) =
-  match t.Model.Lang.Compilation_unit.id with
+let root (t : Odoc_model.Lang.Compilation_unit.t) =
+  match t.Odoc_model.Lang.Compilation_unit.id with
   | `Root (root, _) -> root
   | _ -> assert false
 

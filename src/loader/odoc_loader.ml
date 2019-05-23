@@ -1,7 +1,7 @@
-open Compat
+open Odoc_compat
 open Result
 
-module Error = Model.Error
+module Error = Odoc_model.Error
 
 
 
@@ -49,20 +49,20 @@ let read_cmti ~make_root ~filename =
           in
           let imports =
             List.map (fun (s, d) ->
-              Model.Lang.Compilation_unit.Import.Unresolved (s, d))
+              Odoc_model.Lang.Compilation_unit.Import.Unresolved (s, d))
             imports
           in
           let interface = true in
-          let hidden = Model.Root.contains_double_underscore name in
+          let hidden = Odoc_model.Root.contains_double_underscore name in
           let source =
             match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
             | Some file, Some digest ->
               let build_dir = cmt_info.cmt_builddir in
-              Some {Model.Lang.Compilation_unit.Source.file; digest; build_dir}
+              Some {Odoc_model.Lang.Compilation_unit.Source.file; digest; build_dir}
             | _, _ -> None
           in
-          let content = Model.Lang.Compilation_unit.Module items in
-          {Model.Lang.Compilation_unit.id; doc; digest; imports; source;
+          let content = Odoc_model.Lang.Compilation_unit.Module items in
+          {Odoc_model.Lang.Compilation_unit.id; doc; digest; imports; source;
            interface; hidden; content; expansion = None}
         end
       end
@@ -91,9 +91,9 @@ let read_cmt ~make_root ~filename =
           | None -> assert false
           | exception Not_found -> assert false
       in
-      let hidden = Model.Root.contains_double_underscore name in
+      let hidden = Odoc_model.Root.contains_double_underscore name in
       let root = make_root ~module_name:name ~digest in
-      let id = `Root(root, Model.Names.UnitName.of_string name) in
+      let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
       let items =
         List.map (fun file ->
           let pref = Misc.chop_extensions file in
@@ -103,21 +103,21 @@ let read_cmt ~make_root ~filename =
       let items = List.sort String.compare items in
       let items =
         List.map (fun name ->
-          let id = `Module(id, Model.Names.ModuleName.of_string name) in
+          let id = `Module(id, Odoc_model.Names.ModuleName.of_string name) in
           let path = `Root name in
-          {Model.Lang.Compilation_unit.Packed.id; path})
+          {Odoc_model.Lang.Compilation_unit.Packed.id; path})
           items
       in
       let imports =
         List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
       let imports =
         List.map (fun (s, d) ->
-          Model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
+          Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
       let doc = Doc_attr.empty in
       let source = None in
-      let content = Model.Lang.Compilation_unit.Pack items in
-      Ok {Model.Lang.Compilation_unit.id; doc; digest; imports;
+      let content = Odoc_model.Lang.Compilation_unit.Pack items in
+      Ok {Odoc_model.Lang.Compilation_unit.id; doc; digest; imports;
           source; interface; hidden; content; expansion = None}
 
     | Implementation impl ->
@@ -132,24 +132,24 @@ let read_cmt ~make_root ~filename =
             | None -> assert false
             | exception Not_found -> assert false
         in
-        let hidden = Model.Root.contains_double_underscore name in
+        let hidden = Odoc_model.Root.contains_double_underscore name in
         let root = make_root ~module_name:name ~digest in
         let (id, doc, items) = Cmt.read_implementation root name impl in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
         let imports =
           List.map (fun (s, d) ->
-            Model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
+            Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
         in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
             let build_dir = cmt_info.cmt_builddir in
-            Some {Model.Lang.Compilation_unit.Source.file; digest; build_dir}
+            Some {Odoc_model.Lang.Compilation_unit.Source.file; digest; build_dir}
           | _, _ -> None
         in
-        let content = Model.Lang.Compilation_unit.Module items in
-        {Model.Lang.Compilation_unit.id; doc; digest; imports;
+        let content = Odoc_model.Lang.Compilation_unit.Module items in
+        {Odoc_model.Lang.Compilation_unit.id; doc; digest; imports;
          source; interface; hidden; content; expansion = None}
       end
 
@@ -168,16 +168,16 @@ let read_cmi ~make_root ~filename =
     | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
       Error.catch begin fun () ->
         let root = make_root ~module_name:name ~digest:digest in
-        let (id, doc, items) = Cmi.read_interface root name (Model.Compat.signature cmi_info.cmi_sign) in
+        let (id, doc, items) = Cmi.read_interface root name (Odoc_model.Compat.signature cmi_info.cmi_sign) in
         let imports =
           List.map (fun (s, d) ->
-            Model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
+            Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
         in
         let interface = true in
-        let hidden = Model.Root.contains_double_underscore name in
+        let hidden = Odoc_model.Root.contains_double_underscore name in
         let source = None in
-        let content = Model.Lang.Compilation_unit.Module items in
-        {Model.Lang.Compilation_unit.id; doc; digest; imports;
+        let content = Odoc_model.Lang.Compilation_unit.Module items in
+        {Odoc_model.Lang.Compilation_unit.id; doc; digest; imports;
          source; interface; hidden; content; expansion = None}
       end
 

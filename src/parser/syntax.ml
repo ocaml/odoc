@@ -19,9 +19,9 @@
 
 
 
-module Location = Model.Location_
-module Error = Model.Error
-module Comment = Model.Comment
+module Location = Odoc_model.Location_
+module Error = Odoc_model.Error
+module Comment = Odoc_model.Comment
 
 type 'a with_location = 'a Location.with_location
 
@@ -852,7 +852,7 @@ let rec block_element_list
 
       let block = paragraph input in
       let block =
-        Model.Location_.map (accepted_in_all_contexts context) block in
+        Odoc_model.Location_.map (accepted_in_all_contexts context) block in
       let acc = block::acc in
       consume_block_elements ~parsed_a_tag `After_text acc
 

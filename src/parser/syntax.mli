@@ -1,4 +1,4 @@
 val parse :
-  Model.Error.warning_accumulator ->
-  (Token.t Model.Location_.with_location) Stream.t ->
+  Odoc_model.Error.warning_accumulator ->
+  (Token.t Odoc_model.Location_.with_location) Stream.t ->
     Ast.docs

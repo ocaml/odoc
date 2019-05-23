@@ -14,9 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type t = Model.Lang.Compilation_unit.t
+type t = Odoc_model.Lang.Compilation_unit.t
 
-val root : t -> Model.Root.t
+val root : t -> Odoc_model.Root.t
 
 (** {2 Serialization} *)
 

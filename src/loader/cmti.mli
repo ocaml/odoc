@@ -16,15 +16,15 @@
 
 
 
-module Paths = Model.Paths
-module Ident_env = Model.Ident_env
+module Paths = Odoc_model.Paths
+module Ident_env = Odoc_model.Ident_env
 
 
 
-val read_interface: Model.Root.t -> string -> Typedtree.signature ->
+val read_interface: Odoc_model.Root.t -> string -> Typedtree.signature ->
   Paths.Identifier.Module.t *
-  Model.Comment.docs *
-  Model.Lang.Signature.t
+  Odoc_model.Comment.docs *
+  Odoc_model.Lang.Signature.t
 
 val read_module_type :
   Ident_env.t ->
@@ -32,23 +32,23 @@ val read_module_type :
   Paths.Identifier.LabelParent.t ->
   int ->
   Typedtree.module_type ->
-    Model.Lang.ModuleType.expr
+    Odoc_model.Lang.ModuleType.expr
 
 val read_value_description : Ident_env.t ->
   Paths.Identifier.Signature.t ->
-  Typedtree.value_description -> Model.Lang.Signature.item
+  Typedtree.value_description -> Odoc_model.Lang.Signature.item
 
 val read_type_declarations : Ident_env.t ->
   Paths.Identifier.Signature.t ->
-  Model.Lang.Signature.recursive ->
+  Odoc_model.Lang.Signature.recursive ->
   Typedtree.type_declaration list ->
-  Model.Lang.Signature.item list
+  Odoc_model.Lang.Signature.item list
 
 val read_module_type_declaration : Ident_env.t ->
   Paths.Identifier.Signature.t ->
-  Typedtree.module_type_declaration -> Model.Lang.ModuleType.t
+  Typedtree.module_type_declaration -> Odoc_model.Lang.ModuleType.t
 
 val read_class_type_declarations : Ident_env.t ->
   Paths.Identifier.Signature.t ->
   Typedtree.class_type Typedtree.class_infos list ->
-  Model.Lang.Signature.item list
+  Odoc_model.Lang.Signature.item list

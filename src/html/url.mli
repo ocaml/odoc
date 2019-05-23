@@ -1,6 +1,6 @@
 open Result
 
-open Model.Paths
+open Odoc_model.Paths
 
 type t = {
   page : string list;
@@ -52,7 +52,7 @@ module Anchor : sig
   module Polymorphic_variant_decl : sig
     val from_element
       : type_ident:Identifier.t
-      -> Model.Lang.TypeExpr.Polymorphic_variant.element
+      -> Odoc_model.Lang.TypeExpr.Polymorphic_variant.element
       -> t
   end
 

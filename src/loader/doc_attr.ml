@@ -18,13 +18,13 @@ open Result
 
 
 
-module Paths = Model.Paths
+module Paths = Odoc_model.Paths
 
 
 
 let empty_body = []
 
-let empty : Model.Comment.docs = empty_body
+let empty : Odoc_model.Comment.docs = empty_body
 
 
 
@@ -44,7 +44,7 @@ let load_payload : Parsetree.payload -> (string * Location.t) option = function
 let attached parent attrs =
   let ocaml_deprecated = ref None in
   let rec loop first nb_deprecated acc
-      : _ -> (Model.Comment.docs, Model.Error.t) result =
+      : _ -> (Odoc_model.Comment.docs, Odoc_model.Error.t) result =
     function
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
     | {Parsetree.attr_name = { Location.txt =
@@ -59,12 +59,12 @@ let attached parent attrs =
             let start_pos =
               {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
             let parsed =
-              Parser_.parse_comment
+              Odoc_parser.parse_comment
                 ~sections_allowed:`All
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
-              |> Model.Error.shed_warnings
+              |> Odoc_model.Error.shed_warnings
             in
             loop false 0 (acc @ parsed) rest
           end
@@ -78,24 +78,24 @@ let attached parent attrs =
       end
   in
     loop true 0 empty_body attrs
-  |> Model.Error.to_exception
+  |> Odoc_model.Error.to_exception
 
-let read_string parent loc str : Model.Comment.docs_or_stop =
+let read_string parent loc str : Odoc_model.Comment.docs_or_stop =
   let start_pos = loc.Location.loc_start in
-  let doc : Model.Comment.docs =
-    Parser_.parse_comment
+  let doc : Odoc_model.Comment.docs =
+    Odoc_parser.parse_comment
       ~sections_allowed:`All
       ~containing_definition:parent
       ~location:start_pos
       ~text:str
-    |> Model.Error.shed_warnings
+    |> Odoc_model.Error.shed_warnings
   in
   `Docs doc
 
 let page = read_string
 
 let standalone parent
-    : Parsetree.attribute -> Model.Comment.docs_or_stop option =
+    : Parsetree.attribute -> Odoc_model.Comment.docs_or_stop option =
 
   function
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
@@ -116,7 +116,7 @@ let standalone parent
       | None ->
         (* TODO *)
         assert false
-          (* let doc : Model.Comment.t =
+          (* let doc : Odoc_model.Comment.t =
             Error (invalid_attribute_error parent loc) in
             Some (Documentation doc) *)
     end

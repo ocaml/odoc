@@ -263,7 +263,7 @@ let some_decl =
 
 let int_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = int_identifier in
   (* let text = [Raw "The type of integer numbers."] in *)
   (* TODO *)
@@ -275,7 +275,7 @@ let int_decl =
 
 let char_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = char_identifier in
   (* let text = [Raw "The type of characters."] in *)
   (* let text = [] in *)
@@ -287,7 +287,7 @@ let char_decl =
 
 let bytes_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = bytes_identifier in
   (* let text = [Raw "The type of (writable) byte sequences."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -298,7 +298,7 @@ let bytes_decl =
 
 let string_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = string_identifier in
   (* let text = [Raw "The type of (read-only) character strings."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -309,7 +309,7 @@ let string_decl =
 
 let float_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = float_identifier in
   (* let text = [Raw "The type of floating-point numbers."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -321,7 +321,7 @@ let float_decl =
 let bool_decl =
   let open TypeDecl in
   let open Representation in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = bool_identifier in
   (* let text = [Raw "The type of booleans (truth values)."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -333,7 +333,7 @@ let bool_decl =
 let unit_decl =
   let open TypeDecl in
   let open Representation in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = unit_identifier in
   (* let text = [Raw "The type of the unit value."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -345,7 +345,7 @@ let unit_decl =
 let exn_decl =
   let open TypeDecl in
   let open Representation in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = exn_identifier in
   (* let text = [Raw "The type of exception values."] in *)
   (* let doc = Ok {empty_doc with text} in *)
@@ -356,7 +356,7 @@ let exn_decl =
 
 let array_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = array_identifier in
   (* let text =
     [Raw "The type of arrays whose elements have type ";
@@ -372,7 +372,7 @@ let array_decl =
 let list_decl =
   let open TypeDecl in
   let open Representation in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = list_identifier in
   (* let text =
     [Raw "The type of lists whose elements have type ";
@@ -388,7 +388,7 @@ let list_decl =
 let option_decl =
   let open TypeDecl in
   let open Representation in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = option_identifier in
   (* let text =
     [Raw "The type of optional values of type ";
@@ -403,7 +403,7 @@ let option_decl =
 
 let int32_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = int32_identifier in
   (* let text =
     [Raw "The type of signed 32-bit integers. See the ";
@@ -418,7 +418,7 @@ let int32_decl =
 
 let int64_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = int64_identifier in
   (* let text =
     [Raw "The type of signed 64-bit integers. See the ";
@@ -433,7 +433,7 @@ let int64_decl =
 
 let nativeint_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = nativeint_identifier in
   (* let text =
     [Raw "The type of signed, platform-native integers (32 bits on \
@@ -449,7 +449,7 @@ let nativeint_decl =
 
 let lazy_t_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = lazy_t_identifier in
   (* let text =
     [Raw "This type is used to implement the ";
@@ -464,7 +464,7 @@ let lazy_t_decl =
 
 let extension_constructor_decl =
   let open TypeDecl in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = extension_constructor_identifier in
   (* let text =
     [Raw "cf. ";
@@ -504,7 +504,7 @@ let floatarray_decl =
 
 let match_failure_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = match_failure_identifier in
   (* let text =
     [Raw "Exception raised when none of the cases of a pattern matching apply. \
@@ -524,7 +524,7 @@ let match_failure_decl =
 
 let assert_failure_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = assert_failure_identifier in
   (* let text =
     [Raw "Exception raised when and assertion fails. \
@@ -544,7 +544,7 @@ let assert_failure_decl =
 
 let invalid_argument_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = invalid_argument_identifier in
   (* let text =
     [Raw "Exception raised by library functions to signal that the given \
@@ -558,7 +558,7 @@ let invalid_argument_decl =
 
 let failure_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = failure_identifier in
   (* let text =
     [Raw "Exception raised by library functions to signal that they are \
@@ -572,7 +572,7 @@ let failure_decl =
 
 let not_found_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = not_found_identifier in
   (* let text =
     [Raw "Exception raised by search functions when the desired object \
@@ -586,7 +586,7 @@ let not_found_decl =
 
 let out_of_memory_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = out_of_memory_identifier in
   (* let text =
     [Raw "Exception raised by the garbage collector when there is \
@@ -601,7 +601,7 @@ let out_of_memory_decl =
 (* TODO: Provide reference to the OCaml manual *)
 let stack_overflow_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = stack_overflow_identifier in
   (* let text =
     [Raw "Exception raised by the bytecode interpreter when the evaluation \
@@ -618,7 +618,7 @@ let stack_overflow_decl =
 
 let sys_error_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = sys_error_identifier in
   (* let text =
     [Raw "Exception raised by the input/output functions to report an \
@@ -632,7 +632,7 @@ let sys_error_decl =
 
 let end_of_file_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = end_of_file_identifier in
   (* let text =
     [Raw "Exception raised by input functions to signal that the end of \
@@ -646,7 +646,7 @@ let end_of_file_decl =
 
 let division_by_zero_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = division_by_zero_identifier in
   (* let text =
     [Raw "Exception raised by integer division and remainder operations \
@@ -660,7 +660,7 @@ let division_by_zero_decl =
 
 let sys_blocked_io_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = sys_blocked_io_identifier in
   (* let text =
     [Raw "A special case of ";
@@ -676,7 +676,7 @@ let sys_blocked_io_decl =
 (* TODO: Provide reference to the OCaml manual *)
 let undefined_recursive_module_decl =
   let open Lang.Exception in
-  (* let open Model.Comment in *)
+  (* let open Odoc_model.Comment in *)
   let id = undefined_recursive_module_identifier in
   (* let text =
     [Raw "Exception raised when an ill-founded recursive module definition \

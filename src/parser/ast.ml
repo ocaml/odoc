@@ -1,9 +1,9 @@
-module Path = Model.Paths.Path
-module Reference = Model.Paths.Reference
-module Identifier = Model.Paths.Identifier
-module Comment = Model.Comment
+module Path = Odoc_model.Paths.Path
+module Reference = Odoc_model.Paths.Reference
+module Identifier = Odoc_model.Paths.Identifier
+module Comment = Odoc_model.Comment
 
-type 'a with_location = 'a Model.Location_.with_location
+type 'a with_location = 'a Odoc_model.Location_.with_location
 
 
 

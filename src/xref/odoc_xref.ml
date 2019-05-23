@@ -14,16 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 type lookup_result_found = Component_table.lookup_result_found =
-  { root : Model.Root.t; hidden : bool }
+  { root : Odoc_model.Root.t; hidden : bool }
 
 type lookup_result = Component_table.lookup_unit_result =
   | Forward_reference
   | Found of lookup_result_found
   | Not_found
 
-let core_types = Model.Predefined.core_types
+let core_types = Odoc_model.Predefined.core_types
 
-let core_exceptions = Model.Predefined.core_exceptions
+let core_exceptions = Odoc_model.Predefined.core_exceptions
 
 type resolver = Resolve.resolver
 

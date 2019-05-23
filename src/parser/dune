@@ -12,9 +12,8 @@ let () =
 (ocamllex lexer)
 
 (library
- (name odoc__parser)
+ (name odoc_parser)
  (public_name odoc.parser)
     |} ^ preprocess ^ {|
- (libraries astring odoc__alias odoc__compat odoc__model)
- (flags (:standard -open Odoc__alias)))
+ (libraries astring odoc_compat odoc_model))
     |}

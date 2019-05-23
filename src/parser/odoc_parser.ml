@@ -23,7 +23,7 @@
    then passed to the lexer, so it can apply the table to its emitted tokens. *)
 let offset_to_location
     : input:string -> comment_location:Lexing.position ->
-        (int -> Model.Location_.point) =
+        (int -> Odoc_model.Location_.point) =
     fun ~input ~comment_location ->
 
   let rec find_newlines line_number input_index newlines_accumulator =
@@ -62,14 +62,14 @@ let offset_to_location
             else
               column_in_comment
           in
-          {Model.Location_.line = line_in_file; column = column_in_file}
+          {Odoc_model.Location_.line = line_in_file; column = column_in_file}
     in
     scan_to_last_newline reversed_newlines
 
 
 
 let parse_comment ~sections_allowed ~containing_definition ~location ~text =
-  Model.Error.accumulate_warnings begin fun warnings ->
+  Odoc_model.Error.accumulate_warnings begin fun warnings ->
     let token_stream =
       let lexbuf = Lexing.from_string text in
       let offset_to_location =

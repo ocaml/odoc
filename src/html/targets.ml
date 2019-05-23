@@ -15,9 +15,9 @@
  *)
 
 open StdLabels
-open Model.Paths
+open Odoc_model.Paths
 
-let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
+let functor_arg_pos { Odoc_model.Lang.FunctorArgument.id ; _ } =
   match id with
   | `Argument (_, nb, _) -> nb
   | _ ->
@@ -25,7 +25,7 @@ let functor_arg_pos { Model.Lang.FunctorArgument.id ; _ } =
     (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
     invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
 
-let rec unit ~package (t : Model.Lang.Compilation_unit.t) : string list =
+let rec unit ~package (t : Odoc_model.Lang.Compilation_unit.t) : string list =
   let name = Printf.sprintf "%s/%s" package (Identifier.name t.id) in
   let rest =
     match t.content with
@@ -34,12 +34,12 @@ let rec unit ~package (t : Model.Lang.Compilation_unit.t) : string list =
   in
   name :: rest
 
-and signature ~prefix (t : Model.Lang.Signature.t) =
+and signature ~prefix (t : Odoc_model.Lang.Signature.t) =
   let rec add_items ~don't acc = function
   | [] -> List.concat (List.rev acc)
   | i :: is ->
       match i with
-      | Model.Lang.Signature.Comment `Stop ->
+      | Odoc_model.Lang.Signature.Comment `Stop ->
           add_items ~don't:(not don't) acc is
       | _ when don't ->
           add_items ~don't acc is
@@ -61,7 +61,7 @@ and signature ~prefix (t : Model.Lang.Signature.t) =
   add_items ~don't:false [] t
 
 and functor_argument ~prefix arg =
-  let open Model.Lang.FunctorArgument in
+  let open Odoc_model.Lang.FunctorArgument in
   match arg.expansion with
   | None -> []
   | Some expansion ->
@@ -72,7 +72,7 @@ and functor_argument ~prefix arg =
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 
-and module_expansion ~prefix (t : Model.Lang.Module.expansion) =
+and module_expansion ~prefix (t : Odoc_model.Lang.Module.expansion) =
   match t with
   | AlreadyASig -> [] (* FIXME. *)
   | Signature sg -> signature ~prefix sg
@@ -86,7 +86,7 @@ and module_expansion ~prefix (t : Model.Lang.Module.expansion) =
         arg_subpages @ subpages
     )
 
-and module_ ~prefix (t : Model.Lang.Module.t) =
+and module_ ~prefix (t : Odoc_model.Lang.Module.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
@@ -94,7 +94,7 @@ and module_ ~prefix (t : Model.Lang.Module.t) =
     let subpages = module_expansion ~prefix:page expansion in
     page :: subpages
 
-and module_type ~prefix (t : Model.Lang.ModuleType.t) =
+and module_type ~prefix (t : Odoc_model.Lang.ModuleType.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
@@ -104,5 +104,5 @@ and module_type ~prefix (t : Model.Lang.ModuleType.t) =
     page :: subpages
 
 
-and include_ ~prefix (t : Model.Lang.Include.t) =
+and include_ ~prefix (t : Odoc_model.Lang.Include.t) =
   signature ~prefix t.expansion.content

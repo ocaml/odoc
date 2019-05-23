@@ -17,7 +17,7 @@
 
 
 module Html = Tyxml.Html
-module Paths = Model.Paths
+module Paths = Odoc_model.Paths
 
 (** Supported languages for printing code parts. *)
 

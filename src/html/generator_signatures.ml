@@ -1,5 +1,5 @@
 module Html = Tyxml.Html
-module Lang = Model.Lang
+module Lang = Odoc_model.Lang
 
 
 
@@ -11,12 +11,12 @@ type ('inner, 'outer) text =
 type ('item_kind, 'item) tagged_item = [
   | `Leaf_item of 'item_kind * 'item
   | `Nested_article of 'item
-  | `Comment of Model.Comment.docs_or_stop
+  | `Comment of Odoc_model.Comment.docs_or_stop
 ]
 
 type section = {
   anchor : string;
-  text : Model.Comment.link_content;
+  text : Odoc_model.Comment.link_content;
   children : section list
 }
 
@@ -128,9 +128,9 @@ sig
     val lay_out :
       item_to_id:('item -> string option) ->
       item_to_spec:('item -> string option) ->
-      render_leaf_item:('item -> rendered_item * Model.Comment.docs) ->
+      render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
       render_nested_article:
-        ('item -> rendered_item * Model.Comment.docs * (Tree.t list)) ->
+        ('item -> rendered_item * Odoc_model.Comment.docs * (Tree.t list)) ->
       (_, 'item) tagged_item list ->
         (Html_types.div_content Html.elt) list * toc * (Tree.t list)
 

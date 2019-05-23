@@ -1,7 +1,7 @@
-module Location = Model.Location_
-module Error = Model.Error
+module Location = Odoc_model.Location_
+module Error = Odoc_model.Error
 
-open Compat
+open Odoc_compat
 
 
 

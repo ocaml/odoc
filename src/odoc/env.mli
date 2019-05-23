@@ -33,10 +33,10 @@ val create :
 val build : builder -> [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 (** Initialize the environment for the given unit. *)
 
-val resolver : t -> Xref.resolver
+val resolver : t -> Odoc_xref.resolver
 (** Get a resolver from an env *)
 
-val expander : t -> Xref.expander
+val expander : t -> Odoc_xref.expander
 (** Get an expander from an env *)
 
 (* val forward_resolver : t -> Root.t DocOck.forward_resolver *)
