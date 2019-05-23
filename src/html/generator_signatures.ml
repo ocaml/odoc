@@ -93,7 +93,7 @@ sig
       val semicolon : bool
       val handle_primitives :
         string list ->
-          [< Html_types.code_content_fun > `A `PCDATA `Span] Tyxml_html.elt list
+          [< Html_types.code_content_fun > `A `PCDATA `Span] Html.elt list
     end
   end
 
