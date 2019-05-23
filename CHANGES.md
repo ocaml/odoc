@@ -1,3 +1,8 @@
+Unreleased
+----------
+
+- Fixed rendering of conjunctive types (#358, #353, Florian Angeletti)
+
 1.4.0
 -----
 

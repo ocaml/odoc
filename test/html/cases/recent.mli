@@ -26,3 +26,11 @@ type polymorphic_variant = [
 ]
 
 type nonrec nonrec_ = int
+
+
+(* Conjunctive types: dune compilation scheme exposes a bug in old
+   versions of the compiler *)
+type empty_conj= X: [< `X of & 'a & int * float  ] -> empty_conj
+type conj = X: [< `X of int & [< `B of int & float ] ] -> conj
+val empty_conj: [< `X of & 'a & int * float  ]
+val conj : [< `X of int & [< `B of int & float ] ]
