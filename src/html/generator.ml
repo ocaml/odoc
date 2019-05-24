@@ -67,7 +67,7 @@ end =
 struct
   let rec te_variant
     : 'inner 'outer. Odoc_model.Lang.TypeExpr.Polymorphic_variant.t ->
-        ('inner, 'outer) text Html.elt list
+        ('inner, 'outer) text Html.elt
   = fun (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) ->
     let elements =
       list_concat_map t.elements ~sep:(Html.txt " | ") ~f:(function
@@ -85,7 +85,8 @@ struct
             let wrapped_type_expr =
               (* type conjunction in Reason is printed as `Lbl (t1)&(t2)` *)
               if Syntax.Type.Variant.parenthesize_params then
-                fun x -> Html.txt "(" :: type_expr x @ [Html.txt ")"]
+                fun x ->
+                  [Html.span (Html.txt "(" :: type_expr x @ [Html.txt ")"])]
               else
                 fun x -> type_expr x
             in
@@ -102,13 +103,15 @@ struct
             else Html.txt (constr ^ " of ") :: arguments
       )
     in
-    match t.kind with
-    | Fixed -> Html.txt "[ " :: elements @ [Html.txt " ]"]
-    | Open -> Html.txt "[> " :: elements @ [Html.txt " ]"]
-    | Closed [] -> Html.txt "[< " :: elements @ [Html.txt " ]"]
-    | Closed lst ->
-      let constrs = String.concat " " lst in
-      Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
+    Html.span (
+      match t.kind with
+      | Fixed -> Html.txt "[ " :: elements @ [Html.txt " ]"]
+      | Open -> Html.txt "[> " :: elements @ [Html.txt " ]"]
+      | Closed [] -> Html.txt "[< " :: elements @ [Html.txt " ]"]
+      | Closed lst ->
+        let constrs = String.concat " " lst in
+        Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
+    )
 
   and te_object
     : 'inner 'outer. Odoc_model.Lang.TypeExpr.Object.t ->
@@ -143,8 +146,8 @@ struct
         let param = (type_expr ~needs_parentheses:true param) in
         let args =
           if Syntax.Type.parenthesize_constructor
-          then  Html.txt "(" :: param @ [Html.txt ")"]
-          else param
+          then [Html.span (Html.txt "(" :: param @ [Html.txt ")"])]
+          else [Html.span param]
         in
       Syntax.Type.handle_constructor_params path args
     | params  ->
@@ -152,11 +155,14 @@ struct
         list_concat_map params ~sep:(Html.txt ",\194\160")
           ~f:type_expr
       in
-      let params = match delim with
-        | `parens   -> Html.txt "(" :: params @ [Html.txt ")"]
-        | `brackets -> Html.txt "[" :: params @ [Html.txt "]"]
+      let params =
+        Html.span (
+          match delim with
+          | `parens   -> Html.txt "(" :: params @ [Html.txt ")"]
+          | `brackets -> Html.txt "[" :: params @ [Html.txt "]"]
+        )
       in
-      Syntax.Type.handle_constructor_params path params
+      Syntax.Type.handle_constructor_params path [params]
 
   and type_expr
     : 'inner 'outer. ?needs_parentheses:bool
@@ -173,20 +179,22 @@ struct
         type_expr ~needs_parentheses:true src @
         Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
-      if not needs_parentheses then
-        res
-      else
-        Html.txt "(" :: res @ [Html.txt ")"]
+      [Html.span (
+         if not needs_parentheses
+         then res
+         else Html.txt "(" :: res @ [Html.txt ")"]
+       )]
     | Arrow (Some lbl, src, dst) ->
       let res =
         label lbl @ Html.txt ":" ::
         type_expr ~needs_parentheses:true src @
         Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
-      if not needs_parentheses then
-        res
-      else
-        Html.txt "(" :: res @ [Html.txt ")"]
+      [Html.span (
+         if not needs_parentheses
+         then res
+         else Html.txt "(" :: res @ [Html.txt ")"]
+       )]
     | Tuple lst ->
       let res =
         list_concat_map
@@ -194,14 +202,15 @@ struct
           ~sep:(Html.txt Syntax.Type.Tuple.element_separator)
           ~f:(type_expr ~needs_parentheses:true)
       in
-      if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
-        Html.txt "(" :: res @ [Html.txt ")"]
-      else
-        res
+      [Html.span (
+         if Syntax.Type.Tuple.always_parenthesize || needs_parentheses
+         then Html.txt "(" :: res @ [Html.txt ")"]
+         else res
+       )]
     | Constr (path, args) ->
       let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
       format_type_path ~delim:(`parens) args link
-    | Polymorphic_variant v -> te_variant v
+    | Polymorphic_variant v -> [te_variant v]
     | Object o -> te_object o
     | Class (path, args) ->
       format_type_path ~delim:(`brackets) args
@@ -209,18 +218,21 @@ struct
     | Poly (polyvars, t) ->
       Html.txt (String.concat " " polyvars ^ ". ") :: type_expr t
     | Package pkg ->
-      Html.txt "(" :: keyword "module" :: Html.txt " " ::
-      Tree.Relative_link.of_path ~stop_before:false (pkg.path :> Paths.Path.t) @
-      begin match pkg.substitutions with
-      | [] -> []
-      | lst ->
-        Html.txt " " :: keyword "with" :: Html.txt " " ::
-        list_concat_map_list_sep
-          ~sep:[Html.txt " "; keyword "and"; Html.txt " "]
-          lst
-          ~f:(package_subst pkg.path)
-      end
-      @ [Html.txt ")"]
+      [Html.span (
+         Html.txt "(" :: keyword "module" :: Html.txt " " ::
+         Tree.Relative_link.of_path ~stop_before:false
+           (pkg.path :> Paths.Path.t) @
+         begin match pkg.substitutions with
+         | [] -> []
+         | lst ->
+           Html.txt " " :: keyword "with" :: Html.txt " " ::
+           list_concat_map_list_sep
+             ~sep:[Html.txt " "; keyword "and"; Html.txt " "]
+             lst
+             ~f:(package_subst pkg.path)
+         end
+         @ [Html.txt ")"]
+       )]
 
   and package_subst
     : 'inner 'outer.
@@ -510,6 +522,7 @@ struct
     in
     let table =
       Html.table ~a:[Html.a_class ["variant"]] (List.map row t.elements) in
+    (* FIXME: stop using a table... *)
     match t.kind with
     | Fixed ->
       Html.code [Html.txt "[ "] :: table :: [Html.code [Html.txt " ]"]]
