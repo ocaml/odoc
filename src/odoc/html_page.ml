@@ -88,9 +88,7 @@ let from_odoc ~env ?(syntax=Odoc_html.Tree.OCaml) ?theme_uri ~output:root_dir in
 (* Used only for [--index-for] which is deprecated and available only for
    backward compatibility. It should be removed whenever. *)
 let from_mld ~env ?(syntax=Odoc_html.Tree.OCaml) ~package ~output:root_dir input =
-  let root_name =
-    Filename.chop_extension (Fs.File.(to_string @@ basename input))
-  in
+  let root_name = "index" in
   let digest = Digest.file (Fs.File.to_string input) in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
