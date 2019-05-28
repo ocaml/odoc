@@ -5,8 +5,11 @@ module Lang = Odoc_model.Lang
 
 type rendered_item = (Html_types.dt_content Html.elt) list
 
-type ('inner, 'outer) text =
-  [> `PCDATA | `Span | `A of ([> `PCDATA] as 'inner)] as 'outer
+type text =
+  [ `A of Html_types.phrasing_without_interactive
+  | `Code
+  | `PCDATA
+  | `Span ] Html.elt list
 
 type ('item_kind, 'item) tagged_item = [
   | `Leaf_item of 'item_kind * 'item
@@ -41,15 +44,8 @@ sig
   sig
     val annotation_separator : string
 
-    val handle_constructor_params :
-      ('inner, 'outer) text Html.elt list ->
-      ('inner, 'outer) text Html.elt list ->
-        ('inner, 'outer) text Html.elt list
-
-    val handle_substitution_params :
-      ('inner, 'outer) text Html.elt list ->
-      ('inner, 'outer) text Html.elt list ->
-        ('inner, 'outer) text Html.elt list
+    val handle_constructor_params : text -> text -> text
+    val handle_substitution_params : text -> text -> text
 
     val handle_format_params : string -> string
     val type_def_semicolon : bool

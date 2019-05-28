@@ -53,22 +53,13 @@ include Generator_signatures
 module Make (Syntax : SYNTAX) = struct
 module Type_expression :
 sig
-  val type_expr :
-    ?needs_parentheses:bool ->
-    Lang.TypeExpr.t ->
-      (('inner, 'outer) text Html.elt) list
+  val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> text
 
   val format_type_path :
-    delim:[ `parens | `brackets ] ->
-    Lang.TypeExpr.t list ->
-    (('inner, 'outer) text Html.elt) list ->
-      (('inner, 'outer) text Html.elt) list
+    delim:[ `parens | `brackets ] -> Lang.TypeExpr.t list -> text -> text
 end =
 struct
-  let rec te_variant
-    : 'inner 'outer. Odoc_model.Lang.TypeExpr.Polymorphic_variant.t ->
-        ('inner, 'outer) text Html.elt list
-  = fun (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) ->
+  let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) : text =
     let elements =
       list_concat_map t.elements ~sep:(Html.txt " | ") ~f:(function
         | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
@@ -110,10 +101,7 @@ struct
       let constrs = String.concat " " lst in
       Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
 
-  and te_object
-    : 'inner 'outer. Odoc_model.Lang.TypeExpr.Object.t ->
-        ('inner, 'outer) text Html.elt list
-  = fun (t : Odoc_model.Lang.TypeExpr.Object.t) ->
+  and te_object (t : Odoc_model.Lang.TypeExpr.Object.t) : text =
     let fields =
       list_concat_map t.fields ~f:(function
         | Odoc_model.Lang.TypeExpr.Object.Method {name; type_} ->
@@ -133,10 +121,7 @@ struct
     (open_tag :: fields) @ [close_tag]
 
   and format_type_path
-    : 'inner 'outer. delim:[ `parens | `brackets ]
-    -> Odoc_model.Lang.TypeExpr.t list -> ('inner, 'outer) text Html.elt list
-    -> ('inner, 'outer) text Html.elt list
-  = fun ~delim params path ->
+        ~delim (params : Odoc_model.Lang.TypeExpr.t list) (path : text) : text =
     match params with
     | [] -> path
     | [param] ->
@@ -159,9 +144,7 @@ struct
       Syntax.Type.handle_constructor_params path params
 
   and type_expr
-    : 'inner 'outer. ?needs_parentheses:bool
-    -> Odoc_model.Lang.TypeExpr.t -> ('inner, 'outer) text Html.elt list
-  = fun ?(needs_parentheses=false) t ->
+        ?(needs_parentheses=false) (t : Odoc_model.Lang.TypeExpr.t) : text =
     match t with
     | Var s -> [type_var (Syntax.Type.var_prefix ^ s)]
     | Any  -> [type_var Syntax.Type.any]
@@ -222,11 +205,9 @@ struct
       end
       @ [Html.txt ")"]
 
-  and package_subst
-    : 'inner 'outer.
-      Paths.Path.ModuleType.t -> Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t
-    -> ('inner, 'outer) text Html.elt list
-    = fun pkg_path (frag_typ, te) ->
+  and package_subst (pkg_path : Paths.Path.ModuleType.t)
+        (frag_typ, te : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t)
+    : text =
     keyword "type" ::
     Html.txt " " ::
     (match pkg_path with
@@ -260,14 +241,9 @@ sig
     Lang.TypeDecl.param list ->
       [> `PCDATA ] Html.elt
 
-  val format_manifest :
-    ?compact_variants:bool ->
-    Lang.TypeDecl.Equation.t ->
-      ((('inner, 'outer) text Html.elt) list) * bool
+  val format_manifest : ?compact_variants:bool -> Lang.TypeDecl.Equation.t -> text * bool
 
-  val format_constraints :
-    (Lang.TypeExpr.t * Lang.TypeExpr.t) list ->
-      (('inner, 'outer) text Html.elt) list
+  val format_constraints : (Lang.TypeExpr.t * Lang.TypeExpr.t) list -> text
 end =
 struct
   let record fields =
@@ -550,12 +526,7 @@ struct
         (match delim with `parens -> ")" | `brackets -> "]")
     )
 
-  let format_constraints
-    : 'inner_row 'outer_row. (_ * _) list ->
-    ([> `PCDATA | `Span
-    | `A of ([> `PCDATA ] as 'inner_row) ] as 'outer_row) Html.elt list =
-      fun constraints ->
-
+  let format_constraints constraints =
     list_concat_map constraints ~f:begin fun (t1, t2) ->
       Html.txt " " ::
       keyword "constraint" ::
@@ -568,7 +539,7 @@ struct
   let format_manifest
     : 'inner_row 'outer_row. ?compact_variants:bool
     -> Odoc_model.Lang.TypeDecl.Equation.t
-    -> ('inner_row, 'outer_row) text Html.elt list * bool
+    -> text * bool
   = fun ?(compact_variants=true) equation ->
     let _ = compact_variants in (* TODO *)
     let private_ = equation.private_ in
@@ -1101,7 +1072,8 @@ struct
 
     | Comment comment -> `Comment comment
 
-  let rec render_class_signature_item : Lang.ClassSignature.item -> _ = function
+  let rec render_class_signature_item : Lang.ClassSignature.item -> text * _ =
+    function
     | Method m -> method_ m
     | InstanceVariable v -> instance_variable v
     | Constraint (t1, t2) -> format_constraints [(t1, t2)], []
@@ -1121,7 +1093,10 @@ struct
     Top_level_markup.lay_out
       ~item_to_id:class_signature_item_to_id
       ~item_to_spec:class_signature_item_to_spec
-      ~render_leaf_item:render_class_signature_item
+      ~render_leaf_item:(fun item ->
+        let text, docs = render_class_signature_item item in
+        (text :> rendered_item), docs
+      )
       ~render_nested_article:(fun _ -> assert false)
       tagged_items
 
@@ -1159,35 +1134,29 @@ struct
     in
     [Html.code val_], t.doc
 
-  and class_type_expr
-    : 'inner_row 'outer_row. Odoc_model.Lang.ClassType.expr
-    -> ('inner_row, 'outer_row) text Html.elt list
-    = fun (cte : Odoc_model.Lang.ClassType.expr) ->
-      match cte with
-      | Constr (path, args) ->
-        let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
-        format_type_path ~delim:(`brackets) args link
-      | Signature _ ->
-        [
-          Syntax.Class.open_tag;
-          Html.txt " ... ";
-          Syntax.Class.close_tag
-        ]
+  and class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
+    match cte with
+    | Constr (path, args) ->
+      let link = Tree.Relative_link.of_path ~stop_before:false (path :> Paths.Path.t) in
+      format_type_path ~delim:(`brackets) args link
+    | Signature _ ->
+      [
+        Syntax.Class.open_tag;
+        Html.txt " ... ";
+        Syntax.Class.close_tag
+      ]
 
-  and class_decl
-    : 'inner_row 'outer_row. Odoc_model.Lang.Class.decl
-    -> ('inner_row, 'outer_row) text Html.elt list
-    = fun (cd : Odoc_model.Lang.Class.decl) ->
-      match cd with
-      | ClassType expr -> class_type_expr expr
-      (* TODO: factorize the following with [type_expr] *)
-      | Arrow (None, src, dst) ->
-        type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
-      | Arrow (Some lbl, src, dst) ->
-        label lbl @ Html.txt ":" ::
-        type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
+  and class_decl (cd : Odoc_model.Lang.Class.decl) =
+    match cd with
+    | ClassType expr -> class_type_expr expr
+    (* TODO: factorize the following with [type_expr] *)
+    | Arrow (None, src, dst) ->
+      type_expr ~needs_parentheses:true src @
+      Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
+    | Arrow (Some lbl, src, dst) ->
+      label lbl @ Html.txt ":" ::
+                  type_expr ~needs_parentheses:true src @
+      Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: class_decl dst
 
   and class_ ?theme_uri recursive (t : Odoc_model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
@@ -1488,10 +1457,8 @@ struct
     | _ -> default
 
   and module_decl'
-    : 'inner_row 'outer_row. Paths.Identifier.Signature.t
-    -> Odoc_model.Lang.Module.decl
-    -> ('inner_row, 'outer_row) text Html.elt list
-  = fun base -> function
+    : Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
+    fun base -> function
     | Alias mod_path ->
       Tree.Relative_link.of_path ~stop_before:true (mod_path :> Paths.Path.t)
     | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
@@ -1544,10 +1511,8 @@ struct
     region, t.doc, subtree
 
   and mty
-    : 'inner_row 'outer_row.
-      Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr
-    -> ('inner_row, 'outer_row) text Html.elt list
-  = fun (base : Paths.Identifier.Signature.t) -> function
+    : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
+  = fun base -> function
     | Path mty_path ->
       Tree.Relative_link.of_path ~stop_before:true (mty_path :> Paths.Path.t)
     | Signature _ ->
@@ -1595,9 +1560,8 @@ struct
       module_decl' base md
 
   and substitution
-    : 'inner_row 'outer_row. Paths.Identifier.Signature.t ->
-        Odoc_model.Lang.ModuleType.substitution
-    -> ('inner_row, 'outer_row) text Html.elt list
+    : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.substitution
+    -> text
   = fun base -> function
     | ModuleEq (frag_mod, md) ->
       keyword "module" ::
