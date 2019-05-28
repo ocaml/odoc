@@ -191,9 +191,9 @@ struct
         [enclose ~l:"(" res ~r:")"]
     | Arrow (Some lbl, src, dst) ->
       let res =
-        label lbl @ Html.txt ":" ::
-        type_expr ~needs_parentheses:true src @
-        Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
+        Html.span (
+          label lbl @ Html.txt ":" :: type_expr ~needs_parentheses:true src
+        ) :: Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
       if not needs_parentheses then
         res
