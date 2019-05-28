@@ -18,7 +18,7 @@ module ML = Generator.Make (struct
 
     let handle_params name args =
       if args <> [ Html.txt "" ]
-      then args @ [ Html.txt " " ] @ name
+      then [Html.span (args @ [ Html.txt " " ] @ name)]
       else name
 
     let handle_constructor_params = handle_params
