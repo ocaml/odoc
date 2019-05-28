@@ -39,7 +39,7 @@
      <a href="#type-private_" class="anchor"></a><code><span class="keyword">type</span> private_</code><code> = <span class="keyword">private</span> int</code>
     </dt>
     <dt class="spec type" id="type-constructor">
-     <a href="#type-constructor" class="anchor"></a><code><span class="keyword">type</span> 'a constructor</code><code> = <span class="type-var">'a</span></code>
+     <a href="#type-constructor" class="anchor"></a><code><span class="keyword">type</span> <span>'a constructor</span></code><code> = <span class="type-var">'a</span></code>
     </dt>
     <dt class="spec type" id="type-arrow">
      <a href="#type-arrow" class="anchor"></a><code><span class="keyword">type</span> arrow</code><code> = int <span>-&gt;</span> int</code>
@@ -69,7 +69,7 @@
      <a href="#type-nested_pair" class="anchor"></a><code><span class="keyword">type</span> nested_pair</code><code> = <span>(int * int)</span> * int</code>
     </dt>
     <dt class="spec type" id="type-instance">
-     <a href="#type-instance" class="anchor"></a><code><span class="keyword">type</span> instance</code><code> = int <a href="index.html#type-constructor">constructor</a></code>
+     <a href="#type-instance" class="anchor"></a><code><span class="keyword">type</span> instance</code><code> = <span>int <a href="index.html#type-constructor">constructor</a></span></code>
     </dt>
     <dt class="spec type" id="type-variant_e">
      <a href="#type-variant_e" class="anchor"></a><code><span class="keyword">type</span> variant_e</code><code> = </code><code>{</code>
@@ -140,22 +140,22 @@
      <code>}</code>
     </dt>
     <dt class="spec type" id="type-gadt">
-     <a href="#type-gadt" class="anchor"></a><code><span class="keyword">type</span> _ gadt</code><code> = </code>
+     <a href="#type-gadt" class="anchor"></a><code><span class="keyword">type</span> <span>_ gadt</span></code><code> = </code>
      <table class="variant">
       <tbody>
        <tr id="type-gadt.A" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.A" class="anchor"></a><code>| </code><code><span class="constructor">A</span> : int <a href="index.html#type-gadt">gadt</a></code>
+         <a href="#type-gadt.A" class="anchor"></a><code>| </code><code><span class="constructor">A</span> : <span>int <a href="index.html#type-gadt">gadt</a></span></code>
         </td>
        </tr>
        <tr id="type-gadt.B" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.B" class="anchor"></a><code>| </code><code><span class="constructor">B</span> : int <span>-&gt;</span> string <a href="index.html#type-gadt">gadt</a></code>
+         <a href="#type-gadt.B" class="anchor"></a><code>| </code><code><span class="constructor">B</span> : int <span>-&gt;</span> <span>string <a href="index.html#type-gadt">gadt</a></span></code>
         </td>
        </tr>
        <tr id="type-gadt.C" class="anchored">
         <td class="def constructor">
-         <a href="#type-gadt.C" class="anchor"></a><code>| </code><code><span class="constructor">C</span> : <a href="index.html#type-variant_c">variant_c</a> <span>-&gt;</span> unit <a href="index.html#type-gadt">gadt</a></code>
+         <a href="#type-gadt.C" class="anchor"></a><code>| </code><code><span class="constructor">C</span> : <a href="index.html#type-variant_c">variant_c</a> <span>-&gt;</span> <span>unit <a href="index.html#type-gadt">gadt</a></span></code>
         </td>
        </tr>
       </tbody>
@@ -318,52 +318,52 @@
      <a href="#type-module_substitution" class="anchor"></a><code><span class="keyword">type</span> module_substitution</code><code> = <span>(<span class="keyword">module</span> <a href="module-type-X/index.html">X</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-t">t</a> = int <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-u">u</a> = unit)</span></code>
     </dt>
     <dt class="spec type" id="type-covariant">
-     <a href="#type-covariant" class="anchor"></a><code><span class="keyword">type</span> +'a covariant</code>
+     <a href="#type-covariant" class="anchor"></a><code><span class="keyword">type</span> <span>+'a covariant</span></code>
     </dt>
     <dt class="spec type" id="type-contravariant">
-     <a href="#type-contravariant" class="anchor"></a><code><span class="keyword">type</span> -'a contravariant</code>
+     <a href="#type-contravariant" class="anchor"></a><code><span class="keyword">type</span> <span>-'a contravariant</span></code>
     </dt>
     <dt class="spec type" id="type-bivariant">
-     <a href="#type-bivariant" class="anchor"></a><code><span class="keyword">type</span> _ bivariant</code><code> = int</code>
+     <a href="#type-bivariant" class="anchor"></a><code><span class="keyword">type</span> <span>_ bivariant</span></code><code> = int</code>
     </dt>
     <dt class="spec type" id="type-binary">
-     <a href="#type-binary" class="anchor"></a><code><span class="keyword">type</span> ('a, 'b) binary</code>
+     <a href="#type-binary" class="anchor"></a><code><span class="keyword">type</span> <span>('a, 'b) binary</span></code>
     </dt>
     <dt class="spec type" id="type-using_binary">
-     <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary</code><code> = <span>(int,&nbsp;int)</span> <a href="index.html#type-binary">binary</a></code>
+     <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary</code><code> = <span><span>(int,&nbsp;int)</span> <a href="index.html#type-binary">binary</a></span></code>
     </dt>
     <dt class="spec type" id="type-name">
-     <a href="#type-name" class="anchor"></a><code><span class="keyword">type</span> 'custom name</code>
+     <a href="#type-name" class="anchor"></a><code><span class="keyword">type</span> <span>'custom name</span></code>
     </dt>
     <dt class="spec type" id="type-constrained">
-     <a href="#type-constrained" class="anchor"></a><code><span class="keyword">type</span> 'a constrained</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int</code>
+     <a href="#type-constrained" class="anchor"></a><code><span class="keyword">type</span> <span>'a constrained</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int</code>
     </dt>
     <dt class="spec type" id="type-exact_variant">
-     <a href="#type-exact_variant" class="anchor"></a><code><span class="keyword">type</span> 'a exact_variant</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [ `A | `B of int ]</code>
+     <a href="#type-exact_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [ `A | `B of int ]</code>
     </dt>
     <dt class="spec type" id="type-lower_variant">
-     <a href="#type-lower_variant" class="anchor"></a><code><span class="keyword">type</span> 'a lower_variant</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt; `A | `B of int ]</code>
+     <a href="#type-lower_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a lower_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt; `A | `B of int ]</code>
     </dt>
     <dt class="spec type" id="type-any_variant">
-     <a href="#type-any_variant" class="anchor"></a><code><span class="keyword">type</span> 'a any_variant</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt;  ]</code>
+     <a href="#type-any_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a any_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt;  ]</code>
     </dt>
     <dt class="spec type" id="type-upper_variant">
-     <a href="#type-upper_variant" class="anchor"></a><code><span class="keyword">type</span> 'a upper_variant</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; `A | `B of int ]</code>
+     <a href="#type-upper_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a upper_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; `A | `B of int ]</code>
     </dt>
     <dt class="spec type" id="type-named_variant">
-     <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> 'a named_variant</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; <a href="index.html#type-polymorphic_variant">polymorphic_variant</a> ]</code>
+     <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a named_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; <a href="index.html#type-polymorphic_variant">polymorphic_variant</a> ]</code>
     </dt>
     <dt class="spec type" id="type-exact_object">
-     <a href="#type-exact_object" class="anchor"></a><code><span class="keyword">type</span> 'a exact_object</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; &gt;</code>
+     <a href="#type-exact_object" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_object</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; &gt;</code>
     </dt>
     <dt class="spec type" id="type-lower_object">
-     <a href="#type-lower_object" class="anchor"></a><code><span class="keyword">type</span> 'a lower_object</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; .. &gt;</code>
+     <a href="#type-lower_object" class="anchor"></a><code><span class="keyword">type</span> <span>'a lower_object</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; .. &gt;</code>
     </dt>
     <dt class="spec type" id="type-poly_object">
-     <a href="#type-poly_object" class="anchor"></a><code><span class="keyword">type</span> 'a poly_object</code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : a. <span class="type-var">'a</span>; &gt;</code>
+     <a href="#type-poly_object" class="anchor"></a><code><span class="keyword">type</span> <span>'a poly_object</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : a. <span class="type-var">'a</span>; &gt;</code>
     </dt>
     <dt class="spec type" id="type-double_constrained">
-     <a href="#type-double_constrained" class="anchor"></a><code><span class="keyword">type</span> ('a, 'b) double_constrained</code><code> = <span class="type-var">'a</span> * <span class="type-var">'b</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int <span class="keyword">constraint</span> <span class="type-var">'b</span> = unit</code>
+     <a href="#type-double_constrained" class="anchor"></a><code><span class="keyword">type</span> <span>('a, 'b) double_constrained</span></code><code> = <span class="type-var">'a</span> * <span class="type-var">'b</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int <span class="keyword">constraint</span> <span class="type-var">'b</span> = unit</code>
     </dt>
     <dt class="spec type" id="type-as_">
      <a href="#type-as_" class="anchor"></a><code><span class="keyword">type</span> as_</code><code> = int <span class="keyword">as</span> a * <span class="type-var">'a</span></code>
