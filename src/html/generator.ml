@@ -43,7 +43,8 @@ let keyword keyword =
 let type_var tv =
   Html.span ~a:[ Html.a_class ["type-var"] ] [ Html.txt tv ]
 
-
+let enclose ~l ~r content =
+  Html.span (Html.txt l :: content @ [Html.txt r])
 
 include Generator_signatures
 
@@ -138,10 +139,10 @@ struct
           ~f:type_expr
       in
       let params = match delim with
-        | `parens   -> Html.txt "(" :: params @ [Html.txt ")"]
-        | `brackets -> Html.txt "[" :: params @ [Html.txt "]"]
+        | `parens   -> enclose ~l:"(" params ~r:")"
+        | `brackets -> enclose ~l:"[" params ~r:"]"
       in
-      Syntax.Type.handle_constructor_params path params
+      Syntax.Type.handle_constructor_params path [params]
 
   and type_expr
         ?(needs_parentheses=false) (t : Odoc_model.Lang.TypeExpr.t) : text =
@@ -159,7 +160,7 @@ struct
       if not needs_parentheses then
         res
       else
-        Html.txt "(" :: res @ [Html.txt ")"]
+        [enclose ~l:"(" res ~r:")"]
     | Arrow (Some lbl, src, dst) ->
       let res =
         label lbl @ Html.txt ":" ::
@@ -169,7 +170,7 @@ struct
       if not needs_parentheses then
         res
       else
-        Html.txt "(" :: res @ [Html.txt ")"]
+        [enclose ~l:"(" res ~r:")"]
     | Tuple lst ->
       let res =
         list_concat_map
@@ -178,7 +179,7 @@ struct
           ~f:(type_expr ~needs_parentheses:true)
       in
       if Syntax.Type.Tuple.always_parenthesize || needs_parentheses then
-        Html.txt "(" :: res @ [Html.txt ")"]
+        [enclose ~l:"(" res ~r:")"]
       else
         res
     | Constr (path, args) ->
@@ -192,18 +193,19 @@ struct
     | Poly (polyvars, t) ->
       Html.txt (String.concat " " polyvars ^ ". ") :: type_expr t
     | Package pkg ->
-      Html.txt "(" :: keyword "module" :: Html.txt " " ::
-      Tree.Relative_link.of_path ~stop_before:false (pkg.path :> Paths.Path.t) @
-      begin match pkg.substitutions with
-      | [] -> []
-      | lst ->
-        Html.txt " " :: keyword "with" :: Html.txt " " ::
-        list_concat_map_list_sep
-          ~sep:[Html.txt " "; keyword "and"; Html.txt " "]
-          lst
-          ~f:(package_subst pkg.path)
-      end
-      @ [Html.txt ")"]
+      [enclose ~l:"(" ~r:")" (
+         keyword "module" :: Html.txt " " ::
+         Tree.Relative_link.of_path ~stop_before:false
+           (pkg.path :> Paths.Path.t) @
+         match pkg.substitutions with
+         | [] -> []
+         | lst ->
+           Html.txt " " :: keyword "with" :: Html.txt " " ::
+           list_concat_map_list_sep
+             ~sep:[Html.txt " "; keyword "and"; Html.txt " "]
+             lst
+             ~f:(package_subst pkg.path)
+       )]
 
   and package_subst (pkg_path : Paths.Path.ModuleType.t)
         (frag_typ, te : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t)
