@@ -61,46 +61,74 @@ sig
 end =
 struct
   let rec te_variant (t : Odoc_model.Lang.TypeExpr.Polymorphic_variant.t) : text =
-    let elements =
-      list_concat_map t.elements ~sep:(Html.txt " | ") ~f:(function
-        | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te -> type_expr te
-        | Constructor {constant; name; arguments; _} ->
-          let constr = "`" ^ name in
-          match arguments with
-          | [] -> [ Html.txt constr ]
-          | _ ->
-            (* Multiple arguments in a polymorphic variant constructor correspond
-               to a conjunction of types, not a product: [`Lbl int&float].
-               If constant is [true], the conjunction starts with an empty type,
-               for instance [`Lbl &int].
-            *)
-            let wrapped_type_expr =
-              (* type conjunction in Reason is printed as `Lbl (t1)&(t2)` *)
-              if Syntax.Type.Variant.parenthesize_params then
-                fun x -> Html.txt "(" :: type_expr x @ [Html.txt ")"]
-              else
-                fun x -> type_expr x
-            in
-            let arguments =
-              list_concat_map
-                arguments
-                ~sep:(Html.txt " & ")
-                ~f:wrapped_type_expr
-            in
-            let arguments =
-              if constant then Html.txt "& " :: arguments else arguments in
-            if Syntax.Type.Variant.parenthesize_params
-            then Html.txt constr :: arguments
-            else Html.txt (constr ^ " of ") :: arguments
-      )
+    let style_arguments ~constant arguments =
+      (* Multiple arguments in a polymorphic variant constructor correspond
+         to a conjunction of types, not a product: [`Lbl int&float].
+         If constant is [true], the conjunction starts with an empty type,
+         for instance [`Lbl &int].
+      *)
+      let wrapped_type_expr =
+        (* type conjunction in Reason is printed as `Lbl (t1)&(t2)` *)
+        if Syntax.Type.Variant.parenthesize_params then
+          fun x ->
+            [Html.span (Html.txt "(" :: type_expr x @ [Html.txt ")"])]
+        else
+          fun x -> type_expr x
+      in
+      let arguments =
+        list_concat_map
+          arguments
+          ~sep:(Html.txt " & ")
+          ~f:wrapped_type_expr
+      in
+      if constant
+      then Html.txt "& " :: arguments
+      else arguments
     in
-    match t.kind with
-    | Fixed -> Html.txt "[ " :: elements @ [Html.txt " ]"]
-    | Open -> Html.txt "[> " :: elements @ [Html.txt " ]"]
-    | Closed [] -> Html.txt "[< " :: elements @ [Html.txt " ]"]
-    | Closed lst ->
-      let constrs = String.concat " " lst in
-      Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
+    let rec style_elements ~add_pipe = function
+      | [] -> []
+      | first :: rest ->
+        let first =
+          match first with
+          | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
+            let res = type_expr te in
+            if add_pipe
+            then [Html.txt " "; Html.span (Html.txt "| " :: res)]
+            else res
+          | Constructor {constant; name; arguments; _} ->
+            let constr =
+              let name = "`" ^ name in
+              if add_pipe
+              then Html.span [Html.txt ("| " ^ name)]
+              else Html.txt name
+            in
+            let res =
+              match arguments with
+              | [] -> constr
+              | _ ->
+                let arguments = style_arguments ~constant arguments in
+                Html.span (
+                  if Syntax.Type.Variant.parenthesize_params
+                  then constr :: arguments
+                  else constr :: Html.txt  " of " :: arguments
+                )
+            in
+            if add_pipe
+            then [Html.txt " "; res]
+            else [res]
+        in
+        first @ style_elements ~add_pipe:true rest
+    in
+    let elements = style_elements ~add_pipe:false t.elements in
+    [Html.span (
+       match t.kind with
+       | Fixed -> Html.txt "[ " :: elements @ [Html.txt " ]"]
+       | Open -> Html.txt "[> " :: elements @ [Html.txt " ]"]
+       | Closed [] -> Html.txt "[< " :: elements @ [Html.txt " ]"]
+       | Closed lst ->
+         let constrs = String.concat " " lst in
+         Html.txt "[< " :: elements @ [Html.txt (" " ^ constrs ^ " ]")]
+     )]
 
   and te_object (t : Odoc_model.Lang.TypeExpr.Object.t) : text =
     let fields =

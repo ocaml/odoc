@@ -280,7 +280,7 @@
       <tbody>
        <tr id="type-nested_polymorphic_variant.A" class="anchored">
         <td class="def constructor">
-         <a href="#type-nested_polymorphic_variant.A" class="anchor"></a><code>| </code><code>`A <span class="keyword">of</span> [ `B | `C ]</code>
+         <a href="#type-nested_polymorphic_variant.A" class="anchor"></a><code>| </code><code>`A <span class="keyword">of</span> <span>[ `B <span>| `C</span> ]</span></code>
         </td>
        </tr>
       </tbody>
@@ -339,19 +339,19 @@
      <a href="#type-constrained" class="anchor"></a><code><span class="keyword">type</span> <span>'a constrained</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = int</code>
     </dt>
     <dt class="spec type" id="type-exact_variant">
-     <a href="#type-exact_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [ `A | `B of int ]</code>
+     <a href="#type-exact_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[ `A <span><span>| `B</span> of int</span> ]</span></code>
     </dt>
     <dt class="spec type" id="type-lower_variant">
-     <a href="#type-lower_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a lower_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt; `A | `B of int ]</code>
+     <a href="#type-lower_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a lower_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&gt; `A <span><span>| `B</span> of int</span> ]</span></code>
     </dt>
     <dt class="spec type" id="type-any_variant">
-     <a href="#type-any_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a any_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&gt;  ]</code>
+     <a href="#type-any_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a any_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&gt;  ]</span></code>
     </dt>
     <dt class="spec type" id="type-upper_variant">
-     <a href="#type-upper_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a upper_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; `A | `B of int ]</code>
+     <a href="#type-upper_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a upper_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&lt; `A <span><span>| `B</span> of int</span> ]</span></code>
     </dt>
     <dt class="spec type" id="type-named_variant">
-     <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a named_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = [&lt; <a href="index.html#type-polymorphic_variant">polymorphic_variant</a> ]</code>
+     <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a named_variant</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&lt; <a href="index.html#type-polymorphic_variant">polymorphic_variant</a> ]</span></code>
     </dt>
     <dt class="spec type" id="type-exact_object">
      <a href="#type-exact_object" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_object</span></code><code> = <span class="type-var">'a</span></code><code> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; &gt;</code>
