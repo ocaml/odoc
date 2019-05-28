@@ -45,7 +45,7 @@
      <a href="#type-arrow" class="anchor"></a><code><span class="keyword">type</span> arrow</code><code> = int <span>-&gt;</span> int</code>
     </dt>
     <dt class="spec type" id="type-higher_order">
-     <a href="#type-higher_order" class="anchor"></a><code><span class="keyword">type</span> higher_order</code><code> = (int <span>-&gt;</span> int) <span>-&gt;</span> int</code>
+     <a href="#type-higher_order" class="anchor"></a><code><span class="keyword">type</span> higher_order</code><code> = <span>(int <span>-&gt;</span> int)</span> <span>-&gt;</span> int</code>
     </dt>
     <dt class="spec type" id="type-labeled">
      <a href="#type-labeled" class="anchor"></a><code><span class="keyword">type</span> labeled</code><code> = l:int <span>-&gt;</span> int</code>
@@ -54,7 +54,7 @@
      <a href="#type-optional" class="anchor"></a><code><span class="keyword">type</span> optional</code><code> = ?⁠l:int <span>-&gt;</span> int</code>
     </dt>
     <dt class="spec type" id="type-labeled_higher_order">
-     <a href="#type-labeled_higher_order" class="anchor"></a><code><span class="keyword">type</span> labeled_higher_order</code><code> = (l:int <span>-&gt;</span> int) <span>-&gt;</span> (?⁠l:int <span>-&gt;</span> int) <span>-&gt;</span> int</code>
+     <a href="#type-labeled_higher_order" class="anchor"></a><code><span class="keyword">type</span> labeled_higher_order</code><code> = <span>(l:int <span>-&gt;</span> int)</span> <span>-&gt;</span> <span>(?⁠l:int <span>-&gt;</span> int)</span> <span>-&gt;</span> int</code>
     </dt>
     <dt class="spec type" id="type-pair">
      <a href="#type-pair" class="anchor"></a><code><span class="keyword">type</span> pair</code><code> = int * int</code>
@@ -66,7 +66,7 @@
      <a href="#type-triple" class="anchor"></a><code><span class="keyword">type</span> triple</code><code> = int * int * int</code>
     </dt>
     <dt class="spec type" id="type-nested_pair">
-     <a href="#type-nested_pair" class="anchor"></a><code><span class="keyword">type</span> nested_pair</code><code> = (int * int) * int</code>
+     <a href="#type-nested_pair" class="anchor"></a><code><span class="keyword">type</span> nested_pair</code><code> = <span>(int * int)</span> * int</code>
     </dt>
     <dt class="spec type" id="type-instance">
      <a href="#type-instance" class="anchor"></a><code><span class="keyword">type</span> instance</code><code> = int <a href="index.html#type-constructor">constructor</a></code>
@@ -312,10 +312,10 @@
    </div>
    <dl>
     <dt class="spec type" id="type-module_">
-     <a href="#type-module_" class="anchor"></a><code><span class="keyword">type</span> module_</code><code> = (<span class="keyword">module</span> <a href="module-type-X/index.html">X</a>)</code>
+     <a href="#type-module_" class="anchor"></a><code><span class="keyword">type</span> module_</code><code> = <span>(<span class="keyword">module</span> <a href="module-type-X/index.html">X</a>)</span></code>
     </dt>
     <dt class="spec type" id="type-module_substitution">
-     <a href="#type-module_substitution" class="anchor"></a><code><span class="keyword">type</span> module_substitution</code><code> = (<span class="keyword">module</span> <a href="module-type-X/index.html">X</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-t">t</a> = int <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-u">u</a> = unit)</code>
+     <a href="#type-module_substitution" class="anchor"></a><code><span class="keyword">type</span> module_substitution</code><code> = <span>(<span class="keyword">module</span> <a href="module-type-X/index.html">X</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-t">t</a> = int <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-X/index.html#type-u">u</a> = unit)</span></code>
     </dt>
     <dt class="spec type" id="type-covariant">
      <a href="#type-covariant" class="anchor"></a><code><span class="keyword">type</span> +'a covariant</code>
@@ -330,7 +330,7 @@
      <a href="#type-binary" class="anchor"></a><code><span class="keyword">type</span> ('a, 'b) binary</code>
     </dt>
     <dt class="spec type" id="type-using_binary">
-     <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary</code><code> = (int,&nbsp;int) <a href="index.html#type-binary">binary</a></code>
+     <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary</code><code> = <span>(int,&nbsp;int)</span> <a href="index.html#type-binary">binary</a></code>
     </dt>
     <dt class="spec type" id="type-name">
      <a href="#type-name" class="anchor"></a><code><span class="keyword">type</span> 'custom name</code>
