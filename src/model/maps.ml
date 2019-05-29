@@ -961,88 +961,133 @@ class virtual documentation = object (self)
       reference
 
   method private documentation_inline_element element =
-    match element with
+    let open Location_ in
+    match element.value with
     | `Styled (style, nested_elements) ->
-      let nested_elements =
-        List.map
-          (Location_.map self#documentation_inline_element) nested_elements
+      let nested_elements' =
+        list_map self#documentation_inline_element nested_elements
       in
-      `Styled (style, nested_elements)
-    | `Reference (path, nested_elements) ->
-      let path', nested_elements' =
-        self#documentation_reference (path, nested_elements) in
-      if path' != path || nested_elements' != nested_elements then
-        `Reference (path', nested_elements')
+      if nested_elements' != nested_elements then
+        { element with value = `Styled (style, nested_elements') }
+      else
+        element
+    | `Reference x ->
+      let x' = self#documentation_reference x in
+      if x' != x then
+        { element with value = `Reference x' }
       else
         element
     | _ ->
       element
 
-  method private documentation_nestable_block_element = function
+  method private documentation_nestable_block_element element =
+    match element with
     | `Paragraph elements ->
-      `Paragraph
-        (list_map (Location_.map self#documentation_inline_element) elements)
+      let elements' = list_map self#documentation_inline_element elements in
+      if elements' != elements then
+        `Paragraph elements'
+      else
+        element
     | `Modules modules ->
-      `Modules (List.map self#documentation_special_modules modules)
+      let modules' = list_map self#documentation_special_modules modules in
+      if modules' != modules then
+        `Modules modules'
+      else
+        element
     | `List (tag, elements) ->
-        `List (tag,
-          (List.map
-            (List.map
-              (Location_.map self#documentation_nestable_block_element))
-            elements))
-    | element ->
+      let elements' =
+        list_map
+          (list_map self#documentation_located_nestable_block_element)
+          elements
+      in
+      if elements' != elements then
+        `List (tag, elements')
+      else
+        element
+    | _ ->
+      element
+
+  method private documentation_located_nestable_block_element element =
+    let open Location_ in
+    let value' = self#documentation_nestable_block_element element.value in
+    if element.value != value' then
+      { element with value = value' }
+    else
       element
 
   method private documentation_block_element element =
-    match element with
-    | #Comment.nestable_block_element as element ->
-      (self#documentation_nestable_block_element element
-        :> Comment.block_element)
-    | `Tag tag ->
-      let tag' =
+    let open Location_ in
+    match element.value with
+    | #Comment.nestable_block_element as value ->
+        let value' = self#documentation_nestable_block_element value in
+        if value' != value then
+          { element with value = (value' :> Comment.block_element) }
+        else
+          element
+    | `Tag tag -> begin
         match tag with
         | `Deprecated elements ->
-          `Deprecated
-            (list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`Deprecated elements') }
+            else
+              element
         | `Param (s, elements) ->
-          `Param
-            (s, list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`Param (s, elements')) }
+            else
+              element
         | `Raise (s, elements) ->
-          `Raise
-            (s, list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`Raise (s, elements')) }
+            else
+              element
         | `Return elements ->
-          `Return
-            (list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`Return elements') }
+            else
+              element
         | `See (k, s, elements) ->
-          `See
-            (k, s, list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`See (k, s, elements')) }
+            else
+              element
         | `Before (s, elements) ->
-          `Before
-            (s, list_map
-              (Location_.map self#documentation_nestable_block_element)
-              elements)
+            let elements' =
+              list_map self#documentation_located_nestable_block_element
+                elements
+            in
+            if elements' != elements then
+              { element with value = `Tag (`Before (s, elements')) }
+            else
+              element
         | _ ->
-          tag
-      in
-      if tag' != tag then
-        `Tag tag'
-      else
-        element
+            element
+      end
     | _ ->
-      element
+        element
 
   method documentation doc =
-    list_map (Location_.map self#documentation_block_element) doc
+    list_map self#documentation_block_element doc
 
   method documentation_comment (comment : Comment.docs_or_stop) =
     match comment with
