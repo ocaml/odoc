@@ -172,11 +172,13 @@ let rename_datatype ~equal x y =
   let open Path.Resolved in
     (Module(Identifier id, name))*)
 
-class prefix ~equal:_ ~canonical id : t = object (self)
+class prefix ~equal:_ ~canonical id : t = object
 
   inherit Maps.paths as super
 
   method root x = x
+
+  method! identifier x = x
 
   method! path_resolved : Path.Resolved.t -> Path.Resolved.t =
     fun p ->
@@ -258,8 +260,7 @@ class prefix ~equal:_ ~canonical id : t = object (self)
 
   inherit Maps.types
 
-  method offset_identifier_signature (id, offset) =
-    (self#identifier_signature id, offset)
+  method offset_identifier_signature x = x
 
 end
 
