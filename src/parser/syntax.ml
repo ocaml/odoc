@@ -53,7 +53,7 @@ let npeek n input = Stream.npeek n input.tokens
 type token_that_always_begins_an_inline_element = [
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Comment.raw_markup_target * string
+  | `Raw_markup of string option * string
   | `Begin_style of Comment.style
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string

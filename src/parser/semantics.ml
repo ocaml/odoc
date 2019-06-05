@@ -8,6 +8,15 @@ type 'a with_location = 'a Location.with_location
 
 
 
+type ast_leaf_inline_element = [
+  | `Space
+  | `Word of string
+  | `Code_span of string
+  | `Raw_markup of string option * string
+]
+
+
+
 type status = {
   warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
@@ -29,14 +38,40 @@ let describe_element = function
 
 
 
+let leaf_inline_element
+    : status -> ast_leaf_inline_element with_location ->
+        Comment.leaf_inline_element with_location =
+    fun status element ->
+
+  match element with
+  | { value = (`Space | `Word _ | `Code_span _); _ } as element ->
+    element
+
+  | { value = `Raw_markup (Some "html", s); _ } ->
+    Location.same element (`Raw_markup (`Html, s))
+
+  | { value = `Raw_markup (target, s); location } ->
+    let error =
+      match target with
+      | Some invalid_target ->
+        Parse_error.invalid_raw_markup_target invalid_target location
+      | None ->
+        Parse_error.default_raw_markup_target_not_supported location
+    in
+    Error.warning status.warnings error;
+    Location.same element (`Code_span s)
+
+
+
 let rec non_link_inline_element
     : status -> surrounding:_ -> Ast.inline_element with_location ->
         Comment.non_link_inline_element with_location =
     fun status ~surrounding element ->
 
   match element with
-  | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+  | {value = #ast_leaf_inline_element; _} as element ->
+    (leaf_inline_element status element
+     :> Comment.non_link_inline_element with_location)
 
   | {value = `Styled (style, content); _} ->
     `Styled (style, non_link_inline_elements status ~surrounding content)
@@ -64,8 +99,9 @@ let rec inline_element
     fun status element ->
 
   match element with
-  | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+  | {value = #ast_leaf_inline_element; _} as element ->
+    (leaf_inline_element status element
+     :> Comment.inline_element with_location)
 
   | {value = `Styled (style, content); location} ->
     `Styled (style, inline_elements status content)

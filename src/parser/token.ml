@@ -55,7 +55,7 @@ type t = [
      bullets. *)
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Odoc_model.Comment.raw_markup_target * string
+  | `Raw_markup of string option * string
   | `Begin_style of Odoc_model.Comment.style
 
   (* Other inline element markup. *)
@@ -137,8 +137,10 @@ let print : [< t ] -> string = function
     "'@open'"
   | `Tag `Closed ->
     "'@closed'"
-  | `Raw_markup (`Html, _) ->
-    "'{%html:...%}'"
+  | `Raw_markup (None, _) ->
+    "'{%...%}'"
+  | `Raw_markup (Some target, _) ->
+    "'{%" ^ target ^ ":...%}'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted

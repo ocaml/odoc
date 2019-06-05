@@ -13,7 +13,7 @@ type inline_element = [
   | `Space
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Comment.raw_markup_target * string
+  | `Raw_markup of string option * string
   | `Styled of Comment.style * (inline_element with_location) list
   | `Reference of
       reference_kind * Reference.t * (inline_element with_location) list

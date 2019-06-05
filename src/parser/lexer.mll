@@ -314,21 +314,8 @@ rule token input = parse
           ~start_offset:(Lexing.lexeme_end lexbuf)
           (Parse_error.not_allowed
             ~what:(Token.describe `End)
-            ~in_what:(Token.describe (`Raw_markup (`Html, ""))));
-      let target_is_valid =
-        match target with
-        | Some "html" -> true
-        | Some invalid_target ->
-          warning input (Parse_error.invalid_raw_markup_target invalid_target);
-          false
-        | None ->
-          warning input Parse_error.default_raw_markup_target_not_supported;
-          false
-      in
-      if target_is_valid then
-        emit input (`Raw_markup (`Html, s))
-      else
-        emit input (`Code_span s) }
+            ~in_what:(Token.describe (`Raw_markup (None, ""))));
+      emit input (`Raw_markup (target, s)) }
 
   | "{ul"
     { emit input (`Begin_list `Unordered) }
