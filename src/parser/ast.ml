@@ -27,6 +27,7 @@ type nestable_block_element = [
   | `Modules of Reference.Module.t list
   | `List of
     [ `Unordered | `Ordered ] *
+    [ `Light | `Heavy ] *
     ((nestable_block_element with_location) list) list
 ]
 

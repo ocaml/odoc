@@ -945,7 +945,7 @@ let rec block_element_list
         |> Error.warning input.warnings;
 
       let location = Location.span [location; brace_location] in
-      let block = `List (kind, items) in
+      let block = `List (kind, `Heavy, items) in
       let block = accepted_in_all_contexts context block in
       let block = Location.at location block in
       let acc = block::acc in
@@ -980,7 +980,7 @@ let rec block_element_list
           location::(List.map Location.location (List.flatten items))
           |> Location.span
         in
-        let block = `List (kind, items) in
+        let block = `List (kind, `Light, items) in
         let block = accepted_in_all_contexts context block in
         let block = Location.at location block in
         let acc = block::acc in

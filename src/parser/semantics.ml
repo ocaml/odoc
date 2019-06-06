@@ -135,7 +135,7 @@ let rec nestable_block_element
   | {value = `Modules _; _} as element ->
     element
 
-  | {value = `List (kind, items); location} ->
+  | {value = `List (kind, _syntax, items); location} ->
     `List (kind, List.map (nestable_block_elements status) items)
     |> Location.at location
 
