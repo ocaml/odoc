@@ -725,6 +725,11 @@ sig
 
   val render_toc :
     toc -> ([> Html_types.flow5_without_header_footer ] Html.elt) list
+
+  val lay_out_page : Odoc_model.Comment.docs ->
+      ((Html_types.div_content Html.elt) list *
+       (Html_types.flow5_without_header_footer Html.elt) list *
+       toc)
 end =
 struct
   (* Just some type abbreviations. *)
@@ -854,12 +859,8 @@ struct
      functions. *)
   type ('kind, 'item) sectioning_state = {
     input_items : (('kind, 'item) tagged_item) list;
-    input_comment : Odoc_model.Comment.docs;
-
-    acc_html : html list;
-    acc_toc : toc;
     acc_subpages : Tree.t list;
-
+    comment_state : comment_state;
     item_to_id : 'item -> string option;
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
@@ -867,7 +868,15 @@ struct
       'item -> rendered_item * Odoc_model.Comment.docs * Tree.t list;
   }
 
-  let finish_section state =
+
+  (* Comment state used to generate HTML and TOC for both mli and mld inputs. *)
+  and comment_state = {
+    input_comment : Odoc_model.Comment.docs;
+    acc_html : html list;
+    acc_toc : toc;
+  }
+
+  let finish_comment_state (state : comment_state) =
     {state with
       acc_html = List.rev state.acc_html;
       acc_toc = List.rev state.acc_toc;
@@ -890,7 +899,8 @@ struct
   let rec section_items section_level state =
     match state.input_items with
     | [] ->
-      finish_section state
+      {state with comment_state =
+        finish_comment_state state.comment_state }
 
     | tagged_item::input_items ->
       match tagged_item with
@@ -905,7 +915,8 @@ struct
         in
         section_items section_level {state with
             input_items;
-            acc_html = html::state.acc_html;
+            comment_state = { state.comment_state with
+              acc_html = html::state.comment_state.acc_html };
           }
 
       | `Nested_article item ->
@@ -922,7 +933,8 @@ struct
         in
         section_items section_level { state with
           input_items;
-          acc_html = html::state.acc_html;
+          comment_state = { state.comment_state with
+            acc_html = html::state.comment_state.acc_html };
           acc_subpages = state.acc_subpages @ subpages;
         }
 
@@ -935,13 +947,13 @@ struct
       | `Comment (`Docs input_comment) ->
         section_comment section_level {state with
             input_items;
-            input_comment;
-          }
+            comment_state = { state.comment_state with input_comment };
+        }
 
 
 
   and section_comment section_level state =
-    match state.input_comment with
+    match state.comment_state.input_comment with
     | [] ->
       section_items section_level state
 
@@ -950,7 +962,8 @@ struct
       match element.Location.value with
       | `Heading (level, label, content) ->
         if not (is_deeper_section_level level ~than:section_level) then
-          finish_section state
+          {state with comment_state =
+            finish_comment_state state.comment_state }
 
         else
           (* We have a deeper section heading in a comment within this section.
@@ -965,25 +978,25 @@ struct
             render_comment_until_heading_or_end input_comment in
           let html = Html.header (heading_html @ more_comment_html) in
           let nested_section_state =
-            {state with
-              input_comment = input_comment;
-              acc_html = [html];
-              acc_toc = [];
+            { state with
+              comment_state = {
+                input_comment;
+                acc_html = [html];
+                acc_toc = [];
+              }
             }
           in
-          let nested_section_state =
-            section_comment level nested_section_state in
-
+          let nested_section_state = section_comment level nested_section_state in
           (* Wrap the nested section in a <section> element, and extend the
-             table of contents. *)
-          let html = Html.section nested_section_state.acc_html in
+            table of contents. *)
+          let html = Html.section nested_section_state.comment_state.acc_html in
 
           let `Label (_, label) = label in
           let toc_entry =
             {
               anchor = Odoc_model.Names.LabelName.to_string label;
               text = content;
-              children = nested_section_state.acc_toc;
+              children = nested_section_state.comment_state.acc_toc;
             }
           in
 
@@ -992,29 +1005,33 @@ struct
              another section heading – the nested section will have consumed
              everything else. *)
           section_comment section_level {nested_section_state with
-              acc_html = html::state.acc_html;
-              acc_toc = toc_entry::state.acc_toc;
+              comment_state = { nested_section_state.comment_state with
+                acc_html = html::state.comment_state.acc_html;
+                acc_toc = toc_entry::state.comment_state.acc_toc;
+              }
             }
 
       | _ ->
         let html, input_comment =
-          render_comment_until_heading_or_end state.input_comment in
+          render_comment_until_heading_or_end state.comment_state.input_comment in
         let html = (html :> (Html_types.aside_content Html.elt) list) in
         section_comment section_level {state with
-            input_comment;
-            acc_html = (Html.aside html)::state.acc_html;
+            comment_state = { state.comment_state with
+              input_comment;
+              acc_html = (Html.aside html)::state.comment_state.acc_html;
+            }
           }
-
-
 
   let lay_out ~item_to_id ~item_to_spec ~render_leaf_item ~render_nested_article items =
     let initial_state =
       {
         input_items = items;
-        input_comment = [];
+        comment_state = {
+          input_comment = [];
+          acc_html = [];
+          acc_toc = [];
+        };
 
-        acc_html = [];
-        acc_toc = [];
         acc_subpages = [];
 
         item_to_id;
@@ -1024,7 +1041,79 @@ struct
       }
     in
     let state = section_items `Title initial_state in
-    state.acc_html, state.acc_toc, state.acc_subpages
+    state.comment_state.acc_html, state.comment_state.acc_toc, state.acc_subpages
+
+
+  let rec page_section_comment ~header_docs section_level state =
+    match state.input_comment with
+    | [] -> finish_comment_state state, header_docs
+    | element::input_comment ->
+      begin match element.Location.value with
+      | `Heading (`Title, _label, _content) ->
+        let heading_html = Comment.to_html [element] in
+        let more_comment_html, input_comment =
+          render_comment_until_heading_or_end input_comment in
+        let header_docs = heading_html @ more_comment_html in
+        let nested_section_state = {
+          input_comment = input_comment;
+          acc_html = [];
+          acc_toc = [];
+        } in
+        let nested_section_state, header_docs =
+          page_section_comment ~header_docs `Section nested_section_state in
+        let acc_html = List.rev_append nested_section_state.acc_html state.acc_html in
+        page_section_comment ~header_docs section_level
+          { nested_section_state with acc_html }
+
+      | `Heading (level, _label, _content)
+        when not (is_deeper_section_level level ~than:section_level) ->
+          finish_comment_state state, header_docs
+
+      | `Heading (level, label, content) ->
+        let heading_html = Comment.to_html [element] in
+        let more_comment_html, input_comment =
+          render_comment_until_heading_or_end input_comment in
+        let acc_html = more_comment_html @ heading_html in
+        let acc_html = (acc_html :> (Html_types.flow5 Html.elt) list) in
+        let nested_section_state = {
+          input_comment = input_comment;
+          acc_html;
+          acc_toc = [];
+        } in
+        let nested_section_state, header_docs = page_section_comment ~header_docs level nested_section_state in
+        let acc_html = List.rev_append nested_section_state.acc_html state.acc_html in
+
+        let acc_toc =
+          let `Label (_, label) = label in
+          let toc_entry = {
+            anchor = Odoc_model.Names.LabelName.to_string label;
+            text = content;
+            children = nested_section_state.acc_toc;
+          } in
+          toc_entry :: state.acc_toc
+        in
+        page_section_comment ~header_docs section_level
+          { nested_section_state with acc_html; acc_toc }
+
+      | _ ->
+        let html, input_comment =
+          render_comment_until_heading_or_end state.input_comment in
+        let html = (html :> (Html_types.flow5 Html.elt) list) in
+        page_section_comment ~header_docs section_level {state with
+            input_comment;
+            acc_html = html @ state.acc_html;
+          }
+      end
+
+
+  let lay_out_page input_comment =
+    let initial_state : comment_state = {
+      input_comment;
+      acc_html = [];
+      acc_toc = [];
+    } in
+    let state, header_docs = page_section_comment ~header_docs:[] `Title initial_state in
+    state.acc_html, header_docs, state.acc_toc
 
 
 
@@ -1749,9 +1838,14 @@ struct
     in
     Tree.enter package;
     Tree.enter ~kind:`Page (Odoc_model.Names.PageName.to_string name);
-    let html = Comment.to_html t.content in
+    let html, header_docs, toc = Top_level_markup.lay_out_page t.content in
     let html = (html :> (Html_types.div_content Html.elt) list) in
-    Tree.make ?theme_uri html []
+    let header_docs =
+      match toc with
+      | [] -> header_docs
+      | _ -> header_docs @ (Top_level_markup.render_toc toc)
+    in
+    Tree.make ~header_docs ?theme_uri html []
 end
 include Page
 end
