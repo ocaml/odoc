@@ -24,7 +24,7 @@ type nestable_block_element = [
   | `Paragraph of (inline_element with_location) list
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Reference.Module.t list
+  | `Modules of string with_location list
   | `List of
     [ `Unordered | `Ordered ] *
     [ `Light | `Heavy ] *

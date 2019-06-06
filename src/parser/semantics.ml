@@ -143,9 +143,22 @@ let rec nestable_block_element
     Location.at location (`Paragraph (inline_elements status content))
 
   | {value = `Code_block _; _}
-  | {value = `Verbatim _; _}
-  | {value = `Modules _; _} as element ->
+  | {value = `Verbatim _; _} as element ->
     element
+
+  | {value = `Modules modules; location} ->
+    let modules =
+      List.fold_left (fun acc Location.{value; location} ->
+          match Reference.read_mod_longident status.warnings location value with
+          | Result.Ok r ->
+            r :: acc
+          | Result.Error error ->
+            Error.warning status.warnings error;
+            acc
+        ) [] modules
+      |> List.rev
+    in
+    Location.at location (`Modules modules)
 
   | {value = `List (kind, _syntax, items); location} ->
     `List (kind, List.map (nestable_block_elements status) items)

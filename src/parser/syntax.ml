@@ -897,13 +897,7 @@ let rec block_element_list
          parsing. *)
       let modules =
         split_string " \t\r\n" s
-        |> List.fold_left (fun acc r ->
-          match Reference.read_mod_longident input.warnings location r with
-          | Result.Ok r -> r::acc
-          | Result.Error error ->
-            Error.warning input.warnings error;
-            acc) []
-        |> List.rev
+        |> List.map (fun r -> Location.at location r)
       in
 
       if modules = [] then
