@@ -146,30 +146,15 @@ let rec inline_element
     junk input;
 
     let r_location = Location.nudge_start (String.length "{!") location in
+    let r = Location.at r_location r in
 
-    begin match Reference.parse input.warnings r_location r with
-    | Result.Ok r ->
-      Location.at location (`Reference (`Simple, r, []))
-    | Result.Error error ->
-      Error.warning input.warnings error;
-      Location.at location (`Code_span r)
-    end
+    Location.at location (`Reference (`Simple, r, []))
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
 
     let r_location = Location.nudge_start (String.length "{{!") location in
-
-    (* Parse the reference target immediately, so that any warnings from it are
-       triggered before warnings from the content. *)
-    let make_element =
-      match Reference.parse input.warnings r_location r with
-      | Result.Ok r ->
-        fun content -> `Reference (`With_text, r, content)
-      | Result.Error error ->
-        Error.warning input.warnings error;
-        fun content -> `Styled (`Emphasis, content)
-    in
+    let r = Location.at r_location r in
 
     let content, brace_location =
       delimited_inline_element_list
@@ -186,7 +171,7 @@ let rec inline_element
         ~what:(Token.describe parent_markup) location
       |> Error.warning input.warnings;
 
-    Location.at location (make_element content)
+    Location.at location (`Reference (`With_text, r, content))
 
   | `Simple_link u ->
     junk input;

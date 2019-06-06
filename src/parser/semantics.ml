@@ -107,10 +107,22 @@ let rec inline_element
     `Styled (style, inline_elements status content)
     |> Location.at location
 
-  | {value = `Reference (_, target, content) as value; location} ->
-    `Reference
-      (target, non_link_inline_elements status ~surrounding:value content)
-    |> Location.at location
+  | {value = `Reference (kind, target, content) as value; location} ->
+    let Location.{value = target; location = target_location} = target in
+    begin match Reference.parse status.warnings target_location target with
+      | Result.Ok target ->
+        let content = non_link_inline_elements status ~surrounding:value content in
+        Location.at location (`Reference (target, content))
+
+      | Result.Error error ->
+        Error.warning status.warnings error;
+        let placeholder =
+          match kind with
+          | `Simple -> `Code_span target
+          | `With_text -> `Styled (`Emphasis, content)
+        in
+        inline_element status (Location.at location placeholder)
+    end
 
   | {value = `Link (target, content) as value; location} ->
     `Link (target, non_link_inline_elements status ~surrounding:value content)
