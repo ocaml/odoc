@@ -1,6 +1,3 @@
-module Path = Odoc_model.Paths.Path
-module Reference = Odoc_model.Paths.Reference
-module Identifier = Odoc_model.Paths.Identifier
 module Comment = Odoc_model.Comment
 
 type 'a with_location = 'a Odoc_model.Location_.with_location
@@ -44,7 +41,7 @@ type tag = [
   | `Since of string
   | `Before of string * (nestable_block_element with_location) list
   | `Version of string
-  | `Canonical of Path.Module.t * Reference.Module.t
+  | `Canonical of string with_location
   | `Inline
   | `Open
   | `Closed

@@ -169,34 +169,51 @@ and nestable_block_elements status elements =
 
 
 
-let tag : status -> Ast.tag -> Comment.tag = fun status tag ->
+let tag
+    : location:Location.span -> status -> Ast.tag ->
+        (Comment.block_element with_location, Ast.block_element with_location) Result.result =
+    fun ~location status tag ->
+  let ok t = Ok (Location.at location (`Tag t)) in
   match tag with
   | `Author _
   | `Since _
   | `Version _
-  | `Canonical _
   | `Inline
   | `Open
   | `Closed as tag ->
-    tag
+    ok tag
+
+  | `Canonical {value = s; location = r_location} ->
+    let path = Reference.read_path_longident r_location s in
+    let module_ = Reference.read_mod_longident status.warnings r_location s in
+    begin match path, module_ with
+    | Ok path, Ok module_ ->
+      ok (`Canonical (path, module_))
+    | Error e, _
+    | Ok _, Error e ->
+      Error.warning status.warnings e;
+      let placeholder = [`Word "@canonical"; `Space; `Code_span s] in
+      let placeholder = List.map (Location.at location) placeholder in
+      Error (Location.at location (`Paragraph placeholder))
+    end
 
   | `Deprecated content ->
-    `Deprecated (nestable_block_elements status content)
+    ok (`Deprecated (nestable_block_elements status content))
 
   | `Param (name, content) ->
-    `Param (name, nestable_block_elements status content)
+    ok (`Param (name, nestable_block_elements status content))
 
   | `Raise (name, content) ->
-    `Raise (name, nestable_block_elements status content)
+    ok (`Raise (name, nestable_block_elements status content))
 
   | `Return content ->
-    `Return (nestable_block_elements status content)
+    ok (`Return (nestable_block_elements status content))
 
   | `See (kind, target, content) ->
-    `See (kind, target, nestable_block_elements status content)
+    ok (`See (kind, target, nestable_block_elements status content))
 
   | `Before (version, content) ->
-    `Before (version, nestable_block_elements status content)
+    ok (`Before (version, nestable_block_elements status content))
 
 
 
@@ -365,9 +382,13 @@ let top_level_block_elements
         let element = (element :> Comment.block_element with_location) in
         traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
-      | {value = `Tag the_tag; _} ->
-        let element = Location.same ast_element (`Tag (tag status the_tag)) in
-        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
+      | {value = `Tag the_tag; location} ->
+        begin match tag ~location status the_tag with
+          | Ok element ->
+            traverse ~top_heading_level (element::comment_elements_acc) ast_elements
+          | Error placeholder ->
+            traverse ~top_heading_level comment_elements_acc (placeholder::ast_elements)
+        end
 
       | {value = `Heading _ as heading; _} ->
         let top_heading_level, element =

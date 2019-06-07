@@ -747,38 +747,18 @@ let rec block_element_list
             |> Error.warning input.warnings;
           let tag =
             match tag with
-            | `Author _ -> Result.Ok (`Author s)
-            | `Since _ -> Result.Ok (`Since s)
-            | `Version _ -> Result.Ok (`Version s)
+            | `Author _ -> `Author s
+            | `Since _ -> `Since s
+            | `Version _ -> `Version s
             | `Canonical _ ->
               (* TODO The location is only approximate, as we need lexer
                  cooperation to get the real location. *)
               let r_location =
                 Location.nudge_start (String.length "@canonical ") location in
-              let result = match Reference.read_path_longident r_location s with
-              | Error _ as e -> e
-              | Ok path ->
-                  match
-                    Reference.read_mod_longident input.warnings r_location s
-                  with
-                  | Error _ as e -> e
-                  | Ok module_ ->  Result.Ok (`Canonical (path, module_))
-              in
-              match result with
-              | Result.Ok _ as result -> result
-              | Result.Error error ->
-                Error.warning input.warnings error;
-                Result.Error [`Word "@canonical"; `Space; `Code_span s]
+              `Canonical (Location.at r_location s)
           in
 
-          let tag =
-            match tag with
-            | Result.Ok tag -> Location.at location (`Tag tag)
-            | Result.Error text ->
-              Location.at location (`Paragraph
-                (List.map (Location.at location) text))
-          in
-
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
