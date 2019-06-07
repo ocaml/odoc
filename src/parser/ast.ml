@@ -1,8 +1,14 @@
-module Comment = Odoc_model.Comment
-
 type 'a with_location = 'a Odoc_model.Location_.with_location
 
 
+
+type style = [
+  | `Bold
+  | `Italic
+  | `Emphasis
+  | `Superscript
+  | `Subscript
+]
 
 type reference_kind = [ `Simple | `With_text ]
 
@@ -11,7 +17,7 @@ type inline_element = [
   | `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string
-  | `Styled of Comment.style * (inline_element with_location) list
+  | `Styled of style * (inline_element with_location) list
   | `Reference of
       reference_kind * string with_location * (inline_element with_location) list
   | `Link of string * (inline_element with_location) list
