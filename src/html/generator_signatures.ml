@@ -130,6 +130,12 @@ sig
       (_, 'item) tagged_item list ->
         (Html_types.div_content Html.elt) list * toc * (Tree.t list)
 
+  val lay_out_page :
+    Odoc_model.Comment.docs ->
+      ((Html_types.div_content Html.elt) list *
+       (Html_types.flow5_without_header_footer Html.elt) list *
+       toc)
+
     val render_toc :
       toc -> [> Html_types.flow5_without_header_footer] Html.elt list
   end

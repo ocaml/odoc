@@ -1,4 +1,22 @@
+{0 Mld Page}
+
 This is an [.mld] file. It doesn't have an auto-generated title, like modules
 and other pages generated fully by odoc do.
 
-The whole thing is {b written} {i in}{^ocamldoc}{_syntax}.
+It will have a TOC generated from section headings.
+
+{1 Section}
+
+This is a section.
+
+{1 Another section}
+
+This is another section.
+
+{2 Subsection}
+
+This is a subsection.
+
+{2 Another Subsection}
+
+This is another subsection.
