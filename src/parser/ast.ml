@@ -13,7 +13,7 @@ type style = [
 type reference_kind = [ `Simple | `With_text ]
 
 type inline_element = [
-  | `Space
+  | `Space of string
   | `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string

@@ -39,9 +39,9 @@ type t = [
      tokens are emitted by the lexer. Otherwise, there would be the need for
      unbounded lookahead, a (co-?)ambiguity between
      [Single_newline Single_newline] and [Blank_line], and other problems. *)
-  | `Space
-  | `Single_newline
-  | `Blank_line
+  | `Space of string
+  | `Single_newline of string
+  | `Blank_line of string
 
   (* A right curly brace ([}]), i.e. end of markup. *)
   | `Right_brace
@@ -172,11 +172,11 @@ let describe : [< t | `Comment ] -> string = function
     "'{{:...} ...}' (external link)"
   | `End ->
     "end of text"
-  | `Space ->
+  | `Space _ ->
     "whitespace"
-  | `Single_newline ->
+  | `Single_newline _ ->
     "line break"
-  | `Blank_line ->
+  | `Blank_line _ ->
     "blank line"
   | `Right_brace ->
     "'}'"

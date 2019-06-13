@@ -76,7 +76,7 @@ let trim_leading_whitespace : string -> string = fun s ->
       match line.[index] with
       | ' ' | '\t' -> count_leading_whitespace' (index + 1)
       | _ -> `Leading_whitespace index
-      | exception Invalid_argument _ -> `Blank_line
+      | exception Invalid_argument _ -> `Blank_line "\n"
     in
     count_leading_whitespace' 0
   in
@@ -251,15 +251,15 @@ rule token input = parse
   | horizontal_space* eof
     { emit input `End }
 
-  | (horizontal_space* newline as prefix)
-    horizontal_space* ((newline horizontal_space*)+ as suffix)
-    { emit input `Blank_line ~adjust_start_by:prefix ~adjust_end_by:suffix }
+  | ((horizontal_space* newline as prefix)
+    horizontal_space* ((newline horizontal_space*)+ as suffix) as ws)
+    { emit input (`Blank_line ws) ~adjust_start_by:prefix ~adjust_end_by:suffix }
 
-  | horizontal_space* newline horizontal_space*
-    { emit input `Single_newline }
+  | (horizontal_space* newline horizontal_space* as ws)
+    { emit input (`Single_newline ws) }
 
-  | horizontal_space+
-    { emit input `Space }
+  | (horizontal_space+ as ws)
+    { emit input (`Space ws) }
 
   | (horizontal_space* (newline horizontal_space*)? as p) '}'
     { emit input `Right_brace ~adjust_start_by:p }
@@ -474,7 +474,7 @@ and code_span buffer nesting_level start_offset input = parse
     { warning
         input
         (Parse_error.not_allowed
-          ~what:(Token.describe `Blank_line)
+          ~what:(Token.describe (`Blank_line "\n\n"))
           ~in_what:(Token.describe (`Code_span "")));
       Buffer.add_char buffer '\n';
       code_span buffer nesting_level start_offset input lexbuf }

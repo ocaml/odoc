@@ -9,7 +9,7 @@ type 'a with_location = 'a Location.with_location
 
 
 type ast_leaf_inline_element = [
-  | `Space
+  | `Space of string
   | `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string
@@ -44,8 +44,11 @@ let leaf_inline_element
     fun status element ->
 
   match element with
-  | { value = (`Space | `Word _ | `Code_span _); _ } as element ->
+  | { value = (`Word _ | `Code_span _); _ } as element ->
     element
+
+  | { value = `Space _; _ } ->
+    Location.same element `Space
 
   | { value = `Raw_markup (Some "html", s); _ } ->
     Location.same element (`Raw_markup (`Html, s))
@@ -192,7 +195,7 @@ let tag
     | Error e, _
     | Ok _, Error e ->
       Error.warning status.warnings e;
-      let placeholder = [`Word "@canonical"; `Space; `Code_span s] in
+      let placeholder = [`Word "@canonical"; `Space " "; `Code_span s] in
       let placeholder = List.map (Location.at location) placeholder in
       Error (Location.at location (`Paragraph placeholder))
     end
