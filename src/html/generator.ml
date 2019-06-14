@@ -1047,7 +1047,7 @@ struct
 
   let rec page_section_comment ~header_docs section_level state =
     match state.input_comment with
-    | [] -> finish_comment_state state, header_docs
+    | [] -> {state with acc_toc = List.rev state.acc_toc}, header_docs
     | element::input_comment ->
       begin match element.Location.value with
       | `Heading (`Title, _label, _content) ->
@@ -1062,19 +1062,19 @@ struct
         } in
         let nested_section_state, header_docs =
           page_section_comment ~header_docs `Section nested_section_state in
-        let acc_html = List.rev_append nested_section_state.acc_html state.acc_html in
+        let acc_html = state.acc_html @ nested_section_state.acc_html in
         page_section_comment ~header_docs section_level
           { nested_section_state with acc_html }
 
       | `Heading (level, _label, _content)
         when not (is_deeper_section_level level ~than:section_level) ->
-          finish_comment_state state, header_docs
+          {state with acc_toc = List.rev state.acc_toc}, header_docs
 
       | `Heading (level, label, content) ->
         let heading_html = Comment.to_html [element] in
         let more_comment_html, input_comment =
           render_comment_until_heading_or_end input_comment in
-        let acc_html = more_comment_html @ heading_html in
+        let acc_html =  heading_html @ more_comment_html in
         let acc_html = (acc_html :> (Html_types.flow5 Html.elt) list) in
         let nested_section_state = {
           input_comment = input_comment;
@@ -1082,7 +1082,7 @@ struct
           acc_toc = [];
         } in
         let nested_section_state, header_docs = page_section_comment ~header_docs level nested_section_state in
-        let acc_html = List.rev_append nested_section_state.acc_html state.acc_html in
+        let acc_html = state.acc_html @ nested_section_state.acc_html in
 
         let acc_toc =
           let `Label (_, label) = label in
