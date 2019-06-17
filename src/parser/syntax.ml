@@ -90,13 +90,13 @@ let rec inline_element
     fun input location next_token ->
 
   match next_token with
-  | `Space ws ->
+  | `Space _ as token ->
     junk input;
-    Location.at location (`Space ws)
+    Location.at location token
 
-  | `Word w ->
+  | `Word _ as token ->
     junk input;
-    Location.at location (`Word w)
+    Location.at location token
     (* This is actually the same memory representation as the token, complete
        with location, and is probably the most common case. Perhaps the token
        can be reused somehow. The same is true of [`Space], [`Code_span]. *)

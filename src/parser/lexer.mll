@@ -308,14 +308,15 @@ rule token input = parse
 
   | "{%" ((raw_markup_target as target) ':')? (raw_markup as s)
     ("%}" | eof as e)
-    { if e <> "%}" then
+    { let token = `Raw_markup (target, s) in
+      if e <> "%}" then
         warning
           input
           ~start_offset:(Lexing.lexeme_end lexbuf)
           (Parse_error.not_allowed
             ~what:(Token.describe `End)
-            ~in_what:(Token.describe (`Raw_markup (None, ""))));
-      emit input (`Raw_markup (target, s)) }
+            ~in_what:(Token.describe token));
+      emit input token }
 
   | "{ul"
     { emit input (`Begin_list `Unordered) }

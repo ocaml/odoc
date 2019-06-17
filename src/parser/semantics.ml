@@ -111,7 +111,7 @@ let rec inline_element
     |> Location.at location
 
   | {value = `Reference (kind, target, content) as value; location} ->
-    let Location.{value = target; location = target_location} = target in
+    let {Location.value = target; location = target_location} = target in
     begin match Reference.parse status.warnings target_location target with
       | Result.Ok target ->
         let content = non_link_inline_elements status ~surrounding:value content in
@@ -151,7 +151,7 @@ let rec nestable_block_element
 
   | {value = `Modules modules; location} ->
     let modules =
-      List.fold_left (fun acc Location.{value; location} ->
+      List.fold_left (fun acc {Location.value; location} ->
           match Reference.read_mod_longident status.warnings location value with
           | Result.Ok r ->
             r :: acc
