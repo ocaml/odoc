@@ -176,7 +176,7 @@ let tag
     : location:Location.span -> status -> Ast.tag ->
         (Comment.block_element with_location, Ast.block_element with_location) Result.result =
     fun ~location status tag ->
-  let ok t = Ok (Location.at location (`Tag t)) in
+  let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | `Author _
   | `Since _
@@ -190,10 +190,10 @@ let tag
     let path = Reference.read_path_longident r_location s in
     let module_ = Reference.read_mod_longident status.warnings r_location s in
     begin match path, module_ with
-    | Ok path, Ok module_ ->
+    | Result.Ok path, Result.Ok module_ ->
       ok (`Canonical (path, module_))
-    | Error e, _
-    | Ok _, Error e ->
+    | Result.Error e, _
+    | Result.Ok _, Result.Error e ->
       Error.warning status.warnings e;
       let placeholder = [`Word "@canonical"; `Space " "; `Code_span s] in
       let placeholder = List.map (Location.at location) placeholder in
@@ -387,9 +387,9 @@ let top_level_block_elements
 
       | {value = `Tag the_tag; location} ->
         begin match tag ~location status the_tag with
-          | Ok element ->
+          | Result.Ok element ->
             traverse ~top_heading_level (element::comment_elements_acc) ast_elements
-          | Error placeholder ->
+          | Result.Error placeholder ->
             traverse ~top_heading_level comment_elements_acc (placeholder::ast_elements)
         end
 
