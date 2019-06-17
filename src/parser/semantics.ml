@@ -8,6 +8,15 @@ type 'a with_location = 'a Location.with_location
 
 
 
+type ast_leaf_inline_element = [
+  | `Space of string
+  | `Word of string
+  | `Code_span of string
+  | `Raw_markup of string option * string
+]
+
+
+
 type status = {
   warnings : Error.warning_accumulator;
   sections_allowed : Ast.sections_allowed;
@@ -29,14 +38,43 @@ let describe_element = function
 
 
 
+let leaf_inline_element
+    : status -> ast_leaf_inline_element with_location ->
+        Comment.leaf_inline_element with_location =
+    fun status element ->
+
+  match element with
+  | { value = (`Word _ | `Code_span _); _ } as element ->
+    element
+
+  | { value = `Space _; _ } ->
+    Location.same element `Space
+
+  | { value = `Raw_markup (Some "html", s); _ } ->
+    Location.same element (`Raw_markup (`Html, s))
+
+  | { value = `Raw_markup (target, s); location } ->
+    let error =
+      match target with
+      | Some invalid_target ->
+        Parse_error.invalid_raw_markup_target invalid_target location
+      | None ->
+        Parse_error.default_raw_markup_target_not_supported location
+    in
+    Error.warning status.warnings error;
+    Location.same element (`Code_span s)
+
+
+
 let rec non_link_inline_element
     : status -> surrounding:_ -> Ast.inline_element with_location ->
         Comment.non_link_inline_element with_location =
     fun status ~surrounding element ->
 
   match element with
-  | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+  | {value = #ast_leaf_inline_element; _} as element ->
+    (leaf_inline_element status element
+     :> Comment.non_link_inline_element with_location)
 
   | {value = `Styled (style, content); _} ->
     `Styled (style, non_link_inline_elements status ~surrounding content)
@@ -64,17 +102,30 @@ let rec inline_element
     fun status element ->
 
   match element with
-  | {value = #Comment.leaf_inline_element; _} as element ->
-    element
+  | {value = #ast_leaf_inline_element; _} as element ->
+    (leaf_inline_element status element
+     :> Comment.inline_element with_location)
 
   | {value = `Styled (style, content); location} ->
     `Styled (style, inline_elements status content)
     |> Location.at location
 
-  | {value = `Reference (_, target, content) as value; location} ->
-    `Reference
-      (target, non_link_inline_elements status ~surrounding:value content)
-    |> Location.at location
+  | {value = `Reference (kind, target, content) as value; location} ->
+    let {Location.value = target; location = target_location} = target in
+    begin match Reference.parse status.warnings target_location target with
+      | Result.Ok target ->
+        let content = non_link_inline_elements status ~surrounding:value content in
+        Location.at location (`Reference (target, content))
+
+      | Result.Error error ->
+        Error.warning status.warnings error;
+        let placeholder =
+          match kind with
+          | `Simple -> `Code_span target
+          | `With_text -> `Styled (`Emphasis, content)
+        in
+        inline_element status (Location.at location placeholder)
+    end
 
   | {value = `Link (target, content) as value; location} ->
     `Link (target, non_link_inline_elements status ~surrounding:value content)
@@ -95,11 +146,24 @@ let rec nestable_block_element
     Location.at location (`Paragraph (inline_elements status content))
 
   | {value = `Code_block _; _}
-  | {value = `Verbatim _; _}
-  | {value = `Modules _; _} as element ->
+  | {value = `Verbatim _; _} as element ->
     element
 
-  | {value = `List (kind, items); location} ->
+  | {value = `Modules modules; location} ->
+    let modules =
+      List.fold_left (fun acc {Location.value; location} ->
+          match Reference.read_mod_longident status.warnings location value with
+          | Result.Ok r ->
+            r :: acc
+          | Result.Error error ->
+            Error.warning status.warnings error;
+            acc
+        ) [] modules
+      |> List.rev
+    in
+    Location.at location (`Modules modules)
+
+  | {value = `List (kind, _syntax, items); location} ->
     `List (kind, List.map (nestable_block_elements status) items)
     |> Location.at location
 
@@ -108,34 +172,51 @@ and nestable_block_elements status elements =
 
 
 
-let tag : status -> Ast.tag -> Comment.tag = fun status tag ->
+let tag
+    : location:Location.span -> status -> Ast.tag ->
+        (Comment.block_element with_location, Ast.block_element with_location) Result.result =
+    fun ~location status tag ->
+  let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
   | `Author _
   | `Since _
   | `Version _
-  | `Canonical _
   | `Inline
   | `Open
   | `Closed as tag ->
-    tag
+    ok tag
+
+  | `Canonical {value = s; location = r_location} ->
+    let path = Reference.read_path_longident r_location s in
+    let module_ = Reference.read_mod_longident status.warnings r_location s in
+    begin match path, module_ with
+    | Result.Ok path, Result.Ok module_ ->
+      ok (`Canonical (path, module_))
+    | Result.Error e, _
+    | Result.Ok _, Result.Error e ->
+      Error.warning status.warnings e;
+      let placeholder = [`Word "@canonical"; `Space " "; `Code_span s] in
+      let placeholder = List.map (Location.at location) placeholder in
+      Error (Location.at location (`Paragraph placeholder))
+    end
 
   | `Deprecated content ->
-    `Deprecated (nestable_block_elements status content)
+    ok (`Deprecated (nestable_block_elements status content))
 
   | `Param (name, content) ->
-    `Param (name, nestable_block_elements status content)
+    ok (`Param (name, nestable_block_elements status content))
 
   | `Raise (name, content) ->
-    `Raise (name, nestable_block_elements status content)
+    ok (`Raise (name, nestable_block_elements status content))
 
   | `Return content ->
-    `Return (nestable_block_elements status content)
+    ok (`Return (nestable_block_elements status content))
 
   | `See (kind, target, content) ->
-    `See (kind, target, nestable_block_elements status content)
+    ok (`See (kind, target, nestable_block_elements status content))
 
   | `Before (version, content) ->
-    `Before (version, nestable_block_elements status content)
+    ok (`Before (version, nestable_block_elements status content))
 
 
 
@@ -304,9 +385,13 @@ let top_level_block_elements
         let element = (element :> Comment.block_element with_location) in
         traverse ~top_heading_level (element::comment_elements_acc) ast_elements
 
-      | {value = `Tag the_tag; _} ->
-        let element = Location.same ast_element (`Tag (tag status the_tag)) in
-        traverse ~top_heading_level (element::comment_elements_acc) ast_elements
+      | {value = `Tag the_tag; location} ->
+        begin match tag ~location status the_tag with
+          | Result.Ok element ->
+            traverse ~top_heading_level (element::comment_elements_acc) ast_elements
+          | Result.Error placeholder ->
+            traverse ~top_heading_level comment_elements_acc (placeholder::ast_elements)
+        end
 
       | {value = `Heading _ as heading; _} ->
         let top_heading_level, element =

@@ -1,22 +1,25 @@
-module Path = Odoc_model.Paths.Path
-module Reference = Odoc_model.Paths.Reference
-module Identifier = Odoc_model.Paths.Identifier
-module Comment = Odoc_model.Comment
-
 type 'a with_location = 'a Odoc_model.Location_.with_location
 
 
 
+type style = [
+  | `Bold
+  | `Italic
+  | `Emphasis
+  | `Superscript
+  | `Subscript
+]
+
 type reference_kind = [ `Simple | `With_text ]
 
 type inline_element = [
-  | `Space
+  | `Space of string
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Comment.raw_markup_target * string
-  | `Styled of Comment.style * (inline_element with_location) list
+  | `Raw_markup of string option * string
+  | `Styled of style * (inline_element with_location) list
   | `Reference of
-      reference_kind * Reference.t * (inline_element with_location) list
+      reference_kind * string with_location * (inline_element with_location) list
   | `Link of string * (inline_element with_location) list
 ]
 
@@ -24,9 +27,10 @@ type nestable_block_element = [
   | `Paragraph of (inline_element with_location) list
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Reference.Module.t list
+  | `Modules of string with_location list
   | `List of
     [ `Unordered | `Ordered ] *
+    [ `Light | `Heavy ] *
     ((nestable_block_element with_location) list) list
 ]
 
@@ -43,7 +47,7 @@ type tag = [
   | `Since of string
   | `Before of string * (nestable_block_element with_location) list
   | `Version of string
-  | `Canonical of Path.Module.t * Reference.Module.t
+  | `Canonical of string with_location
   | `Inline
   | `Open
   | `Closed

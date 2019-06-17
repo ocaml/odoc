@@ -53,7 +53,7 @@ let npeek n input = Stream.npeek n input.tokens
 type token_that_always_begins_an_inline_element = [
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Comment.raw_markup_target * string
+  | `Raw_markup of string option * string
   | `Begin_style of Comment.style
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
@@ -90,13 +90,13 @@ let rec inline_element
     fun input location next_token ->
 
   match next_token with
-  | `Space ->
+  | `Space _ as token ->
     junk input;
-    Location.at location `Space
+    Location.at location token
 
-  | `Word w ->
+  | `Word _ as token ->
     junk input;
-    Location.at location (`Word w)
+    Location.at location token
     (* This is actually the same memory representation as the token, complete
        with location, and is probably the most common case. Perhaps the token
        can be reused somehow. The same is true of [`Space], [`Code_span]. *)
@@ -146,30 +146,15 @@ let rec inline_element
     junk input;
 
     let r_location = Location.nudge_start (String.length "{!") location in
+    let r = Location.at r_location r in
 
-    begin match Reference.parse input.warnings r_location r with
-    | Result.Ok r ->
-      Location.at location (`Reference (`Simple, r, []))
-    | Result.Error error ->
-      Error.warning input.warnings error;
-      Location.at location (`Code_span r)
-    end
+    Location.at location (`Reference (`Simple, r, []))
 
   | `Begin_reference_with_replacement_text r as parent_markup ->
     junk input;
 
     let r_location = Location.nudge_start (String.length "{{!") location in
-
-    (* Parse the reference target immediately, so that any warnings from it are
-       triggered before warnings from the content. *)
-    let make_element =
-      match Reference.parse input.warnings r_location r with
-      | Result.Ok r ->
-        fun content -> `Reference (`With_text, r, content)
-      | Result.Error error ->
-        Error.warning input.warnings error;
-        fun content -> `Styled (`Emphasis, content)
-    in
+    let r = Location.at r_location r in
 
     let content, brace_location =
       delimited_inline_element_list
@@ -186,7 +171,7 @@ let rec inline_element
         ~what:(Token.describe parent_markup) location
       |> Error.warning input.warnings;
 
-    Location.at location (make_element content)
+    Location.at location (`Reference (`With_text, r, content))
 
   | `Simple_link u ->
     junk input;
@@ -276,25 +261,25 @@ and delimited_inline_element_list
        because that is combined into the [`Right_brace] token by the lexer. So,
        it is an internal space, and we want to add it to the non-link inline
        element list. *)
-    | `Space
+    | `Space _
     | #token_that_always_begins_an_inline_element as token ->
       let acc = (inline_element input next_token.location token)::acc in
       consume_elements ~at_start_of_line:false acc
 
-    | `Single_newline ->
+    | `Single_newline ws ->
       junk input;
-      let element = Location.same next_token `Space in
+      let element = Location.same next_token (`Space ws) in
       consume_elements ~at_start_of_line:true (element::acc)
 
-    | `Blank_line ->
+    | `Blank_line ws as blank ->
       Parse_error.not_allowed
-        ~what:(Token.describe `Blank_line)
+        ~what:(Token.describe blank)
         ~in_what:(Token.describe parent_markup)
         next_token.location
       |> Error.warning input.warnings;
 
       junk input;
-      let element = Location.same next_token `Space in
+      let element = Location.same next_token (`Space ws) in
       consume_elements ~at_start_of_line:true (element::acc)
 
     | `Minus
@@ -334,25 +319,25 @@ and delimited_inline_element_list
 
   let first_token = peek input in
   match first_token.value with
-  | `Space ->
+  | `Space _ ->
     junk input;
     consume_elements ~at_start_of_line:false []
     (* [~at_start_of_line] is [false] here because the preceding token was some
        some markup like '{b', and we didn't move to the next line, so the next
        token will not be the first non-whitespace token on its line. *)
 
-  | `Single_newline ->
+  | `Single_newline _ ->
     junk input;
     consume_elements ~at_start_of_line:true []
 
-  | `Blank_line ->
+  | `Blank_line _ as blank ->
     (* In case the markup is immediately followed by a blank line, the error
        message printed by the catch-all case below can be confusing, as it will
        suggest that the markup must be followed by a newline (which it is). It
        just must not be followed by two newlines. To explain that clearly,
        handle that case specifically. *)
     Parse_error.not_allowed
-      ~what:(Token.describe `Blank_line)
+      ~what:(Token.describe blank)
       ~in_what:(Token.describe parent_markup)
       first_token.location
     |> Error.warning input.warnings;
@@ -403,7 +388,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
 
     let next_token = peek input in
     match next_token.value with
-    | `Space
+    | `Space _
     | `Minus
     | `Plus
     | #token_that_always_begins_an_inline_element as token ->
@@ -421,10 +406,10 @@ let paragraph : input -> Ast.nestable_block_element with_location =
       fun acc ->
 
     match npeek 2 input with
-    | {value = `Single_newline; location}::
+    | {value = `Single_newline ws; location}::
       {value = #token_that_always_begins_an_inline_element; _}::_ ->
       junk input;
-      let acc = (Location.at location `Space)::acc in
+      let acc = (Location.at location (`Space ws))::acc in
       let acc = paragraph_line acc in
       additional_lines acc
 
@@ -505,7 +490,7 @@ type stops_at_delimiters = [
 
 type stopped_implicitly = [
   | `End
-  | `Blank_line
+  | `Blank_line of string
   | `Right_brace
   | `Minus
   | `Plus
@@ -557,21 +542,21 @@ let accepted_in_all_contexts
 (* Converts a tag to a series of words. This is used in error recovery, when a
    tag cannot be generated. *)
 let tag_to_words = function
-  | `Author s -> [`Word "@author"; `Space; `Word s]
-  | `Before s -> [`Word "@before"; `Space; `Word s]
-  | `Canonical s -> [`Word "@canonical"; `Space; `Word s]
+  | `Author s -> [`Word "@author"; `Space " "; `Word s]
+  | `Before s -> [`Word "@before"; `Space " "; `Word s]
+  | `Canonical s -> [`Word "@canonical"; `Space " "; `Word s]
   | `Deprecated -> [`Word "@deprecated"]
   | `Inline -> [`Word "@inline"]
   | `Open -> [`Word "@open"]
   | `Closed -> [`Word "@closed"]
-  | `Param s -> [`Word "@param"; `Space; `Word s]
-  | `Raise s -> [`Word "@raise"; `Space; `Word s]
+  | `Param s -> [`Word "@param"; `Space " "; `Word s]
+  | `Raise s -> [`Word "@raise"; `Space " "; `Word s]
   | `Return -> [`Word "@return"]
-  | `See (`Document, s) -> [`Word "@see"; `Space; `Word ("\"" ^ s ^ "\"")]
-  | `See (`File, s) -> [`Word "@see"; `Space; `Word ("'" ^ s ^ "'")]
-  | `See (`Url, s) -> [`Word "@see"; `Space; `Word ("<" ^ s ^ ">")]
-  | `Since s -> [`Word "@since"; `Space; `Word s]
-  | `Version s -> [`Word "@version"; `Space; `Word s]
+  | `See (`Document, s) -> [`Word "@see"; `Space " "; `Word ("\"" ^ s ^ "\"")]
+  | `See (`File, s) -> [`Word "@see"; `Space " "; `Word ("'" ^ s ^ "'")]
+  | `See (`Url, s) -> [`Word "@see"; `Space " "; `Word ("<" ^ s ^ ">")]
+  | `Since s -> [`Word "@since"; `Space " "; `Word s]
+  | `Version s -> [`Word "@version"; `Space " "; `Word s]
 
 (* {3 Block element lists} *)
 
@@ -665,15 +650,15 @@ let rec block_element_list
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
        well as to ensure that all block elements begin on their own line. *)
-    | {value = `Space; _} ->
+    | {value = `Space _; _} ->
       junk input;
       consume_block_elements ~parsed_a_tag where_in_line acc
 
-    | {value = `Single_newline; _} ->
+    | {value = `Single_newline _; _} ->
       junk input;
       consume_block_elements ~parsed_a_tag `At_start_of_line acc
 
-    | {value = `Blank_line; _} as next_token ->
+    | {value = `Blank_line _; _} as next_token ->
       begin match context with
       (* Blank lines terminate shorthand lists ([- foo]). They also terminate
          paragraphs, but the paragraph parser is aware of that internally. *)
@@ -762,38 +747,18 @@ let rec block_element_list
             |> Error.warning input.warnings;
           let tag =
             match tag with
-            | `Author _ -> Result.Ok (`Author s)
-            | `Since _ -> Result.Ok (`Since s)
-            | `Version _ -> Result.Ok (`Version s)
+            | `Author _ -> `Author s
+            | `Since _ -> `Since s
+            | `Version _ -> `Version s
             | `Canonical _ ->
               (* TODO The location is only approximate, as we need lexer
                  cooperation to get the real location. *)
               let r_location =
                 Location.nudge_start (String.length "@canonical ") location in
-              let result = match Reference.read_path_longident r_location s with
-              | Error _ as e -> e
-              | Ok path ->
-                  match
-                    Reference.read_mod_longident input.warnings r_location s
-                  with
-                  | Error _ as e -> e
-                  | Ok module_ ->  Result.Ok (`Canonical (path, module_))
-              in
-              match result with
-              | Result.Ok _ as result -> result
-              | Result.Error error ->
-                Error.warning input.warnings error;
-                Result.Error [`Word "@canonical"; `Space; `Code_span s]
+              `Canonical (Location.at r_location s)
           in
 
-          let tag =
-            match tag with
-            | Result.Ok tag -> Location.at location (`Tag tag)
-            | Result.Error text ->
-              Location.at location (`Paragraph
-                (List.map (Location.at location) text))
-          in
-
+          let tag = Location.at location (`Tag tag) in
           consume_block_elements ~parsed_a_tag:true `After_text (tag::acc)
 
         | `Deprecated | `Return as tag ->
@@ -912,13 +877,7 @@ let rec block_element_list
          parsing. *)
       let modules =
         split_string " \t\r\n" s
-        |> List.fold_left (fun acc r ->
-          match Reference.read_mod_longident input.warnings location r with
-          | Result.Ok r -> r::acc
-          | Result.Error error ->
-            Error.warning input.warnings error;
-            acc) []
-        |> List.rev
+        |> List.map (fun r -> Location.at location r)
       in
 
       if modules = [] then
@@ -945,7 +904,7 @@ let rec block_element_list
         |> Error.warning input.warnings;
 
       let location = Location.span [location; brace_location] in
-      let block = `List (kind, items) in
+      let block = `List (kind, `Heavy, items) in
       let block = accepted_in_all_contexts context block in
       let block = Location.at location block in
       let acc = block::acc in
@@ -980,7 +939,7 @@ let rec block_element_list
           location::(List.map Location.location (List.flatten items))
           |> Location.span
         in
-        let block = `List (kind, items) in
+        let block = `List (kind, `Light, items) in
         let block = accepted_in_all_contexts context block in
         let block = Location.at location block in
         let acc = block::acc in
@@ -1104,7 +1063,7 @@ and shorthand_list_items
     match next_token.value with
     | `End
     | `Right_brace
-    | `Blank_line
+    | `Blank_line _
     | `Tag _
     | `Begin_section_heading _ ->
       List.rev acc, where_in_line
@@ -1168,9 +1127,9 @@ and explicit_list_items
       junk input;
       List.rev acc, next_token.location
 
-    | `Space
-    | `Single_newline
-    | `Blank_line ->
+    | `Space _
+    | `Single_newline _
+    | `Blank_line _ ->
       junk input;
       consume_list_items acc
 
@@ -1181,7 +1140,7 @@ and explicit_list_items
          whitespace. *)
       if kind = `Li then begin
         match (peek input).value with
-        | `Space | `Single_newline | `Blank_line | `Right_brace ->
+        | `Space _ | `Single_newline _ | `Blank_line _ | `Right_brace ->
           ()
           (* The presence of [`Right_brace] above requires some explanation:
 

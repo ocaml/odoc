@@ -39,9 +39,9 @@ type t = [
      tokens are emitted by the lexer. Otherwise, there would be the need for
      unbounded lookahead, a (co-?)ambiguity between
      [Single_newline Single_newline] and [Blank_line], and other problems. *)
-  | `Space
-  | `Single_newline
-  | `Blank_line
+  | `Space of string
+  | `Single_newline of string
+  | `Blank_line of string
 
   (* A right curly brace ([}]), i.e. end of markup. *)
   | `Right_brace
@@ -55,7 +55,7 @@ type t = [
      bullets. *)
   | `Word of string
   | `Code_span of string
-  | `Raw_markup of Odoc_model.Comment.raw_markup_target * string
+  | `Raw_markup of string option * string
   | `Begin_style of Odoc_model.Comment.style
 
   (* Other inline element markup. *)
@@ -137,8 +137,10 @@ let print : [< t ] -> string = function
     "'@open'"
   | `Tag `Closed ->
     "'@closed'"
-  | `Raw_markup (`Html, _) ->
-    "'{%html:...%}'"
+  | `Raw_markup (None, _) ->
+    "'{%...%}'"
+  | `Raw_markup (Some target, _) ->
+    "'{%" ^ target ^ ":...%}'"
 
 (* [`Minus] and [`Plus] are interpreted as if they start list items. Therefore,
    for error messages based on [Token.describe] to be accurate, formatted
@@ -170,11 +172,11 @@ let describe : [< t | `Comment ] -> string = function
     "'{{:...} ...}' (external link)"
   | `End ->
     "end of text"
-  | `Space ->
+  | `Space _ ->
     "whitespace"
-  | `Single_newline ->
+  | `Single_newline _ ->
     "line break"
-  | `Blank_line ->
+  | `Blank_line _ ->
     "blank line"
   | `Right_brace ->
     "'}'"
