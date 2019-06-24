@@ -1,7 +1,21 @@
-Unreleased
-----------
+1.4.1
+-----
 
-- Fixed rendering of conjunctive types (#358, #353, Florian Angeletti)
+Bugs fixed
+
+- Messy formatting in large definitions due to lack of `<span>`s (#360, Thomas
+  Refis).
+- Missing table of contents on `.mld` pages (#361, Rizo Isrof).
+- Missing space before polymorphic class names (#339, Kevin Ji).
+- Module type definitions printed with `:` instead of `=` (#344, Geoff Reedy).
+- Conjunctive types printed with `*` instead of `&` (#353, Florian Angeletti).
+- Type extensions (`+=`) printed without CSS classes found in other items (#348,
+  reported Stéphane Lavergne).
+- High memory usage on large codebases (#361, Thomas Refis).
+- Build: double underscores in internal filenames (#357, Thomas Refis).
+- Development: test suite assumed that html5-tidy supports `--mute` (#345,
+  Geoff Reedy).
+- Internal: refactored AST (#351, #364, Jules Aguillon).
 
 1.4.0
 -----
