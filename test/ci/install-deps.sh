@@ -22,7 +22,7 @@ if [[ $ESY_BUILD == YES ]]; then
   npm --global install esy@0.5.x
 else
   OPAM_RELEASES=https://github.com/ocaml/opam/releases/
-  OPAM_VERSION=2.0.3
+  OPAM_VERSION=2.0.5
 
   case $TRAVIS_OS_NAME in
   "linux") OPAM_OS=linux;;
@@ -37,5 +37,10 @@ else
   sudo chmod a+x /usr/local/bin/opam
 
   opam init -y --bare --disable-sandboxing
-  opam switch create . $OCAML $REPOSITORIES --no-install
+
+  if [ ! -d _opam/bin ]
+  then
+      rm -rf _opam
+      opam switch create . $OCAML $REPOSITORIES --no-install
+  fi
 fi

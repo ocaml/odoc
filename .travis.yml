@@ -42,6 +42,7 @@ cache:
   - $HOME/travis/.opam
   - $HOME/travis/.esy
   - $HOME/travis/.nvm
+  - ./_opam
   - ./_build/default
 
 install:
