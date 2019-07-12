@@ -37,13 +37,11 @@ matrix:
 
 cache:
   directories:
-  - /usr/local/Cellar/opam
-  - /usr/local/Cellar/tidy-html5
-  - $HOME/travis/.opam
-  - $HOME/travis/.esy
-  - $HOME/travis/.nvm
-  - ./_opam
-  - ./_build/default
+    - $HOME/.opam
+    - $HOME/.esy
+    - $HOME/.nvm
+    - ./_opam
+    - ./_build/default
 
 install:
   - ./test/ci/install-deps.sh

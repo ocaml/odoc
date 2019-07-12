@@ -5,16 +5,11 @@ set -e
 
 # Install Tidy everywhere
 case $TRAVIS_OS_NAME in
-"linux")
-  sudo add-apt-repository -y ppa:robert7/tidy-html5
-  sudo apt-get update
-  sudo apt-get install tidy
-;;
-
-"osx")
-  brew install tidy-html5
-  brew link tidy-html5
-;;
+  "linux")
+    sudo add-apt-repository -y ppa:robert7/tidy-html5
+    sudo apt-get update
+    sudo apt-get install tidy
+  ;;
 esac
 
 # Install esy or opam

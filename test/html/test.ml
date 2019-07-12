@@ -35,14 +35,14 @@ module Env = struct
     | `cases when from_root -> "test/html/cases"
     | `cases -> "cases"
 
-  let running_in_travis =
-    match Sys.getenv "TRAVIS" with
-    | "true" -> true
+  let running_in_travis_on_linux =
+    match Sys.getenv "TRAVIS_OS_NAME" with
+    | "linux" -> true
     | _ -> false
     | exception Not_found -> false
 
   let init () = begin
-    if running_in_travis && not Tidy.is_present_in_path then begin
+    if running_in_travis_on_linux && not Tidy.is_present_in_path then begin
       Alcotest.failf "Could not find `tidy` in $PATH in a CI environment"
     end;
 
