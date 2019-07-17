@@ -331,6 +331,8 @@ let tests : test_suite list = [
     t "unterminated" "{[foo";
     t "unterminated-bracket" "{[foo]";
     t "trailing-cr" "{[foo\r]}";
+    t "indented" "  {[\n    foo\n    bar\n  ]}";
+    t "indented-starting-on-same-line" "  {[ foo\n     bar\n  ]}";
   ];
 
   "verbatim", [
