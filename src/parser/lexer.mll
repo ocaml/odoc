@@ -85,23 +85,25 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
   let lines = Astring.String.cuts ~sep:"\n" s in
 
   let least_amount_of_whitespace =
-    let least_so_far, lines =
-      match lines with
-      | [] -> None, []
-      | first_line :: tl ->
-        begin match count_leading_whitespace first_line with
-          | `Leading_whitespace n -> Some (first_line_offset + n), tl
-          | `Blank_line _ -> None, tl
-        end
-    in
-    lines
-    |> List.fold_left (fun least_so_far line ->
+    List.fold_left (fun least_so_far line ->
       match (count_leading_whitespace line, least_so_far) with
       | (`Leading_whitespace n, None) -> Some n
       | (`Leading_whitespace n, Some least) when n < least -> Some n
       | _ -> least_so_far)
-      least_so_far
   in
+
+  let first_line_max_drop, least_amount_of_whitespace =
+    match lines with
+    | [] -> 0, None
+    | first_line :: tl ->
+      begin match count_leading_whitespace first_line with
+        | `Leading_whitespace n ->
+          n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
+        | `Blank_line _ ->
+          0, least_amount_of_whitespace None tl
+      end
+  in
+
   match least_amount_of_whitespace with
   | None ->
     s
@@ -117,7 +119,7 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
       match lines with
       | [] -> []
       | first_line :: tl ->
-        drop (max 0 (least_amount_of_whitespace - first_line_offset)) first_line
+        drop (min first_line_max_drop least_amount_of_whitespace) first_line
         :: List.map (drop least_amount_of_whitespace) tl
     in
     String.concat "\n" lines
