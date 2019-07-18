@@ -1,3 +1,2 @@
 ((output (((f.ml (1 6) (3 8)) (code_block  "foo\
-                                          \n        bar"))))
- (warnings ()))
+                                          \nbar")))) (warnings ()))

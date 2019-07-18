@@ -1,2 +1,2 @@
-((output (((f.ml (1 0) (2 7)) (code_block  "foo\
-                                          \n\tbar")))) (warnings ()))
+((output (((f.ml (1 0) (2 7)) (code_block  "\tfoo\
+                                          \nbar")))) (warnings ()))
