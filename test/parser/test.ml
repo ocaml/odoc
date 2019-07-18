@@ -333,6 +333,8 @@ let tests : test_suite list = [
     t "trailing-cr" "{[foo\r]}";
     t "indented" "  {[\n    foo\n    bar\n  ]}";
     t "indented-starting-on-same-line" "  {[ foo\n     bar\n  ]}";
+    t ~location:{Odoc_model.Location_.line = 1; column = 5}
+      "indented-starting-on-same-line-reloc" " {[ foo\n         bar\n      ]} ";
   ];
 
   "verbatim", [
