@@ -70,7 +70,8 @@ let trim_trailing_blank_lines : string -> string = fun s ->
     in
     String.sub s 0 trim_from
 
-let trim_leading_whitespace : string -> string = fun s ->
+let trim_leading_whitespace : first_line_offset:int -> string -> string =
+ fun ~first_line_offset s ->
   let count_leading_whitespace line =
     let rec count_leading_whitespace' index =
       match line.[index] with
@@ -84,33 +85,44 @@ let trim_leading_whitespace : string -> string = fun s ->
   let lines = Astring.String.cuts ~sep:"\n" s in
 
   let least_amount_of_whitespace =
-    lines
-    |> List.fold_left (fun least_so_far line ->
+    List.fold_left (fun least_so_far line ->
       match (count_leading_whitespace line, least_so_far) with
       | (`Leading_whitespace n, None) -> Some n
       | (`Leading_whitespace n, Some least) when n < least -> Some n
       | _ -> least_so_far)
-      None
   in
+
+  let first_line_max_drop, least_amount_of_whitespace =
+    match lines with
+    | [] -> 0, None
+    | first_line :: tl ->
+      begin match count_leading_whitespace first_line with
+        | `Leading_whitespace n ->
+          n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
+        | `Blank_line _ ->
+          0, least_amount_of_whitespace None tl
+      end
+  in
+
   match least_amount_of_whitespace with
   | None ->
     s
   | Some least_amount_of_whitespace ->
-    let remove_whitespace : string -> string = fun line ->
-      if String.length line < least_amount_of_whitespace then
-        (* Since blank lines were ignored when calculating
-           [least_amount_of_whitespace], their length might be less than the
-           amount. *)
-        line
-      else
-        String.sub
-          line
-          least_amount_of_whitespace
-          (String.length line - least_amount_of_whitespace)
+    let drop n line =
+      (* Since blank lines were ignored when calculating
+         [least_amount_of_whitespace], their length might be less than the
+         amount. *)
+      if String.length line < n then line
+      else String.sub line n (String.length line - n)
     in
-    lines
-    |> List.map remove_whitespace
-    |> String.concat "\n"
+    let lines =
+      match lines with
+      | [] -> []
+      | first_line :: tl ->
+        drop (min first_line_max_drop least_amount_of_whitespace) first_line
+        :: List.map (drop least_amount_of_whitespace) tl
+    in
+    String.concat "\n" lines
 
 
 
@@ -201,11 +213,17 @@ let emit_verbatim input start_offset buffer =
   let t = trim_trailing_blank_lines t in
   emit input (`Verbatim t) ~start_offset
 
-let code_block c =
-  let c = trim_leading_blank_lines c in
+let emit_code_block input c =
   let c = trim_trailing_blank_lines c in
-  let c = trim_leading_whitespace c in
-  `Code_block c
+  let c =
+    with_location_adjustments
+      (fun _ location c ->
+         let first_line_offset = location.start.column + 2 (* Length of {[ *) in
+         trim_leading_whitespace ~first_line_offset c)
+      input c
+  in
+  let c = trim_leading_blank_lines c in
+  emit input (`Code_block c)
 
 
 
@@ -300,7 +318,7 @@ rule token input = parse
     { emit input (reference_token start target) }
 
   | "{[" (code_block_text as c) "]}"
-    { emit input (code_block c) }
+    { emit_code_block input c }
 
   | "{v"
     { verbatim
@@ -450,7 +468,7 @@ rule token input = parse
         (Parse_error.not_allowed
           ~what:(Token.describe `End)
           ~in_what:(Token.describe (`Code_block "")));
-      emit input (code_block c) }
+      emit_code_block input c }
 
 
 

@@ -298,9 +298,12 @@ let tests : test_suite list = [
     t "leading-whitespace-two-cr-lf" "{[ foo\r\n bar]}";
     t "leading-whitespace-two-different-indent" "{[ foo\n   bar]}";
     t "leading-whitespace-two-different-indent-rev" "{[   foo\n bar]}";
+    t ~location:{Odoc_model.Location_.line = 1; column = 3}
+      "leading-whitespace-two-different-indent-reloc" "{[ foo\n      bar]}";
     t "leading-whitespace-with-empty-line" "{[ foo\n\n bar]}";
     t "leading-whitespace-with-whitespace-line-short" "{[  foo\n \n  bar]}";
     t "leading-whitespace-with-whitespace-line-long" "{[ foo\n   \n bar]}";
+    t "leading-whitespace-leading-newline" "{[\n  foo\n  bar\n]}";
     t "leading-tab" "{[\tfoo]}";
     t "leading-tab-two" "{[\tfoo\n\tbar]}";
     t "leading-tab-two-different-indent" "{[\tfoo\n\t\tbar]}";
