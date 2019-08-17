@@ -334,6 +334,9 @@ let tests : test_suite list = [
     t "unterminated" "{[foo";
     t "unterminated-bracket" "{[foo]";
     t "trailing-cr" "{[foo\r]}";
+    t "comment" "{[(* foo *)\nlet bar = ()]}";
+    t "docstring" "{[(** foo *)\nlet bar = ()]}";
+    t "docstring-with-code-block" "{[(** {[foo]} *)\nlet bar = ()]}";
   ];
 
   "verbatim", [
