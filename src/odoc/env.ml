@@ -91,17 +91,18 @@ module Accessible_paths = struct
         List.fold_right (fun x acc -> match f x with | Some y -> y::acc | None -> acc) l []
       in
       let safe_read file =
-        try Some (Root.read file)
+        try Some (Root.read file, file)
         with
         | End_of_file ->
           let warning = Odoc_model.Error.filename_only "End_of_file while reading" (Fs.File.to_string file) in
           prerr_endline (Odoc_model.Error.to_string warning);
           None
       in
-      let roots = filter_map safe_read paths in
+      let roots_paths = filter_map safe_read paths in
+      let roots = List.map fst roots_paths in
       Hashtbl.add t.file_map filename roots;
-      List.iter2 (fun root path ->
-        Odoc_model.Root.Hash_table.add t.root_map root path) roots paths;
+      List.iter (fun (root, path) ->
+        Odoc_model.Root.Hash_table.add t.root_map root path) roots_paths;
       roots
 
   let file_of_root t root =
