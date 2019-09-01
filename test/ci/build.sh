@@ -13,7 +13,5 @@ else
   opam pin add -y --no-action odoc .
   opam install -y --deps-only odoc
   make test
-  opam pin add -y --dev-repo dune
-  make dune-test
   make docs
 fi
