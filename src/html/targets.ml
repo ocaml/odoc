@@ -90,18 +90,38 @@ and module_ ~prefix (t : Odoc_model.Lang.Module.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
-    let page = Printf.sprintf "%s/%s" prefix (Identifier.name t.id) in
-    let subpages = module_expansion ~prefix:page expansion in
-    page :: subpages
+      let expansion =
+        match expansion with
+        | AlreadyASig ->
+            begin match t.type_ with
+            | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
+                Odoc_model.Lang.Module.Signature sg
+            | _ -> assert false
+            end
+        | e -> e
+      in
+      let page = Printf.sprintf "%s/%s" prefix (Identifier.name t.id) in
+      let subpages = module_expansion ~prefix:page expansion in
+      page :: subpages
 
 and module_type ~prefix (t : Odoc_model.Lang.ModuleType.t) =
   match t.expansion with
   | None -> []
   | Some expansion ->
+      let expansion = match expansion with
+      | AlreadyASig ->
+          begin match t.expr with
+          | Some (Signature sg) -> Odoc_model.Lang.Module.Signature sg
+          | _ -> assert false
+          end
+      | e -> e
+      in
     (* FIXME: reuse [Url] somehow. *)
-    let page = Printf.sprintf "%s/module-type-%s" prefix (Identifier.name t.id) in
-    let subpages = module_expansion ~prefix:page expansion in
-    page :: subpages
+      let page =
+        Printf.sprintf "%s/module-type-%s" prefix (Identifier.name t.id)
+      in
+      let subpages = module_expansion ~prefix:page expansion in
+      page :: subpages
 
 
 and include_ ~prefix (t : Odoc_model.Lang.Include.t) =
