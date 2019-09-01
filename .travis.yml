@@ -55,7 +55,5 @@ script: travis_wait 20 ./test/ci/build.sh
 
 notifications:
   email:
-    recipients:
-      - antonbachin@yahoo.com
     on_success: always
     on_failure: always
