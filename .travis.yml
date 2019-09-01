@@ -30,7 +30,6 @@ matrix:
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
 
   allow_failures:
-    - env: OCAML=4.08.1
     - env: OCAML=ocaml-variants.4.09.0+beta1 REPOSITORIES=--repositories=default,beta=git+https://github.com/ocaml/ocaml-beta-repository.git
 
   fast_finish: true
