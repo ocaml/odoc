@@ -81,6 +81,14 @@ and ModuleType : sig
 
 end = ModuleType
 
+and ModuleSubstitution : sig
+  type t =
+    { id: Identifier.Module.t
+    ; doc: Comment.docs
+    ; manifest: Path.Module.t
+    ; }
+end = ModuleSubstitution
+
 (** {3 Signatures} *)
 
 and Signature : sig
@@ -94,7 +102,9 @@ and Signature : sig
   type item =
     | Module of recursive * Module.t
     | ModuleType of ModuleType.t
+    | ModuleSubstitution of ModuleSubstitution.t
     | Type of recursive * TypeDecl.t
+    | TypeSubstitution of TypeDecl.t
     | TypExt of Extension.t
     | Exception of Exception.t
     | Value of Value.t

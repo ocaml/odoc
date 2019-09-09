@@ -261,7 +261,7 @@ open Type_expression
 module Type_declaration :
 sig
   val type_decl :
-    Lang.Signature.recursive * Lang.TypeDecl.t ->
+    ?is_substitution:bool -> Lang.Signature.recursive * Lang.TypeDecl.t ->
       rendered_item * Odoc_model.Comment.docs
   val extension : Lang.Extension.t -> rendered_item * Odoc_model.Comment.docs
   val exn : Lang.Exception.t -> rendered_item * Odoc_model.Comment.docs
@@ -271,7 +271,7 @@ sig
     Lang.TypeDecl.param list ->
       [> `PCDATA ] Html.elt
 
-  val format_manifest : ?compact_variants:bool -> Lang.TypeDecl.Equation.t -> text * bool
+  val format_manifest : ?is_substitution:bool -> ?compact_variants:bool -> Lang.TypeDecl.Equation.t -> text * bool
 
   val format_constraints : (Lang.TypeExpr.t * Lang.TypeExpr.t) list -> text
 end =
@@ -567,17 +567,17 @@ struct
     end
 
   let format_manifest
-    : 'inner_row 'outer_row. ?compact_variants:bool
+    : 'inner_row 'outer_row. ?is_substitution:bool -> ?compact_variants:bool
     -> Odoc_model.Lang.TypeDecl.Equation.t
     -> text * bool
-  = fun ?(compact_variants=true) equation ->
+  = fun ?(is_substitution=false) ?(compact_variants=true) equation ->
     let _ = compact_variants in (* TODO *)
     let private_ = equation.private_ in
     match equation.manifest with
     | None -> [], private_
     | Some t ->
       let manifest =
-        Html.txt " = " ::
+        Html.txt (if is_substitution then " := " else " = ") ::
         (if private_ then
           [keyword Syntax.Type.private_keyword; Html.txt " "]
         else []) @
@@ -587,7 +587,7 @@ struct
 
 
 
-  let type_decl ((recursive, t) : Lang.Signature.recursive * Lang.TypeDecl.t) =
+  let type_decl ?(is_substitution=false) ((recursive, t) : Lang.Signature.recursive * Lang.TypeDecl.t) =
     let tyname = Paths.Identifier.name t.id in
     let params = format_params t.equation.params in
     let constraints = format_constraints t.equation.constraints in
@@ -595,7 +595,7 @@ struct
       match t.equation.manifest with
       | Some (Odoc_model.Lang.TypeExpr.Polymorphic_variant variant) ->
         let manifest =
-          (Html.txt " = " ::
+          (Html.txt (if is_substitution then " := " else " = ") ::
           if t.equation.private_ then
             [keyword Syntax.Type.private_keyword; Html.txt " "]
           else
@@ -604,7 +604,7 @@ struct
         in
         manifest, false
       | _ ->
-        let manifest, need_private = format_manifest t.equation in
+        let manifest, need_private = format_manifest ~is_substitution t.equation in
         Utils.optional_code manifest, need_private
     in
     let representation =
@@ -678,6 +678,24 @@ struct
 end
 open Value
 
+module ModuleSubstitution :
+sig
+  val module_substitution : Lang.ModuleSubstitution.t -> rendered_item * Odoc_model.Comment.docs
+end =
+struct
+  let module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
+    let name = Paths.Identifier.name t.id in
+    let path = Tree.Relative_link.of_path ~stop_before:true (t.manifest :> Paths.Path.t) in
+    let value =
+      keyword "module" ::
+      Html.txt " " ::
+      Html.txt name ::
+      Html.txt " := " ::
+      path
+    in
+    [Html.code value], t.doc
+end
+open ModuleSubstitution
 
 
 (* This chunk of code is responsible for laying out signatures and class
@@ -1368,11 +1386,13 @@ end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
     | Type (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
+    | TypeSubstitution {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | Exception {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | Value {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | External {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | Module (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
     | ModuleType {id; _} -> path_to_id (id :> Paths.Identifier.t)
+    | ModuleSubstitution {id; _} -> path_to_id (id :> Paths.Identifier.t)
     | Class (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
     | ClassType (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
     | TypExt _
@@ -1381,11 +1401,13 @@ struct
 
   let signature_item_to_spec : Lang.Signature.item -> _ = function
     | Type _ -> Some "type"
+    | TypeSubstitution _ -> Some "type-subst"
     | Exception _ -> Some "exception"
     | Value _ -> Some "value"
     | External _ -> Some "external"
     | Module _ -> Some "module"
     | ModuleType _ -> Some "module-type"
+    | ModuleSubstitution _ -> Some "module-substitution"
     | Class _ -> Some "class"
     | ClassType _ -> Some "class-type"
     | TypExt _ -> Some "extension"
@@ -1395,10 +1417,12 @@ struct
   let tag_signature_item : Lang.Signature.item -> _ = fun item ->
     match item with
     | Type _ -> `Leaf_item (`Type, item)
+    | TypeSubstitution _ -> `Leaf_item (`TypeSubstitution, item)
     | TypExt _ -> `Leaf_item (`Extension, item)
     | Exception _ -> `Leaf_item (`Exception, item)
     | Value _ -> `Leaf_item (`Value, item)
     | External _ -> `Leaf_item (`External, item)
+    | ModuleSubstitution _ -> `Leaf_item (`ModuleSubstitution, item)
 
     | Module _
     | ModuleType _
@@ -1410,10 +1434,12 @@ struct
 
   let rec render_leaf_signature_item : Lang.Signature.item -> _ = function
     | Type (r, t) -> type_decl (r, t)
+    | TypeSubstitution t -> type_decl ~is_substitution:true (Ordinary, t)
     | TypExt e -> extension e
     | Exception e -> exn e
     | Value v -> value v
     | External e -> external_ e
+    | ModuleSubstitution m -> module_substitution m
     | _ -> assert false
 
   and render_nested_signature_or_class

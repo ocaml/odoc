@@ -435,6 +435,17 @@ class virtual module_ : object
   method module_hidden : bool -> bool
 end
 
+class virtual module_substitution : object
+
+  method virtual identifier_module : Identifier.Module.t -> Identifier.Module.t
+
+  method virtual path_module : Path.Module.t -> Path.Module.t
+
+  method virtual documentation : Comment.docs -> Comment.docs
+
+  method module_substitution : ModuleSubstitution.t -> ModuleSubstitution.t
+end
+
 class virtual module_type : object
 
   method virtual identifier_module : Identifier.Module.t -> Identifier.Module.t
@@ -485,6 +496,8 @@ class virtual signature : object
 
   method virtual module_ : Module.t -> Module.t
 
+  method virtual module_substitution : ModuleSubstitution.t -> ModuleSubstitution.t
+  
   method virtual module_type : ModuleType.t -> ModuleType.t
 
   method virtual type_decl : TypeDecl.t -> TypeDecl.t
@@ -857,6 +870,7 @@ end
 class virtual types : object
   inherit documentation
   inherit module_
+  inherit module_substitution
   inherit module_type
   inherit signature
   inherit include_

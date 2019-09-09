@@ -338,6 +338,11 @@ let add_module md env =
   let env = add_documentation md.doc env in
     add_module_ident md.id env
 
+let add_module_substitution m env =
+  let open Odoc_model.Lang.ModuleSubstitution in
+  let env = add_documentation m.doc env in
+  add_module_ident m.id env
+
 let add_unit unit env =
   let open Compilation_unit in
   let env = add_documentation unit.doc env in
@@ -367,7 +372,9 @@ and add_signature_item item env =
   | ClassType (_, cltyp) -> add_class_type cltyp env
   | Include incl -> add_include incl env
   | Comment com -> add_comment com env
-
+  | ModuleSubstitution m -> add_module_substitution m env
+  | TypeSubstitution t -> add_type_decl t env
+  
 and add_signature_items sg env =
   List.fold_right add_signature_item sg env
 
