@@ -622,8 +622,6 @@ and read_signature_item env parent item =
         [ModuleSubstitution (read_module_substitution env parent mst)]
 #endif
 
-(*and read_type_subst _env _parent _tst = []*)
-
 and read_module_substitution env parent ms =
   let open ModuleSubstitution in
   let name = parenthesise (Ident.name ms.ms_id) in

@@ -1192,9 +1192,9 @@ class virtual module_substitution = object (self)
     let id' = self#identifier_module id in
     let doc' = self#documentation doc in
     let manifest' = self#path_module manifest in
-    if id != id' || doc != doc' || manifest' != manifest then
-        {id = id'; doc = doc'; manifest = manifest' }
-      else subst
+    if id != id' || doc != doc' || manifest' != manifest
+    then {id = id'; doc = doc'; manifest = manifest' }
+    else subst
 end
 
 class virtual module_type = object (self)
