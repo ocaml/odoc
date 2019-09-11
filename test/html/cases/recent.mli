@@ -34,3 +34,21 @@ type empty_conj= X: [< `X of & 'a & int * float  ] -> empty_conj
 type conj = X: [< `X of int & [< `B of int & float ] ] -> conj
 val empty_conj: [< `X of & 'a & int * float  ]
 val conj : [< `X of int & [< `B of int & float ] ]
+
+module Z : sig
+  module Y : sig
+    module X : sig
+      type 'a t
+    end
+  end
+end
+
+module X : sig
+  module L := Z.Y
+  type t = int L.X.t
+  type u := int
+  type v = u L.X.t
+end
+
+
+

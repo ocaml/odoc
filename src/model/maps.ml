@@ -1175,6 +1175,28 @@ class virtual module_ = object (self)
 
 end
 
+class virtual module_substitution = object (self)
+
+  method virtual identifier_module :
+    Identifier.Module.t -> Identifier.Module.t
+  
+  method virtual documentation :
+    Comment.docs -> Comment.docs
+  
+  method virtual path_module :
+    Path.Module.t -> Path.Module.t
+
+  method module_substitution subst =
+    let open ModuleSubstitution in
+    let {id; doc; manifest} = subst in
+    let id' = self#identifier_module id in
+    let doc' = self#documentation doc in
+    let manifest' = self#path_module manifest in
+    if id != id' || doc != doc' || manifest' != manifest
+    then {id = id'; doc = doc'; manifest = manifest' }
+    else subst
+end
+
 class virtual module_type = object (self)
 
   method virtual identifier_module :
@@ -1328,6 +1350,9 @@ class virtual signature = object (self)
   method virtual include_:
     Include.t -> Include.t
 
+  method virtual module_substitution :
+    ModuleSubstitution.t -> ModuleSubstitution.t
+
   method signature_item item =
     let open Signature in
       match item with
@@ -1367,6 +1392,14 @@ class virtual signature = object (self)
           let mty' = self#module_type mty in
             if mty != mty' then ModuleType mty'
             else item
+      | ModuleSubstitution msub ->
+          let msub' = self#module_substitution msub in
+          if msub' != msub then ModuleSubstitution msub'
+          else item
+      | TypeSubstitution tsub ->
+          let tsub' = self#type_decl tsub in 
+          if tsub' != tsub then TypeSubstitution tsub'
+          else item
       | Include incl ->
           let incl' = self#include_ incl in
             if incl != incl' then Include incl'
@@ -2211,6 +2244,7 @@ end
 class virtual types = object
   inherit documentation
   inherit module_
+  inherit module_substitution
   inherit module_type
   inherit signature
   inherit include_

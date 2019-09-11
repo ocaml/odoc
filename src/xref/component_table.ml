@@ -536,6 +536,17 @@ and signature_items local =
     | Comment com :: rest ->
         let sg = signature_items local rest in
           add_comment com sg
+    | ModuleSubstitution mst :: rest ->
+        let open ModuleSubstitution in
+        (* Treat it like an alias *)
+        let name = Identifier.name mst.id in
+        let decl = module_decl local (Alias mst.manifest) in
+        add_local_module_identifier local mst.id decl;
+        let sg = signature_items local rest in
+        let sg = add_documentation mst.doc sg in
+          add_module name decl sg
+    | TypeSubstitution _ :: rest ->
+        signature_items local rest
     | [] -> empty
 
 and module_type_expr local expr =
