@@ -67,7 +67,7 @@ and modtype_declaration =
 
 let opt conv = function | None -> None | Some x -> Some (conv x)
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR = 08
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 
 let rec signature : Types.signature -> signature = fun x -> List.map signature_item x
 
