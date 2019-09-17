@@ -321,7 +321,21 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
   in
 
   let old_kind, s, location =
-    match String.rindex s ':' with
+    let rec find_old_reference_kind_separator index =
+      match s.[index] with
+      | ':' ->
+        index
+      | ')' ->
+        begin match String.rindex_from s index '(' with
+        | index -> find_old_reference_kind_separator (index - 1)
+        | exception (Not_found as exn) -> raise exn
+        end
+      | _ ->
+        find_old_reference_kind_separator (index - 1)
+      | exception Invalid_argument _ ->
+        raise Not_found
+    in
+    match find_old_reference_kind_separator (String.length s - 1) with
     | index ->
       let old_kind = String.trim (String.sub s 0 index) in
       let old_kind_location =

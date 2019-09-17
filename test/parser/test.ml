@@ -203,6 +203,7 @@ let tests : test_suite list = [
     t "operator" "{!(>>=)}";
     t "operator-with-dash" "{!(@->)}";
     t "operator-with-dot" "{!(*.)}";
+    t "operator-with-colon" "{!(>::)}";
   ];
 
   "reference-with-text", [
