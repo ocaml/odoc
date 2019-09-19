@@ -1,3 +1,19 @@
+1.4.2
+-----
+
+Bugs fixed
+
+- Build on OCaml 4.09 (#383, Anil Madhavapeddy).
+- Handle OCaml 4.08 type and module substitutions (#381, Jon Ludlam).
+- Parser: better trimming of leading whitespace in code blocks (#370, Jules
+  Aguillon).
+- Parser: allow references to operators containing `:` characters (#384,
+  reported Sylvain Le Gall).
+- HTML: emit `<meta generator>` again (#378, Daniel Bünzli).
+- CLI: `odoc html-targets` was ignoring deeply nested modules (#379, Daniel
+  Bünzli).
+- Fix bad internal usage of `List.iter2` (#376, Yotam Barnoy).
+
 1.4.1
 -----
 
