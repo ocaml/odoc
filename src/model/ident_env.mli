@@ -14,21 +14,23 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Names
+
 type t
 
 val empty : t
 
-val add_module : Paths.Identifier.Signature.t -> Ident.t -> t -> t
+val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
 
-val add_argument : Paths.Identifier.Signature.t -> int -> Ident.t -> t -> t
+val add_argument : Paths.Identifier.Signature.t -> int -> Ident.t -> ArgumentName.t -> t -> t
 
-val add_module_type : Paths.Identifier.Signature.t -> Ident.t -> t -> t
+val add_module_type : Paths.Identifier.Signature.t -> Ident.t -> ModuleTypeName.t -> t -> t
 
-val add_type : Paths.Identifier.Signature.t -> Ident.t -> t -> t
+val add_type : Paths.Identifier.Signature.t -> Ident.t -> TypeName.t -> t -> t
 
-val add_class : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> Ident.t -> t -> t
+val add_class : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> Ident.t -> ClassName.t -> t -> t
 
-val add_class_type : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> t -> t
+val add_class_type : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> ClassTypeName.t -> t -> t
 
 val add_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 

@@ -8,6 +8,8 @@ module type Name = sig
 
     val of_ident : Ident.t -> t
 
+    val internal_of_ident : Ident.t -> t
+    
     val equal : t -> t -> bool
 
     val is_hidden : t -> bool

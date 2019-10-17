@@ -372,7 +372,7 @@ let rec read_module_expr env parent label_parent pos mexpr =
               in
                 Some { FunctorArgument. id; expr = arg; expansion }
         in
-        let env = Env.add_argument parent pos id env in
+        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
       let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmod_apply _ ->
