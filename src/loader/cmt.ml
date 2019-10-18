@@ -434,6 +434,23 @@ and read_module_bindings env parent mbs =
   |> fst
   |> List.rev
 
+and module_of_extended_open env parent o =
+  let open Module in
+  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
+  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
+  let type_ =
+    match unwrap_module_expr_desc o.open_expr.mod_desc with
+    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+    | _ -> ModuleType (read_module_expr env id container 1 o.open_expr)
+  in
+  { id
+  ; doc = []
+  ; type_
+  ; canonical = None
+  ; hidden = true
+  ; display_type = None
+  ; expansion = None }
+
 and read_structure_item env parent item =
   let open Signature in
     match item.str_desc with
@@ -471,7 +488,8 @@ and read_structure_item env parent item =
         read_module_bindings env parent mbs
     | Tstr_modtype mtd ->
         [ModuleType (Cmti.read_module_type_declaration env parent mtd)]
-    | Tstr_open _ -> []
+    | Tstr_open o ->
+        [Comment `Stop; Module (Ordinary, module_of_extended_open env parent o); Comment `Stop]
     | Tstr_include incl ->
         [Include (read_include env parent incl)]
     | Tstr_class cls ->

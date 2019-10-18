@@ -20,6 +20,8 @@ type t
 
 val empty : t
 
+val module_name_of_open : Typedtree.open_declaration -> string
+
 val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
 
 val add_argument : Paths.Identifier.Signature.t -> int -> Ident.t -> ArgumentName.t -> t -> t

@@ -4,15 +4,37 @@ module type Name = sig
 
     val to_string : t -> string
 
+    val to_string_unsafe : t -> string
+
     val of_string : string -> t
 
     val of_ident : Ident.t -> t
 
+    val internal_of_string : string -> t
+
     val internal_of_ident : Ident.t -> t
-    
+
+    val is_internal : t -> bool
+
     val equal : t -> t -> bool
 
     val is_hidden : t -> bool
+end
+
+module type SimpleName = sig
+
+    type t
+
+    val to_string : t -> string
+
+    val of_string : string -> t
+
+    val of_ident : Ident.t -> t
+
+    val equal : t -> t -> bool
+
+    val is_hidden : t -> bool
+
 end
 
 module ModuleName : Name
@@ -23,26 +45,26 @@ module ModuleTypeName : Name
 
 module TypeName : Name
 
-module ConstructorName : Name
+module ConstructorName : SimpleName
 
-module FieldName : Name
+module FieldName : SimpleName
 
-module ExtensionName : Name
+module ExtensionName : SimpleName
 
-module ExceptionName : Name
+module ExceptionName : SimpleName
 
-module ValueName : Name
+module ValueName : SimpleName
 
 module ClassName : Name
 
 module ClassTypeName : Name
 
-module MethodName : Name
+module MethodName : SimpleName
 
-module InstanceVariableName : Name
+module InstanceVariableName : SimpleName
 
-module UnitName : Name
+module UnitName : SimpleName
 
-module LabelName : Name
+module LabelName : SimpleName
 
-module PageName : Name
+module PageName : SimpleName

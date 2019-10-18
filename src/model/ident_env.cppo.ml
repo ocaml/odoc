@@ -38,6 +38,11 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
+let module_name_of_open o =
+  let open Typedtree in
+  let loc_start = o.open_loc.Location.loc_start in
+  Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
+  
 let add_module parent id name env =
   let ident = `Identifier (`Module(parent, name)) in
   let module_ = if ModuleName.is_hidden name then `Hidden ident else ident in
@@ -121,6 +126,41 @@ let rec add_signature_type_items parent items env =
     | Sig_class_type _ :: _ -> assert false
 
     | [] -> env
+
+let rec add_extended_open_items parent items env =
+  let open Types in
+    match items with
+    | Sig_type(id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          if Btype.is_row_name (Ident.name id) then env
+          else add_type parent id (TypeName.internal_of_ident id) env
+    | Sig_module(id, _, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_module parent id (ModuleName.internal_of_ident id) env
+    | Sig_modtype(id, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_module_type parent id (ModuleTypeName.internal_of_ident id) env
+    | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_class parent id ty_id obj_id cl_id (ClassName.internal_of_ident id) env
+    | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _)
+      :: Sig_type(cl_id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_class_type parent id obj_id cl_id (ClassTypeName.internal_of_ident id) env
+    | (Sig_value _ | Sig_typext _) :: rest ->
+        add_extended_open_items parent rest env
+
+    | Sig_class _ :: _
+    | Sig_class_type _ :: _ -> assert false
+
+    | [] -> env
+
+let add_extended_open parent item env =
+  Format.fprintf Format.std_formatter "add_extended_open\n%!";
+  let open Typedtree in
+  let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open item)) in
+  add_extended_open_items parent item.open_bound_items env
 
 let add_signature_tree_item parent item env =
   let open Typedtree in
@@ -237,9 +277,15 @@ let add_structure_tree_item parent item env =
                (ClassTypeName.of_ident clty.ci_id_class_type)
                env)
           cltyps env
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 08
+    | Tstr_open _ -> env
+#else
+    | Tstr_open o ->
+      add_extended_open parent o env
+#endif
     | Tstr_eval _ | Tstr_value _
     | Tstr_primitive _ | Tstr_typext _
-    | Tstr_exception _ | Tstr_open _
+    | Tstr_exception _ 
     | Tstr_attribute _ -> env
 
 let add_structure_tree_items parent str env =
