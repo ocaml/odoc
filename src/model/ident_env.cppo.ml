@@ -38,11 +38,14 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let module_name_of_open o =
+let module_name_of_open str =
   let open Typedtree in
-  let loc_start = o.open_loc.Location.loc_start in
-  Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
-  
+  match str with
+  | Tstr_open o -> 
+    let loc_start = o.open_loc.Location.loc_start in
+    Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
+  | _ -> failwith "Error - module_name_of_open should only ever be passed a Tstr_open"
+
 let add_module parent id name env =
   let ident = `Identifier (`Module(parent, name)) in
   let module_ = if ModuleName.is_hidden name then `Hidden ident else ident in
@@ -127,6 +130,7 @@ let rec add_signature_type_items parent items env =
 
     | [] -> env
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 let rec add_extended_open_items parent items env =
   let open Types in
     match items with
@@ -159,8 +163,10 @@ let rec add_extended_open_items parent items env =
 let add_extended_open parent item env =
   Format.fprintf Format.std_formatter "add_extended_open\n%!";
   let open Typedtree in
-  let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open item)) in
+  let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open (Tstr_open item))) in
   add_extended_open_items parent item.open_bound_items env
+#endif
+
 
 let add_signature_tree_item parent item env =
   let open Typedtree in

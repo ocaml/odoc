@@ -434,9 +434,10 @@ and read_module_bindings env parent mbs =
   |> fst
   |> List.rev
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and module_of_extended_open env parent o =
   let open Module in
-  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
+  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open (Typedtree.Tstr_open o))) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let type_ =
     match unwrap_module_expr_desc o.open_expr.mod_desc with
@@ -450,6 +451,7 @@ and module_of_extended_open env parent o =
   ; hidden = true
   ; display_type = None
   ; expansion = None }
+#endif
 
 and read_structure_item env parent item =
   let open Signature in
@@ -489,7 +491,11 @@ and read_structure_item env parent item =
     | Tstr_modtype mtd ->
         [ModuleType (Cmti.read_module_type_declaration env parent mtd)]
     | Tstr_open o ->
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 08
+        ignore(o); []
+#else
         [Comment `Stop; Module (Ordinary, module_of_extended_open env parent o); Comment `Stop]
+#endif
     | Tstr_include incl ->
         [Include (read_include env parent incl)]
     | Tstr_class cls ->
