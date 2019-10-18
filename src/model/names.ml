@@ -1,5 +1,3 @@
-exception IdentifierLeak of string
-
 module type Name = sig
 
     type t
@@ -24,8 +22,6 @@ module type Name = sig
 
 end
 
-let relaxed = true
-
 module Name : Name = struct
 
     type t =
@@ -34,7 +30,7 @@ module Name : Name = struct
 
     let to_string = function
         | Std s -> s
-        | Internal s -> if relaxed then s else raise (IdentifierLeak s)
+        | Internal s -> Printf.sprintf "$%s" s
 
     let to_string_unsafe = function
         | Std s -> s
