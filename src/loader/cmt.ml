@@ -437,7 +437,7 @@ and read_module_bindings env parent mbs =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and module_of_extended_open env parent o =
   let open Module in
-  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open (Typedtree.Tstr_open o))) in
+  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let type_ =
     match unwrap_module_expr_desc o.open_expr.mod_desc with

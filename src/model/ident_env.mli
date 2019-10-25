@@ -20,7 +20,7 @@ type t
 
 val empty : t
 
-val module_name_of_open : Typedtree.structure_item_desc -> string
+val module_name_of_open : 'a Typedtree.open_infos -> string
 
 val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
 
