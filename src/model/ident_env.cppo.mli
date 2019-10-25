@@ -20,7 +20,9 @@ type t
 
 val empty : t
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 val module_name_of_open : 'a Typedtree.open_infos -> string
+#endif
 
 val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
 

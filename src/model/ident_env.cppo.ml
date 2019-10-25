@@ -38,9 +38,11 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
+#if OCAML_MAJOR=4 && OCAML_MINOR >= 08
 let module_name_of_open o =
   let loc_start = o.Typedtree.open_loc.Location.loc_start in
   Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
+#endif
 
 let add_module parent id name env =
   let ident = `Identifier (`Module(parent, name)) in
