@@ -179,7 +179,7 @@ struct
     | Any  -> [type_var Syntax.Type.any]
     | Alias (te, alias) ->
       type_expr ~needs_parentheses:true te @
-      Html.txt " " :: keyword "as" :: Html.txt " " :: [ Html.txt alias ]
+      Html.txt " " :: keyword "as" :: Html.txt " '" :: [ Html.txt alias ]
     | Arrow (None, src, dst) ->
       let res =
         type_expr ~needs_parentheses:true src @
