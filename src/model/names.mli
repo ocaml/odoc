@@ -1,9 +1,25 @@
+(** Typed names for paths, identifiers, references and fragments.
+
+    This module contains a module per type of named object in our internal
+    representation of the langage, each containing an opaque type [t].
+    This allows us to ensure that, for example, we never mistake a module
+    name for a module type name.
+*)
+
+(** Name is the signature for names that could possibly be internal. Internal
+    names occur when we generate items that don't have a path that will be
+    exposed in the generated HTML, for example, when we are doing generalised
+    opens. The compiler makes sure these new types are removed from the
+    signature, so they should never be externally visible, and an attempt to
+    turn an internal name into a string will result in an exception being thrown. *)
 module type Name = sig
 
     type t
 
     val to_string : t -> string
 
+    (** [to_string_unsafe] will allow even internal names to be turned into
+        strings. Use with caution. *)
     val to_string_unsafe : t -> string
 
     val of_string : string -> t
@@ -18,9 +34,13 @@ module type Name = sig
 
     val equal : t -> t -> bool
 
+    (** Hidden names are those that contain a double underscore, e.g.
+        [Hidden__module] *)
     val is_hidden : t -> bool
 end
 
+(** Some named objects can't have internal names, so they have this simpler
+    module. *)
 module type SimpleName = sig
 
     type t

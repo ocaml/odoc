@@ -159,7 +159,6 @@ let rec add_extended_open_items parent items env =
     | [] -> env
 
 let add_extended_open parent item env =
-  Format.fprintf Format.std_formatter "add_extended_open\n%!";
   let open Typedtree in
   let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open item)) in
   add_extended_open_items parent item.open_bound_items env
