@@ -61,10 +61,10 @@ scripts:
     install:
       - npm --global install esy@0.5.x
       - $(npm bin --global)/esy --version
-
-    script:
       - ESY=$(npm bin --global)/esy
       - $ESY install --verbose
+
+    script:
       - $ESY build --verbose
       - $ESY make test
 
