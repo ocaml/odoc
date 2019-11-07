@@ -33,6 +33,7 @@ scripts:
             opam switch create . $OCAML $REPOSITORIES --no-install
         fi
       - eval `opam env`
+      - opam install -y --deps-only .
       - opam --version
       - ocaml -version
       - tidy --version
@@ -41,8 +42,6 @@ scripts:
       - rm -rf ./_build/default/test/html/_scratch
 
     script:
-      - opam pin add -y --no-action odoc .
-      - opam install -y --deps-only odoc
       - make test
       - make docs
 
