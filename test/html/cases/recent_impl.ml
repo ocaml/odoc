@@ -22,3 +22,8 @@ module type S = sig
     val f: t
 end
 
+open Foo
+
+(* Check that regular open still works as expected *)
+module B' = B
+

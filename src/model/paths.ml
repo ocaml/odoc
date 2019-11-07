@@ -39,7 +39,7 @@ module Identifier = struct
   let name : [< t] -> string = function
     | `Root(_, name) -> UnitName.to_string name
     | `Page(_, name) -> PageName.to_string name
-    | `Module(_, name) -> ModuleName.to_string_unsafe name
+    | `Module(_, name) -> ModuleName.to_string name
     | `Argument(_, _, name) -> ArgumentName.to_string name
     | `ModuleType(_, name) -> ModuleTypeName.to_string name
     | `Type(_, name) -> TypeName.to_string name

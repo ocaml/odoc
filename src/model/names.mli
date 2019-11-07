@@ -11,7 +11,11 @@
     exposed in the generated HTML, for example, when we are doing generalised
     opens. The compiler makes sure these new types are removed from the
     signature, so they should never be externally visible, and an attempt to
-    turn an internal name into a string will result in an exception being thrown. *)
+    turn an internal name into a string will result in an exception being thrown.
+
+    Note that it is tricky currently to remove references to internal names,
+    and hence the 'safe' [to_string] will not currently raise an exception. When
+    the model is updated to handle this the exception will be reinstated. *)
 module type Name = sig
 
     type t
