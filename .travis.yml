@@ -1,4 +1,5 @@
 language: generic
+sudo: required
 
 scripts:
   - &opam
