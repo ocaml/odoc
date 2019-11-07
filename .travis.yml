@@ -69,7 +69,7 @@ scripts:
       - |
         if [ "$TRAVIS_EVENT_TYPE" == cron ]
         then
-          rm -rf ~/.esy
+          rm -rf ~/.esy ./_cache
         fi
 
     install:
@@ -79,8 +79,18 @@ scripts:
       - $ESY install --verbose
 
     script:
+      - |
+        if [ -d _cache/_build ]
+        then
+          cp -r _cache/_build .
+        fi
       - $ESY build --verbose
       - $ESY make test
+      - |
+        if [ ! -d _cache/_build ]
+        then
+          cp -r _build _cache
+        fi
 
 matrix:
   include:
