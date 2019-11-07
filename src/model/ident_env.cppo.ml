@@ -129,6 +129,12 @@ let rec add_signature_type_items parent items env =
     | [] -> env
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+
+let rec unwrap_module_expr_desc = function
+  | Typedtree.Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
+      unwrap_module_expr_desc mexpr.mod_desc
+  | desc -> desc
+
 let rec add_extended_open_items parent items env =
   let open Types in
     match items with
@@ -158,10 +164,13 @@ let rec add_extended_open_items parent items env =
 
     | [] -> env
 
-let add_extended_open parent item env =
+let add_extended_open parent o env =
   let open Typedtree in
-  let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open item)) in
-  add_extended_open_items parent item.open_bound_items env
+  match unwrap_module_expr_desc o.open_expr.mod_desc with
+  | Tmod_ident(_, _) -> env
+  | _ ->
+      let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open o)) in
+      add_extended_open_items parent o.open_bound_items env
 #endif
 
 
