@@ -6,13 +6,13 @@ scripts:
   - &opam
     install:
       - |
-        case $TRAVIS_OS_NAME in
-          "linux")
-            sudo add-apt-repository -y ppa:robert7/tidy-html5
-            sudo apt-get update
-            sudo apt-get install tidy
-          ;;
-        esac
+        if [ "$TIDY" == YES ]
+        then
+          sudo add-apt-repository -y ppa:robert7/tidy-html5
+          sudo apt-get update
+          sudo apt-get install tidy
+          tidy --version
+        fi
       - OPAM_RELEASES=https://github.com/ocaml/opam/releases/
       - OPAM_VERSION=2.0.5
       - |
@@ -36,7 +36,6 @@ scripts:
       - opam install -y --deps-only .
       - opam --version
       - ocaml -version
-      - tidy --version
 
     before_script:
       - rm -rf ./_build/default/test/html/_scratch
@@ -61,17 +60,8 @@ scripts:
 
   - &esy
     install:
-      - |
-        case $TRAVIS_OS_NAME in
-          "linux")
-            sudo add-apt-repository -y ppa:robert7/tidy-html5
-            sudo apt-get update
-            sudo apt-get install tidy
-          ;;
-        esac
       - npm --global install esy@0.5.x
       - $(npm bin --global)/esy --version
-      - tidy --version
 
     script:
       - ESY=$(npm bin --global)/esy
@@ -92,7 +82,7 @@ matrix:
       env: OCAML=4.08.1
     - <<: *opam
       os: linux
-      env: OCAML=4.09.0
+      env: OCAML=4.09.0 TIDY=YES
     - <<: *opam
       os: linux
       env: OCAML=4.07.1
