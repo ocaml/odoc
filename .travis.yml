@@ -2,27 +2,101 @@ language: node_js
 node_js:
   - "10.13.0"
 
+scripts:
+  - &opam
+    install:
+      - |
+        case $TRAVIS_OS_NAME in
+          "linux")
+            sudo add-apt-repository -y ppa:robert7/tidy-html5
+            sudo apt-get update
+            sudo apt-get install tidy
+          ;;
+        esac
+      - OPAM_RELEASES=https://github.com/ocaml/opam/releases/
+      - OPAM_VERSION=2.0.5
+      - |
+        case $TRAVIS_OS_NAME in
+        "linux") OPAM_OS=linux;;
+          "osx") OPAM_OS=macos;;
+              *) echo Unsupported system $TRAVIS_OS_NAME; exit 1;;
+        esac
+      - OPAM_PKG=opam-${OPAM_VERSION}-x86_64-${OPAM_OS}
+      - wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}
+      - sudo mv ${OPAM_PKG} /usr/local/bin/opam
+      - sudo chmod a+x /usr/local/bin/opam
+      - opam init -y --bare --disable-sandboxing
+      - |
+        if [ ! -d _opam/bin ]
+        then
+            rm -rf _opam
+            opam switch create . $OCAML $REPOSITORIES --no-install
+        fi
+      - eval `opam env`
+      - opam --version
+      - ocaml -version
+      - tidy --version
+
+    before_script:
+      - rm -rf ./_build/default/test/html/_scratch
+
+    script:
+      - opam pin add -y --no-action odoc .
+      - opam install -y --deps-only odoc
+      - make test
+      - make docs
+
+  - &esy
+    install:
+      - |
+        case $TRAVIS_OS_NAME in
+          "linux")
+            sudo add-apt-repository -y ppa:robert7/tidy-html5
+            sudo apt-get update
+            sudo apt-get install tidy
+          ;;
+        esac
+      - npm --global install esy@0.5.x
+      - $(npm bin --global)/esy --version
+      - tidy --version
+
+    script:
+      - ESY=$(npm bin --global)/esy
+      - $ESY install --verbose
+      - $ESY build --verbose
+      - $ESY make test
+
 matrix:
   include:
-    - os: osx
+    - <<: *esy
+      os: osx
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
-    - os : linux
+    - <<: *esy
+      os : linux
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
-    - os: osx
+    - <<: *opam
+      os: osx
       env: OCAML=4.08.1
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.09.0
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.07.1
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.06.1
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.05.0
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.04.2
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.03.0
-    - os: linux
+    - <<: *opam
+      os: linux
       env: OCAML=4.02.3
 
   fast_finish: true
@@ -34,69 +108,6 @@ cache:
     - $HOME/.nvm
     - ./_opam
     - ./_build/default
-
-install:
-  - |
-    case $TRAVIS_OS_NAME in
-      "linux")
-        sudo add-apt-repository -y ppa:robert7/tidy-html5
-        sudo apt-get update
-        sudo apt-get install tidy
-      ;;
-    esac
-  - |
-    if [[ $ESY_BUILD == YES ]]; then
-      npm --global install esy@0.5.x
-    else
-      OPAM_RELEASES=https://github.com/ocaml/opam/releases/
-      OPAM_VERSION=2.0.5
-
-      case $TRAVIS_OS_NAME in
-      "linux") OPAM_OS=linux;;
-        "osx") OPAM_OS=macos;;
-            *) echo Unsupported system $TRAVIS_OS_NAME; exit 1;;
-      esac
-
-      OPAM_PKG=opam-${OPAM_VERSION}-x86_64-${OPAM_OS}
-
-      wget ${OPAM_RELEASES}/download/${OPAM_VERSION}/${OPAM_PKG}
-      sudo mv ${OPAM_PKG} /usr/local/bin/opam
-      sudo chmod a+x /usr/local/bin/opam
-
-      opam init -y --bare --disable-sandboxing
-
-      if [ ! -d _opam/bin ]
-      then
-          rm -rf _opam
-          opam switch create . $OCAML $REPOSITORIES --no-install
-      fi
-    fi
-  - "if [[ $OCAML ]]; then eval `opam env`; fi"
-  - |
-    if [[ $ESY_BUILD == YES ]]; then
-      $(npm bin --global)/esy --version
-    else
-      opam --version
-      ocaml -version
-    fi
-  - tidy --version
-
-before_script:
-  - rm -rf ./_build/default/test/html/_scratch
-
-script:
-  - ESY=$(npm bin --global)/esy
-  - |
-    if [[ $ESY_BUILD == YES ]]; then
-      $ESY install --verbose
-      $ESY build --verbose
-      $ESY make test
-    else
-      opam pin add -y --no-action odoc .
-      opam install -y --deps-only odoc
-      make test
-      make docs
-    fi
 
 notifications:
   email:
