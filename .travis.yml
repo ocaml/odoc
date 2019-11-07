@@ -7,7 +7,7 @@ scripts:
       - |
         if [ "$TRAVIS_EVENT_TYPE" == cron ]
         then
-          rm ~/.opam ./_opam ./_cache
+          rm -rf ~/.opam ./_opam ./_cache
         fi
 
     install:
