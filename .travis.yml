@@ -11,8 +11,6 @@ matrix:
     - os: linux
       env: OCAML=4.02.3
     - os: linux
-      env: OCAML=4.02.3+buckle-master
-    - os: linux
       env: OCAML=4.03.0
     - os: linux
       env: OCAML=4.04.2
@@ -22,8 +20,6 @@ matrix:
       env: OCAML=4.06.1
     - os: linux
       env: OCAML=4.07.1
-    - os: linux
-      env: OCAML=4.08.1
     - os: linux
       env: OCAML=4.09.0
     - os : linux
