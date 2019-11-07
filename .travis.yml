@@ -3,6 +3,13 @@ sudo: required
 
 scripts:
   - &opam
+    before_install:
+      - |
+        if [ "$TRAVIS_EVENT_TYPE" == cron ]
+        then
+          rm ~/.opam ./_opam ./_cache
+        fi
+
     install:
       - |
         if [ "$TIDY" == YES ]
@@ -58,6 +65,13 @@ scripts:
       - rm -rf /home/travis/build/ocaml/odoc/_opam/.opam-switch/sources/odoc
 
   - &esy
+    before_install:
+      - |
+        if [ "$TRAVIS_EVENT_TYPE" == cron ]
+        then
+          rm -rf ~/.esy
+        fi
+
     install:
       - npm --global install esy@0.5.x
       - $(npm bin --global)/esy --version
