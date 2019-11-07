@@ -56,7 +56,7 @@ scripts:
 
     before_cache:
       - opam clean
-      - rm -rf /home/travis/build/ocaml/odoc/_opam/.opam-switch/sources/odoc/.git
+      - rm -rf /home/travis/build/ocaml/odoc/_opam/.opam-switch/sources/odoc
 
   - &esy
     install:
