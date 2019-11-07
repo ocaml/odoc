@@ -5,25 +5,25 @@ node_js:
 matrix:
   include:
     - os: osx
-      env: OCAML=4.08.1
-    - os: osx
       env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+    - os : linux
+      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+    - os: osx
+      env: OCAML=4.08.1
     - os: linux
-      env: OCAML=4.02.3
-    - os: linux
-      env: OCAML=4.03.0
-    - os: linux
-      env: OCAML=4.04.2
-    - os: linux
-      env: OCAML=4.05.0
-    - os: linux
-      env: OCAML=4.06.1
+      env: OCAML=4.09.0
     - os: linux
       env: OCAML=4.07.1
     - os: linux
-      env: OCAML=4.09.0
-    - os : linux
-      env: ESY_BUILD=YES ESY__CACHE=/home/travis/.esy
+      env: OCAML=4.06.1
+    - os: linux
+      env: OCAML=4.05.0
+    - os: linux
+      env: OCAML=4.04.2
+    - os: linux
+      env: OCAML=4.03.0
+    - os: linux
+      env: OCAML=4.02.3
 
   fast_finish: true
 
