@@ -15,6 +15,11 @@ let () =
   (action (chdir %{workspace_root} (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
 
 (rule
+ (targets ident_env.mli)
+  (deps (:x ident_env.cppo.mli))
+  (action (chdir %{workspace_root} (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))
+
+(rule
  (targets compat.ml)
   (deps   (:x compat.cppo.ml))
   (action (chdir %{workspace_root} (run %{bin:cppo} -V OCAML:%{ocaml_version} %{x} -o %{targets}))))

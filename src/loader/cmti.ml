@@ -21,6 +21,7 @@ module OCamlPath = Path
 
 open Odoc_model.Paths
 open Odoc_model.Lang
+open Odoc_model.Names
 
 module Env = Odoc_model.Ident_env
 module Paths = Odoc_model.Paths
@@ -491,7 +492,7 @@ and read_module_type env parent label_parent pos mty =
               in
                 Some { FunctorArgument. id; expr = arg; expansion }
         in
-        let env = Env.add_argument parent pos id env in
+        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
       let res = read_module_type env parent label_parent (pos + 1) res in
           Functor(arg, res)
     | Tmty_with(body, subs) ->
@@ -573,6 +574,21 @@ and read_module_equation env p =
   let open Module in
     Alias (Env.Path.read_module env p)
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+and module_of_extended_open env parent o =
+  let open Module in
+  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
+  let (p,_) = o.Typedtree.open_expr in
+  let type_ = Alias (Env.Path.read_module env p) in
+  { id
+  ; doc = []
+  ; type_
+  ; canonical = None
+  ; hidden = true
+  ; display_type = None
+  ; expansion = None }
+#endif
+
 and read_signature_item env parent item =
   let open Signature in
     match item.sig_desc with
@@ -604,7 +620,12 @@ and read_signature_item env parent item =
         read_module_declarations env parent mds
     | Tsig_modtype mtd ->
         [ModuleType (read_module_type_declaration env parent mtd)]
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+    | Tsig_open o ->
+        [Comment `Stop; Module (Ordinary, module_of_extended_open env parent o); Comment `Stop]
+#else
     | Tsig_open _ -> []
+#endif
     | Tsig_include incl ->
         [Include (read_include env parent incl)]
     | Tsig_class cls ->

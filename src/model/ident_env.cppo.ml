@@ -38,37 +38,36 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let should_be_hidden = Root.contains_double_underscore
+#if OCAML_MAJOR=4 && OCAML_MINOR >= 08
+let module_name_of_open o =
+  let loc_start = o.Typedtree.open_loc.Location.loc_start in
+  Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
+#endif
 
-let add_module parent id env =
-  let name = Ident.name id in
-  let ident = `Identifier (`Module(parent, ModuleName.of_string name)) in
-  let module_ = if should_be_hidden name then `Hidden ident else ident in
+let add_module parent id name env =
+  let ident = `Identifier (`Module(parent, name)) in
+  let module_ = if ModuleName.is_hidden name then `Hidden ident else ident in
   let modules = Ident.add id module_ env.modules in
     { env with modules }
 
-let add_argument parent arg id env =
-  let name = Ident.name id in
-  let ident = `Identifier (`Argument(parent, arg, ArgumentName.of_string name)) in
-  let module_ = if should_be_hidden name then `Hidden ident else ident in
+let add_argument parent arg id name env =
+  let ident = `Identifier (`Argument(parent, arg, name)) in
+  let module_ = if ArgumentName.is_hidden name then `Hidden ident else ident in
   let modules = Ident.add id module_ env.modules in
     { env with modules }
 
-let add_module_type parent id env =
-  let name = Ident.name id in
-  let identifier = `ModuleType(parent, ModuleTypeName.of_string name) in
+let add_module_type parent id name env =
+  let identifier = `ModuleType(parent, name) in
   let module_types = Ident.add id identifier env.module_types in
     { env with module_types }
 
-let add_type parent id env =
-  let name = Ident.name id in
-  let identifier = `Type(parent, TypeName.of_string name) in
+let add_type parent id name env =
+  let identifier = `Type(parent, name) in
   let types = Ident.add id identifier env.types in
     { env with types }
 
-let add_class parent id ty_id obj_id cl_id env =
-  let name = Ident.name id in
-  let identifier = `Class(parent, ClassName.of_string name) in
+let add_class parent id ty_id obj_id cl_id name env =
+  let identifier = `Class(parent, name) in
   let add_idents tbl =
     Ident.add id identifier
       (Ident.add ty_id identifier
@@ -79,9 +78,8 @@ let add_class parent id ty_id obj_id cl_id env =
   let class_types = add_idents env.class_types in
     { env with types; class_types }
 
-let add_class_type parent id obj_id cl_id env =
-  let name = Ident.name id in
-  let identifier = `ClassType(parent, ClassTypeName.of_string name) in
+let add_class_type parent id obj_id cl_id name env =
+  let identifier = `ClassType(parent, name) in
   let add_idents tbl =
     Ident.add id identifier
          (Ident.add obj_id identifier
@@ -91,27 +89,28 @@ let add_class_type parent id obj_id cl_id env =
   let class_types = add_idents env.class_types in
     { env with types; class_types }
 
+
 let rec add_signature_type_items parent items env =
   let open Compat in
     match items with
     | Sig_type(id, _, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
           if Btype.is_row_name (Ident.name id) then env
-          else add_type parent id env
+          else add_type parent id (TypeName.of_ident id) env
     | Sig_module(id, _, _, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
-          add_module parent id env
+          add_module parent id (ModuleName.of_ident id) env
     | Sig_modtype(id, _, Exported) :: rest ->
         let env = add_signature_type_items parent rest env in
-          add_module_type parent id env
+          add_module_type parent id (ModuleTypeName.of_ident id) env
     | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
         let env = add_signature_type_items parent rest env in
-          add_class parent id ty_id obj_id cl_id env
+          add_class parent id ty_id obj_id cl_id (ClassName.of_ident id) env
     | Sig_class_type(id, _, _, Exported) :: Sig_type(obj_id, _, _, _)
       :: Sig_type(cl_id, _, _, _) :: rest ->
         let env = add_signature_type_items parent rest env in
-          add_class_type parent id obj_id cl_id env
+          add_class_type parent id obj_id cl_id (ClassTypeName.of_ident id) env
     | (Sig_value _ | Sig_typext _) :: rest ->
         add_signature_type_items parent rest env
 
@@ -129,6 +128,52 @@ let rec add_signature_type_items parent items env =
 
     | [] -> env
 
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+
+let rec unwrap_module_expr_desc = function
+  | Typedtree.Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
+      unwrap_module_expr_desc mexpr.mod_desc
+  | desc -> desc
+
+let rec add_extended_open_items parent items env =
+  let open Types in
+    match items with
+    | Sig_type(id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          if Btype.is_row_name (Ident.name id) then env
+          else add_type parent id (TypeName.internal_of_ident id) env
+    | Sig_module(id, _, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_module parent id (ModuleName.internal_of_ident id) env
+    | Sig_modtype(id, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_module_type parent id (ModuleTypeName.internal_of_ident id) env
+    | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
+        :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_class parent id ty_id obj_id cl_id (ClassName.internal_of_ident id) env
+    | Sig_class_type(id, _, _, _) :: Sig_type(obj_id, _, _, _)
+      :: Sig_type(cl_id, _, _, _) :: rest ->
+        let env = add_extended_open_items parent rest env in
+          add_class_type parent id obj_id cl_id (ClassTypeName.internal_of_ident id) env
+    | (Sig_value _ | Sig_typext _) :: rest ->
+        add_extended_open_items parent rest env
+
+    | Sig_class _ :: _
+    | Sig_class_type _ :: _ -> assert false
+
+    | [] -> env
+
+let add_extended_open parent o env =
+  let open Typedtree in
+  match unwrap_module_expr_desc o.open_expr.mod_desc with
+  | Tmod_ident(_, _) -> env
+  | _ ->
+      let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open o)) in
+      add_extended_open_items parent o.open_bound_items env
+#endif
+
+
 let add_signature_tree_item parent item env =
   let open Typedtree in
     match item.sig_desc with
@@ -138,16 +183,16 @@ let add_signature_tree_item parent item env =
     | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
 #endif
         List.fold_right
-          (fun decl env -> add_type parent decl.typ_id env)
+          (fun decl env -> add_type parent decl.typ_id (TypeName.of_ident decl.typ_id) env)
           decls env
     | Tsig_module md ->
-        add_module parent md.md_id env
+        add_module parent md.md_id (ModuleName.of_ident md.md_id) env
     | Tsig_recmodule mds ->
         List.fold_right
-          (fun md env -> add_module parent md.md_id env)
+          (fun md env -> add_module parent md.md_id (ModuleName.of_ident md.md_id) env)
           mds env
     | Tsig_modtype mtd ->
-        add_module_type parent mtd.mtd_id env
+        add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tsig_include incl ->
         add_signature_type_items parent (Compat.signature incl.incl_type) env
     | Tsig_class cls ->
@@ -160,6 +205,7 @@ let add_signature_tree_item parent item env =
 #else
                cld.ci_id_typehash
 #endif
+               (ClassName.of_ident cld.ci_id_class)
                env)
           cls env
     | Tsig_class_type cltyps ->
@@ -172,14 +218,15 @@ let add_signature_tree_item parent item env =
 #else
                clty.ci_id_typehash
 #endif
+               (ClassTypeName.of_ident clty.ci_id_class_type)
                env)
           cltyps env
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
     | Tsig_modsubst ms ->
-      add_module parent ms.ms_id env
+      add_module parent ms.ms_id (ModuleName.of_ident ms.ms_id) env
     | Tsig_typesubst ts ->
       List.fold_right
-        (fun decl env -> add_type parent decl.typ_id env)
+        (fun decl env -> add_type parent decl.typ_id (TypeName.of_ident decl.typ_id) env)
         ts env
 #endif
     | Tsig_value _ | Tsig_typext _
@@ -201,15 +248,15 @@ let add_structure_tree_item parent item env =
     | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
 #endif
         List.fold_right
-          (fun decl env -> add_type parent decl.typ_id env)
+          (fun decl env -> add_type parent decl.typ_id (TypeName.of_ident decl.typ_id) env)
           decls env
-    | Tstr_module mb -> add_module parent mb.mb_id env
+    | Tstr_module mb -> add_module parent mb.mb_id (ModuleName.of_ident mb.mb_id) env
     | Tstr_recmodule mbs ->
         List.fold_right
-          (fun mb env -> add_module parent mb.mb_id env)
+          (fun mb env -> add_module parent mb.mb_id (ModuleName.of_ident mb.mb_id) env)
           mbs env
     | Tstr_modtype mtd ->
-        add_module_type parent mtd.mtd_id env
+        add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tstr_include incl ->
         add_signature_type_items parent (Compat.signature incl.incl_type) env
     | Tstr_class cls ->
@@ -226,6 +273,7 @@ let add_structure_tree_item parent item env =
 #else
                cld.ci_id_typehash
 #endif
+               (ClassName.of_ident cld.ci_id_class)
                env)
           cls env
     | Tstr_class_type cltyps ->
@@ -238,11 +286,18 @@ let add_structure_tree_item parent item env =
 #else
                clty.ci_id_typehash
 #endif
+               (ClassTypeName.of_ident clty.ci_id_class_type)
                env)
           cltyps env
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 08
+    | Tstr_open _ -> env
+#else
+    | Tstr_open o ->
+      add_extended_open parent o env
+#endif
     | Tstr_eval _ | Tstr_value _
     | Tstr_primitive _ | Tstr_typext _
-    | Tstr_exception _ | Tstr_open _
+    | Tstr_exception _ 
     | Tstr_attribute _ -> env
 
 let add_structure_tree_items parent str env =

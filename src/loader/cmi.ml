@@ -21,6 +21,7 @@ module OCamlPath = Path
 
 open Odoc_model.Paths
 open Odoc_model.Lang
+open Odoc_model.Names
 
 module Env = Odoc_model.Ident_env
 module Paths = Odoc_model.Paths
@@ -851,7 +852,7 @@ let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
               in
                 Some { FunctorArgument. id; expr = arg; expansion }
         in
-        let env = Env.add_argument parent pos id env in
+        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
         let res = read_module_type env parent (pos + 1) res in
           Functor(arg, res)
     | Mty_alias _ -> assert false

@@ -458,7 +458,7 @@ let expand_signature_identifier' t root (id : Identifier.Signature.t) =
         ex
   | `Module(parent, name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let md = find_module t root (ModuleName.to_string name) ex in
+      let md = find_module t root (ModuleName.to_string_unsafe name) ex in
         expand_module t root md
   | `Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
@@ -475,7 +475,7 @@ and expand_module_identifier' t root (id : Identifier.Module.t) =
   | `Module(parent, name) ->
       let open Module in
       let ex = t.expand_signature_identifier ~root parent in
-      let md = find_module t root (ModuleName.to_string name) ex in
+      let md = find_module t root (ModuleName.to_string_unsafe name) ex in
         md.id, md.doc, md.canonical, expand_module t root md, []
   | `Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
