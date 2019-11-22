@@ -1,0 +1,20 @@
+File "cases/parser_errors_fatal.mli", line 1, characters 4-26:
+'{x This is bad markup}': bad markup.
+Suggestion: did you mean '{!x This is bad markup}' or '[x This is bad markup]'?
+odoc: internal error, uncaught exception:
+      Failure("Warnings have been generated.")
+      Raised at file "stdlib.ml", line 29, characters 17-33
+      Called from file "src/model/error.ml", line 93, characters 4-44
+      Called from file "src/loader/doc_attr.ml", line 62, characters 14-234
+      Called from file "src/loader/doc_attr.ml", line 80, characters 4-32
+      Called from file "src/loader/cmti.ml", line 163, characters 12-57
+      Called from file "src/loader/cmti.ml", line 596, characters 9-45
+      Called from file "src/loader/cmti.ml", line 674, characters 25-62
+      Called from file "list.ml", line 121, characters 24-34
+      Called from file "src/loader/cmti.ml", line 672, characters 4-135
+      Called from file "src/loader/cmti.ml", line 681, characters 14-46
+      Called from file "src/loader/odoc_loader.ml", line 46, characters 33-67
+      Called from file "src/model/error.ml", line 65, characters 9-15
+      Called from file "src/odoc/compile.ml", line 24, characters 8-36
+      Called from file "cmdliner_term.ml", line 25, characters 19-24
+      Called from file "cmdliner.ml", line 117, characters 32-39
