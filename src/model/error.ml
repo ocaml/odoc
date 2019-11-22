@@ -82,9 +82,15 @@ let accumulate_warnings f =
 let warning accumulator error =
   accumulator := error::!accumulator
 
+let warn_error = ref false
+
 (* TODO This is a temporary measure until odoc is ported to handle warnings
    throughout. *)
 let shed_warnings with_warnings =
   with_warnings.warnings
   |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
+  if !warn_error && with_warnings.warnings <> [] then
+    failwith "Warnings have been generated.";
   with_warnings.value
+
+let set_warn_error b = warn_error := b

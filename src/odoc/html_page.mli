@@ -22,4 +22,4 @@ val from_odoc :
   Fs.File.t -> unit
 
 val from_mld : env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> package:Odoc_model.Root.Package.t ->
-  output:Fs.Directory.t -> Fs.File.t -> unit
+  output:Fs.Directory.t -> warn_error:bool -> Fs.File.t -> unit

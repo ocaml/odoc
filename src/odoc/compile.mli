@@ -18,16 +18,16 @@
 
 val cmti :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+  output:Fs.File.t -> warn_error:bool -> Fs.File.t -> unit
 
 val cmt :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+  output:Fs.File.t -> warn_error:bool -> Fs.File.t -> unit
 
 val cmi :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> Fs.File.t -> unit
+  output:Fs.File.t -> warn_error:bool -> Fs.File.t -> unit
 
 val mld :
   env:Env.builder -> package:Odoc_model.Root.Package.t ->
-  output:Fs.File.t -> Fs.File.t -> unit
+  output:Fs.File.t -> warn_error:bool -> Fs.File.t -> unit

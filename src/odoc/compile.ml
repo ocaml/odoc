@@ -18,7 +18,8 @@ open Result
 
 
 
-let resolve_and_substitute ~env ~output input_file read_file =
+let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
+  Odoc_model.Error.set_warn_error warn_error;
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
   | Error e -> failwith (Odoc_model.Error.to_string e)
@@ -47,23 +48,24 @@ let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
     Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
   {Odoc_model.Root.package; file = file_representation; digest}
 
-let cmti ~env ~package ~hidden ~output input =
+let cmti ~env ~package ~hidden ~output ~warn_error input =
   let make_root = root_of_compilation_unit ~package ~hidden in
   let read_file = Odoc_loader.read_cmti ~make_root in
-  resolve_and_substitute ~env ~output input read_file
+  resolve_and_substitute ~env ~output ~warn_error input read_file
 
-let cmt ~env ~package ~hidden ~output input =
+let cmt ~env ~package ~hidden ~output ~warn_error input =
   let make_root = root_of_compilation_unit ~package ~hidden in
   let read_file = Odoc_loader.read_cmt ~make_root in
-  resolve_and_substitute ~env ~output input read_file
+  resolve_and_substitute ~env ~output ~warn_error input read_file
 
-let cmi ~env ~package ~hidden ~output input =
+let cmi ~env ~package ~hidden ~output ~warn_error input =
   let make_root = root_of_compilation_unit ~package ~hidden in
   let read_file = Odoc_loader.read_cmi ~make_root in
-  resolve_and_substitute ~env ~output input read_file
+  resolve_and_substitute ~env ~output ~warn_error input read_file
 
 (* TODO: move most of this to doc-ock. *)
-let mld ~env ~package ~output input =
+let mld ~env ~package ~output ~warn_error input =
+  Odoc_model.Error.set_warn_error warn_error;
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
