@@ -15,6 +15,7 @@ type filename_only_payload = {
 type t = [
   | `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload
+  | `Without_location of string
 ]
 
 let full message location =
@@ -22,6 +23,10 @@ let full message location =
 
 let filename_only message file =
   `With_filename_only {file; message}
+
+(** Only used internally *)
+let without_location message =
+  `Without_location message
 
 let make ?suggestion format =
   format |>
@@ -49,6 +54,9 @@ let to_string = function
 
   | `With_filename_only {file; message} ->
     Printf.sprintf "File \"%s\":\n%s" file message
+
+  | `Without_location message ->
+    message
 
 
 
@@ -90,7 +98,7 @@ let shed_warnings with_warnings =
   with_warnings.warnings
   |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
   if !warn_error && with_warnings.warnings <> [] then
-    failwith "Warnings have been generated.";
+    raise_exception (without_location "Warnings have been generated.");
   with_warnings.value
 
 let set_warn_error b = warn_error := b
