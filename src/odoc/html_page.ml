@@ -107,17 +107,7 @@ let from_mld ~env ?(syntax=Odoc_html.Tree.OCaml) ~package ~output:root_dir ~warn
     in
     Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
-  match Fs.File.read input with
-  | Error (`Msg s) ->
-    Printf.eprintf "ERROR: %s\n%!" s;
-    exit 1
-  | Ok str ->
-    let content =
-      match Odoc_loader.read_string name location str with
-      | Error e -> failwith (Odoc_model.Error.to_string e)
-      | Ok (`Docs content) -> content
-      | Ok `Stop -> [] (* TODO: Error? *)
-    in
+  let to_html content =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let page = Odoc_xref.Lookup.lookup_page page in
@@ -135,4 +125,13 @@ let from_mld ~env ?(syntax=Odoc_html.Tree.OCaml) ~package ~output:root_dir ~warn
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
-    )
+    );
+    Ok ()
+  in
+  match Fs.File.read input with
+  | Error _ as e -> e
+  | Ok str ->
+    match Odoc_loader.read_string name location str with
+    | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
+    | Ok (`Docs content) -> to_html content
+    | Ok `Stop -> to_html [] (* TODO: Error? *)

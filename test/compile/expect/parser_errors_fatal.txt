@@ -1,8 +1,4 @@
 File "cases/parser_errors_fatal.mli", line 1, characters 4-26:
 '{x This is bad markup}': bad markup.
 Suggestion: did you mean '{!x This is bad markup}' or '[x This is bad markup]'?
-odoc: internal error, uncaught exception:
-      Failure("Warnings have been generated.")
-      Raised at file "stdlib.ml", line 29, characters 17-33
-      Called from file "cmdliner_term.ml", line 25, characters 19-24
-      Called from file "cmdliner.ml", line 117, characters 32-39
+ERROR: Warnings have been generated.
