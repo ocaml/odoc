@@ -1,3 +1,4 @@
+open Result
 
 let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   Odoc_model.Error.set_warn_error warn_error;

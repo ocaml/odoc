@@ -5,6 +5,7 @@
 
 open Odoc_odoc
 open Cmdliner
+open Result
 
 let convert_syntax : Odoc_html.Tree.syntax Arg.converter =
   let syntax_parser str =

@@ -15,6 +15,7 @@
  *)
 
 open StdLabels
+open Result
 
 let to_html_tree_page ?theme_uri ~syntax v =
   match syntax with
