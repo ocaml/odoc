@@ -21,7 +21,7 @@ open Result
 let resolve_and_substitute ~env ~output input_file read_file =
   let filename = Fs.File.to_string input_file in
   match read_file ~filename:filename with
-  | Error e -> failwith (Odoc_model.Error.to_string e)
+  | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
   | Ok unit ->
     let unit = Odoc_xref.Lookup.lookup unit in
     if not unit.Odoc_model.Lang.Compilation_unit.interface then (
@@ -40,7 +40,8 @@ let resolve_and_substitute ~env ~output input_file read_file =
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
     let expanded = Odoc_xref.expand (Env.expander expand_env) resolved in
-    Compilation_unit.save output expanded
+    Compilation_unit.save output expanded;
+    Ok ()
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   let file_representation : Odoc_model.Root.Odoc_file.t =
@@ -88,20 +89,19 @@ let mld ~env ~package ~output input =
     in
     Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
-  match Fs.File.read input with
-  | Error (`Msg s) ->
-    Printf.eprintf "ERROR: %s\n%!" s;
-    exit 1
-  | Ok str ->
-    let content =
-      match Odoc_loader.read_string name location str with
-      | Error e -> failwith (Odoc_model.Error.to_string e)
-      | Ok (`Docs content) -> content
-      | Ok `Stop -> [] (* TODO: Error? *)
-    in
+  let resolve content =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
     let resolved = Odoc_xref.resolve_page (Env.resolver env) page in
-    Page.save output resolved
+    Page.save output resolved;
+    Ok ()
+  in
+  match Fs.File.read input with
+  | Error _ as e -> e
+  | Ok str ->
+    match Odoc_loader.read_string name location str with
+    | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
+    | Ok `Stop -> resolve [] (* TODO: Error? *)
+    | Ok (`Docs content) -> resolve content
