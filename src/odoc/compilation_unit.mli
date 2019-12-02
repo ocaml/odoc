@@ -24,4 +24,4 @@ val save : Fs.File.t -> t -> unit
 
 (** {2 Deserialization} *)
 
-val load : Fs.File.t -> t
+val load : Fs.File.t -> t Or_error.or_error

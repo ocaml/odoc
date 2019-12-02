@@ -34,6 +34,8 @@ open Odoc_compat
    Where we notice this ambiguity we warn the user to wrap their libraries,
    which will generally fix this issue. *)
 
+open Or_error
+
 type t = {
   expander : Odoc_xref.expander ;
   resolver : Odoc_xref.resolver ;
@@ -91,9 +93,13 @@ module Accessible_paths = struct
         List.fold_right (fun x acc -> match f x with | Some y -> y::acc | None -> acc) l []
       in
       let safe_read file =
-        try Some (Root.read file, file)
-        with
-        | End_of_file ->
+        match Root.read file with
+        | Ok root -> Some (root, file)
+        | Error (`Msg msg) ->
+          let warning = Odoc_model.Error.filename_only msg (Fs.File.to_string file) in
+          prerr_endline (Odoc_model.Error.to_string warning);
+          None
+        | exception End_of_file ->
           let warning = Odoc_model.Error.filename_only "End_of_file while reading" (Fs.File.to_string file) in
           prerr_endline (Odoc_model.Error.to_string warning);
           None
@@ -181,8 +187,10 @@ let fetch_unit ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Compilation_unit.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Odoc_model.Root.to_string root);
-    exit 2
+    let msg =
+      Printf.sprintf "No unit for root: %s\n%!" (Odoc_model.Root.to_string root)
+    in
+    Error (`Msg msg)
 
 type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 
@@ -211,24 +219,24 @@ let create ?(important_digests=true) ~directories : builder =
           end
         | x -> x
     in
-    let fetch_unit root : Odoc_model.Lang.Compilation_unit.t =
+    let fetch_unit root : (Odoc_model.Lang.Compilation_unit.t, _) Result.result =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
         let current_root = Compilation_unit.root unit in
         if Odoc_model.Root.equal root current_root then
-          unit
+          Ok unit
         else
           fetch_unit ap root
     in
     let lookup_page target_name = lookup_page ap target_name in
-    let fetch_page root : Odoc_model.Lang.Page.t =
+    let fetch_page root : (Odoc_model.Lang.Page.t, _) Result.result =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->
         let current_root = Page.root page in
         if Odoc_model.Root.equal root current_root then
-          page
+          Ok page
         else
           fetch_page ap root
     in

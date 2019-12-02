@@ -15,6 +15,7 @@
  *)
 
 open StdLabels
+open Or_error
 
 module Compile = struct
   type t = {
@@ -64,19 +65,21 @@ end = struct
   let elements t = Odoc_model.Root.Hash_table.fold (fun s () acc -> s :: acc) t []
 end
 
-let deps_of_odoc_file ~deps input = match (Root.read input).file with
-| Page _ -> () (* XXX something should certainly be done here *)
-| Compilation_unit _ ->
-    let odoctree = Compilation_unit.load input in
+let deps_of_odoc_file ~deps input =
+  Root.read input >>= function
+  | { file = Page _; _ } -> Ok () (* XXX something should certainly be done here *)
+  | { file = Compilation_unit _; _ } ->
+    Compilation_unit.load input >>= fun odoctree ->
     List.iter odoctree.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
         match import with
         | Odoc_model.Lang.Compilation_unit.Import.Unresolved _  -> ()
         | Odoc_model.Lang.Compilation_unit.Import.Resolved root ->
             Hash_set.add deps root
-      )
+      );
+    Ok ()
 
 let for_html_step pkg_dir =
   let deps = Hash_set.create () in
   let add_deps () file = deps_of_odoc_file ~deps file in
-  Fs.Directory.fold_files_rec ~ext:".odoc" add_deps () pkg_dir;
-  Hash_set.elements deps
+  Fs.Directory.fold_files_rec_result ~ext:".odoc" add_deps () pkg_dir >>= fun () ->
+  Ok (Hash_set.elements deps)

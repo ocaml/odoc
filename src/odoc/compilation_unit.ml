@@ -35,7 +35,7 @@ let load =
   fun file ->
     let file = Fs.File.to_string file in
     match Hashtbl.find units file with
-    | unit -> unit
+    | unit -> Ok unit
     | exception Not_found ->
       try
         let ic = open_in_bin file in
@@ -43,10 +43,12 @@ let load =
         let res = Marshal.from_channel ic in
         close_in ic;
         Hashtbl.add units file res;
-        res
+        Ok res
       with exn ->
-        Printf.eprintf "Error while unmarshalling %S: %s\n%!" file
-          (match exn with
-           | Failure s -> s
-           | _ -> Printexc.to_string exn);
-        exit 2
+        let msg =
+          Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+            (match exn with
+              | Failure s -> s
+              | _ -> Printexc.to_string exn)
+        in
+        Error (`Msg msg)

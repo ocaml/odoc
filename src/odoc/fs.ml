@@ -146,6 +146,16 @@ module Directory = struct
     in
     loop ext f acc ([Fpath.to_string d] :: []);;
 
+  let fold_files_rec_result (type e) ?ext f acc d =
+    let exception Stop_iter of e in
+    let f acc fn =
+      match f acc fn with
+      | Ok acc -> acc
+      | Error e -> raise (Stop_iter e)
+    in
+    try Ok (fold_files_rec ?ext f acc d)
+    with Stop_iter e -> Error e
+
   module Table = Hashtbl.Make(struct
       type nonrec t = t
       let equal = Fpath.equal

@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
+
 
 
 type t = Odoc_model.Lang.Page.t
@@ -42,18 +44,23 @@ let load =
   fun file ->
     let file = Fs.File.to_string file in
     match Hashtbl.find pages file with
-    | page -> page
+    | page -> Ok page
     | exception Not_found ->
       try
         let ic = open_in_bin file in
-        let _root = Root.load file ic in
-        let res = Marshal.from_channel ic in
+        let res =
+          Root.load file ic >>= fun _root ->
+          let res = Marshal.from_channel ic in
+          Hashtbl.add pages file res;
+          Ok res
+        in
         close_in ic;
-        Hashtbl.add pages file res;
         res
       with exn ->
-        Printf.eprintf "Error while unmarshalling %S: %s\n%!" file
-          (match exn with
-           | Failure s -> s
-           | _ -> Printexc.to_string exn);
-        exit 2
+        let msg =
+          Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+            (match exn with
+              | Failure s -> s
+              | _ -> Printexc.to_string exn)
+        in
+        Error (`Msg msg)

@@ -21,12 +21,13 @@ let magic = "odoc-%%VERSION%%"
 let load file ic =
   let m = really_input_string ic (String.length magic) in
   if m = magic then
-    Marshal.from_channel ic
-  else (
-    Printf.eprintf "%s: invalid magic number %S, expected %S\n%!"
-      file m magic;
-    exit 1
-  )
+    Ok (Marshal.from_channel ic)
+  else
+    let msg =
+      Printf.sprintf "%s: invalid magic number %S, expected %S\n%!"
+        file m magic
+    in
+    Error (`Msg msg)
 
 let save oc t =
   output_string oc magic;

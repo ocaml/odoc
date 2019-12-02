@@ -19,19 +19,19 @@
 val cmti :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  (unit, [> `Msg of string ]) Result.result
+  unit Or_error.or_error
 
 val cmt :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  (unit, [> `Msg of string ]) Result.result
+  unit Or_error.or_error
 
 val cmi :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  (unit, [> `Msg of string ]) Result.result
+  unit Or_error.or_error
 
 val mld :
   env:Env.builder -> package:Odoc_model.Root.Package.t ->
   output:Fs.File.t -> Fs.File.t ->
-  (unit, [> `Msg of string ]) Result.result
+  unit Or_error.or_error

@@ -15,28 +15,29 @@
  *)
 
 open StdLabels
+open Or_error
 
 let of_odoc_file ~env ~output:root_dir input =
-  let root = Root.read input in
-  match root.Odoc_model.Root.file with
-  | Page page_name ->
-      let pkg_dir = Fs.Directory.of_string root.package in
+  Root.read input >>= function
+  | { file = Page page_name; package; _ } ->
+      let pkg_dir = Fs.Directory.of_string package in
       let directory = Fs.Directory.append root_dir pkg_dir in
       let file = Fs.File.create ~directory ~name:(page_name ^ ".html") in
-      [file]
-  | Compilation_unit _ ->
-      let unit = Compilation_unit.load input in
+      Ok [file]
+  | { file = Compilation_unit _; _ } ->
+      Compilation_unit.load input >>= fun unit ->
       let env = Env.build env (`Unit unit) in
-      let odoctree = Odoc_xref.resolve (Env.resolver env) unit in
-      let odoctree = Odoc_xref.expand (Env.expander env) odoctree in
+      Odoc_xref.resolve (Env.resolver env) unit >>=
+      Odoc_xref.expand (Env.expander env) >>= fun odoctree ->
       let root = Compilation_unit.root odoctree in
       let package = root.package in
       let targets = Odoc_html.Targets.unit ~package odoctree in
       (* CR-someday trefis: have [List_targets] return a tree instead of
          postprocessing. *)
-      List.map targets ~f:(fun path ->
+      Ok (
+        List.map targets ~f:(fun path ->
           let directory = Fs.Directory.(append root_dir (of_string path)) in
           Fs.File.create ~directory ~name:"index.html"
-        )
+        ))
 
 let index ~output:_ _ = []

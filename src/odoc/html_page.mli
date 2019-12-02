@@ -19,7 +19,7 @@
 
 val from_odoc :
   env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> ?theme_uri:Odoc_html.Tree.uri -> output:Fs.Directory.t ->
-  Fs.File.t -> unit
+  Fs.File.t -> unit Or_error.or_error
 
 val from_mld : env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> package:Odoc_model.Root.Package.t ->
-  output:Fs.Directory.t -> Fs.File.t -> (unit, [ `Msg of string ]) Result.result
+  output:Fs.Directory.t -> Fs.File.t -> unit Or_error.or_error

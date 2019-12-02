@@ -16,7 +16,7 @@
 
 val of_odoc_file :
   env:Env.builder -> output:Fs.Directory.t ->
-  Fs.File.t -> Fs.File.t list
+  Fs.File.t -> Fs.File.t list Or_error.or_error
 
 val index :
   output:Fs.Directory.t -> Fs.File.t list -> Fs.File.t list

@@ -1,3 +1,4 @@
+open Or_error
 
 let from_mld ~xref_base_uri ~env ~output input =
   (* Internal names, they don't have effect on the output. *)
@@ -25,7 +26,7 @@ let from_mld ~xref_base_uri ~env ~output input =
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref.resolve_page (Env.resolver env) page in
+    Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
 
     let content = Odoc_html.Comment.to_html ~xref_base_uri resolved.content in
     let oc = open_out (Fs.File.to_string output) in

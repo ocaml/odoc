@@ -39,10 +39,11 @@ module Directory : sig
   val of_string : string -> t
   val to_string : t -> string
 
-  val fold_files_rec : ?ext:string -> ('a -> file -> 'a) -> 'a -> t -> 'a
-  (** [fold_files_rec ~ext f acc d] recursively folds [f] over the files
+  val fold_files_rec_result : ?ext:string ->
+    ('a -> file -> ('a, 'e) Result.result) -> 'a -> t -> ('a, 'e) Result.result
+  (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
       with extension matching [ext] (defaults to [""]) contained in [d]
-      and its sub directories. *)
+      and its sub directories. Stop as soon as [f] returns [Error _]. *)
 
   module Table : Hashtbl.S with type key = t
 end

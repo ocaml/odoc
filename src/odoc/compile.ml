@@ -1,4 +1,4 @@
-open Result
+open Or_error
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
@@ -32,14 +32,14 @@ let resolve_and_substitute ~env ~output input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let resolve_env = Env.build env (`Unit unit) in
-    let resolved = Odoc_xref.resolve (Env.resolver resolve_env) unit in
+    Odoc_xref.resolve (Env.resolver resolve_env) unit >>= fun resolved ->
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
        environment with the resolved unit.
        Note that this is bad and once rewritten expand should not fetch the unit it is
        working on. *)
     let expand_env = Env.build env (`Unit resolved) in
-    let expanded = Odoc_xref.expand (Env.expander expand_env) resolved in
+    Odoc_xref.expand (Env.expander expand_env) resolved >>= fun expanded ->
     Compilation_unit.save output expanded;
     Ok ()
 
@@ -94,14 +94,12 @@ let mld ~env ~package ~output input =
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref.resolve_page (Env.resolver env) page in
+    Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
     Page.save output resolved;
     Ok ()
   in
-  match Fs.File.read input with
-  | Error _ as e -> e
-  | Ok str ->
-    match Odoc_loader.read_string name location str with
-    | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
-    | Ok `Stop -> resolve [] (* TODO: Error? *)
-    | Ok (`Docs content) -> resolve content
+  Fs.File.read input >>= fun str ->
+  match Odoc_loader.read_string name location str with
+  | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
+  | Ok `Stop -> resolve [] (* TODO: Error? *)
+  | Ok (`Docs content) -> resolve content
