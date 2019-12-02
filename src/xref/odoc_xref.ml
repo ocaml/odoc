@@ -13,6 +13,9 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
+
+type 'a or_error = ('a, [ `Msg of string ]) Result.result
+
 type lookup_result_found = Component_table.lookup_result_found =
   { root : Odoc_model.Root.t; hidden : bool }
 
@@ -21,22 +24,47 @@ type lookup_result = Component_table.lookup_unit_result =
   | Found of lookup_result_found
   | Not_found
 
+(** Internal. Used to handled errors from [fetch_unit] and [fetch_page] *)
+exception Fetch_failed of [ `Msg of string ]
+
 let core_types = Odoc_model.Predefined.core_types
 
 let core_exceptions = Odoc_model.Predefined.core_exceptions
 
 type resolver = Resolve.resolver
 
-let build_resolver = Resolve.build_resolver
+let build_resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
+  let fetch_unit root =
+    match fetch_unit root with
+    | Ok unit -> unit
+    | Error e -> raise (Fetch_failed e)
+  and fetch_page root =
+    match fetch_page root with
+    | Ok page -> page
+    | Error e -> raise (Fetch_failed e)
+  in
+  Resolve.build_resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page
 
-let resolve = Resolve.resolve
+let resolve resolver unit =
+  try Ok (Resolve.resolve resolver unit)
+  with Fetch_failed e -> Error e
 
-let resolve_page = Resolve.resolve_page
+let resolve_page resolver page =
+  try Ok (Resolve.resolve_page resolver page)
+  with Fetch_failed e -> Error e
 
 type expander = Expand.t
 
-let build_expander = Expand.build_expander
+let build_expander ?equal ?hash lookup fetch =
+  let fetch ~root root' =
+    match fetch ~root root' with
+    | Ok unit -> unit
+    | Error e -> raise (Fetch_failed e)
+  in
+  Expand.build_expander ?equal ?hash lookup fetch
 
-let expand = Expand.expand
+let expand expander unit =
+  try Ok (Expand.expand expander unit)
+  with Fetch_failed e -> Error e
 
 module Lookup = Lookup
