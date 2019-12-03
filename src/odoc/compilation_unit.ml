@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
+open Or_error
 
 type t = Odoc_model.Lang.Compilation_unit.t
 

@@ -24,6 +24,8 @@ type directory
 
 module Directory : sig
 
+  open Or_error
+
   type t = directory
 
   val dirname : t -> t
@@ -40,7 +42,7 @@ module Directory : sig
   val to_string : t -> string
 
   val fold_files_rec_result : ?ext:string ->
-    ('a -> file -> ('a, 'e) Result.result) -> 'a -> t -> ('a, 'e) Result.result
+    ('a -> file -> ('a, msg) result) -> 'a -> t -> ('a, [> msg ]) result
   (** [fold_files_rec_result ~ext f acc d] recursively folds [f] over the files
       with extension matching [ext] (defaults to [""]) contained in [d]
       and its sub directories. Stop as soon as [f] returns [Error _]. *)

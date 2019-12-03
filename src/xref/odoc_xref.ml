@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Result
+
 type lookup_result_found = Component_table.lookup_result_found =
   { root : Odoc_model.Root.t; hidden : bool }
 

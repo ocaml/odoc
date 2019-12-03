@@ -52,7 +52,7 @@ let convert_uri : Odoc_html.Tree.uri Arg.converter =
   (parser, printer)
 
 let handle_error = function
-  | Ok () -> ()
+  | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
     Printf.eprintf "%s\n%!" msg;
     exit 2
