@@ -180,8 +180,10 @@ let fetch_page ap root =
   match Accessible_paths.file_of_root ap root with
   | path -> Page.load path
   | exception Not_found ->
-    Printf.eprintf "No unit for root: %s\n%!" (Odoc_model.Root.to_string root);
-    exit 2
+    let msg =
+      Printf.sprintf "No unit for root: %s\n%!" (Odoc_model.Root.to_string root)
+    in
+    Error (`Msg msg)
 
 let fetch_unit ap root =
   match Accessible_paths.file_of_root ap root with
