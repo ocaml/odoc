@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
+
 (** Computes the dependencies required for each step of the pipeline to work
     correctly on a given input. *)
 
@@ -27,7 +29,7 @@ end
 val for_compile_step : Fs.File.t -> Compile.t list
 (** Takes a .cm{i,t,ti} file and returns the list of its dependencies. *)
 
-val for_html_step : Fs.Directory.t -> Odoc_model.Root.t list Or_error.or_error
+val for_html_step : Fs.Directory.t -> (Odoc_model.Root.t list, [> msg]) result
 (** Takes the directory where the .odoc files of a given package are stored and
     returns the list of roots that need to be in odoc's load path to process
     html from these .odoc files. *)

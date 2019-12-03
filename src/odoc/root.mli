@@ -14,14 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
 
 
-val load : string -> in_channel -> (Odoc_model.Root.t , [ `Msg of string ]) Result.result
+val load : string -> in_channel -> (Odoc_model.Root.t, [> msg ]) result
 (** [load fn ic] reads a {!t} from [ic].
     [fn] is the name of the file [ic] is "watching", and is used for error
     reporting. *)
 
-val read : Fs.File.t -> (Odoc_model.Root.t , [ `Msg of string ]) Result.result
+val read : Fs.File.t -> (Odoc_model.Root.t, [> msg ]) result
 (** [read f] opens [f] for reading and then calls {!load}. *)
 
 val save : out_channel -> Odoc_model.Root.t -> unit

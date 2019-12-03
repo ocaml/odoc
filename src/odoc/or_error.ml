@@ -2,7 +2,7 @@ type ('a, 'e) result = ('a, 'e) Result.result =
   | Ok of 'a
   | Error of 'e
 
-type 'a or_error = ('a, [ `Msg of string ]) result
+type msg = [ `Msg of string ]
 
 let (>>=) r f =
   match r with

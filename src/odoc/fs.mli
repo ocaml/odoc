@@ -1,4 +1,4 @@
-open Result
+open Or_error
 
 (*
  * Copyright (c) 2016 Thomas Refis <trefis@janestreet.com>
@@ -63,7 +63,7 @@ module File : sig
   val of_string : string -> t
   val to_string : t -> string
 
-  val read : t -> (string, [> `Msg of string ]) result
+  val read : t -> (string, [> msg ]) result
 
   module Table : Hashtbl.S with type key = t
 end

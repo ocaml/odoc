@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a or_error = ('a, [ `Msg of string ]) Result.result
-
 type lookup_result_found = Component_table.lookup_result_found =
   { root : Odoc_model.Root.t; hidden : bool }
 
@@ -24,8 +22,10 @@ type lookup_result = Component_table.lookup_unit_result =
   | Found of lookup_result_found
   | Not_found
 
+type msg = [ `Msg of string ]
+
 (** Internal. Used to handled errors from [fetch_unit] and [fetch_page] *)
-exception Fetch_failed of [ `Msg of string ]
+exception Fetch_failed of msg
 
 let core_types = Odoc_model.Predefined.core_types
 
@@ -47,11 +47,11 @@ let build_resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
 
 let resolve resolver unit =
   try Ok (Resolve.resolve resolver unit)
-  with Fetch_failed e -> Error e
+  with Fetch_failed (`Msg _ as e) -> Error e
 
 let resolve_page resolver page =
   try Ok (Resolve.resolve_page resolver page)
-  with Fetch_failed e -> Error e
+  with Fetch_failed (`Msg _ as e) -> Error e
 
 type expander = Expand.t
 
@@ -65,6 +65,6 @@ let build_expander ?equal ?hash lookup fetch =
 
 let expand expander unit =
   try Ok (Expand.expand expander unit)
-  with Fetch_failed e -> Error e
+  with Fetch_failed (`Msg _ as e) -> Error e
 
 module Lookup = Lookup

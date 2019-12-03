@@ -14,24 +14,26 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
+
 (** Produces .odoc files out of .cm{i,t,ti} or .mld files. *)
 
 val cmti :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  unit Or_error.or_error
+  (unit, [> msg]) result
 
 val cmt :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  unit Or_error.or_error
+  (unit, [> msg]) result
 
 val cmi :
   env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
   output:Fs.File.t -> Fs.File.t ->
-  unit Or_error.or_error
+  (unit, [> msg]) result
 
 val mld :
   env:Env.builder -> package:Odoc_model.Root.Package.t ->
   output:Fs.File.t -> Fs.File.t ->
-  unit Or_error.or_error
+  (unit, [> msg]) result
