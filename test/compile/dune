@@ -26,3 +26,18 @@
 (alias
  (name runtest)
  (action (diff expect/parser_errors.txt parser_errors.output)))
+
+;; Test --warn-error
+
+(rule
+ (deps cases/parser_errors_fatal.mli)
+ (targets parser_errors_fatal.output)
+ (action
+  (progn
+   (run %{ocamlc} -bin-annot -o parser_errors_fatal.cmi -c cases/parser_errors_fatal.mli)
+   (with-stderr-to parser_errors_fatal.output
+	  (system "! %{bin:odoc} compile --package foo --warn-error parser_errors_fatal.cmti")))))
+
+(alias
+ (name runtest)
+ (action (diff expect/parser_errors_fatal.txt parser_errors_fatal.output)))
