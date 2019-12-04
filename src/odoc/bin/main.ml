@@ -77,6 +77,10 @@ let hidden =
   in
   Arg.(value & flag & info ~docs ~doc ["hidden"])
 
+let warn_error =
+  let doc = "Turn warnings into errors." in
+  Arg.(value & flag & info ~docs ~doc ["warn-error"])
+
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in
   Arg.(required & opt (some (convert_directory ?create ())) None &
@@ -117,7 +121,8 @@ end = struct
       in
       Fs.File.(set_ext ".odoc" output)
 
-  let compile hidden directories resolve_fwd_refs dst package_name input =
+  let compile hidden directories resolve_fwd_refs dst package_name input
+      warn_error =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories
     in
@@ -125,13 +130,13 @@ end = struct
     let output = output_file ~dst ~input in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
     if Fs.File.has_ext ".cmti" input then
-      Compile.cmti ~env ~package:package_name ~hidden ~output input
+      Compile.cmti ~env ~package:package_name ~hidden ~output ~warn_error input
     else if Fs.File.has_ext ".cmt" input then
-      Compile.cmt ~env ~package:package_name ~hidden ~output input
+      Compile.cmt ~env ~package:package_name ~hidden ~output ~warn_error input
     else if Fs.File.has_ext ".cmi" input then
-      Compile.cmi ~env ~package:package_name ~hidden ~output input
+      Compile.cmi ~env ~package:package_name ~hidden ~output ~warn_error input
     else if Fs.File.has_ext ".mld" input then
-      Compile.mld ~env ~package:package_name ~output input
+      Compile.mld ~env ~package:package_name ~output ~warn_error input
     else
       Error (`Cli_error "Unknown extension, expected one of: cmti, cmt, cmi or mld.\n%!")
 
@@ -159,7 +164,7 @@ end = struct
       Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const handle_error $ (const compile $ hidden $ odoc_file_directories $
-          resolve_fwd_refs $ dst $ pkg $ input))
+          resolve_fwd_refs $ dst $ pkg $ input $ warn_error))
 
   let info =
     Term.info "compile"
@@ -202,7 +207,7 @@ module Odoc_html : sig
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
-        syntax theme_uri input_file =
+        syntax theme_uri input_file warn_error =
     Odoc_html.Tree.Relative_link.semantic_uris := semantic_uris;
     Odoc_html.Tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
@@ -211,7 +216,7 @@ end = struct
     | None ->
       Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file
     | Some pkg_name ->
-      Html_page.from_mld ~env ~syntax ~output:output_dir ~package:pkg_name file
+      Html_page.from_mld ~env ~syntax ~output:output_dir ~package:pkg_name ~warn_error file
 
   let cmd =
     let input =
@@ -252,7 +257,7 @@ end = struct
     in
     Term.(const handle_error $ (const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst ~create:true () $ index_for $ syntax $
-          theme_uri $ input))
+          theme_uri $ input $ warn_error))
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -263,7 +268,7 @@ module Html_fragment : sig
   val info: Term.info
 end = struct
 
-  let html_fragment directories xref_base_uri output_file input_file =
+  let html_fragment directories xref_base_uri output_file input_file warn_error =
     let env = Env.create ~important_digests:false ~directories in
     let input_file = Fs.File.of_string input_file in
     let output_file = Fs.File.of_string output_file in
@@ -273,7 +278,7 @@ end = struct
         let last_char = String.get xref_base_uri (String.length xref_base_uri - 1) in
         if last_char <> '/' then xref_base_uri ^ "/" else xref_base_uri
     in
-    Html_fragment.from_mld ~env ~xref_base_uri ~output:output_file input_file
+    Html_fragment.from_mld ~env ~xref_base_uri ~output:output_file ~warn_error input_file
 
   let cmd =
     let output =
@@ -292,7 +297,7 @@ end = struct
       Arg.(value & opt string "" & info ~docv:"URI" ~doc ["xref-base-uri"])
     in
     Term.(const handle_error $ (const html_fragment $ odoc_file_directories $
-          xref_base_uri $ output $ input))
+          xref_base_uri $ output $ input $ warn_error))
 
   let info =
     Term.info ~doc:"Generates an html fragment file from an mld one" "html-fragment"

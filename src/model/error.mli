@@ -20,3 +20,7 @@ type warning_accumulator
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 val warning : warning_accumulator -> t -> unit
 val shed_warnings : 'a with_warnings -> 'a
+
+(** When set to [true],
+   [shed_warnings] will raise [Failure] if it had to print warnings. *)
+val set_warn_error : bool -> unit
