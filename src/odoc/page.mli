@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
+
 type t = Odoc_model.Lang.Page.t
 
 val root : t -> Odoc_model.Root.t
@@ -24,4 +26,4 @@ val save : Fs.File.t -> t -> unit
 
 (** {2 Deserialization} *)
 
-val load : Fs.File.t -> t
+val load : Fs.File.t -> (t, [> msg ]) result

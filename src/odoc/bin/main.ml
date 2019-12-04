@@ -5,7 +5,6 @@
 
 open Odoc_odoc
 open Cmdliner
-open Result
 
 let convert_syntax : Odoc_html.Tree.syntax Arg.converter =
   let syntax_parser str =
@@ -53,7 +52,7 @@ let convert_uri : Odoc_html.Tree.uri Arg.converter =
   (parser, printer)
 
 let handle_error = function
-  | Ok () -> ()
+  | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
     Printf.eprintf "%s\n%!" msg;
     exit 2
@@ -215,8 +214,7 @@ end = struct
     let file = Fs.File.of_string input_file in
     match index_for with
     | None ->
-      Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file;
-      Ok ()
+      Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file
     | Some pkg_name ->
       Html_page.from_mld ~env ~syntax ~output:output_dir ~package:pkg_name ~warn_error file
 
@@ -332,20 +330,23 @@ module Depends = struct
 
   module Odoc_html = struct
     let list_dependencies input_file =
-      List.iter (Depends.for_html_step (Fs.Directory.of_string input_file))
+      let open Or_error in
+      Depends.for_html_step (Fs.Directory.of_string input_file) >>= fun depends ->
+      List.iter depends
         ~f:(fun (root : Odoc_model.Root.t) ->
           Printf.printf "%s %s %s\n"
             root.package
             (Odoc_model.Root.Odoc_file.name root.file)
             (Digest.to_hex root.digest)
-        )
+        );
+      Ok ()
 
     let cmd =
       let input =
         let doc = "Input directory" in
         Arg.(required & pos 0 (some file) None & info ~doc ~docv:"PKG_DIR" [])
       in
-      Term.(const list_dependencies $ input)
+      Term.(const handle_error $ (const list_dependencies $ input))
 
   let info =
     Term.info "html-deps"
@@ -371,20 +372,21 @@ module Targets = struct
 
   module Odoc_html = struct
     let list_targets directories output_dir odoc_file =
+      let open Or_error in
       let env = Env.create ~important_digests:false ~directories in
       let odoc_file = Fs.File.of_string odoc_file in
-      let targets =
-        Targets.of_odoc_file ~env ~output:output_dir odoc_file
-        |> List.map ~f:Fs.File.to_string
-      in
-      Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets)
+      Targets.of_odoc_file ~env ~output:output_dir odoc_file >>= fun targets ->
+      let targets = List.map ~f:Fs.File.to_string targets in
+      Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
+      Ok ()
 
     let cmd =
       let input =
         let doc = "Input file" in
         Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
       in
-      Term.(const list_targets $ odoc_file_directories $ dst () $ input)
+      Term.(const handle_error $ (const list_targets $ odoc_file_directories $
+            dst () $ input))
 
     let info =
       Term.info "html-targets" ~doc:"TODO: Fill in."

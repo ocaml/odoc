@@ -27,18 +27,26 @@ type lookup_result =
   | Found of lookup_result_found
   | Not_found
 
+type msg = [ `Msg of string ]
+
 (** Build a resolver. Optionally provide equality and hash on ['a]. *)
 val build_resolver :
   ?equal:(Odoc_model.Root.t -> Odoc_model.Root.t -> bool) -> ?hash:(Odoc_model.Root.t -> int)
   -> (string -> lookup_result)
-  -> (Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t)
-  -> (string -> Odoc_model.Root.t option) -> (Odoc_model.Root.t -> Odoc_model.Lang.Page.t)
+  -> (Odoc_model.Root.t -> (Odoc_model.Lang.Compilation_unit.t, msg) Result.result)
+  -> (string -> Odoc_model.Root.t option)
+  -> (Odoc_model.Root.t -> (Odoc_model.Lang.Page.t, msg) Result.result)
   -> resolver
 
 val resolve :
-  resolver -> Odoc_model.Lang.Compilation_unit.t -> Odoc_model.Lang.Compilation_unit.t
+  resolver
+  -> Odoc_model.Lang.Compilation_unit.t
+  -> (Odoc_model.Lang.Compilation_unit.t, [> msg]) Result.result
 
-val resolve_page : resolver -> Odoc_model.Lang.Page.t -> Odoc_model.Lang.Page.t
+val resolve_page :
+  resolver
+  -> Odoc_model.Lang.Page.t
+  -> (Odoc_model.Lang.Page.t, [> msg]) Result.result
 
 (** {2:expansion Expansion}
 
@@ -52,11 +60,13 @@ type expander
 val build_expander :
   ?equal:(Odoc_model.Root.t -> Odoc_model.Root.t -> bool) -> ?hash:(Odoc_model.Root.t -> int)
   -> (string -> lookup_result)
-  -> (root:Odoc_model.Root.t -> Odoc_model.Root.t -> Odoc_model.Lang.Compilation_unit.t)
+  -> (root:Odoc_model.Root.t -> Odoc_model.Root.t -> (Odoc_model.Lang.Compilation_unit.t, msg) Result.result)
   -> expander
 
 val expand :
-  expander -> Odoc_model.Lang.Compilation_unit.t -> Odoc_model.Lang.Compilation_unit.t
+  expander
+  -> Odoc_model.Lang.Compilation_unit.t
+  -> (Odoc_model.Lang.Compilation_unit.t, [> msg]) Result.result
 
 (** {2 Misc.}
 

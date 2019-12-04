@@ -14,12 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
 
 (** Produces .html files from a .odoc file. *)
 
 val from_odoc :
   env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> ?theme_uri:Odoc_html.Tree.uri -> output:Fs.Directory.t ->
-  Fs.File.t -> unit
+  Fs.File.t -> (unit, [> msg]) result
 
 val from_mld : env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> package:Odoc_model.Root.Package.t ->
-  output:Fs.Directory.t -> warn_error:bool -> Fs.File.t -> (unit, [ `Msg of string ]) Result.result
+  output:Fs.Directory.t -> warn_error:bool -> Fs.File.t -> (unit, [> msg]) result

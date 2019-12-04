@@ -15,7 +15,7 @@
  *)
 
 open StdLabels
-open Result
+open Or_error
 
 let to_html_tree_page ?theme_uri ~syntax v =
   match syntax with
@@ -28,14 +28,12 @@ let to_html_tree_compilation_unit ?theme_uri ~syntax v =
   | Odoc_html.Tree.OCaml -> Odoc_html.Generator.ML.compilation_unit ?theme_uri v
 
 let from_odoc ~env ?(syntax=Odoc_html.Tree.OCaml) ?theme_uri ~output:root_dir input =
-  let root = Root.read input in
+  Root.read input >>= fun root ->
   match root.file with
   | Page page_name ->
-    let page = Page.load input in
-    let odoctree =
-      let resolve_env = Env.build env (`Page page) in
-      Odoc_xref.resolve_page (Env.resolver resolve_env) page
-    in
+    Page.load input >>= fun page ->
+    let resolve_env = Env.build env (`Page page) in
+    Odoc_xref.resolve_page (Env.resolver resolve_env) page >>= fun odoctree ->
     let pkg_name = root.package in
     let pages = to_html_tree_page ?theme_uri ~syntax odoctree in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
@@ -49,21 +47,22 @@ let from_odoc ~env ?(syntax=Odoc_html.Tree.OCaml) ?theme_uri ~output:root_dir in
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
-    )
+    );
+    Ok ()
   | Compilation_unit {hidden = _; _} ->
     (* If hidden, we should not generate HTML. See
          https://github.com/ocaml/odoc/issues/99. *)
-    let unit = Compilation_unit.load input in
+    Compilation_unit.load input >>= fun unit ->
     let unit = Odoc_xref.Lookup.lookup unit in
-    let odoctree =
+    begin
       (* See comment in compile for explanation regarding the env duplication. *)
       let resolve_env = Env.build env (`Unit unit) in
-      let resolved = Odoc_xref.resolve (Env.resolver resolve_env) unit in
+      Odoc_xref.resolve (Env.resolver resolve_env) unit >>= fun resolved ->
       let expand_env = Env.build env (`Unit resolved) in
-      Odoc_xref.expand (Env.expander expand_env) resolved
-      |> Odoc_xref.Lookup.lookup
+      Odoc_xref.expand (Env.expander expand_env) resolved >>= fun expanded ->
+      Odoc_xref.Lookup.lookup expanded
       |> Odoc_xref.resolve (Env.resolver expand_env) (* Yes, again. *)
-    in
+    end >>= fun odoctree ->
     let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
@@ -84,7 +83,8 @@ let from_odoc ~env ?(syntax=Odoc_html.Tree.OCaml) ?theme_uri ~output:root_dir in
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%a@?" (Tyxml.Html.pp ()) content;
       close_out oc
-    )
+    );
+    Ok ()
 
 (* Used only for [--index-for] which is deprecated and available only for
    backward compatibility. It should be removed whenever. *)
@@ -113,7 +113,7 @@ let from_mld ~env ?(syntax=Odoc_html.Tree.OCaml) ~package ~output:root_dir ~warn
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let page = Odoc_xref.Lookup.lookup_page page in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref.resolve_page (Env.resolver env) page in
+    Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
     let pages = to_html_tree_page ~syntax resolved in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;

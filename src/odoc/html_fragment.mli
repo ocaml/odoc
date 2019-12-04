@@ -14,10 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Or_error
+
 (** Produces html fragment files from a mld file. *)
 
 val from_mld : xref_base_uri:string -> env:Env.builder -> output:Fs.File.t ->
-  warn_error:bool -> Fs.File.t -> (unit, [ `Msg of string ]) Result.result
+  warn_error:bool -> Fs.File.t -> (unit, [> msg]) result
 (** [from_mld ~xref_base_uri ~env ~output input] parses the content of the [input]
     file as a documentation page ({e i.e.} the ocamldoc syntax), generates the
     equivalent HTML representation and writes the result into the [output]

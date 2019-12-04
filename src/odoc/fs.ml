@@ -15,6 +15,7 @@
  *)
 
 open StdLabels
+open Or_error
 
 type directory = Fpath.t
 type file = Fpath.t
@@ -145,6 +146,17 @@ module Directory = struct
     | [] -> acc
     in
     loop ext f acc ([Fpath.to_string d] :: []);;
+
+  exception Stop_iter of msg
+
+  let fold_files_rec_result ?ext f acc d =
+    let f acc fn =
+      match f acc fn with
+      | Ok acc -> acc
+      | Error e -> raise (Stop_iter e)
+    in
+    try Ok (fold_files_rec ?ext f acc d)
+    with Stop_iter (`Msg _ as e) -> Error e
 
   module Table = Hashtbl.Make(struct
       type nonrec t = t
