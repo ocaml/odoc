@@ -79,7 +79,8 @@ let hidden =
 
 let warn_error =
   let doc = "Turn warnings into errors." in
-  Arg.(value & flag & info ~docs ~doc ["warn-error"])
+  let env = Arg.env_var "ODOC_WARN_ERROR" ~doc:(doc ^ " See option $(opt).") in
+  Arg.(value & flag & info ~docs ~doc ~env ["warn-error"])
 
 let dst ?create () =
   let doc = "Output directory where the HTML tree is expected to be saved." in
