@@ -401,7 +401,7 @@ and TypeExpr : sig
     | Var of string
     | Any
     | Alias of t * string
-    | Arrow of label option * t * t
+    | Arrow of label option * Comment.docs * t * t
     | Tuple of t list
     | Constr of Path.Type.t * t list
     | Polymorphic_variant of TypeExpr.Polymorphic_variant.t

@@ -52,6 +52,7 @@ let rec read_core_type env container ctyp =
     | Ttyp_var s -> Var s
     | Ttyp_arrow(lbl, arg, res) ->
         let lbl = read_label lbl in
+        let doc = Doc_attr.attached container arg.ctyp_attributes in
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
         (* NOTE(@ostera): Unbox the optional value for this optional labelled
            argument since the 4.02.x representation includes it explicitly. *)
@@ -68,7 +69,7 @@ let rec read_core_type env container ctyp =
 #endif
         in
         let res = read_core_type env container res in
-          Arrow(lbl, arg, res)
+          Arrow(lbl, doc, arg, res)
     | Ttyp_tuple typs ->
         let typs = List.map (read_core_type env container) typs in
           Tuple typs

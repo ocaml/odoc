@@ -374,7 +374,7 @@ let rec read_type_expr env typ =
           in
           let lbl = read_label lbl in
           let res = read_type_expr env res in
-            Arrow(lbl, arg, res)
+            Arrow(lbl, [], arg, res)
       | Ttuple typs ->
           let typs = List.map (read_type_expr env) typs in
             Tuple typs

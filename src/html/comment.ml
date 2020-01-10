@@ -246,6 +246,19 @@ and inline_element_list ?xref_base_uri elements =
 
 
 
+let small_nestable_block_element
+    : ?xref_base_uri:string ->
+    to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
+    Comment.nestable_block_element ->
+    Html_types.span_content_fun Html.elt list =
+  fun ?xref_base_uri ~to_syntax:_ ~from_syntax:_ -> function
+  | `Paragraph [{value = `Raw_markup (`Html, s); _}] -> [Html.Unsafe.data s]
+  | `Paragraph content -> inline_element_list ?xref_base_uri content
+  | `Code_block _
+  | `Verbatim _
+  | `Modules _
+  | `List _ -> []
+
 let rec nestable_block_element
     : 'a. ?xref_base_uri:string ->
     to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
@@ -399,6 +412,17 @@ let block_element
   | `Tag t ->
     tag ?xref_base_uri ~to_syntax ~from_syntax t
 
+let small_block_element
+  : ?xref_base_uri:string -> to_syntax:Tree.syntax -> from_syntax:Tree.syntax ->
+  Comment.block_element -> Html_types.span_content_fun Html.elt list =
+  fun ?xref_base_uri ~to_syntax ~from_syntax -> function
+  | #Comment.nestable_block_element as e ->
+    small_nestable_block_element ?xref_base_uri ~to_syntax ~from_syntax e
+
+  | `Heading _
+  | `Tag _ ->
+    []
+
 let block_element_list ?xref_base_uri ~to_syntax elements =
   List.fold_left (fun html_elements (from_syntax, block) ->
     match block_element ?xref_base_uri  ~to_syntax ~from_syntax block with
@@ -420,6 +444,19 @@ let first_to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) = function
 let to_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) docs =
   block_element_list ?xref_base_uri ~to_syntax
     (List.map (fun el -> Odoc_model.Location_.((location el |> location_to_syntax, value el))) docs)
+
+let to_small_html ?xref_base_uri ?syntax:(to_syntax=Tree.OCaml) docs =
+  List.map
+    (fun el ->
+       Odoc_model.Location_.((location el |> location_to_syntax, value el)))
+    docs
+  |> List.fold_left (fun html_elements (from_syntax, block) ->
+    List.rev_append
+      (small_block_element ?xref_base_uri  ~to_syntax ~from_syntax block)
+      html_elements
+    )
+    []
+  |> List.rev
 
 let has_doc docs =
   docs <> []

@@ -6,6 +6,12 @@ val to_html :
   Odoc_model.Comment.docs ->
     ([> Html_types.flow5_without_header_footer ] Html.elt) list
 
+val to_small_html :
+  ?xref_base_uri:string ->
+  ?syntax:Tree.syntax ->
+  Odoc_model.Comment.docs ->
+    Html_types.span_content_fun Html.elt list
+
 val first_to_html :
   ?xref_base_uri:string ->
   ?syntax:Tree.syntax ->

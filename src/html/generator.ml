@@ -180,19 +180,41 @@ struct
     | Alias (te, alias) ->
       type_expr ~needs_parentheses:true te @
       Html.txt " " :: keyword "as" :: Html.txt " '" :: [ Html.txt alias ]
-    | Arrow (None, src, dst) ->
+    | Arrow (None, doc, src, dst) ->
+      let arg = type_expr ~needs_parentheses:true src in
+      let arg =
+        if Comment.has_doc doc then
+          let txt = Comment.to_small_html doc in
+          [ Html.span ~a:[ Html.a_class [ "tooltip" ] ] (
+              arg @ [ Html.span ~a:[Html.a_class ["tooltiptext"]] txt ]
+            )
+          ]
+        else
+          arg
+      in
       let res =
-        type_expr ~needs_parentheses:true src @
+        arg @
         Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
       if not needs_parentheses then
         res
       else
         [enclose ~l:"(" res ~r:")"]
-    | Arrow (Some lbl, src, dst) ->
+    | Arrow (Some lbl, doc, src, dst) ->
+      let label = label lbl in
+      let label =
+        if Comment.has_doc doc then
+          let txt = Comment.to_small_html doc in
+          [ Html.span ~a:[ Html.a_class [ "tooltip" ] ] (
+              label @ [ Html.span ~a:[Html.a_class ["tooltiptext"]] txt ]
+            )
+          ]
+        else
+          label
+      in
       let res =
         Html.span (
-          label lbl @ Html.txt ":" :: type_expr ~needs_parentheses:true src
+          label @ Html.txt ":" :: type_expr ~needs_parentheses:true src
         ) :: Html.txt " " :: Syntax.Type.arrow :: Html.txt " " :: type_expr dst
       in
       if not needs_parentheses then

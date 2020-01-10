@@ -2070,11 +2070,12 @@ class virtual type_expr = object (self)
           let name' = self#type_expr_var_name name in
             if body != body' || name != name' then Alias(body', name')
             else typ
-      | Arrow(lbl, arg, res) ->
+      | Arrow(lbl, arg_doc, arg, res) ->
           let lbl' = option_map self#type_expr_label lbl in
           let arg' = self#type_expr arg in
           let res' = self#type_expr res in
-            if lbl != lbl' || arg != arg' || res != res' then Arrow(lbl', arg', res')
+            if lbl != lbl' || arg != arg' || res != res' then
+              Arrow(lbl', arg_doc, arg', res')
             else typ
       | Tuple typs ->
           let typs' = list_map self#type_expr typs in
