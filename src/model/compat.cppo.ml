@@ -31,8 +31,12 @@ type visibility =
 type module_type =
     Mty_ident of Path.t
   | Mty_signature of signature
-  | Mty_functor of Ident.t * module_type option * module_type
+  | Mty_functor of functor_parameter * module_type
   | Mty_alias of Path.t
+
+and functor_parameter =
+  | Unit
+  | Named of Ident.t option * module_type
 
 and module_presence =
   | Mp_present
@@ -67,7 +71,48 @@ and modtype_declaration =
 
 let opt conv = function | None -> None | Some x -> Some (conv x)
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+
+let rec signature : Types.signature -> signature = fun x -> List.map signature_item x
+
+and signature_item : Types.signature_item -> signature_item = function
+  | Types.Sig_value (a,b,c) -> Sig_value (a,b,visibility c)
+  | Types.Sig_type (a,b,c,d) -> Sig_type (a,b,c, visibility d)
+  | Types.Sig_typext (a,b,c,d) -> Sig_typext (a,b,c,visibility d)
+  | Types.Sig_module (a,b,c,d,e) -> Sig_module (a, module_presence b, module_declaration c, d, visibility e)
+  | Types.Sig_modtype (a,b,c) -> Sig_modtype (a, modtype_declaration b, visibility c)
+  | Types.Sig_class (a,b,c,d) -> Sig_class (a,b,c, visibility d)
+  | Types.Sig_class_type (a,b,c,d) -> Sig_class_type (a,b,c, visibility d)
+
+and visibility : Types.visibility -> visibility = function
+  | Types.Hidden -> Hidden
+  | Types.Exported -> Exported
+
+and module_type : Types.module_type -> module_type = function
+  | Types.Mty_ident p -> Mty_ident p
+  | Types.Mty_signature s -> Mty_signature (signature s)
+  | Types.Mty_functor (a, b) -> Mty_functor(functor_parameter a, module_type b)
+  | Types.Mty_alias p -> Mty_alias p
+
+and functor_parameter : Types.functor_parameter -> functor_parameter = function
+  | Types.Unit -> Unit
+  | Types.Named (a,b) -> Named (a, module_type b)
+
+and module_presence : Types.module_presence -> module_presence = function
+  | Types.Mp_present -> Mp_present
+  | Types.Mp_absent -> Mp_absent
+
+and module_declaration : Types.module_declaration -> module_declaration = fun x ->
+  { md_type = module_type x.Types.md_type;
+    md_attributes = x.md_attributes;
+    md_loc = x.md_loc }
+
+and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun x ->
+  { mtd_type = opt module_type x.Types.mtd_type;
+    mtd_attributes = x.Types.mtd_attributes;
+    mtd_loc = x.Types.mtd_loc }
+
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 
 let rec signature : Types.signature -> signature = fun x -> List.map signature_item x
 

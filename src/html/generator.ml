@@ -25,7 +25,7 @@ open Utils
 
 let a_href = Tree.Relative_link.to_sub_element
 
-let functor_arg_pos { Odoc_model.Lang.FunctorArgument.id ; _ } =
+let functor_arg_pos { Odoc_model.Lang.FunctorParameter.id ; _ } =
   match id with
   | `Argument (_, nb, _) -> nb
   | _ ->
@@ -1462,10 +1462,10 @@ struct
       tagged_items
 
   and functor_argument
-    : 'row. ?theme_uri:Tree.uri -> Odoc_model.Lang.FunctorArgument.t
+    : 'row. ?theme_uri:Tree.uri -> Odoc_model.Lang.FunctorParameter.parameter
     -> Html_types.div_content Html.elt list * Tree.t list
   = fun ?theme_uri arg ->
-    let open Odoc_model.Lang.FunctorArgument in
+    let open Odoc_model.Lang.FunctorParameter in
     let name = Paths.Identifier.name arg.id in
     let nb = functor_arg_pos arg in
     let link_name = Printf.sprintf "%d-%s" nb name in
@@ -1515,8 +1515,8 @@ struct
       let params, params_subpages =
         List.fold_left (fun (args, subpages as acc) arg ->
           match arg with
-          | None -> acc
-          | Some arg ->
+          | Odoc_model.Lang.FunctorParameter.Unit -> acc
+          | Named arg ->
             let arg, arg_subpages = functor_argument ?theme_uri arg in
             let arg = Html.li arg in
             (args @ [arg], subpages @ arg_subpages)
@@ -1666,13 +1666,13 @@ struct
         Html.txt " ... ";
         Syntax.Mod.close_tag;
       ]
-    | Functor (None, expr) ->
+    | Functor (Unit, expr) ->
       (if Syntax.Mod.functor_keyword then [keyword "functor"] else []) @
       Html.txt " () " ::
       mty base expr
-    | Functor (Some arg, expr) ->
+    | Functor (Named arg, expr) ->
       let name =
-        let open Odoc_model.Lang.FunctorArgument in
+        let open Odoc_model.Lang.FunctorParameter in
         let to_print = Html.txt @@ Paths.Identifier.name arg.id in
         match
           Tree.Relative_link.Id.href

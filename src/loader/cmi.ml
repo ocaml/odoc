@@ -837,12 +837,15 @@ let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
     match mty with
     | Mty_ident p -> Path (Env.Path.read_module_type env p)
     | Mty_signature sg -> Signature (read_signature env parent sg)
-    | Mty_functor(id, arg, res) ->
-        let arg =
-          match arg with
-          | None -> None
-          | Some arg ->
-              let name = parenthesise (Ident.name id) in
+    | Mty_functor(parameter, res) ->
+        let parameter, env =
+          match parameter with
+          | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
+          | Named (id_opt, arg) ->
+              let name, env = match id_opt with
+                | Some id -> parenthesise (Ident.name id), Env.add_argument parent pos id (ArgumentName.of_ident id) env
+                | None -> "_", env
+              in
               let id = `Argument(parent, pos, Odoc_model.Names.ArgumentName.of_string name) in
               let arg = read_module_type env id 1 arg in
               let expansion =
@@ -850,11 +853,10 @@ let rec read_module_type env parent pos (mty : Odoc_model.Compat.module_type) =
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-                Some { FunctorArgument. id; expr = arg; expansion }
+              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg; expansion }), env
         in
-        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
-        let res = read_module_type env parent (pos + 1) res in
-          Functor(arg, res)
+        let res = read_module_type env parent (pos+1) res in
+        Functor(parameter, res)
     | Mty_alias _ -> assert false
 
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =

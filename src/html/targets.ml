@@ -17,7 +17,7 @@
 open StdLabels
 open Odoc_model.Paths
 
-let functor_arg_pos { Odoc_model.Lang.FunctorArgument.id ; _ } =
+let functor_arg_pos { Odoc_model.Lang.FunctorParameter.id ; _ } =
   match id with
   | `Argument (_, nb, _) -> nb
   | _ ->
@@ -63,7 +63,7 @@ and signature ~prefix (t : Odoc_model.Lang.Signature.t) =
   add_items ~don't:false [] t
 
 and functor_argument ~prefix arg =
-  let open Odoc_model.Lang.FunctorArgument in
+  let open Odoc_model.Lang.FunctorParameter in
   match arg.expansion with
   | None -> []
   | Some expansion ->
@@ -82,8 +82,8 @@ and module_expansion ~prefix (t : Odoc_model.Lang.Module.expansion) =
     let subpages = signature ~prefix sg in
     List.fold_left args ~init:subpages ~f:(fun subpages arg ->
       match arg with
-      | None -> subpages
-      | Some arg ->
+      | Odoc_model.Lang.FunctorParameter.Unit -> subpages
+      | Named arg ->
         let arg_subpages = functor_argument ~prefix arg in
         arg_subpages @ subpages
     )

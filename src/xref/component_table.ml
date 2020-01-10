@@ -552,15 +552,15 @@ and signature_items local =
 and module_type_expr local expr =
   let open Sig in
   let open ModuleType in
-  let open FunctorArgument in
+  let open FunctorParameter in
     match expr with
     | Path p -> path (module_type_path local) p
     | Signature sg -> signature (signature_items local) sg
-    | Functor(Some{ id; expr = arg; _}, res) ->
+    | Functor(Named { id; expr = arg; _}, res) ->
         let res = module_type_expr local res in
         let arg = module_type_expr local arg in
           functor_ local.t.equal local.t.hash id arg res
-    | Functor(None, res) ->
+    | Functor(Unit, res) ->
         let res = module_type_expr local res in
           generative res
     | With(body, subs) ->
