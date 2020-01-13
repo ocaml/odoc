@@ -357,6 +357,7 @@ let rec read_module_expr env parent label_parent pos mexpr =
     | Tmod_ident _ ->
         Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_structure str -> Signature (read_structure env parent str)
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     | Tmod_functor(parameter, res) ->
         let parameter, env =
           match parameter with
@@ -378,6 +379,26 @@ let rec read_module_expr env parent label_parent pos mexpr =
           in
         let res = read_module_expr env parent label_parent (pos + 1) res in
         Functor(parameter, res)
+#else
+    | Tmod_functor(id, _, arg, res) ->
+        let arg =
+          match arg with
+          | None -> FunctorParameter.Unit
+          | Some arg ->
+              let name = parenthesise (Ident.name id) in
+              let id = `Argument(parent, pos, ArgumentName.of_string name) in
+          let arg = Cmti.read_module_type env id label_parent 1 arg in
+          let expansion =
+            match arg with
+            | Signature _ -> Some Module.AlreadyASig
+            | _ -> None
+          in
+                Named { FunctorParameter. id; expr = arg; expansion }
+        in
+        let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
+      let res = read_module_expr env parent label_parent (pos + 1) res in
+          Functor(arg, res)
+#endif
     | Tmod_apply _ ->
         Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
@@ -396,12 +417,17 @@ and read_module_binding env parent mb =
   let open Module in
   let open Odoc_model.Names in
   let id =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
       match mb.mb_id with
       | Some id ->
         let name = parenthesise (Ident.name id) in
         `Module(parent, ModuleName.of_string name)
       | None ->
         `Module(parent, ModuleName.of_string "_")
+#else
+    let name = parenthesise (Ident.name mb.mb_id) in
+    `Module(parent, ModuleName.of_string name)
+#endif
   in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
@@ -418,9 +444,15 @@ and read_module_binding env parent mb =
     | _ -> ModuleType (read_module_expr env id container 1 mb.mb_expr)
   in
   let hidden =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     match canonical, mb.mb_id with
     | None, Some id -> Odoc_model.Root.contains_double_underscore (Ident.name id)
     | _, _ -> false
+#else
+    match canonical with
+    | None -> Odoc_model.Root.contains_double_underscore (Ident.name mb.mb_id)
+    | _ -> false
+#endif
   in
   let expansion =
     match type_ with

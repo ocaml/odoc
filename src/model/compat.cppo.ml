@@ -132,7 +132,11 @@ and visibility : Types.visibility -> visibility = function
 and module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
-  | Types.Mty_functor (a, b, c) -> Mty_functor(a, opt module_type b, module_type c)
+  | Types.Mty_functor (a, b, c) -> begin
+    match b with
+    | Some m -> Mty_functor(Named(Some a,module_type m),module_type c)
+    | None -> Mty_functor(Unit,module_type c)
+    end
   | Types.Mty_alias p -> Mty_alias p
 
 and module_presence : Types.module_presence -> module_presence = function
@@ -154,7 +158,11 @@ and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun
   let rec module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
-  | Types.Mty_functor (a, b, c) -> Mty_functor(a, opt module_type b, module_type c)
+  | Types.Mty_functor (a, b, c) -> begin
+    match b with
+    | Some m -> Mty_functor(Named(Some a,module_type m),module_type c)
+    | None -> Mty_functor(Unit,module_type c)
+    end
   | Types.Mty_alias (_,q) -> Mty_alias q
 
   and signature_item : Types.signature_item -> signature_item = function
@@ -185,7 +193,11 @@ and modtype_declaration : Types.modtype_declaration -> modtype_declaration = fun
   let rec module_type : Types.module_type -> module_type = function
   | Types.Mty_ident p -> Mty_ident p
   | Types.Mty_signature s -> Mty_signature (signature s)
-  | Types.Mty_functor (a, b, c) -> Mty_functor(a, opt module_type b, module_type c)
+  | Types.Mty_functor (a, b, c) -> begin
+    match b with
+    | Some m -> Mty_functor(Named(Some a,module_type m),module_type c)
+    | None -> Mty_functor(Unit,module_type c)
+    end
   | Types.Mty_alias q -> Mty_alias q
 
   and signature_item : Types.signature_item -> signature_item = function
