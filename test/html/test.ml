@@ -250,8 +250,7 @@ let make_test_case ?theme_uri ?syntax case =
   in
   Case.name case, `Slow, run
 
-
-let source_files = [
+let source_files_all = [
   ("val.mli", ["Val/index.html"]);
   ("markup.mli", ["Markup/index.html"]);
   ("section.mli", ["Section/index.html"]);
@@ -279,18 +278,25 @@ let source_files = [
   ("alias.ml", [
       "Alias/index.html";
       "Alias/X/index.html";
-    ]);
+    ])
 ]
 
-let source_files =
-  let latest_supported = "4.08." in
-  match String.sub (Sys.ocaml_version) 0 (String.length latest_supported) with
-  | s when s = latest_supported -> source_files @
-    [ ("recent.mli", ["Recent/index.html"; "Recent/X/index.html"])
-    ; ("recent_impl.ml", ["Recent_impl/index.html"])]
-  | _ -> source_files
-  | exception _ -> source_files
+let source_files_post408 =
+  [ ("recent.mli", ["Recent/index.html"; "Recent/X/index.html"])
+  ; ("recent_impl.ml", ["Recent_impl/index.html"]) ]
 
+let source_files_pre410 =
+  [ ("bugs_pre_410.ml", ["Bugs_pre_410/index.html"]) ]
+
+let source_files =
+  let cur = Astring.String.cuts ~sep:"." (Sys.ocaml_version) |> List.map (fun i -> try Some (int_of_string i) with _ -> None) in
+  match cur with
+  | Some major :: Some minor :: _ ->
+    List.concat
+      [ (if major=4 && minor<10 then source_files_pre410 else [])
+      ; (if major=4 && minor>8 then source_files_post408 else [])
+      ; source_files_all ]
+  | _ -> source_files_all
 
 let () =
   Env.init ();
