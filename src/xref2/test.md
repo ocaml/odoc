@@ -21,7 +21,9 @@ identifiers that will allow us to construct links.
 We'll start with a little preamble, constructing the execution environment in which we can
 run through some tests and describe the resolution process.
 
-```ocaml require=odoc.xref_test,env=e1
+```ocaml env=e1
+(* Prelude *)
+#require "odoc.xref_test";;
 open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;
