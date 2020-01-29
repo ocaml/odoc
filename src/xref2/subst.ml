@@ -1,4 +1,12 @@
+open Component
 
+type t = Substitution.t = {
+  module_ : Cpath.Resolved.module_ ModuleMap.t;
+  module_type : Cpath.Resolved.module_type ModuleTypeMap.t;
+  type_ : Cpath.Resolved.type_ TypeMap.t;
+  class_type : Cpath.Resolved.class_type ClassTypeMap.t;
+  type_replacement : TypeExpr.t TypeMap.t;
+}
 
 exception TypeReplacement of Component.TypeExpr.t
 
@@ -19,7 +27,6 @@ let add_module id subst t =
     t with
     module_ = ModuleMap.add id subst t.module_;
   }
-
 
 let add_module_type id subst t =
   {
@@ -57,6 +64,16 @@ let add_class_type : Ident.class_type -> Cpath.Resolved.class_type -> t -> t =
 let add_type_replacement : Ident.path_type -> Component.TypeExpr.t -> t -> t =
  fun id texp t ->
   { t with type_replacement = TypeMap.add id texp t.type_replacement }
+
+let compose_delayed f : 'a Delayed.t Substitution.delayed -> t -> 'a Delayed.t Substitution.delayed =
+  fun v s ->
+  match v with
+  | DelayedSubst (s', v) ->
+    let v = Delayed.put (fun () -> f s' (Delayed.get v)) in
+    DelayedSubst (s, v) (* TODO: compose s and s': Remove [f] argument *)
+  | NoSubst v -> DelayedSubst (s, v)
+
+let make_delayed f = NoSubst (Delayed.put f)
 
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -528,22 +545,13 @@ and apply_sig_map s items removed =
     List.map
       (function
         | Module (id, r, m) ->
-            Module
-              ( id,
-                r,
-                Component.Delayed.put (fun () ->
-                    module_ s (Component.Delayed.get m)) )
+            Module (id, r, compose_delayed module_ m s)
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution (id, module_substitution s m)
         | ModuleType (id, mt) ->
-            ModuleType
-              ( id,
-                Component.Delayed.put (fun () ->
-                    module_type s (Component.Delayed.get mt)) )
+            ModuleType (id, compose_delayed module_type mt s)
         | Type (id, r, t) ->
-            Type (id,
-                  r,
-                  Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)))
+            Type (id, r, compose_delayed type_ t s)
         | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
         | Exception (id, e) -> Exception (id, exception_ s e)
         | TypExt e -> TypExt (extension s e)
@@ -556,3 +564,18 @@ and apply_sig_map s items removed =
       items
   in
   { items; removed = removed_items s removed }
+
+let delayed_get_module : Module.t Delayed.t Substitution.delayed -> Module.t =
+  function
+  | DelayedSubst (s, m) -> module_ s (Delayed.get m)
+  | NoSubst m -> Delayed.get m
+
+let delayed_get_module_type : ModuleType.t Delayed.t Substitution.delayed -> ModuleType.t =
+  function
+  | DelayedSubst (s, mt) -> module_type s (Delayed.get mt)
+  | NoSubst mt -> Delayed.get mt
+
+let delayed_get_type : TypeDecl.t Delayed.t Substitution.delayed -> TypeDecl.t =
+  function
+  | DelayedSubst (s, t) -> type_ s (Delayed.get t)
+  | NoSubst t -> Delayed.get t

@@ -21,7 +21,7 @@ let careful_module_in_sig s name =
   in
   let rec inner = function
     | Signature.Module (id, _, m) :: _ when Ident.Name.module_ id = name ->
-        Found (Delayed.get m)
+        Found (Subst.delayed_get_module m)
     | Signature.Include i :: rest -> (
         try inner i.Include.expansion_.items with _ -> inner rest )
     | _ :: rest -> inner rest
@@ -40,7 +40,7 @@ let careful_type_in_sig s name =
   in
   let rec inner = function
     | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
-        Found (`T (Component.Delayed.get m))
+        Found (`T (Subst.delayed_get_type m))
     | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
         Found (`C c)
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
@@ -68,7 +68,7 @@ let module_type_in_sig s name =
   let rec inner = function
     | Signature.ModuleType (id, m) :: _ when Ident.Name.module_type id = name
       ->
-        Delayed.get m
+        Subst.delayed_get_module_type m
     | Signature.Include i :: rest -> (
         try inner i.Include.expansion_.items with _ -> inner rest )
     | _ :: rest -> inner rest
