@@ -1,4 +1,6 @@
-```ocaml require=odoc.xref_test,env=e1
+```ocaml env=e1
+(* Prelude *)
+#require "odoc.xref_test";;
 open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;

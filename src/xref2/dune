@@ -8,31 +8,31 @@
  (name   runtest)
  (deps   (:x paths.md)
          (package odoc))
- (action (ignore-stderr (progn
-           (run ocaml-mdx test --direction=infer-timestamp %{x})
-           (diff? %{x} %{x}.corrected))
+ (action (progn
+           (run ocaml-mdx test %{x})
+           (diff? %{x} %{x}.corrected)
 )))
 (alias
  (name   runtest)
  (deps   (:x test.md)
          (package odoc))
- (action (ignore-stderr (progn
-           (run ocaml-mdx test --direction=infer-timestamp %{x})
-           (diff? %{x} %{x}.corrected))
+ (action (progn
+           (run ocaml-mdx test %{x})
+           (diff? %{x} %{x}.corrected)
 )))
 (alias
  (name   runtest)
  (deps   (:x notes.md)
          (package odoc))
- (action (ignore-stderr (progn
-           (run ocaml-mdx test --direction=infer-timestamp %{x})
-           (diff? %{x} %{x}.corrected))
+ (action (progn
+           (run ocaml-mdx test %{x})
+           (diff? %{x} %{x}.corrected)
 )))
 (alias
  (name   runtest)
  (deps   (:x scratch.md)
          (package odoc))
- (action (ignore-stderr (progn
-           (run ocaml-mdx test --direction=infer-timestamp %{x})
-           (diff? %{x} %{x}.corrected))
+ (action (progn
+           (run ocaml-mdx test %{x})
+           (diff? %{x} %{x}.corrected)
 )))
