@@ -25,29 +25,29 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
             Module
               ( id,
                 r,
-                Component.Delayed.put (fun () ->
+                Subst.make_delayed (fun () ->
                     module_
                       (`Module
                         (`Module prefix, ModuleName.of_string (Ident.Name.module_ id)))
-                      (Component.Delayed.get m)) )
+                      (Subst.delayed_get_module m)) )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
-                Component.Delayed.put (fun () ->
+                Subst.make_delayed (fun () ->
                     module_type
                       (`ModuleType
                         ( `Module prefix,
                           ModuleTypeName.of_string (Ident.Name.module_type id)
                         ))
-                      (Component.Delayed.get mt)) )
+                      (Subst.delayed_get_module_type mt)) )
         | Type (id, r, t) ->
             Type
               ( id,
                 r,
-                Component.Delayed.put (fun () ->
+                Subst.make_delayed (fun () ->
                   type_decl
                     (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
-                    (Component.Delayed.get t)) )
+                    (Subst.delayed_get_type t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)
