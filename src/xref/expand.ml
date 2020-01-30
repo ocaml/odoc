@@ -1007,9 +1007,9 @@ class t ?equal ?hash lookup fetch = object
     let incl' = expand_include t incl in
     super#include_ incl'
 
-  method! module_type_functor_arg arg =
+  method! module_type_functor_param arg =
     let arg = expand_argument t arg in
-      super#module_type_functor_arg arg
+      super#module_type_functor_param arg
 
   method! class_ c =
     let c' = expand_class t c in

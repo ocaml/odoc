@@ -2172,7 +2172,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
           {parent = parent'; doc = doc'; decl = decl'; expansion = expansion'}
         else incl
 
-    method! module_type_functor_arg arg =
+    method! module_type_functor_param arg =
       let open Lang.FunctorParameter in
       match arg with
       | Unit -> arg
@@ -2223,7 +2223,7 @@ class resolver ?equal ?hash lookup_unit fetch_unit lookup_page fetch_page =
           in
           With(body, substs)
         | Functor(arg, res) ->
-          let arg' = self#module_type_functor_arg arg in
+          let arg' = self#module_type_functor_param arg in
           let res' = self#module_type_expr_with_id id res in
           if res != res' || arg != arg' then Functor(arg', res')
           else expr

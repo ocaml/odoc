@@ -416,19 +416,16 @@ and unwrap_module_expr_desc = function
 and read_module_binding env parent mb =
   let open Module in
   let open Odoc_model.Names in
-  let id =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
       match mb.mb_id with
+      | None -> None
       | Some id ->
         let name = parenthesise (Ident.name id) in
-        `Module(parent, ModuleName.of_string name)
-      | None ->
-        `Module(parent, ModuleName.of_string "_")
+        let id = `Module(parent, ModuleName.of_string name) in
 #else
     let name = parenthesise (Ident.name mb.mb_id) in
-    `Module(parent, ModuleName.of_string name)
+    let id = `Module(parent, ModuleName.of_string name) in
 #endif
-  in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
@@ -459,7 +456,7 @@ and read_module_binding env parent mb =
     | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
     | _ -> None
   in
-    {id; doc; type_; expansion; canonical; hidden; display_type = None}
+  Some {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
@@ -469,8 +466,10 @@ and read_module_bindings env parent mbs =
     (fun (acc, recursive) mb ->
       let comments = Doc_attr.standalone_multiple container mb.mb_attributes in
       let comments = List.map (fun com -> Comment com) comments in
-      let mb = read_module_binding env parent mb in
-      ((Module (recursive, mb))::(List.rev_append comments acc), And))
+      match read_module_binding env parent mb with
+      | Some mb ->
+        ((Module (recursive, mb))::(List.rev_append comments acc), And)
+      | None -> (acc, recursive))
     ([], Rec) mbs
   |> fst
   |> List.rev
@@ -525,8 +524,12 @@ and read_structure_item env parent item =
 #endif
         in
           [Exception ext]
-    | Tstr_module mb ->
-        [Module (Ordinary, read_module_binding env parent mb)]
+    | Tstr_module mb -> begin
+        match read_module_binding env parent mb with
+        | Some mb ->
+          [Module (Ordinary, mb)]
+        | None -> []
+        end
     | Tstr_recmodule mbs ->
         read_module_bindings env parent mbs
     | Tstr_modtype mtd ->
