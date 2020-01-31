@@ -421,8 +421,8 @@ class virtual module_ : object
 
   method virtual signature : Signature.t -> Signature.t
 
-  method virtual module_type_functor_arg :
-    FunctorArgument.t option -> FunctorArgument.t option
+  method virtual module_type_functor_param :
+    FunctorParameter.t -> FunctorParameter.t
 
   method module_expansion : Module.expansion -> Module.expansion
 
@@ -482,8 +482,8 @@ class virtual module_type : object
 
   method module_type_expr : ModuleType.expr -> ModuleType.expr
 
-  method module_type_functor_arg :
-    FunctorArgument.t option -> FunctorArgument.t option
+  method module_type_functor_param :
+    FunctorParameter.t -> FunctorParameter.t
 
   method module_type : ModuleType.t -> ModuleType.t
 

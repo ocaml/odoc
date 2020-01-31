@@ -357,24 +357,48 @@ let rec read_module_expr env parent label_parent pos mexpr =
     | Tmod_ident _ ->
         Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_structure str -> Signature (read_structure env parent str)
-    | Tmod_functor(id, _, arg, res) ->
-        let arg =
-          match arg with
-          | None -> None
-          | Some arg ->
-              let name = parenthesise (Ident.name id) in
-              let id = `Argument(parent, pos, ArgumentName.of_string name) in
-          let arg = Cmti.read_module_type env id label_parent 1 arg in
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+    | Tmod_functor(parameter, res) ->
+        let parameter, env =
+          match parameter with
+          | Unit -> FunctorParameter.Unit, env
+          | Named (id_opt, _, arg) ->
+              let name, env =
+                match id_opt with
+                | Some id -> parenthesise (Ident.name id), Env.add_argument parent pos id (ArgumentName.of_ident id) env
+                | None -> "_", env
+              in
+              let id = `Argument(parent, pos, Odoc_model.Names.ArgumentName.of_string name) in
+              let arg = Cmti.read_module_type env id label_parent 1 arg in
               let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-                Some { FunctorArgument. id; expr = arg; expansion }
+              Named { id; expr=arg; expansion}, env
+          in
+        let res = read_module_expr env parent label_parent (pos + 1) res in
+        Functor(parameter, res)
+#else
+    | Tmod_functor(id, _, arg, res) ->
+        let arg =
+          match arg with
+          | None -> FunctorParameter.Unit
+          | Some arg ->
+              let name = parenthesise (Ident.name id) in
+              let id = `Argument(parent, pos, ArgumentName.of_string name) in
+          let arg = Cmti.read_module_type env id label_parent 1 arg in
+          let expansion =
+            match arg with
+            | Signature _ -> Some Module.AlreadyASig
+            | _ -> None
+          in
+                Named { FunctorParameter. id; expr = arg; expansion }
         in
         let env = Env.add_argument parent pos id (ArgumentName.of_ident id) env in
       let res = read_module_expr env parent label_parent (pos + 1) res in
           Functor(arg, res)
+#endif
     | Tmod_apply _ ->
         Cmi.read_module_type env parent pos (Odoc_model.Compat.module_type mexpr.mod_type)
     | Tmod_constraint(_, _, Tmodtype_explicit mty, _) ->
@@ -392,8 +416,16 @@ and unwrap_module_expr_desc = function
 and read_module_binding env parent mb =
   let open Module in
   let open Odoc_model.Names in
-  let name = parenthesise (Ident.name mb.mb_id) in
-  let id = `Module(parent, ModuleName.of_string name) in
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+      match mb.mb_id with
+      | None -> None
+      | Some id ->
+        let name = parenthesise (Ident.name id) in
+        let id = `Module(parent, ModuleName.of_string name) in
+#else
+    let name = parenthesise (Ident.name mb.mb_id) in
+    let id = `Module(parent, ModuleName.of_string name) in
+#endif
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =
@@ -409,16 +441,22 @@ and read_module_binding env parent mb =
     | _ -> ModuleType (read_module_expr env id container 1 mb.mb_expr)
   in
   let hidden =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+    match canonical, mb.mb_id with
+    | None, Some id -> Odoc_model.Root.contains_double_underscore (Ident.name id)
+    | _, _ -> false
+#else
     match canonical with
-    | Some _ -> false
     | None -> Odoc_model.Root.contains_double_underscore (Ident.name mb.mb_id)
+    | _ -> false
+#endif
   in
   let expansion =
     match type_ with
     | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
     | _ -> None
   in
-    {id; doc; type_; expansion; canonical; hidden; display_type = None}
+  Some {id; doc; type_; expansion; canonical; hidden; display_type = None}
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
@@ -428,8 +466,10 @@ and read_module_bindings env parent mbs =
     (fun (acc, recursive) mb ->
       let comments = Doc_attr.standalone_multiple container mb.mb_attributes in
       let comments = List.map (fun com -> Comment com) comments in
-      let mb = read_module_binding env parent mb in
-      ((Module (recursive, mb))::(List.rev_append comments acc), And))
+      match read_module_binding env parent mb with
+      | Some mb ->
+        ((Module (recursive, mb))::(List.rev_append comments acc), And)
+      | None -> (acc, recursive))
     ([], Rec) mbs
   |> fst
   |> List.rev
@@ -484,8 +524,12 @@ and read_structure_item env parent item =
 #endif
         in
           [Exception ext]
-    | Tstr_module mb ->
-        [Module (Ordinary, read_module_binding env parent mb)]
+    | Tstr_module mb -> begin
+        match read_module_binding env parent mb with
+        | Some mb ->
+          [Module (Ordinary, mb)]
+        | None -> []
+        end
     | Tstr_recmodule mbs ->
         read_module_bindings env parent mbs
     | Tstr_modtype mtd ->

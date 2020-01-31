@@ -185,12 +185,27 @@ let add_signature_tree_item parent item env =
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id (TypeName.of_ident decl.typ_id) env)
           decls env
-    | Tsig_module md ->
-        add_module parent md.md_id (ModuleName.of_ident md.md_id) env
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+    | Tsig_module { md_id = Some id; _ } ->
+        add_module parent id (ModuleName.of_ident id) env
+    | Tsig_module _ ->
+        env
     | Tsig_recmodule mds ->
         List.fold_right
-          (fun md env -> add_module parent md.md_id (ModuleName.of_ident md.md_id) env)
+          (fun md env ->
+            match md.md_id with
+            | Some id -> add_module parent id (ModuleName.of_ident id) env
+            | None -> env)
           mds env
+#else
+    | Tsig_module { md_id; _ } ->
+        add_module parent md_id (ModuleName.of_ident md_id) env
+    | Tsig_recmodule mds ->
+        List.fold_right
+          (fun md env ->
+            add_module parent md.md_id (ModuleName.of_ident md.md_id) env)
+          mds env
+#endif
     | Tsig_modtype mtd ->
         add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tsig_include incl ->
@@ -250,11 +265,23 @@ let add_structure_tree_item parent item env =
         List.fold_right
           (fun decl env -> add_type parent decl.typ_id (TypeName.of_ident decl.typ_id) env)
           decls env
-    | Tstr_module mb -> add_module parent mb.mb_id (ModuleName.of_ident mb.mb_id) env
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+    | Tstr_module { mb_id = Some id; _} -> add_module parent id (ModuleName.of_ident id) env
+    | Tstr_module _ -> env
+    | Tstr_recmodule mbs ->
+        List.fold_right
+          (fun mb env ->
+            match mb.mb_id with
+            | Some id -> add_module parent id (ModuleName.of_ident id) env
+            | None -> env)
+          mbs env
+#else
+    | Tstr_module { mb_id; _} -> add_module parent mb_id (ModuleName.of_ident mb_id) env
     | Tstr_recmodule mbs ->
         List.fold_right
           (fun mb env -> add_module parent mb.mb_id (ModuleName.of_ident mb.mb_id) env)
           mbs env
+#endif
     | Tstr_modtype mtd ->
         add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tstr_include incl ->

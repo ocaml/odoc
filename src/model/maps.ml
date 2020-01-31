@@ -1119,8 +1119,8 @@ class virtual module_ = object (self)
 
   method virtual signature : Signature.t -> Signature.t
 
-  method virtual module_type_functor_arg :
-    FunctorArgument.t option -> FunctorArgument.t option
+  method virtual module_type_functor_param :
+    FunctorParameter.t -> FunctorParameter.t
 
   method module_hidden h = h
 
@@ -1133,7 +1133,7 @@ class virtual module_ = object (self)
         if sg != sg' then Signature sg'
         else expn
     | Functor (args, sg) ->
-        let args' = list_map self#module_type_functor_arg args in
+        let args' = list_map self#module_type_functor_param args in
         let sg' = self#signature sg in
         if args != args' || sg != sg' then Functor(args', sg')
         else expn
@@ -1278,7 +1278,7 @@ class virtual module_type = object (self)
             if sg != sg' then Signature sg'
             else expr
       | Functor(arg, res) ->
-          let arg' = self#module_type_functor_arg arg in
+          let arg' = self#module_type_functor_param arg in
           let res' = self#module_type_expr res in
             if arg != arg' || res != res' then Functor(arg', res')
             else expr
@@ -1292,15 +1292,15 @@ class virtual module_type = object (self)
             if decl != decl' then TypeOf decl'
             else expr
 
-  method module_type_functor_arg arg =
+  method module_type_functor_param arg =
     match arg with
-    | None -> arg
-    | Some { FunctorArgument. id; expr; expansion } ->
+    | Unit -> Unit
+    | Named { FunctorParameter. id; expr; expansion } ->
         let id' = self#identifier_module id in
         let expr' = self#module_type_expr expr in
         let expansion' = option_map self#module_expansion expansion in
           if id != id' || expr != expr' || expansion != expansion' then
-            Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
+            Named {FunctorParameter. id = id'; expr = expr'; expansion = expansion'}
           else arg
 
   method module_type mty =

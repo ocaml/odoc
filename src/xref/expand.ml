@@ -21,7 +21,7 @@ open Names
 
 type partial_expansion =
   | Signature of Signature.t
-  | Functor of FunctorArgument.t option *
+  | Functor of FunctorParameter.t *
                Identifier.Signature.t * int *
                ModuleType.expr
 
@@ -30,15 +30,16 @@ let subst_signature sub = function
   | Some sg -> Some (Subst.signature sub sg)
 
 let subst_arg sub arg =
+  let open FunctorParameter in
   match arg with
-  | None -> None
-  | Some {FunctorArgument. id; expr; expansion} ->
+  | Unit -> Unit
+  | Named {id; expr; expansion} ->
       let id' = Subst.identifier_module sub id in
       let expr' = Subst.module_type_expr sub expr in
       let expansion' =
         Maps.option_map (Subst.module_expansion sub) expansion
       in
-        Some {FunctorArgument. id = id'; expr = expr'; expansion = expansion'}
+        Named {id = id'; expr = expr'; expansion = expansion'}
 
 let subst_expansion sub = function
   | None -> None
@@ -349,7 +350,7 @@ let expand_include t root incl =
       | Some (Functor _) -> To_functor (* TODO: Should be an error *)
     end
 
-let expand_argument_ t root {FunctorArgument. id; expr; expansion} =
+let expand_argument_ t root {FunctorParameter. id; expr; expansion} =
   match expansion with
   | None ->
       let id = (id : Identifier.Module.t :> Identifier.Signature.t) in
@@ -416,8 +417,8 @@ let find_argument t root pos ex =
     match ex with
     | None -> raise Not_found
     | Some (Signature _) -> raise Not_found
-    | Some (Functor(None, _, _, _)) when pos = 1 -> raise Not_found
-    | Some (Functor(Some arg, _, _, _)) when pos = 1 -> arg
+    | Some (Functor(Unit, _, _, _)) when pos = 1 -> raise Not_found
+    | Some (Functor(Named arg, _, _, _)) when pos = 1 -> arg
     | Some (Functor(_, dest, offset, expr)) ->
         loop t root (pos - 1) (expand_module_type_expr t root dest offset expr)
   in
@@ -479,9 +480,9 @@ and expand_module_identifier' t root (id : Identifier.Module.t) =
         md.id, md.doc, md.canonical, expand_module t root md, []
   | `Argument(parent, pos, _name) ->
       let ex = t.expand_signature_identifier ~root parent in
-      let {FunctorArgument. id; _} as arg = find_argument t root pos ex in
+      let {FunctorParameter. id; _} as arg = find_argument t root pos ex in
       let doc = [] in
-        id, doc, None, expand_argument_ t root arg, []
+      id, doc, None, expand_argument_ t root arg, []
 
 and expand_module_type_identifier' t root (id : Identifier.ModuleType.t) =
   match id with
@@ -821,16 +822,16 @@ let rec force_expansion t root (ex : partial_expansion option) =
         | Some (Module.Functor(args, sg)) ->
             Some(Module.Functor(arg :: args, sg))
 
-and expand_argument t arg_opt =
-  match arg_opt with
-  | None -> arg_opt
-  | Some ({FunctorArgument. id; expr; expansion} as arg) ->
+and expand_argument t arg =
+  match arg with
+  | Unit -> arg
+  | Named ({FunctorParameter. id; expr; expansion} as a) ->
       match expansion with
-      | Some _ -> arg_opt
+      | Some _ -> arg
       | None ->
           let root = Identifier.Module.root id in
-          let expansion = force_expansion t root (expand_argument_ t root arg) in
-            Some {FunctorArgument. id; expr; expansion}
+          let expansion = force_expansion t root (expand_argument_ t root a) in
+          Named {FunctorParameter. id; expr; expansion}
 
 (** We will always expand modules which are not aliases. For aliases we only
     expand when the thing they point to should be hidden. *)
@@ -1006,9 +1007,9 @@ class t ?equal ?hash lookup fetch = object
     let incl' = expand_include t incl in
     super#include_ incl'
 
-  method! module_type_functor_arg arg =
+  method! module_type_functor_param arg =
     let arg = expand_argument t arg in
-      super#module_type_functor_arg arg
+      super#module_type_functor_param arg
 
   method! class_ c =
     let c' = expand_class t c in

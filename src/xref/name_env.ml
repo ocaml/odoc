@@ -383,8 +383,8 @@ let rec add_module_type_expr_items expr env =
     match expr with
     | Path _ -> env
     | Signature sg -> add_signature_items sg env
-    | Functor(None, expr) -> add_module_type_expr_items expr env
-    | Functor(Some{ FunctorArgument. id; _ }, expr) ->
+    | Functor(Unit, expr) -> add_module_type_expr_items expr env
+    | Functor(Named { FunctorParameter. id; _ }, expr) ->
       add_module_ident id
         (add_module_type_expr_items expr env)
     | With(expr, _) -> add_module_type_expr_items expr env
