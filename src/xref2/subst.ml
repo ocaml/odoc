@@ -65,12 +65,10 @@ let add_type_replacement : Ident.path_type -> Component.TypeExpr.t -> t -> t =
  fun id texp t ->
   { t with type_replacement = TypeMap.add id texp t.type_replacement }
 
-let compose_delayed f : 'a Delayed.t Substitution.delayed -> t -> 'a Delayed.t Substitution.delayed =
-  fun v s ->
+let compose_delayed' compose v s =
+  let open Substitution in
   match v with
-  | DelayedSubst (s', v) ->
-    let v = Delayed.put (fun () -> f s' (Delayed.get v)) in
-    DelayedSubst (s, v) (* TODO: compose s and s': Remove [f] argument *)
+  | DelayedSubst (s', v) -> DelayedSubst (compose s' s, v)
   | NoSubst v -> DelayedSubst (s, v)
 
 let make_delayed f = NoSubst (Delayed.put f)
@@ -545,13 +543,13 @@ and apply_sig_map s items removed =
     List.map
       (function
         | Module (id, r, m) ->
-            Module (id, r, compose_delayed module_ m s)
+            Module (id, r, compose_delayed' compose m s)
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution (id, module_substitution s m)
         | ModuleType (id, mt) ->
-            ModuleType (id, compose_delayed module_type mt s)
+            ModuleType (id, compose_delayed' compose mt s)
         | Type (id, r, t) ->
-            Type (id, r, compose_delayed type_ t s)
+            Type (id, r, compose_delayed' compose t s)
         | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
         | Exception (id, e) -> Exception (id, exception_ s e)
         | TypExt e -> TypExt (extension s e)
@@ -564,6 +562,27 @@ and apply_sig_map s items removed =
       items
   in
   { items; removed = removed_items s removed }
+
+and compose : t -> t -> t =
+  (* TODO: Don't override *)
+  let override _key a b =
+    match b with
+    | Some _ -> b
+    | None -> a
+  in
+  fun a b ->
+  let compose_map ~add ~fold resolve field =
+    fold (fun key path acc -> add key (resolve b path) acc) (field a) (field b)
+  in
+  { module_ = ModuleMap.(compose_map ~add ~fold resolved_module_path) (fun t -> t.module_)
+  ; module_type = ModuleTypeMap.(compose_map ~add ~fold resolved_module_type_path) (fun t -> t.module_type)
+  ; type_ = TypeMap.(compose_map ~add ~fold resolved_type_path) (fun t -> t.type_)
+  ; class_type = ClassTypeMap.(compose_map ~add ~fold resolved_class_type_path) (fun t -> t.class_type)
+  ; type_replacement = TypeMap.merge override a.type_replacement b.type_replacement
+  }
+
+let compose_delayed : 'a Substitution.delayed -> t -> 'a Substitution.delayed =
+  fun v s -> compose_delayed' compose v s
 
 let delayed_get_module : Module.t Delayed.t Substitution.delayed -> Module.t =
   function

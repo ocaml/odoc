@@ -7,10 +7,10 @@ type equations for all abstract types.
 BEFORE
 ======
 type t/24 
-type u/25 = t/24
+type u/25 = resolved(t/24)
  (removed=[])
 AFTER 
 ======
-type t/26 = global((root Root)).t
-type u/27 = t/26
+type t/26 DelayedSubst (<subst>, = resolved(identifier((root Root)).t))
+type u/27 DelayedSubst (<subst>, = resolved(t/24))
  (removed=[])
