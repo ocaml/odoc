@@ -15,8 +15,8 @@ type vv/29 = resolved(local(SubstituteMe/24)).v
 AFTER 
 ======
 S: sig
-type tt/30 = resolved(local(SubTargets/25)).t
-type uu/31 = resolved(local(SubTargets/25)).u
-type vv/32 = resolved(local(SubTargets/25)).v
+type tt/30 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).t)
+type uu/31 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).u)
+type vv/32 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).v)
  (removed=[])end
 
