@@ -80,6 +80,7 @@ and ModuleType : sig
     { id: Identifier.ModuleType.t;
       doc: Comment.docs;
       expr: expr option;
+      display_expr: expr option option; (* Optional override *) 
       expansion: Module.expansion option;
     }
 

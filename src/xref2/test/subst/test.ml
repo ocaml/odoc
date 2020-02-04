@@ -54,9 +54,12 @@ let module_substitution () =
     let subst_idents_mod = resolve_module_name c "SubstituteMe" in
     let subst_targets_mod = resolve_module_name c "SubTargets" in
 
-    let subst = Subst.add_module subst_idents_mod (`Local subst_targets_mod) Subst.identity in
+    let subst =
+      let target = `Local subst_targets_mod in
+      Subst.add_module subst_idents_mod target target Subst.identity
+    in
 
-    let m = Component.Find.module_in_sig c "S" in
+    let m = Find.module_in_sig c "S" in
 
     let m' = Subst.module_ subst m in
 

@@ -265,6 +265,7 @@ sig
   type signature = [
     | `Resolved of Resolved_fragment.signature
     | `Dot of signature * string
+    | `Root
   ]
 
   type module_ = [
@@ -280,14 +281,19 @@ sig
   type any = [
     | `Resolved of Resolved_fragment.any
     | `Dot of signature * string
+    | `Root
   ]
 end = Fragment
 
 and Resolved_fragment :
 sig
+  type root = [
+    | `ModuleType of Resolved_path.module_type
+    | `Module of Resolved_path.module_
+  ]
 
   type signature = [
-    | `Root
+    | `Root of root
     | `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
@@ -306,7 +312,7 @@ sig
 
   (* Absence of `Root here might make coersions annoying *)
   type any = [
-    | `Root
+    | `Root of root
     | `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t

@@ -871,7 +871,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
     | Some (Signature _) -> Some Module.AlreadyASig
     | _ -> None
   in
-    {id; doc; expr; expansion}
+    {id; doc; expr; display_expr=None; expansion}
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in

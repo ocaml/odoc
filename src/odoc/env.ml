@@ -239,7 +239,7 @@ let create ?(important_digests=true) ~directories ~open_modules : builder =
         else
           fetch_page ap root
     in
-    Odoc_xref2.Resolve.build_resolver open_modules lookup_unit fetch_unit lookup_page fetch_page
+    Odoc_xref2.Compile.build_resolver open_modules lookup_unit fetch_unit lookup_page fetch_page
 
 let build builder unit =
   builder unit

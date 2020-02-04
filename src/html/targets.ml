@@ -73,11 +73,15 @@ and functor_argument ~prefix arg =
   | None -> []
   | Some expansion ->
     let name = Identifier.name arg.id in
-    let nb = functor_arg_pos arg in
+    try
+      let nb = functor_arg_pos arg in
     (* FIXME: reuse [Url] somehow. *)
-    let page = Printf.sprintf "%s/argument-%d-%s" prefix nb name in
-    let subpages = module_expansion ~prefix:page expansion in
-    page :: subpages
+      let page = Printf.sprintf "%s/argument-%d-%s" prefix nb name in
+      let subpages = module_expansion ~prefix:page expansion in
+      page :: subpages
+    with e ->
+      Format.fprintf Format.err_formatter "bad functor arg pos: name=%s\n%!" name;
+      raise e
 
 and module_expansion ~prefix (t : Odoc_model.Lang.Module.expansion) =
   match t with

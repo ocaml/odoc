@@ -550,7 +550,7 @@ and read_module_type_declaration env parent mtd =
     | Some (Signature _) -> Some Module.AlreadyASig
     | _ -> None
   in
-    {id; doc; expr; expansion}
+    {id; doc; expr; display_expr=None; expansion}
 
 and read_module_declaration env parent md =
   let open Module in

@@ -17,7 +17,7 @@
 open StdLabels
 open Or_error
 
-let of_odoc_file ~env ~output:root_dir input =
+let of_odoc_file ~env:_ ~output:root_dir input =
   Root.read input >>= function
   | { file = Page page_name; package; _ } ->
       let pkg_dir = Fs.Directory.of_string package in
@@ -26,12 +26,12 @@ let of_odoc_file ~env ~output:root_dir input =
       Ok [file]
   | { file = Compilation_unit _; _ } ->
       Compilation_unit.load input >>= fun unit ->
-      let env = Env.build env (`Unit unit) in
-      let odoctree = Odoc_xref2.Resolve.resolve env unit in
+      (* let env = Env.build env (`Unit unit) in
+      let odoctree = Odoc_xref2.Resolve.resolve env unit in *)
 (*      let odoctree = Odoc_xref.expand (Env.expander env) odoctree in*)
-      let root = Compilation_unit.root odoctree in
+      let root = Compilation_unit.root unit in
       let package = root.package in
-      let targets = Odoc_html.Targets.unit ~package odoctree in
+      let targets = Odoc_html.Targets.unit ~package unit in
       (* CR-someday trefis: have [List_targets] return a tree instead of
          postprocessing. *)
       Ok (

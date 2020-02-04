@@ -26,13 +26,14 @@ type test = {
 }
 
 let test_resolve test =
+    Odoc_xref2.Tools.reset_cache ();
     let _, _, sg = Common.model_of_string test.test_data in
     let open Format in
     fprintf std_formatter "%s\n%s\n%!" test.name test.description;
     fprintf std_formatter "CODE\n====\n%!%s\n%!" test.test_data;
     fprintf std_formatter "BEFORE\n======\n%!%a\n%!" Common.LangUtils.Fmt.signature sg;
     try
-        let sg' = Resolve.signature Env.empty sg in
+        let sg' = Compile.signature Env.empty sg in
 
         fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
     with

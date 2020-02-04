@@ -1,3 +1,5 @@
+(* Phase 1 - compilation *)
+
 (* First round of resolving only attempts to resolve paths and fragments, and then only those
    that don't contain forward paths *)
 
@@ -38,8 +40,8 @@ and module_type_path :
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
   let cp = Component.Of_Lang.(module_path empty p) in
-  match Tools.lookup_and_resolve_module_from_path true true env cp with
-  | Resolved (p', _) -> `Resolved (Cpath.resolved_module_path_of_cpath p')
+  match Tools.resolve_module env cp with
+  | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
   | exception e ->
       Format.fprintf Format.err_formatter
@@ -50,52 +52,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
-  let initial_env =
-    let m = Env.module_of_unit t in
-    Env.empty |> Env.add_module t.id m
-    |> Env.add_root (Paths.Identifier.name t.id) (Env.Resolved (t.id, m))
-  in
-  let imports, env =
-    List.fold_left
-      (fun (imports, env) import ->
-        match import with
-        | Import.Resolved root ->
-            let unit = resolver.resolve_unit root in
-            let m = Env.module_of_unit unit in
-            let env = Env.add_module unit.id m env in
-            let env =
-              Env.add_root
-                (Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file)
-                (Env.Resolved (unit.id, m))
-                env
-            in
-            (import :: imports, env)
-        | Import.Unresolved (str, _) -> (
-            match resolver.lookup_unit str with
-            | Forward_reference ->
-              let env = Env.add_root str Env.Forward env in
-                (import :: imports, env)
-            | Found f ->
-              let unit = resolver.resolve_unit f.root in
-                let m = Env.module_of_unit unit in
-                let env = Env.add_module unit.id m env in
-                let env =
-                  Env.add_root
-                    (Odoc_model.Root.Odoc_file.name f.root.Odoc_model.Root.file)
-                    (Env.Resolved (unit.id, m))
-                    env
-                in
-                (Resolved f.root :: imports, env)
-            | Not_found ->  
-            (import :: imports, env) ))
-      ([], initial_env) t.imports
-  in
-  let env = List.fold_left (fun env name ->
-    match resolver.lookup_unit name with
-    | Found f ->
-      let unit = resolver.resolve_unit f.root in
-      Env.open_unit unit env
-    | _ -> failwith "Can't open unresolved unit") env resolver.open_units in
+  let imports, env = Env.initial_env t resolver in
   { t with content = content env t.content; imports }
 
 and content env =
@@ -106,7 +63,12 @@ and content env =
 
 and value_ env t =
   let open Value in
-  { t with type_ = type_expression env t.type_ }
+  try { t with type_ = type_expression env t.type_ }
+  with e ->
+    Format.fprintf Format.err_formatter "Failed to compile value: %a\n%!"
+      Component.Fmt.model_identifier
+      (t.id :> Paths.Identifier.t);
+    raise e
 
 and exception_ env e =
   let open Exception in
@@ -140,7 +102,16 @@ and class_type_expr env =
 
 and class_type env c =
   let open ClassType in
-  { c with expr = class_type_expr env c.expr }
+  let c' = Env.lookup_class_type c.id env in
+  let sg = Tools.class_signature_of_class_type env c' in
+  let expansion =
+    Some
+      (Lang_of.class_signature Lang_of.empty
+         (c.id :> Paths_types.Identifier.path_class_type)
+         sg)
+  in
+
+  { c with expr = class_type_expr env c.expr; expansion }
 
 and class_signature env c =
   let open ClassSignature in
@@ -168,21 +139,29 @@ and instance_variable env i =
 
 and class_ env c =
   let open Class in
+  let c' = Env.lookup_class c.id env in
+  let sg = Tools.class_signature_of_class env c' in
+  let expansion =
+    Some
+      (Lang_of.class_signature Lang_of.empty
+         (c.id :> Paths_types.Identifier.path_class_type)
+         sg)
+  in
+
   let rec map_decl = function
     | ClassType expr -> ClassType (class_type_expr env expr)
     | Arrow (lbl, expr, decl) ->
         Arrow (lbl, type_expression env expr, map_decl decl)
   in
-  { c with type_ = map_decl c.type_ }
+  { c with type_ = map_decl c.type_; expansion }
 
 and module_substitution env m =
   let open ModuleSubstitution in
   { m with manifest = module_path env m.manifest }
 
-and signature : Env.t -> Signature.t -> _ =
+and signature_items : Env.t -> Signature.t -> _ =
  fun env s ->
   let open Signature in
-  let env = Env.open_signature s env in
   List.map
     (fun item ->
       match item with
@@ -201,19 +180,43 @@ and signature : Env.t -> Signature.t -> _ =
       | Include i -> Include (include_ env i))
     s
 
+and signature : Env.t -> Signature.t -> _ =
+ fun env s ->
+  let env = Env.open_signature s env in
+  signature_items env s
+
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
+  let extra_expansion_needed =
+    match m.type_ with
+    | ModuleType (Signature _) -> false (* AlreadyASig *)
+    | ModuleType _ -> true
+    | Alias _ -> false (* Aliases are expanded if necessary during link *)
+  in
+  let env' = Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env in
+  let expansion =
+    if not extra_expansion_needed then m.expansion
+    else
+      let m' = Env.lookup_module m.id env in
+      try
+        let env, e = Expand_tools.expansion_of_module env m.id m' in
+        Some (expansion env e)
+      with
+      | Tools.OpaqueModule -> None
+      | Tools.UnresolvedForwardPath -> None
+      | e ->
+        Format.fprintf Format.err_formatter "Failed to expand module id: %a\n%!%a\n%!" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t) Component.Fmt.module_ m';
+        raise e
+  in
   try
-    let env' =
-      Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env
-    in
     {
       m with
       type_ = module_decl env' (m.id :> Paths.Identifier.Signature.t) m.type_;
+      expansion;
     }
   with
-  | Component.Find.Find_failure (sg, name, ty) as e ->
+  | Find.Find_failure (sg, name, ty) as e ->
       let bt = Printexc.get_backtrace () in
       Format.fprintf Format.err_formatter
         "Find failure: Failed to find %s %s in %a\n" ty name
@@ -234,8 +237,8 @@ and module_decl :
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias p -> (
       let cp = Component.Of_Lang.(module_path empty p) in
-      match Tools.lookup_and_resolve_module_from_path true true env cp with
-      | Resolved (p', _) ->
+      match Tools.resolve_module env cp with
+      | Resolved p' ->
           Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
       | Unresolved p' -> Alias (Cpath.module_path_of_cpath p') )
 
@@ -243,19 +246,38 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
   try
-    let env' =
-      Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env
-    in
-    let expr' =
+    let env = Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env in
+    let expansion', expr' =
       match m.expr with
-      | None -> None
+      | None -> (None, None)
       | Some expr ->
-          Some
-            (module_type_expr env' (m.id :> Paths.Identifier.Signature.t) expr)
+          let m' = Env.lookup_module_type m.id env in
+          let env, expansion =
+            try
+              let env, e = Expand_tools.expansion_of_module_type env m.id m' in
+              (env, Some e)
+            with
+            | Tools.OpaqueModule -> (env, None)
+            | e ->
+                ( match m'.expr with
+                | Some (Component.ModuleType.Signature sg) ->
+                    Format.fprintf Format.err_formatter
+                      "Failed to expand module_type: %a\n%!sig:\n%!%a\n%!"
+                      Component.Fmt.model_identifier
+                      (m.id :> Paths.Identifier.t)
+                      Component.Fmt.signature sg
+                | _ -> () );
+                raise e
+          in
+          ( expansion,
+            Some
+              (module_type_expr env (m.id :> Paths.Identifier.Signature.t) expr)
+          )
     in
-    { m with expr = expr' }
+    { m with expr = expr'; expansion = Opt.map (expansion env) expansion' }
   with e ->
-    Format.fprintf Format.err_formatter "Failed to resolve module_type (%a): %s"
+    Format.fprintf Format.err_formatter
+      "Failed to resolve module_type (%a): %s\n%!"
       Component.Fmt.model_identifier
       (m.id :> Paths.Identifier.t)
       (Printexc.to_string e);
@@ -265,27 +287,78 @@ and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
   try
-    {
-      i with
-      decl = module_decl env i.parent i.decl;
-      expansion =
-        { resolved = true; content = signature env i.expansion.content };
-    }
+    let remove_top_doc_from_signature =
+      let open Signature in
+      function Comment (`Docs _) :: xs -> xs | xs -> xs
+    in
+    let decl = Component.Of_Lang.(module_decl empty i.decl) in
+    let _, expn =
+      Expand_tools.aux_expansion_of_module_decl env decl
+      |> Expand_tools.handle_expansion env i.parent
+    in
+    let expansion =
+      (* try ( *)
+      match expn with
+      | Module.Signature sg ->
+          {
+            resolved = true;
+            content = remove_top_doc_from_signature (signature env sg);
+          }
+      | _ -> i.expansion
+      (* ) with _ -> i.expansion *)
+    in
+    { i with decl = module_decl env i.parent i.decl; expansion }
   with e ->
+    let bt = Printexc.get_backtrace () in
     let i' = Component.Of_Lang.(module_decl empty i.decl) in
     Format.fprintf Format.err_formatter
-      "Failed to resolve include: %a\nGot exception %s (parent=%a)\nbacktrace:\n%s\n%!"
+      "Failed to resolve include: %a\n\
+       Got exception %s (parent=%a)\n\
+       backtrace:\n\
+       %s\n\
+       %!"
       Component.Fmt.module_decl i' (Printexc.to_string e)
       Component.Fmt.model_identifier
       (i.parent :> Paths.Identifier.t)
-      (Printexc.get_backtrace ());
+      bt;
     raise e
 
-and functor_argument : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
+and expansion : Env.t -> Module.expansion -> Module.expansion =
+  let open Module in
+  fun env e ->
+    match e with
+    | AlreadyASig -> AlreadyASig
+    | Signature sg -> Signature (signature env sg)
+    | Functor (args, sg) ->
+        Functor (List.map (functor_parameter env) args, signature env sg)
+
+and functor_parameter :
+    Env.t -> FunctorParameter.t -> FunctorParameter.t =
+ fun env param ->
+  match param with
+  | Unit -> Unit
+  | Named arg -> Named (functor_parameter_parameter env arg)
+
+and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env a ->
+  let functor_arg = Env.lookup_module a.id env in
+  let env, expn =
+    match functor_arg.type_ with
+    | ModuleType expr -> (
+        try
+          let env, e =
+            Expand_tools.expansion_of_module_type_expr env
+              (a.id :> Paths_types.Identifier.signature)
+              expr
+          in
+          (env, Some e)
+        with Tools.OpaqueModule -> (env, None) )
+    | _ -> failwith "error"
+  in
   {
     a with
     expr = module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr;
+    expansion = Component.Opt.map (expansion env) expn;
   }
 
 and module_type_expr :
@@ -293,92 +366,126 @@ and module_type_expr :
     =
  fun env id expr ->
   let open ModuleType in
-  match expr with
-  | Signature s -> Signature (signature env s)
+  let rec inner resolve_signatures = 
+    function
+    | Signature s -> 
+      if resolve_signatures
+      then Signature (signature env s)
+      else Signature s
   | Path p -> Path (module_type_path env p)
   | With (expr, subs) ->
+      let expr = inner false expr in
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-      let sg = Tools.signature_of_module_type_expr_nopath env cexpr in
-(*      Format.fprintf Format.err_formatter
-        "Handling `With` expression for %a [%a]\n%!"
-        Component.Fmt.model_identifier
-        (id :> Paths.Identifier.t)
-        Component.Fmt.substitution_list
-        (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
-      With
-        ( module_type_expr env id expr,
-          List.fold_left
-            (fun (sg, subs) sub ->
+      let csubs = List.map Component.Of_Lang.(module_type_substitution empty) subs in
+        let rec find_parent : Component.ModuleType.expr -> Cfrag.root option = fun expr ->
+        match expr with
+        | Component.ModuleType.Signature _ -> None
+        | Path (`Resolved p) -> Some (`ModuleType p)
+        | Path _ -> None
+        | With (e, _) -> find_parent e
+        | Functor _ -> failwith "Impossible"
+        | TypeOf (Alias (`Resolved p)) -> Some (`Module p)
+        | TypeOf (Alias _) -> None
+        | TypeOf (ModuleType t) -> find_parent t
+      in
+(*      let parent = match id with
+        | `ModuleType _ as x -> `ModuleType (`Identifier x)
+        | `Root _ | `Module _ | `Parameter _ | `Result _ as x -> `Module (`Identifier x)
+      in*)
+      let parent_opt = find_parent cexpr in
+      (* Format.fprintf Format.err_formatter
+         "Handling `With` expression for %a [%a]\n%!"
+         Component.Fmt.model_identifier
+         (id :> Paths.Identifier.t)
+         Component.Fmt.substitution_list
+         (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
+      begin
+        match parent_opt with
+        | None -> With (expr, subs)
+        | Some parent ->
+          (* Tools.without_memoizing (fun () -> *)
+          let sg = Tools.signature_of_module_type_expr env cexpr in
+          let fragment_root = match parent with
+            | `ModuleType _ | `Module _ as x -> x
+          in
+          (* Format.fprintf Format.err_formatter "Before: sig=%a fragment=%a\n%!" Component.Fmt.signature sg Component.Fmt.resolved_parent_path fragment_root; *)
+
+          With
+        ( inner false expr,
+          List.fold_left2
+            (fun (sg, env, subs) csub lsub ->
+              (* Format.fprintf Format.err_formatter "Step: sig=%a\n%!" Component.Fmt.signature sg; *)
+              let env = Env.add_fragment_root sg env in
               try
                 (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
-                  Component.Fmt.signature sg;
-                Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
-                  Component.Fmt.substitution
-                  Component.Of_Lang.(module_type_substitution empty sub); *)
-                match sub with
-                | ModuleEq (frag, decl) ->
-                    let frag' =
-                      Tools.resolve_mt_module_fragment env (id, sg) frag
-                    in
-                    let sg' =
-                      Tools.fragmap_module env frag
-                        Component.Of_Lang.(module_type_substitution empty sub)
-                        sg
-                    in
-                    ( sg',
+                     Component.Fmt.signature sg;
+                   Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
+                     Component.Fmt.substitution
+                     Component.Of_Lang.(module_type_substitution empty sub); *)
+                match csub, lsub with
+                | Component.ModuleType.ModuleEq (frag, _), ModuleEq (_, decl) ->
+                    let cfrag =
+                        Tools.resolve_mt_module_fragment env (fragment_root, sg) frag in
+                    (* Format.fprintf Format.err_formatter "Resolved fragment: %a\n%!" Component.Fmt.resolved_module_fragment cfrag; *)
+                        let frag' = Lang_of.(Path.resolved_module_fragment empty) cfrag in
+                    let sg' = Tools.fragmap_module env frag csub sg in
+                    ( sg', env,
                       ModuleEq (`Resolved frag', module_decl env id decl)
                       :: subs )
-                | TypeEq (frag, eqn) ->
-                    let frag' =
-                      Tools.resolve_mt_type_fragment env (id, sg) frag
+                | TypeEq (frag, _), TypeEq (_, eqn) ->
+                    let cfrag = Tools.resolve_mt_type_fragment env (fragment_root, sg) frag in
+                    (* Format.fprintf Format.err_formatter "Resolved fragment: %a\n%!" Component.Fmt.resolved_type_fragment cfrag; *)
+                    let frag' = Lang_of.(Path.resolved_type_fragment empty) cfrag
                     in
                     let sg' =
-                      Tools.fragmap_type env frag
-                        Component.Of_Lang.(module_type_substitution empty sub)
-                        sg
+                      Tools.fragmap_type env frag csub sg 
                     in
-                    ( sg',
+                    ( sg', env,
                       TypeEq (`Resolved frag', type_decl_equation env eqn)
                       :: subs )
-                | ModuleSubst (frag, mpath) ->
+                | ModuleSubst (frag, _), ModuleSubst (_, mpath) ->
                     let frag' =
-                      Tools.resolve_mt_module_fragment env (id, sg) frag
+                      Tools.resolve_mt_module_fragment env (fragment_root, sg) frag  |>
+                      Lang_of.(Path.resolved_module_fragment empty)
                     in
                     let sg' =
                       Tools.fragmap_module env frag
-                        Component.Of_Lang.(module_type_substitution empty sub)
+                        csub
                         sg
                     in
-                    ( sg',
+                    ( sg', env,
                       ModuleSubst (`Resolved frag', module_path env mpath)
                       :: subs )
-                | TypeSubst (frag, eqn) ->
+                | TypeSubst (frag, _), TypeSubst (_, eqn) ->
                     let frag' =
-                      Tools.resolve_mt_type_fragment env (id, sg) frag
+                      Tools.resolve_mt_type_fragment env (fragment_root, sg) frag |>
+                      Lang_of.(Path.resolved_type_fragment empty)
                     in
                     let sg' =
                       Tools.fragmap_type env frag
-                        Component.Of_Lang.(module_type_substitution empty sub)
+                        csub
                         sg
                     in
-                    ( sg',
+                    ( sg', env,
                       TypeSubst (`Resolved frag', type_decl_equation env eqn)
                       :: subs )
+                | _ -> failwith "This is pretty unusual"
               with e ->
                 let bt = Printexc.get_backtrace () in
                 Printf.fprintf stderr
                   "Exception caught while resolving fragments: %s\n%s\n%!"
                   (Printexc.to_string e) bt;
                 raise e)
-            (sg, []) subs
-          |> snd |> List.rev )
-  | Functor (Named arg, res) ->
-      let arg' = functor_argument env arg in
+            (sg, env, []) csubs subs
+          |> (fun (_,_,x) -> x) |> List.rev )
+                    end
+  | Functor (param, res) ->
+      let param' = functor_parameter env param in
       let res' = module_type_expr env id res in
-      Functor (Named arg', res')
-  | Functor (Unit, res) ->
-      Functor (Unit, module_type_expr env id res)
-  | TypeOf decl -> TypeOf (module_decl env id decl)
+      Functor (param', res')
+  | TypeOf (ModuleType expr) -> TypeOf (ModuleType (inner resolve_signatures expr))
+  | TypeOf (Alias p) -> TypeOf (Alias (module_path env p))
+  in inner true expr
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
@@ -439,14 +546,12 @@ and type_expression_package env p =
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
   | Resolved (path, mt) ->
-      let sg = Tools.signature_of_module_type_nopath env mt in
-      let path = Cpath.resolved_module_type_path_of_cpath path in
-      let identifier =
-        ( Paths.Path.Resolved.ModuleType.identifier path
-          :> Paths.Identifier.Signature.t )
-      in
+      let sg = Tools.signature_of_module_type env mt in
       let substitution (frag, t) =
-        let frag' = Tools.resolve_mt_type_fragment env (identifier, sg) frag in
+        let cfrag = Component.Of_Lang.(type_fragment empty frag) in
+        let frag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag |>
+          Lang_of.(Path.resolved_type_fragment empty)
+        in
         (`Resolved frag', type_expression env t)
       in
       {
@@ -458,26 +563,29 @@ and type_expression_package env p =
 and type_expression : Env.t -> _ -> _ =
  fun env texpr ->
   let open TypeExpr in
-    match texpr with
-    | Var _ | Any -> texpr
-    | Alias (t, str) -> Alias (type_expression env t, str)
-    | Arrow (lbl, t1, t2) ->
-        Arrow (lbl, type_expression env t1, type_expression env t2)
-    | Tuple ts -> Tuple (List.map (type_expression env) ts)
-    | Constr (path, ts) -> (
-        let cp = Component.Of_Lang.(type_path empty path) in
-        match Tools.lookup_type_from_path env cp with
-        | Resolved (cp, Found _t) ->
-            let p = Cpath.resolved_type_path_of_cpath cp in
-            Constr (`Resolved p, ts)
-        | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty x)
-        | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
-    | Polymorphic_variant v ->
-        Polymorphic_variant (type_expression_polyvar env v)
-    | Object o -> Object (type_expression_object env o)
-    | Class (path, ts) -> Class (path, List.map (type_expression env) ts)
-    | Poly (strs, t) -> Poly (strs, type_expression env t)
-    | Package p -> Package (type_expression_package env p)
+  match texpr with
+  | Var _ | Any -> texpr
+  | Alias (t, str) -> Alias (type_expression env t, str)
+  | Arrow (lbl, t1, t2) ->
+      Arrow (lbl, type_expression env t1, type_expression env t2)
+  | Tuple ts -> Tuple (List.map (type_expression env) ts)
+  | Constr (path, ts') -> (
+      let cp = Component.Of_Lang.(type_path empty path) in
+      let ts = List.map (type_expression env) ts' in
+      match Tools.lookup_type_from_path env cp with
+      | Resolved (cp, Found _t) ->
+          let p = Cpath.resolved_type_path_of_cpath cp in
+          Constr (`Resolved p, ts)
+      | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty x)
+      | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts)
+      | exception e ->
+        Format.fprintf Format.err_formatter "Exception handling type expression: %a\n%!" Component.Fmt.type_expr (Component.Of_Lang.(type_expression empty texpr));
+        raise e)
+  | Polymorphic_variant v -> Polymorphic_variant (type_expression_polyvar env v)
+  | Object o -> Object (type_expression_object env o)
+  | Class (path, ts) -> Class (path, List.map (type_expression env) ts)
+  | Poly (strs, t) -> Poly (strs, type_expression env t)
+  | Package p -> Package (type_expression_package env p)
 
 type msg = [ `Msg of string ]
 
@@ -486,7 +594,7 @@ exception Fetch_failed of msg
 let build_resolver :
     ?equal:(Root.t -> Root.t -> bool) ->
     ?hash:(Root.t -> int) ->
-    (string list) ->
+    string list ->
     (string -> Env.lookup_unit_result) ->
     (Root.t -> (Compilation_unit.t, _) Result.result) ->
     (string -> Root.t option) ->
@@ -504,7 +612,7 @@ let build_resolver :
       in
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page; open_units }
 
-let resolve x y =
+let compile x y =
   let before = y in
   let after = unit x before in
   after

@@ -17,6 +17,7 @@ utop # Resolve.signature Env.empty sg
 let _ = Toploop.set_paths ()
 
 let cmti_of_string s =
+    Odoc_xref2.Tools.reset_cache ();
     let env = Compmisc.initial_env () in
     let l = Lexing.from_string s in
     let p = Parse.interface l in
@@ -41,7 +42,7 @@ let root =
     root_of_compilation_unit
         ~package:"nopackage"
         ~hidden:false
-        ~module_name:"Test"
+        ~module_name:"Root"
         ~digest:"nodigest"
 
 let root_identifier = `Identifier (`Root (root, Odoc_model.Names.UnitName.of_string "Root"))
@@ -189,6 +190,23 @@ module LangUtils = struct
                 in
                 { get; set }
 
+            let value : string -> (t, Lang.Value.t) lens = fun name ->
+                let module V = Lang.Value in
+                let rec get = function
+                    | [] -> raise Not_found
+                    | (Value v) ::_xs when name_of_id v.V.id = name ->
+                        v
+                    | _::xs -> get xs
+                in
+                let set v =
+                    let rec inner = function
+                        | [] -> raise Not_found
+                        | (Value v') :: xs when name_of_id v'.V.id = name ->
+                            (Value v)::xs
+                        | x::xs -> x :: inner xs
+                    in inner
+                in
+                { get; set }
             end
 
             module Module = struct
@@ -459,12 +477,14 @@ module LangUtils = struct
 
         and model_fragment ppf (f : Odoc_model.Paths.Fragment.t) =
             match f with
+            | `Root -> ()
             | `Resolved rf -> model_resolved_fragment ppf rf
             | `Dot (sg, d) -> Format.fprintf ppf "*%a.%s" model_fragment (sg :> Odoc_model.Paths.Fragment.t) d
 
         and model_resolved_fragment ppf (f : Odoc_model.Paths.Fragment.Resolved.t) =
             match f with
-            | `Root -> ()
+            | `Root (`Module p) -> Format.fprintf ppf "root_module(%a)" resolved_path (p :> Odoc_model.Paths.Path.Resolved.t) 
+            | `Root (`ModuleType p) -> Format.fprintf ppf "root_module_type(%a)" resolved_path (p :> Odoc_model.Paths.Path.Resolved.t) 
             | `Module (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (Odoc_model.Names.ModuleName.to_string m)
             | `Type (sg, m) -> Format.fprintf ppf "%a.%s" model_resolved_fragment (sg :> Odoc_model.Paths.Fragment.Resolved.t) (Odoc_model.Names.TypeName.to_string m)
             | _ -> Format.fprintf ppf "UNIMPLEMENTED model_resolved_fragment"
@@ -500,7 +520,7 @@ let mkenv () =
 let resolve unit =
   let env = mkenv () in
   let resolve_env = Odoc_odoc.Env.build env (`Unit unit) in
-  let result = Odoc_xref2.Resolve.resolve resolve_env unit in
+  let result = Odoc_xref2.Compile.compile resolve_env unit in
   result
 
 

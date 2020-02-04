@@ -31,9 +31,8 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
           Printf.sprintf
             " Using %S while you should use the .cmti file" filename)
     );
-    let resolve_env = Env.build env (`Unit unit) in
-    let resolved = Odoc_xref2.Resolve.resolve resolve_env unit in
-    let expanded = Odoc_xref2.Expand.expand resolve_env resolved in
+    let env = Env.build env (`Unit unit) in
+    let compiled = Odoc_xref2.Compile.compile env unit in
 
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
@@ -42,7 +41,7 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
        working on. *)
 (*    let expand_env = Env.build env (`Unit resolved) in*)
 (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-    Compilation_unit.save output expanded;
+    Compilation_unit.save output compiled;
     Ok ()
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
@@ -96,7 +95,7 @@ let mld ~env ~package ~output ~warn_error input =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref2.Resolve.resolve_page env page in
+    let resolved = Odoc_xref2.Link.resolve_page env page in
     Page.save output resolved;
     Ok ()
   in

@@ -140,7 +140,7 @@ and using this lens on our original signature we obtain:
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved (`Identifier (`Type (`Root (Common.root, "Root"), "x"))),
+   (`Resolved (`Identifier (`Type (`Root (Common.root, "Root"), "x"))), 
    []))
 ```
 
@@ -168,7 +168,7 @@ started with alongside the `Component.Type.t` that represents the type (which we
 ignore in this case).
 
 ```ocaml env=e1
-# Resolve.signature Env.empty sg;;
+# Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "x");
@@ -242,41 +242,16 @@ which are:
 # let get_ok = Tools.ResultMonad.get_resolved
 val get_ok : ('a, 'b) Tools.ResultMonad.t -> 'a = <fun>
 # let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "M"))));;
-val path : Cpath.resolved_module =
-  `Identifier (`Module (`Root (Common.root, "Root"), "M"))
-val module_ : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc = [];
-   type_ =
-    Odoc_xref2.Component.Module.ModuleType
-     (Odoc_xref2.Component.ModuleType.Signature
-       {Odoc_xref2.Component.Signature.items =
-         [Odoc_xref2.Component.Signature.Type (`LType ("t", 0),
-           Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_xref2.Component.TypeDecl.doc = [];
-            equation =
-             {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-              private_ = false; manifest = None; constraints = []};
-            representation = None})];
-        removed = []});
-   canonical = None; hidden = false; display_type = None;
-   expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
+Line 1, characters 33-62:
+Error: Unbound value Tools.lookup_module_from_path
 ```
 
 The three values returned are a boolean representing whether this path is dependent on a module substituted in a functor (see later), the resolved path to the module, and a representation of the module itself. We then turn the module into a signature via `signature_of_module`, which in this case is quite simple since the module contains an explicit signature:
 
 ```ocaml env=e1
 # Tools.signature_of_module env (path, module_);;
-- : Cpath.resolved_module * Component.Signature.t =
-(`Identifier (`Module (`Root (Common.root, "Root"), "M")),
- {Odoc_xref2.Component.Signature.items =
-   [Odoc_xref2.Component.Signature.Type (`LType ("t", 0),
-     Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_xref2.Component.TypeDecl.doc = [];
-      equation =
-       {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
-        manifest = None; constraints = []};
-      representation = None})];
-  removed = []})
+Line 1, characters 1-26:
+Error: Unbound value Tools.signature_of_module
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -307,16 +282,8 @@ of looking up the module `N`:
 
 ```ocaml env=e1
 # let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "N"))));;
-val path : Cpath.resolved_module =
-  `Identifier (`Module (`Root (Common.root, "Root"), "N"))
-val module_ : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc = [];
-   type_ =
-    Odoc_xref2.Component.Module.ModuleType
-     (Odoc_xref2.Component.ModuleType.Path
-       (`Resolved
-          (`Identifier (`ModuleType (`Root (Common.root, "Root"), "M")))));
-   canonical = None; hidden = false; display_type = None; expansion = None}
+Line 1, characters 33-62:
+Error: Unbound value Tools.lookup_module_from_path
 ```
 
 This time turning the module into a signature demonstrates why the function `signature_of_module` requires the environment. We need to lookup the module type `M` from the environment to determine the
@@ -355,10 +322,36 @@ val m : Component.ModuleType.t =
      (Odoc_xref2.Component.ModuleType.Signature
        {Odoc_xref2.Component.Signature.items =
          [Odoc_xref2.Component.Signature.ModuleType (`LModuleType ("N", 1),
-           {Odoc_xref2.Component.Delayed.v = None; get = <fun>});
+           {Odoc_xref2.Component.Delayed.v =
+             Some
+              {Odoc_xref2.Component.ModuleType.doc = [];
+               expr =
+                Some
+                 (Odoc_xref2.Component.ModuleType.Signature
+                   {Odoc_xref2.Component.Signature.items =
+                     [Odoc_xref2.Component.Signature.Type (`LType ("t", 2),
+                       Odoc_model.Lang.Signature.Ordinary,
+                       {Odoc_xref2.Component.TypeDecl.doc = [];
+                        equation =
+                         {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+                          private_ = false; manifest = None;
+                          constraints = []};
+                        representation = None})];
+                    removed = []});
+               expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+            get = <fun>});
           Odoc_xref2.Component.Signature.Module (`LModule ("B", 0),
            Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_xref2.Component.Delayed.v = None; get = <fun>})];
+           {Odoc_xref2.Component.Delayed.v =
+             Some
+              {Odoc_xref2.Component.Module.doc = [];
+               type_ =
+                Odoc_xref2.Component.Module.ModuleType
+                 (Odoc_xref2.Component.ModuleType.Path
+                   (`Resolved (`Local (`LModuleType ("N", 1)))));
+               canonical = None; hidden = false; display_type = None;
+               expansion = None};
+            get = <fun>})];
         removed = []});
    expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
@@ -394,15 +387,8 @@ we look up `A` from the environment:
 ```ocaml env=e1
 # let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (`Module (`Root (Common.root, "Root"), "A"))) in
   Tools.signature_of_module env (p, m) |> Tools.prefix_signature;;
-- : Cpath.resolved_module * Component.Signature.t =
-(`Identifier (`Module (`Root (Common.root, "Root"), "A")),
- {Odoc_xref2.Component.Signature.items =
-   [Odoc_xref2.Component.Signature.ModuleType (`LModuleType ("N", 2),
-     {Odoc_xref2.Component.Delayed.v = None; get = <fun>});
-    Odoc_xref2.Component.Signature.Module (`LModule ("B", 3),
-     Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_xref2.Component.Delayed.v = None; get = <fun>})];
-  removed = []})
+Line 1, characters 14-52:
+Error: Unbound value Tools.lookup_module_from_resolved_path
 ```
 
 So before the prefixing operation we had that the type of the module was
@@ -446,9 +432,12 @@ we then return along with the fully resolved identifier.
 - : (Tools.type_lookup_result, Cpath.type_) Tools.ResultMonad.t =
 Odoc_xref2.Tools.ResultMonad.Resolved
  (`Type
-    (`Module (`Identifier (`Module (`Root (Common.root, "Root"), "A")), "B"),
+    (`Module
+       (`Module
+          (`Module (`Identifier (`Module (`Root (Common.root, "Root"), "A"))),
+           "B")),
      "t"),
-  Odoc_xref2.Component.Find.Found
+  Odoc_xref2.Find.Found
    (`T
       {Odoc_xref2.Component.TypeDecl.doc = [];
        equation =
@@ -469,7 +458,7 @@ end
 type t = A.N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 Let's look at `t`'s manifest:
@@ -507,7 +496,7 @@ end
 type t = A.O.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -520,7 +509,7 @@ Some
          (`Alias
             (`Module
                (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
-                "M"),
+                "N"),
              `Module
                (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
                 "O")),
@@ -553,7 +542,7 @@ type t = C.N.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
-let resolved = Resolve.signature env sg;;
+let resolved = Compile.signature env sg;;
 ```
 
 So in module type `A`, module `N` has type `M.S`, which 
@@ -584,7 +573,7 @@ val module_C_lens :
      (Odoc_model.Lang.ModuleType.Path
        (`Resolved
           (`Identifier (`ModuleType (`Root (Common.root, "Root"), "A")))),
-     [Odoc_model.Lang.ModuleType.ModuleEq (`Dot (`Resolved `Root, "M"),
+     [Odoc_model.Lang.ModuleType.ModuleEq (`Dot (`Root, "M"),
        Odoc_model.Lang.Module.Alias
         (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "B")))))]));
  canonical = None; hidden = false; display_type = None; expansion = None}
@@ -595,38 +584,16 @@ of module `C` we see the following:
 
 ```ocaml env=e1
 # let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (`Module (`Root (Common.root, "Root"), "C")));;
-val p : Cpath.resolved_module =
-  `Identifier (`Module (`Root (Common.root, "Root"), "C"))
-val m : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc = [];
-   type_ =
-    Odoc_xref2.Component.Module.ModuleType
-     (Odoc_xref2.Component.ModuleType.With
-       (Odoc_xref2.Component.ModuleType.Path
-         (`Resolved
-            (`Identifier (`ModuleType (`Root (Common.root, "Root"), "A")))),
-       [Odoc_xref2.Component.ModuleType.ModuleEq
-         (`Dot (`Resolved `Root, "M"),
-         Odoc_xref2.Component.Module.Alias
-          (`Resolved
-             (`Identifier (`Module (`Root (Common.root, "Root"), "B")))))]));
-   canonical = None; hidden = false; display_type = None; expansion = None}
+Line 1, characters 14-52:
+Error: Unbound value Tools.lookup_module_from_resolved_path
 ```
 
 now we can ask for the signature of this module:
 
 ```ocaml env=e1
 # let sg = Tools.signature_of_module env (p, m);;
-val sg : Cpath.resolved_module * Component.Signature.t =
-  (`Identifier (`Module (`Root (Common.root, "Root"), "C")),
-   {Odoc_xref2.Component.Signature.items =
-     [Odoc_xref2.Component.Signature.Module (`LModule ("N", 30),
-       Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_xref2.Component.Delayed.v = None; get = <fun>});
-      Odoc_xref2.Component.Signature.Module (`LModule ("M", 31),
-       Odoc_model.Lang.Signature.Ordinary,
-       {Odoc_xref2.Component.Delayed.v = None; get = <fun>})];
-    removed = []})
+Line 1, characters 10-35:
+Error: Unbound value Tools.signature_of_module
 ```
 
 and we can see we've picked up the `type t` declaration in `M.S`. If we now ask for the signature of `C.N` we get:
@@ -634,32 +601,11 @@ and we can see we've picked up the `type t` declaration in `M.S`. If we now ask 
 ```ocaml env=e1
 # let (p, m) = Tools.lookup_module_from_resolved_path env
       (`Module (`Identifier (`Module (`Root (Common.root, "Root"), "C")), "N"));;
-val p : Cpath.resolved_module =
-  `Module (`Identifier (`Module (`Root (Common.root, "Root"), "C")), "N")
-val m : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc = [];
-   type_ =
-    Odoc_xref2.Component.Module.ModuleType
-     (Odoc_xref2.Component.ModuleType.Path
-       (`Dot
-          (`Resolved
-             (`Module
-                (`Identifier (`Module (`Root (Common.root, "Root"), "C")),
-                 "M")),
-           "S")));
-   canonical = None; hidden = false; display_type = None; expansion = None}
+Line 1, characters 14-52:
+Error: Unbound value Tools.lookup_module_from_resolved_path
 # Tools.signature_of_module env (p, m);;
-- : Cpath.resolved_module * Component.Signature.t =
-(`Module (`Identifier (`Module (`Root (Common.root, "Root"), "C")), "N"),
- {Odoc_xref2.Component.Signature.items =
-   [Odoc_xref2.Component.Signature.Type (`LType ("t", 44),
-     Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_xref2.Component.TypeDecl.doc = [];
-      equation =
-       {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
-        manifest = None; constraints = []};
-      representation = None})];
-  removed = []})
+Line 1, characters 1-26:
+Error: Unbound value Tools.signature_of_module
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -699,7 +645,7 @@ let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
 let t_manifest = type_manifest "t";;
 let s_manifest = type_manifest "s";;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 The interesting thing here is the difference between `type t` and `type s`. The module `M.O` has
@@ -777,7 +723,7 @@ let env = Env.open_signature sg Env.empty;;
 ```
 
 ```ocaml env=e1
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -819,7 +765,7 @@ end
 type t = M.O(M).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -912,19 +858,19 @@ Now let's lookup that module:
 
 ```ocaml env=e1
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env cp;;
-val p : Cpath.resolved_module =
+val p : Cpath.Resolved.module_ =
   `Apply
     (`Apply
        (`Apply
           (`Identifier (`Module (`Root (Common.root, "Root"), "App")),
-           `Substituted
-             (`Resolved
+           `Resolved
+             (`Substituted
                 (`Identifier (`Module (`Root (Common.root, "Root"), "Bar"))))),
-        `Substituted
-          (`Resolved
+        `Resolved
+          (`Substituted
              (`Identifier (`Module (`Root (Common.root, "Root"), "Foo"))))),
-     `Substituted
-       (`Resolved
+     `Resolved
+       (`Substituted
           (`Identifier (`Module (`Root (Common.root, "Root"), "FooBarInt")))))
 val m : Component.Module.t =
   {Odoc_xref2.Component.Module.doc = [];
@@ -944,43 +890,12 @@ val m : Component.Module.t =
            "T")));
    canonical = None; hidden = false; display_type = None; expansion = None}
 # let (p, sg') = Tools.signature_of_module env (p, m);;
-val p : Cpath.resolved_module =
-  `Subst
-    (`ModuleType
-       (`Apply
-          (`Substituted
-             (`Identifier (`Module (`Root (Common.root, "Root"), "Foo"))),
-           `Substituted
-             (`Resolved
-                (`Substituted
-                   (`Identifier
-                      (`Module (`Root (Common.root, "Root"), "Bar")))))),
-        "T"),
-     `Apply
-       (`Apply
-          (`Apply
-             (`Identifier (`Module (`Root (Common.root, "Root"), "App")),
-              `Substituted
-                (`Resolved
-                   (`Identifier
-                      (`Module (`Root (Common.root, "Root"), "Bar"))))),
-           `Substituted
-             (`Resolved
-                (`Identifier (`Module (`Root (Common.root, "Root"), "Foo"))))),
-        `Substituted
-          (`Resolved
-             (`Identifier
-                (`Module (`Root (Common.root, "Root"), "FooBarInt"))))))
-val sg' : Component.Signature.t =
-  {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Module (`LModule ("Foo", 13),
-      Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_xref2.Component.Delayed.v = None; get = <fun>})];
-   removed = []}
+Line 1, characters 16-41:
+Error: Unbound value Tools.signature_of_module
 ```
 
 ```ocaml env=e1
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 The resolved path of t is:
@@ -997,31 +912,20 @@ Some
                (`Identifier (`Module (`Root (Common.root, "Root"), "Bar")),
                 "T"),
              `Module
-               (`Subst
-                  (`ModuleType
+               (`Apply
+                  (`Apply
                      (`Apply
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Foo")),
+                           (`Module (`Root (Common.root, "Root"), "App")),
                          `Resolved
                            (`Identifier
                               (`Module (`Root (Common.root, "Root"), "Bar")))),
-                      "T"),
-                   `Apply
-                     (`Apply
-                        (`Apply
-                           (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "App")),
-                            `Resolved
-                              (`Identifier
-                                 (`Module
-                                    (`Root (Common.root, "Root"), "Bar")))),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Foo")))),
                       `Resolved
                         (`Identifier
-                           (`Module
-                              (`Root (Common.root, "Root"), "FooBarInt"))))),
+                           (`Module (`Root (Common.root, "Root"), "Foo")))),
+                   `Resolved
+                     (`Identifier
+                        (`Module (`Root (Common.root, "Root"), "FooBarInt")))),
                 "Foo")),
           "bar")),
    []))
@@ -1046,7 +950,7 @@ end
 type t = M.O(M).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1093,7 +997,7 @@ type dep1 = Dep2(Dep1).B.c
 |};;
 
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 (*let ty_dep1 = {|
@@ -1163,7 +1067,7 @@ type dep2 = Dep5(Dep4).Z.X.b
 type dep3 = Dep5(Dep4).Z.Y.a
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1247,7 +1151,7 @@ module Dep7 :
 type dep4 = Dep7(Dep6).M.Y.d
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1264,20 +1168,14 @@ Some
                      (`Identifier
                         (`Module (`Root (Common.root, "Root"), "Dep6")),
                       "T"),
-                   `Subst
-                     (`ModuleType
+                   `Module
+                     (`Apply
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep6")),
-                         "T"),
-                      `Module
-                        (`Apply
+                           (`Module (`Root (Common.root, "Root"), "Dep7")),
+                         `Resolved
                            (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep7")),
-                            `Resolved
-                              (`Identifier
-                                 (`Module
-                                    (`Root (Common.root, "Root"), "Dep6")))),
-                         "M"))),
+                              (`Module (`Root (Common.root, "Root"), "Dep6")))),
+                      "M")),
                 "R"),
              `Module
                (`Subst
@@ -1322,7 +1220,7 @@ module Dep13 : Dep12(Dep11).T
 type dep5 = Dep13.c
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 
@@ -1350,7 +1248,7 @@ module H=Hidden__
 type t = Hidden__.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1375,7 +1273,7 @@ type t
 (** [t] {!t} *)
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1417,7 +1315,7 @@ let test_data = {|
 type t = Buffer.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty sg;;
 ```
 
 ```ocaml env=e1
@@ -1477,7 +1375,12 @@ let sg = Common.signature_of_mli_string test_data;;
 ```
 
 ```ocaml env=e1
-# Expand.signature Env.empty sg
+# Link.signature Env.empty sg
+Not reresolving
+type_expression: path
+before = global((root Root).u)
+after = global((root Root).u)
+after lookup = global((root Root).u)
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.ModuleType
   {Odoc_model.Lang.ModuleType.id =
@@ -1494,17 +1397,7 @@ let sg = Common.signature_of_mli_string test_data;;
            {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
             manifest = None; constraints = []};
           representation = None})]);
-   expansion =
-    Some
-     (Odoc_model.Lang.Module.Signature
-       [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-         {Odoc_model.Lang.TypeDecl.id =
-           `Type (`ModuleType (`Root (Common.root, "Root"), "M"), "t");
-          doc = [];
-          equation =
-           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-            manifest = None; constraints = []};
-          representation = None})])};
+   display_expr = None; expansion = Some Odoc_model.Lang.Module.AlreadyASig};
  Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "u");
    doc = [];
@@ -1522,7 +1415,7 @@ let sg = Common.signature_of_mli_string test_data;;
        (Odoc_model.Lang.ModuleType.Path
          (`Resolved
             (`Identifier (`ModuleType (`Root (Common.root, "Root"), "M")))),
-       [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Resolved `Root, "t"),
+       [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
           manifest =
            Some
@@ -1531,23 +1424,7 @@ let sg = Common.signature_of_mli_string test_data;;
                  (`Identifier (`Type (`Root (Common.root, "Root"), "u"))),
               []));
           constraints = []})]));
-   expansion =
-    Some
-     (Odoc_model.Lang.Module.Signature
-       [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-         {Odoc_model.Lang.TypeDecl.id =
-           `Type (`ModuleType (`Root (Common.root, "Root"), "M1"), "t");
-          doc = [];
-          equation =
-           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-            manifest =
-             Some
-              (Odoc_model.Lang.TypeExpr.Constr
-                (`Resolved
-                   (`Identifier (`Type (`Root (Common.root, "Root"), "u"))),
-                []));
-            constraints = []};
-          representation = None})])}]
+   display_expr = None; expansion = None}]
 ```
 
 # Expansion continued
@@ -1562,8 +1439,8 @@ module Bar : sig end
 module M : Foo(Bar).S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
-(*let expanded = Expand.signature Env.empty resolved;;*)
+let resolved = Compile.signature Env.empty sg;;
+(*let expanded = Link.signature Env.empty resolved;;*)
 (*let module_M_expansion =
   let open Common.LangUtils.Lens in
   Signature.module_ "M" |-- Module.expansion |-~ option |-~ Module.expansion_signature*)
@@ -1588,390 +1465,750 @@ end
 module type S1 = functor (_ : S) -> S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Resolve.signature Env.empty sg;;
-let expanded = Expand.signature Env.empty resolved;;
+let resolved = Compile.signature Env.empty sg;;
+let expanded = Link.signature Env.empty resolved;;
 ```
 
 # Hidden / Canonical
 
 ```ocaml env=e1
 let test_data = {|
-module M__Hidden : sig
-  type x
+module CanonicalTest : sig
+  module Base__List : sig
+    type 'a t
+
+    val id : 'a t -> 'a t
+  end
+
+  module Base__ : sig
+    (** @canonical Root.CanonicalTest.Base.List *)
+    module List = Base__List
+  end
+
+  module Base : sig
+    module List = Base__.List
+  end
 end
 
-type b = M__Hidden.x
-
-(** @canonical Root.N *)
-module N = M__Hidden
-
-type t = N.x
+val test : 'a CanonicalTest.Base__.List.t -> unit
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let env = Env.open_signature sg Env.empty;;
+let unit = Common.my_compilation_unit (`Root (Common.root, Odoc_model.Names.UnitName.of_string "Root")) [] sg;;
+let resolver =
+  let env = Odoc_odoc.Env.create ~important_digests:false
+    ~directories:[] ~open_modules:[] in
+  let resolver = Odoc_odoc.Env.build env (`Unit unit) in
+  resolver;;
+let resolved = Compile.unit resolver unit;;
+let _ = Tools.is_compile := false;;
+let linked = Link.unit resolver resolved;;
+
+let _ = Tools.is_compile := true;;
+let Odoc_model.Lang.Compilation_unit.Module sg = linked.Odoc_model.Lang.Compilation_unit.content
+let value_test_lens =
+  let open Common.LangUtils.Lens in
+  Signature.value "test";;
 ```
 
 ```ocaml env=e1
-# let resolved = Resolve.signature Env.empty sg;;
-val resolved : Odoc_model.Lang.Signature.t =
-  [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.Module.id =
-      `Module (`Root (Common.root, "Root"), "M__Hidden");
-     doc = [];
-     type_ =
-      Odoc_model.Lang.Module.ModuleType
-       (Odoc_model.Lang.ModuleType.Signature
-         [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_model.Lang.TypeDecl.id =
-             `Type (`Module (`Root (Common.root, "Root"), "M__Hidden"), "x");
-            doc = [];
-            equation =
-             {Odoc_model.Lang.TypeDecl.Equation.params = [];
-              private_ = false; manifest = None; constraints = []};
-            representation = None})]);
-     canonical = None; hidden = true; display_type = None;
-     expansion = Some Odoc_model.Lang.Module.AlreadyASig});
-   Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "b");
-     doc = [];
-     equation =
-      {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest =
-        Some
-         (Odoc_model.Lang.TypeExpr.Constr
-           (`Resolved
-              (`Type
-                 (`Hidden
-                    (`Identifier
-                       (`Module (`Root (Common.root, "Root"), "M__Hidden"))),
-                  "x")),
-           []));
-       constraints = []};
-     representation = None});
-   Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "N");
-     doc =
-      [{Odoc_model.Location_.location =
-         {Odoc_model.Location_.file = "";
-          start = {Odoc_model.Location_.line = 8; column = 6};
-          end_ = {Odoc_model.Location_.line = 8; column = 24}};
-        value =
-         `Tag
-           (`Canonical
-              (`Dot (`Root "Root", "N"),
-               `Dot (`Root ("Root", `TUnknown), "N")))}];
-     type_ =
-      Odoc_model.Lang.Module.Alias
-       (`Resolved
-          (`Hidden
-             (`Identifier
-                (`Module (`Root (Common.root, "Root"), "M__Hidden")))));
-     canonical =
-      Some (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N"));
-     hidden = false; display_type = None; expansion = None});
-   Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
-     doc = [];
-     equation =
-      {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest =
-        Some
-         (Odoc_model.Lang.TypeExpr.Constr
-           (`Resolved
-              (`Type
-                 (`Canonical
-                    (`Identifier (`Module (`Root (Common.root, "Root"), "N")),
-                     `Dot (`Root "Root", "N")),
-                  "x")),
-           []));
-       constraints = []};
-     representation = None})]
-# let expanded = Expand.signature Env.empty resolved;;
-val expanded : Odoc_model.Lang.Signature.t =
-  [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.Module.id =
-      `Module (`Root (Common.root, "Root"), "M__Hidden");
-     doc = [];
-     type_ =
-      Odoc_model.Lang.Module.ModuleType
-       (Odoc_model.Lang.ModuleType.Signature
-         [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_model.Lang.TypeDecl.id =
-             `Type (`Module (`Root (Common.root, "Root"), "M__Hidden"), "x");
-            doc = [];
-            equation =
-             {Odoc_model.Lang.TypeDecl.Equation.params = [];
-              private_ = false; manifest = None; constraints = []};
-            representation = None})]);
-     canonical = None; hidden = true; display_type = None;
-     expansion =
-      Some
-       (Odoc_model.Lang.Module.Signature
-         [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_model.Lang.TypeDecl.id =
-             `Type (`Module (`Root (Common.root, "Root"), "M__Hidden"), "x");
-            doc = [];
-            equation =
-             {Odoc_model.Lang.TypeDecl.Equation.params = [];
-              private_ = false; manifest = None; constraints = []};
-            representation = None})])});
-   Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "b");
-     doc = [];
-     equation =
-      {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest =
-        Some
-         (Odoc_model.Lang.TypeExpr.Constr
-           (`Resolved
-              (`Type
-                 (`Hidden
-                    (`Identifier
-                       (`Module (`Root (Common.root, "Root"), "M__Hidden"))),
-                  "x")),
-           []));
-       constraints = []};
-     representation = None});
-   Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "N");
-     doc =
-      [{Odoc_model.Location_.location =
-         {Odoc_model.Location_.file = "";
-          start = {Odoc_model.Location_.line = 8; column = 6};
-          end_ = {Odoc_model.Location_.line = 8; column = 24}};
-        value =
-         `Tag
-           (`Canonical
-              (`Dot (`Root "Root", "N"),
-               `Dot (`Root ("Root", `TUnknown), "N")))}];
-     type_ =
-      Odoc_model.Lang.Module.Alias
-       (`Resolved
-          (`Hidden
-             (`Identifier
-                (`Module (`Root (Common.root, "Root"), "M__Hidden")))));
-     canonical =
-      Some (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N"));
-     hidden = false; display_type = None;
-     expansion =
-      Some
-       (Odoc_model.Lang.Module.Signature
-         [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_model.Lang.TypeDecl.id =
-             `Type (`Module (`Root (Common.root, "Root"), "N"), "x");
-            doc = [];
-            equation =
-             {Odoc_model.Lang.TypeDecl.Equation.params = [];
-              private_ = false; manifest = None; constraints = []};
-            representation = None})])});
-   Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-    {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
-     doc = [];
-     equation =
-      {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-       manifest =
-        Some
-         (Odoc_model.Lang.TypeExpr.Constr
-           (`Resolved
-              (`Type
-                 (`Canonical
-                    (`Identifier (`Module (`Root (Common.root, "Root"), "N")),
-                     `Dot (`Root "Root", "N")),
-                  "x")),
-           []));
-       constraints = []};
-     representation = None})]
+# Common.LangUtils.Lens.get value_test_lens sg;;
+- : Odoc_model.Lang.Value.t =
+{Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
+ doc = [];
+ type_ =
+  Odoc_model.Lang.TypeExpr.Arrow (None,
+   Odoc_model.Lang.TypeExpr.Constr
+    (`Resolved
+       (`Type
+          (`Canonical
+             (`Alias
+                (`Hidden
+                   (`Module
+                      (`Identifier
+                         (`Module
+                            (`Root (Common.root, "Root"), "CanonicalTest")),
+                       "Base__List")),
+                 `Module
+                   (`Module
+                      (`Identifier
+                         (`Module
+                            (`Root (Common.root, "Root"), "CanonicalTest")),
+                       "Base__"),
+                    "List")),
+              `Resolved
+                (`Module
+                   (`Module
+                      (`Identifier
+                         (`Module
+                            (`Root (Common.root, "Root"), "CanonicalTest")),
+                       "Base"),
+                    "List"))),
+           "t")),
+    [Odoc_model.Lang.TypeExpr.Var "a"]),
+   Odoc_model.Lang.TypeExpr.Constr
+    (`Resolved (`Identifier (`CoreType "unit")), []))}
+# Common.LangUtils.Lens.get value_test_lens resolved |> Component.Of_Lang.(value empty);;
+Line 1, characters 43-51:
+Error: This expression has type Odoc_odoc.Compilation_unit.t
+       but an expression was expected of type
+         Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
+# let expanded = Link.signature Env.empty resolved;;
+Line 1, characters 41-49:
+Error: This expression has type Odoc_odoc.Compilation_unit.t
+       but an expression was expected of type
+         Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env (`Resolved
                (`Identifier (`Module (`Root (Common.root, "Root"), "N"))));;
-val p : Cpath.resolved_module =
-  `Canonical
-    (`Identifier (`Module (`Root (Common.root, "Root"), "N")),
-     `Dot (`Root "Root", "N"))
-val m : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc =
-    [`Tag
-       (`Canonical
-          (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N")))];
-   type_ =
-    Odoc_xref2.Component.Module.Alias
-     (`Resolved
-        (`Hidden
-           (`Identifier (`Module (`Root (Common.root, "Root"), "M__Hidden")))));
-   canonical =
-    Some (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N"));
-   hidden = false; display_type = None; expansion = None}
+Exception:
+Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, "Root"), "N"),
+ <abstr>).
 # Tools.signature_of_module env (p, m);;
-- : Cpath.resolved_module * Component.Signature.t =
-(`Canonical
-   (`Identifier (`Module (`Root (Common.root, "Root"), "N")),
-    `Dot (`Root "Root", "N")),
- {Odoc_xref2.Component.Signature.items =
-   [Odoc_xref2.Component.Signature.Type (`LType ("x", 0),
-     Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_xref2.Component.TypeDecl.doc = [];
-      equation =
-       {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
-        manifest = None; constraints = []};
-      representation = None})];
-  removed = []})
+Line 1, characters 1-26:
+Error: Unbound value Tools.signature_of_module
 # sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.Module.id =
-    `Module (`Root (Common.root, "Root"), "M__Hidden");
+    `Module (`Root (Common.root, "Root"), "CanonicalTest");
    doc = [];
    type_ =
     Odoc_model.Lang.Module.ModuleType
      (Odoc_model.Lang.ModuleType.Signature
-       [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-         {Odoc_model.Lang.TypeDecl.id =
-           `Type (`Module (`Root (Common.root, "Root"), "M__Hidden"), "x");
+       [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+         {Odoc_model.Lang.Module.id =
+           `Module
+             (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
+              "Base__List");
           doc = [];
-          equation =
-           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-            manifest = None; constraints = []};
-          representation = None})]);
-   canonical = None; hidden = true; display_type = None;
+          type_ =
+           Odoc_model.Lang.Module.ModuleType
+            (Odoc_model.Lang.ModuleType.Signature
+              [Odoc_model.Lang.Signature.Type
+                (Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_model.Lang.TypeDecl.id =
+                  `Type
+                    (`Module
+                       (`Module
+                          (`Root (Common.root, "Root"), "CanonicalTest"),
+                        "Base__List"),
+                     "t");
+                 doc = [];
+                 equation =
+                  {Odoc_model.Lang.TypeDecl.Equation.params =
+                    [(Odoc_model.Lang.TypeDecl.Var "a", None)];
+                   private_ = false; manifest = None; constraints = []};
+                 representation = None});
+               Odoc_model.Lang.Signature.Value
+                {Odoc_model.Lang.Value.id =
+                  `Value
+                    (`Module
+                       (`Module
+                          (`Root (Common.root, "Root"), "CanonicalTest"),
+                        "Base__List"),
+                     "id");
+                 doc = [];
+                 type_ =
+                  Odoc_model.Lang.TypeExpr.Arrow (None,
+                   Odoc_model.Lang.TypeExpr.Constr
+                    (`Resolved
+                       (`Identifier
+                          (`Type
+                             (`Module
+                                (`Module
+                                   (`Root (Common.root, "Root"),
+                                    "CanonicalTest"),
+                                 "Base__List"),
+                              "t"))),
+                    [Odoc_model.Lang.TypeExpr.Var "a"]),
+                   Odoc_model.Lang.TypeExpr.Constr
+                    (`Resolved
+                       (`Identifier
+                          (`Type
+                             (`Module
+                                (`Module
+                                   (`Root (Common.root, "Root"),
+                                    "CanonicalTest"),
+                                 "Base__List"),
+                              "t"))),
+                    [Odoc_model.Lang.TypeExpr.Var "a"]))}]);
+          canonical = None; hidden = true; display_type = None;
+          expansion = Some Odoc_model.Lang.Module.AlreadyASig});
+        Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+         {Odoc_model.Lang.Module.id =
+           `Module
+             (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
+              "Base__");
+          doc = [];
+          type_ =
+           Odoc_model.Lang.Module.ModuleType
+            (Odoc_model.Lang.ModuleType.Signature
+              [Odoc_model.Lang.Signature.Module
+                (Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_model.Lang.Module.id =
+                  `Module
+                    (`Module
+                       (`Module
+                          (`Root (Common.root, "Root"), "CanonicalTest"),
+                        "Base__"),
+                     "List");
+                 doc =
+                  [{Odoc_model.Location_.location =
+                     {Odoc_model.Location_.file = "";
+                      start = {Odoc_model.Location_.line = 10; column = 10};
+                      end_ = {Odoc_model.Location_.line = 10; column = 50}};
+                    value =
+                     `Tag
+                       (`Canonical
+                          (`Dot
+                             (`Dot
+                                (`Dot (`Root "Root", "CanonicalTest"),
+                                 "Base"),
+                              "List"),
+                           `Dot
+                             (`Dot
+                                (`Dot
+                                   (`Root ("Root", `TUnknown),
+                                    "CanonicalTest"),
+                                 "Base"),
+                              "List")))}];
+                 type_ =
+                  Odoc_model.Lang.Module.Alias
+                   (`Resolved
+                      (`Canonical
+                         (`Hidden
+                            (`Identifier
+                               (`Module
+                                  (`Module
+                                     (`Root (Common.root, "Root"),
+                                      "CanonicalTest"),
+                                   "Base__List"))),
+                          `Resolved
+                            (`Module
+                               (`Identifier
+                                  (`Module
+                                     (`Module
+                                        (`Root (Common.root, "Root"),
+                                         "CanonicalTest"),
+                                      "Base")),
+                                "List")))));
+                 canonical =
+                  Some
+                   (`Dot
+                      (`Dot (`Dot (`Root "Root", "CanonicalTest"), "Base"),
+                       "List"),
+                    `Dot
+                      (`Dot
+                         (`Dot (`Root ("Root", `TUnknown), "CanonicalTest"),
+                          "Base"),
+                       "List"));
+                 hidden = false; display_type = None; expansion = None})]);
+          canonical = None; hidden = true; display_type = None;
+          expansion = Some Odoc_model.Lang.Module.AlreadyASig});
+        Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+         {Odoc_model.Lang.Module.id =
+           `Module
+             (`Module (`Root (Common.root, "Root"), "CanonicalTest"), "Base");
+          doc = [];
+          type_ =
+           Odoc_model.Lang.Module.ModuleType
+            (Odoc_model.Lang.ModuleType.Signature
+              [Odoc_model.Lang.Signature.Module
+                (Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_model.Lang.Module.id =
+                  `Module
+                    (`Module
+                       (`Module
+                          (`Root (Common.root, "Root"), "CanonicalTest"),
+                        "Base"),
+                     "List");
+                 doc = [];
+                 type_ =
+                  Odoc_model.Lang.Module.Alias
+                   (`Resolved
+                      (`Canonical
+                         (`Alias
+                            (`Hidden
+                               (`Identifier
+                                  (`Module
+                                     (`Module
+                                        (`Root (Common.root, "Root"),
+                                         "CanonicalTest"),
+                                      "Base__List"))),
+                             `Module
+                               (`Hidden
+                                  (`Identifier
+                                     (`Module
+                                        (`Module
+                                           (`Root (Common.root, "Root"),
+                                            "CanonicalTest"),
+                                         "Base__"))),
+                                "List")),
+                          `Resolved
+                            (`Identifier
+                               (`Module
+                                  (`Module
+                                     (`Module
+                                        (`Root (Common.root, "Root"),
+                                         "CanonicalTest"),
+                                      "Base"),
+                                   "List"))))));
+                 canonical = None; hidden = false;
+                 display_type =
+                  Some
+                   (Odoc_model.Lang.Module.ModuleType
+                     (Odoc_model.Lang.ModuleType.Signature
+                       [Odoc_model.Lang.Signature.Comment
+                         (`Docs
+                            [{Odoc_model.Location_.location =
+                               {Odoc_model.Location_.file = "";
+                                start =
+                                 {Odoc_model.Location_.line = 0; column = 0};
+                                end_ =
+                                 {Odoc_model.Location_.line = 0; column = 0}};
+                              value =
+                               `Tag
+                                 (`Canonical
+                                    (`Dot
+                                       (`Dot
+                                          (`Dot
+                                             (`Root "Root", "CanonicalTest"),
+                                           "Base"),
+                                        "List"),
+                                     `Dot
+                                       (`Dot
+                                          (`Dot
+                                             (`Root ("Root", `TUnknown),
+                                              "CanonicalTest"),
+                                           "Base"),
+                                        "List")))}]);
+                        Odoc_model.Lang.Signature.Type
+                         (Odoc_model.Lang.Signature.Ordinary,
+                         {Odoc_model.Lang.TypeDecl.id =
+                           `Type
+                             (`Module
+                                (`Module
+                                   (`Module
+                                      (`Root (Common.root, "Root"),
+                                       "CanonicalTest"),
+                                    "Base"),
+                                 "List"),
+                              "t");
+                          doc = [];
+                          equation =
+                           {Odoc_model.Lang.TypeDecl.Equation.params =
+                             [(Odoc_model.Lang.TypeDecl.Var "a", None)];
+                            private_ = false;
+                            manifest =
+                             Some
+                              (Odoc_model.Lang.TypeExpr.Constr
+                                (`Resolved
+                                   (`Type
+                                      (`Hidden
+                                         (`Identifier
+                                            (`Module
+                                               (`Module
+                                                  (`Root
+                                                     (Common.root, "Root"),
+                                                   "CanonicalTest"),
+                                                "Base__List"))),
+                                       "t")),
+                                [Odoc_model.Lang.TypeExpr.Var "a"]));
+                            constraints = []};
+                          representation = None});
+                        Odoc_model.Lang.Signature.Value
+                         {Odoc_model.Lang.Value.id =
+                           `Value
+                             (`Module
+                                (`Module
+                                   (`Module
+                                      (`Root (Common.root, "Root"),
+                                       "CanonicalTest"),
+                                    "Base"),
+                                 "List"),
+                              "id");
+                          doc = [];
+                          type_ =
+                           Odoc_model.Lang.TypeExpr.Arrow (None,
+                            Odoc_model.Lang.TypeExpr.Constr
+                             (`Resolved
+                                (`Identifier
+                                   (`Type
+                                      (`Module
+                                         (`Module
+                                            (`Module
+                                               (`Root (Common.root, "Root"),
+                                                "CanonicalTest"),
+                                             "Base"),
+                                          "List"),
+                                       "t"))),
+                             [Odoc_model.Lang.TypeExpr.Var "a"]),
+                            Odoc_model.Lang.TypeExpr.Constr
+                             (`Resolved
+                                (`Identifier
+                                   (`Type
+                                      (`Module
+                                         (`Module
+                                            (`Module
+                                               (`Root (Common.root, "Root"),
+                                                "CanonicalTest"),
+                                             "Base"),
+                                          "List"),
+                                       "t"))),
+                             [Odoc_model.Lang.TypeExpr.Var "a"]))}]));
+                 expansion =
+                  Some
+                   (Odoc_model.Lang.Module.Signature
+                     [Odoc_model.Lang.Signature.Comment
+                       (`Docs
+                          [{Odoc_model.Location_.location =
+                             {Odoc_model.Location_.file = "";
+                              start =
+                               {Odoc_model.Location_.line = 0; column = 0};
+                              end_ =
+                               {Odoc_model.Location_.line = 0; column = 0}};
+                            value =
+                             `Tag
+                               (`Canonical
+                                  (`Dot
+                                     (`Dot
+                                        (`Dot (`Root "Root", "CanonicalTest"),
+                                         "Base"),
+                                      "List"),
+                                   `Dot
+                                     (`Dot
+                                        (`Dot
+                                           (`Root ("Root", `TUnknown),
+                                            "CanonicalTest"),
+                                         "Base"),
+                                      "List")))}]);
+                      Odoc_model.Lang.Signature.Type
+                       (Odoc_model.Lang.Signature.Ordinary,
+                       {Odoc_model.Lang.TypeDecl.id =
+                         `Type
+                           (`Module
+                              (`Module
+                                 (`Module
+                                    (`Root (Common.root, "Root"),
+                                     "CanonicalTest"),
+                                  "Base"),
+                               "List"),
+                            "t");
+                        doc = [];
+                        equation =
+                         {Odoc_model.Lang.TypeDecl.Equation.params =
+                           [(Odoc_model.Lang.TypeDecl.Var "a", None)];
+                          private_ = false; manifest = None;
+                          constraints = []};
+                        representation = None});
+                      Odoc_model.Lang.Signature.Value
+                       {Odoc_model.Lang.Value.id =
+                         `Value
+                           (`Module
+                              (`Module
+                                 (`Module
+                                    (`Root (Common.root, "Root"),
+                                     "CanonicalTest"),
+                                  "Base"),
+                               "List"),
+                            "id");
+                        doc = [];
+                        type_ =
+                         Odoc_model.Lang.TypeExpr.Arrow (None,
+                          Odoc_model.Lang.TypeExpr.Constr
+                           (`Resolved
+                              (`Identifier
+                                 (`Type
+                                    (`Module
+                                       (`Module
+                                          (`Module
+                                             (`Root (Common.root, "Root"),
+                                              "CanonicalTest"),
+                                           "Base"),
+                                        "List"),
+                                     "t"))),
+                           [Odoc_model.Lang.TypeExpr.Var "a"]),
+                          Odoc_model.Lang.TypeExpr.Constr
+                           (`Resolved
+                              (`Identifier
+                                 (`Type
+                                    (`Module
+                                       (`Module
+                                          (`Module
+                                             (`Root (Common.root, "Root"),
+                                              "CanonicalTest"),
+                                           "Base"),
+                                        "List"),
+                                     "t"))),
+                           [Odoc_model.Lang.TypeExpr.Var "a"]))}])})]);
+          canonical = None; hidden = false; display_type = None;
+          expansion = Some Odoc_model.Lang.Module.AlreadyASig})]);
+   canonical = None; hidden = false; display_type = None;
    expansion = Some Odoc_model.Lang.Module.AlreadyASig});
- Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "b");
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
    doc = [];
-   equation =
-    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-     manifest =
-      Some
-       (Odoc_model.Lang.TypeExpr.Constr
-         (`Dot
-            (`Resolved
-               (`Hidden
-                  (`Identifier
-                     (`Module (`Root (Common.root, "Root"), "M__Hidden")))),
-             "x"),
-         []));
-     constraints = []};
-   representation = None});
- Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "N");
-   doc =
-    [{Odoc_model.Location_.location =
-       {Odoc_model.Location_.file = "";
-        start = {Odoc_model.Location_.line = 8; column = 6};
-        end_ = {Odoc_model.Location_.line = 8; column = 24}};
-      value =
-       `Tag
-         (`Canonical
-            (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N")))}];
    type_ =
-    Odoc_model.Lang.Module.Alias
-     (`Resolved
-        (`Hidden
-           (`Identifier (`Module (`Root (Common.root, "Root"), "M__Hidden")))));
-   canonical =
-    Some (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N"));
-   hidden = false; display_type = None; expansion = None});
- Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
-   doc = [];
-   equation =
-    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-     manifest =
-      Some
-       (Odoc_model.Lang.TypeExpr.Constr
-         (`Dot
-            (`Resolved
-               (`Identifier (`Module (`Root (Common.root, "Root"), "N"))),
-             "x"),
-         []));
-     constraints = []};
-   representation = None})]
+    Odoc_model.Lang.TypeExpr.Arrow (None,
+     Odoc_model.Lang.TypeExpr.Constr
+      (`Resolved
+         (`Type
+            (`Canonical
+               (`Alias
+                  (`Hidden
+                     (`Module
+                        (`Identifier
+                           (`Module
+                              (`Root (Common.root, "Root"), "CanonicalTest")),
+                         "Base__List")),
+                   `Module
+                     (`Module
+                        (`Identifier
+                           (`Module
+                              (`Root (Common.root, "Root"), "CanonicalTest")),
+                         "Base__"),
+                      "List")),
+                `Resolved
+                  (`Module
+                     (`Module
+                        (`Identifier
+                           (`Module
+                              (`Root (Common.root, "Root"), "CanonicalTest")),
+                         "Base"),
+                      "List"))),
+             "t")),
+      [Odoc_model.Lang.TypeExpr.Var "a"]),
+     Odoc_model.Lang.TypeExpr.Constr
+      (`Resolved (`Identifier (`CoreType "unit")), []))}]
 # resolved;;
-- : Odoc_model.Lang.Signature.t =
-[Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.Module.id =
-    `Module (`Root (Common.root, "Root"), "M__Hidden");
-   doc = [];
-   type_ =
-    Odoc_model.Lang.Module.ModuleType
-     (Odoc_model.Lang.ModuleType.Signature
-       [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-         {Odoc_model.Lang.TypeDecl.id =
-           `Type (`Module (`Root (Common.root, "Root"), "M__Hidden"), "x");
-          doc = [];
-          equation =
-           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-            manifest = None; constraints = []};
-          representation = None})]);
-   canonical = None; hidden = true; display_type = None;
-   expansion = Some Odoc_model.Lang.Module.AlreadyASig});
- Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "b");
-   doc = [];
-   equation =
-    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-     manifest =
-      Some
-       (Odoc_model.Lang.TypeExpr.Constr
-         (`Resolved
-            (`Type
-               (`Hidden
-                  (`Identifier
-                     (`Module (`Root (Common.root, "Root"), "M__Hidden"))),
-                "x")),
-         []));
-     constraints = []};
-   representation = None});
- Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "N");
-   doc =
-    [{Odoc_model.Location_.location =
-       {Odoc_model.Location_.file = "";
-        start = {Odoc_model.Location_.line = 8; column = 6};
-        end_ = {Odoc_model.Location_.line = 8; column = 24}};
-      value =
-       `Tag
-         (`Canonical
-            (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N")))}];
-   type_ =
-    Odoc_model.Lang.Module.Alias
-     (`Resolved
-        (`Hidden
-           (`Identifier (`Module (`Root (Common.root, "Root"), "M__Hidden")))));
-   canonical =
-    Some (`Dot (`Root "Root", "N"), `Dot (`Root ("Root", `TUnknown), "N"));
-   hidden = false; display_type = None; expansion = None});
- Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
-   doc = [];
-   equation =
-    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-     manifest =
-      Some
-       (Odoc_model.Lang.TypeExpr.Constr
+- : Odoc_odoc.Compilation_unit.t =
+{Odoc_model.Lang.Compilation_unit.id = `Root (Common.root, "Root"); doc = [];
+ digest = "nodigest"; imports = []; source = None; interface = true;
+ hidden = false;
+ content =
+  Odoc_model.Lang.Compilation_unit.Module
+   [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_model.Lang.Module.id =
+       `Module (`Root (Common.root, "Root"), "CanonicalTest");
+      doc = [];
+      type_ =
+       Odoc_model.Lang.Module.ModuleType
+        (Odoc_model.Lang.ModuleType.Signature
+          [Odoc_model.Lang.Signature.Module
+            (Odoc_model.Lang.Signature.Ordinary,
+            {Odoc_model.Lang.Module.id =
+              `Module
+                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
+                 "Base__List");
+             doc = [];
+             type_ =
+              Odoc_model.Lang.Module.ModuleType
+               (Odoc_model.Lang.ModuleType.Signature
+                 [Odoc_model.Lang.Signature.Type
+                   (Odoc_model.Lang.Signature.Ordinary,
+                   {Odoc_model.Lang.TypeDecl.id =
+                     `Type
+                       (`Module
+                          (`Module
+                             (`Root (Common.root, "Root"), "CanonicalTest"),
+                           "Base__List"),
+                        "t");
+                    doc = [];
+                    equation =
+                     {Odoc_model.Lang.TypeDecl.Equation.params =
+                       [(Odoc_model.Lang.TypeDecl.Var "a", None)];
+                      private_ = false; manifest = None; constraints = []};
+                    representation = None});
+                  Odoc_model.Lang.Signature.Value
+                   {Odoc_model.Lang.Value.id =
+                     `Value
+                       (`Module
+                          (`Module
+                             (`Root (Common.root, "Root"), "CanonicalTest"),
+                           "Base__List"),
+                        "id");
+                    doc = [];
+                    type_ =
+                     Odoc_model.Lang.TypeExpr.Arrow (None,
+                      Odoc_model.Lang.TypeExpr.Constr
+                       (`Resolved
+                          (`Identifier
+                             (`Type
+                                (`Module
+                                   (`Module
+                                      (`Root (Common.root, "Root"),
+                                       "CanonicalTest"),
+                                    "Base__List"),
+                                 "t"))),
+                       [Odoc_model.Lang.TypeExpr.Var "a"]),
+                      Odoc_model.Lang.TypeExpr.Constr
+                       (`Resolved
+                          (`Identifier
+                             (`Type
+                                (`Module
+                                   (`Module
+                                      (`Root (Common.root, "Root"),
+                                       "CanonicalTest"),
+                                    "Base__List"),
+                                 "t"))),
+                       [Odoc_model.Lang.TypeExpr.Var "a"]))}]);
+             canonical = None; hidden = true; display_type = None;
+             expansion = Some Odoc_model.Lang.Module.AlreadyASig});
+           Odoc_model.Lang.Signature.Module
+            (Odoc_model.Lang.Signature.Ordinary,
+            {Odoc_model.Lang.Module.id =
+              `Module
+                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
+                 "Base__");
+             doc = [];
+             type_ =
+              Odoc_model.Lang.Module.ModuleType
+               (Odoc_model.Lang.ModuleType.Signature
+                 [Odoc_model.Lang.Signature.Module
+                   (Odoc_model.Lang.Signature.Ordinary,
+                   {Odoc_model.Lang.Module.id =
+                     `Module
+                       (`Module
+                          (`Module
+                             (`Root (Common.root, "Root"), "CanonicalTest"),
+                           "Base__"),
+                        "List");
+                    doc =
+                     [{Odoc_model.Location_.location =
+                        {Odoc_model.Location_.file = "";
+                         start =
+                          {Odoc_model.Location_.line = 10; column = 10};
+                         end_ = {Odoc_model.Location_.line = 10; column = 50}};
+                       value =
+                        `Tag
+                          (`Canonical
+                             (`Dot
+                                (`Dot
+                                   (`Dot (`Root "Root", "CanonicalTest"),
+                                    "Base"),
+                                 "List"),
+                              `Dot
+                                (`Dot
+                                   (`Dot
+                                      (`Root ("Root", `TUnknown),
+                                       "CanonicalTest"),
+                                    "Base"),
+                                 "List")))}];
+                    type_ =
+                     Odoc_model.Lang.Module.Alias
+                      (`Resolved
+                         (`Hidden
+                            (`Identifier
+                               (`Module
+                                  (`Module
+                                     (`Root (Common.root, "Root"),
+                                      "CanonicalTest"),
+                                   "Base__List")))));
+                    canonical =
+                     Some
+                      (`Dot
+                         (`Dot (`Dot (`Root "Root", "CanonicalTest"), "Base"),
+                          "List"),
+                       `Dot
+                         (`Dot
+                            (`Dot
+                               (`Root ("Root", `TUnknown), "CanonicalTest"),
+                             "Base"),
+                          "List"));
+                    hidden = false; display_type = None; expansion = None})]);
+             canonical = None; hidden = true; display_type = None;
+             expansion = Some Odoc_model.Lang.Module.AlreadyASig});
+           Odoc_model.Lang.Signature.Module
+            (Odoc_model.Lang.Signature.Ordinary,
+            {Odoc_model.Lang.Module.id =
+              `Module
+                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
+                 "Base");
+             doc = [];
+             type_ =
+              Odoc_model.Lang.Module.ModuleType
+               (Odoc_model.Lang.ModuleType.Signature
+                 [Odoc_model.Lang.Signature.Module
+                   (Odoc_model.Lang.Signature.Ordinary,
+                   {Odoc_model.Lang.Module.id =
+                     `Module
+                       (`Module
+                          (`Module
+                             (`Root (Common.root, "Root"), "CanonicalTest"),
+                           "Base"),
+                        "List");
+                    doc = [];
+                    type_ =
+                     Odoc_model.Lang.Module.Alias
+                      (`Resolved
+                         (`Canonical
+                            (`Alias
+                               (`Hidden
+                                  (`Identifier
+                                     (`Module
+                                        (`Module
+                                           (`Root (Common.root, "Root"),
+                                            "CanonicalTest"),
+                                         "Base__List"))),
+                                `Module
+                                  (`Hidden
+                                     (`Identifier
+                                        (`Module
+                                           (`Module
+                                              (`Root (Common.root, "Root"),
+                                               "CanonicalTest"),
+                                            "Base__"))),
+                                   "List")),
+                             `Dot
+                               (`Dot
+                                  (`Dot (`Root "Root", "CanonicalTest"),
+                                   "Base"),
+                                "List"))));
+                    canonical = None; hidden = false; display_type = None;
+                    expansion = None})]);
+             canonical = None; hidden = false; display_type = None;
+             expansion = Some Odoc_model.Lang.Module.AlreadyASig})]);
+      canonical = None; hidden = false; display_type = None;
+      expansion = Some Odoc_model.Lang.Module.AlreadyASig});
+    Odoc_model.Lang.Signature.Value
+     {Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
+      doc = [];
+      type_ =
+       Odoc_model.Lang.TypeExpr.Arrow (None,
+        Odoc_model.Lang.TypeExpr.Constr
          (`Resolved
             (`Type
                (`Canonical
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "N")),
-                   `Dot (`Root "Root", "N")),
-                "x")),
-         []));
-     constraints = []};
-   representation = None})]
+                  (`Alias
+                     (`Hidden
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, "Root"),
+                                  "CanonicalTest")),
+                            "Base__List")),
+                      `Module
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, "Root"),
+                                  "CanonicalTest")),
+                            "Base__"),
+                         "List")),
+                   `Dot
+                     (`Dot (`Dot (`Root "Root", "CanonicalTest"), "Base"),
+                      "List")),
+                "t")),
+         [Odoc_model.Lang.TypeExpr.Var "a"]),
+        Odoc_model.Lang.TypeExpr.Constr
+         (`Resolved (`Identifier (`CoreType "unit")), []))}];
+ expansion = None}
 # Tools.lookup_type_from_path env (`Dot
             (`Resolved
                (`Identifier (`Module (`Root (Common.root, "Root"), "N"))),
              "t"));;
 Exception:
-Odoc_xref2.Component.Find.Find_failure
- ({Odoc_xref2__Component.Signature.items =
-    [Odoc_xref2__Component.Signature.Type (`LType ("x", 5),
-      Odoc_model.Lang.Signature.Ordinary,
-      {Odoc_xref2__Component.TypeDecl.doc = [];
-       equation =
-        {Odoc_xref2__Component.TypeDecl.Equation.params = [];
-         private_ = false; manifest = None; constraints = []};
-       representation = None})];
-   removed = []},
- "t", "type").
+Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, "Root"), "N"),
+ <abstr>).
 ```
 
 
@@ -2003,1415 +2240,10 @@ end
 |};;
 let cmt = Common.cmt_of_string test_data |> fst;;
 let _, _, sg = Odoc_loader__Cmt.read_implementation Common.root "Root" cmt;;
-let resolved = Resolve.signature Env.empty sg;;
-(*let expanded = Expand.signature Env.empty resolved;;*)
+let resolved = Compile.signature Env.empty sg;;
+(*let expanded = Link.signature Env.empty resolved;;*)
 ```
 
 ```ocaml env=e1
-# cmt;;
-- : Typedtree.structure =
-{Typedtree.str_items =
-  [{Typedtree.str_desc =
-     Typedtree.Tstr_module
-      {Typedtree.mb_id = <abstr>;
-       mb_name =
-        {Asttypes.txt = "EEE";
-         loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 13};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 16};
-           loc_ghost = false}};
-       mb_presence = Types.Mp_present;
-       mb_expr =
-        {Typedtree.mod_desc =
-          Typedtree.Tmod_structure
-           {Typedtree.str_items =
-             [{Typedtree.str_desc =
-                Typedtree.Tstr_type (Asttypes.Recursive,
-                 [{Typedtree.typ_id = <abstr>;
-                   typ_name =
-                    {Asttypes.txt = "u";
-                     loc =
-                      {Location.loc_start =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 35};
-                       loc_end =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 36};
-                       loc_ghost = false}};
-                   typ_params = [];
-                   typ_type =
-                    {Types.type_params = []; type_arity = 0;
-                     type_kind = Types.Type_abstract;
-                     type_private = Asttypes.Public; type_manifest = None;
-                     type_variance = []; type_is_newtype = false;
-                     type_expansion_scope = 0;
-                     type_loc =
-                      {Location.loc_start =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 30};
-                       loc_end =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 36};
-                       loc_ghost = false};
-                     type_attributes = []; type_immediate = false;
-                     type_unboxed = {Types.unboxed = false; default = false}};
-                   typ_cstrs = []; typ_kind = Typedtree.Ttype_abstract;
-                   typ_private = Asttypes.Public; typ_manifest = None;
-                   typ_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 30};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 36};
-                     loc_ghost = false};
-                   typ_attributes = []}]);
-               str_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 30};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 36};
-                 loc_ghost = false};
-               str_env = <abstr>}];
-            str_type =
-             [Types.Sig_type (<abstr>,
-               {Types.type_params = []; type_arity = 0;
-                type_kind = Types.Type_abstract;
-                type_private = Asttypes.Public; type_manifest = None;
-                type_variance = []; type_is_newtype = false;
-                type_expansion_scope = 0;
-                type_loc =
-                 {Location.loc_start =
-                   {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                    pos_cnum = 30};
-                  loc_end =
-                   {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                    pos_cnum = 36};
-                  loc_ghost = false};
-                type_attributes = []; type_immediate = false;
-                type_unboxed = {Types.unboxed = false; default = false}},
-               Types.Trec_first, Types.Exported)];
-            str_final_env = <abstr>};
-         mod_loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 19};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 5; pos_bol = 37;
-             pos_cnum = 42};
-           loc_ghost = false};
-         mod_type =
-          Types.Mty_signature
-           [Types.Sig_type (<abstr>,
-             {Types.type_params = []; type_arity = 0;
-              type_kind = Types.Type_abstract;
-              type_private = Asttypes.Public; type_manifest = None;
-              type_variance = []; type_is_newtype = false;
-              type_expansion_scope = 0;
-              type_loc =
-               {Location.loc_start =
-                 {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                  pos_cnum = 30};
-                loc_end =
-                 {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                  pos_cnum = 36};
-                loc_ghost = false};
-              type_attributes = []; type_immediate = false;
-              type_unboxed = {Types.unboxed = false; default = false}},
-             Types.Trec_first, Types.Exported)];
-         mod_env = <abstr>; mod_attributes = []};
-       mb_attributes = [];
-       mb_loc =
-        {Location.loc_start =
-          {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 6};
-         loc_end =
-          {Lexing.pos_fname = ""; pos_lnum = 5; pos_bol = 37; pos_cnum = 42};
-         loc_ghost = false}};
-    str_loc =
-     {Location.loc_start =
-       {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 6};
-      loc_end =
-       {Lexing.pos_fname = ""; pos_lnum = 5; pos_bol = 37; pos_cnum = 42};
-      loc_ghost = false};
-    str_env = <abstr>};
-   {Typedtree.str_desc =
-     Typedtree.Tstr_module
-      {Typedtree.mb_id = <abstr>;
-       mb_name =
-        {Asttypes.txt = "FFF";
-         loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46;
-             pos_cnum = 55};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46;
-             pos_cnum = 58};
-           loc_ghost = false}};
-       mb_presence = Types.Mp_present;
-       mb_expr =
-        {Typedtree.mod_desc =
-          Typedtree.Tmod_structure
-           {Typedtree.str_items =
-             [{Typedtree.str_desc =
-                Typedtree.Tstr_module
-                 {Typedtree.mb_id = <abstr>;
-                  mb_name =
-                   {Asttypes.txt = "Caml";
-                    loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                        pos_cnum = 79};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                        pos_cnum = 83};
-                      loc_ghost = false}};
-                  mb_presence = Types.Mp_present;
-                  mb_expr =
-                   {Typedtree.mod_desc =
-                     Typedtree.Tmod_structure
-                      {Typedtree.str_items =
-                        [{Typedtree.str_desc =
-                           Typedtree.Tstr_include
-                            {Typedtree.incl_mod =
-                              {Typedtree.mod_desc =
-                                Typedtree.Tmod_ident (Path.Pident <abstr>,
-                                 {Asttypes.txt = Longident.Lident "EEE";
-                                  loc =
-                                   {Location.loc_start =
-                                     {Lexing.pos_fname = ""; pos_lnum = 9;
-                                      pos_bol = 93; pos_cnum = 107};
-                                    loc_end =
-                                     {Lexing.pos_fname = ""; pos_lnum = 9;
-                                      pos_bol = 93; pos_cnum = 110};
-                                    loc_ghost = false}});
-                               mod_loc =
-                                {Location.loc_start =
-                                  {Lexing.pos_fname = ""; pos_lnum = 9;
-                                   pos_bol = 93; pos_cnum = 107};
-                                 loc_end =
-                                  {Lexing.pos_fname = ""; pos_lnum = 9;
-                                   pos_bol = 93; pos_cnum = 110};
-                                 loc_ghost = false};
-                               mod_type =
-                                Types.Mty_signature
-                                 [Types.Sig_type (<abstr>,
-                                   {Types.type_params = []; type_arity = 0;
-                                    type_kind = Types.Type_abstract;
-                                    type_private = Asttypes.Public;
-                                    type_manifest =
-                                     Some
-                                      {Types.desc =
-                                        Types.Tconstr
-                                         (Path.Pdot (Path.Pident <abstr>,
-                                           "u"),
-                                         [], {contents = Types.Mnil});
-                                       level = 100000000; scope = 0;
-                                       id = 1112940};
-                                    type_variance = [];
-                                    type_is_newtype = false;
-                                    type_expansion_scope = 0;
-                                    type_loc =
-                                     {Location.loc_start =
-                                       {Lexing.pos_fname = ""; pos_lnum = 4;
-                                        pos_bol = 26; pos_cnum = 30};
-                                      loc_end =
-                                       {Lexing.pos_fname = ""; pos_lnum = 4;
-                                        pos_bol = 26; pos_cnum = 36};
-                                      loc_ghost = false};
-                                    type_attributes = [];
-                                    type_immediate = false;
-                                    type_unboxed =
-                                     {Types.unboxed = false; default = false}},
-                                   Types.Trec_first, Types.Exported)];
-                               mod_env = <abstr>; mod_attributes = []};
-                             incl_type =
-                              [Types.Sig_type (<abstr>,
-                                {Types.type_params = []; type_arity = 0;
-                                 type_kind = Types.Type_abstract;
-                                 type_private = Asttypes.Public;
-                                 type_manifest =
-                                  Some
-                                   {Types.desc =
-                                     Types.Tconstr
-                                      (Path.Pdot (Path.Pident <abstr>, "u"),
-                                      [], {contents = Types.Mnil});
-                                    level = 100000000; scope = 0;
-                                    id = 1112941};
-                                 type_variance = []; type_is_newtype = false;
-                                 type_expansion_scope = 0;
-                                 type_loc =
-                                  {Location.loc_start =
-                                    {Lexing.pos_fname = ""; pos_lnum = 4;
-                                     pos_bol = 26; pos_cnum = 30};
-                                   loc_end =
-                                    {Lexing.pos_fname = ""; pos_lnum = 4;
-                                     pos_bol = 26; pos_cnum = 36};
-                                   loc_ghost = false};
-                                 type_attributes = [];
-                                 type_immediate = false;
-                                 type_unboxed =
-                                  {Types.unboxed = false; default = false}},
-                                Types.Trec_first, Types.Exported)];
-                             incl_loc =
-                              {Location.loc_start =
-                                {Lexing.pos_fname = ""; pos_lnum = 9;
-                                 pos_bol = 93; pos_cnum = 99};
-                               loc_end =
-                                {Lexing.pos_fname = ""; pos_lnum = 9;
-                                 pos_bol = 93; pos_cnum = 110};
-                               loc_ghost = false};
-                             incl_attributes = []};
-                          str_loc =
-                           {Location.loc_start =
-                             {Lexing.pos_fname = ""; pos_lnum = 9;
-                              pos_bol = 93; pos_cnum = 99};
-                            loc_end =
-                             {Lexing.pos_fname = ""; pos_lnum = 9;
-                              pos_bol = 93; pos_cnum = 110};
-                            loc_ghost = false};
-                          str_env = <abstr>}];
-                       str_type =
-                        [Types.Sig_type (<abstr>,
-                          {Types.type_params = []; type_arity = 0;
-                           type_kind = Types.Type_abstract;
-                           type_private = Asttypes.Public;
-                           type_manifest =
-                            Some
-                             {Types.desc =
-                               Types.Tconstr
-                                (Path.Pdot (Path.Pident <abstr>, "u"),
-                                [], {contents = Types.Mnil});
-                              level = 100000000; scope = 0; id = 1112941};
-                           type_variance = []; type_is_newtype = false;
-                           type_expansion_scope = 0;
-                           type_loc =
-                            {Location.loc_start =
-                              {Lexing.pos_fname = ""; pos_lnum = 4;
-                               pos_bol = 26; pos_cnum = 30};
-                             loc_end =
-                              {Lexing.pos_fname = ""; pos_lnum = 4;
-                               pos_bol = 26; pos_cnum = 36};
-                             loc_ghost = false};
-                           type_attributes = []; type_immediate = false;
-                           type_unboxed =
-                            {Types.unboxed = false; default = false}},
-                          Types.Trec_first, Types.Exported)];
-                       str_final_env = <abstr>};
-                    mod_loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                        pos_cnum = 86};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                        pos_cnum = 118};
-                      loc_ghost = false};
-                    mod_type =
-                     Types.Mty_signature
-                      [Types.Sig_type (<abstr>,
-                        {Types.type_params = []; type_arity = 0;
-                         type_kind = Types.Type_abstract;
-                         type_private = Asttypes.Public;
-                         type_manifest =
-                          Some
-                           {Types.desc =
-                             Types.Tconstr
-                              (Path.Pdot (Path.Pident <abstr>, "u"),
-                              [], {contents = Types.Mnil});
-                            level = 100000000; scope = 0; id = 1112941};
-                         type_variance = []; type_is_newtype = false;
-                         type_expansion_scope = 0;
-                         type_loc =
-                          {Location.loc_start =
-                            {Lexing.pos_fname = ""; pos_lnum = 4;
-                             pos_bol = 26; pos_cnum = 30};
-                           loc_end =
-                            {Lexing.pos_fname = ""; pos_lnum = 4;
-                             pos_bol = 26; pos_cnum = 36};
-                           loc_ghost = false};
-                         type_attributes = []; type_immediate = false;
-                         type_unboxed =
-                          {Types.unboxed = false; default = false}},
-                        Types.Trec_first, Types.Exported)];
-                    mod_env = <abstr>; mod_attributes = []};
-                  mb_attributes = [];
-                  mb_loc =
-                   {Location.loc_start =
-                     {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                      pos_cnum = 72};
-                    loc_end =
-                     {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                      pos_cnum = 118};
-                    loc_ghost = false}};
-               str_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                   pos_cnum = 72};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                   pos_cnum = 118};
-                 loc_ghost = false};
-               str_env = <abstr>}];
-            str_type =
-             [Types.Sig_module (<abstr>, Types.Mp_present,
-               {Types.md_type =
-                 Types.Mty_signature
-                  [Types.Sig_type (<abstr>,
-                    {Types.type_params = []; type_arity = 0;
-                     type_kind = Types.Type_abstract;
-                     type_private = Asttypes.Public;
-                     type_manifest =
-                      Some
-                       {Types.desc =
-                         Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                          [], {contents = Types.Mnil});
-                        level = 100000000; scope = 0; id = 1112941};
-                     type_variance = []; type_is_newtype = false;
-                     type_expansion_scope = 0;
-                     type_loc =
-                      {Location.loc_start =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 30};
-                       loc_end =
-                        {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                         pos_cnum = 36};
-                       loc_ghost = false};
-                     type_attributes = []; type_immediate = false;
-                     type_unboxed = {Types.unboxed = false; default = false}},
-                    Types.Trec_first, Types.Exported)];
-                md_attributes = [];
-                md_loc =
-                 {Location.loc_start =
-                   {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                    pos_cnum = 72};
-                  loc_end =
-                   {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                    pos_cnum = 118};
-                  loc_ghost = false}},
-               Types.Trec_not, Types.Exported)];
-            str_final_env = <abstr>};
-         mod_loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46;
-             pos_cnum = 61};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 11; pos_bol = 119;
-             pos_cnum = 124};
-           loc_ghost = false};
-         mod_type =
-          Types.Mty_signature
-           [Types.Sig_module (<abstr>, Types.Mp_present,
-             {Types.md_type =
-               Types.Mty_signature
-                [Types.Sig_type (<abstr>,
-                  {Types.type_params = []; type_arity = 0;
-                   type_kind = Types.Type_abstract;
-                   type_private = Asttypes.Public;
-                   type_manifest =
-                    Some
-                     {Types.desc =
-                       Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                        [], {contents = Types.Mnil});
-                      level = 100000000; scope = 0; id = 1112941};
-                   type_variance = []; type_is_newtype = false;
-                   type_expansion_scope = 0;
-                   type_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 30};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 36};
-                     loc_ghost = false};
-                   type_attributes = []; type_immediate = false;
-                   type_unboxed = {Types.unboxed = false; default = false}},
-                  Types.Trec_first, Types.Exported)];
-              md_attributes = [];
-              md_loc =
-               {Location.loc_start =
-                 {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                  pos_cnum = 72};
-                loc_end =
-                 {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                  pos_cnum = 118};
-                loc_ghost = false}},
-             Types.Trec_not, Types.Exported)];
-         mod_env = <abstr>; mod_attributes = []};
-       mb_attributes = [];
-       mb_loc =
-        {Location.loc_start =
-          {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46; pos_cnum = 48};
-         loc_end =
-          {Lexing.pos_fname = ""; pos_lnum = 11; pos_bol = 119;
-           pos_cnum = 124};
-         loc_ghost = false}};
-    str_loc =
-     {Location.loc_start =
-       {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46; pos_cnum = 48};
-      loc_end =
-       {Lexing.pos_fname = ""; pos_lnum = 11; pos_bol = 119; pos_cnum = 124};
-      loc_ghost = false};
-    str_env = <abstr>};
-   {Typedtree.str_desc =
-     Typedtree.Tstr_module
-      {Typedtree.mb_id = <abstr>;
-       mb_name =
-        {Asttypes.txt = "GGG";
-         loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128;
-             pos_cnum = 137};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128;
-             pos_cnum = 140};
-           loc_ghost = false}};
-       mb_presence = Types.Mp_present;
-       mb_expr =
-        {Typedtree.mod_desc =
-          Typedtree.Tmod_constraint
-           ({Typedtree.mod_desc =
-              Typedtree.Tmod_structure
-               {Typedtree.str_items =
-                 [{Typedtree.str_desc =
-                    Typedtree.Tstr_include
-                     {Typedtree.incl_mod =
-                       {Typedtree.mod_desc =
-                         Typedtree.Tmod_ident (Path.Pident <abstr>,
-                          {Asttypes.txt = Longident.Lident "FFF";
-                           loc =
-                            {Location.loc_start =
-                              {Lexing.pos_fname = ""; pos_lnum = 14;
-                               pos_bol = 150; pos_cnum = 162};
-                             loc_end =
-                              {Lexing.pos_fname = ""; pos_lnum = 14;
-                               pos_bol = 150; pos_cnum = 165};
-                             loc_ghost = false}});
-                        mod_loc =
-                         {Location.loc_start =
-                           {Lexing.pos_fname = ""; pos_lnum = 14;
-                            pos_bol = 150; pos_cnum = 162};
-                          loc_end =
-                           {Lexing.pos_fname = ""; pos_lnum = 14;
-                            pos_bol = 150; pos_cnum = 165};
-                          loc_ghost = false};
-                        mod_type =
-                         Types.Mty_signature
-                          [Types.Sig_module (<abstr>, Types.Mp_present,
-                            {Types.md_type =
-                              Types.Mty_alias
-                               (Path.Pdot (Path.Pident <abstr>, "Caml"));
-                             md_attributes = [];
-                             md_loc =
-                              {Location.loc_start =
-                                {Lexing.pos_fname = ""; pos_lnum = 8;
-                                 pos_bol = 68; pos_cnum = 72};
-                               loc_end =
-                                {Lexing.pos_fname = ""; pos_lnum = 10;
-                                 pos_bol = 111; pos_cnum = 118};
-                               loc_ghost = false}},
-                            Types.Trec_not, Types.Exported)];
-                        mod_env = <abstr>; mod_attributes = []};
-                      incl_type =
-                       [Types.Sig_module (<abstr>, Types.Mp_present,
-                         {Types.md_type =
-                           Types.Mty_alias
-                            (Path.Pdot (Path.Pident <abstr>, "Caml"));
-                          md_attributes = [];
-                          md_loc =
-                           {Location.loc_start =
-                             {Lexing.pos_fname = ""; pos_lnum = 8;
-                              pos_bol = 68; pos_cnum = 72};
-                            loc_end =
-                             {Lexing.pos_fname = ""; pos_lnum = 10;
-                              pos_bol = 111; pos_cnum = 118};
-                            loc_ghost = false}},
-                         Types.Trec_not, Types.Exported)];
-                      incl_loc =
-                       {Location.loc_start =
-                         {Lexing.pos_fname = ""; pos_lnum = 14;
-                          pos_bol = 150; pos_cnum = 154};
-                        loc_end =
-                         {Lexing.pos_fname = ""; pos_lnum = 14;
-                          pos_bol = 150; pos_cnum = 165};
-                        loc_ghost = false};
-                      incl_attributes = []};
-                   str_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 14; pos_bol = 150;
-                       pos_cnum = 154};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 14; pos_bol = 150;
-                       pos_cnum = 165};
-                     loc_ghost = false};
-                   str_env = <abstr>};
-                  {Typedtree.str_desc =
-                    Typedtree.Tstr_module
-                     {Typedtree.mb_id = <abstr>;
-                      mb_name =
-                       {Asttypes.txt = "Caml";
-                        loc =
-                         {Location.loc_start =
-                           {Lexing.pos_fname = ""; pos_lnum = 16;
-                            pos_bol = 169; pos_cnum = 180};
-                          loc_end =
-                           {Lexing.pos_fname = ""; pos_lnum = 16;
-                            pos_bol = 169; pos_cnum = 184};
-                          loc_ghost = false}};
-                      mb_presence = Types.Mp_present;
-                      mb_expr =
-                       {Typedtree.mod_desc =
-                         Typedtree.Tmod_structure
-                          {Typedtree.str_items =
-                            [{Typedtree.str_desc =
-                               Typedtree.Tstr_include
-                                {Typedtree.incl_mod =
-                                  {Typedtree.mod_desc =
-                                    Typedtree.Tmod_constraint
-                                     ({Typedtree.mod_desc =
-                                        Typedtree.Tmod_ident
-                                         (Path.Pident <abstr>,
-                                         {Asttypes.txt =
-                                           Longident.Lident "Caml";
-                                          loc =
-                                           {Location.loc_start =
-                                             {Lexing.pos_fname = "";
-                                              pos_lnum = 17; pos_bol = 194;
-                                              pos_cnum = 208};
-                                            loc_end =
-                                             {Lexing.pos_fname = "";
-                                              pos_lnum = 17; pos_bol = 194;
-                                              pos_cnum = 212};
-                                            loc_ghost = false}});
-                                       mod_loc =
-                                        {Location.loc_start =
-                                          {Lexing.pos_fname = "";
-                                           pos_lnum = 17; pos_bol = 194;
-                                           pos_cnum = 208};
-                                         loc_end =
-                                          {Lexing.pos_fname = "";
-                                           pos_lnum = 17; pos_bol = 194;
-                                           pos_cnum = 212};
-                                         loc_ghost = false};
-                                       mod_type =
-                                        Types.Mty_alias (Path.Pident <abstr>);
-                                       mod_env = <abstr>;
-                                       mod_attributes = []},
-                                     Types.Mty_signature
-                                      [Types.Sig_type (<abstr>,
-                                        {Types.type_params = [];
-                                         type_arity = 0;
-                                         type_kind = Types.Type_abstract;
-                                         type_private = Asttypes.Public;
-                                         type_manifest =
-                                          Some
-                                           {Types.desc =
-                                             Types.Tconstr
-                                              (Path.Pdot
-                                                (Path.Pident <abstr>, "u"),
-                                              [], {contents = Types.Mnil});
-                                            level = 100000000; scope = 0;
-                                            id = 1112942};
-                                         type_variance = [];
-                                         type_is_newtype = false;
-                                         type_expansion_scope = 0;
-                                         type_loc =
-                                          {Location.loc_start =
-                                            {Lexing.pos_fname = "";
-                                             pos_lnum = 4; pos_bol = 26;
-                                             pos_cnum = 30};
-                                           loc_end =
-                                            {Lexing.pos_fname = "";
-                                             pos_lnum = 4; pos_bol = 26;
-                                             pos_cnum = 36};
-                                           loc_ghost = false};
-                                         type_attributes = [];
-                                         type_immediate = false;
-                                         type_unboxed =
-                                          {Types.unboxed = false;
-                                           default = false}},
-                                        Types.Trec_first, Types.Exported)],
-                                     Typedtree.Tmodtype_implicit,
-                                     Typedtree.Tcoerce_alias (<abstr>,
-                                      Path.Pident <abstr>,
-                                      Typedtree.Tcoerce_none));
-                                   mod_loc =
-                                    {Location.loc_start =
-                                      {Lexing.pos_fname = ""; pos_lnum = 17;
-                                       pos_bol = 194; pos_cnum = 208};
-                                     loc_end =
-                                      {Lexing.pos_fname = ""; pos_lnum = 17;
-                                       pos_bol = 194; pos_cnum = 212};
-                                     loc_ghost = false};
-                                   mod_type =
-                                    Types.Mty_signature
-                                     [Types.Sig_type (<abstr>,
-                                       {Types.type_params = [];
-                                        type_arity = 0;
-                                        type_kind = Types.Type_abstract;
-                                        type_private = Asttypes.Public;
-                                        type_manifest =
-                                         Some
-                                          {Types.desc =
-                                            Types.Tconstr
-                                             (Path.Pdot (Path.Pident <abstr>,
-                                               "u"),
-                                             [], {contents = Types.Mnil});
-                                           level = 100000000; scope = 0;
-                                           id = 1112942};
-                                        type_variance = [];
-                                        type_is_newtype = false;
-                                        type_expansion_scope = 0;
-                                        type_loc =
-                                         {Location.loc_start =
-                                           {Lexing.pos_fname = "";
-                                            pos_lnum = 4; pos_bol = 26;
-                                            pos_cnum = 30};
-                                          loc_end =
-                                           {Lexing.pos_fname = "";
-                                            pos_lnum = 4; pos_bol = 26;
-                                            pos_cnum = 36};
-                                          loc_ghost = false};
-                                        type_attributes = [];
-                                        type_immediate = false;
-                                        type_unboxed =
-                                         {Types.unboxed = false;
-                                          default = false}},
-                                       Types.Trec_first, Types.Exported)];
-                                   mod_env = <abstr>; mod_attributes = []};
-                                 incl_type =
-                                  [Types.Sig_type (<abstr>,
-                                    {Types.type_params = []; type_arity = 0;
-                                     type_kind = Types.Type_abstract;
-                                     type_private = Asttypes.Public;
-                                     type_manifest =
-                                      Some
-                                       {Types.desc =
-                                         Types.Tconstr
-                                          (Path.Pdot (Path.Pident <abstr>,
-                                            "u"),
-                                          [], {contents = Types.Mnil});
-                                        level = 100000000; scope = 0;
-                                        id = 1112943};
-                                     type_variance = [];
-                                     type_is_newtype = false;
-                                     type_expansion_scope = 0;
-                                     type_loc =
-                                      {Location.loc_start =
-                                        {Lexing.pos_fname = ""; pos_lnum = 4;
-                                         pos_bol = 26; pos_cnum = 30};
-                                       loc_end =
-                                        {Lexing.pos_fname = ""; pos_lnum = 4;
-                                         pos_bol = 26; pos_cnum = 36};
-                                       loc_ghost = false};
-                                     type_attributes = [];
-                                     type_immediate = false;
-                                     type_unboxed =
-                                      {Types.unboxed = false;
-                                       default = false}},
-                                    Types.Trec_first, Types.Exported)];
-                                 incl_loc =
-                                  {Location.loc_start =
-                                    {Lexing.pos_fname = ""; pos_lnum = 17;
-                                     pos_bol = 194; pos_cnum = 200};
-                                   loc_end =
-                                    {Lexing.pos_fname = ""; pos_lnum = 17;
-                                     pos_bol = 194; pos_cnum = 212};
-                                   loc_ghost = false};
-                                 incl_attributes = []};
-                              str_loc =
-                               {Location.loc_start =
-                                 {Lexing.pos_fname = ""; pos_lnum = 17;
-                                  pos_bol = 194; pos_cnum = 200};
-                                loc_end =
-                                 {Lexing.pos_fname = ""; pos_lnum = 17;
-                                  pos_bol = 194; pos_cnum = 212};
-                                loc_ghost = false};
-                              str_env = <abstr>};
-                             {Typedtree.str_desc =
-                               Typedtree.Tstr_type (Asttypes.Recursive,
-                                [{Typedtree.typ_id = <abstr>;
-                                  typ_name =
-                                   {Asttypes.txt = "x";
-                                    loc =
-                                     {Location.loc_start =
-                                       {Lexing.pos_fname = ""; pos_lnum = 18;
-                                        pos_bol = 213; pos_cnum = 224};
-                                      loc_end =
-                                       {Lexing.pos_fname = ""; pos_lnum = 18;
-                                        pos_bol = 213; pos_cnum = 225};
-                                      loc_ghost = false}};
-                                  typ_params = [];
-                                  typ_type =
-                                   {Types.type_params = []; type_arity = 0;
-                                    type_kind = Types.Type_abstract;
-                                    type_private = Asttypes.Public;
-                                    type_manifest =
-                                     Some
-                                      {Types.desc =
-                                        Types.Tconstr (Path.Pident <abstr>,
-                                         [], {contents = Types.Mnil});
-                                       level = 100000000; scope = 0;
-                                       id = 1112945};
-                                    type_variance = [];
-                                    type_is_newtype = false;
-                                    type_expansion_scope = 0;
-                                    type_loc =
-                                     {Location.loc_start =
-                                       {Lexing.pos_fname = ""; pos_lnum = 18;
-                                        pos_bol = 213; pos_cnum = 219};
-                                      loc_end =
-                                       {Lexing.pos_fname = ""; pos_lnum = 18;
-                                        pos_bol = 213; pos_cnum = 229};
-                                      loc_ghost = false};
-                                    type_attributes = [];
-                                    type_immediate = false;
-                                    type_unboxed =
-                                     {Types.unboxed = false; default = false}};
-                                  typ_cstrs = [];
-                                  typ_kind = Typedtree.Ttype_abstract;
-                                  typ_private = Asttypes.Public;
-                                  typ_manifest =
-                                   Some
-                                    {Typedtree.ctyp_desc =
-                                      Typedtree.Ttyp_constr
-                                       (Path.Pident <abstr>,
-                                       {Asttypes.txt = Longident.Lident "u";
-                                        loc =
-                                         {Location.loc_start =
-                                           {Lexing.pos_fname = "";
-                                            pos_lnum = 18; pos_bol = 213;
-                                            pos_cnum = 228};
-                                          loc_end =
-                                           {Lexing.pos_fname = "";
-                                            pos_lnum = 18; pos_bol = 213;
-                                            pos_cnum = 229};
-                                          loc_ghost = false}},
-                                       []);
-                                     ctyp_type =
-                                      {Types.desc =
-                                        Types.Tconstr (Path.Pident <abstr>,
-                                         [], {contents = Types.Mnil});
-                                       level = 100000000; scope = 0;
-                                       id = 1112945};
-                                     ctyp_env = <abstr>;
-                                     ctyp_loc =
-                                      {Location.loc_start =
-                                        {Lexing.pos_fname = "";
-                                         pos_lnum = 18; pos_bol = 213;
-                                         pos_cnum = 228};
-                                       loc_end =
-                                        {Lexing.pos_fname = "";
-                                         pos_lnum = 18; pos_bol = 213;
-                                         pos_cnum = 229};
-                                       loc_ghost = false};
-                                     ctyp_attributes = []};
-                                  typ_loc =
-                                   {Location.loc_start =
-                                     {Lexing.pos_fname = ""; pos_lnum = 18;
-                                      pos_bol = 213; pos_cnum = 219};
-                                    loc_end =
-                                     {Lexing.pos_fname = ""; pos_lnum = 18;
-                                      pos_bol = 213; pos_cnum = 229};
-                                    loc_ghost = false};
-                                  typ_attributes = []}]);
-                              str_loc =
-                               {Location.loc_start =
-                                 {Lexing.pos_fname = ""; pos_lnum = 18;
-                                  pos_bol = 213; pos_cnum = 219};
-                                loc_end =
-                                 {Lexing.pos_fname = ""; pos_lnum = 18;
-                                  pos_bol = 213; pos_cnum = 229};
-                                loc_ghost = false};
-                              str_env = <abstr>}];
-                           str_type =
-                            [Types.Sig_type (<abstr>,
-                              {Types.type_params = []; type_arity = 0;
-                               type_kind = Types.Type_abstract;
-                               type_private = Asttypes.Public;
-                               type_manifest =
-                                Some
-                                 {Types.desc =
-                                   Types.Tconstr
-                                    (Path.Pdot (Path.Pident <abstr>, "u"),
-                                    [], {contents = Types.Mnil});
-                                  level = 100000000; scope = 0; id = 1112943};
-                               type_variance = []; type_is_newtype = false;
-                               type_expansion_scope = 0;
-                               type_loc =
-                                {Location.loc_start =
-                                  {Lexing.pos_fname = ""; pos_lnum = 4;
-                                   pos_bol = 26; pos_cnum = 30};
-                                 loc_end =
-                                  {Lexing.pos_fname = ""; pos_lnum = 4;
-                                   pos_bol = 26; pos_cnum = 36};
-                                 loc_ghost = false};
-                               type_attributes = []; type_immediate = false;
-                               type_unboxed =
-                                {Types.unboxed = false; default = false}},
-                              Types.Trec_first, Types.Exported);
-                             Types.Sig_type (<abstr>,
-                              {Types.type_params = []; type_arity = 0;
-                               type_kind = Types.Type_abstract;
-                               type_private = Asttypes.Public;
-                               type_manifest =
-                                Some
-                                 {Types.desc =
-                                   Types.Tconstr (Path.Pident <abstr>,
-                                    [], {contents = Types.Mnil});
-                                  level = 100000000; scope = 0; id = 1112945};
-                               type_variance = []; type_is_newtype = false;
-                               type_expansion_scope = 0;
-                               type_loc =
-                                {Location.loc_start =
-                                  {Lexing.pos_fname = ""; pos_lnum = 18;
-                                   pos_bol = 213; pos_cnum = 219};
-                                 loc_end =
-                                  {Lexing.pos_fname = ""; pos_lnum = 18;
-                                   pos_bol = 213; pos_cnum = 229};
-                                 loc_ghost = false};
-                               type_attributes = []; type_immediate = false;
-                               type_unboxed =
-                                {Types.unboxed = false; default = false}},
-                              Types.Trec_first, Types.Exported)];
-                           str_final_env = <abstr>};
-                        mod_loc =
-                         {Location.loc_start =
-                           {Lexing.pos_fname = ""; pos_lnum = 16;
-                            pos_bol = 169; pos_cnum = 187};
-                          loc_end =
-                           {Lexing.pos_fname = ""; pos_lnum = 19;
-                            pos_bol = 230; pos_cnum = 237};
-                          loc_ghost = false};
-                        mod_type =
-                         Types.Mty_signature
-                          [Types.Sig_type (<abstr>,
-                            {Types.type_params = []; type_arity = 0;
-                             type_kind = Types.Type_abstract;
-                             type_private = Asttypes.Public;
-                             type_manifest =
-                              Some
-                               {Types.desc =
-                                 Types.Tconstr
-                                  (Path.Pdot (Path.Pident <abstr>, "u"),
-                                  [], {contents = Types.Mnil});
-                                level = 100000000; scope = 0; id = 1112943};
-                             type_variance = []; type_is_newtype = false;
-                             type_expansion_scope = 0;
-                             type_loc =
-                              {Location.loc_start =
-                                {Lexing.pos_fname = ""; pos_lnum = 4;
-                                 pos_bol = 26; pos_cnum = 30};
-                               loc_end =
-                                {Lexing.pos_fname = ""; pos_lnum = 4;
-                                 pos_bol = 26; pos_cnum = 36};
-                               loc_ghost = false};
-                             type_attributes = []; type_immediate = false;
-                             type_unboxed =
-                              {Types.unboxed = false; default = false}},
-                            Types.Trec_first, Types.Exported);
-                           Types.Sig_type (<abstr>,
-                            {Types.type_params = []; type_arity = 0;
-                             type_kind = Types.Type_abstract;
-                             type_private = Asttypes.Public;
-                             type_manifest =
-                              Some
-                               {Types.desc =
-                                 Types.Tconstr (Path.Pident <abstr>,
-                                  [], {contents = Types.Mnil});
-                                level = 100000000; scope = 0; id = 1112945};
-                             type_variance = []; type_is_newtype = false;
-                             type_expansion_scope = 0;
-                             type_loc =
-                              {Location.loc_start =
-                                {Lexing.pos_fname = ""; pos_lnum = 18;
-                                 pos_bol = 213; pos_cnum = 219};
-                               loc_end =
-                                {Lexing.pos_fname = ""; pos_lnum = 18;
-                                 pos_bol = 213; pos_cnum = 229};
-                               loc_ghost = false};
-                             type_attributes = []; type_immediate = false;
-                             type_unboxed =
-                              {Types.unboxed = false; default = false}},
-                            Types.Trec_first, Types.Exported)];
-                        mod_env = <abstr>; mod_attributes = []};
-                      mb_attributes = [];
-                      mb_loc =
-                       {Location.loc_start =
-                         {Lexing.pos_fname = ""; pos_lnum = 16;
-                          pos_bol = 169; pos_cnum = 173};
-                        loc_end =
-                         {Lexing.pos_fname = ""; pos_lnum = 19;
-                          pos_bol = 230; pos_cnum = 237};
-                        loc_ghost = false}};
-                   str_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-                       pos_cnum = 173};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-                       pos_cnum = 237};
-                     loc_ghost = false};
-                   str_env = <abstr>}];
-                str_type =
-                 [Types.Sig_module (<abstr>, Types.Mp_present,
-                   {Types.md_type =
-                     Types.Mty_alias
-                      (Path.Pdot (Path.Pident <abstr>, "Caml"));
-                    md_attributes = [];
-                    md_loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                        pos_cnum = 72};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                        pos_cnum = 118};
-                      loc_ghost = false}},
-                   Types.Trec_not, Types.Exported);
-                  Types.Sig_module (<abstr>, Types.Mp_present,
-                   {Types.md_type =
-                     Types.Mty_signature
-                      [Types.Sig_type (<abstr>,
-                        {Types.type_params = []; type_arity = 0;
-                         type_kind = Types.Type_abstract;
-                         type_private = Asttypes.Public;
-                         type_manifest =
-                          Some
-                           {Types.desc =
-                             Types.Tconstr
-                              (Path.Pdot (Path.Pident <abstr>, "u"),
-                              [], {contents = Types.Mnil});
-                            level = 100000000; scope = 0; id = 1112943};
-                         type_variance = []; type_is_newtype = false;
-                         type_expansion_scope = 0;
-                         type_loc =
-                          {Location.loc_start =
-                            {Lexing.pos_fname = ""; pos_lnum = 4;
-                             pos_bol = 26; pos_cnum = 30};
-                           loc_end =
-                            {Lexing.pos_fname = ""; pos_lnum = 4;
-                             pos_bol = 26; pos_cnum = 36};
-                           loc_ghost = false};
-                         type_attributes = []; type_immediate = false;
-                         type_unboxed =
-                          {Types.unboxed = false; default = false}},
-                        Types.Trec_first, Types.Exported);
-                       Types.Sig_type (<abstr>,
-                        {Types.type_params = []; type_arity = 0;
-                         type_kind = Types.Type_abstract;
-                         type_private = Asttypes.Public;
-                         type_manifest =
-                          Some
-                           {Types.desc =
-                             Types.Tconstr (Path.Pident <abstr>, [],
-                              {contents = Types.Mnil});
-                            level = 100000000; scope = 0; id = 1112945};
-                         type_variance = []; type_is_newtype = false;
-                         type_expansion_scope = 0;
-                         type_loc =
-                          {Location.loc_start =
-                            {Lexing.pos_fname = ""; pos_lnum = 18;
-                             pos_bol = 213; pos_cnum = 219};
-                           loc_end =
-                            {Lexing.pos_fname = ""; pos_lnum = 18;
-                             pos_bol = 213; pos_cnum = 229};
-                           loc_ghost = false};
-                         type_attributes = []; type_immediate = false;
-                         type_unboxed =
-                          {Types.unboxed = false; default = false}},
-                        Types.Trec_first, Types.Exported)];
-                    md_attributes = [];
-                    md_loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-                        pos_cnum = 173};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-                        pos_cnum = 237};
-                      loc_ghost = false}},
-                   Types.Trec_not, Types.Exported)];
-                str_final_env = <abstr>};
-             mod_loc =
-              {Location.loc_start =
-                {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128;
-                 pos_cnum = 143};
-               loc_end =
-                {Lexing.pos_fname = ""; pos_lnum = 20; pos_bol = 238;
-                 pos_cnum = 243};
-               loc_ghost = false};
-             mod_type =
-              Types.Mty_signature
-               [Types.Sig_module (<abstr>, Types.Mp_present,
-                 {Types.md_type =
-                   Types.Mty_alias (Path.Pdot (Path.Pident <abstr>, "Caml"));
-                  md_attributes = [];
-                  md_loc =
-                   {Location.loc_start =
-                     {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-                      pos_cnum = 72};
-                    loc_end =
-                     {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-                      pos_cnum = 118};
-                    loc_ghost = false}},
-                 Types.Trec_not, Types.Exported);
-                Types.Sig_module (<abstr>, Types.Mp_present,
-                 {Types.md_type =
-                   Types.Mty_signature
-                    [Types.Sig_type (<abstr>,
-                      {Types.type_params = []; type_arity = 0;
-                       type_kind = Types.Type_abstract;
-                       type_private = Asttypes.Public;
-                       type_manifest =
-                        Some
-                         {Types.desc =
-                           Types.Tconstr
-                            (Path.Pdot (Path.Pident <abstr>, "u"), [],
-                            {contents = Types.Mnil});
-                          level = 100000000; scope = 0; id = 1112943};
-                       type_variance = []; type_is_newtype = false;
-                       type_expansion_scope = 0;
-                       type_loc =
-                        {Location.loc_start =
-                          {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                           pos_cnum = 30};
-                         loc_end =
-                          {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                           pos_cnum = 36};
-                         loc_ghost = false};
-                       type_attributes = []; type_immediate = false;
-                       type_unboxed =
-                        {Types.unboxed = false; default = false}},
-                      Types.Trec_first, Types.Exported);
-                     Types.Sig_type (<abstr>,
-                      {Types.type_params = []; type_arity = 0;
-                       type_kind = Types.Type_abstract;
-                       type_private = Asttypes.Public;
-                       type_manifest =
-                        Some
-                         {Types.desc =
-                           Types.Tconstr (Path.Pident <abstr>, [],
-                            {contents = Types.Mnil});
-                          level = 100000000; scope = 0; id = 1112945};
-                       type_variance = []; type_is_newtype = false;
-                       type_expansion_scope = 0;
-                       type_loc =
-                        {Location.loc_start =
-                          {Lexing.pos_fname = ""; pos_lnum = 18;
-                           pos_bol = 213; pos_cnum = 219};
-                         loc_end =
-                          {Lexing.pos_fname = ""; pos_lnum = 18;
-                           pos_bol = 213; pos_cnum = 229};
-                         loc_ghost = false};
-                       type_attributes = []; type_immediate = false;
-                       type_unboxed =
-                        {Types.unboxed = false; default = false}},
-                      Types.Trec_first, Types.Exported)];
-                  md_attributes = [];
-                  md_loc =
-                   {Location.loc_start =
-                     {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-                      pos_cnum = 173};
-                    loc_end =
-                     {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-                      pos_cnum = 237};
-                    loc_ghost = false}},
-                 Types.Trec_not, Types.Exported)];
-             mod_env = <abstr>; mod_attributes = []},
-           Types.Mty_signature
-            [Types.Sig_module (<abstr>, Types.Mp_present,
-              {Types.md_type =
-                Types.Mty_signature
-                 [Types.Sig_type (<abstr>,
-                   {Types.type_params = []; type_arity = 0;
-                    type_kind = Types.Type_abstract;
-                    type_private = Asttypes.Public;
-                    type_manifest =
-                     Some
-                      {Types.desc =
-                        Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                         [], {contents = Types.Mnil});
-                       level = 100000000; scope = 0; id = 1112959};
-                    type_variance = []; type_is_newtype = false;
-                    type_expansion_scope = 0;
-                    type_loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                        pos_cnum = 30};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                        pos_cnum = 36};
-                      loc_ghost = false};
-                    type_attributes = []; type_immediate = false;
-                    type_unboxed = {Types.unboxed = false; default = false}},
-                   Types.Trec_first, Types.Exported);
-                  Types.Sig_type (<abstr>,
-                   {Types.type_params = []; type_arity = 0;
-                    type_kind = Types.Type_abstract;
-                    type_private = Asttypes.Public;
-                    type_manifest =
-                     Some
-                      {Types.desc =
-                        Types.Tconstr (Path.Pident <abstr>, [],
-                         {contents = Types.Mnil});
-                       level = 100000000; scope = 0; id = 1112960};
-                    type_variance = []; type_is_newtype = false;
-                    type_expansion_scope = 0;
-                    type_loc =
-                     {Location.loc_start =
-                       {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                        pos_cnum = 219};
-                      loc_end =
-                       {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                        pos_cnum = 229};
-                      loc_ghost = false};
-                    type_attributes = []; type_immediate = false;
-                    type_unboxed = {Types.unboxed = false; default = false}},
-                   Types.Trec_first, Types.Exported)];
-               md_attributes = [];
-               md_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-                   pos_cnum = 173};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-                   pos_cnum = 237};
-                 loc_ghost = false}},
-              Types.Trec_not, Types.Exported)],
-           Typedtree.Tmodtype_implicit,
-           Typedtree.Tcoerce_structure ([(1, Typedtree.Tcoerce_none)],
-            [(<abstr>, 1, Typedtree.Tcoerce_none);
-             (<abstr>, 0, Typedtree.Tcoerce_none)]));
-         mod_loc =
-          {Location.loc_start =
-            {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128;
-             pos_cnum = 143};
-           loc_end =
-            {Lexing.pos_fname = ""; pos_lnum = 20; pos_bol = 238;
-             pos_cnum = 243};
-           loc_ghost = false};
-         mod_type =
-          Types.Mty_signature
-           [Types.Sig_module (<abstr>, Types.Mp_present,
-             {Types.md_type =
-               Types.Mty_signature
-                [Types.Sig_type (<abstr>,
-                  {Types.type_params = []; type_arity = 0;
-                   type_kind = Types.Type_abstract;
-                   type_private = Asttypes.Public;
-                   type_manifest =
-                    Some
-                     {Types.desc =
-                       Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                        [], {contents = Types.Mnil});
-                      level = 100000000; scope = 0; id = 1112959};
-                   type_variance = []; type_is_newtype = false;
-                   type_expansion_scope = 0;
-                   type_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 30};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                       pos_cnum = 36};
-                     loc_ghost = false};
-                   type_attributes = []; type_immediate = false;
-                   type_unboxed = {Types.unboxed = false; default = false}},
-                  Types.Trec_first, Types.Exported);
-                 Types.Sig_type (<abstr>,
-                  {Types.type_params = []; type_arity = 0;
-                   type_kind = Types.Type_abstract;
-                   type_private = Asttypes.Public;
-                   type_manifest =
-                    Some
-                     {Types.desc =
-                       Types.Tconstr (Path.Pident <abstr>, [],
-                        {contents = Types.Mnil});
-                      level = 100000000; scope = 0; id = 1112960};
-                   type_variance = []; type_is_newtype = false;
-                   type_expansion_scope = 0;
-                   type_loc =
-                    {Location.loc_start =
-                      {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                       pos_cnum = 219};
-                     loc_end =
-                      {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                       pos_cnum = 229};
-                     loc_ghost = false};
-                   type_attributes = []; type_immediate = false;
-                   type_unboxed = {Types.unboxed = false; default = false}},
-                  Types.Trec_first, Types.Exported)];
-              md_attributes = [];
-              md_loc =
-               {Location.loc_start =
-                 {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-                  pos_cnum = 173};
-                loc_end =
-                 {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-                  pos_cnum = 237};
-                loc_ghost = false}},
-             Types.Trec_not, Types.Exported)];
-         mod_env = <abstr>; mod_attributes = []};
-       mb_attributes = [];
-       mb_loc =
-        {Location.loc_start =
-          {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128;
-           pos_cnum = 130};
-         loc_end =
-          {Lexing.pos_fname = ""; pos_lnum = 20; pos_bol = 238;
-           pos_cnum = 243};
-         loc_ghost = false}};
-    str_loc =
-     {Location.loc_start =
-       {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128; pos_cnum = 130};
-      loc_end =
-       {Lexing.pos_fname = ""; pos_lnum = 20; pos_bol = 238; pos_cnum = 243};
-      loc_ghost = false};
-    str_env = <abstr>}];
- str_type =
-  [Types.Sig_module (<abstr>, Types.Mp_present,
-    {Types.md_type =
-      Types.Mty_signature
-       [Types.Sig_type (<abstr>,
-         {Types.type_params = []; type_arity = 0;
-          type_kind = Types.Type_abstract; type_private = Asttypes.Public;
-          type_manifest = None; type_variance = []; type_is_newtype = false;
-          type_expansion_scope = 0;
-          type_loc =
-           {Location.loc_start =
-             {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-              pos_cnum = 30};
-            loc_end =
-             {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-              pos_cnum = 36};
-            loc_ghost = false};
-          type_attributes = []; type_immediate = false;
-          type_unboxed = {Types.unboxed = false; default = false}},
-         Types.Trec_first, Types.Exported)];
-     md_attributes = [];
-     md_loc =
-      {Location.loc_start =
-        {Lexing.pos_fname = ""; pos_lnum = 3; pos_bol = 4; pos_cnum = 6};
-       loc_end =
-        {Lexing.pos_fname = ""; pos_lnum = 5; pos_bol = 37; pos_cnum = 42};
-       loc_ghost = false}},
-    Types.Trec_not, Types.Exported);
-   Types.Sig_module (<abstr>, Types.Mp_present,
-    {Types.md_type =
-      Types.Mty_signature
-       [Types.Sig_module (<abstr>, Types.Mp_present,
-         {Types.md_type =
-           Types.Mty_signature
-            [Types.Sig_type (<abstr>,
-              {Types.type_params = []; type_arity = 0;
-               type_kind = Types.Type_abstract;
-               type_private = Asttypes.Public;
-               type_manifest =
-                Some
-                 {Types.desc =
-                   Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                    [], {contents = Types.Mnil});
-                  level = 100000000; scope = 0; id = 1112941};
-               type_variance = []; type_is_newtype = false;
-               type_expansion_scope = 0;
-               type_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 30};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 36};
-                 loc_ghost = false};
-               type_attributes = []; type_immediate = false;
-               type_unboxed = {Types.unboxed = false; default = false}},
-              Types.Trec_first, Types.Exported)];
-          md_attributes = [];
-          md_loc =
-           {Location.loc_start =
-             {Lexing.pos_fname = ""; pos_lnum = 8; pos_bol = 68;
-              pos_cnum = 72};
-            loc_end =
-             {Lexing.pos_fname = ""; pos_lnum = 10; pos_bol = 111;
-              pos_cnum = 118};
-            loc_ghost = false}},
-         Types.Trec_not, Types.Exported)];
-     md_attributes = [];
-     md_loc =
-      {Location.loc_start =
-        {Lexing.pos_fname = ""; pos_lnum = 7; pos_bol = 46; pos_cnum = 48};
-       loc_end =
-        {Lexing.pos_fname = ""; pos_lnum = 11; pos_bol = 119; pos_cnum = 124};
-       loc_ghost = false}},
-    Types.Trec_not, Types.Exported);
-   Types.Sig_module (<abstr>, Types.Mp_present,
-    {Types.md_type =
-      Types.Mty_signature
-       [Types.Sig_module (<abstr>, Types.Mp_present,
-         {Types.md_type =
-           Types.Mty_signature
-            [Types.Sig_type (<abstr>,
-              {Types.type_params = []; type_arity = 0;
-               type_kind = Types.Type_abstract;
-               type_private = Asttypes.Public;
-               type_manifest =
-                Some
-                 {Types.desc =
-                   Types.Tconstr (Path.Pdot (Path.Pident <abstr>, "u"),
-                    [], {contents = Types.Mnil});
-                  level = 100000000; scope = 0; id = 1112959};
-               type_variance = []; type_is_newtype = false;
-               type_expansion_scope = 0;
-               type_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 30};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 4; pos_bol = 26;
-                   pos_cnum = 36};
-                 loc_ghost = false};
-               type_attributes = []; type_immediate = false;
-               type_unboxed = {Types.unboxed = false; default = false}},
-              Types.Trec_first, Types.Exported);
-             Types.Sig_type (<abstr>,
-              {Types.type_params = []; type_arity = 0;
-               type_kind = Types.Type_abstract;
-               type_private = Asttypes.Public;
-               type_manifest =
-                Some
-                 {Types.desc =
-                   Types.Tconstr (Path.Pident <abstr>, [],
-                    {contents = Types.Mnil});
-                  level = 100000000; scope = 0; id = 1112960};
-               type_variance = []; type_is_newtype = false;
-               type_expansion_scope = 0;
-               type_loc =
-                {Location.loc_start =
-                  {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                   pos_cnum = 219};
-                 loc_end =
-                  {Lexing.pos_fname = ""; pos_lnum = 18; pos_bol = 213;
-                   pos_cnum = 229};
-                 loc_ghost = false};
-               type_attributes = []; type_immediate = false;
-               type_unboxed = {Types.unboxed = false; default = false}},
-              Types.Trec_first, Types.Exported)];
-          md_attributes = [];
-          md_loc =
-           {Location.loc_start =
-             {Lexing.pos_fname = ""; pos_lnum = 16; pos_bol = 169;
-              pos_cnum = 173};
-            loc_end =
-             {Lexing.pos_fname = ""; pos_lnum = 19; pos_bol = 230;
-              pos_cnum = 237};
-            loc_ghost = false}},
-         Types.Trec_not, Types.Exported)];
-     md_attributes = [];
-     md_loc =
-      {Location.loc_start =
-        {Lexing.pos_fname = ""; pos_lnum = 13; pos_bol = 128; pos_cnum = 130};
-       loc_end =
-        {Lexing.pos_fname = ""; pos_lnum = 20; pos_bol = 238; pos_cnum = 243};
-       loc_ghost = false}},
-    Types.Trec_not, Types.Exported)];
- str_final_env = <abstr>}
+
 ```
