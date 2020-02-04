@@ -182,10 +182,10 @@
     </p>
     <ul class="modules">
      <li>
-      <code>Empty</code>
+      <a href="Empty/index.html"><code>Empty</code></a>
      </li>
      <li>
-      <code>EmptyAlias</code>
+      <a href="EmptyAlias/index.html"><code>EmptyAlias</code></a>
      </li>
     </ul>
    </aside>
@@ -719,13 +719,13 @@
        </dd>
       </dl>
       <div class="spec module" id="module-Recollection">
-       <a href="#module-Recollection" class="anchor"></a><code><span class="keyword">module</span> <a href="Recollection/index.html">Recollection</a> : <span class="keyword">functor</span> (<a href="Recollection/argument-1-C/index.html">C</a> : <a href="index.html#module-type-COLLECTION">COLLECTION</a>) <span>-&gt;</span> <a href="index.html#module-type-COLLECTION">COLLECTION</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="Recollection/index.html#type-collection">collection</a> = <span><a href="Recollection/index.html#argument-1-C">C</a>.element list</span> <span class="keyword">and</span> <span class="keyword">type</span> <a href="Recollection/index.html#type-element">element</a> = <a href="Recollection/argument-1-C/index.html#type-collection">C.collection</a></code>
+       <a href="#module-Recollection" class="anchor"></a><code><span class="keyword">module</span> <a href="Recollection/index.html">Recollection</a> : <span class="keyword">functor</span> (<a href="Recollection/argument-1-C/index.html">C</a> : <a href="index.html#module-type-COLLECTION">COLLECTION</a>) <span>-&gt;</span> <a href="index.html#module-type-COLLECTION">COLLECTION</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-collection">collection</a> = <span><a href="Recollection/argument-1-C/index.html#type-element">C.element</a> list</span> <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-element">element</a> = <a href="Recollection/argument-1-C/index.html#type-collection">C.collection</a></code>
       </div>
       <div class="spec module-type" id="module-type-MMM">
        <a href="#module-type-MMM" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-MMM/index.html">MMM</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
       </div>
       <div class="spec module-type" id="module-type-RECOLLECTION">
-       <a href="#module-type-RECOLLECTION" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-RECOLLECTION/index.html">RECOLLECTION</a> = <a href="index.html#module-type-MMM">MMM</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-RECOLLECTION/C/index.html">C</a> = <a href="index.html#module-Recollection">Recollection(CollectionModule)</a></code>
+       <a href="#module-type-RECOLLECTION" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-RECOLLECTION/index.html">RECOLLECTION</a> = <a href="index.html#module-type-MMM">MMM</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-MMM/index.html#module-C">C</a> = <a href="index.html#module-Recollection">Recollection(CollectionModule)</a></code>
       </div>
       <div class="spec module-type" id="module-type-RecollectionModule">
        <a href="#module-type-RecollectionModule" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-RecollectionModule/index.html">RecollectionModule</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
@@ -1568,7 +1568,7 @@
        <a href="#module-Dep9" class="anchor"></a><code><span class="keyword">module</span> <a href="Dep9/index.html">Dep9</a> : <span class="keyword">functor</span> (<a href="Dep9/argument-1-X/index.html">X</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span>) <span>-&gt;</span> <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
       </div>
       <div class="spec module-type" id="module-type-Dep10">
-       <a href="#module-type-Dep10" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-Dep10/index.html">Dep10</a> = <a href="Dep9/index.html#module-type-T">Dep9(Dep8).T</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-Dep10/index.html#type-t">t</a> = int</code>
+       <a href="#module-type-Dep10" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-Dep10/index.html">Dep10</a> = <a href="Dep9/index.html#module-type-T">Dep9(Dep8).T</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="Dep9/module-type-T/index.html#type-t">t</a> = int</code>
       </div>
       <div class="spec module" id="module-Dep11">
        <a href="#module-Dep11" class="anchor"></a><code><span class="keyword">module</span> <a href="Dep11/index.html">Dep11</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
@@ -1591,7 +1591,7 @@
        <a href="#module-With2" class="anchor"></a><code><span class="keyword">module</span> <a href="With2/index.html">With2</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
       </div>
       <div class="spec module" id="module-With3">
-       <a href="#module-With3" class="anchor"></a><code><span class="keyword">module</span> <a href="With3/index.html">With3</a> : <a href="index.html#module-type-With1">With1</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> = <a href="index.html#module-With2">With2</a></code>
+       <a href="#module-With3" class="anchor"></a><code><span class="keyword">module</span> <a href="With3/index.html">With3</a> : <a href="index.html#module-type-With1">With1</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With1/index.html#module-M">M</a> = <a href="index.html#module-With2">With2</a></code>
       </div>
       <dl>
        <dt class="spec type" id="type-with1">
@@ -1599,7 +1599,7 @@
        </dt>
       </dl>
       <div class="spec module" id="module-With4">
-       <a href="#module-With4" class="anchor"></a><code><span class="keyword">module</span> <a href="With4/index.html">With4</a> : <a href="index.html#module-type-With1">With1</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> := <a href="index.html#module-With2">With2</a></code>
+       <a href="#module-With4" class="anchor"></a><code><span class="keyword">module</span> <a href="With4/index.html">With4</a> : <a href="index.html#module-type-With1">With1</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With1/index.html#module-M">M</a> := <a href="index.html#module-With2">With2</a></code>
       </div>
       <dl>
        <dt class="spec type" id="type-with2">
@@ -1616,7 +1616,7 @@
        <a href="#module-With7" class="anchor"></a><code><span class="keyword">module</span> <a href="With7/index.html">With7</a> : <span class="keyword">functor</span> (<a href="With7/argument-1-X/index.html">X</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span>) <span>-&gt;</span> <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
       </div>
       <div class="spec module-type" id="module-type-With8">
-       <a href="#module-type-With8" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-With8/index.html">With8</a> = <a href="With7/index.html#module-type-T">With7(With6).T</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With8/M/index.html">M</a> = <a href="index.html#module-With5">With5</a> <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-With8/M/N/index.html#type-t">M.N.t</a> = <a href="With5/N/index.html#type-t">With5.N.t</a></code>
+       <a href="#module-type-With8" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-With8/index.html">With8</a> = <a href="With7/index.html#module-type-T">With7(With6).T</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="With7/module-type-T/index.html#module-M">M</a> = <a href="index.html#module-With5">With5</a> <span class="keyword">and</span> <span class="keyword">type</span> <a href="With7/module-type-T/M/N/index.html#type-t">M.N.t</a> = <a href="With5/N/index.html#type-t">With5.N.t</a></code>
       </div>
       <div class="spec module" id="module-With9">
        <a href="#module-With9" class="anchor"></a><code><span class="keyword">module</span> <a href="With9/index.html">With9</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
@@ -1625,7 +1625,7 @@
        <a href="#module-With10" class="anchor"></a><code><span class="keyword">module</span> <a href="With10/index.html">With10</a> : <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
       </div>
       <div class="spec module-type" id="module-type-With11">
-       <a href="#module-type-With11" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-With11/index.html">With11</a> = <a href="With7/index.html#module-type-T">With7(With10).T</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="module-type-With11/M/index.html">M</a> = <a href="index.html#module-With9">With9</a> <span class="keyword">and</span> <span class="keyword">type</span> <a href="module-type-With11/N/index.html#type-t">N.t</a> = int</code>
+       <a href="#module-type-With11" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-With11/index.html">With11</a> = <a href="With7/index.html#module-type-T">With7(With10).T</a> <span class="keyword">with</span> <span class="keyword">module</span> <a href="With7/module-type-T/index.html#module-M">M</a> = <a href="index.html#module-With9">With9</a> <span class="keyword">and</span> <span class="keyword">type</span> <a href="With7/module-type-T/N/index.html#type-t">N.t</a> = int</code>
       </div>
       <div class="spec module-type" id="module-type-NestedInclude1">
        <a href="#module-type-NestedInclude1" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-NestedInclude1/index.html">NestedInclude1</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
@@ -1675,7 +1675,7 @@
           </summary>
           <dl>
            <dt class="spec type" id="type-double_include">
-            <a href="#type-double_include" class="anchor"></a><code><span class="keyword">type</span> double_include</code>
+            <a href="#type-double_include" class="anchor"></a><code><span class="keyword">type</span> double_include</code><code> = <a href="DoubleInclude3/DoubleInclude2/index.html#type-double_include">DoubleInclude3.DoubleInclude2.double_include</a></code>
            </dt>
           </dl>
          </details>
@@ -1731,16 +1731,16 @@
      </p>
      <ul class="modules">
       <li>
-       <span class="xref-unresolved" title="unresolved reference to &quot;Dep1.X&quot;"><code>Dep1</code>.X</span>
+       <a href="Dep1/X/index.html"><code>Dep1.X</code></a>
       </li>
       <li>
        <code>DocOckTypes</code>
       </li>
       <li>
-       <span class="xref-unresolved" title="unresolved reference to &quot;Ocamlary.IncludeInclude1&quot;"><code>Ocamlary</code>.IncludeInclude1</span>
+       <a href="IncludeInclude1/index.html"><code>Ocamlary.IncludeInclude1</code></a>
       </li>
       <li>
-       <code>Ocamlary</code>
+       <a href="index.html"><code>Ocamlary</code></a>
       </li>
      </ul>
     </header>
@@ -1757,7 +1757,7 @@
         <span class="xref-unresolved" title="unresolved reference to &quot;Dep4.T&quot;"><code>Dep4</code>.T</span>
        </li>
        <li>
-        <span class="xref-unresolved" title="unresolved reference to &quot;A.Q&quot;"><code>A</code>.Q</span>
+        <a href="module-type-A/Q/index.html"><code>A.Q</code></a>
        </li>
       </ul>
      </header>
@@ -1778,7 +1778,7 @@
      </dt>
      <dd>
       <p>
-       Some ref to <a href="CanonicalTest/Base__Tests/C/index.html#type-t"><code>CanonicalTest.Base__Tests.C.t</code></a> and <a href="CanonicalTest/Base__Tests/L/index.html#val-id"><code>CanonicalTest.Base__Tests.L.id</code></a>. But also to <a href="CanonicalTest/Base/List/index.html"><code>Ocamlary.CanonicalTest.Base.List</code></a> and <a href="CanonicalTest/Base/List/index.html#type-t"><code>Ocamlary.CanonicalTest.Base.List.t</code></a>
+       Some ref to <a href="CanonicalTest/Base__Tests/C/index.html#type-t"><code>CanonicalTest.Base__Tests.C.t</code></a> and <a href="CanonicalTest/Base__List/index.html#val-id"><code>CanonicalTest.Base__Tests.L.id</code></a>. But also to <a href="CanonicalTest/Base/List/index.html"><code>Ocamlary.CanonicalTest.Base.List</code></a> and <a href="CanonicalTest/Base__List/index.html#type-t"><code>Ocamlary.CanonicalTest.Base.List.t</code></a>
       </p>
      </dd>
     </dl>

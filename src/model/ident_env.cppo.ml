@@ -306,9 +306,9 @@ let add_structure_tree_item parent item env =
     | Tstr_modtype mtd ->
         add_module_type parent mtd.mtd_id (ModuleTypeName.of_ident mtd.mtd_id) env
     | Tstr_include incl ->
-        Format.fprintf Format.err_formatter "Adding Tstr_include items\n%!";
+        (* Format.fprintf Format.err_formatter "Adding Tstr_include items\n%!"; *)
         let res = add_signature_type_items parent (Compat.signature incl.incl_type) env in
-        Format.fprintf Format.err_formatter "Finished adding Tstr_include items\n%!";
+        (* Format.fprintf Format.err_formatter "Finished adding Tstr_include items\n%!"; *)
         res
     | Tstr_class cls ->
         List.fold_right
@@ -448,12 +448,12 @@ end
 module Fragment = struct
 
   let rec read_module : Longident.t -> Paths.Fragment.Module.t = function
-    | Longident.Lident s -> `Dot(`Resolved `Root, s)
+    | Longident.Lident s -> `Dot(`Root, s)
     | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
     | Longident.Lapply _ -> assert false
 
   let read_type = function
-    | Longident.Lident s -> `Dot(`Resolved `Root, s)
+    | Longident.Lident s -> `Dot(`Root, s)
     | Longident.Ldot(p, s) -> `Dot((read_module p :> Paths.Fragment.Signature.t), s)
     | Longident.Lapply _ -> assert false
 

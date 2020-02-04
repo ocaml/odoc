@@ -14,7 +14,7 @@ this is probably the best thing to produce in this case.
 
 *)
 
-let rec signature (prefix : Cpath.resolved_module) sg =
+let rec signature (prefix : Cpath.Resolved.module_) sg =
   let open Component.Signature in
   let open Odoc_model.Names in
   let items =
@@ -28,34 +28,34 @@ let rec signature (prefix : Cpath.resolved_module) sg =
                 Component.Delayed.put (fun () ->
                     module_
                       (`Module
-                        (prefix, ModuleName.of_string (Ident.Name.module_ id)))
+                        (`Module prefix, ModuleName.of_string (Ident.Name.module_ id)))
                       (Component.Delayed.get m)) )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
                 Component.Delayed.put (fun () ->
-                  module_type
-                    (`ModuleType
-                      ( prefix,
-                        ModuleTypeName.of_string (Ident.Name.module_type id) ))
-                    (Component.Delayed.get mt) ) )
+                    module_type
+                      (`ModuleType
+                        ( `Module prefix,
+                          ModuleTypeName.of_string (Ident.Name.module_type id)
+                        ))
+                      (Component.Delayed.get mt)) )
         | Type (id, r, t) ->
             Type
               ( id,
                 r,
                 type_decl
-                  (`Type (prefix, TypeName.of_string (Ident.Name.type_ id)))
+                  (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
                   t )
-        | Exception _ | TypExt _ | Value _ | External _ | Class _
-        | ClassType _ | Include _ | ModuleSubstitution _ | TypeSubstitution _
-        | Comment _ ->
+        | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
+        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)
       sg.items
   in
   (* The identity substitution used here is to rename all of the bound idents in the signature *)
   Subst.signature Subst.identity { items; removed = sg.removed }
 
-and module_ : Cpath.resolved_module -> Component.Module.t -> Component.Module.t
+and module_ : Cpath.Resolved.module_ -> Component.Module.t -> Component.Module.t
     =
  fun prefix m ->
   match m.Component.Module.type_ with
@@ -65,7 +65,7 @@ and module_ : Cpath.resolved_module -> Component.Module.t -> Component.Module.t
   | ModuleType _ -> m
 
 and module_type :
-    Cpath.resolved_module_type ->
+    Cpath.Resolved.module_type ->
     Component.ModuleType.t ->
     Component.ModuleType.t =
  fun prefix m ->
@@ -86,14 +86,18 @@ and module_type :
   { m with expr }
 
 and type_decl :
-    Cpath.resolved_type -> Component.TypeDecl.t -> Component.TypeDecl.t =
+    Cpath.Resolved.type_ -> Component.TypeDecl.t -> Component.TypeDecl.t =
  fun path t ->
   let equation =
     let e = t.Component.TypeDecl.equation in
     let open Component.TypeDecl.Equation in
+    let constr_params = List.map (fun (desc,_) ->
+      match desc with
+      | Odoc_model.Lang.TypeDecl.Var x -> Component.TypeExpr.Var x
+      | Any -> Any) e.params in
     let manifest =
       match e.manifest with
-      | None -> Some (Component.TypeExpr.Constr (`Resolved path, []))
+      | None -> Some (Component.TypeExpr.Constr (`Resolved path, constr_params))
       | _ -> e.manifest
     in
     {

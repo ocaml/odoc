@@ -573,9 +573,7 @@ and read_include env parent incl =
     {parent; doc; decl; expansion}
 
 and read_structure env parent str =
-  Format.fprintf Format.err_formatter "Cmt.read_structure\n%!";
   let env = Env.add_structure_tree_items parent str env in
-  Format.fprintf Format.err_formatter "Cmt.read_structure: added all structure_tree_items\n%!";
   let items =
     List.fold_left
       (fun items item ->

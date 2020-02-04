@@ -81,10 +81,14 @@ module Path = struct
     | `Resolved x -> `Resolved (resolved_class_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
 
-  and resolved_module map (p : Cpath.resolved_module) :
+  and resolved_module map (p : Cpath.Resolved.module_) :
       Odoc_model.Paths.Path.Resolved.Module.t =
     match p with
-    | `Local id -> `Identifier (try List.assoc id map.module_ with Not_found -> failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
+    | `Local id ->
+        `Identifier
+          ( try List.assoc id map.module_
+            with Not_found ->
+              failwith (Format.asprintf "Not_found: %a" Ident.fmt id) )
     | `Substituted x -> resolved_module map x
     | `Identifier (#Odoc_model.Paths.Identifier.Module.t as y) -> `Identifier y
     | `Subst (mty, m) ->
@@ -92,39 +96,45 @@ module Path = struct
     | `SubstAlias (m1, m2) ->
         `SubstAlias (resolved_module map m1, resolved_module map m2)
     | `Hidden h -> `Hidden (resolved_module map h)
-    | `Module (p, n) -> `Module (resolved_module map p, n)
+    | `Module (p, n) -> `Module (resolved_parent map p, n)
     | `Canonical (r, m) -> `Canonical (resolved_module map r, module_ map m)
     | `Apply (m1, m2) -> `Apply (resolved_module map m1, module_ map m2)
     | `Alias (m1, m2) -> `Alias (resolved_module map m1, resolved_module map m2)
 
-  and resolved_module_type map (p : Cpath.resolved_module_type) :
+  and resolved_parent map (p : Cpath.Resolved.parent) =
+    match p with
+    | `Module m -> resolved_module map m
+    | `ModuleType _ 
+    | `FragmentRoot -> failwith "Invalid"
+
+  and resolved_module_type map (p : Cpath.Resolved.module_type) :
       Odoc_model.Paths.Path.Resolved.ModuleType.t =
     match p with
     | `Identifier (#Odoc_model.Paths.Identifier.ModuleType.t as y) ->
         `Identifier y
     | `Local id -> `Identifier (List.assoc id map.module_type)
-    | `ModuleType (p, name) -> `ModuleType (resolved_module map p, name)
+    | `ModuleType (p, name) -> `ModuleType (resolved_parent map p, name)
     | `Substituted s -> resolved_module_type map s
 
-  and resolved_type map (p : Cpath.resolved_type) :
+  and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
     | `Identifier (#Odoc_model.Paths_types.Identifier.path_type as y) ->
         `Identifier y
     | `Local id -> `Identifier (List.assoc id map.path_type)
-    | `Type (p, name) -> `Type (resolved_module map p, name)
-    | `Class (p, name) -> `Class (resolved_module map p, name)
-    | `ClassType (p, name) -> `ClassType (resolved_module map p, name)
+    | `Type (p, name) -> `Type (resolved_parent map p, name)
+    | `Class (p, name) -> `Class (resolved_parent map p, name)
+    | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> resolved_type map s
 
-  and resolved_class_type map (p : Cpath.resolved_class_type) :
+  and resolved_class_type map (p : Cpath.Resolved.class_type) :
       Odoc_model.Paths.Path.Resolved.ClassType.t =
     match p with
     | `Identifier (#Odoc_model.Paths_types.Identifier.path_class_type as y) ->
         `Identifier y
     | `Local id -> `Identifier (List.assoc id map.path_class_type)
-    | `Class (p, name) -> `Class (resolved_module map p, name)
-    | `ClassType (p, name) -> `ClassType (resolved_module map p, name)
+    | `Class (p, name) -> `Class (resolved_parent map p, name)
+    | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> resolved_class_type map s
 
   and resolved_label_parent_reference map (p : Cref.Resolved.label_parent) =
@@ -152,8 +162,12 @@ module Path = struct
   and resolved_reference map (p : Cref.Resolved.any) =
     match p with
     | `Identifier s -> `Identifier s
-    | `Local id -> `Identifier (try List.assoc id map.any with Not_found ->
-      failwith (Format.asprintf "XXX Failed to find id: %a" Ident.fmt id))
+    | `Local id ->
+        `Identifier
+          ( try List.assoc id map.any
+            with Not_found ->
+              failwith
+                (Format.asprintf "XXX Failed to find id: %a" Ident.fmt id) )
     | `SubstAlias (m1, m2) ->
         `SubstAlias (resolved_module map m1, resolved_module_reference map m2)
     | `Module (p, n) -> `Module (resolved_signature_reference map p, n)
@@ -196,7 +210,12 @@ module Path = struct
   and resolved_signature_reference map (p : Cref.Resolved.signature) =
     match p with
     | `Identifier s -> `Identifier s
-    | `Local id -> `Identifier (try List.assoc id map.signatures with Not_found -> failwith (Format.asprintf "Not_found finding %a\n%!" Ident.fmt id))
+    | `Local id ->
+        `Identifier
+          ( try List.assoc id map.signatures
+            with Not_found ->
+              failwith (Format.asprintf "Not_found finding %a\n%!" Ident.fmt id)
+          )
     | `SubstAlias (m1, m2) ->
         `SubstAlias (resolved_module map m1, resolved_module_reference map m2)
     | `Module (p, n) -> `Module (resolved_signature_reference map p, n)
@@ -286,6 +305,48 @@ module Path = struct
     | `InstanceVariable (p, n) ->
         `InstanceVariable (class_signature_reference map p, n)
     | `Label (p, n) -> `Label (label_parent_reference map p, n)
+
+    let rec module_fragment : maps -> Cfrag.module_ -> Odoc_model.Paths.Fragment.Module.t =
+      fun map f ->
+        match f with
+        | `Resolved r -> `Resolved (resolved_module_fragment map r)
+        | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+
+    and signature_fragment : maps -> Cfrag.signature -> Odoc_model.Paths.Fragment.Signature.t =
+      fun map f ->
+        match f with
+       | `Resolved r -> `Resolved (resolved_signature_fragment map r)
+       | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+       | `Root -> `Root
+
+and type_fragment : maps -> Cfrag.type_ -> Odoc_model.Paths.Fragment.Type.t =
+    fun map f ->
+      match f with
+      | `Resolved r -> `Resolved (resolved_type_fragment map r)
+      | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+
+and resolved_module_fragment : maps -> Cfrag.resolved_module -> Odoc_model.Paths.Fragment.Resolved.Module.t =
+      fun map f ->
+        match f with
+        | `Subst (p, f) -> `Subst (resolved_module_type map p, resolved_module_fragment map f)
+        | `SubstAlias (p, f) -> `SubstAlias (resolved_module map p, resolved_module_fragment map f)
+        | `Module (p, n) -> `Module (resolved_signature_fragment map p, n)
+
+and resolved_signature_fragment : maps -> Cfrag.resolved_signature -> Odoc_model.Paths.Fragment.Resolved.Signature.t =
+      fun map f ->
+      match f with
+  | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
+  | `Root (`Module p) -> `Root (`Module (resolved_module map p))
+  | `Subst _ | `SubstAlias _ | `Module _ as x -> (resolved_module_fragment map x :> Odoc_model.Paths.Fragment.Resolved.Signature.t)
+
+and resolved_type_fragment : maps -> Cfrag.resolved_type -> Odoc_model.Paths.Fragment.Resolved.Type.t = 
+      fun map f ->
+      match f with
+  | `Type (p, n) -> `Type (resolved_signature_fragment map p, n)
+  | `ClassType (p, n) -> `ClassType (resolved_signature_fragment map p, n)
+  | `Class (p, n) -> `Class (resolved_signature_fragment map p, n)
+
+
 end
 
 module ExtractIDs = struct
@@ -399,11 +460,12 @@ module ExtractIDs = struct
       any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
-  and include_ parent map i = signature parent map i.Include.expansion_
+  and include_ parent map i =
+    signature parent map i.Include.expansion_
 
-  and docs parent map =
-    List.fold_left
-      (fun map item ->
+  and docs parent map d =
+    List.fold_right
+      (fun item map ->
         match item with
         | `Heading (_, id, _) ->
             let identifier =
@@ -411,7 +473,7 @@ module ExtractIDs = struct
             in
             { map with labels = (id, identifier) :: map.labels }
         | _ -> map)
-      map
+      d map
 
   and docs_or_stop parent map = function
     | `Docs d -> docs parent map d
@@ -441,36 +503,39 @@ module ExtractIDs = struct
 
   and class_signature parent map sg =
     let open ClassSignature in
-    List.fold_left
-      (fun map item ->
+    List.fold_right
+      (fun item map ->
         match item with
         | Method (id, _) -> method_ parent map id
         | InstanceVariable (id, _) -> instance_variable parent map id
         | Inherit _ -> map
         | Constraint _ -> map
         | Comment c -> docs_or_stop (parent :> Identifier.LabelParent.t) map c)
-      map sg
+      sg map
 
   and signature_items parent map items =
     let open Signature in
     let lpp = (parent :> Identifier.LabelParent.t) in
-    List.fold_left
-      (fun map item ->
+    List.fold_right
+      (fun item map ->
         match item with
-        | Module (id, _, m) -> docs lpp (module_ parent map id) (Delayed.get m).doc
+        | Module (id, _, m) ->
+            docs lpp (module_ parent map id) (Delayed.get m).doc
         | ModuleSubstitution (id, m) -> docs lpp (module_ parent map id) m.doc
-        | ModuleType (id, mt) -> docs lpp (module_type parent map id) (Delayed.get mt).doc
+        | ModuleType (id, mt) ->
+            docs lpp (module_type parent map id) (Delayed.get mt).doc
         | Type (id, _, t) -> docs lpp (type_decl parent map id) t.doc
         | TypeSubstitution (id, t) -> docs lpp (type_decl parent map id) t.doc
         | Exception (id, e) -> docs lpp (exception_ parent map id) e.doc
         | Value (id, v) -> docs lpp (value_ parent map id) v.doc
-        | External (id, e) -> docs lpp (value_ parent map id) e.doc (* externals are values *)
+        | External (id, e) ->
+            docs lpp (value_ parent map id) e.doc (* externals are values *)
         | Class (id, _, c) -> docs lpp (class_ parent map id) c.doc
         | ClassType (id, _, c) -> docs lpp (class_type parent map id) c.doc
-        | Include i -> include_ parent map i
+        | Include i -> docs lpp (include_ parent map i) i.doc
         | TypExt t -> docs lpp map t.doc
         | Comment d -> docs_or_stop (parent :> Identifier.LabelParent.t) map d)
-      map items
+      items map
 
   and signature parent map sg =
     let open Signature in
@@ -493,7 +558,8 @@ let rec signature_items id map items =
           with e ->
             let bt = Printexc.get_backtrace () in
             Format.fprintf Format.err_formatter
-              "Failed (%s) during type lookup: %a\nbt:\n%s\n%!" (Printexc.to_string e) Ident.fmt id bt;
+              "Failed (%s) during type lookup: %a\nbt:\n%s\n%!"
+              (Printexc.to_string e) Ident.fmt id bt;
             raise e )
       | Exception (id', e) ->
           Odoc_model.Lang.Signature.Exception
@@ -504,14 +570,13 @@ let rec signature_items id map items =
       | TypExt t -> Odoc_model.Lang.Signature.TypExt (typ_ext map id t) :: acc
       | Value (id, v) ->
           Odoc_model.Lang.Signature.Value (value_ map id v) :: acc
-      | Include i ->
-          begin
-            try
-            Odoc_model.Lang.Signature.Include (include_ id map i) :: acc
-            with e ->
-              Format.fprintf Format.err_formatter "Caught exception %s with include: %a" (Printexc.to_string e) Component.Fmt.include_ i;
-              raise e
-          end
+      | Include i -> (
+          try Odoc_model.Lang.Signature.Include (include_ id map i) :: acc
+          with e ->
+            Format.fprintf Format.err_formatter
+              "Caught exception %s with include: %a" (Printexc.to_string e)
+              Component.Fmt.include_ i;
+            raise e )
       | External (id, e) ->
           Odoc_model.Lang.Signature.External (external_ map id e) :: acc
       | ModuleSubstitution (id, m) ->
@@ -522,7 +587,8 @@ let rec signature_items id map items =
           Odoc_model.Lang.Signature.TypeSubstitution (type_decl map id t) :: acc
       | Class (id, r, c) ->
           Odoc_model.Lang.Signature.Class (r, class_ map id c) :: acc
-      | ClassType _ -> acc
+      | ClassType (id, r, c) ->
+          Odoc_model.Lang.Signature.ClassType (r, class_type map id c) :: acc
       | Comment c ->
           Odoc_model.Lang.Signature.Comment (docs_or_stop map c) :: acc)
     items []
@@ -760,10 +826,10 @@ and module_type_expr map identifier =
   let substitution = function
     | Component.ModuleType.ModuleEq (frag, decl) ->
         Odoc_model.Lang.ModuleType.ModuleEq
-          (frag, module_decl map identifier decl)
-    | ModuleSubst (frag, path) -> ModuleSubst (frag, Path.module_ map path)
-    | TypeEq (frag, eqn) -> TypeEq (frag, type_decl_equation map eqn)
-    | TypeSubst (frag, eqn) -> TypeSubst (frag, type_decl_equation map eqn)
+          (Path.module_fragment map frag, module_decl map identifier decl)
+    | ModuleSubst (frag, path) -> ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
+    | TypeEq (frag, eqn) -> TypeEq (Path.type_fragment map frag, type_decl_equation map eqn)
+    | TypeSubst (frag, eqn) -> TypeSubst (Path.type_fragment map frag, type_decl_equation map eqn)
   in
   function
   | Component.ModuleType.Path p ->
@@ -799,6 +865,7 @@ and module_type map id mty =
     Odoc_model.Lang.ModuleType.id = identifier;
     doc = docs map mty.doc;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
+    display_expr = None;
     expansion;
   }
 
@@ -883,7 +950,7 @@ and type_expr_package map t =
       Path.module_type map t.Component.TypeExpr.Package.path;
     substitutions =
       List.map
-        (fun (frag, texpr) -> (frag, type_expr map texpr))
+        (fun (frag, texpr) -> (Path.type_fragment map frag, type_expr map texpr))
         t.substitutions;
   }
 
@@ -1035,14 +1102,12 @@ and tag map t =
 and block_element map (d : Component.CComment.block_element) :
     Odoc_model.Comment.block_element =
   match d with
-  | `Heading (l, id, content) -> begin
-    try
-      `Heading (l, List.assoc id map.labels, content)
-    with Not_found ->
-      Format.fprintf Format.err_formatter "Failed to find id: %a\n" Ident.fmt
-        id;
-      raise Not_found
-  end
+  | `Heading (l, id, content) -> (
+      try `Heading (l, List.assoc id map.labels, content)
+      with Not_found ->
+        Format.fprintf Format.err_formatter "Failed to find id: %a\n" Ident.fmt
+          id;
+        raise Not_found )
   | `Tag t -> `Tag (tag map t)
   | #Component.CComment.nestable_block_element as n ->
       (nestable_block_element map n :> Odoc_model.Comment.block_element)

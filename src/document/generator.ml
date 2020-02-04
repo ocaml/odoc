@@ -124,12 +124,13 @@ struct
     | `Resolved rr -> render_resolved_fragment rr
     | `Dot (prefix, suffix) ->
       dot (render_fragment (prefix :> Fragment.t)) suffix
+    | `Root -> ""
 
   and render_resolved_fragment : Fragment.Resolved.t -> string =
     let open Fragment.Resolved in
     fun fragment ->
       match fragment with
-      | `Root -> ""
+      | `Root _ -> ""
       | `Subst (_, rr) -> render_resolved_fragment (rr :> t)
       | `SubstAlias (_, rr) -> render_resolved_fragment (rr :> t)
       | `Module (rr, s) ->
@@ -146,7 +147,8 @@ struct
     fun ~stop_before ~base fragment ->
     let open Fragment in
     match fragment with
-    | `Resolved `Root ->
+    | `Root 
+    | `Resolved (`Root _) ->
       let id = (base :> Identifier.t) in
       begin match Url.from_identifier ~stop_before:true id with
       | Ok href ->
@@ -159,7 +161,7 @@ struct
         unresolved [inline @@ Text (Identifier.name id)]
       end
     | `Resolved rr ->
-      let id = Resolved.identifier base (rr :> Resolved.t) in
+      let id = Resolved.identifier (rr :> Resolved.t) in
       let txt = render_resolved_fragment rr in
       begin match Url.from_identifier ~stop_before id with
       | Ok href ->

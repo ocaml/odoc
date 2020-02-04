@@ -43,7 +43,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
     Page.load input >>= fun page ->
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
-      Odoc_xref2.Resolve2.resolve_page resolve_env page
+      Odoc_xref2.Link.resolve_page resolve_env page
     in
     let pkg_name = root.package in
     let pages = to_html_tree_page ?theme_uri ~syntax odoctree in
@@ -59,7 +59,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       Format.fprintf fmt "%t@?" content;
       close_out oc
     );
-    Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times;
+    (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
     Ok ()
   | Compilation_unit {hidden = _; _} ->
     (* If hidden, we should not generate HTML. See
@@ -68,17 +68,19 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
 (*    let unit = Odoc_xref.Lookup.lookup unit in *)
     let odoctree =
       let env = Env.build env (`Unit unit) in
-      let startresolve = Unix.gettimeofday () in
-      Format.fprintf Format.err_formatter "**** Resolve2...\n%!";
-      let resolved = Odoc_xref2.Resolve2.resolve env unit in
-      let startexpand = Unix.gettimeofday () in
-      Format.fprintf Format.err_formatter "**** Expand...\n%!";
-      let expanded = Odoc_xref2.Expand.expand2 env resolved in
-      let finishexpand = Unix.gettimeofday () in
-      Format.fprintf Format.err_formatter "**** Finished: Resolve=%f Expand=%f\n%!" (startexpand -. startresolve) (finishexpand -. startexpand);
-      Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times;
-      expanded
+      (* let startlink = Unix.gettimeofday () in *)
+      (* Format.fprintf Format.err_formatter "**** Link...\n%!"; *)
+      let linked = Odoc_xref2.Link.link env unit in
+      (* let finishlink = Unix.gettimeofday () in *)
+      (* Format.fprintf Format.err_formatter "**** Finished: Link=%f\n%!" (finishlink -. startlink); *)
+      (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
+      linked
     in
+    (* let stats = Odoc_xref2.Tools.(Memos1.stats memo) in
+    Format.fprintf Format.err_formatter "Hashtbl memo1: n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length; *)
+    let stats = Odoc_xref2.Tools.(Memos2.stats memo2) in
+    Format.fprintf Format.err_formatter "Hashtbl memo2: n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length;
+    Format.fprintf Format.err_formatter "time wasted: %f\n%!" (!Odoc_xref2.Tools.time_wasted);
     let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
@@ -129,7 +131,7 @@ let from_mld ~env ?(syntax=Renderer.OCaml) ~package ~output:root_dir ~warn_error
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
 (*    let page = Odoc_xref.Lookup.lookup_page page in*)
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref2.Resolve.resolve_page env page in
+    let resolved = Odoc_xref2.Link.resolve_page env page in
     let pages = to_html_tree_page ~syntax resolved in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;

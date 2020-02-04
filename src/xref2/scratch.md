@@ -4,165 +4,100 @@
 open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;
-#print_length 65536;;
+#print_length 6000;;
+#print_depth 20;;
 ```
 
 ```ocaml env=e1
 let test_data = {|
-module type Applicative_infix = sig
-  type 'a t
-end
-
-module type Let_syntax = sig
-  type 'a t
-
-  module Open_on_rhs_intf : sig
-    module type S
-  end
-
-  module Let_syntax : sig
-    include Applicative_infix with type 'a t := 'a t
-
-    module Let_syntax : sig
-      module Open_on_rhs : Open_on_rhs_intf.S
-    end
-  end
-end
-
-module type For_let_syntax = sig
-  type 'a t
-
-  include Applicative_infix with type 'a t := 'a t
-end
-
-module type Applicative = sig
-  module Make_let_syntax
-      (X : For_let_syntax)
-      (Intf : sig module type S end)
-      (Impl : Intf.S) :
-    Let_syntax with type 'a t := 'a X.t with module Open_on_rhs_intf := Intf
-end
-|};;
-let cmti = Common.cmti_of_string test_data;;
-let _, _, sg = Odoc_loader__Cmti.read_interface Common.root "Root" cmti;;
-let resolved = Resolve.signature Env.empty sg;;
-let env = Env.open_signature resolved Env.empty;;
-let applicative = Common.LangUtils.Lens.(get (Signature.module_type "Applicative") resolved);;
-let sg2 = Common.LangUtils.Lens.(get (ModuleType.expr |-~ option |-~ ModuleType.expr_signature) applicative);;
-let env = Env.open_signature sg2 env;;
-let m2 = Common.LangUtils.Lens.(get(Signature.module_ "Make_let_syntax") sg2);;
-let env = Env.add_functor_args (m2.Odoc_model.Lang.Module.id :> Odoc_model.Paths.Identifier.Signature.t) env;;
-let type_ = Expand.module_decl env m2.Odoc_model.Lang.Module.id m2.Odoc_model.Lang.Module.type_;;
-let id = m2.Odoc_model.Lang.Module.id;;
-let m' = Env.lookup_module id env;;
-let expr = match m'.Component.Module.type_ with | Component.Module.ModuleType e -> e | _ -> failwith "bah";;
-let expanded = 
-  try 
-    ignore (Expand.expansion_of_module_type_expr (id :> Odoc_model.Paths.Identifier.Signature.t) env expr);
-    "OK"
-  with _ ->
-    Printexc.get_backtrace ()
+module type RESULT = sig type u type v end
+module Make (S : sig type t end)
+  : RESULT
+      with type u := S.t
+      with type v = S.t
+|}
+let sg = Common.signature_of_mli_string test_data;;
 ```
 
 ```ocaml env=e1
-# #install_printer Common.Ident.print_with_scope;;
-# m';
-- : Component.Module.t =
-{Odoc_xref2.Component.Module.doc = [];
- type_ =
-  Odoc_xref2.Component.Module.ModuleType
-   (Odoc_xref2.Component.ModuleType.Functor
-     (Some
-       {Odoc_xref2.Component.FunctorArgument.id = `LParameter ("X", 62);
-        expr =
-         Odoc_xref2.Component.ModuleType.Path
-          (`Resolved
-             (`Identifier
-                (`ModuleType (`Root (Common.root, "Root"), "For_let_syntax"))));
-        expansion = None},
-     Odoc_xref2.Component.ModuleType.Functor
-      (Some
-        {Odoc_xref2.Component.FunctorArgument.id = `LParameter ("Intf", 63);
-         expr =
-          Odoc_xref2.Component.ModuleType.Signature
-           {Odoc_xref2.Component.Signature.items =
-             [Odoc_xref2.Component.Signature.ModuleType
-               (`LModuleType ("S", 64),
-               {Odoc_xref2.Component.Delayed.v =
-                 Some
-                  {Odoc_xref2.Component.ModuleType.doc = []; expr = None;
-                   expansion = None};
-                get = <fun>})];
-            removed = []};
-         expansion = Some Odoc_xref2.Component.Module.AlreadyASig},
-      Odoc_xref2.Component.ModuleType.Functor
+# sg;;
+- : Odoc_model.Lang.Signature.t =
+[Odoc_model.Lang.Signature.ModuleType
+  {Odoc_model.Lang.ModuleType.id =
+    `ModuleType (`Root (Common.root, "Root"), "RESULT");
+   doc = [];
+   expr =
+    Some
+     (Odoc_model.Lang.ModuleType.Signature
+       [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+         {Odoc_model.Lang.TypeDecl.id =
+           `Type (`ModuleType (`Root (Common.root, "Root"), "RESULT"), "u");
+          doc = [];
+          equation =
+           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+            manifest = None; constraints = []};
+          representation = None});
+        Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+         {Odoc_model.Lang.TypeDecl.id =
+           `Type (`ModuleType (`Root (Common.root, "Root"), "RESULT"), "v");
+          doc = [];
+          equation =
+           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+            manifest = None; constraints = []};
+          representation = None})]);
+   display_expr = None; expansion = Some Odoc_model.Lang.Module.AlreadyASig};
+ Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+  {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "Make");
+   doc = [];
+   type_ =
+    Odoc_model.Lang.Module.ModuleType
+     (Odoc_model.Lang.ModuleType.Functor
        (Some
-         {Odoc_xref2.Component.FunctorArgument.id = `LParameter ("Impl", 65);
+         {Odoc_model.Lang.FunctorArgument.id =
+           `Parameter (`Module (`Root (Common.root, "Root"), "Make"), "S");
           expr =
-           Odoc_xref2.Component.ModuleType.Path
-            (`Resolved (`ModuleType (`Local (`LParameter ("Intf", 63)), "S")));
-          expansion = None},
-       Odoc_xref2.Component.ModuleType.With
-        (Odoc_xref2.Component.ModuleType.With
-          (Odoc_xref2.Component.ModuleType.Path
+           Odoc_model.Lang.ModuleType.Signature
+            [Odoc_model.Lang.Signature.Type
+              (Odoc_model.Lang.Signature.Ordinary,
+              {Odoc_model.Lang.TypeDecl.id =
+                `Type
+                  (`Parameter
+                     (`Module (`Root (Common.root, "Root"), "Make"), "S"),
+                   "t");
+               doc = [];
+               equation =
+                {Odoc_model.Lang.TypeDecl.Equation.params = [];
+                 private_ = false; manifest = None; constraints = []};
+               representation = None})];
+          expansion = Some Odoc_model.Lang.Module.AlreadyASig},
+       Odoc_model.Lang.ModuleType.With
+        (Odoc_model.Lang.ModuleType.With
+          (Odoc_model.Lang.ModuleType.Path
             (`Resolved
                (`Identifier
-                  (`ModuleType (`Root (Common.root, "Root"), "Let_syntax")))),
-          [Odoc_xref2.Component.ModuleType.TypeSubst
-            (`Resolved (`Type (`Root, "t")),
-            {Odoc_xref2.Component.TypeDecl.Equation.params =
-              [(Odoc_model.Lang.TypeDecl.Var "a", None)];
-             private_ = false;
+                  (`ModuleType (`Root (Common.root, "Root"), "RESULT")))),
+          [Odoc_model.Lang.ModuleType.TypeSubst (`Dot (`Root, "u"),
+            {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
              manifest =
               Some
-               (Odoc_xref2.Component.TypeExpr.Constr
-                 (`Resolved (`Type (`Local (`LParameter ("X", 62)), "t")),
+               (Odoc_model.Lang.TypeExpr.Constr
+                 (`Dot
+                    (`Resolved
+                       (`Identifier (`Parameter (`Module (`Root ...), "S"))),
+                       "t"),
+                    []));
+              constraints = []})]),
+          [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "v"),
+            {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+             manifest =
+              Some
+               (Odoc_model.Lang.TypeExpr.Constr
+                 (`Dot
+                    (`Resolved
+                       (`Identifier
+                          (`Parameter (`Module (`Root (...), "Make"), "S"))),
+                     "t"),
                  []));
-             constraints = []})]),
-        [Odoc_xref2.Component.ModuleType.ModuleSubst
-          (`Resolved (`Module (`Root, "Open_on_rhs_intf")),
-          `Resolved (`Local (`LParameter ("Intf", 63))))])))));
- canonical = None; hidden = false; display_type = None; expansion = None}
-```
-
-
-```ocaml env=e1
-let test_data = {|
-module With10 : sig
-  module type T = sig
-    module M : sig
-      module type S
-    end
-    module N : M.S
-  end
-  (** {!With10.T} is a submodule type. *)
-end
-|};;
-let cmti = Common.cmti_of_string test_data;;
-let _, _, sg = Odoc_loader__Cmti.read_interface Common.root "Root" cmti;;
-let resolved = Resolve2.signature Env.empty sg;;
-let env = Env.open_signature resolved Env.empty;;
-let with10 = Common.LangUtils.Lens.(get (Signature.module_ "With10") resolved);;
-let id = with10.Odoc_model.Lang.Module.id;;
-let m' = Env.lookup_module id env;;
-let expr = match m'.Component.Module.type_ with | Component.Module.ModuleType e -> e | _ -> failwith "bah";;
-
-(*let expanded = 
-    Expand.expansion_of_module_type_expr (id :> Odoc_model.Paths.Identifier.Signature.t) env expr;;*)
-```
-
-```ocaml env=e1
-# #install_printer Common.Ident.print_with_scope;;
-# m';;
-- : Component.Module.t =
-{Odoc_xref2.Component.Module.doc = [];
- type_ =
-  Odoc_xref2.Component.Module.ModuleType
-   (Odoc_xref2.Component.ModuleType.Signature
-     {Odoc_xref2.Component.Signature.items =
-       [Odoc_xref2.Component.Signature.ModuleType (`LModuleType ("T", 87),
-         {Odoc_xref2.Component.Delayed.v = None; get = <fun>})];
-      removed = []});
- canonical = None; hidden = false; display_type = None;
- expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
+             constraints = []})])));
+    canonical = None; hidden = false; display_type = None; expansion = None})]
 ```

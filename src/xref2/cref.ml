@@ -16,7 +16,7 @@ module rec Resolved : sig
   and module_ =
     [ `Identifier of Identifier.module_
     | `Local of Ident.module_
-    | `SubstAlias of Cpath.resolved_module * module_
+    | `SubstAlias of Cpath.Resolved.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_ ]
 
@@ -24,7 +24,7 @@ module rec Resolved : sig
   and signature =
     [ `Identifier of Identifier.signature
     | `Local of Ident.signature
-    | `SubstAlias of Cpath.resolved_module * module_
+    | `SubstAlias of Cpath.Resolved.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t ]
@@ -36,7 +36,7 @@ module rec Resolved : sig
     | `ClassType of signature * ClassTypeName.t ]
 
   type parent_no_id =
-    [ `SubstAlias of Cpath.resolved_module * module_
+    [ `SubstAlias of Cpath.Resolved.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t
@@ -46,9 +46,7 @@ module rec Resolved : sig
 
   (* parent is [ signature | class_signature ] *)
   type parent =
-    [ `Identifier of Identifier.parent
-    | `Local of Ident.parent
-    | parent_no_id ]
+    [ `Identifier of Identifier.parent | `Local of Ident.parent | parent_no_id ]
 
   (* The only difference between parent and label_parent
      is that the Identifier allows more types *)
@@ -56,8 +54,8 @@ module rec Resolved : sig
     [ `Identifier of Identifier.label_parent
     | `Local of Ident.label_parent
     | parent_no_id ]
-  
-  type s_substalias = [ `SubstAlias of Cpath.resolved_module * module_ ]
+
+  type s_substalias = [ `SubstAlias of Cpath.Resolved.module_ * module_ ]
 
   type s_module = [ `Module of signature * ModuleName.t ]
 
@@ -342,6 +340,41 @@ end =
   Reference
 
 include Reference
+
+let rec resolved_module_reference_of_resolved_module_path : Cpath.Resolved.module_ -> Resolved.module_ =
+  function
+  | `Local id -> `Local id
+  | `Identifier id -> `Identifier id
+  | `Substituted s -> resolved_module_reference_of_resolved_module_path s
+  | `Subst (_, m) -> resolved_module_reference_of_resolved_module_path m
+  | `SubstAlias (m1, m2) -> `SubstAlias (m1, resolved_module_reference_of_resolved_module_path m2)
+  | `Hidden m -> resolved_module_reference_of_resolved_module_path m
+  | `Module (p, m) -> `Module (resolved_signature_reference_of_resolved_parent_path p, m)
+  | `Canonical (p, _) -> resolved_module_reference_of_resolved_module_path p
+  | `Apply (p, _) -> resolved_module_reference_of_resolved_module_path p
+  | `Alias (p1, _) -> resolved_module_reference_of_resolved_module_path p1
+
+and module_reference_of_module_path : Cpath.module_ -> module_ =
+  function
+  | `Resolved p -> `Resolved (resolved_module_reference_of_resolved_module_path p)
+  | `Substituted p -> module_reference_of_module_path p
+  | `Root r -> `Root (UnitName.of_string r, `TModule)
+  | `Forward r -> `Root (UnitName.of_string r, `TModule)
+  | `Dot (p, m) -> `Dot ((module_reference_of_module_path p :> label_parent), m)
+  | `Apply (m1, _) -> module_reference_of_module_path m1
+
+and resolved_module_type_reference_of_resolved_module_type_path : Cpath.Resolved.module_type -> Resolved.module_type =
+  function
+  | `Local l -> `Local l
+  | `Identifier id -> `Identifier id
+  | `Substituted s -> resolved_module_type_reference_of_resolved_module_type_path s
+  | `ModuleType (p, m) -> `ModuleType (resolved_signature_reference_of_resolved_parent_path p, m)
+
+and resolved_signature_reference_of_resolved_parent_path : Cpath.Resolved.parent -> Resolved.signature =
+  function
+  | `Module m -> (resolved_module_reference_of_resolved_module_path m :> Resolved.signature)
+  | `ModuleType m -> (resolved_module_type_reference_of_resolved_module_type_path m :> Resolved.signature)
+  | `FragmentRoot -> `Local (`LRoot (UnitName.of_string "dummy", 0))
 
 let rec signature_identifier_of_resolved_reference (r : Resolved.signature) =
   match r with

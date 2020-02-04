@@ -179,7 +179,7 @@ and now we can get the paths for all three type declarations:
 We can resolve the paths:
 
 ```ocaml env=e1
-let sg' = Resolve.signature Env.empty sg;;
+let sg' = Compile.signature Env.empty sg;;
 ```
 
 and now the paths are:
@@ -239,7 +239,7 @@ end
 
 type t = F(M).N.t
 |};;
-let sg = Resolve.signature Env.empty (Common.signature_of_mli_string example);;
+let sg = Compile.signature Env.empty (Common.signature_of_mli_string example);;
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.
