@@ -1,11 +1,14 @@
 1.5.0
 -----
 
+Additions
+
+- Add option to turn warnings into errors (#398, Jules Aguillon)
+
 Bugs fixed
 
 - Emit quote before identifier in alias type expr (Fixes #391, Anton Bachin)
 - Handle generalized open statements introduced in 4.08 (#393, Jon Ludlam)
-- Add option to turn warnings into errors (#398, Jules Aguillon)
 - Refactor error reporting to avoid exiting the program in library code
   (#400, Jules Aguillon)
 - Build on OCaml 4.10 (#408, Jon Ludlam)
