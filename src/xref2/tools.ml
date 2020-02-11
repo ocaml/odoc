@@ -139,16 +139,16 @@ let prefix_signature (path, sg) =
             Module
               ( Ident.Rename.module_ id,
                 r,
-                Subst.compose_delayed m sub )
+                Subst.Delayed.compose m sub )
         | ModuleType (id, mt) ->
             ModuleType
               ( Ident.Rename.module_type id,
-                Subst.compose_delayed mt sub )
+                Subst.Delayed.compose mt sub )
         | Type (id, r, t) ->
             Type
               ( Ident.Rename.type_ id,
                 r,
-                Subst.compose_delayed t sub )
+                Subst.Delayed.compose t sub )
         | TypeSubstitution (id, t) ->
             TypeSubstitution (Ident.Rename.type_ id, Subst.type_ sub t)
         | ModuleSubstitution (id, m) ->
@@ -879,7 +879,7 @@ and lookup_module_from_resolved_fragment :
                = Odoc_model.Names.ModuleName.to_string name ->
             ( id,
               `Module (`Module ppath, ModuleName.of_string (Ident.Name.module_ id)),
-              Subst.delayed_get_module m' )
+              Subst.Delayed.get_module m' )
         | _ :: xs -> find xs
         | [] -> failwith "Can't find it"
       in
@@ -898,7 +898,7 @@ and lookup_module_from_fragment :
       let rec find = function
         | Component.Signature.Module (id, _, m') :: _
           when Ident.Name.module_ id = name ->
-            (id, `Module (`Module ppath, (ModuleName.of_string name)), Subst.delayed_get_module m')
+            (id, `Module (`Module ppath, (ModuleName.of_string name)), Subst.Delayed.get_module m')
         | _ :: xs -> find xs
         | [] -> failwith "Can't find it"
       in
@@ -1150,7 +1150,7 @@ and fragmap_module :
         match item with
         | Component.Signature.Module (id, r, m)
           when Ident.Name.module_ id = name -> (
-            let m = Subst.delayed_get_module m in
+            let m = Subst.Delayed.get_module m in
             match map_module m with
             | Left m ->
                 ( Component.Signature.Module
@@ -1226,7 +1226,7 @@ and fragmap_type :
             match item with
             | Component.Signature.Type (id, r, t)
               when Ident.Name.type_ id = name -> (
-                match mapfn (Subst.delayed_get_type t) with
+                match mapfn (Subst.Delayed.get_type t) with
                 | Left x ->
                     (Component.Signature.Type (id, r, (Component.Substitution.NoSubst x)) :: items, true, removed)
                 | Right y ->
@@ -1303,7 +1303,7 @@ and fragmap_type :
             match item with
             | Component.Signature.Module (id, r, m)
               when Ident.Name.module_ id = name ->
-                let m = Subst.delayed_get_module m in
+                let m = Subst.Delayed.get_module m in
                 let item =
                   Component.Signature.Module
                     (id, r, Component.Substitution.NoSubst (mapfn m))

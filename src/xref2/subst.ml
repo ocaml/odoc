@@ -579,20 +579,33 @@ and compose : t -> t -> t =
   ; type_replacement = TypeMap.merge override a.type_replacement b.type_replacement
   }
 
-let compose_delayed : 'a Substitution.delayed -> t -> 'a Substitution.delayed =
-  fun v s -> compose_delayed' compose v s
+module Delayed = struct
 
-let delayed_get_module : Module.t Substitution.delayed -> Module.t =
-  function
-  | DelayedSubst (s, m) -> module_ s m
-  | NoSubst m -> m
+  (** [subst] is [Subst.t] *)
+  type subst = t
 
-let delayed_get_module_type : ModuleType.t Substitution.delayed -> ModuleType.t =
-  function
-  | DelayedSubst (s, mt) -> module_type s mt
-  | NoSubst mt -> mt
+  (** Represent a component that has been substituted.
+      The substitution is performed only when necessary. Applying again a
+      substitution is a shallow operation and doesn't require mapping the entire
+      tree (see [compose] below). *)
+  type 'a t = 'a Substitution.delayed = DelayedSubst of subst * 'a | NoSubst of 'a
 
-let delayed_get_type : TypeDecl.t Substitution.delayed -> TypeDecl.t =
-  function
-  | DelayedSubst (s, t) -> type_ s t
-  | NoSubst t -> t
+  let compose : 'a t -> subst -> 'a t =
+    fun v s -> compose_delayed' compose v s
+
+  let get_module : Module.t t -> Module.t =
+    function
+    | DelayedSubst (s, m) -> module_ s m
+    | NoSubst m -> m
+
+  let get_module_type : ModuleType.t t -> ModuleType.t =
+    function
+    | DelayedSubst (s, mt) -> module_type s mt
+    | NoSubst mt -> mt
+
+  let get_type : TypeDecl.t t -> TypeDecl.t =
+    function
+    | DelayedSubst (s, t) -> type_ s t
+    | NoSubst t -> t
+
+end
