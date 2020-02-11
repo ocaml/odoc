@@ -30,7 +30,7 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
                     module_
                       (`Module
                         (`Module prefix, ModuleName.of_string (Ident.Name.module_ id)))
-                      (Subst.delayed_get_module m)) )
+                      (Subst.Delayed.get_module m)) )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
@@ -40,7 +40,7 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
                         ( `Module prefix,
                           ModuleTypeName.of_string (Ident.Name.module_type id)
                         ))
-                      (Subst.delayed_get_module_type mt)) )
+                      (Subst.Delayed.get_module_type mt)) )
         | Type (id, r, t) ->
             Type
               ( id,
@@ -48,7 +48,7 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
                 NoSubst (
                   type_decl
                     (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
-                    (Subst.delayed_get_type t)) )
+                    (Subst.Delayed.get_type t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)

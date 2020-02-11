@@ -384,12 +384,12 @@ let rec signature_items id map items =
     (fun item acc ->
       match item with
       | Module (id, r, m) ->
-          let m = Subst.delayed_get_module m in
+          let m = Subst.Delayed.get_module m in
           Odoc_model.Lang.Signature.Module (r, module_ map id m) :: acc
       | ModuleType (id, m) ->
           Odoc_model.Lang.Signature.ModuleType (module_type map id m) :: acc
       | Type (id, r, t) -> (
-          let t = Subst.delayed_get_type t in
+          let t = Subst.Delayed.get_type t in
           try Odoc_model.Lang.Signature.Type (r, type_decl map id t) :: acc
           with e ->
             let bt = Printexc.get_backtrace () in
@@ -694,7 +694,7 @@ and module_type_expr map identifier =
   | TypeOf decl -> TypeOf (module_decl map identifier decl)
 
 and module_type map id mty =
-  let mty = Subst.delayed_get_module_type mty in
+  let mty = Subst.Delayed.get_module_type mty in
   let identifier = List.assoc id map.module_type in
   let sig_id = (identifier :> Odoc_model.Paths.Identifier.Signature.t) in
   let expansion = Opt.map (module_expansion map sig_id) mty.expansion in
