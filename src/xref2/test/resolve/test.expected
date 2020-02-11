@@ -210,21 +210,29 @@ module (root Root).B : sig
 module (root Root).C : resolved[global((root Root).A)] with [*.M = = resolved[global((root Root).B)]]
 type (root Root).t = resolved[global((root Root).C)].N.t
 
-AFTER 
-===== 
-module type (root Root).A = sig
-  module (root Root).A.M : sig
-    module type (root Root).A.M.S
-    end
-  module (root Root).A.N : resolved[global((root Root).A.M).S]
-  end
-module (root Root).B : sig
-  module type (root Root).B.S = sig
-    type (root Root).B.S.t
-    end
-  end
-module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M = = resolved[global((root Root).B)]]
-type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
+FAILURE when lookup up a module: 
+Path: local(M/76)
+Env:
+
+ENV modules: (root Root).B: : sig
+module type S/54 = sig
+  type t/55 
+   (removed=[])end
+ (removed=[])end 
+(root Root).C: : resolved(identifier((root Root).A)) with [root.M = = resolved(identifier((root Root).B))] 
+ 
+ENV module_types: (root Root).A: = sig
+module M/51 : sig
+  module type S/53 
+   (removed=[])end
+module N/52 : resolved(local(M/51)).S
+ (removed=[])end 
+ 
+ENV types: (root Root).t: = resolved(identifier((root Root).C)).N.t 
+
+ENV values: 
+ENV externals: 
+END OF ENVBacktrace:
 
 Module substitution2
 Ensure a destructive substitution is taken into account during resolution
@@ -258,21 +266,29 @@ module (root Root).B : sig
 module (root Root).C : resolved[global((root Root).A)] with [*.M := resolved[global((root Root).B)]]
 type (root Root).t = resolved[global((root Root).C)].N.t
 
-AFTER 
-===== 
-module type (root Root).A = sig
-  module (root Root).A.M : sig
-    module type (root Root).A.M.S
-    end
-  module (root Root).A.N : resolved[global((root Root).A.M).S]
-  end
-module (root Root).B : sig
-  module type (root Root).B.S = sig
-    type (root Root).B.S.t
-    end
-  end
-module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M := resolved[global((root Root).B)]]
-type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
+FAILURE when lookup up a module: 
+Path: local(M/76)
+Env:
+
+ENV modules: (root Root).B: : sig
+module type S/83 = sig
+  type t/84 
+   (removed=[])end
+ (removed=[])end 
+(root Root).C: : resolved(identifier((root Root).A)) with [root.M := resolved(identifier((root Root).B))] 
+ 
+ENV module_types: (root Root).A: = sig
+module M/80 : sig
+  module type S/82 
+   (removed=[])end
+module N/81 : resolved(local(M/80)).S
+ (removed=[])end 
+ 
+ENV types: (root Root).t: = resolved(identifier((root Root).C)).N.t 
+
+ENV values: 
+ENV externals: 
+END OF ENVBacktrace:
 
 Module alias
 Resolve a module alias
