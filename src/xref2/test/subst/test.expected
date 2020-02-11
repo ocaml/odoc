@@ -7,16 +7,16 @@ the equations for t, u and v point to SubTargets rather than SubstituteMe
 BEFORE
 ======
 S: sig
-type tt/27 = resolved(local(SubstituteMe/24)).t
-type uu/28 = resolved(local(SubstituteMe/24)).u
-type vv/29 = resolved(local(SubstituteMe/24)).v
+type tt/33 = resolved(local(SubstituteMe/24)).t
+type uu/34 = resolved(local(SubstituteMe/24)).u
+type vv/35 = resolved(local(SubstituteMe/24)).v
  (removed=[])end
 
 AFTER 
 ======
 S: sig
-type tt/30 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).t)
-type uu/31 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).u)
-type vv/32 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).v)
+type tt/36 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).t)
+type uu/37 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).u)
+type vv/38 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).v)
  (removed=[])end
 
