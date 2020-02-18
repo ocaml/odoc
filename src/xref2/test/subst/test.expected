@@ -20,3 +20,18 @@ type uu/37 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).u)
 type vv/38 DelayedSubst (<subst>, = resolved(local(SubstituteMe/24)).v)
  (removed=[])end
 
+Test AB . CD
+	local(A/0) -> local(B/0)
+	local(B/0) -> local(B/0)
+	local(C/0) -> local(D/0)
+	local(D/0) -> local(D/0)
+Test BC . AB
+	local(B/0) -> local(C/0)
+	local(C/0) -> local(C/0)
+	local(A/0) -> local(B/0)
+	local(B/0) -> local(C/0)
+Test AB . BC
+	local(A/0) -> local(C/0)
+	local(B/0) -> local(C/0)
+	local(B/0) -> local(C/0)
+	local(C/0) -> local(C/0)
