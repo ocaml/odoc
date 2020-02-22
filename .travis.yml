@@ -20,7 +20,7 @@ scripts:
           tidy --version
         fi
       - OPAM_RELEASES=https://github.com/ocaml/opam/releases/
-      - OPAM_VERSION=2.0.5
+      - OPAM_VERSION=2.0.6
       - |
         case $TRAVIS_OS_NAME in
         "linux") OPAM_OS=linux;;
