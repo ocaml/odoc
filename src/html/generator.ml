@@ -738,7 +738,7 @@ sig
     item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
     render_nested_article:
-      ('item -> rendered_item * Odoc_model.Comment.docs * Tree.t list) ->
+      ('item -> rendered_item * Odoc_model.Comment.docs * toc * Tree.t list) ->
     ((_, 'item) tagged_item) list ->
       (Html_types.div_content Html.elt) list * toc * Tree.t list
 
@@ -884,7 +884,7 @@ struct
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
     render_nested_article :
-      'item -> rendered_item * Odoc_model.Comment.docs * Tree.t list;
+      'item -> rendered_item * Odoc_model.Comment.docs * toc * Tree.t list;
   }
 
 
@@ -939,7 +939,7 @@ struct
           }
 
       | `Nested_article item ->
-        let html, maybe_docs, subpages = state.render_nested_article item in
+        let html, maybe_docs, toc, subpages = state.render_nested_article item in
         let html, maybe_id = add_anchor state.item_to_id item html in
         let a = add_spec state.item_to_spec item maybe_id in
         let html =
@@ -953,7 +953,9 @@ struct
         section_items section_level { state with
           input_items;
           comment_state = { state.comment_state with
-            acc_html = html::state.comment_state.acc_html };
+            acc_html = html::state.comment_state.acc_html;
+            acc_toc = List.rev_append toc state.comment_state.acc_toc;
+          };
           acc_subpages = state.acc_subpages @ subpages;
         }
 
@@ -1179,11 +1181,11 @@ module Class :
 sig
   val class_ :
     ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.Class.t ->
-      rendered_item * Odoc_model.Comment.docs * Tree.t list
+      rendered_item * Odoc_model.Comment.docs * toc * Tree.t list
 
   val class_type :
     ?theme_uri:Tree.uri -> Lang.Signature.recursive -> Lang.ClassType.t ->
-      rendered_item * Odoc_model.Comment.docs * Tree.t list
+      rendered_item * Odoc_model.Comment.docs * toc * Tree.t list
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1334,7 +1336,7 @@ struct
       cd
     in
     let region = [Html.code class_def_content] in
-    region, t.doc, subtree
+    region, t.doc, [], subtree
 
 
   and class_type ?theme_uri recursive (t : Odoc_model.Lang.ClassType.t) =
@@ -1372,7 +1374,7 @@ struct
       expr
     in
     let region = [Html.code ctyp] in
-    region, t.doc, subtree
+    region, t.doc, [], subtree
 end
 open Class
 
@@ -1534,7 +1536,7 @@ struct
   and module_
       : ?theme_uri:Tree.uri -> Odoc_model.Lang.Signature.recursive ->
         Odoc_model.Lang.Module.t ->
-          rendered_item * Odoc_model.Comment.docs * Tree.t list
+          rendered_item * Odoc_model.Comment.docs * toc * Tree.t list
       = fun ?theme_uri recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1580,7 +1582,7 @@ struct
       keyword' @ Html.txt " " :: modname :: md @
       (if Syntax.Mod.close_tag_semicolon then [Html.txt ";"] else []) in
     let region = [Html.code md_def_content] in
-    region, t.doc, subtree
+    region, t.doc, [], subtree
 
   and module_decl (base : Paths.Identifier.Signature.t) md =
     begin match md with
@@ -1653,7 +1655,7 @@ struct
       )
     in
     let region = [Html.code mty_def] in
-    region, t.doc, subtree
+    region, t.doc, [], subtree
 
   and mty
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
@@ -1748,7 +1750,7 @@ struct
   and include_ ?theme_uri (t : Odoc_model.Lang.Include.t) =
     let docs = Comment.to_html t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
-    let included_html, _, tree = signature ?theme_uri t.expansion.content in
+    let included_html, toc, tree = signature ?theme_uri t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
         element.Odoc_model.Location_.value = `Tag `Inline in
@@ -1763,9 +1765,9 @@ struct
       else
         !Tree.open_details && not (List.exists is_closed_tag t.doc)
     in
-    let incl =
+    let incl, toc =
       if should_be_inlined then
-        included_html
+        included_html, toc
       else
         let incl =
           Html.code (
@@ -1782,7 +1784,7 @@ struct
           Html.details ~a:(if should_be_open then [Html.a_open ()] else [])
             (Html.summary [Html.span ~a:[Html.a_class ["def"]] [incl]])
             included_html
-        ]
+        ], []
     in
     [
       Html.div ~a:[Html.a_class ["spec"; "include"]]
@@ -1790,6 +1792,7 @@ struct
           (docs @ incl)]
     ],
     [],
+    toc,
     tree
 end
 open Module

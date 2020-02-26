@@ -126,7 +126,7 @@ sig
       item_to_spec:('item -> string option) ->
       render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
       render_nested_article:
-        ('item -> rendered_item * Odoc_model.Comment.docs * (Tree.t list)) ->
+        ('item -> rendered_item * Odoc_model.Comment.docs * toc * (Tree.t list)) ->
       (_, 'item) tagged_item list ->
         (Html_types.div_content Html.elt) list * toc * (Tree.t list)
 
