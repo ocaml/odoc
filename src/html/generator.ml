@@ -733,12 +733,16 @@ type async
 
 module Top_level_markup :
 sig
+  type heading_level_shift
+
   val lay_out :
+    heading_level_shift option ->
     item_to_id:('item -> string option) ->
     item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
     render_nested_article:
-      ('item -> rendered_item * Odoc_model.Comment.docs * toc * Tree.t list) ->
+      (heading_level_shift -> 'item ->
+        rendered_item * Odoc_model.Comment.docs * toc * Tree.t list) ->
     ((_, 'item) tagged_item) list ->
       (Html_types.div_content Html.elt) list * toc * Tree.t list
 
@@ -856,6 +860,8 @@ struct
     docs, remaining
 
 
+  type heading_level_shift = int
+
 
   (* The sectioning functions take several arguments, and return "modified"
      instances of them as results. So, it is convenient to group them into a
@@ -884,7 +890,8 @@ struct
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
     render_nested_article :
-      'item -> rendered_item * Odoc_model.Comment.docs * toc * Tree.t list;
+      heading_level_shift -> 'item ->
+      rendered_item * Odoc_model.Comment.docs * toc * Tree.t list;
   }
 
 
@@ -901,21 +908,34 @@ struct
       acc_toc = List.rev state.acc_toc;
     }
 
-  let is_deeper_section_level =
-    let level_to_int = function
-      | `Title -> 0
-      | `Section -> 1
-      | `Subsection -> 2
-      | `Subsubsection -> 3
-      | `Paragraph -> 4
-      | `Subparagraph -> 5
-    in
-    fun other_level ~than ->
-      level_to_int other_level > level_to_int than
+  let level_to_int = function
+    | `Title -> 0
+    | `Section -> 1
+    | `Subsection -> 2
+    | `Subsubsection -> 3
+    | `Paragraph -> 4
+    | `Subparagraph -> 5
+
+  let shift shift_by level =
+    match shift_by with
+    | Some i when i > 0 -> begin
+        match level_to_int level + i with
+        | 0 -> assert false
+        | 1 -> `Section
+        | 2 -> `Subsection
+        | 3 -> `Subsubsection
+        | 4 -> `Paragraph
+        | n ->
+          assert (n >= 5);
+          `Subparagraph
+      end
+    | None | Some _ -> level
+
+  let is_deeper_section_level other_level ~than =
+    level_to_int other_level > level_to_int than
 
 
-
-  let rec section_items section_level state =
+  let rec section_items level_shift section_level state =
     match state.input_items with
     | [] ->
       {state with comment_state =
@@ -932,14 +952,16 @@ struct
             kind
             state.input_items
         in
-        section_items section_level {state with
+        section_items level_shift section_level {state with
             input_items;
             comment_state = { state.comment_state with
               acc_html = html::state.comment_state.acc_html };
           }
 
       | `Nested_article item ->
-        let html, maybe_docs, toc, subpages = state.render_nested_article item in
+        let html, maybe_docs, toc, subpages =
+          state.render_nested_article (level_to_int section_level) item
+        in
         let html, maybe_id = add_anchor state.item_to_id item html in
         let a = add_spec state.item_to_spec item maybe_id in
         let html =
@@ -950,7 +972,7 @@ struct
             let docs = (docs :> (Html_types.dd_content Html.elt) list) in
             Html.dl [Html.dt ~a html; Html.dd docs]
         in
-        section_items section_level { state with
+        section_items level_shift section_level { state with
           input_items;
           comment_state = { state.comment_state with
             acc_html = html::state.comment_state.acc_html;
@@ -961,27 +983,31 @@ struct
 
       | `Comment `Stop ->
         let input_items = skip_everything_until_next_stop_comment input_items in
-        section_items section_level {state with
+        section_items level_shift section_level {state with
             input_items;
           }
 
       | `Comment (`Docs input_comment) ->
-        section_comment section_level {state with
+        section_comment level_shift section_level {state with
             input_items;
             comment_state = { state.comment_state with input_comment };
         }
 
 
 
-  and section_comment section_level state =
+  and section_comment level_shift section_level state =
     match state.comment_state.input_comment with
     | [] ->
-      section_items section_level state
+      section_items level_shift section_level state
 
     | element::input_comment ->
 
       match element.Location.value with
       | `Heading (level, label, content) ->
+        let level = shift level_shift level in
+        let element =
+          { element with Location.value = `Heading (level, label, content) }
+        in
         if not (is_deeper_section_level level ~than:section_level) then
           {state with comment_state =
             finish_comment_state state.comment_state }
@@ -1007,7 +1033,9 @@ struct
               }
             }
           in
-          let nested_section_state = section_comment level nested_section_state in
+          let nested_section_state =
+            section_comment level_shift level nested_section_state
+          in
           (* Wrap the nested section in a <section> element, and extend the
             table of contents. *)
           let html = Html.section nested_section_state.comment_state.acc_html in
@@ -1025,7 +1053,7 @@ struct
              either run out of items, or the first thing in the input will be
              another section heading – the nested section will have consumed
              everything else. *)
-          section_comment section_level {nested_section_state with
+          section_comment level_shift section_level {nested_section_state with
               comment_state = { nested_section_state.comment_state with
                 acc_html = html::state.comment_state.acc_html;
                 acc_toc = toc_entry::state.comment_state.acc_toc;
@@ -1036,14 +1064,15 @@ struct
         let html, input_comment =
           render_comment_until_heading_or_end state.comment_state.input_comment in
         let html = (html :> (Html_types.aside_content Html.elt) list) in
-        section_comment section_level {state with
+        section_comment level_shift section_level {state with
             comment_state = { state.comment_state with
               input_comment;
               acc_html = (Html.aside html)::state.comment_state.acc_html;
             }
           }
 
-  let lay_out ~item_to_id ~item_to_spec ~render_leaf_item ~render_nested_article items =
+  let lay_out heading_level_shift ~item_to_id ~item_to_spec
+    ~render_leaf_item ~render_nested_article items =
     let initial_state =
       {
         input_items = items;
@@ -1061,7 +1090,7 @@ struct
         render_nested_article;
       }
     in
-    let state = section_items `Title initial_state in
+    let state = section_items heading_level_shift `Title initial_state in
     state.comment_state.acc_html, state.comment_state.acc_toc, state.acc_subpages
 
 
@@ -1230,6 +1259,7 @@ struct
     (* FIXME: use [t.self] *)
     let tagged_items = List.map tag_class_signature_item c.items in
     Top_level_markup.lay_out
+      None
       ~item_to_id:class_signature_item_to_id
       ~item_to_spec:class_signature_item_to_spec
       ~render_leaf_item:(fun item ->
@@ -1382,8 +1412,11 @@ open Class
 
 module Module :
 sig
-  val signature : ?theme_uri:Tree.uri -> Lang.Signature.t ->
-    (Html_types.div_content Html.elt) list * toc * Tree.t list
+  val signature
+    : ?heading_level_shift:Top_level_markup.heading_level_shift
+    -> ?theme_uri:Tree.uri
+    -> Lang.Signature.t
+    -> (Html_types.div_content Html.elt) list * toc * Tree.t list
 end =
 struct
   let signature_item_to_id : Lang.Signature.item -> _ = function
@@ -1445,18 +1478,21 @@ struct
     | _ -> assert false
 
   and render_nested_signature_or_class
-      : ?theme_uri:Tree.uri -> Lang.Signature.item -> _ = fun ?theme_uri item ->
+    : ?theme_uri:Tree.uri -> Top_level_markup.heading_level_shift ->
+      Lang.Signature.item -> _ =
+    fun ?theme_uri heading_level item ->
     match item with
     | Module (recursive, m) -> module_ ?theme_uri recursive m
     | ModuleType m -> module_type ?theme_uri m
     | Class (recursive, c) -> class_ ?theme_uri recursive c
     | ClassType (recursive, c) -> class_type ?theme_uri recursive c
-    | Include m -> include_ ?theme_uri m
+    | Include m -> include_ heading_level ?theme_uri m
     | _ -> assert false
 
-  and signature ?theme_uri s =
+  and signature ?heading_level_shift ?theme_uri s =
     let tagged_items = List.map tag_signature_item s in
     Top_level_markup.lay_out
+      heading_level_shift
       ~item_to_id:signature_item_to_id
       ~item_to_spec:signature_item_to_spec
       ~render_leaf_item:render_leaf_signature_item
@@ -1747,14 +1783,22 @@ struct
       | Some te ->
         type_expr te
 
-  and include_ ?theme_uri (t : Odoc_model.Lang.Include.t) =
+  and include_ heading_level_shift ?theme_uri (t : Odoc_model.Lang.Include.t) =
     let docs = Comment.to_html t.doc in
     let docs = (docs :> (Html_types.div_content Html.elt) list) in
-    let included_html, toc, tree = signature ?theme_uri t.expansion.content in
     let should_be_inlined =
       let is_inline_tag element =
         element.Odoc_model.Location_.value = `Tag `Inline in
       List.exists is_inline_tag t.doc
+    in
+    let included_html, toc, tree =
+      let heading_level_shift =
+        if should_be_inlined then
+          Some heading_level_shift
+        else
+          None
+      in
+      signature ?heading_level_shift ?theme_uri t.expansion.content
     in
     let should_be_open =
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in

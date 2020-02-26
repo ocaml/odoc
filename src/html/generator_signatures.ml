@@ -121,12 +121,16 @@ module type GENERATOR =
 sig
   module Top_level_markup :
   sig
+    type heading_level_shift
+
     val lay_out :
+      heading_level_shift option ->
       item_to_id:('item -> string option) ->
       item_to_spec:('item -> string option) ->
       render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
       render_nested_article:
-        ('item -> rendered_item * Odoc_model.Comment.docs * toc * (Tree.t list)) ->
+        (heading_level_shift -> 'item ->
+          rendered_item * Odoc_model.Comment.docs * toc * (Tree.t list)) ->
       (_, 'item) tagged_item list ->
         (Html_types.div_content Html.elt) list * toc * (Tree.t list)
 
