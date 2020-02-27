@@ -1,13 +1,13 @@
 (** A module type. *)
 module type Something = sig
 
-  type t
+  val something : unit
 
   (** {1 Something 1}
 
       foo *)
 
-  val foo : t
+  val foo : unit
 
   (** {2 Something 2} *)
 
