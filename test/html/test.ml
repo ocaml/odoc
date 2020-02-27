@@ -258,6 +258,10 @@ let source_files_all = [
   ("interlude.mli", ["Interlude/index.html"]);
   ("include.mli", ["Include/index.html"]);
   ("include2.ml", ["Include2/index.html"]);
+  ("include_sections.mli", [
+      "Include_sections/index.html";
+      "Include_sections/module-type-Something/index.html";
+    ]);
   ("mld.mld", ["mld.html"]);
   ("nested.mli", [
       "Nested/index.html";
