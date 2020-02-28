@@ -10,13 +10,18 @@ let compare_sequential_and_composed ~substs test_case =
   and composed =
     let s = List.fold_left (Subst.compose) Subst.identity substs in
     resolve s test_case
+  and delayed =
+    let open Component.Substitution in
+    let resolve_delayed = function DelayedSubst (s, p) -> resolve s p | NoSubst p -> p in
+    let s = List.fold_left (Subst.Delayed.compose) (NoSubst test_case) substs in
+    resolve_delayed s
   in
   let pp_p = Component.Fmt.resolved_module_path in
-  if composed = sequential then
+  if composed = sequential && sequential = delayed then
     Format.printf "\t%a -> %a\n" pp_p test_case pp_p composed
   else
-    Format.printf "Error %a -> composed: %a != sequential: %a\n"
-      pp_p test_case pp_p composed pp_p sequential
+    Format.printf "Error %a -> composed: %a != sequential: %a != delayed: %a\n"
+      pp_p test_case pp_p composed pp_p sequential pp_p delayed
 
 let make_subst =
   let f s (a, b) =
