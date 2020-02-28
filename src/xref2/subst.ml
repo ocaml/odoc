@@ -562,21 +562,27 @@ and apply_sig_map s items removed =
   { items; removed = removed_items s removed }
 
 and compose : t -> t -> t =
-  (* TODO: Don't override *)
-  let override _key a b =
-    match b with
-    | Some _ -> b
-    | None -> a
-  in
   fun a b ->
   let compose_map ~add ~fold resolve field =
     fold (fun key path acc -> add key (resolve b path) acc) (field a) (field b)
   in
+  let type_, type_replacement =
+    (* resolving a type may fail with [TypeReplacement],
+       in that case, add it to the type_replacement map *)
+    let fold_type key path (t, tr) =
+      match resolved_type_path b path with
+      | path' -> (TypeMap.add key path' t, tr)
+      | exception TypeReplacement texpr -> (t, TypeMap.add key texpr tr)
+    in
+    let type_, type_replacement = TypeMap.fold fold_type a.type_ (b.type_, b.type_replacement) in
+    let fold_type_replacement key path acc = TypeMap.add key path acc in
+    let type_replacement = TypeMap.fold fold_type_replacement a.type_replacement type_replacement in
+    type_, type_replacement
+  in
   { module_ = ModuleMap.(compose_map ~add ~fold resolved_module_path) (fun t -> t.module_)
   ; module_type = ModuleTypeMap.(compose_map ~add ~fold resolved_module_type_path) (fun t -> t.module_type)
-  ; type_ = TypeMap.(compose_map ~add ~fold resolved_type_path) (fun t -> t.type_)
+  ; type_; type_replacement
   ; class_type = ClassTypeMap.(compose_map ~add ~fold resolved_class_type_path) (fun t -> t.class_type)
-  ; type_replacement = TypeMap.merge override a.type_replacement b.type_replacement
   }
 
 module Delayed = struct
