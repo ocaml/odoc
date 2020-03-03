@@ -1,6 +1,7 @@
 (executable
  (name test)
- (libraries compiler-libs.toplevel odoc_xref2 odoc_model odoc_xref_test))
+ (modules test)
+ (libraries compiler-libs.toplevel alcotest fmt odoc_xref2 odoc_model odoc_xref_test))
 
 (rule
  (targets test.output)
@@ -12,3 +13,7 @@
  (name runtest)
  (action (diff test.expected test.output)))
 
+(tests
+  (names test_compose)
+  (modules test_compose)
+  (libraries alcotest fmt odoc_xref2 odoc_model))

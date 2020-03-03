@@ -33,6 +33,7 @@ depends: [
   "tyxml" {>= "4.3.0"}
 
   "alcotest" {dev & >= "0.8.3"}
+  "fmt" {dev}
   "markup" {dev & >= "0.8.0"}
   "ocamlfind" {dev}
   "sexplib" {dev & >= "113.33.00"}

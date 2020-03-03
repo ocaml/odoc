@@ -72,4 +72,3 @@ let module_substitution () =
 
 let _ =
     module_substitution ()
-  ; Test_compose.test ()
