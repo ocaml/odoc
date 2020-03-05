@@ -5,7 +5,8 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   (* Internal names, they don't have effect on the output. *)
   let page_name = "__fragment_page__" in
   let package = "__fragment_package__" in
-  let digest = Digest.file (Fs.File.to_string input) in
+  let input_s = Fs.File.to_string input in
+  let digest = Digest.file input_s in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page page_name in
     {Odoc_model.Root.package; file; digest}
@@ -14,7 +15,7 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   let location =
     let pos =
       Lexing.{
-        pos_fname = Fs.File.to_string input;
+        pos_fname = input_s;
         pos_lnum = 0;
         pos_cnum = 0;
         pos_bol = 0
@@ -26,7 +27,11 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref2.Link.resolve_page env page in
+    let resolved =
+      Odoc_xref2.Link.resolve_page env page
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
+    in
 
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in

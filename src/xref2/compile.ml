@@ -729,9 +729,6 @@ let build_resolver :
   in
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page; open_units }
 
-let compile x y =
-  let before = y in
-  let after = unit x before in
-  after
+let compile x y = Lookup_failures.catch_failures (fun () -> unit x y)
 
 let resolve_page _resolver y = y

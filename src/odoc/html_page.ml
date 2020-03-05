@@ -38,12 +38,15 @@ let to_html_tree_compilation_unit ?theme_uri ~syntax v =
 
 let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
   Root.read input >>= fun root ->
+  let input_s = Fs.File.to_string input in
   match root.file with
   | Page page_name ->
     Page.load input >>= fun page ->
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
       Odoc_xref2.Link.resolve_page resolve_env page
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
     in
     let pkg_name = root.package in
     let pages = to_html_tree_page ?theme_uri ~syntax odoctree in
@@ -76,6 +79,8 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       (* Format.fprintf Format.err_formatter "**** Finished: Link=%f\n%!" (finishlink -. startlink); *)
       (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
       linked
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
     in
     (* let stats = Odoc_xref2.Tools.(Memos1.stats memo) in
     Format.fprintf Format.err_formatter "Hashtbl memo1: n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length; *)
@@ -109,7 +114,8 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
 let from_mld ~env ?(syntax=Renderer.OCaml) ~package ~output:root_dir ~warn_error input =
   Odoc_model.Error.set_warn_error warn_error;
   let root_name = "index" in
-  let digest = Digest.file (Fs.File.to_string input) in
+  let input_s = Fs.File.to_string input in
+  let digest = Digest.file input_s in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
     {Odoc_model.Root.package; file; digest}
@@ -118,7 +124,7 @@ let from_mld ~env ?(syntax=Renderer.OCaml) ~package ~output:root_dir ~warn_error
   let location =
     let pos =
       Lexing.{
-        pos_fname = Fs.File.to_string input;
+        pos_fname = input_s;
         pos_lnum = 0;
         pos_cnum = 0;
         pos_bol = 0
@@ -131,7 +137,11 @@ let from_mld ~env ?(syntax=Renderer.OCaml) ~package ~output:root_dir ~warn_error
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
 (*    let page = Odoc_xref.Lookup.lookup_page page in*)
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref2.Link.resolve_page env page in
+    let resolved =
+      Odoc_xref2.Link.resolve_page env page
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
+    in
     let pages = to_html_tree_page ~syntax resolved in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
