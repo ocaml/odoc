@@ -32,7 +32,11 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let env = Env.build env (`Unit unit) in
-    let compiled = Odoc_xref2.Compile.compile env unit in
+    let compiled =
+      Odoc_xref2.Compile.compile env unit
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename
+      |> Odoc_model.Error.shed_warnings
+    in
 
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an
@@ -74,7 +78,8 @@ let mld ~env ~package ~output ~warn_error input =
     String.sub page_dash_root (String.length "page-")
       (String.length page_dash_root - String.length "page-")
   in
-  let digest = Digest.file (Fs.File.to_string input) in
+  let input_s = Fs.File.to_string input in
+  let digest = Digest.file input_s in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
     {Odoc_model.Root.package; file; digest}
@@ -83,7 +88,7 @@ let mld ~env ~package ~output ~warn_error input =
   let location =
     let pos =
       Lexing.{
-        pos_fname = Fs.File.to_string input;
+        pos_fname = input_s;
         pos_lnum = 0;
         pos_cnum = 0;
         pos_bol = 0
@@ -95,7 +100,11 @@ let mld ~env ~package ~output ~warn_error input =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let env = Env.build env (`Page page) in
-    let resolved = Odoc_xref2.Link.resolve_page env page in
+    let resolved =
+      Odoc_xref2.Link.resolve_page env page
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
+    in
     Page.save output resolved;
     Ok ()
   in

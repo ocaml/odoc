@@ -937,14 +937,13 @@ let build_resolver :
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page }
 *)
 let link x y =
-  let before = y in
-  let after = unit x before in
-  after
+  Lookup_failures.catch_failures (fun () -> unit x y)
 
 let resolve_page resolver y =
   let env = Env.set_resolver Env.empty resolver in
-  {
-    y with
-    Page.content =
-      List.map (with_location comment_block_element env) y.Page.content;
-  }
+  Lookup_failures.catch_failures (fun () ->
+      {
+        y with
+        Page.content =
+          List.map (with_location comment_block_element env) y.Page.content;
+      })
