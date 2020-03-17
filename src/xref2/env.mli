@@ -165,7 +165,7 @@ val lookup_any_by_name : string -> t -> Component.Element.any option
 
 val lookup_signature_by_name : string -> t -> Component.Element.signature option
 
-val lookup_module_by_name : string -> t -> Component.Element.module_ option
+val lookup_module_by_name : string -> t -> root option
 
 val lookup_module_type_by_name :
   string -> t -> Component.Element.module_type option
@@ -181,8 +181,8 @@ val lookup_value_by_name :
 
 val add_functor_args : Odoc_model.Paths_types.Identifier.signature -> t -> t
 
-val open_component_signature :
-  Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t
+(* val open_component_signature :
+  Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 
 val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
@@ -198,3 +198,5 @@ val modules_of :
 val len : int ref
 
 val n : int ref
+
+val verify_lookups : t -> lookup_type list -> bool

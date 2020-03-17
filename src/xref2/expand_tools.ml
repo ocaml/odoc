@@ -77,7 +77,7 @@ and handle_expansion env id expansion =
             env
         in
         let subst =
-          Subst.add_module arg.id (`Identifier identifier) (`Identifier identifier) Subst.identity
+          Subst.add_module arg.id (`Identifier identifier) Subst.identity
         in
         (env', Subst.module_type_expr subst expr)
   in

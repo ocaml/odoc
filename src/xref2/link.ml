@@ -40,6 +40,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
   | `Apply (x, y) ->
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
+  | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Alias (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Type (p, _)
   | `Class (p, _)
@@ -65,20 +66,25 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
     (* Format.fprintf Format.err_formatter "Not reresolving\n%!"; *)
     p)
   else (
-    (* Format.fprintf Format.err_formatter "Reresolving...\n%!"; *)
     let cp = Component.Of_Lang.(type_path empty p) in
+    (* Format.fprintf Format.err_formatter "Reresolving %a\n%!" Component.Fmt.type_path cp; *)
     match cp with
-    | `Resolved p -> `Resolved (Tools.reresolve_type env p |> Cpath.resolved_type_path_of_cpath)
+    | `Resolved p ->
+      let result = Tools.reresolve_type env p in
+      (* Format.fprintf Format.err_formatter "result 1: %a\n%!" Component.Fmt.resolved_type_path result; *)
+      `Resolved (result |> Cpath.resolved_type_path_of_cpath)
     | _ ->
-    match Tools.lookup_type_from_path env cp with
-    | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
-    | Unresolved p -> Cpath.type_path_of_cpath p
-    | exception e ->
-        Format.fprintf Format.err_formatter
-          "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
-          Component.Fmt.model_path
-          (p :> Paths.Path.t);
-        p)
+      match Tools.lookup_type_from_path env cp with
+      | Resolved (p', _) ->
+        (* Format.fprintf Format.err_formatter "result 2: %a\n%!" Component.Fmt.resolved_type_path p'; *)
+        `Resolved (Cpath.resolved_type_path_of_cpath p')
+      | Unresolved p -> Cpath.type_path_of_cpath p
+      | exception e ->
+          Format.fprintf Format.err_formatter
+            "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
+            Component.Fmt.model_path
+            (p :> Paths.Path.t);
+          p)
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -123,7 +129,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
     | Unresolved _ ->
       if is_forward p
       then begin
-        Format.fprintf Format.err_formatter "Skipping resolution of forward path %a\n%!" Component.Fmt.model_path (p :> Odoc_model.Paths.Path.t);
+        (* Format.fprintf Format.err_formatter "Skipping resolution of forward path %a\n%!" Component.Fmt.model_path (p :> Odoc_model.Paths.Path.t); *)
         p
       end else begin
         Format.fprintf Format.err_formatter
@@ -393,9 +399,9 @@ and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
   let start_time = Unix.gettimeofday () in
-  Format.fprintf Format.err_formatter "Processing Module %a\n%!"
+  (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
     Component.Fmt.model_identifier
-    (m.id :> Paths.Identifier.t);
+    (m.id :> Paths.Identifier.t); *)
   if (*skip m.id*) false then m
   else
     try
@@ -405,20 +411,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       let t1 = Unix.gettimeofday () in
       let m' = Env.lookup_module m.id env in
       let t2 = Unix.gettimeofday () in
-      let type_ =
-        match
-          module_decl env (m.id :> Paths.Identifier.Signature.t) m.type_
-        with
-        | Alias (`Resolved p) ->
-            let p' =
-              Component.Of_Lang.resolved_module_path Component.Of_Lang.empty p
-            in
-            Alias
-              (`Resolved
-                (Lang_of.Path.resolved_module Lang_of.empty
-                   (Tools.add_canonical_path env m' p')))
-        | t -> t
-      in
+      let type_ = module_decl env (m.id :> Paths.Identifier.Signature.t) m.type_ in
       let t3 = Unix.gettimeofday () in
       let hidden_alias =
         match type_ with
@@ -462,7 +455,7 @@ and module_ : Env.t -> Module.t -> Module.t =
             | _ -> ([], expansion) )
       in
       let override_display_type =
-        self_canonical || should_hide_module_decl m.type_
+        self_canonical || should_hide_module_decl type_
       in
       let display_type =
         match (override_display_type, expansion) with
@@ -735,7 +728,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
   try
     let equation = type_decl_equation env t.equation in
     let doc = comment_docs env t.doc in
-    let _hidden_path =
+    let hidden_path =
       match equation.Equation.manifest with
       | Some (Constr (`Resolved path, params))
         when Paths.Path.Resolved.Type.is_hidden path ->
@@ -746,8 +739,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
       Opt.map (type_decl_representation env) t.representation
     in
     let default = { t with equation; doc; representation } in
-    default
-(*    match hidden_path with
+    let result = match hidden_path with
     | Some (p, params) -> (
         let p' =
           Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
@@ -770,7 +762,10 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
                 (t.id :> Paths.Identifier.t);
               raise e )
         | _ -> default )
-    | None -> default*)
+    | None -> default in
+    (* Format.fprintf Format.err_formatter "type_decl result: %a\n%!"
+          Component.Fmt.type_decl (Component.Of_Lang.(type_decl empty result)); *)
+    result
   with e ->
     Format.fprintf Format.err_formatter "Failed to resolve type (%a): %s"
       Component.Fmt.model_identifier

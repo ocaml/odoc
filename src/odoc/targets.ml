@@ -29,15 +29,18 @@ let of_odoc_file ~env:_ ~output:root_dir input =
       (* let env = Env.build env (`Unit unit) in
       let odoctree = Odoc_xref2.Resolve.resolve env unit in *)
 (*      let odoctree = Odoc_xref.expand (Env.expander env) odoctree in*)
-      let root = Compilation_unit.root unit in
-      let package = root.package in
-      let targets = Odoc_html.Targets.unit ~package unit in
-      (* CR-someday trefis: have [List_targets] return a tree instead of
-         postprocessing. *)
-      Ok (
-        List.map targets ~f:(fun path ->
-          let directory = Fs.Directory.(append root_dir (of_string path)) in
-          Fs.File.create ~directory ~name:"index.html"
-        ))
+      if unit.hidden
+      then Ok []
+      else
+        let root = Compilation_unit.root unit in
+        let package = root.package in
+        let targets = Odoc_html.Targets.unit ~package unit in
+        (* CR-someday trefis: have [List_targets] return a tree instead of
+           postprocessing. *)
+        Ok (
+          List.map targets ~f:(fun path ->
+            let directory = Fs.Directory.(append root_dir (of_string path)) in
+            Fs.File.create ~directory ~name:"index.html"
+          ))
 
 let index ~output:_ _ = []

@@ -250,8 +250,9 @@ The three values returned are a boolean representing whether this path is depend
 
 ```ocaml env=e1
 # Tools.signature_of_module env (path, module_);;
-Line 1, characters 1-26:
-Error: Unbound value Tools.signature_of_module
+Line 1, characters 31-46:
+Error: This expression has type 'a * 'b
+       but an expression was expected of type Component.Module.t
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -592,8 +593,9 @@ now we can ask for the signature of this module:
 
 ```ocaml env=e1
 # let sg = Tools.signature_of_module env (p, m);;
-Line 1, characters 10-35:
-Error: Unbound value Tools.signature_of_module
+Line 1, characters 40-46:
+Error: This expression has type 'a * 'b
+       but an expression was expected of type Component.Module.t
 ```
 
 and we can see we've picked up the `type t` declaration in `M.S`. If we now ask for the signature of `C.N` we get:
@@ -604,8 +606,9 @@ and we can see we've picked up the `type t` declaration in `M.S`. If we now ask 
 Line 1, characters 14-52:
 Error: Unbound value Tools.lookup_module_from_resolved_path
 # Tools.signature_of_module env (p, m);;
-Line 1, characters 1-26:
-Error: Unbound value Tools.signature_of_module
+Line 1, characters 31-37:
+Error: This expression has type 'a * 'b
+       but an expression was expected of type Component.Module.t
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -858,7 +861,7 @@ Now let's lookup that module:
 
 ```ocaml env=e1
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env cp;;
-val p : Cpath.Resolved.module_ =
+val p : Tools.Memos1.key =
   `Apply
     (`Apply
        (`Apply
@@ -890,8 +893,9 @@ val m : Component.Module.t =
            "T")));
    canonical = None; hidden = false; display_type = None; expansion = None}
 # let (p, sg') = Tools.signature_of_module env (p, m);;
-Line 1, characters 16-41:
-Error: Unbound value Tools.signature_of_module
+Line 1, characters 46-52:
+Error: This expression has type 'a * 'b
+       but an expression was expected of type Component.Module.t
 ```
 
 ```ocaml env=e1
@@ -1012,7 +1016,7 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Alias
+         (`SubstAlias
             (`Subst
                (`ModuleType
                   (`Identifier
@@ -1104,7 +1108,7 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Alias
+         (`SubstAlias
             (`Identifier (`Module (`Root (Common.root, "Root"), "Dep3")),
              `Module
                (`Subst
@@ -1376,11 +1380,6 @@ let sg = Common.signature_of_mli_string test_data;;
 
 ```ocaml env=e1
 # Link.signature Env.empty sg
-Not reresolving
-type_expression: path
-before = global((root Root).u)
-after = global((root Root).u)
-after lookup = global((root Root).u)
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.ModuleType
   {Odoc_model.Lang.ModuleType.id =
@@ -1563,8 +1562,9 @@ Exception:
 Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, "Root"), "N"),
  <abstr>).
 # Tools.signature_of_module env (p, m);;
-Line 1, characters 1-26:
-Error: Unbound value Tools.signature_of_module
+Line 1, characters 31-37:
+Error: This expression has type 'a * 'b
+       but an expression was expected of type Component.Module.t
 # sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
@@ -1683,14 +1683,39 @@ Error: Unbound value Tools.signature_of_module
                                       "CanonicalTest"),
                                    "Base__List"))),
                           `Resolved
-                            (`Module
-                               (`Identifier
+                            (`Alias
+                               (`Canonical
+                                  (`Alias
+                                     (`Hidden
+                                        (`Module
+                                           (`Module
+                                              (`Identifier
+                                                 (`Root (Common.root, "Root")),
+                                               "CanonicalTest"),
+                                            "Base__List")),
+                                      `Module
+                                        (`Hidden
+                                           (`Module
+                                              (`Module
+                                                 (`Identifier
+                                                    (`Root
+                                                       (Common.root, "Root")),
+                                                  "CanonicalTest"),
+                                               "Base__")),
+                                         "List")),
+                                   `Dot
+                                     (`Dot
+                                        (`Dot (`Root "Root", "CanonicalTest"),
+                                         "Base"),
+                                      "List")),
+                                `Module
                                   (`Module
                                      (`Module
-                                        (`Root (Common.root, "Root"),
+                                        (`Identifier
+                                           (`Root (Common.root, "Root")),
                                          "CanonicalTest"),
-                                      "Base")),
-                                "List")))));
+                                      "Base"),
+                                   "List"))))));
                  canonical =
                   Some
                    (`Dot

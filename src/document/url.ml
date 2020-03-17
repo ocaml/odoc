@@ -11,6 +11,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Identifier id -> Identifier.name id
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstAlias (_, p) -> render_resolved (p :> t)
+    | `SubstT (_, p) -> render_resolved (p :> t)
     | `Alias (_, p) -> render_resolved (p :> t)
     | `Hidden p -> render_resolved (p :> t)
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)

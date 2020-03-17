@@ -192,7 +192,7 @@ let empty =
 let add_fragment_root sg env =
   let id = ( incr unique_id;
   !unique_id ) in
-  { env with fragmentroot = Some (id, sg) }
+  { env with fragmentroot = Some (id, sg); id }
 
 let add_module identifier m env =
   (*  Format.fprintf Format.err_formatter "Adding module: %a\n%!" Component.Fmt.model_identifier (identifier : Odoc_model.Paths.Identifier.Module.t :> Odoc_model.Paths.Identifier.t);*)
@@ -510,14 +510,20 @@ let lookup_module_by_name_internal name env =
     | n, (#Component.Element.module_ as item) when n = name -> Some item
     | _ -> None
   in
-  find_map filter_fn env.elts
+  match find_map filter_fn env.elts with
+  | None -> None
+     (* (match lookup_root_module name env with
+      | Some (Resolved (id, m)) -> Some (Resolved (id, m))
+      | Some Forward -> Some Forward
+      | _ -> None) *)
+  | Some (`Module (id,m)) -> Some (Resolved (id,m))
 
 let lookup_module_by_name name env =
   let maybe_record_result res =
     match res, env.recorder with
-    | Some (`Module (id, _)), Some r ->
+    | Some (Resolved (id, _)), Some r ->
       r.lookups <- (ModuleByName (name, Some id)) :: r.lookups
-    | None, Some r -> 
+    | (None | Some Forward), Some r -> 
       r.lookups <- (ModuleByName (name, None)) :: r.lookups
     | _ -> ()
   in
@@ -582,7 +588,7 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
        local idents for things that are declared within themselves *)
     let fold_fn (env, subst) (ident, identifier, m) =
       let env' = add_module identifier (Subst.module_ subst m) env in
-      (env', Subst.add_module ident (`Identifier identifier) (`Identifier identifier) subst)
+      (env', Subst.add_module ident (`Identifier identifier) subst)
     in
     match id with
     | (`Module _ | `Result _ | `Parameter _) as mid -> (
@@ -604,26 +610,6 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
             env'
         | None -> env )
     | `Root _ -> env
-
-let rec open_component_signature :
-    Odoc_model.Paths.Identifier.Signature.t -> Component.Signature.t -> t -> t =
-  let open Component in
-  fun id s env ->
-    List.fold_left
-      (fun env orig ->
-        match orig with
-        | Signature.Type (tid, _, t) ->
-            let new_id = `Type (id, Odoc_model.Names.TypeName.of_string (Ident.Name.type_ tid)) in
-            add_type new_id t env
-        | Signature.Module (mid, _, m) ->
-            let new_id = `Module (id, Odoc_model.Names.ModuleName.of_string (Ident.Name.module_ mid)) in
-            add_module new_id (Delayed.get m) env
-        | Signature.ModuleType (mid, m) ->
-            let new_id = `ModuleType (id, Odoc_model.Names.ModuleTypeName.of_string (Ident.Name.module_type mid)) in
-            add_module_type new_id (Delayed.get m) env
-        | Signature.Include i -> open_component_signature id i.expansion_ env
-        | _ -> env)
-      env s.items
 
 let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
   let open Component in
@@ -736,3 +722,53 @@ let initial_env : Odoc_model.Lang.Compilation_unit.t -> resolver -> Odoc_model.L
       t.imports ([], initial_env)
 
 let modules_of env = ModuleMap.bindings env.modules
+
+let verify_lookups env lookups =
+  let bad_lookup = function
+    | Module (id, found) ->
+        let actually_found =
+          try
+            ignore (lookup_module id env);
+            true
+          with _ -> false
+        in
+        found <> actually_found
+    | RootModule (name, res) -> (
+        let actual_result = lookup_root_module name env in
+        match (res, actual_result) with
+        | None, None -> false
+        | Some `Forward, Some Forward -> false
+        | Some (`Resolved id1), Some (Resolved (id2, _)) -> id1 <> id2
+        | _ -> true )
+    | ModuleType (id, found) ->
+        let actually_found =
+          try
+            ignore (lookup_module_type id env);
+            true
+          with _ -> false
+        in
+        found <> actually_found
+    | ModuleByName (name, result) -> begin
+        let actually_found = lookup_module_by_name name env in
+        match result, actually_found with
+        | None, None -> false
+        | Some id, Some (Resolved (id', _)) -> id <> id'
+        | None, Some Forward -> false
+        | _ -> true
+    end
+    | FragmentRoot _i -> true (* begin
+        try
+          let (i', _) = Env.lookup_fragment_root env in
+          i' <> i
+        with _ ->
+          true
+      end*)
+  in
+  let result = not (List.exists bad_lookup lookups) in
+  (* If we're recording lookups, make sure it looks like we
+      looked all this stuff up *)
+  (match result, env.recorder with
+  | true, Some r ->
+      r.lookups <- r.lookups @ lookups;
+  | _ -> ());
+  result
