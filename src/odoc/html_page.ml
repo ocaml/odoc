@@ -59,7 +59,8 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       Format.fprintf fmt "%t@?" content;
       close_out oc
     );
-    (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
+    Ok ()
+  | Compilation_unit {hidden = true; _} ->
     Ok ()
   | Compilation_unit {hidden = _; _} ->
     (* If hidden, we should not generate HTML. See
