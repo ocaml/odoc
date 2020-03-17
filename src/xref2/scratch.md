@@ -101,3 +101,26 @@ let sg = Common.signature_of_mli_string test_data;;
              constraints = []})])));
     canonical = None; hidden = false; display_type = None; expansion = None})]
 ```
+
+
+Subst nodes
+===========
+
+module type Foo = sig
+
+module X : functor (Y : sig module type S end) ->
+  sig
+    module Z : Y.S
+    module type S = Y.S
+  end
+
+module A : sig
+  module type S = sig
+    type t
+  end
+end
+
+module M : X(A).S with type t = int
+
+end
+

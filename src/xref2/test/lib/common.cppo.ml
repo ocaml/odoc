@@ -460,6 +460,7 @@ module LangUtils = struct
             | `Module (p, m) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ModuleName.to_string m)
             | `ModuleType (p, mt) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.ModuleTypeName.to_string mt)
             | `Type (p, t) -> Format.fprintf ppf "%a.%s" resolved_path (cast p) (Odoc_model.Names.TypeName.to_string t)
+            | `SubstT (_, _) 
             | `Class (_, _)
             | `ClassType (_, _)
             | `SubstAlias (_, _)

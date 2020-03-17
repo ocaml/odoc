@@ -213,6 +213,7 @@ sig
 
   and module_type = [
     | `Identifier of Identifier.path_module_type
+    | `SubstT of module_type * module_type
     | `ModuleType of module_ * ModuleTypeName.t
   ]
 
@@ -228,6 +229,7 @@ sig
 
   type module_type_no_id = [
     | `ModuleType of module_ * ModuleTypeName.t
+    | `SubstT of module_type * module_type
   ]
 
   type type_no_id = [
@@ -698,7 +700,7 @@ sig
 
   and module_ = [
     | `Identifier of Identifier.module_
-
+    | `Hidden of module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
@@ -707,7 +709,7 @@ sig
   (* Signature is [ module | moduletype ] *)
   and signature = [
     | `Identifier of Identifier.signature
-
+    | `Hidden of module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
@@ -728,6 +730,7 @@ sig
 
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
+    | `Hidden of module_
     | `Canonical of module_ * Reference.module_
 
     | `ModuleType of signature * ModuleTypeName.t
@@ -745,6 +748,7 @@ sig
 
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
+    | `Hidden of module_
     | `Canonical of module_ * Reference.module_
 
     | `ModuleType of signature * ModuleTypeName.t
@@ -760,6 +764,7 @@ sig
   type s_canonical = [ `Canonical of module_ * Reference.module_ ]
   type s_module_type = [ `ModuleType of signature * ModuleTypeName.t ]
   type s_type =[ `Type of signature * TypeName.t ]
+  type s_hidden = [ `Hidden of module_ ]
   type s_constructor = [ `Constructor of datatype * ConstructorName.t ]
   type s_field = [ `Field of parent * FieldName.t ]
   type s_extension = [ `Extension of signature * ExtensionName.t ]
@@ -774,6 +779,7 @@ sig
   type module_no_id = [
     | s_substalias
     | s_module
+    | s_hidden
     | s_canonical
   ]
 
@@ -887,6 +893,7 @@ sig
     | `Identifier of Identifier.any
     | s_substalias
     | s_module
+    | s_hidden
     | s_canonical
     | s_module_type
     | s_type

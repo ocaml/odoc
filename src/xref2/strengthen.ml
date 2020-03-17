@@ -44,9 +44,10 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
             Type
               ( id,
                 r,
-                type_decl
-                  (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
-                  t )
+                Component.Delayed.put (fun () ->
+                  type_decl
+                    (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
+                    (Component.Delayed.get t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)

@@ -40,7 +40,7 @@ let careful_type_in_sig s name =
   in
   let rec inner = function
     | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
-        Found (`T m)
+        Found (`T (Component.Delayed.get m))
     | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
         Found (`C c)
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
@@ -125,8 +125,8 @@ let opt_label_in_sig s name =
         let rec inner' xs =
           match xs with
           | elt :: rest -> (
-              match elt with
-              | `Heading (_, label, _) when Ident.Name.label label = name ->
+              match elt.Odoc_model.Location_.value with
+              | `Heading (_, label, _) when Odoc_model.Paths.Identifier.name label = name ->
                   Some label
               | _ -> inner' rest )
           | _ -> None

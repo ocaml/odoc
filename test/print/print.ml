@@ -118,6 +118,8 @@ struct
       List [Atom "class_type"; Atom (ClassTypeName.to_string s); resolved (m :> Resolved.t)]
     |`Alias (m, m') ->
       List [Atom "alias"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
+    |`SubstT (m, m') ->
+      List [Atom "substt"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
 end
 
 
@@ -211,6 +213,8 @@ struct
       List [Atom "instance_variable"; Atom (InstanceVariableName.to_string s); resolved (parent :> Resolved.t)]
     | `Label (parent, s) ->
       List [Atom "label"; Atom (LabelName.to_string s); resolved (parent :> Resolved.t)]
+    | `Hidden s ->
+      List [Atom "hidden"; resolved (s :> Resolved.t)]
 end
 
 

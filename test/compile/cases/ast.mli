@@ -60,9 +60,6 @@ exception Kaboom
 (** @Hidden *)
 (**/**)
 
-(** @Functor *)
-module F : functor (M : sig type t end) -> Map.S
-
 (** @IncludeDescription *)
 include sig
   (** @TxtAttribute *)

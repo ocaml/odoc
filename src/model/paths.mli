@@ -222,41 +222,6 @@ module Identifier : sig
 
   type t = Paths_types.Identifier.any
 
-  val page_of_t : t -> Page.t
-
-  val signature_of_t : t -> Signature.t
-
-  val class_signature_of_t : t -> ClassSignature.t
-
-  val datatype_of_t : t -> DataType.t
-
-  val module_of_t : t -> Module.t
-
-  val module_type_of_t : t -> ModuleType.t
-
-  val type_of_t : t -> Type.t
-
-  val constructor_of_t : t -> Constructor.t
-
-  val field_of_t : t -> Field.t
-
-  val extension_of_t : t -> Extension.t
-
-  val exception_of_t : t -> Exception.t
-
-  val value_of_t : t -> Value.t
-
-  val class_of_t : t -> Class.t
-
-  val class_type_of_t : t -> ClassType.t
-
-  val method_of_t : t -> Method.t
-
-  val instance_variable_of_t : t -> InstanceVariable.t
-
-  val label_of_t : t -> Label.t
-
-  val parent_of_t : t -> Parent.t
 
   val equal : t -> t -> bool
 
@@ -285,8 +250,6 @@ module rec Path : sig
 
       val canonical_ident : t -> Identifier.Path.Module.t option
 
-      val rebase : Identifier.Signature.t -> t -> t
-
       val equal_identifier : Identifier.Path.Module.t -> t -> bool
     end
 
@@ -302,8 +265,6 @@ module rec Path : sig
       val is_hidden : t -> bool
 
       val identifier : t -> Identifier.Path.ModuleType.t
-
-      val rebase : Identifier.Signature.t -> t -> t
 
       val canonical_ident : t -> Identifier.Path.ModuleType.t option
 
@@ -323,8 +284,6 @@ module rec Path : sig
 
       val identifier : t -> Identifier.Path.Type.t
 
-      val rebase : Identifier.Signature.t -> t -> t
-
       val equal_identifier : Identifier.Path.Type.t -> t -> bool
     end
 
@@ -340,8 +299,6 @@ module rec Path : sig
       val is_hidden : t -> bool
 
       val identifier : t -> Identifier.Path.ClassType.t
-
-      val rebase : Identifier.Signature.t -> t -> t
 
       val equal_identifier : Identifier.Path.ClassType.t -> t -> bool
     end
@@ -434,7 +391,7 @@ module Fragment : sig
     module Signature : sig
       type t = Paths_types.Resolved_fragment.signature
 
-      val identifier : t -> Identifier.Signature.t
+      (* val identifier : t -> Identifier.Signature.t *)
 
       val equal : t -> t -> bool
 
@@ -446,7 +403,7 @@ module Fragment : sig
     module Module : sig
       type t = Paths_types.Resolved_fragment.module_
 
-      val identifier : t -> Identifier.Path.Module.t
+      (* val identifier : t -> Identifier.Path.Module.t *)
 
       val equal : t -> t -> bool
 
@@ -458,7 +415,7 @@ module Fragment : sig
     module Type : sig
       type t = Paths_types.Resolved_fragment.type_
 
-      val identifier : t -> Identifier.Path.Type.t
+      (* val identifier : t -> Identifier.Path.Type.t *)
 
       val equal : t -> t -> bool
 
@@ -535,8 +492,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Signature.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module ClassSignature : sig
@@ -547,8 +502,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.ClassSignature.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module DataType : sig
@@ -559,8 +512,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.DataType.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Parent : sig
@@ -571,8 +522,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Parent.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module LabelParent : sig
@@ -583,8 +532,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.LabelParent.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
     module Module : sig
       type t = Paths_types.Resolved_reference.module_
@@ -594,8 +541,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Module.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module ModuleType : sig
@@ -606,8 +551,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.ModuleType.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Type : sig
@@ -618,8 +561,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Path.Type.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Constructor : sig
@@ -630,8 +571,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Paths_types.Identifier.reference_constructor
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Field : sig
@@ -642,8 +581,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Paths_types.Identifier.reference_field
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Extension : sig
@@ -654,8 +591,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Paths_types.Identifier.reference_extension
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Exception : sig
@@ -666,8 +601,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Exception.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Value : sig
@@ -678,8 +611,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Value.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Class : sig
@@ -690,8 +621,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Class.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module ClassType : sig
@@ -702,8 +631,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Paths_types.Identifier.reference_class_type
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Method : sig
@@ -714,8 +641,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Method.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module InstanceVariable : sig
@@ -726,8 +651,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.InstanceVariable.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Label : sig
@@ -738,8 +661,6 @@ module rec Reference : sig
       val hash : t -> int
 
       val identifier : t -> Identifier.Label.t
-
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     module Page : sig
@@ -751,46 +672,9 @@ module rec Reference : sig
 
       val identifier : t -> Identifier.Page.t
 
-      val rebase : Identifier.Signature.t -> t -> t
     end
 
     type t = Paths_types.Resolved_reference.any
-
-    val module_of_t : t -> Module.t
-
-    val module_type_of_t : t -> ModuleType.t
-
-    val signature_of_t : t -> Signature.t
-
-    val class_signature_of_t : t -> ClassSignature.t
-
-    val parent_of_t : t -> Parent.t
-
-    val label_parent_of_t : t -> LabelParent.t
-
-    val type_of_t : t -> Type.t
-
-    val datatype_of_t : t -> DataType.t
-
-    val constructor_of_t : t -> Constructor.t
-
-    val field_of_t : t -> Field.t
-
-    val extension_of_t : t -> Extension.t
-
-    val exception_of_t : t -> Exception.t
-
-    val value_of_t : t -> Value.t
-
-    val class_of_t : t -> Class.t
-
-    val class_type_of_t : t -> ClassType.t
-
-    val method_of_t : t -> Method.t
-
-    val instance_variable_of_t : t -> InstanceVariable.t
-
-    val label_of_t : t -> Label.t
 
     val identifier : t -> Identifier.t
   end
@@ -952,39 +836,6 @@ module rec Reference : sig
 
     type t = Paths_types.Reference.any
 
-    val module_type_of_t : t -> ModuleType.t
-
-    val signature_of_t : t -> Signature.t
-
-    val class_signature_of_t : t -> ClassSignature.t
-
-    val parent_of_t : t -> Parent.t
-
-    val label_parent_of_t : t -> LabelParent.t
-
-    val type_of_t : t -> Type.t
-
-    val datatype_of_t : t -> DataType.t
-
-    val constructor_of_t : t -> Constructor.t
-
-    val field_of_t : t -> Field.t
-
-    val extension_of_t : t -> Extension.t
-
-    val exception_of_t : t -> Exception.t
-
-    val value_of_t : t -> Value.t
-
-    val class_of_t : t -> Class.t
-
-    val class_type_of_t : t -> ClassType.t
-
-    val method_of_t : t -> Method.t
-
-    val instance_variable_of_t : t -> InstanceVariable.t
-
-    val label_of_t : t -> Label.t
 
     val hash : t -> int
 

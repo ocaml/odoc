@@ -23,7 +23,8 @@ module rec Resolved : sig
   [ `Local of Ident.module_type
   | `Substituted of module_type
   | `Identifier of Identifier.ModuleType.t
-  | `ModuleType of parent * ModuleTypeName.t ]
+  | `ModuleType of parent * ModuleTypeName.t
+  | `SubstT of module_type * module_type ]
 
   and type_ =
   [ `Local of Ident.path_type
@@ -39,6 +40,7 @@ module rec Resolved : sig
   | `Identifier of Odoc_model.Paths_types.Identifier.path_class_type
   | `Class of parent * ClassName.t
   | `ClassType of parent * ClassTypeName.t ]
+
 end = Resolved
 
 and Cpath : sig 
@@ -99,6 +101,7 @@ and resolved_module_type_hash : Resolved.module_type -> int =
   | `Substituted m -> Hashtbl.hash (17, resolved_module_type_hash m)
   | `Identifier id -> Hashtbl.hash (18, Odoc_model.Paths.Identifier.(hash (id :> t)))
   | `ModuleType (p, n) -> Hashtbl.hash (19, resolved_parent_hash p, n)
+  | `SubstT (p1, p2) -> Hashtbl.hash (1023, resolved_module_type_hash p1, resolved_module_type_hash p2)
 
 and resolved_parent_hash : Resolved.parent -> int =
   function
@@ -147,6 +150,7 @@ and resolved_module_type_path_of_cpath :
   | `Identifier (#Identifier.ModuleType.t as x) -> `Identifier x
   | `Substituted y -> resolved_module_type_path_of_cpath y
   | `ModuleType (p, m) -> `ModuleType (resolved_module_path_of_cpath_parent p, m)
+  | `SubstT (p1, p2) -> `SubstT (resolved_module_type_path_of_cpath p1, resolved_module_type_path_of_cpath p2)
 
 and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   function
@@ -201,6 +205,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   | `Substituted _ -> true
   | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
+  | `SubstT _ -> true
 
 and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `Local _ -> false
@@ -277,6 +282,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Identifier _ -> false
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden p
+  | `SubstT (p1, p2) -> is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
@@ -307,6 +313,7 @@ let rec resolved_module_of_resolved_module_reference :
       `Module (`Module (resolved_module_of_resolved_signature_reference parent), name)
   | `Identifier i -> `Identifier i
   | `SubstAlias (_m1, _m2) -> failwith "gah"
+  | `Hidden s -> `Hidden (resolved_module_of_resolved_module_reference s)
   | `Canonical (m1, m2) ->
       `Canonical
         ( resolved_module_of_resolved_module_reference m1,
@@ -315,7 +322,7 @@ let rec resolved_module_of_resolved_module_reference :
 and resolved_module_of_resolved_signature_reference :
     Reference.Resolved.Signature.t -> Resolved.module_ = function
   | `Identifier (#Identifier.Module.t as i) -> `Identifier i
-  | (`SubstAlias _ | `Canonical _ | `Module _) as r' ->
+  | (`SubstAlias _ | `Canonical _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
   | `ModuleType (_, n) -> failwith ("Not a module reference: " ^ (ModuleTypeName.to_string n))
   | `Identifier _ -> failwith ("Not a module reference : identifier")
