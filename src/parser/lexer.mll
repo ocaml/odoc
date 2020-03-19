@@ -204,6 +204,7 @@ let trim_trailing_space_or_accept_whitespace text =
   | ' ' -> String.sub text 0 (String.length text - 1)
   | '\t' | '\r' | '\n' -> text
   | _ -> text
+  | exception Invalid_argument _ -> text
 
 let emit_verbatim input start_offset buffer =
   let t = Buffer.contents buffer in

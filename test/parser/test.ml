@@ -383,6 +383,9 @@ let tests : test_suite list = [
     t "followed-by-paragraph" "{v foo v}\nbar";
     t "unterminated" "{v foo";
     t "unterminated-v" "{v foo v";
+    t "unterminated-empty" "{v";
+    t "unterminated-whitespace" "{v ";
+    t "unterminated-whitespace-2" "{v  ";
     t "trailing-cr" "{v foo\rv}";
   ];
 
