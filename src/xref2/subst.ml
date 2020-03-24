@@ -71,14 +71,23 @@ let compose_delayed' compose v s =
   | DelayedSubst (s', v) -> DelayedSubst (compose s' s, v)
   | NoSubst v -> DelayedSubst (s, v)
 
+let local_module_path : t -> Ident.module_ -> Cpath.Resolved.module_ =
+ fun s id ->
+  try ModuleMap.find id s.module_ with Not_found -> `Local id
+
+let local_module_type_path : t -> Ident.module_type -> Cpath.Resolved.module_type =
+ fun s id ->
+  try ModuleTypeMap.find id s.module_type with Not_found -> `Local id
+
+let local_type_path : t -> Ident.path_type -> Cpath.Resolved.type_ =
+ fun s id ->
+  try TypeMap.find id s.type_ with Not_found -> `Local id
+
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
  fun s p ->
   match p with
-  | `Local id -> (
-      match try Some (ModuleMap.find id s.module_) with _ -> None with
-      | Some x -> x
-      | None -> `Local id )
+  | `Local id -> local_module_path s id
   | `Identifier _ -> p
   | `Apply (p1, p2) -> `Apply (resolved_module_path s p1, module_path s p2)
   | `Substituted p -> `Substituted (resolved_module_path s p)
@@ -112,10 +121,7 @@ and resolved_module_type_path :
     t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
  fun s p ->
   match p with
-  | `Local id -> (
-      match try Some (ModuleTypeMap.find id s.module_type) with _ -> None with
-      | Some x -> x
-      | None -> `Local id )
+  | `Local id -> local_module_type_path s id
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_module_type_path s p)
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
@@ -131,12 +137,11 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
 and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
  fun s p ->
   match p with
-  | `Local id -> (
+  | `Local id ->
       if TypeMap.mem id s.type_replacement then
-        raise (TypeReplacement (TypeMap.find id s.type_replacement));
-      match try Some (TypeMap.find id s.type_) with Not_found -> None with
-      | Some x -> x
-      | None -> `Local id )
+        raise (TypeReplacement (TypeMap.find id s.type_replacement))
+      else
+        local_type_path s id
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_type_path s p)
   | `Type (p, n) -> `Type (resolved_parent_path s p, n)
@@ -456,31 +461,31 @@ and rename_bound_idents s sg =
   | Module (id, r, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (`Local id') s)
+        ( add_module id (local_module_path s id') s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (`Local id') s)
+        ( add_module id (local_module_path s id') s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
       let id' = Ident.Rename.module_type id in
       rename_bound_idents
-        ( add_module_type id (`Local id') s)
+        ( add_module_type id (local_module_type_path s id') s)
         (ModuleType (id', mt) :: sg)
         rest
   | Type (id, r, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (`Local (id' :> Ident.path_type)) s)
+        ( add_type id (local_type_path s (id' :> Ident.path_type)) s)
         (Type (id', r, t) :: sg)
         rest
   | TypeSubstitution (id, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (`Local (id' :> Ident.path_type)) s)
+        ( add_type id (local_type_path s (id' :> Ident.path_type)) s)
         (TypeSubstitution (id', t) :: sg)
         rest
   | Exception (id, e) :: rest ->
