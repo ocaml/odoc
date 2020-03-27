@@ -89,8 +89,13 @@ and handle_expansion env id expansion =
         | args -> (env, Component.Module.Functor (args, sg)) )
     | Functor (arg, expr) ->
         let env', expr' = handle_argument id arg expr env in
-        expand (`Result id) env' (arg :: args)
-          (aux_expansion_of_module_type_expr env' expr')
+        let res =
+          try
+            (aux_expansion_of_module_type_expr env' expr')
+          with
+          | Tools.OpaqueModule -> Signature { items = []; removed = [] }
+        in
+        expand (`Result id) env' (arg :: args) res
   in
   let env, e = expand id env [] expansion in
   (env, Lang_of.(module_expansion empty id e))

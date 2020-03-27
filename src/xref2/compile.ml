@@ -249,9 +249,9 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
   try
     let env = Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env in
-    let expansion', expr' =
+    let env', expansion', expr' =
       match m.expr with
-      | None -> (None, None)
+      | None -> (env, None, None)
       | Some expr ->
           let m' = Env.lookup_module_type m.id env in
           let env, expansion =
@@ -271,12 +271,12 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
                 | _ -> () );
                 raise e
           in
-          ( expansion,
+          ( env, expansion,
             Some
               (module_type_expr env (m.id :> Paths.Identifier.Signature.t) expr)
           )
     in
-    { m with expr = expr'; expansion = Opt.map (expansion env) expansion' }
+    { m with expr = expr'; expansion = Opt.map (expansion env') expansion' }
   with e ->
     Format.fprintf Format.err_formatter
       "Failed to resolve module_type (%a): %s\n%!"
@@ -342,7 +342,9 @@ and functor_parameter :
   | Named arg -> Named (functor_parameter_parameter env arg)
 
 and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
- fun env a ->
+ fun env' a ->
+    let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
+
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match functor_arg.type_ with
