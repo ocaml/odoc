@@ -602,7 +602,9 @@ and include_ : Env.t -> Include.t -> Include.t =
     raise e
 
 and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
- fun env a ->
+ fun env' a ->
+ let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
+
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
