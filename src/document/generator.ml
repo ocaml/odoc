@@ -1483,10 +1483,9 @@ struct
 
   and include_ (t : Odoc_model.Lang.Include.t) =
     let status =
-      let is_inline_tag element = element.Odoc_model.Location_.value = `Tag `Inline in
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
-      if List.exists is_inline_tag t.doc then `Inline
+      if t.inline then `Inline
       else if List.exists is_open_tag t.doc then `Open
       else if List.exists is_closed_tag t.doc then `Closed
       else `Default
