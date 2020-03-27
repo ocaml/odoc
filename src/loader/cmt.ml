@@ -570,7 +570,7 @@ and read_include env parent incl =
   in
   let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false } in
-    {parent; doc; decl; expansion}
+    {parent; doc; decl; expansion; inline=false }
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

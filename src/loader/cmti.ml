@@ -704,7 +704,7 @@ and read_include env parent incl =
   let decl = Module.ModuleType expr in
   let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false} in
-    {parent; doc; decl; expansion}
+    {parent; doc; decl; expansion; inline=false }
 
 and read_signature env parent sg =
   let env =

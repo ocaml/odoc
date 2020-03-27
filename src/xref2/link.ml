@@ -554,13 +554,32 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
+  let decl = module_decl env i.parent i.decl in
+  let rec hidden_rhs decl =
+    match decl with
+    | Odoc_model.Lang.Module.Alias (`Resolved p) -> Paths.Path.Resolved.Module.is_hidden p
+    | Alias (_) -> false
+    | ModuleType (Signature _) -> false
+    | ModuleType (Functor _) -> failwith "Invalid"
+    | ModuleType (Path (`Resolved p)) -> Paths.Path.Resolved.ModuleType.is_hidden p
+    | ModuleType (Path _) -> false
+    | ModuleType (With (e, _)) -> hidden_rhs (ModuleType e)
+    | ModuleType (TypeOf decl) -> hidden_rhs decl
+  in
+  let doc = comment_docs env i.doc in
+  let should_be_inlined =
+    let is_inline_tag element =
+      element.Odoc_model.Location_.value = `Tag `Inline in
+    List.exists is_inline_tag doc
+  in
   try
     {
       i with
-      decl = module_decl env i.parent i.decl;
+      decl;
       expansion =
         { resolved = true; content = signature_items env i.expansion.content };
-      doc = comment_docs env i.doc;
+      inline = should_be_inlined || hidden_rhs decl;
+      doc = doc;
     }
   with Env.MyFailure (_id, _env) as e ->
     (* Format.fprintf Format.err_formatter

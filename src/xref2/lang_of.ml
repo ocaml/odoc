@@ -576,6 +576,7 @@ and include_ parent map i =
     decl = module_decl map parent i.decl;
     expansion =
       { resolved = false; content = signature parent map i.expansion_ };
+    inline = false
   }
 
 and value_ map id v =

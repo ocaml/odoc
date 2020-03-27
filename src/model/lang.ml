@@ -135,6 +135,7 @@ and Include : sig
     { parent: Identifier.Signature.t;
       doc: Comment.docs;
       decl: Module.decl;
+      inline : bool;
       expansion: expansion; }
 
 end = Include
