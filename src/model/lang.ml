@@ -51,6 +51,7 @@ and FunctorParameter : sig
   type parameter = {
     id : Identifier.Module.t;
     expr : ModuleType.expr;
+    display_expr : ModuleType.expr option;
     expansion: Module.expansion option;
   }
 

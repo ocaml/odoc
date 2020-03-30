@@ -89,12 +89,15 @@ and process_module env add_canonical m base_path' base_ref' : module_lookup_resu
     match Tools.get_module_path_modifiers env add_canonical m with
     | None -> base_path, base_ref
     | Some (`SubstAliased cp) ->
+      let cp = Tools.reresolve_module env cp in
       let p = Lang_of.(Path.resolved_module empty cp) in
       `SubstAlias (cp, base_path), `SubstAlias (p, base_ref)
     | Some (`Aliased cp) ->
+      let cp = Tools.reresolve_module env cp in
       let p = Lang_of.(Path.resolved_module empty cp) in
       `Alias (cp, base_path), `SubstAlias (p, base_ref)
     | Some (`SubstMT cp) ->
+      let cp = Tools.reresolve_module_type env cp in
       `Subst (cp, base_path), base_ref in
   if add_canonical
   then (add_canonical_path env m r, Tools.reresolve_module env (Tools.add_canonical_path env m p),  m) else (r, p, m)

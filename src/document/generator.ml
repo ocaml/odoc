@@ -1167,6 +1167,7 @@ struct
     = fun arg ->
       let open Odoc_model.Lang.FunctorParameter in
       let name = Paths.Identifier.name arg.id in
+      let render_ty = match arg.display_expr with | Some e -> e | None -> arg.expr in
       let content =
         match arg.expansion with
         | None ->
@@ -1174,13 +1175,13 @@ struct
             O.keyword "module" ++ O.txt " " ++
             O.txt (Paths.Identifier.name arg.id) ++
               O.txt Syntax.Type.annotation_separator ++
-              mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
+              mty (arg.id :> Paths.Identifier.Signature.t) render_ty
           )
         | Some expansion ->
           let expansion =
             match expansion with
             | AlreadyASig ->
-              begin match arg.expr with
+              begin match render_ty with
               | Signature sg -> Odoc_model.Lang.Module.Signature sg
               | _ -> assert false
               end
@@ -1198,7 +1199,7 @@ struct
             let summary =
               O.render (
                 O.txt Syntax.Type.annotation_separator
-                ++ mty (arg.id :> Paths.Identifier.Signature.t) arg.expr)
+                ++ mty (arg.id :> Paths.Identifier.Signature.t) render_ty)
             in
             let status = `Default in
             [DocumentedSrc.Subpage { content ; summary ; status }]

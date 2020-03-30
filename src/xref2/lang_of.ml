@@ -857,6 +857,7 @@ and functor_parameter map f =
       module_type_expr map
         (identifier :> Odoc_model.Paths_types.Identifier.signature)
         f.expr;
+    display_expr=None;
     expansion;
   }
 
