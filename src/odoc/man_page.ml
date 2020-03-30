@@ -28,7 +28,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
     Page.load input >>= fun page ->
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
-      Odoc_xref2.Resolve2.resolve_page resolve_env page
+      Odoc_xref2.Link.resolve_page resolve_env page
     in
     let pkg_name = root.package in
     let pages = mk_page ~syntax odoctree in
@@ -51,8 +51,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
     Compilation_unit.load input >>= fun unit ->
     let odoctree =
       let env = Env.build env (`Unit unit) in
-      let resolved = Odoc_xref2.Resolve2.resolve env unit in
-      Odoc_xref2.Expand.expand2 env resolved
+      Odoc_xref2.Link.link env unit
     in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;

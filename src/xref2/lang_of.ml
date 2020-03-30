@@ -546,9 +546,9 @@ and module_expansion :
   | AlreadyASig -> Lang.Module.AlreadyASig
   | Signature sg -> Signature (signature id map sg)
   | Functor (args, sg) ->
-      let identifier, args, map =
-        List.fold_right
-          (fun arg (id, args, map) ->
+      let identifier, rev_args, map =
+        List.fold_left
+          (fun (id, args, map) arg ->
             match arg with
             | Named arg ->
                 let identifier' =
@@ -564,9 +564,9 @@ and module_expansion :
                 let arg = functor_parameter map arg in
                 (identifier_result, Odoc_model.Lang.FunctorParameter.Named arg :: args, map)
             | Unit -> (`Result id, Unit :: args, map))
-          args (id, [], map)
+          (id, [], map) args
       in
-      Functor (args, signature identifier map sg)
+      Functor (List.rev rev_args, signature identifier map sg)
 
 and include_ parent map i =
   let open Component.Include in

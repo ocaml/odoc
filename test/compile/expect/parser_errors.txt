@@ -42,3 +42,4 @@ Suggestion: try '\}'.
 File "cases/parser_errors.mli", line 56, characters 4-18:
 '{x bad markup}': bad markup.
 Suggestion: did you mean '{!x bad markup}' or '[x bad markup]'?
+Adding module: (root Parser_errors)
