@@ -853,7 +853,7 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg; expansion }), env
+              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg; expansion; display_expr = None }), env
         in
         let res = read_module_type env (`Result parent) res in
         Functor(parameter, res)

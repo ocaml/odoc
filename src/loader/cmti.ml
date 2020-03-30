@@ -514,7 +514,7 @@ and read_module_type env parent label_parent mty =
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-              Named { FunctorParameter. id; expr = arg; expansion }
+              Named { FunctorParameter. id; expr = arg; expansion; display_expr = None }
         in
         let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
         let res = read_module_type env (`Result parent) label_parent res in

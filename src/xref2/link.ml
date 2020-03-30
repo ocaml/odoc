@@ -555,17 +555,7 @@ and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
   let decl = module_decl env i.parent i.decl in
-  let rec hidden_rhs decl =
-    match decl with
-    | Odoc_model.Lang.Module.Alias (`Resolved p) -> Paths.Path.Resolved.Module.is_hidden p
-    | Alias (_) -> false
-    | ModuleType (Signature _) -> false
-    | ModuleType (Functor _) -> failwith "Invalid"
-    | ModuleType (Path (`Resolved p)) -> Paths.Path.Resolved.ModuleType.is_hidden p
-    | ModuleType (Path _) -> false
-    | ModuleType (With (e, _)) -> hidden_rhs (ModuleType e)
-    | ModuleType (TypeOf decl) -> hidden_rhs decl
-  in
+  let hidden_rhs = should_hide_module_decl decl in
   let doc = comment_docs env i.doc in
   let should_be_inlined =
     let is_inline_tag element =
@@ -578,7 +568,7 @@ and include_ : Env.t -> Include.t -> Include.t =
       decl;
       expansion =
         { resolved = true; content = signature_items env i.expansion.content };
-      inline = should_be_inlined || hidden_rhs decl;
+      inline = should_be_inlined || hidden_rhs;
       doc = doc;
     }
   with Env.MyFailure (_id, _env) as e ->
@@ -604,6 +594,7 @@ and include_ : Env.t -> Include.t -> Include.t =
 and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
+  let expr = module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr in
   Format.eprintf "Handling functor argument: %a\n%!" Component.Fmt.model_identifier (a.id :> Odoc_model.Paths.Identifier.t);
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
@@ -619,9 +610,18 @@ and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Functor
         with Tools.OpaqueModule -> (env, None) )
     | x, _ -> (env, x)
   in
+  let display_expr =
+    match should_hide_moduletype expr,expn with
+      | false, _ -> None
+      | true, None -> None
+      | true, Some (Odoc_model.Lang.Module.AlreadyASig) -> None
+      | true, Some (Odoc_model.Lang.Module.Signature sg) -> Some (Odoc_model.Lang.ModuleType.Signature sg)
+      | true, Some (Odoc_model.Lang.Module.Functor _) -> None
+  in
   {
     a with
-    expr = module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr;
+    expr;
+    display_expr;
     expansion = Opt.map (module_expansion env) expn;
   }
 

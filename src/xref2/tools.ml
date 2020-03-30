@@ -293,36 +293,12 @@ let rec handle_apply is_resolve env func_path arg_path m =
       new_module )
 
 and add_canonical_path : Env.t -> Component.Module.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
-  fun env m p ->
+  fun _env m p ->
   match p with
   | `Canonical _ -> p
   | _ -> (
       match m.Component.Module.canonical with
-      | Some (cp, _cr) -> (
-          if !is_compile
-          then (
-            (* Format.fprintf Format.err_formatter "XXX skipping canonical resolution\n%!"; *)
-            `Canonical (p, cp)
-          )
-          else (
-            (* Format.fprintf Format.err_formatter "XXX Handling canonical path for %a\n%!" (Component.Fmt.resolved_module_path) p; *)
-            match lookup_and_resolve_module_from_path true false env cp with
-            | Resolved (`Alias (_, p2'), _) ->
-                  `Canonical ( p, `Resolved (simplify_resolved_module_path env p2'))
-            | Resolved (p2', _) ->
-                  `Canonical ( p, `Resolved (simplify_resolved_module_path env p2'))
-            | Unresolved p' ->
-                (* Format.fprintf Format.err_formatter "XXX No idea :/\n%!"; *)
-                `Canonical (p, p')
-            | exception _e ->
-                Format.fprintf Format.err_formatter
-                  "Tools.add_canonical_path: Warning: Failed to look up \
-                   canonical path for module %a\n\
-                   %s\n\
-                   %!"
-                  Component.Fmt.resolved_module_path p
-                  (Printexc.get_backtrace ());
-                p ))
+      | Some (cp, _cr) -> `Canonical (p, cp)
       | None -> p )
 
 and get_substituted_module_type : Env.t -> Component.ModuleType.expr -> Cpath.Resolved.module_type option =
