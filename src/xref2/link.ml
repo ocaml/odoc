@@ -603,8 +603,8 @@ and include_ : Env.t -> Include.t -> Include.t =
 
 and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
- let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
-
+  let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
+  Format.eprintf "Handling functor argument: %a\n%!" Component.Fmt.model_identifier (a.id :> Odoc_model.Paths.Identifier.t);
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match (a.expansion, functor_arg.type_) with

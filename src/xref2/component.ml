@@ -1665,9 +1665,9 @@ module Of_Lang = struct
     | AlreadyASig -> Module.AlreadyASig
     | Signature t -> Signature (signature ident_map t)
     | Functor (args, sg) ->
-        let args, ident_map =
-          List.fold_right
-            (fun arg (args, ident_map) ->
+        let rev_args, ident_map =
+          List.fold_left
+            (fun (args, ident_map) arg ->
               match arg with
               | Named arg ->
                   let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
@@ -1681,9 +1681,9 @@ module Of_Lang = struct
                   let arg' = functor_parameter ident_map' id arg in
                   (FunctorParameter.Named arg' :: args, ident_map')
               | Unit -> (FunctorParameter.Unit :: args, ident_map))
-            args ([], ident_map)
+            ([], ident_map) args
         in
-        Functor (args, signature ident_map sg)
+        Functor (List.rev rev_args, signature ident_map sg)
 
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in
