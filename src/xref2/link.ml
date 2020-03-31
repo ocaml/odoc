@@ -443,6 +443,7 @@ and module_ : Env.t -> Module.t -> Module.t =
         | _ -> (env, m.expansion)
       in
       let t4 = Unix.gettimeofday () in
+      let expansion = Opt.map (module_expansion env) expansion in
       let doc, expansion =
         match m.doc with
         | _ :: _ -> (m.doc, expansion)
@@ -468,7 +469,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           doc = comment_docs env doc;
           type_;
           display_type;
-          expansion = Opt.map (module_expansion env) expansion;
+          expansion;
         }
       in
       let end_time = Unix.gettimeofday () in
