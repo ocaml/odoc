@@ -1,7 +1,8 @@
 open Odoc_model
 open Odoc_xref2
 
-let compare_sequential_and_composed ~resolve ~pp_path ~substs test_case =
+let compare_sequential_and_composed ?expected ~resolve ~pp_path ~substs
+    test_case =
   let sequential = List.fold_left (fun acc s -> resolve s acc) test_case substs
   (* and composed = *)
   (*   let s = List.fold_left (Subst.compose) Subst.identity substs in *)
@@ -16,6 +17,9 @@ let compare_sequential_and_composed ~resolve ~pp_path ~substs test_case =
     resolve_delayed s
   in
   let path = Alcotest.testable pp_path ( = ) in
+  ( match expected with
+  | Some expected -> Alcotest.check path "expected path" expected delayed
+  | None -> () );
   Alcotest.check path "same path" sequential delayed
 
 let suite_name ~pp_id ~pp_path substs_desc =
@@ -83,9 +87,9 @@ module Subst_type_expr = struct
     and substs =
       List.map (List.fold_left subst_add Subst.identity) substs_desc
     in
-    let make_test_case id =
+    let make_test_case (id, expected) =
       let test () =
-        compare_sequential_and_composed ~resolve ~pp_path ~substs id
+        compare_sequential_and_composed ~expected ~resolve ~pp_path ~substs id
       in
       Alcotest.test_case (Fmt.to_to_string pp_path id) `Quick test
     in
@@ -115,5 +119,5 @@ let () =
             [ (type_ "a", Tuple [ constr "b"; constr "c" ]) ];
             [ (type_ "c", constr "d") ];
           ]
-          ~test_cases:[ constr "a" ]);
+          ~test_cases:[ (constr "a", Tuple [ constr "b"; constr "d" ]) ]);
     ]
