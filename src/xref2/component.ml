@@ -45,7 +45,7 @@ module rec Module : sig
   type decl = Alias of Cpath.module_ | ModuleType of ModuleType.expr
 
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     type_ : decl;
     canonical : (Cpath.module_ * Odoc_model.Paths.Reference.Module.t) option;
     hidden : bool;
@@ -56,7 +56,7 @@ end =
   Module
 
 and ModuleSubstitution : sig
-  type t = { doc : Odoc_model.Comment.docs; manifest : Cpath.module_ }
+  type t = { doc : CComment.docs; manifest : Cpath.module_ }
 end =
   ModuleSubstitution
 
@@ -69,7 +69,7 @@ and TypeExpr : sig
         name : string;
         constant : bool;
         arguments : TypeExpr.t list;
-        doc : Odoc_model.Comment.docs;
+        doc : CComment.docs;
       }
     end
 
@@ -113,7 +113,7 @@ and Extension : sig
   module Constructor : sig
     type t = {
       name : string;
-      doc : Odoc_model.Comment.docs;
+      doc : CComment.docs;
       args : TypeDecl.Constructor.argument;
       res : TypeExpr.t option;
     }
@@ -121,7 +121,7 @@ and Extension : sig
 
   type t = {
     type_path : Cpath.type_;
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     type_params : TypeDecl.param list;
     private_ : bool;
     constructors : Constructor.t list;
@@ -131,7 +131,7 @@ end =
 
 and Exception : sig
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     args : TypeDecl.Constructor.argument;
     res : TypeExpr.t option;
   }
@@ -165,7 +165,7 @@ and ModuleType : sig
     | TypeOf of Module.decl
 
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     expr : expr option;
     expansion : Module.expansion option;
   }
@@ -176,7 +176,7 @@ and TypeDecl : sig
   module Field : sig
     type t = {
       name : string;
-      doc : Odoc_model.Comment.docs;
+      doc : CComment.docs;
       mutable_ : bool;
       type_ : TypeExpr.t;
     }
@@ -187,7 +187,7 @@ and TypeDecl : sig
 
     type t = {
       name : string;
-      doc : Odoc_model.Comment.docs;
+      doc : CComment.docs;
       args : argument;
       res : TypeExpr.t option;
     }
@@ -212,7 +212,7 @@ and TypeDecl : sig
   end
 
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -220,7 +220,7 @@ end =
   TypeDecl
 
 and Value : sig
-  type t = { doc : Odoc_model.Comment.docs; type_ : TypeExpr.t }
+  type t = { doc : CComment.docs; type_ : TypeExpr.t }
 end =
   Value
 
@@ -240,7 +240,7 @@ and Signature : sig
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t
     | Include of Include.t
-    | Comment of Odoc_model.Comment.docs_or_stop
+    | Comment of CComment.docs_or_stop
 
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
@@ -255,7 +255,7 @@ end =
 and Include : sig
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     expansion_ : Signature.t;
     decl : Module.decl;
   }
@@ -263,7 +263,7 @@ end =
   Include
 
 and External : sig
-  type t = { doc : Odoc_model.Comment.docs; type_ : TypeExpr.t; primitives : string list }
+  type t = { doc : CComment.docs; type_ : TypeExpr.t; primitives : string list }
 end =
   External
 
@@ -273,7 +273,7 @@ and Class : sig
     | Arrow of TypeExpr.label option * TypeExpr.t * decl
 
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
     type_ : decl;
@@ -288,7 +288,7 @@ and ClassType : sig
     | Signature of ClassSignature.t
 
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     virtual_ : bool;
     params : TypeDecl.param list;
     expr : expr;
@@ -303,7 +303,7 @@ and ClassSignature : sig
     | InstanceVariable of Ident.instance_variable * InstanceVariable.t
     | Constraint of TypeExpr.t * TypeExpr.t
     | Inherit of ClassType.expr
-    | Comment of Odoc_model.Comment.docs_or_stop
+    | Comment of CComment.docs_or_stop
 
   type t = { self : TypeExpr.t option; items : item list }
 end =
@@ -311,7 +311,7 @@ end =
 
 and Method : sig
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     private_ : bool;
     virtual_ : bool;
     type_ : TypeExpr.t;
@@ -321,7 +321,7 @@ end =
 
 and InstanceVariable : sig
   type t = {
-    doc : Odoc_model.Comment.docs;
+    doc : CComment.docs;
     mutable_ : bool;
     virtual_ : bool;
     type_ : TypeExpr.t;
@@ -336,12 +336,29 @@ and Substitution : sig
     type_ : Cpath.Resolved.type_ TypeMap.t;
     class_type : Cpath.Resolved.class_type ClassTypeMap.t;
     type_replacement : TypeExpr.t TypeMap.t;
-    (* Reference maps *)
   }
 
   type 'a delayed = DelayedSubst of t * 'a | NoSubst of 'a
 end =
   Substitution
+
+and CComment : sig
+  open Odoc_model.Comment
+
+  type block_element = [
+    | nestable_block_element
+    | `Heading of heading_level * Ident.label * link_content
+    | `Tag of tag
+  ]
+
+  type docs = (block_element with_location) list
+
+  type docs_or_stop = [
+    | `Docs of docs
+    | `Stop
+  ]
+end =
+  CComment
 
 module Element = struct
   open Odoc_model.Paths
@@ -1086,7 +1103,7 @@ module LocalIdents = struct
   and docs d ids =
     List.fold_right (fun bel_loc -> block_element bel_loc.Location_.value) d ids
 
-  and docs_or_stop (d : Comment.docs_or_stop) ids =
+  and docs_or_stop (d : Odoc_model.Comment.docs_or_stop) ids =
     match d with `Docs d' -> docs d' ids | `Stop -> ids
 
   and class_signature s ids =
@@ -1523,7 +1540,7 @@ module Of_Lang = struct
   let rec type_decl ident_map ty =
     let open Odoc_model.Lang.TypeDecl in
     {
-      TypeDecl.doc = ty.doc;
+      TypeDecl.doc = docs ident_map ty.doc;
       equation = type_equation ident_map ty.equation;
       representation =
         Opt.map (type_decl_representation ident_map) ty.representation;
@@ -1544,7 +1561,7 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) t.res in
     {
       TypeDecl.Constructor.name = Paths.Identifier.name t.id;
-      doc = t.doc;
+      doc = docs ident_map t.doc;
       args;
       res;
     }
@@ -1561,7 +1578,7 @@ module Of_Lang = struct
     let type_ = type_expression ident_map f.type_ in
     {
       TypeDecl.Field.name = Paths.Identifier.name f.id;
-      doc = f.doc;
+      doc = docs ident_map f.doc;
       mutable_ = f.mutable_;
       type_;
     }
@@ -1591,7 +1608,7 @@ module Of_Lang = struct
                 name = c.name;
                 constant = c.constant;
                 arguments = List.map (type_expression ident_map) c.arguments;
-                doc = c.doc;
+                doc = docs ident_map c.doc;
               }
     in
     {
@@ -1693,7 +1710,7 @@ module Of_Lang = struct
     in
     let expansion = Opt.map (module_expansion ident_map) m.expansion in
     {
-      Module.doc = m.doc;
+      Module.doc = docs ident_map m.doc;
       type_;
       canonical;
       hidden = m.hidden;
@@ -1727,7 +1744,7 @@ module Of_Lang = struct
     in
     {
       Extension.type_path;
-      doc = e.doc;
+      doc = docs ident_map e.doc;
       type_params = e.type_params;
       private_ = e.private_;
       constructors;
@@ -1739,7 +1756,7 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) c.res in
     {
       Extension.Constructor.name = Paths.Identifier.name c.id;
-      doc = c.doc;
+      doc = docs ident_map c.doc;
       args;
       res;
     }
@@ -1748,7 +1765,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.Exception in
     let args = type_decl_constructor_argument ident_map e.args in
     let res = Opt.map (type_expression ident_map) e.res in
-    { Exception.doc = e.doc; args; res }
+    { Exception.doc = docs ident_map e.doc; args; res }
 
   and module_type_expr ident_map m =
     match m with
@@ -1783,23 +1800,23 @@ module Of_Lang = struct
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr
     in
     let expansion = Opt.map (module_expansion ident_map) m.expansion in
-    { ModuleType.doc = m.doc; expr; expansion }
+    { ModuleType.doc = docs ident_map m.doc; expr; expansion }
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Odoc_model.Lang.Value.type_ in
-    { Value.type_; doc = v.doc }
+    { Value.type_; doc = docs ident_map v.doc }
 
   and external_ ident_map e =
     let open Odoc_model.Lang.External in
     let type_ = type_expression ident_map e.type_ in
-    { External.doc = e.doc; type_; primitives = e.primitives }
+    { External.doc = docs ident_map e.doc; type_; primitives = e.primitives }
 
   and include_ ident_map i =
     let open Odoc_model.Lang.Include in
     let decl = module_decl ident_map i.decl in
     {
       Include.parent = i.parent;
-      doc = i.doc;
+      doc = docs ident_map i.doc;
       expansion_ = apply_sig_map ident_map i.expansion.content;
       decl;
     }
@@ -1808,7 +1825,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.Class in
     let expansion = Opt.map (class_signature ident_map) c.expansion in
     {
-      Class.doc = c.doc;
+      Class.doc = docs ident_map c.doc;
       virtual_ = c.virtual_;
       params = c.params;
       type_ = class_decl ident_map c.type_;
@@ -1834,7 +1851,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.ClassType in
     let expansion = Opt.map (class_signature ident_map) t.expansion in
     {
-      ClassType.doc = t.doc;
+      ClassType.doc = docs ident_map t.doc;
       virtual_ = t.virtual_;
       params = t.params;
       expr = class_type_expr ident_map t.expr;
@@ -1872,7 +1889,7 @@ module Of_Lang = struct
               Constraint
                 (type_expression ident_map t1, type_expression ident_map t2)
           | Inherit e -> Inherit (class_type_expr ident_map e)
-          | Comment c -> Comment c)
+          | Comment c -> Comment (docs_or_stop ident_map c))
         sg.items
     in
     { ClassSignature.self = Opt.map (type_expression ident_map) sg.self; items }
@@ -1880,7 +1897,7 @@ module Of_Lang = struct
   and method_ ident_map m =
     let open Odoc_model.Lang.Method in
     {
-      Method.doc = m.doc;
+      Method.doc = docs ident_map m.doc;
       private_ = m.private_;
       virtual_ = m.virtual_;
       type_ = type_expression ident_map m.type_;
@@ -1888,7 +1905,7 @@ module Of_Lang = struct
 
   and instance_variable ident_map i =
     {
-      InstanceVariable.doc = i.doc;
+      InstanceVariable.doc = docs ident_map i.doc;
       mutable_ = i.mutable_;
       virtual_ = i.virtual_;
       type_ = type_expression ident_map i.type_;
@@ -1896,7 +1913,7 @@ module Of_Lang = struct
 
   and module_substitution ident_map (t : Odoc_model.Lang.ModuleSubstitution.t) =
     {
-      ModuleSubstitution.doc = t.doc;
+      ModuleSubstitution.doc = docs ident_map t.doc;
       manifest = module_path ident_map t.manifest;
     }
 
@@ -1908,7 +1925,7 @@ module Of_Lang = struct
         (manifest, `Root (Odoc_model.Names.UnitName.of_string "dummy", `TModule))
     in
     {
-      Module.doc = t.doc;
+      Module.doc = docs ident_map t.doc;
       type_ = Alias manifest;
       canonical;
       hidden = true;
@@ -1957,7 +1974,7 @@ module Of_Lang = struct
             let id = List.assoc v.id ident_map.values in
             let v' = value ident_map v in
             Signature.Value (id, v')
-        | Comment c -> Comment c
+        | Comment c -> Comment (docs_or_stop ident_map c)
         | TypExt e -> TypExt (extension ident_map e)
         | Exception e ->
             let id = List.assoc e.id ident_map.exceptions in
@@ -1975,7 +1992,37 @@ module Of_Lang = struct
         items
     in
     { items; removed = [] }
-end
+  
+  and with_location :
+          'a 'b. (map -> 'a -> 'b) -> map -> 'a Location_.with_location -> 'b Location_.with_location =
+     fun conv ident_map v -> {v with value = conv ident_map v.Location_.value}
+    
+  and block_element :
+        _ -> Odoc_model.Comment.block_element -> CComment.block_element =
+     fun ident_map b ->
+      match b with
+      | `Heading (l, id, content) -> (
+          try `Heading (l, List.assoc id ident_map.labels, content)
+          with Not_found ->
+            Format.fprintf Format.err_formatter "XX Couldn't find: %a\n"
+              Fmt.model_identifier
+              (id :> Paths.Identifier.t);
+            List.iter
+              (fun (id, _) ->
+                Format.fprintf Format.err_formatter "  %a\n%!"
+                  Fmt.model_identifier
+                  (id :> Paths.Identifier.t))
+              ident_map.labels;
+            raise Not_found )
+      | `Tag t -> `Tag t
+      | #Odoc_model.Comment.nestable_block_element as n -> n
+  
+    and docs ident_map d = List.map (with_location block_element ident_map) d
+  
+    and docs_or_stop ident_map = function
+      | `Docs d -> `Docs (docs ident_map d)
+      | `Stop -> `Stop
+    end
 
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
