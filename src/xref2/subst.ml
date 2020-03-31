@@ -574,13 +574,13 @@ and compose : t -> t -> t =
   let type_, type_replacement =
     (* resolving a type may fail with [TypeReplacement],
        in that case, add it to the type_replacement map *)
+    let fold_type_replacement key texpr acc = TypeMap.add key (type_expr b texpr) acc in
     let fold_type key path (t, tr) =
       match resolved_type_path b path with
       | path' -> (TypeMap.add key path' t, tr)
-      | exception TypeReplacement texpr -> (t, TypeMap.add key texpr tr)
+      | exception TypeReplacement texpr -> (t, fold_type_replacement key texpr tr)
     in
     let type_, type_replacement = TypeMap.fold fold_type a.type_ (b.type_, b.type_replacement) in
-    let fold_type_replacement key path acc = TypeMap.add key path acc in
     let type_replacement = TypeMap.fold fold_type_replacement a.type_replacement type_replacement in
     type_, type_replacement
   in
