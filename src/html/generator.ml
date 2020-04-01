@@ -391,21 +391,24 @@ struct
         in
         anchor, cell
     in
-    let rows =
-      cstrs |> List.map (fun cstr ->
-        let open Odoc_model.Lang.TypeDecl.Constructor in
-        let anchor, lhs = constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res in
-        let rhs = Comment.to_html cstr.doc in
-        let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
-        Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
-          lhs ::
-          if not (Comment.has_doc cstr.doc) then [] else [
-            Html.td ~a:[ Html.a_class ["doc"] ] rhs
-          ]
+    match cstrs with
+    | [] -> Html.code [ Html.txt "|" ]
+    | _ :: _ ->
+      let rows =
+        cstrs |> List.map (fun cstr ->
+          let open Odoc_model.Lang.TypeDecl.Constructor in
+          let anchor, lhs = constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res in
+          let rhs = Comment.to_html cstr.doc in
+          let rhs = (rhs :> (Html_types.td_content Html.elt) list) in
+          Html.tr ~a:[ Html.a_id anchor; Html.a_class ["anchored"] ] (
+            lhs ::
+            if not (Comment.has_doc cstr.doc) then [] else [
+              Html.td ~a:[ Html.a_class ["doc"] ] rhs
+            ]
+          )
         )
-      )
-    in
-    Html.table ~a:[ Html.a_class ["variant"] ] rows
+      in
+      Html.table ~a:[ Html.a_class ["variant"] ] rows
 
 
 

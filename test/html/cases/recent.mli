@@ -25,6 +25,8 @@ type polymorphic_variant = [
   | `D (** bar *)
 ]
 
+type empty_variant = |
+
 type nonrec nonrec_ = int
 
 
