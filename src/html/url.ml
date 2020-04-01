@@ -229,6 +229,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
       if Odoc_model.Paths.Path.is_hidden (`Resolved (p2 :> t))
       then render_resolved (p1 :> t)
       else render_resolved (p2 :> t)
+    | `OpaqueModule m -> render_resolved (m :> t)
+    | `OpaqueModuleType m -> render_resolved (m :> t)
   and render_path : Odoc_model.Paths.Path.t -> string =
     function
     | `Root root -> root

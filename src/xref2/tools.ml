@@ -5,15 +5,6 @@ exception OpaqueModule
 
 exception UnresolvedForwardPath
 
-let is_compile = ref true
-
-let num_times = ref 0
-
-let time_wasted_start = ref 0.0
-
-let time_wasted = ref 0.0
-
-
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 module OptionMonad = struct
@@ -199,6 +190,7 @@ let rec get_canonical_path :
   | `Apply _ -> None
   | `Alias _ -> None
   | `Canonical _ -> None
+  | `OpaqueModule m -> get_canonical_path m
 
 type module_lookup_result = Cpath.Resolved.module_ * Component.Module.t
 
@@ -326,9 +318,19 @@ and process_module_type env m p' =
   let substpath =
     m.expr >>= get_substituted_module_type env >>= fun p -> Some (`SubstT(p, p'))
   in
-  match substpath with
-  | Some p -> p
-  | None -> p'
+  let p' =
+    match substpath with
+    | Some p -> p
+    | None -> p'
+  in
+  try
+    ignore(signature_of_module_type env m);
+    p'
+  with
+    | OpaqueModule ->
+      `OpaqueModuleType p'
+    | UnresolvedForwardPath ->
+      p'
 
 and get_module_path_modifiers : Env.t -> bool -> Component.Module.t -> _ option =
   fun env add_canonical m ->
@@ -355,8 +357,14 @@ and process_module_path env add_canonical m p =
     | Some (`Aliased p') -> `Alias (p', p)
     | Some (`SubstMT p') -> `Subst (p', p)
   in
-  if add_canonical then add_canonical_path env m p' else p'
-  
+  let p'' = if add_canonical then add_canonical_path env m p' else p' in
+  try
+    ignore(signature_of_module env m); p''
+  with
+    | OpaqueModule ->
+      `OpaqueModule p''
+    | UnresolvedForwardPath ->
+      p''
 
 and handle_module_lookup env add_canonical id parent sg =
   match Find.careful_module_in_sig sg id with
@@ -424,6 +432,7 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> Component.Module.t =
     | `Hidden p -> lookup_module env p
     | `Canonical (p, _) -> lookup_module env p
     | `Apply (_, _) -> failwith "Unresolved argument to apply"
+    | `OpaqueModule m -> lookup_module env m
   in
   match Memos1.find_all module_lookup_cache id with
   | [] ->
@@ -478,6 +487,7 @@ fun env path ->
     | Resolved (p2',_) ->  `Apply (reresolve_module env p, `Resolved p2')
     | Unresolved p2' -> `Apply (reresolve_module env p, p2')
     end
+  | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent =
     fun env path ->
@@ -494,6 +504,7 @@ and reresolve_module_type : Env.t -> Cpath.Resolved.module_type -> Cpath.Resolve
       | `Substituted x -> `Substituted (reresolve_module_type env x)
       | `ModuleType (parent, name) -> `ModuleType (reresolve_parent env parent, name)
       | `SubstT (p1, p2) -> `SubstT (reresolve_module_type env p1, reresolve_module_type env p2)
+      | `OpaqueModuleType m -> `OpaqueModuleType (reresolve_module_type env m)
 
 and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     fun env path ->
@@ -530,6 +541,7 @@ and lookup_module_type : Env.t -> Cpath.Resolved.module_type -> Component.Module
         in
         Find.module_type_in_sig sg (ModuleTypeName.to_string name)
         end
+      | `OpaqueModuleType m -> lookup_module_type env m
     in lookup env
 
 (* *)
@@ -659,7 +671,9 @@ and lookup_and_resolve_module_type_from_path :
         let p', mt = handle_module_type_lookup env id (`Module p) sg in
         return (p', mt)
     | `Resolved r ->
-        return (r, lookup_module_type env r)
+        let m = lookup_module_type env r in
+        let p' = process_module_type env m r in
+        return (p', lookup_module_type env r)
     | `Substituted s ->
         lookup_and_resolve_module_type_from_path is_resolve env s
         |> map_unresolved (fun p' -> `Substituted p')
@@ -847,6 +861,7 @@ and lookup_module_from_resolved_fragment :
  fun env p f s ->
   match f with
   | `Subst (_, _) | `SubstAlias (_, _) -> failwith "What do we do with these?"
+  | `OpaqueModule m -> lookup_module_from_resolved_fragment env p m s
   | `Module (parent, name) ->
       let ppath, sg = lookup_signature_from_resolved_fragment env p parent s in
       let rec find = function
@@ -1344,6 +1359,8 @@ and find_external_module_path : Cpath.Resolved.module_ -> Cpath.Resolved.module_
       find_external_module_path x >>= fun x ->
       Some (`Apply (x, y))
     | `Identifier x -> Some (`Identifier x)
+    | `OpaqueModule m ->
+      find_external_module_path m >>= fun x -> Some (`OpaqueModule x)
 
 and find_external_module_type_path : Cpath.Resolved.module_type -> Cpath.Resolved.module_type option =
   fun p ->
@@ -1360,6 +1377,9 @@ and find_external_module_type_path : Cpath.Resolved.module_type -> Cpath.Resolve
       find_external_module_type_path x >>= fun x ->
       Some (`Substituted x)
     | `Identifier _ -> Some p
+    | `OpaqueModuleType m ->
+      find_external_module_type_path m >>= fun x ->
+      Some (`OpaqueModuleType x)
 
 and find_external_parent_path : Cpath.Resolved.parent -> Cpath.Resolved.parent option =
   fun p ->
@@ -1384,12 +1404,13 @@ and fixup_module_cfrag (f : Cfrag.resolved_module) : Cfrag.resolved_module  =
     | None -> frag
     end 
   | `Module (parent, name) -> `Module (fixup_signature_cfrag parent, name)
+  | `OpaqueModule m -> `OpaqueModule (fixup_module_cfrag m)
 
 and fixup_signature_cfrag (f : Cfrag.resolved_signature) =
   match f with
   | `Root x -> `Root x
-  | `Subst _ | `SubstAlias _ | `Module _ as f -> (fixup_module_cfrag f :> Cfrag.resolved_signature)
-
+  | `OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _ as f -> (fixup_module_cfrag f :> Cfrag.resolved_signature)
+  
 and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
   match f with
   | `Type (p, x) -> `Type (fixup_signature_cfrag p, x)
@@ -1450,7 +1471,7 @@ and resolve_mt_module_fragment :
     Cfrag.resolved_module =
  fun env (p, sg) frag ->
   match frag with
-  | `Resolved r -> r
+  | `Resolved _r -> assert false
   | `Dot (parent, name) ->
     let pfrag, _ppath, sg = resolve_mt_signature_fragment env (p, sg) parent in
     let m' = find_module_with_replacement env sg name in
@@ -1464,7 +1485,17 @@ and resolve_mt_module_fragment :
       | Some (`Aliased p') -> `SubstAlias (p', new_frag)
       | Some (`SubstMT p') -> `Subst (p', new_frag)
     in
-    fixup_module_cfrag f'
+    let f'' =
+      try
+        let (_m : Component.Signature.t) = signature_of_module env m' in
+        f'
+      with
+        | OpaqueModule ->
+          `OpaqueModule f'
+        | UnresolvedForwardPath ->
+          f'
+    in
+    fixup_module_cfrag f''
 
 and resolve_mt_type_fragment :
     Env.t ->
@@ -1473,7 +1504,7 @@ and resolve_mt_type_fragment :
     Cfrag.resolved_type =
   fun env (p, sg) frag ->
   match frag with
-  | `Resolved r -> r
+  | `Resolved _r -> assert false
   | `Dot (parent, name) ->
     let pfrag, ppath, _sg =
       resolve_mt_signature_fragment env (p, sg) parent
@@ -1487,7 +1518,7 @@ let rec reresolve_signature_fragment : Env.t -> Cfrag.resolved_signature -> Cfra
     match m with
     | `Root (`ModuleType p) -> `Root (`ModuleType (reresolve_module_type env p))
     | `Root (`Module p) -> `Root (`Module (reresolve_module env p))
-    | `Subst _ | `SubstAlias _ | `Module _ as x -> (reresolve_module_fragment env x :> Cfrag.resolved_signature)
+    | `OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _ as x -> (reresolve_module_fragment env x :> Cfrag.resolved_signature)
 
 and reresolve_module_fragment : Env.t -> Cfrag.resolved_module -> Cfrag.resolved_module =
   fun env m ->
@@ -1498,6 +1529,7 @@ and reresolve_module_fragment : Env.t -> Cfrag.resolved_module -> Cfrag.resolved
     | `SubstAlias (p, f) ->
       let p' = reresolve_module env p in
       `SubstAlias (p', reresolve_module_fragment env f)
+    | `OpaqueModule m -> `OpaqueModule (reresolve_module_fragment env m)
     | `Module (sg, m) -> `Module (reresolve_signature_fragment env sg, m)
 
 and reresolve_type_fragment : Env.t -> Cfrag.resolved_type -> Cfrag.resolved_type =

@@ -9,12 +9,14 @@ type resolved_signature =
   [ `Root of root
   | `Subst of Cpath.Resolved.module_type * resolved_module
   | `SubstAlias of Cpath.Resolved.module_ * resolved_module
-  | `Module of resolved_signature * ModuleName.t ]
+  | `Module of resolved_signature * ModuleName.t
+  | `OpaqueModule of resolved_module]
 
 and resolved_module =
   [ `Subst of Cpath.Resolved.module_type * resolved_module
   | `SubstAlias of Cpath.Resolved.module_ * resolved_module
-  | `Module of resolved_signature * ModuleName.t ]
+  | `Module of resolved_signature * ModuleName.t
+  | `OpaqueModule of resolved_module ]
 
 and resolved_type =
   [ `Type of resolved_signature * TypeName.t
@@ -52,6 +54,7 @@ let rec resolved_signature_split_parent : resolved_signature -> resolved_base_na
   | `Root i -> RBase i
   | `Subst(_, p) -> resolved_signature_split_parent (p :> resolved_signature)
   | `SubstAlias(_, p) -> resolved_signature_split_parent (p :> resolved_signature)
+  | `OpaqueModule m -> resolved_signature_split_parent (m :> resolved_signature)
   | `Module(p, name) ->
     match resolved_signature_split_parent p with
     | RBase i -> RBranch(name, `Root i)
@@ -81,6 +84,7 @@ let rec resolved_module_split : resolved_module -> string * resolved_module opti
     | RBase _ -> (ModuleName.to_string name, None)
     | RBranch(base,m) -> ModuleName.to_string base, Some (`Module(m,name))
   end
+| `OpaqueModule m -> resolved_module_split m
 
   let module_split : module_ -> string * module_ option = function
   | `Resolved r ->

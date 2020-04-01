@@ -504,7 +504,10 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
   let open TypeDecl in
   try
     let equation = type_decl_equation env t.equation in
-    { t with equation }
+    let representation =
+      Opt.map (type_decl_representation env) t.representation
+    in
+    { t with equation; representation }
   with e ->
     Format.fprintf Format.err_formatter "Failed to resolve type (%a): %s"
       Component.Fmt.model_identifier
@@ -522,6 +525,16 @@ and type_decl_equation env t =
   in
   { t with manifest; constraints }
 
+and type_decl_representation :
+  Env.t -> TypeDecl.Representation.t -> TypeDecl.Representation.t =
+  fun env r ->
+    let open TypeDecl.Representation in
+    match r with
+    | Variant cs -> Variant (List.map (type_decl_constructor env) cs)
+    | Record fs -> Record (List.map (type_decl_field env) fs)
+    | Extensible -> Extensible
+
+
 and type_decl_field env f =
   let open TypeDecl.Field in
   { f with type_ = type_expression env f.type_ }
@@ -531,6 +544,12 @@ and type_decl_constructor_argument env c =
   match c with
   | Tuple ts -> Tuple (List.map (type_expression env) ts)
   | Record fs -> Record (List.map (type_decl_field env) fs)
+
+and type_decl_constructor env c =
+  let open TypeDecl.Constructor in
+  let args = type_decl_constructor_argument env c.args in
+  let res = Opt.map (type_expression env) c.res in
+  { c with args; res }
 
 and type_expression_polyvar env v =
   let open TypeExpr.Polymorphic_variant in
@@ -561,16 +580,16 @@ and type_expression_package env p =
       let sg = Tools.signature_of_module_type env mt in
       let substitution (frag, t) =
         let cfrag = Component.Of_Lang.(type_fragment empty frag) in
-        let frag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag |>
-          Lang_of.(Path.resolved_type_fragment empty)
-        in
+        let cfrag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag in
+        let frag' = Lang_of.(Path.resolved_type_fragment empty) cfrag' in
         (`Resolved frag', type_expression env t)
       in
       {
         path = module_type_path env p.path;
         substitutions = List.map substitution p.substitutions;
       }
-  | Unresolved p' -> { p with path = Cpath.module_type_path_of_cpath p' }
+  | Unresolved p' ->
+     { p with path = Cpath.module_type_path_of_cpath p' }
 
 and type_expression : Env.t -> _ -> _ =
  fun env texpr ->

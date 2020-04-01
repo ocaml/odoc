@@ -60,6 +60,3 @@ File "cases/ast.mli", line 71, characters 4-10:
 Unknown tag '@Class'.
 File "cases/ast.mli", line 74, characters 6-13:
 Unknown tag '@Method'.
-Adding module: (root Ast)
-Adding module: (root Ast).M
-Adding module: (root Ast).M.N

@@ -120,7 +120,11 @@ struct
       List [Atom "alias"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
     |`SubstT (m, m') ->
       List [Atom "substt"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t)]
-end
+    |`OpaqueModule m ->
+      List [Atom "opaquemodule"; resolved (m :> Resolved.t)]
+    |`OpaqueModuleType m ->
+      List [Atom "opaquemoduletype"; resolved (m :> Resolved.t)]
+    end
 
 
 

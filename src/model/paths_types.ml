@@ -209,12 +209,14 @@ sig
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * Path.module_
     | `Alias of module_ * module_
+    | `OpaqueModule of module_
     ]
 
   and module_type = [
     | `Identifier of Identifier.path_module_type
     | `SubstT of module_type * module_type
     | `ModuleType of module_ * ModuleTypeName.t
+    | `OpaqueModuleType of module_type
   ]
 
   type module_no_id = [
@@ -225,11 +227,13 @@ sig
     | `Canonical of module_ * Path.module_
     | `Apply of module_ * Path.module_
     | `Alias of module_ * module_
+    | `OpaqueModule of module_
     ]
 
   type module_type_no_id = [
     | `ModuleType of module_ * ModuleTypeName.t
     | `SubstT of module_type * module_type
+    | `OpaqueModuleType of module_type
   ]
 
   type type_no_id = [
@@ -299,11 +303,14 @@ sig
     | `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
+    | `OpaqueModule of module_
   ]
+
   and module_ = [
     | `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
+    | `OpaqueModule of module_
   ]
 
   type type_ = [
@@ -321,6 +328,7 @@ sig
     | `Type of signature * TypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
+    | `OpaqueModule of module_
   ]
 end = Resolved_fragment
 

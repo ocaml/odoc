@@ -104,6 +104,7 @@ module Path = struct
     | `Canonical (r, m) -> `Canonical (resolved_module map r, module_ map m)
     | `Apply (m1, m2) -> `Apply (resolved_module map m1, module_ map m2)
     | `Alias (m1, m2) -> `Alias (resolved_module map m1, resolved_module map m2)
+    | `OpaqueModule m -> `OpaqueModule (resolved_module map m)
 
   and resolved_parent map (p : Cpath.Resolved.parent) =
     match p with
@@ -122,7 +123,8 @@ module Path = struct
     | `ModuleType (p, name) -> `ModuleType (resolved_parent map p, name)
     | `Substituted s -> resolved_module_type map s
     | `SubstT (p1, p2) -> `SubstT (resolved_module_type map p1, resolved_module_type map p2)
-
+    | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)
+  
   and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
@@ -169,12 +171,14 @@ and resolved_module_fragment : maps -> Cfrag.resolved_module -> Odoc_model.Paths
         | `Subst (p, f) -> `Subst (resolved_module_type map p, resolved_module_fragment map f)
         | `SubstAlias (p, f) -> `SubstAlias (resolved_module map p, resolved_module_fragment map f)
         | `Module (p, n) -> `Module (resolved_signature_fragment map p, n)
+        | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment map m)
 
 and resolved_signature_fragment : maps -> Cfrag.resolved_signature -> Odoc_model.Paths.Fragment.Resolved.Signature.t =
       fun map f ->
       match f with
   | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
   | `Root (`Module p) -> `Root (`Module (resolved_module map p))
+  | `OpaqueModule _
   | `Subst _ | `SubstAlias _ | `Module _ as x -> (resolved_module_fragment map x :> Odoc_model.Paths.Fragment.Resolved.Signature.t)
 
 and resolved_type_fragment : maps -> Cfrag.resolved_type -> Odoc_model.Paths.Fragment.Resolved.Type.t = 

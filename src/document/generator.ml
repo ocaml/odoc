@@ -141,6 +141,8 @@ struct
         dot (render_resolved_fragment ( rr :> t)) (ClassName.to_string s)
       | `ClassType (rr, s) ->
         dot (render_resolved_fragment (rr :> t)) (ClassTypeName.to_string s)
+      | `OpaqueModule r ->
+        render_resolved_fragment (r :> t)
 
   let rec fragment_to_ir : stop_before:bool ->
     base:Identifier.Signature.t -> Fragment.t -> text =

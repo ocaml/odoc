@@ -628,6 +628,8 @@ module Fmt = struct
     | `Canonical (p1, p2) ->
         Format.fprintf ppf "canonical(%a,%a)" resolved_module_path p1
           module_path p2
+    | `OpaqueModule m ->
+        Format.fprintf ppf "opaquemodule(%a)" resolved_module_path m
 
   and module_path : Format.formatter -> Cpath.module_ -> unit =
    fun ppf p ->
@@ -655,7 +657,8 @@ module Fmt = struct
           (ModuleTypeName.to_string m)
     | `SubstT (m1, m2) ->
         Format.fprintf ppf "substt(%a,%a)" resolved_module_type_path m1 resolved_module_type_path m2
-    
+    | `OpaqueModuleType m ->
+        Format.fprintf ppf "opaquemoduletype(%a)" resolved_module_type_path m
     
   and module_type_path : Format.formatter -> Cpath.module_type -> unit =
    fun ppf m ->
@@ -792,6 +795,10 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_resolved_path
           (parent :> t)
           (Odoc_model.Names.ClassTypeName.to_string name)
+    | `OpaqueModule m ->
+      Format.fprintf ppf "opaquemodule(%a)" model_resolved_path (m :> t)
+    | `OpaqueModuleType m ->
+      Format.fprintf ppf "opaquemoduletype(%a)" model_resolved_path (m :> t)
 
   and model_identifier ppf (p : Odoc_model.Paths.Identifier.t) =
     match p with
@@ -897,19 +904,23 @@ module Fmt = struct
         Format.fprintf ppf "%a.%s" model_resolved_fragment
           (sg :> t)
           (Odoc_model.Names.ClassTypeName.to_string c)
+    | `OpaqueModule m ->
+        Format.fprintf ppf "opaquemodule(%a)" model_resolved_fragment (m :> Odoc_model.Paths.Fragment.Resolved.t)
 
   and resolved_signature_fragment ppf (f : Cfrag.resolved_signature) =
     match f with
     | `Root (`ModuleType p) -> Format.fprintf ppf "root(%a)" resolved_module_type_path p
     | `Root (`Module p) -> Format.fprintf ppf "root(%a)" resolved_module_path p
     | `Subst _ | `SubstAlias _ | `Module _ as x -> resolved_module_fragment ppf x
-  
+    | `OpaqueModule m -> Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
+
   and resolved_module_fragment ppf (f : Cfrag.resolved_module) =
     match f with
     | `Subst (s, f) -> Format.fprintf ppf "subst(%a,%a)" resolved_module_type_path s resolved_module_fragment f
     | `SubstAlias (m, f) -> Format.fprintf ppf "substalias(%a,%a)" resolved_module_path m resolved_module_fragment f
     | `Module (p, n) -> Format.fprintf ppf "%a.%s" resolved_signature_fragment p (ModuleName.to_string n)
-
+    | `OpaqueModule m -> Format.fprintf ppf "opaquemodule(%a)" resolved_module_fragment m
+  
   and resolved_type_fragment ppf (f : Cfrag.resolved_type) =
     match f with
     | `Type (s, n) -> Format.fprintf ppf "%a.%s" resolved_signature_fragment s (TypeName.to_string n)
@@ -1434,6 +1445,7 @@ module Of_Lang = struct
     | `SubstAlias (p1, p2) -> `SubstAlias (recurse p1, recurse p2)
     | `Canonical (p1, p2) -> `Canonical (recurse p1, module_path ident_map p2)
     | `Hidden p1 -> `Hidden (recurse p1)
+    | `OpaqueModule m -> `OpaqueModule (recurse m)
 
   and resolved_module_type_path :
       _ ->
@@ -1446,7 +1458,9 @@ module Of_Lang = struct
         `ModuleType (`Module (resolved_module_path ident_map p), name)
     | `SubstT (p1, p2) ->
         `SubstT (resolved_module_type_path ident_map p1, resolved_module_type_path ident_map p2)
-
+    | `OpaqueModuleType m ->
+        `OpaqueModuleType (resolved_module_type_path ident_map m)
+  
   and resolved_type_path :
       _ -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_ =
    fun ident_map p ->
@@ -1501,7 +1515,7 @@ module Of_Lang = struct
       match ty with
       | `Root (`ModuleType path) -> `Root (`ModuleType (resolved_module_type_path ident_map path))
       | `Root (`Module path) -> `Root (`Module (resolved_module_path ident_map path))
-      | `SubstAlias _ | `Subst _ | `Module _ as x -> (resolved_module_fragment ident_map x :> Cfrag.resolved_signature)
+      | `SubstAlias _ | `Subst _ | `Module _  | `OpaqueModule _ as x -> (resolved_module_fragment ident_map x :> Cfrag.resolved_signature)
 
   and resolved_module_fragment : _ -> Odoc_model.Paths.Fragment.Resolved.Module.t -> Cfrag.resolved_module =
     fun ident_map ty ->
@@ -1509,7 +1523,7 @@ module Of_Lang = struct
       | `Subst (p, m) -> `Subst (resolved_module_type_path ident_map p, resolved_module_fragment ident_map m)
       | `SubstAlias (p, m) -> `SubstAlias (resolved_module_path ident_map p, resolved_module_fragment ident_map m)
       | `Module (p, m) -> `Module (resolved_signature_fragment ident_map p, m)
-  
+      | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment ident_map m)
   and resolved_type_fragment : _ -> Odoc_model.Paths.Fragment.Resolved.Type.t -> Cfrag.resolved_type =
     fun ident_map ty ->
       match ty with

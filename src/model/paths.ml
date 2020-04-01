@@ -243,6 +243,8 @@ module Path = struct
     | `ClassType (p, _) -> is_resolved_hidden (p : module_ :> any)
     | `Alias (p1, p2) -> is_resolved_hidden (p1 : module_ :> any) && (is_resolved_hidden (p2 : module_ :> any))
     | `SubstT (p1, p2) -> is_resolved_hidden (p1 :> any) || is_resolved_hidden (p2 :> any)
+    | `OpaqueModule m -> is_resolved_hidden (m :> any)
+    | `OpaqueModuleType mt -> is_resolved_hidden (mt :> any)
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
@@ -262,6 +264,7 @@ module Path = struct
       | `Identifier id -> (id : Identifier.ModuleType.t :> Identifier.Signature.t)
       | `ModuleType(m, n) -> `ModuleType(parent_module_identifier m, n)
       | `SubstT(m, _n) -> parent_module_type_identifier m
+      | `OpaqueModuleType mt -> parent_module_type_identifier mt
 
     and parent_module_identifier : Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
       | `Identifier id -> (id : Identifier.Module.t :> Identifier.Signature.t)
@@ -276,6 +279,7 @@ module Path = struct
         if is_path_hidden (`Resolved (sub :> t))
         then parent_module_identifier orig
         else parent_module_identifier sub
+      | `OpaqueModule m -> parent_module_identifier m
 
     module Module = struct
 
@@ -285,7 +289,7 @@ module Path = struct
 
       let is_hidden m = is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
 
-        let rec identifier = function
+        let rec identifier : t -> Identifier.Module.t = function
         | `Identifier id -> id
         | `Subst(_, p) -> identifier p
         | `SubstAlias(_, p) -> identifier p
@@ -298,8 +302,9 @@ module Path = struct
           if is_path_hidden (`Resolved (sub :> Paths_types.Resolved_path.any))
           then identifier orig
           else identifier sub
+        | `OpaqueModule m -> identifier m
           
-      let rec canonical_ident = function
+      let rec canonical_ident : t -> Identifier.Module.t option = function
         | `Identifier _id -> None
         | `Subst(_,_) -> None
         | `SubstAlias(_,_) -> None
@@ -311,6 +316,7 @@ module Path = struct
         | `Canonical(_, _) -> None
         | `Apply(_,_) -> None
         | `Alias(_,_) -> None
+        | `OpaqueModule m -> canonical_ident m
     end
 
     module ModuleType = struct
@@ -321,17 +327,20 @@ module Path = struct
 
       let is_hidden m = is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
 
-      let rec identifier = function
+      let rec identifier : t -> Identifier.ModuleType.t = function
         | `Identifier id -> id
         | `ModuleType(m, n) -> `ModuleType(parent_module_identifier m, n)
         | `SubstT(s,_) -> identifier s
+        | `OpaqueModuleType mt -> identifier mt
 
-      let canonical_ident : t -> Identifier.ModuleType.t option = function
+      let rec canonical_ident : t -> Identifier.ModuleType.t option = function
         | `Identifier _id -> None
         | `ModuleType (p, n) -> begin
             match Module.canonical_ident p with | Some x -> Some (`ModuleType((x :>Identifier.Signature.t), n)) | None -> None
         end 
         | `SubstT (_, _) -> None
+        | `OpaqueModuleType m ->
+          canonical_ident (m :> t)
 
     end
 
@@ -382,6 +391,8 @@ module Path = struct
         then identifier (orig :> t)
         else identifier (sub :> t)
       | `SubstT(p, _) -> identifier (p :> t)
+      | `OpaqueModule m -> identifier (m :> t)
+      | `OpaqueModuleType mt -> identifier (mt :> t)
 
   end
 
@@ -431,6 +442,7 @@ module Fragment = struct
       | `Root i -> Base i
       | `Subst(_, p) -> split_parent (sig_of_mod p)
       | `SubstAlias(_, p) -> split_parent (sig_of_mod p)
+      | `OpaqueModule m -> split_parent (sig_of_mod m)
       | `Module(p, name) ->
         match split_parent p with
         | Base i -> Branch(name, `Root i)
@@ -445,6 +457,7 @@ module Fragment = struct
         | `Root _ -> "", None
         | `Subst(_,p) -> split (sig_of_mod p)
         | `SubstAlias(_,p) -> split (sig_of_mod p)
+        | `OpaqueModule m -> split (sig_of_mod m)
         | `Module (m, name) -> begin
             match split_parent m with
             | Base _ -> (ModuleName.to_string name, None)
@@ -458,6 +471,7 @@ module Fragment = struct
           | `Subst(s, _) -> (Path.Resolved.ModuleType.identifier s :> Identifier.Signature.t)
           | `SubstAlias(_, p) -> identifier (sig_of_mod p)
           | `Module(m, n) -> `Module (identifier m, n)
+          | `OpaqueModule m -> identifier (sig_of_mod m)
 
     end
 
@@ -473,6 +487,8 @@ module Fragment = struct
             | Base _ -> (ModuleName.to_string name, None)
             | Branch(base,m) -> ModuleName.to_string base, Some (`Module(m,name))
           end
+        | `OpaqueModule m ->
+            split m
 
     end
 
@@ -513,6 +529,7 @@ module Fragment = struct
         | `Type(m, n) -> `Type(Signature.identifier m, n)
         | `Class(m, n) -> `Class(Signature.identifier m, n)
         | `ClassType(m, n) -> `ClassType(Signature.identifier m, n)
+        | `OpaqueModule m -> identifier (m :> t)
 
 
   end

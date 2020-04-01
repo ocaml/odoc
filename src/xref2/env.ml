@@ -195,7 +195,6 @@ let add_fragment_root sg env =
   { env with fragmentroot = Some (id, sg); id }
 
 let add_module identifier m env =
-   Format.fprintf Format.err_formatter "Adding module: %a\n%!" Component.Fmt.model_identifier (identifier : Odoc_model.Paths.Identifier.Module.t :> Odoc_model.Paths.Identifier.t);
   {
     env with
     id =
