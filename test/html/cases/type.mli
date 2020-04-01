@@ -46,6 +46,8 @@ type degenerate_gadt =
 
 type private_variant = private A
 
+type empty_variant = |
+
 type record = {
   a : int;
   mutable b : int;
