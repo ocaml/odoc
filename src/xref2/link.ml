@@ -48,6 +48,10 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `ModuleType (p, _)
   | `Module (p, _) ->
       should_reresolve (p :> t)
+  | `OpaqueModule m ->
+    should_reresolve (m :> t)
+  | `OpaqueModuleType m ->
+    should_reresolve (m :> t)
 
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
@@ -147,7 +151,6 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
-  Tools.is_compile := false;
   let (imports, env) = Env.initial_env t resolver in
   { t with content = content env t.content; doc = comment_docs env t.doc; imports }
 
@@ -596,7 +599,6 @@ and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Functor
  fun env' a ->
   let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
   let expr = module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr in
-  Format.eprintf "Handling functor argument: %a\n%!" Component.Fmt.model_identifier (a.id :> Odoc_model.Paths.Identifier.t);
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
@@ -874,7 +876,7 @@ and type_expression_package env visited p =
 and type_expression : Env.t -> _ -> _ =
  fun env visited texpr ->
   let open TypeExpr in
-  try
+  (* try *)
     match texpr with
     | Var _ | Any -> texpr
     | Alias (t, str) -> Alias (type_expression env visited t, str)
@@ -930,7 +932,7 @@ and type_expression : Env.t -> _ -> _ =
     | Class (path, ts) -> Class (path, List.map (type_expression env visited) ts)
     | Poly (strs, t) -> Poly (strs, type_expression env visited t)
     | Package p -> Package (type_expression_package env visited p)
-  with _ -> texpr
+  (* with _ -> texpr *)
 
 (*
 let build_resolver :

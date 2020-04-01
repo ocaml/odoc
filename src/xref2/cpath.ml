@@ -17,14 +17,16 @@ module rec Resolved : sig
   | `Module of parent * ModuleName.t
   | `Canonical of module_ * Cpath.module_
   | `Apply of module_ * Cpath.module_
-  | `Alias of module_ * module_ ]
+  | `Alias of module_ * module_
+  | `OpaqueModule of module_ ]
 
   and module_type =
   [ `Local of Ident.module_type
   | `Substituted of module_type
   | `Identifier of Identifier.ModuleType.t
   | `ModuleType of parent * ModuleTypeName.t
-  | `SubstT of module_type * module_type ]
+  | `SubstT of module_type * module_type
+  | `OpaqueModuleType of module_type ]
 
   and type_ =
   [ `Local of Ident.path_type
@@ -85,6 +87,7 @@ let rec resolved_module_hash : Resolved.module_ -> int =
   | `Canonical (m, m2) -> Hashtbl.hash (7, resolved_module_hash m, module_hash m2)
   | `Apply (m1, m2) -> Hashtbl.hash (8, resolved_module_hash m1, module_hash m2)
   | `Alias (m1, m2) -> Hashtbl.hash (9, resolved_module_hash m1, resolved_module_hash m2)
+  | `OpaqueModule m -> Hashtbl.hash (10, resolved_module_hash m)
 
 and module_hash : module_ -> int =
   function
@@ -102,6 +105,7 @@ and resolved_module_type_hash : Resolved.module_type -> int =
   | `Identifier id -> Hashtbl.hash (18, Odoc_model.Paths.Identifier.(hash (id :> t)))
   | `ModuleType (p, n) -> Hashtbl.hash (19, resolved_parent_hash p, n)
   | `SubstT (p1, p2) -> Hashtbl.hash (1023, resolved_module_type_hash p1, resolved_module_type_hash p2)
+  | `OpaqueModuleType m -> Hashtbl.hash (1111, resolved_module_type_hash m)
 
 and resolved_parent_hash : Resolved.parent -> int =
   function
@@ -138,6 +142,7 @@ let rec resolved_module_path_of_cpath :
   | `Alias (a, b) ->
       `Alias (resolved_module_path_of_cpath a, resolved_module_path_of_cpath b)
   | `Module (p, m) -> `Module (resolved_module_path_of_cpath_parent p, m)
+  | `OpaqueModule m -> `OpaqueModule (resolved_module_path_of_cpath m)
 
 and resolved_module_path_of_cpath_parent : Resolved.parent -> Path.Resolved.Module.t = function
 | `Module m -> resolved_module_path_of_cpath m
@@ -151,6 +156,7 @@ and resolved_module_type_path_of_cpath :
   | `Substituted y -> resolved_module_type_path_of_cpath y
   | `ModuleType (p, m) -> `ModuleType (resolved_module_path_of_cpath_parent p, m)
   | `SubstT (p1, p2) -> `SubstT (resolved_module_type_path_of_cpath p1, resolved_module_type_path_of_cpath p2)
+  | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type_path_of_cpath m)
 
 and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   function
@@ -193,6 +199,8 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
       is_resolved_module_substituted a
   | `Module (a, _) ->
       is_resolved_parent_substituted a
+  | `OpaqueModule a ->
+      is_resolved_module_substituted a
 
 and is_resolved_parent_substituted = function
 | `Module m -> is_resolved_module_substituted m
@@ -206,6 +214,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
   | `SubstT _ -> true
+  | `OpaqueModuleType m -> is_resolved_module_type_substituted m
 
 and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `Local _ -> false
@@ -266,6 +275,7 @@ and is_resolved_module_hidden : Resolved.module_ -> bool = function
       is_resolved_module_type_hidden p1 || is_resolved_module_hidden p2
   | `SubstAlias (p1, p2) | `Alias (p1, p2) ->
       is_resolved_module_hidden p1 || is_resolved_module_hidden p2
+  | `OpaqueModule m -> is_resolved_module_hidden m
 
 and is_resolved_parent_hidden : Resolved.parent -> bool = function
   | `Module m -> is_resolved_module_hidden m
@@ -283,6 +293,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden p
   | `SubstT (p1, p2) -> is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
+  | `OpaqueModuleType m -> is_resolved_module_type_substituted m
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r

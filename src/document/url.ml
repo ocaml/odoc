@@ -9,6 +9,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     let open Resolved in
     function
     | `Identifier id -> Identifier.name id
+    | `OpaqueModule p -> render_resolved (p :> t)
+    | `OpaqueModuleType p -> render_resolved (p :> t)
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstAlias (_, p) -> render_resolved (p :> t)
     | `SubstT (_, p) -> render_resolved (p :> t)

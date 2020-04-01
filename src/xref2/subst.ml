@@ -101,6 +101,8 @@ let rec resolved_module_path :
   | `Hidden p1 -> `Hidden (resolved_module_path s p1)
   | `Canonical (p1, p2) ->
       `Canonical (resolved_module_path s p1, module_path s p2)
+  | `OpaqueModule m ->
+      `OpaqueModule (resolved_module_path s m)
 
 and resolved_parent_path s = function
   | `Module m -> `Module (resolved_module_path s m)
@@ -126,6 +128,7 @@ and resolved_module_type_path :
   | `Substituted p -> `Substituted (resolved_module_type_path s p)
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
   | `SubstT (m1, m2) -> `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
+  | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type_path s m)
 
 and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
  fun s p ->
@@ -182,6 +185,7 @@ let rec resolved_signature_fragment : t -> Cfrag.resolved_signature -> Cfrag.res
   | `Root (`Module p) -> `Root (`Module (resolved_module_path t p))
   | `Subst _
   | `SubstAlias _
+  | `OpaqueModule _
   | `Module _ as x -> (resolved_module_fragment t x :> Cfrag.resolved_signature)
 
 and resolved_module_fragment : t -> Cfrag.resolved_module -> Cfrag.resolved_module =
@@ -190,6 +194,7 @@ and resolved_module_fragment : t -> Cfrag.resolved_module -> Cfrag.resolved_modu
   | `Subst (mty, f) -> `Subst (resolved_module_type_path t mty, resolved_module_fragment t f)
   | `SubstAlias (m, f) -> `SubstAlias (resolved_module_path t m, resolved_module_fragment t f)
   | `Module (sg, n) -> `Module (resolved_signature_fragment t sg, n)
+  | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment t m)
 
 and resolved_type_fragment : t -> Cfrag.resolved_type -> Cfrag.resolved_type =
   fun t r ->

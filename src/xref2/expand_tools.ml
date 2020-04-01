@@ -71,7 +71,6 @@ and handle_expansion env id expansion =
               Odoc_model.Names.ParameterName.of_string
                 (Ident.Name.module_ arg.Component.FunctorParameter.id) )
         in
-        Format.eprintf "handle_expansion: Adding module identifier: %a\n%!" Component.Fmt.model_identifier Odoc_model.Paths.Identifier.((identifier :> t));
         let env' =
           Env.add_module identifier
             (Component.module_of_functor_argument arg)
