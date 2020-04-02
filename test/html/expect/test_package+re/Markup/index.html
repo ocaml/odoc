@@ -148,7 +148,10 @@
       <a href="#styling" class="anchor"></a>Styling
      </h2>
      <p>
-      This paragraph has some styled elements: <b>bold</b> and <i>italic</i>, <b><i>bold italic</i></b>, <em>emphasis</em>, <em><em>emphasis</em> within emphasis</em>, <b><i>bold italic</i></b>, super<sup>script</sup>, sub<sub>script</sub>. The line spacing should be enough for superscripts and subscripts not to look odd.
+      This paragraph has some styled elements: <b>bold</b> and <i>italic</i>, <b><i>bold italic</i></b>, <em>emphasis</em>, <em><em class="odd">emphasis</em> within emphasis</em>, <b><i>bold italic</i></b>, super<sup>script</sup>, sub<sub>script</sub>. The line spacing should be enough for superscripts and subscripts not to look odd.
+     </p>
+     <p>
+      Note: <i>In italics <em>emphasis</em> is rendered as normal text while <em>emphasis <em class="odd">in</em> emphasis</em> is rendered in italics.</i> <i>It also work the same in <a href="#">links in italics with <em>emphasis <em class="odd">in</em> emphasis</em>.</a></i>
      </p>
      <p>
       <code>code</code> is a different kind of markup that doesn't allow nested markup.
