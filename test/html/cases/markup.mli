@@ -40,6 +40,10 @@
     {b {i bold italic}}, super{^script}, sub{_script}. The line spacing should
     be enough for superscripts and subscripts not to look odd.
 
+    Note: {i In italics {e emphasis} is rendered as normal text while {e
+    emphasis {e in} emphasis} is rendered in italics.} {i It also work the same
+    in {{:#} links in italics with {e emphasis {e in} emphasis}.}}
+
     [code] is a different kind of markup that doesn't allow nested markup.
 
     It's possible for two markup elements to appear {b next} {i to} each other
