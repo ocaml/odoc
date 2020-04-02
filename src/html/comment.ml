@@ -183,8 +183,7 @@ let styled_element ~emph_level ~(next : ?emph_level:int -> 'a -> 'b) content = f
   | `Emphasis ->
     let a = if emph_level mod 2 = 0 then [] else [Html.a_class ["odd"]] in
     let emph_level = emph_level + 1 in
-    Html.em ~a
-      (next ~emph_level content)
+    Html.em ~a (next ~emph_level content)
   | #Comment.non_nest_aware_styles as style ->
       (style_to_combinator style)
       (next ~emph_level:0 content)
@@ -219,7 +218,6 @@ and non_link_inline_element_list :
 
 let link_content_to_html =
   non_link_inline_element_list ~emph_level:0
-
 
 
 let rec inline_element ~emph_level ?xref_base_uri : Comment.inline_element -> (phrasing Html.elt) option =
