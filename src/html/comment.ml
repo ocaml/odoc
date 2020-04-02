@@ -176,11 +176,18 @@ let location_to_syntax (loc:Odoc_model.Location_.span) =
 let style_to_combinator = function
   | `Bold -> Html.b
   | `Italic -> Html.i
-  | `Emphasis -> Html.em
   | `Superscript -> Html.sup
   | `Subscript -> Html.sub
 
-
+let styled_element ~emph_level ~(next : ?emph_level:int -> 'a -> 'b) content = function
+  | `Emphasis ->
+    let a = if emph_level mod 2 = 0 then [] else [Html.a_class ["odd"]] in
+    let emph_level = emph_level + 1 in
+    Html.em ~a
+      (next ~emph_level content)
+  | #Comment.non_nest_aware_styles as style ->
+      (style_to_combinator style)
+      (next ~emph_level:0 content)
 
 let leaf_inline_element
     : Comment.leaf_inline_element -> ([> non_link_phrasing ] Html.elt) option =
@@ -191,33 +198,37 @@ let leaf_inline_element
   | `Raw_markup (`Html, s) -> Some (Html.Unsafe.data s)
 
 let rec non_link_inline_element
-    : 'a. Comment.non_link_inline_element ->
+    : 'a. emph_level:int -> Comment.non_link_inline_element ->
         (([> non_link_phrasing ] as 'a) Html.elt) option =
-  function
+  fun ~emph_level -> function
   | #Comment.leaf_inline_element as e -> leaf_inline_element e
   | `Styled (style, content) ->
-    Some ((style_to_combinator style) (non_link_inline_element_list content))
+    let next = non_link_inline_element_list in
+    Some (styled_element ~emph_level ~next content style)
 
 and non_link_inline_element_list :
-    'a. _ -> ([> non_link_phrasing ] as 'a) Html.elt list = fun elements ->
+    'a. ?emph_level:int ->_ -> ([> non_link_phrasing ] as 'a) Html.elt list =
+    fun ?(emph_level = 0) elements ->
   List.fold_left (fun html_elements ast_element ->
-    match non_link_inline_element ast_element.Odoc_model.Location_.value with
+    match non_link_inline_element ~emph_level
+      ast_element.Odoc_model.Location_.value with
     | None -> html_elements
     | Some e -> e::html_elements)
     [] elements
   |> List.rev
 
 let link_content_to_html =
-  non_link_inline_element_list
+  non_link_inline_element_list ~emph_level:0
 
 
 
-let rec inline_element ?xref_base_uri : Comment.inline_element -> (phrasing Html.elt) option =
+let rec inline_element ~emph_level ?xref_base_uri : Comment.inline_element -> (phrasing Html.elt) option =
   function
   | #Comment.leaf_inline_element as e ->
     (leaf_inline_element e :> (phrasing Html.elt) option)
   | `Styled (style, content) ->
-    Some ((style_to_combinator style) (inline_element_list ?xref_base_uri content))
+    let next = inline_element_list ?xref_base_uri in
+    Some (styled_element ~emph_level ~next content style)
   | `Reference (path, content) ->
     (* TODO Rework that ugly function. *)
     (* TODO References should be set in code style, if they are to code
@@ -225,20 +236,21 @@ let rec inline_element ?xref_base_uri : Comment.inline_element -> (phrasing Html
     let content =
       match content with
       | [] -> None
-      | _ -> Some (Html.span (non_link_inline_element_list content))
+      | _ -> Some (Html.span
+        (non_link_inline_element_list ~emph_level content))
     in
     Some (Reference.to_html ?text:content ?xref_base_uri ~stop_before:false path)
   | `Link (target, content) ->
     let content =
       match content with
       | [] -> [Html.txt target]
-      | _ -> non_link_inline_element_list content
+      | _ -> non_link_inline_element_list ~emph_level content
     in
     Some (Html.a ~a:[Html.a_href target] content)
 
-and inline_element_list ?xref_base_uri elements =
+and inline_element_list ?(emph_level=0) ?xref_base_uri elements =
   List.fold_left (fun html_elements ast_element ->
-    match inline_element ?xref_base_uri ast_element.Odoc_model.Location_.value with
+    match inline_element ~emph_level ?xref_base_uri ast_element.Odoc_model.Location_.value with
     | None -> html_elements
     | Some e -> e::html_elements)
     [] elements
