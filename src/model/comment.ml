@@ -5,16 +5,12 @@ module Identifier = Paths.Identifier
 type 'a with_location = 'a Location_.with_location
 
 
-type non_nest_aware_styles = [
+type style = [
   | `Bold
   | `Italic
+  | `Emphasis
   | `Superscript
   | `Subscript
-]
-
-type style = [
-  | non_nest_aware_styles
-  | `Emphasis
 ]
 
 type raw_markup_target = [

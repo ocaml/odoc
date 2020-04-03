@@ -1,6 +1,7 @@
-module Html = Tyxml.Html
+open Types
 
-open Utils
+module O = Codefmt
+open O.Infix
 
 module ML = Generator.Make (struct
   module Obj =
@@ -17,9 +18,7 @@ module ML = Generator.Make (struct
     let annotation_separator = " : "
 
     let handle_params name args =
-      if args <> [ Html.txt "" ]
-      then [Html.span (args @ [ Html.txt " " ] @ name)]
-      else name
+      O.span (args ++ O.txt " " ++ name)
 
     let handle_constructor_params = handle_params
     let handle_substitution_params = handle_params
@@ -46,7 +45,8 @@ module ML = Generator.Make (struct
 
     let var_prefix = "'"
     let any = "_"
-    let arrow = Html.span [Html.entity "#45"; Html.entity "gt"]
+    let arrow =
+      O.span (O.entity "#45" ++ O.entity "gt")
 
     module Exception =
     struct
@@ -62,14 +62,14 @@ module ML = Generator.Make (struct
     struct
       let semicolon = false
       let handle_primitives prims =
-        List.map (fun p -> Html.txt ("\"" ^ p ^ "\" ")) prims
+        List.map (fun p -> inline @@ Text ("\"" ^ p ^ "\" ")) prims
     end
   end
 
   module Mod =
   struct
-    let open_tag = Generator.keyword "sig"
-    let close_tag = Generator.keyword "end"
+    let open_tag = O.keyword "sig"
+    let close_tag = O.keyword "end"
     let close_tag_semicolon = false
     let include_semicolon = false
     let functor_keyword = true
@@ -77,8 +77,8 @@ module ML = Generator.Make (struct
 
   module Class =
   struct
-    let open_tag = Generator.keyword "object"
-    let close_tag = Generator.keyword "end"
+    let open_tag = O.keyword "object"
+    let close_tag = O.keyword "end"
   end
 
   module Value =

@@ -10,8 +10,8 @@ let () =
   Jbuild_plugin.V1.send @@
     {|
 (library
- (name odoc_html)
- (public_name odoc.html)
+ (name odoc_document)
+ (public_name odoc.document)
     |} ^ preprocess ^ {|
- (libraries odoc_model odoc_document tyxml))
-    |}
+ (libraries odoc_model fmt)
+)|}

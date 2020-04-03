@@ -14,9 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-val compilation_unit : ?theme_uri:Tree.uri -> Odoc_model.Lang.Compilation_unit.t -> Tree.t
-val page : ?theme_uri:Tree.uri -> Odoc_model.Lang.Page.t -> Tree.t
-(** Convert compilation unit or page models into HTML trees.
-
-    Optionally [theme_uri] can be provided to locate custom theme files. The
-    HTML output directory will be used by default. *)
+val compilation_unit : Odoc_model.Lang.Compilation_unit.t -> Types.Page.t
+val page : Odoc_model.Lang.Page.t -> Types.Page.t
+(** Convert compilation unit or page models into a document *)

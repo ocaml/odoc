@@ -1,11 +1,12 @@
-module Html = Tyxml.Html
+open Types
 
-open Utils
+module O = Codefmt
+open O.Infix
 
 module Reason = Generator.Make (struct
   module Obj =
   struct
-    let close_tag_closed = "}"
+    let close_tag_closed = "}" 
     let close_tag_extendable = "}"
     let field_separator = ", "
     let open_tag_closed = "{. "
@@ -15,8 +16,8 @@ module Reason = Generator.Make (struct
   module Type =
   struct
     let annotation_separator = ": "
-    let handle_constructor_params name args = name @ args
-    let handle_substitution_params name args = name @ args
+    let handle_constructor_params name args = name ++ args
+    let handle_substitution_params name args = name ++ args
     let handle_format_params p = "(" ^ p ^ ")"
     let type_def_semicolon = true
     let private_keyword = "pri"
@@ -41,7 +42,7 @@ module Reason = Generator.Make (struct
 
     let var_prefix = "'"
     let any = "_"
-    let arrow = Html.span [Html.txt "="; Html.entity "gt"]
+    let arrow = O.span (O.txt "=" ++ O.entity "gt")
 
     module Exception =
     struct
@@ -50,7 +51,7 @@ module Reason = Generator.Make (struct
 
     module GADT =
     struct
-      let arrow = Html.txt ":"
+      let arrow = O.txt ":"
     end
 
     module External =
@@ -62,15 +63,15 @@ module Reason = Generator.Make (struct
             let str =
               match acc with [] -> "\"" ^ p ^ "\"" | _ -> " \"" ^ p ^ "\""
             in
-            Html.txt str :: acc )
+            inline (Text str) :: acc )
           [] prims
     end
   end
 
   module Mod =
   struct
-    let open_tag = Html.txt "{"
-    let close_tag = Html.txt "}"
+    let open_tag = O.txt "{"
+    let close_tag = O.txt "}"
     let close_tag_semicolon = true
     let include_semicolon = true
     let functor_keyword = false
@@ -78,8 +79,8 @@ module Reason = Generator.Make (struct
 
   module Class =
   struct
-    let open_tag = Html.txt "{"
-    let close_tag = Html.txt "}"
+    let open_tag = O.txt "{"
+    let close_tag = O.txt "}"
   end
 
   module Value =
