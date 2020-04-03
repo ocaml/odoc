@@ -221,8 +221,6 @@ type type_lookup_result =
 type class_type_lookup_result =
   Cpath.Resolved.class_type * Find.class_type
 
-exception ClassType_lookup_failure of Env.t * Cpath.Resolved.class_type
-
 type module_lookup_error = [
   | `Failure of Env.t * Ident.module_ (** Found local path *)
   | `Unresolved_apply (** [`Apply] argument is not [`Resolved] *)
@@ -241,6 +239,12 @@ and module_type_lookup_error = [
 and type_lookup_error = [
   | `Failure of Env.t * Cpath.Resolved.type_
   | `Unhandled of Cpath.Resolved.type_
+  | `Parent_module of module_lookup_error
+]
+
+and class_type_lookup_error = [
+  | `Failure of Env.t * Cpath.Resolved.class_type
+  | `Unhandled of Cpath.Resolved.class_type
   | `Parent_module of module_lookup_error
 ]
 
@@ -853,31 +857,31 @@ and lookup_type_from_path :
         >>= fun (p, m) -> return (`Substituted p, m)
 
 and lookup_class_type_from_resolved_path :
-    Env.t -> Cpath.Resolved.class_type -> class_type_lookup_result =
+    Env.t -> Cpath.Resolved.class_type -> (class_type_lookup_result, class_type_lookup_error) result =
  fun env p ->
   match p with
-  | `Local _id -> raise (ClassType_lookup_failure (env, p))
+  | `Local _id -> Error (`Failure (env, p))
   | `Identifier (`Class _ as c) ->
       let t = Env.lookup_class c env in
-      (`Identifier c, `C t)
+      Ok (`Identifier c, `C t)
   | `Identifier (`ClassType _ as c) ->
       let t = Env.lookup_class_type c env in
-      (`Identifier c, `CT t)
+      Ok (`Identifier c, `CT t)
   | `Substituted s ->
-      let p, t = lookup_class_type_from_resolved_path env s in
-      (`Substituted p, t)
+      lookup_class_type_from_resolved_path env s >>= fun (p, t) ->
+      Ok (`Substituted p, t)
   | `Class (`Module p, id) ->
-      let m = result_force (lookup_module env p) in
+      lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
       let p', t = handle_class_type_lookup env (ClassName.to_string id) p m in
-      (p', t)
+      Ok (p', t)
   | `ClassType (`Module p, id) ->
-      let m = result_force (lookup_module env p) in
+      lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
       let p', t = handle_class_type_lookup env (ClassTypeName.to_string id) p m in
-      (p', t)
-  | `ClassType (`ModuleType _, _) -> failwith "Unhandled 6"
-  | `Class (`ModuleType _, _) -> failwith "Unhandled 7"
-  | `ClassType (`FragmentRoot, _) -> failwith "Unhandled 14"
-  | `Class (`FragmentRoot, _) -> failwith "Unhandled 15"
+      Ok (p', t)
+  | `ClassType (`ModuleType _, _)
+  | `Class (`ModuleType _, _)
+  | `ClassType (`FragmentRoot, _)
+  | `Class (`FragmentRoot, _) -> Error (`Unhandled p)
     
 and lookup_class_type_from_path :
     Env.t ->
@@ -892,7 +896,10 @@ and lookup_class_type_from_path :
         >>= fun (p, m) ->
         let p', c = handle_class_type_lookup env id p m in
         return (p', c)
-    | `Resolved r -> return (lookup_class_type_from_resolved_path env r)
+    | `Resolved r -> (
+        match lookup_class_type_from_resolved_path env r with
+        | Ok c -> return c
+        | Error _ -> Unresolved (`Resolved r) )
     | `Substituted s ->
         lookup_class_type_from_path env s
         |> map_unresolved (fun p' -> `Substituted p')
