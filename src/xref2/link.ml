@@ -773,7 +773,7 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
           Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
         in
         match Tools.lookup_type_from_resolved_path env p' with
-        | _, Found (`T t') -> (
+        | Ok (_, Found (`T t')) -> (
             try
               (* Format.fprintf Format.err_formatter "XXXXXXX - replacing type at id %a maybe: %a\n%!" Component.Fmt.model_identifier (t.id :> Paths.Identifier.t) Component.Fmt.resolved_type_path p'; *)
               {
