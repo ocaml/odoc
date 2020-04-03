@@ -212,10 +212,6 @@ exception ModuleType_lookup_failure of Env.t * Cpath.Resolved.module_type
 
 exception ClassType_lookup_failure of Env.t * Cpath.Resolved.class_type
 
-exception MyFailure of Component.Module.t * Component.Module.t
-
-exception Couldnt_find_functor_argument
-
 module Hashable = struct
   type t = Cpath.Resolved.module_
 
@@ -581,12 +577,10 @@ and lookup_and_resolve_module_from_path :
             return (handle_apply is_resolve env func_path' arg_path' m)
         | Unresolved func_path', Resolved (arg_path', _) ->
             Unresolved (`Apply (func_path', `Resolved arg_path'))
-        | Resolved (_func_path', _), Unresolved _arg_path' ->
-            failwith "Unable to find argument"
-            (* Unresolved (`Apply (`Resolved func_path', arg_path')) *)
-        | Unresolved _func_path', Unresolved _arg_path' ->
-            failwith "Unable to find argument"    
-            (* Unresolved (`Apply (func_path', arg_path')) ) *)
+        | Resolved (func_path', _), Unresolved arg_path' ->
+            Unresolved (`Apply (`Resolved func_path', arg_path'))
+        | Unresolved func_path', Unresolved arg_path' ->
+            Unresolved (`Apply (func_path', arg_path'))
     )
     | `Resolved (`Identifier i as resolved_path) ->
         let m = Env.lookup_module i env in
