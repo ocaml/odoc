@@ -8,6 +8,10 @@ module StdResultMonad = struct
     | Ok x -> x
     | Error _ -> assert false
 
+  let map_error f = function
+    | Ok _ as ok -> ok
+    | Error e -> Error (f e)
+
   let ( >>= ) m f = match m with Ok x -> f x | Error _ as e -> e
 end
 
@@ -219,14 +223,21 @@ type class_type_lookup_result =
 
 exception Type_lookup_failure of Env.t * Cpath.Resolved.type_
 
-exception ModuleType_lookup_failure of Env.t * Cpath.Resolved.module_type
-
 exception ClassType_lookup_failure of Env.t * Cpath.Resolved.class_type
 
 type module_lookup_error = [
   | `Failure of Env.t * Ident.module_ (** Found local path *)
   | `Unresolved_apply (** [`Apply] argument is not [`Resolved] *)
   | `Find_failure
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent of module_lookup_error
+]
+
+and module_type_lookup_error = [
+  | `Failure of Env.t * Cpath.Resolved.module_type
+  | `Find_failure
+  | `Parent_module of module_lookup_error
+  | `Parent of module_type_lookup_error
 ]
 
 module Hashable = struct
@@ -439,11 +450,15 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
         in
         match parent with
         | `Module mp ->
-            lookup_module env mp >>= fun parent_module ->
+            lookup_module env mp
+            |> map_error (fun e -> `Parent e)
+            >>= fun parent_module ->
             let sg = signature_of_module_cached env mp false parent_module in
             find_in_sg (prefix_signature (parent, sg))
         | `ModuleType mtyp ->
-            let parent_module_type = lookup_module_type env mtyp in
+            lookup_module_type env mtyp
+            |> map_error (fun e -> `Parent_module_type e)
+            >>= fun parent_module_type ->
             let sg = signature_of_module_type env parent_module_type in
             find_in_sg (prefix_signature (parent, sg))
         | `FragmentRoot ->
@@ -542,29 +557,39 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
       in
       result
 
-and lookup_module_type : Env.t -> Cpath.Resolved.module_type -> Component.ModuleType.t =
+and lookup_module_type :
+    Env.t ->
+    Cpath.Resolved.module_type ->
+    (Component.ModuleType.t, module_type_lookup_error) result =
   fun env path ->
     let lookup env =
       match path with
-      | `Local _ -> raise (ModuleType_lookup_failure (env, path))
-      | `Identifier i -> Env.lookup_module_type i env
+      | `Local _ -> Error (`Failure (env, path))
+      | `Identifier i -> Ok (Env.lookup_module_type i env)
       | `Substituted s -> lookup_module_type env s
       | `SubstT (_, p2) -> lookup_module_type env p2
-      | `ModuleType (parent, name) -> begin
-        let sg =
+      | `ModuleType (parent, name) -> (
+          let find_in_sg sg =
+            match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+            | exception Find.Find_failure (_, _, _) -> Error `Find_failure
+            | mt -> Ok mt
+          in
           match parent with
           | `Module mp ->
-            let parent_module = result_force @@ lookup_module env mp in
-            prefix_signature (parent, signature_of_module_cached env mp false parent_module)
+              lookup_module env mp
+              |> map_error (fun e -> `Parent_module e)
+              >>= fun parent_module ->
+              let sg = signature_of_module_cached env mp false parent_module in
+              find_in_sg (prefix_signature (parent, sg))
           | `ModuleType mtyp ->
-            let parent_module_type = lookup_module_type env mtyp in
-            prefix_signature (parent, signature_of_module_type env parent_module_type)
+            lookup_module_type env mtyp
+            |> map_error (fun e -> `Parent e)
+            >>= fun parent_module_type ->
+            let sg = signature_of_module_type env parent_module_type in
+            find_in_sg (prefix_signature (parent, sg))
           | `FragmentRoot ->
-            let _,sg = Env.lookup_fragment_root env in
-            sg
-        in
-        Find.module_type_in_sig sg (ModuleTypeName.to_string name)
-        end
+            let (_, sg) = Env.lookup_fragment_root env in
+            find_in_sg sg )
       | `OpaqueModuleType m -> lookup_module_type env m
     in lookup env
 
@@ -693,10 +718,12 @@ and lookup_and_resolve_module_type_from_path :
         let sg = prefix_signature (`Module p, signature_of_module_cached env p is_resolve m) in
         let p', mt = handle_module_type_lookup env id (`Module p) sg in
         return (p', mt)
-    | `Resolved r ->
-        let m = lookup_module_type env r in
-        let p' = process_module_type env m r in
-        return (p', lookup_module_type env r)
+    | `Resolved r -> (
+        match lookup_module_type env r with
+        | Ok m ->
+            let p' = process_module_type env m r in
+            return (p', m)
+        | Error _ -> Unresolved (`Resolved r) )
     | `Substituted s ->
         lookup_and_resolve_module_type_from_path is_resolve env s
         |> map_unresolved (fun p' -> `Substituted p')
