@@ -1,15 +1,11 @@
-module Html = Tyxml.Html
+open Types
 module Lang = Odoc_model.Lang
 
 
 
-type rendered_item = (Html_types.dt_content Html.elt) list
+type rendered_item = DocumentedSrc.t
 
-type text =
-  [ `A of Html_types.phrasing_without_interactive
-  | `Code
-  | `PCDATA
-  | `Span ] Html.elt list
+type text = Format.formatter -> unit
 
 type ('item_kind, 'item) tagged_item = [
   | `Leaf_item of 'item_kind * 'item
@@ -72,7 +68,7 @@ sig
 
     val any : string
 
-    val arrow : [> Html_types.span | Html_types.pcdata ] Html.elt
+    val arrow : text
 
     module Exception :
     sig
@@ -81,22 +77,21 @@ sig
 
     module GADT :
     sig
-      val arrow : [> Html_types.span | Html_types.pcdata ] Html.elt
+      val arrow : text
     end
 
     module External :
     sig
       val semicolon : bool
       val handle_primitives :
-        string list ->
-          [< Html_types.code_content_fun > `A `PCDATA `Span] Html.elt list
+        string list -> Inline.t
     end
   end
 
   module Mod :
   sig
-    val open_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
-    val close_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
+    val open_tag : text
+    val close_tag : text
     val close_tag_semicolon : bool
     val include_semicolon : bool
     val functor_keyword : bool
@@ -104,8 +99,8 @@ sig
 
   module Class :
   sig
-    val open_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
-    val close_tag : [> Html_types.span | Html_types.pcdata ] Html.elt
+    val open_tag : text
+    val close_tag : text
   end
 
   module Value :
@@ -130,24 +125,24 @@ sig
       render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
       render_nested_article:
         (heading_level_shift -> 'item ->
-          rendered_item * Odoc_model.Comment.docs * toc * (Tree.t list)) ->
+          rendered_item * Odoc_model.Comment.docs * toc * Block.t) ->
       (_, 'item) tagged_item list ->
-        (Html_types.div_content Html.elt) list * toc * (Tree.t list)
+        Block.t * toc * Block.t
 
   val lay_out_page :
     Odoc_model.Comment.docs ->
-      ((Html_types.div_content Html.elt) list *
-       (Html_types.flow5_without_header_footer Html.elt) list *
+      (Block.t *
+       Block.t *
        toc)
 
     val render_toc :
-      toc -> [> Html_types.flow5_without_header_footer] Html.elt list
+      toc -> Block.t
   end
 
   module Page :
   sig
     val compilation_unit :
-      ?theme_uri:Tree.uri -> Lang.Compilation_unit.t -> Tree.t
-    val page : ?theme_uri:Tree.uri -> Lang.Page.t -> Tree.t
+      ?theme_uri:string -> Lang.Compilation_unit.t -> Block.t
+    val page : ?theme_uri:string -> Lang.Page.t -> Block.t
   end
 end

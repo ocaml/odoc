@@ -116,7 +116,7 @@
         <a href="#anchors" class="anchor"></a>Anchors
        </h4>
        <p>
-        Sections can have attached <a href="index.html#anchors"><span>Anchors</span></a>, and it is possible to <a href="index.html#anchors"><span>link</span></a> to them. Links to section headers should not be set in source code style.
+        Sections can have attached <a href="index.html#anchors">Anchors</a>, and it is possible to <a href="index.html#anchors">link</a> to them. Links to section headers should not be set in source code style.
        </p>
       </header>
       <section>
@@ -176,7 +176,7 @@
       This is a <a href="#">link</a>. It sends you to the top of this page. Links can have markup inside them: <a href="#"><b>bold</b></a>, <a href="#"><i>italics</i></a>, <a href="#"><em>emphasis</em></a>, <a href="#">super<sup>script</sup></a>, <a href="#">sub<sub>script</sub></a>, and <a href="#"><code>code</code></a>. Links can also be nested <em><a href="#">inside</a></em> markup. Links cannot be nested inside each other. This link has no replacement text: <a href="#">#</a>. The text is filled in by odoc. This is a shorthand link: <a href="#">#</a>. The text is also filled in by odoc in this case.
      </p>
      <p>
-      This is a reference to <a href="index.html#val-foo"><code>foo</code></a>. References can have replacement text: <a href="index.html#val-foo"><span>the value foo</span></a>. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: <a href="index.html#val-foo"><span><b>bold</b></span></a>, <a href="index.html#val-foo"><span><i>italic</i></span></a>, <a href="index.html#val-foo"><span><em>emphasis</em></span></a>, <a href="index.html#val-foo"><span>super<sup>script</sup></span></a>, <a href="index.html#val-foo"><span>sub<sub>script</sub></span></a>, and <a href="index.html#val-foo"><span><code>code</code></span></a>. It's also possible to surround a reference in a style: <b><a href="index.html#val-foo"><code>foo</code></a></b>. References can't be nested inside references, and links and references can't be nested inside each other.
+      This is a reference to <a href="index.html#val-foo"><code>foo</code></a>. References can have replacement text: <a href="index.html#val-foo">the value foo</a>. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: <a href="index.html#val-foo"><b>bold</b></a>, <a href="index.html#val-foo"><i>italic</i></a>, <a href="index.html#val-foo"><em>emphasis</em></a>, <a href="index.html#val-foo">super<sup>script</sup></a>, <a href="index.html#val-foo">sub<sub>script</sub></a>, and <a href="index.html#val-foo"><code>code</code></a>. It's also possible to surround a reference in a style: <b><a href="index.html#val-foo"><code>foo</code></a></b>. References can't be nested inside references, and links and references can't be nested inside each other.
      </p>
     </header>
    </section>
@@ -188,7 +188,7 @@
      <p>
       This is a code block:
      </p>
-     <pre><code class="ml">let foo = ()
+     <pre><code>let foo = ()
 (** There are some nested comments in here, but an unpaired comment
     terminator would terminate the whole doc surrounding comment. It's
     best to keep code blocks no wider than 72 characters. *)

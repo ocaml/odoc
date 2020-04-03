@@ -17,7 +17,7 @@
 
 
 module Html = Tyxml.Html
-module Paths = Odoc_model.Paths
+module Url = Odoc_document.Url
 
 (** Supported languages for printing code parts. *)
 
@@ -25,18 +25,12 @@ type syntax = OCaml | Reason
 
 val string_of_syntax: syntax -> string
 
-type t = private {
-  name : string;
-  content : [ `Html ] Html.elt;
-  children : t list
-}
+type t
 
 val traverse
     : f:(parents:string list -> string -> [ `Html ] Html.elt -> unit)
   -> t
   -> unit
-
-type kind = [ `Arg | `Mod | `Mty | `Class | `Cty | `Page ]
 
 type uri =
   | Absolute of string
@@ -47,9 +41,7 @@ type uri =
 (** These two functions are used to track the depth while building the tree,
     which is needed to produce correct links. *)
 
-val enter : ?kind:kind -> string -> unit
-
-val leave : unit -> unit
+val enter : Url.Path.t -> unit
 
 (** {1 Page creator} *)
 
@@ -58,6 +50,8 @@ val leave : unit -> unit
 val make :
   ?header_docs:(Html_types.flow5_without_header_footer Html.elt) list ->
   ?theme_uri:uri ->
+  url:Url.Path.t ->
+  string ->
   (Html_types.div_content Html.elt) list ->
   t list ->
     t
@@ -69,23 +63,11 @@ module Relative_link : sig
   val semantic_uris : bool ref
   (** Whether to generate pretty/semantics links or not. *)
 
-  module Id : sig
-    exception Not_linkable
+  val href : xref_base_uri:string option -> Url.t -> string
 
-    val href : ?xref_base_uri:string -> stop_before:bool -> Paths.Identifier.t -> string
-  end
-
-  val of_path : stop_before:bool -> Paths.Path.t
-    -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
-
-  val of_fragment : base:Paths.Identifier.Signature.t
-    -> Paths.Fragment.t
-    -> [> `A of [> `PCDATA ] | `PCDATA ] Html.elt list
-
-  val to_sub_element : kind:kind -> string -> [> `Href ] Html.attrib
 end
 
-val render_fragment : Paths.Fragment.t -> string
+(* val render_fragment : Paths.Fragment.t -> string *)
 
 (* TODO: move to a centralized [State] module or something. Along with
    Relative_link.semantic_uris. *)
