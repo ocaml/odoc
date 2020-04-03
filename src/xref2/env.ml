@@ -659,7 +659,11 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
                   m)
             in
             add_module m.id ty env
-        | Odoc_model.Lang.Signature.TypeSubstitution _ -> env
+        | Odoc_model.Lang.Signature.TypeSubstitution t ->
+            let idents = LocalIdents.(type_decl t empty) in
+            let map = map_of_idents idents empty in
+            let ty = type_decl map t in
+            add_type t.Odoc_model.Lang.TypeDecl.id ty env
         | Odoc_model.Lang.Signature.Value v ->
             let idents = Component.LocalIdents.(value_ v empty) in
             let ident_map = Component.Of_Lang.(map_of_idents idents empty) in
