@@ -221,8 +221,6 @@ type type_lookup_result =
 type class_type_lookup_result =
   Cpath.Resolved.class_type * Find.class_type
 
-exception Type_lookup_failure of Env.t * Cpath.Resolved.type_
-
 exception ClassType_lookup_failure of Env.t * Cpath.Resolved.class_type
 
 type module_lookup_error = [
@@ -238,6 +236,12 @@ and module_type_lookup_error = [
   | `Find_failure
   | `Parent_module of module_lookup_error
   | `Parent of module_type_lookup_error
+]
+
+and type_lookup_error = [
+  | `Failure of Env.t * Cpath.Resolved.type_
+  | `Unhandled of Cpath.Resolved.type_
+  | `Parent_module of module_lookup_error
 ]
 
 module Hashable = struct
@@ -730,33 +734,35 @@ and lookup_and_resolve_module_type_from_path :
         >>= fun (p, m) -> return (`Substituted p, m)
 
 and lookup_type_from_resolved_path :
-    Env.t -> Cpath.Resolved.type_ -> type_lookup_result =
+    Env.t -> Cpath.Resolved.type_ -> (type_lookup_result, type_lookup_error) result =
  fun env p ->
   (* let start_time = Unix.gettimeofday () in *)
   (* Format.fprintf Format.err_formatter "lookup_type_from_resolved_path\n%!"; *)
   let res = match p with
-  | `Local _id -> raise (Type_lookup_failure (env, p))
+  | `Local _id -> Error (`Failure (env, p))
   | `Identifier (`CoreType name) ->
       (* CoreTypes aren't put into the environment, so they can't be handled by the
             next clause. We just look them up here in the list of core types *)
-      ( `Identifier (`CoreType name),
-        Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
+      Ok ( `Identifier (`CoreType name),
+           Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
   | `Identifier (`Type _ as i) ->
       let t = Env.lookup_type i env in
-      (`Identifier i, Found (`T t))
+      Ok (`Identifier i, Found (`T t))
   | `Identifier (`Class _ as i) ->
       let t = Env.lookup_class i env in
-      (`Identifier i, Found (`C t))
+      Ok (`Identifier i, Found (`C t))
   | `Identifier (`ClassType _ as i) ->
       let t = Env.lookup_class_type i env in
-      (`Identifier i, Found (`CT t))
+      Ok (`Identifier i, Found (`CT t))
   | `Substituted s ->
-      let p, t = lookup_type_from_resolved_path env s in
-      (`Substituted p, t)
+      lookup_type_from_resolved_path env s >>= fun (p, t) ->
+      Ok (`Substituted p, t)
   | `Type (`Module p, id) -> (
       try
         (* let t0 = Unix.gettimeofday () in *)
-        let m = result_force (lookup_module env p) in
+        lookup_module env p
+        |> map_error (fun e -> `Parent_module e)
+        >>= fun m ->
         (* let t1 = Unix.gettimeofday () in *)
         let sg = signature_of_module_cached env p true m in
         (* let t2 = Unix.gettimeofday () in *)
@@ -771,7 +777,7 @@ and lookup_type_from_resolved_path :
           | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr) in 
         (* let t5 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "timing stats: %f %f %f %f %f\n%!" (t1 -. t0) (t2 -. t1) (t3 -. t2) (t4 -. t3) (t5 -. t4); *)
-          (p', t) 
+          Ok (p', t) 
       with e ->
         Format.fprintf Format.err_formatter "Here...\n%s\n%!"
           (Printexc.get_backtrace ());
@@ -781,7 +787,7 @@ and lookup_type_from_resolved_path :
         | _ -> Format.fprintf Format.err_formatter "Not ident\n%!" );
         raise e )
   | `Class (`Module p, id) ->
-  let m = result_force (lookup_module env p) in
+  lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
   let sg = signature_of_module_cached env p true m in
   let sub = prefix_substitution (`Module p) sg in
   let p', t' = handle_type_lookup (ClassName.to_string id) (`Module p) sg in
@@ -790,9 +796,9 @@ and lookup_type_from_resolved_path :
     | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
     | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
     | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr) in 
-  (p', t) 
+  Ok (p', t) 
   | `ClassType (`Module p, id) ->
-  let m = result_force (lookup_module env p) in
+  lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
   let sg = signature_of_module_cached env p true m in
   let sub = prefix_substitution (`Module p) sg in
   let p', t' = handle_type_lookup (ClassTypeName.to_string id) (`Module p) sg in
@@ -801,13 +807,13 @@ and lookup_type_from_resolved_path :
     | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
     | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
     | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr) in 
-  (p', t) 
-  | `Type (`ModuleType _, _) -> failwith "Unhandled 3"
-  | `ClassType (`ModuleType _, _) -> failwith "Unhandled 4"
-  | `Class (`ModuleType _, _) -> failwith "Unhandled 5"
-  | `Type (`FragmentRoot, _) -> failwith "Unhandled 11"
-  | `ClassType (`FragmentRoot, _) -> failwith "Unhandled 12"
-  | `Class (`FragmentRoot, _) -> failwith "Unhandled 13"
+  Ok (p', t) 
+  | `Type (`ModuleType _, _)
+  | `ClassType (`ModuleType _, _)
+  | `Class (`ModuleType _, _)
+  | `Type (`FragmentRoot, _)
+  | `ClassType (`FragmentRoot, _)
+  | `Class (`FragmentRoot, _) -> Error (`Unhandled p)
   in
         (* let end_time = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup_type_from_resolved_path finished: %f\n%!" (end_time -. start_time); *)
@@ -837,7 +843,10 @@ and lookup_type_from_path :
         (* let time3 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
         return (p', t) 
-    | `Resolved r -> return (lookup_type_from_resolved_path env r)
+    | `Resolved r -> (
+        match lookup_type_from_resolved_path env r with
+        | Ok t -> return t
+        | Error _ -> Unresolved (`Resolved r) )
     | `Substituted s ->
         lookup_type_from_path env s
         |> map_unresolved (fun p' -> `Substituted p')
