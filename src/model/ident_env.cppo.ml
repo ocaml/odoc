@@ -47,29 +47,20 @@ let module_name_of_open o =
 #endif
 
 let add_module parent id name env =
-  let ident = `Module(parent, name) in
-  let module_ = if ModuleName.is_hidden name then `Hidden (`Identifier ident) else `Identifier ident in
-  let all = Ident.find_all (ModuleName.to_string name) env.module_ids in
-  let shadowing =
-    List.filter (fun (_,ident') -> ident' = ident) all
+  let ident =
+    let i = `Module(parent, name) in
+    let all = Ident.find_all (ModuleName.to_string name) env.module_ids in
+    let exists =
+      List.exists (fun (_,ident') -> ident' = i) all
+    in
+    if exists
+    then `Module(parent, ModuleName.internal_of_string (ModuleName.to_string name))
+    else i
   in
-  match shadowing with
-  | [] ->
-    (* Format.fprintf Format.err_formatter "Adding module: %a\n%!" Ident.print_with_scope id; *)
-    let modules = Ident.add id module_ env.modules in
-    let module_ids = Ident.add id ident env.module_ids in
-    { env with modules; module_ids }
-  | [(id',_)] ->
-    (* Format.fprintf Format.err_formatter "Renaming module: %a\n%!" Ident.print_with_scope id; *)
-    let new_ident = `Module(parent, ModuleName.of_string (Printf.sprintf "%s/hidden" (ModuleName.to_string name))) in
-    let new_module = `Hidden (`Identifier new_ident) in
-    let module_ids = Ident.add id' new_ident (Ident.remove id' env.module_ids) in
-    let module_ids = Ident.add id ident module_ids in
-    let modules = Ident.add id' new_module (Ident.remove id' env.modules) in
-    let modules = Ident.add id module_ modules in
-    { env with modules; module_ids }
-  | (id1', _) :: (id2', _) :: _ ->
-    failwith (Format.asprintf "This shouldn't happen...! %a %a %a" Ident.print_with_scope id1' Ident.print_with_scope id2' Ident.print_with_scope id)
+  let module_ = if ModuleName.is_hidden name then `Hidden (`Identifier ident) else `Identifier ident in
+  let modules = Ident.add id module_ env.modules in
+  let module_ids = Ident.add id ident env.module_ids in
+  { env with modules; module_ids }
 
 let add_parameter parent id name env =
   let ident = `Identifier (`Parameter(parent, name)) in

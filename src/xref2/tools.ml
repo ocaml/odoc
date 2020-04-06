@@ -1471,7 +1471,7 @@ and resolve_mt_module_fragment :
     Cfrag.resolved_module =
  fun env (p, sg) frag ->
   match frag with
-  | `Resolved _r -> assert false
+  | `Resolved r -> r
   | `Dot (parent, name) ->
     let pfrag, _ppath, sg = resolve_mt_signature_fragment env (p, sg) parent in
     let m' = find_module_with_replacement env sg name in
@@ -1504,7 +1504,7 @@ and resolve_mt_type_fragment :
     Cfrag.resolved_type =
   fun env (p, sg) frag ->
   match frag with
-  | `Resolved _r -> assert false
+  | `Resolved r -> r
   | `Dot (parent, name) ->
     let pfrag, ppath, _sg =
       resolve_mt_signature_fragment env (p, sg) parent
