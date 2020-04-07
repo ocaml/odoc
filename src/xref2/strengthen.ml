@@ -16,7 +16,6 @@ this is probably the best thing to produce in this case.
 
 let rec signature (prefix : Cpath.Resolved.module_) sg =
   let open Component.Signature in
-  let open Component.Substitution in
   let open Odoc_model.Names in
   let items =
     List.map
@@ -26,29 +25,29 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
             Module
               ( id,
                 r,
-                NoSubst (
+                Component.Delayed.put (fun () ->
                     module_
                       (`Module
                         (`Module prefix, ModuleName.of_string (Ident.Name.module_ id)))
-                      (Subst.Delayed.get_module m)) )
+                      (Component.Delayed.get m)) )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
-                NoSubst (
+                Component.Delayed.put (fun () ->
                     module_type
                       (`ModuleType
                         ( `Module prefix,
                           ModuleTypeName.of_string (Ident.Name.module_type id)
                         ))
-                      (Subst.Delayed.get_module_type mt)) )
+                      (Component.Delayed.get mt)) )
         | Type (id, r, t) ->
             Type
               ( id,
                 r,
-                NoSubst (
+                Component.Delayed.put (fun () ->
                   type_decl
                     (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
-                    (Subst.Delayed.get_type t)) )
+                    (Component.Delayed.get t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)

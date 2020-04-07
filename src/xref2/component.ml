@@ -31,6 +31,26 @@ module IdentMap = Map.Make (struct
 
   let compare = Ident.compare
 end)
+    
+
+module Delayed = struct
+  let eager = ref false
+
+  type 'a t = { mutable v : 'a option; get : unit -> 'a }
+
+  let get : 'a t -> 'a =
+   fun x ->
+    match x.v with
+    | Some x -> x
+    | None ->
+        let v = x.get () in
+        x.v <- Some v;
+        v
+
+  let put : (unit -> 'a) -> 'a t =
+   fun f ->
+    if !eager then { v = Some (f ()); get = f } else { v = None; get = f }
+end
 
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
@@ -228,10 +248,10 @@ and Signature : sig
   type recursive = Odoc_model.Lang.Signature.recursive
 
   type item =
-    | Module of Ident.module_ * recursive * Module.t Substitution.delayed
+    | Module of Ident.module_ * recursive * Module.t Delayed.t
     | ModuleSubstitution of Ident.module_ * ModuleSubstitution.t
-    | ModuleType of Ident.module_type * ModuleType.t Substitution.delayed
-    | Type of Ident.type_ * recursive * TypeDecl.t Substitution.delayed
+    | ModuleType of Ident.module_type * ModuleType.t Delayed.t
+    | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
@@ -337,8 +357,6 @@ and Substitution : sig
     class_type : Cpath.Resolved.class_type ClassTypeMap.t;
     type_replacement : TypeExpr.t TypeMap.t;
   }
-
-  type 'a delayed = DelayedSubst of t * 'a | NoSubst of 'a
 end =
   Substitution
 
@@ -398,28 +416,23 @@ module Fmt = struct
     Format.fprintf (Format.formatter_of_buffer b) "%a%!" fmt c;
     Buffer.contents b
 
-  let subst_delayed f ppf = function
-    | Substitution.DelayedSubst (_, v) ->
-      Format.fprintf ppf "@[DelayedSubst (<subst>, %a)@]" f v
-    | NoSubst v -> f ppf v
-
   let rec signature ppf sg =
     let open Signature in
     Format.fprintf ppf "@[<v>";
     List.iter
       (function
         | Module (id, _, m) ->
-            Format.fprintf ppf "@[<v 2>module %a %a@]@," Ident.fmt id
-              (subst_delayed module_) m
+            Format.fprintf ppf "@[<v 2>module %a %a@]@," Ident.fmt id module_
+              (Delayed.get m)
         | ModuleSubstitution (id, m) ->
             Format.fprintf ppf "@[<v 2>module %a := %a@]@," Ident.fmt id
               module_path m.ModuleSubstitution.manifest
         | ModuleType (id, mt) ->
             Format.fprintf ppf "@[<v 2>module type %a %a@]@," Ident.fmt id
-              (subst_delayed module_type) mt
+              module_type (Delayed.get mt)
         | Type (id, _, t) ->
-            Format.fprintf ppf "@[<v 2>type %a %a@]@," Ident.fmt id
-              (subst_delayed type_decl) t
+            Format.fprintf ppf "@[<v 2>type %a %a@]@," Ident.fmt id type_decl
+              (Delayed.get t)
         | TypeSubstitution (id, t) ->
             Format.fprintf ppf "@[<v 2>type %a := %a@]@," Ident.fmt id type_decl
               t
@@ -1966,7 +1979,7 @@ module Of_Lang = struct
         function
         | Type (r, t) ->
             let id = List.assoc t.id ident_map.types in
-            let t' = Substitution.NoSubst (type_decl ident_map t) in
+            let t' = Delayed.put (fun () -> type_decl ident_map t) in
             Signature.Type (id, r, t')
         | TypeSubstitution t ->
             let id = List.assoc t.id ident_map.types in
@@ -1974,7 +1987,7 @@ module Of_Lang = struct
             Signature.TypeSubstitution (id, t')
         | Module (r, m) ->
             let id = List.assoc m.id ident_map.modules in
-            let m' = Substitution.NoSubst (module_ ident_map m) in
+            let m' = Delayed.put (fun () -> module_ ident_map m) in
             Signature.Module (id, r, m')
         | ModuleSubstitution m ->
             let id = List.assoc m.id ident_map.modules in
@@ -1982,7 +1995,7 @@ module Of_Lang = struct
             Signature.ModuleSubstitution (id, m')
         | ModuleType m ->
             let id = List.assoc m.id ident_map.module_types in
-            let m' = Substitution.NoSubst (module_type ident_map m) in
+            let m' = Delayed.put (fun () -> module_type ident_map m) in
             Signature.ModuleType (id, m')
         | Value v ->
             let id = List.assoc v.id ident_map.values in
