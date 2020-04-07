@@ -64,10 +64,16 @@ module Memos2 = Hashtbl.Make (Hashable2)
 let memo2 = Memos2.create 91
 
 let module_lookup_to_signature_lookup : Env.t -> module_lookup_result -> signature_lookup_result option =
-  fun env (ref, cp, m) -> Some ((ref :> Resolved.Signature.t), `Module cp, Tools.signature_of_module env m)
+  fun env (ref, cp, m) ->
+    match Tools.signature_of_module env m with
+    | Ok sg -> Some ((ref :> Resolved.Signature.t), `Module cp, sg)
+    | Error _ -> None
 
 let module_type_lookup_to_signature_lookup : Env.t -> module_type_lookup_result -> signature_lookup_result option =
-  fun env (ref, cp, m) -> Some ((ref :> Resolved.Signature.t), `ModuleType cp, Tools.signature_of_module_type env m)
+  fun env (ref, cp, m) ->
+    match Tools.signature_of_module_type env m with
+    | Ok sg -> Some ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
+    | Error _ -> None
 
 
 let rec add_canonical_path : Env.t -> Component.Module.t -> Odoc_model.Paths.Reference.Resolved.Module.t -> Odoc_model.Paths.Reference.Resolved.Module.t =

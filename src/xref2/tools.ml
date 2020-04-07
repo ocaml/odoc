@@ -45,6 +45,14 @@ module ResultMonad = struct
   let get_resolved = function
     | Resolved r -> r
     | Unresolved _ -> failwith "Unresolved"
+
+  let of_result ~unresolved = function
+    | StdResultMonad.Ok x -> Resolved x
+    | Error _ -> Unresolved unresolved
+
+  let of_option ~unresolved = function
+    | Some x -> Resolved x
+    | None -> Unresolved unresolved
 end
 
 let add_subst p = function
@@ -219,10 +227,13 @@ type class_type_lookup_result =
 
 type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
 
-exception OpaqueModule
 exception UnresolvedForwardPath
 
-type handle_apply_error = [ `OpaqueModule ]
+type signature_of_module_error = [
+  | `OpaqueModule
+  | `UnresolvedForwardPath
+  | `UnresolvedPath of [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ]
+]
 
 type module_lookup_error = [
   | `Failure of Env.t * Ident.module_ (** Found local path *)
@@ -230,7 +241,7 @@ type module_lookup_error = [
   | `Find_failure
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
-  | handle_apply_error
+  | `Parent_sig of signature_of_module_error
 ]
 
 and module_type_lookup_error = [
@@ -238,18 +249,21 @@ and module_type_lookup_error = [
   | `Find_failure
   | `Parent_module of module_lookup_error
   | `Parent of module_type_lookup_error
+  | `Parent_sig of signature_of_module_error
 ]
 
 and type_lookup_error = [
   | `Failure of Env.t * Cpath.Resolved.type_
   | `Unhandled of Cpath.Resolved.type_
   | `Parent_module of module_lookup_error
+  | `Parent_sig of signature_of_module_error
 ]
 
 and class_type_lookup_error = [
   | `Failure of Env.t * Cpath.Resolved.class_type
   | `Unhandled of Cpath.Resolved.class_type
   | `Parent_module of module_lookup_error
+  | `Parent_sig of signature_of_module_error
 ]
 
 module Hashable = struct
@@ -288,7 +302,7 @@ module Memos3 = Hashtbl.Make (Hashable3)
 
 let module_resolve_cache : ((module_lookup_result, Cpath.module_) ResultMonad.t * int * Env.lookup_type list) Memos2.t = Memos2.create 10000
 
-let module_signature_cache : (Component.Signature.t * int * Env.lookup_type list) Memos3.t = Memos3.create 10000
+let module_signature_cache : ((Component.Signature.t, signature_of_module_error) result * int * Env.lookup_type list) Memos3.t = Memos3.create 10000
 
 
 let reset_cache () = Memos1.clear module_lookup_cache; Memos2.clear module_resolve_cache
@@ -359,14 +373,10 @@ and process_module_type env m p' =
     | Some p -> p
     | None -> p'
   in
-  try
-    ignore(signature_of_module_type env m);
-    p'
-  with
-    | OpaqueModule ->
-      `OpaqueModuleType p'
-    | UnresolvedForwardPath ->
-      p'
+  match signature_of_module_type env m with
+  | Ok _ -> p'
+  | Error `OpaqueModule -> `OpaqueModuleType p'
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> p'
 
 and get_module_path_modifiers : Env.t -> bool -> Component.Module.t -> _ option =
   fun env add_canonical m ->
@@ -394,13 +404,10 @@ and process_module_path env add_canonical m p =
     | Some (`SubstMT p') -> `Subst (p', p)
   in
   let p'' = if add_canonical then add_canonical_path env m p' else p' in
-  try
-    ignore(signature_of_module env m); p''
-  with
-    | OpaqueModule ->
-      `OpaqueModule p''
-    | UnresolvedForwardPath ->
-      p''
+  match signature_of_module env m with
+  | Ok _ -> p''
+  | Error `OpaqueModule -> `OpaqueModule p''
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> p''
 
 and handle_module_lookup env add_canonical id parent sg =
   match Find.careful_module_in_sig sg id with
@@ -432,9 +439,12 @@ and handle_type_lookup id p sg : type_lookup_result =
     raise e
 
 and handle_class_type_lookup env id p m =
-  let sg = prefix_signature (`Module p, signature_of_module_cached env p true m) in
+  signature_of_module_cached env p true m
+  |> map_error (fun e -> `Parent_sig e)
+  >>= fun sg ->
+  let sg = prefix_signature (`Module p, sg) in
   let c = Find.class_type_in_sig sg id in
-  (`ClassType (`Module p, Odoc_model.Names.ClassTypeName.of_string id), c)
+  Ok (`ClassType (`Module p, Odoc_model.Names.ClassTypeName.of_string id), c)
 
 and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, module_lookup_error) result =
   fun env' path ->
@@ -449,6 +459,7 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
         match lookup_module env functor_path with
         | Ok functor_module ->
             handle_apply false env functor_path argument_path functor_module
+            |> map_error (fun e -> `Parent_sig e)
             >>= fun (_, m) ->
             Ok m
         | Error _ as e -> e )
@@ -464,13 +475,17 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
             lookup_module env mp
             |> map_error (fun e -> `Parent e)
             >>= fun parent_module ->
-            let sg = signature_of_module_cached env mp false parent_module in
+            signature_of_module_cached env mp false parent_module
+            |> map_error (fun e -> `Parent_sig e)
+            >>= fun sg ->
             find_in_sg (prefix_signature (parent, sg))
         | `ModuleType mtyp ->
             lookup_module_type env mtyp
             |> map_error (fun e -> `Parent_module_type e)
             >>= fun parent_module_type ->
-            let sg = signature_of_module_type env parent_module_type in
+            signature_of_module_type env parent_module_type
+            |> map_error (fun e -> `Parent_sig e)
+            >>= fun sg ->
             find_in_sg (prefix_signature (parent, sg))
         | `FragmentRoot ->
           let (_, sg) = Env.lookup_fragment_root env in
@@ -590,13 +605,17 @@ and lookup_module_type :
               lookup_module env mp
               |> map_error (fun e -> `Parent_module e)
               >>= fun parent_module ->
-              let sg = signature_of_module_cached env mp false parent_module in
+              signature_of_module_cached env mp false parent_module
+              |> map_error (fun e -> `Parent_sig e)
+              >>= fun sg ->
               find_in_sg (prefix_signature (parent, sg))
           | `ModuleType mtyp ->
             lookup_module_type env mtyp
             |> map_error (fun e -> `Parent e)
             >>= fun parent_module_type ->
-            let sg = signature_of_module_type env parent_module_type in
+            signature_of_module_type env parent_module_type
+            |> map_error (fun e -> `Parent_sig e)
+            >>= fun sg ->
             find_in_sg (prefix_signature (parent, sg))
           | `FragmentRoot ->
             let (_, sg) = Env.lookup_fragment_root env in
@@ -620,15 +639,17 @@ and lookup_and_resolve_module_from_path :
   let resolve : Env.t -> (module_lookup_result, Cpath.module_) ResultMonad.t =
     fun env ->
     match p with
-    | `Dot (parent, id) -> (
+    | `Dot (parent, id) as unresolved -> (
         lookup_and_resolve_module_from_path is_resolve add_canonical env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        let sg = prefix_signature (`Module p, signature_of_module_cached env p is_resolve m) in
-        match handle_module_lookup env add_canonical id (`Module p) sg with
-        | Some (p'', m') -> return (p'', m')
-        | None -> Unresolved (`Dot (parent, id))
-    )
+        signature_of_module_cached env p is_resolve m
+        |> of_result ~unresolved
+        >>= fun parent_sig ->
+        let sg = prefix_signature (`Module p, parent_sig) in
+        handle_module_lookup env add_canonical id (`Module p) sg
+        |> of_option ~unresolved
+      )
     | `Apply (m1, m2) -> (
         let func =
           lookup_and_resolve_module_from_path is_resolve add_canonical env m1
@@ -726,19 +747,21 @@ and lookup_and_resolve_module_type_from_path :
   fun is_resolve env p ->
     (* Format.fprintf Format.err_formatter "lookup_and_resolve_module_type_from_path: looking up %a\n%!" Component.Fmt.module_type_path p; *)
     match p with
-    | `Dot (parent, id) ->
+    | `Dot (parent, id) as unresolved ->
         lookup_and_resolve_module_from_path is_resolve true env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        let sg = prefix_signature (`Module p, signature_of_module_cached env p is_resolve m) in
+        of_result ~unresolved (signature_of_module_cached env p is_resolve m)
+        >>= fun parent_sg ->
+        let sg = prefix_signature (`Module p, parent_sg) in
         let p', mt = handle_module_type_lookup env id (`Module p) sg in
         return (p', mt)
-    | `Resolved r -> (
-        match lookup_module_type env r with
-        | Ok m ->
-            let p' = process_module_type env m r in
-            return (p', m)
-        | Error _ -> Unresolved (`Resolved r) )
+    | `Resolved r as unresolved -> (
+        of_result ~unresolved (lookup_module_type env r)
+        >>= fun m ->
+        let p' = process_module_type env m r in
+        return (p', m)
+      )
     | `Substituted s ->
         lookup_and_resolve_module_type_from_path is_resolve env s
         |> map_unresolved (fun p' -> `Substituted p')
@@ -775,7 +798,9 @@ and lookup_type_from_resolved_path :
         |> map_error (fun e -> `Parent_module e)
         >>= fun m ->
         (* let t1 = Unix.gettimeofday () in *)
-        let sg = signature_of_module_cached env p true m in
+        signature_of_module_cached env p true m
+        |> map_error (fun e -> `Parent_sig e)
+        >>= fun sg ->
         (* let t2 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
         (* let t3 = Unix.gettimeofday () in *)
@@ -799,7 +824,9 @@ and lookup_type_from_resolved_path :
         raise e )
   | `Class (`Module p, id) ->
   lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
-  let sg = signature_of_module_cached env p true m in
+  signature_of_module_cached env p true m
+  |> map_error (fun e -> `Parent_sig e)
+  >>= fun sg ->
   let sub = prefix_substitution (`Module p) sg in
   let p', t' = handle_type_lookup (ClassName.to_string id) (`Module p) sg in
   let t = match t' with
@@ -810,7 +837,9 @@ and lookup_type_from_resolved_path :
   Ok (p', t) 
   | `ClassType (`Module p, id) ->
   lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
-  let sg = signature_of_module_cached env p true m in
+  signature_of_module_cached env p true m
+  |> map_error (fun e -> `Parent_sig e)
+  >>= fun sg ->
   let sub = prefix_substitution (`Module p) sg in
   let p', t' = handle_type_lookup (ClassTypeName.to_string id) (`Module p) sg in
   let t = match t' with
@@ -835,13 +864,14 @@ and lookup_type_from_path :
   let open ResultMonad in
   fun env p ->
     match p with
-    | `Dot (parent, id) ->
+    | `Dot (parent, id) as unresolved ->
         (* let start_time = Unix.gettimeofday () in *)
         lookup_and_resolve_module_from_path true true env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
         (* let time1 = Unix.gettimeofday () in *)
-        let sg = signature_of_module_cached env p true m in
+        of_result ~unresolved (signature_of_module_cached env p true m)
+        >>= fun sg ->
         (* let time1point5 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg  in
         (* let time2 = Unix.gettimeofday () in *)
@@ -854,10 +884,8 @@ and lookup_type_from_path :
         (* let time3 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
         return (p', t) 
-    | `Resolved r -> (
-        match lookup_type_from_resolved_path env r with
-        | Ok t -> return t
-        | Error _ -> Unresolved (`Resolved r) )
+    | `Resolved r as unresolved ->
+        of_result ~unresolved (lookup_type_from_resolved_path env r)
     | `Substituted s ->
         lookup_type_from_path env s
         |> map_unresolved (fun p' -> `Substituted p')
@@ -879,12 +907,10 @@ and lookup_class_type_from_resolved_path :
       Ok (`Substituted p, t)
   | `Class (`Module p, id) ->
       lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
-      let p', t = handle_class_type_lookup env (ClassName.to_string id) p m in
-      Ok (p', t)
+      handle_class_type_lookup env (ClassName.to_string id) p m
   | `ClassType (`Module p, id) ->
       lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
-      let p', t = handle_class_type_lookup env (ClassTypeName.to_string id) p m in
-      Ok (p', t)
+      handle_class_type_lookup env (ClassTypeName.to_string id) p m
   | `ClassType (`ModuleType _, _)
   | `Class (`ModuleType _, _)
   | `ClassType (`FragmentRoot, _)
@@ -897,16 +923,14 @@ and lookup_class_type_from_path :
   let open ResultMonad in
   fun env p ->
     match p with
-    | `Dot (parent, id) ->
+    | `Dot (parent, id) as unresolved -> (
         lookup_and_resolve_module_from_path true true env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        let p', c = handle_class_type_lookup env id p m in
-        return (p', c)
-    | `Resolved r -> (
-        match lookup_class_type_from_resolved_path env r with
-        | Ok c -> return c
-        | Error _ -> Unresolved (`Resolved r) )
+        of_result ~unresolved (handle_class_type_lookup env id p m)
+      )
+    | `Resolved r as unresolved ->
+        of_result ~unresolved (lookup_class_type_from_resolved_path env r)
     | `Substituted s ->
         lookup_class_type_from_path env s
         |> map_unresolved (fun p' -> `Substituted p')
@@ -917,71 +941,83 @@ and lookup_signature_from_resolved_fragment :
     Cpath.Resolved.module_ ->
     Fragment.Resolved.Signature.t ->
     Component.Signature.t ->
-    Cpath.Resolved.module_ * Component.Signature.t =
+    (Cpath.Resolved.module_ * Component.Signature.t) option =
  fun env p f s ->
   match f with
-  | `Root _ -> (p, s)
+  | `Root _ -> Some (p, s)
   | #Fragment.Resolved.Module.t as frag ->
-      let _, p, m = lookup_module_from_resolved_fragment env p frag s in
-      p, signature_of_module env m
+      match lookup_module_from_resolved_fragment env p frag s with
+      | None -> None
+      | Some (_, p, m) ->
+          match signature_of_module env m with
+          | Ok sg -> Some (p, sg)
+          | Error _ -> None
 
 and lookup_module_from_resolved_fragment :
     Env.t ->
     Cpath.Resolved.module_ ->
     Fragment.Resolved.Module.t ->
     Component.Signature.t ->
-    Ident.module_ * Cpath.Resolved.module_ * Component.Module.t =
+    (Ident.module_ * Cpath.Resolved.module_ * Component.Module.t) option =
  fun env p f s ->
   match f with
   | `Subst (_, _) | `SubstAlias (_, _) -> failwith "What do we do with these?"
   | `OpaqueModule m -> lookup_module_from_resolved_fragment env p m s
   | `Module (parent, name) ->
-      let ppath, sg = lookup_signature_from_resolved_fragment env p parent s in
-      let rec find = function
+      let rec find ppath = function
         | Component.Signature.Module (id, _, m') :: _
           when Ident.Name.module_ id
                = Odoc_model.Names.ModuleName.to_string name ->
-            ( id,
-              `Module (`Module ppath, ModuleName.of_string (Ident.Name.module_ id)),
-              Subst.Delayed.get_module m' )
-        | _ :: xs -> find xs
-        | [] -> failwith "Can't find it"
+            Some
+              ( id,
+                `Module (`Module ppath, ModuleName.of_string (Ident.Name.module_ id)),
+                Subst.Delayed.get_module m' )
+        | _ :: xs -> find ppath xs
+        | [] -> None
       in
-      find sg.items
+      match lookup_signature_from_resolved_fragment env p parent s with
+      | Some (ppath, sg) -> find ppath sg.items
+      | None -> None
 
 and lookup_module_from_fragment :
     Env.t ->
     Cpath.Resolved.module_ ->
     Fragment.Module.t ->
     Component.Signature.t ->
-    Ident.module_ * Cpath.Resolved.module_ * Component.Module.t =
+    (Ident.module_ * Cpath.Resolved.module_ * Component.Module.t) option =
  fun env p f s ->
   match f with
+  | `Resolved r -> lookup_module_from_resolved_fragment env p r s
   | `Dot (parent, name) ->
-      let ppath, sg = lookup_signature_from_fragment env p parent s in
-      let rec find = function
+      let rec find ppath = function
         | Component.Signature.Module (id, _, m') :: _
           when Ident.Name.module_ id = name ->
-            (id, `Module (`Module ppath, (ModuleName.of_string name)), Subst.Delayed.get_module m')
-        | _ :: xs -> find xs
-        | [] -> failwith "Can't find it"
+            let p = `Module (`Module ppath, (ModuleName.of_string name)) in
+            Some (id, p, Subst.Delayed.get_module m')
+        | _ :: xs -> find ppath xs
+        | [] -> None
       in
-      find sg.items
-  | `Resolved r -> lookup_module_from_resolved_fragment env p r s
+      match lookup_signature_from_fragment env p parent s with
+      | None -> None
+      | Some (ppath, sg) -> find ppath sg.items
 
 and lookup_signature_from_fragment :
     Env.t ->
     Cpath.Resolved.module_ ->
     Fragment.Signature.t ->
     Component.Signature.t ->
-    Cpath.Resolved.module_ * Component.Signature.t =
+    (Cpath.Resolved.module_ * Component.Signature.t) option =
  fun env p f s ->
   match f with
-  | `Root -> (p, s)
-  | `Dot (_, _) as f' ->
-      let _, p, m = lookup_module_from_fragment env p f' s in
-      p, signature_of_module env m
+  | `Root -> Some (p, s)
   | `Resolved r -> lookup_signature_from_resolved_fragment env p r s
+  | `Dot (_, _) as f' ->
+      match lookup_module_from_fragment env p f' s with
+      | None -> None
+      | Some (_, p, m) ->
+          match signature_of_module env m with
+          | Ok sg -> Some (p, sg)
+          | Error _ -> None
 
 and module_type_expr_of_module_decl :
     Env.t ->
@@ -1012,21 +1048,17 @@ and module_type_expr_of_module :
  fun env m -> module_type_expr_of_module_decl env m.type_
 
 and signature_of_module_alias :
-    Env.t -> Cpath.module_ -> Component.Signature.t =
+    Env.t -> Cpath.module_ -> (Component.Signature.t, signature_of_module_error) result =
  fun env path ->
   match lookup_and_resolve_module_from_path false true env path with
   | Resolved (p', m) ->
       (* p' is the path to the aliased module *)
-      let m' = signature_of_module_cached env p' false m in
+      signature_of_module_cached env p' false m
+      >>= fun m' ->
       let m'' = Strengthen.signature p' m' in
-      m''
-  | Unresolved p when Cpath.is_module_forward p -> raise UnresolvedForwardPath
-  | Unresolved p' ->
-      let err =
-        Format.asprintf "Failed to lookup alias module (path=%a) (res=%a)"
-          Component.Fmt.module_path path Component.Fmt.module_path p'
-      in
-      failwith err
+      Ok m''
+  | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
+  | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
 
 and handle_signature_with_subs :
     Env.t ->
@@ -1045,19 +1077,20 @@ and handle_signature_with_subs :
     sg subs
 
 and signature_of_module_type_expr :
-    Env.t -> Component.ModuleType.expr -> Component.Signature.t =
+    Env.t -> Component.ModuleType.expr ->
+    (Component.Signature.t, signature_of_module_error) result =
  fun env m ->
   match m with
   | Component.ModuleType.Path p -> (
       match lookup_and_resolve_module_type_from_path false env p with
       | Resolved (_, mt) -> signature_of_module_type env mt
-      | Unresolved _p ->
-          let p = Component.Fmt.(string_of module_type_path p) in
-          failwith (Printf.sprintf "Couldn't find signature: %s" p) )
-  | Component.ModuleType.Signature s -> s
+      | Unresolved _p -> Error (`UnresolvedPath (`ModuleType p))
+    )
+  | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With (s, subs) ->
-      let sg = signature_of_module_type_expr env s in
-      handle_signature_with_subs env sg subs
+      signature_of_module_type_expr env s
+      >>= fun sg ->
+      Ok (handle_signature_with_subs env sg subs)
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr env expr
   | Component.ModuleType.Functor (Named arg, expr) ->
@@ -1066,14 +1099,16 @@ and signature_of_module_type_expr :
   | Component.ModuleType.TypeOf decl -> signature_of_module_decl env decl
 
 and signature_of_module_type :
-    Env.t -> Component.ModuleType.t -> Component.Signature.t =
+    Env.t -> Component.ModuleType.t ->
+    (Component.Signature.t, signature_of_module_error) result =
  fun env m ->
   match m.expr with
-  | None -> raise OpaqueModule
+  | None -> Error `OpaqueModule
   | Some expr -> signature_of_module_type_expr env expr
 
 and signature_of_module_decl :
-    Env.t -> Component.Module.decl -> Component.Signature.t =
+    Env.t -> Component.Module.decl ->
+    (Component.Signature.t, signature_of_module_error) result =
  fun env decl ->
   match decl with
   | Component.Module.Alias path -> signature_of_module_alias env path
@@ -1081,11 +1116,12 @@ and signature_of_module_decl :
       signature_of_module_type_expr env expr
 
 and signature_of_module :
-    Env.t -> Component.Module.t -> Component.Signature.t =
+    Env.t -> Component.Module.t -> (Component.Signature.t, signature_of_module_error) result =
  fun env m -> signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
-    Env.t -> Cpath.Resolved.module_ -> bool -> Component.Module.t -> Component.Signature.t =
+    Env.t -> Cpath.Resolved.module_ -> bool -> Component.Module.t ->
+    (Component.Signature.t, signature_of_module_error) result =
   fun env' path is_resolve m ->
     let id = (is_resolve, path) in
     let run env = signature_of_module env m in
@@ -1534,8 +1570,12 @@ and resolve_mt_signature_fragment :
           (`Subst (p', new_path), `Subst (p', new_frag))
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
-      let sg = prefix_signature (`Module cp', signature_of_module env m') in
-      (f', `Module cp', sg)
+      let exception Resolve_mt_signature_fragment of signature_of_module_error in
+      match signature_of_module env m' with
+      | Ok parent_sg ->
+          let sg = prefix_signature (`Module cp', parent_sg) in
+          (f', `Module cp', sg)
+      | Error e -> raise (Resolve_mt_signature_fragment e)
 
 and resolve_mt_module_fragment :
     Env.t ->
@@ -1559,14 +1599,10 @@ and resolve_mt_module_fragment :
       | Some (`SubstMT p') -> `Subst (p', new_frag)
     in
     let f'' =
-      try
-        let (_m : Component.Signature.t) = signature_of_module env m' in
-        f'
-      with
-        | OpaqueModule ->
-          `OpaqueModule f'
-        | UnresolvedForwardPath ->
-          f'
+      match signature_of_module env m' with
+      | Ok (_m : Component.Signature.t) -> f'
+      | Error `OpaqueModule -> `OpaqueModule f'
+      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
     in
     fixup_module_cfrag f''
 

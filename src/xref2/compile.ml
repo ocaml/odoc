@@ -205,7 +205,7 @@ and module_ : Env.t -> Module.t -> Module.t =
         let env, e = Expand_tools.expansion_of_module env m.id m' in
         Some (expansion env e)
       with
-      | Tools.OpaqueModule -> None
+      | Expand_tools.ExpandFailure `OpaqueModule -> None
       | Tools.UnresolvedForwardPath -> None
       | e ->
         Format.fprintf Format.err_formatter "Failed to expand module id: %a\n%!%a\n%!" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t) Component.Fmt.module_ m';
@@ -260,7 +260,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
               let env, e = Expand_tools.expansion_of_module_type env m.id m' in
               (env, Some e)
             with
-            | Tools.OpaqueModule -> (env, None)
+            | Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
             | e ->
                 ( match m'.expr with
                 | Some (Component.ModuleType.Signature sg) ->
@@ -357,7 +357,7 @@ and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Functor
               expr
           in
           (env, Some e)
-        with Tools.OpaqueModule -> (env, None) )
+        with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
     | _ -> failwith "error"
   in
   {
@@ -411,7 +411,12 @@ and module_type_expr :
           let lang_of_map = Lang_of.with_fragment_root parent in
           (* Format.fprintf Format.err_formatter "parent=%a\n" Component.Fmt.resolved_parent_path (parent :> Cpath.Resolved.parent); *)
           (* Tools.without_memoizing (fun () -> *)
-          let sg = Tools.signature_of_module_type_expr env cexpr in
+          let sg =
+            let exception Compile_module_type_expr of Tools.signature_of_module_error in
+            match Tools.signature_of_module_type_expr env cexpr with
+            | Ok sg -> sg
+            | Error e -> raise (Compile_module_type_expr e)
+          in
           let fragment_root = match parent with
             | `ModuleType _ | `Module _ as x -> x
           in
@@ -578,7 +583,13 @@ and type_expression_package env p =
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
   | Resolved (path, mt) ->
-      let sg = Tools.signature_of_module_type env mt in
+      let sg =
+        match Tools.signature_of_module_type env mt with
+        | Ok sg -> sg
+        | Error e ->
+            let exception Compile_type_expression_package of Tools.signature_of_module_error in
+            raise (Compile_type_expression_package e)
+      in
       let substitution (frag, t) =
         let cfrag = Component.Of_Lang.(type_fragment empty frag) in
         let cfrag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag in
