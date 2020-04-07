@@ -18,10 +18,6 @@ end
 (* Add [result] and a bind operator over it in scope *)
 open StdResultMonad
 
-exception OpaqueModule
-
-exception UnresolvedForwardPath
-
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 module OptionMonad = struct
@@ -221,12 +217,20 @@ type type_lookup_result =
 type class_type_lookup_result =
   Cpath.Resolved.class_type * Find.class_type
 
+type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
+
+exception OpaqueModule
+exception UnresolvedForwardPath
+
+type handle_apply_error = [ `OpaqueModule ]
+
 type module_lookup_error = [
   | `Failure of Env.t * Ident.module_ (** Found local path *)
   | `Unresolved_apply (** [`Apply] argument is not [`Resolved] *)
   | `Find_failure
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
+  | handle_apply_error
 ]
 
 and module_type_lookup_error = [
@@ -295,23 +299,23 @@ let rec handle_apply is_resolve env func_path arg_path m =
   let rec find_functor mty =
     match mty with
     | Component.ModuleType.Functor (Named arg, expr) ->
-        (arg.Component.FunctorParameter.id, expr)
+        Ok (arg.Component.FunctorParameter.id, expr)
     | Component.ModuleType.Path mty_path -> begin
         match lookup_and_resolve_module_type_from_path false env mty_path with
         | Resolved (_, { Component.ModuleType.expr = Some mty'; _ }) ->
           find_functor mty'
-        | _ ->
-          raise OpaqueModule
+        | _ -> Error `OpaqueModule
       end
     | _ -> 
       Format.fprintf Format.err_formatter "Got this instead: %a\n%!" Component.Fmt.module_type_expr mty;
       failwith "Application must take a functor"
   in
-  let arg_id, result = find_functor mty' in
+  find_functor mty' >>= fun (arg_id, result) ->
   let new_module = { m with Component.Module.type_ = ModuleType result } in
   let path = `Apply (func_path, (`Resolved (`Substituted arg_path))) in
   let substitution = if is_resolve then `Substituted arg_path else arg_path in
-  ( path,
+  Ok (
+    path,
     Subst.module_
       (Subst.add_module arg_id substitution Subst.identity)
       new_module )
@@ -444,9 +448,8 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
     | `Apply (functor_path, `Resolved argument_path) -> (
         match lookup_module env functor_path with
         | Ok functor_module ->
-            let (_, m) = 
-              handle_apply false env functor_path argument_path functor_module
-            in
+            handle_apply false env functor_path argument_path functor_module
+            >>= fun (_, m) ->
             Ok m
         | Error _ as e -> e )
     | `Module (parent, name) -> (
@@ -634,8 +637,12 @@ and lookup_and_resolve_module_from_path :
           lookup_and_resolve_module_from_path is_resolve add_canonical env m2
         in
         match (func, arg) with
-        | Resolved (func_path', m), Resolved (arg_path', _) ->
-            return (handle_apply is_resolve env func_path' arg_path' m)
+        | Resolved (func_path', m), Resolved (arg_path', _) -> (
+            match handle_apply is_resolve env func_path' arg_path' m with
+            | Ok r -> return r
+            | Error _ ->
+                Unresolved (`Apply (`Resolved func_path', `Resolved arg_path'))
+          )
         | Unresolved func_path', Resolved (arg_path', _) ->
             Unresolved (`Apply (func_path', `Resolved arg_path'))
         | Resolved (func_path', _), Unresolved arg_path' ->
