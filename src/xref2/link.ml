@@ -440,7 +440,7 @@ and module_ : Env.t -> Module.t -> Module.t =
               try
                 let env, e = Expand_tools.expansion_of_module env m.id m' in
                 (env, Some e)
-              with Tools.OpaqueModule -> (env, None)
+              with Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
             in
             (env, expansion)
         | _ -> (env, m.expansion)
@@ -610,7 +610,7 @@ and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Functor
               expr
           in
           (env, Some e)
-        with Tools.OpaqueModule -> (env, None) )
+        with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
     | x, _ -> (env, x)
   in
   let display_expr =
@@ -731,7 +731,13 @@ and module_type_expr :
   | Path p -> Path (module_type_path env p)
   | With (expr, subs) ->
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-      let sg = Tools.signature_of_module_type_expr env cexpr in
+      let sg =
+        match Tools.signature_of_module_type_expr env cexpr with
+        | Ok sg -> sg
+        | Error e ->
+            let exception Link_module_type_expr of Tools.signature_of_module_error in
+            raise (Link_module_type_expr e)
+      in
       With
         ( module_type_expr env id expr,
             handle_fragments env id sg subs)
@@ -860,11 +866,16 @@ and type_expression_object env visited o =
   { o with fields = List.map field o.fields }
 
 and type_expression_package env visited p =
+  let exception Link_type_expression_package of Tools.signature_of_module_error in
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
   | Resolved (path, mt) ->
-      let sg = Tools.signature_of_module_type env mt in
+      let sg =
+        match Tools.signature_of_module_type env mt with
+        | Ok sg -> sg
+        | Error e -> raise (Link_type_expression_package e)
+      in
       let substitution (frag, t) =
         let cfrag = Component.Of_Lang.(type_fragment empty frag) in
         let frag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag |>

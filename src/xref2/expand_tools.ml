@@ -1,3 +1,5 @@
+exception ExpandFailure of [ `OpaqueModule ]
+
 type expansion =
   | Signature of Component.Signature.t
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
@@ -54,7 +56,7 @@ and aux_expansion_of_module_type_expr env expr : expansion =
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
   match mt.expr with
-  | None -> raise Tools.OpaqueModule
+  | None -> raise (ExpandFailure `OpaqueModule)
   | Some expr -> aux_expansion_of_module_type_expr env expr
 
 and handle_expansion env id expansion =
@@ -93,7 +95,7 @@ and handle_expansion env id expansion =
           try
             (aux_expansion_of_module_type_expr env' expr')
           with
-          | Tools.OpaqueModule -> Signature { items = []; removed = [] }
+          | ExpandFailure `OpaqueModule -> Signature { items = []; removed = [] }
         in
         expand (`Result id) env' (arg :: args) res
   in
