@@ -7,7 +7,7 @@ let counter = ref 0
 type signature =
   [ `LRoot of UnitName.t * int
   | `LModule of ModuleName.t * int
-  | `LResult of signature
+  | `LResult of signature * int
   | `LParameter of ParameterName.t * int
   | `LModuleType of ModuleTypeName.t * int ]
 
@@ -23,7 +23,7 @@ type label_parent = [ parent | `LPage of PageName.t * int ]
 type module_ =
   [ `LRoot of UnitName.t * int
   | `LModule of ModuleName.t * int
-  | `LResult of signature
+  | `LResult of signature * int
   | `LParameter of ParameterName.t * int ]
 
 type module_type = [ `LModuleType of ModuleTypeName.t * int ]
@@ -83,6 +83,28 @@ let fresh_int () =
   incr counter;
   n
 
+let int_of_any : any -> int = function
+  | `LRoot (_, i) 
+  | `LModule (_, i) 
+  | `LException (_, i)
+  | `LConstructor (_, i)
+  | `LPage (_, i)
+  | `LClassType (_, i)
+  | `LMethod (_, i)
+  | `LClass (_, i)
+  | `LType (_, i)
+  | `LValue (_, i)
+  | `LInstanceVariable (_, i)
+  | `LParameter (_, i)
+  | `LField (_, i)
+  | `LResult (_, i)
+  | `LLabel (_, i)
+  | `LModuleType (_, i)
+  | `LExtension (_, i)
+    -> i
+  | `LCoreException _
+  | `LCoreType _ -> failwith "error"
+
 module Of_Identifier = struct
   open Identifier
 
@@ -94,7 +116,7 @@ module Of_Identifier = struct
     | `Module (_, n) -> `LModule (n, i)
     | `Parameter (_, n) -> `LParameter (n, i)
     | `ModuleType (_, n) -> `LModuleType (n, i)
-    | `Result sg -> `LResult (signature sg)
+    | `Result s -> `LResult (signature s, i)
 
   let class_signature : ClassSignature.t -> class_signature =
    fun sg ->
@@ -128,7 +150,7 @@ module Of_Identifier = struct
     | `Root (_, n) -> `LRoot (n, i)
     | `Module (_, n) -> `LModule (n, i)
     | `Parameter (_, n) -> `LParameter (n, i)
-    | `Result x -> `LResult (signature x)
+    | `Result x -> `LResult (signature x, i)
 
   let module_type : ModuleType.t -> module_type =
    fun m ->
@@ -180,14 +202,14 @@ module Name = struct
   let rec signature : signature -> string = function
     | `LRoot (n, _) -> UnitName.to_string n
     | `LModule (n, _) -> ModuleName.to_string n
-    | `LResult x -> signature x
+    | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
 
   let module_ : module_ -> string = function
     | `LRoot (n, _) -> UnitName.to_string n
     | `LModule (n, _) -> ModuleName.to_string n
-    | `LResult x -> signature x
+    | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
 
   let type_ : type_ -> string = function
@@ -233,14 +255,14 @@ module Rename = struct
   let rec signature : signature -> signature = function
     | `LRoot (n, _) -> `LRoot (n, fresh_int ())
     | `LModule (n, _) -> `LModule (n, fresh_int ())
-    | `LResult x -> `LResult (signature x)
+    | `LResult (x, _) -> `LResult (signature x, fresh_int ())
     | `LParameter (n, _) -> `LParameter (n, fresh_int ())
     | `LModuleType (n, _) -> `LModuleType (n, fresh_int ())
 
   let module_ : module_ -> module_ = function
     | `LRoot (n, _) -> `LRoot (n, fresh_int ())
     | `LModule (n, _) -> `LModule (n, fresh_int ())
-    | `LResult x -> `LResult (signature x)
+    | `LResult (x, _) -> `LResult (signature x, fresh_int ())
     | `LParameter (n, _) -> `LParameter (n, fresh_int ())
 
   let module_type : module_type -> module_type = function
@@ -266,7 +288,7 @@ end
 
 let hash : any -> int = Hashtbl.hash
 
-let compare : any -> any -> int = fun a b -> Int.compare (hash a) (hash b)
+let compare : any -> any -> int = fun a b -> Int.compare (int_of_any a) (int_of_any b)
 
 let reset () = counter := 0
 
@@ -276,7 +298,7 @@ let rec fmt_aux ppf (id : any) =
   | `LModule (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
   | `LParameter (n, i) ->
       Format.fprintf ppf "%s/%d" (ParameterName.to_string n) i
-  | `LResult x -> Format.fprintf ppf "result(%a)" fmt_aux (x :> any)
+  | `LResult (x, _) -> Format.fprintf ppf "result(%a)" fmt_aux (x :> any)
   | `LModuleType (n, i) ->
       Format.fprintf ppf "%s/%d" (ModuleTypeName.to_string n) i
   | `LType (n, i) -> Format.fprintf ppf "%s/%d" (TypeName.to_string n) i

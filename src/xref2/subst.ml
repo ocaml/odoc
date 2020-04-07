@@ -1,12 +1,4 @@
-open Component
 
-type t = Substitution.t = {
-  module_ : Cpath.Resolved.module_ ModuleMap.t;
-  module_type : Cpath.Resolved.module_type ModuleTypeMap.t;
-  type_ : Cpath.Resolved.type_ TypeMap.t;
-  class_type : Cpath.Resolved.class_type ClassTypeMap.t;
-  type_replacement : TypeExpr.t TypeMap.t;
-}
 
 exception TypeReplacement of Component.TypeExpr.t
 
@@ -27,6 +19,7 @@ let add_module id subst t =
     t with
     module_ = ModuleMap.add id subst t.module_;
   }
+
 
 let add_module_type id subst t =
   {
@@ -65,29 +58,14 @@ let add_type_replacement : Ident.path_type -> Component.TypeExpr.t -> t -> t =
  fun id texp t ->
   { t with type_replacement = TypeMap.add id texp t.type_replacement }
 
-let compose_delayed' compose v s =
-  let open Substitution in
-  match v with
-  | DelayedSubst (s', v) -> DelayedSubst (compose s' s, v)
-  | NoSubst v -> DelayedSubst (s, v)
-
-let local_module_path : t -> Ident.module_ -> Cpath.Resolved.module_ =
- fun s id ->
-  try ModuleMap.find id s.module_ with Not_found -> `Local id
-
-let local_module_type_path : t -> Ident.module_type -> Cpath.Resolved.module_type =
- fun s id ->
-  try ModuleTypeMap.find id s.module_type with Not_found -> `Local id
-
-let local_type_path : t -> Ident.path_type -> Cpath.Resolved.type_ =
- fun s id ->
-  try TypeMap.find id s.type_ with Not_found -> `Local id
-
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
  fun s p ->
   match p with
-  | `Local id -> local_module_path s id
+  | `Local id -> (
+      match try Some (ModuleMap.find id s.module_) with _ -> None with
+      | Some x -> x
+      | None -> `Local id )
   | `Identifier _ -> p
   | `Apply (p1, p2) -> `Apply (resolved_module_path s p1, module_path s p2)
   | `Substituted p -> `Substituted (resolved_module_path s p)
@@ -123,7 +101,10 @@ and resolved_module_type_path :
     t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
  fun s p ->
   match p with
-  | `Local id -> local_module_type_path s id
+  | `Local id -> (
+      match try Some (ModuleTypeMap.find id s.module_type) with _ -> None with
+      | Some x -> x
+      | None -> `Local id )
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_module_type_path s p)
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
@@ -140,11 +121,12 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
 and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
  fun s p ->
   match p with
-  | `Local id ->
+  | `Local id -> (
       if TypeMap.mem id s.type_replacement then
-        raise (TypeReplacement (TypeMap.find id s.type_replacement))
-      else
-        local_type_path s id
+        raise (TypeReplacement (TypeMap.find id s.type_replacement));
+      match try Some (TypeMap.find id s.type_) with Not_found -> None with
+      | Some x -> x
+      | None -> `Local id )
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_type_path s p)
   | `Type (p, n) -> `Type (resolved_parent_path s p, n)
@@ -466,31 +448,31 @@ and rename_bound_idents s sg =
   | Module (id, r, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (local_module_path s id') s)
+        ( add_module id (`Local id') s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (local_module_path s id') s)
+        ( add_module id (`Local id') s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
       let id' = Ident.Rename.module_type id in
       rename_bound_idents
-        ( add_module_type id (local_module_type_path s id') s)
+        ( add_module_type id (`Local id') s)
         (ModuleType (id', mt) :: sg)
         rest
   | Type (id, r, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (local_type_path s (id' :> Ident.path_type)) s)
+        ( add_type id (`Local (id' :> Ident.path_type)) s)
         (Type (id', r, t) :: sg)
         rest
   | TypeSubstitution (id, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (local_type_path s (id' :> Ident.path_type)) s)
+        ( add_type id (`Local (id' :> Ident.path_type)) s)
         (TypeSubstitution (id', t) :: sg)
         rest
   | Exception (id, e) :: rest ->
@@ -551,13 +533,22 @@ and apply_sig_map s items removed =
     List.map
       (function
         | Module (id, r, m) ->
-            Module (id, r, compose_delayed' compose m s)
+            Module
+              ( id,
+                r,
+                Component.Delayed.put (fun () ->
+                    module_ s (Component.Delayed.get m)) )
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution (id, module_substitution s m)
         | ModuleType (id, mt) ->
-            ModuleType (id, compose_delayed' compose mt s)
+            ModuleType
+              ( id,
+                Component.Delayed.put (fun () ->
+                    module_type s (Component.Delayed.get mt)) )
         | Type (id, r, t) ->
-            Type (id, r, compose_delayed' compose t s)
+            Type (id,
+                  r,
+                  Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)))
         | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
         | Exception (id, e) -> Exception (id, exception_ s e)
         | TypExt e -> TypExt (extension s e)
@@ -570,58 +561,3 @@ and apply_sig_map s items removed =
       items
   in
   { items; removed = removed_items s removed }
-
-and compose : t -> t -> t =
-  fun a b ->
-  let compose_map ~add ~fold resolve field =
-    fold (fun key path acc -> add key (resolve b path) acc) (field a) (field b)
-  in
-  let type_, type_replacement =
-    (* resolving a type may fail with [TypeReplacement],
-       in that case, add it to the type_replacement map *)
-    let fold_type_replacement key texpr acc = TypeMap.add key (type_expr b texpr) acc in
-    let fold_type key path (t, tr) =
-      match resolved_type_path b path with
-      | path' -> (TypeMap.add key path' t, tr)
-      | exception TypeReplacement texpr -> (t, fold_type_replacement key texpr tr)
-    in
-    let type_, type_replacement = TypeMap.fold fold_type a.type_ (b.type_, b.type_replacement) in
-    let type_replacement = TypeMap.fold fold_type_replacement a.type_replacement type_replacement in
-    type_, type_replacement
-  in
-  { module_ = ModuleMap.(compose_map ~add ~fold resolved_module_path) (fun t -> t.module_)
-  ; module_type = ModuleTypeMap.(compose_map ~add ~fold resolved_module_type_path) (fun t -> t.module_type)
-  ; type_; type_replacement
-  ; class_type = ClassTypeMap.(compose_map ~add ~fold resolved_class_type_path) (fun t -> t.class_type)
-  }
-
-module Delayed = struct
-
-  (** [subst] is [Subst.t] *)
-  type subst = t
-
-  (** Represent a component that has been substituted.
-      The substitution is performed only when necessary. Applying again a
-      substitution is a shallow operation and doesn't require mapping the entire
-      tree (see [compose] below). *)
-  type 'a t = 'a Substitution.delayed = DelayedSubst of subst * 'a | NoSubst of 'a
-
-  let compose : 'a t -> subst -> 'a t =
-    fun v s -> compose_delayed' compose v s
-
-  let get_module : Module.t t -> Module.t =
-    function
-    | DelayedSubst (s, m) -> module_ s m
-    | NoSubst m -> m
-
-  let get_module_type : ModuleType.t t -> ModuleType.t =
-    function
-    | DelayedSubst (s, mt) -> module_type s mt
-    | NoSubst mt -> mt
-
-  let get_type : TypeDecl.t t -> TypeDecl.t =
-    function
-    | DelayedSubst (s, t) -> type_ s t
-    | NoSubst t -> t
-
-end

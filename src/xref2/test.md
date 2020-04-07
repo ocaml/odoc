@@ -28,6 +28,7 @@ open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;
 #print_length 65536;;
+Odoc_xref2__Component.Delayed.eager := true;;
 ```
 
 Simple resolution

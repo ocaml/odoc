@@ -362,12 +362,12 @@ module ExtractIDs = struct
       (fun item map ->
         match item with
         | Module (id, _, m) ->
-          docs lpp (module_ parent map id) (Subst.Delayed.get_module m).doc
+          docs lpp (module_ parent map id) (Delayed.get m).doc
         | ModuleSubstitution (id, m) -> docs lpp (module_ parent map id) m.doc
         | ModuleType (id, mt) ->
-          docs lpp (module_type parent map id) (Subst.Delayed.get_module_type mt).doc
+          docs lpp (module_type parent map id) (Delayed.get mt).doc
         | Type (id, _, t) ->
-          docs lpp (type_decl parent map id) (Subst.Delayed.get_type t).doc
+          docs lpp (type_decl parent map id) (Delayed.get t).doc
         | TypeSubstitution (id, t) -> docs lpp (type_decl parent map id) t.doc
         | Exception (id, e) -> docs lpp (exception_ parent map id) e.doc
         | Value (id, v) -> docs lpp (value_ parent map id) v.doc
@@ -391,12 +391,12 @@ let rec signature_items id map items =
     (fun item acc ->
       match item with
       | Module (id, r, m) ->
-          let m = Subst.Delayed.get_module m in
+          let m = Component.Delayed.get m in
           Odoc_model.Lang.Signature.Module (r, module_ map id m) :: acc
       | ModuleType (id, m) ->
           Odoc_model.Lang.Signature.ModuleType (module_type map id m) :: acc
       | Type (id, r, t) -> (
-          let t = Subst.Delayed.get_type t in
+          let t = Component.Delayed.get t in
           try Odoc_model.Lang.Signature.Type (r, type_decl map id t) :: acc
           with e ->
             let bt = Printexc.get_backtrace () in
@@ -701,7 +701,7 @@ and module_type_expr map identifier =
   | TypeOf decl -> TypeOf (module_decl map identifier decl)
 
 and module_type map id mty =
-  let mty = Subst.Delayed.get_module_type mty in
+  let mty = Component.Delayed.get mty in
   let identifier = List.assoc id map.module_type in
   let sig_id = (identifier :> Odoc_model.Paths.Identifier.Signature.t) in
   let expansion = Opt.map (module_expansion map sig_id) mty.expansion in
