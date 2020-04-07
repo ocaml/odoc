@@ -188,6 +188,7 @@ and signature : Env.t -> Signature.t -> _ =
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
+  if m.hidden then m else
   let extra_expansion_needed =
     match m.type_ with
     | ModuleType (Signature _) -> false (* AlreadyASig *)
