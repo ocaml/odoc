@@ -405,7 +405,7 @@ and module_ : Env.t -> Module.t -> Module.t =
   (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
     Component.Fmt.model_identifier
     (m.id :> Paths.Identifier.t); *)
-  if (*skip m.id*) false then m
+  if m.hidden then m
   else
     try
       let env =
