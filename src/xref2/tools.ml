@@ -4,10 +4,6 @@ open Odoc_model.Paths
 module StdResultMonad = struct
   type ('a, 'b) result = ('a, 'b) Result.result = Ok of 'a | Error of 'b
 
-  let result_force = function
-    | Ok x -> x
-    | Error _ -> assert false
-
   let map_error f = function
     | Ok _ as ok -> ok
     | Error e -> Error (f e)
@@ -26,6 +22,11 @@ module OptionMonad = struct
   let return x = Some x
 
   let bind m f = match m with Some x -> f x | None -> None
+
+  (* The error case become [None], the error value is ignored. *)
+  let of_result = function
+    | StdResultMonad.Ok x -> Some x
+    | Error _ -> None
 
   let ( >>= ) = bind
 end
@@ -1527,28 +1528,32 @@ and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
 
 
 and find_module_with_replacement :
-    Env.t -> Component.Signature.t -> string -> Component.Module.t =
+    Env.t -> Component.Signature.t -> string ->
+    (Component.Module.t, module_lookup_error) result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
-  | Found m -> m
-  | Replaced path -> result_force (lookup_module env path)
+  | Found m -> Ok m
+  | Replaced path -> lookup_module env path
 
 and resolve_mt_signature_fragment :
     Env.t ->
     Cfrag.root * Component.Signature.t ->
     Cfrag.signature ->
-    Cfrag.resolved_signature
-    * Cpath.Resolved.parent
-    * Component.Signature.t =
+    (Cfrag.resolved_signature
+     * Cpath.Resolved.parent
+     * Component.Signature.t) option =
  fun env (p, sg) frag ->
   match frag with
   | `Root ->
     let sg = prefix_signature (`FragmentRoot, sg) in
-    (`Root p, `FragmentRoot, sg)
-  | `Resolved _r -> failwith "Shouldn't happen"
+    Some (`Root p, `FragmentRoot, sg)
+  | `Resolved _r -> None
   | `Dot (parent, name) ->
-      let pfrag, ppath, sg = resolve_mt_signature_fragment env (p, sg) parent in
-      let m' = find_module_with_replacement env sg name in
+      let open OptionMonad in
+      resolve_mt_signature_fragment env (p, sg) parent
+      >>= fun (pfrag, ppath, sg) ->
+      of_result (find_module_with_replacement env sg name)
+      >>= fun m' ->
       let mname = Odoc_model.Names.ModuleName.of_string name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
@@ -1569,24 +1574,25 @@ and resolve_mt_signature_fragment :
           (`Subst (p', new_path), `Subst (p', new_frag))
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
-      let exception Resolve_mt_signature_fragment of signature_of_module_error in
-      match signature_of_module env m' with
-      | Ok parent_sg ->
-          let sg = prefix_signature (`Module cp', parent_sg) in
-          (f', `Module cp', sg)
-      | Error e -> raise (Resolve_mt_signature_fragment e)
+      of_result (signature_of_module env m')
+      >>= fun parent_sg ->
+      let sg = prefix_signature (`Module cp', parent_sg) in
+      Some (f', `Module cp', sg)
 
 and resolve_mt_module_fragment :
     Env.t ->
     Cfrag.root * Component.Signature.t ->
     Cfrag.module_ ->
-    Cfrag.resolved_module =
+    Cfrag.resolved_module option =
  fun env (p, sg) frag ->
   match frag with
-  | `Resolved r -> r
+  | `Resolved r -> Some r
   | `Dot (parent, name) ->
-    let pfrag, _ppath, sg = resolve_mt_signature_fragment env (p, sg) parent in
-    let m' = find_module_with_replacement env sg name in
+    let open OptionMonad in
+    resolve_mt_signature_fragment env (p, sg) parent
+    >>= fun (pfrag, _ppath, sg) ->
+    of_result (find_module_with_replacement env sg name)
+    >>= fun m' ->
     let mname = Odoc_model.Names.ModuleName.of_string name in
     let new_frag = `Module (pfrag, mname) in
     let modifier = get_module_path_modifiers env false m' in
@@ -1603,24 +1609,25 @@ and resolve_mt_module_fragment :
       | Error `OpaqueModule -> `OpaqueModule f'
       | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
     in
-    fixup_module_cfrag f''
+    Some (fixup_module_cfrag f'')
 
 and resolve_mt_type_fragment :
     Env.t ->
     Cfrag.root * Component.Signature.t ->
     Cfrag.type_ ->
-    Cfrag.resolved_type =
+    Cfrag.resolved_type option =
   fun env (p, sg) frag ->
   match frag with
-  | `Resolved r -> r
+  | `Resolved r -> Some r
   | `Dot (parent, name) ->
-    let pfrag, ppath, _sg =
-      resolve_mt_signature_fragment env (p, sg) parent
-    in
+    let open OptionMonad in
+    resolve_mt_signature_fragment env (p, sg) parent
+    >>= fun (pfrag, ppath, _sg) ->
     let _new_id = `Type (ppath, Odoc_model.Names.ModuleName.of_string name) in    
     let result = fixup_type_cfrag (`Type (pfrag, (TypeName.of_string name))) in
     (* Format.fprintf Format.err_formatter "resolve_mt_type_fragment: fragment=%a\n%!" Component.Fmt.resolved_type_fragment result; *)
-    result
+    Some result
+
 let rec reresolve_signature_fragment : Env.t -> Cfrag.resolved_signature -> Cfrag.resolved_signature =
   fun env m ->
     match m with

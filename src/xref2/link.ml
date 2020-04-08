@@ -866,7 +866,7 @@ and type_expression_object env visited o =
   { o with fields = List.map field o.fields }
 
 and type_expression_package env visited p =
-  let exception Link_type_expression_package of Tools.signature_of_module_error in
+  let exception Link_type_expression_package of Tools.signature_of_module_error option in
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
@@ -874,12 +874,14 @@ and type_expression_package env visited p =
       let sg =
         match Tools.signature_of_module_type env mt with
         | Ok sg -> sg
-        | Error e -> raise (Link_type_expression_package e)
+        | Error e -> raise (Link_type_expression_package (Some e))
       in
       let substitution (frag, t) =
         let cfrag = Component.Of_Lang.(type_fragment empty frag) in
-        let frag' = Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag |>
-          Lang_of.(Path.resolved_type_fragment empty) in
+        let frag' =
+          match Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag with
+          | Some tfrag -> Lang_of.(Path.resolved_type_fragment empty) tfrag
+          | None -> raise (Link_type_expression_package None) in
         (`Resolved frag', type_expression env visited t)
       in
       {
