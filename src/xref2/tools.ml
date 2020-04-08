@@ -1657,7 +1657,7 @@ and reresolve_type_fragment : Env.t -> Cfrag.resolved_type -> Cfrag.resolved_typ
 let rec class_signature_of_class :
     Env.t ->
     Component.Class.t ->
-    Component.ClassSignature.t =
+    Component.ClassSignature.t option =
  fun env c ->
   let rec inner decl =
     match decl with
@@ -1670,22 +1670,18 @@ let rec class_signature_of_class :
 and class_signature_of_class_type_expr :
     Env.t ->
     Component.ClassType.expr ->
-    Component.ClassSignature.t =
+    Component.ClassSignature.t option =
  fun env e ->
   match e with
-  | Signature s -> s
+  | Signature s -> Some s
   | Constr (p, _) -> (
-      let c =
-        match lookup_class_type_from_path env p with
-        | Resolved (_, c) -> c
-        | _ -> failwith "error"
-      in
-      match c with
-      | `C c -> class_signature_of_class env c
-      | `CT c -> class_signature_of_class_type env c )
+      match lookup_class_type_from_path env p with
+      | Resolved (_, `C c) -> class_signature_of_class env c
+      | Resolved (_, `CT c) -> class_signature_of_class_type env c
+      | _ -> None )
 
 and class_signature_of_class_type :
     Env.t ->
     Component.ClassType.t ->
-    Component.ClassSignature.t =
+    Component.ClassSignature.t option =
  fun env c -> class_signature_of_class_type_expr env c.expr
