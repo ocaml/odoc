@@ -706,13 +706,7 @@ and lookup_and_resolve_module_from_path :
   | [] ->
       (* Format.fprintf Format.err_formatter "Looking up path (no bindings) %a\n%!" Component.Fmt.module_path p; *)
       (* Format.fprintf Format.err_formatter "Uncached\n%!"; *)
-      let lookups, resolved =
-        try
-          Env.with_recorded_lookups env' resolve
-        with e ->
-          Format.fprintf Format.err_formatter "Caught exception: %s\n%!" (Printexc.to_string e);
-          raise e
-          in
+      let lookups, resolved = Env.with_recorded_lookups env' resolve in
       (* Format.fprintf Format.err_formatter "Adding into hashtbl\n%!"; *)
       Memos2.add module_resolve_cache id (resolved, env_id, lookups);
       resolved
@@ -794,37 +788,28 @@ and lookup_type_from_resolved_path :
   | `Substituted s ->
       lookup_type_from_resolved_path env s >>= fun (p, t) ->
       Ok (`Substituted p, t)
-  | `Type (`Module p, id) -> (
-      try
-        (* let t0 = Unix.gettimeofday () in *)
-        lookup_module env p
-        |> map_error (fun e -> `Parent_module e)
-        >>= fun m ->
-        (* let t1 = Unix.gettimeofday () in *)
-        signature_of_module_cached env p true m
-        |> map_error (fun e -> `Parent_sig e)
-        >>= fun sg ->
-        (* let t2 = Unix.gettimeofday () in *)
-        let sub = prefix_substitution (`Module p) sg in
-        (* let t3 = Unix.gettimeofday () in *)
-        let p', t' = handle_type_lookup (TypeName.to_string id) (`Module p) sg in
-        (* let t4 = Unix.gettimeofday () in *)
-        let t = match t' with
-          | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
-          | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr) in 
-        (* let t5 = Unix.gettimeofday () in *)
-        (* Format.fprintf Format.err_formatter "timing stats: %f %f %f %f %f\n%!" (t1 -. t0) (t2 -. t1) (t3 -. t2) (t4 -. t3) (t5 -. t4); *)
-          Ok (p', t) 
-      with e ->
-        Format.fprintf Format.err_formatter "Here...\n%s\n%!"
-          (Printexc.get_backtrace ());
-        ( match p with
-        | `Identifier _ident ->
-            Format.fprintf Format.err_formatter "Identifier\n%!"
-        | _ -> Format.fprintf Format.err_formatter "Not ident\n%!" );
-        raise e )
+  | `Type (`Module p, id) ->
+      (* let t0 = Unix.gettimeofday () in *)
+      lookup_module env p
+      |> map_error (fun e -> `Parent_module e)
+      >>= fun m ->
+      (* let t1 = Unix.gettimeofday () in *)
+      signature_of_module_cached env p true m
+      |> map_error (fun e -> `Parent_sig e)
+      >>= fun sg ->
+      (* let t2 = Unix.gettimeofday () in *)
+      let sub = prefix_substitution (`Module p) sg in
+      (* let t3 = Unix.gettimeofday () in *)
+      let p', t' = handle_type_lookup (TypeName.to_string id) (`Module p) sg in
+      (* let t4 = Unix.gettimeofday () in *)
+      let t = match t' with
+        | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
+        | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
+        | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
+        | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr) in 
+      (* let t5 = Unix.gettimeofday () in *)
+      (* Format.fprintf Format.err_formatter "timing stats: %f %f %f %f %f\n%!" (t1 -. t0) (t2 -. t1) (t3 -. t2) (t4 -. t3) (t5 -. t4); *)
+      Ok (p', t) 
   | `Class (`Module p, id) ->
   lookup_module env p |> map_error (fun e -> `Parent_module e) >>= fun m ->
   signature_of_module_cached env p true m
