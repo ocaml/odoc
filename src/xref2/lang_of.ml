@@ -326,6 +326,8 @@ module ExtractIDs = struct
     let new_map = { map with s_modules = [] } in
     signature parent new_map i.Include.expansion_
 
+  and open_ parent map o = signature parent map o.Open.expansion
+
   and docs parent map (d : Component.CComment.docs) =
     List.fold_right
       (fun item map ->
@@ -397,6 +399,7 @@ module ExtractIDs = struct
         | ClassType (id, _, c) -> docs lpp (class_type parent map id) c.doc
         | Include i -> docs lpp (include_ parent map i) i.doc
         | TypExt t -> docs lpp map t.doc
+        | Open o -> open_ parent map o
         | Comment d -> docs_or_stop lpp map d)
       items map
 
@@ -441,6 +444,7 @@ let rec signature_items id map items =
               "Caught exception %s with include: %a" (Printexc.to_string e)
               Component.Fmt.include_ i;
             raise e )
+      | Open o -> Odoc_model.Lang.Signature.Open (open_ id map o) :: acc
       | External (id, e) ->
           Odoc_model.Lang.Signature.External (external_ map id e) :: acc
       | ModuleSubstitution (id, m) ->
@@ -608,6 +612,10 @@ and include_ parent map i =
       { resolved = false; content = signature parent map i.expansion_ };
     inline = false;
   }
+
+and open_ parent map o =
+  let open Component.Open in
+  { Odoc_model.Lang.Open.expansion = signature parent map o.expansion }
 
 and value_ map id v =
   let open Component.Value in

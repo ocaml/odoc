@@ -99,7 +99,8 @@ let prefix_substitution path sg =
         | ClassType (id, _, _) ->
             let name = ClassTypeName.of_string (Ident.Name.class_type id) in
             Subst.add_class_type id (`ClassType (path, name)) map
-        | Include i -> get_sub map i.expansion_.items)
+        | Include i -> get_sub map i.expansion_.items
+        | Open o -> get_sub map o.expansion.items)
       is sub'
   in
   let extend_sub_removed removed sub =
@@ -153,6 +154,7 @@ let prefix_signature (path, sg) =
         | ClassType (id, r, c) ->
             ClassType (Ident.Rename.class_type id, r, Subst.class_type sub c)
         | Include i -> Include (Subst.include_ sub i)
+        | Open o -> Open (Subst.open_ sub o)
         | Comment c -> Comment c)
       sg.items
   in
