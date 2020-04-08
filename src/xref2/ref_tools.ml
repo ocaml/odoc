@@ -1,11 +1,12 @@
 open Odoc_model.Paths
 open Odoc_model.Names
-
 open Reference
 
-type module_lookup_result = Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t
+type module_lookup_result =
+  Resolved.Module.t * Cpath.Resolved.module_ * Component.Module.t
 
-type module_type_lookup_result = Resolved.ModuleType.t * Cpath.Resolved.module_type * Component.ModuleType.t
+type module_type_lookup_result =
+  Resolved.ModuleType.t * Cpath.Resolved.module_type * Component.ModuleType.t
 
 type signature_lookup_result =
   Resolved.Signature.t * Cpath.Resolved.parent * Component.Signature.t
@@ -22,7 +23,9 @@ type value_lookup_result =
 type label_parent_lookup_result =
   Resolved.LabelParent.t
   * Cpath.Resolved.parent option
-  * [ `S of Component.Signature.t | `CS of Component.ClassSignature.t | `Page of (string * Identifier.Label.t) list ]
+  * [ `S of Component.Signature.t
+    | `CS of Component.ClassSignature.t
+    | `Page of (string * Identifier.Label.t) list ]
 
 let rec choose l =
   match l with
@@ -33,9 +36,13 @@ let signature_lookup_result_of_label_parent :
     label_parent_lookup_result -> signature_lookup_result option =
  fun (rr, cp, c) ->
   match (rr, cp, c) with
-  | (`Identifier #Odoc_model.Paths.Identifier.Signature.t as rr'), Some p, `S s ->
+  | (`Identifier #Odoc_model.Paths.Identifier.Signature.t as rr'), Some p, `S s
+    ->
       Some (rr', p, s)
-  | ((`SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ | `Hidden _) as rr'), Some p,  `S s ->
+  | ( ( (`SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ | `Hidden _)
+      as rr' ),
+      Some p,
+      `S s ) ->
       Some (rr', p, s)
   | _ -> None
 
@@ -63,60 +70,70 @@ module Memos2 = Hashtbl.Make (Hashable2)
 
 let memo2 = Memos2.create 91
 
-let module_lookup_to_signature_lookup : Env.t -> module_lookup_result -> signature_lookup_result option =
-  fun env (ref, cp, m) ->
-    match Tools.signature_of_module env m with
-    | Ok sg -> Some ((ref :> Resolved.Signature.t), `Module cp, sg)
-    | Error _ -> None
+let module_lookup_to_signature_lookup :
+    Env.t -> module_lookup_result -> signature_lookup_result option =
+ fun env (ref, cp, m) ->
+  match Tools.signature_of_module env m with
+  | Ok sg -> Some ((ref :> Resolved.Signature.t), `Module cp, sg)
+  | Error _ -> None
 
-let module_type_lookup_to_signature_lookup : Env.t -> module_type_lookup_result -> signature_lookup_result option =
-  fun env (ref, cp, m) ->
-    match Tools.signature_of_module_type env m with
-    | Ok sg -> Some ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
-    | Error _ -> None
+let module_type_lookup_to_signature_lookup :
+    Env.t -> module_type_lookup_result -> signature_lookup_result option =
+ fun env (ref, cp, m) ->
+  match Tools.signature_of_module_type env m with
+  | Ok sg -> Some ((ref :> Resolved.Signature.t), `ModuleType cp, sg)
+  | Error _ -> None
 
-
-let rec add_canonical_path : Env.t -> Component.Module.t -> Odoc_model.Paths.Reference.Resolved.Module.t -> Odoc_model.Paths.Reference.Resolved.Module.t =
-  fun env m r ->
+let rec add_canonical_path :
+    Env.t ->
+    Component.Module.t ->
+    Odoc_model.Paths.Reference.Resolved.Module.t ->
+    Odoc_model.Paths.Reference.Resolved.Module.t =
+ fun env m r ->
   match m.Component.Module.canonical with
   | Some (_cp, cr) -> (
-    match resolve_module_reference env cr ~add_canonical:false with
-    | Some (canonical,_,_) -> `Canonical (r, `Resolved canonical)
-    | None -> r
-  )
-  | None -> r 
+      match resolve_module_reference env cr ~add_canonical:false with
+      | Some (canonical, _, _) -> `Canonical (r, `Resolved canonical)
+      | None -> r )
+  | None -> r
 
-and process_module env add_canonical m base_path' base_ref' : module_lookup_result =  
+and process_module env add_canonical m base_path' base_ref' :
+    module_lookup_result =
   let base_path, base_ref =
-    if m.Component.Module.hidden
-    then `Hidden base_path', `Hidden base_ref'
-    else base_path', base_ref' in
+    if m.Component.Module.hidden then (`Hidden base_path', `Hidden base_ref')
+    else (base_path', base_ref')
+  in
   let p, r =
     match Tools.get_module_path_modifiers env add_canonical m with
-    | None -> base_path, base_ref
+    | None -> (base_path, base_ref)
     | Some (`SubstAliased cp) ->
-      let cp = Tools.reresolve_module env cp in
-      let p = Lang_of.(Path.resolved_module empty cp) in
-      `SubstAlias (cp, base_path), `SubstAlias (p, base_ref)
+        let cp = Tools.reresolve_module env cp in
+        let p = Lang_of.(Path.resolved_module empty cp) in
+        (`SubstAlias (cp, base_path), `SubstAlias (p, base_ref))
     | Some (`Aliased cp) ->
-      let cp = Tools.reresolve_module env cp in
-      let p = Lang_of.(Path.resolved_module empty cp) in
-      `Alias (cp, base_path), `SubstAlias (p, base_ref)
+        let cp = Tools.reresolve_module env cp in
+        let p = Lang_of.(Path.resolved_module empty cp) in
+        (`Alias (cp, base_path), `SubstAlias (p, base_ref))
     | Some (`SubstMT cp) ->
-      let cp = Tools.reresolve_module_type env cp in
-      `Subst (cp, base_path), base_ref in
-  if add_canonical
-  then (add_canonical_path env m r, Tools.reresolve_module env (Tools.add_canonical_path env m p),  m) else (r, p, m)
+        let cp = Tools.reresolve_module_type env cp in
+        (`Subst (cp, base_path), base_ref)
+  in
+  if add_canonical then
+    ( add_canonical_path env m r,
+      Tools.reresolve_module env (Tools.add_canonical_path env m p),
+      m )
+  else (r, p, m)
 
 and handle_module_lookup env add_canonical id parent_path parent_ref sg =
   match Find.careful_module_in_sig sg id with
   | Find.Found m ->
       let mname = Odoc_model.Names.ModuleName.of_string id in
-      Some (process_module env add_canonical m (`Module (parent_path, mname)) (`Module (parent_ref, mname)))
-  | Replaced _p ->
-      None
-  | exception _ ->
-      None
+      Some
+        (process_module env add_canonical m
+           (`Module (parent_path, mname))
+           (`Module (parent_ref, mname)))
+  | Replaced _p -> None
+  | exception _ -> None
 
 and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
   let open Tools.OptionMonad in
@@ -124,7 +141,10 @@ and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
     match r with
     | `Resolved _r -> failwith "unhandled"
     | `Root (name, _) -> (
-        Env.lookup_datatype_by_name (Odoc_model.Names.UnitName.to_string name) env >>= function
+        Env.lookup_datatype_by_name
+          (Odoc_model.Names.UnitName.to_string name)
+          env
+        >>= function
         | `Type (id, t) ->
             return
               ( `Identifier
@@ -167,12 +187,17 @@ and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
         Find.opt_type_in_sig sg (TypeName.to_string name) >>= function
         | `T _ as c -> return (`Type (parent', name), c)
         | _ -> None )
- 
-and find_module : Env.t -> LabelParent.t -> string -> add_canonical:bool -> module_lookup_result option =
-  fun env parent name ~add_canonical ->
+
+and find_module :
+    Env.t ->
+    LabelParent.t ->
+    string ->
+    add_canonical:bool ->
+    module_lookup_result option =
+ fun env parent name ~add_canonical ->
   let open Tools.OptionMonad in
   (* Format.fprintf Format.err_formatter "resolve_module_reference: (add_canonical=%b) before:\n%!%a\n%!" add_canonical
-    Component.Fmt.model_reference (`Dot (parent, name)); *)
+     Component.Fmt.model_reference (`Dot (parent, name)); *)
   resolve_label_parent_reference env parent ~add_canonical
   >>= signature_lookup_result_of_label_parent
   >>= fun (parent', cp_unresolved, sg) ->
@@ -181,8 +206,13 @@ and find_module : Env.t -> LabelParent.t -> string -> add_canonical:bool -> modu
   let sg = Tools.prefix_signature (cp_reresolved, sg) in
   handle_module_lookup env add_canonical name cp_reresolved parent' sg
 
-and find_module_type : Env.t -> LabelParent.t -> string -> add_canonical:bool -> module_type_lookup_result option =
-  fun env parent name ~add_canonical ->
+and find_module_type :
+    Env.t ->
+    LabelParent.t ->
+    string ->
+    add_canonical:bool ->
+    module_type_lookup_result option =
+ fun env parent name ~add_canonical ->
   let open Tools.OptionMonad in
   resolve_label_parent_reference env parent ~add_canonical
   >>= signature_lookup_result_of_label_parent
@@ -190,7 +220,7 @@ and find_module_type : Env.t -> LabelParent.t -> string -> add_canonical:bool ->
   let sg = Tools.prefix_signature (cp, sg) in
   (try Some (Tools.handle_module_type_lookup env name cp sg) with _ -> None)
   >>= fun (cp', m) ->
-  let resolved_ref = 
+  let resolved_ref =
     let base = `ModuleType (parent', ModuleTypeName.of_string name) in
     match m.expr >>= Tools.get_substituted_module_type env with
     | Some _p -> base
@@ -200,25 +230,28 @@ and find_module_type : Env.t -> LabelParent.t -> string -> add_canonical:bool ->
 
 and resolve_module_reference :
     Env.t -> Module.t -> add_canonical:bool -> module_lookup_result option =
-  fun env r ~add_canonical ->
-    match r with
-    | `Resolved _r ->
-        failwith "What's going on!?"
-(*        Some (resolve_resolved_module_reference env r ~add_canonical)*)
-    | `Dot (parent, name) -> find_module env parent name ~add_canonical
-    | `Module (parent, name) -> find_module env (parent :> LabelParent.t) (Odoc_model.Names.ModuleName.to_string name) ~add_canonical
-    | `Root (name, _) -> (
-        let resolved id m =
-          let base = `Identifier id in
-          (try Some (process_module env add_canonical m base base) with _ -> None)
+ fun env r ~add_canonical ->
+  match r with
+  | `Resolved _r -> failwith "What's going on!?"
+  (*        Some (resolve_resolved_module_reference env r ~add_canonical)*)
+  | `Dot (parent, name) -> find_module env parent name ~add_canonical
+  | `Module (parent, name) ->
+      find_module env
+        (parent :> LabelParent.t)
+        (Odoc_model.Names.ModuleName.to_string name)
+        ~add_canonical
+  | `Root (name, _) -> (
+      let resolved id m =
+        let base = `Identifier id in
+        try Some (process_module env add_canonical m base base) with _ -> None
       in
       match Env.lookup_module_by_name (UnitName.to_string name) env with
-        | Some (Resolved (id, m)) -> resolved id m
-        | Some (Forward) -> None
-        | None -> (
-            match Env.lookup_root_module (UnitName.to_string name) env with
-            | Some (Env.Resolved (id, m)) -> resolved id m
-            | _ -> None))
+      | Some (Resolved (id, m)) -> resolved id m
+      | Some Forward -> None
+      | None -> (
+          match Env.lookup_root_module (UnitName.to_string name) env with
+          | Some (Env.Resolved (id, m)) -> resolved id m
+          | _ -> None ) )
 
 and resolve_module_type_reference :
     Env.t ->
@@ -229,14 +262,17 @@ and resolve_module_type_reference :
   fun env r ~add_canonical ->
     match r with
     | `Resolved _r ->
-      failwith "What's going oN!?"
-      (*Some (resolve_resolved_module_type_reference env r)*)
-    | `Dot (parent, name) ->
-       find_module_type env parent name ~add_canonical
+        failwith "What's going oN!?"
+        (*Some (resolve_resolved_module_type_reference env r)*)
+    | `Dot (parent, name) -> find_module_type env parent name ~add_canonical
     | `ModuleType (parent, name) ->
-        find_module_type env (parent :> LabelParent.t) (Odoc_model.Names.ModuleTypeName.to_string name) ~add_canonical
+        find_module_type env
+          (parent :> LabelParent.t)
+          (Odoc_model.Names.ModuleTypeName.to_string name)
+          ~add_canonical
     | `Root (name, _) ->
-        Env.lookup_module_type_by_name (UnitName.to_string name) env >>= fun (`ModuleType (id, m)) ->
+        Env.lookup_module_type_by_name (UnitName.to_string name) env
+        >>= fun (`ModuleType (id, m)) ->
         return (`Identifier id, `Identifier id, m)
 
 and resolve_label_parent_reference :
@@ -248,8 +284,7 @@ and resolve_label_parent_reference :
   fun env r ~add_canonical ->
     let label_parent_res_of_sig_res :
         signature_lookup_result -> label_parent_lookup_result option =
-     fun (r', cp, sg) ->
-      return ((r' :> Resolved.LabelParent.t), Some cp, `S sg)
+     fun (r', cp, sg) -> return ((r' :> Resolved.LabelParent.t), Some cp, `S sg)
     in
     match r with
     | `Resolved _ -> failwith "unimplemented"
@@ -258,25 +293,32 @@ and resolve_label_parent_reference :
         resolve_signature_reference env sr ~add_canonical
         >>= label_parent_res_of_sig_res
     | `Dot (parent, name) ->
-        choose [
-          (fun () ->
-            find_module env parent name ~add_canonical
-            >>= module_lookup_to_signature_lookup env
-            >>= label_parent_res_of_sig_res);
-          (fun () ->
-            find_module_type env parent name ~add_canonical
-            >>= module_type_lookup_to_signature_lookup env
-            >>= label_parent_res_of_sig_res);
-        ]
+        choose
+          [
+            (fun () ->
+              find_module env parent name ~add_canonical
+              >>= module_lookup_to_signature_lookup env
+              >>= label_parent_res_of_sig_res);
+            (fun () ->
+              find_module_type env parent name ~add_canonical
+              >>= module_type_lookup_to_signature_lookup env
+              >>= label_parent_res_of_sig_res);
+          ]
     | `Root (name, _) ->
         Env.lookup_page (UnitName.to_string name) env >>= fun p ->
-        let labels = List.fold_right
-                (fun element l ->
-                  match element.Odoc_model.Location_.value with
-                  | `Heading (_, (`Label (_, name) as x), _nested_elements) ->
-                    (LabelName.to_string name,x) :: l
-                  | _ -> l) p.Odoc_model.Lang.Page.content [] in
-        return ((`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.LabelParent.t)), None, `Page labels)
+        let labels =
+          List.fold_right
+            (fun element l ->
+              match element.Odoc_model.Location_.value with
+              | `Heading (_, (`Label (_, name) as x), _nested_elements) ->
+                  (LabelName.to_string name, x) :: l
+              | _ -> l)
+            p.Odoc_model.Lang.Page.content []
+        in
+        return
+          ( `Identifier (p.Odoc_model.Lang.Page.name :> Identifier.LabelParent.t),
+            None,
+            `Page labels )
     | _ -> None
 
 and resolve_signature_reference :
@@ -284,33 +326,30 @@ and resolve_signature_reference :
     =
   let open Tools.OptionMonad in
   fun env' r ~add_canonical ->
-
     let id = (add_canonical, r) in
     (* Format.fprintf Format.err_formatter "lookup_and_resolve_module_from_resolved_path: looking up %a\n%!" Component.Fmt.resolved_path p; *)
     let resolve env =
       (* Format.fprintf Format.err_formatter "B"; *)
       match r with
       | `Resolved _r ->
-        failwith "What's going on here then?"
+          failwith "What's going on here then?"
           (* Some (resolve_resolved_signature_reference env r ~add_canonical) *)
-      | `Root (_, `TModule)
-      | `Module (_, _) as r ->
-        resolve_module_reference env r ~add_canonical
-        >>= module_lookup_to_signature_lookup env
-      | `Root (_, `TModuleType)
-      | `ModuleType (_, _) as r ->
-        resolve_module_type_reference env r ~add_canonical
-        >>= module_type_lookup_to_signature_lookup env
-      | `Root (_, `TUnknown)
-      | `Dot (_,_) as r ->
-        choose [
-          (fun () ->
-            resolve_module_reference env r ~add_canonical
-            >>= module_lookup_to_signature_lookup env);
-          (fun () ->
-            resolve_module_type_reference env r ~add_canonical
-            >>= module_type_lookup_to_signature_lookup env)
-        ]
+      | (`Root (_, `TModule) | `Module (_, _)) as r ->
+          resolve_module_reference env r ~add_canonical
+          >>= module_lookup_to_signature_lookup env
+      | (`Root (_, `TModuleType) | `ModuleType (_, _)) as r ->
+          resolve_module_type_reference env r ~add_canonical
+          >>= module_type_lookup_to_signature_lookup env
+      | (`Root (_, `TUnknown) | `Dot (_, _)) as r ->
+          choose
+            [
+              (fun () ->
+                resolve_module_reference env r ~add_canonical
+                >>= module_lookup_to_signature_lookup env);
+              (fun () ->
+                resolve_module_type_reference env r ~add_canonical
+                >>= module_type_lookup_to_signature_lookup env);
+            ]
     in
     (*        Memos2.add memo2 id result; *)
     match Memos2.find_all memo2 id with
@@ -321,9 +360,9 @@ and resolve_signature_reference :
     | xs ->
         let rec find = function
           | [] ->
-            let lookups, resolved = Env.with_recorded_lookups env' resolve in
-            Memos2.add memo2 id (resolved, lookups);
-            resolved
+              let lookups, resolved = Env.with_recorded_lookups env' resolve in
+              Memos2.add memo2 id (resolved, lookups);
+              resolved
           | (resolved, lookups) :: xs ->
               if Env.verify_lookups env' lookups then
                 (*Format.fprintf Format.err_formatter "G";*) resolved
@@ -366,7 +405,7 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             Some (`Label (p, LabelName.of_string name))
         | `CS _sg -> None
         | `Page p -> (
-            try Some (`Identifier (List.assoc name p)) with _ -> None))
+            try Some (`Identifier (List.assoc name p)) with _ -> None ) )
     | `Label (parent, name) -> (
         resolve_label_parent_reference env parent ~add_canonical:true
         >>= fun (p, _, sg) ->
@@ -376,7 +415,8 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             Some (`Label (p, name))
         | `CS _sg -> None
         | `Page p -> (
-            try Some (`Identifier (List.assoc (LabelName.to_string name) p)) with _ -> None)) 
+            try Some (`Identifier (List.assoc (LabelName.to_string name) p))
+            with _ -> None ) )
 
 and resolve_reference : Env.t -> t -> Resolved.t option =
   let open Tools.OptionMonad in
@@ -384,15 +424,15 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
     match r with
     | `Root (name, `TUnknown) -> (
         Env.lookup_any_by_name (UnitName.to_string name) env >>= function
-        | `Module (_, _) -> begin
+        | `Module (_, _) ->
             (* Make sure we handle aliases correctly *)
-            resolve_module_reference env ~add_canonical:true (`Root (name, `TModule))
+            resolve_module_reference env ~add_canonical:true
+              (`Root (name, `TModule))
             >>= fun (r, _, _) -> Some (r :> Resolved.t)
-          end
-        | `ModuleType (_, _) -> begin
-            resolve_module_type_reference env ~add_canonical:true (`Root (name, `TModuleType))
+        | `ModuleType (_, _) ->
+            resolve_module_type_reference env ~add_canonical:true
+              (`Root (name, `TModuleType))
             >>= fun (r, _, _) -> Some (r :> Resolved.t)
-          end
         | `Value (id, _) ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | `Type (id, _) ->
@@ -418,11 +458,11 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
         resolve_value_reference env r >>= fun (x, _) -> return (x :> Resolved.t)
     | (`Root (_, `TLabel) | `Label (_, _)) as r ->
         resolve_label_reference env r >>= fun x -> return (x :> Resolved.t)
-    | (`Root (name, `TPage)) -> (
+    | `Root (name, `TPage) -> (
         match Env.lookup_page (UnitName.to_string name) env with
-        | Some p -> Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
-        | None -> None
-      )
+        | Some p ->
+            Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
+        | None -> None )
     | `Dot (_, _) as r ->
         choose
           [

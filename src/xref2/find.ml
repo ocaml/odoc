@@ -66,8 +66,7 @@ let opt_module_in_sig s name =
 
 let module_type_in_sig s name =
   let rec inner = function
-    | Signature.ModuleType (id, m) :: _ when Ident.Name.module_type id = name
-      ->
+    | Signature.ModuleType (id, m) :: _ when Ident.Name.module_type id = name ->
         Delayed.get m
     | Signature.Include i :: rest -> (
         try inner i.Include.expansion_.items with _ -> inner rest )

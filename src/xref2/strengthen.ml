@@ -28,7 +28,8 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
                 Component.Delayed.put (fun () ->
                     module_
                       (`Module
-                        (`Module prefix, ModuleName.of_string (Ident.Name.module_ id)))
+                        ( `Module prefix,
+                          ModuleName.of_string (Ident.Name.module_ id) ))
                       (Component.Delayed.get m)) )
         | ModuleType (id, mt) ->
             ModuleType
@@ -45,9 +46,11 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
               ( id,
                 r,
                 Component.Delayed.put (fun () ->
-                  type_decl
-                    (`Type (`Module prefix, TypeName.of_string (Ident.Name.type_ id)))
-                    (Component.Delayed.get t)) )
+                    type_decl
+                      (`Type
+                        ( `Module prefix,
+                          TypeName.of_string (Ident.Name.type_ id) ))
+                      (Component.Delayed.get t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
             item)
@@ -92,10 +95,14 @@ and type_decl :
   let equation =
     let e = t.Component.TypeDecl.equation in
     let open Component.TypeDecl.Equation in
-    let constr_params = List.map (fun (desc,_) ->
-      match desc with
-      | Odoc_model.Lang.TypeDecl.Var x -> Component.TypeExpr.Var x
-      | Any -> Any) e.params in
+    let constr_params =
+      List.map
+        (fun (desc, _) ->
+          match desc with
+          | Odoc_model.Lang.TypeDecl.Var x -> Component.TypeExpr.Var x
+          | Any -> Any)
+        e.params
+    in
     let manifest =
       match e.manifest with
       | None -> Some (Component.TypeExpr.Constr (`Resolved path, constr_params))

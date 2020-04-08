@@ -20,13 +20,12 @@ let with_dummy_location v =
       value = v;
     }
 
-let rec is_forward : Paths.Path.Module.t -> bool =
-  function
-    | `Resolved _ -> false
-    | `Root _ -> false
-    | `Forward _ -> true
-    | `Dot (p, _) -> is_forward p
-    | `Apply (p1, p2) -> is_forward p1 || is_forward p2
+let rec is_forward : Paths.Path.Module.t -> bool = function
+  | `Resolved _ -> false
+  | `Root _ -> false
+  | `Forward _ -> true
+  | `Dot (p, _) -> is_forward p
+  | `Apply (p1, p2) -> is_forward p1 || is_forward p2
 
 let rec should_reresolve : Paths.Path.Resolved.t -> bool =
  fun p ->
@@ -48,10 +47,8 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `ModuleType (p, _)
   | `Module (p, _) ->
       should_reresolve (p :> t)
-  | `OpaqueModule m ->
-    should_reresolve (m :> t)
-  | `OpaqueModuleType m ->
-    should_reresolve (m :> t)
+  | `OpaqueModule m -> should_reresolve (m :> t)
+  | `OpaqueModuleType m -> should_reresolve (m :> t)
 
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
@@ -66,29 +63,29 @@ let add_module_docs m expn =
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
-  if not (should_resolve (p :> Paths.Path.t)) then (
+  if not (should_resolve (p :> Paths.Path.t)) then
     (* Format.fprintf Format.err_formatter "Not reresolving\n%!"; *)
-    p)
-  else (
+    p
+  else
     let cp = Component.Of_Lang.(type_path empty p) in
     (* Format.fprintf Format.err_formatter "Reresolving %a\n%!" Component.Fmt.type_path cp; *)
     match cp with
     | `Resolved p ->
-      let result = Tools.reresolve_type env p in
-      (* Format.fprintf Format.err_formatter "result 1: %a\n%!" Component.Fmt.resolved_type_path result; *)
-      `Resolved (result |> Cpath.resolved_type_path_of_cpath)
-    | _ ->
-      match Tools.lookup_type_from_path env cp with
-      | Resolved (p', _) ->
-        (* Format.fprintf Format.err_formatter "result 2: %a\n%!" Component.Fmt.resolved_type_path p'; *)
-        `Resolved (Cpath.resolved_type_path_of_cpath p')
-      | Unresolved p -> Cpath.type_path_of_cpath p
-      | exception e ->
-          Format.fprintf Format.err_formatter
-            "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
-            Component.Fmt.model_path
-            (p :> Paths.Path.t);
-          p)
+        let result = Tools.reresolve_type env p in
+        (* Format.fprintf Format.err_formatter "result 1: %a\n%!" Component.Fmt.resolved_type_path result; *)
+        `Resolved (result |> Cpath.resolved_type_path_of_cpath)
+    | _ -> (
+        match Tools.lookup_type_from_path env cp with
+        | Resolved (p', _) ->
+            (* Format.fprintf Format.err_formatter "result 2: %a\n%!" Component.Fmt.resolved_type_path p'; *)
+            `Resolved (Cpath.resolved_type_path_of_cpath p')
+        | Unresolved p -> Cpath.type_path_of_cpath p
+        | exception e ->
+            Format.fprintf Format.err_formatter
+              "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
+              Component.Fmt.model_path
+              (p :> Paths.Path.t);
+            p )
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -101,20 +98,22 @@ and module_type_path :
        cp; *)
     match cp with
     | `Resolved p ->
-      `Resolved (Tools.reresolve_module_type env p |> Cpath.resolved_module_type_path_of_cpath)   
-    | _ ->
-      match Tools.lookup_and_resolve_module_type_from_path true env cp with
-      | Resolved (p', _) ->
-        (* Format.fprintf Format.err_formatter "It became: %a\n%!"
-           Component.Fmt.resolved_module_type_path p'; *)
-        `Resolved (Cpath.resolved_module_type_path_of_cpath p')
-      | Unresolved _p -> failwith "Unresolved module type path"
-      | exception e ->
-        Format.fprintf Format.err_formatter
-          "Failed to lookup module_type path (%s): %a\n%!"
-          (Printexc.to_string e) Component.Fmt.model_path
-          (p :> Paths.Path.t);
-        p
+        `Resolved
+          ( Tools.reresolve_module_type env p
+          |> Cpath.resolved_module_type_path_of_cpath )
+    | _ -> (
+        match Tools.lookup_and_resolve_module_type_from_path true env cp with
+        | Resolved (p', _) ->
+            (* Format.fprintf Format.err_formatter "It became: %a\n%!"
+               Component.Fmt.resolved_module_type_path p'; *)
+            `Resolved (Cpath.resolved_module_type_path_of_cpath p')
+        | Unresolved _p -> failwith "Unresolved module type path"
+        | exception e ->
+            Format.fprintf Format.err_formatter
+              "Failed to lookup module_type path (%s): %a\n%!"
+              (Printexc.to_string e) Component.Fmt.model_path
+              (p :> Paths.Path.t);
+            p )
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -126,35 +125,38 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
     (* Format.fprintf Format.err_formatter "Reresolving...\n%!"; *)
     let cp = Component.Of_Lang.(module_path empty p) in
     match cp with
-    | `Resolved p -> `Resolved (Tools.reresolve_module env p |> Cpath.resolved_module_path_of_cpath)
-    | _ ->
-    match Tools.lookup_and_resolve_module_from_path true true env cp with
-    | Resolved (p', _) -> `Resolved (Cpath.resolved_module_path_of_cpath p')
-    | Unresolved _ ->
-      if is_forward p
-      then begin
-        (* Format.fprintf Format.err_formatter "Skipping resolution of forward path %a\n%!" Component.Fmt.model_path (p :> Odoc_model.Paths.Path.t); *)
-        p
-      end else begin
-        Format.fprintf Format.err_formatter
-        "Failed to lookup module path: %a\n%!" 
-        Component.Fmt.model_path
-        (p :> Paths.Path.t);
-        failwith "Failed to resolve module path"
-      end
-    | exception e ->
-        Format.fprintf Format.err_formatter
-          "Failed to lookup module path (%s): %a\n%!" (Printexc.to_string e)
-          Component.Fmt.model_path
-          (p :> Paths.Path.t);
-      raise e
+    | `Resolved p ->
+        `Resolved
+          (Tools.reresolve_module env p |> Cpath.resolved_module_path_of_cpath)
+    | _ -> (
+        match Tools.lookup_and_resolve_module_from_path true true env cp with
+        | Resolved (p', _) -> `Resolved (Cpath.resolved_module_path_of_cpath p')
+        | Unresolved _ ->
+            if is_forward p then
+              (* Format.fprintf Format.err_formatter "Skipping resolution of forward path %a\n%!" Component.Fmt.model_path (p :> Odoc_model.Paths.Path.t); *)
+              p
+            else (
+              Format.fprintf Format.err_formatter
+                "Failed to lookup module path: %a\n%!" Component.Fmt.model_path
+                (p :> Paths.Path.t);
+              failwith "Failed to resolve module path" )
+        | exception e ->
+            Format.fprintf Format.err_formatter
+              "Failed to lookup module path (%s): %a\n%!" (Printexc.to_string e)
+              Component.Fmt.model_path
+              (p :> Paths.Path.t);
+            raise e )
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
-
-  let (imports, env) = Env.initial_env t resolver in
+  let imports, env = Env.initial_env t resolver in
   Format.eprintf "Starting link\n%!";
-  { t with content = content env t.content; doc = comment_docs env t.doc; imports }
+  {
+    t with
+    content = content env t.content;
+    doc = comment_docs env t.doc;
+    imports;
+  }
 
 and content env =
   let open Compilation_unit in
@@ -221,14 +223,23 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
             (List.map (with_location comment_nestable_block_element env))
             ys )
   | `Modules refs ->
-    let refs = List.map (fun r ->
-      match Ref_tools.resolve_module_reference env ~add_canonical:false r with
-      | Some (r, _, _) -> `Resolved r
-      | None -> r
-      | exception _e ->
-        Format.fprintf Format.err_formatter "Error resolving reference: %a\n%!" Component.Fmt.model_reference (r :> Odoc_model.Paths.Reference.t);
-        r) refs in
-    `Modules refs
+      let refs =
+        List.map
+          (fun r ->
+            match
+              Ref_tools.resolve_module_reference env ~add_canonical:false r
+            with
+            | Some (r, _, _) -> `Resolved r
+            | None -> r
+            | exception _e ->
+                Format.fprintf Format.err_formatter
+                  "Error resolving reference: %a\n%!"
+                  Component.Fmt.model_reference
+                  (r :> Odoc_model.Paths.Reference.t);
+                r)
+          refs
+      in
+      `Modules refs
 
 and comment_block_element env (x : Comment.block_element) =
   match x with
@@ -405,8 +416,8 @@ and module_ : Env.t -> Module.t -> Module.t =
   let open Module in
   let start_time = Unix.gettimeofday () in
   (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
-    Component.Fmt.model_identifier
-    (m.id :> Paths.Identifier.t); *)
+     Component.Fmt.model_identifier
+     (m.id :> Paths.Identifier.t); *)
   if m.hidden then m
   else
     try
@@ -416,7 +427,9 @@ and module_ : Env.t -> Module.t -> Module.t =
       let t1 = Unix.gettimeofday () in
       let m' = Env.lookup_module m.id env in
       let t2 = Unix.gettimeofday () in
-      let type_ = module_decl env (m.id :> Paths.Identifier.Signature.t) m.type_ in
+      let type_ =
+        module_decl env (m.id :> Paths.Identifier.Signature.t) m.type_
+      in
       let t3 = Unix.gettimeofday () in
       let hidden_alias =
         match type_ with
@@ -431,9 +444,7 @@ and module_ : Env.t -> Module.t -> Module.t =
             | None -> false )
         | _ -> false
       in
-      let expansion_needed =
-        self_canonical || hidden_alias
-      in
+      let expansion_needed = self_canonical || hidden_alias in
       (* Format.fprintf Format.err_formatter "moduletype_expansion=%b self_canonical=%b hidden_alias=%b expansion_needed=%b\n%!" moduletype_expansion self_canonical hidden_alias expansion_needed; *)
       let env, expansion =
         match (m.expansion, expansion_needed) with
@@ -469,13 +480,7 @@ and module_ : Env.t -> Module.t -> Module.t =
         | _ -> None
       in
       let result =
-        {
-          m with
-          doc = comment_docs env doc;
-          type_;
-          display_type;
-          expansion;
-        }
+        { m with doc = comment_docs env doc; type_; display_type; expansion }
       in
       let end_time = Unix.gettimeofday () in
       Format.fprintf Format.err_formatter
@@ -565,7 +570,8 @@ and include_ : Env.t -> Include.t -> Include.t =
   let doc = comment_docs env i.doc in
   let should_be_inlined =
     let is_inline_tag element =
-      element.Odoc_model.Location_.value = `Tag `Inline in
+      element.Odoc_model.Location_.value = `Tag `Inline
+    in
     List.exists is_inline_tag doc
   in
   try
@@ -575,7 +581,7 @@ and include_ : Env.t -> Include.t -> Include.t =
       expansion =
         { resolved = true; content = signature_items env i.expansion.content };
       inline = should_be_inlined || hidden_rhs;
-      doc = doc;
+      doc;
     }
   with Env.MyFailure (_id, _env) as e ->
     (* Format.fprintf Format.err_formatter
@@ -597,10 +603,13 @@ and include_ : Env.t -> Include.t -> Include.t =
              (i.parent :> Paths.Identifier.t);*)
     raise e
 
-and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
+and functor_parameter_parameter :
+    Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
-  let expr = module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr in
+  let expr =
+    module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr
+  in
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
@@ -616,19 +625,15 @@ and functor_parameter_parameter : Env.t -> FunctorParameter.parameter -> Functor
     | x, _ -> (env, x)
   in
   let display_expr =
-    match should_hide_moduletype expr,expn with
-      | false, _ -> None
-      | true, None -> None
-      | true, Some (Odoc_model.Lang.Module.AlreadyASig) -> None
-      | true, Some (Odoc_model.Lang.Module.Signature sg) -> Some (Odoc_model.Lang.ModuleType.Signature sg)
-      | true, Some (Odoc_model.Lang.Module.Functor _) -> None
+    match (should_hide_moduletype expr, expn) with
+    | false, _ -> None
+    | true, None -> None
+    | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
+    | true, Some (Odoc_model.Lang.Module.Signature sg) ->
+        Some (Odoc_model.Lang.ModuleType.Signature sg)
+    | true, Some (Odoc_model.Lang.Module.Functor _) -> None
   in
-  {
-    a with
-    expr;
-    display_expr;
-    expansion = Opt.map (module_expansion env) expn;
-  }
+  { a with expr; display_expr; expansion = Opt.map (module_expansion env) expn }
 
 and functor_argument env a =
   match a with
@@ -637,91 +642,93 @@ and functor_argument env a =
 
 and handle_fragments env id sg subs =
   let open ModuleType in
-  let csubs = List.map Component.Of_Lang.(module_type_substitution empty) subs in
-(* Format.fprintf Format.err_formatter
-   "Handling `With` expression for %a (expr=%a) [%a]\n%!"
-   Component.Fmt.model_identifier
-   (id :> Paths.Identifier.t)
-   Component.Fmt.module_type_expr cexpr Component.Fmt.substitution_list
-   (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
-    List.fold_left2
-      (fun (sg, subs) csub lsub ->
-        try
-          (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
-             Component.Fmt.signature sg; *)
-          (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
-             Component.Fmt.substitution
-             Component.Of_Lang.(module_type_substitution empty sub); *)
-          match csub, lsub with
-          | Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
-          let frag' = match cfrag with
-          | `Resolved f -> 
-            `Resolved (Tools.reresolve_module_fragment env f |>
-              Lang_of.(Path.resolved_module_fragment empty))
-          | _ -> frag
-        in
-              let sg' =
-                Tools.fragmap_module env (cfrag)
-                  Component.Of_Lang.(module_type_substitution empty lsub)
-                  sg
-              in
-              ( sg',
-                ModuleEq (frag', module_decl env id decl)
-                :: subs )
-          | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
-          let frag' = match cfrag with
-          | `Resolved f -> 
-            `Resolved (Tools.reresolve_type_fragment env f |>
-              Lang_of.(Path.resolved_type_fragment empty))
-          | _ -> frag
-        in
-              let sg' =
-                Tools.fragmap_type env cfrag
-                  Component.Of_Lang.(module_type_substitution empty lsub)
-                  sg
-              in
-              ( sg',
-                TypeEq (frag', type_decl_equation env eqn)
-                :: subs )
-          | ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
-          let frag' = match cfrag with
-          | `Resolved f -> 
-            `Resolved (Tools.reresolve_module_fragment env f |>
-              Lang_of.(Path.resolved_module_fragment empty))
-          | _ -> frag
-        in
-              let sg' =
-                Tools.fragmap_module env cfrag
-                  Component.Of_Lang.(module_type_substitution empty lsub)
-                  sg
-              in
-              ( sg',
-                ModuleSubst (frag', module_path env mpath)
-                :: subs )
-          | TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
-              let frag' = match cfrag with
-                | `Resolved f -> 
-                  `Resolved (Tools.reresolve_type_fragment env f |>
-                    Lang_of.(Path.resolved_type_fragment empty))
-                | _ -> frag
-              in
-              let sg' =
-                Tools.fragmap_type env cfrag
-                  Component.Of_Lang.(module_type_substitution empty lsub)
-                  sg
-              in
-              ( sg',
-                TypeSubst (frag', type_decl_equation env eqn)
-                :: subs )
-          | _ -> failwith "can't happen"
-        with e ->
-          let bt = Printexc.get_backtrace () in
-          Printf.fprintf stderr
-            "Exception caught while resolving fragments: %s\n%s\n%!"
-            (Printexc.to_string e) bt;
-          raise e)
-      (sg, []) csubs subs
-    |> snd |> List.rev
+  let csubs =
+    List.map Component.Of_Lang.(module_type_substitution empty) subs
+  in
+  (* Format.fprintf Format.err_formatter
+     "Handling `With` expression for %a (expr=%a) [%a]\n%!"
+     Component.Fmt.model_identifier
+     (id :> Paths.Identifier.t)
+     Component.Fmt.module_type_expr cexpr Component.Fmt.substitution_list
+     (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
+  List.fold_left2
+    (fun (sg, subs) csub lsub ->
+      try
+        (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
+           Component.Fmt.signature sg; *)
+        (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
+           Component.Fmt.substitution
+           Component.Of_Lang.(module_type_substitution empty sub); *)
+        match (csub, lsub) with
+        | Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
+            let frag' =
+              match cfrag with
+              | `Resolved f ->
+                  `Resolved
+                    ( Tools.reresolve_module_fragment env f
+                    |> Lang_of.(Path.resolved_module_fragment empty) )
+              | _ -> frag
+            in
+            let sg' =
+              Tools.fragmap_module env cfrag
+                Component.Of_Lang.(module_type_substitution empty lsub)
+                sg
+            in
+            (sg', ModuleEq (frag', module_decl env id decl) :: subs)
+        | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
+            let frag' =
+              match cfrag with
+              | `Resolved f ->
+                  `Resolved
+                    ( Tools.reresolve_type_fragment env f
+                    |> Lang_of.(Path.resolved_type_fragment empty) )
+              | _ -> frag
+            in
+            let sg' =
+              Tools.fragmap_type env cfrag
+                Component.Of_Lang.(module_type_substitution empty lsub)
+                sg
+            in
+            (sg', TypeEq (frag', type_decl_equation env eqn) :: subs)
+        | ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
+            let frag' =
+              match cfrag with
+              | `Resolved f ->
+                  `Resolved
+                    ( Tools.reresolve_module_fragment env f
+                    |> Lang_of.(Path.resolved_module_fragment empty) )
+              | _ -> frag
+            in
+            let sg' =
+              Tools.fragmap_module env cfrag
+                Component.Of_Lang.(module_type_substitution empty lsub)
+                sg
+            in
+            (sg', ModuleSubst (frag', module_path env mpath) :: subs)
+        | TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
+            let frag' =
+              match cfrag with
+              | `Resolved f ->
+                  `Resolved
+                    ( Tools.reresolve_type_fragment env f
+                    |> Lang_of.(Path.resolved_type_fragment empty) )
+              | _ -> frag
+            in
+            let sg' =
+              Tools.fragmap_type env cfrag
+                Component.Of_Lang.(module_type_substitution empty lsub)
+                sg
+            in
+            (sg', TypeSubst (frag', type_decl_equation env eqn) :: subs)
+        | _ -> failwith "can't happen"
+      with e ->
+        let bt = Printexc.get_backtrace () in
+        Printf.fprintf stderr
+          "Exception caught while resolving fragments: %s\n%s\n%!"
+          (Printexc.to_string e) bt;
+        raise e)
+    (sg, []) csubs subs
+  |> snd |> List.rev
 
 and module_type_expr :
     Env.t -> Paths.Identifier.Signature.t -> ModuleType.expr -> ModuleType.expr
@@ -737,12 +744,12 @@ and module_type_expr :
         match Tools.signature_of_module_type_expr env cexpr with
         | Ok sg -> sg
         | Error e ->
-            let exception Link_module_type_expr of Tools.signature_of_module_error in
+            let exception
+              Link_module_type_expr of Tools.signature_of_module_error
+            in
             raise (Link_module_type_expr e)
       in
-      With
-        ( module_type_expr env id expr,
-            handle_fragments env id sg subs)
+      With (module_type_expr env id expr, handle_fragments env id sg subs)
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
       let res' = module_type_expr env id res in
@@ -775,30 +782,32 @@ and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
       Opt.map (type_decl_representation env) t.representation
     in
     let default = { t with equation; doc; representation } in
-    let result = match hidden_path with
-    | Some (p, params) -> (
-        let p' =
-          Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
-        in
-        match Tools.lookup_type_from_resolved_path env p' with
-        | Ok (_, Found (`T t')) -> (
-            try
-              (* Format.fprintf Format.err_formatter "XXXXXXX - replacing type at id %a maybe: %a\n%!" Component.Fmt.model_identifier (t.id :> Paths.Identifier.t) Component.Fmt.resolved_type_path p'; *)
-              {
-                default with
-                equation =
-                  Expand_tools.collapse_eqns default.equation
-                    (Lang_of.type_decl_equation Lang_of.empty t'.equation)
-                    params;
-              }
-            with e ->
-              Format.fprintf Format.err_formatter
-                "Failed to do the simplify thing for %a\n%!"
-                Component.Fmt.model_identifier
-                (t.id :> Paths.Identifier.t);
-              raise e )
-        | _ -> default )
-    | None -> default in
+    let result =
+      match hidden_path with
+      | Some (p, params) -> (
+          let p' =
+            Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
+          in
+          match Tools.lookup_type_from_resolved_path env p' with
+          | Ok (_, Found (`T t')) -> (
+              try
+                (* Format.fprintf Format.err_formatter "XXXXXXX - replacing type at id %a maybe: %a\n%!" Component.Fmt.model_identifier (t.id :> Paths.Identifier.t) Component.Fmt.resolved_type_path p'; *)
+                {
+                  default with
+                  equation =
+                    Expand_tools.collapse_eqns default.equation
+                      (Lang_of.type_decl_equation Lang_of.empty t'.equation)
+                      params;
+                }
+              with e ->
+                Format.fprintf Format.err_formatter
+                  "Failed to do the simplify thing for %a\n%!"
+                  Component.Fmt.model_identifier
+                  (t.id :> Paths.Identifier.t);
+                raise e )
+          | _ -> default )
+      | None -> default
+    in
     (* Format.fprintf Format.err_formatter "type_decl result: %a\n%!"
           Component.Fmt.type_decl (Component.Of_Lang.(type_decl empty result)); *)
     result
@@ -850,10 +859,12 @@ and type_expression_polyvar env visited v =
     }
   in
   let element = function
-    | Type t -> Type (
-      match type_expression env visited t with
-      | Constr _ as x -> x
-      | _ -> t) (* These have to remain Constrs *)
+    | Type t ->
+        Type
+          ( match type_expression env visited t with
+          | Constr _ as x -> x
+          | _ -> t )
+        (* These have to remain Constrs *)
     | Constructor c -> Constructor (constructor c)
   in
   { v with elements = List.map element v.elements }
@@ -868,7 +879,9 @@ and type_expression_object env visited o =
   { o with fields = List.map field o.fields }
 
 and type_expression_package env visited p =
-  let exception Link_type_expression_package of Tools.signature_of_module_error option in
+  let exception
+    Link_type_expression_package of Tools.signature_of_module_error option
+  in
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
@@ -881,9 +894,12 @@ and type_expression_package env visited p =
       let substitution (frag, t) =
         let cfrag = Component.Of_Lang.(type_fragment empty frag) in
         let frag' =
-          match Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag with
+          match
+            Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag
+          with
           | Some tfrag -> Lang_of.(Path.resolved_type_fragment empty) tfrag
-          | None -> raise (Link_type_expression_package None) in
+          | None -> raise (Link_type_expression_package None)
+        in
         (`Resolved frag', type_expression env visited t)
       in
       {
@@ -896,62 +912,62 @@ and type_expression : Env.t -> _ -> _ =
  fun env visited texpr ->
   let open TypeExpr in
   (* try *)
-    match texpr with
-    | Var _ | Any -> texpr
-    | Alias (t, str) -> Alias (type_expression env visited t, str)
-    | Arrow (lbl, t1, t2) ->
-        Arrow
-          (lbl, type_expression env visited t1, type_expression env visited t2)
-    | Tuple ts -> Tuple (List.map (type_expression env visited) ts)
-    | Constr (path', ts') -> (
-        let path = type_path env path' in
-        let ts = List.map (type_expression env visited) ts' in
-        if not (Odoc_model.Paths.Path.is_hidden (path :> Odoc_model.Paths.Path.t))
-        then Constr (path, ts)
-        else 
-          let cp = Component.Of_Lang.(type_path empty path') in
-          match Tools.lookup_type_from_path env cp with
-          | Resolved (cp', Found (`T t)) ->
-              let p = Cpath.resolved_type_path_of_cpath cp' in
-              if List.mem p visited then raise Loop
-              else if Cpath.is_resolved_type_hidden cp' then
-                match t.Component.TypeDecl.equation with
-                | { manifest = Some expr; params; _ } -> (
-                    let map =
-                      List.fold_left2
-                        (fun acc param sub ->
-                          match param with
-                          | Odoc_model.Lang.TypeDecl.Var x, _ -> (x, sub) :: acc
-                          | Any, _ -> acc)
-                        [] params ts
-                    in
+  match texpr with
+  | Var _ | Any -> texpr
+  | Alias (t, str) -> Alias (type_expression env visited t, str)
+  | Arrow (lbl, t1, t2) ->
+      Arrow (lbl, type_expression env visited t1, type_expression env visited t2)
+  | Tuple ts -> Tuple (List.map (type_expression env visited) ts)
+  | Constr (path', ts') -> (
+      let path = type_path env path' in
+      let ts = List.map (type_expression env visited) ts' in
+      if not (Odoc_model.Paths.Path.is_hidden (path :> Odoc_model.Paths.Path.t))
+      then Constr (path, ts)
+      else
+        let cp = Component.Of_Lang.(type_path empty path') in
+        match Tools.lookup_type_from_path env cp with
+        | Resolved (cp', Found (`T t)) ->
+            let p = Cpath.resolved_type_path_of_cpath cp' in
+            if List.mem p visited then raise Loop
+            else if Cpath.is_resolved_type_hidden cp' then
+              match t.Component.TypeDecl.equation with
+              | { manifest = Some expr; params; _ } -> (
+                  let map =
+                    List.fold_left2
+                      (fun acc param sub ->
+                        match param with
+                        | Odoc_model.Lang.TypeDecl.Var x, _ -> (x, sub) :: acc
+                        | Any, _ -> acc)
+                      [] params ts
+                  in
 
-                    (* Format.fprintf Format.err_formatter "Here we go...%a \n" Component.Fmt.type_path cp; *)
-                    (* Format.fprintf Format.err_formatter "here we are... %d before=%a (path=%a)\n%!" (List.length visited) Component.Fmt.type_decl t Component.Fmt.type_path cp;*)
-                    try
-                      let t' =
-                        Expand_tools.type_expr map Lang_of.(type_expr empty expr)
-                      in
-                      type_expression env (p :: visited) t'
-                    with
-                    | Loop ->
-                        Format.fprintf Format.err_formatter "Loop detected\n%!";
-                        Constr (`Resolved p, ts)
-                    | _ -> Constr (`Resolved p, ts) )
-                | _ -> Constr (`Resolved p, ts)
-              else Constr (`Resolved p, ts)
-          | Resolved (cp', Found _) ->
-              let p = Cpath.resolved_type_path_of_cpath cp' in
-              Constr (`Resolved p, ts)
-          | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty x)
-          | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
-    | Polymorphic_variant v ->
-        Polymorphic_variant (type_expression_polyvar env visited v)
-    | Object o -> Object (type_expression_object env visited o)
-    | Class (path, ts) -> Class (path, List.map (type_expression env visited) ts)
-    | Poly (strs, t) -> Poly (strs, type_expression env visited t)
-    | Package p -> Package (type_expression_package env visited p)
-  (* with _ -> texpr *)
+                  (* Format.fprintf Format.err_formatter "Here we go...%a \n" Component.Fmt.type_path cp; *)
+                  (* Format.fprintf Format.err_formatter "here we are... %d before=%a (path=%a)\n%!" (List.length visited) Component.Fmt.type_decl t Component.Fmt.type_path cp;*)
+                  try
+                    let t' =
+                      Expand_tools.type_expr map Lang_of.(type_expr empty expr)
+                    in
+                    type_expression env (p :: visited) t'
+                  with
+                  | Loop ->
+                      Format.fprintf Format.err_formatter "Loop detected\n%!";
+                      Constr (`Resolved p, ts)
+                  | _ -> Constr (`Resolved p, ts) )
+              | _ -> Constr (`Resolved p, ts)
+            else Constr (`Resolved p, ts)
+        | Resolved (cp', Found _) ->
+            let p = Cpath.resolved_type_path_of_cpath cp' in
+            Constr (`Resolved p, ts)
+        | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty x)
+        | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
+  | Polymorphic_variant v ->
+      Polymorphic_variant (type_expression_polyvar env visited v)
+  | Object o -> Object (type_expression_object env visited o)
+  | Class (path, ts) -> Class (path, List.map (type_expression env visited) ts)
+  | Poly (strs, t) -> Poly (strs, type_expression env visited t)
+  | Package p -> Package (type_expression_package env visited p)
+
+(* with _ -> texpr *)
 
 (*
 let build_resolver :

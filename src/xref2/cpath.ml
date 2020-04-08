@@ -3,94 +3,96 @@ open Odoc_model.Names
 
 module rec Resolved : sig
   type parent =
-  [ `Module of module_
-  | `ModuleType of module_type
-  | `FragmentRoot ]
+    [ `Module of module_ | `ModuleType of module_type | `FragmentRoot ]
 
   and module_ =
-  [ `Local of Ident.module_
-  | `Identifier of Identifier.Module.t
-  | `Substituted of module_
-  | `Subst of module_type * module_
-  | `SubstAlias of module_ * module_
-  | `Hidden of module_
-  | `Module of parent * ModuleName.t
-  | `Canonical of module_ * Cpath.module_
-  | `Apply of module_ * Cpath.module_
-  | `Alias of module_ * module_
-  | `OpaqueModule of module_ ]
+    [ `Local of Ident.module_
+    | `Identifier of Identifier.Module.t
+    | `Substituted of module_
+    | `Subst of module_type * module_
+    | `SubstAlias of module_ * module_
+    | `Hidden of module_
+    | `Module of parent * ModuleName.t
+    | `Canonical of module_ * Cpath.module_
+    | `Apply of module_ * Cpath.module_
+    | `Alias of module_ * module_
+    | `OpaqueModule of module_ ]
 
   and module_type =
-  [ `Local of Ident.module_type
-  | `Substituted of module_type
-  | `Identifier of Identifier.ModuleType.t
-  | `ModuleType of parent * ModuleTypeName.t
-  | `SubstT of module_type * module_type
-  | `OpaqueModuleType of module_type ]
+    [ `Local of Ident.module_type
+    | `Substituted of module_type
+    | `Identifier of Identifier.ModuleType.t
+    | `ModuleType of parent * ModuleTypeName.t
+    | `SubstT of module_type * module_type
+    | `OpaqueModuleType of module_type ]
 
   and type_ =
-  [ `Local of Ident.path_type
-  | `Identifier of Odoc_model.Paths_types.Identifier.path_type
-  | `Substituted of type_
-  | `Type of parent * TypeName.t
-  | `Class of parent * ClassName.t
-  | `ClassType of parent * ClassTypeName.t ]
+    [ `Local of Ident.path_type
+    | `Identifier of Odoc_model.Paths_types.Identifier.path_type
+    | `Substituted of type_
+    | `Type of parent * TypeName.t
+    | `Class of parent * ClassName.t
+    | `ClassType of parent * ClassTypeName.t ]
 
   and class_type =
-  [ `Local of Ident.path_class_type
-  | `Substituted of class_type
-  | `Identifier of Odoc_model.Paths_types.Identifier.path_class_type
-  | `Class of parent * ClassName.t
-  | `ClassType of parent * ClassTypeName.t ]
+    [ `Local of Ident.path_class_type
+    | `Substituted of class_type
+    | `Identifier of Odoc_model.Paths_types.Identifier.path_class_type
+    | `Class of parent * ClassName.t
+    | `ClassType of parent * ClassTypeName.t ]
+end =
+  Resolved
 
-end = Resolved
-
-and Cpath : sig 
+and Cpath : sig
   type module_ =
-  [ `Resolved of Resolved.module_
-  | `Substituted of module_
-  | `Root of string
-  | `Forward of string
-  | `Dot of module_ * string
-  | `Apply of module_ * module_ ]
+    [ `Resolved of Resolved.module_
+    | `Substituted of module_
+    | `Root of string
+    | `Forward of string
+    | `Dot of module_ * string
+    | `Apply of module_ * module_ ]
 
+  and module_type =
+    [ `Resolved of Resolved.module_type
+    | `Substituted of module_type
+    | `Dot of module_ * string ]
 
-and module_type =
-  [ `Resolved of Resolved.module_type
-  | `Substituted of module_type
-  | `Dot of module_ * string ]
+  and type_ =
+    [ `Resolved of Resolved.type_
+    | `Substituted of type_
+    | `Dot of module_ * string ]
 
-
-and type_ =
-  [ `Resolved of Resolved.type_
-  | `Substituted of type_
-  | `Dot of module_ * string ]
-
-and class_type =
-[ `Resolved of Resolved.class_type
-| `Substituted of class_type
-| `Dot of module_ * string ]
-
-end = Cpath
+  and class_type =
+    [ `Resolved of Resolved.class_type
+    | `Substituted of class_type
+    | `Dot of module_ * string ]
+end =
+  Cpath
 
 include Cpath
 
-let rec resolved_module_hash : Resolved.module_ -> int =
-  function
+let rec resolved_module_hash : Resolved.module_ -> int = function
   | `Local id -> Hashtbl.hash (0, Ident.hash (id :> Ident.any))
-  | `Identifier id -> Hashtbl.hash (1, Odoc_model.Paths.Identifier.hash (id :> Odoc_model.Paths.Identifier.t ))
+  | `Identifier id ->
+      Hashtbl.hash
+        ( 1,
+          Odoc_model.Paths.Identifier.hash (id :> Odoc_model.Paths.Identifier.t)
+        )
   | `Substituted s -> Hashtbl.hash (2, resolved_module_hash s)
-  | `Subst (mt, m) -> Hashtbl.hash (3, resolved_module_type_hash mt, resolved_module_hash m)
-  | `SubstAlias (m1, m2) -> Hashtbl.hash (4, resolved_module_hash m1, resolved_module_hash m2)
+  | `Subst (mt, m) ->
+      Hashtbl.hash (3, resolved_module_type_hash mt, resolved_module_hash m)
+  | `SubstAlias (m1, m2) ->
+      Hashtbl.hash (4, resolved_module_hash m1, resolved_module_hash m2)
   | `Hidden h -> Hashtbl.hash (5, resolved_module_hash h)
   | `Module (m, n) -> Hashtbl.hash (6, resolved_parent_hash m, n)
-  | `Canonical (m, m2) -> Hashtbl.hash (7, resolved_module_hash m, module_hash m2)
+  | `Canonical (m, m2) ->
+      Hashtbl.hash (7, resolved_module_hash m, module_hash m2)
   | `Apply (m1, m2) -> Hashtbl.hash (8, resolved_module_hash m1, module_hash m2)
-  | `Alias (m1, m2) -> Hashtbl.hash (9, resolved_module_hash m1, resolved_module_hash m2)
+  | `Alias (m1, m2) ->
+      Hashtbl.hash (9, resolved_module_hash m1, resolved_module_hash m2)
   | `OpaqueModule m -> Hashtbl.hash (10, resolved_module_hash m)
 
-and module_hash : module_ -> int =
-  function
+and module_hash : module_ -> int = function
   | `Resolved r -> Hashtbl.hash (10, resolved_module_hash r)
   | `Substituted s -> Hashtbl.hash (11, module_hash s)
   | `Root r -> Hashtbl.hash (12, r)
@@ -98,21 +100,21 @@ and module_hash : module_ -> int =
   | `Dot (m, s) -> Hashtbl.hash (14, module_hash m, s)
   | `Apply (m1, m2) -> Hashtbl.hash (15, module_hash m1, module_hash m2)
 
-and resolved_module_type_hash : Resolved.module_type -> int =
-  function
+and resolved_module_type_hash : Resolved.module_type -> int = function
   | `Local id -> Hashtbl.hash (16, Ident.hash (id :> Ident.any))
   | `Substituted m -> Hashtbl.hash (17, resolved_module_type_hash m)
-  | `Identifier id -> Hashtbl.hash (18, Odoc_model.Paths.Identifier.(hash (id :> t)))
+  | `Identifier id ->
+      Hashtbl.hash (18, Odoc_model.Paths.Identifier.(hash (id :> t)))
   | `ModuleType (p, n) -> Hashtbl.hash (19, resolved_parent_hash p, n)
-  | `SubstT (p1, p2) -> Hashtbl.hash (1023, resolved_module_type_hash p1, resolved_module_type_hash p2)
+  | `SubstT (p1, p2) ->
+      Hashtbl.hash
+        (1023, resolved_module_type_hash p1, resolved_module_type_hash p2)
   | `OpaqueModuleType m -> Hashtbl.hash (1111, resolved_module_type_hash m)
 
-and resolved_parent_hash : Resolved.parent -> int =
-  function
-  | `Module m -> Hashtbl.hash (20,resolved_module_hash m)
+and resolved_parent_hash : Resolved.parent -> int = function
+  | `Module m -> Hashtbl.hash (20, resolved_module_hash m)
   | `ModuleType m -> Hashtbl.hash (21, resolved_module_type_hash m)
-  | `FragmentRoot -> Hashtbl.hash (22)
-
+  | `FragmentRoot -> Hashtbl.hash 22
 
 type local_path_error =
   | ErrModule of module_
@@ -144,10 +146,10 @@ let rec resolved_module_path_of_cpath :
   | `Module (p, m) -> `Module (resolved_module_path_of_cpath_parent p, m)
   | `OpaqueModule m -> `OpaqueModule (resolved_module_path_of_cpath m)
 
-and resolved_module_path_of_cpath_parent : Resolved.parent -> Path.Resolved.Module.t = function
-| `Module m -> resolved_module_path_of_cpath m
-| `ModuleType _ 
-| `FragmentRoot -> failwith "Can't do it"
+and resolved_module_path_of_cpath_parent :
+    Resolved.parent -> Path.Resolved.Module.t = function
+  | `Module m -> resolved_module_path_of_cpath m
+  | `ModuleType _ | `FragmentRoot -> failwith "Can't do it"
 
 and resolved_module_type_path_of_cpath :
     Resolved.module_type -> Path.Resolved.ModuleType.t = function
@@ -155,8 +157,12 @@ and resolved_module_type_path_of_cpath :
   | `Identifier (#Identifier.ModuleType.t as x) -> `Identifier x
   | `Substituted y -> resolved_module_type_path_of_cpath y
   | `ModuleType (p, m) -> `ModuleType (resolved_module_path_of_cpath_parent p, m)
-  | `SubstT (p1, p2) -> `SubstT (resolved_module_type_path_of_cpath p1, resolved_module_type_path_of_cpath p2)
-  | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type_path_of_cpath m)
+  | `SubstT (p1, p2) ->
+      `SubstT
+        ( resolved_module_type_path_of_cpath p1,
+          resolved_module_type_path_of_cpath p2 )
+  | `OpaqueModuleType m ->
+      `OpaqueModuleType (resolved_module_type_path_of_cpath m)
 
 and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   function
@@ -197,15 +203,13 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Apply (a, _)
   | `Alias (a, _) ->
       is_resolved_module_substituted a
-  | `Module (a, _) ->
-      is_resolved_parent_substituted a
-  | `OpaqueModule a ->
-      is_resolved_module_substituted a
+  | `Module (a, _) -> is_resolved_parent_substituted a
+  | `OpaqueModule a -> is_resolved_module_substituted a
 
 and is_resolved_parent_substituted = function
-| `Module m -> is_resolved_module_substituted m
-| `ModuleType m -> is_resolved_module_type_substituted m
-| `FragmentRoot -> false
+  | `Module m -> is_resolved_module_substituted m
+  | `ModuleType m -> is_resolved_module_type_substituted m
+  | `FragmentRoot -> false
 
 and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   function
@@ -268,7 +272,7 @@ and is_resolved_module_hidden : Resolved.module_ -> bool = function
   | `Identifier _ -> false
   | `Hidden _ -> true
   | `Canonical (_, `Resolved _) -> false
-  | `Substituted p | `Canonical (p, _) | `Apply (p, _)  ->
+  | `Substituted p | `Canonical (p, _) | `Apply (p, _) ->
       is_resolved_module_hidden p
   | `Module (p, _) -> is_resolved_parent_hidden p
   | `Subst (p1, p2) ->
@@ -282,7 +286,7 @@ and is_resolved_parent_hidden : Resolved.parent -> bool = function
   | `ModuleType m -> is_resolved_module_type_hidden m
   | `FragmentRoot -> false
 
-  and is_module_type_hidden : module_type -> bool = function
+and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
   | `Substituted p -> is_module_type_hidden p
   | `Dot (p, _) -> is_module_hidden p
@@ -292,7 +296,8 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Identifier _ -> false
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden p
-  | `SubstT (p1, p2) -> is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
+  | `SubstT (p1, p2) ->
+      is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
   | `OpaqueModuleType m -> is_resolved_module_type_substituted m
 
 and is_type_hidden : type_ -> bool = function
@@ -321,7 +326,8 @@ and is_class_type_hidden : class_type -> bool = function
 let rec resolved_module_of_resolved_module_reference :
     Reference.Resolved.Module.t -> Resolved.module_ = function
   | `Module (parent, name) ->
-      `Module (`Module (resolved_module_of_resolved_signature_reference parent), name)
+      `Module
+        (`Module (resolved_module_of_resolved_signature_reference parent), name)
   | `Identifier i -> `Identifier i
   | `SubstAlias (_m1, _m2) -> failwith "gah"
   | `Hidden s -> `Hidden (resolved_module_of_resolved_module_reference s)
@@ -335,8 +341,9 @@ and resolved_module_of_resolved_signature_reference :
   | `Identifier (#Identifier.Module.t as i) -> `Identifier i
   | (`SubstAlias _ | `Canonical _ | `Module _ | `Hidden _) as r' ->
       resolved_module_of_resolved_module_reference r'
-  | `ModuleType (_, n) -> failwith ("Not a module reference: " ^ (ModuleTypeName.to_string n))
-  | `Identifier _ -> failwith ("Not a module reference : identifier")
+  | `ModuleType (_, n) ->
+      failwith ("Not a module reference: " ^ ModuleTypeName.to_string n)
+  | `Identifier _ -> failwith "Not a module reference : identifier"
 
 and module_of_module_reference : Reference.Module.t -> module_ = function
   | `Resolved r -> `Resolved (resolved_module_of_resolved_module_reference r)

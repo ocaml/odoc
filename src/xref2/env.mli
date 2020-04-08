@@ -22,8 +22,11 @@ type resolver = {
 type lookup_type =
   | Module of Odoc_model.Paths_types.Identifier.reference_module * bool
   | ModuleType of Odoc_model.Paths_types.Identifier.module_type * bool
-  | RootModule of string * [`Forward | `Resolved of Odoc_model.Paths.Identifier.Module.t] option
-  | ModuleByName of string * Odoc_model.Paths_types.Identifier.reference_module option
+  | RootModule of
+      string
+      * [ `Forward | `Resolved of Odoc_model.Paths.Identifier.Module.t ] option
+  | ModuleByName of
+      string * Odoc_model.Paths_types.Identifier.reference_module option
   | FragmentRoot of int
 
 val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
@@ -55,8 +58,7 @@ val pp_externals :
   (Odoc_model.Paths.Identifier.Value.t * Component.External.t) list ->
   unit
 
-val with_recorded_lookups :
-  t -> (t -> 'a) -> (lookup_type list * 'a)
+val with_recorded_lookups : t -> (t -> 'a) -> lookup_type list * 'a
 
 val pp : Format.formatter -> t -> unit
 
@@ -152,8 +154,7 @@ val lookup_class :
 val lookup_class_type :
   Odoc_model.Paths_types.Identifier.class_type -> t -> Component.ClassType.t
 
-val lookup_page :
-  string -> t -> Odoc_model.Lang.Page.t option
+val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 
 val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
 
@@ -190,7 +191,10 @@ val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
 val open_unit : Odoc_model.Lang.Compilation_unit.t -> t -> t
 
-val initial_env : Odoc_model.Lang.Compilation_unit.t -> resolver -> Odoc_model.Lang.Compilation_unit.Import.t list * t
+val initial_env :
+  Odoc_model.Lang.Compilation_unit.t ->
+  resolver ->
+  Odoc_model.Lang.Compilation_unit.Import.t list * t
 
 val modules_of :
   t -> (Odoc_model.Paths.Identifier.Module.t * Component.Module.t) list
