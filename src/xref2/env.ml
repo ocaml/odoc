@@ -697,7 +697,8 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty = class_type ident_map c in
             add_class_type c.id ty env
         | Odoc_model.Lang.Signature.Include i ->
-            open_signature i.expansion.content env)
+            open_signature i.expansion.content env
+        | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
       e s
 
 let open_unit : Odoc_model.Lang.Compilation_unit.t -> t -> t =

@@ -52,7 +52,8 @@ let rec signature (prefix : Cpath.Resolved.module_) sg =
                           TypeName.of_string (Ident.Name.type_ id) ))
                       (Component.Delayed.get t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
-        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _ ->
+        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _
+        | Open _ ->
             item)
       sg.items
   in

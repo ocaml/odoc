@@ -187,7 +187,8 @@ and signature_items : Env.t -> Signature.t -> _ =
       | External e -> External (external_ env e)
       | Class (r, c) -> Class (r, class_ env c)
       | ClassType (r, c) -> ClassType (r, class_type env c)
-      | Include i -> Include (include_ env i))
+      | Include i -> Include (include_ env i)
+      | Open o -> Open o)
     s
 
 and signature : Env.t -> Signature.t -> _ =

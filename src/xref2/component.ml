@@ -258,6 +258,7 @@ and Signature : sig
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t
     | Include of Include.t
+    | Open of Open.t
     | Comment of CComment.docs_or_stop
 
   (* When doing destructive substitution we keep track of the items that have been removed,
@@ -269,6 +270,11 @@ and Signature : sig
   type t = { items : item list; removed : removed_item list }
 end =
   Signature
+
+and Open : sig
+  type t = { expansion : Signature.t }
+end =
+  Open
 
 and Include : sig
   type t = {
@@ -446,6 +452,7 @@ module Fmt = struct
             Format.fprintf ppf "@[<v 2>class type %a %a@]@," Ident.fmt id
               class_type c
         | Include i -> Format.fprintf ppf "@[<v 2>include %a@]@," include_ i
+        | Open _o -> Format.fprintf ppf "open ..."
         | Comment _c -> ())
       sg.items;
     Format.fprintf ppf "@] (removed=[%a])" removed_item_list sg.removed
@@ -1261,6 +1268,7 @@ module LocalIdents = struct
         | Include i ->
             let ids = docs i.Include.doc ids in
             signature i.Include.expansion.content ids
+        | Open o -> signature o.Open.expansion ids
         | Comment c -> docs_or_stop c ids)
       s ids
 end
@@ -2083,6 +2091,9 @@ module Of_Lang = struct
                 our elements to local paths *)
     apply_sig_map ident_map items
 
+  and open_ ident_map o =
+    Open.{ expansion = signature ident_map o.Odoc_model.Lang.Open.expansion }
+
   and apply_sig_map ident_map items =
     let items =
       List.map
@@ -2126,6 +2137,7 @@ module Of_Lang = struct
         | ClassType (r, c) ->
             let id = List.assoc c.id ident_map.class_types in
             ClassType (id, r, class_type ident_map c)
+        | Open o -> Open (open_ ident_map o)
         | Include i -> Include (include_ ident_map i))
         items
     in

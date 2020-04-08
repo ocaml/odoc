@@ -1150,6 +1150,7 @@ struct
         | Value v     -> continue @@ value v
         | External e  -> continue @@ external_ e
 
+        | Open _ -> loop ?level_shift rest (acc_items, acc_pages)
         | Comment `Stop ->
           let rest = Utils.skip_until rest ~p:(function
             | Lang.Signature.Comment `Stop -> true

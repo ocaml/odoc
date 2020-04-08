@@ -387,6 +387,10 @@ and include_ s i =
     expansion_ = apply_sig_map s i.expansion_.items i.expansion_.removed;
   }
 
+and open_ s o =
+  let open Component.Open in
+  { expansion = apply_sig_map s o.expansion.items o.expansion.removed }
+
 and value s v =
   let open Component.Value in
   { type_ = type_expr s v.type_; doc = v.doc }
@@ -502,6 +506,13 @@ and rename_bound_idents s sg =
             { i with Component.Include.expansion_ = { items; removed = [] } }
         :: sg )
         rest
+  | Open o :: rest ->
+      let s, items =
+        rename_bound_idents s [] o.Component.Open.expansion.items
+      in
+      rename_bound_idents s
+        (Open { Component.Open.expansion = { items; removed = [] } } :: sg)
+        rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 
 and removed_items s items =
@@ -549,6 +560,7 @@ and apply_sig_map s items removed =
         | Class (id, r, c) -> Class (id, r, class_ s c)
         | ClassType (id, r, c) -> ClassType (id, r, class_type s c)
         | Include i -> Include (include_ s i)
+        | Open o -> Open (open_ s o)
         | Comment c -> Comment c)
       items
   in
