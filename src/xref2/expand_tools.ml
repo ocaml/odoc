@@ -101,7 +101,7 @@ and handle_expansion env id expansion =
         expand (`Result id) env' (arg :: args) res
   in
   let env, e = expand id env [] expansion in
-  (env, Lang_of.(module_expansion empty id e))
+  (env, e)
 
 let expansion_of_module_type env id m =
   let open Odoc_model.Paths.Identifier in

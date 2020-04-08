@@ -393,7 +393,7 @@ and process_module_path env add_canonical m p =
     | Some (`SubstMT p') -> `Subst (p', p)
   in
   let p'' = if add_canonical then add_canonical_path env m p' else p' in
-  match signature_of_module env m with
+  match signature_of_module_cached env p'' false m with
   | Ok _ -> p''
   | Error `OpaqueModule -> `OpaqueModule p''
   | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> p''
