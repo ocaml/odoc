@@ -22,7 +22,7 @@ type resolver = {
 
 let unique_id = ref 0
 
-module ModuleMap = Map.Make (struct
+module EnvModuleMap = Map.Make (struct
   type t = Odoc_model.Paths.Identifier.Module.t
 
   let compare (a : t) (b : t) = Stdlib.compare a b
@@ -77,7 +77,7 @@ type recorder = { mutable lookups : lookup_type list }
 
 type t = {
   id : int;
-  modules : Component.Module.t ModuleMap.t;
+  modules : Component.Module.t EnvModuleMap.t;
   module_types :
     (Odoc_model.Paths.Identifier.ModuleType.t * Component.ModuleType.t) list;
   types : (Odoc_model.Paths.Identifier.Type.t * Component.TypeDecl.t) list;
@@ -125,10 +125,10 @@ let with_recorded_lookups env f =
 let pp_modules ppf modules =
   List.iter
     (fun (i, m) ->
-      Format.fprintf ppf "%a: %a @," Component.Fmt.model_identifier
+      Format.fprintf ppf "ENV MODULE %a: %a @," Component.Fmt.model_identifier
         (i :> Odoc_model.Paths.Identifier.t)
         Component.Fmt.module_ m)
-    (ModuleMap.bindings modules)
+    (EnvModuleMap.bindings modules)
 
 let pp_module_types ppf module_types =
   List.iter
@@ -179,7 +179,7 @@ exception MyFailure of Odoc_model.Paths.Identifier.t * t
 let empty =
   {
     id = 0;
-    modules = ModuleMap.empty;
+    modules = EnvModuleMap.empty;
     module_types = [];
     types = [];
     values = [];
@@ -210,7 +210,7 @@ let add_module identifier m env =
       ( incr unique_id;
         (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
         !unique_id );
-    modules = ModuleMap.add identifier m env.modules;
+    modules = EnvModuleMap.add identifier m env.modules;
     elts =
       (Odoc_model.Paths.Identifier.name identifier, `Module (identifier, m))
       :: env.elts;
@@ -440,10 +440,10 @@ let lookup_root_module name env =
 
 let lookup_module_internal identifier env =
   try
-    let l = ModuleMap.cardinal env.modules in
+    let l = EnvModuleMap.cardinal env.modules in
     len := !len + l;
     n := !n + 1;
-    ModuleMap.find identifier env.modules
+    EnvModuleMap.find identifier env.modules
   with _ -> (
     match identifier with
     | `Root (_, name) -> (
@@ -461,6 +461,8 @@ let lookup_module_internal identifier env =
         Format.fprintf Format.err_formatter "Non root: %a\n%!"
           Component.Fmt.model_identifier
           (identifier :> Odoc_model.Paths.Identifier.t);
+        Format.fprintf Format.err_formatter "modules: %a\n%!" pp_modules
+          env.modules;
         raise (MyFailure ((identifier :> Odoc_model.Paths.Identifier.t), env)) )
 
 let lookup_module identifier env =
@@ -635,6 +637,7 @@ let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
       env s.items
 
 let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
+  let module M = EnvModuleMap in
   let open Component in
   let open Of_Lang in
   fun s e ->
@@ -734,7 +737,7 @@ let initial_env :
           | Not_found -> (import :: imports, env) ))
     t.imports ([], initial_env)
 
-let modules_of env = ModuleMap.bindings env.modules
+let modules_of env = EnvModuleMap.bindings env.modules
 
 let verify_lookups env lookups =
   let bad_lookup = function

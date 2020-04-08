@@ -421,15 +421,12 @@ and module_ : Env.t -> Module.t -> Module.t =
   if m.hidden then m
   else
     try
-      let env =
-        Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env
-      in
+      let sg_id = (m.id :> Paths.Identifier.Signature.t) in
+      let env = Env.add_functor_args sg_id env in
       let t1 = Unix.gettimeofday () in
       let m' = Env.lookup_module m.id env in
       let t2 = Unix.gettimeofday () in
-      let type_ =
-        module_decl env (m.id :> Paths.Identifier.Signature.t) m.type_
-      in
+      let type_ = module_decl env m.type_ in
       let t3 = Unix.gettimeofday () in
       let hidden_alias =
         match type_ with
@@ -451,7 +448,9 @@ and module_ : Env.t -> Module.t -> Module.t =
         | None, true ->
             let env, expansion =
               try
-                let env, e = Expand_tools.expansion_of_module env m.id m' in
+                let env, ce = Expand_tools.expansion_of_module env m.id m' in
+                let e = Lang_of.(module_expansion empty sg_id ce) in
+
                 (env, Some e)
               with Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
             in
@@ -512,12 +511,11 @@ and module_ : Env.t -> Module.t -> Module.t =
           (Printexc.get_backtrace ());
         raise e
 
-and module_decl :
-    Env.t -> Paths.Identifier.Signature.t -> Module.decl -> Module.decl =
- fun env id decl ->
+and module_decl : Env.t -> Module.decl -> Module.decl =
+ fun env decl ->
   let open Module in
   match decl with
-  | ModuleType expr -> ModuleType (module_type_expr env id expr)
+  | ModuleType expr -> ModuleType (module_type_expr env expr)
   | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
@@ -530,9 +528,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     let expr' =
       match m.expr with
       | None -> None
-      | Some expr ->
-          Some
-            (module_type_expr env' (m.id :> Paths.Identifier.Signature.t) expr)
+      | Some expr -> Some (module_type_expr env' expr)
     in
     (* let self_canonical =
          match m.expr with
@@ -565,7 +561,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
-  let decl = module_decl env i.parent i.decl in
+  let decl = module_decl env i.decl in
   let hidden_rhs = should_hide_module_decl decl in
   let doc = comment_docs env i.doc in
   let should_be_inlined =
@@ -606,20 +602,18 @@ and include_ : Env.t -> Include.t -> Include.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
-  let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
-  let expr =
-    module_type_expr env (a.id :> Paths.Identifier.Signature.t) a.expr
-  in
+  let sg_id = (a.id :> Paths.Identifier.Signature.t) in
+  let env = Env.add_functor_args sg_id env' in
+  let expr = module_type_expr env a.expr in
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
         try
-          let env, e =
-            Expand_tools.expansion_of_module_type_expr env
-              (a.id :> Paths_types.Identifier.signature)
-              expr
+          let env, ce =
+            Expand_tools.expansion_of_module_type_expr env sg_id expr
           in
+          let e = Lang_of.(module_expansion empty sg_id ce) in
           (env, Some e)
         with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
     | x, _ -> (env, x)
@@ -640,7 +634,7 @@ and functor_argument env a =
   | FunctorParameter.Unit -> FunctorParameter.Unit
   | Named arg -> Named (functor_parameter_parameter env arg)
 
-and handle_fragments env id sg subs =
+and handle_fragments env sg subs =
   let open ModuleType in
   let csubs =
     List.map Component.Of_Lang.(module_type_substitution empty) subs
@@ -674,7 +668,7 @@ and handle_fragments env id sg subs =
                 Component.Of_Lang.(module_type_substitution empty lsub)
                 sg
             in
-            (sg', ModuleEq (frag', module_decl env id decl) :: subs)
+            (sg', ModuleEq (frag', module_decl env decl) :: subs)
         | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
             let frag' =
               match cfrag with
@@ -730,10 +724,8 @@ and handle_fragments env id sg subs =
     (sg, []) csubs subs
   |> snd |> List.rev
 
-and module_type_expr :
-    Env.t -> Paths.Identifier.Signature.t -> ModuleType.expr -> ModuleType.expr
-    =
- fun env id expr ->
+and module_type_expr : Env.t -> ModuleType.expr -> ModuleType.expr =
+ fun env expr ->
   let open ModuleType in
   match expr with
   | Signature s -> Signature (signature env s)
@@ -749,12 +741,12 @@ and module_type_expr :
             in
             raise (Link_module_type_expr e)
       in
-      With (module_type_expr env id expr, handle_fragments env id sg subs)
+      With (module_type_expr env expr, handle_fragments env sg subs)
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
-      let res' = module_type_expr env id res in
+      let res' = module_type_expr env res in
       Functor (arg', res')
-  | TypeOf decl -> TypeOf (module_decl env id decl)
+  | TypeOf decl -> TypeOf (module_decl env decl)
 
 and type_decl_representation :
     Env.t -> TypeDecl.Representation.t -> TypeDecl.Representation.t =
@@ -879,34 +871,20 @@ and type_expression_object env visited o =
   { o with fields = List.map field o.fields }
 
 and type_expression_package env visited p =
-  let exception
-    Link_type_expression_package of Tools.signature_of_module_error option
-  in
   let open TypeExpr.Package in
-  let cp = Component.Of_Lang.(module_type_path empty p.path) in
-  match Tools.lookup_and_resolve_module_type_from_path true env cp with
-  | Resolved (path, mt) ->
-      let sg =
-        match Tools.signature_of_module_type env mt with
-        | Ok sg -> sg
-        | Error e -> raise (Link_type_expression_package (Some e))
-      in
-      let substitution (frag, t) =
-        let cfrag = Component.Of_Lang.(type_fragment empty frag) in
-        let frag' =
-          match
-            Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag
-          with
-          | Some tfrag -> Lang_of.(Path.resolved_type_fragment empty) tfrag
-          | None -> raise (Link_type_expression_package None)
-        in
-        (`Resolved frag', type_expression env visited t)
-      in
-      {
-        path = module_type_path env p.path;
-        substitutions = List.map substitution p.substitutions;
-      }
-  | Unresolved p' -> { p with path = Cpath.module_type_path_of_cpath p' }
+  let substitution (frag, t) =
+    let cfrag = Component.Of_Lang.(type_fragment empty frag) in
+    let frag' =
+      match cfrag with
+      | `Resolved f -> `Resolved (Tools.reresolve_type_fragment env f)
+      | _ -> cfrag
+    in
+    (Lang_of.(Path.type_fragment empty frag'), type_expression env visited t)
+  in
+  {
+    path = module_type_path env p.path;
+    substitutions = List.map substitution p.substitutions;
+  }
 
 and type_expression : Env.t -> _ -> _ =
  fun env visited texpr ->

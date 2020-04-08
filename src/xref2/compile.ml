@@ -208,15 +208,15 @@ and module_ : Env.t -> Module.t -> Module.t =
       (* Aliases are expanded if necessary during link *)
     in
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
-    let env' =
-      Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env
-    in
+    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
+    let env' = Env.add_functor_args sg_id env in
     let expansion =
       if not extra_expansion_needed then m.expansion
       else
         let m' = Env.lookup_module m.id env in
         try
-          let env, e = Expand_tools.expansion_of_module env m.id m' in
+          let env, ce = Expand_tools.expansion_of_module env m.id m' in
+          let e = Lang_of.(module_expansion empty sg_id ce) in
           Some (expansion env e)
         with
         | Expand_tools.ExpandFailure `OpaqueModule -> None
@@ -266,7 +266,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
   try
-    let env = Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env in
+    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
+    let env = Env.add_functor_args sg_id env in
     let env', expansion', expr' =
       match m.expr with
       | None -> (env, None, None)
@@ -274,7 +275,9 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
           let m' = Env.lookup_module_type m.id env in
           let env, expansion =
             try
-              let env, e = Expand_tools.expansion_of_module_type env m.id m' in
+              let env, ce = Expand_tools.expansion_of_module_type env m.id m' in
+              let e = Lang_of.(module_expansion empty sg_id ce) in
+
               (env, Some e)
             with
             | Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
@@ -304,6 +307,38 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
       (Printexc.to_string e);
     raise e
 
+and find_shadowed map =
+  let open Odoc_model.Names in
+  let open Signature in
+  let hidden_name : Odoc_model.Paths.Identifier.t -> string option = function
+    | `Module (_, m) ->
+        if ModuleName.is_internal m then Some (ModuleName.to_string_unsafe m)
+        else (
+          Format.eprintf "Module %s is not internal\n%!"
+            (ModuleName.to_string_unsafe m);
+          None )
+    | `Parameter (_, m) ->
+        if ParameterName.is_internal m then
+          Some (ParameterName.to_string_unsafe m)
+        else (
+          Format.eprintf "Parameter %s is not internal\n%!"
+            (ParameterName.to_string_unsafe m);
+          None )
+    | _ -> None
+  in
+  function
+  | Module (_, m) :: rest -> (
+      match hidden_name (m.id :> Odoc_model.Paths.Identifier.t) with
+      | Some n ->
+          Format.eprintf "woo, shadowing %s\n%!" n;
+          find_shadowed Lang_of.{ map with s_modules = n :: map.s_modules } rest
+      | None ->
+          Format.eprintf "not shadowing: %a\n%!" Component.Fmt.model_identifier
+            (m.id :> Odoc_model.Paths.Identifier.t);
+          find_shadowed map rest )
+  | _ :: rest -> find_shadowed map rest
+  | [] -> map
+
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
@@ -313,20 +348,20 @@ and include_ : Env.t -> Include.t -> Include.t =
       function Comment (`Docs _) :: xs -> xs | xs -> xs
     in
     let decl = Component.Of_Lang.(module_decl empty i.decl) in
-    let _, expn =
+    let _, ce =
       Expand_tools.aux_expansion_of_module_decl env decl
       |> Expand_tools.handle_expansion env i.parent
     in
+    let map = find_shadowed Lang_of.empty i.expansion.content in
+    let e = Lang_of.(module_expansion map i.parent ce) in
     let expansion =
-      (* try ( *)
-      match expn with
+      match e with
       | Module.Signature sg ->
           {
             resolved = true;
             content = remove_top_doc_from_signature (signature env sg);
           }
-      | _ -> i.expansion
-      (* ) with _ -> i.expansion *)
+      | _ -> failwith "Expansion shouldn't be anything other than a signature"
     in
     { i with decl = module_decl env i.parent i.decl; expansion }
   with e ->
@@ -362,18 +397,18 @@ and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
-  let env = Env.add_functor_args (a.id :> Paths.Identifier.Signature.t) env' in
+  let sg_id = (a.id :> Paths.Identifier.Signature.t) in
+  let env = Env.add_functor_args sg_id env' in
 
   let functor_arg = Env.lookup_module a.id env in
   let env, expn =
     match functor_arg.type_ with
     | ModuleType expr -> (
         try
-          let env, e =
-            Expand_tools.expansion_of_module_type_expr env
-              (a.id :> Paths_types.Identifier.signature)
-              expr
+          let env, ce =
+            Expand_tools.expansion_of_module_type_expr env sg_id expr
           in
+          let e = Lang_of.(module_expansion empty sg_id ce) in
           (env, Some e)
         with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
     | _ -> failwith "error"

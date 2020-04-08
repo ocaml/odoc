@@ -1,5 +1,6 @@
 open Odoc_model
-open Odoc_model.Paths
+open Paths
+open Names
 
 type maps = {
   module_ : (Ident.module_ * Identifier.Module.t) list;
@@ -23,6 +24,8 @@ type maps = {
     list;
   fragment_root : Cfrag.root option;
   any : (Ident.any * Identifier.t) list;
+  (* Shadowed items *)
+  s_modules : string list;
 }
 
 let empty =
@@ -49,6 +52,7 @@ let empty =
     path_class_type = [];
     fragment_root = None;
     any = [];
+    s_modules = [];
   }
 
 let with_fragment_root r = { empty with fragment_root = Some r }
@@ -206,7 +210,6 @@ end
 
 module ExtractIDs = struct
   open Component
-  open Odoc_model.Names
 
   let rec exception_ parent map id =
     let identifier =
@@ -230,8 +233,11 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
+    let name = Ident.Name.module_ id in
     let identifier =
-      `Module (parent, ModuleName.of_string (Ident.Name.module_ id))
+      if List.mem name map.s_modules then
+        `Module (parent, ModuleName.internal_of_string name)
+      else `Module (parent, ModuleName.of_string name)
     in
     {
       map with
@@ -315,7 +321,10 @@ module ExtractIDs = struct
       any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
-  and include_ parent map i = signature parent map i.Include.expansion_
+  and include_ parent map i =
+    (* Shadowed items don't apply to nested includes *)
+    let new_map = { map with s_modules = [] } in
+    signature parent new_map i.Include.expansion_
 
   and docs parent map (d : Component.CComment.docs) =
     List.fold_right
@@ -570,12 +579,11 @@ and module_expansion :
           (fun (id, args, map) arg ->
             match arg with
             | Named arg ->
+                let name = Ident.Name.module_ arg.id in
                 let identifier' =
-                  `Parameter
-                    ( id,
-                      Odoc_model.Names.ParameterName.of_string
-                        (Ident.Name.module_ arg.Component.FunctorParameter.id)
-                    )
+                  if List.mem name map.s_modules then
+                    `Parameter (id, ParameterName.internal_of_string name)
+                  else `Parameter (id, ParameterName.of_string name)
                 in
                 let identifier_result = `Result id in
                 let map =
@@ -618,7 +626,7 @@ and typ_ext map parent t =
 
 and extension_constructor map parent c =
   let open Component.Extension.Constructor in
-  let identifier = `Extension (parent, Names.ExtensionName.of_string c.name) in
+  let identifier = `Extension (parent, ExtensionName.of_string c.name) in
   {
     id = identifier;
     doc = docs map c.doc;
@@ -704,11 +712,11 @@ and module_type_expr map identifier =
   | With (expr, subs) ->
       With (module_type_expr map identifier expr, List.map substitution subs)
   | Functor (Named arg, expr) ->
+      let name = Ident.Name.module_ arg.id in
       let identifier' =
-        `Parameter
-          ( identifier,
-            Odoc_model.Names.ParameterName.of_string (Ident.Name.module_ arg.id)
-          )
+        if List.mem name map.s_modules then
+          `Parameter (identifier, ParameterName.internal_of_string name)
+        else `Parameter (identifier, ParameterName.of_string name)
       in
       let map = { map with module_ = (arg.id, identifier') :: map.module_ } in
       Functor
@@ -747,7 +755,7 @@ and type_decl_field :
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
-  let identifier = `Field (parent, Names.FieldName.of_string f.name) in
+  let identifier = `Field (parent, FieldName.of_string f.name) in
   {
     id = identifier;
     doc = docs map f.doc;
@@ -795,7 +803,7 @@ and type_decl_constructor :
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
-  let identifier = `Constructor (id, Names.ConstructorName.of_string t.name) in
+  let identifier = `Constructor (id, ConstructorName.of_string t.name) in
   {
     id = identifier;
     doc = docs map t.doc;
