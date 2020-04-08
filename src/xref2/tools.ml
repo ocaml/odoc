@@ -227,7 +227,11 @@ type class_type_lookup_result =
 
 type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
 
-exception UnresolvedForwardPath
+type module_type_expr_of_module_error = [
+  | `OpaqueModule
+  | `UnresolvedForwardPath
+  | `UnresolvedPath of [ `Module of Cpath.module_ ]
+]
 
 type signature_of_module_error = [
   | `OpaqueModule
@@ -242,6 +246,7 @@ type module_lookup_error = [
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
   | `Parent_sig of signature_of_module_error
+  | `Parent_expr of module_type_expr_of_module_error
 ]
 
 and module_type_lookup_error = [
@@ -309,7 +314,6 @@ let reset_cache () = Memos1.clear module_lookup_cache; Memos2.clear module_resol
 
 
 let rec handle_apply is_resolve env func_path arg_path m =
-  let mty' = module_type_expr_of_module env m in
   let rec find_functor mty =
     match mty with
     | Component.ModuleType.Functor (Named arg, expr) ->
@@ -324,6 +328,7 @@ let rec handle_apply is_resolve env func_path arg_path m =
       Format.fprintf Format.err_formatter "Got this instead: %a\n%!" Component.Fmt.module_type_expr mty;
       failwith "Application must take a functor"
   in
+  module_type_expr_of_module env m >>= fun mty' ->
   find_functor mty' >>= fun (arg_id, result) ->
   let new_module = { m with Component.Module.type_ = ModuleType result } in
   let path = `Apply (func_path, (`Resolved (`Substituted arg_path))) in
@@ -459,7 +464,7 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
         match lookup_module env functor_path with
         | Ok functor_module ->
             handle_apply false env functor_path argument_path functor_module
-            |> map_error (fun e -> `Parent_sig e)
+            |> map_error (fun e -> `Parent_expr e)
             >>= fun (_, m) ->
             Ok m
         | Error _ as e -> e )
@@ -1022,7 +1027,7 @@ and lookup_signature_from_fragment :
 and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    Component.ModuleType.expr =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) result =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
@@ -1032,19 +1037,15 @@ and module_type_expr_of_module_decl :
       match lookup_and_resolve_module_from_path false true env path with
       | Resolved (_, y) -> module_type_expr_of_module env y
       | Unresolved p when Cpath.is_module_forward p ->
-          raise UnresolvedForwardPath
+          Error `UnresolvedForwardPath
       | Unresolved p' ->
-          let err =
-            Format.asprintf "Failed to lookup alias module (path=%a) (res=%a)"
-              Component.Fmt.module_path path Component.Fmt.module_path p'
-          in
-          failwith err )
-  | Component.Module.ModuleType expr -> expr
+          Error (`UnresolvedPath (`Module p')) )
+  | Component.Module.ModuleType expr -> Ok expr
 
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
-    Component.ModuleType.expr =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) result =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
 and signature_of_module_alias :
