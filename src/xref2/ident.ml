@@ -84,8 +84,8 @@ let fresh_int () =
   n
 
 let int_of_any : any -> int = function
-  | `LRoot (_, i) 
-  | `LModule (_, i) 
+  | `LRoot (_, i)
+  | `LModule (_, i)
   | `LException (_, i)
   | `LConstructor (_, i)
   | `LPage (_, i)
@@ -100,10 +100,9 @@ let int_of_any : any -> int = function
   | `LResult (_, i)
   | `LLabel (_, i)
   | `LModuleType (_, i)
-  | `LExtension (_, i)
-    -> i
-  | `LCoreException _
-  | `LCoreType _ -> failwith "error"
+  | `LExtension (_, i) ->
+      i
+  | `LCoreException _ | `LCoreType _ -> failwith "error"
 
 module Of_Identifier = struct
   open Identifier
@@ -288,7 +287,8 @@ end
 
 let hash : any -> int = Hashtbl.hash
 
-let compare : any -> any -> int = fun a b -> Int.compare (int_of_any a) (int_of_any b)
+let compare : any -> any -> int =
+ fun a b -> Int.compare (int_of_any a) (int_of_any b)
 
 let reset () = counter := 0
 

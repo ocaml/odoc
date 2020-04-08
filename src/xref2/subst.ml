@@ -1,5 +1,3 @@
-
-
 exception TypeReplacement of Component.TypeExpr.t
 
 open Component
@@ -15,41 +13,37 @@ let identity =
   }
 
 let add_module id subst t =
-  {
-    t with
-    module_ = ModuleMap.add id subst t.module_;
-  }
-
+  { t with module_ = ModuleMap.add id subst t.module_ }
 
 let add_module_type id subst t =
-  {
-    t with
-    module_type = ModuleTypeMap.add id subst t.module_type;
-  }
+  { t with module_type = ModuleTypeMap.add id subst t.module_type }
 
 let add_type : Ident.type_ -> Cpath.Resolved.type_ -> t -> t =
  fun id subst t ->
-  {
-    t with
-    type_ = TypeMap.add (id :> Ident.path_type) subst t.type_;
-  }
+  { t with type_ = TypeMap.add (id :> Ident.path_type) subst t.type_ }
 
 let add_class : Ident.class_ -> Cpath.Resolved.class_type -> t -> t =
  fun id subst t ->
   {
     t with
     type_ =
-      TypeMap.add (id :> Ident.path_type) (subst :> Cpath.Resolved.type_) t.type_;
+      TypeMap.add
+        (id :> Ident.path_type)
+        (subst :> Cpath.Resolved.type_)
+        t.type_;
     class_type =
       ClassTypeMap.add (id :> Ident.path_class_type) subst t.class_type;
-   }
+  }
 
 let add_class_type : Ident.class_type -> Cpath.Resolved.class_type -> t -> t =
  fun id subst t ->
   {
     t with
     type_ =
-      TypeMap.add (id :> Ident.path_type) (subst :> Cpath.Resolved.type_) t.type_;
+      TypeMap.add
+        (id :> Ident.path_type)
+        (subst :> Cpath.Resolved.type_)
+        t.type_;
     class_type =
       ClassTypeMap.add (id :> Ident.path_class_type) subst t.class_type;
   }
@@ -79,8 +73,7 @@ let rec resolved_module_path :
   | `Hidden p1 -> `Hidden (resolved_module_path s p1)
   | `Canonical (p1, p2) ->
       `Canonical (resolved_module_path s p1, module_path s p2)
-  | `OpaqueModule m ->
-      `OpaqueModule (resolved_module_path s m)
+  | `OpaqueModule m -> `OpaqueModule (resolved_module_path s m)
 
 and resolved_parent_path s = function
   | `Module m -> `Module (resolved_module_path s m)
@@ -108,7 +101,8 @@ and resolved_module_type_path :
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (resolved_module_type_path s p)
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
-  | `SubstT (m1, m2) -> `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
+  | `SubstT (m1, m2) ->
+      `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
   | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type_path s m)
 
 and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
@@ -160,46 +154,48 @@ and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
   | `Substituted p -> `Substituted (class_type_path s p)
   | `Dot (p, n) -> `Dot (module_path s p, n)
 
-let rec resolved_signature_fragment : t -> Cfrag.resolved_signature -> Cfrag.resolved_signature =
-  fun t r ->
+let rec resolved_signature_fragment :
+    t -> Cfrag.resolved_signature -> Cfrag.resolved_signature =
+ fun t r ->
   match r with
   | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type_path t p))
   | `Root (`Module p) -> `Root (`Module (resolved_module_path t p))
-  | `Subst _
-  | `SubstAlias _
-  | `OpaqueModule _
-  | `Module _ as x -> (resolved_module_fragment t x :> Cfrag.resolved_signature)
+  | (`Subst _ | `SubstAlias _ | `OpaqueModule _ | `Module _) as x ->
+      (resolved_module_fragment t x :> Cfrag.resolved_signature)
 
-and resolved_module_fragment : t -> Cfrag.resolved_module -> Cfrag.resolved_module =
-  fun t r ->
+and resolved_module_fragment :
+    t -> Cfrag.resolved_module -> Cfrag.resolved_module =
+ fun t r ->
   match r with
-  | `Subst (mty, f) -> `Subst (resolved_module_type_path t mty, resolved_module_fragment t f)
-  | `SubstAlias (m, f) -> `SubstAlias (resolved_module_path t m, resolved_module_fragment t f)
+  | `Subst (mty, f) ->
+      `Subst (resolved_module_type_path t mty, resolved_module_fragment t f)
+  | `SubstAlias (m, f) ->
+      `SubstAlias (resolved_module_path t m, resolved_module_fragment t f)
   | `Module (sg, n) -> `Module (resolved_signature_fragment t sg, n)
   | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment t m)
 
 and resolved_type_fragment : t -> Cfrag.resolved_type -> Cfrag.resolved_type =
-  fun t r ->
-    match r with
-    | `Type (s,n) -> `Type (resolved_signature_fragment t s, n)
-    | `ClassType (s,n) -> `ClassType (resolved_signature_fragment t s, n)
-    | `Class (s,n) -> `Class (resolved_signature_fragment t s, n)
+ fun t r ->
+  match r with
+  | `Type (s, n) -> `Type (resolved_signature_fragment t s, n)
+  | `ClassType (s, n) -> `ClassType (resolved_signature_fragment t s, n)
+  | `Class (s, n) -> `Class (resolved_signature_fragment t s, n)
 
 let rec signature_fragment : t -> Cfrag.signature -> Cfrag.signature =
-  fun t r ->
+ fun t r ->
   match r with
   | `Resolved f -> `Resolved (resolved_signature_fragment t f)
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
   | `Root -> `Root
 
 let module_fragment : t -> Cfrag.module_ -> Cfrag.module_ =
-  fun t r ->
+ fun t r ->
   match r with
   | `Resolved r -> `Resolved (resolved_module_fragment t r)
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
 
 let type_fragment : t -> Cfrag.type_ -> Cfrag.type_ =
-  fun t r ->
+ fun t r ->
   match r with
   | `Resolved r -> `Resolved (resolved_type_fragment t r)
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
@@ -211,7 +207,7 @@ let list conv s xs = List.map (conv s) xs
 let rec type_ s t =
   let open Component.TypeDecl in
   let representation = option_ type_decl_representation s t.representation in
-  { equation = type_decl_equation s t.equation; representation; doc=t.doc }
+  { equation = type_decl_equation s t.equation; representation; doc = t.doc }
 
 and type_decl_representation s t =
   let open Component.TypeDecl.Representation in
@@ -224,7 +220,7 @@ and type_decl_constructor s t =
   let open Component.TypeDecl.Constructor in
   let args = type_decl_constructor_arg s t.args in
   let res = option_ type_expr s t.res in
-  { t with args; res; }
+  { t with args; res }
 
 and type_poly_var s v =
   let open Component.TypeExpr.Polymorphic_variant in
@@ -290,7 +286,7 @@ and module_type s t =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
   let expansion = option_ module_expansion s t.expansion in
-  { expr; expansion; doc=t.doc }
+  { expr; expansion; doc = t.doc }
 
 and functor_parameter s t =
   let open Component.FunctorParameter in
@@ -331,12 +327,12 @@ and module_ s t =
   let canonical =
     option_ (fun s (m1, m2) -> (module_path s m1, m2)) s t.canonical
   in
-  { t with type_; expansion; canonical; doc=t.doc }
+  { t with type_; expansion; canonical; doc = t.doc }
 
 and module_substitution s m =
   let open Component.ModuleSubstitution in
   let manifest = module_path s m.manifest in
-  { manifest; doc=m.doc }
+  { manifest; doc = m.doc }
 
 and type_decl_field s f =
   let open Component.TypeDecl.Field in
@@ -361,7 +357,7 @@ and exception_ s e =
   let open Component.Exception in
   let res = option_ type_expr s e.res in
   let args = type_decl_constructor_arg s e.args in
-  { args; res; doc=e.doc }
+  { args; res; doc = e.doc }
 
 and extension_constructor s c =
   let open Component.Extension.Constructor in
@@ -381,7 +377,7 @@ and extension s e =
 
 and external_ s e =
   let open Component.External in
-  { e with type_ = type_expr s e.type_; }
+  { e with type_ = type_expr s e.type_ }
 
 and include_ s i =
   let open Component.Include in
@@ -393,12 +389,12 @@ and include_ s i =
 
 and value s v =
   let open Component.Value in
-  { type_ = type_expr s v.type_; doc=v.doc }
+  { type_ = type_expr s v.type_; doc = v.doc }
 
 and class_ s c =
   let open Component.Class in
   let expansion = option_ class_signature s c.expansion in
-  { c with type_ = class_decl s c.type_; expansion; }
+  { c with type_ = class_decl s c.type_; expansion }
 
 and class_decl s =
   let open Component.Class in
@@ -415,7 +411,7 @@ and class_type_expr s =
 and class_type s c =
   let open Component.ClassType in
   let expansion = option_ class_signature s c.expansion in
-  { c with expr = class_type_expr s c.expr; expansion; }
+  { c with expr = class_type_expr s c.expr; expansion }
 
 and class_signature_item s =
   let open Component.ClassSignature in
@@ -435,11 +431,11 @@ and class_signature s sg =
 
 and method_ s m =
   let open Component.Method in
-  { m with type_ = type_expr s m.type_; }
+  { m with type_ = type_expr s m.type_ }
 
 and instance_variable s i =
   let open Component.InstanceVariable in
-  { i with type_ = type_expr s i.type_; }
+  { i with type_ = type_expr s i.type_ }
 
 and rename_bound_idents s sg =
   let open Component.Signature in
@@ -448,59 +444,53 @@ and rename_bound_idents s sg =
   | Module (id, r, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (`Local id') s)
+        (add_module id (`Local id') s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
       let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        ( add_module id (`Local id') s)
+        (add_module id (`Local id') s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
       let id' = Ident.Rename.module_type id in
       rename_bound_idents
-        ( add_module_type id (`Local id') s)
+        (add_module_type id (`Local id') s)
         (ModuleType (id', mt) :: sg)
         rest
   | Type (id, r, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (`Local (id' :> Ident.path_type)) s)
+        (add_type id (`Local (id' :> Ident.path_type)) s)
         (Type (id', r, t) :: sg)
         rest
   | TypeSubstitution (id, t) :: rest ->
       let id' = Ident.Rename.type_ id in
       rename_bound_idents
-        ( add_type id (`Local (id' :> Ident.path_type)) s)
+        (add_type id (`Local (id' :> Ident.path_type)) s)
         (TypeSubstitution (id', t) :: sg)
         rest
   | Exception (id, e) :: rest ->
       let id' = Ident.Rename.exception_ id in
-      rename_bound_idents s
-        (Exception (id', e) :: sg)
-        rest
+      rename_bound_idents s (Exception (id', e) :: sg) rest
   | TypExt e :: rest -> rename_bound_idents s (TypExt e :: sg) rest
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
-      rename_bound_idents s
-        (Value (id', v) :: sg)
-        rest
+      rename_bound_idents s (Value (id', v) :: sg) rest
   | External (id, e) :: rest ->
       let id' = Ident.Rename.value id in
-      rename_bound_idents s
-        (External (id', e) :: sg)
-        rest
+      rename_bound_idents s (External (id', e) :: sg) rest
   | Class (id, r, c) :: rest ->
       let id' = Ident.Rename.class_ id in
       rename_bound_idents
-        ( add_class id (`Local (id' :> Ident.path_class_type)) s)
+        (add_class id (`Local (id' :> Ident.path_class_type)) s)
         (Class (id', r, c) :: sg)
         rest
   | ClassType (id, r, c) :: rest ->
       let id' = Ident.Rename.class_type id in
       rename_bound_idents
-        ( add_class_type id (`Local (id' :> Ident.path_class_type)) s)
+        (add_class_type id (`Local (id' :> Ident.path_class_type)) s)
         (ClassType (id', r, c) :: sg)
         rest
   | Include i :: rest ->
@@ -546,9 +536,11 @@ and apply_sig_map s items removed =
                 Component.Delayed.put (fun () ->
                     module_type s (Component.Delayed.get mt)) )
         | Type (id, r, t) ->
-            Type (id,
-                  r,
-                  Component.Delayed.put (fun () -> type_ s (Component.Delayed.get t)))
+            Type
+              ( id,
+                r,
+                Component.Delayed.put (fun () ->
+                    type_ s (Component.Delayed.get t)) )
         | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
         | Exception (id, e) -> Exception (id, exception_ s e)
         | TypExt e -> TypExt (extension s e)

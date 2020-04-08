@@ -51,7 +51,7 @@ let empty =
     any = [];
   }
 
-let with_fragment_root r = {empty with fragment_root = Some r}
+let with_fragment_root r = { empty with fragment_root = Some r }
 
 module Opt = Component.Opt
 
@@ -110,9 +110,11 @@ module Path = struct
     match p with
     | `Module m -> resolved_module map m
     | `ModuleType _ -> failwith "Invalid"
-    | `FragmentRoot ->
-      Format.fprintf Format.err_formatter "dereferencing fragmentroot...\n%!";
-      match map.fragment_root with Some r -> resolved_parent map (r :> Cpath.Resolved.parent) | None -> failwith "Invalid"
+    | `FragmentRoot -> (
+        Format.fprintf Format.err_formatter "dereferencing fragmentroot...\n%!";
+        match map.fragment_root with
+        | Some r -> resolved_parent map (r :> Cpath.Resolved.parent)
+        | None -> failwith "Invalid" )
 
   and resolved_module_type map (p : Cpath.Resolved.module_type) :
       Odoc_model.Paths.Path.Resolved.ModuleType.t =
@@ -122,9 +124,10 @@ module Path = struct
     | `Local id -> `Identifier (List.assoc id map.module_type)
     | `ModuleType (p, name) -> `ModuleType (resolved_parent map p, name)
     | `Substituted s -> resolved_module_type map s
-    | `SubstT (p1, p2) -> `SubstT (resolved_module_type map p1, resolved_module_type map p2)
+    | `SubstT (p1, p2) ->
+        `SubstT (resolved_module_type map p1, resolved_module_type map p2)
     | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)
-  
+
   and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
@@ -146,49 +149,59 @@ module Path = struct
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)
     | `Substituted s -> resolved_class_type map s
 
-    let rec module_fragment : maps -> Cfrag.module_ -> Odoc_model.Paths.Fragment.Module.t =
-      fun map f ->
-        match f with
-        | `Resolved r -> `Resolved (resolved_module_fragment map r)
-        | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+  let rec module_fragment :
+      maps -> Cfrag.module_ -> Odoc_model.Paths.Fragment.Module.t =
+   fun map f ->
+    match f with
+    | `Resolved r -> `Resolved (resolved_module_fragment map r)
+    | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
 
-    and signature_fragment : maps -> Cfrag.signature -> Odoc_model.Paths.Fragment.Signature.t =
-      fun map f ->
-        match f with
-       | `Resolved r -> `Resolved (resolved_signature_fragment map r)
-       | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
-       | `Root -> `Root
+  and signature_fragment :
+      maps -> Cfrag.signature -> Odoc_model.Paths.Fragment.Signature.t =
+   fun map f ->
+    match f with
+    | `Resolved r -> `Resolved (resolved_signature_fragment map r)
+    | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+    | `Root -> `Root
 
-and type_fragment : maps -> Cfrag.type_ -> Odoc_model.Paths.Fragment.Type.t =
-    fun map f ->
-      match f with
-      | `Resolved r -> `Resolved (resolved_type_fragment map r)
-      | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
+  and type_fragment : maps -> Cfrag.type_ -> Odoc_model.Paths.Fragment.Type.t =
+   fun map f ->
+    match f with
+    | `Resolved r -> `Resolved (resolved_type_fragment map r)
+    | `Dot (sg, p) -> `Dot (signature_fragment map sg, p)
 
-and resolved_module_fragment : maps -> Cfrag.resolved_module -> Odoc_model.Paths.Fragment.Resolved.Module.t =
-      fun map f ->
-        match f with
-        | `Subst (p, f) -> `Subst (resolved_module_type map p, resolved_module_fragment map f)
-        | `SubstAlias (p, f) -> `SubstAlias (resolved_module map p, resolved_module_fragment map f)
-        | `Module (p, n) -> `Module (resolved_signature_fragment map p, n)
-        | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment map m)
+  and resolved_module_fragment :
+      maps ->
+      Cfrag.resolved_module ->
+      Odoc_model.Paths.Fragment.Resolved.Module.t =
+   fun map f ->
+    match f with
+    | `Subst (p, f) ->
+        `Subst (resolved_module_type map p, resolved_module_fragment map f)
+    | `SubstAlias (p, f) ->
+        `SubstAlias (resolved_module map p, resolved_module_fragment map f)
+    | `Module (p, n) -> `Module (resolved_signature_fragment map p, n)
+    | `OpaqueModule m -> `OpaqueModule (resolved_module_fragment map m)
 
-and resolved_signature_fragment : maps -> Cfrag.resolved_signature -> Odoc_model.Paths.Fragment.Resolved.Signature.t =
-      fun map f ->
-      match f with
-  | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
-  | `Root (`Module p) -> `Root (`Module (resolved_module map p))
-  | `OpaqueModule _
-  | `Subst _ | `SubstAlias _ | `Module _ as x -> (resolved_module_fragment map x :> Odoc_model.Paths.Fragment.Resolved.Signature.t)
+  and resolved_signature_fragment :
+      maps ->
+      Cfrag.resolved_signature ->
+      Odoc_model.Paths.Fragment.Resolved.Signature.t =
+   fun map f ->
+    match f with
+    | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
+    | `Root (`Module p) -> `Root (`Module (resolved_module map p))
+    | (`OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _) as x ->
+        ( resolved_module_fragment map x
+          :> Odoc_model.Paths.Fragment.Resolved.Signature.t )
 
-and resolved_type_fragment : maps -> Cfrag.resolved_type -> Odoc_model.Paths.Fragment.Resolved.Type.t = 
-      fun map f ->
-      match f with
-  | `Type (p, n) -> `Type (resolved_signature_fragment map p, n)
-  | `ClassType (p, n) -> `ClassType (resolved_signature_fragment map p, n)
-  | `Class (p, n) -> `Class (resolved_signature_fragment map p, n)
-
-
+  and resolved_type_fragment :
+      maps -> Cfrag.resolved_type -> Odoc_model.Paths.Fragment.Resolved.Type.t =
+   fun map f ->
+    match f with
+    | `Type (p, n) -> `Type (resolved_signature_fragment map p, n)
+    | `ClassType (p, n) -> `ClassType (resolved_signature_fragment map p, n)
+    | `Class (p, n) -> `Class (resolved_signature_fragment map p, n)
 end
 
 module ExtractIDs = struct
@@ -302,8 +315,7 @@ module ExtractIDs = struct
       any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
-  and include_ parent map i =
-    signature parent map i.Include.expansion_
+  and include_ parent map i = signature parent map i.Include.expansion_
 
   and docs parent map (d : Component.CComment.docs) =
     List.fold_right
@@ -362,12 +374,12 @@ module ExtractIDs = struct
       (fun item map ->
         match item with
         | Module (id, _, m) ->
-          docs lpp (module_ parent map id) (Delayed.get m).doc
+            docs lpp (module_ parent map id) (Delayed.get m).doc
         | ModuleSubstitution (id, m) -> docs lpp (module_ parent map id) m.doc
         | ModuleType (id, mt) ->
-          docs lpp (module_type parent map id) (Delayed.get mt).doc
+            docs lpp (module_type parent map id) (Delayed.get mt).doc
         | Type (id, _, t) ->
-          docs lpp (type_decl parent map id) (Delayed.get t).doc
+            docs lpp (type_decl parent map id) (Delayed.get t).doc
         | TypeSubstitution (id, t) -> docs lpp (type_decl parent map id) t.doc
         | Exception (id, e) -> docs lpp (exception_ parent map id) e.doc
         | Value (id, v) -> docs lpp (value_ parent map id) v.doc
@@ -562,14 +574,17 @@ and module_expansion :
                   `Parameter
                     ( id,
                       Odoc_model.Names.ParameterName.of_string
-                        (Ident.Name.module_ arg.Component.FunctorParameter.id) )
+                        (Ident.Name.module_ arg.Component.FunctorParameter.id)
+                    )
                 in
                 let identifier_result = `Result id in
                 let map =
                   { map with module_ = (arg.id, identifier') :: map.module_ }
                 in
                 let arg = functor_parameter map arg in
-                (identifier_result, Odoc_model.Lang.FunctorParameter.Named arg :: args, map)
+                ( identifier_result,
+                  Odoc_model.Lang.FunctorParameter.Named arg :: args,
+                  map )
             | Unit -> (`Result id, Unit :: args, map))
           (id, [], map) args
       in
@@ -583,7 +598,7 @@ and include_ parent map i =
     decl = module_decl map parent i.decl;
     expansion =
       { resolved = false; content = signature parent map i.expansion_ };
-    inline = false
+    inline = false;
   }
 
 and value_ map id v =
@@ -671,9 +686,12 @@ and module_type_expr map identifier =
     | Component.ModuleType.ModuleEq (frag, decl) ->
         Odoc_model.Lang.ModuleType.ModuleEq
           (Path.module_fragment map frag, module_decl map identifier decl)
-    | ModuleSubst (frag, path) -> ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
-    | TypeEq (frag, eqn) -> TypeEq (Path.type_fragment map frag, type_decl_equation map eqn)
-    | TypeSubst (frag, eqn) -> TypeSubst (Path.type_fragment map frag, type_decl_equation map eqn)
+    | ModuleSubst (frag, path) ->
+        ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
+    | TypeEq (frag, eqn) ->
+        TypeEq (Path.type_fragment map frag, type_decl_equation map eqn)
+    | TypeSubst (frag, eqn) ->
+        TypeSubst (Path.type_fragment map frag, type_decl_equation map eqn)
   in
   function
   | Component.ModuleType.Path p ->
@@ -794,7 +812,8 @@ and type_expr_package map t =
       Path.module_type map t.Component.TypeExpr.Package.path;
     substitutions =
       List.map
-        (fun (frag, texpr) -> (Path.type_fragment map frag, type_expr map texpr))
+        (fun (frag, texpr) ->
+          (Path.type_fragment map frag, type_expr map texpr))
         t.substitutions;
   }
 
@@ -864,7 +883,7 @@ and functor_parameter map f =
       module_type_expr map
         (identifier :> Odoc_model.Paths_types.Identifier.signature)
         f.expr;
-    display_expr=None;
+    display_expr = None;
     expansion;
   }
 
@@ -878,23 +897,24 @@ and exception_ map parent id (e : Component.Exception.t) :
     res = Opt.map (type_expr map) e.res;
   }
 
-  and block_element map (d : Component.CComment.block_element Odoc_model.Location_.with_location) :
-      Odoc_model.Comment.block_element Odoc_model.Location_.with_location =
-    let value =
-      match d.Odoc_model.Location_.value with
-      | `Heading (l, id, content) -> (
-          try `Heading (l, List.assoc id map.labels, content)
-          with Not_found ->
-            Format.fprintf Format.err_formatter "Failed to find id: %a\n" Ident.fmt
-              id;
-            raise Not_found )
-      | `Tag t -> `Tag t
-      | #Odoc_model.Comment.nestable_block_element as n -> n
-    in
-    {d with Odoc_model.Location_.value }
-    
-  and docs : maps -> Component.CComment.docs -> Odoc_model.Comment.docs =
-   fun map ds -> List.map (fun d -> block_element map d) ds
-  
-  and docs_or_stop map (d : Component.CComment.docs_or_stop) =
-    match d with `Docs d -> `Docs (docs map d) | `Stop -> `Stop
+and block_element map
+    (d : Component.CComment.block_element Odoc_model.Location_.with_location) :
+    Odoc_model.Comment.block_element Odoc_model.Location_.with_location =
+  let value =
+    match d.Odoc_model.Location_.value with
+    | `Heading (l, id, content) -> (
+        try `Heading (l, List.assoc id map.labels, content)
+        with Not_found ->
+          Format.fprintf Format.err_formatter "Failed to find id: %a\n"
+            Ident.fmt id;
+          raise Not_found )
+    | `Tag t -> `Tag t
+    | #Odoc_model.Comment.nestable_block_element as n -> n
+  in
+  { d with Odoc_model.Location_.value }
+
+and docs : maps -> Component.CComment.docs -> Odoc_model.Comment.docs =
+ fun map ds -> List.map (fun d -> block_element map d) ds
+
+and docs_or_stop map (d : Component.CComment.docs_or_stop) =
+  match d with `Docs d -> `Docs (docs map d) | `Stop -> `Stop
