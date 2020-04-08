@@ -42,10 +42,6 @@ module ResultMonad = struct
   let map_unresolved f m =
     match m with Resolved x -> Resolved x | Unresolved y -> Unresolved (f y)
 
-  let get_resolved = function
-    | Resolved r -> r
-    | Unresolved _ -> failwith "Unresolved"
-
   let of_result ~unresolved = function
     | StdResultMonad.Ok x -> Resolved x
     | Error _ -> Unresolved unresolved
@@ -227,12 +223,6 @@ type class_type_lookup_result =
 
 type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
 
-type module_type_expr_of_module_error = [
-  | `OpaqueModule
-  | `UnresolvedForwardPath
-  | `UnresolvedPath of [ `Module of Cpath.module_ ]
-]
-
 type signature_of_module_error = [
   | `OpaqueModule
   | `UnresolvedForwardPath
@@ -247,6 +237,14 @@ type module_lookup_error = [
   | `Parent of module_lookup_error
   | `Parent_sig of signature_of_module_error
   | `Parent_expr of module_type_expr_of_module_error
+]
+
+and module_type_expr_of_module_error = [
+  | `ApplyNotFunctor
+  | `OpaqueModule
+  | `UnresolvedForwardPath
+  | `UnresolvedPath of [ `Module of Cpath.module_ ]
+  | `Parent_module of module_lookup_error
 ]
 
 and module_type_lookup_error = [
@@ -325,8 +323,7 @@ let rec handle_apply is_resolve env func_path arg_path m =
         | _ -> Error `OpaqueModule
       end
     | _ -> 
-      Format.fprintf Format.err_formatter "Got this instead: %a\n%!" Component.Fmt.module_type_expr mty;
-      failwith "Application must take a functor"
+        Error `ApplyNotFunctor
   in
   module_type_expr_of_module env m >>= fun mty' ->
   find_functor mty' >>= fun (arg_id, result) ->
@@ -1031,7 +1028,8 @@ and module_type_expr_of_module_decl :
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
-      let m = result_force (lookup_module env r) in
+      lookup_module env r
+      |> map_error (fun e -> `Parent_module e) >>= fun m ->
       module_type_expr_of_module_decl env m.type_
   | Component.Module.Alias path -> (
       match lookup_and_resolve_module_from_path false true env path with
