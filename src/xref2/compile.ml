@@ -101,9 +101,14 @@ and class_type_expr env =
   | Signature s -> Signature (class_signature env s)
 
 and class_type env c =
+  let exception Compile_class_type in
   let open ClassType in
   let c' = Env.lookup_class_type c.id env in
-  let sg = Tools.class_signature_of_class_type env c' in
+  let sg =
+    match Tools.class_signature_of_class_type env c' with
+    | Some sg -> sg
+    | None -> raise Compile_class_type
+  in
   let expansion =
     Some
       (Lang_of.class_signature Lang_of.empty
@@ -138,9 +143,14 @@ and instance_variable env i =
   { i with type_ = type_expression env i.type_ }
 
 and class_ env c =
+  let exception Compile_class_ in
   let open Class in
   let c' = Env.lookup_class c.id env in
-  let sg = Tools.class_signature_of_class env c' in
+  let sg =
+    match Tools.class_signature_of_class env c' with
+    | Some sg -> sg
+    | None -> raise Compile_class_
+  in
   let expansion =
     Some
       (Lang_of.class_signature Lang_of.empty
