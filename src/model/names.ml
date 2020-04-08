@@ -18,8 +18,9 @@ module type Name = sig
 
     val equal : t -> t -> bool
 
-    val is_hidden : t -> bool
+    val fmt : Format.formatter -> t -> unit
 
+    val is_hidden : t -> bool
 end
 
 module Name : Name = struct
@@ -36,7 +37,10 @@ module Name : Name = struct
         | Std s -> s
         | Internal s -> s
 
-    let of_string s = Std s
+    let of_string s =
+      if String.length s > 0 && s.[0] = '$' then
+        Internal (String.sub s 1 (String.length s - 1))
+      else Std s
 
     let of_ident id = of_string (Ident.name id)
 
@@ -47,6 +51,8 @@ module Name : Name = struct
     let is_internal = function | Std _ -> false | Internal _ -> true
 
     let equal (x : t) (y : t) = x = y
+
+    let fmt ppf x = Format.fprintf ppf "%s" (to_string x)
 
     let is_hidden = function
         | Std s ->

@@ -38,6 +38,8 @@ module type Name = sig
 
     val equal : t -> t -> bool
 
+    val fmt : Format.formatter -> t -> unit
+
     (** Hidden names are those that contain a double underscore, e.g.
         [Hidden__module] *)
     val is_hidden : t -> bool
