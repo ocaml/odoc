@@ -60,8 +60,8 @@ let add_module parent id name env =
     let module_ids = Ident.add id ident env.module_ids in
     { env with modules; module_ids }
   | [(id',_)] ->
-    (* Format.fprintf Format.err_formatter "Renaming module: %a\n%!" Ident.print_with_scope id; *)
-    let new_ident = `Module(parent, ModuleName.of_string (Printf.sprintf "%s/hidden" (ModuleName.to_string name))) in
+    (* Format.fprintf Format.err_formatter "Adding module %a (renaming module %a)\n%!" Ident.print_with_scope id Ident.print_with_scope id'; *)
+    let new_ident = `Module(parent, ModuleName.internal_of_string (ModuleName.to_string name)) in
     let new_module = `Hidden (`Identifier new_ident) in
     let module_ids = Ident.add id' new_ident (Ident.remove id' env.module_ids) in
     let module_ids = Ident.add id ident module_ids in
@@ -271,9 +271,9 @@ let add_signature_tree_item parent item env =
 
 let add_signature_tree_items parent sg env =
   let open Typedtree in
-    List.fold_right
-      (add_signature_tree_item parent)
-      sg.sig_items env
+    List.fold_left
+      (fun env item -> add_signature_tree_item parent item env)
+      env sg.sig_items
 
 let add_structure_tree_item parent item env =
   let open Typedtree in
@@ -355,7 +355,7 @@ let add_structure_tree_items parent str env =
   let open Typedtree in
     List.fold_left
       (fun acc item -> add_structure_tree_item parent item acc)
-      env (List.rev str.str_items)
+      env str.str_items
 
 let find_module env id =
   (* Format.fprintf Format.err_formatter "Finding module path: %a\n%!" (Ident.print_with_scope) id; *)

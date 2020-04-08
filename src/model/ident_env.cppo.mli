@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Names
-
 type t
 
 val empty : t
@@ -24,17 +22,7 @@ val empty : t
 val module_name_of_open : 'a Typedtree.open_infos -> string
 #endif
 
-val add_module : Paths.Identifier.Signature.t -> Ident.t -> ModuleName.t -> t -> t
-
-val add_parameter : Paths.Identifier.Signature.t -> Ident.t -> ParameterName.t -> t -> t
-
-val add_module_type : Paths.Identifier.Signature.t -> Ident.t -> ModuleTypeName.t -> t -> t
-
-val add_type : Paths.Identifier.Signature.t -> Ident.t -> TypeName.t -> t -> t
-
-val add_class : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> Ident.t -> ClassName.t -> t -> t
-
-val add_class_type : Paths.Identifier.Signature.t -> Ident.t -> Ident.t -> Ident.t -> ClassTypeName.t -> t -> t
+val add_parameter : Paths.Identifier.Signature.t -> Ident.t -> Names.ParameterName.t -> t -> t
 
 val add_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 
