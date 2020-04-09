@@ -421,8 +421,8 @@ and handle_module_type_lookup env id p sg =
 and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) result
     =
   match Find.careful_type_in_sig sg id with
-  | mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
-  | exception Find.Find_failure _ -> Error `Find_failure
+  | Some mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
+  | None -> Error `Find_failure
 
 and handle_class_type_lookup env id p m =
   signature_of_module_cached env p true m |> map_error (fun e -> `Parent_sig e)
