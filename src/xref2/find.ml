@@ -59,22 +59,19 @@ let careful_type_in_sig (s : Signature.t) name =
 
 let module_in_sig s name =
   match careful_module_in_sig s name with
-  | Some (Found m) -> m
-  | Some (Replaced _) | None -> fail s name "module"
-
-let opt_module_in_sig s name =
-  match careful_module_in_sig s name with
   | Some (Found m) -> Some m
   | Some (Replaced _) | None -> None
 
-let module_type_in_sig s name =
+let module_type_in_sig (s : Signature.t) name =
   let rec inner = function
     | Signature.ModuleType (id, m) :: _ when Ident.Name.module_type id = name ->
-        Delayed.get m
+        Some (Delayed.get m)
     | Signature.Include i :: rest -> (
-        try inner i.Include.expansion_.items with _ -> inner rest )
+        match inner i.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner rest )
     | _ :: rest -> inner rest
-    | [] -> fail s name "module type"
+    | [] -> None
   in
   inner s.items
 
@@ -99,24 +96,22 @@ let opt_value_in_sig s name : value option =
 
 let type_in_sig s name =
   match careful_type_in_sig s name with
-  | Some (Found t) -> t
-  | Some (Replaced _) | None -> fail s name "type"
-
-let opt_type_in_sig s name =
-  match careful_type_in_sig s name with
   | Some (Found t) -> Some t
   | Some (Replaced _) | None -> None
 
-let class_type_in_sig s name =
+let class_type_in_sig (s : Signature.t) name =
   let rec inner = function
-    | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name -> `C c
+    | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
+      Some (`C c)
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
       ->
-        `CT c
+        Some (`CT c)
     | Signature.Include i :: rest -> (
-        try inner i.Include.expansion_.items with _ -> inner rest )
+        match inner i.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner rest )
     | _ :: rest -> inner rest
-    | [] -> fail s name "class type"
+    | [] -> None
   in
   inner s.items
 
