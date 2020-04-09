@@ -149,10 +149,10 @@ val lookup_section_title :
   Odoc_model.Comment.link_content option
 
 val lookup_class :
-  Odoc_model.Paths_types.Identifier.reference_class -> t -> Component.Class.t
+  Odoc_model.Paths_types.Identifier.reference_class -> t -> Component.Class.t option
 
 val lookup_class_type :
-  Odoc_model.Paths_types.Identifier.class_type -> t -> Component.ClassType.t
+  Odoc_model.Paths_types.Identifier.class_type -> t -> Component.ClassType.t option
 
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 

@@ -252,7 +252,8 @@ and class_type_lookup_error =
   | `Unhandled of Cpath.Resolved.class_type
   | `Parent_module of module_lookup_error
   | `Parent_sig of signature_of_module_error
-  | `Find_failure ]
+  | `Find_failure
+  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_class_type ]
 
 module Hashable = struct
   type t = Cpath.Resolved.module_
@@ -765,11 +766,11 @@ and lookup_type_from_resolved_path :
         of_option ~error:(`Lookup_failure i) (Env.lookup_type i env) >>= fun t ->
         Ok (`Identifier i, Find.Found (`T t))
     | `Identifier (`Class _ as i) ->
-        let t = Env.lookup_class i env in
-        Ok (`Identifier i, Found (`C t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_class i env) >>= fun t ->
+        Ok (`Identifier i, Find.Found (`C t))
     | `Identifier (`ClassType _ as i) ->
-        let t = Env.lookup_class_type i env in
-        Ok (`Identifier i, Found (`CT t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_class_type i env) >>= fun t ->
+        Ok (`Identifier i, Find.Found (`CT t))
     | `Substituted s ->
         lookup_type_from_resolved_path env s >>= fun (p, t) ->
         Ok (`Substituted p, t)
@@ -886,10 +887,10 @@ and lookup_class_type_from_resolved_path :
   match p with
   | `Local _id -> Error (`Local (env, p))
   | `Identifier (`Class _ as c) ->
-      let t = Env.lookup_class c env in
+      of_option ~error:(`Lookup_failure c) (Env.lookup_class c env) >>= fun t ->
       Ok (`Identifier c, `C t)
   | `Identifier (`ClassType _ as c) ->
-      let t = Env.lookup_class_type c env in
+      of_option ~error:(`Lookup_failure c) (Env.lookup_class_type c env) >>= fun t ->
       Ok (`Identifier c, `CT t)
   | `Substituted s ->
       lookup_class_type_from_resolved_path env s >>= fun (p, t) ->

@@ -103,7 +103,11 @@ and class_type_expr env =
 and class_type env c =
   let exception Compile_class_type in
   let open ClassType in
-  let c' = Env.lookup_class_type c.id env in
+  let c' =
+    match Env.lookup_class_type c.id env with
+    | Some c' -> c'
+    | None -> raise Compile_class_type
+  in
   let sg =
     match Tools.class_signature_of_class_type env c' with
     | Some sg -> sg
@@ -145,7 +149,11 @@ and instance_variable env i =
 and class_ env c =
   let exception Compile_class_ in
   let open Class in
-  let c' = Env.lookup_class c.id env in
+  let c' =
+    match Env.lookup_class c.id env with
+    | Some c' -> c'
+    | None -> raise Compile_class_
+  in
   let sg =
     match Tools.class_signature_of_class env c' with
     | Some sg -> sg
