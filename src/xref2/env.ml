@@ -341,13 +341,12 @@ let lookup_fragment_root env =
     | None -> ()
   in
   match env.fragmentroot with
-  | Some (i, sg) ->
+  | Some (i, _) as result ->
       maybe_record_result (FragmentRoot i);
-      (i, sg)
-  | None -> failwith "Looking up fragment root"
+      result
+  | None -> None
 
-let lookup_type identifier env =
-  List.assoc_opt identifier env.types
+let lookup_type identifier env = List.assoc_opt identifier env.types
 
 let lookup_module_type identifier env =
   let maybe_record_result res =
@@ -357,11 +356,11 @@ let lookup_module_type identifier env =
   in
   match List.assoc_opt identifier env.module_types with
   | Some _ as result ->
-    maybe_record_result (ModuleType (identifier, true));
-    result
+      maybe_record_result (ModuleType (identifier, true));
+      result
   | None ->
-    maybe_record_result (ModuleType (identifier,false));
-    None
+      maybe_record_result (ModuleType (identifier, false));
+      None
 
 let lookup_value identifier env = List.assoc identifier env.values
 
@@ -435,13 +434,13 @@ let lookup_module_internal identifier env =
     EnvModuleMap.find_opt identifier env.modules
   with
   | Some _ as result -> result
-  | None ->
-    match identifier with
-    | `Root (_, name) -> (
-        match lookup_root_module (UnitName.to_string name) env with
-        | Some (Resolved (_, m)) -> Some m
-      | Some Forward | None -> None )
-    | _ -> None
+  | None -> (
+      match identifier with
+      | `Root (_, name) -> (
+          match lookup_root_module (UnitName.to_string name) env with
+          | Some (Resolved (_, m)) -> Some m
+          | Some Forward | None -> None )
+      | _ -> None )
 
 let lookup_module identifier env =
   let maybe_record_result res =
@@ -548,7 +547,8 @@ let lookup_value_by_name name env =
   in
   find_map filter_fn env.elts
 
-let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t option =
+let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t option
+    =
   let open Component in
   fun id env ->
     let rec find_args parent mty =
@@ -722,9 +722,7 @@ let verify_lookups env lookups =
   let bad_lookup = function
     | Module (id, found) ->
         let actually_found =
-          match lookup_module id env with
-          | Some _ -> true
-          | None -> false
+          match lookup_module id env with Some _ -> true | None -> false
         in
         found <> actually_found
     | RootModule (name, res) -> (

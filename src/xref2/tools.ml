@@ -223,7 +223,8 @@ type module_lookup_error =
   | `Parent of module_lookup_error
   | `Parent_sig of signature_of_module_error
   | `Parent_expr of module_type_expr_of_module_error
-  | `Lookup_failure of Identifier.Module.t ]
+  | `Lookup_failure of Identifier.Module.t
+  | `Fragment_root ]
 
 and module_type_expr_of_module_error =
   [ `ApplyNotFunctor
@@ -238,7 +239,8 @@ and module_type_lookup_error =
   | `Parent_module of module_lookup_error
   | `Parent of module_type_lookup_error
   | `Parent_sig of signature_of_module_error
-  | `Lookup_failure of Identifier.ModuleType.t ]
+  | `Lookup_failure of Identifier.ModuleType.t
+  | `Fragment_root ]
 
 and type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.type_
@@ -480,8 +482,8 @@ and lookup_module :
             |> map_error (fun e -> `Parent_sig e)
             >>= fun sg -> find_in_sg (prefix_signature (parent, sg))
         | `FragmentRoot ->
-            let _, sg = Env.lookup_fragment_root env in
-            find_in_sg sg )
+            of_option ~error:`Fragment_root (Env.lookup_fragment_root env)
+            >>= fun (_, sg) -> find_in_sg sg )
     | `Alias (_, p) -> lookup_module env p
     | `Subst (_, p) -> lookup_module env p
     | `SubstAlias (_, p) -> lookup_module env p
@@ -613,8 +615,8 @@ and lookup_module_type :
             |> map_error (fun e -> `Parent_sig e)
             >>= fun sg -> find_in_sg (prefix_signature (parent, sg))
         | `FragmentRoot ->
-            let _, sg = Env.lookup_fragment_root env in
-            find_in_sg sg )
+            of_option ~error:`Fragment_root (Env.lookup_fragment_root env)
+            >>= fun (_, sg) -> find_in_sg sg )
     | `OpaqueModuleType m -> lookup_module_type env m
   in
   lookup env
