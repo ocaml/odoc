@@ -223,7 +223,8 @@ type module_lookup_error =
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
   | `Parent_sig of signature_of_module_error
-  | `Parent_expr of module_type_expr_of_module_error ]
+  | `Parent_expr of module_type_expr_of_module_error
+  | `Lookup_failure of Identifier.Module.t ]
 
 and module_type_expr_of_module_error =
   [ `ApplyNotFunctor
@@ -448,7 +449,8 @@ and lookup_module :
   let lookup env =
     match path with
     | `Local lpath -> Error (`Local (env, lpath))
-    | `Identifier i -> Ok (Env.lookup_module i env)
+    | `Identifier i ->
+      of_option ~error:(`Lookup_failure i) (Env.lookup_module i env)
     | `Substituted x -> lookup_module env x
     | `Apply (functor_path, `Resolved argument_path) -> (
         match lookup_module env functor_path with
@@ -662,8 +664,8 @@ and lookup_and_resolve_module_from_path :
             Unresolved (`Apply (`Resolved func_path', arg_path'))
         | Unresolved func_path', Unresolved arg_path' ->
             Unresolved (`Apply (func_path', arg_path')) )
-    | `Resolved (`Identifier i as resolved_path) ->
-        let m = Env.lookup_module i env in
+    | `Resolved (`Identifier i as resolved_path) as unresolved ->
+        of_option ~unresolved (Env.lookup_module i env) >>= fun m ->
         return (process_module_path env add_canonical m resolved_path, m)
     | `Resolved r as unresolved -> (
         match lookup_module env r with

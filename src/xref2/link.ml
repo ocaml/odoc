@@ -425,7 +425,11 @@ and module_ : Env.t -> Module.t -> Module.t =
       let sg_id = (m.id :> Paths.Identifier.Signature.t) in
       let env = Env.add_functor_args sg_id env in
       let t1 = Unix.gettimeofday () in
-      let m' = Env.lookup_module m.id env in
+      let m' =
+        match Env.lookup_module m.id env with
+        | Some m' -> m'
+        | None -> raise Not_found
+      in
       let t2 = Unix.gettimeofday () in
       let type_ = module_decl env m.type_ in
       let t3 = Unix.gettimeofday () in
@@ -599,7 +603,11 @@ and functor_parameter_parameter :
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
   let env = Env.add_functor_args sg_id env' in
   let expr = module_type_expr env a.expr in
-  let functor_arg = Env.lookup_module a.id env in
+  let functor_arg =
+    match Env.lookup_module a.id env with
+    | Some f -> f
+    | None -> raise Not_found
+  in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
