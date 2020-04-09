@@ -350,15 +350,7 @@ let lookup_fragment_root env =
   | None -> failwith "Looking up fragment root"
 
 let lookup_type identifier env =
-  try List.assoc identifier env.types
-  with Not_found ->
-    Format.fprintf Format.std_formatter
-      "Failed to find type:\nIdentifier: %a\nCalled: %s\nEnv:\n%a\n\n%!"
-      Component.Fmt.model_identifier
-      (identifier :> Odoc_model.Paths.Identifier.t)
-      (Printexc.raw_backtrace_to_string (Printexc.get_callstack 100))
-      pp env;
-    raise Not_found
+  List.assoc_opt identifier env.types
 
 let lookup_module_type identifier env =
   let maybe_record_result res =

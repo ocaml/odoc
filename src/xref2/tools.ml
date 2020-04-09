@@ -244,7 +244,8 @@ and type_lookup_error =
   | `Unhandled of Cpath.Resolved.type_
   | `Parent_module of module_lookup_error
   | `Parent_sig of signature_of_module_error
-  | `Find_failure ]
+  | `Find_failure
+  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_type ]
 
 and class_type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.class_type
@@ -761,8 +762,8 @@ and lookup_type_from_resolved_path :
           ( `Identifier (`CoreType name),
             Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
     | `Identifier (`Type _ as i) ->
-        let t = Env.lookup_type i env in
-        Ok (`Identifier i, Found (`T t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_type i env) >>= fun t ->
+        Ok (`Identifier i, Find.Found (`T t))
     | `Identifier (`Class _ as i) ->
         let t = Env.lookup_class i env in
         Ok (`Identifier i, Found (`C t))
