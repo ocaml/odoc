@@ -125,7 +125,7 @@ val add_method :
 
 val add_root : string -> root -> t -> t
 
-val lookup_fragment_root : t -> int * Component.Signature.t
+val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
 val lookup_module :
   Odoc_model.Paths_types.Identifier.reference_module -> t ->
