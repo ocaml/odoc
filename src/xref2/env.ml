@@ -173,9 +173,6 @@ let pp ppf env =
      END OF ENV" pp_modules env.modules pp_module_types env.module_types
     pp_types env.types pp_values env.values pp_externals env.externals
 
-(* Handy for extrating transient state *)
-exception MyFailure of Odoc_model.Paths.Identifier.t * t
-
 let empty =
   {
     id = 0;
@@ -747,10 +744,9 @@ let verify_lookups env lookups =
         | _ -> true )
     | ModuleType (id, found) ->
         let actually_found =
-          try
-            ignore (lookup_module_type id env);
-            true
-          with _ -> false
+          match lookup_module_type id env with
+          | Some _ -> true
+          | None -> false
         in
         found <> actually_found
     | ModuleByName (name, result) -> (

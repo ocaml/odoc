@@ -168,15 +168,14 @@ let simplify_resolved_module_path :
   let path = Lang_of.(Path.resolved_module empty cpath) in
   let id = Odoc_model.Paths.Path.Resolved.Module.identifier path in
   let rec check_ident id =
-    try
-      ignore (Env.lookup_module id env);
-      `Identifier id
-    with _ -> (
-      match id with
-      | `Module ((#Odoc_model.Paths_types.Identifier.module_ as parent), name)
-        ->
-          `Module (`Module (check_ident parent), name)
-      | _ -> failwith "Bad canonical path" )
+    match Env.lookup_module id env with
+    | Some _ -> `Identifier id
+    | None -> (
+        match id with
+        | `Module ((#Odoc_model.Paths_types.Identifier.module_ as parent), name)
+          ->
+            `Module (`Module (check_ident parent), name)
+        | _ -> failwith "Bad canonical path" )
   in
   check_ident id
 
@@ -450,7 +449,7 @@ and lookup_module :
     match path with
     | `Local lpath -> Error (`Local (env, lpath))
     | `Identifier i ->
-      of_option ~error:(`Lookup_failure i) (Env.lookup_module i env)
+        of_option ~error:(`Lookup_failure i) (Env.lookup_module i env)
     | `Substituted x -> lookup_module env x
     | `Apply (functor_path, `Resolved argument_path) -> (
         match lookup_module env functor_path with
@@ -591,7 +590,7 @@ and lookup_module_type :
     match path with
     | `Local _ -> Error (`Local (env, path))
     | `Identifier i ->
-          of_option ~error:(`Lookup_failure i) (Env.lookup_module_type i env)
+        of_option ~error:(`Lookup_failure i) (Env.lookup_module_type i env)
     | `Substituted s -> lookup_module_type env s
     | `SubstT (_, p2) -> lookup_module_type env p2
     | `ModuleType (parent, name) -> (
@@ -767,14 +766,14 @@ and lookup_type_from_resolved_path :
           ( `Identifier (`CoreType name),
             Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
     | `Identifier (`Type _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_type i env) >>= fun t ->
-        Ok (`Identifier i, Find.Found (`T t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_type i env)
+        >>= fun t -> Ok (`Identifier i, Find.Found (`T t))
     | `Identifier (`Class _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_class i env) >>= fun t ->
-        Ok (`Identifier i, Find.Found (`C t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_class i env)
+        >>= fun t -> Ok (`Identifier i, Find.Found (`C t))
     | `Identifier (`ClassType _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_class_type i env) >>= fun t ->
-        Ok (`Identifier i, Find.Found (`CT t))
+        of_option ~error:(`Lookup_failure i) (Env.lookup_class_type i env)
+        >>= fun t -> Ok (`Identifier i, Find.Found (`CT t))
     | `Substituted s ->
         lookup_type_from_resolved_path env s >>= fun (p, t) ->
         Ok (`Substituted p, t)
@@ -894,8 +893,8 @@ and lookup_class_type_from_resolved_path :
       of_option ~error:(`Lookup_failure c) (Env.lookup_class c env) >>= fun t ->
       Ok (`Identifier c, `C t)
   | `Identifier (`ClassType _ as c) ->
-      of_option ~error:(`Lookup_failure c) (Env.lookup_class_type c env) >>= fun t ->
-      Ok (`Identifier c, `CT t)
+      of_option ~error:(`Lookup_failure c) (Env.lookup_class_type c env)
+      >>= fun t -> Ok (`Identifier c, `CT t)
   | `Substituted s ->
       lookup_class_type_from_resolved_path env s >>= fun (p, t) ->
       Ok (`Substituted p, t)

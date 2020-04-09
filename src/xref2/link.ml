@@ -413,7 +413,7 @@ and should_hide_module_decl : Module.decl -> bool = function
   | Alias p -> Paths.Path.is_hidden (p :> Paths.Path.t)
 
 and module_ : Env.t -> Module.t -> Module.t =
- fun env m ->
+  fun env m ->
   let open Module in
   let start_time = Unix.gettimeofday () in
   (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
@@ -421,93 +421,78 @@ and module_ : Env.t -> Module.t -> Module.t =
      (m.id :> Paths.Identifier.t); *)
   if m.hidden then m
   else
-    try
-      let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-      let env = Env.add_functor_args sg_id env in
-      let t1 = Unix.gettimeofday () in
-      let m' =
-        match Env.lookup_module m.id env with
-        | Some m' -> m'
-        | None -> raise Not_found
-      in
-      let t2 = Unix.gettimeofday () in
-      let type_ = module_decl env m.type_ in
-      let t3 = Unix.gettimeofday () in
-      let hidden_alias =
-        match type_ with
-        | Alias p when Paths.Path.is_hidden (p :> Paths.Path.t) -> true
-        | _ -> false
-      in
-      let self_canonical =
-        match type_ with
-        | Alias (`Resolved p) -> (
-            match Paths.Path.Resolved.Module.canonical_ident p with
-            | Some i -> i = m.id (* Self-canonical *)
-            | None -> false )
-        | _ -> false
-      in
-      let expansion_needed = self_canonical || hidden_alias in
-      (* Format.fprintf Format.err_formatter "moduletype_expansion=%b self_canonical=%b hidden_alias=%b expansion_needed=%b\n%!" moduletype_expansion self_canonical hidden_alias expansion_needed; *)
-      let env, expansion =
-        match (m.expansion, expansion_needed) with
-        | None, true ->
-            let env, expansion =
-              try
-                let env, ce = Expand_tools.expansion_of_module env m.id m' in
-                let e = Lang_of.(module_expansion empty sg_id ce) in
+    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
+    let env = Env.add_functor_args sg_id env in
+    let t1 = Unix.gettimeofday () in
+    let m' =
+      match Env.lookup_module m.id env with
+      | Some m' -> m'
+      | None -> raise Not_found
+    in
+    let t2 = Unix.gettimeofday () in
+    let type_ = module_decl env m.type_ in
+    let t3 = Unix.gettimeofday () in
+    let hidden_alias =
+      match type_ with
+      | Alias p when Paths.Path.is_hidden (p :> Paths.Path.t) -> true
+      | _ -> false
+    in
+    let self_canonical =
+      match type_ with
+      | Alias (`Resolved p) -> (
+          match Paths.Path.Resolved.Module.canonical_ident p with
+          | Some i -> i = m.id (* Self-canonical *)
+          | None -> false )
+      | _ -> false
+    in
+    let expansion_needed = self_canonical || hidden_alias in
+    (* Format.fprintf Format.err_formatter "moduletype_expansion=%b self_canonical=%b hidden_alias=%b expansion_needed=%b\n%!" moduletype_expansion self_canonical hidden_alias expansion_needed; *)
+    let env, expansion =
+      match (m.expansion, expansion_needed) with
+      | None, true ->
+        let env, expansion =
+          try
+            let env, ce = Expand_tools.expansion_of_module env m.id m' in
+            let e = Lang_of.(module_expansion empty sg_id ce) in
 
-                (env, Some e)
-              with Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
-            in
-            (env, expansion)
-        | _ -> (env, m.expansion)
-      in
-      let t4 = Unix.gettimeofday () in
-      let expansion = Opt.map (module_expansion env) expansion in
-      let doc, expansion =
-        match m.doc with
-        | _ :: _ -> (m.doc, expansion)
-        | [] -> (
-            match expansion with
-            | Some
-                (Signature
+            (env, Some e)
+          with Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
+        in
+        (env, expansion)
+      | _ -> (env, m.expansion)
+    in
+    let t4 = Unix.gettimeofday () in
+    let expansion = Opt.map (module_expansion env) expansion in
+    let doc, expansion =
+      match m.doc with
+      | _ :: _ -> (m.doc, expansion)
+      | [] -> (
+          match expansion with
+          | Some
+              (Signature
                   (Comment (`Docs _doc) :: Comment (`Docs d2) :: expansion)) ->
-                (d2, Some (Signature expansion))
-            | _ -> ([], expansion) )
-      in
-      let override_display_type =
-        self_canonical || should_hide_module_decl type_
-      in
-      let display_type =
-        match (override_display_type, expansion) with
-        | true, Some (Signature sg) -> Some (ModuleType (Signature sg))
-        | _ -> None
-      in
-      let result =
-        { m with doc = comment_docs env doc; type_; display_type; expansion }
-      in
-      let end_time = Unix.gettimeofday () in
-      Format.fprintf Format.err_formatter
-        "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n\
-         %!"
-        (end_time -. start_time) Component.Fmt.model_identifier
-        (m.id :> Paths.Identifier.t)
-        (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4);
-      result
-    with
-    | Env.MyFailure (x, _) as e ->
-        Format.fprintf Format.err_formatter
-          "Failed to expand module: looking up identifier %a while expanding \
-           module %a\n\
-           %!"
-          Component.Fmt.model_identifier x Component.Fmt.model_identifier
-          (m.id :> Paths.Identifier.t);
-        raise e
-    | e ->
-        Printf.fprintf stderr "Failed to resolve module: %s\n%s\n%!"
-          (Printexc.to_string e)
-          (Printexc.get_backtrace ());
-        raise e
+            (d2, Some (Signature expansion))
+          | _ -> ([], expansion) )
+    in
+    let override_display_type =
+      self_canonical || should_hide_module_decl type_
+    in
+    let display_type =
+      match (override_display_type, expansion) with
+      | true, Some (Signature sg) -> Some (ModuleType (Signature sg))
+      | _ -> None
+    in
+    let result =
+      { m with doc = comment_docs env doc; type_; display_type; expansion }
+    in
+    let end_time = Unix.gettimeofday () in
+    Format.fprintf Format.err_formatter
+      "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n\
+       %!"
+      (end_time -. start_time) Component.Fmt.model_identifier
+      (m.id :> Paths.Identifier.t)
+      (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4);
+    result
 
 and module_decl : Env.t -> Module.decl -> Module.decl =
  fun env decl ->
@@ -568,34 +553,14 @@ and include_ : Env.t -> Include.t -> Include.t =
     in
     List.exists is_inline_tag doc
   in
-  try
-    {
-      i with
-      decl;
-      expansion =
-        { resolved = true; content = signature_items env i.expansion.content };
-      inline = should_be_inlined || hidden_rhs;
-      doc;
-    }
-  with Env.MyFailure (_id, _env) as e ->
-    (* Format.fprintf Format.err_formatter
-         "Failed to find module:\nIdentifier: %a\n\n"
-         Component.Fmt.model_identifier
-         (id :> Odoc_model.Paths.Identifier.t);
-       List.iter
-         (fun (ident, _) ->
-           Format.fprintf Format.err_formatter "%a;\n"
-             Component.Fmt.model_identifier
-             (ident :> Odoc_model.Paths.Identifier.t))
-         (Env.modules_of env);
-
-           let i' = Component.Of_Lang.(module_decl empty i.decl) in
-           Format.fprintf Format.err_formatter
-             "Failed to resolve include: %a\nGot exception %s (parent=%a)\n%!"
-             Component.Fmt.module_decl i' (Printexc.to_string e)
-             Component.Fmt.model_identifier
-             (i.parent :> Paths.Identifier.t);*)
-    raise e
+  {
+    i with
+    decl;
+    expansion =
+      { resolved = true; content = signature_items env i.expansion.content };
+    inline = should_be_inlined || hidden_rhs;
+    doc;
+  }
 
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
