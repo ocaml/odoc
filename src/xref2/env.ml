@@ -548,7 +548,7 @@ let lookup_value_by_name name env =
   in
   find_map filter_fn env.elts
 
-let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
+let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t option =
   let open Component in
   fun id env ->
     let rec find_args parent mty =
@@ -580,32 +580,24 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
     in
     match id with
     | (`Module _ | `Result _ | `Parameter _) as mid -> (
-        let m =
-          match lookup_module mid env with
-          | Some m -> m
-          | None -> raise Not_found
-        in
-        match m.Component.Module.type_ with
-        | Alias _ -> env
-        | ModuleType e ->
+        match lookup_module mid env with
+        | None -> None
+        | Some { Component.Module.type_ = Alias _; _ } -> Some env
+        | Some { type_ = ModuleType e; _ } ->
             let env', _subst =
               List.fold_left fold_fn (env, Subst.identity) (find_args id e)
             in
-            env' )
+            Some env' )
     | `ModuleType _ as mtyid -> (
-        let m =
-          match lookup_module_type mtyid env with
-          | Some m -> m
-          | None -> raise Not_found
-        in
-        match m.Component.ModuleType.expr with
-        | Some e ->
+        match lookup_module_type mtyid env with
+        | None -> None
+        | Some { Component.ModuleType.expr = None; _ } -> Some env
+        | Some { expr = Some e; _ } ->
             let env', _subst =
               List.fold_left fold_fn (env, Subst.identity) (find_args id e)
             in
-            env'
-        | None -> env )
-    | `Root _ -> env
+            Some env' )
+    | `Root _ -> Some env
 
 let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
   let open Component in
