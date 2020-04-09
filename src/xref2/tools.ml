@@ -6,6 +6,8 @@ module StdResultMonad = struct
 
   let map_error f = function Ok _ as ok -> ok | Error e -> Error (f e)
 
+  let of_option ~error = function Some x -> Ok x | None -> Error error
+
   let ( >>= ) m f = match m with Ok x -> f x | Error _ as e -> e
 end
 
@@ -241,7 +243,8 @@ and type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.type_
   | `Unhandled of Cpath.Resolved.type_
   | `Parent_module of module_lookup_error
-  | `Parent_sig of signature_of_module_error ]
+  | `Parent_sig of signature_of_module_error
+  | `Find_failure ]
 
 and class_type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.class_type
@@ -415,16 +418,11 @@ and handle_module_type_lookup env id p sg =
   let p'' = process_module_type env mt p' in
   (p'', mt)
 
-and handle_type_lookup id p sg : type_lookup_result =
-  try
-    let mt = Find.careful_type_in_sig sg id in
-    (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
-  with e ->
-    Format.fprintf Format.err_formatter "failed to find type in path: %a\n%!"
-      Component.Fmt.resolved_parent_path p;
-    Format.fprintf Format.err_formatter "Signature: %a\n%!"
-      Component.Fmt.signature sg;
-    raise e
+and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) result
+    =
+  match Find.careful_type_in_sig sg id with
+  | mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
+  | exception Find.Find_failure _ -> Error `Find_failure
 
 and handle_class_type_lookup env id p m =
   signature_of_module_cached env p true m |> map_error (fun e -> `Parent_sig e)
@@ -781,9 +779,8 @@ and lookup_type_from_resolved_path :
         (* let t2 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
         (* let t3 = Unix.gettimeofday () in *)
-        let p', t' =
-          handle_type_lookup (TypeName.to_string id) (`Module p) sg
-        in
+        handle_type_lookup (TypeName.to_string id) (`Module p) sg
+        >>= fun (p', t') ->
         (* let t4 = Unix.gettimeofday () in *)
         let t =
           match t' with
@@ -802,9 +799,8 @@ and lookup_type_from_resolved_path :
         |> map_error (fun e -> `Parent_sig e)
         >>= fun sg ->
         let sub = prefix_substitution (`Module p) sg in
-        let p', t' =
-          handle_type_lookup (ClassName.to_string id) (`Module p) sg
-        in
+        handle_type_lookup (ClassName.to_string id) (`Module p) sg
+        >>= fun (p', t') ->
         let t =
           match t' with
           | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
@@ -820,9 +816,8 @@ and lookup_type_from_resolved_path :
         |> map_error (fun e -> `Parent_sig e)
         >>= fun sg ->
         let sub = prefix_substitution (`Module p) sg in
-        let p', t' =
-          handle_type_lookup (ClassTypeName.to_string id) (`Module p) sg
-        in
+        handle_type_lookup (ClassTypeName.to_string id) (`Module p) sg
+        >>= fun (p', t') ->
         let t =
           match t' with
           | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
@@ -859,7 +854,8 @@ and lookup_type_from_path :
         (* let time1point5 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
         (* let time2 = Unix.gettimeofday () in *)
-        let p', t' = handle_type_lookup id (`Module p) sg in
+        of_result ~unresolved (handle_type_lookup id (`Module p) sg)
+        >>= fun (p', t') ->
         let t =
           match t' with
           | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
