@@ -222,7 +222,11 @@ and module_ : Env.t -> Module.t -> Module.t =
     let expansion =
       if not extra_expansion_needed then m.expansion
       else
-        let m' = Env.lookup_module m.id env in
+        let m' =
+          match Env.lookup_module m.id env with
+          | Some m' -> m'
+          | None -> raise Not_found
+        in
         try
           let env, ce = Expand_tools.expansion_of_module env m.id m' in
           let e = Lang_of.(module_expansion empty sg_id ce) in
@@ -400,7 +404,11 @@ and functor_parameter_parameter :
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
   let env = Env.add_functor_args sg_id env' in
 
-  let functor_arg = Env.lookup_module a.id env in
+  let functor_arg =
+    match Env.lookup_module a.id env with
+    | Some f -> f
+    | None -> raise Not_found
+  in
   let env, expn =
     match functor_arg.type_ with
     | ModuleType expr -> (

@@ -431,31 +431,20 @@ let lookup_root_module name env =
   result
 
 let lookup_module_internal identifier env =
-  try
+  match
     let l = EnvModuleMap.cardinal env.modules in
     len := !len + l;
     n := !n + 1;
-    EnvModuleMap.find identifier env.modules
-  with _ -> (
+    EnvModuleMap.find_opt identifier env.modules
+  with
+  | Some _ as result -> result
+  | None ->
     match identifier with
     | `Root (_, name) -> (
         match lookup_root_module (UnitName.to_string name) env with
-        | Some (Resolved (_, m)) -> m
-        | Some Forward ->
-            Format.fprintf Format.err_formatter "Forward!\n%!";
-            raise
-              (MyFailure ((identifier :> Odoc_model.Paths.Identifier.t), env))
-        | None ->
-            Format.fprintf Format.err_formatter "None\n%!";
-            raise
-              (MyFailure ((identifier :> Odoc_model.Paths.Identifier.t), env)) )
-    | _ ->
-        Format.fprintf Format.err_formatter "Non root: %a\n%!"
-          Component.Fmt.model_identifier
-          (identifier :> Odoc_model.Paths.Identifier.t);
-        (* Format.fprintf Format.err_formatter "modules: %a\n%!" pp_modules
-           env.modules; *)
-        raise (MyFailure ((identifier :> Odoc_model.Paths.Identifier.t), env)) )
+        | Some (Resolved (_, m)) -> Some m
+      | Some Forward | None -> None )
+    | _ -> None
 
 let lookup_module identifier env =
   let maybe_record_result res =
@@ -463,13 +452,13 @@ let lookup_module identifier env =
     | Some r -> r.lookups <- res :: r.lookups
     | None -> ()
   in
-  try
-    let result = lookup_module_internal identifier env in
-    maybe_record_result (Module (identifier, true));
-    result
-  with e ->
-    maybe_record_result (Module (identifier, false));
-    raise e
+  match lookup_module_internal identifier env with
+  | Some _ as result ->
+      maybe_record_result (Module (identifier, true));
+      result
+  | None ->
+      maybe_record_result (Module (identifier, false));
+      None
 
 let lookup_page name env =
   match env.resolver with
@@ -594,7 +583,11 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
     in
     match id with
     | (`Module _ | `Result _ | `Parameter _) as mid -> (
-        let m = lookup_module mid env in
+        let m =
+          match lookup_module mid env with
+          | Some m -> m
+          | None -> raise Not_found
+        in
         match m.Component.Module.type_ with
         | Alias _ -> env
         | ModuleType e ->
@@ -740,10 +733,9 @@ let verify_lookups env lookups =
   let bad_lookup = function
     | Module (id, found) ->
         let actually_found =
-          try
-            ignore (lookup_module id env);
-            true
-          with _ -> false
+          match lookup_module id env with
+          | Some _ -> true
+          | None -> false
         in
         found <> actually_found
     | RootModule (name, res) -> (
