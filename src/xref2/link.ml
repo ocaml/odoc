@@ -491,13 +491,6 @@ and module_ : Env.t -> Module.t -> Module.t =
         (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4);
       result
     with
-    | Find.Find_failure (sg, name, ty) as e ->
-        let bt = Printexc.get_backtrace () in
-        Format.fprintf Format.err_formatter
-          "Find failure: Failed to find %s %s in %a\n" ty name
-          Component.Fmt.signature sg;
-        Printf.fprintf stderr "Backtrace: %s\n%!" bt;
-        raise e
     | Env.MyFailure (x, _) as e ->
         Format.fprintf Format.err_formatter
           "Failed to expand module: looking up identifier %a while expanding \

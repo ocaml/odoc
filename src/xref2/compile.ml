@@ -229,25 +229,11 @@ and module_ : Env.t -> Module.t -> Module.t =
               Component.Fmt.module_ m';
             raise e
     in
-    try
-      {
-        m with
-        type_ = module_decl env' (m.id :> Paths.Identifier.Signature.t) m.type_;
-        expansion;
-      }
-    with
-    | Find.Find_failure (sg, name, ty) as e ->
-        let bt = Printexc.get_backtrace () in
-        Format.fprintf Format.err_formatter
-          "Find failure: Failed to find %s %s in %a\n" ty name
-          Component.Fmt.signature sg;
-        Printf.fprintf stderr "Backtrace: %s\n%!" bt;
-        raise e
-    | e ->
-        Printf.fprintf stderr "Failed to resolve module: %s\n%s\n%!"
-          (Printexc.to_string e)
-          (Printexc.get_backtrace ());
-        raise e
+    {
+      m with
+      type_ = module_decl env' (m.id :> Paths.Identifier.Signature.t) m.type_;
+      expansion;
+    }
 
 and module_decl :
     Env.t -> Paths.Identifier.Signature.t -> Module.decl -> Module.decl =

@@ -1,9 +1,5 @@
 open Component
 
-exception Find_failure of Signature.t * string * string
-
-let fail sg name ty = raise (Find_failure (sg, name, ty))
-
 type class_type = [ `C of Class.t | `CT of ClassType.t ]
 
 type type_ = [ `T of TypeDecl.t | class_type ]
