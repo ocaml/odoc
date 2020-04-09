@@ -371,9 +371,9 @@ let lookup_value identifier env = List.assoc identifier env.values
 let lookup_section_title identifier env =
   try Some (List.assoc identifier env.titles) with _ -> None
 
-let lookup_class identifier env = List.assoc identifier env.classes
+let lookup_class identifier env = List.assoc_opt identifier env.classes
 
-let lookup_class_type identifier env = List.assoc identifier env.class_types
+let lookup_class_type identifier env = List.assoc_opt identifier env.class_types
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
