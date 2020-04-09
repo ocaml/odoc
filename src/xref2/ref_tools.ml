@@ -164,26 +164,26 @@ and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
         >>= signature_lookup_result_of_label_parent
         >>= fun (parent', cp, sg) ->
         let sg = Tools.prefix_signature (cp, sg) in
-        Find.opt_type_in_sig sg name >>= fun t ->
+        Find.type_in_sig sg name >>= fun t ->
         return (`Type (parent', TypeName.of_string name), t)
     | `Class (parent, name) -> (
         resolve_signature_reference env parent ~add_canonical:true
         >>= fun (parent', _, sg) ->
-        Find.opt_type_in_sig sg (ClassName.to_string name) >>= function
+        Find.type_in_sig sg (ClassName.to_string name) >>= function
         | `C _ as c -> return (`Class (parent', name), c)
         | _ -> None )
     | `ClassType (parent, name) -> (
         resolve_signature_reference env parent ~add_canonical:true
         >>= fun (parent', cp, sg) ->
         let sg = Tools.prefix_signature (cp, sg) in
-        Find.opt_type_in_sig sg (ClassTypeName.to_string name) >>= function
+        Find.type_in_sig sg (ClassTypeName.to_string name) >>= function
         | `CT _ as c -> return (`ClassType (parent', name), c)
         | _ -> None )
     | `Type (parent, name) -> (
         resolve_signature_reference env parent ~add_canonical:true
         >>= fun (parent', cp, sg) ->
         let sg = Tools.prefix_signature (cp, sg) in
-        Find.opt_type_in_sig sg (TypeName.to_string name) >>= function
+        Find.type_in_sig sg (TypeName.to_string name) >>= function
         | `T _ as c -> return (`Type (parent', name), c)
         | _ -> None )
 
@@ -217,7 +217,7 @@ and find_module_type :
   >>= signature_lookup_result_of_label_parent
   >>= fun (parent', cp, sg) ->
   let sg = Tools.prefix_signature (cp, sg) in
-  (try Some (Tools.handle_module_type_lookup env name cp sg) with _ -> None)
+  Tools.handle_module_type_lookup env name cp sg
   >>= fun (cp', m) ->
   let resolved_ref =
     let base = `ModuleType (parent', ModuleTypeName.of_string name) in

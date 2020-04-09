@@ -250,7 +250,8 @@ and class_type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.class_type
   | `Unhandled of Cpath.Resolved.class_type
   | `Parent_module of module_lookup_error
-  | `Parent_sig of signature_of_module_error ]
+  | `Parent_sig of signature_of_module_error
+  | `Find_failure ]
 
 module Hashable = struct
   type t = Cpath.Resolved.module_
@@ -413,10 +414,11 @@ and handle_module_lookup env add_canonical id parent sg =
   | None -> None
 
 and handle_module_type_lookup env id p sg =
-  let mt = Find.module_type_in_sig sg id in
+  let open OptionMonad in
+  Find.module_type_in_sig sg id >>= fun mt ->
   let p' = `ModuleType (p, Odoc_model.Names.ModuleTypeName.of_string id) in
   let p'' = process_module_type env mt p' in
-  (p'', mt)
+  Some (p'', mt)
 
 and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) result
     =
@@ -428,8 +430,10 @@ and handle_class_type_lookup env id p m =
   signature_of_module_cached env p true m |> map_error (fun e -> `Parent_sig e)
   >>= fun sg ->
   let sg = prefix_signature (`Module p, sg) in
-  let c = Find.class_type_in_sig sg id in
-  Ok (`ClassType (`Module p, Odoc_model.Names.ClassTypeName.of_string id), c)
+  match Find.class_type_in_sig sg id with
+  | Some c ->
+      Ok (`ClassType (`Module p, Odoc_model.Names.ClassTypeName.of_string id), c)
+  | None -> Error `Find_failure
 
 and lookup_module :
     Env.t ->
@@ -587,8 +591,8 @@ and lookup_module_type :
     | `ModuleType (parent, name) -> (
         let find_in_sg sg =
           match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
-          | exception Find.Find_failure (_, _, _) -> Error `Find_failure
-          | mt -> Ok mt
+          | None -> Error `Find_failure
+          | Some mt -> Ok mt
         in
         match parent with
         | `Module mp ->
@@ -729,8 +733,8 @@ and lookup_and_resolve_module_type_from_path :
         of_result ~unresolved (signature_of_module_cached env p is_resolve m)
         >>= fun parent_sg ->
         let sg = prefix_signature (`Module p, parent_sg) in
-        let p', mt = handle_module_type_lookup env id (`Module p) sg in
-        return (p', mt)
+        of_option ~unresolved (handle_module_type_lookup env id (`Module p) sg)
+        >>= fun (p', mt) -> return (p', mt)
     | `Resolved r as unresolved ->
         of_result ~unresolved (lookup_module_type env r) >>= fun m ->
         let p' = process_module_type env m r in
