@@ -179,7 +179,7 @@ val lookup_value_by_name :
   | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
   option
 
-val add_functor_args : Odoc_model.Paths_types.Identifier.signature -> t -> t
+val add_functor_args : Odoc_model.Paths_types.Identifier.signature -> t -> t option
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)

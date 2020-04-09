@@ -422,7 +422,11 @@ and module_ : Env.t -> Module.t -> Module.t =
   if m.hidden then m
   else
     let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-    let env = Env.add_functor_args sg_id env in
+      let env =
+        match Env.add_functor_args sg_id env with
+        | Some env -> env
+        | None -> raise Not_found
+      in
     let t1 = Unix.gettimeofday () in
     let m' =
       match Env.lookup_module m.id env with
@@ -506,7 +510,9 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   try
     let env' =
-      Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env
+      match Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env with
+      | Some env -> env
+      | None -> raise Not_found
     in
     let expr' =
       match m.expr with
@@ -566,7 +572,11 @@ and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
-  let env = Env.add_functor_args sg_id env' in
+  let env =
+    match Env.add_functor_args sg_id env' with
+    | Some env -> env
+    | None -> raise Not_found
+  in
   let expr = module_type_expr env a.expr in
   let functor_arg =
     match Env.lookup_module a.id env with

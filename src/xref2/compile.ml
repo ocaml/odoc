@@ -218,7 +218,11 @@ and module_ : Env.t -> Module.t -> Module.t =
     in
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
     let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-    let env' = Env.add_functor_args sg_id env in
+    let env' =
+      match Env.add_functor_args sg_id env with
+      | Some env' -> env'
+      | None -> raise Not_found
+    in
     let expansion =
       if not extra_expansion_needed then m.expansion
       else
@@ -267,7 +271,11 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
   try
     let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-    let env = Env.add_functor_args sg_id env in
+    let env =
+      match Env.add_functor_args sg_id env with
+      | Some env' -> env'
+      | None -> raise Not_found
+    in
     let env', expansion', expr' =
       match m.expr with
       | None -> (env, None, None)
@@ -402,7 +410,11 @@ and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
-  let env = Env.add_functor_args sg_id env' in
+  let env =
+    match Env.add_functor_args sg_id env' with
+    | Some env' -> env'
+    | None -> raise Not_found
+  in
 
   let functor_arg =
     match Env.lookup_module a.id env with
