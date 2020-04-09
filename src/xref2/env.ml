@@ -358,13 +358,13 @@ let lookup_module_type identifier env =
     | Some r -> r.lookups <- res :: r.lookups
     | None -> ()
   in
-  try
-    let result = List.assoc identifier env.module_types in
+  match List.assoc_opt identifier env.module_types with
+  | Some _ as result ->
     maybe_record_result (ModuleType (identifier, true));
     result
-  with e ->
-    maybe_record_result (ModuleType (identifier, false));
-    raise e
+  | None ->
+    maybe_record_result (ModuleType (identifier,false));
+    None
 
 let lookup_value identifier env = List.assoc identifier env.values
 
@@ -603,7 +603,11 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t =
             in
             env' )
     | `ModuleType _ as mtyid -> (
-        let m = lookup_module_type mtyid env in
+        let m =
+          match lookup_module_type mtyid env with
+          | Some m -> m
+          | None -> raise Not_found
+        in
         match m.Component.ModuleType.expr with
         | Some e ->
             let env', _subst =
