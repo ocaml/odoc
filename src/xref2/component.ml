@@ -452,7 +452,7 @@ module Fmt = struct
             Format.fprintf ppf "@[<v 2>class type %a %a@]@," Ident.fmt id
               class_type c
         | Include i -> Format.fprintf ppf "@[<v 2>include %a@]@," include_ i
-        | Open _o -> Format.fprintf ppf "open ..."
+        | Open o -> Format.fprintf ppf "open [ %a ]" signature o.expansion
         | Comment _c -> ())
       sg.items;
     Format.fprintf ppf "@] (removed=[%a])" removed_item_list sg.removed

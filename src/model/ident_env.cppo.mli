@@ -18,20 +18,19 @@ type t
 
 val empty : t
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-val module_name_of_open : 'a Typedtree.open_infos -> string
-#endif
+val add_parameter :
+  Paths.Identifier.Signature.t -> Ident.t -> Names.ParameterName.t -> t -> t
 
-val add_parameter : Paths.Identifier.Signature.t -> Ident.t -> Names.ParameterName.t -> t -> t
+val add_signature_type_items :
+  Paths.Identifier.Signature.t -> Compat.signature -> t -> t
 
-val add_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t
+val add_signature_tree_items :
+  Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t
 
-val add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t
-
-val add_structure_tree_items : Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t
+val add_structure_tree_items :
+  Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t
 
 module Path : sig
-
   val read_module : t -> Path.t -> Paths.Path.Module.t
 
   val read_module_type : t -> Path.t -> Paths.Path.ModuleType.t
@@ -39,17 +38,16 @@ module Path : sig
   val read_type : t -> Path.t -> Paths.Path.Type.t
 
   val read_class_type : t -> Path.t -> Paths.Path.ClassType.t
-
 end
 
 val find_module : t -> Ident.t -> Paths.Path.Resolved.Module.t
 
 val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 
-module Fragment : sig
+val find_type : t -> Ident.t -> Paths_types.Identifier.path_type
 
+module Fragment : sig
   val read_module : Longident.t -> Paths.Fragment.Module.t
 
   val read_type : Longident.t -> Paths.Fragment.Type.t
-
 end

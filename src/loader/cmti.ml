@@ -613,21 +613,6 @@ and read_module_equation env p =
   let open Module in
     Alias (Env.Path.read_module env p)
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-and module_of_extended_open env parent o =
-  let open Module in
-  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
-  let (p,_) = o.Typedtree.open_expr in
-  let type_ = Alias (Env.Path.read_module env p) in
-  { id
-  ; doc = []
-  ; type_
-  ; canonical = None
-  ; hidden = true
-  ; display_type = None
-  ; expansion = None }
-#endif
-
 and read_signature_item env parent item =
   let open Signature in
     match item.sig_desc with
@@ -664,7 +649,9 @@ and read_signature_item env parent item =
         [ModuleType (read_module_type_declaration env parent mtd)]
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
     | Tsig_open o ->
-        [Comment `Stop; Module (Ordinary, module_of_extended_open env parent o); Comment `Stop]
+        [
+          Open (read_open env parent o)
+        ]
 #else
     | Tsig_open _ -> []
 #endif
@@ -705,6 +692,10 @@ and read_include env parent incl =
   let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false} in
     {parent; doc; decl; expansion; inline=false }
+
+and read_open env parent o =
+  let expansion = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
+  { expansion }
 
 and read_signature env parent sg =
   let env =

@@ -471,25 +471,6 @@ and read_module_bindings env parent mbs =
   |> fst
   |> List.rev
 
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-and module_of_extended_open env parent o =
-  let open Module in
-  let id = `Module (parent, Odoc_model.Names.ModuleName.internal_of_string (Env.module_name_of_open o)) in
-  let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let type_ =
-    match unwrap_module_expr_desc o.open_expr.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
-    | _ -> ModuleType (read_module_expr env id container o.open_expr)
-  in
-  { id
-  ; doc = []
-  ; type_
-  ; canonical = None
-  ; hidden = true
-  ; display_type = None
-  ; expansion = None }
-#endif
-
 and read_structure_item env parent item =
   let open Signature in
     match item.str_desc with
@@ -535,7 +516,7 @@ and read_structure_item env parent item =
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 08
         ignore(o); []
 #else
-        [Comment `Stop; Module (Ordinary, module_of_extended_open env parent o); Comment `Stop]
+        [Open (read_open env parent o)]
 #endif
     | Tstr_include incl ->
         [Include (read_include env parent incl)]
@@ -571,6 +552,11 @@ and read_include env parent incl =
   let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; resolved = false } in
     {parent; doc; decl; expansion; inline=false }
+
+and read_open env parent o =
+  let expansion = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
+  Format.eprintf "expansion size: %d\n%!" (List.length expansion);
+  Open.{expansion}
 
 and read_structure env parent str =
   let env = Env.add_structure_tree_items parent str env in

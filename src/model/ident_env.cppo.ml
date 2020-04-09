@@ -40,12 +40,6 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-#if OCAML_MAJOR=4 && OCAML_MINOR >= 08
-let module_name_of_open o =
-  let loc_start = o.Typedtree.open_loc.Location.loc_start in
-  Printf.sprintf "Open__%d_%d" loc_start.Lexing.pos_lnum loc_start.pos_cnum
-#endif
-
 let add_module parent id name env =
   let ident = `Module(parent, name) in
   let module_ = if ModuleName.is_hidden name then `Hidden (`Identifier ident) else `Identifier ident in
@@ -190,7 +184,6 @@ let add_extended_open parent o env =
   match unwrap_module_expr_desc o.open_expr.mod_desc with
   | Tmod_ident(_, _) -> env
   | _ ->
-      let parent = `Module (parent, ModuleName.internal_of_string (module_name_of_open o)) in
       add_extended_open_items parent o.open_bound_items env
 #endif
 

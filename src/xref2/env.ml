@@ -461,8 +461,8 @@ let lookup_module_internal identifier env =
         Format.fprintf Format.err_formatter "Non root: %a\n%!"
           Component.Fmt.model_identifier
           (identifier :> Odoc_model.Paths.Identifier.t);
-        Format.fprintf Format.err_formatter "modules: %a\n%!" pp_modules
-          env.modules;
+        (* Format.fprintf Format.err_formatter "modules: %a\n%!" pp_modules
+           env.modules; *)
         raise (MyFailure ((identifier :> Odoc_model.Paths.Identifier.t), env)) )
 
 let lookup_module identifier env =
