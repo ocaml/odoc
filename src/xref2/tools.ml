@@ -405,12 +405,12 @@ and process_module_path env add_canonical m p =
 
 and handle_module_lookup env add_canonical id parent sg =
   match Find.careful_module_in_sig sg id with
-  | Find.Found m' ->
+  | Some (Find.Found m') ->
       let p' = `Module (parent, Odoc_model.Names.ModuleName.of_string id) in
       Some (process_module_path env add_canonical m' p', m')
-  | Replaced p -> (
+  | Some (Replaced p) -> (
       match lookup_module env p with Ok m -> Some (p, m) | Error _ -> None )
-  | exception _e -> None
+  | None -> None
 
 and handle_module_type_lookup env id p sg =
   let mt = Find.module_type_in_sig sg id in
@@ -453,9 +453,9 @@ and lookup_module :
     | `Module (parent, name) -> (
         let find_in_sg sg =
           match Find.careful_module_in_sig sg (ModuleName.to_string name) with
-          | exception Find.Find_failure (_, _, _) -> Error `Find_failure
-          | Find.Found m -> Ok m
-          | Replaced p -> lookup_module env p
+          | None -> Error `Find_failure
+          | Some (Find.Found m) -> Ok m
+          | Some (Replaced p) -> lookup_module env p
         in
         match parent with
         | `Module mp ->
@@ -1513,8 +1513,9 @@ and find_module_with_replacement :
     (Component.Module.t, module_lookup_error) result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
-  | Found m -> Ok m
-  | Replaced path -> lookup_module env path
+  | Some (Found m) -> Ok m
+  | Some (Replaced path) -> lookup_module env path
+  | None -> Error `Find_failure
 
 and resolve_mt_signature_fragment :
     Env.t ->
