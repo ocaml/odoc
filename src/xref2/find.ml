@@ -12,18 +12,20 @@ type value = [ `V of Value.t | `E of External.t ]
 
 type ('a, 'b) found = Found of 'a | Replaced of 'b
 
-let careful_module_in_sig s name =
+let careful_module_in_sig (s : Signature.t) name =
   let rec inner_removed = function
     | Signature.RModule (id, p) :: _ when Ident.Name.module_ id = name ->
-        Replaced p
+        Some (Replaced p)
     | _ :: rest -> inner_removed rest
-    | [] -> fail s name "module"
+    | [] -> None
   in
   let rec inner = function
     | Signature.Module (id, _, m) :: _ when Ident.Name.module_ id = name ->
-        Found (Delayed.get m)
+        Some (Found (Delayed.get m))
     | Signature.Include i :: rest -> (
-        try inner i.Include.expansion_.items with _ -> inner rest )
+        match inner i.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner rest )
     | _ :: rest -> inner rest
     | [] -> inner_removed s.removed
   in
@@ -55,14 +57,13 @@ let careful_type_in_sig s name =
 
 let module_in_sig s name =
   match careful_module_in_sig s name with
-  | Found m -> m
-  | Replaced _ -> fail s name "module"
+  | Some (Found m) -> m
+  | Some (Replaced _) | None -> fail s name "module"
 
 let opt_module_in_sig s name =
   match careful_module_in_sig s name with
-  | Found m -> Some m
-  | Replaced _ -> None
-  | exception _ -> None
+  | Some (Found m) -> Some m
+  | Some (Replaced _) | None -> None
 
 let module_type_in_sig s name =
   let rec inner = function

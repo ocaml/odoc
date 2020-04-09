@@ -126,14 +126,13 @@ and process_module env add_canonical m base_path' base_ref' :
 
 and handle_module_lookup env add_canonical id parent_path parent_ref sg =
   match Find.careful_module_in_sig sg id with
-  | Find.Found m ->
+  | Some (Find.Found m) ->
       let mname = Odoc_model.Names.ModuleName.of_string id in
       Some
         (process_module env add_canonical m
            (`Module (parent_path, mname))
            (`Module (parent_ref, mname)))
-  | Replaced _p -> None
-  | exception _ -> None
+  | Some (Replaced _) | None -> None
 
 and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
   let open Tools.OptionMonad in
