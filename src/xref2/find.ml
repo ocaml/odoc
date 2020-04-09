@@ -31,25 +31,27 @@ let careful_module_in_sig (s : Signature.t) name =
   in
   inner s.items
 
-let careful_type_in_sig s name =
+let careful_type_in_sig (s : Signature.t) name =
   let rec inner_removed = function
     | Signature.RType (id, p) :: _ when Ident.Name.type_ id = name ->
         Format.fprintf Format.err_formatter "Found replaced type %a\n%!"
           Ident.fmt id;
-        Replaced p
+        Some (Replaced p)
     | _ :: rest -> inner_removed rest
-    | [] -> fail s name "type"
+    | [] -> None
   in
   let rec inner = function
     | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
-        Found (`T (Component.Delayed.get m))
+        Some (Found (`T (Component.Delayed.get m)))
     | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
-        Found (`C c)
+        Some (Found (`C c))
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
       ->
-        Found (`CT c)
+        Some (Found (`CT c))
     | Signature.Include i :: rest -> (
-        try inner i.Include.expansion_.items with _ -> inner rest )
+        match inner i.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner rest )
     | _ :: rest -> inner rest
     | [] -> inner_removed s.removed
   in
@@ -97,14 +99,13 @@ let opt_value_in_sig s name : value option =
 
 let type_in_sig s name =
   match careful_type_in_sig s name with
-  | Found t -> t
-  | Replaced _ -> fail s name "type"
+  | Some (Found t) -> t
+  | Some (Replaced _) | None -> fail s name "type"
 
 let opt_type_in_sig s name =
   match careful_type_in_sig s name with
-  | Found t -> Some t
-  | Replaced _ -> None
-  | exception _ -> None
+  | Some (Found t) -> Some t
+  | Some (Replaced _) | None -> None
 
 let class_type_in_sig s name =
   let rec inner = function
