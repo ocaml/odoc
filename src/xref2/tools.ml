@@ -237,7 +237,8 @@ and module_type_lookup_error =
   | `Find_failure
   | `Parent_module of module_lookup_error
   | `Parent of module_type_lookup_error
-  | `Parent_sig of signature_of_module_error ]
+  | `Parent_sig of signature_of_module_error
+  | `Lookup_failure of Identifier.ModuleType.t ]
 
 and type_lookup_error =
   [ `Local of Env.t * Cpath.Resolved.type_
@@ -587,7 +588,8 @@ and lookup_module_type :
   let lookup env =
     match path with
     | `Local _ -> Error (`Local (env, path))
-    | `Identifier i -> Ok (Env.lookup_module_type i env)
+    | `Identifier i ->
+          of_option ~error:(`Lookup_failure i) (Env.lookup_module_type i env)
     | `Substituted s -> lookup_module_type env s
     | `SubstT (_, p2) -> lookup_module_type env p2
     | `ModuleType (parent, name) -> (

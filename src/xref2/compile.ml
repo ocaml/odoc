@@ -257,6 +257,7 @@ and module_decl :
       | Unresolved p' -> Alias (Cpath.module_path_of_cpath p') )
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
+  let exception Compile_module_type in
  fun env m ->
   let open ModuleType in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
@@ -267,7 +268,11 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
       match m.expr with
       | None -> (env, None, None)
       | Some expr ->
-          let m' = Env.lookup_module_type m.id env in
+          let m' =
+            match Env.lookup_module_type m.id env with
+            | Some m' -> m'
+            | None -> raise Compile_module_type
+          in
           let env, expansion =
             try
               let env, ce = Expand_tools.expansion_of_module_type env m.id m' in
