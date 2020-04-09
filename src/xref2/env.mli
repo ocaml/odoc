@@ -133,7 +133,7 @@ val lookup_module :
   Odoc_model.Paths_types.Identifier.reference_module -> t -> Component.Module.t
 
 val lookup_type :
-  Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t
+  Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t option
 
 val lookup_module_type :
   Odoc_model.Paths_types.Identifier.reference_module_type ->
