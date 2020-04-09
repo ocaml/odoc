@@ -324,49 +324,50 @@ here, so it has a local identifier. We can see this by looking up module `M` fro
 
 ```ocaml env=e1
 # let m = Env.lookup_module_type (`ModuleType (Common.root_with_name, Odoc_model.Names.ModuleTypeName.of_string "M")) env;;
-val m : Component.ModuleType.t =
-  {Odoc_xref2.Component.ModuleType.doc = [];
-   expr =
-    Some
-     (Odoc_xref2.Component.ModuleType.Signature
-       {Odoc_xref2.Component.Signature.items =
-         [Odoc_xref2.Component.Signature.ModuleType (`LModuleType (N, 1),
-           {Odoc_xref2.Component.Delayed.v =
-             Some
-              {Odoc_xref2.Component.ModuleType.doc = [];
-               expr =
-                Some
-                 (Odoc_xref2.Component.ModuleType.Signature
-                   {Odoc_xref2.Component.Signature.items =
-                     [Odoc_xref2.Component.Signature.Type (`LType (t, 2),
-                       Odoc_model.Lang.Signature.Ordinary,
-                       {Odoc_xref2.Component.Delayed.v =
-                         Some
-                          {Odoc_xref2.Component.TypeDecl.doc = [];
-                           equation =
-                            {Odoc_xref2.Component.TypeDecl.Equation.params =
-                              [];
-                             private_ = false; manifest = None;
-                             constraints = []};
-                           representation = None};
-                        get = <fun>})];
-                    removed = []});
-               expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
-            get = <fun>});
-          Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
-           Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_xref2.Component.Delayed.v =
-             Some
-              {Odoc_xref2.Component.Module.doc = [];
-               type_ =
-                Odoc_xref2.Component.Module.ModuleType
-                 (Odoc_xref2.Component.ModuleType.Path
-                   (`Resolved (`Local (`LModuleType (N, 1)))));
-               canonical = None; hidden = false; display_type = None;
-               expansion = None};
-            get = <fun>})];
-        removed = []});
-   expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
+val m : Component.ModuleType.t option =
+  Some
+   {Odoc_xref2.Component.ModuleType.doc = [];
+    expr =
+     Some
+      (Odoc_xref2.Component.ModuleType.Signature
+        {Odoc_xref2.Component.Signature.items =
+          [Odoc_xref2.Component.Signature.ModuleType (`LModuleType (N, 1),
+            {Odoc_xref2.Component.Delayed.v =
+              Some
+               {Odoc_xref2.Component.ModuleType.doc = [];
+                expr =
+                 Some
+                  (Odoc_xref2.Component.ModuleType.Signature
+                    {Odoc_xref2.Component.Signature.items =
+                      [Odoc_xref2.Component.Signature.Type (`LType (t, 2),
+                        Odoc_model.Lang.Signature.Ordinary,
+                        {Odoc_xref2.Component.Delayed.v =
+                          Some
+                           {Odoc_xref2.Component.TypeDecl.doc = [];
+                            equation =
+                             {Odoc_xref2.Component.TypeDecl.Equation.params =
+                               [];
+                              private_ = false; manifest = None;
+                              constraints = []};
+                            representation = None};
+                         get = <fun>})];
+                     removed = []});
+                expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+             get = <fun>});
+           Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
+            Odoc_model.Lang.Signature.Ordinary,
+            {Odoc_xref2.Component.Delayed.v =
+              Some
+               {Odoc_xref2.Component.Module.doc = [];
+                type_ =
+                 Odoc_xref2.Component.Module.ModuleType
+                  (Odoc_xref2.Component.ModuleType.Path
+                    (`Resolved (`Local (`LModuleType (N, 1)))));
+                canonical = None; hidden = false; display_type = None;
+                expansion = None};
+             get = <fun>})];
+         removed = []});
+    expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
 
 We can see here that module `B` has type `` Path (`Local ("N", 1)) `` which refers to the module type defined just above it.
@@ -1612,9 +1613,7 @@ Error: This expression has type Odoc_odoc.Compilation_unit.t
          Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env (`Resolved
                (`Identifier (Common.root_module "N")));;
-Exception:
-Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, Root), N), <abstr>).
-Non root: (root Root).N
+Exception: Failure "Unresolved path".
 # Tools.signature_of_module env (p, m);;
 Line 1, characters 31-37:
 Error: This expression has type 'a * 'b
@@ -2227,9 +2226,10 @@ Error: This expression has type 'a * 'b
             (`Resolved
                (`Identifier (Common.root_module "N")),
              "t"));;
-Exception:
-Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, Root), N), <abstr>).
-Non root: (root Root).N
+- : (Tools.type_lookup_result, Cpath.type_) Tools.ResultMonad.t =
+Odoc_xref2.Tools.ResultMonad.Unresolved
+ (`Dot
+    (`Resolved (`Identifier (`Module (`Root (Common.root, Root), N))), "t"))
 ```
 
 

@@ -68,8 +68,6 @@ val has_resolver : t -> bool
 
 val id : t -> int
 
-exception MyFailure of Odoc_model.Paths.Identifier.t * t
-
 val empty : t
 
 val add_fragment_root : Component.Signature.t -> t -> t

@@ -32,23 +32,8 @@ let test_resolve test =
     fprintf std_formatter "%s\n%s\n%!" test.name test.description;
     fprintf std_formatter "CODE\n====\n%!%s\n%!" test.test_data;
     fprintf std_formatter "BEFORE\n======\n%!%a\n%!" Common.LangUtils.Fmt.signature sg;
-    try
-        let sg' = Compile.signature Env.empty sg in
-
-        fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
-    with
-    | Env.MyFailure(id, e) ->
-        let bt = Printexc.get_backtrace () in
-        Printf.printf "FAILURE lookup up a path\n%!";
-        fprintf std_formatter "Identifier: %a\n%!" Component.Fmt.model_identifier id;
-        fprintf std_formatter "Env:\n%!%a" Env.pp e;
-        fprintf std_formatter "Backtrace:\n%s\n%!" bt
-    | e ->
-        let bt = Printexc.get_backtrace () in
-        Printf.printf "FAILURE %s\n%!" (Printexc.to_string e);
-        fprintf std_formatter "Backtrace:\n%s\n%!" bt
-       
-
+    let sg' = Compile.signature Env.empty sg in
+    fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
 
 (**
 The simplest resolution is where we simply look up a type and check it's there. Given the signature
