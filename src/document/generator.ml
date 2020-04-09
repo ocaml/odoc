@@ -1125,6 +1125,17 @@ sig
   val signature : Lang.Signature.t -> Item.t list
 end =
 struct
+  let internal_module m =
+    let open Lang.Module in
+    match m.id with
+    | `Module (_, name) when ModuleName.is_internal name -> true
+    | _ -> false
+
+  let internal_type t =
+    let open Lang.TypeDecl in
+    match t.id with
+    | `Type (_, name) when TypeName.is_internal name -> true
+    | _ -> false
 
   let rec signature s : Item.t list =
     let rec loop l acc_items =
@@ -1135,6 +1146,11 @@ struct
           loop rest (item :: acc_items)
         in
         match (item : Lang.Signature.item) with
+        | Module (_, m) when internal_module m ->
+          loop ?level_shift rest (acc_items, acc_pages)
+        | Type (_, t) when internal_type t ->
+          loop ?level_shift rest (acc_items, acc_pages)
+        
         | Module (recursive, m)    -> continue @@ module_ recursive m
         | ModuleType m             -> continue @@ module_type m
         | Class (recursive, c)     -> continue @@ class_ recursive c

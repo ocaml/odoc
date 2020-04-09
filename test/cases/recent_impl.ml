@@ -1,4 +1,4 @@
-(*module Foo = struct
+module Foo = struct
     module A = struct
         type t = A
     end
@@ -26,4 +26,4 @@ open Foo
 
 (* Check that regular open still works as expected *)
 module B' = B
-*)
+

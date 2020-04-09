@@ -615,10 +615,13 @@ let read_type_constraints env params =
        else acc)
     params []
 
-let read_type_declaration env parent id decl =
+let read_type_declaration env parent id vis decl =
   let open TypeDecl in
   let name = parenthesise (Ident.name id) in
-  let id = `Type(parent, Odoc_model.Names.TypeName.of_string name) in
+  let id = match vis with
+    | Odoc_model.Compat.Exported -> `Type(parent, TypeName.of_string name)
+    | Hidden -> `Type(parent, TypeName.internal_of_string name)
+  in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.type_attributes in
   let params = mark_type_declaration decl in
@@ -921,16 +924,16 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     let open Signature in
     let open Odoc_model.Compat in
     match items with
-    | Sig_value(id, v, Exported) :: rest ->
+    | Sig_value(id, v, _) :: rest ->
         let vd = read_value_description env parent id v in
           loop (vd :: acc) rest
-    | Sig_type(id, _, _, Exported) :: rest
+    | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
         loop acc rest
-    | Sig_type(id, decl, rec_status, Exported)::rest ->
-        let decl = read_type_declaration env parent id decl in
+    | Sig_type(id, decl, rec_status, vis)::rest ->
+        let decl = read_type_declaration env parent id vis decl in
       loop (Type (read_type_rec_status rec_status, decl)::acc) rest
-    | Sig_typext (id, ext, Text_first, Exported) :: rest ->
+    | Sig_typext (id, ext, Text_first, _) :: rest ->
         let rec inner_loop inner_acc = function
           | Sig_typext(id, ext, Text_next, _) :: rest ->
               inner_loop ((id, ext) :: inner_acc) rest
@@ -941,36 +944,27 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
                 loop (TypExt ext :: acc) rest
         in
           inner_loop [] rest
-    | Sig_typext (id, ext, Text_next, Exported) :: rest ->
+    | Sig_typext (id, ext, Text_next, _) :: rest ->
         let ext = read_type_extension env parent id ext [] in
           loop (TypExt ext :: acc) rest
-    | Sig_typext (id, ext, Text_exception, Exported) :: rest ->
+    | Sig_typext (id, ext, Text_exception, _) :: rest ->
         let exn = read_exception env parent id ext in
           loop (Exception exn :: acc) rest
-    | Sig_module (id, _, md, rec_status, Exported)::rest ->
+    | Sig_module (id, _, md, rec_status, _)::rest ->
           let md = read_module_declaration env parent id md in
           loop (Module (read_module_rec_status rec_status, md)::acc) rest
-    | Sig_modtype(id, mtd, Exported) :: rest ->
+    | Sig_modtype(id, mtd, _) :: rest ->
           let mtd = read_module_type_declaration env parent id mtd in
           loop (ModuleType mtd :: acc) rest
-    | Sig_class(id, cl, rec_status, Exported) :: Sig_class_type _
+    | Sig_class(id, cl, rec_status, _) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
           let cl = read_class_declaration env parent id cl in
           loop (Class (read_type_rec_status rec_status, cl)::acc) rest
-    | Sig_class_type(id, cltyp, rec_status, Exported)::Sig_type _::Sig_type _::rest ->
+    | Sig_class_type(id, cltyp, rec_status, _)::Sig_type _::Sig_type _::rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
         loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
     (* Skip all of the hidden sig items *)
-    | Sig_class_type(_id, _, _, Hidden)::Sig_type _::Sig_type _::rest
-    | Sig_class(_id, _, _, Hidden) :: Sig_class_type _
-      :: Sig_type _ :: Sig_type _ :: rest
-    | Sig_modtype(_id, _, Hidden) :: rest
-    | Sig_module (_id, _, _, _, Hidden)::rest
-    | Sig_typext (_id, _, Text_exception, Hidden) :: rest
-    | Sig_typext (_id, _, _, Hidden) :: rest
-    | Sig_type(_id, _, _, Hidden) :: rest
-    | Sig_value(_id, _, Hidden) :: rest ->
-      loop acc rest
+
 
   (* Bad - we expect Sig_class and Sig_class_type to be matched above
     with subsequent Sig_type items *)
