@@ -677,10 +677,10 @@ and lookup_and_resolve_module_from_path :
     | `Resolved (`Identifier i as resolved_path) ->
         let m = Env.lookup_module i env in
         return (process_module_path env add_canonical m resolved_path, m)
-    | `Resolved r -> (
+    | `Resolved r as unresolved -> (
         match lookup_module env r with
         | Ok m -> return (process_module_path env add_canonical m r, m)
-        | Error _ -> Unresolved (`Resolved r) )
+        | Error _ -> Unresolved unresolved )
     | `Substituted s ->
         lookup_and_resolve_module_from_path is_resolve add_canonical env s
         |> map_unresolved (fun p -> `Substituted p)
