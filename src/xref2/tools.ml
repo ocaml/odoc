@@ -231,7 +231,7 @@ type signature_of_module_error = [
 ]
 
 type module_lookup_error = [
-  | `Failure of Env.t * Ident.module_ (** Found local path *)
+  | `Local of Env.t * Ident.module_ (** Found local path *)
   | `Unresolved_apply (** [`Apply] argument is not [`Resolved] *)
   | `Find_failure
   | `Parent_module_type of module_type_lookup_error
@@ -249,7 +249,7 @@ and module_type_expr_of_module_error = [
 ]
 
 and module_type_lookup_error = [
-  | `Failure of Env.t * Cpath.Resolved.module_type
+  | `Local of Env.t * Cpath.Resolved.module_type
   | `Find_failure
   | `Parent_module of module_lookup_error
   | `Parent of module_type_lookup_error
@@ -257,14 +257,14 @@ and module_type_lookup_error = [
 ]
 
 and type_lookup_error = [
-  | `Failure of Env.t * Cpath.Resolved.type_
+  | `Local of Env.t * Cpath.Resolved.type_
   | `Unhandled of Cpath.Resolved.type_
   | `Parent_module of module_lookup_error
   | `Parent_sig of signature_of_module_error
 ]
 
 and class_type_lookup_error = [
-  | `Failure of Env.t * Cpath.Resolved.class_type
+  | `Local of Env.t * Cpath.Resolved.class_type
   | `Unhandled of Cpath.Resolved.class_type
   | `Parent_module of module_lookup_error
   | `Parent_sig of signature_of_module_error
@@ -455,7 +455,7 @@ and lookup_module : Env.t -> Cpath.Resolved.module_ -> (Component.Module.t, modu
   let env_id = Env.id env' in
   let lookup env =
     match path with
-    | `Local lpath -> Error (`Failure (env, lpath))
+    | `Local lpath -> Error (`Local (env, lpath))
     | `Identifier i -> Ok (Env.lookup_module i env)
     | `Substituted x -> lookup_module env x
     | `Apply (functor_path, `Resolved argument_path) -> (
@@ -593,7 +593,7 @@ and lookup_module_type :
   fun env path ->
     let lookup env =
       match path with
-      | `Local _ -> Error (`Failure (env, path))
+      | `Local _ -> Error (`Local (env, path))
       | `Identifier i -> Ok (Env.lookup_module_type i env)
       | `Substituted s -> lookup_module_type env s
       | `SubstT (_, p2) -> lookup_module_type env p2
@@ -770,7 +770,7 @@ and lookup_type_from_resolved_path :
   (* let start_time = Unix.gettimeofday () in *)
   (* Format.fprintf Format.err_formatter "lookup_type_from_resolved_path\n%!"; *)
   let res = match p with
-  | `Local _id -> Error (`Failure (env, p))
+  | `Local _id -> Error (`Local (env, p))
   | `Identifier (`CoreType name) ->
       (* CoreTypes aren't put into the environment, so they can't be handled by the
             next clause. We just look them up here in the list of core types *)
@@ -883,7 +883,7 @@ and lookup_class_type_from_resolved_path :
     Env.t -> Cpath.Resolved.class_type -> (class_type_lookup_result, class_type_lookup_error) result =
  fun env p ->
   match p with
-  | `Local _id -> Error (`Failure (env, p))
+  | `Local _id -> Error (`Local (env, p))
   | `Identifier (`Class _ as c) ->
       let t = Env.lookup_class c env in
       Ok (`Identifier c, `C t)
