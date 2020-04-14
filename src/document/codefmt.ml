@@ -1,11 +1,6 @@
 open Types
 
 type out = Source.t
-
-type Format.stag +=
-  | Elt of Inline.t
-  | Tag of Source.tag
-
 module State = struct
 
   type t = {
@@ -37,7 +32,43 @@ module State = struct
       (leave state; flush state)
 
 end
-  
+
+(* Modern implementation using semantic tags, Only for 4.08+ *)
+module Tag = struct
+
+  type Format.stag +=
+    | Elt of Inline.t
+    | Tag of Source.tag
+
+  let setup_tags formatter state0 =
+    let stag_functions =
+      let mark_open_stag = function
+        | Elt elt -> State.push state0 (Elt elt); ""
+        | Tag tag -> State.enter state0 tag; ""
+        | Format.String_tag "" -> State.enter state0 None; ""
+        | Format.String_tag tag -> State.enter state0 (Some tag); ""
+        | _ -> ""
+      and mark_close_stag = function
+        | Elt _ -> ""
+        | Tag _ 
+        | Format.String_tag _ -> State.leave state0; ""
+        | _ -> ""
+      in {Format.
+        print_open_stag = (fun _ -> ());
+        print_close_stag = (fun _ -> ());
+        mark_open_stag; mark_close_stag;
+      }
+    in
+    Format.pp_set_tags formatter true;
+    Format.pp_set_formatter_stag_functions formatter stag_functions;
+    ()
+
+  let elt ppf elt =
+    Format.pp_open_stag ppf (Elt elt);
+    Format.pp_close_stag ppf ()
+
+end
+
 let make () =
   let open Inline in
   let state0 = State.create () in
@@ -50,35 +81,11 @@ let make () =
     out_spaces = (fun n -> push_text (String.make n ' '));
     out_indent = (fun n -> push_text (String.make n ' '))
   }
-  and stag_functions =
-    let mark_open_stag = function
-      | Elt elt -> push elt; ""
-      | Tag tag -> State.enter state0 tag; ""
-      | Format.String_tag "" -> State.enter state0 None; ""
-      | Format.String_tag tag -> State.enter state0 (Some tag); ""
-      | _ -> ""
-    and mark_close_stag = function
-      | Elt _ -> ""
-      | Tag _ 
-      | Format.String_tag _ -> State.leave state0; ""
-      | _ -> ""
-    in {Format.
-      print_open_stag = (fun _ -> ());
-      print_close_stag = (fun _ -> ());
-      mark_open_stag; mark_close_stag;
-    }
   in
   let formatter = Format.formatter_of_out_functions out_functions in
-  Format.pp_set_tags formatter true;
-  Format.pp_set_formatter_stag_functions formatter stag_functions;
+  Tag.setup_tags formatter state0;
   (fun () -> Format.pp_print_flush formatter (); State.flush state0),
   formatter
-
-let elt ppf e =
-  Format.pp_open_stag ppf (Elt e);
-  Format.pp_close_stag ppf ()
-
-let entity e ppf = elt ppf [inline @@ Inline.Entity e]
 
 let spf fmt =
   let flush, ppf = make () in
@@ -88,11 +95,11 @@ let pf = Format.fprintf
 
 (** Transitory hackish API *)
 
+let elt = Tag.elt
+let entity e ppf = elt ppf [inline @@ Inline.Entity e]
 let (++) f g ppf = f ppf; g ppf
 let span f ppf =
-  Format.pp_open_stag ppf (Tag None);
-  f ppf ;
-  Format.pp_close_stag ppf ()
+  pf ppf "@{<>%t@}" f
 let df = Format.dprintf
 let txt s ppf = Format.pp_print_string ppf s
 let noop (_ : Format.formatter) = ()
@@ -118,9 +125,7 @@ let codeblock ?attr f =
   [block ?attr @@ Block.Source (render f)]
 
 let keyword keyword ppf =
-  Format.pp_open_stag ppf (Tag (Some "keyword"));
-  Format.pp_print_string ppf keyword ;
-  Format.pp_close_stag ppf ()
+  pf ppf "@{<keyword>%s@}" keyword
 
 module Infix = struct
   let (!) = (!)
