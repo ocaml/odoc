@@ -74,10 +74,6 @@ let unresolved txt =
 
 include Generator_signatures
 
-
-type text = Format.formatter -> unit
-
-
 (**
    Main functor to create an {!To_html_tree.Html_generator}
  *)

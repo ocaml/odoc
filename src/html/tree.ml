@@ -59,7 +59,9 @@ module Path = struct
 
   let current : Url.Path.t option ref = ref None
 
-  let get () = Option.get !current
+  let get () = match !current with
+    | Some s -> s
+    | None -> assert false
 end
 
 let enter (url : Url.Path.t) = Path.current := Some url
