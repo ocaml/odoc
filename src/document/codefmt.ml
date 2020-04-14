@@ -33,7 +33,8 @@ module State = struct
 
 end
 
-(* Modern implementation using semantic tags, Only for 4.08+ *)
+(** Modern implementation using semantic tags, Only for 4.08+ *)
+(*
 module Tag = struct
 
   type Format.stag +=
@@ -68,21 +69,70 @@ module Tag = struct
     Format.pp_close_stag ppf ()
 
 end
+*)
+
+(** Ugly terrible implementation of Format Semantic tags for OCaml < 4.08.
+    Please get rid of it as soon as possible. *)
+module Tag = struct
+
+  let setup_tags formatter state0 =
+    let tag_functions =
+      let get_tag s =
+        let prefix_tag = "tag:" in
+        let l = String.length prefix_tag in
+        if String.length s > l && String.sub s 0 l = prefix_tag then
+          let elt : Inline.t =
+            Marshal.from_string s l
+          in
+          `Elt elt
+        else
+          `String s
+      in
+      let mark_open_tag s =
+        match get_tag s with
+        | `Elt elt -> State.push state0 (Elt elt); ""
+        | `String "" -> State.enter state0 None; ""
+        | `String tag -> State.enter state0 (Some tag); ""
+      and mark_close_tag s =
+        match get_tag s with
+        | `Elt _ -> ""
+        | `String _ -> State.leave state0; ""
+      in {Format.
+        print_open_tag = (fun _ -> ());
+        print_close_tag = (fun _ -> ());
+        mark_open_tag; mark_close_tag;
+      }
+    in
+    Format.pp_set_tags formatter true;
+    Format.pp_set_formatter_tag_functions formatter tag_functions;
+    ()
+
+  let elt ppf (elt : Inline.t) =
+    Format.fprintf ppf "@{<tag:%s>@}" (Marshal.to_string elt [])
+
+end[@@alert "-deprecated--deprecated"]
 
 let make () =
   let open Inline in
   let state0 = State.create () in
   let push elt = State.push state0 (Elt elt) in
   let push_text s = push [inline @@ Text s] in
-  let out_functions = {Format.
-    out_string = (fun s i j -> push_text (String.sub s i j));
-    out_flush = (fun () -> ());
-    out_newline = (fun () -> push [inline @@ Linebreak]);
-    out_spaces = (fun n -> push_text (String.make n ' '));
-    out_indent = (fun n -> push_text (String.make n ' '))
-  }
+
+  let formatter =
+    let out_string s i j = push_text (String.sub s i j) in
+    let out_flush () = () in
+    Format.make_formatter out_string out_flush
   in
-  let formatter = Format.formatter_of_out_functions out_functions in
+  (* let out_functions = {Format.
+   *   out_string = (fun );
+   *   out_flush = (fun () -> ());
+   *   out_newline = (fun () -> push [inline @@ Linebreak]);
+   *   out_spaces = (fun n -> push_text (String.make n ' '));
+   *   out_indent = (fun n -> push_text (String.make n ' '))
+   * }
+   * in
+   * let formatter = Format.formatter_of_out_functions out_functions in *)
+
   Tag.setup_tags formatter state0;
   (fun () -> Format.pp_print_flush formatter (); State.flush state0),
   formatter
@@ -100,7 +150,6 @@ let entity e ppf = elt ppf [inline @@ Inline.Entity e]
 let (++) f g ppf = f ppf; g ppf
 let span f ppf =
   pf ppf "@{<>%t@}" f
-let df = Format.dprintf
 let txt s ppf = Format.pp_print_string ppf s
 let noop (_ : Format.formatter) = ()
 
