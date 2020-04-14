@@ -233,7 +233,7 @@ let block ~xref_base_uri (l: Block.t) : [> flow] Html.elt list =
 
 let documentedSrc ~xref_base_uri (t : DocumentedSrc.t) =
   let rec coalece acc ?current (content : DocumentedSrc.t) =
-    let (+:?) x l = Option.fold ~none:l ~some:(fun x -> x :: l) x in
+    let (+:?) x l = Utils.fold_option ~none:l ~some:(fun x -> x :: l) x in
     match current, content with
     | current, [] ->
       List.rev (current +:? acc)
@@ -362,7 +362,7 @@ and items ~xref_base_uri l = Utils.list_concat_map ~f:(item ~xref_base_uri) l
 
 
 let rec coalece_items acc ?current (item : Item.t list) =
-  let (+:?) x l = Option.fold ~none:l ~some:(fun x -> x :: l) x in
+  let (+:?) x l = Utils.fold_option ~none:l ~some:(fun x -> x :: l) x in
   match current, item with
   | current, [] ->
     List.rev (current +:? acc)

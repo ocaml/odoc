@@ -123,6 +123,7 @@ let make () =
     let out_flush () = () in
     Format.make_formatter out_string out_flush
   in
+  (* out_functions is only available in OCaml>=4.06 *)
   (* let out_functions = {Format.
    *   out_string = (fun );
    *   out_flush = (fun () -> ());
