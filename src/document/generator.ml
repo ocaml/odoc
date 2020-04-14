@@ -52,26 +52,25 @@ let make_name_from_path {Url.Path. name ; parent ; _ } =
   | Some p ->
     Printf.sprintf "%s.%s" p.name name
 
+let label t ppf = match t with
+  | Odoc_model.Lang.TypeExpr.Label s -> O.pf ppf "%s" s
+  | Optional s -> O.pf ppf "?%t%s" (O.entity "#8288") s
 
-let label = function
-  | Odoc_model.Lang.TypeExpr.Label s -> O.df "%s" s
-  | Optional s -> O.df "?%t%s" (O.entity "#8288") s
-
-let tag tag t = 
-  O.df "@{<%s>%t@}" tag t
+let tag tag t ppf = 
+  O.pf ppf "@{<%s>%t@}" tag t
 
 let type_var tv =
   tag "type-var" (O.txt tv)
 
 let enclose ~l ~r x =
-  O.span (O.df "%s%t%s" l x r)
+  O.span (fun ppf -> O.pf ppf "%s%t%s" l x r)
 
 let path p txt = 
-  O.df "%a" O.elt [inline @@ InternalLink (InternalLink.Resolved (Url.from_path p, txt))]
+  !O.elt [inline @@ InternalLink (InternalLink.Resolved (Url.from_path p, txt))]
 let resolved p txt =
-  O.df "%a" O.elt [inline @@ InternalLink (InternalLink.Resolved (p, txt))]
+  !O.elt [inline @@ InternalLink (InternalLink.Resolved (p, txt))]
 let unresolved txt = 
-  O.df "%a" O.elt [inline @@ InternalLink (InternalLink.Unresolved txt)]
+  !O.elt [inline @@ InternalLink (InternalLink.Unresolved txt)]
 
 include Generator_signatures
 
