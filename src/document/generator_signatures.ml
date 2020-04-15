@@ -13,16 +13,6 @@ type ('item_kind, 'item) tagged_item = [
   | `Comment of Odoc_model.Comment.docs_or_stop
 ]
 
-type section = {
-  anchor : string;
-  text : Odoc_model.Comment.link_content;
-  children : section list
-}
-
-type toc = section list
-
-
-
 (** HTML generation syntax customization module. See {!To_re_html_tree} and
     {!To_ml_html_tree}. *)
 module type SYNTAX =
@@ -125,18 +115,13 @@ sig
       render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
       render_nested_article:
         (heading_level_shift -> 'item ->
-          rendered_item * Odoc_model.Comment.docs * toc * Block.t) ->
+          rendered_item * Odoc_model.Comment.docs * Block.t) ->
       (_, 'item) tagged_item list ->
-        Block.t * toc * Block.t
+      Block.t * Block.t
 
   val lay_out_page :
-    Odoc_model.Comment.docs ->
-      (Block.t *
-       Block.t *
-       toc)
+    Odoc_model.Comment.docs -> Block.t * Block.t
 
-    val render_toc :
-      toc -> Block.t
   end
 
   module Page :

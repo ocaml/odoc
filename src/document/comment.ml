@@ -294,10 +294,21 @@ let tag : Comment.tag -> Block.t = fun t ->
   | `Canonical _ | `Inline | `Open | `Closed ->
     []
 
-let block_element : Comment.block_element -> Block.t = function
+let attached_block_element : Comment.attached_block_element -> Block.t = function
   | #Comment.nestable_block_element as e ->
     [nestable_block_element e]
-  | `Heading (level, `Label (_, label), content) ->
+  | `Tag t ->
+    tag t
+
+let block_element : Comment.block_element -> Block.t = function
+  | #Comment.attached_block_element as e ->
+    attached_block_element e
+  | `Heading (_, `Label (_, _), content) ->
+    (* We are not supposed to receive Heading in this context. 
+       TODO: Remove heading in attached documentation in the model *)
+    [block @@ Paragraph (non_link_inline_element_list content)]
+
+let heading (`Heading (level, `Label (_, label), content)) = 
     let label = Odoc_model.Names.LabelName.to_string label in
     let title = non_link_inline_element_list content in
     let level =
@@ -310,12 +321,13 @@ let block_element : Comment.block_element -> Block.t = function
       | `Subparagraph -> 6
     in
     let label = Some label in
-    [block @@ Block.Heading {label; level; title}]
-  | `Tag t ->
-    tag t
+    [Item.Heading {label; level; title}]
 
-let block_element_list elements =
-  List.concat @@ List.map block_element elements
+let item_element : Comment.block_element -> Item.t list = function
+  | #Comment.attached_block_element as e ->
+    [Item.Text (attached_block_element e)]
+  | `Heading _ as h ->
+    heading h
 
 let first_to_ir = function
   | {Odoc_model.Location_.value = `Paragraph _ as first_paragraph ; _} ::_
@@ -323,8 +335,13 @@ let first_to_ir = function
     block_element first_paragraph
   | _ -> []
 
+let standalone docs =
+  Utils.flatmap ~f:item_element @@
+  List.map (fun x -> x.Odoc_model.Location_.value) docs
+
 let to_ir (docs : Comment.docs) =
-  block_element_list @@ List.map (fun x -> x.Odoc_model.Location_.value) docs
+  Utils.flatmap ~f:block_element @@
+  List.map (fun x -> x.Odoc_model.Location_.value) docs
 
 let has_doc docs =
   docs <> []

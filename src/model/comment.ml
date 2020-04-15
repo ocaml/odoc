@@ -79,6 +79,11 @@ type heading_level = [
   | `Subparagraph
 ]
 
+type attached_block_element = [
+  | nestable_block_element
+  | `Tag of tag
+]
+
 type block_element = [
   | nestable_block_element
   | `Heading of heading_level * Identifier.Label.t * link_content
