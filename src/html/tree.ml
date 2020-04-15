@@ -14,10 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
-
 module Html = Tyxml.Html
-module Url = Odoc_document.Url
 
 type syntax = OCaml | Reason
 
@@ -35,79 +32,9 @@ type t = {
   children : t list
 }
 
-(* Translation of Url.Path *)
-module Path = struct
-
-  let to_list url =
-    let rec loop acc {Url.Path. parent ; name ; kind } =
-      match parent with
-      | None -> (kind,name) :: acc
-      | Some p -> loop ((kind, name) :: acc) p
-    in
-    loop [] url
-
-  let for_printing url = List.map snd @@ to_list url
-
-  let segment_to_string (kind, name) =
-    if kind = "module" || kind = "package"
-    then name
-    else Printf.sprintf "%s-%s" kind name
-  let for_linking url = List.map segment_to_string @@ to_list url
-  let filename (url : Url.Path.t) = segment_to_string (url.kind, url.name)
-
-  let is_page url = (url.Url.Path.kind = "page")
-
-end
-
-module Link = struct
-  let semantic_uris = ref false
-
-  type t =
-    | Current of Url.Path.t
-    | Base of string
-  
-  let rec drop_shared_prefix l1 l2 =
-    match l1, l2 with
-    | l1 :: l1s, l2 :: l2s when l1 = l2 ->
-      drop_shared_prefix l1s l2s
-    | _, _ -> l1, l2
-
-  let href ~resolve { Url.Anchor. page; anchor; kind } =
-    let leaf = if !semantic_uris || kind = "page" then [] else ["index.html"] in
-    let target = Path.for_linking page @ leaf in
-    match resolve with
-    (* If xref_base_uri is defined, do not perform relative URI resolution. *)
-    | Base xref_base_uri ->
-      let page = xref_base_uri ^ String.concat "/" target in
-      begin match anchor with
-      | "" -> page
-      | anchor -> page ^ "#" ^ anchor
-      end
-    | Current path ->
-      let current_loc =
-        let l = Path.for_linking path in
-        if Path.is_page path then
-          (* Sadness. *)
-          List.tl l
-        else l
-      in
-      let current_from_common_ancestor, target_from_common_ancestor =
-        drop_shared_prefix current_loc target
-      in
-      let relative_target =
-        List.map (fun _ -> "..") current_from_common_ancestor
-        @ target_from_common_ancestor
-      in
-      let page = String.concat "/" relative_target in
-      begin match anchor with
-      | "" -> page
-      | anchor -> page ^ "#" ^ anchor
-      end
-end
-
 let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
-  let is_page = Path.is_page url in
-  let path = Path.for_printing url in
+  let is_page = Link.Path.is_page url in
+  let path = Link.Path.for_printing url in
   let rec add_dotdot ~n acc =
     if n <= 0 then
       acc
@@ -208,9 +135,9 @@ let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
 
   html
 
-let make ?(header_docs = []) ?theme_uri ~url title content children =
-  let filename = Path.filename url in
-  let content = page_creator ?theme_uri ~url title header_docs content in
+let make ?theme_uri ~url ~header title content children =
+  let filename = Link.Path.as_filename url in
+  let content = page_creator ?theme_uri ~url title header content in
   { filename; content; children }
 
 let traverse ~f t =
