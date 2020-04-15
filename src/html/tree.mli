@@ -38,11 +38,6 @@ type uri =
 (** The type for absolute and relative URIs. The relative URIs are resolved
     using the HTML output directory as a target. *)
 
-(** These two functions are used to track the depth while building the tree,
-    which is needed to produce correct links. *)
-
-val enter : Url.Path.t -> unit
-
 (** {1 Page creator} *)
 
 (* TOOD Passing the header docs should become non-optional as the code in
@@ -59,11 +54,15 @@ val make :
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
 
-module Relative_link : sig
+module Link : sig
   val semantic_uris : bool ref
   (** Whether to generate pretty/semantics links or not. *)
 
-  val href : xref_base_uri:string option -> Url.t -> string
+  type t =
+    | Current of Url.Path.t
+    | Base of string
+  
+  val href : resolve:t -> Url.t -> string
 
 end
 

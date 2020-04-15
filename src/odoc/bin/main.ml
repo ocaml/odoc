@@ -209,7 +209,7 @@ end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir index_for
         syntax theme_uri input_file warn_error =
-    Odoc_html.Tree.Relative_link.semantic_uris := semantic_uris;
+    Odoc_html.Tree.Link.semantic_uris := semantic_uris;
     Odoc_html.Tree.open_details := not closed_details;
     let env = Env.create ~important_digests:false ~directories in
     let file = Fs.File.of_string input_file in

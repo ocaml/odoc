@@ -30,7 +30,7 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
     Odoc_xref.resolve_page (Env.resolver env) page >>= fun resolved ->
 
     let page = Odoc_document.Comment.to_ir resolved.content in
-    let html = Odoc_html.Generator.doc ~xref_base_uri:(Some xref_base_uri) page in
+    let html = Odoc_html.Generator.doc ~xref_base_uri page in
     let oc = open_out (Fs.File.to_string output) in
     let fmt = Format.formatter_of_out_channel oc in
     Format.fprintf fmt "%a@." (Format.pp_print_list (Tyxml.Html.pp_elt ())) html;

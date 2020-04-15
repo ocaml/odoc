@@ -57,37 +57,33 @@ module Path = struct
 
   let is_page url = (url.Url.Path.kind = "page")
 
-  let current : Url.Path.t option ref = ref None
-
-  let get () = match !current with
-    | Some s -> s
-    | None -> assert false
 end
 
-let enter (url : Url.Path.t) = Path.current := Some url
-
-module Relative_link = struct
+module Link = struct
   let semantic_uris = ref false
 
+  type t =
+    | Current of Url.Path.t
+    | Base of string
+  
   let rec drop_shared_prefix l1 l2 =
     match l1, l2 with
     | l1 :: l1s, l2 :: l2s when l1 = l2 ->
       drop_shared_prefix l1s l2s
     | _, _ -> l1, l2
 
-  let href ~xref_base_uri { Url.Anchor. page; anchor; kind } =
-    let path = Path.get () in
+  let href ~resolve { Url.Anchor. page; anchor; kind } =
     let leaf = if !semantic_uris || kind = "page" then [] else ["index.html"] in
     let target = Path.for_linking page @ leaf in
-    match xref_base_uri with
+    match resolve with
     (* If xref_base_uri is defined, do not perform relative URI resolution. *)
-    | Some xref_base_uri ->
+    | Base xref_base_uri ->
       let page = xref_base_uri ^ String.concat "/" target in
       begin match anchor with
       | "" -> page
       | anchor -> page ^ "#" ^ anchor
       end
-    | None ->
+    | Current path ->
       let current_loc =
         let l = Path.for_linking path in
         if Path.is_page path then
@@ -163,7 +159,7 @@ let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
   let wrapped_content : (Html_types.div_content Html.elt) list =
 
     let header_content =
-      let dot = if !Relative_link.semantic_uris then "" else "index.html" in
+      let dot = if !Link.semantic_uris then "" else "index.html" in
       let dotdot = add_dotdot ~n:1 dot in
       let up_href = if is_page && name <> "index" then dot else dotdot in
       let has_parent = List.length path > 1 in
