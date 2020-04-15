@@ -30,8 +30,8 @@ type uri =
   | Relative of string
 
 type t = {
-  name : string;
-  content : [ `Html ] Html.elt;
+  filename : string;
+  content : Html.doc;
   children : t list
 }
 
@@ -209,14 +209,14 @@ let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
   html
 
 let make ?(header_docs = []) ?theme_uri ~url title content children =
-  let name    = Path.filename url in
+  let filename = Path.filename url in
   let content = page_creator ?theme_uri ~url title header_docs content in
-  { name; content; children }
+  { filename; content; children }
 
 let traverse ~f t =
   let rec aux parents node =
-    f ~parents node.name node.content;
-    List.iter (aux (node.name :: parents)) node.children
+    f ~parents node.filename node.content;
+    List.iter (aux (node.filename :: parents)) node.children
   in
   aux [] t
 
