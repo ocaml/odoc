@@ -65,7 +65,7 @@ let rec internallink
     ?(a=[])
     (t : InternalLink.t) = match t with
   | Resolved (uri, content) ->
-    let href = Tree.Link.href ~resolve uri in
+    let href = Link.href ~resolve uri in
     let a = (a :> Html_types.a_attrib Html.attrib list) in
     let elt = Html.a ~a:(Html.a_href href :: a)
       (inline_nolink ~emph_level content) in
@@ -405,14 +405,12 @@ let render_toc (toc : Toc.t) =
 
 let rec subpage ?theme_uri
     ({Page. title; header; items = i ; toc; subpages; url }) =
-  let resolve = Tree.Link.Current url in
-  let header_docs =
-    block ~resolve header @ render_toc toc
-  in
+  let resolve = Link.Current url in
+  let header = block ~resolve header @ render_toc toc in
   let content = page_content ~resolve i in
   let subpages = List.map (subpage ?theme_uri) subpages in
   let page =
-    Tree.make ?theme_uri ~header_docs ~url title content subpages
+    Tree.make ?theme_uri ~header ~url title content subpages
   in
   page
 
@@ -420,5 +418,5 @@ let render ?theme_uri page =
   subpage ?theme_uri page
 
 let doc ~xref_base_uri b =
-  let resolve = Tree.Link.Base xref_base_uri in
+  let resolve = Link.Base xref_base_uri in
   (block ~resolve b :> item Html.elt list)
