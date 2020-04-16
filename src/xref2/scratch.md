@@ -6,6 +6,8 @@ open Odoc_xref_test;;
 #install_printer Common.root_pp;;
 #install_printer Odoc_model.Names.ModuleName.fmt;;
 #install_printer Odoc_model.Names.ParameterName.fmt;;
+#install_printer Common.value_name_pp;;
+#install_printer Common.unit_name_pp;;
 
 #print_length 60000;;
 #print_depth 200;;
@@ -125,7 +127,7 @@ let sg = Common.model_of_string_impl test_data;;
                     `Module
                       (`Result
                          (`Result (`Module (`Root (Common.root, "Root"), M))),
-                       E/hidden);
+                       $E);
                    doc = [];
                    type_ =
                     Odoc_model.Lang.Module.ModuleType
@@ -139,7 +141,7 @@ let sg = Common.model_of_string_impl test_data;;
                                    (`Result
                                       (`Module
                                          (`Root (Common.root, "Root"), M))),
-                                 E/hidden),
+                                 $E),
                               <abstr>);
                           doc = [];
                           equation =
@@ -193,7 +195,7 @@ let sg = Common.model_of_string_impl test_data;;
                                      (`Result
                                         (`Module
                                            (`Root (Common.root, "Root"), M))),
-                                   E/hidden)))));
+                                   $E)))));
                     inline = false;
                     expansion =
                      {Odoc_model.Lang.Include.resolved = false;
@@ -242,31 +244,8 @@ let sg = Common.model_of_string_impl test_data;;
                     decl =
                      Odoc_model.Lang.Module.ModuleType
                       (Odoc_model.Lang.ModuleType.Signature
-                        [Odoc_model.Lang.Signature.Comment `Stop;
-                         Odoc_model.Lang.Signature.Module
-                          (Odoc_model.Lang.Signature.Ordinary,
-                          {Odoc_model.Lang.Module.id =
-                            `Module
-                              (`Module
-                                 (`Result
-                                    (`Result
-                                       (`Module
-                                          (`Root (Common.root, "Root"), M))),
-                                  E),
-                               $Open__15_212);
-                           doc = [];
-                           type_ =
-                            Odoc_model.Lang.Module.Alias
-                             (`Resolved
-                                (`Identifier
-                                   (`Parameter
-                                      (`Result
-                                         (`Module
-                                            (`Root (Common.root, "Root"), M)),
-                                       D))));
-                           canonical = None; hidden = true;
-                           display_type = None; expansion = None});
-                         Odoc_model.Lang.Signature.Comment `Stop;
+                        [Odoc_model.Lang.Signature.Open
+                          {Odoc_model.Lang.Open.expansion = []};
                          Odoc_model.Lang.Signature.Type
                           (Odoc_model.Lang.Signature.Ordinary,
                           {Odoc_model.Lang.TypeDecl.id =
@@ -298,7 +277,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                             (Common.root,
                                                              "Root"),
                                                           M))),
-                                                 E/hidden)))),
+                                                 $E)))),
                                      "t"),
                                  [Odoc_model.Lang.TypeExpr.Constr
                                    (`Dot
@@ -344,7 +323,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                          (Common.root,
                                                           "Root"),
                                                        M))),
-                                              E/hidden)))),
+                                              $E)))),
                                   "t"),
                               [Odoc_model.Lang.TypeExpr.Constr
                                 (`Dot
@@ -394,7 +373,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                            (Common.root,
                                                             "Root"),
                                                          M))),
-                                                E/hidden)))),
+                                                $E)))),
                                     "t"),
                                 [Odoc_model.Lang.TypeExpr.Constr
                                   (`Dot
@@ -439,7 +418,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                      (`Root
                                                         (Common.root, "Root"),
                                                       M))),
-                                             E/hidden)))),
+                                             $E)))),
                                  "t"),
                              [Odoc_model.Lang.TypeExpr.Constr
                                (`Dot
