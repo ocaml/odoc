@@ -881,43 +881,6 @@ sig
 end =
 struct
 
-  (* "Consumes" adjacent leaf items of the same kind, until one is found with
-     documentation. Then, joins all their definitions, and the documentation of
-     the last item (if any), into a <dl> element. The rendered <dl> element is
-     paired with the list of unconsumed items remaining in the input. *)
-  let leaf_item_group
-      item_to_id item_to_spec render_leaf_item first_item_kind items =
-    let rec consume_leaf_items_until_one_is_documented items acc =
-      match items with
-      | (`Leaf_item (this_item_kind, item))::items
-        when this_item_kind = first_item_kind ->
-        let content, maybe_docs = render_leaf_item item in
-        let anchor = item_to_id item in
-        let kind = item_to_spec item in
-        let decl = {Item. kind ; anchor ; content } in
-        begin match maybe_docs with
-        | [] ->
-          consume_leaf_items_until_one_is_documented items (decl::acc)
-        | docs -> 
-          let docs = Comment.to_ir docs in
-          let decls = List.rev (decl::acc) in
-          let grouped_item =
-            Item.Declarations (decls, docs)
-          in
-          grouped_item, items
-        end
-      | _ ->
-        let decl = List.rev acc in
-        Item.Declarations (decl, []), items
-    in
-
-    let rendered_item_group, remaining_items =
-      consume_leaf_items_until_one_is_documented items [] in
-
-    rendered_item_group, remaining_items
-
-
-
   (* When we encounter a stop comment, [(**/**)], we read everything until the
      next stop comment, if there is one, and discard it. The returned item list
      is the signature items following the next stop comment, if there are
@@ -1034,15 +997,13 @@ struct
 
     | tagged_item::input_items ->
       match tagged_item with
-      | `Leaf_item (kind, _) ->
-        let ir, input_items =
-          leaf_item_group
-            state.item_to_id
-            state.item_to_spec
-            state.render_leaf_item
-            kind
-            state.input_items
-        in
+      | `Leaf_item (_, item) ->
+        let content, docs = state.render_leaf_item item in
+        let anchor = state.item_to_id item in
+        let kind = state.item_to_spec item in
+        let docs = Comment.first_to_ir docs in
+        let decl = {Item. content ; kind ; anchor } in
+        let ir = Item.Declaration (decl, docs) in
         section_items level_shift section_level {state with
             input_items;
             comment_state = { state.comment_state with

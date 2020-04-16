@@ -170,7 +170,6 @@ and Item : sig
   type t =
     | Text of text
     | Heading of Heading.t
-    | Declarations of declaration list * Block.t
     | Declaration of declaration * Block.t
     | Nested of Nested.t item * Block.t
     | Section of Item.t list * t list

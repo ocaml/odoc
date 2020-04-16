@@ -2,25 +2,25 @@ open Types
 
 module Take = struct
 
-  type ('a, 'b) action =
+  type ('a, 'b, 'c) action =
     | Rec of 'a list
     | Skip
     | Accum of 'b list
     | Stop_and_keep
-    | Stop_and_accum of 'b list
+    | Stop_and_accum of 'b list * 'c option
 
   let until ~classify items =
     let rec loop acc = function
-      | [] -> List.rev acc, []
+      | [] -> List.rev acc, None, []
       | b :: rest ->
         match classify b with
         | Skip -> loop acc rest
         | Rec x -> loop acc (x @ rest)
         | Accum v -> loop (List.rev_append v acc) rest
         | Stop_and_keep ->
-          List.rev acc, (b :: rest)
-        | Stop_and_accum v ->
-          List.rev_append acc v, rest
+          List.rev acc, None, (b :: rest)
+        | Stop_and_accum (v, e) ->
+          List.rev_append acc v, e, rest
     in
     loop [] items
 
@@ -66,7 +66,6 @@ module Toc = struct
 
   let classify ~on_nested (i : Item.t) : _ Rewire.action = match i with
     | Text _
-    | Declarations (_, _)
     | Declaration (_, _)
       -> Skip
     | Nested ({ content = { status; items; _ }; _ }, _) ->
