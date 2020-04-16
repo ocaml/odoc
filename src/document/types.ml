@@ -126,7 +126,7 @@ and DocumentedSrc : sig
 
   type 'a documented = {
     attrs : Class.t ;
-    anchor : string ;
+    anchor : Url.Anchor.t option ;
     code : 'a ;
     doc : Block.t ;
   }
@@ -160,7 +160,7 @@ and Item : sig
 
   type 'a item = {
     kind : string option ;
-    anchor : string option ;
+    anchor : Url.Anchor.t option ;
     content : 'a ;
   }
 
