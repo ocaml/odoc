@@ -16,9 +16,8 @@
 
 open Odoc_document.Types
 
-module Location = Odoc_model.Location_
-module Paths = Odoc_model.Paths
 module Html = Tyxml.Html
+module Doctree = Odoc_document.Doctree
 
 type any = Html_types.flow5
 type item = Html_types.flow5_without_header_footer
@@ -195,59 +194,47 @@ let rec block ~resolve (l: Block.t) : flow Html.elt list =
 
 
 let documentedSrc ~resolve (t : DocumentedSrc.t) =
-  let rec coalece acc ?current (content : DocumentedSrc.t) =
-    let (+:?) x l = Utils.fold_option ~none:l ~some:(fun x -> x :: l) x in
-    match current, content with
-    | current, [] ->
-      List.rev (current +:? acc)
-    | Some `O (attr', code'), Code { attr ; code } :: content
-      when attr = attr' ->
-      coalece acc ~current:(`O (attr, code' @ code)) content
-    | Some `T l, Documented { attrs; anchor; code; doc } :: content ->
-      let code = `D code in
-      let x = {DocumentedSrc. attrs ; anchor ; code ; doc } in
-      coalece acc ~current:(`T (l @ [x])) content
-    | Some `T l, Nested { attrs; anchor; code; doc } :: content ->
-      let code = `N (coalece [] code) in
-      let x = {DocumentedSrc. attrs ; anchor ; code ; doc } in
-      coalece acc ~current:(`T (l @ [x])) content
-    | current , Code { attr ; code } :: content ->
-      coalece (current +:? acc) ~current:(`O (attr, code)) content
-    | current , Documented { attrs; anchor; code; doc } :: content ->
-      let code = `D code in
-      let x = {DocumentedSrc. attrs ; anchor ; code ; doc } in
-      coalece (current +:? acc) ~current:(`T [x]) content
-    | current , Nested { attrs; anchor; code; doc } :: content ->
-      let code = `N (coalece [] code) in
-      let x = {DocumentedSrc. attrs ; anchor ; code ; doc } in
-      coalece (current +:? acc) ~current:(`T [x]) content
-  in
-  let rec to_html t : flow Html.elt list =
-    Utils.list_concat_map t ~f:(function 
-      | `O (attr, code) ->
-        let a = class_ attr in
-        source (inline ~resolve) ~a code
-      | `T l ->
-        let one {DocumentedSrc. attrs ; anchor ; code ; doc } =
-          let content = match code with
-            | `D code ->
-              (inline ~resolve code :> flow Html.elt list)
-            | `N n -> to_html n
-          in
-          let doc = match doc with
-            | [] -> []
-            | doc ->
-              [Html.td ~a:(class_ ["doc"])
-                  (block ~resolve doc)]
-          in
-          Html.tr ~a:(anchor_attrib anchor)
-            (Html.td ~a:(class_ attrs)
-                (anchor_link anchor @ content) :: doc)
-        in
-        [Html.table (List.map one l)]
+  let open DocumentedSrc in
+  let take_code attr0 l =
+    Doctree.Take.until l ~classify:(function
+      | Code { attr; code } when attr = attr0 -> Accum code
+      | _ -> Stop_and_keep
     )
   in
-  to_html @@ coalece [] t
+  let take_descr l = 
+    Doctree.Take.until l ~classify:(function
+      | Documented { attrs; anchor; code; doc }  ->
+        Accum [{DocumentedSrc. attrs ; anchor ; code = `D code; doc }]
+      | Nested { attrs; anchor; code; doc } ->
+        Accum [{DocumentedSrc. attrs ; anchor ; code = `N code; doc }]
+      | _ -> Stop_and_keep
+    )
+  in
+  let rec to_html t : flow Html.elt list = match t with
+    | [] -> []
+    | Code { attr ; _ } :: _ ->
+      let code, rest = take_code attr t in
+      let a = class_ attr in
+      source (inline ~resolve) ~a code
+      @ to_html rest
+    | (Documented _ | Nested _) :: _ ->
+      let l, rest = take_descr t in
+      let one {DocumentedSrc. attrs ; anchor ; code ; doc } =
+        let content = match code with
+          | `D code -> (inline ~resolve code :> flow Html.elt list)
+          | `N n -> to_html n
+        in
+        let doc =
+          Utils.optional_elt
+            Html.td ~a:(class_ ["doc"]) (block ~resolve doc)
+        in
+        Html.tr ~a:(anchor_attrib anchor)
+          (Html.td ~a:(class_ attrs) (anchor_link anchor @ content) :: doc)
+      in
+      Html.table (List.map one l)
+      :: to_html rest
+  in
+  to_html t
 
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
@@ -256,18 +243,6 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
 let flow_to_item
   : flow Html.elt list -> item Html.elt list
   = fun x -> Html.totl @@ Html.toeltl x
-
-let rec coalece_items acc ?current (item : Item.t list) =
-  let (+:?) x l = Utils.fold_option ~none:l ~some:(fun x -> x :: l) x in
-  match current, item with
-  | current, [] ->
-    List.rev (current +:? acc)
-  | Some Item.Text text0, Text text :: content ->
-    coalece_items acc ~current:(Text (text0 @ text)) content
-  | current , Text text :: content ->
-    coalece_items (current +:? acc) ~current:(Item.Text text) content
-  | current , i :: content ->
-    coalece_items (current +:? acc) ~current:i content
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function
@@ -281,95 +256,107 @@ let rec is_only_text l =
   in
   List.for_all is_text l
 
-let rec item ~resolve ~only_text (t : Item.t) : item Html.elt list =
-  match t with
-  | Text content ->
-    let content = flow_to_item @@ block ~resolve content in
-    if only_text then
-      content
-    else
-      [Html.aside (content :> any Html.elt list)]
-  | Heading h ->
-    [heading ~resolve h]
-  | Section (header, content) ->
-    let h = nested_items ~resolve header in
-    let content =
-      (items ~resolve ~only_text content :> any Html.elt list)
+let items ~resolve l =
+  let[@tailrec] rec walk_items
+      ~only_text acc (t : Item.t list) : item Html.elt list =
+    let continue_with rest elts =
+      walk_items ~only_text (List.rev_append elts acc) rest
     in
-    [Html.section (Html.header h :: content )]
-  | Nested
-      ({ attr; anchor; content = { summary; status; items = i } }, docs)
-    ->
-    let docs = (block ~resolve docs :> any Html.elt list) in
-    let summary = inline ~resolve summary in
-    let included_html =
-      (items ~resolve ~only_text i :> any Html.elt list)
-    in
-    let content : any Html.elt list =
-      let mk b =
-        let a = if b then [Html.a_open ()] else [] in
-        [Html.details ~a
-            (Html.summary [Html.span ~a:[Html.a_class ["def"]] summary])
-            included_html]
+    match t with
+    | [] -> List.rev acc
+    | Text _ :: _ ->
+      let text, rest = Doctree.Take.until t ~classify:(function
+        | Item.Text text -> Accum text
+        | _ -> Stop_and_keep)
       in
-      match status with
-      | `Inline -> included_html
-      | `Closed -> mk false        
-      | `Open -> mk true
-      | `Default -> mk !Tree.open_details
-    in
-    let anchor_attrib, anchor_link = match anchor with
-      | Some a -> anchor_attrib a, anchor_link a
-      | None -> [], []
-    in
-    let a = class_ (["spec"; "include"] @ attr) @ anchor_attrib in
-    (* TODO : Why double div ??? *)
-    [Html.div [Html.div ~a
-          (anchor_link @ [Html.div ~a:[Html.a_class ["doc"]]
-              (docs @ content)])
-    ]]
-  | Declaration ({Item. attr; anchor ; content}, []) ->
-    let anchor_attrib, anchor_link = match anchor with
-      | Some a -> anchor_attrib a, anchor_link a
-      | None -> [], []
-    in
-    let a = class_ attr @ anchor_attrib in
-    let content = documentedSrc ~resolve content in
-    [Html.div ~a (anchor_link @ content)]
-  | Declaration ({Item. attr; anchor ; content}, docs) ->
-    let anchor_attrib, anchor_link = match anchor with
-      | Some a -> anchor_attrib a, anchor_link a
-      | None -> [], []
-    in
-    let a = class_ attr @ anchor_attrib in
-    let content = documentedSrc ~resolve content in
-    let docs =
-      Utils.optional_elt Html.dd (block ~resolve docs)
-    in
-    [Html.dl (Html.dt ~a (anchor_link @ content) :: docs)]
-  | Declarations (l, docs) -> 
-    let content = List.map (fun {Item. attr; anchor ; content} ->
+      let content = flow_to_item @@ block ~resolve text in
+      let elts = if only_text then
+          content
+        else
+          [Html.aside (content :> any Html.elt list)]
+      in
+      elts
+      |> continue_with rest
+    | Heading h :: rest ->
+      [heading ~resolve h]
+      |> continue_with rest
+    | Section (header, content) :: rest ->
+      let h = items header in
+      let content =
+        (walk_items ~only_text [] content :> any Html.elt list)
+      in
+      [Html.section (Html.header h :: content )]
+      |> continue_with rest
+    | Nested
+        ({ attr; anchor; content = { summary; status; items = i } }, docs)
+      :: rest ->
+      let docs = (block ~resolve docs :> any Html.elt list) in
+      let summary = inline ~resolve summary in
+      let included_html =
+        (items i :> any Html.elt list)
+      in
+      let content : any Html.elt list =
+        let mk b =
+          let a = if b then [Html.a_open ()] else [] in
+          [Html.details ~a
+              (Html.summary [Html.span ~a:[Html.a_class ["def"]] summary])
+              included_html]
+        in
+        match status with
+        | `Inline -> included_html
+        | `Closed -> mk false        
+        | `Open -> mk true
+        | `Default -> mk !Tree.open_details
+      in
+      let anchor_attrib, anchor_link = match anchor with
+        | Some a -> anchor_attrib a, anchor_link a
+        | None -> [], []
+      in
+      let a = class_ (["spec"; "include"] @ attr) @ anchor_attrib in
+      (* TODO : Why double div ??? *)
+      [Html.div [Html.div ~a
+            (anchor_link @ [Html.div ~a:[Html.a_class ["doc"]]
+                (docs @ content)])]]
+      |> continue_with rest
+    | Declaration ({Item. attr; anchor ; content}, []) :: rest ->
       let anchor_attrib, anchor_link = match anchor with
         | Some a -> anchor_attrib a, anchor_link a
         | None -> [], []
       in
       let a = class_ attr @ anchor_attrib in
       let content = documentedSrc ~resolve content in
-      Html.dt ~a (anchor_link @ content)
-    ) l
-    in 
-    let docs =
-      Utils.optional_elt Html.dd (block ~resolve docs)
-    in
-    [Html.dl (content @ docs)]
-
-and items ~resolve ~only_text l : item Html.elt list =
-  Utils.list_concat_map ~f:(item ~resolve ~only_text) l
-
-and nested_items ~resolve l : item Html.elt list =
-  let l = coalece_items [] l in
-  let only_text = is_only_text l in
-  items ~resolve ~only_text l
+      [Html.div ~a (anchor_link @ content)]
+      |> continue_with rest
+    | Declaration ({Item. attr; anchor ; content}, docs) :: rest ->
+      let anchor_attrib, anchor_link = match anchor with
+        | Some a -> anchor_attrib a, anchor_link a
+        | None -> [], []
+      in
+      let a = class_ attr @ anchor_attrib in
+      let content = documentedSrc ~resolve content in
+      let docs =
+        Utils.optional_elt Html.dd (block ~resolve docs)
+      in
+      [Html.dl (Html.dt ~a (anchor_link @ content) :: docs)]
+      |> continue_with rest
+    | Declarations (l, docs) :: rest -> 
+      let content = List.map (fun {Item. attr; anchor ; content} ->
+        let anchor_attrib, anchor_link = match anchor with
+          | Some a -> anchor_attrib a, anchor_link a
+          | None -> [], []
+        in
+        let a = class_ attr @ anchor_attrib in
+        let content = documentedSrc ~resolve content in
+        Html.dt ~a (anchor_link @ content)
+      ) l
+      in 
+      let docs =
+        Utils.optional_elt Html.dd (block ~resolve docs)
+      in
+      [Html.dl (content @ docs)]
+      |> continue_with rest
+  and items l = walk_items ~only_text:(is_only_text l) [] l in
+  items l
 
 module Toc = struct
   open Odoc_document.Doctree
@@ -405,8 +392,8 @@ let rec subpage ?theme_uri
     ({Page. title; header; items = i ; subpages; url }) =
   let resolve = Link.Current url in
   let toc = Toc.from_items i in
-  let header = nested_items ~resolve header @ toc in
-  let content = (nested_items ~resolve i :> any Html.elt list) in
+  let header = items ~resolve header @ toc in
+  let content = (items ~resolve i :> any Html.elt list) in
   let subpages = List.map (subpage ?theme_uri) subpages in
   let page =
     Tree.make ?theme_uri ~header ~url title content subpages
