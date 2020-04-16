@@ -256,6 +256,10 @@ let rec is_only_text l =
   in
   List.for_all is_text l
 
+let class_of_kind kind = match kind with
+  | Some spec -> class_ ["spec"; spec]
+  | None -> []
+
 let items ~resolve l =
   let[@tailrec] rec walk_items
       ~only_text acc (t : Item.t list) : item Html.elt list =
@@ -288,7 +292,7 @@ let items ~resolve l =
       [Html.section (Html.header h :: content )]
       |> continue_with rest
     | Nested
-        ({ attr; anchor; content = { summary; status; items = i } }, docs)
+        ({ kind; anchor; content = { summary; status; items = i } }, docs)
       :: rest ->
       let docs = (block ~resolve docs :> any Html.elt list) in
       let summary = inline ~resolve summary in
@@ -312,27 +316,27 @@ let items ~resolve l =
         | Some a -> anchor_attrib a, anchor_link a
         | None -> [], []
       in
-      let a = class_ (["spec"; "include"] @ attr) @ anchor_attrib in
+      let a = class_of_kind kind @ anchor_attrib in
       (* TODO : Why double div ??? *)
       [Html.div [Html.div ~a
             (anchor_link @ [Html.div ~a:[Html.a_class ["doc"]]
                 (docs @ content)])]]
       |> continue_with rest
-    | Declaration ({Item. attr; anchor ; content}, []) :: rest ->
+    | Declaration ({Item. kind; anchor ; content}, []) :: rest ->
       let anchor_attrib, anchor_link = match anchor with
         | Some a -> anchor_attrib a, anchor_link a
         | None -> [], []
       in
-      let a = class_ attr @ anchor_attrib in
+      let a = class_of_kind kind @ anchor_attrib in
       let content = documentedSrc ~resolve content in
       [Html.div ~a (anchor_link @ content)]
       |> continue_with rest
-    | Declaration ({Item. attr; anchor ; content}, docs) :: rest ->
+    | Declaration ({Item. kind; anchor ; content}, docs) :: rest ->
       let anchor_attrib, anchor_link = match anchor with
         | Some a -> anchor_attrib a, anchor_link a
         | None -> [], []
       in
-      let a = class_ attr @ anchor_attrib in
+      let a = class_of_kind kind @ anchor_attrib in
       let content = documentedSrc ~resolve content in
       let docs =
         Utils.optional_elt Html.dd (block ~resolve docs)
@@ -340,12 +344,12 @@ let items ~resolve l =
       [Html.dl (Html.dt ~a (anchor_link @ content) :: docs)]
       |> continue_with rest
     | Declarations (l, docs) :: rest -> 
-      let content = List.map (fun {Item. attr; anchor ; content} ->
+      let content = List.map (fun {Item. kind; anchor ; content} ->
         let anchor_attrib, anchor_link = match anchor with
           | Some a -> anchor_attrib a, anchor_link a
           | None -> [], []
         in
-        let a = class_ attr @ anchor_attrib in
+        let a = class_of_kind kind @ anchor_attrib in
         let content = documentedSrc ~resolve content in
         Html.dt ~a (anchor_link @ content)
       ) l
