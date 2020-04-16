@@ -1,5 +1,31 @@
 open Types
 
+module Take = struct
+
+  type ('a, 'b) action =
+    | Rec of 'a list
+    | Skip
+    | Accum of 'b list
+    | Stop_and_keep
+    | Stop_and_accum of 'b list
+
+  let until ~classify items =
+    let rec loop acc = function
+      | [] -> List.rev acc, []
+      | b :: rest ->
+        match classify b with
+        | Skip -> loop acc rest
+        | Rec x -> loop acc (x @ rest)
+        | Accum v -> loop (List.rev_append v acc) rest
+        | Stop_and_keep ->
+          List.rev acc, (b :: rest)
+        | Stop_and_accum v ->
+          List.rev_append acc v, rest
+    in
+    loop [] items
+
+end
+
 module Rewire = struct
 
   type ('a, 'h) action =
