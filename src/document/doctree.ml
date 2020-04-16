@@ -1,5 +1,33 @@
 open Types
 
+module Rewire = struct
+
+  type ('a, 'h) action =
+    | Rec of 'a
+    | Skip
+    | Heading of 'h * int
+
+  let walk ~classify ~node items =
+    let rec loop current_level acc l =
+      match l with
+      | [] -> List.rev acc, []
+      | b :: rest ->
+        match classify b with
+        | Skip -> loop current_level acc rest
+        | Rec l -> loop current_level acc (l @ rest)
+        | Heading (h, level) ->
+          if level > current_level then
+            let children, rest = loop level [] rest in
+            loop current_level (node h children :: acc) rest
+          else
+            List.rev acc, l
+    in
+    let trees, rest = loop (-1) [] items in
+    assert (rest = []);
+    trees
+
+end
+
 module Toc = struct
 
   type t = one list
@@ -10,44 +38,29 @@ module Toc = struct
     children : t
   }
 
-  let rec walk_items ~on_nested current_level acc (t : Item.t list) =
-    match t with
-    | [] -> List.rev acc, []
-    | b :: rest ->
-      match b with
-      | Text _
-      | Declarations (_, _)
-      | Declaration (_, _)
-        -> walk_items ~on_nested current_level acc rest
-      | Nested
-          ({ content = { status; items; _ }; _ }, _) ->
-        if on_nested status then
-          walk_items ~on_nested current_level acc (items @ rest)
-        else
-          walk_items ~on_nested current_level acc rest
-      | Section (doc, items) ->
-        walk_items ~on_nested current_level acc (doc@items@rest)
-      | Heading { label = None; _ } ->
-        walk_items ~on_nested current_level acc rest
-      | Heading { label = Some label; level; title } ->
-        if level > current_level then
-          let children, rest = walk_items ~on_nested level [] rest in
-          let toc_entry = { anchor = label; text = title; children } in
-          walk_items ~on_nested current_level (toc_entry :: acc) rest
-        else
-          List.rev acc, t
+  let classify ~on_nested (i : Item.t) : _ Rewire.action = match i with
+    | Text _
+    | Declarations (_, _)
+    | Declaration (_, _)
+      -> Skip
+    | Nested ({ content = { status; items; _ }; _ }, _) ->
+      if on_nested status then Rec items else Skip
+    | Section (doc, items) ->
+      Rec (doc@items)
+    | Heading { label = None ; _ } -> Skip
+    | Heading { label = Some label; level; title } ->
+      Heading ((label, title), level)
+
+  let node (anchor, text) children = { anchor; text; children}
 
   let on_nested_default : Nested.status -> bool = function
     | `Closed | `Open | `Default -> false
     | `Inline -> true
 
   let compute ?(on_nested=on_nested_default) t =
-    let rec loop items =
-      let toc, rest = walk_items ~on_nested 0 [] items in
-      match rest with
-      | [] -> toc
-      | l -> toc @ loop l
-    in
-    loop t
+    Rewire.walk
+      ~classify:(classify ~on_nested)
+      ~node
+      t
 
 end
