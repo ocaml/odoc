@@ -12,6 +12,12 @@ Preamble for the following examples:
 open Odoc_xref2;;
 open Odoc_xref_test;;
 #install_printer Common.root_pp;;
+#install_printer Common.unit_name_pp;;
+#install_printer Common.value_name_pp;;
+#install_printer Common.module_name_pp;;
+#install_printer Common.module_type_name_pp;;
+#install_printer Common.type_name_pp;;
+#install_printer Common.parameter_name_pp;;
 let mod_sig =
     let open Common.LangUtils.Lens in
     Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_signature
@@ -20,7 +26,7 @@ let functor_sig =
     Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_functor |-- snd |-~ ModuleType.expr_signature
 let functor_arg_sig =
     let open Common.LangUtils.Lens in
-    Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_functor |-- fst |-~ option |-- FunctorArgument.expr |-~ ModuleType.expr_signature
+    Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_functor |-- fst |-~ FunctorParameter.named |-- FunctorParameter.expr |-~ ModuleType.expr_signature
 ```
 
 Identifiers
