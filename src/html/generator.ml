@@ -47,7 +47,7 @@ and source k ?a (t : Source.t) =
     | Tag (None, l) -> [Html.span (tokens l)]
     | Tag (Some s, l) -> [Html.span ~a:[Html.a_class [s]] (tokens l)]
   and tokens t = Utils.list_concat_map t ~f:token
-  in 
+  in
   Utils.optional_elt Html.code ?a (tokens t)
 
 and styled style ~emph_level = match style with
@@ -90,7 +90,7 @@ and internallink_nolink
 
 and inline
     ?(emph_level=0) ~resolve (l : Inline.t) : phrasing Html.elt list =
-  let one (t : Inline.one) = 
+  let one (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
     | Text s ->
@@ -117,7 +117,7 @@ and inline
 
 and inline_nolink
     ?(emph_level=0) (l : Inline.t) : non_link_phrasing Html.elt list =
-  let one (t : Inline.one) = 
+  let one (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
     | Text s ->
@@ -161,7 +161,7 @@ let rec block ~resolve (l: Block.t) : flow Html.elt list =
   let as_flow x =
     (x : phrasing Html.elt list :> flow Html.elt list)
   in
-  let one (t : Block.one) = 
+  let one (t : Block.one) =
     let a = class_ t.attr in
     match t.desc with
     | Inline i ->
@@ -189,7 +189,7 @@ let rec block ~resolve (l: Block.t) : flow Html.elt list =
       [Html.pre ~a [Html.txt s]]
     | Source c ->
       [Html.pre ~a (source (inline ~resolve) c)]
-  in 
+  in
   Utils.list_concat_map l ~f:one
 
 
@@ -201,7 +201,7 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
       | _ -> Stop_and_keep
     )
   in
-  let take_descr l = 
+  let take_descr l =
     Doctree.Take.until l ~classify:(function
       | Documented { attrs; anchor; code; doc }  ->
         Accum [{DocumentedSrc. attrs ; anchor ; code = `D code; doc }]
@@ -213,12 +213,12 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
   let rec to_html t : flow Html.elt list = match t with
     | [] -> []
     | Code { attr ; _ } :: _ ->
-      let code, rest = take_code attr t in
+      let code, _, rest = take_code attr t in
       let a = class_ attr in
       source (inline ~resolve) ~a code
       @ to_html rest
     | (Documented _ | Nested _) :: _ ->
-      let l, rest = take_descr t in
+      let l, _, rest = take_descr t in
       let one {DocumentedSrc. attrs ; anchor ; code ; doc } =
         let content = match code with
           | `D code -> (inline ~resolve code :> flow Html.elt list)
@@ -246,10 +246,9 @@ let flow_to_item
 
 let rec is_only_text l =
   let is_text : Item.t -> _ = function
-    | Heading _ | Text _
-    | Declarations ([],_) -> true
+    | Heading _ | Text _ -> true
     | Section (doc, items) -> is_only_text doc && is_only_text items
-    | Declaration _ | Declarations _
+    | Declaration _
       -> false
     | Nested ({ content = { items; _ }; _ },_)
       -> is_only_text items
@@ -260,6 +259,16 @@ let class_of_kind kind = match kind with
   | Some spec -> class_ ["spec"; spec]
   | None -> []
 
+let should_coalesce = function
+  | None -> false
+  | Some s -> match s with
+    | "exception" | "value" | "external"
+    | "type" | "type-subst" | "extension"
+    | "module-substitution"
+    | "method" | "instance-variable" | "inherit"
+      -> true
+    | _ -> false
+
 let items ~resolve l =
   let[@tailrec] rec walk_items
       ~only_text acc (t : Item.t list) : item Html.elt list =
@@ -268,8 +277,8 @@ let items ~resolve l =
     in
     match t with
     | [] -> List.rev acc
-    | Text _ :: _ ->
-      let text, rest = Doctree.Take.until t ~classify:(function
+    | Text _ :: _ as t ->
+      let text, _, rest = Doctree.Take.until t ~classify:(function
         | Item.Text text -> Accum text
         | _ -> Stop_and_keep)
       in
@@ -308,7 +317,7 @@ let items ~resolve l =
         in
         match status with
         | `Inline -> included_html
-        | `Closed -> mk false        
+        | `Closed -> mk false
         | `Open -> mk true
         | `Default -> mk !Tree.open_details
       in
@@ -322,28 +331,16 @@ let items ~resolve l =
             (anchor_link @ [Html.div ~a:[Html.a_class ["doc"]]
                 (docs @ content)])]]
       |> continue_with rest
-    | Declaration ({Item. kind; anchor ; content}, []) :: rest ->
-      let anchor_attrib, anchor_link = match anchor with
-        | Some a -> anchor_attrib a, anchor_link a
-        | None -> [], []
+
+    | Declaration ({ kind ; _ }, _) :: _ as t 
+      when should_coalesce kind ->
+      let l, doc, rest = Doctree.Take.until t ~classify:(function
+        | Item.Declaration (d, []) when d.kind = kind ->
+          Accum [d]
+        | Item.Declaration (d, doc) when d.kind = kind ->
+          Stop_and_accum ([d], Some doc)
+        | _ -> Stop_and_keep)
       in
-      let a = class_of_kind kind @ anchor_attrib in
-      let content = documentedSrc ~resolve content in
-      [Html.div ~a (anchor_link @ content)]
-      |> continue_with rest
-    | Declaration ({Item. kind; anchor ; content}, docs) :: rest ->
-      let anchor_attrib, anchor_link = match anchor with
-        | Some a -> anchor_attrib a, anchor_link a
-        | None -> [], []
-      in
-      let a = class_of_kind kind @ anchor_attrib in
-      let content = documentedSrc ~resolve content in
-      let docs =
-        Utils.optional_elt Html.dd (block ~resolve docs)
-      in
-      [Html.dl (Html.dt ~a (anchor_link @ content) :: docs)]
-      |> continue_with rest
-    | Declarations (l, docs) :: rest -> 
       let content = List.map (fun {Item. kind; anchor ; content} ->
         let anchor_attrib, anchor_link = match anchor with
           | Some a -> anchor_attrib a, anchor_link a
@@ -353,12 +350,33 @@ let items ~resolve l =
         let content = documentedSrc ~resolve content in
         Html.dt ~a (anchor_link @ content)
       ) l
-      in 
+      in
       let docs =
-        Utils.optional_elt Html.dd (block ~resolve docs)
+        match doc with
+        | None | Some [] -> []
+        | Some d -> [Html.dd (block ~resolve d)]
       in
       [Html.dl (content @ docs)]
       |> continue_with rest
+
+    | Declaration ({Item. kind; anchor ; content}, doc) :: rest ->
+      let anchor_attrib, anchor_link = match anchor with
+        | Some a -> anchor_attrib a, anchor_link a
+        | None -> [], []
+      in
+      let a = class_of_kind kind @ anchor_attrib in
+      let content = anchor_link @ documentedSrc ~resolve content in
+      let elts = match doc with
+        | [] ->
+          [Html.div ~a content]
+        | docs ->
+          [Html.dl [
+              Html.dt ~a content;
+              Html.dd (block ~resolve docs);
+            ]]
+      in
+      continue_with rest elts
+
   and items l = walk_items ~only_text:(is_only_text l) [] l in
   items l
 
