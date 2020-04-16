@@ -881,13 +881,6 @@ sig
 end =
 struct
 
-(* Adds spec class to the list of existing item attributes. *)
-  let mk_class item_to_spec item =
-    match item_to_spec item with
-    | Some spec -> ["spec " ^ spec]
-    | None -> []
-
-
   (* "Consumes" adjacent leaf items of the same kind, until one is found with
      documentation. Then, joins all their definitions, and the documentation of
      the last item (if any), into a <dl> element. The rendered <dl> element is
@@ -900,8 +893,8 @@ struct
         when this_item_kind = first_item_kind ->
         let content, maybe_docs = render_leaf_item item in
         let anchor = item_to_id item in
-        let attr = mk_class item_to_spec item in
-        let decl = {Item. attr ; anchor ; content } in
+        let kind = item_to_spec item in
+        let decl = {Item. kind ; anchor ; content } in
         begin match maybe_docs with
         | [] ->
           consume_leaf_items_until_one_is_documented items (decl::acc)
@@ -1061,14 +1054,14 @@ struct
           state.render_nested_article (level_to_int section_level) item
         in
         let anchor = state.item_to_id item in
-        let attr = mk_class state.item_to_spec item in
+        let kind = state.item_to_spec item in
         let docs = Comment.first_to_ir docs in
         let ir = match rendered_item with 
           | `Decl content ->
-            let decl = {Item. content ; attr ; anchor } in
+            let decl = {Item. content ; kind ; anchor } in
             Item.Declaration (decl, docs)
           | `Nested content -> 
-            Item.Nested ({Item. content ; attr ; anchor }, docs)
+            Item.Nested ({Item. content ; kind ; anchor }, docs)
         in
         section_items level_shift section_level { state with
           input_items;
@@ -1273,8 +1266,8 @@ struct
   let class_signature_item_to_spec : Lang.ClassSignature.item -> _ = function
     | Method _ -> Some "method"
     | InstanceVariable _ -> Some "instance-variable"
+    | Inherit _ -> Some "inherit"
     | Constraint _
-    | Inherit _
     | Comment _ -> None
 
   let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
@@ -1497,7 +1490,7 @@ struct
     | Class _ -> Some "class"
     | ClassType _ -> Some "class-type"
     | TypExt _ -> Some "extension"
-    | Include _
+    | Include _ -> Some "include"
     | Comment _ -> None
 
   let tag_signature_item : Lang.Signature.item -> _ = fun item ->
@@ -1890,8 +1883,8 @@ struct
       in
       let content = O.documentedSrc md_def in
       let anchor = Some ("module-" ^ modname) in
-      let attr = [] in
-      let decl = {Item. anchor ; content ; attr } in
+      let kind = Some "modules" in
+      let decl = {Item. anchor ; content ; kind } in
       Item.Declaration (decl, [])
     in
     List.map f t

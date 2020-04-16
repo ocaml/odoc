@@ -159,7 +159,7 @@ end = Nested
 and Item : sig
 
   type 'a item = {
-    attr : Class.t ;
+    kind : string option ;
     anchor : string option ;
     content : 'a ;
   }
