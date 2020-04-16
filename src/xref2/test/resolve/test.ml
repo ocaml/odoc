@@ -37,12 +37,6 @@ let test_resolve test =
 
         fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
     with
-    | Tools.Module_lookup_failure (e, p) ->
-        let bt = Printexc.get_backtrace () in
-        Printf.printf "FAILURE when lookup up a module: \n%!";
-        fprintf std_formatter "Path: %a\n%!" Component.Fmt.resolved_module_path p;
-        fprintf std_formatter "Env:\n%!%a" Env.pp e;
-        fprintf std_formatter "Backtrace:\n%s\n%!" bt
     | Env.MyFailure(id, e) ->
         let bt = Printexc.get_backtrace () in
         Printf.printf "FAILURE lookup up a path\n%!";

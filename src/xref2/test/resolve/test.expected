@@ -134,7 +134,7 @@ module type (root Root).M = sig
   module (root Root).M.B : resolved[global((root Root).M.N)]
   end
 module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A).B.t]
+type (root Root).u = resolved[global((root Root).A)].B.t
 
 Basic resolution 4
 Module type
@@ -176,7 +176,7 @@ module type (root Root).M = sig
     end
   end
 module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A).X.B.t]
+type (root Root).u = resolved[global((root Root).A)].X.B.t
 
 Module substitution
 Ensure a substitution is taken into account during resolution
@@ -216,7 +216,7 @@ module type (root Root).A = sig
   module (root Root).A.M : sig
     module type (root Root).A.M.S
     end
-  module (root Root).A.N : resolved[global((root Root).A.M).S]
+  module (root Root).A.N : resolved[opaquemoduletype(global((root Root).A.M).S)]
   end
 module (root Root).B : sig
   module type (root Root).B.S = sig
@@ -224,7 +224,7 @@ module (root Root).B : sig
     end
   end
 module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M = = resolved[global((root Root).B)]]
-type (root Root).t = resolved[global((root Root).C).N.t]
+type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
 
 Module substitution2
 Ensure a destructive substitution is taken into account during resolution
@@ -264,7 +264,7 @@ module type (root Root).A = sig
   module (root Root).A.M : sig
     module type (root Root).A.M.S
     end
-  module (root Root).A.N : resolved[global((root Root).A.M).S]
+  module (root Root).A.N : resolved[opaquemoduletype(global((root Root).A.M).S)]
   end
 module (root Root).B : sig
   module type (root Root).B.S = sig
@@ -272,7 +272,7 @@ module (root Root).B : sig
     end
   end
 module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M := resolved[global((root Root).B)]]
-type (root Root).t = resolved[global((root Root).C).N.t]
+type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
 
 Module alias
 Resolve a module alias
@@ -299,7 +299,7 @@ module (root Root).A : sig
   type (root Root).A.t
   end
 module (root Root).B = resolved[global((root Root).A)]
-type (root Root).t = resolved[global((root Root).B).t]
+type (root Root).t = resolved[(global((root Root).A) -> global((root Root).B)).t]
 
 Module alias
 Resolve a module alias
@@ -328,8 +328,8 @@ module (root Root).A : sig
   type (root Root).A.t
   end
 module (root Root).B = resolved[global((root Root).A)]
-module (root Root).C = resolved[global((root Root).B)]
-type (root Root).t = resolved[global((root Root).C).t]
+module (root Root).C = resolved[(global((root Root).A) -> global((root Root).B))]
+type (root Root).t = resolved[((global((root Root).A) -> global((root Root).B)) -> global((root Root).C)).t]
 
 Functor
 Resolve a functor
@@ -494,7 +494,7 @@ module type (root Root).ARG = sig
   module type (root Root).ARG.S
   end
 module (root Root).F : ((param (root Root).F X) : resolved[global((root Root).ARG)]) -> sig
-  module (root Root).F.result.N : resolved[global((param (root Root).F X)).S]
+  module (root Root).F.result.N : resolved[opaquemoduletype(global((param (root Root).F X)).S)]
   end
 module (root Root).M : sig
   module type (root Root).M.S = sig
@@ -547,7 +547,7 @@ AFTER
 module type (root Root).Type = sig
   module type (root Root).Type.T
   end
-module (root Root).App : ((param (root Root).App T) : resolved[global((root Root).Type)]) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : resolved[global((root Root).Type)]) -> resolved[global((root Root).Type)]) -> ((param (root Root).App.result.result M) : resolved[global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T]) -> resolved[global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T]
+module (root Root).App : ((param (root Root).App T) : resolved[global((root Root).Type)]) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : resolved[global((root Root).Type)]) -> resolved[global((root Root).Type)]) -> ((param (root Root).App.result.result M) : resolved[opaquemoduletype(global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T)]) -> resolved[opaquemoduletype(global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T)]
 module (root Root).Bar : sig
   module type (root Root).Bar.T = sig
     type (root Root).Bar.T.bar
@@ -555,7 +555,7 @@ module (root Root).Bar : sig
   end
 module (root Root).Foo : ((param (root Root).Foo T) : resolved[global((root Root).Type)]) -> sig
   module type (root Root).Foo.result.T = sig
-    module (root Root).Foo.result.T.Foo : resolved[global((param (root Root).Foo T)).T]
+    module (root Root).Foo.result.T.Foo : resolved[opaquemoduletype(global((param (root Root).Foo T)).T)]
     end
   end
 module (root Root).FooBarInt : sig

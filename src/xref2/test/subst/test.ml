@@ -56,7 +56,7 @@ let module_substitution () =
 
     let subst =
       let target = `Local subst_targets_mod in
-      Subst.add_module subst_idents_mod target target Subst.identity
+      Subst.add_module subst_idents_mod target Subst.identity
     in
 
     let m = Find.module_in_sig c "S" in
