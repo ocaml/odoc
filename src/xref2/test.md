@@ -140,7 +140,7 @@ and using this lens on our original signature we obtain:
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved (`Identifier (`Type (`Root (Common.root, "Root"), "x"))), 
+   (`Resolved (`Identifier (`Type (`Root (Common.root, <abstr>), <abstr>))),
    []))
 ```
 
@@ -171,21 +171,24 @@ ignore in this case).
 # Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "x");
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
      manifest = None; constraints = []};
    representation = None});
  Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "u");
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
      manifest =
       Some
        (Odoc_model.Lang.TypeExpr.Constr
-         (`Resolved (`Identifier (`Type (`Root (Common.root, "Root"), "x"))),
+         (`Resolved
+            (`Identifier (`Type (`Root (Common.root, <abstr>), <abstr>))),
          []));
      constraints = []};
    representation = None})]
@@ -216,7 +219,8 @@ to identify precisely. So the manifest of `u` is now:
 Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Dot
-      (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "M"))),
+      (`Resolved
+         (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
        "t"),
    []))
 ```
@@ -239,9 +243,11 @@ the environment. This gets us back the path and a `Component.Module.t` represent
 which are:
 
 ```ocaml env=e1
-# let get_ok = Tools.ResultMonad.get_resolved
+# let get_ok = function
+    | Tools.ResultMonad.Resolved x -> x
+    | Unresolved _ -> failwith "Unresolved path" ;;
 val get_ok : ('a, 'b) Tools.ResultMonad.t -> 'a = <fun>
-# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "M"))));;
+# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (Common.root_module "M")));;
 Line 1, characters 33-62:
 Error: Unbound value Tools.lookup_module_from_path
 ```
@@ -282,7 +288,7 @@ It proceeds much as the previous example until we get the result
 of looking up the module `N`:
 
 ```ocaml env=e1
-# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "N"))));;
+# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (Common.root_module "N")));;
 Line 1, characters 33-62:
 Error: Unbound value Tools.lookup_module_from_path
 ```
@@ -316,45 +322,9 @@ here, so it has a local identifier. We can see this by looking up module `M` fro
 
 ```ocaml env=e1
 # let m = Env.lookup_module_type (`ModuleType (`Root (Common.root, "Root"), "M")) env;;
-val m : Component.ModuleType.t =
-  {Odoc_xref2.Component.ModuleType.doc = [];
-   expr =
-    Some
-     (Odoc_xref2.Component.ModuleType.Signature
-       {Odoc_xref2.Component.Signature.items =
-         [Odoc_xref2.Component.Signature.ModuleType (`LModuleType ("N", 1),
-           {Odoc_xref2.Component.Delayed.v =
-             Some
-              {Odoc_xref2.Component.ModuleType.doc = [];
-               expr =
-                Some
-                 (Odoc_xref2.Component.ModuleType.Signature
-                   {Odoc_xref2.Component.Signature.items =
-                     [Odoc_xref2.Component.Signature.Type (`LType ("t", 2),
-                       Odoc_model.Lang.Signature.Ordinary,
-                       {Odoc_xref2.Component.TypeDecl.doc = [];
-                        equation =
-                         {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-                          private_ = false; manifest = None;
-                          constraints = []};
-                        representation = None})];
-                    removed = []});
-               expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
-            get = <fun>});
-          Odoc_xref2.Component.Signature.Module (`LModule ("B", 0),
-           Odoc_model.Lang.Signature.Ordinary,
-           {Odoc_xref2.Component.Delayed.v =
-             Some
-              {Odoc_xref2.Component.Module.doc = [];
-               type_ =
-                Odoc_xref2.Component.Module.ModuleType
-                 (Odoc_xref2.Component.ModuleType.Path
-                   (`Resolved (`Local (`LModuleType ("N", 1)))));
-               canonical = None; hidden = false; display_type = None;
-               expansion = None};
-            get = <fun>})];
-        removed = []});
-   expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
+Line 1, characters 66-72:
+Error: This expression has type string but an expression was expected of type
+         Odoc_model.Names.UnitName.t
 ```
 
 We can see here that module `B` has type `` Path (`Local ("N", 1)) `` which refers to the module type defined just above it.
@@ -377,7 +347,7 @@ Some
    (`Dot
       (`Dot
          (`Resolved
-            (`Identifier (`Module (`Root (Common.root, "Root"), "A"))),
+            (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
           "B"),
        "t"),
    []))
@@ -386,7 +356,7 @@ Some
 we look up `A` from the environment:
 
 ```ocaml env=e1
-# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (`Module (`Root (Common.root, "Root"), "A"))) in
+# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (Common.root_module "A")) in
   Tools.signature_of_module env (p, m) |> Tools.prefix_signature;;
 Line 1, characters 14-52:
 Error: Unbound value Tools.lookup_module_from_resolved_path
@@ -409,7 +379,7 @@ type_ =
       (`Identifier
           (`Resolved
             (`ModuleType
-                (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
+                (`Identifier (Common.root_module "A"),
                 "N")))))
 ```
 
@@ -427,7 +397,7 @@ we then return along with the fully resolved identifier.
     (`Dot
       (`Dot
          (`Resolved
-            (`Identifier (`Module (`Root (Common.root, "Root"), "A"))),
+            (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
 - : (Tools.type_lookup_result, Cpath.type_) Tools.ResultMonad.t =
@@ -435,9 +405,10 @@ Odoc_xref2.Tools.ResultMonad.Resolved
  (`Type
     (`Module
        (`Module
-          (`Module (`Identifier (`Module (`Root (Common.root, "Root"), "A"))),
-           "B")),
-     "t"),
+          (`Module
+             (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
+           <abstr>)),
+     <abstr>),
   Odoc_xref2.Find.Found
    (`T
       {Odoc_xref2.Component.TypeDecl.doc = [];
@@ -473,12 +444,12 @@ Some
       (`Type
          (`Alias
             (`Module
-               (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
-                "M"),
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>),
              `Module
-               (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
-                "N")),
-          "t")),
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -505,16 +476,12 @@ let resolved = Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved
-      (`Type
-         (`Alias
-            (`Module
-               (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
-                "N"),
-             `Module
-               (`Identifier (`Module (`Root (Common.root, "Root"), "A")),
-                "O")),
-          "t")),
+   (`Dot
+      (`Dot
+         (`Resolved
+            (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
+          "O"),
+       "t"),
    []))
 ```
 
@@ -566,17 +533,18 @@ val module_C_lens :
   {Odoc_xref_test.Common.LangUtils.Lens.get = <fun>; set = <fun>}
 # Common.LangUtils.Lens.get module_C_lens sg;;
 - : Odoc_model.Lang.Module.t =
-{Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), "C");
+{Odoc_model.Lang.Module.id = `Module (`Root (Common.root, <abstr>), <abstr>);
  doc = [];
  type_ =
   Odoc_model.Lang.Module.ModuleType
    (Odoc_model.Lang.ModuleType.With
      (Odoc_model.Lang.ModuleType.Path
        (`Resolved
-          (`Identifier (`ModuleType (`Root (Common.root, "Root"), "A")))),
+          (`Identifier (`ModuleType (`Root (Common.root, <abstr>), <abstr>)))),
      [Odoc_model.Lang.ModuleType.ModuleEq (`Dot (`Root, "M"),
        Odoc_model.Lang.Module.Alias
-        (`Resolved (`Identifier (`Module (`Root (Common.root, "Root"), "B")))))]));
+        (`Resolved
+           (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))))]));
  canonical = None; hidden = false; display_type = None; expansion = None}
 ```
 
@@ -584,7 +552,7 @@ Clearly there is no `type t` declared in here. Let's get the representation
 of module `C` we see the following:
 
 ```ocaml env=e1
-# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (`Module (`Root (Common.root, "Root"), "C")));;
+# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (Common.root_module "C"));;
 Line 1, characters 14-52:
 Error: Unbound value Tools.lookup_module_from_resolved_path
 ```
@@ -602,7 +570,7 @@ and we can see we've picked up the `type t` declaration in `M.S`. If we now ask 
 
 ```ocaml env=e1
 # let (p, m) = Tools.lookup_module_from_resolved_path env
-      (`Module (`Identifier (`Module (`Root (Common.root, "Root"), "C")), "N"));;
+      (`Module (`Identifier (Common.root_module "C"), "N"));;
 Line 1, characters 14-52:
 Error: Unbound value Tools.lookup_module_from_resolved_path
 # Tools.signature_of_module env (p, m);;
@@ -621,9 +589,20 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Module
-            (`Identifier (`Module (`Root (Common.root, "Root"), "C")), "N"),
-          "t")),
+         (`Subst
+            (`ModuleType
+               (`SubstAlias
+                  (`Identifier
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                   `Module
+                     (`Identifier
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>)),
+                <abstr>),
+             `Module
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -665,9 +644,31 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Module
-            (`Identifier (`Module (`Root (Common.root, "Root"), "M")), "O"),
-          "t")),
+         (`Subst
+            (`SubstT
+               (`ModuleType
+                  (`Module
+                     (`Identifier
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>),
+                   <abstr>),
+                `ModuleType
+                  (`Apply
+                     (`Module
+                        (`Identifier
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                         <abstr>),
+                      `Resolved
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            <abstr>))),
+                   <abstr>)),
+             `Module
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>)),
+          <abstr>)),
    []))
 # Common.LangUtils.Lens.get s_manifest resolved;;
 - : Odoc_model.Lang.TypeExpr.t option =
@@ -678,22 +679,23 @@ Some
          (`Subst
             (`ModuleType
                (`Module
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "M")),
-                   "T"),
-                "S"),
+                  (`Identifier
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                   <abstr>),
+                <abstr>),
              `Module
                (`Apply
                   (`Module
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "M")),
-                      "F"),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>),
                    `Resolved
                      (`Module
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "M")),
-                         "T"))),
-                "N")),
-          "t")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                         <abstr>))),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -734,14 +736,14 @@ let resolved = Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved
-      (`Type
-         (`Module
-            (`Module
-               (`Identifier (`Module (`Root (Common.root, "Root"), "M")),
-                "O"),
-             "N"),
-          "t")),
+   (`Dot
+      (`Dot
+         (`Dot
+            (`Resolved
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
+             "O"),
+          "N"),
+       "t"),
    []))
 ```
 
@@ -776,17 +778,42 @@ let resolved = Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved
-      (`Type
-         (`Module
-            (`Apply
-               (`Module
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "M")),
-                   "O"),
-                `Resolved
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "M")))),
-             "N"),
-          "t")),
+   (`Dot
+      (`Dot
+         (`Apply
+            (`Resolved
+               (`Subst
+                  (`SubstT
+                     (`ModuleType
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            <abstr>),
+                         <abstr>),
+                      `ModuleType
+                        (`Apply
+                           (`Module
+                              (`Identifier
+                                 (`Module
+                                    (`Root (Common.root, <abstr>), <abstr>)),
+                               <abstr>),
+                            `Resolved
+                              (`Module
+                                 (`Identifier
+                                    (`Module
+                                       (`Root (Common.root, <abstr>),
+                                        <abstr>)),
+                                  <abstr>))),
+                         <abstr>)),
+                   `Module
+                     (`Identifier
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>))),
+             `Resolved
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+          "N"),
+       "t"),
    []))
 ```
 
@@ -823,15 +850,15 @@ Some
                (`Apply
                   (`Resolved
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "App"))),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>))),
                    `Resolved
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Bar")))),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)))),
                 `Resolved
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "Foo")))),
+                  (`Identifier
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)))),
              `Resolved
-               (`Identifier
-                  (`Module (`Root (Common.root, "Root"), "FooBarInt")))),
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))),
           "Foo"),
        "bar"),
    []))
@@ -845,15 +872,15 @@ let test_path =
         (`Apply
           (`Resolved
               (`Identifier
-                (`Module (`Root (Common.root, "Root"), "App"))),
+                (Common.root_module "App")),
             `Resolved
               (`Identifier
-                (`Module (`Root (Common.root, "Root"), "Bar")))),
+                (Common.root_module "Bar"))),
         `Resolved
-          (`Identifier (`Module (`Root (Common.root, "Root"), "Foo")))),
+          (`Identifier (Common.root_module "Foo"))),
       `Resolved
         (`Identifier
-          (`Module (`Root (Common.root, "Root"), "FooBarInt"))));;
+          (Common.root_module "FooBarInt")));;
 let cp = Component.Of_Lang.(module_path empty test_path);;
 ```
 
@@ -865,16 +892,17 @@ val p : Tools.Memos1.key =
   `Apply
     (`Apply
        (`Apply
-          (`Identifier (`Module (`Root (Common.root, "Root"), "App")),
+          (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
            `Resolved
              (`Substituted
-                (`Identifier (`Module (`Root (Common.root, "Root"), "Bar"))))),
+                (`Identifier
+                   (`Module (`Root (Common.root, <abstr>), <abstr>))))),
         `Resolved
           (`Substituted
-             (`Identifier (`Module (`Root (Common.root, "Root"), "Foo"))))),
+             (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))))),
      `Resolved
        (`Substituted
-          (`Identifier (`Module (`Root (Common.root, "Root"), "FooBarInt")))))
+          (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))))
 val m : Component.Module.t =
   {Odoc_xref2.Component.Module.doc = [];
    type_ =
@@ -885,11 +913,11 @@ val m : Component.Module.t =
              (`Resolved
                 (`Substituted
                    (`Identifier
-                      (`Module (`Root (Common.root, "Root"), "Foo")))),
+                      (`Module (`Root (Common.root, <abstr>), <abstr>)))),
               `Resolved
                 (`Substituted
                    (`Identifier
-                      (`Module (`Root (Common.root, "Root"), "Bar"))))),
+                      (`Module (`Root (Common.root, <abstr>), <abstr>))))),
            "T")));
    canonical = None; hidden = false; display_type = None; expansion = None}
 # let (p, sg') = Tools.signature_of_module env (p, m);;
@@ -913,25 +941,26 @@ Some
       (`Type
          (`Subst
             (`ModuleType
-               (`Identifier (`Module (`Root (Common.root, "Root"), "Bar")),
-                "T"),
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>),
              `Module
                (`Apply
                   (`Apply
                      (`Apply
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "App")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
                          `Resolved
                            (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Bar")))),
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)))),
                       `Resolved
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Foo")))),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)))),
                    `Resolved
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "FooBarInt")))),
-                "Foo")),
-          "bar")),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -962,17 +991,42 @@ let resolved = Compile.signature Env.empty sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Resolved
-      (`Type
-         (`Module
-            (`Apply
-               (`Module
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "M")),
-                   "O"),
-                `Resolved
-                  (`Identifier (`Module (`Root (Common.root, "Root"), "M")))),
-             "N"),
-          "t")),
+   (`Dot
+      (`Dot
+         (`Apply
+            (`Resolved
+               (`Subst
+                  (`SubstT
+                     (`ModuleType
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            <abstr>),
+                         <abstr>),
+                      `ModuleType
+                        (`Apply
+                           (`Module
+                              (`Identifier
+                                 (`Module
+                                    (`Root (Common.root, <abstr>), <abstr>)),
+                               <abstr>),
+                            `Resolved
+                              (`Module
+                                 (`Identifier
+                                    (`Module
+                                       (`Root (Common.root, <abstr>),
+                                        <abstr>)),
+                                  <abstr>))),
+                         <abstr>)),
+                   `Module
+                     (`Identifier
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>))),
+             `Resolved
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+          "N"),
+       "t"),
    []))
 ```
 
@@ -1020,27 +1074,28 @@ Some
             (`Subst
                (`ModuleType
                   (`Identifier
-                     (`Module (`Root (Common.root, "Root"), "Dep1")),
-                   "S"),
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                   <abstr>),
                 `Module
                   (`Module
                      (`Apply
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep2")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
                          `Resolved
                            (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep1")))),
-                      "A"),
-                   "Y")),
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)))),
+                      <abstr>),
+                   <abstr>)),
              `Module
                (`Apply
                   (`Identifier
-                     (`Module (`Root (Common.root, "Root"), "Dep2")),
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
                    `Resolved
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Dep1")))),
-                "B")),
-          "c")),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -1083,24 +1138,19 @@ Some
       (`Type
          (`Subst
             (`ModuleType
-               (`Identifier (`Module (`Root (Common.root, "Root"), "Dep4")),
-                "T"),
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                <abstr>),
              `Module
-               (`Subst
-                  (`ModuleType
+               (`Module
+                  (`Apply
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Dep4")),
-                      "S"),
-                   `Module
-                     (`Apply
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      `Resolved
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep5")),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep4")))),
-                      "Z")),
-                "X")),
-          "b")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+                   <abstr>),
+                <abstr>)),
+          <abstr>)),
    []))
 # Common.LangUtils.Lens.get (type_manifest "dep3") resolved;;
 - : Odoc_model.Lang.TypeExpr.t option =
@@ -1109,23 +1159,18 @@ Some
    (`Resolved
       (`Type
          (`SubstAlias
-            (`Identifier (`Module (`Root (Common.root, "Root"), "Dep3")),
+            (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)),
              `Module
-               (`Subst
-                  (`ModuleType
+               (`Module
+                  (`Apply
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Dep4")),
-                      "S"),
-                   `Module
-                     (`Apply
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      `Resolved
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep5")),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep4")))),
-                      "Z")),
-                "Y")),
-          "a")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+                   <abstr>),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -1166,37 +1211,45 @@ Some
    (`Resolved
       (`Type
          (`Subst
-            (`ModuleType
-               (`Subst
-                  (`ModuleType
-                     (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Dep6")),
-                      "T"),
-                   `Module
-                     (`Apply
+            (`SubstT
+               (`ModuleType
+                  (`Identifier
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                   <abstr>),
+                `ModuleType
+                  (`Subst
+                     (`ModuleType
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep7")),
-                         `Resolved
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                         <abstr>),
+                      `Module
+                        (`Apply
                            (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep6")))),
-                      "M")),
-                "R"),
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            `Resolved
+                              (`Identifier
+                                 (`Module
+                                    (`Root (Common.root, <abstr>), <abstr>)))),
+                         <abstr>)),
+                   <abstr>)),
              `Module
                (`Subst
                   (`ModuleType
                      (`Identifier
-                        (`Module (`Root (Common.root, "Root"), "Dep6")),
-                      "T"),
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      <abstr>),
                    `Module
                      (`Apply
                         (`Identifier
-                           (`Module (`Root (Common.root, "Root"), "Dep7")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
                          `Resolved
                            (`Identifier
-                              (`Module (`Root (Common.root, "Root"), "Dep6")))),
-                      "M")),
-                "Y")),
-          "d")),
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)))),
+                      <abstr>)),
+                <abstr>)),
+          <abstr>)),
    []))
 ```
 
@@ -1235,7 +1288,22 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Identifier (`Module (`Root (Common.root, "Root"), "Dep13")), "c")),
+         (`Subst
+            (`SubstT
+               (`ModuleType
+                  (`Identifier
+                     (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                   <abstr>),
+                `ModuleType
+                  (`Apply
+                     (`Identifier
+                        (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                      `Resolved
+                        (`Identifier
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+                   <abstr>)),
+             `Identifier (`Module (`Root (Common.root, <abstr>), <abstr>))),
+          <abstr>)),
    []))
 ```
 
@@ -1263,8 +1331,9 @@ Some
    (`Resolved
       (`Type
          (`Hidden
-            (`Identifier (`Module (`Root (Common.root, "Root"), "Hidden__"))),
-          "t")),
+            (`Hidden
+               (`Identifier (`Module (`Root (Common.root, <abstr>), <abstr>)))),
+          <abstr>)),
    []))
 ```
 
@@ -1283,7 +1352,7 @@ let resolved = Compile.signature Env.empty sg;;
 ```ocaml env=e1
 # Common.LangUtils.Lens.get (Common.LangUtils.Lens.Signature.type_ "t") resolved;;
 - : Odoc_model.Lang.TypeDecl.t =
-{Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
+{Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, <abstr>), <abstr>);
  doc =
   [{Odoc_model.Location_.location =
      {Odoc_model.Location_.file = "";
@@ -1305,7 +1374,7 @@ let resolved = Compile.signature Env.empty sg;;
           {Odoc_model.Location_.file = "";
            start = {Odoc_model.Location_.line = 3; column = 10};
            end_ = {Odoc_model.Location_.line = 3; column = 14}};
-         value = `Reference (`Root ("t", `TUnknown), [])}]}];
+         value = `Reference (`Root (<abstr>, `TUnknown), [])}]}];
  equation =
   {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
    manifest = None; constraints = []};
@@ -1325,7 +1394,7 @@ let resolved = Compile.signature Env.empty sg;;
 ```ocaml env=e1
 # Common.LangUtils.Lens.get (Common.LangUtils.Lens.Signature.type_ "t") resolved;;
 - : Odoc_model.Lang.TypeDecl.t =
-{Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "t");
+{Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, <abstr>), <abstr>);
  doc = [];
  equation =
   {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1349,16 +1418,16 @@ let sg = Common.signature_of_mli_string test_data;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Exception
   {Odoc_model.Lang.Exception.id =
-    `Exception (`Root (Common.root, "Root"), "Foo");
+    `Exception (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    args =
     Odoc_model.Lang.TypeDecl.Constructor.Record
      [{Odoc_model.Lang.TypeDecl.Field.id =
-        `Field (`Root (Common.root, "Root"), "test");
+        `Field (`Root (Common.root, <abstr>), <abstr>);
        doc = []; mutable_ = false;
        type_ =
         Odoc_model.Lang.TypeExpr.Constr
-         (`Resolved (`Identifier (`CoreType "int")), [])}];
+         (`Resolved (`Identifier (`CoreType <abstr>)), [])}];
    res = None}]
 ```
 
@@ -1383,14 +1452,15 @@ let sg = Common.signature_of_mli_string test_data;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.ModuleType
   {Odoc_model.Lang.ModuleType.id =
-    `ModuleType (`Root (Common.root, "Root"), "M");
+    `ModuleType (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    expr =
     Some
      (Odoc_model.Lang.ModuleType.Signature
        [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
          {Odoc_model.Lang.TypeDecl.id =
-           `Type (`ModuleType (`Root (Common.root, "Root"), "M"), "t");
+           `Type
+             (`ModuleType (`Root (Common.root, <abstr>), <abstr>), <abstr>);
           doc = [];
           equation =
            {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1398,7 +1468,8 @@ let sg = Common.signature_of_mli_string test_data;;
           representation = None})]);
    display_expr = None; expansion = Some Odoc_model.Lang.Module.AlreadyASig};
  Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, "Root"), "u");
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1406,21 +1477,22 @@ let sg = Common.signature_of_mli_string test_data;;
    representation = None});
  Odoc_model.Lang.Signature.ModuleType
   {Odoc_model.Lang.ModuleType.id =
-    `ModuleType (`Root (Common.root, "Root"), "M1");
+    `ModuleType (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    expr =
     Some
      (Odoc_model.Lang.ModuleType.With
        (Odoc_model.Lang.ModuleType.Path
          (`Resolved
-            (`Identifier (`ModuleType (`Root (Common.root, "Root"), "M")))),
+            (`Identifier
+               (`ModuleType (`Root (Common.root, <abstr>), <abstr>)))),
        [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
           manifest =
            Some
             (Odoc_model.Lang.TypeExpr.Constr
               (`Resolved
-                 (`Identifier (`Type (`Root (Common.root, "Root"), "u"))),
+                 (`Identifier (`Type (`Root (Common.root, <abstr>), <abstr>))),
               []));
           constraints = []})]));
    display_expr = None; expansion = None}]
@@ -1499,10 +1571,8 @@ let resolver =
   let resolver = Odoc_odoc.Env.build env (`Unit unit) in
   resolver;;
 let resolved = Compile.unit resolver unit;;
-let _ = Tools.is_compile := false;;
 let linked = Link.unit resolver resolved;;
 
-let _ = Tools.is_compile := true;;
 let Odoc_model.Lang.Compilation_unit.Module sg = linked.Odoc_model.Lang.Compilation_unit.content
 let value_test_lens =
   let open Common.LangUtils.Lens in
@@ -1512,7 +1582,7 @@ let value_test_lens =
 ```ocaml env=e1
 # Common.LangUtils.Lens.get value_test_lens sg;;
 - : Odoc_model.Lang.Value.t =
-{Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
+{Odoc_model.Lang.Value.id = `Value (`Root (Common.root, <abstr>), <abstr>);
  doc = [];
  type_ =
   Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -1522,30 +1592,29 @@ let value_test_lens =
           (`Canonical
              (`Alias
                 (`Hidden
-                   (`Module
-                      (`Identifier
-                         (`Module
-                            (`Root (Common.root, "Root"), "CanonicalTest")),
-                       "Base__List")),
+                   (`Hidden
+                      (`Module
+                         (`Identifier
+                            (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                          <abstr>))),
                  `Module
-                   (`Module
-                      (`Identifier
-                         (`Module
-                            (`Root (Common.root, "Root"), "CanonicalTest")),
-                       "Base__"),
-                    "List")),
+                   (`Hidden
+                      (`Module
+                         (`Identifier
+                            (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                          <abstr>)),
+                    <abstr>)),
               `Resolved
                 (`Module
                    (`Module
                       (`Identifier
-                         (`Module
-                            (`Root (Common.root, "Root"), "CanonicalTest")),
-                       "Base"),
-                    "List"))),
-           "t")),
+                         (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                       <abstr>),
+                    <abstr>))),
+           <abstr>)),
     [Odoc_model.Lang.TypeExpr.Var "a"]),
    Odoc_model.Lang.TypeExpr.Constr
-    (`Resolved (`Identifier (`CoreType "unit")), []))}
+    (`Resolved (`Identifier (`CoreType <abstr>)), []))}
 # Common.LangUtils.Lens.get value_test_lens resolved |> Component.Of_Lang.(value empty);;
 Line 1, characters 43-51:
 Error: This expression has type Odoc_odoc.Compilation_unit.t
@@ -1557,10 +1626,11 @@ Error: This expression has type Odoc_odoc.Compilation_unit.t
        but an expression was expected of type
          Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env (`Resolved
-               (`Identifier (`Module (`Root (Common.root, "Root"), "N"))));;
+               (`Identifier (Common.root_module "N")));;
 Exception:
-Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, "Root"), "N"),
+Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, <abstr>), <abstr>),
  <abstr>).
+Non root: (root Root).N
 # Tools.signature_of_module env (p, m);;
 Line 1, characters 31-37:
 Error: This expression has type 'a * 'b
@@ -1569,16 +1639,14 @@ Error: This expression has type 'a * 'b
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.Module.id =
-    `Module (`Root (Common.root, "Root"), "CanonicalTest");
+    `Module (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    type_ =
     Odoc_model.Lang.Module.ModuleType
      (Odoc_model.Lang.ModuleType.Signature
        [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
          {Odoc_model.Lang.Module.id =
-           `Module
-             (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
-              "Base__List");
+           `Module (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
           doc = [];
           type_ =
            Odoc_model.Lang.Module.ModuleType
@@ -1588,10 +1656,9 @@ Error: This expression has type 'a * 'b
                 {Odoc_model.Lang.TypeDecl.id =
                   `Type
                     (`Module
-                       (`Module
-                          (`Root (Common.root, "Root"), "CanonicalTest"),
-                        "Base__List"),
-                     "t");
+                       (`Module (`Root (Common.root, <abstr>), <abstr>),
+                        <abstr>),
+                     <abstr>);
                  doc = [];
                  equation =
                   {Odoc_model.Lang.TypeDecl.Equation.params =
@@ -1602,10 +1669,9 @@ Error: This expression has type 'a * 'b
                 {Odoc_model.Lang.Value.id =
                   `Value
                     (`Module
-                       (`Module
-                          (`Root (Common.root, "Root"), "CanonicalTest"),
-                        "Base__List"),
-                     "id");
+                       (`Module (`Root (Common.root, <abstr>), <abstr>),
+                        <abstr>),
+                     <abstr>);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -1615,10 +1681,9 @@ Error: This expression has type 'a * 'b
                           (`Type
                              (`Module
                                 (`Module
-                                   (`Root (Common.root, "Root"),
-                                    "CanonicalTest"),
-                                 "Base__List"),
-                              "t"))),
+                                   (`Root (Common.root, <abstr>), <abstr>),
+                                 <abstr>),
+                              <abstr>))),
                     [Odoc_model.Lang.TypeExpr.Var "a"]),
                    Odoc_model.Lang.TypeExpr.Constr
                     (`Resolved
@@ -1626,18 +1691,15 @@ Error: This expression has type 'a * 'b
                           (`Type
                              (`Module
                                 (`Module
-                                   (`Root (Common.root, "Root"),
-                                    "CanonicalTest"),
-                                 "Base__List"),
-                              "t"))),
+                                   (`Root (Common.root, <abstr>), <abstr>),
+                                 <abstr>),
+                              <abstr>))),
                     [Odoc_model.Lang.TypeExpr.Var "a"]))}]);
           canonical = None; hidden = true; display_type = None;
           expansion = Some Odoc_model.Lang.Module.AlreadyASig});
         Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
          {Odoc_model.Lang.Module.id =
-           `Module
-             (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
-              "Base__");
+           `Module (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
           doc = [];
           type_ =
            Odoc_model.Lang.Module.ModuleType
@@ -1647,10 +1709,9 @@ Error: This expression has type 'a * 'b
                 {Odoc_model.Lang.Module.id =
                   `Module
                     (`Module
-                       (`Module
-                          (`Root (Common.root, "Root"), "CanonicalTest"),
-                        "Base__"),
-                     "List");
+                       (`Module (`Root (Common.root, <abstr>), <abstr>),
+                        <abstr>),
+                     <abstr>);
                  doc =
                   [{Odoc_model.Location_.location =
                      {Odoc_model.Location_.file = "";
@@ -1667,55 +1728,19 @@ Error: This expression has type 'a * 'b
                            `Dot
                              (`Dot
                                 (`Dot
-                                   (`Root ("Root", `TUnknown),
+                                   (`Root (<abstr>, `TUnknown),
                                     "CanonicalTest"),
                                  "Base"),
                               "List")))}];
                  type_ =
                   Odoc_model.Lang.Module.Alias
                    (`Resolved
-                      (`Canonical
-                         (`Hidden
-                            (`Identifier
+                      (`Hidden
+                         (`Identifier
+                            (`Module
                                (`Module
-                                  (`Module
-                                     (`Root (Common.root, "Root"),
-                                      "CanonicalTest"),
-                                   "Base__List"))),
-                          `Resolved
-                            (`Alias
-                               (`Canonical
-                                  (`Alias
-                                     (`Hidden
-                                        (`Module
-                                           (`Module
-                                              (`Identifier
-                                                 (`Root (Common.root, "Root")),
-                                               "CanonicalTest"),
-                                            "Base__List")),
-                                      `Module
-                                        (`Hidden
-                                           (`Module
-                                              (`Module
-                                                 (`Identifier
-                                                    (`Root
-                                                       (Common.root, "Root")),
-                                                  "CanonicalTest"),
-                                               "Base__")),
-                                         "List")),
-                                   `Dot
-                                     (`Dot
-                                        (`Dot (`Root "Root", "CanonicalTest"),
-                                         "Base"),
-                                      "List")),
-                                `Module
-                                  (`Module
-                                     (`Module
-                                        (`Identifier
-                                           (`Root (Common.root, "Root")),
-                                         "CanonicalTest"),
-                                      "Base"),
-                                   "List"))))));
+                                  (`Root (Common.root, <abstr>), <abstr>),
+                                <abstr>)))));
                  canonical =
                   Some
                    (`Dot
@@ -1723,7 +1748,7 @@ Error: This expression has type 'a * 'b
                        "List"),
                     `Dot
                       (`Dot
-                         (`Dot (`Root ("Root", `TUnknown), "CanonicalTest"),
+                         (`Dot (`Root (<abstr>, `TUnknown), "CanonicalTest"),
                           "Base"),
                        "List"));
                  hidden = false; display_type = None; expansion = None})]);
@@ -1731,8 +1756,7 @@ Error: This expression has type 'a * 'b
           expansion = Some Odoc_model.Lang.Module.AlreadyASig});
         Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
          {Odoc_model.Lang.Module.id =
-           `Module
-             (`Module (`Root (Common.root, "Root"), "CanonicalTest"), "Base");
+           `Module (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
           doc = [];
           type_ =
            Odoc_model.Lang.Module.ModuleType
@@ -1742,10 +1766,9 @@ Error: This expression has type 'a * 'b
                 {Odoc_model.Lang.Module.id =
                   `Module
                     (`Module
-                       (`Module
-                          (`Root (Common.root, "Root"), "CanonicalTest"),
-                        "Base"),
-                     "List");
+                       (`Module (`Root (Common.root, <abstr>), <abstr>),
+                        <abstr>),
+                     <abstr>);
                  doc = [];
                  type_ =
                   Odoc_model.Lang.Module.Alias
@@ -1753,30 +1776,32 @@ Error: This expression has type 'a * 'b
                       (`Canonical
                          (`Alias
                             (`Hidden
-                               (`Identifier
-                                  (`Module
-                                     (`Module
-                                        (`Root (Common.root, "Root"),
-                                         "CanonicalTest"),
-                                      "Base__List"))),
-                             `Module
                                (`Hidden
                                   (`Identifier
                                      (`Module
                                         (`Module
-                                           (`Root (Common.root, "Root"),
-                                            "CanonicalTest"),
-                                         "Base__"))),
-                                "List")),
+                                           (`Root (Common.root, <abstr>),
+                                            <abstr>),
+                                         <abstr>)))),
+                             `Module
+                               (`Hidden
+                                  (`Hidden
+                                     (`Identifier
+                                        (`Module
+                                           (`Module
+                                              (`Root (Common.root, <abstr>),
+                                               <abstr>),
+                                            <abstr>)))),
+                                <abstr>)),
                           `Resolved
                             (`Identifier
                                (`Module
                                   (`Module
                                      (`Module
-                                        (`Root (Common.root, "Root"),
-                                         "CanonicalTest"),
-                                      "Base"),
-                                   "List"))))));
+                                        (`Root (Common.root, <abstr>),
+                                         <abstr>),
+                                      <abstr>),
+                                   <abstr>))))));
                  canonical = None; hidden = false;
                  display_type =
                   Some
@@ -1787,9 +1812,11 @@ Error: This expression has type 'a * 'b
                             [{Odoc_model.Location_.location =
                                {Odoc_model.Location_.file = "";
                                 start =
-                                 {Odoc_model.Location_.line = 0; column = 0};
+                                 {Odoc_model.Location_.line = 10;
+                                  column = 10};
                                 end_ =
-                                 {Odoc_model.Location_.line = 0; column = 0}};
+                                 {Odoc_model.Location_.line = 10;
+                                  column = 50}};
                               value =
                                `Tag
                                  (`Canonical
@@ -1802,7 +1829,7 @@ Error: This expression has type 'a * 'b
                                      `Dot
                                        (`Dot
                                           (`Dot
-                                             (`Root ("Root", `TUnknown),
+                                             (`Root (<abstr>, `TUnknown),
                                               "CanonicalTest"),
                                            "Base"),
                                         "List")))}]);
@@ -1813,31 +1840,15 @@ Error: This expression has type 'a * 'b
                              (`Module
                                 (`Module
                                    (`Module
-                                      (`Root (Common.root, "Root"),
-                                       "CanonicalTest"),
-                                    "Base"),
-                                 "List"),
-                              "t");
+                                      (`Root (Common.root, <abstr>), <abstr>),
+                                    <abstr>),
+                                 <abstr>),
+                              <abstr>);
                           doc = [];
                           equation =
                            {Odoc_model.Lang.TypeDecl.Equation.params =
                              [(Odoc_model.Lang.TypeDecl.Var "a", None)];
-                            private_ = false;
-                            manifest =
-                             Some
-                              (Odoc_model.Lang.TypeExpr.Constr
-                                (`Resolved
-                                   (`Type
-                                      (`Hidden
-                                         (`Identifier
-                                            (`Module
-                                               (`Module
-                                                  (`Root
-                                                     (Common.root, "Root"),
-                                                   "CanonicalTest"),
-                                                "Base__List"))),
-                                       "t")),
-                                [Odoc_model.Lang.TypeExpr.Var "a"]));
+                            private_ = false; manifest = None;
                             constraints = []};
                           representation = None});
                         Odoc_model.Lang.Signature.Value
@@ -1846,11 +1857,10 @@ Error: This expression has type 'a * 'b
                              (`Module
                                 (`Module
                                    (`Module
-                                      (`Root (Common.root, "Root"),
-                                       "CanonicalTest"),
-                                    "Base"),
-                                 "List"),
-                              "id");
+                                      (`Root (Common.root, <abstr>), <abstr>),
+                                    <abstr>),
+                                 <abstr>),
+                              <abstr>);
                           doc = [];
                           type_ =
                            Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -1861,11 +1871,11 @@ Error: This expression has type 'a * 'b
                                       (`Module
                                          (`Module
                                             (`Module
-                                               (`Root (Common.root, "Root"),
-                                                "CanonicalTest"),
-                                             "Base"),
-                                          "List"),
-                                       "t"))),
+                                               (`Root (Common.root, <abstr>),
+                                                <abstr>),
+                                             <abstr>),
+                                          <abstr>),
+                                       <abstr>))),
                              [Odoc_model.Lang.TypeExpr.Var "a"]),
                             Odoc_model.Lang.TypeExpr.Constr
                              (`Resolved
@@ -1874,11 +1884,11 @@ Error: This expression has type 'a * 'b
                                       (`Module
                                          (`Module
                                             (`Module
-                                               (`Root (Common.root, "Root"),
-                                                "CanonicalTest"),
-                                             "Base"),
-                                          "List"),
-                                       "t"))),
+                                               (`Root (Common.root, <abstr>),
+                                                <abstr>),
+                                             <abstr>),
+                                          <abstr>),
+                                       <abstr>))),
                              [Odoc_model.Lang.TypeExpr.Var "a"]))}]));
                  expansion =
                   Some
@@ -1888,9 +1898,9 @@ Error: This expression has type 'a * 'b
                           [{Odoc_model.Location_.location =
                              {Odoc_model.Location_.file = "";
                               start =
-                               {Odoc_model.Location_.line = 0; column = 0};
+                               {Odoc_model.Location_.line = 10; column = 10};
                               end_ =
-                               {Odoc_model.Location_.line = 0; column = 0}};
+                               {Odoc_model.Location_.line = 10; column = 50}};
                             value =
                              `Tag
                                (`Canonical
@@ -1902,7 +1912,7 @@ Error: This expression has type 'a * 'b
                                    `Dot
                                      (`Dot
                                         (`Dot
-                                           (`Root ("Root", `TUnknown),
+                                           (`Root (<abstr>, `TUnknown),
                                             "CanonicalTest"),
                                          "Base"),
                                       "List")))}]);
@@ -1913,11 +1923,10 @@ Error: This expression has type 'a * 'b
                            (`Module
                               (`Module
                                  (`Module
-                                    (`Root (Common.root, "Root"),
-                                     "CanonicalTest"),
-                                  "Base"),
-                               "List"),
-                            "t");
+                                    (`Root (Common.root, <abstr>), <abstr>),
+                                  <abstr>),
+                               <abstr>),
+                            <abstr>);
                         doc = [];
                         equation =
                          {Odoc_model.Lang.TypeDecl.Equation.params =
@@ -1931,11 +1940,10 @@ Error: This expression has type 'a * 'b
                            (`Module
                               (`Module
                                  (`Module
-                                    (`Root (Common.root, "Root"),
-                                     "CanonicalTest"),
-                                  "Base"),
-                               "List"),
-                            "id");
+                                    (`Root (Common.root, <abstr>), <abstr>),
+                                  <abstr>),
+                               <abstr>),
+                            <abstr>);
                         doc = [];
                         type_ =
                          Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -1946,11 +1954,11 @@ Error: This expression has type 'a * 'b
                                     (`Module
                                        (`Module
                                           (`Module
-                                             (`Root (Common.root, "Root"),
-                                              "CanonicalTest"),
-                                           "Base"),
-                                        "List"),
-                                     "t"))),
+                                             (`Root (Common.root, <abstr>),
+                                              <abstr>),
+                                           <abstr>),
+                                        <abstr>),
+                                     <abstr>))),
                            [Odoc_model.Lang.TypeExpr.Var "a"]),
                           Odoc_model.Lang.TypeExpr.Constr
                            (`Resolved
@@ -1959,18 +1967,18 @@ Error: This expression has type 'a * 'b
                                     (`Module
                                        (`Module
                                           (`Module
-                                             (`Root (Common.root, "Root"),
-                                              "CanonicalTest"),
-                                           "Base"),
-                                        "List"),
-                                     "t"))),
+                                             (`Root (Common.root, <abstr>),
+                                              <abstr>),
+                                           <abstr>),
+                                        <abstr>),
+                                     <abstr>))),
                            [Odoc_model.Lang.TypeExpr.Var "a"]))}])})]);
           canonical = None; hidden = false; display_type = None;
           expansion = Some Odoc_model.Lang.Module.AlreadyASig})]);
    canonical = None; hidden = false; display_type = None;
    expansion = Some Odoc_model.Lang.Module.AlreadyASig});
  Odoc_model.Lang.Signature.Value
-  {Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
+  {Odoc_model.Lang.Value.id = `Value (`Root (Common.root, <abstr>), <abstr>);
    doc = [];
    type_ =
     Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -1980,40 +1988,41 @@ Error: This expression has type 'a * 'b
             (`Canonical
                (`Alias
                   (`Hidden
-                     (`Module
-                        (`Identifier
-                           (`Module
-                              (`Root (Common.root, "Root"), "CanonicalTest")),
-                         "Base__List")),
+                     (`Hidden
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            <abstr>))),
                    `Module
-                     (`Module
-                        (`Identifier
-                           (`Module
-                              (`Root (Common.root, "Root"), "CanonicalTest")),
-                         "Base__"),
-                      "List")),
+                     (`Hidden
+                        (`Module
+                           (`Identifier
+                              (`Module
+                                 (`Root (Common.root, <abstr>), <abstr>)),
+                            <abstr>)),
+                      <abstr>)),
                 `Resolved
                   (`Module
                      (`Module
                         (`Identifier
-                           (`Module
-                              (`Root (Common.root, "Root"), "CanonicalTest")),
-                         "Base"),
-                      "List"))),
-             "t")),
+                           (`Module (`Root (Common.root, <abstr>), <abstr>)),
+                         <abstr>),
+                      <abstr>))),
+             <abstr>)),
       [Odoc_model.Lang.TypeExpr.Var "a"]),
      Odoc_model.Lang.TypeExpr.Constr
-      (`Resolved (`Identifier (`CoreType "unit")), []))}]
+      (`Resolved (`Identifier (`CoreType <abstr>)), []))}]
 # resolved;;
 - : Odoc_odoc.Compilation_unit.t =
-{Odoc_model.Lang.Compilation_unit.id = `Root (Common.root, "Root"); doc = [];
- digest = "nodigest"; imports = []; source = None; interface = true;
- hidden = false;
+{Odoc_model.Lang.Compilation_unit.id = `Root (Common.root, <abstr>);
+ doc = []; digest = "nodigest"; imports = []; source = None;
+ interface = true; hidden = false;
  content =
   Odoc_model.Lang.Compilation_unit.Module
    [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
      {Odoc_model.Lang.Module.id =
-       `Module (`Root (Common.root, "Root"), "CanonicalTest");
+       `Module (`Root (Common.root, <abstr>), <abstr>);
       doc = [];
       type_ =
        Odoc_model.Lang.Module.ModuleType
@@ -2022,8 +2031,7 @@ Error: This expression has type 'a * 'b
             (Odoc_model.Lang.Signature.Ordinary,
             {Odoc_model.Lang.Module.id =
               `Module
-                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
-                 "Base__List");
+                (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
              doc = [];
              type_ =
               Odoc_model.Lang.Module.ModuleType
@@ -2033,10 +2041,9 @@ Error: This expression has type 'a * 'b
                    {Odoc_model.Lang.TypeDecl.id =
                      `Type
                        (`Module
-                          (`Module
-                             (`Root (Common.root, "Root"), "CanonicalTest"),
-                           "Base__List"),
-                        "t");
+                          (`Module (`Root (Common.root, <abstr>), <abstr>),
+                           <abstr>),
+                        <abstr>);
                     doc = [];
                     equation =
                      {Odoc_model.Lang.TypeDecl.Equation.params =
@@ -2047,10 +2054,9 @@ Error: This expression has type 'a * 'b
                    {Odoc_model.Lang.Value.id =
                      `Value
                        (`Module
-                          (`Module
-                             (`Root (Common.root, "Root"), "CanonicalTest"),
-                           "Base__List"),
-                        "id");
+                          (`Module (`Root (Common.root, <abstr>), <abstr>),
+                           <abstr>),
+                        <abstr>);
                     doc = [];
                     type_ =
                      Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -2060,10 +2066,9 @@ Error: This expression has type 'a * 'b
                              (`Type
                                 (`Module
                                    (`Module
-                                      (`Root (Common.root, "Root"),
-                                       "CanonicalTest"),
-                                    "Base__List"),
-                                 "t"))),
+                                      (`Root (Common.root, <abstr>), <abstr>),
+                                    <abstr>),
+                                 <abstr>))),
                        [Odoc_model.Lang.TypeExpr.Var "a"]),
                       Odoc_model.Lang.TypeExpr.Constr
                        (`Resolved
@@ -2071,10 +2076,9 @@ Error: This expression has type 'a * 'b
                              (`Type
                                 (`Module
                                    (`Module
-                                      (`Root (Common.root, "Root"),
-                                       "CanonicalTest"),
-                                    "Base__List"),
-                                 "t"))),
+                                      (`Root (Common.root, <abstr>), <abstr>),
+                                    <abstr>),
+                                 <abstr>))),
                        [Odoc_model.Lang.TypeExpr.Var "a"]))}]);
              canonical = None; hidden = true; display_type = None;
              expansion = Some Odoc_model.Lang.Module.AlreadyASig});
@@ -2082,8 +2086,7 @@ Error: This expression has type 'a * 'b
             (Odoc_model.Lang.Signature.Ordinary,
             {Odoc_model.Lang.Module.id =
               `Module
-                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
-                 "Base__");
+                (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
              doc = [];
              type_ =
               Odoc_model.Lang.Module.ModuleType
@@ -2093,10 +2096,9 @@ Error: This expression has type 'a * 'b
                    {Odoc_model.Lang.Module.id =
                      `Module
                        (`Module
-                          (`Module
-                             (`Root (Common.root, "Root"), "CanonicalTest"),
-                           "Base__"),
-                        "List");
+                          (`Module (`Root (Common.root, <abstr>), <abstr>),
+                           <abstr>),
+                        <abstr>);
                     doc =
                      [{Odoc_model.Location_.location =
                         {Odoc_model.Location_.file = "";
@@ -2114,7 +2116,7 @@ Error: This expression has type 'a * 'b
                               `Dot
                                 (`Dot
                                    (`Dot
-                                      (`Root ("Root", `TUnknown),
+                                      (`Root (<abstr>, `TUnknown),
                                        "CanonicalTest"),
                                     "Base"),
                                  "List")))}];
@@ -2125,9 +2127,8 @@ Error: This expression has type 'a * 'b
                             (`Identifier
                                (`Module
                                   (`Module
-                                     (`Root (Common.root, "Root"),
-                                      "CanonicalTest"),
-                                   "Base__List")))));
+                                     (`Root (Common.root, <abstr>), <abstr>),
+                                   <abstr>)))));
                     canonical =
                      Some
                       (`Dot
@@ -2136,7 +2137,7 @@ Error: This expression has type 'a * 'b
                        `Dot
                          (`Dot
                             (`Dot
-                               (`Root ("Root", `TUnknown), "CanonicalTest"),
+                               (`Root (<abstr>, `TUnknown), "CanonicalTest"),
                              "Base"),
                           "List"));
                     hidden = false; display_type = None; expansion = None})]);
@@ -2146,8 +2147,7 @@ Error: This expression has type 'a * 'b
             (Odoc_model.Lang.Signature.Ordinary,
             {Odoc_model.Lang.Module.id =
               `Module
-                (`Module (`Root (Common.root, "Root"), "CanonicalTest"),
-                 "Base");
+                (`Module (`Root (Common.root, <abstr>), <abstr>), <abstr>);
              doc = [];
              type_ =
               Odoc_model.Lang.Module.ModuleType
@@ -2157,10 +2157,9 @@ Error: This expression has type 'a * 'b
                    {Odoc_model.Lang.Module.id =
                      `Module
                        (`Module
-                          (`Module
-                             (`Root (Common.root, "Root"), "CanonicalTest"),
-                           "Base"),
-                        "List");
+                          (`Module (`Root (Common.root, <abstr>), <abstr>),
+                           <abstr>),
+                        <abstr>);
                     doc = [];
                     type_ =
                      Odoc_model.Lang.Module.Alias
@@ -2168,21 +2167,24 @@ Error: This expression has type 'a * 'b
                          (`Canonical
                             (`Alias
                                (`Hidden
-                                  (`Identifier
-                                     (`Module
-                                        (`Module
-                                           (`Root (Common.root, "Root"),
-                                            "CanonicalTest"),
-                                         "Base__List"))),
-                                `Module
                                   (`Hidden
                                      (`Identifier
                                         (`Module
                                            (`Module
-                                              (`Root (Common.root, "Root"),
-                                               "CanonicalTest"),
-                                            "Base__"))),
-                                   "List")),
+                                              (`Root (Common.root, <abstr>),
+                                               <abstr>),
+                                            <abstr>)))),
+                                `Module
+                                  (`Hidden
+                                     (`Hidden
+                                        (`Identifier
+                                           (`Module
+                                              (`Module
+                                                 (`Root
+                                                    (Common.root, <abstr>),
+                                                  <abstr>),
+                                               <abstr>)))),
+                                   <abstr>)),
                              `Dot
                                (`Dot
                                   (`Dot (`Root "Root", "CanonicalTest"),
@@ -2195,7 +2197,8 @@ Error: This expression has type 'a * 'b
       canonical = None; hidden = false; display_type = None;
       expansion = Some Odoc_model.Lang.Module.AlreadyASig});
     Odoc_model.Lang.Signature.Value
-     {Odoc_model.Lang.Value.id = `Value (`Root (Common.root, "Root"), "test");
+     {Odoc_model.Lang.Value.id =
+       `Value (`Root (Common.root, <abstr>), <abstr>);
       doc = [];
       type_ =
        Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -2205,35 +2208,36 @@ Error: This expression has type 'a * 'b
                (`Canonical
                   (`Alias
                      (`Hidden
-                        (`Module
-                           (`Identifier
-                              (`Module
-                                 (`Root (Common.root, "Root"),
-                                  "CanonicalTest")),
-                            "Base__List")),
+                        (`Hidden
+                           (`Module
+                              (`Identifier
+                                 (`Module
+                                    (`Root (Common.root, <abstr>), <abstr>)),
+                               <abstr>))),
                       `Module
-                        (`Module
-                           (`Identifier
-                              (`Module
-                                 (`Root (Common.root, "Root"),
-                                  "CanonicalTest")),
-                            "Base__"),
-                         "List")),
+                        (`Hidden
+                           (`Module
+                              (`Identifier
+                                 (`Module
+                                    (`Root (Common.root, <abstr>), <abstr>)),
+                               <abstr>)),
+                         <abstr>)),
                    `Dot
                      (`Dot (`Dot (`Root "Root", "CanonicalTest"), "Base"),
                       "List")),
-                "t")),
+                <abstr>)),
          [Odoc_model.Lang.TypeExpr.Var "a"]),
         Odoc_model.Lang.TypeExpr.Constr
-         (`Resolved (`Identifier (`CoreType "unit")), []))}];
+         (`Resolved (`Identifier (`CoreType <abstr>)), []))}];
  expansion = None}
 # Tools.lookup_type_from_path env (`Dot
             (`Resolved
-               (`Identifier (`Module (`Root (Common.root, "Root"), "N"))),
+               (`Identifier (Common.root_module "N")),
              "t"));;
 Exception:
-Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, "Root"), "N"),
+Odoc_xref2.Env.MyFailure (`Module (`Root (Common.root, <abstr>), <abstr>),
  <abstr>).
+Non root: (root Root).N
 ```
 
 

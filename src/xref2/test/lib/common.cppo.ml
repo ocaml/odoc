@@ -45,7 +45,11 @@ let root =
         ~module_name:"Root"
         ~digest:"nodigest"
 
-let root_identifier = `Identifier (`Root (root, Odoc_model.Names.UnitName.of_string "Root"))
+let root_with_name = `Root (root, Odoc_model.Names.UnitName.of_string "Root")
+
+let root_identifier = `Identifier root_with_name
+
+let root_module name = `Module (root_with_name, Odoc_model.Names.ModuleName.of_string name)
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
