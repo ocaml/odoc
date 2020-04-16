@@ -409,9 +409,9 @@ struct
     let field mutable_ id typ =
       match Url.from_identifier ~stop_before:true id with
       | Error e -> failwith (Url.Error.to_string e)
-      | Ok { anchor; kind; _ } ->
+      | Ok url ->
         let name = Paths.Identifier.name id in
-        let attrs = ["def"; "record"; kind] in
+        let attrs = ["def"; "record"; url.kind] in
         let cell =
           (* O.td ~a:[ O.a_class ["def"; kind ] ]
            *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
@@ -425,14 +425,15 @@ struct
               )
             (* ] *)
         in
-        anchor, attrs, cell
+        url, attrs, cell
     in
     let rows =
       fields |> List.map (fun fld ->
         let open Odoc_model.Lang.TypeDecl.Field in
-        let anchor, attrs, code =
+        let url, attrs, code =
           field fld.mutable_ (fld.id :> Paths.Identifier.t) fld.type_
-        in 
+        in
+        let anchor = Some url in
         let rhs = Comment.to_ir fld.doc in
         let doc = if not (Comment.has_doc fld.doc) then [] else rhs in
         DocumentedSrc.Documented { anchor; attrs; code; doc }
@@ -504,13 +505,13 @@ struct
     let constructor id args res =
       match Url.from_identifier ~stop_before:true id with
       | Error e -> failwith (Url.Error.to_string e)
-      | Ok { anchor; kind; _ } ->
-        let attrs = ["def" ; "variant" ; kind] in
+      | Ok url ->
+        let attrs = ["def" ; "variant" ; url.kind] in
         let content =
           let doc = constructor id args res in
           O.documentedSrc (O.txt "| ") @ doc
         in
-        anchor, attrs, content
+        url, attrs, content
     in
     match cstrs with
     | [] -> O.documentedSrc (O.txt "|")
@@ -518,9 +519,10 @@ struct
       let rows =
         cstrs |> List.map (fun cstr ->
           let open Odoc_model.Lang.TypeDecl.Constructor in
-          let anchor, attrs, code =
+          let url, attrs, code =
             constructor (cstr.id :> Paths.Identifier.t) cstr.args cstr.res
           in
+          let anchor = Some url in
           let rhs = Comment.to_ir cstr.doc in
           let doc = if not (Comment.has_doc cstr.doc) then [] else rhs in
           DocumentedSrc.Nested { anchor; attrs; code; doc }
@@ -611,10 +613,9 @@ struct
             Some (Comment.to_ir doc)
       in
       try
-        let { Url.Anchor. anchor; kind ; _ } =
-          Url.Anchor.polymorphic_variant ~type_ident item
-        in
-        let attrs = ["def"; kind] in
+        let url = Url.Anchor.polymorphic_variant ~type_ident item in
+        let attrs = ["def"; url.kind] in
+        let anchor = Some url in
         let code =
           O.code (O.txt "| ") @ cstr
         in
@@ -628,7 +629,7 @@ struct
         let code = O.code (O.txt "| " ) @ cstr in
         let attrs = ["def"; kind_approx] in
         let doc = [] in
-        let anchor = "" in
+        let anchor = None in
         DocumentedSrc.Documented { attrs ; anchor ; code ; doc }
     in
     let variants = List.map row t.elements in
@@ -868,7 +869,7 @@ sig
   
   val lay_out :
     heading_level_shift option ->
-    item_to_id:('item -> string option) ->
+    item_to_id:('item -> Url.Anchor.t option) ->
     item_to_spec:('item -> string option) ->
     render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
     render_nested_article:
@@ -941,7 +942,7 @@ struct
     input_items : (('kind, 'item) tagged_item) list;
     acc_subpages : Page.t list;
     comment_state : comment_state;
-    item_to_id : 'item -> string option;
+    item_to_id : 'item -> Url.Anchor.t option;
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
     render_nested_article : 
@@ -1201,10 +1202,8 @@ end
 
 let path_to_id path =
   match Url.Anchor.from_identifier path with
-  | Error _ | Ok {anchor=""; _} ->
-    None
-  | Ok {anchor; _} ->
-    Some anchor
+  | Error _ -> None
+  | Ok url -> Some url
 
 module Class :
 sig
@@ -1833,8 +1832,9 @@ struct
     : Odoc_model.Lang.Compilation_unit.Packed.t -> Item.t list
   = fun t ->
     let open Odoc_model.Lang in
-    let f x = 
-      let modname = Paths.Identifier.name x.Compilation_unit.Packed.id in
+    let f x =
+      let id = x.Compilation_unit.Packed.id in
+      let modname = Paths.Identifier.name id in
       let md_def =
         O.keyword "module" ++
           O.txt " " ++
@@ -1843,7 +1843,10 @@ struct
           Link.from_path ~stop_before:false (x.path :> Paths.Path.t)
       in
       let content = O.documentedSrc md_def in
-      let anchor = Some ("module-" ^ modname) in
+      let anchor =
+        Utils.option_of_result @@
+        Url.Anchor.from_identifier (id :> Paths.Identifier.t)
+      in
       let kind = Some "modules" in
       let decl = {Item. anchor ; content ; kind } in
       Item.Declaration (decl, [])

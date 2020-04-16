@@ -25,11 +25,14 @@ type flow = Html_types.flow5_without_sectioning_heading_header_footer
 type phrasing = Html_types.phrasing
 type non_link_phrasing = Html_types.phrasing_without_interactive
 
-let anchor_link anchor =
-  [ Html.a ~a:[Html.a_href ("#" ^ anchor); Html.a_class ["anchor"]] []]
-
-let anchor_attrib anchor =
-  [ Html.a_id anchor; Html.a_class ["anchored"] ]
+let mk_anchor_link id =
+  [ Html.a ~a:[Html.a_href ("#" ^ id); Html.a_class ["anchor"]] [] ]
+let mk_anchor anchor = match anchor with
+  | None -> [], []
+  | Some {Odoc_document.Url.Anchor. anchor ; _ } ->
+    let link = mk_anchor_link anchor in
+    let attrib = [ Html.a_id anchor; Html.a_class ["anchored"] ] in
+    attrib, link
 
 let class_ (l : Class.t) =
   if l = [] then [] else [Html.a_class l]
@@ -142,7 +145,7 @@ and inline_nolink
 
 let heading ~resolve (h : Heading.t) =
   let a, anchor = match h.label with
-    | Some id -> [Html.a_id id], anchor_link id
+    | Some id -> [Html.a_id id], mk_anchor_link id
     | None -> [], []
   in
   let content = inline ~resolve h.title in
@@ -228,8 +231,9 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
           Utils.optional_elt
             Html.td ~a:(class_ ["doc"]) (block ~resolve doc)
         in
-        Html.tr ~a:(anchor_attrib anchor)
-          (Html.td ~a:(class_ attrs) (anchor_link anchor @ content) :: doc)
+        let a, link = mk_anchor anchor in
+        Html.tr ~a
+          (Html.td ~a:(class_ attrs) (link @ content) :: doc)
       in
       Html.table (List.map one l)
       :: to_html rest
@@ -321,10 +325,7 @@ let items ~resolve l =
         | `Open -> mk true
         | `Default -> mk !Tree.open_details
       in
-      let anchor_attrib, anchor_link = match anchor with
-        | Some a -> anchor_attrib a, anchor_link a
-        | None -> [], []
-      in
+      let anchor_attrib, anchor_link = mk_anchor anchor in
       let a = class_of_kind kind @ anchor_attrib in
       (* TODO : Why double div ??? *)
       [Html.div [Html.div ~a
@@ -342,10 +343,7 @@ let items ~resolve l =
         | _ -> Stop_and_keep)
       in
       let content = List.map (fun {Item. kind; anchor ; content} ->
-        let anchor_attrib, anchor_link = match anchor with
-          | Some a -> anchor_attrib a, anchor_link a
-          | None -> [], []
-        in
+      let anchor_attrib, anchor_link = mk_anchor anchor in
         let a = class_of_kind kind @ anchor_attrib in
         let content = documentedSrc ~resolve content in
         Html.dt ~a (anchor_link @ content)
@@ -360,10 +358,7 @@ let items ~resolve l =
       |> continue_with rest
 
     | Declaration ({Item. kind; anchor ; content}, doc) :: rest ->
-      let anchor_attrib, anchor_link = match anchor with
-        | Some a -> anchor_attrib a, anchor_link a
-        | None -> [], []
-      in
+      let anchor_attrib, anchor_link = mk_anchor anchor in
       let a = class_of_kind kind @ anchor_attrib in
       let content = anchor_link @ documentedSrc ~resolve content in
       let elts = match doc with

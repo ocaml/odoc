@@ -1,3 +1,6 @@
+let option_of_result = function
+  | Result.Ok x -> Some x
+  | Result.Error _ -> None
 
 let rec flatmap ?sep ~f = function
   | [] -> []
