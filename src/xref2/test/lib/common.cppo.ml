@@ -62,6 +62,8 @@ let module_name_pp = _quoted Odoc_model.Names.ModuleName.fmt
 let module_type_name_pp = _quoted Odoc_model.Names.ModuleTypeName.fmt
 let type_name_pp = _quoted Odoc_model.Names.TypeName.fmt
 let parameter_name_pp = _quoted Odoc_model.Names.ParameterName.fmt
+let exception_name_pp = _quoted_str Odoc_model.Names.ExceptionName.to_string
+let field_name_pp = _quoted_str Odoc_model.Names.FieldName.to_string
 
 let model_of_string str = 
     let cmti = cmti_of_string str in

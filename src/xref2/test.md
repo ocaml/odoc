@@ -33,6 +33,8 @@ open Odoc_xref_test;;
 #install_printer Common.module_type_name_pp;;
 #install_printer Common.type_name_pp;;
 #install_printer Common.parameter_name_pp;;
+#install_printer Common.exception_name_pp;;
+#install_printer Common.field_name_pp;;
 #print_length 65536;;
 Odoc_xref2__Component.Delayed.eager := true;;
 ```
@@ -323,10 +325,50 @@ by the module type `N`. However, `N` is not defined at the top level
 here, so it has a local identifier. We can see this by looking up module `M` from the environment:
 
 ```ocaml env=e1
-# let m = Env.lookup_module_type (`ModuleType (`Root (Common.root, "Root"), "M")) env;;
-Line 1, characters 66-72:
-Error: This expression has type string but an expression was expected of type
-         Odoc_model.Names.UnitName.t
+# let m = Env.lookup_module_type (`ModuleType (Common.root_with_name, Odoc_model.Names.ModuleTypeName.of_string "M")) env;;
+val m : Component.ModuleType.t =
+  {Odoc_xref2.Component.ModuleType.doc = [];
+   expr =
+    Some
+     (Odoc_xref2.Component.ModuleType.Signature
+       {Odoc_xref2.Component.Signature.items =
+         [Odoc_xref2.Component.Signature.ModuleType (`LModuleType ("N", 1),
+           {Odoc_xref2.Component.Delayed.v =
+             Some
+              {Odoc_xref2.Component.ModuleType.doc = [];
+               expr =
+                Some
+                 (Odoc_xref2.Component.ModuleType.Signature
+                   {Odoc_xref2.Component.Signature.items =
+                     [Odoc_xref2.Component.Signature.Type (`LType ("t", 2),
+                       Odoc_model.Lang.Signature.Ordinary,
+                       {Odoc_xref2.Component.Delayed.v =
+                         Some
+                          {Odoc_xref2.Component.TypeDecl.doc = [];
+                           equation =
+                            {Odoc_xref2.Component.TypeDecl.Equation.params =
+                              [];
+                             private_ = false; manifest = None;
+                             constraints = []};
+                           representation = None};
+                        get = <fun>})];
+                    removed = []});
+               expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+            get = <fun>});
+          Odoc_xref2.Component.Signature.Module (`LModule ("B", 0),
+           Odoc_model.Lang.Signature.Ordinary,
+           {Odoc_xref2.Component.Delayed.v =
+             Some
+              {Odoc_xref2.Component.Module.doc = [];
+               type_ =
+                Odoc_xref2.Component.Module.ModuleType
+                 (Odoc_xref2.Component.ModuleType.Path
+                   (`Resolved (`Local (`LModuleType ("N", 1)))));
+               canonical = None; hidden = false; display_type = None;
+               expansion = None};
+            get = <fun>})];
+        removed = []});
+   expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
 
 We can see here that module `B` has type `` Path (`Local ("N", 1)) `` which refers to the module type defined just above it.
@@ -1405,12 +1447,12 @@ let sg = Common.signature_of_mli_string test_data;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Exception
   {Odoc_model.Lang.Exception.id =
-    `Exception (`Root (Common.root, "Root"), <abstr>);
+    `Exception (`Root (Common.root, "Root"), "Foo");
    doc = [];
    args =
     Odoc_model.Lang.TypeDecl.Constructor.Record
      [{Odoc_model.Lang.TypeDecl.Field.id =
-        `Field (`Root (Common.root, "Root"), <abstr>);
+        `Field (`Root (Common.root, "Root"), "test");
        doc = []; mutable_ = false;
        type_ =
         Odoc_model.Lang.TypeExpr.Constr
