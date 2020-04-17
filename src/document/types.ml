@@ -162,6 +162,7 @@ and Item : sig
     kind : string option ;
     anchor : Url.Anchor.t option ;
     content : 'a ;
+    doc : Block.t ;
   }
 
   type declaration = DocumentedSrc.t item
@@ -170,8 +171,8 @@ and Item : sig
   type t =
     | Text of text
     | Heading of Heading.t
-    | Declaration of declaration * Block.t
-    | Nested of Nested.t item * Block.t
+    | Declaration of DocumentedSrc.t item
+    | Nested of Nested.t item
     | Section of Item.t list * t list
 
 end = Item

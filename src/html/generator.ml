@@ -254,7 +254,7 @@ let rec is_only_text l =
     | Section (doc, items) -> is_only_text doc && is_only_text items
     | Declaration _
       -> false
-    | Nested ({ content = { items; _ }; _ },_)
+    | Nested { content = { items; _ }; _ }
       -> is_only_text items
   in
   List.for_all is_text l
@@ -305,9 +305,9 @@ let items ~resolve l =
       [Html.section (Html.header h :: content )]
       |> continue_with rest
     | Nested
-        ({ kind; anchor; content = { summary; status; items = i } }, docs)
+        { kind; anchor; doc ; content = { summary; status; items = i } }
       :: rest ->
-      let docs = (block ~resolve docs :> any Html.elt list) in
+      let docs = (block ~resolve doc :> any Html.elt list) in
       let summary = inline ~resolve summary in
       let included_html =
         (items i :> any Html.elt list)
@@ -333,16 +333,17 @@ let items ~resolve l =
                 (docs @ content)])]]
       |> continue_with rest
 
-    | Declaration ({ kind ; _ }, _) :: _ as t 
-      when should_coalesce kind ->
+    | Declaration { kind = kind0 ; _ } :: _ as t 
+      when should_coalesce kind0 ->
       let l, doc, rest = Doctree.Take.until t ~classify:(function
-        | Item.Declaration (d, []) when d.kind = kind ->
-          Accum [d]
-        | Item.Declaration (d, doc) when d.kind = kind ->
-          Stop_and_accum ([d], Some doc)
+        | Item.Declaration { doc = [] ; anchor ; content ; kind }
+          when kind = kind0 ->
+          Accum [(anchor, content, kind)]
+        | Item.Declaration { kind; anchor; content; doc } when kind = kind0 ->
+          Stop_and_accum ([(anchor, content, kind)], Some doc)
         | _ -> Stop_and_keep)
       in
-      let content = List.map (fun {Item. kind; anchor ; content} ->
+      let content = List.map (fun (anchor, content, kind) ->
       let anchor_attrib, anchor_link = mk_anchor anchor in
         let a = class_of_kind kind @ anchor_attrib in
         let content = documentedSrc ~resolve content in
@@ -357,7 +358,7 @@ let items ~resolve l =
       [Html.dl (content @ docs)]
       |> continue_with rest
 
-    | Declaration ({Item. kind; anchor ; content}, doc) :: rest ->
+    | Declaration {Item. kind; anchor ; content ; doc} :: rest ->
       let anchor_attrib, anchor_link = mk_anchor anchor in
       let a = class_of_kind kind @ anchor_attrib in
       let content = anchor_link @ documentedSrc ~resolve content in

@@ -1002,9 +1002,9 @@ struct
         let content, docs = state.render_leaf_item item in
         let anchor = state.item_to_id item in
         let kind = state.item_to_spec item in
-        let docs = Comment.first_to_ir docs in
-        let decl = {Item. content ; kind ; anchor } in
-        let ir = Item.Declaration (decl, docs) in
+        let doc = Comment.first_to_ir docs in
+        let decl = {Item. content ; kind ; anchor ; doc} in
+        let ir = Item.Declaration decl in
         section_items level_shift section_level {state with
             input_items;
             comment_state = { state.comment_state with
@@ -1017,13 +1017,14 @@ struct
         in
         let anchor = state.item_to_id item in
         let kind = state.item_to_spec item in
-        let docs = Comment.first_to_ir docs in
+        let doc = Comment.first_to_ir docs in
         let ir = match rendered_item with 
           | `Decl content ->
-            let decl = {Item. content ; kind ; anchor } in
-            Item.Declaration (decl, docs)
+            let decl = {Item. content ; kind ; anchor ; doc} in
+            Item.Declaration decl
           | `Nested content -> 
-            Item.Nested ({Item. content ; kind ; anchor }, docs)
+            let decl = {Item. content ; kind ; anchor ; doc} in
+            Item.Nested decl
         in
         section_items level_shift section_level { state with
           input_items;
@@ -1848,8 +1849,9 @@ struct
         Url.Anchor.from_identifier (id :> Paths.Identifier.t)
       in
       let kind = Some "modules" in
-      let decl = {Item. anchor ; content ; kind } in
-      Item.Declaration (decl, [])
+      let doc = [] in
+      let decl = {Item. anchor ; content ; kind ; doc } in
+      Item.Declaration decl
     in
     List.map f t
 

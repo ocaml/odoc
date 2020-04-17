@@ -66,9 +66,9 @@ module Toc = struct
 
   let classify ~on_nested (i : Item.t) : _ Rewire.action = match i with
     | Text _
-    | Declaration (_, _)
+    | Declaration _
       -> Skip
-    | Nested ({ content = { status; items; _ }; _ }, _) ->
+    | Nested { content = { status; items; _ }; _ } ->
       if on_nested status then Rec items else Skip
     | Section (doc, items) ->
       Rec (doc@items)
