@@ -178,7 +178,7 @@ let diff =
   fun output ->
     let actual_file   = Env.path `scratch // output in
     let expected_file = Env.path `expect  // output in
-    let cmd = sprintf "diff -u %s %s" expected_file actual_file in
+    let cmd = sprintf "diff -u -b %s %s" expected_file actual_file in
     match Sys.command cmd with
     | 0 -> ()
 

@@ -9,6 +9,8 @@ let muted_warnings = [
 
   (* NOTE: see https://github.com/ocaml/odoc/issues/186 *)
   "ANCHOR_NOT_UNIQUE";
+
+  "TRIM_EMPTY_ELEMENT";
 ]
 
 
