@@ -837,6 +837,11 @@ sig
 
   type heading_level_shift
 
+  val comment_items :
+    ?level_shift:heading_level_shift ->
+    Comment.docs ->
+    heading_level_shift option * Item.t list
+
   type tagged_item = [
     | `Item of Item.t * Page.t list
     | `Comment of Odoc_model.Comment.docs_or_stop
@@ -927,25 +932,25 @@ struct
       end
     | None | Some _ -> level
 
-  let comment_items level_shift level0 input0 =
-    let rec loop level input_comment acc =
+  let comment_items ?level_shift (input0 : Odoc_model.Comment.docs) =
+    let rec loop next_level_shift input_comment acc =
       match input_comment with
-      | [] -> level, List.rev acc
+      | [] -> next_level_shift, List.rev acc
       | element::input_comment ->
         match element.Location.value with
         | `Heading (level, label, content) ->
           let level = shift level_shift level in
           let h = `Heading (level, label, content) in
           let item = Comment.heading h in
-          loop level input_comment (item :: acc)
+          loop (Some (level_to_int level)) input_comment (item :: acc)
         | _ ->
           let content, input_comment =
             render_comment_until_heading_or_end (element::input_comment)
           in
           let item = Item.Text content in
-          loop level input_comment (item :: acc)
+          loop next_level_shift input_comment (item :: acc)
     in
-    loop level0 input0 []
+    loop level_shift input0 []
 
   
   let rec section_items level_shift section_level input_items state =
@@ -970,8 +975,8 @@ struct
         section_items level_shift section_level input_items state
 
       | `Comment (`Docs input_comment) ->
-        let section_level, items =
-          comment_items level_shift section_level input_comment
+        let level_shift, items =
+          comment_items ?level_shift input_comment
         in
         section_items level_shift section_level input_items {state with
           acc_ir = List.rev_append items state.acc_ir ;
@@ -995,7 +1000,7 @@ struct
      is either lower, or a section.
   *)
   let docs input_comment =
-    let _, items = comment_items None `Title input_comment in
+    let _, items = comment_items input_comment in
     let until_first_heading, o, items =
       Doctree.Take.until items ~classify:(function
         | Item.Heading h as i ->
@@ -1106,23 +1111,31 @@ struct
     let doc = [] in
     Item.Declaration {kind ; anchor ; doc ; content}
   
-  let render_item _ (c : Lang.ClassSignature.item) = match c with
-    | Method m ->
-      `Item (method_ m, [])
-    | InstanceVariable v ->
-      `Item (instance_variable v, [])
-    | Constraint (t1, t2) ->
-      `Item (constraint_ t1 t2, [])
-    | Inherit (Signature _) ->
-      assert false (* Bold. *)
-    | Inherit cty ->
-      `Item (inherit_ cty, [])
-    | Comment c ->
-      `Comment c
-
   let class_signature (c : Lang.ClassSignature.t) =
+    let rec loop l acc_items =
+      match l with
+      | [] -> List.rev acc_items
+      | item :: rest -> 
+        let continue item = loop rest (item :: acc_items) in
+        match (item : Lang.ClassSignature.item) with
+        | Inherit (Signature _) ->
+          assert false (* Bold. *)
+        | Inherit cty         -> continue @@ inherit_ cty
+        | Method m            -> continue @@ method_ m
+        | InstanceVariable v  -> continue @@ instance_variable v
+        | Constraint (t1, t2) -> continue @@ constraint_ t1 t2
+        | Comment `Stop ->
+          let rest = Utils.skip_until rest ~p:(function
+            | Lang.ClassSignature.Comment `Stop -> true
+            | _ -> false)
+          in
+          loop rest acc_items
+        | Comment (`Docs c) ->
+          let _, items = Sectionning.comment_items c in
+          loop rest (List.rev_append items acc_items)
+    in
     (* FIXME: use [t.self] *)
-    Sectionning.items None ~render_item c.items
+    loop c.items []
 
   let rec class_decl (cd : Odoc_model.Lang.Class.decl) =
     match cd with
@@ -1147,7 +1160,7 @@ struct
       | None -> O.txt name, []
       | Some csig ->
         let doc = Comment.standalone t.doc in
-        let items, _ = class_signature csig in
+        let items = class_signature csig in
         let url = Url.Path.from_identifier t.id in
         let header = format_title `Class (make_name_from_path url) @ doc in 
         let page = {Page.
@@ -1195,7 +1208,7 @@ struct
       | Some csig ->
         let url = Url.Path.from_identifier t.id in
         let doc = Comment.standalone t.doc in
-        let items, _ = class_signature csig in
+        let items = class_signature csig in
         let header = format_title `Cty (make_name_from_path url) @ doc in
         let page = {Page.
           title = name ;
@@ -1238,46 +1251,50 @@ open Class
 module Module :
 sig
   val signature
-    : ?heading_level_shift:Sectionning.heading_level_shift
+    : ?level_shift:Sectionning.heading_level_shift
     -> Lang.Signature.t
     -> Item.t list * Page.t list
 end =
 struct
-  
 
-  let rec signature ?heading_level_shift s =
-    Sectionning.items heading_level_shift ~render_item s
+  let rec signature ?level_shift:level_shift0 s =
+    let rec loop ?level_shift l (acc_items, acc_pages) =
+      match l with
+      | [] -> List.rev acc_items, List.rev acc_pages
+      | item :: rest -> 
+        let continue (item, pages) =
+          loop ?level_shift rest (item :: acc_items, List.rev_append pages acc_pages)
+        in
+        let continue_no_pages item = continue (item, []) in
+        match (item : Lang.Signature.item) with
+        | Module (recursive, m)    -> continue @@ module_ recursive m
+        | ModuleType m             -> continue @@ module_type m
+        | Class (recursive, c)     -> continue @@ class_ recursive c
+        | ClassType (recursive, c) -> continue @@ class_type recursive c
+        | Include m                -> continue @@ include_ level_shift m
+        | ModuleSubstitution m     -> continue_no_pages @@ module_substitution m
 
-  and render_item
-    : Sectionning.heading_level_shift -> Lang.Signature.item -> _ =
-    fun heading_level item ->
-      match item with
-      | Module (recursive, m) ->
-        `Item (module_ recursive m)
-      | ModuleType m ->
-        `Item (module_type m)
-      | Class (recursive, c) ->
-        `Item (class_ recursive c)
-      | ClassType (recursive, c) ->
-        `Item (class_type recursive c)
-      | Include m ->
-        `Item (include_ heading_level m)
-      | Type (r, t) ->
-        `Item (type_decl (r, t), [])
-      | TypeSubstitution t ->
-        `Item (type_decl ~is_substitution:true (Ordinary, t), [])
-      | TypExt e ->
-        `Item (extension e, [])
-      | Exception e ->
-        `Item (exn e, [])
-      | Value v ->
-        `Item (value v, [])
-      | External e ->
-        `Item (external_ e, [])
-      | ModuleSubstitution m ->
-        `Item (module_substitution m, [])
-      | Comment c ->
-        `Comment c
+        | TypeSubstitution t ->
+          continue_no_pages @@ type_decl ~is_substitution:true (Ordinary, t)
+        | Type (r, t) -> continue_no_pages @@ type_decl (r, t)
+        | TypExt e    -> continue_no_pages @@ extension e
+        | Exception e -> continue_no_pages @@ exn e
+        | Value v     -> continue_no_pages @@ value v
+        | External e  -> continue_no_pages @@ external_ e
+
+        | Comment `Stop ->
+          let rest = Utils.skip_until rest ~p:(function
+            | Lang.Signature.Comment `Stop -> true
+            | _ -> false)
+          in
+          loop ?level_shift rest (acc_items, acc_pages)
+        | Comment (`Docs c) ->
+          let level_shift, items =
+            Sectionning.comment_items ?level_shift:level_shift0 c
+          in
+          loop ?level_shift rest (List.rev_append items acc_items, acc_pages)
+    in
+    loop ?level_shift:level_shift0 s ([], [])
 
   and functor_argument
     : Odoc_model.Lang.FunctorParameter.parameter
@@ -1586,7 +1603,7 @@ struct
           | Some te ->
             type_expr te
 
-  and include_ heading_level_shift (t : Odoc_model.Lang.Include.t) =
+  and include_ level_shift (t : Odoc_model.Lang.Include.t) =
     let status =
       let is_inline_tag element = element.Odoc_model.Location_.value = `Tag `Inline in
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
@@ -1597,13 +1614,13 @@ struct
       else `Default
     in
     let items, tree =
-      let heading_level_shift =
+      let level_shift =
         if status = `Inline then
-          Some heading_level_shift
+          level_shift
         else
           None
       in
-      signature ?heading_level_shift t.expansion.content
+      signature ?level_shift t.expansion.content
     in
     let summary = 
       O.code (

@@ -11,3 +11,7 @@ let rec flatmap ?sep ~f = function
     match sep with
     | None -> hd @ tl
     | Some sep -> hd @ sep @ tl
+
+let rec skip_until ~p = function
+  | [] -> []
+  | h :: t -> if p h then t else skip_until ~p t
