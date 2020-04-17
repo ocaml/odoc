@@ -821,31 +821,6 @@ struct
 end
 open Value
 
-module ModuleSubstitution :
-sig
-  val module_substitution : Lang.ModuleSubstitution.t -> Item.t
-end =
-struct
-  let module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
-    let name = Paths.Identifier.name t.id in
-    let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
-    let content =
-      O.documentedSrc (
-        O.keyword "module" ++
-          O.txt " " ++
-          O.txt name ++
-          O.txt " := " ++
-          path
-      )
-    in
-    let kind = Some "module-substitution" in
-    let anchor = path_to_id t.id in
-    let doc = Comment.to_ir t.doc in
-    Item.Declaration {kind ; anchor ; doc ; content}
-end
-open ModuleSubstitution
-
-
 (* This chunk of code is responsible for sectioning list of items
    according to headings and comments.
 
@@ -1341,6 +1316,23 @@ struct
     in
     let region = O.code def_div in
     region, subtree
+
+and module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
+  let name = Paths.Identifier.name t.id in
+  let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
+  let content =
+    O.documentedSrc (
+      O.keyword "module" ++
+        O.txt " " ++
+        O.txt name ++
+        O.txt " := " ++
+        path
+    )
+  in
+  let kind = Some "module-substitution" in
+  let anchor = path_to_id t.id in
+  let doc = Comment.to_ir t.doc in
+  Item.Declaration {kind ; anchor ; doc ; content}
 
 and module_expansion
   : Odoc_model.Lang.Module.expansion
