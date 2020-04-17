@@ -53,18 +53,6 @@ let root_module name = `Module (root_with_name, Odoc_model.Names.ModuleName.of_s
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
-let _quoted fmt_a fmt a = Format.fprintf fmt "\"%a\"" fmt_a a
-let _quoted_str a_to_str fmt a = Format.fprintf fmt "%S" (a_to_str a)
-
-let unit_name_pp = _quoted_str Odoc_model.Names.UnitName.to_string
-let value_name_pp = _quoted_str Odoc_model.Names.ValueName.to_string
-let module_name_pp = _quoted Odoc_model.Names.ModuleName.fmt
-let module_type_name_pp = _quoted Odoc_model.Names.ModuleTypeName.fmt
-let type_name_pp = _quoted Odoc_model.Names.TypeName.fmt
-let parameter_name_pp = _quoted Odoc_model.Names.ParameterName.fmt
-let exception_name_pp = _quoted_str Odoc_model.Names.ExceptionName.to_string
-let field_name_pp = _quoted_str Odoc_model.Names.FieldName.to_string
-
 let model_of_string str = 
     let cmti = cmti_of_string str in
     Odoc_loader__Cmti.read_interface root "Root" cmti
