@@ -90,4 +90,4 @@ module Reason = Generator.Make (struct
   end
 end)
 
-include Reason.Page
+include Reason

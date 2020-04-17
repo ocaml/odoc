@@ -88,4 +88,4 @@ module ML = Generator.Make (struct
   end
 end)
 
-include ML.Page
+include ML

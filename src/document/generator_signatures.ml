@@ -7,11 +7,6 @@ type rendered_item = DocumentedSrc.t
 
 type text = Format.formatter -> unit
 
-type 'item tagged_item = [
-  | `Item of 'item
-  | `Comment of Odoc_model.Comment.docs_or_stop
-]
-
 (** HTML generation syntax customization module. See {!To_re_html_tree} and
     {!To_ml_html_tree}. *)
 module type SYNTAX =
@@ -99,34 +94,7 @@ sig
   end
 end
 
-
-
-module type GENERATOR =
-sig
-  module Top_level_markup :
-  sig
-    type heading_level_shift
-
-    val lay_out :
-      heading_level_shift option ->
-      item_to_id:('item -> string option) ->
-      item_to_spec:('item -> string option) ->
-      render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
-      render_nested_article:
-        (heading_level_shift -> 'item ->
-          rendered_item * Odoc_model.Comment.docs * Block.t) ->
-      'item tagged_item list ->
-      Block.t * Block.t
-
-  val lay_out_page :
-    Odoc_model.Comment.docs -> Block.t * Block.t
-
-  end
-
-  module Page :
-  sig
-    val compilation_unit :
-      ?theme_uri:string -> Lang.Compilation_unit.t -> Block.t
-    val page : ?theme_uri:string -> Lang.Page.t -> Block.t
-  end
+module type GENERATOR = sig
+  val compilation_unit : Lang.Compilation_unit.t -> Page.t
+  val page : Lang.Page.t -> Page.t
 end

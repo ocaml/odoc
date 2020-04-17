@@ -20,14 +20,6 @@ module Location = Odoc_model.Location_
 module Paths = Odoc_model.Paths
 open Types
 
-let functor_arg_pos { Odoc_model.Lang.FunctorParameter.id ; _ } =
-  match id with
-  | `Argument (_, nb, _) -> nb
-  | _ ->
-    failwith "TODO"
-    (* let id = string_of_sexp @@ Identifier.sexp_of_t id in
-    invalid_arg (Printf.sprintf "functor_arg_pos: %s" id) *)
-
 module O = Codefmt
 open O.Infix
 
@@ -79,9 +71,6 @@ let path_to_id path =
 
 include Generator_signatures
 
-(**
-   Main functor to create an {!To_html_tree.Html_generator}
- *)
 module Make (Syntax : SYNTAX) = struct
 
 module Link :
@@ -857,65 +846,45 @@ end
 open ModuleSubstitution
 
 
-(* This chunk of code is responsible for laying out signatures and class
-   signatures: the parts of OCaml that contain other parts as nested items.
+(* This chunk of code is responsible for sectioning list of items
+   according to headings and comments.
 
-   Each item is either
+   In particular, it extracts headings as Items, shift heading levels
+   of included items and remove items that should be skipped.
 
-   - a leaf, like a type declaration or a value,
-   - something that has a nested signature/class signature, or
-   - a comment.
+   It expects a rendering function which either renders, or identify comments.
 
-   Comments can contain section headings, and the top-level markup code is also
-   responsible for generating a table of contents. As a result, it must compute
-   the nesting of sections.
-
-   This is also a good opportunity to properly nest everything in <section>
-   tags. Even though that is not strictly required by HTML, we carry out the
-   computation for it anyway when computing nesting for the table of
-   contents.
-
-   Leaf items are set in <dl> tags – the name and any definition in <dt>, and
-   documentation in <dd>. Multiple adjacent undocumented leaf items of the same
-   kind are set as sibling <dt>s in one <dl>, until one of them has
-   documentation. This indicates groups like:
-
-{[
-type sync
-type async
-(** Documentation for both types. *)
-]}
-
-   Nested signatures are currently marked up with <article> tags. The top-level
-   layout code is eventually indirectly triggered recursively for laying them
-   out, as well. *)
-
-module Top_level_markup :
+   TODO: This sectioning would be better done as a pass on the model directly.
+*)
+module Sectionning :
 sig
   type heading_level_shift
 
-  val lay_out :
+  type tagged_item = [
+    | `Item of Item.t * Page.t list
+    | `Comment of Odoc_model.Comment.docs_or_stop
+  ]
+  
+  val items :
     heading_level_shift option ->
     render_item:
-      (heading_level_shift -> 'item -> (Item.t * Page.t list) tagged_item) ->
+      (heading_level_shift -> 'item -> tagged_item) ->
     'item list ->
     Item.t list * Page.t list
 
-  val lay_out_page :
+  val docs :
     Odoc_model.Comment.docs -> Item.t list * Item.t list
 end =
 struct
 
-
-
-  (* Reads comment content until the next heading, or the end of comment, and
-     renders it as HTML. The returned HTML is paired with the remainder of the
+  (* Reads comment content until the next heading, or the end of comment.
+     The returned IR is paired with the remainder of the
      comment, which will either start with the next section heading in the
      comment, or be empty if there are no section headings. *)
   let render_comment_until_heading_or_end docs =
     let rec scan_comment acc docs =
       match docs with
-      | [] -> List.rev acc, docs
+      | [] -> List.rev acc, []
       | block :: rest -> 
         match block.Location.value with
         | `Heading _ -> List.rev acc, docs 
@@ -926,27 +895,24 @@ struct
     let docs, remaining = scan_comment [] docs in
     docs, remaining
 
-
   type heading_level_shift = int
 
+  type tagged_item = [
+    | `Item of Item.t * Page.t list
+    | `Comment of Odoc_model.Comment.docs_or_stop
+  ]
+  
   (* The sectioning functions take several arguments, and return "modified"
-     instances of them as results. So, it is convenient to group them into a
-     record type. This is most useful for the return type, as otherwise there is
-     no way to give names to its components.
-
-     The components themselves are:
-
-     - The various rendering functions
+     instances of them as results. The components themselves are:
+     - The rendering function
      - An accumulator of the rendered items.
      - An accumulator of the subpages generated for nested signatures.
-
-     The record is also convenient for passing around the two item-rendering
-     functions. *)
+  *)
   type ('kind, 'item) sectioning_state = {
     acc_subpages : Page.t list;
     acc_ir : Item.t list;
     render_item:
-      (heading_level_shift -> 'item -> (Item.t * Page.t list) tagged_item);
+      (heading_level_shift -> 'item -> tagged_item);
   }
 
   (* When we encounter a stop comment, [(**/**)], we read everything until the
@@ -1010,8 +976,6 @@ struct
           acc_ir = state.acc_ir @ items ;
         }
 
-
-
   and section_comment level_shift section_level input_comment acc =
     match input_comment with
     | [] -> section_level, acc
@@ -1033,7 +997,7 @@ struct
         section_comment level_shift section_level input_comment
           (acc @ item)
 
-  let lay_out heading_level_shift ~render_item items =
+  let items heading_level_shift ~render_item items =
     let initial_state =
       {
         acc_subpages = [];
@@ -1046,11 +1010,11 @@ struct
     in
     state.acc_ir, state.acc_subpages
 
-  (* For doc pages, we want the header to contain
-     - Everything until the first heading, then everything before
-       the next heading which is either lower, or a section.
+  (* For doc pages, we want the header to contain everything until
+     the first heading, then everything before the next heading which 
+     is either lower, or a section.
   *)
-  let lay_out_page input_comment =
+  let docs input_comment =
     let _, items = section_comment None `Title input_comment [] in
     let until_first_heading, o, items =
       Doctree.Take.until items ~classify:(function
@@ -1102,7 +1066,7 @@ struct
 
   and class_signature (c : Lang.ClassSignature.t) =
     (* FIXME: use [t.self] *)
-    Top_level_markup.lay_out None ~render_item c.items
+    Sectionning.items None ~render_item c.items
 
   and method_ (t : Odoc_model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
@@ -1294,7 +1258,7 @@ open Class
 module Module :
 sig
   val signature
-    : ?heading_level_shift:Top_level_markup.heading_level_shift
+    : ?heading_level_shift:Sectionning.heading_level_shift
     -> Lang.Signature.t
     -> Item.t list * Page.t list
 end =
@@ -1302,10 +1266,10 @@ struct
   
 
   let rec signature ?heading_level_shift s =
-    Top_level_markup.lay_out heading_level_shift ~render_item s
+    Sectionning.items heading_level_shift ~render_item s
 
   and render_item
-    : Top_level_markup.heading_level_shift -> Lang.Signature.item -> _ =
+    : Sectionning.heading_level_shift -> Lang.Signature.item -> _ =
     fun heading_level item ->
       match item with
       | Module (recursive, m) ->
@@ -1718,7 +1682,7 @@ struct
     in
     let title = Odoc_model.Names.PageName.to_string name in
     let url = Url.Path.from_identifier t.name in
-    let header, items = Top_level_markup.lay_out_page t.content in
+    let header, items = Sectionning.docs t.content in
     {Page. title ; header ; items ; subpages = [] ; url }
 end
 include Page
