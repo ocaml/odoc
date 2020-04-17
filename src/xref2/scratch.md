@@ -43,23 +43,23 @@ let sg = Common.model_of_string_impl test_data;;
 - : Odoc_model.Paths_types.Identifier.reference_module *
     Odoc_model.Comment.docs * Odoc_model.Lang.Signature.t
 =
-(`Root (Common.root, "Root"), [],
+(`Root (Common.root, <abstr>), [],
  [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-   {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, "Root"), M);
+   {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, <abstr>), M);
     doc = [];
     type_ =
      Odoc_model.Lang.Module.ModuleType
       (Odoc_model.Lang.ModuleType.Functor
         (Odoc_model.Lang.FunctorParameter.Named
           {Odoc_model.Lang.FunctorParameter.id =
-            `Parameter (`Module (`Root (Common.root, "Root"), M), S);
+            `Parameter (`Module (`Root (Common.root, <abstr>), M), S);
            expr =
             Odoc_model.Lang.ModuleType.Signature
              [Odoc_model.Lang.Signature.Module
                (Odoc_model.Lang.Signature.Ordinary,
                {Odoc_model.Lang.Module.id =
                  `Module
-                   (`Parameter (`Module (`Root (Common.root, "Root"), M), S),
+                   (`Parameter (`Module (`Root (Common.root, <abstr>), M), S),
                     E);
                 doc = [];
                 type_ =
@@ -71,7 +71,8 @@ let sg = Common.model_of_string_impl test_data;;
                         `Type
                           (`Module
                              (`Parameter
-                                (`Module (`Root (Common.root, "Root"), M), S),
+                                (`Module (`Root (Common.root, <abstr>), M),
+                                 S),
                               E),
                            <abstr>);
                        doc = [];
@@ -88,7 +89,7 @@ let sg = Common.model_of_string_impl test_data;;
          (Odoc_model.Lang.FunctorParameter.Named
            {Odoc_model.Lang.FunctorParameter.id =
              `Parameter
-               (`Result (`Module (`Root (Common.root, "Root"), M)), D);
+               (`Result (`Module (`Root (Common.root, <abstr>), M)), D);
             expr =
              Odoc_model.Lang.ModuleType.Signature
               [Odoc_model.Lang.Signature.Type
@@ -96,7 +97,7 @@ let sg = Common.model_of_string_impl test_data;;
                 {Odoc_model.Lang.TypeDecl.id =
                   `Type
                     (`Parameter
-                       (`Result (`Module (`Root (Common.root, "Root"), M)),
+                       (`Result (`Module (`Root (Common.root, <abstr>), M)),
                         D),
                      <abstr>);
                  doc = [];
@@ -109,14 +110,14 @@ let sg = Common.model_of_string_impl test_data;;
          Odoc_model.Lang.ModuleType.Signature
           [Odoc_model.Lang.Signature.Include
             {Odoc_model.Lang.Include.parent =
-              `Result (`Result (`Module (`Root (Common.root, "Root"), M)));
+              `Result (`Result (`Module (`Root (Common.root, <abstr>), M)));
              doc = [];
              decl =
               Odoc_model.Lang.Module.Alias
                (`Resolved
                   (`Identifier
                      (`Parameter
-                        (`Module (`Root (Common.root, "Root"), M), S))));
+                        (`Module (`Root (Common.root, <abstr>), M), S))));
              inline = false;
              expansion =
               {Odoc_model.Lang.Include.resolved = false;
@@ -126,7 +127,7 @@ let sg = Common.model_of_string_impl test_data;;
                   {Odoc_model.Lang.Module.id =
                     `Module
                       (`Result
-                         (`Result (`Module (`Root (Common.root, "Root"), M))),
+                         (`Result (`Module (`Root (Common.root, <abstr>), M))),
                        $E);
                    doc = [];
                    type_ =
@@ -140,7 +141,7 @@ let sg = Common.model_of_string_impl test_data;;
                                 (`Result
                                    (`Result
                                       (`Module
-                                         (`Root (Common.root, "Root"), M))),
+                                         (`Root (Common.root, <abstr>), M))),
                                  $E),
                               <abstr>);
                           doc = [];
@@ -158,7 +159,7 @@ let sg = Common.model_of_string_impl test_data;;
                                             (`Parameter
                                                (`Module
                                                   (`Root
-                                                     (Common.root, "Root"),
+                                                     (Common.root, <abstr>),
                                                    M),
                                                 S))),
                                        "E"),
@@ -172,7 +173,8 @@ let sg = Common.model_of_string_impl test_data;;
             (Odoc_model.Lang.Signature.Ordinary,
             {Odoc_model.Lang.Module.id =
               `Module
-                (`Result (`Result (`Module (`Root (Common.root, "Root"), M))),
+                (`Result
+                   (`Result (`Module (`Root (Common.root, <abstr>), M))),
                  E);
              doc = [];
              type_ =
@@ -182,7 +184,8 @@ let sg = Common.model_of_string_impl test_data;;
                    {Odoc_model.Lang.Include.parent =
                      `Module
                        (`Result
-                          (`Result (`Module (`Root (Common.root, "Root"), M))),
+                          (`Result
+                             (`Module (`Root (Common.root, <abstr>), M))),
                         E);
                     doc = [];
                     decl =
@@ -194,7 +197,7 @@ let sg = Common.model_of_string_impl test_data;;
                                   (`Result
                                      (`Result
                                         (`Module
-                                           (`Root (Common.root, "Root"), M))),
+                                           (`Root (Common.root, <abstr>), M))),
                                    $E)))));
                     inline = false;
                     expansion =
@@ -208,7 +211,7 @@ let sg = Common.model_of_string_impl test_data;;
                                 (`Result
                                    (`Result
                                       (`Module
-                                         (`Root (Common.root, "Root"), M))),
+                                         (`Root (Common.root, <abstr>), M))),
                                  E),
                               <abstr>);
                           doc = [];
@@ -226,7 +229,7 @@ let sg = Common.model_of_string_impl test_data;;
                                             (`Parameter
                                                (`Module
                                                   (`Root
-                                                     (Common.root, "Root"),
+                                                     (Common.root, <abstr>),
                                                    M),
                                                 S))),
                                        "E"),
@@ -238,7 +241,8 @@ let sg = Common.model_of_string_impl test_data;;
                    {Odoc_model.Lang.Include.parent =
                      `Module
                        (`Result
-                          (`Result (`Module (`Root (Common.root, "Root"), M))),
+                          (`Result
+                             (`Module (`Root (Common.root, <abstr>), M))),
                         E);
                     doc = [];
                     decl =
@@ -254,7 +258,7 @@ let sg = Common.model_of_string_impl test_data;;
                                  (`Result
                                     (`Result
                                        (`Module
-                                          (`Root (Common.root, "Root"), M))),
+                                          (`Root (Common.root, <abstr>), M))),
                                   E),
                                <abstr>);
                            doc = [];
@@ -275,7 +279,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                       (`Module
                                                          (`Root
                                                             (Common.root,
-                                                             "Root"),
+                                                             <abstr>),
                                                           M))),
                                                  $E)))),
                                      "t"),
@@ -287,7 +291,8 @@ let sg = Common.model_of_string_impl test_data;;
                                                (`Result
                                                   (`Module
                                                      (`Root
-                                                        (Common.root, "Root"),
+                                                        (Common.root,
+                                                         <abstr>),
                                                       M)),
                                                 D))),
                                        "element"),
@@ -301,9 +306,9 @@ let sg = Common.model_of_string_impl test_data;;
                                  (`Result
                                     (`Result
                                        (`Module
-                                          (`Root (Common.root, "Root"), M))),
+                                          (`Root (Common.root, <abstr>), M))),
                                   E),
-                               "foo");
+                               <abstr>);
                            doc = [];
                            type_ =
                             Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -321,7 +326,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                    (`Module
                                                       (`Root
                                                          (Common.root,
-                                                          "Root"),
+                                                          <abstr>),
                                                        M))),
                                               $E)))),
                                   "t"),
@@ -333,7 +338,7 @@ let sg = Common.model_of_string_impl test_data;;
                                             (`Result
                                                (`Module
                                                   (`Root
-                                                     (Common.root, "Root"),
+                                                     (Common.root, <abstr>),
                                                    M)),
                                              D))),
                                     "element"),
@@ -350,7 +355,7 @@ let sg = Common.model_of_string_impl test_data;;
                                 (`Result
                                    (`Result
                                       (`Module
-                                         (`Root (Common.root, "Root"), M))),
+                                         (`Root (Common.root, <abstr>), M))),
                                  E),
                               <abstr>);
                           doc = [];
@@ -371,7 +376,7 @@ let sg = Common.model_of_string_impl test_data;;
                                                      (`Module
                                                         (`Root
                                                            (Common.root,
-                                                            "Root"),
+                                                            <abstr>),
                                                          M))),
                                                 $E)))),
                                     "t"),
@@ -383,7 +388,7 @@ let sg = Common.model_of_string_impl test_data;;
                                               (`Result
                                                  (`Module
                                                     (`Root
-                                                       (Common.root, "Root"),
+                                                       (Common.root, <abstr>),
                                                      M)),
                                                D))),
                                       "element"),
@@ -397,9 +402,9 @@ let sg = Common.model_of_string_impl test_data;;
                                 (`Result
                                    (`Result
                                       (`Module
-                                         (`Root (Common.root, "Root"), M))),
+                                         (`Root (Common.root, <abstr>), M))),
                                  E),
-                              "foo");
+                              <abstr>);
                           doc = [];
                           type_ =
                            Odoc_model.Lang.TypeExpr.Arrow (None,
@@ -416,7 +421,8 @@ let sg = Common.model_of_string_impl test_data;;
                                                (`Result
                                                   (`Module
                                                      (`Root
-                                                        (Common.root, "Root"),
+                                                        (Common.root,
+                                                         <abstr>),
                                                       M))),
                                              $E)))),
                                  "t"),
@@ -427,7 +433,8 @@ let sg = Common.model_of_string_impl test_data;;
                                         (`Parameter
                                            (`Result
                                               (`Module
-                                                 (`Root (Common.root, "Root"),
+                                                 (`Root
+                                                    (Common.root, <abstr>),
                                                   M)),
                                             D))),
                                    "element"),
