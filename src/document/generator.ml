@@ -833,6 +833,8 @@ open Value
 *)
 module Sectionning :
 sig
+  open Odoc_model
+
   type heading_level_shift
 
   type tagged_item = [
@@ -848,7 +850,7 @@ sig
     Item.t list * Page.t list
 
   val docs :
-    Odoc_model.Comment.docs -> Item.t list * Item.t list
+    Comment.docs -> Item.t list * Item.t list
 end =
 struct
 
@@ -857,18 +859,16 @@ struct
      comment, which will either start with the next section heading in the
      comment, or be empty if there are no section headings. *)
   let render_comment_until_heading_or_end docs =
-    let rec scan_comment acc docs =
-      match docs with
-      | [] -> List.rev acc, []
-      | block :: rest -> 
-        match block.Location.value with
-        | `Heading _ -> List.rev acc, docs 
+    let content, _, rest =
+      Doctree.Take.until docs ~classify:(fun b ->
+        match b.Location.value with
+        | `Heading _ -> Stop_and_keep
         | #Odoc_model.Comment.attached_block_element as doc ->
           let content = Comment.attached_block_element doc in
-          scan_comment (content @ acc) rest
+          Accum content
+      )
     in
-    let docs, remaining = scan_comment [] docs in
-    docs, remaining
+    content, rest
 
   type heading_level_shift = int
 
@@ -894,13 +894,15 @@ struct
      next stop comment, if there is one, and discard it. The returned item list
      is the signature items following the next stop comment, if there are
      any. *)
-  let rec skip_everything_until_next_stop_comment state =
-    function
-    | [] -> []
-    | item::items ->
-      match state.render_item 0 item with
-      | `Comment `Stop -> items
-      | _ -> skip_everything_until_next_stop_comment state items
+  let skip_everything_until_next_stop_comment state l =
+    let _, _, items =
+      Doctree.Take.until l ~classify:(fun item ->
+        match state.render_item 0 item with
+        | `Comment `Stop -> Stop_and_accum ([], None)
+        | _ -> Skip
+      )
+    in
+    items
 
   let level_to_int = function
     | `Title -> 0
@@ -924,7 +926,28 @@ struct
           `Subparagraph
       end
     | None | Some _ -> level
- 
+
+  let comment_items level_shift level0 input0 =
+    let rec loop level input_comment acc =
+      match input_comment with
+      | [] -> level, List.rev acc
+      | element::input_comment ->
+        match element.Location.value with
+        | `Heading (level, label, content) ->
+          let level = shift level_shift level in
+          let h = `Heading (level, label, content) in
+          let item = Comment.heading h in
+          loop level input_comment (item :: acc)
+        | _ ->
+          let content, input_comment =
+            render_comment_until_heading_or_end (element::input_comment)
+          in
+          let item = Item.Text content in
+          loop level input_comment (item :: acc)
+    in
+    loop level0 input0 []
+
+  
   let rec section_items level_shift section_level input_items state =
     match input_items with
     | [] -> state
@@ -948,29 +971,11 @@ struct
 
       | `Comment (`Docs input_comment) ->
         let section_level, items =
-          section_comment level_shift section_level input_comment []
+          comment_items level_shift section_level input_comment
         in
         section_items level_shift section_level input_items {state with
           acc_ir = List.rev_append items state.acc_ir ;
         }
-
-  and section_comment level_shift section_level input_comment acc =
-    match input_comment with
-    | [] -> section_level, List.rev acc
-
-    | element::input_comment ->
-      match element.Location.value with
-      | `Heading (level, label, content) ->
-        let level = shift level_shift level in
-        let h = `Heading (level, label, content) in
-        let item = Comment.heading h in
-        section_comment level_shift level input_comment (item :: acc)
-      | _ ->
-        let content, input_comment =
-          render_comment_until_heading_or_end (element::input_comment)
-        in
-        let item = Item.Text content in
-        section_comment level_shift section_level input_comment (item :: acc)
 
   let items heading_level_shift ~render_item items =
     let initial_state =
@@ -990,7 +995,7 @@ struct
      is either lower, or a section.
   *)
   let docs input_comment =
-    let _, items = section_comment None `Title input_comment [] in
+    let _, items = comment_items None `Title input_comment in
     let until_first_heading, o, items =
       Doctree.Take.until items ~classify:(function
         | Item.Heading h as i ->
