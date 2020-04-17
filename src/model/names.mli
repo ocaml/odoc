@@ -59,6 +59,8 @@ module type SimpleName = sig
 
     val equal : t -> t -> bool
 
+    val fmt : Format.formatter -> t -> unit
+
     val is_hidden : t -> bool
 
 end

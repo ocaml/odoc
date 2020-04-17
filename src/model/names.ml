@@ -77,6 +77,8 @@ module type SimpleName = sig
 
     val equal : t -> t -> bool
 
+    val fmt : Format.formatter -> t -> unit
+
     val is_hidden : t -> bool
 
 end
@@ -92,6 +94,8 @@ module SimpleName : SimpleName = struct
     let of_ident id = of_string (Ident.name id)
 
     let equal (x : t) (y : t) = x = y
+
+    let fmt ppf t = Format.pp_print_string ppf (to_string t)
 
     let is_hidden s =
         let len = String.length s in
