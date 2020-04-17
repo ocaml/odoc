@@ -173,7 +173,6 @@ and Item : sig
     | Heading of Heading.t
     | Declaration of DocumentedSrc.t item
     | Nested of Nested.t item
-    | Section of Item.t list * t list
 
 end = Item
 

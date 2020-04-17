@@ -70,8 +70,6 @@ module Toc = struct
       -> Skip
     | Nested { content = { status; items; _ }; _ } ->
       if on_nested status then Rec items else Skip
-    | Section (doc, items) ->
-      Rec (doc@items)
     | Heading { label = None ; _ } -> Skip
     | Heading { label = Some label; level; title } ->
       Heading ((label, title), level)

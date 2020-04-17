@@ -926,22 +926,15 @@ struct
 
      The components themselves are:
 
-     - The current comment being read. When non-empty, this is progressively
-       replaced with its tail until it is exhausted.
-     - The general signature items to be read. These are read one at a time when
-       there is no current comment. Upon encountering a comment, it becomes the
-       "current comment," and the sectioning functions read it one block element
-       at a time, scanning for section headings.
-     - A reversed accumulator of the rendered signature items.
-     - A reversed accumulator of the table of contents.
+     - The various rendering functions
+     - An accumulator of the rendered items.
      - An accumulator of the subpages generated for nested signatures.
 
      The record is also convenient for passing around the two item-rendering
      functions. *)
   type ('kind, 'item) sectioning_state = {
-    input_items : (('kind, 'item) tagged_item) list;
     acc_subpages : Page.t list;
-    comment_state : comment_state;
+    acc_ir : Item.t list;
     item_to_id : 'item -> Url.Anchor.t option;
     item_to_spec : 'item -> string option;
     render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
@@ -950,18 +943,6 @@ struct
       [`Decl of rendered_item | `Nested of Nested.t ] *
         Odoc_model.Comment.docs * Page.t list;
   }
-
-
-  (* Comment state used to generate HTML for both mli and mld inputs. *)
-  and comment_state = {
-    input_comment : Odoc_model.Comment.docs;
-    acc_ir : Item.t list;
-  }
-
-  let finish_comment_state (state : comment_state) =
-    {state with
-      acc_ir = List.rev state.acc_ir;
-    }
 
   let level_to_int = function
     | `Title -> 0
@@ -986,15 +967,9 @@ struct
       end
     | None | Some _ -> level
 
-  let is_deeper_section_level other_level ~than =
-    level_to_int other_level > level_to_int than
-
-
-  let rec section_items level_shift section_level state =
-    match state.input_items with
-    | [] ->
-      {state with comment_state =
-        finish_comment_state state.comment_state }
+  let rec section_items level_shift section_level input_items state =
+    match input_items with
+    | [] -> state
 
     | tagged_item::input_items ->
       match tagged_item with
@@ -1004,12 +979,10 @@ struct
         let kind = state.item_to_spec item in
         let doc = Comment.first_to_ir docs in
         let decl = {Item. content ; kind ; anchor ; doc} in
-        let ir = Item.Declaration decl in
-        section_items level_shift section_level {state with
-            input_items;
-            comment_state = { state.comment_state with
-              acc_ir = ir :: state.comment_state.acc_ir };
-          }
+        let item = [Item.Declaration decl] in
+        section_items level_shift section_level input_items {state with
+          acc_ir = state.acc_ir @ item ;
+        }
 
       | `Nested_article item ->
         let rendered_item, docs, subpages =
@@ -1018,113 +991,60 @@ struct
         let anchor = state.item_to_id item in
         let kind = state.item_to_spec item in
         let doc = Comment.first_to_ir docs in
-        let ir = match rendered_item with 
+        let item = match rendered_item with 
           | `Decl content ->
             let decl = {Item. content ; kind ; anchor ; doc} in
-            Item.Declaration decl
+            [Item.Declaration decl]
           | `Nested content -> 
             let decl = {Item. content ; kind ; anchor ; doc} in
-            Item.Nested decl
+            [Item.Nested decl]
         in
-        section_items level_shift section_level { state with
-          input_items;
-          comment_state = { state.comment_state with
-            acc_ir = ir :: state.comment_state.acc_ir;
-          };
+        section_items level_shift section_level input_items { state with
+          acc_ir = state.acc_ir @ item;
           acc_subpages = state.acc_subpages @ subpages;
         }
 
       | `Comment `Stop ->
         let input_items = skip_everything_until_next_stop_comment input_items in
-        section_items level_shift section_level {state with
-            input_items;
-          }
+        section_items level_shift section_level input_items state
 
       | `Comment (`Docs input_comment) ->
-        section_comment level_shift section_level {state with
-            input_items;
-            comment_state = { state.comment_state with input_comment };
+        let section_level, items =
+          section_comment level_shift section_level input_comment []
+        in
+        section_items level_shift section_level input_items {state with
+          acc_ir = state.acc_ir @ items ;
         }
 
 
 
-  and section_comment level_shift section_level state =
-    match state.comment_state.input_comment with
-    | [] ->
-      section_items level_shift section_level state
+  and section_comment level_shift section_level input_comment acc =
+    match input_comment with
+    | [] -> section_level, acc
 
     | element::input_comment ->
-
       match element.Location.value with
       | `Heading (level, label, content) ->
         let level = shift level_shift level in
         let h = `Heading (level, label, content) in
-        if not (is_deeper_section_level level ~than:section_level) then
-          {state with comment_state =
-            finish_comment_state state.comment_state }
-
-        else
-          (* We have a deeper section heading in a comment within this section.
-             Parse it recursively. We start the nested HTML by parsing the
-             section heading itself, and anything that follows it in the current
-             comment, up to the next section heading, if any. All of this
-             comment matter goes into a <header> element. The nested HTML will
-             then be extended recursively by parsing more structure items,
-             including, perhaps, additional comments in <aside> elements. *)
-          let heading_ir = Comment.heading h in
-          let more_comment_ir, input_comment =
-            render_comment_until_heading_or_end input_comment in
-          let header = heading_ir @ [Item.Text more_comment_ir] in
-          let nested_section_state =
-            { state with
-              comment_state = {
-                input_comment;
-                acc_ir = [];
-              }
-            }
-          in
-          let nested_section_state =
-            section_comment level_shift level nested_section_state
-          in
-          (* Wrap the nested section in a <section> element, and extend the
-            table of contents. *)
-          let section = nested_section_state.comment_state.acc_ir in
-
-          let item = Item.Section (header, section) in
-          
-          (* Continue parsing after the nested section. In practice, we have
-             either run out of items, or the first thing in the input will be
-             another section heading – the nested section will have consumed
-             everything else. *)
-          section_comment level_shift section_level {nested_section_state with
-              comment_state = { nested_section_state.comment_state with
-                acc_ir = item :: state.comment_state.acc_ir;
-              }
-            }
+        let item = Comment.heading h in
+        section_comment level_shift level input_comment
+          (acc @ item)
 
       | _ ->
         let content, input_comment =
-          render_comment_until_heading_or_end state.comment_state.input_comment
+          render_comment_until_heading_or_end (element::input_comment)
         in
-        let item = Item.Text content in
-        section_comment level_shift section_level {state with
-            comment_state = {
-              input_comment;
-              acc_ir = item :: state.comment_state.acc_ir;
-            }
-          }
+        let item = [Item.Text content] in
+        section_comment level_shift section_level input_comment
+          (acc @ item)
 
   let lay_out heading_level_shift ~item_to_id ~item_to_spec
     ~render_leaf_item ~render_nested_article items =
     let initial_state =
       {
-        input_items = items;
-        comment_state = {
-          input_comment = [];
-          acc_ir = [];
-        };
-
         acc_subpages = [];
+        acc_ir = [];
 
         item_to_id;
         item_to_spec;
@@ -1132,72 +1052,36 @@ struct
         render_nested_article;
       }
     in
-    let state = section_items heading_level_shift `Title initial_state in
-    state.comment_state.acc_ir, state.acc_subpages
-
-
-  let rec page_section_comment ~header_docs section_level state =
-    match state.input_comment with
-    | [] -> state, header_docs
-    | element::input_comment ->
-      begin match element.Location.value with
-      | `Heading (`Title, _label, _content) as h ->
-        let heading_ir = Comment.heading h in
-        let more_comment_ir, input_comment =
-          render_comment_until_heading_or_end input_comment in
-        let header_docs = heading_ir @ [Item.Text more_comment_ir] in
-        let nested_section_state = {
-          input_comment = input_comment;
-          acc_ir = [];
-        } in
-        let nested_section_state, header_docs =
-          page_section_comment ~header_docs `Section nested_section_state in
-        let acc_ir = state.acc_ir @ nested_section_state.acc_ir in
-        page_section_comment ~header_docs section_level
-          { nested_section_state with acc_ir }
-
-      | `Heading (level, _label, _content)
-        when not (is_deeper_section_level level ~than:section_level) ->
-          state, header_docs
-
-      | `Heading (level, _, _) as h ->
-        let heading_ir = Comment.heading h in
-        let more_comment_ir, input_comment =
-          render_comment_until_heading_or_end input_comment in
-        let item =
-          heading_ir @ [Item.Text more_comment_ir]
-        in
-        let nested_section_state = {
-          input_comment = input_comment;
-          acc_ir = item;
-        } in
-        let nested_section_state, header_docs =
-          page_section_comment ~header_docs level nested_section_state
-        in
-        let acc_ir = state.acc_ir @ nested_section_state.acc_ir in
-        page_section_comment ~header_docs section_level
-          { nested_section_state with acc_ir }
-
-      | _ ->
-        let content, input_comment =
-          render_comment_until_heading_or_end state.input_comment
-        in
-        let item = Item.Text content in
-        page_section_comment ~header_docs section_level {
-            input_comment;
-            acc_ir = item :: state.acc_ir;
-          }
-      end
-
-  let lay_out_page input_comment =
-    let initial_state : comment_state = {
-      input_comment;
-      acc_ir = [];
-    } in
-    let state, header_docs =
-      page_section_comment ~header_docs:[] `Title initial_state
+    let state =
+      section_items heading_level_shift `Title items initial_state
     in
-    state.acc_ir, header_docs
+    state.acc_ir, state.acc_subpages
+
+  (* For doc pages, we want the header to contain
+     - Everything until the first heading, then everything before
+       the next heading which is either lower, or a section.
+  *)
+  let lay_out_page input_comment =
+    let _, items = section_comment None `Title input_comment [] in
+    let until_first_heading, o, items =
+      Doctree.Take.until items ~classify:(function
+        | Item.Heading h as i ->
+          Stop_and_accum ([i], Some h.level)
+        | i -> Accum [i]
+      )
+    in
+    match o with
+    | None -> until_first_heading, items
+    | Some level ->
+      let max_level = if level = 1 then 2 else level in
+      let before_second_heading, _, items =
+      Doctree.Take.until items ~classify:(function
+        | Item.Heading h when h.level >= max_level -> Stop_and_keep
+        | i -> Accum [i]
+      )
+      in
+      let header = until_first_heading @ before_second_heading in
+      header, items
 
 end
 
@@ -1878,8 +1762,7 @@ struct
     in
     let title = Odoc_model.Names.PageName.to_string name in
     let url = Url.Path.from_identifier t.name in
-    let items, doc = Top_level_markup.lay_out_page t.content in
-    let header = doc in
+    let header, items = Top_level_markup.lay_out_page t.content in
     {Page. title ; header ; items ; subpages = [] ; url }
 end
 include Page

@@ -251,7 +251,6 @@ let flow_to_item
 let rec is_only_text l =
   let is_text : Item.t -> _ = function
     | Heading _ | Text _ -> true
-    | Section (doc, items) -> is_only_text doc && is_only_text items
     | Declaration _
       -> false
     | Nested { content = { items; _ }; _ }
@@ -296,13 +295,6 @@ let items ~resolve l =
       |> continue_with rest
     | Heading h :: rest ->
       [heading ~resolve h]
-      |> continue_with rest
-    | Section (header, content) :: rest ->
-      let h = items header in
-      let content =
-        (walk_items ~only_text [] content :> any Html.elt list)
-      in
-      [Html.section (Html.header h :: content )]
       |> continue_with rest
     | Nested
         { kind; anchor; doc ; content = { summary; status; items = i } }
