@@ -894,33 +894,17 @@ module Top_level_markup :
 sig
   type heading_level_shift
 
-  type item = [ `Decl of rendered_item | `Nested of Nested.t ]
-  
   val lay_out :
     heading_level_shift option ->
-    item_to_id:('item -> Url.Anchor.t option) ->
-    item_to_spec:('item -> string option) ->
     render_item:
-      (heading_level_shift -> 'item -> Item.t * Page.t list) ->
-    'item tagged_item list ->
+      (heading_level_shift -> 'item -> (Item.t * Page.t list) tagged_item) ->
+    'item list ->
     Item.t list * Page.t list
 
   val lay_out_page :
     Odoc_model.Comment.docs -> Item.t list * Item.t list
 end =
 struct
-
-  (* When we encounter a stop comment, [(**/**)], we read everything until the
-     next stop comment, if there is one, and discard it. The returned item list
-     is the signature items following the next stop comment, if there are
-     any. *)
-  let rec skip_everything_until_next_stop_comment : 'item list -> 'item list =
-    function
-    | [] -> []
-    | item::items ->
-      match item with
-      | `Comment `Stop -> items
-      | _ -> skip_everything_until_next_stop_comment items
 
 
 
@@ -945,8 +929,6 @@ struct
 
   type heading_level_shift = int
 
-  type item = [ `Decl of rendered_item | `Nested of Nested.t ]
-
   (* The sectioning functions take several arguments, and return "modified"
      instances of them as results. So, it is convenient to group them into a
      record type. This is most useful for the return type, as otherwise there is
@@ -963,11 +945,21 @@ struct
   type ('kind, 'item) sectioning_state = {
     acc_subpages : Page.t list;
     acc_ir : Item.t list;
-    item_to_id : 'item -> Url.Anchor.t option;
-    item_to_spec : 'item -> string option;
     render_item:
-      (heading_level_shift -> 'item -> Item.t * Page.t list);
+      (heading_level_shift -> 'item -> (Item.t * Page.t list) tagged_item);
   }
+
+  (* When we encounter a stop comment, [(**/**)], we read everything until the
+     next stop comment, if there is one, and discard it. The returned item list
+     is the signature items following the next stop comment, if there are
+     any. *)
+  let rec skip_everything_until_next_stop_comment state =
+    function
+    | [] -> []
+    | item::items ->
+      match state.render_item 0 item with
+      | `Comment `Stop -> items
+      | _ -> skip_everything_until_next_stop_comment state items
 
   let level_to_int = function
     | `Title -> 0
@@ -991,24 +983,23 @@ struct
           `Subparagraph
       end
     | None | Some _ -> level
-
+ 
   let rec section_items level_shift section_level input_items state =
     match input_items with
     | [] -> state
-
-    | tagged_item::input_items ->
+    | item::input_items ->
+      let tagged_item = state.render_item (level_to_int section_level) item in
       match tagged_item with
-      | `Item item ->
-        let rendered_item, subpages =
-          state.render_item (level_to_int section_level) item
-        in
+      | `Item (rendered_item, subpages) ->
         section_items level_shift section_level input_items { state with
           acc_ir = state.acc_ir @ [rendered_item];
           acc_subpages = state.acc_subpages @ subpages;
         }
 
       | `Comment `Stop ->
-        let input_items = skip_everything_until_next_stop_comment input_items in
+        let input_items =
+          skip_everything_until_next_stop_comment state input_items
+        in
         section_items level_shift section_level input_items state
 
       | `Comment (`Docs input_comment) ->
@@ -1042,15 +1033,11 @@ struct
         section_comment level_shift section_level input_comment
           (acc @ item)
 
-  let lay_out heading_level_shift ~item_to_id ~item_to_spec
-    ~render_item items =
+  let lay_out heading_level_shift ~render_item items =
     let initial_state =
       {
         acc_subpages = [];
         acc_ir = [];
-
-        item_to_id;
-        item_to_spec;
         render_item;
       }
     in
@@ -1098,46 +1085,24 @@ sig
       Item.t * Page.t list
 end =
 struct
-  let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
-    | Method {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | InstanceVariable {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | Constraint _
-    | Inherit _
-    | Comment _ -> None
-
-  let class_signature_item_to_spec : Lang.ClassSignature.item -> _ = function
-    | Method _ -> Some "method"
-    | InstanceVariable _ -> Some "instance-variable"
-    | Inherit _ -> Some "inherit"
-    | Constraint _
-    | Comment _ -> None
-
-  let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
-    match item with
-    | Comment comment -> `Comment comment
-    | _ -> `Item item
- 
-  let rec render_class_signature_item : Lang.ClassSignature.item -> Item.t =
-    function
-    | Method m -> method_ m
-    | InstanceVariable v -> instance_variable v
-    | Constraint (t1, t2) -> constraint_ t1 t2
-    | Inherit (Signature _) -> assert false (* Bold. *)
-    | Inherit cty -> inherit_ cty
-    | Comment _ -> assert false
+  
+  let rec render_item _ (c : Lang.ClassSignature.item) = match c with
+    | Method m ->
+      `Item (method_ m, [])
+    | InstanceVariable v ->
+      `Item (instance_variable v, [])
+    | Constraint (t1, t2) ->
+      `Item (constraint_ t1 t2, [])
+    | Inherit (Signature _) ->
+      assert false (* Bold. *)
+    | Inherit cty ->
+      `Item (inherit_ cty, [])
+    | Comment c ->
+      `Comment c
 
   and class_signature (c : Lang.ClassSignature.t) =
     (* FIXME: use [t.self] *)
-    let tagged_items = List.map tag_class_signature_item c.items in
-    Top_level_markup.lay_out
-      None
-      ~item_to_id:class_signature_item_to_id
-      ~item_to_spec:class_signature_item_to_spec
-      ~render_item:(fun _ item ->
-        let content = render_class_signature_item item in
-        content, []
-      )
-      tagged_items
+    Top_level_markup.lay_out None ~render_item c.items
 
   and method_ (t : Odoc_model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
@@ -1334,68 +1299,41 @@ sig
     -> Item.t list * Page.t list
 end =
 struct
-  let signature_item_to_id : Lang.Signature.item -> _ = function
-    | Type (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
-    | TypeSubstitution {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | Exception {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | Value {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | External {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | Module (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
-    | ModuleType {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | ModuleSubstitution {id; _} -> path_to_id (id :> Paths.Identifier.t)
-    | Class (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
-    | ClassType (_, {id; _}) -> path_to_id (id :> Paths.Identifier.t)
-    | TypExt _
-    | Include _
-    | Comment _ -> None
+  
 
-  let signature_item_to_spec : Lang.Signature.item -> _ = function
-    | Type _ -> Some "type"
-    | TypeSubstitution _ -> Some "type-subst"
-    | Exception _ -> Some "exception"
-    | Value _ -> Some "value"
-    | External _ -> Some "external"
-    | Module _ -> Some "module"
-    | ModuleType _ -> Some "module-type"
-    | ModuleSubstitution _ -> Some "module-substitution"
-    | Class _ -> Some "class"
-    | ClassType _ -> Some "class-type"
-    | TypExt _ -> Some "extension"
-    | Include _ -> Some "include"
-    | Comment _ -> None
-
-  let rec tag_signature_item : Lang.Signature.item -> _ = fun item ->
-    match item with
-    | Comment comment -> `Comment comment
-    | _ -> `Item item
-
-  and signature ?heading_level_shift s =
-    let tagged_items = List.map tag_signature_item s in
-    Top_level_markup.lay_out
-      heading_level_shift
-      ~item_to_id:signature_item_to_id
-      ~item_to_spec:signature_item_to_spec
-      ~render_item
-      tagged_items
+  let rec signature ?heading_level_shift s =
+    Top_level_markup.lay_out heading_level_shift ~render_item s
 
   and render_item
-    : Top_level_markup.heading_level_shift ->
-      Lang.Signature.item -> _ =
+    : Top_level_markup.heading_level_shift -> Lang.Signature.item -> _ =
     fun heading_level item ->
-    match item with
-    | Module (recursive, m) -> module_ recursive m
-    | ModuleType m -> module_type m
-    | Class (recursive, c) -> class_ recursive c
-    | ClassType (recursive, c) -> class_type recursive c
-    | Include m -> include_ heading_level m
-    | Type (r, t) -> type_decl (r, t), []
-    | TypeSubstitution t -> type_decl ~is_substitution:true (Ordinary, t), []
-    | TypExt e -> extension e, []
-    | Exception e -> exn e, []
-    | Value v -> value v, []
-    | External e -> external_ e, []
-    | ModuleSubstitution m -> module_substitution m, []
-    | Comment _ -> assert false
+      match item with
+      | Module (recursive, m) ->
+        `Item (module_ recursive m)
+      | ModuleType m ->
+        `Item (module_type m)
+      | Class (recursive, c) ->
+        `Item (class_ recursive c)
+      | ClassType (recursive, c) ->
+        `Item (class_type recursive c)
+      | Include m ->
+        `Item (include_ heading_level m)
+      | Type (r, t) ->
+        `Item (type_decl (r, t), [])
+      | TypeSubstitution t ->
+        `Item (type_decl ~is_substitution:true (Ordinary, t), [])
+      | TypExt e ->
+        `Item (extension e, [])
+      | Exception e ->
+        `Item (exn e, [])
+      | Value v ->
+        `Item (value v, [])
+      | External e ->
+        `Item (external_ e, [])
+      | ModuleSubstitution m ->
+        `Item (module_substitution m, [])
+      | Comment c ->
+        `Comment c
 
   and functor_argument
     : Odoc_model.Lang.FunctorParameter.parameter
