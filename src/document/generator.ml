@@ -1276,157 +1276,157 @@ struct
 
   and functor_argument
     : Odoc_model.Lang.FunctorParameter.parameter
-    -> Inline.t * Page.t list
-  = fun arg ->
-    let open Odoc_model.Lang.FunctorParameter in
-    let name = Paths.Identifier.name arg.id in
-    let def_div, subtree =
-      match arg.expansion with
-      | None ->
-        (
-          O.txt (Paths.Identifier.name arg.id) ++
-          O.txt Syntax.Type.annotation_separator ++
-          mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
-        ), []
-      | Some expansion ->
-        let expansion =
-          match expansion with
-          | AlreadyASig ->
-            begin match arg.expr with
-            | Signature sg -> Odoc_model.Lang.Module.Signature sg
-            | _ -> assert false
-            end
-          | e -> e
-        in
-        let url = Url.Path.from_identifier arg.id in
-        let link = path url [inline @@ Text name] in
-        let prelude, items, subpages = module_expansion expansion in
-        let header =
-          format_title `Arg (make_name_from_path url) @ prelude
-        in
-        let title = name in
-        let page = {Page.
-          items ; subpages ; title ; header ; url ;
-        } in
-        (
-          link ++
-          O.txt Syntax.Type.annotation_separator ++
-          mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
-        ), [page]
+      -> Inline.t * Page.t list
+    = fun arg ->
+      let open Odoc_model.Lang.FunctorParameter in
+      let name = Paths.Identifier.name arg.id in
+      let def_div, subtree =
+        match arg.expansion with
+        | None ->
+          (
+            O.txt (Paths.Identifier.name arg.id) ++
+              O.txt Syntax.Type.annotation_separator ++
+              mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
+          ), []
+        | Some expansion ->
+          let expansion =
+            match expansion with
+            | AlreadyASig ->
+              begin match arg.expr with
+              | Signature sg -> Odoc_model.Lang.Module.Signature sg
+              | _ -> assert false
+              end
+            | e -> e
+          in
+          let url = Url.Path.from_identifier arg.id in
+          let link = path url [inline @@ Text name] in
+          let prelude, items, subpages = module_expansion expansion in
+          let header =
+            format_title `Arg (make_name_from_path url) @ prelude
+          in
+          let title = name in
+          let page = {Page.
+            items ; subpages ; title ; header ; url ;
+          } in
+          (
+            link ++
+              O.txt Syntax.Type.annotation_separator ++
+              mty (arg.id :> Paths.Identifier.Signature.t) arg.expr
+          ), [page]
+      in
+      let region = O.code def_div in
+      region, subtree
+
+  and module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
+    let name = Paths.Identifier.name t.id in
+    let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
+    let content =
+      O.documentedSrc (
+        O.keyword "module" ++
+          O.txt " " ++
+          O.txt name ++
+          O.txt " := " ++
+          path
+      )
     in
-    let region = O.code def_div in
-    region, subtree
+    let kind = Some "module-substitution" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}
 
-and module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
-  let name = Paths.Identifier.name t.id in
-  let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
-  let content =
-    O.documentedSrc (
-      O.keyword "module" ++
-        O.txt " " ++
-        O.txt name ++
-        O.txt " := " ++
-        path
-    )
-  in
-  let kind = Some "module-substitution" in
-  let anchor = path_to_id t.id in
-  let doc = Comment.to_ir t.doc in
-  Item.Declaration {kind ; anchor ; doc ; content}
-
-and module_expansion
-  : Odoc_model.Lang.Module.expansion
-    -> Item.t list * Item.t list * Page.t list
-  = fun t ->
-    match t with
-    | AlreadyASig -> assert false
-    | Signature sg ->
-      let expansion, subpages = signature sg in
-      [], expansion, subpages
-    | Functor (args, sg) ->
-      let content, subpages = signature sg in
-      let params, params_subpages =
-        List.fold_left (fun (args, subpages as acc) arg ->
-          match arg with
-          | Odoc_model.Lang.FunctorParameter.Unit -> acc
-          | Named arg ->
-            let arg, arg_subpages = functor_argument arg in
-            let content = [block @@ Inline arg] in
-            (args @ [content], subpages @ arg_subpages)
-        )
-          ([], []) args
-      in
-      let prelude = [
-        Item.Heading {
-          label = Some "heading" ; level = 3 ; title = [inline @@ Text "Parameters"];
-        };
-        Item.Text [block (List (Unordered, params))];
-        Item.Heading {
-          label = Some "heading" ; level = 3 ; title = [inline @@ Text "Signature"];
-        };
-      ]
-      in
-      prelude, content, params_subpages @ subpages
+  and module_expansion
+    : Odoc_model.Lang.Module.expansion
+      -> Item.t list * Item.t list * Page.t list
+    = fun t ->
+      match t with
+      | AlreadyASig -> assert false
+      | Signature sg ->
+        let expansion, subpages = signature sg in
+        [], expansion, subpages
+      | Functor (args, sg) ->
+        let content, subpages = signature sg in
+        let params, params_subpages =
+          List.fold_left (fun (args, subpages as acc) arg ->
+            match arg with
+            | Odoc_model.Lang.FunctorParameter.Unit -> acc
+            | Named arg ->
+              let arg, arg_subpages = functor_argument arg in
+              let content = [block @@ Inline arg] in
+              (args @ [content], subpages @ arg_subpages)
+          )
+            ([], []) args
+        in
+        let prelude = [
+          Item.Heading {
+            label = Some "heading" ; level = 3 ; title = [inline @@ Text "Parameters"];
+          };
+          Item.Text [block (List (Unordered, params))];
+          Item.Heading {
+            label = Some "heading" ; level = 3 ; title = [inline @@ Text "Signature"];
+          };
+        ]
+        in
+        prelude, content, params_subpages @ subpages
 
   and module_
-      : Odoc_model.Lang.Signature.recursive ->
-        Odoc_model.Lang.Module.t ->
-        Item.t * Page.t list
-      = fun recursive t ->
-    let modname = Paths.Identifier.name t.id in
-    let md =
-      module_decl (t.id :> Paths.Identifier.Signature.t)
-        (match t.display_type with
-        | None -> t.type_
-        | Some t -> t)
-    in
-    let modname, subtree =
-      match t.expansion with
-      | None -> O.txt modname, []
-      | Some expansion ->
-        let expansion =
-          match expansion with
-          | AlreadyASig ->
-            begin match t.type_ with
-            | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
-              Odoc_model.Lang.Module.Signature sg
-            | _ -> assert false
-            end
-          | e -> e
-        in
-        let doc = Comment.standalone t.doc in
-        let prelude, items, subpages = module_expansion expansion in
-        let url = Url.Path.from_identifier t.id in
-        let link = path url [inline @@ Text modname] in
-        let title = modname in
-        let header =
-          format_title `Mod (make_name_from_path url) @ doc @ prelude
-        in
-        let page = {Page. items ; subpages ; title ; header ; url } in
-        link, [page]
-    in
-    let md_def_content =
-      let keyword' =
-        match recursive with
-        | Ordinary | Nonrec -> O.keyword "module"
-        | Rec -> O.keyword "module" ++ O.txt " " ++ O.keyword "rec"
-        | And -> O.keyword "and"
+    : Odoc_model.Lang.Signature.recursive ->
+      Odoc_model.Lang.Module.t ->
+      Item.t * Page.t list
+    = fun recursive t ->
+      let modname = Paths.Identifier.name t.id in
+      let md =
+        module_decl (t.id :> Paths.Identifier.Signature.t)
+          (match t.display_type with
+            | None -> t.type_
+            | Some t -> t)
       in
+      let modname, subtree =
+        match t.expansion with
+        | None -> O.txt modname, []
+        | Some expansion ->
+          let expansion =
+            match expansion with
+            | AlreadyASig ->
+              begin match t.type_ with
+              | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
+                Odoc_model.Lang.Module.Signature sg
+              | _ -> assert false
+              end
+            | e -> e
+          in
+          let doc = Comment.standalone t.doc in
+          let prelude, items, subpages = module_expansion expansion in
+          let url = Url.Path.from_identifier t.id in
+          let link = path url [inline @@ Text modname] in
+          let title = modname in
+          let header =
+            format_title `Mod (make_name_from_path url) @ doc @ prelude
+          in
+          let page = {Page. items ; subpages ; title ; header ; url } in
+          link, [page]
+      in
+      let md_def_content =
+        let keyword' =
+          match recursive with
+          | Ordinary | Nonrec -> O.keyword "module"
+          | Rec -> O.keyword "module" ++ O.txt " " ++ O.keyword "rec"
+          | And -> O.keyword "and"
+        in
 
-      keyword' ++ O.txt " " ++ modname ++ md ++
-      (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop) in
-    let content = O.documentedSrc md_def_content in
-    let kind = Some "module" in
-    let anchor = path_to_id t.id in
-    let doc = Comment.first_to_ir t.doc in
-    Item.Declaration {kind ; anchor ; doc ; content}, subtree
+        keyword' ++ O.txt " " ++ modname ++ md ++
+          (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop) in
+      let content = O.documentedSrc md_def_content in
+      let kind = Some "module" in
+      let anchor = path_to_id t.id in
+      let doc = Comment.first_to_ir t.doc in
+      Item.Declaration {kind ; anchor ; doc ; content}, subtree
 
   and module_decl (base : Paths.Identifier.Signature.t) md =
     begin match md with
     | Alias _ -> O.txt " = "
     | ModuleType _ -> O.txt Syntax.Type.annotation_separator
     end ++
-    module_decl' base md
+      module_decl' base md
 
   and extract_path_from_mt ~(default: Paths.Identifier.Signature.t) =
     let open Odoc_model.Lang.ModuleType in
@@ -1443,9 +1443,9 @@ and module_expansion
   and module_decl'
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
     fun base -> function
-    | Alias mod_path ->
-      Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
-    | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
+      | Alias mod_path ->
+        Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
+      | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
   and module_type (t : Odoc_model.Lang.ModuleType.t) =
     let modname = Paths.Identifier.name t.id in
@@ -1482,11 +1482,11 @@ and module_expansion
     let mty_def =
       (
         O.keyword "module" ++
-        O.txt " " ++
-        O.keyword "type" ++
-        O.txt " " ++
-        modname ++
-        mty
+          O.txt " " ++
+          O.keyword "type" ++
+          O.txt " " ++
+          modname ++
+          mty
         ++ (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       )
     in
@@ -1498,48 +1498,48 @@ and module_expansion
 
   and mty
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
-  = fun base -> function
-    | Path mty_path ->
-      Link.from_path ~stop_before:true (mty_path :> Paths.Path.t)
-    | Signature _ ->
-      Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-    | Functor (Unit, expr) ->
-      (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
-      O.txt " () " ++
-      mty base expr
-    | Functor (Named arg, expr) ->
-      let name =
-        let open Odoc_model.Lang.FunctorParameter in
-        let name = Paths.Identifier.name arg.id in
-        match
-          Url.from_identifier
-            ~stop_before:(arg.expansion = None) (arg.id :> Paths.Identifier.t)
-        with
-        | Error _ -> O.txt name
-        | Ok href -> resolved href [inline @@ Text name]
-      in
-      (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
-      O.txt " (" ++ name ++ O.txt Syntax.Type.annotation_separator ++
-      mty base arg.expr ++
-      O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
-      mty base expr
-    | With (expr, substitutions) ->
-      mty base expr ++
-      O.txt " " ++
-      O.keyword "with" ++
-      O.txt " " ++
-      O.list
-        ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-        ~f:(substitution base)
-        substitutions
-    | TypeOf md ->
-      O.keyword "module" ++
-      O.txt " " ++
-      O.keyword "type" ++
-      O.txt " " ++
-      O.keyword "of" ++
-      O.txt " " ++
-      module_decl' base md
+    = fun base -> function
+      | Path mty_path ->
+        Link.from_path ~stop_before:true (mty_path :> Paths.Path.t)
+      | Signature _ ->
+        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+      | Functor (Unit, expr) ->
+        (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
+          O.txt " () " ++
+          mty base expr
+      | Functor (Named arg, expr) ->
+        let name =
+          let open Odoc_model.Lang.FunctorParameter in
+          let name = Paths.Identifier.name arg.id in
+          match
+            Url.from_identifier
+              ~stop_before:(arg.expansion = None) (arg.id :> Paths.Identifier.t)
+          with
+          | Error _ -> O.txt name
+          | Ok href -> resolved href [inline @@ Text name]
+        in
+        (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
+          O.txt " (" ++ name ++ O.txt Syntax.Type.annotation_separator ++
+          mty base arg.expr ++
+          O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
+          mty base expr
+      | With (expr, substitutions) ->
+        mty base expr ++
+          O.txt " " ++
+          O.keyword "with" ++
+          O.txt " " ++
+          O.list
+            ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
+            ~f:(substitution base)
+            substitutions
+      | TypeOf md ->
+        O.keyword "module" ++
+          O.txt " " ++
+          O.keyword "type" ++
+          O.txt " " ++
+          O.keyword "of" ++
+          O.txt " " ++
+          module_decl' base md
 
   (* TODO : Centralize the list juggling for type parameters *)
   and type_expr_in_subst ~base td typath =
@@ -1550,69 +1550,69 @@ and module_expansion
 
   and substitution
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.substitution
-    -> text
-  = fun base -> function
-    | ModuleEq (frag_mod, md) ->
-      O.keyword "module" ++
-      O.txt " " ++
-      Link.from_fragment ~base (frag_mod :> Paths.Fragment.t)
-      ++ O.txt " = " ++
-      module_decl' base md
-    | TypeEq (frag_typ, td) ->
-      O.keyword "type" ++
-      O.txt " " ++
-      type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t) ++
-      fst (format_manifest td) ++
-      format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
-    | ModuleSubst (frag_mod, mod_path) ->
-      O.keyword "module" ++
-      O.txt " " ++
-      Link.from_fragment
-        ~base (frag_mod :> Paths.Fragment.t) ++
-      O.txt " := " ++
-      Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
-    | TypeSubst (frag_typ, td) ->
-      O.keyword "type" ++
-      O.txt " " ++
-      type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t) ++
-      O.txt " := " ++
-      match td.Lang.TypeDecl.Equation.manifest with
-      | None -> assert false (* cf loader/cmti *)
-      | Some te ->
-        type_expr te
+      -> text
+    = fun base -> function
+      | ModuleEq (frag_mod, md) ->
+        O.keyword "module" ++
+          O.txt " " ++
+          Link.from_fragment ~base (frag_mod :> Paths.Fragment.t)
+        ++ O.txt " = " ++
+          module_decl' base md
+      | TypeEq (frag_typ, td) ->
+        O.keyword "type" ++
+          O.txt " " ++
+          type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t) ++
+          fst (format_manifest td) ++
+          format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
+      | ModuleSubst (frag_mod, mod_path) ->
+        O.keyword "module" ++
+          O.txt " " ++
+          Link.from_fragment
+            ~base (frag_mod :> Paths.Fragment.t) ++
+          O.txt " := " ++
+          Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
+      | TypeSubst (frag_typ, td) ->
+        O.keyword "type" ++
+          O.txt " " ++
+          type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t) ++
+          O.txt " := " ++
+          match td.Lang.TypeDecl.Equation.manifest with
+          | None -> assert false (* cf loader/cmti *)
+          | Some te ->
+            type_expr te
 
-and include_ heading_level_shift (t : Odoc_model.Lang.Include.t) =
-  let status =
-    let is_inline_tag element = element.Odoc_model.Location_.value = `Tag `Inline in
-    let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
-    let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
-    if List.exists is_inline_tag t.doc then `Inline
-    else if List.exists is_open_tag t.doc then `Open
-    else if List.exists is_closed_tag t.doc then `Closed
-    else `Default
-  in
-  let items, tree =
-    let heading_level_shift =
-      if status = `Inline then
-        Some heading_level_shift
-      else
-        None
+  and include_ heading_level_shift (t : Odoc_model.Lang.Include.t) =
+    let status =
+      let is_inline_tag element = element.Odoc_model.Location_.value = `Tag `Inline in
+      let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
+      let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
+      if List.exists is_inline_tag t.doc then `Inline
+      else if List.exists is_open_tag t.doc then `Open
+      else if List.exists is_closed_tag t.doc then `Closed
+      else `Default
     in
-    signature ?heading_level_shift t.expansion.content
-  in
-  let summary = 
-    O.code (
-      O.keyword "include" ++
-        O.txt " " ++
-        module_decl' t.parent t.decl ++
-        (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
-    )
-  in
-  let content = {Nested. items; status; summary} in
-  let kind = Some "include" in
-  let anchor = None in
-  let doc = Comment.first_to_ir t.doc in
-  Item.Nested {kind ; anchor ; doc ; content}, tree
+    let items, tree =
+      let heading_level_shift =
+        if status = `Inline then
+          Some heading_level_shift
+        else
+          None
+      in
+      signature ?heading_level_shift t.expansion.content
+    in
+    let summary = 
+      O.code (
+        O.keyword "include" ++
+          O.txt " " ++
+          module_decl' t.parent t.decl ++
+          (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
+      )
+    in
+    let content = {Nested. items; status; summary} in
+    let kind = Some "include" in
+    let anchor = None in
+    let doc = Comment.first_to_ir t.doc in
+    Item.Nested {kind ; anchor ; doc ; content}, tree
 
 end
 open Module
