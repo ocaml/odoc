@@ -824,10 +824,8 @@ open Value
 (* This chunk of code is responsible for sectioning list of items
    according to headings and comments.
 
-   In particular, it extracts headings as Items, shift heading levels
-   of included items and remove items that should be skipped.
-
-   It expects a rendering function which either renders, or identify comments.
+   In particular, it extracts headings as Items and shift heading levels
+   of included items.
 
    TODO: This sectioning would be better done as a pass on the model directly.
 *)
@@ -841,18 +839,6 @@ sig
     ?level_shift:heading_level_shift ->
     Comment.docs ->
     heading_level_shift option * Item.t list
-
-  type tagged_item = [
-    | `Item of Item.t * Page.t list
-    | `Comment of Odoc_model.Comment.docs_or_stop
-  ]
-  
-  val items :
-    heading_level_shift option ->
-    render_item:
-      (heading_level_shift -> 'item -> tagged_item) ->
-    'item list ->
-    Item.t list * Page.t list
 
   val docs :
     Comment.docs -> Item.t list * Item.t list
@@ -876,39 +862,7 @@ struct
     content, rest
 
   type heading_level_shift = int
-
-  type tagged_item = [
-    | `Item of Item.t * Page.t list
-    | `Comment of Odoc_model.Comment.docs_or_stop
-  ]
   
-  (* The sectioning functions take several arguments, and return "modified"
-     instances of them as results. The components themselves are:
-     - The rendering function
-     - A reversed accumulator of the rendered
-     - A reversed accumulator of the subpages
-  *)
-  type ('kind, 'item) sectioning_state = {
-    acc_subpages : Page.t list;
-    acc_ir : Item.t list;
-    render_item:
-      (heading_level_shift -> 'item -> tagged_item);
-  }
-
-  (* When we encounter a stop comment, [(**/**)], we read everything until the
-     next stop comment, if there is one, and discard it. The returned item list
-     is the signature items following the next stop comment, if there are
-     any. *)
-  let skip_everything_until_next_stop_comment state l =
-    let _, _, items =
-      Doctree.Take.until l ~classify:(fun item ->
-        match state.render_item 0 item with
-        | `Comment `Stop -> Stop_and_accum ([], None)
-        | _ -> Skip
-      )
-    in
-    items
-
   let level_to_int = function
     | `Title -> 0
     | `Section -> 1
@@ -953,47 +907,6 @@ struct
     loop level_shift input0 []
 
   
-  let rec section_items level_shift section_level input_items state =
-    match input_items with
-    | [] -> state
-    | item::input_items ->
-      let tagged_item = state.render_item (level_to_int section_level) item in
-      match tagged_item with
-      | `Item (rendered_item, subpages) ->
-        let state =
-          { state with
-            acc_ir = rendered_item :: state.acc_ir;
-            acc_subpages = List.rev_append subpages state.acc_subpages ;
-          }
-        in
-        section_items level_shift section_level input_items state
-
-      | `Comment `Stop ->
-        let input_items =
-          skip_everything_until_next_stop_comment state input_items
-        in
-        section_items level_shift section_level input_items state
-
-      | `Comment (`Docs input_comment) ->
-        let level_shift, items =
-          comment_items ?level_shift input_comment
-        in
-        section_items level_shift section_level input_items {state with
-          acc_ir = List.rev_append items state.acc_ir ;
-        }
-
-  let items heading_level_shift ~render_item items =
-    let initial_state =
-      {
-        acc_subpages = [];
-        acc_ir = [];
-        render_item;
-      }
-    in
-    let state =
-      section_items heading_level_shift `Title items initial_state
-    in
-    List.rev state.acc_ir, List.rev state.acc_subpages
 
   (* For doc pages, we want the header to contain everything until
      the first heading, then everything before the next heading which 
