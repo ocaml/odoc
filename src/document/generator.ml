@@ -880,8 +880,8 @@ struct
   (* The sectioning functions take several arguments, and return "modified"
      instances of them as results. The components themselves are:
      - The rendering function
-     - An accumulator of the rendered items.
-     - An accumulator of the subpages generated for nested signatures.
+     - A reversed accumulator of the rendered
+     - A reversed accumulator of the subpages
   *)
   type ('kind, 'item) sectioning_state = {
     acc_subpages : Page.t list;
@@ -932,10 +932,13 @@ struct
       let tagged_item = state.render_item (level_to_int section_level) item in
       match tagged_item with
       | `Item (rendered_item, subpages) ->
-        section_items level_shift section_level input_items { state with
-          acc_ir = state.acc_ir @ [rendered_item];
-          acc_subpages = state.acc_subpages @ subpages;
-        }
+        let state =
+          { state with
+            acc_ir = rendered_item :: state.acc_ir;
+            acc_subpages = List.rev_append subpages state.acc_subpages ;
+          }
+        in
+        section_items level_shift section_level input_items state
 
       | `Comment `Stop ->
         let input_items =
@@ -948,12 +951,12 @@ struct
           section_comment level_shift section_level input_comment []
         in
         section_items level_shift section_level input_items {state with
-          acc_ir = state.acc_ir @ items ;
+          acc_ir = List.rev_append items state.acc_ir ;
         }
 
   and section_comment level_shift section_level input_comment acc =
     match input_comment with
-    | [] -> section_level, acc
+    | [] -> section_level, List.rev acc
 
     | element::input_comment ->
       match element.Location.value with
@@ -961,16 +964,13 @@ struct
         let level = shift level_shift level in
         let h = `Heading (level, label, content) in
         let item = Comment.heading h in
-        section_comment level_shift level input_comment
-          (acc @ item)
-
+        section_comment level_shift level input_comment (item :: acc)
       | _ ->
         let content, input_comment =
           render_comment_until_heading_or_end (element::input_comment)
         in
-        let item = [Item.Text content] in
-        section_comment level_shift section_level input_comment
-          (acc @ item)
+        let item = Item.Text content in
+        section_comment level_shift section_level input_comment (item :: acc)
 
   let items heading_level_shift ~render_item items =
     let initial_state =
@@ -983,7 +983,7 @@ struct
     let state =
       section_items heading_level_shift `Title items initial_state
     in
-    state.acc_ir, state.acc_subpages
+    List.rev state.acc_ir, List.rev state.acc_subpages
 
   (* For doc pages, we want the header to contain everything until
      the first heading, then everything before the next heading which 

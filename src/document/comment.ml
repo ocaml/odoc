@@ -321,13 +321,13 @@ let heading (`Heading (level, `Label (_, label), content)) =
       | `Subparagraph -> 6
     in
     let label = Some label in
-    [Item.Heading {label; level; title}]
+    Item.Heading {label; level; title}
 
 let item_element : Comment.block_element -> Item.t list = function
   | #Comment.attached_block_element as e ->
     [Item.Text (attached_block_element e)]
   | `Heading _ as h ->
-    heading h
+    [heading h]
 
 let first_to_ir = function
   | {Odoc_model.Location_.value = `Paragraph _ as first_paragraph ; _} ::_
