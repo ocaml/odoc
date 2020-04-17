@@ -1024,26 +1024,18 @@ sig
       Item.t * Page.t list
 end =
 struct
+
+  let class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
+    match cte with
+    | Constr (path, args) ->
+      let link = Link.from_path ~stop_before:false (path :> Paths.Path.t) in
+      format_type_path ~delim:(`brackets) args link
+    | Signature _ ->
+      Syntax.Class.open_tag
+      ++ O.txt " ... "
+      ++ Syntax.Class.close_tag
   
-  let rec render_item _ (c : Lang.ClassSignature.item) = match c with
-    | Method m ->
-      `Item (method_ m, [])
-    | InstanceVariable v ->
-      `Item (instance_variable v, [])
-    | Constraint (t1, t2) ->
-      `Item (constraint_ t1 t2, [])
-    | Inherit (Signature _) ->
-      assert false (* Bold. *)
-    | Inherit cty ->
-      `Item (inherit_ cty, [])
-    | Comment c ->
-      `Comment c
-
-  and class_signature (c : Lang.ClassSignature.t) =
-    (* FIXME: use [t.self] *)
-    Sectionning.items None ~render_item c.items
-
-  and method_ (t : Odoc_model.Lang.Method.t) =
+  let method_ (t : Odoc_model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
@@ -1065,7 +1057,7 @@ struct
     let doc = Comment.to_ir t.doc in 
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  and instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
+  let instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
@@ -1087,7 +1079,7 @@ struct
     let doc = Comment.to_ir t.doc in 
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  and inherit_ cte = 
+  let inherit_ cte = 
     let content =
       O.documentedSrc (
         O.keyword "inherit" ++
@@ -1100,17 +1092,7 @@ struct
     let doc = [] in
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  and class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
-    match cte with
-    | Constr (path, args) ->
-      let link = Link.from_path ~stop_before:false (path :> Paths.Path.t) in
-      format_type_path ~delim:(`brackets) args link
-    | Signature _ ->
-      Syntax.Class.open_tag
-      ++ O.txt " ... "
-      ++ Syntax.Class.close_tag
-
-  and constraint_ t1 t2 =
+  let constraint_ t1 t2 =
     let content =
       O.documentedSrc (format_constraints [(t1, t2)])
     in
@@ -1119,19 +1101,37 @@ struct
     let doc = [] in
     Item.Declaration {kind ; anchor ; doc ; content}
   
-  and class_decl (cd : Odoc_model.Lang.Class.decl) =
+  let render_item _ (c : Lang.ClassSignature.item) = match c with
+    | Method m ->
+      `Item (method_ m, [])
+    | InstanceVariable v ->
+      `Item (instance_variable v, [])
+    | Constraint (t1, t2) ->
+      `Item (constraint_ t1 t2, [])
+    | Inherit (Signature _) ->
+      assert false (* Bold. *)
+    | Inherit cty ->
+      `Item (inherit_ cty, [])
+    | Comment c ->
+      `Comment c
+
+  let class_signature (c : Lang.ClassSignature.t) =
+    (* FIXME: use [t.self] *)
+    Sectionning.items None ~render_item c.items
+
+  let rec class_decl (cd : Odoc_model.Lang.Class.decl) =
     match cd with
     | ClassType expr -> class_type_expr expr
     (* TODO: factorize the following with [type_expr] *)
     | Arrow (None, src, dst) ->
       type_expr ~needs_parentheses:true src ++
-      O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
+        O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
     | Arrow (Some lbl, src, dst) ->
       label lbl ++ O.txt ":" ++
-                  type_expr ~needs_parentheses:true src ++
-      O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
-
-  and class_ recursive (t : Odoc_model.Lang.Class.t) =
+        type_expr ~needs_parentheses:true src ++
+        O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
+  
+  let class_ recursive (t : Odoc_model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1178,7 +1178,7 @@ struct
     let doc = Comment.first_to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}, subtree
 
-  and class_type recursive (t : Odoc_model.Lang.ClassType.t) =
+  let class_type recursive (t : Odoc_model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
