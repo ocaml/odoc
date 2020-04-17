@@ -7,9 +7,8 @@ type rendered_item = DocumentedSrc.t
 
 type text = Format.formatter -> unit
 
-type ('item_kind, 'item) tagged_item = [
-  | `Leaf_item of 'item_kind * 'item
-  | `Nested_article of 'item
+type 'item tagged_item = [
+  | `Item of 'item
   | `Comment of Odoc_model.Comment.docs_or_stop
 ]
 
@@ -116,7 +115,7 @@ sig
       render_nested_article:
         (heading_level_shift -> 'item ->
           rendered_item * Odoc_model.Comment.docs * Block.t) ->
-      (_, 'item) tagged_item list ->
+      'item tagged_item list ->
       Block.t * Block.t
 
   val lay_out_page :

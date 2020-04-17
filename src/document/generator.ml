@@ -72,6 +72,11 @@ let resolved p txt =
 let unresolved txt = 
   !O.elt [inline @@ InternalLink (InternalLink.Unresolved txt)]
 
+let path_to_id path =
+  match Url.Anchor.from_identifier (path :> Paths.Identifier.t) with
+  | Error _ -> None
+  | Ok url -> Some url
+
 include Generator_signatures
 
 (**
@@ -392,9 +397,9 @@ module Type_declaration :
 sig
   val type_decl :
     ?is_substitution:bool -> Lang.Signature.recursive * Lang.TypeDecl.t ->
-      rendered_item * Odoc_model.Comment.docs
-  val extension : Lang.Extension.t -> rendered_item * Odoc_model.Comment.docs
-  val exn : Lang.Exception.t -> rendered_item * Odoc_model.Comment.docs
+      Item.t
+  val extension : Lang.Extension.t -> Item.t
+  val exn : Lang.Exception.t -> Item.t
 
   val format_params :
     ?delim:[ `parens | `brackets ] ->
@@ -538,7 +543,7 @@ struct
     O.documentedSrc (O.txt "| ") @ doc
 
   let extension (t : Odoc_model.Lang.Extension.t) =
-    let extension =
+    let content =
       O.documentedSrc (O.keyword "type" ++
           O.txt " " ++
           Link.from_path ~stop_before:false (t.type_path :> Paths.Path.t) ++
@@ -549,20 +554,26 @@ struct
       @ 
         O.documentedSrc
           (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
-    in 
-    extension, t.doc
+    in
+    let kind = Some "extension" in
+    let anchor = None in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}
 
 
 
   let exn (t : Odoc_model.Lang.Exception.t) =
     let cstr = constructor (t.id :> Paths.Identifier.t) t.args t.res in
-    let exn =
+    let content =
       O.documentedSrc (O.keyword "exception" ++ O.txt " ")
       @ cstr
       @ O.documentedSrc
           (if Syntax.Type.Exception.semicolon then O.txt ";" else O.noop)
     in
-    exn, t.doc
+    let kind = Some "exception" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}
 
 
 
@@ -756,7 +767,7 @@ struct
         let params = format_params l in
         Syntax.Type.handle_constructor_params (O.txt tyname) params
     in
-    let tdecl_def =
+    let content =
       let keyword' =
         match recursive with
         | Ordinary | Rec -> O.keyword "type"
@@ -770,7 +781,10 @@ struct
       @ O.documentedSrc
           (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
     in
-    tdecl_def, t.doc
+    let kind = Some (if is_substitution then "type-subst" else "type") in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}
 end
 open Type_declaration
 
@@ -778,52 +792,67 @@ open Type_declaration
 
 module Value :
 sig
-  val value : Lang.Value.t -> rendered_item * Odoc_model.Comment.docs
-  val external_ : Lang.External.t -> rendered_item * Odoc_model.Comment.docs
+  val value : Lang.Value.t -> Item.t
+  val external_ : Lang.External.t -> Item.t
 end =
 struct
   let value (t : Odoc_model.Lang.Value.t) =
     let name = Paths.Identifier.name t.id in
-    let value =
-      O.keyword Syntax.Value.variable_keyword ++
-      O.txt " " ++
-      O.txt name ++
-      O.txt Syntax.Type.annotation_separator ++
-      type_expr t.type_
-      ++ (if Syntax.Value.semicolon then O.txt ";" else O.noop)
+    let content =
+      O.documentedSrc (
+        O.keyword Syntax.Value.variable_keyword ++
+          O.txt " " ++
+          O.txt name ++
+          O.txt Syntax.Type.annotation_separator ++
+          type_expr t.type_
+        ++ (if Syntax.Value.semicolon then O.txt ";" else O.noop)
+      )
     in
-    O.documentedSrc value, t.doc
+    let kind = Some "value" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration { kind ; anchor ; doc ; content}
 
   let external_ (t : Odoc_model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
-    let external_ =
-      O.keyword Syntax.Value.variable_keyword ++
-      O.txt " " ++
-      O.txt name ++
-      O.txt Syntax.Type.annotation_separator ++
-      type_expr t.type_
-      ++ (if Syntax.Type.External.semicolon then O.txt ";" else O.noop)
-    in
-    O.documentedSrc external_, t.doc
+    let content = 
+      O.documentedSrc (
+        O.keyword Syntax.Value.variable_keyword ++
+          O.txt " " ++
+          O.txt name ++
+          O.txt Syntax.Type.annotation_separator ++
+          type_expr t.type_
+        ++ (if Syntax.Type.External.semicolon then O.txt ";" else O.noop)
+      )
+    in 
+    let kind = Some "external" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in 
+    Item.Declaration {kind ; anchor ; doc ; content}
 end
 open Value
 
 module ModuleSubstitution :
 sig
-  val module_substitution : Lang.ModuleSubstitution.t -> rendered_item * Odoc_model.Comment.docs
+  val module_substitution : Lang.ModuleSubstitution.t -> Item.t
 end =
 struct
   let module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let name = Paths.Identifier.name t.id in
     let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
-    let value =
-      O.keyword "module" ++
-      O.txt " " ++
-      O.txt name ++
-      O.txt " := " ++
-      path
+    let content =
+      O.documentedSrc (
+        O.keyword "module" ++
+          O.txt " " ++
+          O.txt name ++
+          O.txt " := " ++
+          path
+      )
     in
-    O.documentedSrc value, t.doc
+    let kind = Some "module-substitution" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}
 end
 open ModuleSubstitution
 
@@ -871,11 +900,10 @@ sig
     heading_level_shift option ->
     item_to_id:('item -> Url.Anchor.t option) ->
     item_to_spec:('item -> string option) ->
-    render_leaf_item:('item -> rendered_item * Odoc_model.Comment.docs) ->
-    render_nested_article:
-      (heading_level_shift -> 'item ->
-         item * Odoc_model.Comment.docs * Page.t list) ->
-    ((_, 'item) tagged_item) list -> Item.t list * Page.t list
+    render_item:
+      (heading_level_shift -> 'item -> Item.t * Page.t list) ->
+    'item tagged_item list ->
+    Item.t list * Page.t list
 
   val lay_out_page :
     Odoc_model.Comment.docs -> Item.t list * Item.t list
@@ -937,11 +965,8 @@ struct
     acc_ir : Item.t list;
     item_to_id : 'item -> Url.Anchor.t option;
     item_to_spec : 'item -> string option;
-    render_leaf_item : 'item -> rendered_item * Odoc_model.Comment.docs;
-    render_nested_article : 
-      heading_level_shift -> 'item ->
-      [`Decl of rendered_item | `Nested of Nested.t ] *
-        Odoc_model.Comment.docs * Page.t list;
+    render_item:
+      (heading_level_shift -> 'item -> Item.t * Page.t list);
   }
 
   let level_to_int = function
@@ -973,34 +998,12 @@ struct
 
     | tagged_item::input_items ->
       match tagged_item with
-      | `Leaf_item (_, item) ->
-        let content, docs = state.render_leaf_item item in
-        let anchor = state.item_to_id item in
-        let kind = state.item_to_spec item in
-        let doc = Comment.first_to_ir docs in
-        let decl = {Item. content ; kind ; anchor ; doc} in
-        let item = [Item.Declaration decl] in
-        section_items level_shift section_level input_items {state with
-          acc_ir = state.acc_ir @ item ;
-        }
-
-      | `Nested_article item ->
-        let rendered_item, docs, subpages =
-          state.render_nested_article (level_to_int section_level) item
-        in
-        let anchor = state.item_to_id item in
-        let kind = state.item_to_spec item in
-        let doc = Comment.first_to_ir docs in
-        let item = match rendered_item with 
-          | `Decl content ->
-            let decl = {Item. content ; kind ; anchor ; doc} in
-            [Item.Declaration decl]
-          | `Nested content -> 
-            let decl = {Item. content ; kind ; anchor ; doc} in
-            [Item.Nested decl]
+      | `Item item ->
+        let rendered_item, subpages =
+          state.render_item (level_to_int section_level) item
         in
         section_items level_shift section_level input_items { state with
-          acc_ir = state.acc_ir @ item;
+          acc_ir = state.acc_ir @ [rendered_item];
           acc_subpages = state.acc_subpages @ subpages;
         }
 
@@ -1040,7 +1043,7 @@ struct
           (acc @ item)
 
   let lay_out heading_level_shift ~item_to_id ~item_to_spec
-    ~render_leaf_item ~render_nested_article items =
+    ~render_item items =
     let initial_state =
       {
         acc_subpages = [];
@@ -1048,8 +1051,7 @@ struct
 
         item_to_id;
         item_to_spec;
-        render_leaf_item;
-        render_nested_article;
+        render_item;
       }
     in
     let state =
@@ -1085,20 +1087,15 @@ struct
 
 end
 
-let path_to_id path =
-  match Url.Anchor.from_identifier path with
-  | Error _ -> None
-  | Ok url -> Some url
-
 module Class :
 sig
   val class_ :
     Lang.Signature.recursive -> Lang.Class.t ->
-      Top_level_markup.item * Odoc_model.Comment.docs * Page.t list
+      Item.t * Page.t list
   
   val class_type :
     Lang.Signature.recursive -> Lang.ClassType.t ->
-      Top_level_markup.item * Odoc_model.Comment.docs * Page.t list
+      Item.t * Page.t list
 end =
 struct
   let class_signature_item_to_id : Lang.ClassSignature.item -> _ = function
@@ -1117,24 +1114,16 @@ struct
 
   let tag_class_signature_item : Lang.ClassSignature.item -> _ = fun item ->
     match item with
-    | Method _ -> `Leaf_item (`Method, item)
-    | InstanceVariable _ -> `Leaf_item (`Variable, item)
-    | Constraint _ -> `Leaf_item (`Constraint, item)
-    | Inherit _ -> `Leaf_item (`Inherit, item)
     | Comment comment -> `Comment comment
+    | _ -> `Item item
  
-  let rec render_class_signature_item : Lang.ClassSignature.item -> DocumentedSrc.t * _ =
+  let rec render_class_signature_item : Lang.ClassSignature.item -> Item.t =
     function
     | Method m -> method_ m
     | InstanceVariable v -> instance_variable v
-    | Constraint (t1, t2) -> O.documentedSrc (format_constraints [(t1, t2)]), []
+    | Constraint (t1, t2) -> constraint_ t1 t2
     | Inherit (Signature _) -> assert false (* Bold. *)
-    | Inherit class_type_expression ->
-      O.documentedSrc (
-        O.keyword "inherit" ++
-        O.txt " " ++
-        class_type_expr class_type_expression),
-      []
+    | Inherit cty -> inherit_ cty
     | Comment _ -> assert false
 
   and class_signature (c : Lang.ClassSignature.t) =
@@ -1144,11 +1133,10 @@ struct
       None
       ~item_to_id:class_signature_item_to_id
       ~item_to_spec:class_signature_item_to_spec
-      ~render_leaf_item:(fun item ->
-        let text, docs = render_class_signature_item item in
-        text (* XXX Check *), docs
+      ~render_item:(fun _ item ->
+        let content = render_class_signature_item item in
+        content, []
       )
-      ~render_nested_article:(fun _ -> assert false)
       tagged_items
 
   and method_ (t : Odoc_model.Lang.Method.t) =
@@ -1157,16 +1145,21 @@ struct
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
     let private_ =
       if t.private_ then O.keyword "private" ++ O.txt " " else O.noop in
-    let method_ =
-      O.keyword "method" ++
-      O.txt " " ++
-      private_ ++
-      virtual_ ++
-      O.txt name ++
-      O.txt Syntax.Type.annotation_separator ++
-      type_expr t.type_
+    let content =
+      O.documentedSrc (
+        O.keyword "method" ++
+          O.txt " " ++
+          private_ ++
+          virtual_ ++
+          O.txt name ++
+          O.txt Syntax.Type.annotation_separator ++
+          type_expr t.type_
+      )
     in
-    O.documentedSrc method_, t.doc
+    let kind = Some "method" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in 
+    Item.Declaration {kind ; anchor ; doc ; content}
 
   and instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
     let name = Paths.Identifier.name t.id in
@@ -1174,16 +1167,34 @@ struct
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
     let mutable_ =
       if t.mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop in
-    let val_ =
-      O.keyword "val" ++
-      O.txt " " ++
-      mutable_ ++
-      virtual_ ++
-      O.txt name ++
-      O.txt Syntax.Type.annotation_separator ++
-      type_expr t.type_
+    let content =
+      O.documentedSrc (
+        O.keyword "val" ++
+          O.txt " " ++
+          mutable_ ++
+          virtual_ ++
+          O.txt name ++
+          O.txt Syntax.Type.annotation_separator ++
+          type_expr t.type_
+      )
     in
-    O.documentedSrc val_, t.doc
+    let kind = Some "instance-variable" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.to_ir t.doc in 
+    Item.Declaration {kind ; anchor ; doc ; content}
+
+  and inherit_ cte = 
+    let content =
+      O.documentedSrc (
+        O.keyword "inherit" ++
+          O.txt " " ++
+          class_type_expr cte
+      )
+    in
+    let kind = Some "inherit" in
+    let anchor = None in
+    let doc = [] in
+    Item.Declaration {kind ; anchor ; doc ; content}
 
   and class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
     match cte with
@@ -1195,6 +1206,15 @@ struct
       ++ O.txt " ... "
       ++ Syntax.Class.close_tag
 
+  and constraint_ t1 t2 =
+    let content =
+      O.documentedSrc (format_constraints [(t1, t2)])
+    in
+    let kind = None in
+    let anchor = None in
+    let doc = [] in
+    Item.Declaration {kind ; anchor ; doc ; content}
+  
   and class_decl (cd : Odoc_model.Lang.Class.decl) =
     match cd with
     | ClassType expr -> class_type_expr expr
@@ -1248,8 +1268,11 @@ struct
         O.txt Syntax.Type.annotation_separator ++
         cd
     in
-    let code = O.documentedSrc class_def_content in
-    `Decl code, t.doc, subtree
+    let content = O.documentedSrc class_def_content in
+    let kind = Some "class" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.first_to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}, subtree
 
   and class_type recursive (t : Odoc_model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
@@ -1293,8 +1316,11 @@ struct
       O.txt " = " ++
       expr
     in
-    let code = O.documentedSrc ctyp in
-    `Decl code, t.doc, subtree
+    let content = O.documentedSrc ctyp in
+    let kind = Some "class-type" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.first_to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}, subtree
 end
 open Class
 
@@ -1338,33 +1364,10 @@ struct
     | Include _ -> Some "include"
     | Comment _ -> None
 
-  let tag_signature_item : Lang.Signature.item -> _ = fun item ->
+  let rec tag_signature_item : Lang.Signature.item -> _ = fun item ->
     match item with
-    | Type _ -> `Leaf_item (`Type, item)
-    | TypeSubstitution _ -> `Leaf_item (`TypeSubstitution, item)
-    | TypExt _ -> `Leaf_item (`Extension, item)
-    | Exception _ -> `Leaf_item (`Exception, item)
-    | Value _ -> `Leaf_item (`Value, item)
-    | External _ -> `Leaf_item (`External, item)
-    | ModuleSubstitution _ -> `Leaf_item (`ModuleSubstitution, item)
-
-    | Module _
-    | ModuleType _
-    | Include _
-    | Class _
-    | ClassType _ -> `Nested_article item
-
     | Comment comment -> `Comment comment
-
-  let rec render_leaf_signature_item : Lang.Signature.item -> _ = function
-    | Type (r, t) -> type_decl (r, t)
-    | TypeSubstitution t -> type_decl ~is_substitution:true (Ordinary, t)
-    | TypExt e -> extension e
-    | Exception e -> exn e
-    | Value v -> value v
-    | External e -> external_ e
-    | ModuleSubstitution m -> module_substitution m
-    | _ -> assert false
+    | _ -> `Item item
 
   and signature ?heading_level_shift s =
     let tagged_items = List.map tag_signature_item s in
@@ -1372,11 +1375,10 @@ struct
       heading_level_shift
       ~item_to_id:signature_item_to_id
       ~item_to_spec:signature_item_to_spec
-      ~render_leaf_item:render_leaf_signature_item
-      ~render_nested_article:(render_nested_signature_or_class)
+      ~render_item
       tagged_items
 
-  and render_nested_signature_or_class
+  and render_item
     : Top_level_markup.heading_level_shift ->
       Lang.Signature.item -> _ =
     fun heading_level item ->
@@ -1386,7 +1388,14 @@ struct
     | Class (recursive, c) -> class_ recursive c
     | ClassType (recursive, c) -> class_type recursive c
     | Include m -> include_ heading_level m
-    | _ -> assert false
+    | Type (r, t) -> type_decl (r, t), []
+    | TypeSubstitution t -> type_decl ~is_substitution:true (Ordinary, t), []
+    | TypExt e -> extension e, []
+    | Exception e -> exn e, []
+    | Value v -> value v, []
+    | External e -> external_ e, []
+    | ModuleSubstitution m -> module_substitution m, []
+    | Comment _ -> assert false
 
   and functor_argument
     : Odoc_model.Lang.FunctorParameter.parameter
@@ -1468,7 +1477,7 @@ and module_expansion
   and module_
       : Odoc_model.Lang.Signature.recursive ->
         Odoc_model.Lang.Module.t ->
-        _ * Odoc_model.Comment.docs * Page.t list
+        Item.t * Page.t list
       = fun recursive t ->
     let modname = Paths.Identifier.name t.id in
     let md =
@@ -1512,8 +1521,11 @@ and module_expansion
 
       keyword' ++ O.txt " " ++ modname ++ md ++
       (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop) in
-    let region = O.documentedSrc md_def_content in
-    `Decl region, t.doc, subtree
+    let content = O.documentedSrc md_def_content in
+    let kind = Some "module" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.first_to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}, subtree
 
   and module_decl (base : Paths.Identifier.Signature.t) md =
     begin match md with
@@ -1584,8 +1596,11 @@ and module_expansion
         ++ (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       )
     in
-    let region = O.documentedSrc mty_def in
-    `Decl region, t.doc, subtree
+    let content = O.documentedSrc mty_def in
+    let kind = Some "module-type" in
+    let anchor = path_to_id t.id in
+    let doc = Comment.first_to_ir t.doc in
+    Item.Declaration {kind ; anchor ; doc ; content}, subtree
 
   and mty
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
@@ -1699,8 +1714,11 @@ and include_ heading_level_shift (t : Odoc_model.Lang.Include.t) =
         (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
     )
   in
-  let nested = {Nested. items; status; summary} in
-  `Nested nested, t.doc, tree
+  let content = {Nested. items; status; summary} in
+  let kind = Some "include" in
+  let anchor = None in
+  let doc = Comment.first_to_ir t.doc in
+  Item.Nested {kind ; anchor ; doc ; content}, tree
 
 end
 open Module
