@@ -1,10 +1,3 @@
-type entity = string
-
-type href = string  
-
-type reference = Url.t
-
-
 type style = [
   | `Bold
   | `Italic
@@ -19,20 +12,6 @@ module rec Class : sig
 
 end = Class
 
-(* and Tabular : sig
- * 
- *   type t = {
- *     header : line option ;
- *     lines : line List.t ;
- *   }
- * 
- *   and line = {
- *     attr : Class.t ;
- *     desc : Block.t list ;
- *   }
- *         
- * end = Tabular *)
-
 and InternalLink : sig
 
   type resolved = Url.t * Inline.t
@@ -45,7 +24,7 @@ end = InternalLink
 
 and Raw_markup : sig
 
-  type target = Odoc_model.Comment.raw_markup_target 
+  type target = Odoc_model.Comment.raw_markup_target
   and t = target * string
 
 end = Raw_markup
@@ -62,13 +41,16 @@ end = Source
 
 and Inline : sig
 
+  type entity = string
+  type href = string
+
   type t = one list
 
   and one = {
     attr : Class.t ;
     desc : desc ;
   }
-  
+
   and desc =
     | Text of string
     | Entity of entity
@@ -99,7 +81,7 @@ and Block : sig
     attr : Class.t ;
     desc : desc ;
   }
-  
+
   and desc =
     | Inline of Inline.t
     | Paragraph of Inline.t
@@ -108,18 +90,11 @@ and Block : sig
     | Source of Source.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t
-    (* | DocumentedSrc of DocumentedSrc.t *)
-    (* | Math_blk of Math.t *)
-    (* | Tabular of Tabular.t *)
-    (* | Table of Wrapper.t * t *)
-    (* | Picture of href * string * string option * int option *)
-    (* | Figure of Wrapper.t * t *)
-    (* | Rule *)
 
   and list_type =
     | Ordered
     | Unordered
-  
+
 end = Block
 
 and DocumentedSrc : sig
@@ -152,7 +127,7 @@ and Nested : sig
     status : status ;
     items : Item.t list ;
   }
-  
+
 end = Nested
 
 
@@ -167,7 +142,7 @@ and Item : sig
 
   type declaration = DocumentedSrc.t item
   type text = Block.t
-  
+
   type t =
     | Text of text
     | Heading of Heading.t

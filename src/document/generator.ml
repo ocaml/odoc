@@ -845,22 +845,6 @@ sig
 end =
 struct
 
-  (* Reads comment content until the next heading, or the end of comment.
-     The returned IR is paired with the remainder of the
-     comment, which will either start with the next section heading in the
-     comment, or be empty if there are no section headings. *)
-  let render_comment_until_heading_or_end docs =
-    let content, _, rest =
-      Doctree.Take.until docs ~classify:(fun b ->
-        match b.Location.value with
-        | `Heading _ -> Stop_and_keep
-        | #Odoc_model.Comment.attached_block_element as doc ->
-          let content = Comment.attached_block_element doc in
-          Accum content
-      )
-    in
-    content, rest
-
   type heading_level_shift = int
   
   let level_to_int = function
@@ -886,6 +870,18 @@ struct
       end
     | None | Some _ -> level
 
+  let take_until_heading_or_end (docs : Odoc_model.Comment.docs) =
+    let content, _, rest =
+      Doctree.Take.until docs ~classify:(fun b ->
+        match b.Location.value with
+        | `Heading _ -> Stop_and_keep
+        | #Odoc_model.Comment.attached_block_element as doc ->
+          let content = Comment.attached_block_element doc in
+          Accum content
+      )
+    in
+    content, rest
+
   let comment_items ?level_shift (input0 : Odoc_model.Comment.docs) =
     let rec loop next_level_shift input_comment acc =
       match input_comment with
@@ -899,7 +895,7 @@ struct
           loop (Some (level_to_int level)) input_comment (item :: acc)
         | _ ->
           let content, input_comment =
-            render_comment_until_heading_or_end (element::input_comment)
+            take_until_heading_or_end (element::input_comment)
           in
           let item = Item.Text content in
           loop next_level_shift input_comment (item :: acc)
