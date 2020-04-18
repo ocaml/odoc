@@ -198,9 +198,9 @@ let rec block ~resolve (l: Block.t) : flow Html.elt list =
 
 let documentedSrc ~resolve (t : DocumentedSrc.t) =
   let open DocumentedSrc in
-  let take_code attr0 l =
+  let take_code l =
     Doctree.Take.until l ~classify:(function
-      | Code { attr; code } when attr = attr0 -> Accum code
+      | Code code -> Accum code
       | _ -> Stop_and_keep
     )
   in
@@ -215,10 +215,9 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
   in
   let rec to_html t : flow Html.elt list = match t with
     | [] -> []
-    | Code { attr ; _ } :: _ ->
-      let code, _, rest = take_code attr t in
-      let a = class_ attr in
-      source (inline ~resolve) ~a code
+    | Code _ :: _ ->
+      let code, _, rest = take_code t in
+      source (inline ~resolve) code
       @ to_html rest
     | (Documented _ | Nested _) :: _ ->
       let l, _, rest = take_descr t in

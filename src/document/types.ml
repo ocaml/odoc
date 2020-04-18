@@ -105,14 +105,10 @@ and DocumentedSrc : sig
     code : 'a ;
     doc : Block.t ;
   }
-  type only_code = {
-    attr : Class.t ;
-    code : Source.t ;
-  }
 
   type t = one list
   and one =
-    | Code of only_code
+    | Code of Source.t
     | Documented of Inline.t documented
     | Nested of t documented
 

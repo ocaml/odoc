@@ -169,8 +169,8 @@ let rec list ?sep ~f = function
 let render f = spf "%t" f
 let code ?attr f =
   [inline ?attr @@ Inline.Source (render f)]
-let documentedSrc ?(attr=[]) f =
-  [DocumentedSrc.Code { attr ; code = render f }]
+let documentedSrc f =
+  [DocumentedSrc.Code (render f)]
 let codeblock ?attr f =
   [block ?attr @@ Block.Source (render f)]
 
