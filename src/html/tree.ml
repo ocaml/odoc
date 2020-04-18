@@ -32,7 +32,7 @@ type t = {
   children : t list
 }
 
-let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
+let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   let is_page = Link.Path.is_page url in
   let path = Link.Path.for_printing url in
   let rec add_dotdot ~n acc =
@@ -83,61 +83,58 @@ let page_creator ?(theme_uri = Relative "./") ~url name header_docs content =
     ]
   in
 
-  let wrapped_content : (Html_types.div_content Html.elt) list =
-
-    let header_content =
-      let dot = if !Link.semantic_uris then "" else "index.html" in
-      let dotdot = add_dotdot ~n:1 dot in
-      let up_href = if is_page && name <> "index" then dot else dotdot in
-      let has_parent = List.length path > 1 in
-      if has_parent then
-        let nav =
-          Html.nav @@ [
-            Html.a ~a:[Html.a_href up_href] [
-              Html.txt "Up"
-            ];
-            Html.txt " – "
-          ] @
-            (* Create breadcrumbs *)
-            let space = Html.txt " " in
-            let breadcrumb_spec =
-              if is_page
-              then (fun n x -> n, dot, x)
-              else (fun n x -> n, add_dotdot ~n dot, x)
-            in
-            let rev_path = if is_page && name = "index"
-              then List.tl (List.rev path)
-              else List.rev path
-            in
-            rev_path |>
-            List.mapi breadcrumb_spec |>
-            List.rev |>
-            Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
-              ~f:(fun (n, addr, lbl) ->
-                if n > 0 then
-                  [[Html.a ~a:[Html.a_href addr] [Html.txt lbl]]]
-                else
-                  [[Html.txt lbl]]
-                ) |>
-            List.flatten
-        in
-        nav::header_docs
-      else
-        header_docs
-    in
-
-    let header = Html.header header_content in
-
-    [Html.div ~a:[Html.a_class ["content"]] (header::content)]
+  let breadcrumbs = 
+    let dot = if !Link.semantic_uris then "" else "index.html" in
+    let dotdot = add_dotdot ~n:1 dot in
+    let up_href = if is_page && name <> "index" then dot else dotdot in
+    let has_parent = List.length path > 1 in
+    if has_parent then
+      let l =
+         [
+          Html.a ~a:[Html.a_href up_href] [
+            Html.txt "Up"
+          ];
+          Html.txt " – "
+        ] @
+          (* Create breadcrumbs *)
+          let space = Html.txt " " in
+          let breadcrumb_spec =
+            if is_page
+            then (fun n x -> n, dot, x)
+            else (fun n x -> n, add_dotdot ~n dot, x)
+          in
+          let rev_path = if is_page && name = "index"
+            then List.tl (List.rev path)
+            else List.rev path
+          in
+          rev_path |>
+          List.mapi breadcrumb_spec |>
+          List.rev |>
+          Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
+            ~f:(fun (n, addr, lbl) ->
+              if n > 0 then
+                [[Html.a ~a:[Html.a_href addr] [Html.txt lbl]]]
+              else
+                [[Html.txt lbl]]
+            ) |>
+          List.flatten
+      in
+      [Html.nav l]
+    else
+      []
   in
 
-  let html : [ `Html ] Html.elt = Html.html head (Html.body wrapped_content) in
+  let body = 
+    breadcrumbs
+    @ [Html.header header]
+    @ toc
+    @ [Html.div ~a:[Html.a_class ["content"]] content]
+  in
+  Html.html head (Html.body body)
 
-  html
-
-let make ?theme_uri ~url ~header title content children =
+let make ?theme_uri ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename url in
-  let content = page_creator ?theme_uri ~url title header content in
+  let content = page_creator ?theme_uri ~url title header toc content in
   { filename; content; children }
 
 let traverse ~f t =

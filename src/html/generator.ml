@@ -401,11 +401,11 @@ let rec subpage ?theme_uri
     ({Page. title; header; items = i ; subpages; url }) =
   let resolve = Link.Current url in
   let toc = Toc.from_items i in
-  let header = items ~resolve header @ toc in
+  let header = items ~resolve header in
   let content = (items ~resolve i :> any Html.elt list) in
   let subpages = List.map (subpage ?theme_uri) subpages in
   let page =
-    Tree.make ?theme_uri ~header ~url title content subpages
+    Tree.make ?theme_uri ~header ~toc ~url title content subpages
   in
   page
 

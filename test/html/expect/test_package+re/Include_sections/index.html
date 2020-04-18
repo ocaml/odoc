@@ -13,15 +13,29 @@
   </script>
  </head>
  <body>
-  <div class="content">
-   <header>
-    <nav>
-     <a href="../index.html">Up</a> – <a href="../index.html">test_package+re</a> » Include_sections
-    </nav>
-    <h1>
-     Module <code>Include_sections</code>
-    </h1>
-    <nav class="toc">
+  <nav>
+   <a href="../index.html">Up</a> – <a href="../index.html">test_package+re</a> » Include_sections
+  </nav>
+  <header>
+   <h1>
+    Module <code>Include_sections</code>
+   </h1>
+  </header>
+  <nav class="toc">
+   <ul>
+    <li>
+     <a href="#something-1">Something 1</a>
+     <ul>
+      <li>
+       <a href="#something-2">Something 2</a>
+      </li>
+     </ul>
+    </li>
+    <li>
+     <a href="#something-1-bis">Something 1-bis</a>
+    </li>
+    <li>
+     <a href="#second-include">Second include</a>
      <ul>
       <li>
        <a href="#something-1">Something 1</a>
@@ -35,7 +49,7 @@
        <a href="#something-1-bis">Something 1-bis</a>
       </li>
       <li>
-       <a href="#second-include">Second include</a>
+       <a href="#third-include">Third include</a>
        <ul>
         <li>
          <a href="#something-1">Something 1</a>
@@ -48,27 +62,13 @@
         <li>
          <a href="#something-1-bis">Something 1-bis</a>
         </li>
-        <li>
-         <a href="#third-include">Third include</a>
-         <ul>
-          <li>
-           <a href="#something-1">Something 1</a>
-           <ul>
-            <li>
-             <a href="#something-2">Something 2</a>
-            </li>
-           </ul>
-          </li>
-          <li>
-           <a href="#something-1-bis">Something 1-bis</a>
-          </li>
-         </ul>
-        </li>
        </ul>
       </li>
      </ul>
-    </nav>
-   </header>
+    </li>
+   </ul>
+  </nav>
+  <div class="content">
    <dl>
     <dt class="spec module-type" id="module-type-Something">
      <a href="#module-type-Something" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-Something/index.html">Something</a> = { ... };</code>
