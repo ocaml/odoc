@@ -26,7 +26,7 @@ open O.Infix
 (* TODO: Title formatting should be a renderer decision *)
 let format_title kind name =
   let mk title =
-    let level = 1 and label = None in 
+    let level = 1 and label = None in
     [Item.Heading { level ; label ; title}]
   in
   let prefix s = mk (inline (Text (s ^" ")) :: O.code (O.txt name)) in
@@ -48,7 +48,7 @@ let label t ppf = match t with
   | Odoc_model.Lang.TypeExpr.Label s -> O.pf ppf "%s" s
   | Optional s -> O.pf ppf "?%t%s" (O.entity "#8288") s
 
-let tag tag t ppf = 
+let tag tag t ppf =
   O.pf ppf "@{<%s>%t@}" tag t
 
 let type_var tv =
@@ -57,11 +57,11 @@ let type_var tv =
 let enclose ~l ~r x =
   O.span (fun ppf -> O.pf ppf "%s%t%s" l x r)
 
-let path p txt = 
+let path p txt =
   !O.elt [inline @@ InternalLink (InternalLink.Resolved (Url.from_path p, txt))]
 let resolved p txt =
   !O.elt [inline @@ InternalLink (InternalLink.Resolved (p, txt))]
-let unresolved txt = 
+let unresolved txt =
   !O.elt [inline @@ InternalLink (InternalLink.Unresolved txt)]
 
 let path_to_id path =
@@ -82,7 +82,7 @@ sig
 end =
 struct
   open Paths
-  
+
   let rec from_path : stop_before:bool -> Path.t -> text =
     fun ~stop_before path ->
       match path with
@@ -90,7 +90,7 @@ struct
       | `Forward root -> unresolved [inline @@ Text root] (* FIXME *)
       | `Dot (prefix, suffix) ->
         let link = from_path ~stop_before:true (prefix :> Path.t) in
-        link ++ O.txt ("." ^ suffix) 
+        link ++ O.txt ("." ^ suffix)
       | `Apply (p1, p2) ->
         let link1 = from_path ~stop_before (p1 :> Path.t) in
         let link2 = from_path ~stop_before (p2 :> Path.t) in
@@ -173,7 +173,7 @@ struct
 
 end
 
-  
+
 module Type_expression :
 sig
   val type_expr : ?needs_parentheses:bool -> Lang.TypeExpr.t -> text
@@ -210,13 +210,13 @@ struct
     let rec style_elements ~add_pipe = function
       | [] -> O.noop
       | first :: rest ->
-        let first = 
+        let first =
           match first with
           | Odoc_model.Lang.TypeExpr.Polymorphic_variant.Type te ->
             let res = type_expr te in
             if add_pipe
             then O.txt " " ++ O.span (O.txt "| " ++ res)
-            else res 
+            else res
           | Constructor {constant; name; arguments; _} ->
             let constr =
               let name = "`" ^ name in
@@ -227,7 +227,7 @@ struct
             let res =
               match arguments with
               | [] -> constr
-              | _ -> 
+              | _ ->
                 let arguments = style_arguments ~constant arguments in
                 O.span (
                   if Syntax.Type.Variant.parenthesize_params
@@ -237,7 +237,7 @@ struct
             in
             if add_pipe
             then O.txt " " ++ res
-            else res 
+            else res
         in
         first ++ style_elements ~add_pipe:true rest
     in
@@ -295,7 +295,7 @@ struct
       in
       Syntax.Type.handle_constructor_params path params
 
-  and type_expr 
+  and type_expr
         ?(needs_parentheses=false) (t : Odoc_model.Lang.TypeExpr.t) =
     match t with
     | Var s -> type_var (Syntax.Type.var_prefix ^ s)
@@ -368,7 +368,7 @@ struct
       Link.from_fragment ~base (frag_typ :> Paths.Fragment.t)
     | _ ->
       O.txt (Link.render_fragment (frag_typ :> Paths.Fragment.t))
-    in 
+    in
     O.keyword "type" ++
     O.txt " " ++
     typath ++
@@ -398,7 +398,7 @@ sig
 
   val format_constraints : (Lang.TypeExpr.t * Lang.TypeExpr.t) list -> text
 end =
-struct 
+struct
   let record fields =
     let field mutable_ id typ =
       match Url.from_identifier ~stop_before:true id with
@@ -433,13 +433,13 @@ struct
         DocumentedSrc.Documented { anchor; attrs; code; doc }
       )
     in
-    let content = 
+    let content =
       O.documentedSrc (O.txt "{")
       @ rows
       @ O.documentedSrc (O.txt "}")
     in
     content
-  
+
 
   let constructor
     : Paths.Identifier.t -> Odoc_model.Lang.TypeDecl.Constructor.argument
@@ -523,7 +523,7 @@ struct
         )
       in
       rows
- 
+
 
 
   let extension_constructor (t : Odoc_model.Lang.Extension.Constructor.t) =
@@ -537,10 +537,10 @@ struct
           O.txt " " ++
           Link.from_path ~stop_before:false (t.type_path :> Paths.Path.t) ++
           O.txt " += ")
-      @ 
+      @
         Utils.flatmap t.constructors
           ~f:extension_constructor
-      @ 
+      @
         O.documentedSrc
           (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
     in
@@ -604,7 +604,7 @@ struct
                   then params
                   else O.txt " " ++ O.keyword "of" ++ O.txt " " ++ params
                 )
-            )             
+            )
           end,
           match doc with
           | [] ->
@@ -710,7 +710,7 @@ struct
   let type_decl ?(is_substitution=false) ((recursive, t) : Lang.Signature.recursive * Lang.TypeDecl.t) =
     let tyname = Paths.Identifier.name t.id in
     let constraints = format_constraints t.equation.constraints in
-    let manifest, need_private = 
+    let manifest, need_private =
       match t.equation.manifest with
       | Some (Odoc_model.Lang.TypeExpr.Polymorphic_variant variant) ->
         let code =
@@ -732,7 +732,7 @@ struct
         in
         O.documentedSrc manifest, need_private
     in
-    let representation = 
+    let representation =
       match t.representation with
       | None -> []
       | Some repr ->
@@ -740,7 +740,7 @@ struct
           | Extensible -> O.documentedSrc (O.txt "..")
           | Variant cstrs -> variant cstrs
           | Record fields -> record fields
-        in 
+        in
         O.documentedSrc (
           O.txt " = " ++
           if need_private then
@@ -804,7 +804,7 @@ struct
 
   let external_ (t : Odoc_model.Lang.External.t) =
     let name = Paths.Identifier.name t.id in
-    let content = 
+    let content =
       O.documentedSrc (
         O.keyword Syntax.Value.variable_keyword ++
           O.txt " " ++
@@ -813,10 +813,10 @@ struct
           type_expr t.type_
         ++ (if Syntax.Type.External.semicolon then O.txt ";" else O.noop)
       )
-    in 
+    in
     let kind = Some "external" in
     let anchor = path_to_id t.id in
-    let doc = Comment.to_ir t.doc in 
+    let doc = Comment.to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 end
 open Value
@@ -829,7 +829,7 @@ open Value
 
    TODO: This sectioning would be better done as a pass on the model directly.
 *)
-module Sectionning :
+module Sectioning :
 sig
   open Odoc_model
 
@@ -846,7 +846,7 @@ end =
 struct
 
   type heading_level_shift = int
-  
+
   let level_to_int = function
     | `Title -> 0
     | `Section -> 1
@@ -902,10 +902,10 @@ struct
     in
     loop level_shift input0 []
 
-  
+
 
   (* For doc pages, we want the header to contain everything until
-     the first heading, then everything before the next heading which 
+     the first heading, then everything before the next heading which
      is either lower, or a section.
   *)
   let docs input_comment =
@@ -937,7 +937,7 @@ sig
   val class_ :
     Lang.Signature.recursive -> Lang.Class.t ->
       Item.t * Page.t list
-  
+
   val class_type :
     Lang.Signature.recursive -> Lang.ClassType.t ->
       Item.t * Page.t list
@@ -953,7 +953,7 @@ struct
       Syntax.Class.open_tag
       ++ O.txt " ... "
       ++ Syntax.Class.close_tag
-  
+
   let method_ (t : Odoc_model.Lang.Method.t) =
     let name = Paths.Identifier.name t.id in
     let virtual_ =
@@ -973,7 +973,7 @@ struct
     in
     let kind = Some "method" in
     let anchor = path_to_id t.id in
-    let doc = Comment.to_ir t.doc in 
+    let doc = Comment.to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
   let instance_variable (t : Odoc_model.Lang.InstanceVariable.t) =
@@ -995,10 +995,10 @@ struct
     in
     let kind = Some "instance-variable" in
     let anchor = path_to_id t.id in
-    let doc = Comment.to_ir t.doc in 
+    let doc = Comment.to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  let inherit_ cte = 
+  let inherit_ cte =
     let content =
       O.documentedSrc (
         O.keyword "inherit" ++
@@ -1019,12 +1019,12 @@ struct
     let anchor = None in
     let doc = [] in
     Item.Declaration {kind ; anchor ; doc ; content}
-  
+
   let class_signature (c : Lang.ClassSignature.t) =
     let rec loop l acc_items =
       match l with
       | [] -> List.rev acc_items
-      | item :: rest -> 
+      | item :: rest ->
         let continue item = loop rest (item :: acc_items) in
         match (item : Lang.ClassSignature.item) with
         | Inherit (Signature _) ->
@@ -1040,7 +1040,7 @@ struct
           in
           loop rest acc_items
         | Comment (`Docs c) ->
-          let _, items = Sectionning.comment_items c in
+          let _, items = Sectioning.comment_items c in
           loop rest (List.rev_append items acc_items)
     in
     (* FIXME: use [t.self] *)
@@ -1057,7 +1057,7 @@ struct
       label lbl ++ O.txt ":" ++
         type_expr ~needs_parentheses:true src ++
         O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
-  
+
   let class_ recursive (t : Odoc_model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
@@ -1071,7 +1071,7 @@ struct
         let doc = Comment.standalone t.doc in
         let items = class_signature csig in
         let url = Url.Path.from_identifier t.id in
-        let header = format_title `Class (make_name_from_path url) @ doc in 
+        let header = format_title `Class (make_name_from_path url) @ doc in
         let page = {Page.
           title = name ;
           header ;
@@ -1130,7 +1130,7 @@ struct
         let link = path url [inline @@ Text name] in
         link, [page]
     in
-    let ctyp = 
+    let ctyp =
       let open Lang.Signature in
       let keyword' =
         match recursive with
@@ -1160,7 +1160,7 @@ open Class
 module Module :
 sig
   val signature
-    : ?level_shift:Sectionning.heading_level_shift
+    : ?level_shift:Sectioning.heading_level_shift
     -> Lang.Signature.t
     -> Item.t list * Page.t list
 end =
@@ -1170,7 +1170,7 @@ struct
     let rec loop ?level_shift l (acc_items, acc_pages) =
       match l with
       | [] -> List.rev acc_items, List.rev acc_pages
-      | item :: rest -> 
+      | item :: rest ->
         let continue (item, pages) =
           loop ?level_shift rest (item :: acc_items, List.rev_append pages acc_pages)
         in
@@ -1199,7 +1199,7 @@ struct
           loop ?level_shift rest (acc_items, acc_pages)
         | Comment (`Docs c) ->
           let level_shift, items =
-            Sectionning.comment_items ?level_shift:level_shift0 c
+            Sectioning.comment_items ?level_shift:level_shift0 c
           in
           loop ?level_shift rest (List.rev_append items acc_items, acc_pages)
     in
@@ -1531,7 +1531,7 @@ struct
       in
       signature ?level_shift t.expansion.content
     in
-    let summary = 
+    let summary =
       O.code (
         O.keyword "include" ++
           O.txt " " ++
@@ -1605,7 +1605,7 @@ struct
     in
     let title = Odoc_model.Names.PageName.to_string name in
     let url = Url.Path.from_identifier t.name in
-    let header, items = Sectionning.docs t.content in
+    let header, items = Sectioning.docs t.content in
     {Page. title ; header ; items ; subpages = [] ; url }
 end
 include Page
