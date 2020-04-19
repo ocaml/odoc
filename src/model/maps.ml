@@ -203,63 +203,63 @@ class virtual identifier = object (self)
   method identifier_class_signature : Identifier.ClassSignature.t -> Identifier.ClassSignature.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.class_signature_of_t
-    
+
   method identifier_datatype : Identifier.DataType.t -> Identifier.DataType.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.datatype_of_t
-  
+
   method identifier_module : Identifier.Module.t -> Identifier.Module.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.module_of_t
-    
+
   method identifier_module_type : Identifier.ModuleType.t -> Identifier.ModuleType.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.module_type_of_t
-    
+
   method identifier_type : Identifier.Type.t -> Identifier.Type.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.type_of_t
-    
+
   method identifier_constructor : Identifier.Constructor.t -> Identifier.Constructor.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.constructor_of_t
-    
+
   method identifier_field : Identifier.Field.t -> Identifier.Field.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.field_of_t
-    
+
   method identifier_extension : Identifier.Extension.t -> Identifier.Extension.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.extension_of_t
-    
+
   method identifier_exception : Identifier.Exception.t -> Identifier.Exception.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.exception_of_t
-    
+
   method identifier_value : Identifier.Value.t -> Identifier.Value.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.value_of_t
-    
+
   method identifier_class : Identifier.Class.t -> Identifier.Class.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.class_of_t
-    
+
   method identifier_class_type : Identifier.ClassType.t -> Identifier.ClassType.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.class_type_of_t
-    
+
   method identifier_method : Identifier.Method.t -> Identifier.Method.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.method_of_t
-    
+
   method identifier_instance_variable : Identifier.InstanceVariable.t -> Identifier.InstanceVariable.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.instance_variable_of_t
-  
+
   method identifier_label : Identifier.Label.t -> Identifier.Label.t = fun id ->
     self#identifier (id :> Identifier.t) |>
     Identifier.label_of_t
-    
+
 end
 
 class virtual path = object (self)
@@ -383,7 +383,7 @@ class virtual path = object (self)
   method path_dot_name name = name
 
   method path_module : Path.Module.t -> Path.Module.t = fun p ->
-    self#path (p :> Path.t) |> 
+    self#path (p :> Path.t) |>
     Path.module_of_t
 
   method path_module_type : Path.ModuleType.t -> Path.ModuleType.t = fun p ->
@@ -456,7 +456,7 @@ class virtual fragment = object (self)
   method fragment_resolved_signature : Fragment.Resolved.Signature.t -> Fragment.Resolved.Signature.t = fun p ->
     self#fragment_resolved (p :> Fragment.Resolved.t) |>
     Fragment.Resolved.signature_of_t
-     
+
   method fragment_resolved_module : Fragment.Resolved.Module.t -> Fragment.Resolved.Module.t = fun p ->
     self#fragment_resolved (p :> Fragment.Resolved.t) |>
     Fragment.Resolved.module_of_t
@@ -1179,10 +1179,10 @@ class virtual module_substitution = object (self)
 
   method virtual identifier_module :
     Identifier.Module.t -> Identifier.Module.t
-  
+
   method virtual documentation :
     Comment.docs -> Comment.docs
-  
+
   method virtual path_module :
     Path.Module.t -> Path.Module.t
 
@@ -1397,7 +1397,7 @@ class virtual signature = object (self)
           if msub' != msub then ModuleSubstitution msub'
           else item
       | TypeSubstitution tsub ->
-          let tsub' = self#type_decl tsub in 
+          let tsub' = self#type_decl tsub in
           if tsub' != tsub then TypeSubstitution tsub'
           else item
       | Include incl ->

@@ -6,7 +6,7 @@ open O.Infix
 module Reason = Generator.Make (struct
   module Obj =
   struct
-    let close_tag_closed = "}" 
+    let close_tag_closed = "}"
     let close_tag_extendable = "}"
     let field_separator = ", "
     let open_tag_closed = "{. "

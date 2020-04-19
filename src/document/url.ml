@@ -57,7 +57,7 @@ module Path = struct
     | Identifier.Signature.t
     | Identifier.ClassSignature.t
   ]
-  
+
   type t = {
     kind : string ;
     parent : t option ;
@@ -108,7 +108,7 @@ module Path = struct
       mk ~parent kind page
 
   let from_identifier p = from_identifier (p : [< source] :> source)
-  
+
 end
 
 
@@ -140,7 +140,7 @@ module Anchor = struct
         Ok { page = parent; anchor; kind }
       | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page ; kind = "module" ; anchor = "" }    
+        Ok { page ; kind = "module" ; anchor = "" }
       | `Page _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page ; kind = "page" ; anchor = "" }
@@ -286,13 +286,13 @@ let kind id =
    *     match prefix with
    *     | "" -> suffix
    *     | _  -> prefix ^ "." ^ suffix
-   * 
+   *
    *   let rec render_raw : Fragment.t -> string =
    *     fun fragment ->
    *       match fragment with
    *       | `Resolved rr -> render_resolved rr
    *       | `Dot (prefix, suffix) -> dot (render_raw (prefix :> Fragment.t)) suffix
-   * 
+   *
    *   and render_resolved : Fragment.Resolved.t -> string =
    *     let open Fragment.Resolved in
    *     fun fragment ->
@@ -304,7 +304,7 @@ let kind id =
    *       | `Type (rr, s) -> dot (render_resolved (rr :> t)) (TypeName.to_string s)
    *       | `Class (rr, s) -> dot (render_resolved ( rr :> t)) (ClassName.to_string s)
    *       | `ClassType (rr, s) -> dot (render_resolved (rr :> t)) (ClassTypeName.to_string s)
-   * 
+   *
    *   let rec to_html : stop_before:bool ->
    *     Identifier.Signature.t -> Fragment.t -> _ =
    *     fun ~stop_before id fragment ->

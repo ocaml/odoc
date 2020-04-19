@@ -63,7 +63,7 @@ module Identifier = struct
       | `Root (r1, n1), `Root (r2, n2) ->
         UnitName.equal n1 n2 && Root.equal r1 r2
       | `Module (s1,n1), `Module (s2,n2) ->
-        ModuleName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any) 
+        ModuleName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
       | `Argument (s1,i1,n1), `Argument (s2,i2,n2) ->
         i1=i2 && ArgumentName.equal n1 n2 && equal (s1 : signature :> any) (s2 : signature :> any)
       | `ModuleType (s1,n1), `ModuleType (s2,n2) ->
@@ -140,7 +140,7 @@ module Identifier = struct
 
   module Signature =
   struct
-    type t = Paths_types.Identifier.signature 
+    type t = Paths_types.Identifier.signature
 
     let equal : t -> t -> bool =
       fun t1 t2 -> equal (t1 : t :> Paths_types.Identifier.any) (t2 : t :> Paths_types.Identifier.any)
@@ -157,7 +157,7 @@ module Identifier = struct
 
   module ClassSignature =
   struct
-    type t = Paths_types.Identifier.class_signature 
+    type t = Paths_types.Identifier.class_signature
 
     let equal : t -> t -> bool =
       fun t1 t2 -> equal (t1 : t :> Paths_types.Identifier.any) (t2 : t :> Paths_types.Identifier.any)
@@ -638,7 +638,7 @@ module Path = struct
     type t = Paths_types.Resolved_path.any
 
     let rec parent_module_type_identifier : Paths_types.Resolved_path.module_type -> Identifier.Signature.t = function
-      | `Identifier id -> (id : Identifier.ModuleType.t :> Identifier.Signature.t) 
+      | `Identifier id -> (id : Identifier.ModuleType.t :> Identifier.Signature.t)
       | `ModuleType(m, n) -> `ModuleType(parent_module_identifier m, n)
 
     and parent_module_identifier : Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
@@ -1138,10 +1138,10 @@ module Fragment = struct
       loop p
 
     let sig_of_mod m =
-      let open Paths_types.Resolved_fragment in 
+      let open Paths_types.Resolved_fragment in
       (m : module_ :> signature)
 
-    let rec parent_resolved_path : Path.Resolved.Module.t -> Paths_types.Resolved_fragment.signature -> Path.Resolved.Module.t = fun root -> 
+    let rec parent_resolved_path : Path.Resolved.Module.t -> Paths_types.Resolved_fragment.signature -> Path.Resolved.Module.t = fun root ->
       function
       | `Root -> root
       | `Subst(sub, p) ->
@@ -1493,17 +1493,17 @@ module Fragment = struct
   end
 
   let signature_of_t : t -> Signature.t = function
-    | `Resolved (#Resolved.Signature.t) 
+    | `Resolved (#Resolved.Signature.t)
     | `Dot (_,_) as x -> x
     | _ -> assert false
 
   let module_of_t : t -> Module.t = function
-    | `Resolved (#Resolved.Module.t) 
+    | `Resolved (#Resolved.Module.t)
     | `Dot (_,_) as x -> x
     | _ -> assert false
 
   let type_of_t : t -> Type.t = function
-    | `Resolved (#Resolved.Type.t) 
+    | `Resolved (#Resolved.Type.t)
     | `Dot (_,_) as x -> x
     | _ -> assert false
 
@@ -1570,7 +1570,7 @@ module Reference = struct
       | `InstanceVariable (p,s) -> Hashtbl.hash (69, hash_reference (p : class_signature :> any), s)
       | `Label (p,s) -> Hashtbl.hash (70, hash_reference (p : label_parent :> any), s)
 
-  let rec resolved_equal : Paths_types.Resolved_reference.any -> Paths_types.Resolved_reference.any -> bool = 
+  let rec resolved_equal : Paths_types.Resolved_reference.any -> Paths_types.Resolved_reference.any -> bool =
     let open Paths_types.Resolved_reference in
     fun id1 id2 ->
       match id1, id2 with
@@ -1614,7 +1614,7 @@ module Reference = struct
         s1 = s2 && resolved_equal (r1 : label_parent :> any) (r2 : label_parent :> any)
       | _, _ -> false
 
-  and equal : Paths_types.Reference.any -> Paths_types.Reference.any -> bool = 
+  and equal : Paths_types.Reference.any -> Paths_types.Reference.any -> bool =
     let open Paths_types.Reference in
     fun r1 r2 ->
       match r1, r2 with
@@ -1783,7 +1783,7 @@ module Reference = struct
           | SStop mp' -> `Module (mp', s)
         end
 
-    type module_id = [  
+    type module_id = [
       | `Identifier of Identifier.Module.t
     ]
 
@@ -1859,7 +1859,7 @@ module Reference = struct
 
     let rebase_single_extension : Reversed.t -> s_extension -> [s_extension | `Identifier of Paths_types.Identifier.reference_extension] = fun
       new_base t ->
-      match t with 
+      match t with
       | `Extension (mp, s) ->
         begin match rebase_signature_reference new_base mp with
         | SContinue (id, _) ->
@@ -1946,7 +1946,7 @@ module Reference = struct
 
       let hash t = hash_resolved (t : t :> any)
 
-      let identifier : t -> Identifier.DataType.t = function 
+      let identifier : t -> Identifier.DataType.t = function
         | `Identifier id -> id
         | `Type(s, n) -> `Type(parent_signature_identifier s, n)
 
@@ -2793,8 +2793,8 @@ let class_type_of_t : t -> ClassType.t = function
   | `Resolved (#Paths_types.Resolved_reference.class_type_no_id)
   | `Root (_,#Paths_types.Reference.tag_class_type)
   | `Dot (_,_)
-  | `Class (_,_) 
-  | `ClassType (_,_) as x -> x 
+  | `Class (_,_)
+  | `ClassType (_,_) as x -> x
   | _ -> assert false
 
 let method_of_t : t -> Method.t = function
@@ -2802,7 +2802,7 @@ let method_of_t : t -> Method.t = function
   | `Resolved (#Paths_types.Resolved_reference.s_method)
   | `Root (_,#Paths_types.Reference.tag_method)
   | `Dot (_,_)
-  | `Method (_,_) as x -> x 
+  | `Method (_,_) as x -> x
   | _ -> assert false
 
 let instance_variable_of_t : t -> InstanceVariable.t = function
@@ -2810,7 +2810,7 @@ let instance_variable_of_t : t -> InstanceVariable.t = function
   | `Resolved (#Paths_types.Resolved_reference.s_instance_variable)
   | `Root (_,#Paths_types.Reference.tag_instance_variable)
   | `Dot (_,_)
-  | `InstanceVariable (_,_) as x -> x 
+  | `InstanceVariable (_,_) as x -> x
   | _ -> assert false
 
 let label_of_t : t -> Label.t = function
@@ -2818,6 +2818,6 @@ let label_of_t : t -> Label.t = function
   | `Resolved (#Paths_types.Resolved_reference.s_label)
   | `Root (_,#Paths_types.Reference.tag_label)
   | `Dot (_,_)
-  | `Label (_,_) as x -> x 
+  | `Label (_,_) as x -> x
   | _ -> assert false
 end

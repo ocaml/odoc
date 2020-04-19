@@ -25,9 +25,9 @@ module Identifier : sig
     type t = Paths_types.Identifier.signature
 
     val equal : t -> t -> bool
-    
+
     val hash : t -> int
- 
+
     val root : t -> Root.t
   end
 
@@ -184,12 +184,12 @@ module Identifier : sig
   end
 
   module Path : sig
-    
+
     module Module : sig
       type t = Paths_types.Identifier.path_module
 
-      val equal : t -> t -> bool 
-      
+      val equal : t -> t -> bool
+
       val hash : t -> int
     end
 
@@ -261,7 +261,7 @@ module Identifier : sig
   val equal : t -> t -> bool
 
   val hash : t -> int
-  
+
   val name : [< t] -> string
 end
 
@@ -366,7 +366,7 @@ module rec Path : sig
 
     val hash : t -> int
 
-    val is_hidden : t -> bool    
+    val is_hidden : t -> bool
   end
 
   module ModuleType : sig
@@ -376,7 +376,7 @@ module rec Path : sig
 
     val hash : t -> int
 
-    val is_hidden : t -> bool    
+    val is_hidden : t -> bool
   end
 
   module Type : sig
@@ -386,7 +386,7 @@ module rec Path : sig
 
     val hash : t -> int
 
-    val is_hidden : t -> bool    
+    val is_hidden : t -> bool
   end
 
   module ClassType : sig
@@ -396,7 +396,7 @@ module rec Path : sig
 
     val hash : t -> int
 
-    val is_hidden : t -> bool    
+    val is_hidden : t -> bool
   end
 
   type t = Paths_types.Path.any
@@ -535,7 +535,7 @@ end
 module rec Reference : sig
 
   module Resolved : sig
-    module Signature : sig 
+    module Signature : sig
       type t = Paths_types.Resolved_reference.signature
 
       val equal : t -> t -> bool
@@ -547,7 +547,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module ClassSignature : sig 
+    module ClassSignature : sig
       type t = Paths_types.Resolved_reference.class_signature
 
       val equal : t -> t -> bool
@@ -559,7 +559,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module DataType : sig 
+    module DataType : sig
       type t = Paths_types.Resolved_reference.datatype
 
       val equal : t -> t -> bool
@@ -571,7 +571,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Parent : sig 
+    module Parent : sig
       type t = Paths_types.Resolved_reference.parent
 
       val equal : t -> t -> bool
@@ -583,7 +583,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module LabelParent : sig 
+    module LabelParent : sig
       type t = Paths_types.Resolved_reference.label_parent
 
       val equal : t -> t -> bool
@@ -594,7 +594,7 @@ module rec Reference : sig
 
       val rebase : Identifier.Signature.t -> t -> t
     end
-    module Module : sig 
+    module Module : sig
       type t = Paths_types.Resolved_reference.module_
 
       val equal : t -> t -> bool
@@ -606,7 +606,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module ModuleType : sig 
+    module ModuleType : sig
       type t = Paths_types.Resolved_reference.module_type
 
       val equal : t -> t -> bool
@@ -618,7 +618,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Type : sig 
+    module Type : sig
       type t = Paths_types.Resolved_reference.type_
 
       val equal : t -> t -> bool
@@ -630,7 +630,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Constructor : sig 
+    module Constructor : sig
       type t = Paths_types.Resolved_reference.constructor
 
       val equal : t -> t -> bool
@@ -642,7 +642,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Field : sig 
+    module Field : sig
       type t = Paths_types.Resolved_reference.field
 
       val equal : t -> t -> bool
@@ -654,7 +654,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Extension : sig 
+    module Extension : sig
       type t = Paths_types.Resolved_reference.extension
 
       val equal : t -> t -> bool
@@ -666,7 +666,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Exception : sig 
+    module Exception : sig
       type t = Paths_types.Resolved_reference.exception_
 
       val equal : t -> t -> bool
@@ -678,7 +678,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Value : sig 
+    module Value : sig
       type t = Paths_types.Resolved_reference.value
 
       val equal : t -> t -> bool
@@ -690,7 +690,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Class : sig 
+    module Class : sig
       type t = Paths_types.Resolved_reference.class_
 
       val equal : t -> t -> bool
@@ -702,7 +702,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module ClassType : sig 
+    module ClassType : sig
       type t = Paths_types.Resolved_reference.class_type
 
       val equal : t -> t -> bool
@@ -714,7 +714,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Method : sig 
+    module Method : sig
       type t = Paths_types.Resolved_reference.method_
 
       val equal : t -> t -> bool
@@ -726,7 +726,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module InstanceVariable : sig 
+    module InstanceVariable : sig
       type t = Paths_types.Resolved_reference.instance_variable
 
       val equal : t -> t -> bool
@@ -738,7 +738,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Label : sig 
+    module Label : sig
       type t = Paths_types.Resolved_reference.label
 
       val equal : t -> t -> bool
@@ -750,7 +750,7 @@ module rec Reference : sig
       val rebase : Identifier.Signature.t -> t -> t
     end
 
-    module Page : sig 
+    module Page : sig
       type t = Paths_types.Resolved_reference.page
 
       val equal : t -> t -> bool
@@ -789,7 +789,7 @@ module rec Reference : sig
     val exception_of_t : t -> Exception.t
 
     val value_of_t : t -> Value.t
-  
+
     val class_of_t : t -> Class.t
 
     val class_type_of_t : t -> ClassType.t
@@ -806,7 +806,7 @@ module rec Reference : sig
 
   (** {2 Creators} *)
 
-    module Signature : sig 
+    module Signature : sig
       type t = Paths_types.Reference.signature
 
       val equal : t -> t -> bool
@@ -814,7 +814,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module ClassSignature : sig 
+    module ClassSignature : sig
       type t = Paths_types.Reference.class_signature
 
       val equal : t -> t -> bool
@@ -822,7 +822,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module DataType : sig 
+    module DataType : sig
       type t = Paths_types.Reference.datatype
 
       val equal : t -> t -> bool
@@ -830,7 +830,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Parent : sig 
+    module Parent : sig
       type t = Paths_types.Reference.parent
 
       val equal : t -> t -> bool
@@ -838,14 +838,14 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module LabelParent : sig 
+    module LabelParent : sig
       type t = Paths_types.Reference.label_parent
 
       val equal : t -> t -> bool
 
       val hash : t -> int
     end
-    module Module : sig 
+    module Module : sig
       type t = Paths_types.Reference.module_
 
       val equal : t -> t -> bool
@@ -853,7 +853,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module ModuleType : sig 
+    module ModuleType : sig
       type t = Paths_types.Reference.module_type
 
       val equal : t -> t -> bool
@@ -861,7 +861,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Type : sig 
+    module Type : sig
       type t = Paths_types.Reference.type_
 
       val equal : t -> t -> bool
@@ -869,7 +869,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Constructor : sig 
+    module Constructor : sig
       type t = Paths_types.Reference.constructor
 
       val equal : t -> t -> bool
@@ -877,7 +877,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Field : sig 
+    module Field : sig
       type t = Paths_types.Reference.field
 
       val equal : t -> t -> bool
@@ -886,7 +886,7 @@ module rec Reference : sig
 
     end
 
-    module Extension : sig 
+    module Extension : sig
       type t = Paths_types.Reference.extension
 
       val equal : t -> t -> bool
@@ -894,7 +894,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Exception : sig 
+    module Exception : sig
       type t = Paths_types.Reference.exception_
 
       val equal : t -> t -> bool
@@ -902,7 +902,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Value : sig 
+    module Value : sig
       type t = Paths_types.Reference.value
 
       val equal : t -> t -> bool
@@ -910,7 +910,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Class : sig 
+    module Class : sig
       type t = Paths_types.Reference.class_
 
       val equal : t -> t -> bool
@@ -918,7 +918,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module ClassType : sig 
+    module ClassType : sig
       type t = Paths_types.Reference.class_type
 
       val equal : t -> t -> bool
@@ -926,7 +926,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Method : sig 
+    module Method : sig
       type t = Paths_types.Reference.method_
 
       val equal : t -> t -> bool
@@ -934,7 +934,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module InstanceVariable : sig 
+    module InstanceVariable : sig
       type t = Paths_types.Reference.instance_variable
 
       val equal : t -> t -> bool
@@ -942,7 +942,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Label : sig 
+    module Label : sig
       type t = Paths_types.Reference.label
 
       val equal : t -> t -> bool
@@ -950,7 +950,7 @@ module rec Reference : sig
       val hash : t -> int
     end
 
-    module Page : sig 
+    module Page : sig
       type t = Paths_types.Reference.page
 
       val equal : t -> t -> bool
@@ -985,7 +985,7 @@ module rec Reference : sig
     val exception_of_t : t -> Exception.t
 
     val value_of_t : t -> Value.t
-  
+
     val class_of_t : t -> Class.t
 
     val class_type_of_t : t -> ClassType.t

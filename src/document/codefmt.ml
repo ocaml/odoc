@@ -12,7 +12,7 @@ module State = struct
 
   let push state elt =
     state.current <- elt :: state.current
-  
+
   let enter state tag =
     let previous_elt = state.current in
     Stack.push (previous_elt, tag) state.context;
@@ -51,7 +51,7 @@ module Tag = struct
         | _ -> ""
       and mark_close_stag = function
         | Elt _ -> ""
-        | Tag _ 
+        | Tag _
         | Format.String_tag _ -> State.leave state0; ""
         | _ -> ""
       in {Format.

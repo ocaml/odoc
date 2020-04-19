@@ -42,7 +42,7 @@ struct
 
   type t =
     | Page of string
-    | Compilation_unit of compilation_unit 
+    | Compilation_unit of compilation_unit
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || contains_double_underscore name in

@@ -83,7 +83,7 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
     ]
   in
 
-  let breadcrumbs = 
+  let breadcrumbs =
     let dot = if !Link.semantic_uris then "" else "index.html" in
     let dotdot = add_dotdot ~n:1 dot in
     let up_href = if is_page && name <> "index" then dot else dotdot in
@@ -124,7 +124,7 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
       []
   in
 
-  let body = 
+  let body =
     breadcrumbs
     @ [Html.header header]
     @ toc

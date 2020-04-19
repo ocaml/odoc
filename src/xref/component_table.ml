@@ -289,7 +289,7 @@ let rec unit tbl base =
         t
 
 and signature_identifier tbl (i : Identifier.Signature.t) =
-  match i with 
+  match i with
   | `Root(base, _) -> unit tbl base
   | `Module(id, name) ->
       let parent = signature_identifier tbl id in
@@ -639,7 +639,7 @@ let rec resolved_signature_fragment wth (f : Fragment.Resolved.Signature.t) =
         Sig.lookup_module (ModuleName.to_string name) parent
 
 let rec resolved_signature_reference tbl (r : Reference.Resolved.Signature.t) =
-  match r with 
+  match r with
   | `Identifier id ->
       signature_identifier tbl id
   | `SubstAlias(sub, _) ->
@@ -673,6 +673,6 @@ and resolved_datatype_reference tbl (r : Reference.Resolved.DataType.t) =
 and resolved_page_reference tbl : Reference.Resolved.Page.t -> _ = function
     | `Identifier id -> page_identifier tbl id
 
-let base tbl s = tbl.lookup_unit s  
+let base tbl s = tbl.lookup_unit s
 
 let page_base tbl s = tbl.lookup_page s

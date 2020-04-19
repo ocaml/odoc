@@ -303,8 +303,8 @@ and resolve_resolved_module_path_no_id : _ -> _ -> Paths_types.Resolved_path.mod
     if sub != sub' || orig != orig' then `Subst(sub', orig')
     else (p :> Path.Resolved.Module.t)
   | `SubstAlias(sub, orig) ->
-    let sub'  = resolve_resolved_module_path ident tbl sub in 
-    let orig' = resolve_resolved_module_path ident tbl orig in 
+    let sub'  = resolve_resolved_module_path ident tbl sub in
+    let orig' = resolve_resolved_module_path ident tbl orig in
     if sub != sub' || orig != orig' then `SubstAlias(sub', orig')
     else (p :> Path.Resolved.Module.t)
   | `Hidden hp ->
@@ -853,7 +853,7 @@ and resolve_resolved_reference_signature_no_id : _ -> _ ->
   fun ident tbl r ->
     match r with
     | `SubstAlias _
-    | `Module _ 
+    | `Module _
     | `Canonical _ as r' ->
       (resolve_resolved_reference_module_no_id ident tbl r' :> Reference.Resolved.Signature.t)
     | `ModuleType(parent, name) ->
@@ -868,7 +868,7 @@ and resolve_resolved_reference_signature : _ -> _ ->
     match r with
     | `Identifier _ -> r
     | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ as r' ->
-      resolve_resolved_reference_signature_no_id ident tbl r' 
+      resolve_resolved_reference_signature_no_id ident tbl r'
 
 and resolve_resolved_reference_module_no_id : _ -> _ ->
   Paths_types.Resolved_reference.module_no_id -> Reference.Resolved.Module.t =
@@ -905,7 +905,7 @@ and resolve_resolved_reference_module : _ -> _ ->
     match r with
     | `Identifier _ -> r
     | `SubstAlias _ | `Module _ | `Canonical _ as r' ->
-      resolve_resolved_reference_module_no_id ident tbl r' 
+      resolve_resolved_reference_module_no_id ident tbl r'
 
 and resolve_resolved_reference_class_signature_no_id : _ -> _ ->
   Paths_types.Resolved_reference.class_signature_no_id -> Reference.Resolved.ClassSignature.t =
@@ -928,7 +928,7 @@ and resolve_resolved_reference_class_signature : _ -> _ ->
     match r with
     | `Identifier _ -> r
     | `Class _ | `ClassType _ as r' ->
-      resolve_resolved_reference_class_signature_no_id ident tbl r' 
+      resolve_resolved_reference_class_signature_no_id ident tbl r'
 
 and resolve_resolved_reference_datatype_no_id : _ -> _ ->
   Paths_types.Resolved_reference.datatype_no_id -> Reference.Resolved.DataType.t =
@@ -964,7 +964,7 @@ and resolve_resolved_reference_parent : _ -> _ ->
   fun ident tbl r ->
     match r with
     | `Identifier _ -> r
-    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ 
+    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _
     | `Class _ | `ClassType _ | `Type _  as r' ->
       resolve_resolved_reference_parent_no_id ident tbl r'
 
@@ -973,7 +973,7 @@ and resolve_resolved_reference_label_parent : _ -> _ ->
   fun ident tbl r ->
     match r with
     | `Identifier _ -> r
-    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ 
+    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _
     | `Class _ | `ClassType _ | `Type _  as r' ->
       (resolve_resolved_reference_parent_no_id ident tbl r' :> Reference.Resolved.LabelParent.t)
 
@@ -1125,7 +1125,7 @@ and resolve_resolved_reference :
   fun ident tbl r ->
     match r with
     | `Identifier _ -> r
-    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ 
+    | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _
     | `Class _ | `ClassType _ | `Type _  as r' ->
       (resolve_resolved_reference_parent_no_id ident tbl r' :> Reference.Resolved.t)
     | `Constructor(parent, name) ->
@@ -1225,7 +1225,7 @@ and resolve_module_reference ident tbl (r : Reference.Module.t)
               resolved unresolved ident tbl r parent
         | _ -> assert false
 
-        
+
       end
 
 and resolve_module_type_reference ident tbl (r : Reference.ModuleType.t)

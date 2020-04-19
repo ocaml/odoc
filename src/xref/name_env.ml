@@ -374,7 +374,7 @@ and add_signature_item item env =
   | Comment com -> add_comment com env
   | ModuleSubstitution m -> add_module_substitution m env
   | TypeSubstitution t -> add_type_decl t env
-  
+
 and add_signature_items sg env =
   List.fold_right add_signature_item sg env
 

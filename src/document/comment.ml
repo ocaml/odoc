@@ -51,8 +51,8 @@ module Reference = struct
         render_resolved (r :> t) ^ "." ^ (InstanceVariableName.to_string s)
       | `Label (r, s) -> render_resolved (r :> t) ^ ":" ^ (LabelName.to_string s)
 
-  
-  
+
+
   let rec ref_to_string : Reference.t -> string =
     let open Reference in
     function
@@ -237,7 +237,7 @@ let rec nestable_block_element
         [block @@ Block.Inline (inline_element_list content)]
       | item ->
         nestable_block_element_list item
-    in 
+    in
     let items = List.map f items in
     block @@ Block.List (kind, items)
 
@@ -304,11 +304,11 @@ let block_element : Comment.block_element -> Block.t = function
   | #Comment.attached_block_element as e ->
     attached_block_element e
   | `Heading (_, `Label (_, _), content) ->
-    (* We are not supposed to receive Heading in this context. 
+    (* We are not supposed to receive Heading in this context.
        TODO: Remove heading in attached documentation in the model *)
     [block @@ Paragraph (non_link_inline_element_list content)]
 
-let heading (`Heading (level, `Label (_, label), content)) = 
+let heading (`Heading (level, `Label (_, label), content)) =
     let label = Odoc_model.Names.LabelName.to_string label in
     let title = non_link_inline_element_list content in
     let level =

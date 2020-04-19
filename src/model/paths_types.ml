@@ -383,7 +383,7 @@ sig
     | tag_only_field
     | tag_only_extension
     | tag_only_exception
-    | tag_only_value 
+    | tag_only_value
     | tag_only_class
     | tag_only_class_type
     | tag_only_method

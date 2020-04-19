@@ -163,7 +163,7 @@ class virtual fragment : object
   method fragment_resolved : Fragment.Resolved.t ->
     Fragment.Resolved.t
 
-  method fragment_resolved_signature : Fragment.Resolved.Signature.t -> Fragment.Resolved.Signature.t 
+  method fragment_resolved_signature : Fragment.Resolved.Signature.t -> Fragment.Resolved.Signature.t
 
   method fragment_resolved_module_name : ModuleName.t -> ModuleName.t
 
@@ -307,9 +307,9 @@ class virtual reference : object
 
   method reference_label_name : LabelName.t -> LabelName.t
 
-  method reference_signature : Reference.Signature.t -> Reference.Signature.t 
+  method reference_signature : Reference.Signature.t -> Reference.Signature.t
 
-  method reference_label_parent : Reference.LabelParent.t -> Reference.LabelParent.t 
+  method reference_label_parent : Reference.LabelParent.t -> Reference.LabelParent.t
 
   method reference_parent : Reference.Parent.t -> Reference.Parent.t
 
@@ -335,7 +335,7 @@ class virtual reference : object
 
   method reference_class_type : Reference.ClassType.t -> Reference.ClassType.t
 
-  method reference_class_signature : Reference.ClassSignature.t -> Reference.ClassSignature.t 
+  method reference_class_signature : Reference.ClassSignature.t -> Reference.ClassSignature.t
 
   method reference_method : Reference.Method.t -> Reference.Method.t
 
@@ -497,7 +497,7 @@ class virtual signature : object
   method virtual module_ : Module.t -> Module.t
 
   method virtual module_substitution : ModuleSubstitution.t -> ModuleSubstitution.t
-  
+
   method virtual module_type : ModuleType.t -> ModuleType.t
 
   method virtual type_decl : TypeDecl.t -> TypeDecl.t

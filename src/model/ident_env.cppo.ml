@@ -324,7 +324,7 @@ let add_structure_tree_item parent item env =
 #endif
     | Tstr_eval _ | Tstr_value _
     | Tstr_primitive _ | Tstr_typext _
-    | Tstr_exception _ 
+    | Tstr_exception _
     | Tstr_attribute _ -> env
 
 let add_structure_tree_items parent str env =

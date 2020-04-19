@@ -37,7 +37,7 @@ module Name : Name = struct
         | Internal s -> s
 
     let of_string s = Std s
-    
+
     let of_ident id = of_string (Ident.name id)
 
     let internal_of_string id = Internal id
@@ -82,7 +82,7 @@ module SimpleName : SimpleName = struct
     let to_string s = s
 
     let of_string s = s
-    
+
     let of_ident id = of_string (Ident.name id)
 
     let equal (x : t) (y : t) = x = y

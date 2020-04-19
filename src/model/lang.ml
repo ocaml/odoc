@@ -54,7 +54,7 @@ and FunctorParameter : sig
     expansion: Module.expansion option;
   }
 
-  type t = 
+  type t =
     | Unit
     | Named of parameter
 end = FunctorParameter

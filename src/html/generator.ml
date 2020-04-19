@@ -324,7 +324,7 @@ let items ~resolve l =
                 (docs @ content)])]]
       |> continue_with rest
 
-    | Declaration { kind = kind0 ; _ } :: _ as t 
+    | Declaration { kind = kind0 ; _ } :: _ as t
       when should_coalesce kind0 ->
       let l, doc, rest = Doctree.Take.until t ~classify:(function
         | Item.Declaration { doc = [] ; anchor ; content ; kind }
