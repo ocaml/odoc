@@ -1,15 +1,7 @@
 open Odoc_model.Names
 open Odoc_model.Paths
 
-module StdResultMonad = struct
-  type ('a, 'b) result = ('a, 'b) Result.result = Ok of 'a | Error of 'b
-
-  let map_error f = function Ok _ as ok -> ok | Error e -> Error (f e)
-
-  let of_option ~error = function Some x -> Ok x | None -> Error error
-
-  let ( >>= ) m f = match m with Ok x -> f x | Error _ as e -> e
-end
+module StdResultMonad = Utils.ResultMonad
 
 (* Add [result] and a bind operator over it in scope *)
 open StdResultMonad
