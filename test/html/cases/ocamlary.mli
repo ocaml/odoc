@@ -258,7 +258,16 @@ val ( $ ) : unit
 
 val ( % ) : unit
 
+(* Disabling the following four until we figure out what to do about
+   https://github.com/ocsigen/tyxml/issues/264 
+
 val ( ^ ) : unit
+
+val ( < ) : unit
+
+val ( > ) : unit
+
+val ( -| ) : unit *)
 
 val ( & ) : unit
 
@@ -268,15 +277,9 @@ val ( - ) : unit
 
 val ( + ) : unit
 
-val ( < ) : unit
-
-val ( > ) : unit
-
 val ( -? ) : unit
 
 val ( / ) : unit
-
-val ( -| ) : unit
 
 val ( := ) : unit
 
