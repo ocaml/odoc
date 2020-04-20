@@ -460,6 +460,7 @@ and module_ : Env.t -> Module.t -> Module.t =
               let e = Lang_of.(module_expansion empty sg_id ce) in
               (env, Some e)
           | Error `OpaqueModule -> (env, None)
+          | Error _ -> failwith "expand module"
         in
         (env, expansion)
       | _ -> (env, m.expansion)
@@ -570,17 +571,18 @@ and include_ : Env.t -> Include.t -> Include.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
+  let exception Link_functor_parameter_parameter in
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
   let env =
     match Env.add_functor_args sg_id env' with
     | Some env -> env
-    | None -> raise Not_found
+    | None -> raise Link_functor_parameter_parameter
   in
   let expr = module_type_expr env a.expr in
   let functor_arg =
     match Env.lookup_module a.id env with
     | Some f -> f
-    | None -> raise Not_found
+    | None -> raise Link_functor_parameter_parameter
   in
   let env, expn =
     match (a.expansion, functor_arg.type_) with
@@ -589,7 +591,8 @@ and functor_parameter_parameter :
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
             (env, Some e)
-        | Error `OpaqueModule -> (env, None) )
+        | Error `OpaqueModule -> (env, None)
+        | Error _ -> raise Link_functor_parameter_parameter )
     | x, _ -> (env, x)
   in
   let display_expr =
