@@ -6,15 +6,15 @@
 open Odoc_odoc
 open Cmdliner
 
-let convert_syntax : Odoc_html.Tree.syntax Arg.converter =
+let convert_syntax : Odoc_document.Renderer.syntax Arg.converter =
   let syntax_parser str =
     match str with
-  | "ml" | "ocaml" -> `Ok Odoc_html.Tree.OCaml
-  | "re" | "reason" -> `Ok Odoc_html.Tree.Reason
+  | "ml" | "ocaml" -> `Ok Odoc_document.Renderer.OCaml
+  | "re" | "reason" -> `Ok Odoc_document.Renderer.Reason
   | s -> `Error (Printf.sprintf "Unknown syntax '%s'" s)
   in
   let syntax_printer fmt syntax =
-    Format.pp_print_string fmt (Odoc_html.Tree.string_of_syntax syntax)
+    Format.pp_print_string fmt (Odoc_document.Renderer.string_of_syntax syntax)
   in
   (syntax_parser, syntax_printer)
 
@@ -254,7 +254,7 @@ end = struct
       let doc = "Available options: ml | re" in
       let env = Arg.env_var "ODOC_SYNTAX"
       in
-      Arg.(value & opt (pconv convert_syntax) (Odoc_html.Tree.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
+      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
     in
     Term.(const handle_error $ (const html $ semantic_uris $ closed_details $ hidden $
           odoc_file_directories $ dst ~create:true () $ index_for $ syntax $

@@ -16,21 +16,9 @@
 
 module Html = Tyxml.Html
 
-type syntax = OCaml | Reason
-
-let string_of_syntax = function
-  | OCaml -> "ml"
-  | Reason -> "re"
-
 type uri =
   | Absolute of string
   | Relative of string
-
-type t = {
-  filename : string;
-  content : Html.doc;
-  children : t list
-}
 
 let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   let is_page = Link.Path.is_page url in
@@ -134,14 +122,8 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
 
 let make ?theme_uri ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename url in
-  let content = page_creator ?theme_uri ~url title header toc content in
-  { filename; content; children }
-
-let traverse ~f t =
-  let rec aux parents node =
-    f ~parents node.filename node.content;
-    List.iter (aux (node.filename :: parents)) node.children
-  in
-  aux [] t
+  let html = page_creator ?theme_uri ~url title header toc content in
+  let content ppf = (Html.pp ()) ppf html in
+  {Odoc_document.Renderer. filename; content; children }
 
 let open_details = ref true

@@ -2,7 +2,7 @@ open Odoc_document
 
 val render :
   ?theme_uri:Tree.uri ->
-  Types.Page.t -> Tree.t
+  Types.Page.t -> Renderer.page
 
 val doc :
   xref_base_uri:string ->

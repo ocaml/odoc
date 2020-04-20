@@ -14,22 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
+open Odoc_document
 
 module Html = Tyxml.Html
 
 (** Supported languages for printing code parts. *)
-
-type syntax = OCaml | Reason
-
-val string_of_syntax: syntax -> string
-
-type t
-
-val traverse
-    : f:(parents:string list -> string -> [ `Html ] Html.elt -> unit)
-  -> t
-  -> unit
 
 type uri =
   | Absolute of string
@@ -41,13 +30,12 @@ type uri =
 
 val make :
   ?theme_uri:uri ->
-  url:Odoc_document.Url.Path.t ->
+  url:Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
   toc:Html_types.flow5 Html.elt list ->
   string ->
   (Html_types.div_content Html.elt) list ->
-  t list ->
-    t
+  Renderer.page list -> Renderer.page
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
