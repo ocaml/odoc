@@ -32,8 +32,8 @@ module Env = struct
     | `scratch -> "_scratch"
     | `expect when from_root -> "test/html/expect"
     | `expect -> "expect"
-    | `cases when from_root -> "test/html/cases"
-    | `cases -> "cases"
+    | `cases when from_root -> "test/cases"
+    | `cases -> "../cases"
 
   let running_in_travis_tidy_row =
     match Sys.getenv "TRAVIS", Sys.getenv "TIDY" with
