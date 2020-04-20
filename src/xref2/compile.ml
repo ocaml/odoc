@@ -206,6 +206,7 @@ and signature : Env.t -> Signature.t -> _ =
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
+  let exception Compile_module_ in
   let open Module in
   if m.hidden then m
   else
@@ -221,7 +222,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let env' =
       match Env.add_functor_args sg_id env with
       | Some env' -> env'
-      | None -> raise Not_found
+      | None -> raise Compile_module_
     in
     let expansion =
       if not extra_expansion_needed then m.expansion
@@ -229,13 +230,14 @@ and module_ : Env.t -> Module.t -> Module.t =
         let m' =
           match Env.lookup_module m.id env with
           | Some m' -> m'
-          | None -> raise Not_found
+          | None -> raise Compile_module_
         in
         match Expand_tools.expansion_of_module env m.id m' with
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
             Some (expansion env e)
         | Error `OpaqueModule -> None
+        | Error _ -> raise Compile_module_
     in
     {
       m with
@@ -283,6 +285,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
                 let e = Lang_of.(module_expansion empty sg_id ce) in
                 (env, Some e)
             | Error `OpaqueModule -> (env, None)
+            | Error _ -> raise Compile_module_type
           in
           ( env,
             expansion,
@@ -378,17 +381,18 @@ and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
+  let exception Compile_functor_parameter_parameter in
   let sg_id = (a.id :> Paths.Identifier.Signature.t) in
   let env =
     match Env.add_functor_args sg_id env' with
     | Some env' -> env'
-    | None -> raise Not_found
+    | None -> raise Compile_functor_parameter_parameter
   in
 
   let functor_arg =
     match Env.lookup_module a.id env with
     | Some f -> f
-    | None -> raise Not_found
+    | None -> raise Compile_functor_parameter_parameter
   in
   let env, expn =
     match functor_arg.type_ with
@@ -397,7 +401,8 @@ and functor_parameter_parameter :
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
             (env, Some e)
-        | Error `OpaqueModule -> (env, None) )
+        | Error `OpaqueModule -> (env, None)
+        | Error _ -> raise Compile_functor_parameter_parameter )
     | _ -> failwith "error"
   in
   {

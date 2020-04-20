@@ -1,12 +1,16 @@
 open Utils.ResultMonad
 
-type error = [ `OpaqueModule ]
+type error =
+  [ `OpaqueModule
+  | `Unresolved_module of Cpath.module_
+  | `Unresolved_module_type of Cpath.module_type ]
 
 type expansion =
   | Signature of Component.Signature.t
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
-let rec aux_expansion_of_module : Env.t -> Component.Module.t -> (expansion, error) result =
+let rec aux_expansion_of_module :
+    Env.t -> Component.Module.t -> (expansion, error) result =
   let open Component.Module in
   fun env m -> aux_expansion_of_module_decl env m.type_
 
@@ -20,18 +24,13 @@ and aux_expansion_of_module_alias env path =
   match Tools.lookup_and_resolve_module_from_path false false env path with
   | Resolved (p, m) -> (
       match (aux_expansion_of_module env m, m.doc) with
-      | Error _ as e, _ -> e
+      | (Error _ as e), _ -> e
       | Ok (Signature sg), [] -> Ok (Signature (Strengthen.signature p sg))
       | Ok (Signature sg), docs ->
           let sg = Strengthen.signature p sg in
           Ok (Signature { sg with items = Comment (`Docs docs) :: sg.items })
       | Ok (Functor _ as x), _ -> Ok x )
-  | Unresolved p ->
-      let err =
-        Format.asprintf "Failed to lookup alias module (path=%a) (res=%a)"
-          Component.Fmt.module_path path Component.Fmt.module_path p
-      in
-      failwith err
+  | Unresolved p -> Error (`Unresolved_module p)
 
 and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
   let open Component.ModuleType in
@@ -39,14 +38,7 @@ and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
   | Path p -> (
       match Tools.lookup_and_resolve_module_type_from_path false env p with
       | Resolved (_, mt) -> aux_expansion_of_module_type env mt
-      | Unresolved p ->
-          let p = Component.Fmt.(string_of module_type_path p) in
-          failwith (Printf.sprintf "Couldn't find signature: %s" p)
-      | exception e ->
-          Format.fprintf Format.err_formatter
-            "Failure while looking up path: %a\n%!"
-            Component.Fmt.module_type_path p;
-          raise e )
+      | Unresolved p -> Error (`Unresolved_module_type p) )
   | Signature s -> Ok (Signature s)
   | With (s, subs) -> (
       match aux_expansion_of_module_type_expr env s with
@@ -92,20 +84,17 @@ and handle_expansion env id expansion =
     match expansion with
     | Signature sg -> (
         match args with
-        | [] -> (env, Component.Module.Signature sg)
-        | args -> (env, Component.Module.Functor (List.rev args, sg)) )
-    | Functor (arg, expr) ->
+        | [] -> Ok (env, Component.Module.Signature sg)
+        | args -> Ok (env, Component.Module.Functor (List.rev args, sg)) )
+    | Functor (arg, expr) -> (
         let env', expr' = handle_argument id arg expr env in
-        let res =
-          match aux_expansion_of_module_type_expr env' expr' with
-          | Ok res -> res
-          | Error `OpaqueModule ->
-            Signature { items = []; removed = [] }
-        in
-        expand (`Result id) env' (arg :: args) res
+        let cont = expand (`Result id) env' (arg :: args) in
+        match aux_expansion_of_module_type_expr env' expr' with
+        | Ok res -> cont res
+        | Error `OpaqueModule -> cont (Signature { items = []; removed = [] })
+        | Error _ as e -> e )
   in
-  let env, e = expand id env [] expansion in
-  Ok (env, e)
+  expand id env [] expansion
 
 let expansion_of_module_type env id m =
   let open Odoc_model.Paths.Identifier in
