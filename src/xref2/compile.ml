@@ -231,19 +231,11 @@ and module_ : Env.t -> Module.t -> Module.t =
           | Some m' -> m'
           | None -> raise Not_found
         in
-        try
-          let env, ce = Expand_tools.expansion_of_module env m.id m' in
-          let e = Lang_of.(module_expansion empty sg_id ce) in
-          Some (expansion env e)
-        with
-        | Expand_tools.ExpandFailure `OpaqueModule -> None
-        | e ->
-            Format.fprintf Format.err_formatter
-              "Failed to expand module id: %a\n%!%a\n%!"
-              Component.Fmt.model_identifier
-              (m.id :> Odoc_model.Paths.Identifier.t)
-              Component.Fmt.module_ m';
-            raise e
+        match Expand_tools.expansion_of_module env m.id m' with
+        | Ok (env, ce) ->
+            let e = Lang_of.(module_expansion empty sg_id ce) in
+            Some (expansion env e)
+        | Error `OpaqueModule -> None
     in
     {
       m with
@@ -265,8 +257,8 @@ and module_decl :
       | Unresolved p' -> Alias (Cpath.module_path_of_cpath p') )
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
-  let exception Compile_module_type in
  fun env m ->
+  let exception Compile_module_type in
   let open ModuleType in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
   try
@@ -286,23 +278,11 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
             | None -> raise Compile_module_type
           in
           let env, expansion =
-            try
-              let env, ce = Expand_tools.expansion_of_module_type env m.id m' in
-              let e = Lang_of.(module_expansion empty sg_id ce) in
-
-              (env, Some e)
-            with
-            | Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
-            | e ->
-                ( match m'.expr with
-                | Some (Component.ModuleType.Signature sg) ->
-                    Format.fprintf Format.err_formatter
-                      "Failed to expand module_type: %a\n%!sig:\n%!%a\n%!"
-                      Component.Fmt.model_identifier
-                      (m.id :> Paths.Identifier.t)
-                      Component.Fmt.signature sg
-                | _ -> () );
-                raise e
+            match Expand_tools.expansion_of_module_type env m.id m' with
+            | Ok (env, ce) ->
+                let e = Lang_of.(module_expansion empty sg_id ce) in
+                (env, Some e)
+            | Error `OpaqueModule -> (env, None)
           in
           ( env,
             expansion,
@@ -353,43 +333,32 @@ and find_shadowed map =
 
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
+  let exception Compile_include_ in
   let open Include in
-  try
-    let remove_top_doc_from_signature =
-      let open Signature in
-      function Comment (`Docs _) :: xs -> xs | xs -> xs
-    in
-    let decl = Component.Of_Lang.(module_decl empty i.decl) in
-    let _, ce =
-      Expand_tools.aux_expansion_of_module_decl env decl
-      |> Expand_tools.handle_expansion env i.parent
-    in
-    let map = find_shadowed Lang_of.empty i.expansion.content in
-    let e = Lang_of.(module_expansion map i.parent ce) in
-    let expansion =
-      match e with
-      | Module.Signature sg ->
-          {
-            resolved = true;
-            content = remove_top_doc_from_signature (signature env sg);
-          }
-      | _ -> failwith "Expansion shouldn't be anything other than a signature"
-    in
-    { i with decl = module_decl env i.parent i.decl; expansion }
-  with e ->
-    let bt = Printexc.get_backtrace () in
-    let i' = Component.Of_Lang.(module_decl empty i.decl) in
-    Format.fprintf Format.err_formatter
-      "Failed to resolve include: %a\n\
-       Got exception %s (parent=%a)\n\
-       backtrace:\n\
-       %s\n\
-       %!"
-      Component.Fmt.module_decl i' (Printexc.to_string e)
-      Component.Fmt.model_identifier
-      (i.parent :> Paths.Identifier.t)
-      bt;
-    raise e
+  let remove_top_doc_from_signature =
+    let open Signature in
+    function Comment (`Docs _) :: xs -> xs | xs -> xs
+  in
+  let decl = Component.Of_Lang.(module_decl empty i.decl) in
+  match
+    let open Utils.ResultMonad in
+    Expand_tools.aux_expansion_of_module_decl env decl
+    >>= Expand_tools.handle_expansion env i.parent
+  with
+  | Error _ -> raise Compile_include_
+  | Ok (_, ce) ->
+      let map = find_shadowed Lang_of.empty i.expansion.content in
+      let e = Lang_of.(module_expansion map i.parent ce) in
+      let expansion =
+        match e with
+        | Module.Signature sg ->
+            {
+              resolved = true;
+              content = remove_top_doc_from_signature (signature env sg);
+            }
+        | _ -> failwith "Expansion shouldn't be anything other than a signature"
+      in
+      { i with decl = module_decl env i.parent i.decl; expansion }
 
 and expansion : Env.t -> Module.expansion -> Module.expansion =
   let open Module in
@@ -424,13 +393,11 @@ and functor_parameter_parameter :
   let env, expn =
     match functor_arg.type_ with
     | ModuleType expr -> (
-        try
-          let env, ce =
-            Expand_tools.expansion_of_module_type_expr env sg_id expr
-          in
-          let e = Lang_of.(module_expansion empty sg_id ce) in
-          (env, Some e)
-        with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
+        match Expand_tools.expansion_of_module_type_expr env sg_id expr with
+        | Ok (env, ce) ->
+            let e = Lang_of.(module_expansion empty sg_id ce) in
+            (env, Some e)
+        | Error `OpaqueModule -> (env, None) )
     | _ -> failwith "error"
   in
   {

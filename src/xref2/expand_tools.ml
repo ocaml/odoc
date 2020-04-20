@@ -1,10 +1,12 @@
-exception ExpandFailure of [ `OpaqueModule ]
+open Utils.ResultMonad
+
+type error = [ `OpaqueModule ]
 
 type expansion =
   | Signature of Component.Signature.t
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
-let rec aux_expansion_of_module : Env.t -> Component.Module.t -> expansion =
+let rec aux_expansion_of_module : Env.t -> Component.Module.t -> (expansion, error) result =
   let open Component.Module in
   fun env m -> aux_expansion_of_module_decl env m.type_
 
@@ -18,11 +20,12 @@ and aux_expansion_of_module_alias env path =
   match Tools.lookup_and_resolve_module_from_path false false env path with
   | Resolved (p, m) -> (
       match (aux_expansion_of_module env m, m.doc) with
-      | Signature sg, [] -> Signature (Strengthen.signature p sg)
-      | Signature sg, docs ->
+      | Error _ as e, _ -> e
+      | Ok (Signature sg), [] -> Ok (Signature (Strengthen.signature p sg))
+      | Ok (Signature sg), docs ->
           let sg = Strengthen.signature p sg in
-          Signature { sg with items = Comment (`Docs docs) :: sg.items }
-      | (Functor _ as x), _ -> x )
+          Ok (Signature { sg with items = Comment (`Docs docs) :: sg.items })
+      | Ok (Functor _ as x), _ -> Ok x )
   | Unresolved p ->
       let err =
         Format.asprintf "Failed to lookup alias module (path=%a) (res=%a)"
@@ -30,7 +33,7 @@ and aux_expansion_of_module_alias env path =
       in
       failwith err
 
-and aux_expansion_of_module_type_expr env expr : expansion =
+and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
   let open Component.ModuleType in
   match expr with
   | Path p -> (
@@ -44,21 +47,21 @@ and aux_expansion_of_module_type_expr env expr : expansion =
             "Failure while looking up path: %a\n%!"
             Component.Fmt.module_type_path p;
           raise e )
-  | Signature s -> Signature s
+  | Signature s -> Ok (Signature s)
   | With (s, subs) -> (
-      let expn = aux_expansion_of_module_type_expr env s in
-      match expn with
-      | Functor _ -> failwith "This shouldn't be possible!"
-      | Signature sg ->
+      match aux_expansion_of_module_type_expr env s with
+      | Error _ as e -> e
+      | Ok (Functor _) -> failwith "This shouldn't be possible!"
+      | Ok (Signature sg) ->
           let sg = Tools.handle_signature_with_subs env sg subs in
-          Signature sg )
-  | Functor (arg, expr) -> Functor (arg, expr)
+          Ok (Signature sg) )
+  | Functor (arg, expr) -> Ok (Functor (arg, expr))
   | TypeOf decl -> aux_expansion_of_module_decl env decl
 
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
   match mt.expr with
-  | None -> raise (ExpandFailure `OpaqueModule)
+  | None -> Error `OpaqueModule
   | Some expr -> aux_expansion_of_module_type_expr env expr
 
 and handle_expansion env id expansion =
@@ -94,27 +97,28 @@ and handle_expansion env id expansion =
     | Functor (arg, expr) ->
         let env', expr' = handle_argument id arg expr env in
         let res =
-          try aux_expansion_of_module_type_expr env' expr'
-          with ExpandFailure `OpaqueModule ->
+          match aux_expansion_of_module_type_expr env' expr' with
+          | Ok res -> res
+          | Error `OpaqueModule ->
             Signature { items = []; removed = [] }
         in
         expand (`Result id) env' (arg :: args) res
   in
   let env, e = expand id env [] expansion in
-  (env, e)
+  Ok (env, e)
 
 let expansion_of_module_type env id m =
   let open Odoc_model.Paths.Identifier in
   aux_expansion_of_module_type env m
-  |> handle_expansion env (id : ModuleType.t :> Signature.t)
+  >>= handle_expansion env (id : ModuleType.t :> Signature.t)
 
 let expansion_of_module_type_expr env id expr =
-  aux_expansion_of_module_type_expr env expr |> handle_expansion env id
+  aux_expansion_of_module_type_expr env expr >>= handle_expansion env id
 
 let expansion_of_module env id m =
   let open Odoc_model.Paths.Identifier in
   aux_expansion_of_module env m
-  |> handle_expansion env (id : Module.t :> Signature.t)
+  >>= handle_expansion env (id : Module.t :> Signature.t)
 
 exception Clash
 

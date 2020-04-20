@@ -455,12 +455,11 @@ and module_ : Env.t -> Module.t -> Module.t =
       match (m.expansion, expansion_needed) with
       | None, true ->
         let env, expansion =
-          try
-            let env, ce = Expand_tools.expansion_of_module env m.id m' in
-            let e = Lang_of.(module_expansion empty sg_id ce) in
-
-            (env, Some e)
-          with Expand_tools.ExpandFailure `OpaqueModule -> (env, None)
+          match Expand_tools.expansion_of_module env m.id m' with
+          | Ok (env, ce) ->
+              let e = Lang_of.(module_expansion empty sg_id ce) in
+              (env, Some e)
+          | Error `OpaqueModule -> (env, None)
         in
         (env, expansion)
       | _ -> (env, m.expansion)
@@ -586,13 +585,11 @@ and functor_parameter_parameter :
   let env, expn =
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
-        try
-          let env, ce =
-            Expand_tools.expansion_of_module_type_expr env sg_id expr
-          in
-          let e = Lang_of.(module_expansion empty sg_id ce) in
-          (env, Some e)
-        with Expand_tools.ExpandFailure `OpaqueModule -> (env, None) )
+        match Expand_tools.expansion_of_module_type_expr env sg_id expr with
+        | Ok (env, ce) ->
+            let e = Lang_of.(module_expansion empty sg_id ce) in
+            (env, Some e)
+        | Error `OpaqueModule -> (env, None) )
     | x, _ -> (env, x)
   in
   let display_expr =
