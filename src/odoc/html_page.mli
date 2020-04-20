@@ -15,12 +15,13 @@
  *)
 
 open Or_error
+open Odoc_document
 
 (** Produces .html files from a .odoc file. *)
 
 val from_odoc :
-  env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> ?theme_uri:Odoc_html.Tree.uri -> output:Fs.Directory.t ->
+  env:Env.builder -> ?syntax:Renderer.syntax -> ?theme_uri:Odoc_html.Tree.uri -> output:Fs.Directory.t ->
   Fs.File.t -> (unit, [> msg]) result
 
-val from_mld : env:Env.builder -> ?syntax:Odoc_html.Tree.syntax -> package:Odoc_model.Root.Package.t ->
+val from_mld : env:Env.builder -> ?syntax:Renderer.syntax -> package:Odoc_model.Root.Package.t ->
   output:Fs.Directory.t -> warn_error:bool -> Fs.File.t -> (unit, [> msg]) result
