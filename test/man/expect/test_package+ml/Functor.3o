@@ -1,0 +1,34 @@
+
+.TH Functor 3 "" "Odoc" "OCaml Library"
+.SH Name
+test_package+ml\.Functor
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Functor\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR \f[CB]type\fR S = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR \f[CB]type\fR S1 = \f[CB]sig\fR
+.br 
+.ti +2
+\f[CB]type\fR t
+.br 
+\f[CB]end\fR
+.sp 
+\f[CB]module\fR F1 : \f[CB]functor\fR (Arg : S) \-> S
+.sp 
+\f[CB]module\fR F2 : \f[CB]functor\fR (Arg : S) \-> S \f[CB]with\fR \f[CB]type\fR t = Arg\.t
+.sp 
+\f[CB]module\fR F3 : \f[CB]functor\fR (Arg : S) \-> \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.sp 
+\f[CB]module\fR F4 : \f[CB]functor\fR (Arg : S) \-> S

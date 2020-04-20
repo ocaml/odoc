@@ -1,0 +1,20 @@
+
+.TH External 3 "" "Odoc" "OCaml Library"
+.SH Name
+test_package+ml\.External
+.SH Synopsis
+.sp 
+.in 2
+\fBModule External\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]val\fR foo : unit \-> unit
+.fi 
+.br 
+.ti +2
+Foo bar\.
+.nf 
+

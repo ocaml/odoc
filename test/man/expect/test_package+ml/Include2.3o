@@ -1,0 +1,21 @@
+
+.TH Include2 3 "" "Odoc" "OCaml Library"
+.SH Name
+test_package+ml\.Include2
+.SH Synopsis
+.sp 
+.in 2
+\fBModule Include2\fR
+.in 
+.sp 
+.SH Documentation
+.sp 
+.nf 
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
+.fi 
+.br 
+.ti +2
+Comment about X that should not appear when including X below\.
+.nf 
+.sp 
+\f[CB]type\fR t = int
