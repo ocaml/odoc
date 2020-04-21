@@ -6,20 +6,13 @@ module StdResultMonad = Utils.ResultMonad
 (* Add [result] and a bind operator over it in scope *)
 open StdResultMonad
 
-type ('a, 'b) either = Left of 'a | Right of 'b
-
 module OptionMonad = struct
-  type 'a t = 'a option
+  include Utils.OptionMonad
 
   let return x = Some x
-
-  let bind m f = match m with Some x -> f x | None -> None
-
-  (* The error case become [None], the error value is ignored. *)
-  let of_result = function StdResultMonad.Ok x -> Some x | Error _ -> None
-
-  let ( >>= ) = bind
 end
+
+type ('a, 'b) either = Left of 'a | Right of 'b
 
 module ResultMonad = struct
   type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
