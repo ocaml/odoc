@@ -18,22 +18,24 @@ type t = [
   | `Without_location of string
 ]
 
-let full message location =
-  `With_full_location {location; message}
+let kmake k ?suggestion format =
+  format |>
+  Format.kasprintf (fun message ->
+    match suggestion with
+    | None -> k message
+    | Some suggestion -> k (message ^ "\nSuggestion: " ^ suggestion))
 
-let filename_only message file =
-  `With_filename_only {file; message}
+let make ?suggestion format =
+  let k message location = `With_full_location {location; message} in
+  kmake k ?suggestion format
+
+let filename_only ?suggestion format =
+  let k message file = `With_filename_only {file; message} in
+  kmake k ?suggestion format
 
 (** Only used internally *)
 let without_location message =
   `Without_location message
-
-let make ?suggestion format =
-  format |>
-  Printf.ksprintf (fun message ->
-    match suggestion with
-    | None -> full message
-    | Some suggestion -> full (message ^ "\nSuggestion: " ^ suggestion))
 
 let to_string = function
   | `With_full_location {location; message} ->

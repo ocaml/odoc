@@ -1,8 +1,9 @@
 type t
 
 val make :
-  ?suggestion:string -> ('a, unit, string, Location_.span -> t) format4 -> 'a
-val filename_only : string -> string -> t
+  ?suggestion:string -> ('a, Format.formatter, unit, Location_.span -> t) format4 -> 'a
+val filename_only :
+  ?suggestion:string -> ('a, Format.formatter, unit, string -> t) format4 -> 'a
 
 val to_string : t -> string
 
