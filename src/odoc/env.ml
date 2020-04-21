@@ -92,7 +92,7 @@ module Accessible_paths = struct
         match Root.read file with
         | Ok root -> Some (root, file)
         | Error (`Msg msg) ->
-          let warning = Odoc_model.Error.filename_only msg (Fs.File.to_string file) in
+          let warning = Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file) in
           prerr_endline (Odoc_model.Error.to_string warning);
           None
         | exception End_of_file ->
