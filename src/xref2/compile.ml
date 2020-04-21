@@ -16,12 +16,6 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
   match Tools.lookup_type_from_path env cp with
   | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
   | Unresolved p -> Cpath.type_path_of_cpath p
-  | exception e ->
-      Format.fprintf Format.err_formatter
-        "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
-        Component.Fmt.model_path
-        (p :> Paths.Path.t);
-      p
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -30,12 +24,6 @@ and module_type_path :
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
   | Resolved (p', _) -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
   | Unresolved p -> Cpath.module_type_path_of_cpath p
-  | exception e ->
-      Format.fprintf Format.err_formatter
-        "Failed to lookup module_type path (%s): %a\n%!" (Printexc.to_string e)
-        Component.Fmt.model_path
-        (p :> Paths.Path.t);
-      p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -43,12 +31,6 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
   match Tools.resolve_module env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
-  | exception e ->
-      Format.fprintf Format.err_formatter
-        "Failed to lookup module path (%s): %a\n%!" (Printexc.to_string e)
-        Component.Fmt.model_path
-        (p :> Paths.Path.t);
-      p
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
@@ -691,12 +673,7 @@ and type_expression : Env.t -> _ -> _ =
           let p = Cpath.resolved_type_path_of_cpath cp in
           Constr (`Resolved p, ts)
       | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty x)
-      | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts)
-      | exception e ->
-          Format.fprintf Format.err_formatter
-            "Exception handling type expression: %a\n%!" Component.Fmt.type_expr
-            Component.Of_Lang.(type_expression empty texpr);
-          raise e )
+      | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
   | Polymorphic_variant v -> Polymorphic_variant (type_expression_polyvar env v)
   | Object o -> Object (type_expression_object env o)
   | Class (path, ts) -> Class (path, List.map (type_expression env) ts)
