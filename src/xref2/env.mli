@@ -131,6 +131,12 @@ val lookup_module :
   Odoc_model.Paths_types.Identifier.reference_module -> t ->
   Component.Module.t option
 
+val lookup_module' :
+  Odoc_model.Paths_types.Identifier.reference_module -> t ->
+  (Component.Module.t * t) option
+(** Lookup a module in the environment, return an environment with functor
+    parameters added. *)
+
 val lookup_type :
   Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t option
 
@@ -138,6 +144,13 @@ val lookup_module_type :
   Odoc_model.Paths_types.Identifier.reference_module_type ->
   t ->
   Component.ModuleType.t option
+
+val lookup_module_type' :
+  Odoc_model.Paths_types.Identifier.reference_module_type ->
+  t ->
+  (Component.ModuleType.t * t) option
+(** Lookup a module in the environment, return an environment with functor
+    parameters added. *)
 
 val lookup_value :
   Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t
@@ -178,8 +191,6 @@ val lookup_value_by_name :
   [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
   | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
   option
-
-val add_functor_args : Odoc_model.Paths_types.Identifier.signature -> t -> t option
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
