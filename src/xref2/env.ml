@@ -547,10 +547,13 @@ let lookup_value_by_name name env =
   in
   find_map filter_fn env.elts
 
-let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t option
-    =
+let add_functor_args' :
+    Odoc_model.Paths.Identifier.Signature.t ->
+    Component.ModuleType.expr ->
+    t ->
+    t =
   let open Component in
-  fun id env ->
+  fun id expr env ->
     let rec find_args parent mty =
       match mty with
       | ModuleType.Functor (Named arg, res) ->
@@ -578,26 +581,38 @@ let add_functor_args : Odoc_model.Paths.Identifier.Signature.t -> t -> t option
       let env' = add_module identifier (Subst.module_ subst m) env in
       (env', Subst.add_module ident (`Identifier identifier) subst)
     in
-    match id with
-    | (`Module _ | `Result _ | `Parameter _) as mid -> (
-        match lookup_module mid env with
-        | None -> None
-        | Some { Component.Module.type_ = Alias _; _ } -> Some env
-        | Some { type_ = ModuleType e; _ } ->
-            let env', _subst =
-              List.fold_left fold_fn (env, Subst.identity) (find_args id e)
-            in
-            Some env' )
-    | `ModuleType _ as mtyid -> (
-        match lookup_module_type mtyid env with
-        | None -> None
-        | Some { Component.ModuleType.expr = None; _ } -> Some env
-        | Some { expr = Some e; _ } ->
-            let env', _subst =
-              List.fold_left fold_fn (env, Subst.identity) (find_args id e)
-            in
-            Some env' )
-    | `Root _ -> Some env
+    let env', _subst =
+      List.fold_left fold_fn (env, Subst.identity) (find_args id expr)
+    in
+    env'
+
+let lookup_module' id env =
+  match lookup_module id env with
+  | None -> None
+  | Some m ->
+      let env' =
+        match m.Component.Module.type_ with
+        | Alias _ -> env
+        | ModuleType expr ->
+            add_functor_args'
+              (id :> Odoc_model.Paths.Identifier.Signature.t)
+              expr env
+      in
+      Some (m, env')
+
+let lookup_module_type' id env =
+  match lookup_module_type id env with
+  | None -> None
+  | Some mt ->
+      let env' =
+        match mt.Component.ModuleType.expr with
+        | None -> env
+        | Some expr ->
+            add_functor_args'
+              (id :> Odoc_model.Paths.Identifier.Signature.t)
+              expr env
+      in
+      Some (mt, env')
 
 let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
   let open Component in
@@ -734,9 +749,7 @@ let verify_lookups env lookups =
         | _ -> true )
     | ModuleType (id, found) ->
         let actually_found =
-          match lookup_module_type id env with
-          | Some _ -> true
-          | None -> false
+          match lookup_module_type id env with Some _ -> true | None -> false
         in
         found <> actually_found
     | ModuleByName (name, result) -> (

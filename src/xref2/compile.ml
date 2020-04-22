@@ -200,20 +200,15 @@ and module_ : Env.t -> Module.t -> Module.t =
       (* Aliases are expanded if necessary during link *)
     in
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
-    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-    let env' =
-      match Env.add_functor_args sg_id env with
-      | Some env' -> env'
+    let m', env' =
+      match Env.lookup_module' m.id env with
+      | Some (_, _ as x) -> x
       | None -> raise Compile_module_
     in
     let expansion =
+      let sg_id = (m.id :> Paths.Identifier.Signature.t) in
       if not extra_expansion_needed then m.expansion
       else
-        let m' =
-          match Env.lookup_module m.id env with
-          | Some m' -> m'
-          | None -> raise Compile_module_
-        in
         match Expand_tools.expansion_of_module env m.id m' with
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
@@ -246,21 +241,16 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
   try
-    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-    let env =
-      match Env.add_functor_args sg_id env with
-      | Some env' -> env'
-      | None -> raise Not_found
+    let m', env =
+      match Env.lookup_module_type' m.id env with
+      | Some (_, _ as x) -> x
+      | None -> raise Compile_module_type
     in
     let env', expansion', expr' =
       match m.expr with
       | None -> (env, None, None)
       | Some expr ->
-          let m' =
-            match Env.lookup_module_type m.id env with
-            | Some m' -> m'
-            | None -> raise Compile_module_type
-          in
+          let sg_id = (m.id :> Paths.Identifier.Signature.t) in
           let env, expansion =
             match Expand_tools.expansion_of_module_type env m.id m' with
             | Ok (env, ce) ->
@@ -364,19 +354,14 @@ and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let exception Compile_functor_parameter_parameter in
-  let sg_id = (a.id :> Paths.Identifier.Signature.t) in
-  let env =
-    match Env.add_functor_args sg_id env' with
-    | Some env' -> env'
-    | None -> raise Compile_functor_parameter_parameter
-  in
 
-  let functor_arg =
-    match Env.lookup_module a.id env with
-    | Some f -> f
+  let functor_arg, env =
+    match Env.lookup_module' a.id env' with
+    | Some (_, _ as x) -> x
     | None -> raise Compile_functor_parameter_parameter
   in
   let env, expn =
+    let sg_id = (a.id :> Paths.Identifier.Signature.t) in
     match functor_arg.type_ with
     | ModuleType expr -> (
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with

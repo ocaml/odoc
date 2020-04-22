@@ -421,16 +421,10 @@ and module_ : Env.t -> Module.t -> Module.t =
      (m.id :> Paths.Identifier.t); *)
   if m.hidden then m
   else
-    let sg_id = (m.id :> Paths.Identifier.Signature.t) in
-      let env =
-        match Env.add_functor_args sg_id env with
-        | Some env -> env
-        | None -> raise Not_found
-      in
     let t1 = Unix.gettimeofday () in
-    let m' =
-      match Env.lookup_module m.id env with
-      | Some m' -> m'
+    let m', env =
+      match Env.lookup_module' m.id env with
+      | Some (_, _ as x) -> x
       | None -> raise Not_found
     in
     let t2 = Unix.gettimeofday () in
@@ -452,6 +446,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let expansion_needed = self_canonical || hidden_alias in
     (* Format.fprintf Format.err_formatter "moduletype_expansion=%b self_canonical=%b hidden_alias=%b expansion_needed=%b\n%!" moduletype_expansion self_canonical hidden_alias expansion_needed; *)
     let env, expansion =
+      let sg_id = (m.id :> Paths.Identifier.Signature.t) in
       match (m.expansion, expansion_needed) with
       | None, true ->
         let env, expansion =
@@ -510,8 +505,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   try
     let env' =
-      match Env.add_functor_args (m.id :> Paths.Identifier.Signature.t) env with
-      | Some env -> env
+      match Env.lookup_module_type' m.id env with
+      | Some (_m', env') -> env'
       | None -> raise Not_found
     in
     let expr' =
@@ -572,19 +567,14 @@ and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
   let exception Link_functor_parameter_parameter in
-  let sg_id = (a.id :> Paths.Identifier.Signature.t) in
-  let env =
-    match Env.add_functor_args sg_id env' with
-    | Some env -> env
+  let functor_arg, env =
+    match Env.lookup_module' a.id env' with
+    | Some (_, _ as x) -> x
     | None -> raise Link_functor_parameter_parameter
   in
   let expr = module_type_expr env a.expr in
-  let functor_arg =
-    match Env.lookup_module a.id env with
-    | Some f -> f
-    | None -> raise Link_functor_parameter_parameter
-  in
   let env, expn =
+    let sg_id = (a.id :> Paths.Identifier.Signature.t) in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
