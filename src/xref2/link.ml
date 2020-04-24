@@ -169,12 +169,6 @@ and comment_inline_element :
           `Reference (`Resolved x, [])
       | None ->
           (* Format.fprintf Format.err_formatter "XXXXXXXXXX FAILED to resolve reference: %a\n%!" (Component.Fmt.model_reference) r; *)
-          `Reference (r, [])
-      | exception e ->
-          let bt = Printexc.get_backtrace () in
-          Format.fprintf Format.err_formatter
-            "Caught exception while resolving reference (%a): %s\n%s\n%!"
-            Component.Fmt.model_reference r (Printexc.to_string e) bt;
           `Reference (r, []) )
   | `Reference (r, content) as orig -> (
       (* Format.fprintf Format.err_formatter "XXXXXXXXXX about to resolve contentful reference: %a\n" (Component.Fmt.model_reference) r; *)
@@ -202,13 +196,7 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
               Ref_tools.resolve_module_reference env ~add_canonical:false r
             with
             | Some (r, _, _) -> `Resolved r
-            | None -> r
-            | exception _e ->
-                Format.fprintf Format.err_formatter
-                  "Error resolving reference: %a\n%!"
-                  Component.Fmt.model_reference
-                  (r :> Odoc_model.Paths.Reference.t);
-                r)
+            | None -> r)
           refs
       in
       `Modules refs
@@ -584,80 +572,73 @@ and handle_fragments env sg subs =
      (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
   List.fold_left2
     (fun (sg, subs) csub lsub ->
-      try
-        (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
-           Component.Fmt.signature sg; *)
-        (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
-           Component.Fmt.substitution
-           Component.Of_Lang.(module_type_substitution empty sub); *)
-        match (csub, lsub) with
-        | Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
-            let frag' =
-              match cfrag with
-              | `Resolved f ->
-                  `Resolved
-                    ( Tools.reresolve_module_fragment env f
-                    |> Lang_of.(Path.resolved_module_fragment empty) )
-              | _ -> frag
-            in
-            let sg' =
-              Tools.fragmap_module env cfrag
-                Component.Of_Lang.(module_type_substitution empty lsub)
-                sg
-            in
-            (sg', ModuleEq (frag', module_decl env decl) :: subs)
-        | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
-            let frag' =
-              match cfrag with
-              | `Resolved f ->
-                  `Resolved
-                    ( Tools.reresolve_type_fragment env f
-                    |> Lang_of.(Path.resolved_type_fragment empty) )
-              | _ -> frag
-            in
-            let sg' =
-              Tools.fragmap_type env cfrag
-                Component.Of_Lang.(module_type_substitution empty lsub)
-                sg
-            in
-            (sg', TypeEq (frag', type_decl_equation env eqn) :: subs)
-        | ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
-            let frag' =
-              match cfrag with
-              | `Resolved f ->
-                  `Resolved
-                    ( Tools.reresolve_module_fragment env f
-                    |> Lang_of.(Path.resolved_module_fragment empty) )
-              | _ -> frag
-            in
-            let sg' =
-              Tools.fragmap_module env cfrag
-                Component.Of_Lang.(module_type_substitution empty lsub)
-                sg
-            in
-            (sg', ModuleSubst (frag', module_path env mpath) :: subs)
-        | TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
-            let frag' =
-              match cfrag with
-              | `Resolved f ->
-                  `Resolved
-                    ( Tools.reresolve_type_fragment env f
-                    |> Lang_of.(Path.resolved_type_fragment empty) )
-              | _ -> frag
-            in
-            let sg' =
-              Tools.fragmap_type env cfrag
-                Component.Of_Lang.(module_type_substitution empty lsub)
-                sg
-            in
-            (sg', TypeSubst (frag', type_decl_equation env eqn) :: subs)
-        | _ -> failwith "can't happen"
-      with e ->
-        let bt = Printexc.get_backtrace () in
-        Printf.fprintf stderr
-          "Exception caught while resolving fragments: %s\n%s\n%!"
-          (Printexc.to_string e) bt;
-        raise e)
+      (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
+         Component.Fmt.signature sg; *)
+      (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
+         Component.Fmt.substitution
+         Component.Of_Lang.(module_type_substitution empty sub); *)
+      match (csub, lsub) with
+      | Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
+          let frag' =
+            match cfrag with
+            | `Resolved f ->
+                `Resolved
+                  ( Tools.reresolve_module_fragment env f
+                  |> Lang_of.(Path.resolved_module_fragment empty) )
+            | _ -> frag
+          in
+          let sg' =
+            Tools.fragmap_module env cfrag
+              Component.Of_Lang.(module_type_substitution empty lsub)
+              sg
+          in
+          (sg', ModuleEq (frag', module_decl env decl) :: subs)
+      | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
+          let frag' =
+            match cfrag with
+            | `Resolved f ->
+                `Resolved
+                  ( Tools.reresolve_type_fragment env f
+                  |> Lang_of.(Path.resolved_type_fragment empty) )
+            | _ -> frag
+          in
+          let sg' =
+            Tools.fragmap_type env cfrag
+              Component.Of_Lang.(module_type_substitution empty lsub)
+              sg
+          in
+          (sg', TypeEq (frag', type_decl_equation env eqn) :: subs)
+      | ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
+          let frag' =
+            match cfrag with
+            | `Resolved f ->
+                `Resolved
+                  ( Tools.reresolve_module_fragment env f
+                  |> Lang_of.(Path.resolved_module_fragment empty) )
+            | _ -> frag
+          in
+          let sg' =
+            Tools.fragmap_module env cfrag
+              Component.Of_Lang.(module_type_substitution empty lsub)
+              sg
+          in
+          (sg', ModuleSubst (frag', module_path env mpath) :: subs)
+      | TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
+          let frag' =
+            match cfrag with
+            | `Resolved f ->
+                `Resolved
+                  ( Tools.reresolve_type_fragment env f
+                  |> Lang_of.(Path.resolved_type_fragment empty) )
+            | _ -> frag
+          in
+          let sg' =
+            Tools.fragmap_type env cfrag
+              Component.Of_Lang.(module_type_substitution empty lsub)
+              sg
+          in
+          (sg', TypeSubst (frag', type_decl_equation env eqn) :: subs)
+      | _ -> failwith "can't happen")
     (sg, []) csubs subs
   |> snd |> List.rev
 
