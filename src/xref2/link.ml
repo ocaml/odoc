@@ -385,7 +385,10 @@ and module_ : Env.t -> Module.t -> Module.t =
     let m', env =
       match Env.lookup_module' m.id env with
       | Some ((_, _) as x) -> x
-      | None -> raise Not_found
+      | None ->
+          Format.kasprintf failwith "Failed to lookup module %a"
+            Component.Fmt.model_identifier
+            (m.id :> Paths.Identifier.t)
     in
     let t2 = Unix.gettimeofday () in
     let type_ = module_decl env m.type_ in
@@ -415,7 +418,10 @@ and module_ : Env.t -> Module.t -> Module.t =
                 let e = Lang_of.(module_expansion empty sg_id ce) in
                 (env, Some e)
             | Error `OpaqueModule -> (env, None)
-            | Error _ -> failwith "expand module"
+            | Error _ ->
+                Format.kasprintf failwith "Failed to expand module %a"
+                  Component.Fmt.model_identifier
+                  (m.id :> Paths.Identifier.t)
           in
           (env, expansion)
       | _ -> (env, m.expansion)
