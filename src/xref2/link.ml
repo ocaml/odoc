@@ -63,29 +63,21 @@ let add_module_docs m expn =
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
-  if not (should_resolve (p :> Paths.Path.t)) then
-    (* Format.fprintf Format.err_formatter "Not reresolving\n%!"; *)
-    p
+  if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(type_path empty p) in
-    (* Format.fprintf Format.err_formatter "Reresolving %a\n%!" Component.Fmt.type_path cp; *)
     match cp with
     | `Resolved p ->
         let result = Tools.reresolve_type env p in
-        (* Format.fprintf Format.err_formatter "result 1: %a\n%!" Component.Fmt.resolved_type_path result; *)
         `Resolved (result |> Cpath.resolved_type_path_of_cpath)
     | _ -> (
         match Tools.lookup_type_from_path env cp with
-        | Resolved (p', _) ->
-            (* Format.fprintf Format.err_formatter "result 2: %a\n%!" Component.Fmt.resolved_type_path p'; *)
-            `Resolved (Cpath.resolved_type_path_of_cpath p')
-        | Unresolved p -> Cpath.type_path_of_cpath p
-        | exception e ->
-            Format.fprintf Format.err_formatter
-              "Failed to lookup type path (%s): %a\n%!" (Printexc.to_string e)
+        | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
+        | Unresolved unresolved ->
+            Lookup_failures.report "Failed to lookup type %a"
               Component.Fmt.model_path
               (p :> Paths.Path.t);
-            p )
+            Cpath.type_path_of_cpath unresolved )
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -93,9 +85,6 @@ and module_type_path :
   if not (should_resolve (p :> Paths.Path.t)) then p
   else
     let cp = Component.Of_Lang.(module_type_path empty p) in
-    (* Format.fprintf Format.err_formatter
-       "Link.module_type_path: resolving %a\n%!" Component.Fmt.module_type_path
-       cp; *)
     match cp with
     | `Resolved p ->
         `Resolved
@@ -104,25 +93,17 @@ and module_type_path :
     | _ -> (
         match Tools.lookup_and_resolve_module_type_from_path true env cp with
         | Resolved (p', _) ->
-            (* Format.fprintf Format.err_formatter "It became: %a\n%!"
-               Component.Fmt.resolved_module_type_path p'; *)
             `Resolved (Cpath.resolved_module_type_path_of_cpath p')
-        | Unresolved _p -> failwith "Unresolved module type path"
-        | exception e ->
-            Format.fprintf Format.err_formatter
-              "Failed to lookup module_type path (%s): %a\n%!"
-              (Printexc.to_string e) Component.Fmt.model_path
+        | Unresolved unresolved ->
+            Lookup_failures.report "Failed to resolve module type %a"
+              Component.Fmt.model_path
               (p :> Paths.Path.t);
-            p )
+            Cpath.module_type_path_of_cpath unresolved )
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
-  (* Format.fprintf Format.err_formatter "Link.module_path: %a\n%!" Component.Fmt.model_path (p :> Paths.Path.t); *)
-  if not (should_resolve (p :> Paths.Path.t)) then
-    (* Format.fprintf Format.err_formatter "Not reresolving\n%!"; *)
-    p
+  if not (should_resolve (p :> Paths.Path.t)) then p
   else
-    (* Format.fprintf Format.err_formatter "Reresolving...\n%!"; *)
     let cp = Component.Of_Lang.(module_path empty p) in
     match cp with
     | `Resolved p ->
@@ -131,21 +112,12 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
     | _ -> (
         match Tools.lookup_and_resolve_module_from_path true true env cp with
         | Resolved (p', _) -> `Resolved (Cpath.resolved_module_path_of_cpath p')
-        | Unresolved _ ->
-            if is_forward p then
-              (* Format.fprintf Format.err_formatter "Skipping resolution of forward path %a\n%!" Component.Fmt.model_path (p :> Odoc_model.Paths.Path.t); *)
-              p
-            else (
-              Format.fprintf Format.err_formatter
-                "Failed to lookup module path: %a\n%!" Component.Fmt.model_path
-                (p :> Paths.Path.t);
-              failwith "Failed to resolve module path" )
-        | exception e ->
-            Format.fprintf Format.err_formatter
-              "Failed to lookup module path (%s): %a\n%!" (Printexc.to_string e)
+        | Unresolved _ when is_forward p -> p
+        | Unresolved unresolved ->
+            Lookup_failures.report "Failed to resolve module %a"
               Component.Fmt.model_path
               (p :> Paths.Path.t);
-            raise e )
+            Cpath.module_path_of_cpath unresolved )
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
@@ -413,7 +385,7 @@ and should_hide_module_decl : Module.decl -> bool = function
   | Alias p -> Paths.Path.is_hidden (p :> Paths.Path.t)
 
 and module_ : Env.t -> Module.t -> Module.t =
-  fun env m ->
+ fun env m ->
   let open Module in
   let start_time = Unix.gettimeofday () in
   (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
@@ -424,7 +396,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let t1 = Unix.gettimeofday () in
     let m', env =
       match Env.lookup_module' m.id env with
-      | Some (_, _ as x) -> x
+      | Some ((_, _) as x) -> x
       | None -> raise Not_found
     in
     let t2 = Unix.gettimeofday () in
@@ -449,15 +421,15 @@ and module_ : Env.t -> Module.t -> Module.t =
       let sg_id = (m.id :> Paths.Identifier.Signature.t) in
       match (m.expansion, expansion_needed) with
       | None, true ->
-        let env, expansion =
-          match Expand_tools.expansion_of_module env m.id m' with
-          | Ok (env, ce) ->
-              let e = Lang_of.(module_expansion empty sg_id ce) in
-              (env, Some e)
-          | Error `OpaqueModule -> (env, None)
-          | Error _ -> failwith "expand module"
-        in
-        (env, expansion)
+          let env, expansion =
+            match Expand_tools.expansion_of_module env m.id m' with
+            | Ok (env, ce) ->
+                let e = Lang_of.(module_expansion empty sg_id ce) in
+                (env, Some e)
+            | Error `OpaqueModule -> (env, None)
+            | Error _ -> failwith "expand module"
+          in
+          (env, expansion)
       | _ -> (env, m.expansion)
     in
     let t4 = Unix.gettimeofday () in
@@ -469,8 +441,8 @@ and module_ : Env.t -> Module.t -> Module.t =
           match expansion with
           | Some
               (Signature
-                  (Comment (`Docs _doc) :: Comment (`Docs d2) :: expansion)) ->
-            (d2, Some (Signature expansion))
+                (Comment (`Docs _doc) :: Comment (`Docs d2) :: expansion)) ->
+              (d2, Some (Signature expansion))
           | _ -> ([], expansion) )
     in
     let override_display_type =
@@ -486,8 +458,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     in
     let end_time = Unix.gettimeofday () in
     Format.fprintf Format.err_formatter
-      "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n\
-       %!"
+      "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n%!"
       (end_time -. start_time) Component.Fmt.model_identifier
       (m.id :> Paths.Identifier.t)
       (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4);
@@ -503,44 +474,39 @@ and module_decl : Env.t -> Module.decl -> Module.decl =
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
-  try
-    let env' =
-      match Env.lookup_module_type' m.id env with
-      | Some (_m', env') -> env'
-      | None -> raise Not_found
-    in
-    let expr' =
-      match m.expr with
-      | None -> None
-      | Some expr -> Some (module_type_expr env' expr)
-    in
-    (* let self_canonical =
-         match m.expr with
-         | Some (Path (`Resolved p)) when Paths.Path.Resolved.ModuleType.canonical_ident p = Some m.id ->
-           true
-         | _ -> false
-       in*)
-    let display_expr =
-      match (expr', m.expansion) with
-      | Some (Path (`Resolved p)), Some (Signature sg)
-        when Paths.Path.Resolved.ModuleType.is_hidden p ->
-          Some (Some (Signature sg))
-      | _ -> None
-    in
-    let doc = comment_docs env m.doc in
-    {
-      m with
-      expr = expr';
-      expansion = Opt.map (module_expansion env') m.expansion;
-      display_expr;
-      doc;
-    }
-  with e ->
-    Format.fprintf Format.err_formatter "Failed to resolve module_type (%a): %s"
-      Component.Fmt.model_identifier
-      (m.id :> Paths.Identifier.t)
-      (Printexc.to_string e);
-    raise e
+  match Env.lookup_module_type' m.id env with
+  | None ->
+      Lookup_failures.report "Failed to lookup module type %a"
+        Component.Fmt.model_identifier
+        (m.id :> Paths.Identifier.t);
+      m
+  | Some (_m', env') ->
+      let expr' =
+        match m.expr with
+        | None -> None
+        | Some expr -> Some (module_type_expr env' expr)
+      in
+      (* let self_canonical =
+           match m.expr with
+           | Some (Path (`Resolved p)) when Paths.Path.Resolved.ModuleType.canonical_ident p = Some m.id ->
+             true
+           | _ -> false
+         in*)
+      let display_expr =
+        match (expr', m.expansion) with
+        | Some (Path (`Resolved p)), Some (Signature sg)
+          when Paths.Path.Resolved.ModuleType.is_hidden p ->
+            Some (Some (Signature sg))
+        | _ -> None
+      in
+      let doc = comment_docs env m.doc in
+      {
+        m with
+        expr = expr';
+        expansion = Opt.map (module_expansion env') m.expansion;
+        display_expr;
+        doc;
+      }
 
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
@@ -566,35 +532,39 @@ and include_ : Env.t -> Include.t -> Include.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env' a ->
-  let exception Link_functor_parameter_parameter in
-  let functor_arg, env =
-    match Env.lookup_module' a.id env' with
-    | Some (_, _ as x) -> x
-    | None -> raise Link_functor_parameter_parameter
-  in
-  let expr = module_type_expr env a.expr in
-  let env, expn =
+  match
+    let open Utils.ResultMonad in
+    Env.lookup_module' a.id env' |> of_option ~error:"lookup"
+    >>= fun (functor_arg, env) ->
     let sg_id = (a.id :> Paths.Identifier.Signature.t) in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
-            (env, Some e)
-        | Error `OpaqueModule -> (env, None)
-        | Error _ -> raise Link_functor_parameter_parameter )
-    | x, _ -> (env, x)
-  in
-  let display_expr =
-    match (should_hide_moduletype expr, expn) with
-    | false, _ -> None
-    | true, None -> None
-    | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
-    | true, Some (Odoc_model.Lang.Module.Signature sg) ->
-        Some (Odoc_model.Lang.ModuleType.Signature sg)
-    | true, Some (Odoc_model.Lang.Module.Functor _) -> None
-  in
-  { a with expr; display_expr; expansion = Opt.map (module_expansion env) expn }
+            Ok (env, Some e)
+        | Error `OpaqueModule -> Ok (env, None)
+        | Error _ -> Error "expand" )
+    | x, _ -> Ok (env, x)
+  with
+  | Ok (env, expn) ->
+      let expr = module_type_expr env a.expr in
+      let display_expr =
+        match (should_hide_moduletype expr, expn) with
+        | false, _ -> None
+        | true, None -> None
+        | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
+        | true, Some (Odoc_model.Lang.Module.Signature sg) ->
+            Some (Odoc_model.Lang.ModuleType.Signature sg)
+        | true, Some (Odoc_model.Lang.Module.Functor _) -> None
+      in
+      let expansion = Opt.map (module_expansion env) expn in
+      { a with expr; display_expr; expansion }
+  | Error s ->
+      Lookup_failures.report "Failed to %s functor parameter %a" s
+        Component.Fmt.model_identifier
+        (a.id :> Odoc_model.Paths.Identifier.t);
+      a
 
 and functor_argument env a =
   match a with
@@ -697,18 +667,14 @@ and module_type_expr : Env.t -> ModuleType.expr -> ModuleType.expr =
   match expr with
   | Signature s -> Signature (signature env s)
   | Path p -> Path (module_type_path env p)
-  | With (expr, subs) ->
+  | With (expr, subs) as unresolved -> (
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-      let sg =
-        match Tools.signature_of_module_type_expr env cexpr with
-        | Ok sg -> sg
-        | Error e ->
-            let exception
-              Link_module_type_expr of Tools.signature_of_module_error
-            in
-            raise (Link_module_type_expr e)
-      in
-      With (module_type_expr env expr, handle_fragments env sg subs)
+      match Tools.signature_of_module_type_expr env cexpr with
+      | Ok sg -> With (module_type_expr env expr, handle_fragments env sg subs)
+      | Error _ ->
+          Lookup_failures.report "Failed to resolve module type %a"
+            Component.Fmt.module_type_expr cexpr;
+          unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
       let res' = module_type_expr env res in
