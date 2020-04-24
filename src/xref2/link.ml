@@ -680,55 +680,40 @@ and type_decl_representation :
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
-  try
-    let equation = type_decl_equation env t.equation in
-    let doc = comment_docs env t.doc in
-    let hidden_path =
-      match equation.Equation.manifest with
-      | Some (Constr (`Resolved path, params))
-        when Paths.Path.Resolved.Type.is_hidden path ->
-          Some (path, params)
-      | _ -> None
-    in
-    let representation =
-      Opt.map (type_decl_representation env) t.representation
-    in
-    let default = { t with equation; doc; representation } in
-    let result =
-      match hidden_path with
-      | Some (p, params) -> (
-          let p' =
-            Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
-          in
-          match Tools.lookup_type_from_resolved_path env p' with
-          | Ok (_, Found (`T t')) -> (
-              try
-                (* Format.fprintf Format.err_formatter "XXXXXXX - replacing type at id %a maybe: %a\n%!" Component.Fmt.model_identifier (t.id :> Paths.Identifier.t) Component.Fmt.resolved_type_path p'; *)
-                {
-                  default with
-                  equation =
-                    Expand_tools.collapse_eqns default.equation
-                      (Lang_of.type_decl_equation Lang_of.empty t'.equation)
-                      params;
-                }
-              with e ->
-                Format.fprintf Format.err_formatter
-                  "Failed to do the simplify thing for %a\n%!"
-                  Component.Fmt.model_identifier
-                  (t.id :> Paths.Identifier.t);
-                raise e )
-          | _ -> default )
-      | None -> default
-    in
-    (* Format.fprintf Format.err_formatter "type_decl result: %a\n%!"
-          Component.Fmt.type_decl (Component.Of_Lang.(type_decl empty result)); *)
-    result
-  with e ->
-    Format.fprintf Format.err_formatter "Failed to resolve type (%a): %s"
-      Component.Fmt.model_identifier
-      (t.id :> Paths.Identifier.t)
-      (Printexc.to_string e);
-    raise e
+  let equation = type_decl_equation env t.equation in
+  let doc = comment_docs env t.doc in
+  let hidden_path =
+    match equation.Equation.manifest with
+    | Some (Constr (`Resolved path, params))
+      when Paths.Path.Resolved.Type.is_hidden path ->
+        Some (path, params)
+    | _ -> None
+  in
+  let representation =
+    Opt.map (type_decl_representation env) t.representation
+  in
+  let default = { t with equation; doc; representation } in
+  let result =
+    match hidden_path with
+    | Some (p, params) -> (
+        let p' =
+          Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
+        in
+        match Tools.lookup_type_from_resolved_path env p' with
+        | Ok (_, Found (`T t')) ->
+            {
+              default with
+              equation =
+                Expand_tools.collapse_eqns default.equation
+                  (Lang_of.type_decl_equation Lang_of.empty t'.equation)
+                  params;
+            }
+        | _ -> default )
+    | None -> default
+  in
+  (* Format.fprintf Format.err_formatter "type_decl result: %a\n%!"
+        Component.Fmt.type_decl (Component.Of_Lang.(type_decl empty result)); *)
+  result
 
 and type_decl_equation env t =
   let open TypeDecl.Equation in
