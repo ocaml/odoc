@@ -64,26 +64,50 @@ module Toc = struct
     children : t
   }
 
-  let classify ~on_nested (i : Item.t) : _ Rewire.action = match i with
+  let classify ~on_sub (i : Item.t) : _ Rewire.action = match i with
     | Text _
     | Declaration _
       -> Skip
-    | Nested { content = { status; items; _ }; _ } ->
-      if on_nested status then Rec items else Skip
+    | Subpage { content = { status; content; _ }; _ } ->
+      if on_sub status then
+        Rec (match content with Items i -> i | Page p -> p.items)
+      else Skip
     | Heading { label = None ; _ } -> Skip
     | Heading { label = Some label; level; title } ->
       Heading ((label, title), level)
 
   let node (anchor, text) children = { anchor; text; children}
 
-  let on_nested_default : Nested.status -> bool = function
+  let on_sub_default : Subpage.status -> bool = function
     | `Closed | `Open | `Default -> false
     | `Inline -> true
 
-  let compute ?(on_nested=on_nested_default) t =
+  let compute ?(on_sub=on_sub_default) t =
     Rewire.walk
-      ~classify:(classify ~on_nested)
-      ~node
+      ~classify:(classify ~on_sub) ~node
       t
+
+end
+
+
+module Subpages = struct
+
+  let rec walk_documentedsrc (l : DocumentedSrc.t) =
+    Utils.flatmap l ~f:(function
+      | DocumentedSrc.Code _ -> []
+      | Documented _ -> []
+      | Nested { code ; _ } -> walk_documentedsrc code
+      | Subpage p -> [p]
+    )
+
+  let walk_items (l : Item.t list) =
+    Utils.flatmap l ~f:(function
+      | Item.Text _ -> []
+      | Heading _ -> []
+      | Declaration { content ; _ } -> walk_documentedsrc content
+      | Subpage { content ; _ } -> [content]
+    )
+
+  let compute (p : Page.t) = walk_items (p.header @ p.items)
 
 end
