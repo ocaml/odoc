@@ -125,17 +125,18 @@ val add_method :
 
 val add_root : string -> root -> t -> t
 
+val add_module_functor_args :
+  Component.Module.t -> Odoc_model.Paths_types.Identifier.module_ -> t -> t
+
+val add_module_type_functor_args :
+  Component.ModuleType.t -> Odoc_model.Paths_types.Identifier.module_type -> t -> t
+
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
 val lookup_module :
-  Odoc_model.Paths_types.Identifier.reference_module -> t ->
+  Odoc_model.Paths_types.Identifier.reference_module ->
+  t ->
   Component.Module.t option
-
-val lookup_module' :
-  Odoc_model.Paths_types.Identifier.reference_module -> t ->
-  (Component.Module.t * t) option
-(** Lookup a module in the environment, return an environment with functor
-    parameters added. *)
 
 val lookup_type :
   Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t option
@@ -144,13 +145,6 @@ val lookup_module_type :
   Odoc_model.Paths_types.Identifier.reference_module_type ->
   t ->
   Component.ModuleType.t option
-
-val lookup_module_type' :
-  Odoc_model.Paths_types.Identifier.reference_module_type ->
-  t ->
-  (Component.ModuleType.t * t) option
-(** Lookup a module in the environment, return an environment with functor
-    parameters added. *)
 
 val lookup_value :
   Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t
@@ -161,10 +155,14 @@ val lookup_section_title :
   Odoc_model.Comment.link_content option
 
 val lookup_class :
-  Odoc_model.Paths_types.Identifier.reference_class -> t -> Component.Class.t option
+  Odoc_model.Paths_types.Identifier.reference_class ->
+  t ->
+  Component.Class.t option
 
 val lookup_class_type :
-  Odoc_model.Paths_types.Identifier.class_type -> t -> Component.ClassType.t option
+  Odoc_model.Paths_types.Identifier.class_type ->
+  t ->
+  Component.ClassType.t option
 
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 

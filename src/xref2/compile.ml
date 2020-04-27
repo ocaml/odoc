@@ -222,11 +222,12 @@ and module_ : Env.t -> Module.t -> Module.t =
       (* Aliases are expanded if necessary during link *)
     in
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
-    match Env.lookup_module' m.id env with
+    match Env.lookup_module m.id env with
     | None ->
         lookup_failure ~what:(`Module m.id) `Lookup;
         m
-    | Some (m', env') ->
+    | Some m' ->
+        let env' = Env.add_module_functor_args m' m.id env in
         let expansion =
           let sg_id = (m.id :> Paths.Identifier.Signature.t) in
           if not extra_expansion_needed then m.expansion
@@ -265,7 +266,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   let open Utils.ResultMonad in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Odoc_model.Paths.Identifier.t); *)
-  let expand (m', env) =
+  let expand m' env =
     match m.expr with
     | None -> Ok (env, None, None)
     | Some expr ->
@@ -285,7 +286,9 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
           )
   in
   match
-    Env.lookup_module_type' m.id env |> of_option ~error:`Lookup >>= expand
+    Env.lookup_module_type m.id env |> of_option ~error:`Lookup >>= fun m' ->
+    let env = Env.add_module_type_functor_args m' m.id env in
+    expand m' env
   with
   | Ok (env', expansion', expr') ->
       { m with expr = expr'; expansion = Opt.map (expansion env') expansion' }
@@ -379,8 +382,9 @@ and functor_parameter_parameter :
     | _ -> Error `Resolve_type
   in
   match
-    Env.lookup_module' a.id env' |> of_option ~error:`Lookup
-    >>= fun (functor_arg, env) ->
+    Env.lookup_module a.id env' |> of_option ~error:`Lookup
+    >>= fun functor_arg ->
+    let env = Env.add_module_functor_args functor_arg a.id env' in
     get_module_type_expr functor_arg.type_ >>= fun expr ->
     let sg_id = (a.id :> Paths.Identifier.Signature.t) in
     match Expand_tools.expansion_of_module_type_expr env sg_id expr with
