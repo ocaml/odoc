@@ -59,7 +59,7 @@ let lookup_failure ~what =
   function
   | `Lookup -> r "lookup"
   | `Expand -> r "compile expansion for"
-  | `Resolve_type -> r "resolve type of"
+  | `Resolve_module_type -> r "resolve type of"
   | `Resolve -> r "resolve"
   | `Compile -> r "compile"
 
@@ -379,7 +379,7 @@ and functor_parameter_parameter :
   let open Utils.ResultMonad in
   let get_module_type_expr = function
     | Component.Module.ModuleType expr -> Ok expr
-    | _ -> Error `Resolve_type
+    | _ -> Error `Resolve_module_type
   in
   match
     Env.lookup_module a.id env' |> of_option ~error:`Lookup
@@ -440,7 +440,7 @@ and module_type_expr :
                 `Resolved
                   (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
             | None ->
-                lookup_failure ~what:(`With_type frag) `Resolve;
+                lookup_failure ~what:(`With_type frag) `Compile;
                 unresolved
           in
           let sg' = Tools.fragmap_type env frag csub sg in
@@ -468,7 +468,7 @@ and module_type_expr :
                 `Resolved
                   (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
             | None ->
-                lookup_failure ~what:(`With_type frag) `Resolve;
+                lookup_failure ~what:(`With_type frag) `Compile;
                 unresolved
           in
           let sg' = Tools.fragmap_type env frag csub sg in
@@ -619,7 +619,7 @@ and type_expression_package env p =
               | Some cfrag' ->
                   `Resolved (Lang_of.(Path.resolved_type_fragment empty) cfrag')
               | None ->
-                  lookup_failure ~what:(`Type cfrag) `Resolve;
+                  lookup_failure ~what:(`Type cfrag) `Compile;
                   frag
             in
             (frag', type_expression env t)
