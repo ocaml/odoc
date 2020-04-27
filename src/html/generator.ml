@@ -201,6 +201,7 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
   let take_code l =
     Doctree.Take.until l ~classify:(function
       | Code code -> Accum code
+      | Subpage p -> Accum p.summary
       | _ -> Stop_and_keep
     )
   in
@@ -215,7 +216,7 @@ let documentedSrc ~resolve (t : DocumentedSrc.t) =
   in
   let rec to_html t : flow Html.elt list = match t with
     | [] -> []
-    | Code _ :: _ ->
+    | (Code _ | Subpage _) :: _ ->
       let code, _, rest = take_code t in
       source (inline ~resolve) code
       @ to_html rest
@@ -252,8 +253,10 @@ let rec is_only_text l =
     | Heading _ | Text _ -> true
     | Declaration _
       -> false
-    | Nested { content = { items; _ }; _ }
+    | Subpage { content = { content = Items items; _ }; _ }
       -> is_only_text items
+    | Subpage { content = { content = Page p; _ }; _ }
+      -> is_only_text p.items
   in
   List.for_all is_text l
 
@@ -295,14 +298,15 @@ let items ~resolve l =
     | Heading h :: rest ->
       [heading ~resolve h]
       |> continue_with rest
-    | Nested
-        { kind; anchor; doc ; content = { summary; status; items = i } }
+    | Subpage
+        { kind; anchor; doc ; content = { summary; status; content } }
       :: rest ->
-      let docs = (block ~resolve doc :> any Html.elt list) in
-      let summary = inline ~resolve summary in
-      let included_html =
-        (items i :> any Html.elt list)
+      let included_html = match content with
+        | Items i -> (items i :> any Html.elt list)
+        | Page p -> (items p.items :> any Html.elt list)
       in
+      let docs = (block ~resolve doc :> any Html.elt list) in
+      let summary = source (inline ~resolve) summary in
       let content : any Html.elt list =
         let mk b =
           let a = if b then [Html.a_open ()] else [] in
@@ -335,7 +339,7 @@ let items ~resolve l =
         | _ -> Stop_and_keep)
       in
       let content = List.map (fun (anchor, content, kind) ->
-      let anchor_attrib, anchor_link = mk_anchor anchor in
+        let anchor_attrib, anchor_link = mk_anchor anchor in
         let a = class_of_kind kind @ anchor_attrib in
         let content = documentedSrc ~resolve content in
         Html.dt ~a (anchor_link @ content)
@@ -397,20 +401,30 @@ module Toc = struct
   let from_items i = render_toc @@ Toc.compute i
 end
 
-let rec subpage ?theme_uri
-    ({Page. title; header; items = i ; subpages; url }) =
-  let resolve = Link.Current url in
-  let toc = Toc.from_items i in
-  let header = items ~resolve header in
-  let content = (items ~resolve i :> any Html.elt list) in
-  let subpages = List.map (subpage ?theme_uri) subpages in
-  let page =
-    Tree.make ?theme_uri ~header ~toc ~url title content subpages
-  in
-  page
+module Page = struct
 
-let render ?theme_uri page =
-  subpage ?theme_uri page
+  let rec subpage ?theme_uri {Subpage. content ; _} =
+    match content with
+    | Page p -> [page ?theme_uri p]
+    | Items _ -> []
+
+  and subpages  ?theme_uri i =
+    Utils.list_concat_map ~f:(subpage ?theme_uri) @@ Doctree.Subpages.compute i
+
+  and page ?theme_uri ({Page. title; header; items = i; url } as p) =
+    let resolve = Link.Current url in
+    let toc = Toc.from_items i in
+    let subpages = subpages ?theme_uri p in
+    let header = items ~resolve header in
+    let content = (items ~resolve i :> any Html.elt list) in
+    let page =
+      Tree.make ?theme_uri ~header ~toc ~url title content subpages
+    in
+    page
+
+end
+
+let render ?theme_uri page = Page.page ?theme_uri page
 
 let doc ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

@@ -111,20 +111,25 @@ and DocumentedSrc : sig
     | Code of Source.t
     | Documented of Inline.t documented
     | Nested of t documented
+    | Subpage of Subpage.t
 
 end = DocumentedSrc
 
-and Nested : sig
+and Subpage : sig
 
   type status = [ `Inline | `Open | `Closed | `Default ]
 
   type t = {
-    summary : Inline.t ;
+    summary : Source.t ;
     status : status ;
-    items : Item.t list ;
+    content : content ;
   }
 
-end = Nested
+  and content =
+    | Items of Item.t list
+    | Page of Page.t
+
+end = Subpage
 
 
 and Item : sig
@@ -143,7 +148,7 @@ and Item : sig
     | Text of text
     | Heading of Heading.t
     | Declaration of DocumentedSrc.t item
-    | Nested of Nested.t item
+    | Subpage of Subpage.t item
 
 end = Item
 
@@ -153,7 +158,6 @@ and Page : sig
     title : string ;
     header : Item.t list ;
     items : Item.t list ;
-    subpages : t list ;
     url : Url.Path.t ;
   }
 
