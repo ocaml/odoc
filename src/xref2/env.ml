@@ -586,33 +586,21 @@ let add_functor_args' :
     in
     env'
 
-let lookup_module' id env =
-  match lookup_module id env with
-  | None -> None
-  | Some m ->
-      let env' =
-        match m.Component.Module.type_ with
-        | Alias _ -> env
-        | ModuleType expr ->
-            add_functor_args'
-              (id :> Odoc_model.Paths.Identifier.Signature.t)
-              expr env
-      in
-      Some (m, env')
+let add_module_functor_args m id env =
+  match m.Component.Module.type_ with
+  | Alias _ -> env
+  | ModuleType expr ->
+    add_functor_args'
+      (id :> Odoc_model.Paths.Identifier.Signature.t)
+      expr env
 
-let lookup_module_type' id env =
-  match lookup_module_type id env with
-  | None -> None
-  | Some mt ->
-      let env' =
-        match mt.Component.ModuleType.expr with
-        | None -> env
-        | Some expr ->
-            add_functor_args'
-              (id :> Odoc_model.Paths.Identifier.Signature.t)
-              expr env
-      in
-      Some (mt, env')
+let add_module_type_functor_args mt id env =
+  match mt.Component.ModuleType.expr with
+  | None -> env
+  | Some expr ->
+    add_functor_args'
+      (id :> Odoc_model.Paths.Identifier.Signature.t)
+      expr env
 
 let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
   let open Component in

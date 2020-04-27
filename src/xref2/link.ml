@@ -382,14 +382,15 @@ and module_ : Env.t -> Module.t -> Module.t =
   if m.hidden then m
   else
     let t1 = Unix.gettimeofday () in
-    let m', env =
-      match Env.lookup_module' m.id env with
-      | Some ((_, _) as x) -> x
+    let m' =
+      match Env.lookup_module m.id env with
+      | Some m' -> m'
       | None ->
           Format.kasprintf failwith "Failed to lookup module %a"
             Component.Fmt.model_identifier
             (m.id :> Paths.Identifier.t)
     in
+    let env = Env.add_module_functor_args m' m.id env in
     let t2 = Unix.gettimeofday () in
     let type_ = module_decl env m.type_ in
     let t3 = Unix.gettimeofday () in
@@ -468,13 +469,14 @@ and module_decl : Env.t -> Module.decl -> Module.decl =
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
-  match Env.lookup_module_type' m.id env with
+  match Env.lookup_module_type m.id env with
   | None ->
       Lookup_failures.report "Failed to lookup module type %a"
         Component.Fmt.model_identifier
         (m.id :> Paths.Identifier.t);
       m
-  | Some (_m', env') ->
+  | Some m' ->
+      let env' = Env.add_module_type_functor_args m' m.id env in
       let expr' =
         match m.expr with
         | None -> None
@@ -528,8 +530,9 @@ and functor_parameter_parameter :
  fun env' a ->
   match
     let open Utils.ResultMonad in
-    Env.lookup_module' a.id env' |> of_option ~error:"lookup"
-    >>= fun (functor_arg, env) ->
+    Env.lookup_module a.id env' |> of_option ~error:"lookup"
+    >>= fun functor_arg ->
+    let env = Env.add_module_functor_args functor_arg a.id env' in
     let sg_id = (a.id :> Paths.Identifier.Signature.t) in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
@@ -864,8 +867,7 @@ let build_resolver :
  fun ?equal:_ ?hash:_ lookup_unit resolve_unit lookup_page resolve_page ->
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page }
 *)
-let link x y =
-  Lookup_failures.catch_failures (fun () -> unit x y)
+let link x y = Lookup_failures.catch_failures (fun () -> unit x y)
 
 let resolve_page resolver y =
   let env = Env.set_resolver Env.empty resolver in
