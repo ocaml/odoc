@@ -2092,7 +2092,7 @@ module Of_Lang = struct
     apply_sig_map ident_map items
 
   and open_ ident_map o =
-    Open.{ expansion = signature ident_map o.Odoc_model.Lang.Open.expansion }
+    Open.{ expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion }
 
   and apply_sig_map ident_map items =
     let items =
