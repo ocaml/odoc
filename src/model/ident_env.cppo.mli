@@ -44,6 +44,8 @@ val find_module : t -> Ident.t -> Paths.Path.Resolved.Module.t
 
 val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 
+val find_module_type : t -> Ident.t -> Paths.Identifier.ModuleType.t
+
 val find_type : t -> Ident.t -> Paths_types.Identifier.path_type
 
 module Fragment : sig
