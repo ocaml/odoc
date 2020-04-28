@@ -313,12 +313,12 @@ let heading (`Heading (level, `Label (_, label), content)) =
     let title = non_link_inline_element_list content in
     let level =
       match level with
-      | `Title -> 1
-      | `Section -> 2
-      | `Subsection -> 3
-      | `Subsubsection -> 4
-      | `Paragraph -> 5
-      | `Subparagraph -> 6
+      | `Title -> 0
+      | `Section -> 1
+      | `Subsection -> 2
+      | `Subsubsection -> 3
+      | `Paragraph -> 4
+      | `Subparagraph -> 5
     in
     let label = Some label in
     Item.Heading {label; level; title}
