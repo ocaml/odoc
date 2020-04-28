@@ -78,11 +78,7 @@ module Toc = struct
 
   let node (anchor, text) children = { anchor; text; children}
 
-  let on_sub_default : Subpage.status -> bool = function
-    | `Closed | `Open | `Default -> false
-    | `Inline -> true
-
-  let compute ?(on_sub=on_sub_default) t =
+  let compute ~on_sub t =
     Rewire.walk
       ~classify:(classify ~on_sub) ~node
       t
@@ -109,5 +105,79 @@ module Subpages = struct
     )
 
   let compute (p : Page.t) = walk_items (p.header @ p.items)
+
+end
+
+module Shift = struct
+
+  type state = {
+    englobing_level : int ;
+    current_level : int ;
+  }
+
+  let start = {
+    englobing_level = 0 ;
+    current_level = 0 ;
+  }
+
+  let shift st x =
+    let level = st.englobing_level + x in
+    { st with current_level = level },
+    level
+
+  let enter { current_level ; _ } i =
+    { englobing_level = current_level + i ; current_level }
+
+  let rec walk_documentedsrc ~on_sub shift_state (l : DocumentedSrc.t) =
+    match l with
+    | [] -> []
+    | (Code _ | Documented _ as h) :: rest ->
+      h
+      :: walk_documentedsrc ~on_sub shift_state rest
+    | Nested ds :: rest ->
+      let ds = {ds with code = walk_documentedsrc ~on_sub shift_state ds.code} in
+      Nested ds
+      :: walk_documentedsrc ~on_sub shift_state rest
+    | Subpage subp :: rest ->
+      let subp = subpage ~on_sub shift_state subp in
+      Subpage subp :: walk_documentedsrc ~on_sub shift_state rest
+
+  and subpage ~on_sub shift_state (subp : Subpage.t) =
+    match on_sub subp with
+    | None -> subp
+    | Some i ->
+      let shift_state = enter shift_state i in
+      let content = match subp.content with
+        | Items i ->
+          Subpage.Items (walk_item ~on_sub shift_state i)
+        | Page p ->
+          Page {p with
+            header = walk_item ~on_sub shift_state p.header ;
+            items = walk_item ~on_sub shift_state p.items ;
+          }
+      in
+      {subp with content}
+
+  and walk_item ~on_sub shift_state (l : Item.t list) = match l with
+    | [] -> []
+    | Heading { label; level; title } :: rest->
+      let shift_state, level = shift shift_state level in
+      Item.Heading { label; level; title }
+      :: walk_item ~on_sub shift_state rest
+    | Subpage subp :: rest ->
+      let content = subpage ~on_sub shift_state subp.content in
+      let subp = {subp with content} in
+      Item.Subpage subp :: walk_item ~on_sub shift_state rest
+    | Declaration decl :: rest ->
+      let decl =
+        { decl with content = walk_documentedsrc ~on_sub shift_state decl.content }
+      in
+      Declaration decl :: walk_item ~on_sub shift_state rest
+    | Text txt :: rest ->
+      Text txt :: walk_item ~on_sub shift_state rest
+
+  let compute ~on_sub i =
+    let shift_state = start in
+    walk_item ~on_sub shift_state i
 
 end

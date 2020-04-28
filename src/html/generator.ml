@@ -151,11 +151,11 @@ let heading ~resolve (h : Heading.t) =
   let content = inline ~resolve h.title in
   let mk =
     match h.level with
-    | 1 -> Html.h1
-    | 2 -> Html.h2
-    | 3 -> Html.h3
-    | 4 -> Html.h4
-    | 5 -> Html.h5
+    | 0 -> Html.h1
+    | 1 -> Html.h2
+    | 2 -> Html.h3
+    | 3 -> Html.h4
+    | 4 -> Html.h5
     | _ -> Html.h6
   in
   mk ~a (anchor @ content)
@@ -371,6 +371,7 @@ let items ~resolve l =
   and items l = walk_items ~only_text:(is_only_text l) [] l in
   items l
 
+
 module Toc = struct
   open Odoc_document.Doctree
 
@@ -398,10 +399,18 @@ module Toc = struct
     | [] -> []
     | _ -> [Html.nav ~a:[Html.a_class ["toc"]] [sections toc]]
 
-  let from_items i = render_toc @@ Toc.compute i
+  let on_sub : Subpage.status -> bool = function
+    | `Closed | `Open | `Default -> false
+    | `Inline -> true
+
+  let from_items i = render_toc @@ Toc.compute ~on_sub i
 end
 
 module Page = struct
+
+  let on_sub (subp : Subpage.t) = match subp.status with
+    | `Closed | `Open | `Default -> None
+    | `Inline -> Some 0
 
   let rec subpage ?theme_uri {Subpage. content ; _} =
     match content with
@@ -413,6 +422,7 @@ module Page = struct
 
   and page ?theme_uri ({Page. title; header; items = i; url } as p) =
     let resolve = Link.Current url in
+    let i = Doctree.Shift.compute ~on_sub i in
     let toc = Toc.from_items i in
     let subpages = subpages ?theme_uri p in
     let header = items ~resolve header in
