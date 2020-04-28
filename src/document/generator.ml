@@ -81,7 +81,7 @@ module Make (Syntax : SYNTAX) = struct
 
 module Link :
 sig
-  val from_path : stop_before:bool -> Paths.Path.t -> text
+  val from_path : Paths.Path.t -> text
   val from_fragment :
     base:Paths.Identifier.Signature.t -> Paths.Fragment.t -> text
   val render_fragment : Paths.Fragment.t -> string
@@ -89,19 +89,29 @@ end =
 struct
   open Paths
 
-  let rec from_path : stop_before:bool -> Path.t -> text =
-    fun ~stop_before path ->
+  let rec from_path : Path.t -> text =
+    fun path ->
       match path with
       | `Root root -> unresolved [inline @@ Text root]
       | `Forward root -> unresolved [inline @@ Text root] (* FIXME *)
       | `Dot (prefix, suffix) ->
-        let link = from_path ~stop_before:true (prefix :> Path.t) in
+        let link = from_path (prefix :> Path.t) in
         link ++ O.txt ("." ^ suffix)
       | `Apply (p1, p2) ->
-        let link1 = from_path ~stop_before (p1 :> Path.t) in
-        let link2 = from_path ~stop_before (p2 :> Path.t) in
+        let link1 = from_path (p1 :> Path.t) in
+        let link2 = from_path (p2 :> Path.t) in
         link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
       | `Resolved rp ->
+        (* If the path is pointing to an opaque module or module type
+           there won't be a page generated - so we stop before; at
+           the parent page, and link instead to the anchor representing
+           the declaration of the opaque module(_type) *)
+        let stop_before = 
+          match rp with
+          | `OpaqueModule _
+          | `OpaqueModuleType _ -> true
+          | _ -> false
+        in
         let id = Paths.Path.Resolved.identifier rp in
         let txt = Url.render_path path in
         begin match Url.from_identifier ~stop_before id with
@@ -344,19 +354,19 @@ struct
       else
         res
     | Constr (path, args) ->
-      let link = Link.from_path ~stop_before:false (path :> Paths.Path.t) in
+      let link = Link.from_path (path :> Paths.Path.t) in
       format_type_path ~delim:(`parens) args link
     | Polymorphic_variant v -> te_variant v
     | Object o -> te_object o
     | Class (path, args) ->
       format_type_path ~delim:(`brackets) args
-        (Link.from_path ~stop_before:false (path :> Paths.Path.t))
+        (Link.from_path (path :> Paths.Path.t))
     | Poly (polyvars, t) ->
       O.txt (String.concat " " polyvars ^ ". ") ++ type_expr t
     | Package pkg ->
       enclose ~l:"(" ~r:")" (
          O.keyword "module" ++ O.txt " " ++
-           Link.from_path ~stop_before:false (pkg.path :> Paths.Path.t) ++
+           Link.from_path (pkg.path :> Paths.Path.t) ++
          match pkg.substitutions with
          | [] -> O.noop
          | lst ->
@@ -545,7 +555,7 @@ struct
     let content =
       O.documentedSrc (O.keyword "type" ++
           O.txt " " ++
-          Link.from_path ~stop_before:false (t.type_path :> Paths.Path.t) ++
+          Link.from_path (t.type_path :> Paths.Path.t) ++
           O.txt " += ")
       @
         Utils.flatmap t.constructors
@@ -917,7 +927,7 @@ struct
   let class_type_expr (cte : Odoc_model.Lang.ClassType.expr) =
     match cte with
     | Constr (path, args) ->
-      let link = Link.from_path ~stop_before:false (path :> Paths.Path.t) in
+      let link = Link.from_path (path :> Paths.Path.t) in
       format_type_path ~delim:(`brackets) args link
     | Signature _ ->
       Syntax.Class.open_tag
@@ -1147,9 +1157,9 @@ struct
         in
         match (item : Lang.Signature.item) with
         | Module (_, m) when internal_module m ->
-          loop ?level_shift rest (acc_items, acc_pages)
+          loop rest acc_items
         | Type (_, t) when internal_type t ->
-          loop ?level_shift rest (acc_items, acc_pages)
+          loop rest acc_items
         
         | Module (recursive, m)    -> continue @@ module_ recursive m
         | ModuleType m             -> continue @@ module_type m
@@ -1166,7 +1176,7 @@ struct
         | Value v     -> continue @@ value v
         | External e  -> continue @@ external_ e
 
-        | Open _ -> loop ?level_shift rest (acc_items, acc_pages)
+        | Open _ -> loop rest acc_items
         | Comment `Stop ->
           let rest = Utils.skip_until rest ~p:(function
             | Lang.Signature.Comment `Stop -> true
@@ -1230,7 +1240,7 @@ struct
 
   and module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let name = Paths.Identifier.name t.id in
-    let path = Link.from_path ~stop_before:true (t.manifest :> Paths.Path.t) in
+    let path = Link.from_path (t.manifest :> Paths.Path.t) in
     let content =
       O.documentedSrc (
         O.keyword "module" ++
@@ -1363,7 +1373,7 @@ struct
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
     fun base -> function
       | Alias mod_path ->
-        Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
+        Link.from_path (mod_path :> Paths.Path.t)
       | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
   and module_type (t : Odoc_model.Lang.ModuleType.t) =
@@ -1420,7 +1430,7 @@ struct
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
     = fun base -> function
       | Path mty_path ->
-        Link.from_path ~stop_before:true (mty_path :> Paths.Path.t)
+        Link.from_path (mty_path :> Paths.Path.t)
       | Signature _ ->
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | Functor (Unit, expr) ->
@@ -1490,7 +1500,7 @@ struct
           Link.from_fragment
             ~base (frag_mod :> Paths.Fragment.t) ++
           O.txt " := " ++
-          Link.from_path ~stop_before:true (mod_path :> Paths.Path.t)
+          Link.from_path (mod_path :> Paths.Path.t)
       | TypeSubst (frag_typ, td) ->
         O.keyword "type" ++
           O.txt " " ++
@@ -1550,7 +1560,7 @@ struct
           O.txt " " ++
           O.txt modname ++
           O.txt " = " ++
-          Link.from_path ~stop_before:false (x.path :> Paths.Path.t)
+          Link.from_path (x.path :> Paths.Path.t)
       in
       let content = O.documentedSrc md_def in
       let anchor =

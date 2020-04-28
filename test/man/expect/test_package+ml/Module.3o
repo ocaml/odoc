@@ -44,7 +44,7 @@ https://caml\.inria\.fr/mantis/view\.php?id=7701
 .br 
 \f[CB]end\fR
 .sp 
-\f[CB]module\fR \f[CB]type\fR S1 = \f[CB]sig\fR \f[CB]end\fR
+\f[CB]module\fR \f[CB]type\fR S1
 .sp 
 \f[CB]module\fR \f[CB]type\fR S2 = \f[CB]sig\fR
 .br 
@@ -87,9 +87,6 @@ https://caml\.inria\.fr/mantis/view\.php?id=7701
 \f[CB]module\fR \f[CB]type\fR S4 = \f[CB]sig\fR
 .br 
 .ti +2
-\f[CB]type\fR t
-.sp 
-.ti +2
 \f[CB]type\fR u
 .sp 
 .ti +2
@@ -112,9 +109,6 @@ https://caml\.inria\.fr/mantis/view\.php?id=7701
 \f[CB]type\fR u
 .sp 
 .ti +2
-\f[CB]type\fR 'a v
-.sp 
-.ti +2
 \f[CB]type\fR ('a, 'b) w
 .sp 
 .ti +2
@@ -134,9 +128,6 @@ https://caml\.inria\.fr/mantis/view\.php?id=7701
 .sp 
 .ti +2
 \f[CB]type\fR 'a v
-.sp 
-.ti +2
-\f[CB]type\fR ('a, 'b) w
 .sp 
 .ti +2
 \f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
@@ -177,9 +168,6 @@ https://caml\.inria\.fr/mantis/view\.php?id=7701
 .sp 
 .ti +2
 \f[CB]type\fR ('a, 'b) w
-.sp 
-.ti +2
-\f[CB]module\fR M : \f[CB]sig\fR \f[CB]end\fR
 .br 
 \f[CB]end\fR
 .sp 

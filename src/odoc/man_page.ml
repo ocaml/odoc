@@ -23,12 +23,15 @@ let mk_compilation_unit ~syntax v =
 
 let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
   Root.read input >>= fun root ->
+  let input_s = Fs.File.to_string input in
   match root.file with
   | Page page_name ->
     Page.load input >>= fun page ->
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
       Odoc_xref2.Link.resolve_page resolve_env page
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
     in
     let pkg_name = root.package in
     let pages = mk_page ~syntax odoctree in
@@ -52,6 +55,8 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
     let odoctree =
       let env = Env.build env (`Unit unit) in
       Odoc_xref2.Link.link env unit
+      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+      |> Odoc_model.Error.shed_warnings
     in
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
