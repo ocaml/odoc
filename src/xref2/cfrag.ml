@@ -50,16 +50,16 @@ let rec resolved_signature_split_parent :
       | RBase i -> RBranch (name, `Root i)
       | RBranch (base, m) -> RBranch (base, `Module (m, name)) )
 
+(* Note that this returns an unresolved fragment by design *)
 let rec signature_split_parent : signature -> base_name = function
   | `Root -> Base None
   | `Resolved r -> (
       match resolved_signature_split_parent r with
-      | RBase i -> Base (Some i)
+      | RBase _ -> Base None
       | RBranch (base, m) -> Branch (base, `Resolved m) )
   | `Dot (m, name) -> (
       match signature_split_parent m with
-      | Base None -> Branch (ModuleName.of_string name, `Root)
-      | Base (Some i) -> Branch (ModuleName.of_string name, `Resolved (`Root i))
+      | Base _ -> Branch (ModuleName.of_string name, `Root)
       | Branch (base, m) -> Branch (base, `Dot (m, name)) )
 
 let rec resolved_module_split :
