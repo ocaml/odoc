@@ -864,11 +864,10 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
 
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
   let open ModuleType in
-  let name = parenthesise (Ident.name id) in
-  let id = `ModuleType(parent, Odoc_model.Names.ModuleTypeName.of_string name) in
+  let id = Env.find_module_type env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
-  let expr = opt_map (read_module_type env id) mtd.mtd_type in
+  let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
   let expansion =
     match expr with
     | Some (Signature _) -> Some Module.AlreadyASig
