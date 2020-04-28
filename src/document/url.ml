@@ -14,7 +14,10 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Subst (_, p) -> render_resolved (p :> t)
     | `SubstAlias (_, p) -> render_resolved (p :> t)
     | `SubstT (_, p) -> render_resolved (p :> t)
-    | `Alias (_, p) -> render_resolved (p :> t)
+    | `Alias (p1, p2) ->
+      if Odoc_model.Paths.Path.is_hidden (`Resolved (p2 :> t))
+      then render_resolved (p1 :> t)
+      else render_resolved (p2 :> t)
     | `Hidden p -> render_resolved (p :> t)
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)
     | `Canonical (_, `Resolved p) -> render_resolved (p :> t)
