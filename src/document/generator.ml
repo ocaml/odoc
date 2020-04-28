@@ -69,6 +69,12 @@ let path_to_id path =
   | Error _ -> None
   | Ok url -> Some url
 
+let attach_expansion ?(status=`Default) page text = match page with
+  | None -> O.documentedSrc text
+  | Some content ->
+    let summary = O.render text in
+    [DocumentedSrc.Subpage { summary ; content ; status }]
+
 include Generator_signatures
 
 module Make (Syntax : SYNTAX) = struct
@@ -1061,26 +1067,23 @@ struct
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
-    let cd = class_decl t.type_ in
-    let cname =
+
+    let cname, expansion =
       match t.expansion with
       | None ->
-        O.documentedSrc @@ O.txt name
+        O.documentedSrc @@ O.txt name,
+        None
       | Some csig ->
         let doc = Comment.standalone t.doc in
         let items = class_signature csig in
         let url = Url.Path.from_identifier t.id in
         let header = format_title `Class (make_name_from_path url) @ doc in
-        let content = Subpage.Page {
-          title = name ;
-          header ;
-          items ;
-          url ;
-        }
-        in
-        let summary = O.render @@ path url [inline @@ Text name] in
-        let status = `Closed in
-        [DocumentedSrc.Subpage { summary ; content ; status }]
+        let page = Subpage.Page { title = name ; header ; items ; url } in
+        O.documentedSrc @@ path url [inline @@ Text name],
+        Some page
+    in
+    let cd = attach_expansion expansion
+        (O.txt Syntax.Type.annotation_separator ++ class_decl t.type_)
     in
     let content =
       let open Lang.Signature in
@@ -1096,9 +1099,7 @@ struct
         params ++
         O.txt " ")
       @ cname
-      @ O.documentedSrc (
-        O.txt Syntax.Type.annotation_separator ++
-        cd)
+      @ cd
     in
     let kind = Some "class" in
     let anchor = path_to_id t.id in
@@ -1110,26 +1111,22 @@ struct
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
       if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop in
-    let expr = class_type_expr t.expr in
-    let cname =
+    let cname, expansion =
       match t.expansion with
       | None ->
-        O.documentedSrc @@ O.txt name
+        O.documentedSrc @@ O.txt name,
+        None
       | Some csig ->
         let url = Url.Path.from_identifier t.id in
         let doc = Comment.standalone t.doc in
         let items = class_signature csig in
         let header = format_title `Cty (make_name_from_path url) @ doc in
-        let content = Subpage.Page {
-          title = name ;
-          header ;
-          items ;
-          url ;
-        }
-        in
-        let summary = O.render @@ path url [inline @@ Text name] in
-        let status = `Closed in
-        [DocumentedSrc.Subpage { status ; content ; summary }]
+        let page = Subpage.Page { title = name ; header ; items ; url } in
+        O.documentedSrc @@ path url [inline @@ Text name],
+        Some page
+    in
+    let expr =
+      attach_expansion expansion (O.txt " = " ++ class_type_expr t.expr)
     in
     let content =
       let open Lang.Signature in
@@ -1146,10 +1143,7 @@ struct
           params ++
           O.txt " ")
       @ cname
-      @ O.documentedSrc (
-        O.txt " = " ++
-          expr
-      )
+      @ expr
     in
     let kind = Some "class-type" in
     let anchor = path_to_id t.id in
@@ -1232,8 +1226,8 @@ struct
             | e -> e
           in
           let url = Url.Path.from_identifier arg.id in
-          let link = path url [inline @@ Text name] in
-          let nested = 
+          let modname = path url [inline @@ Text name] in
+          let modtyp =
             let prelude, items = module_expansion expansion in
             let header =
               format_title `Arg (make_name_from_path url) @ prelude
@@ -1241,15 +1235,15 @@ struct
             let title = name in
             let content = Subpage.Page { items ; title ; header ; url } in
             let summary =
-              O.render (mty (arg.id :> Paths.Identifier.Signature.t) arg.expr)
+              O.render (
+                O.txt Syntax.Type.annotation_separator
+                ++ mty (arg.id :> Paths.Identifier.Signature.t) arg.expr)
             in
-            let status = `Closed in
+            let status = `Default in
             [DocumentedSrc.Subpage { content ; summary ; status }]
           in
-          O.documentedSrc (
-            O.keyword "module" ++ O.txt " " ++
-              link ++ O.txt Syntax.Type.annotation_separator)
-          @ nested
+          O.documentedSrc (O.keyword "module" ++ O.txt " " ++ modname)
+          @ modtyp
       in
       content
 
@@ -1313,16 +1307,11 @@ struct
       Item.t
     = fun recursive t ->
       let modname = Paths.Identifier.name t.id in
-      let md =
-        module_decl (t.id :> Paths.Identifier.Signature.t)
-          (match t.display_type with
-            | None -> t.type_
-            | Some t -> t)
-      in
-      let modname =
+      let modname, expansion =
         match t.expansion with
         | None ->
-          O.documentedSrc (O.txt modname)
+          O.documentedSrc (O.txt modname),
+          None
         | Some expansion ->
           let expansion =
             match expansion with
@@ -1342,10 +1331,15 @@ struct
           let header =
             format_title `Mod (make_name_from_path url) @ doc @ prelude
           in
-          let content = Subpage.Page {items ; title ; header ; url } in
-          let summary = O.render link in
-          let status = `Closed in
-          [DocumentedSrc.Subpage {summary; content; status}]
+          let page = Subpage.Page {items ; title ; header ; url } in
+          O.documentedSrc link, Some page
+      in
+      let modexpr =
+        attach_expansion expansion @@
+        module_decl (t.id :> Paths.Identifier.Signature.t)
+          (match t.display_type with
+            | None -> t.type_
+            | Some t -> t)
       in
       let content =
         let keyword' =
@@ -1356,8 +1350,9 @@ struct
         in
         O.documentedSrc (keyword' ++ O.txt " ")
         @ modname
-        @ O.documentedSrc (md ++
-            if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
+        @ modexpr
+        @ O.documentedSrc
+            (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
       in
       let kind = Some "module" in
       let anchor = path_to_id t.id in
@@ -1392,16 +1387,10 @@ struct
 
   and module_type (t : Odoc_model.Lang.ModuleType.t) =
     let modname = Paths.Identifier.name t.id in
-    let mty =
-      match t.expr with
-      | None -> O.noop
-      | Some expr ->
-        O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
-    in
-    let modname =
+    let modname, expansion =
       match t.expansion with
       | None ->
-        O.documentedSrc @@ O.txt modname
+        O.documentedSrc @@ O.txt modname, None
       | Some expansion ->
         let expansion =
           match expansion with
@@ -1420,10 +1409,15 @@ struct
         let header =
           format_title `Mty (make_name_from_path url) @ doc @ prelude
         in
-        let content = Subpage.Page {items ; title ; header ; url } in
-        let summary = O.render link in
-        let status = `Closed in
-        [DocumentedSrc.Subpage {summary; content; status}]
+        let page = Subpage.Page {items ; title ; header ; url } in
+        O.documentedSrc link, Some page
+    in
+    let mty =
+      attach_expansion expansion @@
+      match t.expr with
+      | None -> O.noop
+      | Some expr ->
+        O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
     in
     let content =
       O.documentedSrc (
@@ -1432,10 +1426,9 @@ struct
           O.keyword "type" ++
           O.txt " ")
       @ modname
-      @ O.documentedSrc(
-        mty
-        ++ (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
-      )
+      @ mty
+      @ O.documentedSrc
+          (if Syntax.Mod.close_tag_semicolon then O.txt ";" else O.noop)
     in
     let kind = Some "module-type" in
     let anchor = path_to_id t.id in
