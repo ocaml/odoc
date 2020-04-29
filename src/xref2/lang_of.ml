@@ -26,6 +26,8 @@ type maps = {
   any : (Ident.any * Identifier.t) list;
   (* Shadowed items *)
   s_modules : string list;
+  s_module_types : string list;
+  s_types : string list;
 }
 
 let empty =
@@ -53,6 +55,8 @@ let empty =
     fragment_root = None;
     any = [];
     s_modules = [];
+    s_module_types = [];
+    s_types = [];
   }
 
 let with_fragment_root r = { empty with fragment_root = Some r }
@@ -218,9 +222,13 @@ module ExtractIDs = struct
     { map with exception_ = (id, identifier) :: map.exception_ }
 
   and type_decl parent map id =
-    let identifier = `Type (parent, TypeName.of_string (Ident.Name.type_ id)) in
-    {
-      map with
+    let name = Ident.Name.type_ id in
+    let identifier =
+      if List.mem name map.s_types then
+        `Type (parent, TypeName.internal_of_string name)
+      else `Type (parent, TypeName.of_string name)
+    in
+    { map with
       type_ = (id, identifier) :: map.type_;
       path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
       label_parents =
@@ -255,11 +263,13 @@ module ExtractIDs = struct
     }
 
   and module_type parent map id =
+    let name = Ident.Name.module_type id in
     let identifier =
-      `ModuleType (parent, ModuleTypeName.of_string (Ident.Name.module_type id))
+      if List.mem name map.s_module_types
+      then `ModuleType (parent, ModuleTypeName.internal_of_string name)
+      else `ModuleType (parent, ModuleTypeName.of_string name)
     in
-    {
-      map with
+    { map with
       module_type = (id, identifier) :: map.module_type;
       signatures =
         ((id :> Ident.signature), (identifier :> Identifier.Signature.t))

@@ -300,19 +300,14 @@ and find_shadowed map =
   let open Odoc_model.Names in
   let open Signature in
   let hidden_name : Odoc_model.Paths.Identifier.t -> string option = function
-    | `Module (_, m) ->
-        if ModuleName.is_internal m then Some (ModuleName.to_string_unsafe m)
-        else (
-          Format.eprintf "Module %s is not internal\n%!"
-            (ModuleName.to_string_unsafe m);
-          None )
-    | `Parameter (_, m) ->
-        if ParameterName.is_internal m then
-          Some (ParameterName.to_string_unsafe m)
-        else (
-          Format.eprintf "Parameter %s is not internal\n%!"
-            (ParameterName.to_string_unsafe m);
-          None )
+    | `Module (_, m) when ModuleName.is_internal m ->
+        Some (ModuleName.to_string_unsafe m)
+    | `Parameter (_, m) when ParameterName.is_internal m ->
+        Some (ParameterName.to_string_unsafe m)
+    | `ModuleType (_, m) when ModuleTypeName.is_internal m ->
+        Some (ModuleTypeName.to_string_unsafe m)
+    | `Type (_, t) when TypeName.is_internal t ->
+        Some (TypeName.to_string_unsafe t)
     | _ -> None
   in
   function
@@ -325,6 +320,17 @@ and find_shadowed map =
           Format.eprintf "not shadowing: %a\n%!" Component.Fmt.model_identifier
             (m.id :> Odoc_model.Paths.Identifier.t);
           find_shadowed map rest )
+  | ModuleType m :: rest -> (
+      match hidden_name (m.id :> Odoc_model.Paths.Identifier.t) with
+      | Some n ->
+          find_shadowed Lang_of.{ map with s_module_types = n :: map.s_module_types } rest
+      | None -> find_shadowed map rest)
+  | Type (_, t) :: rest -> (
+      match hidden_name (t.id :> Odoc_model.Paths.Identifier.t) with
+      | Some n ->
+          find_shadowed Lang_of.{ map with s_types = n :: map.s_types } rest
+      | None -> find_shadowed map rest
+      )
   | _ :: rest -> find_shadowed map rest
   | [] -> map
 
