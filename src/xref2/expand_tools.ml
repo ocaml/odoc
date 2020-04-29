@@ -25,9 +25,9 @@ and aux_expansion_of_module_alias env path =
   | Resolved (p, m) -> (
       match (aux_expansion_of_module env m, m.doc) with
       | (Error _ as e), _ -> e
-      | Ok (Signature sg), [] -> Ok (Signature (Strengthen.signature p sg))
+      | Ok (Signature sg), [] -> Ok (Signature (Strengthen.signature (`Resolved p) sg))
       | Ok (Signature sg), docs ->
-          let sg = Strengthen.signature p sg in
+          let sg = Strengthen.signature (`Resolved p) sg in
           Ok (Signature { sg with items = Comment (`Docs docs) :: sg.items })
       | Ok (Functor _ as x), _ -> Ok x )
   | Unresolved p -> Error (`Unresolved_module p)
