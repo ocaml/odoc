@@ -417,7 +417,8 @@ and module_ : Env.t -> Module.t -> Module.t =
             match Expand_tools.expansion_of_module env m.id m' with
             | Ok (env, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in
-                (env, Some e)
+                let compiled_e = Compile.expansion env e in
+                (env, Some compiled_e)
             | Error `OpaqueModule -> (env, None)
             | Error _ ->
                 Format.kasprintf failwith "Failed to expand module %a"
@@ -539,7 +540,8 @@ and functor_parameter_parameter :
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
         | Ok (env, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
-            Ok (env, Some e)
+            let compiled_e = Compile.expansion env e in
+            Ok (env, Some compiled_e)
         | Error `OpaqueModule -> Ok (env, None)
         | Error _ -> Error "expand" )
     | x, _ -> Ok (env, x)
