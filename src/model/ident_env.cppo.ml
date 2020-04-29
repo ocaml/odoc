@@ -40,30 +40,31 @@ let empty =
 
 let builtin_idents = List.map snd Predef.builtin_idents
 
-let add_module parent id name env =
-  let ident = `Module(parent, name) in
-  let module_ = if ModuleName.is_hidden name then `Hidden (`Identifier ident) else `Identifier ident in
-  let all = Ident.find_all (ModuleName.to_string name) env.module_ids in
-  let shadowing =
-    List.filter (fun (_,ident') -> ident' = ident) all
-  in
+let is_shadowing map name ident =
+  let all = Ident.find_all name map in
+  let shadowing = List.filter (fun (_, ident') -> ident' = ident) all in
   match shadowing with
-  | [] ->
-    (* Format.fprintf Format.err_formatter "Adding module: %a\n%!" Ident.print_with_scope id; *)
-    let modules = Ident.add id module_ env.modules in
-    let module_ids = Ident.add id ident env.module_ids in
+  | [] -> None
+  | [(id', _)] -> Some id'
+  | _ -> failwith "Multiple bindings found"
+
+let rebind id new_binding map =
+  map |> Ident.remove id |> Ident.add id new_binding
+
+let add_module parent id name env =
+  let identifier = `Module(parent, name) in
+  let path = if ModuleName.is_hidden name then `Hidden (`Identifier identifier) else `Identifier identifier in
+  match is_shadowing env.module_ids (ModuleName.to_string name) identifier with
+  | None ->
+    let modules = Ident.add id path env.modules in
+    let module_ids = Ident.add id identifier env.module_ids in
     { env with modules; module_ids }
-  | [(id',_)] ->
-    (* Format.fprintf Format.err_formatter "Adding module %a (renaming module %a)\n%!" Ident.print_with_scope id Ident.print_with_scope id'; *)
-    let new_ident = `Module(parent, ModuleName.internal_of_string (ModuleName.to_string name)) in
-    let new_module = `Hidden (`Identifier new_ident) in
-    let module_ids = Ident.add id' new_ident (Ident.remove id' env.module_ids) in
-    let module_ids = Ident.add id ident module_ids in
-    let modules = Ident.add id' new_module (Ident.remove id' env.modules) in
-    let modules = Ident.add id module_ modules in
+  | Some id' ->
+    let new_ident = `Module (parent, ModuleName.internal_of_string (ModuleName.to_string name)) in
+    let module_ids = rebind id' new_ident env.module_ids |> Ident.add id identifier in
+    let new_path = `Hidden (`Identifier new_ident) in
+    let modules = rebind id' new_path env.modules |> Ident.add id path in
     { env with modules; module_ids }
-  | (id1', _) :: (id2', _) :: _ ->
-    failwith (Format.asprintf "This shouldn't happen...! %a %a %a" Ident.print_with_scope id1' Ident.print_with_scope id2' Ident.print_with_scope id)
 
 let add_parameter parent id name env =
   let ident = `Identifier (`Parameter(parent, name)) in
@@ -73,12 +74,24 @@ let add_parameter parent id name env =
 
 let add_module_type parent id name env =
   let identifier = `ModuleType(parent, name) in
-  let module_types = Ident.add id identifier env.module_types in
+  match is_shadowing env.module_types (ModuleTypeName.to_string name) identifier with
+  | None ->
+    let module_types = Ident.add id identifier env.module_types in
+    { env with module_types }
+  | Some id' ->
+    let new_ident = `ModuleType (parent, ModuleTypeName.internal_of_string (ModuleTypeName.to_string name)) in
+    let module_types = rebind id' new_ident env.module_types |> Ident.add id identifier in
     { env with module_types }
 
 let add_type parent id name env =
   let identifier = `Type(parent, name) in
-  let types = Ident.add id identifier env.types in
+  match is_shadowing env.types (TypeName.to_string name) identifier with
+  | None ->
+    let types = Ident.add id identifier env.types in
+    { env with types }
+  | Some id' ->
+    let new_ident = `Type (parent, TypeName.internal_of_string (TypeName.to_string name)) in
+    let types = rebind id' new_ident env.types |> Ident.add id identifier in
     { env with types }
 
 let add_class parent id ty_id obj_id cl_id name env =
