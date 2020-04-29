@@ -16,5 +16,4 @@ end
 
 module F4 (Arg : S) : S
 
-module F5 : functor () -> S
-
+module F5 () : S

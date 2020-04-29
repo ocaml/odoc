@@ -73,6 +73,7 @@ module ML = Generator.Make (struct
     let close_tag_semicolon = false
     let include_semicolon = false
     let functor_keyword = true
+    let functor_contraction = true
   end
 
   module Class =
