@@ -365,12 +365,23 @@ and should_hide_moduletype : ModuleType.expr -> bool = function
   | Signature _ -> false
   | TypeOf x -> should_hide_module_decl x
   | With (e, _) -> should_hide_moduletype e
-  | Functor _ -> false
+  | Functor (_, e) -> should_hide_moduletype e
   | Path p -> Paths.Path.is_hidden (p :> Paths.Path.t)
+
+and build_hidden_moduletype : ModuleType.expr -> ModuleType.expr = function
+  | Signature x -> Signature x
+  | TypeOf _ -> Signature []
+  | With (_, _) -> Signature []
+  | Functor (x, e) -> Functor (x, build_hidden_moduletype e)
+  | Path _ -> Signature []
 
 and should_hide_module_decl : Module.decl -> bool = function
   | ModuleType t -> should_hide_moduletype t
   | Alias p -> Paths.Path.is_hidden (p :> Paths.Path.t)
+
+and build_hidden_module_decl : Module.decl -> Module.decl = function
+  | ModuleType t -> ModuleType (build_hidden_moduletype t)
+  | Alias p -> Alias p
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
@@ -447,6 +458,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let display_type =
       match (override_display_type, expansion) with
       | true, Some (Signature sg) -> Some (ModuleType (Signature sg))
+      | true, Some (Functor _) -> Some (build_hidden_module_decl type_)
       | _ -> None
     in
     let result =
@@ -490,11 +502,18 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
            | _ -> false
          in*)
       let display_expr =
-        match (expr', m.expansion) with
-        | Some (Path (`Resolved p)), Some (Signature sg)
-          when Paths.Path.Resolved.ModuleType.is_hidden p ->
-            Some (Some (Signature sg))
-        | _ -> None
+        match expr' with
+        | None -> None
+        | Some expr ->
+          match (should_hide_moduletype expr, m.expansion) with
+          | false, _ -> Format.eprintf "should_hide=false\n%!"; None
+          | true, None -> Format.eprintf "should_hide=true, no expansion\n%!"; None
+          | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
+          | true, Some (Odoc_model.Lang.Module.Signature sg) ->
+            Some (Some (Odoc_model.Lang.ModuleType.Signature sg))
+          | true, Some (Odoc_model.Lang.Module.Functor _) ->
+            Format.eprintf "should_hide=true, functor expansion\n%!";
+            Some (Some (build_hidden_moduletype expr))
       in
       let doc = comment_docs env m.doc in
       {
@@ -555,7 +574,8 @@ and functor_parameter_parameter :
         | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
         | true, Some (Odoc_model.Lang.Module.Signature sg) ->
             Some (Odoc_model.Lang.ModuleType.Signature sg)
-        | true, Some (Odoc_model.Lang.Module.Functor _) -> None
+        | true, Some (Odoc_model.Lang.Module.Functor _) ->
+          Some (build_hidden_moduletype expr)
       in
       let expansion = Opt.map (module_expansion env) expn in
       { a with expr; display_expr; expansion }
