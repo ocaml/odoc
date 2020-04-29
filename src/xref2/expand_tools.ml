@@ -32,6 +32,36 @@ and aux_expansion_of_module_alias env path =
       | Ok (Functor _ as x), _ -> Ok x )
   | Unresolved p -> Error (`Unresolved_module p)
 
+(* We need to reresolve fragments in expansions as the root of the fragment
+   may well change - so we turn resolved fragments back into unresolved ones
+   here *)
+and unresolve_subs subs =
+  let open Odoc_model in
+  let open Cfrag in
+  let open Names in
+  let rec unresolve_module_fragment : resolved_module -> module_ =
+    function
+    | `OpaqueModule m
+    | `Subst (_, m)
+    | `SubstAlias (_, m) -> unresolve_module_fragment m
+    | `Module (parent, m) -> `Dot (unresolve_signature_fragment parent, ModuleName.to_string m)
+  and unresolve_signature_fragment : resolved_signature -> signature =
+      function
+    | #resolved_module as m -> (unresolve_module_fragment m :> signature)
+    | `Root _ -> `Root
+  and unresolve_type_fragment : resolved_type -> type_ =
+    function
+    | `Type (parent, name) -> `Dot (unresolve_signature_fragment parent, TypeName.to_string name)
+    | `ClassType (parent, name) -> `Dot (unresolve_signature_fragment parent, ClassTypeName.to_string name)
+    | `Class (parent, name) -> `Dot (unresolve_signature_fragment parent, ClassName.to_string name)
+  in
+  List.map (function
+    | Component.ModuleType.ModuleEq (`Resolved f, m) -> Component.ModuleType.ModuleEq (unresolve_module_fragment f, m)
+    | ModuleSubst (`Resolved f, m) -> ModuleSubst (unresolve_module_fragment f, m)
+    | TypeEq (`Resolved f, t) -> TypeEq (unresolve_type_fragment f, t)
+    | TypeSubst (`Resolved f, t) -> TypeSubst (unresolve_type_fragment f, t)
+    | x -> x) subs
+
 and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
   let open Component.ModuleType in
   match expr with
@@ -45,6 +75,7 @@ and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
       | Error _ as e -> e
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
       | Ok (Signature sg) ->
+          let subs = unresolve_subs subs in
           let sg = Tools.handle_signature_with_subs env sg subs in
           Ok (Signature sg) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
