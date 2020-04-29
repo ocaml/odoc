@@ -75,6 +75,7 @@ module Reason = Generator.Make (struct
     let close_tag_semicolon = true
     let include_semicolon = true
     let functor_keyword = false
+    let functor_contraction = false
   end
 
   module Class =

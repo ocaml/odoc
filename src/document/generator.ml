@@ -1244,8 +1244,7 @@ struct
           O.documentedSrc (
             O.keyword "module" ++ O.txt " " ++
             O.txt (Paths.Identifier.name arg.id) ++
-              O.txt Syntax.Type.annotation_separator ++
-              mty (arg.id :> Paths.Identifier.Signature.t) render_ty
+            mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
           )
         | Some (prelude, items) ->
           let url = Url.Path.from_identifier arg.id in
@@ -1258,8 +1257,7 @@ struct
             let content = { Page.items ; title ; header ; url } in
             let summary =
               O.render (
-                O.txt Syntax.Type.annotation_separator
-                ++ mty (arg.id :> Paths.Identifier.Signature.t) render_ty)
+                mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty)
             in
             let status = `Default in
             let expansion =
@@ -1389,7 +1387,7 @@ struct
           O.documentedSrc link, status, Some page
       in
       let summary =
-        module_decl t.id t.type_
+        mdexpr_in_decl t.id t.type_
       in
       let modexpr =
         attach_expansion
@@ -1415,18 +1413,24 @@ struct
       let doc = Comment.first_to_ir t.doc in
       Item.Declaration {kind ; anchor ; doc ; content}
 
-  and module_decl (base : Paths.Identifier.Module.t) md =
+  and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
     let is_canonical p =
       let i = Paths.Path.Resolved.Module.identifier p in
       i = (base :> Paths.Identifier.Path.Module.t)
     in
-    let sig_dotdotdot = O.txt Syntax.Type.annotation_separator ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag in
+    let sig_dotdotdot =
+      O.txt Syntax.Type.annotation_separator ++
+        Syntax.Mod.open_tag ++ O.txt " ... " ++
+        Syntax.Mod.close_tag
+    in
     match md with
     | Alias (`Resolved p, _) when is_canonical p -> sig_dotdotdot
-    | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) -> O.txt " = " ++ module_decl' (base :> Paths.Identifier.Signature.t) md
+    | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
+      O.txt " = " ++
+        mdexpr (base :> Paths.Identifier.Signature.t) md
     | Alias _ -> sig_dotdotdot
-    | ModuleType _ -> O.txt Syntax.Type.annotation_separator ++ module_decl' (base :> Paths.Identifier.Signature.t) md
-
+    | ModuleType mt ->
+      mty_in_decl (base :> Paths.Identifier.Signature.t) mt
 
   and extract_path_from_umt ~(default: Paths.Identifier.Signature.t) =
     let open Odoc_model.Lang.ModuleType.U in
@@ -1450,7 +1454,7 @@ struct
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
-  and module_decl'
+  and mdexpr
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
     fun base -> function
       | Alias (mod_path, _) ->
@@ -1603,6 +1607,39 @@ struct
         | Signature _ ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
+  and mty_in_decl
+    : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
+    = fun base -> function
+      | Path _
+      | Signature _
+      | With _
+      | TypeOf _
+        as m ->
+        O.txt Syntax.Type.annotation_separator ++ mty base m
+      | Functor _ as m when not Syntax.Mod.functor_contraction ->
+        O.txt Syntax.Type.annotation_separator ++ mty base m
+      | Functor (arg, expr) ->
+        let text_arg = match arg with
+          | Unit -> O.txt "()"
+          | Named arg ->
+            let arg_expr = arg.expr in
+            let stop_before = (expansion_of_module_type_expr arg_expr) = None in
+            let name =
+              let open Odoc_model.Lang.FunctorParameter in
+              let name = Paths.Identifier.name arg.id in
+              match
+                Url.from_identifier
+                  ~stop_before (arg.id :> Paths.Identifier.t)
+              with
+              | Error _ -> O.txt name
+              | Ok href -> resolved href [inline @@ Text name]
+            in
+            O.txt "(" ++ name ++ O.txt Syntax.Type.annotation_separator
+            ++ mty base arg.expr
+            ++ O.txt ")"
+        in
+        O.txt " " ++ text_arg ++ mty_in_decl base expr
+
   (* TODO : Centralize the list juggling for type parameters *)
   and type_expr_in_subst ~base td typath =
     let typath = Link.from_fragment ~base typath in
@@ -1619,7 +1656,7 @@ struct
           O.txt " " ++
           Link.from_fragment ~base (frag_mod :> Paths.Fragment.t)
         ++ O.txt " = " ++
-          module_decl' base md
+          mdexpr base md
       | TypeEq (frag_typ, td) ->
         O.keyword "type" ++
           O.txt " " ++

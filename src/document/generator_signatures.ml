@@ -79,6 +79,7 @@ sig
     val close_tag_semicolon : bool
     val include_semicolon : bool
     val functor_keyword : bool
+    val functor_contraction : bool
   end
 
   module Class :
