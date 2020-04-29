@@ -1378,6 +1378,7 @@ struct
 
   and module_type (t : Odoc_model.Lang.ModuleType.t) =
     let modname = Paths.Identifier.name t.id in
+    let expr = match t.display_expr with | Some x -> x | None -> t.expr in
     let modname, expansion =
       match t.expansion with
       | None ->
@@ -1386,7 +1387,7 @@ struct
         let expansion =
           match expansion with
           | AlreadyASig ->
-            begin match t.expr with
+            begin match expr with
             | Some (Signature sg) -> Odoc_model.Lang.Module.Signature sg
             | _ -> assert false
             end
@@ -1405,7 +1406,7 @@ struct
     in
     let mty =
       attach_expansion expansion @@
-      match t.expr with
+      match expr with
       | None -> O.noop
       | Some expr ->
         O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
@@ -1438,6 +1439,7 @@ struct
           O.txt " () " ++
           mty base expr
       | Functor (Named arg, expr) ->
+        let arg_expr = match arg.display_expr with | Some e -> e | None -> arg.expr in
         let name =
           let open Odoc_model.Lang.FunctorParameter in
           let name = Paths.Identifier.name arg.id in
@@ -1450,7 +1452,7 @@ struct
         in
         (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
           O.txt " (" ++ name ++ O.txt Syntax.Type.annotation_separator ++
-          mty base arg.expr ++
+          mty base arg_expr ++
           O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
           mty base expr
       | With (expr, substitutions) ->
