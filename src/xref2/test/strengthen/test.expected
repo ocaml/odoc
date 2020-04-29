@@ -11,6 +11,6 @@ type u/25 = resolved(t/24)
  (removed=[])
 AFTER 
 ======
-type t/26 = resolved(identifier((root Root)).t)
+type t/26 = resolved(identifier((root Root))).t
 type u/27 = resolved(t/26)
  (removed=[])

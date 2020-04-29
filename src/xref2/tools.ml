@@ -1032,7 +1032,7 @@ and signature_of_module_alias :
   | Resolved (p', m) ->
       (* p' is the path to the aliased module *)
       signature_of_module_cached env p' false m >>= fun m' ->
-      let m'' = Strengthen.signature p' m' in
+      let m'' = Strengthen.signature (`Resolved p') m' in
       Ok m''
   | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
   | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
