@@ -572,6 +572,22 @@ and read_module_declaration env parent md =
     | `Tag (`Canonical (p, r)) -> Some (p, r)
     | _ -> None
   in
+  let parent_is_bigarray = match parent with | `Root (_, n) when UnitName.to_string n = "Stdlib__bigarray" -> true | _ -> false in
+    let mk_canonical name =
+      Format.eprintf "Hack for %s\n%!" name;
+      Some (`Dot (`Dot(`Root "Stdlib", "Bigarray"), name), `Dot (`Dot (`Root (UnitName.of_string "Stdlib", `TModule), "Bigarray"), name))
+    in
+    let canonical =
+      if parent_is_bigarray then
+      match ModuleName.to_string (ModuleName.of_ident md.md_id) with
+      | "Genarray" -> mk_canonical "Genarray"
+      | "Array0" -> mk_canonical "Array0"
+      | "Array1" -> mk_canonical "Array1"
+      | "Array2" -> mk_canonical "Array2"
+      | "Array3" -> mk_canonical "Array3"
+      | _ -> canonical
+      else canonical
+    in
   let type_ =
     match md.md_type.mty_desc with
     | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p)
