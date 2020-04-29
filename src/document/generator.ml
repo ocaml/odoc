@@ -1246,13 +1246,11 @@ struct
             O.txt (Paths.Identifier.name arg.id) ++
             mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
           )
-        | Some (prelude, items) ->
+        | Some items ->
           let url = Url.Path.from_identifier arg.id in
           let modname = path url [inline @@ Text name] in
           let modtyp =
-            let header =
-              format_title `Arg (make_name_from_path url) @ prelude
-            in
+            let header = format_title `Arg (make_name_from_path url) in
             let title = name in
             let content = { Page.items ; title ; header ; url } in
             let summary =
@@ -1292,7 +1290,7 @@ struct
 
   and simple_expansion
     : Odoc_model.Lang.ModuleType.simple_expansion
-      -> Item.t list * Item.t list
+      -> Item.t list
     = fun t ->
       let rec extract_functor_params (f : Odoc_model.Lang.ModuleType.simple_expansion) =
         match f with
@@ -1310,7 +1308,7 @@ struct
       match extract_functor_params t with
       | None, sg ->
         let expansion = signature sg in
-        [], expansion
+        expansion
       | Some params, sg ->
         let content = signature sg in
         let params =
@@ -1325,18 +1323,25 @@ struct
               [Item.Declaration { content ; anchor ; kind ; doc }]
           )
         in
-        let prelude = 
-          [Item.Heading {
-            label = Some "parameters" ; level = 2 ; title = [inline @@ Text "Parameters"];
-          }]
-          @ params
-          @ [Item.Heading {
-            label = Some "signature" ; level = 2 ; title = [inline @@ Text "Signature"];
-          }]
+        let prelude =
+          Item.Heading {
+            label = Some "parameters" ;
+            level = 2 ;
+            title = [inline @@ Text "Parameters"];
+          }
+          :: params
+        and content = 
+          Item.Heading {
+            label = Some "signature" ;
+            level = 1 ;
+            title = [inline @@ Text "Signature"];
+          }
+          :: content
         in
-        prelude, content
+        prelude @ content
   
-  and expansion_of_module_type_expr : Odoc_model.Lang.ModuleType.expr -> (Item.t list * Item.t list) option
+  and expansion_of_module_type_expr
+    : Odoc_model.Lang.ModuleType.expr -> Item.t list option
     = fun t ->
       let rec simple_expansion_of (t : Odoc_model.Lang.ModuleType.expr ) =
         match t with
@@ -1374,14 +1379,16 @@ struct
           O.documentedSrc (O.txt modname),
           `Default,
           None
-        | Some (prelude, items) ->
+        | Some items ->
           let doc = Comment.standalone t.doc in
-          let status = match t.type_ with | ModuleType (Signature _) -> `Inline | _ -> `Default in
+          let status = match t.type_ with
+            | ModuleType (Signature _) -> `Inline | _ -> `Default
+          in
           let url = Url.Path.from_identifier t.id in
           let link = path url [inline @@ Text modname] in
           let title = modname in
           let header =
-            format_title `Mod (make_name_from_path url) @ doc @ prelude
+            format_title `Mod (make_name_from_path url) @ doc
           in
           let page = {Page.items ; title ; header ; url } in
           O.documentedSrc link, status, Some page
@@ -1472,13 +1479,13 @@ struct
       match expansion with
       | None ->
         O.documentedSrc @@ O.txt modname, None
-      | Some (prelude,items) ->
+      | Some items ->
         let doc = Comment.standalone t.doc in
         let url = Url.Path.from_identifier t.id in
         let link = path url [inline @@ Text modname] in
         let title = modname in
         let header =
-          format_title `Mty (make_name_from_path url) @ doc @ prelude
+          format_title `Mty (make_name_from_path url) @ doc
         in
         let page = {Page.items ; title ; header ; url } in
         O.documentedSrc link, Some page
