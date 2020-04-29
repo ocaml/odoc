@@ -69,7 +69,7 @@ let cmi ~env ~package ~hidden ~output ~warn_error input =
   resolve_and_substitute ~env ~output ~warn_error input read_file
 
 (* TODO: move most of this to doc-ock. *)
-let mld ~env ~package ~output ~warn_error input =
+let mld ~env:_ ~package ~output ~warn_error input =
   Odoc_model.Error.set_warn_error warn_error;
   let root_name =
     let page_dash_root =
@@ -97,15 +97,8 @@ let mld ~env ~package ~output ~warn_error input =
     Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
   let resolve content =
-    (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
-    let env = Env.build env (`Page page) in
-    let resolved =
-      Odoc_xref2.Link.resolve_page env page
-      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-      |> Odoc_model.Error.shed_warnings
-    in
-    Page.save output resolved;
+    Page.save output page;
     Ok ()
   in
   Fs.File.read input >>= fun str ->
