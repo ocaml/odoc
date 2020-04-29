@@ -506,13 +506,12 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
         | None -> None
         | Some expr ->
           match (should_hide_moduletype expr, m.expansion) with
-          | false, _ -> Format.eprintf "should_hide=false\n%!"; None
-          | true, None -> Format.eprintf "should_hide=true, no expansion\n%!"; None
+          | false, _ -> None
+          | true, None -> None
           | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
           | true, Some (Odoc_model.Lang.Module.Signature sg) ->
             Some (Some (Odoc_model.Lang.ModuleType.Signature sg))
           | true, Some (Odoc_model.Lang.Module.Functor _) ->
-            Format.eprintf "should_hide=true, functor expansion\n%!";
             Some (Some (build_hidden_moduletype expr))
       in
       let doc = comment_docs env m.doc in
