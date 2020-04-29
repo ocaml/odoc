@@ -1232,31 +1232,28 @@ struct
     in
     loop s []
 
-  and functor_argument
+  and functor_parameter
     : Odoc_model.Lang.FunctorParameter.parameter -> DocumentedSrc.t
     = fun arg ->
       let open Odoc_model.Lang.FunctorParameter in
       let name = Paths.Identifier.name arg.id in
       let render_ty = arg.expr in
-      let content =
+      let modtyp =
+        mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
+      in
+      let modname, mod_decl =
         match expansion_of_module_type_expr arg.expr with
         | None ->
-          O.documentedSrc (
-            O.keyword "module" ++ O.txt " " ++
-            O.txt (Paths.Identifier.name arg.id) ++
-            mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty
-          )
+          let modname = O.txt (Paths.Identifier.name arg.id) in
+          modname, O.documentedSrc modtyp
         | Some items ->
           let url = Url.Path.from_identifier arg.id in
           let modname = path url [inline @@ Text name] in
-          let modtyp =
+          let type_with_expansion =
             let header = format_title `Arg (make_name_from_path url) in
             let title = name in
             let content = { Page.items ; title ; header ; url } in
-            let summary =
-              O.render (
-                mty_in_decl (arg.id :> Paths.Identifier.Signature.t) render_ty)
-            in
+            let summary = O.render modtyp in
             let status = `Default in
             let expansion =
               O.documentedSrc
@@ -1266,10 +1263,11 @@ struct
             in
             DocumentedSrc.[ Alternative (Expansion {status=`Default; summary; url; expansion })]
           in
-          O.documentedSrc (O.keyword "module" ++ O.txt " " ++ modname)
-          @ modtyp
+          modname, type_with_expansion
       in
-      content
+      O.documentedSrc (O.keyword "module" ++ O.txt " ")
+      @ O.documentedSrc modname
+      @ mod_decl
 
   and module_substitution (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let name = Paths.Identifier.name t.id in
@@ -1313,7 +1311,7 @@ struct
         let content = signature sg in
         let params =
           Utils.flatmap params ~f:(fun arg ->
-              let content = functor_argument arg in
+              let content = functor_parameter arg in
               let kind = Some "parameter" in
               let anchor =
                 Utils.option_of_result @@
