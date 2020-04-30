@@ -375,7 +375,7 @@ let rec read_module_expr env parent label_parent mexpr =
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-              Named { id; expr=arg; expansion}, env
+              Named { id; expr=arg; expansion; display_expr=None }, env
           in
         let res = read_module_expr env (`Result parent) label_parent res in
         Functor(parameter, res)

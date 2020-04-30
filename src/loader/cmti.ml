@@ -486,19 +486,19 @@ and read_module_type env parent label_parent mty =
             let name, env =
               match id_opt with
               | Some id ->
-                parenthesise (Ident.name id), Env.add_argument parent pos id (ArgumentName.of_ident id) env
+                parenthesise (Ident.name id), Env.add_parameter parent id (ParameterName.of_ident id) env
               | None -> "_", env
             in
-            let id = `Argument(parent, pos, ArgumentName.of_string name) in
-            let arg = read_module_type env id label_parent 1 arg in
+            let id = `Parameter(parent, ParameterName.of_string name) in
+            let arg = read_module_type env id label_parent arg in
             let expansion =
                 match arg with
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-            Named { id; expr = arg; expansion }, env
+            Named { id; expr = arg; expansion; display_expr=None }, env
         in
-        let res = read_module_type env parent label_parent (pos + 1) res in
+        let res = read_module_type env (`Result parent) label_parent res in
         Functor(parameter, res)
 #else
     | Tmty_functor(id, _, arg, res) ->
@@ -579,12 +579,17 @@ and read_module_declaration env parent md =
     in
     let canonical =
       if parent_is_bigarray then
-      match ModuleName.to_string (ModuleName.of_ident md.md_id) with
-      | "Genarray" -> mk_canonical "Genarray"
-      | "Array0" -> mk_canonical "Array0"
-      | "Array1" -> mk_canonical "Array1"
-      | "Array2" -> mk_canonical "Array2"
-      | "Array3" -> mk_canonical "Array3"
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
+      let name = match md.md_id with | Some x -> Some (ModuleName.to_string (ModuleName.of_ident x)) | _ -> None in
+#else
+      let name = Some (ModuleName.to_string (ModuleName.of_ident md.md_id)) in
+#endif
+      match name with
+      | Some "Genarray" -> mk_canonical "Genarray"
+      | Some "Array0" -> mk_canonical "Array0"
+      | Some "Array1" -> mk_canonical "Array1"
+      | Some "Array2" -> mk_canonical "Array2"
+      | Some "Array3" -> mk_canonical "Array3"
       | _ -> canonical
       else canonical
     in
