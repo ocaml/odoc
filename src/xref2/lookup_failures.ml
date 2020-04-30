@@ -34,6 +34,7 @@ let to_warning ~filename (r, failures) =
       match failures with
       | [] -> r
       | _ :: _ ->
+          let failures = List.sort_uniq (String.compare) failures in
           warning warnings
             (filename_only "The following lookup failures occurred:@\n%a"
                pp_failures failures filename);
