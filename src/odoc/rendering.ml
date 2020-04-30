@@ -1,19 +1,6 @@
 open Odoc_document
 open Or_error
 
-let render_document renderer ~output:root_dir ~extra odoctree =
-  let pages = renderer.Renderer.render extra odoctree in
-  Renderer.traverse pages ~f:(fun filename content ->
-    let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
-    let directory = Fs.File.dirname filename in
-    Fs.Directory.mkdir_p directory;
-    let oc = open_out (Fs.File.to_string filename) in
-    let fmt = Format.formatter_of_out_channel oc in
-    Format.fprintf fmt "%t@?" content;
-    close_out oc
-  );
-  Ok ()
-
 let document_of_input ~env ~syntax input =
   Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
@@ -55,7 +42,47 @@ let document_of_input ~env ~syntax input =
     Compilation_unit.save Fs.File.(set_ext ".odocl" input) odoctree;
     Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
-let from_odoc ~env ~syntax ~renderer ~output extra file =
+let render_document renderer ~output:root_dir ~extra odoctree =
+  let pages = renderer.Renderer.render extra odoctree in
+  Renderer.traverse pages ~f:(fun filename content ->
+    let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+    let directory = Fs.File.dirname filename in
+    Fs.Directory.mkdir_p directory;
+    let oc = open_out (Fs.File.to_string filename) in
+    let fmt = Format.formatter_of_out_channel oc in
+    Format.fprintf fmt "%t@?" content;
+    close_out oc
+  );
+  Ok ()
+
+let urls_of_input input =
+  Root.read input >>= function
+  | { file = Page _; _ } ->
+      Page.load input >>= fun odoctree ->
+      let targets = Targets.page odoctree in
+      Ok targets
+  | { file = Compilation_unit _; _ } ->
+      Compilation_unit.load input >>= fun unit ->
+      if unit.hidden
+      then Ok []
+      else
+        (* let root = Compilation_unit.root unit in
+         * let package = root.package in *)
+        let targets = Targets.unit (* ~package *) unit in
+        Ok targets
+
+let render_odoc ~env ~syntax ~renderer ~output extra file =
   document_of_input ~env ~syntax file
   >>= render_document renderer ~output ~extra
-  
+
+let targets_odoc ~renderer ~output:root_dir input =
+  urls_of_input input >>= fun urls ->
+  let targets = Utils.flatmap urls ~f:(fun url ->
+    let filenames = renderer.Renderer.files_of_url url in
+    List.map (fun filename ->
+      Fpath.normalize @@ Fs.File.append root_dir filename
+    ) filenames
+  )
+  in
+  Ok targets
+
