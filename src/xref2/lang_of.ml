@@ -228,7 +228,8 @@ module ExtractIDs = struct
         `Type (parent, TypeName.internal_of_string name)
       else `Type (parent, TypeName.of_string name)
     in
-    { map with
+    {
+      map with
       type_ = (id, identifier) :: map.type_;
       path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
       label_parents =
@@ -265,11 +266,12 @@ module ExtractIDs = struct
   and module_type parent map id =
     let name = Ident.Name.module_type id in
     let identifier =
-      if List.mem name map.s_module_types
-      then `ModuleType (parent, ModuleTypeName.internal_of_string name)
+      if List.mem name map.s_module_types then
+        `ModuleType (parent, ModuleTypeName.internal_of_string name)
       else `ModuleType (parent, ModuleTypeName.of_string name)
     in
-    { map with
+    {
+      map with
       module_type = (id, identifier) :: map.module_type;
       signatures =
         ((id :> Ident.signature), (identifier :> Identifier.Signature.t))

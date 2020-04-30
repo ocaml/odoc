@@ -217,8 +217,7 @@ and find_module_type :
   >>= signature_lookup_result_of_label_parent
   >>= fun (parent', cp, sg) ->
   let sg = Tools.prefix_signature (cp, sg) in
-  Tools.handle_module_type_lookup env name cp sg
-  >>= fun (cp', m) ->
+  Tools.handle_module_type_lookup env name cp sg >>= fun (cp', m) ->
   let resolved_ref =
     let base = `ModuleType (parent', ModuleTypeName.of_string name) in
     match m.expr >>= Tools.get_substituted_module_type env with

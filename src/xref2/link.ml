@@ -5,7 +5,7 @@ open Lang
 (* for < 4.03 *)
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
-  
+
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
@@ -508,15 +508,15 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
       let display_expr =
         match expr' with
         | None -> None
-        | Some expr ->
-          match (should_hide_moduletype expr, m.expansion) with
-          | false, _ -> None
-          | true, None -> None
-          | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
-          | true, Some (Odoc_model.Lang.Module.Signature sg) ->
-            Some (Some (Odoc_model.Lang.ModuleType.Signature sg))
-          | true, Some (Odoc_model.Lang.Module.Functor _) ->
-            Some (Some (build_hidden_moduletype expr))
+        | Some expr -> (
+            match (should_hide_moduletype expr, m.expansion) with
+            | false, _ -> None
+            | true, None -> None
+            | true, Some Odoc_model.Lang.Module.AlreadyASig -> None
+            | true, Some (Odoc_model.Lang.Module.Signature sg) ->
+                Some (Some (Odoc_model.Lang.ModuleType.Signature sg))
+            | true, Some (Odoc_model.Lang.Module.Functor _) ->
+                Some (Some (build_hidden_moduletype expr)) )
       in
       let doc = comment_docs env m.doc in
       {
@@ -578,7 +578,7 @@ and functor_parameter_parameter :
         | true, Some (Odoc_model.Lang.Module.Signature sg) ->
             Some (Odoc_model.Lang.ModuleType.Signature sg)
         | true, Some (Odoc_model.Lang.Module.Functor _) ->
-          Some (build_hidden_moduletype expr)
+            Some (build_hidden_moduletype expr)
       in
       let expansion = Opt.map (module_expansion env) expn in
       { a with expr; display_expr; expansion }

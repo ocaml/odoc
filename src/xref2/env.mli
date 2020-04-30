@@ -129,7 +129,10 @@ val add_module_functor_args :
   Component.Module.t -> Odoc_model.Paths_types.Identifier.module_ -> t -> t
 
 val add_module_type_functor_args :
-  Component.ModuleType.t -> Odoc_model.Paths_types.Identifier.module_type -> t -> t
+  Component.ModuleType.t ->
+  Odoc_model.Paths_types.Identifier.module_type ->
+  t ->
+  t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 

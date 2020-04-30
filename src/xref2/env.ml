@@ -366,8 +366,7 @@ let lookup_module_type identifier env =
 
 let lookup_value identifier env = List.assoc identifier env.values
 
-let lookup_section_title identifier env =
-  assoc_opt identifier env.titles
+let lookup_section_title identifier env = assoc_opt identifier env.titles
 
 let lookup_class identifier env = assoc_opt identifier env.classes
 
@@ -402,7 +401,7 @@ let lookup_root_module name env =
     match try Some (List.assoc name env.roots) with _ -> None with
     | Some x -> Some x
     | None -> (
-        match (try Some (Hashtbl.find roots name) with _ -> None) with
+        match try Some (Hashtbl.find roots name) with _ -> None with
         | Some x -> x
         | None -> (
             match env.resolver with
@@ -433,7 +432,7 @@ let lookup_module_internal identifier env =
     let l = EnvModuleMap.cardinal env.modules in
     len := !len + l;
     n := !n + 1;
-    (try Some (EnvModuleMap.find identifier env.modules) with _ -> None)
+    try Some (EnvModuleMap.find identifier env.modules) with _ -> None
   with
   | Some _ as result -> result
   | None -> (
@@ -592,17 +591,13 @@ let add_module_functor_args m id env =
   match m.Component.Module.type_ with
   | Alias _ -> env
   | ModuleType expr ->
-    add_functor_args'
-      (id :> Odoc_model.Paths.Identifier.Signature.t)
-      expr env
+      add_functor_args' (id :> Odoc_model.Paths.Identifier.Signature.t) expr env
 
 let add_module_type_functor_args mt id env =
   match mt.Component.ModuleType.expr with
   | None -> env
   | Some expr ->
-    add_functor_args'
-      (id :> Odoc_model.Paths.Identifier.Signature.t)
-      expr env
+      add_functor_args' (id :> Odoc_model.Paths.Identifier.Signature.t) expr env
 
 let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
   let open Component in
