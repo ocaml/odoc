@@ -78,7 +78,7 @@ let deps_of_odoc_file ~deps input =
       );
     Ok ()
 
-let for_html_step pkg_dir =
+let for_rendering_step pkg_dir =
   let deps = Hash_set.create () in
   let add_deps () file = deps_of_odoc_file ~deps file in
   Fs.Directory.fold_files_rec_result ~ext:".odoc" add_deps () pkg_dir >>= fun () ->

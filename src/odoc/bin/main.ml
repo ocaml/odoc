@@ -504,10 +504,11 @@ module Depends = struct
             reported in the output."
   end
 
-  module Odoc_html = struct
+  module Render = struct
     let list_dependencies input_file =
       let open Or_error in
-      Depends.for_html_step (Fs.Directory.of_string input_file) >>= fun depends ->
+      Depends.for_rendering_step
+        (Fs.Directory.of_string input_file) >>= fun depends ->
       List.iter depends
         ~f:(fun (root : Odoc_model.Root.t) ->
           Printf.printf "%s %s %s\n"
@@ -524,10 +525,17 @@ module Depends = struct
       in
       Term.(const handle_error $ (const list_dependencies $ input))
 
-  let info =
-    Term.info "html-deps"
-      ~doc:"lists the packages which need to be in odoc's load path to process \
-            html from the .odoc files in the given directory"
+    let info =
+      Term.info "render-deps"
+        ~doc:"lists the packages which need to be in odoc's load path to render \
+              the .odoc files in the given directory"
+  end
+
+  module Odoc_html = struct
+    let cmd = Render.cmd
+    let info =
+      Term.info "html-deps"
+        ~doc:"DEPRECATED alias for render-deps"
   end
 end
 
@@ -574,6 +582,7 @@ let () =
     ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
+    ; Depends.Render.(cmd, info)
     ; Depends.Odoc_html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Support_files.(cmd, info)
