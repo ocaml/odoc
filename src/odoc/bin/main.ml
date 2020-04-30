@@ -29,28 +29,6 @@ let convert_directory ?(create=false) () : Fs.Directory.t Arg.converter =
   let odoc_dir_printer fmt dir = dir_printer fmt (Fs.Directory.to_string dir) in
   (odoc_dir_parser, odoc_dir_printer)
 
-(* Very basic validation and normalization for URI paths. *)
-let convert_uri : Odoc_html.Tree.uri Arg.converter =
-  let parser str =
-    if String.length str = 0 then
-      `Error "invalid URI"
-    else
-      (* The URI is absolute if it starts with a scheme or with '/'. *)
-      let is_absolute =
-        List.exists ["http"; "https"; "file"; "data"; "ftp"]
-          ~f:(fun scheme -> Astring.String.is_prefix ~affix:(scheme ^ ":") str)
-        || String.get str 0 = '/'
-      in
-      let last_char = String.get str (String.length str - 1) in
-      let str = if last_char <> '/' then str ^ "/" else str in
-      `Ok Odoc_html.Tree.(if is_absolute then Absolute str else Relative str)
-  in
-  let printer ppf = function
-    | Odoc_html.Tree.Absolute uri
-    | Odoc_html.Tree.Relative uri -> Format.pp_print_string ppf uri
-  in
-  (parser, printer)
-
 let handle_error = function
   | Result.Ok () -> ()
   | Error (`Cli_error msg) ->
@@ -228,134 +206,145 @@ end = struct
     Term.info ~doc:"Link odoc files together" "link"
 end
 
-module Generate : sig
-  val cmd : unit Term.t
-  val info: Term.info
-end = struct
-  let generate semantic_uris closed_details output_dir
-        syntax theme_uri input_file _warn_error =
-    Odoc_html.Link.semantic_uris := semantic_uris;
-    Odoc_html.Tree.open_details := not closed_details;
-    let file = Fs.File.of_string input_file in
-    Odoc_generate.from_odocl ~syntax ~theme_uri ~output:output_dir file
-
-  let cmd =
-    let input =
-      let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odocl" [])
-    in
-    let semantic_uris =
-      let doc = "Generate pretty (semantic) links" in
-      Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
-    in
-    let closed_details =
-      let doc = "If this flag is passed <details> tags (used for includes) will \
-                 be closed by default."
-      in
-      Arg.(value & flag (info ~doc ["closed-details"]))
-    in
-    let theme_uri =
-      let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
-                 Relative URIs are resolved using `--output-dir' as a target." in
-      let default = Odoc_html.Tree.Relative "./" in
-      Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
-    in
-    let syntax =
-      let doc = "Available options: ml | re" in
-      let env = Arg.env_var "ODOC_SYNTAX"
-      in
-      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
-    in
-    Term.(const handle_error $ (const generate $ semantic_uris $ closed_details $
-          dst ~create:true () $ syntax $
-          theme_uri $ input $ warn_error))
-
-  let info =
-    Term.info ~doc:"Generates an html file from an odocl one" "generate"
+module type S = sig
+  type args
+  val renderer : args Odoc_document.Renderer.t
+  val extra_args : args Cmdliner.Term.t
 end
 
-module Target = struct
+module Make_renderer (R : S) : sig
+  val process : unit Term.t * Term.info
+  val targets : unit Term.t * Term.info
+  val generate : unit Term.t * Term.info
+end = struct
 
   let input =
     let doc = "Input file" in
     Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
 
-  let mk_from_renderer renderer =
+  module Process = struct
+    let process extra _hidden directories output_dir
+        syntax input_file =
+      let env =
+        Env.create ~important_digests:false ~directories ~open_modules:[]
+      in
+      let file = Fs.File.of_string input_file in
+      Rendering.render_odoc
+        ~renderer:R.renderer
+        ~env ~syntax ~output:output_dir extra file
+
+    let cmd =
+      let syntax =
+        let doc = "Available options: ml | re" in
+        let env = Arg.env_var "ODOC_SYNTAX"
+        in
+        Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@
+        info ~docv:"SYNTAX" ~doc ~env ["syntax"])
+      in
+      Term.(const handle_error $ (const process $ R.extra_args $ hidden $
+          odoc_file_directories $ dst ~create:true () $ syntax $
+          input))
+
+    let info =
+      let doc = Format.sprintf "Render %s files from an odoc one" R.renderer.name in
+      Term.info ~doc R.renderer.name
+  end
+  let process = Process.(cmd, info)
+
+  module Generate = struct
+    let generate extra _hidden output_dir
+        syntax input_file =
+      let file = Fs.File.of_string input_file in
+      Rendering.generate_odoc
+        ~renderer:R.renderer
+        ~syntax ~output:output_dir extra file
+
+    let cmd =
+      let syntax =
+        let doc = "Available options: ml | re" in
+        let env = Arg.env_var "ODOC_SYNTAX"
+        in
+        Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@
+        info ~docv:"SYNTAX" ~doc ~env ["syntax"])
+      in
+      Term.(const handle_error $ (const generate $ R.extra_args $ hidden $
+          dst ~create:true () $ syntax $
+          input))
+
+    let info =
+      let doc = Format.sprintf "Generate %s files from an odocl one"
+          R.renderer.name in
+      Term.info ~doc (R.renderer.name ^ "-generate")
+  end
+  let generate = Generate.(cmd, info)    
+  
+  module Targets = struct
     let list_targets output_dir odoc_file =
       let open Or_error in
       let odoc_file = Fs.File.of_string odoc_file in
-      Rendering.targets_odoc ~renderer ~output:output_dir odoc_file
+      Rendering.targets_odoc ~renderer:R.renderer ~output:output_dir odoc_file
       >>= fun targets ->
       let targets = List.map ~f:Fs.File.to_string targets in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
       Ok ()
-    in
+    
     let cmd =
       Term.(const handle_error $ (const list_targets $ dst () $ input))
-    in
+    
     let info =
-      Term.info (renderer.name ^ "-targets") ~doc:"TODO: Fill in."
-    in
-    cmd, info
+      Term.info (R.renderer.name ^ "-targets") ~doc:"TODO: Fill in."
+  end
+  let targets = Targets.(cmd, info)
+  
 end
 
+module Odoc_html = Make_renderer(struct
+  type args = Html_page.args
 
-module Odoc_html : sig
-  val cmd : unit Term.t
-  val info: Term.info
-  val targets : unit Term.t * Term.info
-end = struct
+  let renderer = Html_page.renderer
 
-  let html semantic_uris closed_details _hidden directories output_dir
-        syntax theme_uri input_file =
-    let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
-    let file = Fs.File.of_string input_file in
-    let extra = {Html_page.
-      semantic_uris ;
-      closed_details ;
-      theme_uri ;
-    }
+  let semantic_uris =
+    let doc = "Generate pretty (semantic) links" in
+    Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
+  let closed_details =
+    let doc = "If this flag is passed <details> tags (used for includes) will \
+               be closed by default."
     in
-    Rendering.render_odoc
-      ~renderer:Html_page.renderer
-      ~env ~syntax ~output:output_dir extra file
+    Arg.(value & flag (info ~doc ["closed-details"]))
 
-  let cmd =
-    let input =
-      let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+  (* Very basic validation and normalization for URI paths. *)
+  let convert_uri : Odoc_html.Tree.uri Arg.converter =
+    let parser str =
+      if String.length str = 0 then
+        `Error "invalid URI"
+      else
+        (* The URI is absolute if it starts with a scheme or with '/'. *)
+        let is_absolute =
+          List.exists ["http"; "https"; "file"; "data"; "ftp"]
+            ~f:(fun scheme -> Astring.String.is_prefix ~affix:(scheme ^ ":") str)
+          || String.get str 0 = '/'
+        in
+        let last_char = String.get str (String.length str - 1) in
+        let str = if last_char <> '/' then str ^ "/" else str in
+        `Ok Odoc_html.Tree.(if is_absolute then Absolute str else Relative str)
     in
-    let semantic_uris =
-      let doc = "Generate pretty (semantic) links" in
-      Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
+    let printer ppf = function
+      | Odoc_html.Tree.Absolute uri
+      | Odoc_html.Tree.Relative uri -> Format.pp_print_string ppf uri
     in
-    let closed_details =
-      let doc = "If this flag is passed <details> tags (used for includes) will \
-                 be closed by default."
+    (parser, printer)
+  let theme_uri =
+    let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
+               Relative URIs are resolved using `--output-dir' as a target." in
+    let default = Odoc_html.Tree.Relative "./" in
+    Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
+
+  let extra_args =
+      let f semantic_uris closed_details theme_uri =
+        {Html_page. semantic_uris ; closed_details ; theme_uri }
       in
-      Arg.(value & flag (info ~doc ["closed-details"]))
-    in
-    let theme_uri =
-      let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
-                 Relative URIs are resolved using `--output-dir' as a target." in
-      let default = Odoc_html.Tree.Relative "./" in
-      Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
-    in
-    let syntax =
-      let doc = "Available options: ml | re" in
-      let env = Arg.env_var "ODOC_SYNTAX"
-      in
-      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
-    in
-    Term.(const handle_error $ (const html $ semantic_uris $ closed_details $ hidden $
-          odoc_file_directories $ dst ~create:true () $ syntax $
-          theme_uri $ input))
-
-  let info =
-    Term.info ~doc:"Generates an html file from an odoc one" "html"
-
-  let targets = Target.mk_from_renderer Html_page.renderer
-end
+      Term.(const f $ semantic_uris $ closed_details $ theme_uri)
+end)
 
 module Html_fragment : sig
   val cmd : unit Term.t
@@ -397,87 +386,26 @@ end = struct
     Term.info ~doc:"Generates an html fragment file from an mld one" "html-fragment"
 end
 
+module Odoc_manpage = Make_renderer(struct
+  type args = unit
+  let renderer = Man_page.renderer
+  let extra_args = Term.const ()
+end)
 
-module Odoc_manpage : sig
-  val cmd : unit Term.t
-  val info: Term.info
-  val targets : unit Term.t * Term.info
-end = struct
 
-  let manpage directories output_dir syntax input_file =
-    let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
-    let file = Fs.File.of_string input_file in
-    Rendering.render_odoc
-      ~renderer:Man_page.renderer
-      ~env ~syntax ~output:output_dir () file
+module Odoc_latex = Make_renderer(struct
+  type args = Latex.args 
+  let renderer = Latex.renderer
+  let with_children =
+    let doc = "Include children at the end of the page" in
+    Arg.(value & opt bool true & info ~docv:"BOOL" ~doc ["with-children"])
 
-  let cmd =
-    let input =
-      let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+  let extra_args =
+    let f with_children =
+      {Latex. with_children }
     in
-    let syntax =
-      let doc = "Available options: ml | re" in
-      let env = Arg.env_var "ODOC_SYNTAX"
-      in
-      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
-    in
-    Term.(const handle_error $ (const manpage $
-          odoc_file_directories $ dst ~create:true () $ 
-          syntax $
-          input))
-
-  let info =
-    Term.info ~doc:"Generates a man page file from an odoc one" "man"
-
-  let targets = Target.mk_from_renderer Man_page.renderer
-end
-
-module Odoc_latex : sig
-  val cmd : unit Term.t
-  val info: Term.info
-  val targets : unit Term.t * Term.info
-end = struct
-
-  let latex directories output_dir syntax with_children input_file =
-    let env = Env.create ~important_digests:false ~directories ~open_modules:[]  in
-    let file = Fs.File.of_string input_file in
-    let extra = {Latex.
-      with_children
-    }
-    in
-    Rendering.render_odoc
-      ~renderer:Latex.renderer
-      ~env ~syntax ~output:output_dir extra file
-
-  let cmd =
-    let input =
-      let doc = "Input file" in
-      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
-    in
-    let syntax =
-      let doc = "Available options: ml | re" in
-      let env = Arg.env_var "ODOC_SYNTAX"
-      in
-      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
-    in
-    let with_children =
-      let doc = "Include children at the end of the page" in
-      Arg.(value & opt bool true & info ~docv:"BOOL" ~doc ["with-children"])
-    in
-    Term.(const handle_error $ (const latex $
-          odoc_file_directories $ dst ~create:true () $
-          syntax $
-          with_children $
-          input))
-
-  let info =
-    Term.info ~doc:"Generates a latex file from an odoc one" "latex"
-
-  let targets = Target.mk_from_renderer Latex.renderer
-end
-
-
+    Term.(const f $ with_children)
+end)
 
 module Depends = struct
   module Compile = struct
@@ -535,7 +463,7 @@ module Depends = struct
     let cmd = Render.cmd
     let info =
       Term.info "html-deps"
-        ~doc:"DEPRECATED alias for render-deps"
+        ~doc:"DEPRECATED: alias for render-deps"
   end
 end
 
@@ -572,12 +500,15 @@ let () =
   Printexc.record_backtrace true;
   let subcommands =
     [ Compile.(cmd, info)
-    ; Odoc_html.(cmd, info)
+    ; Odoc_html.process
     ; Odoc_html.targets
-    ; Odoc_manpage.(cmd, info)
+    ; Odoc_html.generate
+    ; Odoc_manpage.process
     ; Odoc_manpage.targets
-    ; Odoc_latex.(cmd,info)
+    ; Odoc_manpage.generate
+    ; Odoc_latex.process
     ; Odoc_latex.targets
+    ; Odoc_latex.generate
     ; Html_fragment.(cmd, info)
     ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
@@ -587,7 +518,6 @@ let () =
     ; Targets.Compile.(cmd, info)
     ; Targets.Support_files.(cmd, info)
     ; Odoc_link.(cmd, info)
-    ; Generate.(cmd, info)
     ]
   in
   let default =
