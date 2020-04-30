@@ -14,14 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Or_error
 open Odoc_document
 
-(** Produces .html files from a .odoc file. *)
+type args = {
+  semantic_uris : bool ;
+  closed_details : bool ;
+  theme_uri : Odoc_html.Tree.uri ;
+}
 
-val from_odoc :
-  env:Env.builder -> ?syntax:Renderer.syntax -> ?theme_uri:Odoc_html.Tree.uri -> output:Fs.Directory.t ->
-  Fs.File.t -> (unit, [> msg]) result
 
-val from_mld : env:Env.builder -> ?syntax:Renderer.syntax -> package:Odoc_model.Root.Package.t ->
-  output:Fs.Directory.t -> warn_error:bool -> Fs.File.t -> (unit, [> msg]) result
+val renderer : args Renderer.t

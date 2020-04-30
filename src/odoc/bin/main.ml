@@ -280,17 +280,19 @@ module Odoc_html : sig
   val info: Term.info
 end = struct
 
-  let html semantic_uris closed_details _hidden directories output_dir index_for
-        syntax theme_uri input_file warn_error =
-    Odoc_html.Link.semantic_uris := semantic_uris;
-    Odoc_html.Tree.open_details := not closed_details;
+  let html semantic_uris closed_details _hidden directories output_dir
+        syntax theme_uri input_file =
     let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
     let file = Fs.File.of_string input_file in
-    match index_for with
-    | None ->
-      Html_page.from_odoc ~env ~syntax ~theme_uri ~output:output_dir file
-    | Some pkg_name ->
-      Html_page.from_mld ~env ~syntax ~output:output_dir ~package:pkg_name ~warn_error file
+    let extra = {Html_page.
+      semantic_uris ;
+      closed_details ;
+      theme_uri ;
+    }
+    in
+    Rendering.from_odoc
+      ~renderer:Html_page.renderer
+      ~env ~syntax ~output:output_dir extra file
 
   let cmd =
     let input =
@@ -307,16 +309,6 @@ end = struct
       in
       Arg.(value & flag (info ~doc ["closed-details"]))
     in
-    let index_for =
-      let doc = "DEPRECATED: you should use 'odoc compile' to process .mld \
-		 files. When this argument is given, then the input file is \
-		 expected to be a .mld file. The output will be a \
-                 \"index.html\" file in the output directory. \
-                 PKG is using to correctly resolve and link references inside \
-		 the input file"
-      in
-      Arg.(value & opt (some string) None & info ~docv:"PKG" ~doc ["index-for"])
-    in
     let theme_uri =
       let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
                  Relative URIs are resolved using `--output-dir' as a target." in
@@ -330,8 +322,8 @@ end = struct
       Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
     in
     Term.(const handle_error $ (const html $ semantic_uris $ closed_details $ hidden $
-          odoc_file_directories $ dst ~create:true () $ index_for $ syntax $
-          theme_uri $ input $ warn_error))
+          odoc_file_directories $ dst ~create:true () $ syntax $
+          theme_uri $ input))
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
@@ -386,7 +378,9 @@ end = struct
   let manpage directories output_dir syntax input_file =
     let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
     let file = Fs.File.of_string input_file in
-    Man_page.from_odoc ~env ~syntax ~output:output_dir file
+    Rendering.from_odoc
+      ~renderer:Man_page.renderer
+      ~env ~syntax ~output:output_dir () file
 
   let cmd =
     let input =
@@ -416,7 +410,13 @@ end = struct
   let latex directories output_dir syntax with_children input_file =
     let env = Env.create ~important_digests:false ~directories ~open_modules:[]  in
     let file = Fs.File.of_string input_file in
-    Latex.from_odoc ~env ~syntax ~output:output_dir ~with_children file
+    let extra = {Latex.
+      with_children
+    }
+    in
+    Rendering.from_odoc
+      ~renderer:Latex.renderer
+      ~env ~syntax ~output:output_dir extra file
 
   let cmd =
     let input =
