@@ -22,7 +22,7 @@ let cmti_of_string s =
     let l = Lexing.from_string s in
     let p = Parse.interface l in
     Typemod.type_interface
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 09
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 09 && OCAML_MINOR >= 04
     ""
 #endif
     env p;;

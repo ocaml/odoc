@@ -201,8 +201,8 @@ type signature_of_module_error =
     [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
 
 type module_lookup_error =
-  [ `Local of Env.t * Ident.module_  (** Found local path *)
-  | `Unresolved_apply  (** [`Apply] argument is not [`Resolved] *)
+  [ `Local of Env.t * Ident.module_  (* Found local path *)
+  | `Unresolved_apply  (* [`Apply] argument is not [`Resolved] *)
   | `Find_failure
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
@@ -258,7 +258,7 @@ let module_lookup_cache = Memos1.create 10000
 module Hashable2 = struct
   type t = bool * bool * Cpath.module_
 
-  let equal = Stdlib.( = )
+  let equal = ( = )
 
   let hash (b1, b2, p) = Hashtbl.hash (b1, b2, Cpath.module_hash p)
 end
@@ -268,7 +268,7 @@ module Memos2 = Hashtbl.Make (Hashable2)
 module Hashable3 = struct
   type t = bool * Cpath.Resolved.module_
 
-  let equal = Stdlib.( = )
+  let equal = ( = )
 
   let hash = Hashtbl.hash
 end

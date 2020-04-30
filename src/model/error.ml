@@ -18,9 +18,12 @@ type t = [
   | `Without_location of string
 ]
 
+let kasprintf k fmt =
+  Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
+
 let kmake k ?suggestion format =
   format |>
-  Format.kasprintf (fun message ->
+  kasprintf (fun message ->
     match suggestion with
     | None -> k message
     | Some suggestion -> k (message ^ "\nSuggestion: " ^ suggestion))

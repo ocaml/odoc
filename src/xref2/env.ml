@@ -25,7 +25,7 @@ let unique_id = ref 0
 module EnvModuleMap = Map.Make (struct
   type t = Odoc_model.Paths.Identifier.Module.t
 
-  let compare (a : t) (b : t) = Stdlib.compare a b
+  let compare (a : t) (b : t) = compare a b
 end)
 
 type lookup_type =
@@ -346,7 +346,9 @@ let lookup_fragment_root env =
       result
   | None -> None
 
-let lookup_type identifier env = List.assoc_opt identifier env.types
+let assoc_opt x l = try Some (List.assoc x l) with _ -> None
+
+let lookup_type identifier env = assoc_opt identifier env.types
 
 let lookup_module_type identifier env =
   let maybe_record_result res =
@@ -354,7 +356,7 @@ let lookup_module_type identifier env =
     | Some r -> r.lookups <- res :: r.lookups
     | None -> ()
   in
-  match List.assoc_opt identifier env.module_types with
+  match assoc_opt identifier env.module_types with
   | Some _ as result ->
       maybe_record_result (ModuleType (identifier, true));
       result
@@ -365,11 +367,11 @@ let lookup_module_type identifier env =
 let lookup_value identifier env = List.assoc identifier env.values
 
 let lookup_section_title identifier env =
-  try Some (List.assoc identifier env.titles) with _ -> None
+  assoc_opt identifier env.titles
 
-let lookup_class identifier env = List.assoc_opt identifier env.classes
+let lookup_class identifier env = assoc_opt identifier env.classes
 
-let lookup_class_type identifier env = List.assoc_opt identifier env.class_types
+let lookup_class_type identifier env = assoc_opt identifier env.class_types
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
@@ -400,7 +402,7 @@ let lookup_root_module name env =
     match try Some (List.assoc name env.roots) with _ -> None with
     | Some x -> Some x
     | None -> (
-        match Hashtbl.find_opt roots name with
+        match (try Some (Hashtbl.find roots name) with _ -> None) with
         | Some x -> x
         | None -> (
             match env.resolver with
@@ -431,7 +433,7 @@ let lookup_module_internal identifier env =
     let l = EnvModuleMap.cardinal env.modules in
     len := !len + l;
     n := !n + 1;
-    EnvModuleMap.find_opt identifier env.modules
+    (try Some (EnvModuleMap.find identifier env.modules) with _ -> None)
   with
   | Some _ as result -> result
   | None -> (

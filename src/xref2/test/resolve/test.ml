@@ -431,7 +431,7 @@ module type F7 = functor (Arg : S) -> sig
   type u = t
 end|}
   ; test_fn = test_resolve }
-
+(*
 let functor_app =
   { name = "Functor"
   ; description = "Resolve a functor"
@@ -453,6 +453,7 @@ end
 type t = F(M).N.t
 |}
   ; test_fn = test_resolve }
+*)
 (*
   Identifier of F:
   
@@ -498,8 +499,8 @@ let tests =
   ; module_alias2
   ; functor1
   ; functor_all
-  ; functor_app
-  ; functor_app_ugh ]
+  (* ; functor_app *)
+  (*; functor_app_ugh *) ]
 
 let _ =
     List.iter (fun test -> test.test_fn test) tests

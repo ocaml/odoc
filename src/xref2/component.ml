@@ -365,14 +365,13 @@ end =
   Substitution
 
 and CComment : sig
-  open Odoc_model.Comment
 
   type block_element =
-    [ nestable_block_element
-    | `Heading of heading_level * Ident.label * link_content
-    | `Tag of tag ]
+    [ Odoc_model.Comment.nestable_block_element
+    | `Heading of Odoc_model.Comment.heading_level * Ident.label * Odoc_model.Comment.link_content
+    | `Tag of Odoc_model.Comment.tag ]
 
-  type docs = block_element with_location list
+  type docs = block_element Odoc_model.Comment.with_location list
 
   type docs_or_stop = [ `Docs of docs | `Stop ]
 end =
