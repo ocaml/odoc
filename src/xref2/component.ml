@@ -365,10 +365,12 @@ end =
   Substitution
 
 and CComment : sig
-
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
-    | `Heading of Odoc_model.Comment.heading_level * Ident.label * Odoc_model.Comment.link_content
+    | `Heading of
+      Odoc_model.Comment.heading_level
+      * Ident.label
+      * Odoc_model.Comment.link_content
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -2091,7 +2093,8 @@ module Of_Lang = struct
     apply_sig_map ident_map items
 
   and open_ ident_map o =
-    Open.{ expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion }
+    Open.
+      { expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion }
 
   and apply_sig_map ident_map items =
     let items =

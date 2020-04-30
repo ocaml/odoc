@@ -98,7 +98,7 @@ let type_in_sig s name =
 let class_type_in_sig (s : Signature.t) name =
   let rec inner = function
     | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
-      Some (`C c)
+        Some (`C c)
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
       ->
         Some (`CT c)

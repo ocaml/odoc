@@ -16,7 +16,7 @@ let catch_failures f =
 
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
-  
+
 (** Report a lookup failure to the enclosing [catch_failures] call. *)
 let report fmt = kasprintf add fmt
 

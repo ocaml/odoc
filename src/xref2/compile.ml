@@ -323,14 +323,15 @@ and find_shadowed map =
   | ModuleType m :: rest -> (
       match hidden_name (m.id :> Odoc_model.Paths.Identifier.t) with
       | Some n ->
-          find_shadowed Lang_of.{ map with s_module_types = n :: map.s_module_types } rest
-      | None -> find_shadowed map rest)
+          find_shadowed
+            Lang_of.{ map with s_module_types = n :: map.s_module_types }
+            rest
+      | None -> find_shadowed map rest )
   | Type (_, t) :: rest -> (
       match hidden_name (t.id :> Odoc_model.Paths.Identifier.t) with
       | Some n ->
           find_shadowed Lang_of.{ map with s_types = n :: map.s_types } rest
-      | None -> find_shadowed map rest
-      )
+      | None -> find_shadowed map rest )
   | _ :: rest -> find_shadowed map rest
   | [] -> map
 

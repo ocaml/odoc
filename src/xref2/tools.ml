@@ -1,6 +1,5 @@
 open Odoc_model.Names
 open Odoc_model.Paths
-
 module StdResultMonad = Utils.ResultMonad
 
 (* Add [result] and a bind operator over it in scope *)
@@ -201,8 +200,8 @@ type signature_of_module_error =
     [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
 
 type module_lookup_error =
-  [ `Local of Env.t * Ident.module_  (* Found local path *)
-  | `Unresolved_apply  (* [`Apply] argument is not [`Resolved] *)
+  [ `Local of Env.t * Ident.module_ (* Found local path *)
+  | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
   | `Find_failure
   | `Parent_module_type of module_type_lookup_error
   | `Parent of module_lookup_error
@@ -531,8 +530,7 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
             ( reresolve_module env p,
               `Resolved (simplify_resolved_module_path env p2') )
       | Unresolved _ -> `Canonical (reresolve_module env p, p2)
-      | (exception _) -> `Canonical (reresolve_module env p, p2)
-      )
+      | exception _ -> `Canonical (reresolve_module env p, p2) )
   | `Apply (p, p2) -> (
       match lookup_and_resolve_module_from_path true false env p2 with
       | Resolved (p2', _) -> `Apply (reresolve_module env p, `Resolved p2')

@@ -26,19 +26,14 @@ let rec signature (prefix : Cpath.module_) sg =
                 r,
                 Component.Delayed.put (fun () ->
                     module_
-                      (`Dot
-                        ( prefix,
-                          Ident.Name.module_ id ))
+                      (`Dot (prefix, Ident.Name.module_ id))
                       (Component.Delayed.get m)) )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
                 Component.Delayed.put (fun () ->
                     module_type
-                      (`Dot
-                        ( prefix,
-                          Ident.Name.module_type id
-                        ))
+                      (`Dot (prefix, Ident.Name.module_type id))
                       (Component.Delayed.get mt)) )
         | Type (id, r, t) ->
             Type
@@ -46,9 +41,7 @@ let rec signature (prefix : Cpath.module_) sg =
                 r,
                 Component.Delayed.put (fun () ->
                     type_decl
-                      (`Dot
-                        ( prefix,
-                          Ident.Name.type_ id ))
+                      (`Dot (prefix, Ident.Name.type_ id))
                       (Component.Delayed.get t)) )
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
         | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _
@@ -59,8 +52,7 @@ let rec signature (prefix : Cpath.module_) sg =
   (* The identity substitution used here is to rename all of the bound idents in the signature *)
   Subst.signature Subst.identity { items; removed = sg.removed }
 
-and module_ : Cpath.module_ -> Component.Module.t -> Component.Module.t
-    =
+and module_ : Cpath.module_ -> Component.Module.t -> Component.Module.t =
  fun prefix m ->
   match m.Component.Module.type_ with
   | Alias _ -> m
@@ -69,9 +61,7 @@ and module_ : Cpath.module_ -> Component.Module.t -> Component.Module.t
   | ModuleType _ -> m
 
 and module_type :
-    Cpath.module_type ->
-    Component.ModuleType.t ->
-    Component.ModuleType.t =
+    Cpath.module_type -> Component.ModuleType.t -> Component.ModuleType.t =
  fun prefix m ->
   let open Component.ModuleType in
   let expr =
@@ -89,8 +79,7 @@ and module_type :
   in
   { m with expr }
 
-and type_decl :
-    Cpath.type_ -> Component.TypeDecl.t -> Component.TypeDecl.t =
+and type_decl : Cpath.type_ -> Component.TypeDecl.t -> Component.TypeDecl.t =
  fun path t ->
   let equation =
     let e = t.Component.TypeDecl.equation in
