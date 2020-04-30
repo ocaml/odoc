@@ -290,7 +290,7 @@ end = struct
       theme_uri ;
     }
     in
-    Rendering.from_odoc
+    Rendering.render_odoc
       ~renderer:Html_page.renderer
       ~env ~syntax ~output:output_dir extra file
 
@@ -378,7 +378,7 @@ end = struct
   let manpage directories output_dir syntax input_file =
     let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
     let file = Fs.File.of_string input_file in
-    Rendering.from_odoc
+    Rendering.render_odoc
       ~renderer:Man_page.renderer
       ~env ~syntax ~output:output_dir () file
 
@@ -517,7 +517,9 @@ module Targets = struct
       let open Or_error in
       let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
       let odoc_file = Fs.File.of_string odoc_file in
-      Targets.of_odoc_file ~env ~output:output_dir odoc_file >>= fun targets ->
+      Rendering.targets_odoc
+        ~env ~renderer:Html_page.renderer ~output:output_dir odoc_file
+      >>= fun targets ->
       let targets = List.map ~f:Fs.File.to_string targets in
       Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
       Ok ()
