@@ -19,10 +19,9 @@ let traverse ~f t =
   in
   aux t
 
-type 'a renderer = {
-  render : Types.Page.t -> page ;
+type 'a t = {
+  render : 'a -> Types.Page.t -> page ;
 }
-
 
 let document_of_page ~syntax v =
   match syntax with
