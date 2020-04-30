@@ -31,6 +31,7 @@ let files_of_url url =
   [Odoc_html.Link.Path.as_filename url]
 
 let renderer = {Renderer.
+  name = "html" ;
   render ;
   files_of_url ;
 }
