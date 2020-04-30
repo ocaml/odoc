@@ -288,7 +288,7 @@ end
 let hash : any -> int = Hashtbl.hash
 
 let compare : any -> any -> int =
- fun a b -> Int.compare (int_of_any a) (int_of_any b)
+ fun a b -> compare (int_of_any a) (int_of_any b)
 
 let reset () = counter := 0
 

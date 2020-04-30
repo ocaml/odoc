@@ -46,10 +46,9 @@ module SubTargets : sig
 end
 
 module S : sig
-    open SubstituteMe
-    type tt = t
-    type uu = u
-    type vv = v
+    type tt = SubstituteMe.t
+    type uu = SubstituteMe.u
+    type vv = SubstituteMe.v
 end
 
 |}
