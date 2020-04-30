@@ -1,6 +1,17 @@
 open Odoc_document
 open Or_error
 
+
+let document_of_odocl ~syntax input =
+  Root.read input >>= fun root ->
+  match root.file with
+  | Page _ ->
+    Page.load input >>= fun odoctree ->
+    Ok (Renderer.document_of_page ~syntax odoctree)
+  | Compilation_unit _ ->
+    Compilation_unit.load input >>= fun odoctree ->
+    Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
+
 let document_of_input ~env ~syntax input =
   Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
@@ -74,6 +85,11 @@ let urls_of_input input =
 let render_odoc ~env ~syntax ~renderer ~output extra file =
   document_of_input ~env ~syntax file
   >>= render_document renderer ~output ~extra
+
+let generate_odoc ~syntax ~renderer ~output extra file =
+  document_of_odocl ~syntax file
+  >>= render_document renderer ~output ~extra
+
 
 let targets_odoc ~renderer ~output:root_dir input =
   urls_of_input input >>= fun urls ->
