@@ -49,7 +49,11 @@ let is_shadowing map name ident =
   | _ -> failwith "Multiple bindings found"
 
 let rebind id new_binding map =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
   map |> Ident.remove id |> Ident.add id new_binding
+#else
+  Ident.add id new_binding map
+#endif
 
 let add_module parent id name env =
   let identifier = `Module(parent, name) in

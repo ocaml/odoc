@@ -530,7 +530,8 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
           `Canonical
             ( reresolve_module env p,
               `Resolved (simplify_resolved_module_path env p2') )
-      | Unresolved _ | (exception _) -> `Canonical (reresolve_module env p, p2)
+      | Unresolved _ -> `Canonical (reresolve_module env p, p2)
+      | (exception _) -> `Canonical (reresolve_module env p, p2)
       )
   | `Apply (p, p2) -> (
       match lookup_and_resolve_module_from_path true false env p2 with

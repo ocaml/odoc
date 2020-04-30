@@ -2232,39 +2232,3 @@ Odoc_xref2.Tools.ResultMonad.Unresolved
     (`Resolved (`Identifier (`Module (`Root (Common.root, Root), N))), "t"))
 ```
 
-
-
-# Include
-
-```ocaml env=e1
-let test_data = {|
-
-module EEE = struct
-  type u
-end
-
-module FFF = struct
-  module Caml = struct
-    include EEE
-  end
-end
-
-module GGG = struct
-  include FFF
-
-  module Caml = struct
-    include Caml
-    type x = u
-  end
-end
-
-|};;
-let cmt = Common.cmt_of_string test_data |> fst;;
-let _, _, sg = Odoc_loader__Cmt.read_implementation Common.root "Root" cmt;;
-let resolved = Compile.signature Env.empty sg;;
-(*let expanded = Link.signature Env.empty resolved;;*)
-```
-
-```ocaml env=e1
-
-```
