@@ -469,11 +469,11 @@ and module_ : Env.t -> Module.t -> Module.t =
       { m with doc = comment_docs env doc; type_; display_type; expansion }
     in
     let end_time = Unix.gettimeofday () in
-    Format.fprintf Format.err_formatter
+    let _timing =  Format.asprintf
       "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n%!"
       (end_time -. start_time) Component.Fmt.model_identifier
       (m.id :> Paths.Identifier.t)
-      (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4);
+      (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4) in
     result
 
 and module_decl : Env.t -> Module.decl -> Module.decl =
@@ -822,7 +822,6 @@ and type_expression_package env visited p =
 and type_expression : Env.t -> _ -> _ =
  fun env visited texpr ->
   let open TypeExpr in
-  (* try *)
   match texpr with
   | Var _ | Any -> texpr
   | Alias (t, str) -> Alias (type_expression env visited t, str)
@@ -851,9 +850,6 @@ and type_expression : Env.t -> _ -> _ =
                         | Any, _ -> acc)
                       [] params ts
                   in
-
-                  (* Format.fprintf Format.err_formatter "Here we go...%a \n" Component.Fmt.type_path cp; *)
-                  (* Format.fprintf Format.err_formatter "here we are... %d before=%a (path=%a)\n%!" (List.length visited) Component.Fmt.type_decl t Component.Fmt.type_path cp;*)
                   try
                     let t' =
                       Expand_tools.type_expr map Lang_of.(type_expr empty expr)
@@ -861,7 +857,6 @@ and type_expression : Env.t -> _ -> _ =
                     type_expression env (p :: visited) t'
                   with
                   | Loop ->
-                      Format.fprintf Format.err_formatter "Loop detected\n%!";
                       Constr (`Resolved p, ts)
                   | _ -> Constr (`Resolved p, ts) )
               | _ -> Constr (`Resolved p, ts)
@@ -877,8 +872,6 @@ and type_expression : Env.t -> _ -> _ =
   | Class (path, ts) -> Class (path, List.map (type_expression env visited) ts)
   | Poly (strs, t) -> Poly (strs, type_expression env visited t)
   | Package p -> Package (type_expression_package env visited p)
-
-(* with _ -> texpr *)
 
 (*
 let build_resolver :

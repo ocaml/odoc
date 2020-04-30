@@ -556,7 +556,6 @@ and read_include env parent incl =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
   let expansion = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
-  Format.eprintf "expansion size: %d\n%!" (List.length expansion);
   Open.{expansion}
 #endif
 
