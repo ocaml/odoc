@@ -49,7 +49,7 @@ let signature_lookup_result_of_label_parent :
 module Hashable = struct
   type t = bool * Resolved.Signature.t
 
-  let equal = Stdlib.( = )
+  let equal = ( = )
 
   let hash = Hashtbl.hash
 end
@@ -61,7 +61,7 @@ module Memos1 = Hashtbl.Make (Hashable)
 module Hashable2 = struct
   type t = bool * Signature.t
 
-  let equal = Stdlib.( = )
+  let equal = ( = )
 
   let hash = Hashtbl.hash
 end

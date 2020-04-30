@@ -874,20 +874,10 @@
         <td class="def constructor">
          <a href="#type-poly_variant.TagA" class="anchor"></a><code>| </code><code>`TagA</code>
         </td>
-        <td class="doc">
-         <p>
-          This comment is for <code>`TagA</code>.
-         </p>
-        </td>
        </tr>
        <tr id="type-poly_variant.ConstrB" class="anchored">
         <td class="def constructor">
          <a href="#type-poly_variant.ConstrB" class="anchor"></a><code>| </code><code>`ConstrB(int)</code>
-        </td>
-        <td class="doc">
-         <p>
-          This comment is for <code>`ConstrB</code>.
-         </p>
         </td>
        </tr>
       </tbody>
@@ -971,54 +961,6 @@
      </p>
      <p>
       Wow! It was a mixed GADT!
-     </p>
-    </dd>
-   </dl>
-   <dl>
-    <dt class="spec type" id="type-record_arg_gadt">
-     <a href="#type-record_arg_gadt" class="anchor"></a><code><span class="keyword">type</span> record_arg_gadt(_) = </code>
-     <table>
-      <tbody>
-       <tr id="type-record_arg_gadt.With_rec" class="anchored">
-        <td class="def variant constructor">
-         <a href="#type-record_arg_gadt.With_rec" class="anchor"></a><code>| <span class="constructor">With_rec</span>: {</code>
-         <table>
-          <tbody>
-           <tr id="type-record_arg_gadt.foo" class="anchored">
-            <td class="def record field">
-             <a href="#type-record_arg_gadt.foo" class="anchor"></a><code>foo: int,</code>
-            </td>
-           </tr>
-          </tbody>
-         </table>
-         <code>} : <a href="index.html#type-record_arg_gadt">record_arg_gadt</a>(unit)</code>
-        </td>
-       </tr>
-       <tr id="type-record_arg_gadt.With_poly_rec" class="anchored">
-        <td class="def variant constructor">
-         <a href="#type-record_arg_gadt.With_poly_rec" class="anchor"></a><code>| <span class="constructor">With_poly_rec</span>: {</code>
-         <table>
-          <tbody>
-           <tr id="type-record_arg_gadt.bar" class="anchored">
-            <td class="def record field">
-             <a href="#type-record_arg_gadt.bar" class="anchor"></a><code>bar: a. <span class="type-var">'a</span> <span>=&gt;</span> <span class="type-var">'a</span>,</code>
-            </td>
-           </tr>
-          </tbody>
-         </table>
-         <code>} : <a href="index.html#type-record_arg_gadt">record_arg_gadt</a>(<span>(<span class="type-var">'a</span> <span>=&gt;</span> <span class="type-var">'a</span>)</span>)</code>
-        </td>
-       </tr>
-      </tbody>
-     </table>
-     <code>;</code>
-    </dt>
-    <dd>
-     <p>
-      This comment is for <code>record_arg_gadt</code>.
-     </p>
-     <p>
-      Wow! It was a GADT with record arguments
      </p>
     </dd>
    </dl>

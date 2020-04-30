@@ -425,8 +425,8 @@ type variant =
 
 (** This comment is for [poly_variant]. *)
 type poly_variant =
-  [ `TagA  (** This comment is for [`TagA]. *)
-  | `ConstrB of int  (** This comment is for [`ConstrB]. *) ]
+  [ `TagA
+  | `ConstrB of int ]
 (** Wow! It was a polymorphic variant! *)
 
 (** This comment is for [full_gadt]. *)
@@ -443,12 +443,6 @@ type 'a partial_gadt =
   | OfTag of 'a partial_gadt
   | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt  (** *)
 (** Wow! It was a mixed GADT! *)
-
-(** This comment is for [record_arg_gadt]. *)
-type _ record_arg_gadt =
-  | With_rec : { foo : int } -> unit record_arg_gadt
-  | With_poly_rec : { bar : 'a. 'a -> 'a } -> ('a -> 'a) record_arg_gadt  (** *)
-(** Wow! It was a GADT with record arguments *)
 
 (** This comment is for [alias]. *)
 type alias = variant

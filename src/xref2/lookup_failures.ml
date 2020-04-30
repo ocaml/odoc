@@ -14,12 +14,15 @@ let catch_failures f =
   failure_acc := prev;
   (r, List.rev failures)
 
+let kasprintf k fmt =
+  Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
+  
 (** Report a lookup failure to the enclosing [catch_failures] call. *)
-let report fmt = Format.kasprintf add fmt
+let report fmt = kasprintf add fmt
 
 (** Like [report] above but may raise the exception [exn] if strict mode is enabled *)
 let report_important exn fmt =
-  if !strict_mode then raise exn else Format.kasprintf add fmt
+  if !strict_mode then raise exn else kasprintf add fmt
 
 let pp = Format.pp_print_string
 

@@ -2,6 +2,10 @@
 open Odoc_model
 open Lang
 
+(* for < 4.03 *)
+let kasprintf k fmt =
+  Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
+  
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
@@ -397,7 +401,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       match Env.lookup_module m.id env with
       | Some m' -> m'
       | None ->
-          Format.kasprintf failwith "Failed to lookup module %a"
+          kasprintf failwith "Failed to lookup module %a"
             Component.Fmt.model_identifier
             (m.id :> Paths.Identifier.t)
     in
@@ -432,7 +436,7 @@ and module_ : Env.t -> Module.t -> Module.t =
                 (env, Some compiled_e)
             | Error `OpaqueModule -> (env, None)
             | Error _ ->
-                Format.kasprintf failwith "Failed to expand module %a"
+                kasprintf failwith "Failed to expand module %a"
                   Component.Fmt.model_identifier
                   (m.id :> Paths.Identifier.t)
           in

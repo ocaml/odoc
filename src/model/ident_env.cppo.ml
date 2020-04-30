@@ -41,12 +41,17 @@ let empty =
 let builtin_idents = List.map snd Predef.builtin_idents
 
 let is_shadowing map name ident =
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
   let all = Ident.find_all name map in
   let shadowing = List.filter (fun (_, ident') -> ident' = ident) all in
   match shadowing with
   | [] -> None
   | [(id', _)] -> Some id'
   | _ -> failwith "Multiple bindings found"
+#else
+  ignore(map, name, ident);
+  None
+#endif
 
 let rebind id new_binding map =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
