@@ -274,10 +274,36 @@ end = struct
     Term.info ~doc:"Generates an html file from an odocl one" "generate"
 end
 
+module Target = struct
+
+  let input =
+    let doc = "Input file" in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+
+  let mk_from_renderer renderer =
+    let list_targets output_dir odoc_file =
+      let open Or_error in
+      let odoc_file = Fs.File.of_string odoc_file in
+      Rendering.targets_odoc ~renderer ~output:output_dir odoc_file
+      >>= fun targets ->
+      let targets = List.map ~f:Fs.File.to_string targets in
+      Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
+      Ok ()
+    in
+    let cmd =
+      Term.(const handle_error $ (const list_targets $ dst () $ input))
+    in
+    let info =
+      Term.info (renderer.name ^ "-targets") ~doc:"TODO: Fill in."
+    in
+    cmd, info
+end
+
 
 module Odoc_html : sig
   val cmd : unit Term.t
   val info: Term.info
+  val targets : unit Term.t * Term.info
 end = struct
 
   let html semantic_uris closed_details _hidden directories output_dir
@@ -327,6 +353,8 @@ end = struct
 
   let info =
     Term.info ~doc:"Generates an html file from an odoc one" "html"
+
+  let targets = Target.mk_from_renderer Html_page.renderer
 end
 
 module Html_fragment : sig
@@ -373,6 +401,7 @@ end
 module Odoc_manpage : sig
   val cmd : unit Term.t
   val info: Term.info
+  val targets : unit Term.t * Term.info
 end = struct
 
   let manpage directories output_dir syntax input_file =
@@ -400,11 +429,14 @@ end = struct
 
   let info =
     Term.info ~doc:"Generates a man page file from an odoc one" "man"
+
+  let targets = Target.mk_from_renderer Man_page.renderer
 end
 
 module Odoc_latex : sig
   val cmd : unit Term.t
   val info: Term.info
+  val targets : unit Term.t * Term.info
 end = struct
 
   let latex directories output_dir syntax with_children input_file =
@@ -414,7 +446,7 @@ end = struct
       with_children
     }
     in
-    Rendering.from_odoc
+    Rendering.render_odoc
       ~renderer:Latex.renderer
       ~env ~syntax ~output:output_dir extra file
 
@@ -441,6 +473,8 @@ end = struct
 
   let info =
     Term.info ~doc:"Generates a latex file from an odoc one" "latex"
+
+  let targets = Target.mk_from_renderer Latex.renderer
 end
 
 
@@ -512,30 +546,6 @@ module Targets = struct
       Term.info "compile-targets" ~doc:"TODO: Fill in."
   end
 
-  module Odoc_html = struct
-    let list_targets directories output_dir odoc_file =
-      let open Or_error in
-      let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
-      let odoc_file = Fs.File.of_string odoc_file in
-      Rendering.targets_odoc
-        ~env ~renderer:Html_page.renderer ~output:output_dir odoc_file
-      >>= fun targets ->
-      let targets = List.map ~f:Fs.File.to_string targets in
-      Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
-      Ok ()
-
-    let cmd =
-      let input =
-        let doc = "Input file" in
-        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
-      in
-      Term.(const handle_error $ (const list_targets $ odoc_file_directories $
-            dst () $ input))
-
-    let info =
-      Term.info "html-targets" ~doc:"TODO: Fill in."
-  end
-
   module Support_files =
   struct
     let list_targets without_theme output_directory =
@@ -555,15 +565,17 @@ let () =
   let subcommands =
     [ Compile.(cmd, info)
     ; Odoc_html.(cmd, info)
+    ; Odoc_html.targets
     ; Odoc_manpage.(cmd, info)
+    ; Odoc_manpage.targets
     ; Odoc_latex.(cmd,info)
+    ; Odoc_latex.targets
     ; Html_fragment.(cmd, info)
     ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
     ; Depends.Odoc_html.(cmd, info)
     ; Targets.Compile.(cmd, info)
-    ; Targets.Odoc_html.(cmd, info)
     ; Targets.Support_files.(cmd, info)
     ; Odoc_link.(cmd, info)
     ; Generate.(cmd, info)

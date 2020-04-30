@@ -20,6 +20,7 @@ let traverse ~f t =
   aux t
 
 type 'a t = {
+  name : string ;
   render : 'a -> Types.Page.t -> page ;
   files_of_url : Url.Path.t -> Fpath.t list ;
 }

@@ -608,4 +608,9 @@ module Page = struct
 
 end
 
+let files_of_url url = 
+  let p = Link.page url in
+  let filename = Fpath.(v p + ".tex") in
+  [filename]
+
 let render ~with_children page = Page.page ~with_children page
