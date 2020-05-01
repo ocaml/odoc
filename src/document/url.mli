@@ -2,6 +2,8 @@ open Result
 
 open Odoc_model.Paths
 
+val functor_arg_pos : Identifier.Module.t -> int
+
 
 module Error : sig
   type nonrec t =
