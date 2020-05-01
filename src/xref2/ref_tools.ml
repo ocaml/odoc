@@ -18,7 +18,7 @@ type type_lookup_result =
     | `CT of Component.ClassType.t ]
 
 type value_lookup_result =
-  Resolved.Value.t * [ `V of Component.Value.t | `E of Component.External.t ]
+  Resolved.Value.t
 
 type label_parent_lookup_result =
   Resolved.LabelParent.t
@@ -374,16 +374,22 @@ and resolve_value_reference : Env.t -> Value.t -> value_lookup_result option =
     match r with
     | `Root (name, _) -> (
         Env.lookup_value_by_name (UnitName.to_string name) env >>= function
-        | `Value (id, x) -> return (`Identifier id, `V x)
-        | `External (id, x) -> return (`Identifier id, `E x) )
+        | `Value (id, _x) -> return (`Identifier id)
+        | `External (id, _x) -> return (`Identifier id) )
     | `Dot (parent, name) -> (
         resolve_label_parent_reference env parent ~add_canonical:true
         >>= signature_lookup_result_of_label_parent
         >>= fun (parent', _, sg) ->
         match Find.opt_value_in_sig sg name with
-        | Some v -> return (`Value (parent', ValueName.of_string name), v)
+        | Some _v -> return (`Value (parent', ValueName.of_string name))
         | None -> None )
-    | _ -> failwith "erk"
+    | `Value (parent, name) -> (
+        resolve_signature_reference env parent ~add_canonical:true
+        >>= fun (parent', _, sg) ->
+        match Find.opt_value_in_sig sg (ValueName.to_string name) with
+        | Some _v -> return (`Value (parent', name))
+        | None -> None )
+    | `Resolved r -> Some r
 
 and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
   let open Tools.OptionMonad in
@@ -453,7 +459,7 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
     | (`Root (_, `TType) | `Type (_, _)) as r ->
         resolve_type_reference env r >>= fun (x, _) -> return (x :> Resolved.t)
     | (`Root (_, `TValue) | `Value (_, _)) as r ->
-        resolve_value_reference env r >>= fun (x, _) -> return (x :> Resolved.t)
+        resolve_value_reference env r >>= fun x -> return (x :> Resolved.t)
     | (`Root (_, `TLabel) | `Label (_, _)) as r ->
         resolve_label_reference env r >>= fun x -> return (x :> Resolved.t)
     | `Root (name, `TPage) -> (
@@ -481,7 +487,7 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
               resolve_label_reference env r >>= fun x -> return (x :> Resolved.t));
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying value reference\n%!"; *)
-              resolve_value_reference env r >>= fun (x, _) ->
+              resolve_value_reference env r >>= fun x ->
               return (x :> Resolved.t));
           ]
     | _ -> None
