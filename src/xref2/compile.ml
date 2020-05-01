@@ -21,8 +21,8 @@ and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
   let cp = Component.Of_Lang.(module_type_path empty p) in
-  match Tools.lookup_and_resolve_module_type_from_path true env cp with
-  | Resolved (p', _) -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
+  match Tools.resolve_module_type env cp with
+  | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
   | Unresolved p -> Cpath.module_type_path_of_cpath p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =

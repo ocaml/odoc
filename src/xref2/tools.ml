@@ -354,11 +354,7 @@ and process_module_type env m p' =
     Some (`SubstT (p, p'))
   in
   let p' = match substpath with Some p -> p | None -> p' in
-  match signature_of_module_type env m with
-  | Ok _ -> p'
-  | Error `OpaqueModule -> `OpaqueModuleType p'
-  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> p'
-
+  p'
 and get_module_path_modifiers : Env.t -> bool -> Component.Module.t -> _ option
     =
  fun env add_canonical m ->
@@ -388,10 +384,7 @@ and process_module_path env add_canonical m p =
     | Some (`SubstMT p') -> `Subst (p', p)
   in
   let p'' = if add_canonical then add_canonical_path env m p' else p' in
-  match signature_of_module_cached env p'' false m with
-  | Ok _ -> p''
-  | Error `OpaqueModule -> `OpaqueModule p''
-  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> p''
+  p''
 
 and handle_module_lookup env add_canonical id parent sg =
   match Find.careful_module_in_sig sg id with
@@ -706,7 +699,20 @@ and lookup_and_resolve_module_from_path :
 and resolve_module env p =
   let open ResultMonad in
   (* Format.fprintf Format.err_formatter "resolve_module: %a\n%!" Component.Fmt.module_path p; *)
-  lookup_and_resolve_module_from_path true true env p >>= fun (p, _) -> return p
+  lookup_and_resolve_module_from_path true true env p >>= fun (p, m) ->
+  match signature_of_module_cached env p false m with
+  | Ok _ -> return p
+  | Error `OpaqueModule -> return (`OpaqueModule p)
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p
+
+and resolve_module_type env p =
+  let open ResultMonad in
+  lookup_and_resolve_module_type_from_path true env p >>= fun (p, mt) ->
+  match signature_of_module_type env mt with
+  | Ok _ -> return p
+  | Error `OpaqueModule -> return (`OpaqueModuleType p)
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p
+
 
 and lookup_and_resolve_module_type_from_path :
     bool ->
