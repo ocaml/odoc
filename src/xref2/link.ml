@@ -95,8 +95,8 @@ and module_type_path :
           ( Tools.reresolve_module_type env p
           |> Cpath.resolved_module_type_path_of_cpath )
     | _ -> (
-        match Tools.lookup_and_resolve_module_type_from_path true env cp with
-        | Resolved (p', _) ->
+        match Tools.resolve_module_type env cp with
+        | Resolved p'->
             `Resolved (Cpath.resolved_module_type_path_of_cpath p')
         | Unresolved unresolved ->
             Lookup_failures.report "Failed to resolve module type %a"
@@ -114,8 +114,8 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         `Resolved
           (Tools.reresolve_module env p |> Cpath.resolved_module_path_of_cpath)
     | _ -> (
-        match Tools.lookup_and_resolve_module_from_path true true env cp with
-        | Resolved (p', _) -> `Resolved (Cpath.resolved_module_path_of_cpath p')
+        match Tools.resolve_module env cp with
+        | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
         | Unresolved _ when is_forward p -> p
         | Unresolved unresolved ->
             Lookup_failures.report "Failed to resolve module %a"
