@@ -18,18 +18,6 @@ open StdLabels
 open Odoc_model.Paths
 
 
-let functor_arg_pos { Odoc_model.Lang.FunctorParameter.id ; _ } =
-  let rec inner = function
-    | `Parameter (p, _) -> inner_sig p
-    | _ -> failwith "Invalid assumptions"
-  and inner_sig = function
-    | `Result p -> 1 + inner_sig p
-    | `Module _
-    | `ModuleType _
-    | `Root _
-    | `Parameter _ -> 1
-  in inner id
-
 let rec unit ~package (t : Odoc_model.Lang.Compilation_unit.t) : string list =
   let name = Printf.sprintf "%s/%s" package (Identifier.name t.id) in
   let rest =
@@ -64,7 +52,7 @@ and functor_argument ~prefix arg =
   | Some expansion -> (
       let name = Identifier.name arg.id in
       try
-        let nb = functor_arg_pos arg in
+        let nb = Odoc_document.Url.functor_arg_pos arg.id in
         (* FIXME: reuse [Url] somehow. *)
         let page = Printf.sprintf "%s/argument-%d-%s" prefix nb name in
         let subpages = module_expansion ~prefix:page expansion in

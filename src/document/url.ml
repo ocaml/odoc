@@ -3,6 +3,18 @@ open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
 
+let functor_arg_pos id =
+  let rec inner = function
+    | `Parameter (p, _) -> inner_sig p
+    | _ -> failwith "wtf"
+  and inner_sig = function
+    | `Result p -> 1 + inner_sig p
+    | `Module _
+    | `ModuleType _
+    | `Root _
+    | `Parameter _ -> 1
+  in inner id
+
 let render_path : Odoc_model.Paths.Path.t -> string =
   let open Odoc_model.Paths.Path in
   let rec render_resolved : Odoc_model.Paths.Path.Resolved.t -> string =
@@ -91,17 +103,10 @@ module Path = struct
       let kind = "module" in
       let page = ModuleName.to_string mod_name in
       mk ~parent kind page
-    | `Parameter (functor_id, arg_name) ->
+    | `Parameter (functor_id, arg_name) as p ->
       let parent = from_identifier (functor_id :> source) in
       let kind = "argument" in
-      let rec argument_number i =
-        function
-        | `Result x -> argument_number (i+1) x
-        | `Module _ -> i
-        | `ModuleType _ -> i
-        | _ -> failwith "Invalid assumptions!"
-      in
-      let arg_num = argument_number 1 functor_id in
+      let arg_num = functor_arg_pos p in
       let page =
         Printf.sprintf "%d-%s" arg_num (ParameterName.to_string arg_name)
       in
