@@ -1052,6 +1052,4 @@ end
     - [{!module-Only_a_module.t}] : {!module-Only_a_module.t}
     - [{!module-type-Only_a_module.t}] : {!module-type-Only_a_module.t} : {{!module-type-Only_a_module.t}test}*)
 
-module type PolyS =
-  sig type a = [ `A ] type t = [ a | `B ] end with type a := [ `A ]
 
