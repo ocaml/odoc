@@ -314,11 +314,8 @@ and find_shadowed map =
   | Module (_, m) :: rest -> (
       match hidden_name (m.id :> Odoc_model.Paths.Identifier.t) with
       | Some n ->
-          Format.eprintf "woo, shadowing %s\n%!" n;
           find_shadowed Lang_of.{ map with s_modules = n :: map.s_modules } rest
       | None ->
-          Format.eprintf "not shadowing: %a\n%!" Component.Fmt.model_identifier
-            (m.id :> Odoc_model.Paths.Identifier.t);
           find_shadowed map rest )
   | ModuleType m :: rest -> (
       match hidden_name (m.id :> Odoc_model.Paths.Identifier.t) with
