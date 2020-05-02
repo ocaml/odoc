@@ -535,18 +535,11 @@ and module_type_expr :
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
   let open TypeDecl in
-  try
     let equation = type_decl_equation env t.equation in
     let representation =
       Opt.map (type_decl_representation env) t.representation
     in
     { t with equation; representation }
-  with e ->
-    Format.fprintf Format.err_formatter "Failed to resolve type (%a): %s"
-      Component.Fmt.model_identifier
-      (t.id :> Paths.Identifier.t)
-      (Printexc.to_string e);
-    raise e
 
 and type_decl_equation env t =
   let open TypeDecl.Equation in
