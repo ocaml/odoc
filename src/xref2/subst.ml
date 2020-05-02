@@ -234,10 +234,15 @@ and type_poly_var s v =
     }
   in
   let map_element = function
-    | Type t -> Type (type_expr s t)
-    | Constructor c -> Constructor (map_constr c)
+    | Type t -> begin
+      match type_expr s t with
+      | Polymorphic_variant v -> v.elements
+      | x -> [Type x]
+    end
+    | Constructor c -> [Constructor (map_constr c)]
   in
-  { kind = v.kind; elements = List.map map_element v.elements }
+
+  { kind = v.kind; elements = List.flatten (List.map map_element v.elements) }
 
 and type_object s o =
   let open Component.TypeExpr.Object in
