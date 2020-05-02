@@ -119,7 +119,6 @@ module Path = struct
     | `Module m -> resolved_module map m
     | `ModuleType _ -> failwith "Invalid"
     | `FragmentRoot -> (
-        Format.fprintf Format.err_formatter "dereferencing fragmentroot...\n%!";
         match map.fragment_root with
         | Some r -> resolved_parent map (r :> Cpath.Resolved.parent)
         | None -> failwith "Invalid" )
@@ -431,15 +430,9 @@ let rec signature_items id map items =
           Odoc_model.Lang.Signature.Module (r, module_ map id m) :: acc
       | ModuleType (id, m) ->
           Odoc_model.Lang.Signature.ModuleType (module_type map id m) :: acc
-      | Type (id, r, t) -> (
+      | Type (id, r, t) ->
           let t = Component.Delayed.get t in
-          try Odoc_model.Lang.Signature.Type (r, type_decl map id t) :: acc
-          with e ->
-            let bt = Printexc.get_backtrace () in
-            Format.fprintf Format.err_formatter
-              "Failed (%s) during type lookup: %a\nbt:\n%s\n%!"
-              (Printexc.to_string e) Ident.fmt id bt;
-            raise e )
+          Odoc_model.Lang.Signature.Type (r, type_decl map id t) :: acc
       | Exception (id', e) ->
           Odoc_model.Lang.Signature.Exception
             (exception_ map
@@ -449,13 +442,8 @@ let rec signature_items id map items =
       | TypExt t -> Odoc_model.Lang.Signature.TypExt (typ_ext map id t) :: acc
       | Value (id, v) ->
           Odoc_model.Lang.Signature.Value (value_ map id v) :: acc
-      | Include i -> (
-          try Odoc_model.Lang.Signature.Include (include_ id map i) :: acc
-          with e ->
-            Format.fprintf Format.err_formatter
-              "Caught exception %s with include: %a" (Printexc.to_string e)
-              Component.Fmt.include_ i;
-            raise e )
+      | Include i ->
+          Odoc_model.Lang.Signature.Include (include_ id map i) :: acc
       | Open o -> Odoc_model.Lang.Signature.Open (open_ id map o) :: acc
       | External (id, e) ->
           Odoc_model.Lang.Signature.External (external_ map id e) :: acc

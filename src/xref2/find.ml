@@ -30,8 +30,6 @@ let careful_module_in_sig (s : Signature.t) name =
 let careful_type_in_sig (s : Signature.t) name =
   let rec inner_removed = function
     | Signature.RType (id, p) :: _ when Ident.Name.type_ id = name ->
-        Format.fprintf Format.err_formatter "Found replaced type %a\n%!"
-          Ident.fmt id;
         Some (Replaced p)
     | _ :: rest -> inner_removed rest
     | [] -> None
