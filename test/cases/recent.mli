@@ -52,5 +52,7 @@ module X : sig
   type v = u L.X.t
 end
 
+module type PolyS =
+  sig type a = [ `A ] type t = [ a | `B ] end with type a := [ `A ]
 
 
