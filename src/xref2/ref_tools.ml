@@ -76,6 +76,7 @@ let module_lookup_to_signature_lookup :
   match Tools.signature_of_module env m with
   | Ok sg -> Some ((ref :> Resolved.Signature.t), `Module cp, sg)
   | Error _ -> None
+  | exception _ -> None
 
 let module_type_lookup_to_signature_lookup :
     Env.t -> module_type_lookup_result -> signature_lookup_result option =
