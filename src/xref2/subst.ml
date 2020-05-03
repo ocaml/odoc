@@ -487,9 +487,13 @@ and rename_bound_idents s sg =
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
       rename_bound_idents s (Value (id', v) :: sg) rest
-  | External (id, e) :: rest ->
-      let id' = Ident.Rename.value id in
-      rename_bound_idents s (External (id', e) :: sg) rest
+  | External (id, e) :: rest -> (
+      try
+        let id' = Ident.Rename.value id in
+        rename_bound_idents s (External (id', e) :: sg) rest
+      with TypeReplacement _ ->
+        rename_bound_idents s sg rest
+    )
   | Class (id, r, c) :: rest ->
       let id' = Ident.Rename.class_ id in
       rename_bound_idents
@@ -536,37 +540,43 @@ and signature s sg =
 and apply_sig_map s items removed =
   let open Component.Signature in
   let items =
-    List.map
-      (function
+    List.fold_right (fun item items ->
+      (match item with
         | Module (id, r, m) ->
             Module
               ( id,
                 r,
                 Component.Delayed.put (fun () ->
-                    module_ s (Component.Delayed.get m)) )
+                    module_ s (Component.Delayed.get m)) ) :: items
         | ModuleSubstitution (id, m) ->
-            ModuleSubstitution (id, module_substitution s m)
+            ModuleSubstitution (id, module_substitution s m) :: items
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
                 Component.Delayed.put (fun () ->
-                    module_type s (Component.Delayed.get mt)) )
+                    module_type s (Component.Delayed.get mt)) ) :: items
         | Type (id, r, t) ->
             Type
               ( id,
                 r,
                 Component.Delayed.put (fun () ->
-                    type_ s (Component.Delayed.get t)) )
-        | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t)
-        | Exception (id, e) -> Exception (id, exception_ s e)
-        | TypExt e -> TypExt (extension s e)
-        | Value (id, v) -> Value (id, value s v)
-        | External (id, e) -> External (id, external_ s e)
-        | Class (id, r, c) -> Class (id, r, class_ s c)
-        | ClassType (id, r, c) -> ClassType (id, r, class_type s c)
-        | Include i -> Include (include_ s i)
-        | Open o -> Open (open_ s o)
-        | Comment c -> Comment c)
-      items
+                    type_ s (Component.Delayed.get t)) ) :: items
+        | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t) :: items
+        | Exception (id, e) -> Exception (id, exception_ s e) :: items
+        | TypExt e -> (
+          try
+            let e' = extension s e in
+            TypExt e' :: items
+          with TypeReplacement _ ->
+            items
+        )
+        | Value (id, v) -> Value (id, value s v) :: items
+        | External (id, e) -> External (id, external_ s e) :: items
+        | Class (id, r, c) -> Class (id, r, class_ s c) :: items
+        | ClassType (id, r, c) -> ClassType (id, r, class_type s c) :: items
+        | Include i -> Include (include_ s i) :: items
+        | Open o -> Open (open_ s o) :: items
+        | Comment c -> Comment c :: items))
+      items []
   in
   { items; removed = removed_items s removed }
