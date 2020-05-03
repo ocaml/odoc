@@ -1742,6 +1742,22 @@
      </li>
     </ul>
    </aside>
+   <div class="spec module-type" id="module-type-TypeExt">
+    <a href="#module-type-TypeExt" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-TypeExt/index.html">TypeExt</a> = { ... };</code>
+   </div>
+   <dl>
+    <dt class="spec type" id="type-new_t">
+     <a href="#type-new_t" class="anchor"></a><code><span class="keyword">type</span> new_t = ..;</code>
+    </dt>
+   </dl>
+   <dl>
+    <dt class="spec extension">
+     <code><span class="keyword">type</span> <a href="index.html#type-new_t">new_t</a> += | <span class="extension">C</span>;</code>
+    </dt>
+   </dl>
+   <div class="spec module-type" id="module-type-TypeExtPruned">
+    <a href="#module-type-TypeExtPruned" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-TypeExtPruned/index.html">TypeExtPruned</a> = <a href="module-type-TypeExt/index.html">TypeExt</a> <span class="keyword">with</span> <span class="keyword">type</span> <a href="module-type-TypeExt/index.html#type-t">t</a> := <a href="index.html#type-new_t">new_t</a>;</code>
+   </div>
   </div>
  </body>
 </html>

@@ -1053,3 +1053,13 @@ end
     - [{!module-type-Only_a_module.t}] : {!module-type-Only_a_module.t} : {{!module-type-Only_a_module.t}test}*)
 
 
+module type TypeExt = sig
+  type t = ..
+  type t += C
+  val f : t -> unit
+end
+
+type new_t = ..
+type new_t += C
+module type TypeExtPruned = TypeExt with type t := new_t
+
