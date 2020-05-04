@@ -246,9 +246,9 @@ which are:
 
 ```ocaml env=e1
 # let get_ok = function
-    | Tools.ResultMonad.Resolved x -> x
+    | Tools.ResolvedMonad.Resolved x -> x
     | Unresolved _ -> failwith "Unresolved path" ;;
-val get_ok : ('a, 'b) Tools.ResultMonad.t -> 'a = <fun>
+val get_ok : ('a, 'b) Tools.ResolvedMonad.t -> 'a = <fun>
 # let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (Common.root_module "M")));;
 Line 1, characters 33-62:
 Error: Unbound value Tools.lookup_module_from_path
@@ -442,8 +442,8 @@ we then return along with the fully resolved identifier.
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : (Tools.type_lookup_result, Cpath.type_) Tools.ResultMonad.t =
-Odoc_xref2.Tools.ResultMonad.Resolved
+- : (Tools.type_lookup_result, Cpath.type_) Tools.ResolvedMonad.t =
+Odoc_xref2.Tools.ResolvedMonad.Resolved
  (`Type
     (`Module
        (`Module
@@ -2226,8 +2226,8 @@ Error: This expression has type 'a * 'b
             (`Resolved
                (`Identifier (Common.root_module "N")),
              "t"));;
-- : (Tools.type_lookup_result, Cpath.type_) Tools.ResultMonad.t =
-Odoc_xref2.Tools.ResultMonad.Unresolved
+- : (Tools.type_lookup_result, Cpath.type_) Tools.ResolvedMonad.t =
+Odoc_xref2.Tools.ResolvedMonad.Unresolved
  (`Dot
     (`Resolved (`Identifier (`Module (`Root (Common.root, Root), N))), "t"))
 ```
