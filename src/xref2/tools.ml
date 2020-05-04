@@ -5,6 +5,8 @@ open Odoc_model.Paths
 open Utils
 open ResultMonad
 
+exception ModuleLookup of Cpath.module_ 
+
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 module ResolvedMonad = struct
@@ -1166,7 +1168,6 @@ and fragmap_module :
     Component.Signature.t ->
     (Component.Signature.t, handle_subs_error) result  =
  fun env frag sub sg ->
-  let exception ModuleLookup of Cpath.module_ in
   let name, frag' = Cfrag.module_split frag in
   let map_module m =
     match (frag', sub) with
