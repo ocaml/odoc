@@ -416,10 +416,14 @@ and module_type_expr :
     =
  fun env id expr ->
   let open ModuleType in
-  let resolve_sub ~fragment_root (sg, env, subs) csub lsub =
+  let open Utils.ResultMonad in
+  let resolve_sub ~fragment_root (sg_res, env, subs) csub lsub =
+    match sg_res with
+    | Error _ -> (sg_res, env, lsub::subs)
+    | Ok sg ->
     let lang_of_map = Lang_of.with_fragment_root fragment_root in
     let env = Env.add_fragment_root sg env in
-    let sg', sub' =
+    let sg_and_sub =
       match (csub, lsub) with
       | Component.ModuleType.ModuleEq (frag, _), ModuleEq (unresolved, decl) ->
           let frag' =
@@ -433,8 +437,8 @@ and module_type_expr :
                 lookup_failure ~what:(`With_module frag) `Resolve;
                 unresolved
           in
-          let sg' = Tools.fragmap_module env frag csub sg in
-          (sg', ModuleEq (frag', module_decl env id decl))
+          Tools.fragmap_module env frag csub sg >>= fun sg' ->
+          Ok (sg', ModuleEq (frag', module_decl env id decl))
       | TypeEq (frag, _), TypeEq (unresolved, eqn) ->
           let frag' =
             match
@@ -448,7 +452,7 @@ and module_type_expr :
                 unresolved
           in
           let sg' = Tools.fragmap_type env frag csub sg in
-          (sg', TypeEq (frag', type_decl_equation env eqn))
+          Ok (sg', TypeEq (frag', type_decl_equation env eqn))
       | ModuleSubst (frag, _), ModuleSubst (unresolved, mpath) ->
           let frag' =
             match
@@ -461,8 +465,8 @@ and module_type_expr :
                 lookup_failure ~what:(`With_module frag) `Resolve;
                 unresolved
           in
-          let sg' = Tools.fragmap_module env frag csub sg in
-          (sg', ModuleSubst (frag', module_path env mpath))
+          Tools.fragmap_module env frag csub sg >>= fun sg' ->
+          Ok (sg', ModuleSubst (frag', module_path env mpath))
       | TypeSubst (frag, _), TypeSubst (unresolved, eqn) ->
           let frag' =
             match
@@ -476,10 +480,12 @@ and module_type_expr :
                 unresolved
           in
           let sg' = Tools.fragmap_type env frag csub sg in
-          (sg', TypeSubst (frag', type_decl_equation env eqn))
+          Ok (sg', TypeSubst (frag', type_decl_equation env eqn))
       | _ -> failwith "This is pretty unusual"
     in
-    (sg', env, sub' :: subs)
+    match sg_and_sub with
+    | Ok (sg', sub') -> ((Ok sg'), env, sub' :: subs)
+    | Error _ -> (sg_res, env, lsub :: subs)
   in
 
   let rec inner resolve_signatures = function
@@ -518,7 +524,7 @@ and module_type_expr :
                 let _, _, subs =
                   List.fold_left2
                     (resolve_sub ~fragment_root)
-                    (sg, env, []) csubs subs
+                    (Ok sg, env, []) csubs subs
                 in
                 let subs = List.rev subs in
                 With (inner false expr, subs) ) )
