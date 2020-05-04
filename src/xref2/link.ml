@@ -605,14 +605,15 @@ and handle_fragments env sg subs =
      Component.Fmt.module_type_expr cexpr Component.Fmt.substitution_list
      (List.map Component.Of_Lang.(module_type_substitution empty) subs);*)
   List.fold_left2
-    (fun (sg, subs) csub lsub ->
+    (fun (sg_res, subs) csub lsub ->
       (* Format.fprintf Format.err_formatter "Signature is: %a\n%!"
          Component.Fmt.signature sg; *)
       (* Format.fprintf Format.err_formatter "Handling sub: %a\n%!"
          Component.Fmt.substitution
          Component.Of_Lang.(module_type_substitution empty sub); *)
-      match (csub, lsub) with
-      | Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
+      
+      match (sg_res, csub, lsub) with
+      | Ok sg, Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
           let frag' =
             match cfrag with
             | `Resolved f ->
@@ -627,7 +628,7 @@ and handle_fragments env sg subs =
               sg
           in
           (sg', ModuleEq (frag', module_decl env decl) :: subs)
-      | TypeEq (cfrag, _), TypeEq (frag, eqn) ->
+      | Ok sg, TypeEq (cfrag, _), TypeEq (frag, eqn) ->
           let frag' =
             match cfrag with
             | `Resolved f ->
@@ -641,8 +642,8 @@ and handle_fragments env sg subs =
               Component.Of_Lang.(module_type_substitution empty lsub)
               sg
           in
-          (sg', TypeEq (frag', type_decl_equation env eqn) :: subs)
-      | ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
+          (Ok sg', TypeEq (frag', type_decl_equation env eqn) :: subs)
+      | Ok sg, ModuleSubst (cfrag, _), ModuleSubst (frag, mpath) ->
           let frag' =
             match cfrag with
             | `Resolved f ->
@@ -657,7 +658,7 @@ and handle_fragments env sg subs =
               sg
           in
           (sg', ModuleSubst (frag', module_path env mpath) :: subs)
-      | TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
+      | Ok sg, TypeSubst (cfrag, _), TypeSubst (frag, eqn) ->
           let frag' =
             match cfrag with
             | `Resolved f ->
@@ -671,9 +672,11 @@ and handle_fragments env sg subs =
               Component.Of_Lang.(module_type_substitution empty lsub)
               sg
           in
-          (sg', TypeSubst (frag', type_decl_equation env eqn) :: subs)
+          (Ok sg', TypeSubst (frag', type_decl_equation env eqn) :: subs)
+      | Error _ as e, _, lsub ->
+          (e, lsub::subs)
       | _ -> failwith "can't happen")
-    (sg, []) csubs subs
+    (Ok sg, []) csubs subs
   |> snd |> List.rev
 
 and module_type_expr : Env.t -> ModuleType.expr -> ModuleType.expr =

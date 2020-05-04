@@ -136,7 +136,7 @@ and handle_module_lookup env add_canonical id parent_path parent_ref sg =
   | Some (Replaced _) | None -> None
 
 and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ->
     match r with
     | `Resolved _r -> failwith "unhandled"
@@ -195,7 +195,7 @@ and find_module :
     add_canonical:bool ->
     module_lookup_result option =
  fun env parent name ~add_canonical ->
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   (* Format.fprintf Format.err_formatter "resolve_module_reference: (add_canonical=%b) before:\n%!%a\n%!" add_canonical
      Component.Fmt.model_reference (`Dot (parent, name)); *)
   resolve_label_parent_reference env parent ~add_canonical
@@ -213,7 +213,7 @@ and find_module_type :
     add_canonical:bool ->
     module_type_lookup_result option =
  fun env parent name ~add_canonical ->
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   resolve_label_parent_reference env parent ~add_canonical
   >>= signature_lookup_result_of_label_parent
   >>= fun (parent', cp, sg) ->
@@ -257,7 +257,7 @@ and resolve_module_type_reference :
     ModuleType.t ->
     add_canonical:bool ->
     module_type_lookup_result option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ~add_canonical ->
     match r with
     | `Resolved _r ->
@@ -279,7 +279,7 @@ and resolve_label_parent_reference :
     LabelParent.t ->
     add_canonical:bool ->
     label_parent_lookup_result option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ~add_canonical ->
     let label_parent_res_of_sig_res :
         signature_lookup_result -> label_parent_lookup_result option =
@@ -323,7 +323,7 @@ and resolve_label_parent_reference :
 and resolve_signature_reference :
     Env.t -> Signature.t -> add_canonical:bool -> signature_lookup_result option
     =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env' r ~add_canonical ->
     let id = (add_canonical, r) in
     (* Format.fprintf Format.err_formatter "lookup_and_resolve_module_from_resolved_path: looking up %a\n%!" Component.Fmt.resolved_path p; *)
@@ -370,7 +370,7 @@ and resolve_signature_reference :
         find xs
 
 and resolve_value_reference : Env.t -> Value.t -> value_lookup_result option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ->
     match r with
     | `Root (name, _) -> (
@@ -393,7 +393,7 @@ and resolve_value_reference : Env.t -> Value.t -> value_lookup_result option =
     | `Resolved r -> Some r
 
 and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ->
     match r with
     | `Resolved r -> Some r
@@ -424,7 +424,7 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             with _ -> None ) )
 
 and resolve_reference : Env.t -> t -> Resolved.t option =
-  let open Tools.OptionMonad in
+  let open Utils.OptionMonad in
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
