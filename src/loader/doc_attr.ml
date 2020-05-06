@@ -33,8 +33,10 @@ let load_payload : Parsetree.payload -> (string * Location.t) option = function
       Pstr_eval ({pexp_desc =
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
         Pexp_constant (Const_string (text, _))
-#else
+#elif OCAML_MAJOR = 4 && OCAML_MINOR < 11
         Pexp_constant (Pconst_string (text, _))
+#else
+        Pexp_constant (Pconst_string (text, _, _))
 #endif
    ; pexp_loc = loc; _}, _); _}] ->
     Some (text, loc)
