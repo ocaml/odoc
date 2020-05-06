@@ -105,7 +105,7 @@ matrix:
       env: OCAML=4.08.1
     - <<: *opam
       os: linux
-      env: OCAML=4.11.0+trunk
+      env: OCAML=4.11.0+trunk OCAML_BETA=enable
     - <<: *opam
       os: linux
       env: OCAML=4.10.0
