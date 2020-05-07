@@ -613,7 +613,7 @@ and handle_fragments env sg subs =
          Component.Of_Lang.(module_type_substitution empty sub); *)
       
       match (sg_res, csub, lsub) with
-      | Ok sg, Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
+      | Result.Ok sg, Component.ModuleType.ModuleEq (cfrag, _), ModuleEq (frag, decl) ->
           let frag' =
             match cfrag with
             | `Resolved f ->

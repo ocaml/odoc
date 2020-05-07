@@ -283,7 +283,7 @@ let module_resolve_cache :
   Memos2.create 10000
 
 let module_signature_cache :
-    ( (Component.Signature.t, signature_of_module_error) result
+    ( (Component.Signature.t, signature_of_module_error) Result.result
     * int
     * Env.lookup_type list )
     Memos3.t =
@@ -403,7 +403,7 @@ and handle_module_type_lookup env id p sg =
   let p'' = process_module_type env mt p' in
   Some (p'', mt)
 
-and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) result
+and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) Result.result
     =
   match Find.careful_type_in_sig sg id with
   | Some mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
@@ -421,7 +421,7 @@ and handle_class_type_lookup env id p m =
 and lookup_module :
     Env.t ->
     Cpath.Resolved.module_ ->
-    (Component.Module.t, module_lookup_error) result =
+    (Component.Module.t, module_lookup_error) Result.result =
  fun env' path ->
   let id = path in
   let env_id = Env.id env' in
@@ -564,7 +564,7 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
 and lookup_module_type :
     Env.t ->
     Cpath.Resolved.module_type ->
-    (Component.ModuleType.t, module_type_lookup_error) result =
+    (Component.ModuleType.t, module_type_lookup_error) Result.result =
  fun env path ->
   let lookup env =
     match path with
@@ -745,7 +745,7 @@ and lookup_and_resolve_module_type_from_path :
 and lookup_type_from_resolved_path :
     Env.t ->
     Cpath.Resolved.type_ ->
-    (type_lookup_result, type_lookup_error) result =
+    (type_lookup_result, type_lookup_error) Result.result =
  fun env p ->
   (* let start_time = Unix.gettimeofday () in *)
   (* Format.fprintf Format.err_formatter "lookup_type_from_resolved_path\n%!"; *)
@@ -878,7 +878,7 @@ and lookup_type_from_path :
 and lookup_class_type_from_resolved_path :
     Env.t ->
     Cpath.Resolved.class_type ->
-    (class_type_lookup_result, class_type_lookup_error) result =
+    (class_type_lookup_result, class_type_lookup_error) Result.result =
  fun env p ->
   match p with
   | `Local _id -> Error (`Local (env, p))
@@ -1009,7 +1009,7 @@ and lookup_signature_from_fragment :
 and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) result =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
@@ -1026,13 +1026,13 @@ and module_type_expr_of_module_decl :
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) result =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
 and signature_of_module_alias :
     Env.t ->
     Cpath.module_ ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env path ->
   match lookup_and_resolve_module_from_path false true env path with
   | Resolved (p', m) ->
@@ -1047,7 +1047,7 @@ and handle_signature_with_subs :
     Env.t ->
     Component.Signature.t ->
     Component.ModuleType.substitution list ->
-    (Component.Signature.t, handle_subs_error) result =
+    (Component.Signature.t, handle_subs_error) Result.result =
  fun env sg subs ->
   let open ResultMonad in
   List.fold_left
@@ -1064,7 +1064,7 @@ and handle_signature_with_subs :
 and signature_of_module_type_expr :
     Env.t ->
     Component.ModuleType.expr ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env m ->
   match m with
   | Component.ModuleType.Path p -> (
@@ -1088,7 +1088,7 @@ and signature_of_module_type_expr :
 and signature_of_module_type :
     Env.t ->
     Component.ModuleType.t ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env m ->
   match m.expr with
   | None -> Error `OpaqueModule
@@ -1097,7 +1097,7 @@ and signature_of_module_type :
 and signature_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
   | Component.Module.Alias path -> signature_of_module_alias env path
@@ -1106,7 +1106,7 @@ and signature_of_module_decl :
 and signature_of_module :
     Env.t ->
     Component.Module.t ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env m -> signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
@@ -1114,7 +1114,7 @@ and signature_of_module_cached :
     Cpath.Resolved.module_ ->
     bool ->
     Component.Module.t ->
-    (Component.Signature.t, signature_of_module_error) result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun env' path is_resolve m ->
   let id = (is_resolve, path) in
   let run env = signature_of_module env m in
@@ -1166,7 +1166,7 @@ and fragmap_module :
     Cfrag.module_ ->
     Component.ModuleType.substitution ->
     Component.Signature.t ->
-    (Component.Signature.t, handle_subs_error) result  =
+    (Component.Signature.t, handle_subs_error) Result.result  =
  fun env frag sub sg ->
   let name, frag' = Cfrag.module_split frag in
   let map_module m =
@@ -1520,7 +1520,7 @@ and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
     string ->
-    (Component.Module.t, module_lookup_error) result =
+    (Component.Module.t, module_lookup_error) Result.result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
   | Some (Found m) -> Ok m
