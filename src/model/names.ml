@@ -18,6 +18,8 @@ module type Name = sig
 
     val equal : t -> t -> bool
 
+    val compare : t -> t -> int
+
     val fmt : Format.formatter -> t -> unit
 
     val is_hidden : t -> bool
@@ -52,6 +54,13 @@ module Name : Name = struct
 
     let equal (x : t) (y : t) = x = y
 
+    let compare x y =
+        match x, y with
+        | Internal x, Internal y -> String.compare x y
+        | Std x, Std y -> String.compare x y
+        | Internal _, Std _ -> -1
+        | Std _, Internal _ -> 1
+
     let fmt ppf x = Format.fprintf ppf "%s" (to_string x)
 
     let is_hidden = function
@@ -77,6 +86,8 @@ module type SimpleName = sig
 
     val equal : t -> t -> bool
 
+    val compare : t -> t -> int
+
     val fmt : Format.formatter -> t -> unit
 
     val is_hidden : t -> bool
@@ -94,6 +105,8 @@ module SimpleName : SimpleName = struct
     let of_ident id = of_string (Ident.name id)
 
     let equal (x : t) (y : t) = x = y
+
+    let compare x y = String.compare x y
 
     let fmt ppf t = Format.pp_print_string ppf (to_string t)
 
