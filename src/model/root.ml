@@ -67,6 +67,8 @@ let hash : t -> int = Hashtbl.hash
 
 let to_string t = Printf.sprintf "%s::%s" t.package (Odoc_file.name t.file)
 
+let compare x y = String.compare x.digest y.digest
+
 module Hash_table =
   Hashtbl.Make
     (struct

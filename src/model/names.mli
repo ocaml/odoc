@@ -38,6 +38,8 @@ module type Name = sig
 
     val equal : t -> t -> bool
 
+    val compare : t -> t -> int
+
     val fmt : Format.formatter -> t -> unit
 
     (** Hidden names are those that contain a double underscore, e.g.
@@ -58,6 +60,8 @@ module type SimpleName = sig
     val of_ident : Ident.t -> t
 
     val equal : t -> t -> bool
+
+    val compare : t -> t -> int
 
     val fmt : Format.formatter -> t -> unit
 

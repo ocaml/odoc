@@ -44,7 +44,7 @@ module Identifier = struct
   let name : [< t] -> string = fun n -> name_aux (n :> t)
 
   
-  let rec hash (id : Paths_types.Identifier.any) =
+  let rec hash (id : t) =
     let open Paths_types.Identifier in
     match id with
     | `Root(r, s) ->
@@ -56,137 +56,275 @@ module Identifier = struct
     | `Parameter(id, s) ->
       Hashtbl.hash (4, hash (id : signature :> any), s)
     | `Result(s) ->
-      Hashtbl.hash (1001, hash (s : signature :> any))
+      Hashtbl.hash (5, hash (s : signature :> any))
     | `ModuleType(id, s) ->
-      Hashtbl.hash (5, hash (id : signature :> any), s)
-    | `Type(id, s) ->
       Hashtbl.hash (6, hash (id : signature :> any), s)
+    | `Type(id, s) ->
+      Hashtbl.hash (7, hash (id : signature :> any), s)
     | `CoreType s ->
-      Hashtbl.hash (7, s)
+      Hashtbl.hash (8, s)
     | `Constructor(id, s) ->
-      Hashtbl.hash (8, hash (id : type_ :> any), s)
+      Hashtbl.hash (9, hash (id : type_ :> any), s)
     | `Field(id, s) ->
-      Hashtbl.hash (9, hash (id : parent :> any), s)
+      Hashtbl.hash (10, hash (id : parent :> any), s)
     | `Extension(id, s) ->
-      Hashtbl.hash (10, hash (id : signature :> any), s)
-    | `Exception(id, s) ->
       Hashtbl.hash (11, hash (id : signature :> any), s)
+    | `Exception(id, s) ->
+      Hashtbl.hash (12, hash (id : signature :> any), s)
     | `CoreException s ->
-      Hashtbl.hash (12, s)
+      Hashtbl.hash (13, s)
     | `Value(id, s) ->
-      Hashtbl.hash (13, hash (id : signature :> any), s)
-    | `Class(id, s) ->
       Hashtbl.hash (14, hash (id : signature :> any), s)
-    | `ClassType(id, s) ->
+    | `Class(id, s) ->
       Hashtbl.hash (15, hash (id : signature :> any), s)
+    | `ClassType(id, s) ->
+      Hashtbl.hash (16, hash (id : signature :> any), s)
     | `Method(id, s) ->
-      Hashtbl.hash (16, hash (id : class_signature :> any), s)
-    | `InstanceVariable(id, s) ->
       Hashtbl.hash (17, hash (id : class_signature :> any), s)
+    | `InstanceVariable(id, s) ->
+      Hashtbl.hash (18, hash (id : class_signature :> any), s)
     | `Label(id, s) ->
-      Hashtbl.hash (18, hash (id : label_parent :> any ), s)
+      Hashtbl.hash (19, hash (id : label_parent :> any ), s)
+
+  let constructor_id : t -> int = function
+    | `Root _ -> 1 | `Page _ -> 2 | `Module _ -> 3 | `Parameter _ -> 4
+    | `Result _ -> 5 | `ModuleType _ -> 6 | `Type _ -> 7 | `CoreType _ -> 8
+    | `Constructor _ -> 9 | `Field _ -> 10 | `Extension _ -> 11 | `Exception _ -> 12
+    | `CoreException _ -> 13 | `Value _ -> 14 | `Class _ -> 15 | `ClassType _ -> 16
+    | `Method _ -> 17 | `InstanceVariable _ -> 18 | `Label _ -> 19
+
+  let std_compare = compare
+
+  let rec compare : t -> t -> int =
+    fun x y ->
+      match x,y with
+      | `Root(r, s), `Root(r', s') -> let s = UnitName.compare s s' in if s<>0 then s else Root.compare r r'
+      | `Page(r, s), `Page(r', s') -> let s = PageName.compare s s' in if s<>0 then s else Root.compare r r'
+      | `Module (p, s), `Module (p', s') -> let s = ModuleName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Parameter (p, s), `Parameter (p', s') -> let s = ParameterName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Result p, `Result p' -> compare (p :> t) (p' :> t)
+      | `ModuleType (p, s), `ModuleType (p', s') -> let s = ModuleTypeName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Type(p, s), `Type(p', s') -> let s = TypeName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `CoreType s, `CoreType s' -> TypeName.compare s s' 
+      | `Constructor(p, s), `Constructor(p', s') -> let s = ConstructorName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Field(p, s), `Field(p', s') -> let s = FieldName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Extension(p, s), `Extension(p', s') -> let s = ExtensionName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Exception(p, s), `Exception(p', s') -> let s = ExceptionName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `CoreException s, `CoreException s' -> ExceptionName.compare s s'
+      | `Value(p, s), `Value(p', s')  -> let s = ValueName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Class(p, s), `Class(p', s') -> let s = ClassName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `ClassType(p, s), `ClassType(p', s') -> let s = ClassTypeName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Method(p, s), `Method(p', s') -> let s = MethodName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `InstanceVariable(p, s), `InstanceVariable(p', s')  -> let s = InstanceVariableName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | `Label(p, s), `Label(p', s') -> let s = LabelName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
+      | x, y -> std_compare (constructor_id x) (constructor_id y)
+
+  let equal : t -> t -> bool =
+    fun x y -> compare x y = 0
+
+  type any = t
 
   module Signature =
   struct
     type t = Paths_types.Identifier.signature
 
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module ClassSignature =
   struct
     type t = Paths_types.Identifier.class_signature 
+
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module DataType =
   struct
     type t = Paths_types.Identifier.datatype
 
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+
   end
 
   module Parent =
   struct
     type t = Paths_types.Identifier.parent
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module LabelParent =
   struct
     type t = Paths_types.Identifier.label_parent
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module Module =
   struct
     type t = Paths_types.Identifier.module_
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module ModuleType =
   struct
     type t = Paths_types.Identifier.module_type
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module Type =
   struct
     type t = Paths_types.Identifier.type_
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module Constructor =
   struct
     type t = Paths_types.Identifier.constructor
+
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Field =
   struct
     type t = Paths_types.Identifier.field
+
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Extension =
   struct
     type t = Paths_types.Identifier.extension
+
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Exception =
   struct
     type t = Paths_types.Identifier.exception_
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
 
   end
 
   module Value =
   struct
     type t = Paths_types.Identifier.value
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Class =
   struct
     type t = Paths_types.Identifier.class_
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module ClassType =
   struct
     type t = Paths_types.Identifier.class_type
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Method =
   struct
     type t = Paths_types.Identifier.method_
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module InstanceVariable =
   struct
     type t = Paths_types.Identifier.instance_variable
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Label =
   struct
     type t = Paths_types.Identifier.label
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Page =
   struct
     type t = Paths_types.Identifier.page
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
   end
 
   module Path =
@@ -194,28 +332,103 @@ module Identifier = struct
     module Module =
     struct
       type t = Paths_types.Identifier.path_module
+      let equal x y = equal (x :> any) (y :> any)
 
+      let hash x = hash (x :> any)
+  
+      let compare x y = compare (x :> any) (y :> any)
+  
     end
 
     module ModuleType =
     struct
       type t = Paths_types.Identifier.path_module_type
+      let equal x y = equal (x :> any) (y :> any)
 
+      let hash x = hash (x :> any)
+  
+      let compare x y = compare (x :> any) (y :> any)
+  
     end
 
     module Type =
     struct
       type t = Paths_types.Identifier.path_type
-    end
+      let equal x y = equal (x :> any) (y :> any)
+
+      let hash x = hash (x :> any)
+  
+      let compare x y = compare (x :> any) (y :> any)
+      end
 
     module ClassType =
     struct
       type t = Paths_types.Identifier.path_class_type
-    end
+      let equal x y = equal (x :> any) (y :> any)
+
+      let hash x = hash (x :> any)
+  
+      let compare x y = compare (x :> any) (y :> any)
+      end
 
     type t = Paths_types.Identifier.path_any
   end
 
+  module Sets = struct
+    module Signature = Set.Make(Signature)
+    module ClassSignature = Set.Make(ClassSignature)
+    module DataType = Set.Make(DataType)
+    module Parent = Set.Make(Parent)
+    module LabelParent = Set.Make(LabelParent)
+    module Module = Set.Make(Module)
+    module ModuleType = Set.Make(ModuleType)
+    module Type = Set.Make(Type)
+    module Constructor = Set.Make(Constructor)
+    module Field = Set.Make(Field)
+    module Extension = Set.Make(Extension)
+    module Exception = Set.Make(Exception)
+    module Value = Set.Make(Value)
+    module Class = Set.Make(Class)
+    module ClassType = Set.Make(ClassType)
+    module Method = Set.Make(Method)
+    module InstanceVariable = Set.Make(InstanceVariable)
+    module Label = Set.Make(Label)
+    module Page = Set.Make(Page)
+    module Path = struct
+      module Module = Set.Make(Path.Module)
+      module ModuleType = Set.Make(Path.ModuleType)
+      module Type = Set.Make(Path.Type)
+      module ClassType = Set.Make(Path.ClassType)
+    end
+  end
+
+  module Maps = struct
+    module Signature = Map.Make(Signature)
+    module ClassSignature = Map.Make(ClassSignature)
+    module DataType = Map.Make(DataType)
+    module Parent = Map.Make(Parent)
+    module LabelParent = Map.Make(LabelParent)
+    module Module = Map.Make(Module)
+    module ModuleType = Map.Make(ModuleType)
+    module Type = Map.Make(Type)
+    module Constructor = Map.Make(Constructor)
+    module Field = Map.Make(Field)
+    module Extension = Map.Make(Extension)
+    module Exception = Map.Make(Exception)
+    module Value = Map.Make(Value)
+    module Class = Map.Make(Class)
+    module ClassType = Map.Make(ClassType)
+    module Method = Map.Make(Method)
+    module InstanceVariable = Map.Make(InstanceVariable)
+    module Label = Map.Make(Label)
+    module Page = Map.Make(Page)
+    module Path = struct
+      module Module = Map.Make(Path.Module)
+      module ModuleType = Map.Make(Path.ModuleType)
+      module Type = Map.Make(Path.Type)
+      module ClassType = Map.Make(Path.ClassType)
+    end
+  end
 
 
 end
