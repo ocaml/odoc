@@ -10,7 +10,7 @@ type expansion =
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
 let rec aux_expansion_of_module :
-    Env.t -> Component.Module.t -> (expansion, error) result =
+    Env.t -> Component.Module.t -> (expansion, error) Result.result =
   let open Component.Module in
   fun env m -> aux_expansion_of_module_decl env m.type_
 
@@ -67,7 +67,7 @@ and unresolve_subs subs =
       | x -> x)
     subs
 
-and aux_expansion_of_module_type_expr env expr : (expansion, error) result =
+and aux_expansion_of_module_type_expr env expr : (expansion, error) Result.result =
   match expr with
   | Path p -> (
       match Tools.lookup_and_resolve_module_type_from_path false env p with

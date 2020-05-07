@@ -35,13 +35,8 @@ let empty =
     module_ = [];
     module_type = [];
     signatures = [];
-    type_ = List.map (fun (x, y) -> (y, x)) Component.core_type_ids;
-    path_type =
-      List.map
-        (fun (x, y) ->
-          ( (y :> Ident.path_type),
-            (x :> Odoc_model.Paths_types.Identifier.path_type) ))
-        Component.core_type_ids;
+    type_ = [];
+    path_type = [];
     exception_ = [];
     value_ = [];
     method_ = [];

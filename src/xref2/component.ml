@@ -2,6 +2,8 @@
     {!Lang}, which may well be too complex for our use, we'll
     see as we expand on this *)
 
+module Maps = Odoc_model.Paths.Identifier.Maps
+
 module ModuleMap = Map.Make (struct
   type t = Ident.module_
 
@@ -1116,168 +1118,74 @@ module Fmt = struct
 end
 
 module LocalIdents = struct
+  (** The purpose of this module is to extract identifiers
+      that could be referenced in Paths - that is, modules,
+      module types, types, classes and class types. That way
+      we can assign them an Ident.t ahead of time and be
+      self-consistent. Because we don't need _all_ of the
+      identifiers we don't traverse the entire structure.
+      Additionally, we stop at (class_)signature boundaries
+      since identifiers within these won't be referenced 
+      except within them, so we only do that on demand. *)
   open Odoc_model
 
   type t = {
-    modules : Paths.Identifier.Module.t list;
-    module_types : Paths.Identifier.ModuleType.t list;
-    fields : Paths.Identifier.Field.t list;
-    constructors : Paths.Identifier.Constructor.t list;
-    types : Paths.Identifier.Type.t list;
-    extensions : Paths.Identifier.Extension.t list;
-    exceptions : Paths.Identifier.Exception.t list;
-    values : Paths.Identifier.Value.t list;
-    classes : Paths.Identifier.Class.t list;
-    class_types : Paths.Identifier.ClassType.t list;
-    methods : Paths.Identifier.Method.t list;
-    instance_variables : Paths.Identifier.InstanceVariable.t list;
-    labels : Paths.Identifier.Label.t list;
+    modules : Paths.Identifier.Sets.Module.t;
+    module_types : Paths.Identifier.Sets.ModuleType.t;
+    types : Paths.Identifier.Sets.Type.t;
+    classes : Paths.Identifier.Sets.Class.t;
+    class_types : Paths.Identifier.Sets.ClassType.t;
   }
 
   let empty =
+    let open Paths.Identifier.Sets in
     {
-      modules = [];
-      module_types = [];
-      fields = [];
-      constructors = [];
-      types = [];
-      extensions = [];
-      exceptions = [];
-      values = [];
-      classes = [];
-      class_types = [];
-      methods = [];
-      instance_variables = [];
-      labels = [];
+      modules = Module.empty;
+      module_types = ModuleType.empty;
+      types = Type.empty;
+      classes = Class.empty;
+      class_types = ClassType.empty;
     }
 
   open Lang
 
-  let opt conv opt ids = match opt with Some x -> conv x ids | None -> ids
-
-  let rec module_ m ids = docs m.Module.doc ids
-
-  and module_substitution m ids = docs m.ModuleSubstitution.doc ids
-
-  and module_type m ids = docs m.ModuleType.doc ids
-
-  and type_decl t ids =
-    let ids = opt type_decl_representation t.TypeDecl.representation ids in
-    docs t.TypeDecl.doc ids
-
-  and type_decl_representation r ids =
-    match r with
-    | TypeDecl.Representation.Extensible -> ids
-    | Record fs -> List.fold_right type_decl_field fs ids
-    | Variant cs -> List.fold_right type_decl_constructor cs ids
-
-  and type_decl_field f ids =
-    let ids = docs f.TypeDecl.Field.doc ids in
-    { ids with fields = f.TypeDecl.Field.id :: ids.fields }
-
-  and type_decl_constructor c ids =
-    let ids = docs c.TypeDecl.Constructor.doc ids in
-    { ids with constructors = c.TypeDecl.Constructor.id :: ids.constructors }
-
-  and extension e ids =
-    let ids = docs e.Extension.doc ids in
-    List.fold_right extension_constructor e.Extension.constructors ids
-
-  and extension_constructor c ids =
-    let ids = docs c.Extension.Constructor.doc ids in
-    { ids with extensions = c.Extension.Constructor.id :: ids.extensions }
-
-  and exception_ e ids = docs e.Exception.doc ids
-
-  and value_ v ids = docs v.Value.doc ids
-
-  and external_ e ids = docs e.External.doc ids
-
-  and class_ c ids = docs c.Class.doc ids
-
-  and class_type c ids = docs c.ClassType.doc ids
-
-  and method_ m ids =
-    let ids = docs m.Method.doc ids in
-    { ids with methods = m.Method.id :: ids.methods }
-
-  and instance_variable i ids =
-    let ids = docs i.InstanceVariable.doc ids in
-    {
-      ids with
-      instance_variables = i.InstanceVariable.id :: ids.instance_variables;
-    }
-
-  and block_element d ids =
-    match d with
-    | `Heading (_, id, _) -> { ids with labels = id :: ids.labels }
-    | _ -> ids
-
-  and docs d ids =
-    List.fold_right (fun bel_loc -> block_element bel_loc.Location_.value) d ids
-
-  and docs_or_stop (d : Odoc_model.Comment.docs_or_stop) ids =
-    match d with `Docs d' -> docs d' ids | `Stop -> ids
-
-  and class_signature s ids =
-    List.fold_right
-      (fun c ids ->
-        match c with
-        | ClassSignature.Method m -> method_ m ids
-        | InstanceVariable i -> instance_variable i ids
-        | Constraint _ -> ids
-        | Inherit _ -> ids
-        | Comment d -> docs_or_stop d ids)
-      s ids
-
-  and signature s ids =
+  let rec signature s ids =
+    let open Paths in
     let open Signature in
     List.fold_right
       (fun c ids ->
         match c with
         | Module (_, m) ->
-            let ids = module_ m ids in
-            { ids with modules = m.Module.id :: ids.modules }
+            { ids with modules = Identifier.Sets.Module.add m.Module.id ids.modules }
         | ModuleType m ->
-            let ids = module_type m ids in
-            { ids with module_types = m.ModuleType.id :: ids.module_types }
+            { ids with module_types = Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types }
         | ModuleSubstitution m ->
-            let ids = module_substitution m ids in
-            { ids with modules = m.ModuleSubstitution.id :: ids.modules }
+            { ids with modules = Identifier.Sets.Module.add m.ModuleSubstitution.id ids.modules }
         | Type (_, t) ->
-            let ids = type_decl t ids in
-            { ids with types = t.TypeDecl.id :: ids.types }
+            { ids with types = Identifier.Sets.Type.add t.TypeDecl.id ids.types }
         | TypeSubstitution t ->
-            let ids = type_decl t ids in
-            { ids with types = t.TypeDecl.id :: ids.types }
-        | TypExt ext -> extension ext ids
-        | Exception e ->
-            let ids = exception_ e ids in
-            { ids with exceptions = e.Exception.id :: ids.exceptions }
-        | Value v ->
-            let ids = value_ v ids in
-            { ids with values = v.Value.id :: ids.values }
-        | External e ->
-            let ids = external_ e ids in
-            { ids with values = e.External.id :: ids.values }
+            { ids with types = Identifier.Sets.Type.add t.TypeDecl.id ids.types }
         | Class (_, c) ->
-            let ids = class_ c ids in
-            { ids with classes = c.Class.id :: ids.classes }
+            { ids with classes = Identifier.Sets.Class.add c.Class.id ids.classes }
         | ClassType (_, c) ->
-            let ids = class_type c ids in
-            { ids with class_types = c.ClassType.id :: ids.class_types }
+            { ids with class_types = Identifier.Sets.ClassType.add c.ClassType.id ids.class_types }
+        | TypExt _
+        | Exception _
+        | Value _
+        | Comment _
+        | External _ -> ids
         | Include i ->
-            let ids = docs i.Include.doc ids in
             signature i.Include.expansion.content ids
-        | Open o -> signature o.Open.expansion ids
-        | Comment c -> docs_or_stop c ids)
+        | Open o -> signature o.Open.expansion ids)
       s ids
+
 end
 
 let core_type_ids =
-  let open Odoc_model.Predefined in
-  List.map
-    (fun id -> (id, Ident.Of_Identifier.type_ id))
+  let open Odoc_model in
+  let open Predefined in
+  List.fold_right
+    (fun id acc -> Paths.Identifier.Maps.Type.add id (Ident.Of_Identifier.type_ id) acc)
     [
       bool_identifier;
       int_identifier;
@@ -1297,11 +1205,13 @@ let core_type_ids =
       extension_constructor_identifier;
       floatarray_identifier;
     ]
+    Maps.Type.empty
 
 let core_constructors =
-  let open Odoc_model.Predefined in
-  List.map
-    (fun id -> (id, Ident.Of_Identifier.constructor id))
+  let open Odoc_model in
+  let open Predefined in
+  List.fold_right
+    (fun id acc -> Paths.Identifier.Maps.Constructor.add id (Ident.Of_Identifier.constructor id) acc)
     [
       false_identifier;
       true_identifier;
@@ -1311,11 +1221,13 @@ let core_constructors =
       none_identifier;
       some_identifier;
     ]
+    Paths.Identifier.Maps.Constructor.empty
 
 let core_exceptions =
-  let open Odoc_model.Predefined in
-  List.map
-    (fun id -> (id, Ident.Of_Identifier.exception_ id))
+  let open Odoc_model in
+  let open Predefined in
+  List.fold_right
+    (fun id acc -> Paths.Identifier.Maps.Exception.add id (Ident.Of_Identifier.exception_ id) acc)
     [
       match_failure_identifier;
       assert_failure_identifier;
@@ -1330,197 +1242,97 @@ let core_exceptions =
       sys_blocked_io_identifier;
       undefined_recursive_module_identifier;
     ]
+    Paths.Identifier.Maps.Exception.empty
 
 module Of_Lang = struct
   open Odoc_model
 
   type map = {
-    modules : (Paths.Identifier.Module.t * Ident.module_) list;
-    module_types : (Paths.Identifier.ModuleType.t * Ident.module_type) list;
-    fields : (Paths.Identifier.Field.t * Ident.field) list;
-    constructors : (Paths.Identifier.Constructor.t * Ident.constructor) list;
-    types : (Paths.Identifier.Type.t * Ident.type_) list;
-    path_types : (Paths_types.Identifier.path_type * Ident.path_type) list;
-    path_class_types :
-      (Paths_types.Identifier.path_class_type * Ident.path_class_type) list;
-    extensions : (Paths.Identifier.Extension.t * Ident.extension) list;
-    exceptions : (Paths.Identifier.Exception.t * Ident.exception_) list;
-    values : (Paths.Identifier.Value.t * Ident.value) list;
-    classes : (Paths.Identifier.Class.t * Ident.class_) list;
-    class_types : (Paths.Identifier.ClassType.t * Ident.class_type) list;
-    methods : (Paths.Identifier.Method.t * Ident.method_) list;
-    instance_variables :
-      (Paths.Identifier.InstanceVariable.t * Ident.instance_variable) list;
-    signatures : (Paths.Identifier.Signature.t * Ident.signature) list;
-    label_parents : (Paths.Identifier.LabelParent.t * Ident.label_parent) list;
-    labels : (Paths.Identifier.Label.t * Ident.label) list;
-    parents : (Paths.Identifier.Parent.t * Ident.parent) list;
-    any : (Paths.Identifier.t * Ident.any) list;
+    modules : Ident.module_ Paths.Identifier.Maps.Module.t;
+    module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
+    types : Ident.type_ Paths.Identifier.Maps.Type.t;
+    path_types : Ident.path_type Paths.Identifier.Maps.Path.Type.t;
+    path_class_types : Ident.path_class_type Paths.Identifier.Maps.Path.ClassType.t;
+    classes : Ident.class_ Paths.Identifier.Maps.Class.t;
+    class_types : Ident.class_type Paths.Identifier.Maps.ClassType.t;
   }
 
   let empty =
+    let open Paths.Identifier.Maps in
     {
-      modules = [];
-      module_types = [];
-      fields = [];
-      constructors = core_constructors;
-      types = core_type_ids;
-      path_types = [];
-      path_class_types = [];
-      extensions = [];
-      exceptions = core_exceptions;
-      values = [];
-      classes = [];
-      class_types = [];
-      methods = [];
-      instance_variables = [];
-      signatures = [];
-      label_parents = [];
-      labels = [];
-      parents = [];
-      any = [];
+      modules = Module.empty;
+      module_types = ModuleType.empty;
+      types = Type.empty;
+      path_types = Path.Type.empty;
+      path_class_types = Path.ClassType.empty;
+      classes = Class.empty;
+      class_types = ClassType.empty;
     }
 
   let map_of_idents ids map =
-    let open Paths_types.Identifier in
+    let open Paths.Identifier in
+
     let types_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.type_ i) :: acc)
-        [] ids.LocalIdents.types
+      Sets.Type.fold
+        (fun i acc -> Maps.Type.add i (Ident.Of_Identifier.type_ i) acc)
+        ids.LocalIdents.types Maps.Type.empty
     in
     let classes_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.class_ i) :: acc)
-        [] ids.LocalIdents.classes
+      Sets.Class.fold
+        (fun i acc -> Maps.Class.add i (Ident.Of_Identifier.class_ i) acc)
+        ids.LocalIdents.classes Maps.Class.empty
     in
     let class_types_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.class_type i) :: acc)
-        [] ids.LocalIdents.class_types
+      Sets.ClassType.fold
+        (fun i acc -> Maps.ClassType.add i (Ident.Of_Identifier.class_type i) acc)
+        ids.LocalIdents.class_types Maps.ClassType.empty
     in
     let modules_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.module_ i) :: acc)
-        [] ids.LocalIdents.modules
+      Sets.Module.fold
+        (fun i acc -> Maps.Module.add i (Ident.Of_Identifier.module_ i) acc)
+        ids.LocalIdents.modules Maps.Module.empty
     in
     let module_types_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.module_type i) :: acc)
-        [] ids.LocalIdents.module_types
-    in
-    let fields_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.field i) :: acc)
-        [] ids.LocalIdents.fields
-    in
-    let constructors_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.constructor i) :: acc)
-        [] ids.LocalIdents.constructors
-    in
-    let extensions_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.extension i) :: acc)
-        [] ids.LocalIdents.extensions
-    in
-    let exceptions_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.exception_ i) :: acc)
-        [] ids.LocalIdents.exceptions
-    in
-    let values_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.value i) :: acc)
-        [] ids.LocalIdents.values
-    in
-    let methods_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.method_ i) :: acc)
-        [] ids.LocalIdents.methods
-    in
-    let instance_variables_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.instance_variable i) :: acc)
-        [] ids.LocalIdents.instance_variables
+      Sets.ModuleType.fold
+        (fun i acc -> Maps.ModuleType.add i (Ident.Of_Identifier.module_type i) acc)
+        ids.LocalIdents.module_types Maps.ModuleType.empty
     in
     let path_class_types_new =
-      (classes_new :> (path_class_type * Ident.path_class_type) list)
-      @ (class_types_new :> (path_class_type * Ident.path_class_type) list)
+      Maps.Path.ClassType.empty |>
+      Maps.ClassType.fold (fun key v acc ->
+        Maps.Path.ClassType.add (key :> Path.ClassType.t) (v :> Ident.path_class_type) acc) class_types_new |>
+      Maps.Class.fold (fun key v acc ->
+        Maps.Path.ClassType.add (key :> Path.ClassType.t) (v :> Ident.path_class_type) acc) classes_new
     in
     let path_types_new =
-      (path_class_types_new :> (path_type * Ident.path_type) list)
-      @ (types_new :> (path_type * Ident.path_type) list)
+      Maps.Path.Type.empty |>
+      Maps.Path.ClassType.fold (fun key v acc ->
+        Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc) path_class_types_new |>
+      Maps.Type.fold (fun key v acc ->
+        Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc) types_new
     in
-    let signatures_new =
-      (modules_new :> (signature * Ident.signature) list)
-      @ (module_types_new :> (signature * Ident.signature) list)
+    let merge_fn _k v1 v2 =
+      match v1, v2 with
+      | _, Some x -> Some x
+      | None, None -> None
+      | Some x, None -> Some x
     in
-    let parents_new =
-      (path_types_new :> (parent * Ident.parent) list)
-      @ (signatures_new :> (parent * Ident.parent) list)
-    in
-    let label_parents_new =
-      (parents_new :> (label_parent * Ident.label_parent) list)
-    in
-    let labels_new =
-      List.fold_left
-        (fun acc i -> (i, Ident.Of_Identifier.label i) :: acc)
-        [] ids.LocalIdents.labels
-    in
-    let any_new =
-      (label_parents_new :> (any * Ident.any) list)
-      @ (fields_new :> (any * Ident.any) list)
-      @ (constructors_new :> (any * Ident.any) list)
-      @ (extensions_new :> (any * Ident.any) list)
-      @ (exceptions_new :> (any * Ident.any) list)
-      @ (values_new :> (any * Ident.any) list)
-      @ (methods_new :> (any * Ident.any) list)
-      @ (instance_variables_new :> (any * Ident.any) list)
-      @ (labels_new :> (any * Ident.any) list)
-    in
-    let modules = modules_new @ map.modules in
-    let module_types = module_types_new @ map.module_types in
-    let fields = fields_new @ map.fields in
-    let constructors = constructors_new @ map.constructors in
-    let types = types_new @ map.types in
-    let extensions = extensions_new @ map.extensions in
-    let exceptions = exceptions_new @ map.exceptions in
-    let values = values_new @ map.values in
-    let classes = classes_new @ map.classes in
-    let class_types = class_types_new @ map.class_types in
-    let methods = methods_new @ map.methods in
-    let instance_variables = instance_variables_new @ map.instance_variables in
-    let path_types = path_types_new @ map.path_types in
-    let path_class_types = path_class_types_new @ map.path_class_types in
-    let signatures = signatures_new @ map.signatures in
-    let parents = parents_new @ map.parents in
-    let label_parents = label_parents_new @ map.label_parents in
-    let any = any_new @ map.any in
-    let labels = labels_new @ map.labels in
+    let modules = Maps.Module.merge merge_fn modules_new map.modules in
+    let module_types = Maps.ModuleType.merge merge_fn module_types_new map.module_types in
+    let types = Maps.Type.merge merge_fn types_new map.types in
+    let classes = Maps.Class.merge merge_fn classes_new map.classes in
+    let class_types = Maps.ClassType.merge merge_fn class_types_new map.class_types in
+    let path_types = Maps.Path.Type.merge merge_fn path_types_new map.path_types in
+    let path_class_types = Maps.Path.ClassType.merge merge_fn path_class_types_new map.path_class_types in
     {
       modules;
       module_types;
-      fields;
-      constructors;
       types;
-      extensions;
-      exceptions;
-      values;
       classes;
       class_types;
-      methods;
-      instance_variables;
       path_types;
       path_class_types;
-      signatures;
-      parents;
-      label_parents;
-      labels;
-      any;
     }
-
-  let ident_of_identifier ident_map identifier =
-    try Some (List.assoc identifier ident_map) with _ -> None
 
   let option conv ident_map x =
     match x with None -> None | Some x' -> Some (conv ident_map x')
@@ -1529,17 +1341,17 @@ module Of_Lang = struct
 
   let optmap o f = match o with Some x -> Some (f x) | None -> None
 
-  let identifier map i =
-    optvalue
-      (optmap (ident_of_identifier map i) (fun x -> `Local x))
-      ~default:(`Identifier i)
+  let identifier lookup map i =
+    match lookup i map with
+    | x -> `Local x
+    | exception Not_found -> `Identifier i
 
   let rec resolved_module_path :
       _ -> Odoc_model.Paths.Path.Resolved.Module.t -> Cpath.Resolved.module_ =
    fun ident_map p ->
     let recurse p = resolved_module_path ident_map p in
     match p with
-    | `Identifier i -> identifier ident_map.modules i
+    | `Identifier i -> identifier Maps.Module.find ident_map.modules i
     | `Module (p, name) -> `Module (`Module (recurse p), name)
     | `Apply (p1, p2) -> `Apply (recurse p1, module_path ident_map p2)
     | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
@@ -1556,7 +1368,7 @@ module Of_Lang = struct
       Cpath.Resolved.module_type =
    fun ident_map p ->
     match p with
-    | `Identifier i -> identifier ident_map.module_types i
+    | `Identifier i -> identifier Maps.ModuleType.find ident_map.module_types i
     | `ModuleType (p, name) ->
         `ModuleType (`Module (resolved_module_path ident_map p), name)
     | `SubstT (p1, p2) ->
@@ -1570,7 +1382,7 @@ module Of_Lang = struct
       _ -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_ =
    fun ident_map p ->
     match p with
-    | `Identifier i -> identifier ident_map.path_types i
+    | `Identifier i -> identifier Maps.Path.Type.find ident_map.path_types i
     | `Type (p, name) -> `Type (`Module (resolved_module_path ident_map p), name)
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
@@ -1583,7 +1395,7 @@ module Of_Lang = struct
       Cpath.Resolved.class_type =
    fun ident_map p ->
     match p with
-    | `Identifier i -> identifier ident_map.path_class_types i
+    | `Identifier i -> identifier Maps.Path.ClassType.find ident_map.path_class_types i
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
@@ -1832,10 +1644,7 @@ module Of_Lang = struct
                   let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
                   let id = Ident.Of_Identifier.module_ identifier in
                   let ident_map' =
-                    {
-                      ident_map with
-                      modules = (identifier, id) :: ident_map.modules;
-                    }
+                    { ident_map with modules = Maps.Module.add identifier id ident_map.modules }
                   in
                   let arg' = functor_parameter ident_map' id arg in
                   (FunctorParameter.Named arg' :: args, ident_map')
@@ -1915,30 +1724,32 @@ module Of_Lang = struct
     { Exception.doc = docs ident_map e.doc; args; res }
 
   and module_type_expr ident_map m =
+    let open Odoc_model in
+    let open Paths in
     match m with
-    | Odoc_model.Lang.ModuleType.Signature s ->
+    | Lang.ModuleType.Signature s ->
         let s = signature ident_map s in
         ModuleType.Signature s
-    | Odoc_model.Lang.ModuleType.Path p ->
+    | Lang.ModuleType.Path p ->
         let p' = module_type_path ident_map p in
         ModuleType.Path p'
-    | Odoc_model.Lang.ModuleType.With (e, subs) ->
+    | Lang.ModuleType.With (e, subs) ->
         ModuleType.With
           ( module_type_expr ident_map e,
             List.map (module_type_substitution ident_map) subs )
-    | Odoc_model.Lang.ModuleType.Functor (Named arg, expr) ->
-        let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
+    | Lang.ModuleType.Functor (Named arg, expr) ->
+        let identifier = arg.Lang.FunctorParameter.id in
         let id = Ident.Of_Identifier.module_ identifier in
         let ident_map' =
-          { ident_map with modules = (identifier, id) :: ident_map.modules }
+          { ident_map with modules = Identifier.Maps.Module.add identifier id ident_map.modules }
         in
         let arg' = functor_parameter ident_map' id arg in
         let expr' = module_type_expr ident_map' expr in
         ModuleType.Functor (Named arg', expr')
-    | Odoc_model.Lang.ModuleType.Functor (Unit, expr) ->
+    | Lang.ModuleType.Functor (Unit, expr) ->
         let expr' = module_type_expr ident_map expr in
         ModuleType.Functor (Unit, expr')
-    | Odoc_model.Lang.ModuleType.TypeOf decl ->
+    | Lang.ModuleType.TypeOf decl ->
         let decl' = module_decl ident_map decl in
         ModuleType.TypeOf decl'
 
@@ -2007,29 +1818,15 @@ module Of_Lang = struct
 
   and class_signature ident_map sg =
     let open Odoc_model.Lang.ClassSignature in
-    (* First we construct a list of brand new [Ident.t]s
-                for each item in the signature *)
-    let ident_map =
-      map_of_idents
-        (LocalIdents.class_signature sg.items LocalIdents.empty)
-        ident_map
-    in
-    (* Now we construct the Components for each item,
-                            converting all paths containing Identifiers pointing at
-                            our elements to local paths *)
-    apply_class_sig_map ident_map sg
-
-  and apply_class_sig_map ident_map sg =
-    let open Odoc_model.Lang.ClassSignature in
     let items =
       List.map
         (function
           | Method m ->
-              let id = List.assoc m.id ident_map.methods in
+              let id = Ident.Of_Identifier.method_ m.id in
               let m' = method_ ident_map m in
               ClassSignature.Method (id, m')
           | InstanceVariable i ->
-              let id = List.assoc i.id ident_map.instance_variables in
+              let id = Ident.Of_Identifier.instance_variable i.id in
               let i' = instance_variable ident_map i in
               ClassSignature.InstanceVariable (id, i')
           | Constraint (t1, t2) ->
@@ -2100,44 +1897,45 @@ module Of_Lang = struct
     let items =
       List.map
         (let open Odoc_model.Lang.Signature in
+         let open Odoc_model.Paths in
         function
         | Type (r, t) ->
-            let id = List.assoc t.id ident_map.types in
+            let id = Identifier.Maps.Type.find t.id ident_map.types in
             let t' = Delayed.put (fun () -> type_decl ident_map t) in
             Signature.Type (id, r, t')
         | TypeSubstitution t ->
-            let id = List.assoc t.id ident_map.types in
+            let id = Identifier.Maps.Type.find t.id ident_map.types in
             let t' = type_decl ident_map t in
             Signature.TypeSubstitution (id, t')
         | Module (r, m) ->
-            let id = List.assoc m.id ident_map.modules in
+            let id = Identifier.Maps.Module.find m.id ident_map.modules in
             let m' = Delayed.put (fun () -> module_ ident_map m) in
             Signature.Module (id, r, m')
         | ModuleSubstitution m ->
-            let id = List.assoc m.id ident_map.modules in
+            let id = Identifier.Maps.Module.find m.id ident_map.modules in
             let m' = module_substitution ident_map m in
             Signature.ModuleSubstitution (id, m')
         | ModuleType m ->
-            let id = List.assoc m.id ident_map.module_types in
+            let id = Identifier.Maps.ModuleType.find m.id ident_map.module_types in
             let m' = Delayed.put (fun () -> module_type ident_map m) in
             Signature.ModuleType (id, m')
         | Value v ->
-            let id = List.assoc v.id ident_map.values in
+            let id = Ident.Of_Identifier.value v.id in
             let v' = value ident_map v in
             Signature.Value (id, v')
         | Comment c -> Comment (docs_or_stop ident_map c)
         | TypExt e -> TypExt (extension ident_map e)
         | Exception e ->
-            let id = List.assoc e.id ident_map.exceptions in
+            let id = Ident.Of_Identifier.exception_ e.id in
             Exception (id, exception_ ident_map e)
         | External e ->
-            let id = List.assoc e.id ident_map.values in
+            let id = Ident.Of_Identifier.value e.id in
             External (id, external_ ident_map e)
         | Class (r, c) ->
-            let id = List.assoc c.id ident_map.classes in
+            let id = Identifier.Maps.Class.find c.id ident_map.classes in
             Class (id, r, class_ ident_map c)
         | ClassType (r, c) ->
-            let id = List.assoc c.id ident_map.class_types in
+            let id = Identifier.Maps.ClassType.find c.id ident_map.class_types in
             ClassType (id, r, class_type ident_map c)
         | Open o -> Open (open_ ident_map o)
         | Include i -> Include (include_ ident_map i))
@@ -2152,21 +1950,9 @@ module Of_Lang = struct
 
   and block_element :
       _ -> Odoc_model.Comment.block_element -> CComment.block_element =
-   fun ident_map b ->
+   fun _ b ->
     match b with
-    | `Heading (l, id, content) -> (
-        try `Heading (l, List.assoc id ident_map.labels, content)
-        with Not_found ->
-          Format.fprintf Format.err_formatter "XX Couldn't find: %a\n"
-            Fmt.model_identifier
-            (id :> Paths.Identifier.t);
-          List.iter
-            (fun (id, _) ->
-              Format.fprintf Format.err_formatter "  %a\n%!"
-                Fmt.model_identifier
-                (id :> Paths.Identifier.t))
-            ident_map.labels;
-          raise Not_found )
+    | `Heading (l, id, content) -> `Heading (l, Ident.Of_Identifier.label id, content)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
 

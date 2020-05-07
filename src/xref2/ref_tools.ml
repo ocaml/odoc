@@ -398,9 +398,8 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
     match r with
     | `Resolved r -> Some r
     | `Root (name, _) -> (
-        Env.lookup_any_by_name (UnitName.to_string name) env >>= function
-        | `Label id -> return (`Identifier id)
-        | _ -> None )
+        Env.lookup_label_by_name (UnitName.to_string name) env >>= function
+        | `Label id -> return (`Identifier id))
     | `Dot (parent, name) -> (
         resolve_label_parent_reference env parent ~add_canonical:true
         >>= fun (p, _env, sg) ->
@@ -428,28 +427,29 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
-        Env.lookup_any_by_name (UnitName.to_string name) env >>= function
-        | `Module (_, _) ->
+        match Env.lookup_any_by_name (UnitName.to_string name) env with
+        | `Module (_, _) :: _ ->
             (* Make sure we handle aliases correctly *)
             resolve_module_reference env ~add_canonical:true
               (`Root (name, `TModule))
             >>= fun (r, _, _) -> Some (r :> Resolved.t)
-        | `ModuleType (_, _) ->
+        | `ModuleType (_, _) :: _ ->
             resolve_module_type_reference env ~add_canonical:true
               (`Root (name, `TModuleType))
             >>= fun (r, _, _) -> Some (r :> Resolved.t)
-        | `Value (id, _) ->
+        | `Value (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        | `Type (id, _) ->
+        | `Type (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        | `Label id ->
+        | `Label id :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        | `Class (id, _) ->
+        | `Class (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        | `ClassType (id, _) ->
+        | `ClassType (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
-        | `External (id, _) ->
-            return (`Identifier (id :> Odoc_model.Paths.Identifier.t)) )
+        | `External (id, _) :: _ ->
+            return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
+        | [] -> None )
     | `Resolved r -> Some r
     | (`Root (_, `TModule) | `Module (_, _)) as r ->
         resolve_module_reference env r ~add_canonical:true >>= fun (x, _, _) ->

@@ -40,22 +40,22 @@ type t
 *)
 val pp_module_types :
   Format.formatter ->
-  (Odoc_model.Paths.Identifier.ModuleType.t * Component.ModuleType.t) list ->
+  Component.ModuleType.t Odoc_model.Paths.Identifier.Maps.ModuleType.t ->
   unit
 
 val pp_types :
   Format.formatter ->
-  (Odoc_model.Paths.Identifier.Type.t * Component.TypeDecl.t) list ->
+  Component.TypeDecl.t Odoc_model.Paths.Identifier.Maps.Type.t ->
   unit
 
 val pp_values :
   Format.formatter ->
-  (Odoc_model.Paths.Identifier.Value.t * Component.Value.t) list ->
+  Component.Value.t Odoc_model.Paths.Identifier.Maps.Value.t ->
   unit
 
 val pp_externals :
   Format.formatter ->
-  (Odoc_model.Paths.Identifier.Value.t * Component.External.t) list ->
+  Component.External.t Odoc_model.Paths.Identifier.Maps.Value.t ->
   unit
 
 val with_recorded_lookups : t -> (t -> 'a) -> lookup_type list * 'a
@@ -150,7 +150,7 @@ val lookup_module_type :
   Component.ModuleType.t option
 
 val lookup_value :
-  Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t
+  Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t option
 
 val lookup_section_title :
   Odoc_model.Paths_types.Identifier.reference_label ->
@@ -173,9 +173,9 @@ val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
 
-val find_map : ('a -> 'b option) -> 'a list -> 'b option
+val find : ('a -> 'b option) -> 'a list -> 'b option
 
-val lookup_any_by_name : string -> t -> Component.Element.any option
+val lookup_any_by_name : string -> t -> Component.Element.any list
 
 val lookup_signature_by_name : string -> t -> Component.Element.signature option
 
@@ -192,6 +192,9 @@ val lookup_value_by_name :
   [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
   | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
   option
+
+val lookup_label_by_name :
+  string -> t -> Component.Element.label option
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
