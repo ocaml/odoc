@@ -27,9 +27,9 @@ jobs:
             odoc maintainers regularly check issues that were closed as stale in
             the past, to see if the time is right to reopen and work on them
             again. PRs addressing issues closed as stale are as welcome as PRs
-            for open issues, i.e. they will be given the same review attention,
-            and any other help.
-          days-before-stale: 60
+            for open issues. They will be given the same review attention, and
+            any other help.
+          days-before-stale: 30
           days-before-close: 7
           exempt-issue-labels: "bug,not stale"
           stale-issue-label: "stale"
