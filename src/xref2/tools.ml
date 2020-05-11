@@ -269,7 +269,7 @@ module Hashable3 = struct
 
   let equal = ( = )
 
-  let hash = Hashtbl.hash
+  let hash (b, p) = Hashtbl.hash (b, Cpath.resolved_module_hash p)
 end
 
 module Memos3 = Hashtbl.Make (Hashable3)
