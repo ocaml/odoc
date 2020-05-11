@@ -67,7 +67,8 @@ and unresolve_subs subs =
       | x -> x)
     subs
 
-and aux_expansion_of_module_type_expr env expr : (expansion, error) Result.result =
+and aux_expansion_of_module_type_expr env expr :
+    (expansion, error) Result.result =
   match expr with
   | Path p -> (
       match Tools.lookup_and_resolve_module_type_from_path false env p with
@@ -78,11 +79,12 @@ and aux_expansion_of_module_type_expr env expr : (expansion, error) Result.resul
       match aux_expansion_of_module_type_expr env s with
       | Error _ as e -> e
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
-      | Ok (Signature sg) ->
+      | Ok (Signature sg) -> (
           let subs = unresolve_subs subs in
-          (match Tools.handle_signature_with_subs env sg subs with
+          match Tools.handle_signature_with_subs env sg subs with
           | Ok sg -> Ok (Signature sg)
-          | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)))
+          | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)
+          ) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
   | TypeOf decl -> aux_expansion_of_module_decl env decl
 

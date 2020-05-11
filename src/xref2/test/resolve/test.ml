@@ -32,7 +32,7 @@ let test_resolve test =
     fprintf std_formatter "%s\n%s\n%!" test.name test.description;
     fprintf std_formatter "CODE\n====\n%!%s\n%!" test.test_data;
     fprintf std_formatter "BEFORE\n======\n%!%a\n%!" Common.LangUtils.Fmt.signature sg;
-    let sg' = Compile.signature Env.empty sg in
+    let sg' = Compile.signature Env.empty Common.root_with_name sg in
     fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
 
 (**

@@ -18,6 +18,7 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.ModuleTypeName.fmt;;
 #install_printer Odoc_model.Names.TypeName.fmt;;
 #install_printer Odoc_model.Names.ParameterName.fmt;;
+let id = Common.root_with_name;;
 let mod_sig =
     let open Common.LangUtils.Lens in
     Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_signature
@@ -184,7 +185,7 @@ and now we can get the paths for all three type declarations:
 We can resolve the paths:
 
 ```ocaml env=e1
-let sg' = Compile.signature Env.empty sg;;
+let sg' = Compile.signature Env.empty id sg;;
 ```
 
 and now the paths are:
@@ -242,7 +243,7 @@ end
 
 type t = F(M).N.t
 |};;
-let sg = Compile.signature Env.empty (Common.signature_of_mli_string example);;
+let sg = Compile.signature Env.empty id (Common.signature_of_mli_string example);;
 ```
 
 The problem here is that odoc will not generate a page for the module `F(M)`.

@@ -9,7 +9,7 @@ module ResultMonad = struct
 
   let bind m f = match m with Ok x -> f x | Error _ as e -> e
 
-  let (>>=) = bind
+  let ( >>= ) = bind
 end
 
 (** A bind operator for the [option] type. This module is meant to be opened. *)
@@ -23,5 +23,23 @@ module OptionMonad = struct
 
   let bind m f = match m with Some x -> f x | None -> None
 
-  let (>>=) = bind
+  let ( >>= ) = bind
+end
+
+module EitherMonad = struct
+  type ('a, 'b) t = Left of 'a | Right of 'b
+
+  let return x = Right x
+
+  let return_left x = Left x
+
+  let bind m f = match m with Right x -> f x | Left y -> Left y
+
+  let bind_left m f = match m with Left x -> f x | Right y -> Right y
+
+  let ( >>= ) = bind
+
+  let of_option ~left = function Some x -> Right x | None -> Left left
+
+  let of_result = function Result.Ok x -> Right x | Error y -> Left y
 end

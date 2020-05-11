@@ -193,8 +193,7 @@ val lookup_value_by_name :
   | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
   option
 
-val lookup_label_by_name :
-  string -> t -> Component.Element.label option
+val lookup_label_by_name : string -> t -> Component.Element.label option
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
