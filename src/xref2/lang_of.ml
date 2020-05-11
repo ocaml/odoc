@@ -5,25 +5,15 @@ open Names
 type maps = {
   module_ : (Ident.module_ * Identifier.Module.t) list;
   module_type : (Ident.module_type * Identifier.ModuleType.t) list;
-  signatures : (Ident.signature * Identifier.Signature.t) list;
   type_ : (Ident.type_ * Identifier.Type.t) list;
   path_type :
     (Ident.path_type * Odoc_model.Paths_types.Identifier.path_type) list;
-  exception_ : (Ident.exception_ * Identifier.Exception.t) list;
-  value_ : (Ident.value * Identifier.Value.t) list;
-  method_ : (Ident.method_ * Identifier.Method.t) list;
-  instance_variable :
-    (Ident.instance_variable * Identifier.InstanceVariable.t) list;
   class_ : (Ident.class_ * Identifier.Class.t) list;
   class_type : (Ident.class_type * Identifier.ClassType.t) list;
-  labels : (Ident.label * Identifier.Label.t) list;
-  parents : (Ident.parent * Identifier.Parent.t) list;
-  label_parents : (Ident.label_parent * Identifier.LabelParent.t) list;
   path_class_type :
     (Ident.path_class_type * Odoc_model.Paths_types.Identifier.path_class_type)
     list;
   fragment_root : Cfrag.root option;
-  any : (Ident.any * Identifier.t) list;
   (* Shadowed items *)
   s_modules : string list;
   s_module_types : string list;
@@ -34,21 +24,12 @@ let empty =
   {
     module_ = [];
     module_type = [];
-    signatures = [];
     type_ = [];
     path_type = [];
-    exception_ = [];
-    value_ = [];
-    method_ = [];
-    instance_variable = [];
     class_ = [];
     class_type = [];
-    labels = [];
-    label_parents = [];
-    parents = [];
     path_class_type = [];
     fragment_root = None;
-    any = [];
     s_modules = [];
     s_module_types = [];
     s_types = [];
@@ -209,30 +190,17 @@ end
 module ExtractIDs = struct
   open Component
 
-  let rec exception_ parent map id =
-    let identifier =
-      `Exception (parent, ExceptionName.of_string (Ident.Name.exception_ id))
-    in
-    { map with exception_ = (id, identifier) :: map.exception_ }
-
-  and type_decl parent map id =
+  let rec type_decl parent map id =
     let name = Ident.Name.type_ id in
     let identifier =
       if List.mem name map.s_types then
         `Type (parent, TypeName.internal_of_string name)
-      else `Type (parent, TypeName.of_string name)
+      else `Type (parent, Ident.Name.typed_type id)
     in
     {
       map with
       type_ = (id, identifier) :: map.type_;
       path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
-      label_parents =
-        ((id :> Ident.label_parent), (identifier :> Identifier.LabelParent.t))
-        :: map.label_parents;
-      parents =
-        ((id :> Ident.parent), (identifier :> Identifier.Parent.t))
-        :: map.parents;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
   and module_ parent map id =
@@ -240,91 +208,37 @@ module ExtractIDs = struct
     let identifier =
       if List.mem name map.s_modules then
         `Module (parent, ModuleName.internal_of_string name)
-      else `Module (parent, ModuleName.of_string name)
+      else `Module (parent, Ident.Name.typed_module id)
     in
-    {
-      map with
-      module_ = (id, identifier) :: map.module_;
-      signatures =
-        ((id :> Ident.signature), (identifier :> Identifier.Signature.t))
-        :: map.signatures;
-      label_parents =
-        ((id :> Ident.label_parent), (identifier :> Identifier.LabelParent.t))
-        :: map.label_parents;
-      parents =
-        ((id :> Ident.parent), (identifier :> Identifier.Parent.t))
-        :: map.parents;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
-    }
+    { map with module_ = (id, identifier) :: map.module_ }
 
   and module_type parent map id =
     let name = Ident.Name.module_type id in
     let identifier =
       if List.mem name map.s_module_types then
         `ModuleType (parent, ModuleTypeName.internal_of_string name)
-      else `ModuleType (parent, ModuleTypeName.of_string name)
+      else `ModuleType (parent, Ident.Name.typed_module_type id)
     in
-    {
-      map with
-      module_type = (id, identifier) :: map.module_type;
-      signatures =
-        ((id :> Ident.signature), (identifier :> Identifier.Signature.t))
-        :: map.signatures;
-      label_parents =
-        ((id :> Ident.label_parent), (identifier :> Identifier.LabelParent.t))
-        :: map.label_parents;
-      parents =
-        ((id :> Ident.parent), (identifier :> Identifier.Parent.t))
-        :: map.parents;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
-    }
-
-  and value_ parent map id =
-    let identifier =
-      `Value (parent, ValueName.of_string (Ident.Name.value id))
-    in
-    {
-      map with
-      value_ = (id, identifier) :: map.value_;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
-    }
+    { map with module_type = (id, identifier) :: map.module_type }
 
   and class_ parent map id =
-    let identifier =
-      `Class (parent, ClassName.of_string (Ident.Name.class_ id))
-    in
+    let identifier = `Class (parent, Ident.Name.typed_class id) in
     {
       map with
       class_ = (id, identifier) :: map.class_;
       path_class_type =
         ((id :> Ident.path_class_type), identifier) :: map.path_class_type;
       path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
-      label_parents =
-        ((id :> Ident.label_parent), (identifier :> Identifier.LabelParent.t))
-        :: map.label_parents;
-      parents =
-        ((id :> Ident.parent), (identifier :> Identifier.Parent.t))
-        :: map.parents;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
   and class_type parent map (id : Ident.class_type) =
-    let identifier =
-      `ClassType (parent, ClassTypeName.of_string (Ident.Name.class_type id))
-    in
+    let identifier = `ClassType (parent, Ident.Name.typed_class_type id) in
     {
       map with
       class_type = ((id :> Ident.class_type), identifier) :: map.class_type;
       path_class_type =
         ((id :> Ident.path_class_type), identifier) :: map.path_class_type;
       path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
-      label_parents =
-        ((id :> Ident.label_parent), (identifier :> Identifier.LabelParent.t))
-        :: map.label_parents;
-      parents =
-        ((id :> Ident.parent), (identifier :> Identifier.Parent.t))
-        :: map.parents;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
     }
 
   and include_ parent map i =
@@ -334,80 +248,29 @@ module ExtractIDs = struct
 
   and open_ parent map o = signature parent map o.Open.expansion
 
-  and docs parent map (d : Component.CComment.docs) =
-    List.fold_right
-      (fun item map ->
-        match item.Location_.value with
-        | `Heading (_, id, _) ->
-            let identifier =
-              `Label (parent, LabelName.of_string (Ident.Name.label id))
-            in
-            { map with labels = (id, identifier) :: map.labels }
-        | _ -> map)
-      d map
-
-  and docs_or_stop parent map = function
-    | `Docs d -> docs parent map d
-    | `Stop -> map
-
-  and method_ parent map id =
-    let identifier =
-      `Method (parent, MethodName.of_string (Ident.Name.method_ id))
-    in
-    {
-      map with
-      method_ = (id, identifier) :: map.method_;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
-    }
-
-  and instance_variable parent map id =
-    let identifier =
-      `InstanceVariable
-        ( parent,
-          InstanceVariableName.of_string (Ident.Name.instance_variable id) )
-    in
-    {
-      map with
-      instance_variable = (id, identifier) :: map.instance_variable;
-      any = ((id :> Ident.any), (identifier :> Identifier.t)) :: map.any;
-    }
-
-  and class_signature parent map sg =
-    let open ClassSignature in
-    List.fold_right
-      (fun item map ->
-        match item with
-        | Method (id, _) -> method_ parent map id
-        | InstanceVariable (id, _) -> instance_variable parent map id
-        | Inherit _ -> map
-        | Constraint _ -> map
-        | Comment c -> docs_or_stop (parent :> Identifier.LabelParent.t) map c)
-      sg map
-
   and signature_items parent map items =
     let open Signature in
-    let lpp = (parent :> Identifier.LabelParent.t) in
-    List.fold_right
-      (fun item map ->
-        match item with
-        | Module (id, _, m) ->
-            docs lpp (module_ parent map id) (Delayed.get m).doc
-        | ModuleSubstitution (id, m) -> docs lpp (module_ parent map id) m.doc
-        | ModuleType (id, mt) ->
-            docs lpp (module_type parent map id) (Delayed.get mt).doc
-        | Type (id, _, t) ->
-            docs lpp (type_decl parent map id) (Delayed.get t).doc
-        | TypeSubstitution (id, t) -> docs lpp (type_decl parent map id) t.doc
-        | Exception (id, e) -> docs lpp (exception_ parent map id) e.doc
-        | Value (id, v) -> docs lpp (value_ parent map id) v.doc
-        | External (id, e) -> docs lpp (value_ parent map id) e.doc
-        | Class (id, _, c) -> docs lpp (class_ parent map id) c.doc
-        | ClassType (id, _, c) -> docs lpp (class_type parent map id) c.doc
-        | Include i -> docs lpp (include_ parent map i) i.doc
-        | TypExt t -> docs lpp map t.doc
-        | Open o -> open_ parent map o
-        | Comment d -> docs_or_stop lpp map d)
-      items map
+    let rec inner items map =
+      match items with
+      | [] -> map
+      | Module (id, _, _) :: rest -> inner rest (module_ parent map id)
+      | ModuleSubstitution (id, _) :: rest -> inner rest (module_ parent map id)
+      | ModuleType (id, _mt) :: rest -> inner rest (module_type parent map id)
+      | Type (id, _, _t) :: rest -> inner rest (type_decl parent map id)
+      | TypeSubstitution (id, _t) :: rest ->
+          inner rest (type_decl parent map id)
+      | Class (id, _, _) :: rest -> inner rest (class_ parent map id)
+      | ClassType (id, _, _) :: rest -> inner rest (class_type parent map id)
+      | Exception (_, _) :: rest
+      | Value (_, _) :: rest
+      | TypExt _ :: rest
+      | Comment _ :: rest
+      | External (_, _) :: rest ->
+          inner rest map
+      | Include i :: rest -> inner rest (include_ parent map i)
+      | Open o :: rest -> inner rest (open_ parent map o)
+    in
+    inner items map
 
   and signature parent map sg =
     let open Signature in
@@ -417,50 +280,52 @@ end
 let rec signature_items id map items =
   let open Component.Signature in
   let map = ExtractIDs.signature_items id map items in
-  List.fold_right
-    (fun item acc ->
-      match item with
-      | Module (id, r, m) ->
-          let m = Component.Delayed.get m in
-          Odoc_model.Lang.Signature.Module (r, module_ map id m) :: acc
-      | ModuleType (id, m) ->
-          Odoc_model.Lang.Signature.ModuleType (module_type map id m) :: acc
-      | Type (id, r, t) ->
-          let t = Component.Delayed.get t in
-          Odoc_model.Lang.Signature.Type (r, type_decl map id t) :: acc
-      | Exception (id', e) ->
-          Odoc_model.Lang.Signature.Exception
-            (exception_ map
-               (id :> Odoc_model.Paths_types.Identifier.parent)
-               id' e)
-          :: acc
-      | TypExt t -> Odoc_model.Lang.Signature.TypExt (typ_ext map id t) :: acc
-      | Value (id, v) ->
-          Odoc_model.Lang.Signature.Value (value_ map id v) :: acc
-      | Include i ->
-          Odoc_model.Lang.Signature.Include (include_ id map i) :: acc
-      | Open o -> Odoc_model.Lang.Signature.Open (open_ id map o) :: acc
-      | External (id, e) ->
-          Odoc_model.Lang.Signature.External (external_ map id e) :: acc
-      | ModuleSubstitution (id, m) ->
-          Odoc_model.Lang.Signature.ModuleSubstitution
-            (module_substitution map id m)
-          :: acc
-      | TypeSubstitution (id, t) ->
-          Odoc_model.Lang.Signature.TypeSubstitution (type_decl map id t) :: acc
-      | Class (id, r, c) ->
-          Odoc_model.Lang.Signature.Class (r, class_ map id c) :: acc
-      | ClassType (id, r, c) ->
-          Odoc_model.Lang.Signature.ClassType (r, class_type map id c) :: acc
-      | Comment c ->
-          Odoc_model.Lang.Signature.Comment (docs_or_stop map c) :: acc)
-    items []
+  let parent = id in
+  let rec inner : item list -> Odoc_model.Lang.Signature.item list -> _ =
+   fun items acc ->
+    match items with
+    | [] -> List.rev acc
+    | Module (id, r, m) :: rest ->
+        let m = Component.Delayed.get m in
+        inner rest (Module (r, module_ map parent id m) :: acc)
+    | ModuleType (id, m) :: rest ->
+        inner rest (ModuleType (module_type map parent id m) :: acc)
+    | Type (id, r, t) :: rest ->
+        let t = Component.Delayed.get t in
+        inner rest (Type (r, type_decl map parent id t) :: acc)
+    | Exception (id', e) :: rest ->
+        inner rest
+          ( Exception
+              (exception_ map
+                 (id :> Odoc_model.Paths_types.Identifier.signature)
+                 id' e)
+          :: acc )
+    | TypExt t :: rest -> inner rest (TypExt (typ_ext map id t) :: acc)
+    | Value (id, v) :: rest -> inner rest (Value (value_ map parent id v) :: acc)
+    | Include i :: rest -> inner rest (Include (include_ id map i) :: acc)
+    | Open o :: rest -> inner rest (Open (open_ id map o) :: acc)
+    | External (id, e) :: rest ->
+        inner rest (External (external_ map parent id e) :: acc)
+    | ModuleSubstitution (id, m) :: rest ->
+        inner rest
+          (ModuleSubstitution (module_substitution map parent id m) :: acc)
+    | TypeSubstitution (id, t) :: rest ->
+        inner rest (TypeSubstitution (type_decl map parent id t) :: acc)
+    | Class (id, r, c) :: rest ->
+        inner rest (Class (r, class_ map parent id c) :: acc)
+    | ClassType (id, r, c) :: rest ->
+        inner rest (ClassType (r, class_type map parent id c) :: acc)
+    | Comment c :: rest ->
+        inner rest
+          (Comment (docs_or_stop (id :> Identifier.LabelParent.t) c) :: acc)
+  in
+  inner items []
 
 and signature id map sg =
   let open Component.Signature in
   signature_items id map sg.items
 
-and class_ map id c =
+and class_ map parent id c =
   let open Component.Class in
   let identifier = List.assoc id map.class_ in
   let expansion =
@@ -470,7 +335,7 @@ and class_ map id c =
   in
   {
     id = identifier;
-    doc = docs map c.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
     type_ =
@@ -484,15 +349,21 @@ and class_decl map parent c =
   match c with
   | Component.Class.ClassType expr ->
       ClassType (class_type_expr map parent expr)
-  | Arrow (lbl, t, d) -> Arrow (lbl, type_expr map t, class_decl map parent d)
+  | Arrow (lbl, t, d) ->
+      Arrow
+        ( lbl,
+          type_expr map (parent :> Identifier.Parent.t) t,
+          class_decl map parent d )
 
 and class_type_expr map parent c =
   match c with
   | Component.ClassType.Constr (p, ts) ->
-      Constr (Path.class_type map p, List.map (type_expr map) ts)
+      Constr
+        ( Path.class_type map p,
+          List.map (type_expr map (parent :> Identifier.Parent.t)) ts )
   | Signature s -> Signature (class_signature map parent s)
 
-and class_type map id c =
+and class_type map parent id c =
   let open Component.ClassType in
   let identifier = List.assoc id map.class_type in
   let expansion =
@@ -502,7 +373,7 @@ and class_type map id c =
   in
   {
     Odoc_model.Lang.ClassType.id = identifier;
-    doc = docs map c.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     virtual_ = c.virtual_;
     params = c.params;
     expr =
@@ -514,50 +385,54 @@ and class_type map id c =
 
 and class_signature map parent sg =
   let open Component.ClassSignature in
-  let map = ExtractIDs.class_signature parent map sg.items in
+  let pparent = (parent :> Identifier.Parent.t) in
   let items =
     List.map
       (function
         | Method (id, m) ->
-            Odoc_model.Lang.ClassSignature.Method (method_ map id m)
+            Odoc_model.Lang.ClassSignature.Method (method_ map parent id m)
         | InstanceVariable (id, i) ->
-            InstanceVariable (instance_variable map id i)
-        | Constraint (t1, t2) -> Constraint (type_expr map t1, type_expr map t2)
+            InstanceVariable (instance_variable map parent id i)
+        | Constraint (t1, t2) ->
+            Constraint (type_expr map pparent t1, type_expr map pparent t2)
         | Inherit e -> Inherit (class_type_expr map parent e)
-        | Comment c -> Comment (docs_or_stop map c))
+        | Comment c ->
+            Comment (docs_or_stop (parent :> Identifier.LabelParent.t) c))
       sg.items
   in
-  { self = Opt.map (type_expr map) sg.self; items }
+  { self = Opt.map (type_expr map pparent) sg.self; items }
 
-and method_ map id m =
+and method_ map parent id m =
   let open Component.Method in
-  let identifier = List.assoc id map.method_ in
+  let identifier = `Method (parent, Ident.Name.typed_method id) in
   {
     id = identifier;
-    doc = docs map m.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) m.doc;
     private_ = m.private_;
     virtual_ = m.virtual_;
-    type_ = type_expr map m.type_;
+    type_ = type_expr map (parent :> Identifier.Parent.t) m.type_;
   }
 
-and instance_variable map id i =
+and instance_variable map parent id i =
   let open Component.InstanceVariable in
-  let identifier = List.assoc id map.instance_variable in
+  let identifier =
+    `InstanceVariable (parent, Ident.Name.typed_instance_variable id)
+  in
   {
     id = identifier;
-    doc = docs map i.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     mutable_ = i.mutable_;
     virtual_ = i.virtual_;
-    type_ = type_expr map i.type_;
+    type_ = type_expr map (parent :> Identifier.Parent.t) i.type_;
   }
 
-and external_ map id e =
+and external_ map parent id e =
   let open Component.External in
-  let identifier = List.assoc id map.value_ in
+  let identifier = `Value (parent, Ident.Name.typed_value id) in
   {
     id = identifier;
-    doc = docs map e.doc;
-    type_ = type_expr map e.type_;
+    doc = docs (parent :> Identifier.LabelParent.t) e.doc;
+    type_ = type_expr map (parent :> Identifier.Parent.t) e.type_;
     primitives = e.primitives;
   }
 
@@ -601,7 +476,7 @@ and include_ parent map i =
   let open Component.Include in
   {
     Odoc_model.Lang.Include.parent;
-    doc = docs map i.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     decl = module_decl map parent i.decl;
     expansion =
       { resolved = false; content = signature parent map i.expansion_ };
@@ -612,16 +487,20 @@ and open_ parent map o =
   let open Component.Open in
   { Odoc_model.Lang.Open.expansion = signature parent map o.expansion }
 
-and value_ map id v =
+and value_ map parent id v =
   let open Component.Value in
-  let identifier = List.assoc id map.value_ in
-  { id = identifier; doc = docs map v.doc; type_ = type_expr map v.type_ }
+  let identifier = `Value (parent, Ident.Name.typed_value id) in
+  {
+    id = identifier;
+    doc = docs (parent :> Identifier.LabelParent.t) v.doc;
+    type_ = type_expr map (parent :> Identifier.Parent.t) v.type_;
+  }
 
 and typ_ext map parent t =
   let open Component.Extension in
   {
     type_path = Path.type_ map t.type_path;
-    doc = docs map t.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     type_params = t.type_params;
     private_ = t.private_;
     constructors = List.map (extension_constructor map parent) t.constructors;
@@ -632,15 +511,13 @@ and extension_constructor map parent c =
   let identifier = `Extension (parent, ExtensionName.of_string c.name) in
   {
     id = identifier;
-    doc = docs map c.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     args =
-      type_decl_constructor_argument map
-        (parent :> Odoc_model.Paths_types.Identifier.parent)
-        c.args;
-    res = Opt.map (type_expr map) c.res;
+      type_decl_constructor_argument map (parent :> Identifier.Parent.t) c.args;
+    res = Opt.map (type_expr map (parent :> Identifier.Parent.t)) c.res;
   }
 
-and module_ map id m =
+and module_ map parent id m =
   try
     let open Component.Module in
     let identifier =
@@ -657,7 +534,7 @@ and module_ map id m =
     in
     {
       Odoc_model.Lang.Module.id = List.assoc id map.module_;
-      doc = docs map m.doc;
+      doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ =
         module_decl map
           (identifier :> Odoc_model.Paths_types.Identifier.signature)
@@ -673,11 +550,11 @@ and module_ map id m =
       "Exception handling module: %a\nbacktrace:\n%s\n%!" Ident.fmt id bt;
     raise e
 
-and module_substitution map id m =
+and module_substitution map parent id m =
   let open Component.ModuleSubstitution in
   {
     Odoc_model.Lang.ModuleSubstitution.id = List.assoc id map.module_;
-    doc = docs map m.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) m.doc;
     manifest = Path.module_ map m.manifest;
   }
 
@@ -700,9 +577,13 @@ and module_type_expr map identifier =
     | ModuleSubst (frag, path) ->
         ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
     | TypeEq (frag, eqn) ->
-        TypeEq (Path.type_fragment map frag, type_decl_equation map eqn)
+        TypeEq
+          ( Path.type_fragment map frag,
+            type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
     | TypeSubst (frag, eqn) ->
-        TypeSubst (Path.type_fragment map frag, type_decl_equation map eqn)
+        TypeSubst
+          ( Path.type_fragment map frag,
+            type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
   in
   function
   | Component.ModuleType.Path p ->
@@ -729,14 +610,20 @@ and module_type_expr map identifier =
       Functor (Unit, module_type_expr map (`Result identifier) expr)
   | TypeOf decl -> TypeOf (module_decl map identifier decl)
 
-and module_type map id mty =
+and module_type :
+    maps ->
+    Identifier.Signature.t ->
+    Ident.module_type ->
+    Component.ModuleType.t Component.Delayed.t ->
+    Odoc_model.Lang.ModuleType.t =
+ fun map parent id mty ->
   let mty = Component.Delayed.get mty in
   let identifier = List.assoc id map.module_type in
   let sig_id = (identifier :> Odoc_model.Paths.Identifier.Signature.t) in
   let expansion = Opt.map (module_expansion map sig_id) mty.expansion in
   {
     Odoc_model.Lang.ModuleType.id = identifier;
-    doc = docs map mty.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
     display_expr = None;
     expansion;
@@ -749,41 +636,43 @@ and type_decl_constructor_argument :
     Odoc_model.Lang.TypeDecl.Constructor.argument =
  fun map parent a ->
   match a with
-  | Tuple ls -> Tuple (List.map (type_expr map) ls)
+  | Tuple ls -> Tuple (List.map (type_expr map parent) ls)
   | Record fs -> Record (List.map (type_decl_field map parent) fs)
 
 and type_decl_field :
     maps ->
-    Paths_types.Identifier.parent ->
+    Identifier.Parent.t ->
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
   let identifier = `Field (parent, FieldName.of_string f.name) in
   {
     id = identifier;
-    doc = docs map f.doc;
+    doc = docs (parent :> Identifier.LabelParent.t) f.doc;
     mutable_ = f.mutable_;
-    type_ = type_expr map f.type_;
+    type_ = type_expr map parent f.type_;
   }
 
-and type_decl_equation map (eqn : Component.TypeDecl.Equation.t) :
-    Odoc_model.Lang.TypeDecl.Equation.t =
+and type_decl_equation map (parent : Identifier.Parent.t)
+    (eqn : Component.TypeDecl.Equation.t) : Odoc_model.Lang.TypeDecl.Equation.t
+    =
   {
     params = eqn.params;
     private_ = eqn.private_;
-    manifest = Opt.map (type_expr map) eqn.manifest;
+    manifest = Opt.map (type_expr map parent) eqn.manifest;
     constraints =
       List.map
-        (fun (x, y) -> (type_expr map x, type_expr map y))
+        (fun (x, y) -> (type_expr map parent x, type_expr map parent y))
         eqn.constraints;
   }
 
-and type_decl map id (t : Component.TypeDecl.t) : Odoc_model.Lang.TypeDecl.t =
+and type_decl map parent id (t : Component.TypeDecl.t) :
+    Odoc_model.Lang.TypeDecl.t =
   let identifier = List.assoc id map.type_ in
   {
     id = identifier;
-    equation = type_decl_equation map t.equation;
-    doc = docs map t.doc;
+    equation = type_decl_equation map (parent :> Identifier.Parent.t) t.equation;
+    doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     representation =
       Opt.map (type_decl_representation map identifier) t.representation;
   }
@@ -809,40 +698,44 @@ and type_decl_constructor :
   let identifier = `Constructor (id, ConstructorName.of_string t.name) in
   {
     id = identifier;
-    doc = docs map t.doc;
+    doc = docs (id :> Identifier.LabelParent.t) t.doc;
     args =
       type_decl_constructor_argument map
         (id :> Odoc_model.Paths_types.Identifier.parent)
         t.args;
-    res = Opt.map (type_expr map) t.res;
+    res = Opt.map (type_expr map (id :> Identifier.Parent.t)) t.res;
   }
 
-and type_expr_package map t =
+and type_expr_package map parent t =
   {
     Lang.TypeExpr.Package.path =
       Path.module_type map t.Component.TypeExpr.Package.path;
     substitutions =
       List.map
         (fun (frag, texpr) ->
-          (Path.type_fragment map frag, type_expr map texpr))
+          (Path.type_fragment map frag, type_expr map parent texpr))
         t.substitutions;
   }
 
-and type_expr map (t : Component.TypeExpr.t) : Odoc_model.Lang.TypeExpr.t =
+and type_expr map (parent : Identifier.Parent.t) (t : Component.TypeExpr.t) :
+    Odoc_model.Lang.TypeExpr.t =
   try
     match t with
     | Var s -> Var s
     | Any -> Any
-    | Alias (t, str) -> Alias (type_expr map t, str)
-    | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr map t1, type_expr map t2)
-    | Tuple ts -> Tuple (List.map (type_expr map) ts)
+    | Alias (t, str) -> Alias (type_expr map parent t, str)
+    | Arrow (lbl, t1, t2) ->
+        Arrow (lbl, type_expr map parent t1, type_expr map parent t2)
+    | Tuple ts -> Tuple (List.map (type_expr map parent) ts)
     | Constr (path, ts) ->
-        Constr (Path.type_ map path, List.map (type_expr map) ts)
-    | Polymorphic_variant v -> Polymorphic_variant (type_expr_polyvar map v)
-    | Object o -> Object (type_expr_object map o)
-    | Class (p, ts) -> Class (Path.class_type map p, List.map (type_expr map) ts)
-    | Poly (strs, t) -> Poly (strs, type_expr map t)
-    | Package p -> Package (type_expr_package map p)
+        Constr (Path.type_ map path, List.map (type_expr map parent) ts)
+    | Polymorphic_variant v ->
+        Polymorphic_variant (type_expr_polyvar map parent v)
+    | Object o -> Object (type_expr_object map parent o)
+    | Class (p, ts) ->
+        Class (Path.class_type map p, List.map (type_expr map parent) ts)
+    | Poly (strs, t) -> Poly (strs, type_expr map parent t)
+    | Package p -> Package (type_expr_package map parent p)
   with e ->
     let bt = Printexc.get_backtrace () in
     Format.fprintf Format.err_formatter
@@ -850,34 +743,34 @@ and type_expr map (t : Component.TypeExpr.t) : Odoc_model.Lang.TypeExpr.t =
       (Printexc.to_string e) Component.Fmt.type_expr t bt;
     raise e
 
-and type_expr_polyvar map v =
+and type_expr_polyvar map parent v =
   let constructor c =
     {
       Lang.TypeExpr.Polymorphic_variant.Constructor.name =
         c.Component.TypeExpr.Polymorphic_variant.Constructor.name;
       constant = c.constant;
-      arguments = List.map (type_expr map) c.arguments;
-      doc = docs map c.doc;
+      arguments = List.map (type_expr map parent) c.arguments;
+      doc = docs (parent :> Identifier.LabelParent.t) c.doc;
     }
   in
   let element = function
     | Component.TypeExpr.Polymorphic_variant.Type t ->
-        Lang.TypeExpr.Polymorphic_variant.Type (type_expr map t)
+        Lang.TypeExpr.Polymorphic_variant.Type (type_expr map parent t)
     | Constructor c -> Constructor (constructor c)
   in
   { kind = v.kind; elements = List.map element v.elements }
 
-and type_expr_object map o =
+and type_expr_object map parent o =
   let method_ m =
     {
       Lang.TypeExpr.Object.name = m.Component.TypeExpr.Object.name;
-      type_ = type_expr map m.type_;
+      type_ = type_expr map parent m.type_;
     }
   in
   let field = function
     | Component.TypeExpr.Object.Method m ->
         Lang.TypeExpr.Object.Method (method_ m)
-    | Inherit i -> Inherit (type_expr map i)
+    | Inherit i -> Inherit (type_expr map parent i)
   in
   { Lang.TypeExpr.Object.fields = List.map field o.fields; open_ = o.open_ }
 
@@ -900,21 +793,22 @@ and functor_parameter map f =
 
 and exception_ map parent id (e : Component.Exception.t) :
     Odoc_model.Lang.Exception.t =
-  let identifier = List.assoc id map.exception_ in
+  let identifier = `Exception (parent, Ident.Name.typed_exception id) in
   {
     id = identifier;
-    doc = docs map e.doc;
-    args = type_decl_constructor_argument map parent e.args;
-    res = Opt.map (type_expr map) e.res;
+    doc = docs (parent :> Identifier.LabelParent.t) e.doc;
+    args =
+      type_decl_constructor_argument map (parent :> Identifier.Parent.t) e.args;
+    res = Opt.map (type_expr map (parent :> Identifier.Parent.t)) e.res;
   }
 
-and block_element map
+and block_element parent
     (d : Component.CComment.block_element Odoc_model.Location_.with_location) :
     Odoc_model.Comment.block_element Odoc_model.Location_.with_location =
   let value =
     match d.Odoc_model.Location_.value with
     | `Heading (l, id, content) -> (
-        try `Heading (l, List.assoc id map.labels, content)
+        try `Heading (l, `Label (parent, Ident.Name.typed_label id), content)
         with Not_found ->
           Format.fprintf Format.err_formatter "Failed to find id: %a\n"
             Ident.fmt id;
@@ -924,8 +818,11 @@ and block_element map
   in
   { d with Odoc_model.Location_.value }
 
-and docs : maps -> Component.CComment.docs -> Odoc_model.Comment.docs =
- fun map ds -> List.map (fun d -> block_element map d) ds
+and docs :
+    Identifier.LabelParent.t ->
+    Component.CComment.docs ->
+    Odoc_model.Comment.docs =
+ fun parent ds -> List.map (fun d -> block_element parent d) ds
 
-and docs_or_stop map (d : Component.CComment.docs_or_stop) =
-  match d with `Docs d -> `Docs (docs map d) | `Stop -> `Stop
+and docs_or_stop parent (d : Component.CComment.docs_or_stop) =
+  match d with `Docs d -> `Docs (docs parent d) | `Stop -> `Stop

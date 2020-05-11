@@ -17,8 +17,7 @@ type type_lookup_result =
     | `C of Component.Class.t
     | `CT of Component.ClassType.t ]
 
-type value_lookup_result =
-  Resolved.Value.t
+type value_lookup_result = Resolved.Value.t
 
 type label_parent_lookup_result =
   Resolved.LabelParent.t
@@ -399,7 +398,7 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
     | `Resolved r -> Some r
     | `Root (name, _) -> (
         Env.lookup_label_by_name (UnitName.to_string name) env >>= function
-        | `Label id -> return (`Identifier id))
+        | `Label id -> return (`Identifier id) )
     | `Dot (parent, name) -> (
         resolve_label_parent_reference env parent ~add_canonical:true
         >>= fun (p, _env, sg) ->
@@ -488,7 +487,6 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
               resolve_label_reference env r >>= fun x -> return (x :> Resolved.t));
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying value reference\n%!"; *)
-              resolve_value_reference env r >>= fun x ->
-              return (x :> Resolved.t));
+              resolve_value_reference env r >>= fun x -> return (x :> Resolved.t));
           ]
     | _ -> None

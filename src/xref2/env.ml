@@ -70,7 +70,7 @@ let pp_lookup_type_list fmt ls =
 type recorder = { mutable lookups : lookup_type list }
 
 module Maps = Odoc_model.Paths.Identifier.Maps
-module StringMap = Map.Make(String)
+module StringMap = Map.Make (String)
 
 type t = {
   id : int;
@@ -194,10 +194,9 @@ let add_fragment_root sg env =
 let add_to_elts name v elts =
   try
     let cur = StringMap.find name elts in
-    StringMap.add name (v::cur) elts
-  with Not_found ->
-    StringMap.add name [v] elts
- 
+    StringMap.add name (v :: cur) elts
+  with Not_found -> StringMap.add name [ v ] elts
+
 let add_module identifier m env =
   {
     env with
@@ -206,10 +205,11 @@ let add_module identifier m env =
         (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
         !unique_id );
     modules = Maps.Module.add identifier m env.modules;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier)
-      (`Module (identifier, m))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Module (identifier, m))
+        env.elts;
   }
 
 let add_type identifier t env =
@@ -219,9 +219,11 @@ let add_type identifier t env =
       ( incr unique_id;
         !unique_id );
     types = Maps.Type.add identifier t env.types;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`Type (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Type (identifier, t))
+        env.elts;
   }
 
 let add_module_type identifier t env =
@@ -231,9 +233,11 @@ let add_module_type identifier t env =
       ( incr unique_id;
         !unique_id );
     module_types = Maps.ModuleType.add identifier t env.module_types;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`ModuleType (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`ModuleType (identifier, t))
+        env.elts;
   }
 
 let add_value identifier t env =
@@ -243,9 +247,11 @@ let add_value identifier t env =
       ( incr unique_id;
         !unique_id );
     values = Maps.Value.add identifier t env.values;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`Value (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Value (identifier, t))
+        env.elts;
   }
 
 let add_external identifier t env =
@@ -255,9 +261,11 @@ let add_external identifier t env =
       ( incr unique_id;
         !unique_id );
     externals = Maps.Value.add identifier t env.externals;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`External (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`External (identifier, t))
+        env.elts;
   }
 
 let add_label identifier env =
@@ -266,9 +274,10 @@ let add_label identifier env =
     id =
       ( incr unique_id;
         !unique_id );
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`Label identifier)
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Label identifier) env.elts;
   }
 
 let add_label_title label elts env =
@@ -287,9 +296,11 @@ let add_class identifier t env =
       ( incr unique_id;
         !unique_id );
     classes = Maps.Class.add identifier t env.classes;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`Class (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Class (identifier, t))
+        env.elts;
   }
 
 let add_class_type identifier t env =
@@ -299,9 +310,11 @@ let add_class_type identifier t env =
       ( incr unique_id;
         !unique_id );
     class_types = Maps.ClassType.add identifier t env.class_types;
-    elts = add_to_elts
-      (Odoc_model.Paths.Identifier.name identifier) (`ClassType (identifier, t))
-      env.elts;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`ClassType (identifier, t))
+        env.elts;
   }
 
 let add_docs (docs : Odoc_model.Comment.docs) env =
@@ -345,7 +358,8 @@ let lookup_fragment_root env =
       result
   | None -> None
 
-let lookup_type identifier env = try Some (Maps.Type.find identifier env.types) with _ -> None
+let lookup_type identifier env =
+  try Some (Maps.Type.find identifier env.types) with _ -> None
 
 let lookup_module_type identifier env =
   let maybe_record_result res =
@@ -356,18 +370,22 @@ let lookup_module_type identifier env =
   match Maps.ModuleType.find identifier env.module_types with
   | result ->
       maybe_record_result (ModuleType (identifier, true));
-      Some (result)
+      Some result
   | exception _ ->
       maybe_record_result (ModuleType (identifier, false));
       None
 
-let lookup_value identifier env = try Some (Maps.Value.find identifier env.values) with _ -> None
+let lookup_value identifier env =
+  try Some (Maps.Value.find identifier env.values) with _ -> None
 
-let lookup_section_title identifier env = try Some (Maps.Label.find identifier env.titles) with _ -> None
+let lookup_section_title identifier env =
+  try Some (Maps.Label.find identifier env.titles) with _ -> None
 
-let lookup_class identifier env = try Some (Maps.Class.find identifier env.classes) with _ -> None
+let lookup_class identifier env =
+  try Some (Maps.Class.find identifier env.classes) with _ -> None
 
-let lookup_class_type identifier env = try Some (Maps.ClassType.find identifier env.class_types) with _ -> None
+let lookup_class_type identifier env =
+  try Some (Maps.ClassType.find identifier env.class_types) with _ -> None
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
@@ -423,9 +441,7 @@ let lookup_root_module name env =
   result
 
 let lookup_module_internal identifier env =
-  match
-    try Some (Maps.Module.find identifier env.modules) with _ -> None
-  with
+  match try Some (Maps.Module.find identifier env.modules) with _ -> None with
   | Some _ as result -> result
   | None -> (
       match identifier with
@@ -469,19 +485,17 @@ let lookup_any_by_name name env =
   try StringMap.find name env.elts with _ -> []
 
 let lookup_signature_by_name name env =
-  let filter_fn :
-      Component.Element.any -> Component.Element.signature option =
+  let filter_fn : Component.Element.any -> Component.Element.signature option =
     function
-    | (#Component.Element.signature as item) -> Some item
+    | #Component.Element.signature as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
 
 let lookup_module_by_name_internal name env =
-  let filter_fn :
-      Component.Element.any -> Component.Element.module_ option =
+  let filter_fn : Component.Element.any -> Component.Element.module_ option =
     function
-    | (#Component.Element.module_ as item) -> Some item
+    | #Component.Element.module_ as item -> Some item
     | _ -> None
   in
   match find filter_fn (lookup_any_by_name name env) with
@@ -507,19 +521,17 @@ let lookup_module_by_name name env =
   result
 
 let lookup_module_type_by_name name env =
-  let filter_fn :
-      Component.Element.any -> Component.Element.module_type option =
-    function
-    | (#Component.Element.module_type as item) -> Some item
+  let filter_fn : Component.Element.any -> Component.Element.module_type option
+      = function
+    | #Component.Element.module_type as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
 
 let lookup_datatype_by_name name env =
-  let filter_fn :
-      Component.Element.any -> Component.Element.datatype option =
+  let filter_fn : Component.Element.any -> Component.Element.datatype option =
     function
-    | (#Component.Element.datatype as item) -> Some item
+    | #Component.Element.datatype as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
@@ -529,17 +541,16 @@ let lookup_value_by_name name env =
       Component.Element.any ->
       [ Component.Element.value | Component.Element.external_ ] option =
     function
-    | (#Component.Element.value as item) -> Some item
-    | (#Component.Element.external_ as item) -> Some item
+    | #Component.Element.value as item -> Some item
+    | #Component.Element.external_ as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
 
 let lookup_label_by_name name env =
-  let filter_fn :
-      Component.Element.any -> Component.Element.label option =
+  let filter_fn : Component.Element.any -> Component.Element.label option =
     function
-    | (#Component.Element.label as item) -> Some item
+    | #Component.Element.label as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
@@ -632,8 +643,8 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty =
               Of_Lang.(
                 module_of_module_substitution
-(*                  { empty with modules = [ (m.id, id) ] } *) empty
-                  m)
+                  (*                  { empty with modules = [ (m.id, id) ] } *)
+                  empty m)
             in
             add_module m.id ty env
         | Odoc_model.Lang.Signature.TypeSubstitution t ->

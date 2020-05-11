@@ -37,6 +37,7 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.FieldName.fmt;;
 #print_length 65536;;
 Odoc_xref2__Component.Delayed.eager := true;;
+let id = Common.root_with_name;;
 ```
 
 Simple resolution
@@ -175,7 +176,7 @@ started with alongside the `Component.Type.t` that represents the type (which we
 ignore in this case).
 
 ```ocaml env=e1
-# Compile.signature Env.empty sg;;
+# Compile.signature Env.empty id sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, Root), x);
@@ -470,7 +471,7 @@ end
 type t = A.N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 Let's look at `t`'s manifest:
@@ -506,7 +507,7 @@ end
 type t = A.O.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -547,7 +548,7 @@ type t = C.N.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
-let resolved = Compile.signature env sg;;
+let resolved = Compile.signature env id sg;;
 ```
 
 So in module type `A`, module `N` has type `M.S`, which 
@@ -659,7 +660,7 @@ let sg = Common.signature_of_mli_string test_data;;
 let env = Env.open_signature sg Env.empty;;
 let t_manifest = type_manifest "t";;
 let s_manifest = type_manifest "s";;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 The interesting thing here is the difference between `type t` and `type s`. The module `M.O` has
@@ -752,7 +753,7 @@ let env = Env.open_signature sg Env.empty;;
 ```
 
 ```ocaml env=e1
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -793,7 +794,7 @@ end
 type t = M.O(M).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -938,7 +939,7 @@ Error: This expression has type 'a * 'b
 ```
 
 ```ocaml env=e1
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 The resolved path of t is:
@@ -992,7 +993,7 @@ end
 type t = M.O(M).N.t
 |}
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1058,7 +1059,7 @@ type dep1 = Dep2(Dep1).B.c
 |};;
 
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 (*let ty_dep1 = {|
@@ -1125,7 +1126,7 @@ type dep2 = Dep5(Dep4).Z.X.b
 type dep3 = Dep5(Dep4).Z.Y.a
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1196,7 +1197,7 @@ module Dep7 :
 type dep4 = Dep7(Dep6).M.Y.d
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1268,7 +1269,7 @@ module Dep13 : Dep12(Dep11).T
 type dep5 = Dep13.c
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 
@@ -1310,7 +1311,7 @@ module H=Hidden__
 type t = Hidden__.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1336,7 +1337,7 @@ type t
 (** [t] {!t} *)
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1378,7 +1379,7 @@ let test_data = {|
 type t = Buffer.t
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 ```
 
 ```ocaml env=e1
@@ -1437,7 +1438,7 @@ let sg = Common.signature_of_mli_string test_data;;
 ```
 
 ```ocaml env=e1
-# Link.signature Env.empty sg
+# Link.signature Env.empty id sg
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.ModuleType
   {Odoc_model.Lang.ModuleType.id = `ModuleType (`Root (Common.root, Root), M);
@@ -1494,7 +1495,7 @@ module Bar : sig end
 module M : Foo(Bar).S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
+let resolved = Compile.signature Env.empty id sg;;
 (*let expanded = Link.signature Env.empty resolved;;*)
 (*let module_M_expansion =
   let open Common.LangUtils.Lens in
@@ -1520,8 +1521,8 @@ end
 module type S1 = functor (_ : S) -> S
 |};;
 let sg = Common.signature_of_mli_string test_data;;
-let resolved = Compile.signature Env.empty sg;;
-let expanded = Link.signature Env.empty resolved;;
+let resolved = Compile.signature Env.empty id sg;;
+let expanded = Link.signature Env.empty id resolved;;
 ```
 
 # Hidden / Canonical
@@ -1606,8 +1607,8 @@ Line 1, characters 43-51:
 Error: This expression has type Odoc_odoc.Compilation_unit.t
        but an expression was expected of type
          Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
-# let expanded = Link.signature Env.empty resolved;;
-Line 1, characters 41-49:
+# let expanded = Link.signature Env.empty id resolved;;
+Line 1, characters 44-52:
 Error: This expression has type Odoc_odoc.Compilation_unit.t
        but an expression was expected of type
          Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list

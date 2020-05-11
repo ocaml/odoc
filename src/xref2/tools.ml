@@ -5,7 +5,7 @@ open Odoc_model.Paths
 open Utils
 open ResultMonad
 
-exception ModuleLookup of Cpath.module_ 
+exception ModuleLookup of Cpath.module_
 
 type ('a, 'b) either = Left of 'a | Right of 'b
 
@@ -55,45 +55,47 @@ let core_types =
 let prefix_substitution path sg =
   let open Component.Signature in
   let rec get_sub sub' is =
-    List.fold_right
-      (fun item map ->
-        match item with
-        | Type (id, _, _) ->
-            let name = TypeName.of_string (Ident.Name.type_ id) in
-            Subst.add_type id (`Type (path, name)) map
-        | Module (id, _, _) ->
-            let name = ModuleName.of_string (Ident.Name.module_ id) in
-            Subst.add_module id (`Module (path, name)) map
-        | ModuleType (id, _) ->
-            let name = ModuleTypeName.of_string (Ident.Name.module_type id) in
-            Subst.add_module_type id (`ModuleType (path, name)) map
-        | ModuleSubstitution (id, _) ->
-            let name = ModuleName.of_string (Ident.Name.module_ id) in
-            Subst.add_module id (`Module (path, name)) map
-        | TypeSubstitution (id, _) ->
-            let name = TypeName.of_string (Ident.Name.type_ id) in
-            Subst.add_type id (`Type (path, name)) map
-        | Exception _ | TypExt _ | Value (_, _) | External (_, _) | Comment _ ->
-            map
-        | Class (id, _, _) ->
-            let name = ClassName.of_string (Ident.Name.class_ id) in
-            Subst.add_class id (`Class (path, name)) map
-        | ClassType (id, _, _) ->
-            let name = ClassTypeName.of_string (Ident.Name.class_type id) in
-            Subst.add_class_type id (`ClassType (path, name)) map
-        | Include i -> get_sub map i.expansion_.items
-        | Open o -> get_sub map o.expansion.items)
-      is sub'
+    match is with
+    | [] -> sub'
+    | Type (id, _, _) :: rest ->
+        let name = Ident.Name.typed_type id in
+        get_sub (Subst.add_type id (`Type (path, name)) sub') rest
+    | Module (id, _, _) :: rest ->
+        let name = Ident.Name.typed_module id in
+        get_sub (Subst.add_module id (`Module (path, name)) sub') rest
+    | ModuleType (id, _) :: rest ->
+        let name = Ident.Name.typed_module_type id in
+        get_sub (Subst.add_module_type id (`ModuleType (path, name)) sub') rest
+    | ModuleSubstitution (id, _) :: rest ->
+        let name = Ident.Name.typed_module id in
+        get_sub (Subst.add_module id (`Module (path, name)) sub') rest
+    | TypeSubstitution (id, _) :: rest ->
+        let name = Ident.Name.typed_type id in
+        get_sub (Subst.add_type id (`Type (path, name)) sub') rest
+    | Exception _ :: rest
+    | TypExt _ :: rest
+    | Value (_, _) :: rest
+    | External (_, _) :: rest
+    | Comment _ :: rest ->
+        get_sub sub' rest
+    | Class (id, _, _) :: rest ->
+        let name = Ident.Name.typed_class id in
+        get_sub (Subst.add_class id (`Class (path, name)) sub') rest
+    | ClassType (id, _, _) :: rest ->
+        let name = Ident.Name.typed_class_type id in
+        get_sub (Subst.add_class_type id (`ClassType (path, name)) sub') rest
+    | Include i :: rest -> get_sub (get_sub sub' i.expansion_.items) rest
+    | Open o :: rest -> get_sub (get_sub sub' o.expansion.items) rest
   in
   let extend_sub_removed removed sub =
     List.fold_right
       (fun item map ->
         match item with
         | Component.Signature.RModule (id, _) ->
-            let name = ModuleName.of_string (Ident.Name.module_ id) in
+            let name = Ident.Name.typed_module id in
             Subst.add_module id (`Module (path, name)) map
         | Component.Signature.RType (id, _) ->
-            let name = TypeName.of_string (Ident.Name.type_ id) in
+            let name = Ident.Name.typed_type id in
             Subst.add_type id (`Type (path, name)) map)
       removed sub
   in
@@ -189,9 +191,7 @@ type class_type_lookup_result = Cpath.Resolved.class_type * Find.class_type
 
 type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
 
-type handle_subs_error =
-  [ `UnresolvedPath of [ `Module of Cpath.module_ ]
-  ]
+type handle_subs_error = [ `UnresolvedPath of [ `Module of Cpath.module_ ] ]
 
 type signature_of_module_error =
   [ `OpaqueModule
@@ -209,7 +209,6 @@ type module_lookup_error =
   | `Parent_expr of module_type_expr_of_module_error
   | `Lookup_failure of Identifier.Module.t
   | `Fragment_root ]
-
 
 and module_type_expr_of_module_error =
   [ `ApplyNotFunctor
@@ -300,7 +299,8 @@ let rec handle_apply is_resolve env func_path arg_path m =
         Ok (arg.Component.FunctorParameter.id, expr)
     | Component.ModuleType.Path mty_path -> (
         match lookup_and_resolve_module_type_from_path false env mty_path with
-        | ResolvedMonad.Resolved (_, { Component.ModuleType.expr = Some mty'; _ }) ->
+        | ResolvedMonad.Resolved
+            (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule )
     | _ -> Error `ApplyNotFunctor
@@ -356,6 +356,7 @@ and process_module_type env m p' =
   in
   let p' = match substpath with Some p -> p | None -> p' in
   p'
+
 and get_module_path_modifiers : Env.t -> bool -> Component.Module.t -> _ option
     =
  fun env add_canonical m ->
@@ -403,8 +404,8 @@ and handle_module_type_lookup env id p sg =
   let p'' = process_module_type env mt p' in
   Some (p'', mt)
 
-and handle_type_lookup id p sg : (type_lookup_result, [> `Find_failure ]) Result.result
-    =
+and handle_type_lookup id p sg :
+    (type_lookup_result, [> `Find_failure ]) Result.result =
   match Find.careful_type_in_sig sg id with
   | Some mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
   | None -> Error `Find_failure
@@ -714,7 +715,6 @@ and resolve_module_type env p =
   | Error `OpaqueModule -> return (`OpaqueModuleType p)
   | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p
 
-
 and lookup_and_resolve_module_type_from_path :
     bool ->
     Env.t ->
@@ -956,8 +956,7 @@ and lookup_module_from_resolved_fragment :
                = Odoc_model.Names.ModuleName.to_string name ->
             Some
               ( id,
-                `Module
-                  (`Module ppath, ModuleName.of_string (Ident.Name.module_ id)),
+                `Module (`Module ppath, Ident.Name.typed_module id),
                 Component.Delayed.get m' )
         | _ :: xs -> find ppath xs
         | [] -> None
@@ -1009,7 +1008,8 @@ and lookup_signature_from_fragment :
 and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result
+    =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
@@ -1026,7 +1026,8 @@ and module_type_expr_of_module_decl :
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result =
+    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result
+    =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
 and signature_of_module_alias :
@@ -1076,8 +1077,7 @@ and signature_of_module_type_expr :
       signature_of_module_type_expr env s >>= fun sg ->
       match handle_signature_with_subs env sg subs with
       | Ok x -> Ok x
-      | Error y -> Error (y :> signature_of_module_error) 
-    )
+      | Error y -> Error (y :> signature_of_module_error) )
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr env expr
   | Component.ModuleType.Functor (Named arg, expr) ->
@@ -1166,7 +1166,7 @@ and fragmap_module :
     Cfrag.module_ ->
     Component.ModuleType.substitution ->
     Component.Signature.t ->
-    (Component.Signature.t, handle_subs_error) Result.result  =
+    (Component.Signature.t, handle_subs_error) Result.result =
  fun env frag sub sg ->
   let name, frag' = Cfrag.module_split frag in
   let map_module m =
@@ -1282,9 +1282,8 @@ and fragmap_module :
     in
     Ok res
     (* Format.(
-      fprintf err_formatter "after sig=%a\n%!" Component.Fmt.(signature) res); *)
-  with ModuleLookup p ->
-    Error (`UnresolvedPath (`Module p))
+       fprintf err_formatter "after sig=%a\n%!" Component.Fmt.(signature) res); *)
+  with ModuleLookup p -> Error (`UnresolvedPath (`Module p))
 
 and fragmap_type :
     Env.t ->
@@ -1610,8 +1609,7 @@ and resolve_mt_type_fragment :
   | `Dot (parent, name) ->
       let open OptionMonad in
       resolve_mt_signature_fragment env (p, sg) parent
-      >>= fun (pfrag, ppath, _sg) ->
-      let _new_id = `Type (ppath, Odoc_model.Names.ModuleName.of_string name) in
+      >>= fun (pfrag, _ppath, _sg) ->
       let result = fixup_type_cfrag (`Type (pfrag, TypeName.of_string name)) in
       (* Format.fprintf Format.err_formatter "resolve_mt_type_fragment: fragment=%a\n%!" Component.Fmt.resolved_type_fragment result; *)
       Some result

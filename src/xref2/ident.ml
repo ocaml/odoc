@@ -211,9 +211,17 @@ module Name = struct
     | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
 
+  let typed_module : module_ -> ModuleName.t = function
+    | `LModule (n, _) -> n
+    | _ -> failwith "Bad module ident"
+
   let type_ : type_ -> string = function
     | `LType (n, _) -> TypeName.to_string n
     | `LCoreType n -> TypeName.to_string n
+
+  let typed_type : type_ -> TypeName.t = function
+    | `LType (n, _) -> n
+    | _ -> failwith "Bad type ident"
 
   let path_type : path_type -> string = function
     | `LClassType (n, _) -> ClassTypeName.to_string n
@@ -224,8 +232,13 @@ module Name = struct
   let class_ : class_ -> string = function
     | `LClass (n, _) -> ClassName.to_string n
 
+  let typed_class : class_ -> ClassName.t = function `LClass (n, _) -> n
+
   let module_type : module_type -> string = function
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
+
+  let typed_module_type : module_type -> ModuleTypeName.t = function
+    | `LModuleType (n, _) -> n
 
   let path_class_type : path_class_type -> string = function
     | `LClass (n, _) -> ClassName.to_string n
@@ -234,20 +247,36 @@ module Name = struct
   let class_type : class_type -> string = function
     | `LClassType (n, _) -> ClassTypeName.to_string n
 
+  let typed_class_type : class_type -> ClassTypeName.t = function
+    | `LClassType (n, _) -> n
+
   let exception_ : exception_ -> string = function
     | `LCoreException n | `LException (n, _) -> ExceptionName.to_string n
+
+  let typed_exception : exception_ -> ExceptionName.t = function
+    | `LCoreException n | `LException (n, _) -> n
 
   let value : value -> string = function
     | `LValue (n, _) -> ValueName.to_string n
 
+  let typed_value : value -> ValueName.t = function `LValue (n, _) -> n
+
   let label : label -> string = function
     | `LLabel (n, _) -> LabelName.to_string n
+
+  let typed_label : label -> LabelName.t = function `LLabel (n, _) -> n
 
   let method_ : method_ -> string = function
     | `LMethod (n, _) -> MethodName.to_string n
 
+  let typed_method : method_ -> MethodName.t = function `LMethod (n, _) -> n
+
   let instance_variable : instance_variable -> string = function
     | `LInstanceVariable (n, _) -> InstanceVariableName.to_string n
+
+  let typed_instance_variable : instance_variable -> InstanceVariableName.t =
+    function
+    | `LInstanceVariable (n, _) -> n
 end
 
 module Rename = struct
@@ -289,6 +318,26 @@ let hash : any -> int = Hashtbl.hash
 
 let compare : any -> any -> int =
  fun a b -> compare (int_of_any a) (int_of_any b)
+
+module Maps = struct
+  module Module = Map.Make (struct
+    type t = module_
+
+    let compare x y = compare (x : t :> any) (y : t :> any)
+  end)
+
+  module ModuleType = Map.Make (struct
+    type t = module_type
+
+    let compare x y = compare (x : t :> any) (y : t :> any)
+  end)
+
+  module Type = Map.Make (struct
+    type t = type_
+
+    let compare x y = compare (x : t :> any) (y : t :> any)
+  end)
+end
 
 let reset () = counter := 0
 

@@ -234,12 +234,11 @@ and type_poly_var s v =
     }
   in
   let map_element = function
-    | Type t -> begin
-      match type_expr s t with
-      | Polymorphic_variant v -> v.elements
-      | x -> [Type x]
-    end
-    | Constructor c -> [Constructor (map_constr c)]
+    | Type t -> (
+        match type_expr s t with
+        | Polymorphic_variant v -> v.elements
+        | x -> [ Type x ] )
+    | Constructor c -> [ Constructor (map_constr c) ]
   in
 
   { kind = v.kind; elements = List.flatten (List.map map_element v.elements) }
@@ -491,9 +490,7 @@ and rename_bound_idents s sg =
       try
         let id' = Ident.Rename.value id in
         rename_bound_idents s (External (id', e) :: sg) rest
-      with TypeReplacement _ ->
-        rename_bound_idents s sg rest
-    )
+      with TypeReplacement _ -> rename_bound_idents s sg rest )
   | Class (id, r, c) :: rest ->
       let id' = Ident.Rename.class_ id in
       rename_bound_idents
@@ -539,44 +536,52 @@ and signature s sg =
 
 and apply_sig_map s items removed =
   let open Component.Signature in
-  let items =
-    List.fold_right (fun item items ->
-      (match item with
-        | Module (id, r, m) ->
-            Module
+  let rec inner items acc =
+    match items with
+    | [] -> List.rev acc
+    | Module (id, r, m) :: rest ->
+        inner rest
+          ( Module
               ( id,
                 r,
                 Component.Delayed.put (fun () ->
-                    module_ s (Component.Delayed.get m)) ) :: items
-        | ModuleSubstitution (id, m) ->
-            ModuleSubstitution (id, module_substitution s m) :: items
-        | ModuleType (id, mt) ->
-            ModuleType
+                    module_ s (Component.Delayed.get m)) )
+          :: acc )
+    | ModuleSubstitution (id, m) :: rest ->
+        inner rest (ModuleSubstitution (id, module_substitution s m) :: acc)
+    | ModuleType (id, mt) :: rest ->
+        inner rest
+          ( ModuleType
               ( id,
                 Component.Delayed.put (fun () ->
-                    module_type s (Component.Delayed.get mt)) ) :: items
-        | Type (id, r, t) ->
-            Type
+                    module_type s (Component.Delayed.get mt)) )
+          :: acc )
+    | Type (id, r, t) :: rest ->
+        inner rest
+          ( Type
               ( id,
                 r,
                 Component.Delayed.put (fun () ->
-                    type_ s (Component.Delayed.get t)) ) :: items
-        | TypeSubstitution (id, t) -> TypeSubstitution (id, type_ s t) :: items
-        | Exception (id, e) -> Exception (id, exception_ s e) :: items
-        | TypExt e -> (
-          try
-            let e' = extension s e in
-            TypExt e' :: items
-          with TypeReplacement _ ->
-            items
-        )
-        | Value (id, v) -> Value (id, value s v) :: items
-        | External (id, e) -> External (id, external_ s e) :: items
-        | Class (id, r, c) -> Class (id, r, class_ s c) :: items
-        | ClassType (id, r, c) -> ClassType (id, r, class_type s c) :: items
-        | Include i -> Include (include_ s i) :: items
-        | Open o -> Open (open_ s o) :: items
-        | Comment c -> Comment c :: items))
-      items []
+                    type_ s (Component.Delayed.get t)) )
+          :: acc )
+    | TypeSubstitution (id, t) :: rest ->
+        inner rest (TypeSubstitution (id, type_ s t) :: acc)
+    | Exception (id, e) :: rest ->
+        inner rest (Exception (id, exception_ s e) :: acc)
+    | TypExt e :: rest ->
+        inner rest
+          ( try
+              let e' = extension s e in
+              TypExt e' :: acc
+            with TypeReplacement _ -> acc )
+    | Value (id, v) :: rest -> inner rest (Value (id, value s v) :: acc)
+    | External (id, e) :: rest ->
+        inner rest (External (id, external_ s e) :: acc)
+    | Class (id, r, c) :: rest -> inner rest (Class (id, r, class_ s c) :: acc)
+    | ClassType (id, r, c) :: rest ->
+        inner rest (ClassType (id, r, class_type s c) :: acc)
+    | Include i :: rest -> inner rest (Include (include_ s i) :: acc)
+    | Open o :: rest -> inner rest (Open (open_ s o) :: acc)
+    | Comment c :: rest -> inner rest (Comment c :: acc)
   in
-  { items; removed = removed_items s removed }
+  { items = inner items []; removed = removed_items s removed }

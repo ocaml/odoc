@@ -1118,6 +1118,7 @@ module Fmt = struct
 end
 
 module LocalIdents = struct
+  open Odoc_model
   (** The purpose of this module is to extract identifiers
       that could be referenced in Paths - that is, modules,
       module types, types, classes and class types. That way
@@ -1127,7 +1128,6 @@ module LocalIdents = struct
       Additionally, we stop at (class_)signature boundaries
       since identifiers within these won't be referenced 
       except within them, so we only do that on demand. *)
-  open Odoc_model
 
   type t = {
     modules : Paths.Identifier.Sets.Module.t;
@@ -1156,36 +1156,55 @@ module LocalIdents = struct
       (fun c ids ->
         match c with
         | Module (_, m) ->
-            { ids with modules = Identifier.Sets.Module.add m.Module.id ids.modules }
+            {
+              ids with
+              modules = Identifier.Sets.Module.add m.Module.id ids.modules;
+            }
         | ModuleType m ->
-            { ids with module_types = Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types }
+            {
+              ids with
+              module_types =
+                Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types;
+            }
         | ModuleSubstitution m ->
-            { ids with modules = Identifier.Sets.Module.add m.ModuleSubstitution.id ids.modules }
+            {
+              ids with
+              modules =
+                Identifier.Sets.Module.add m.ModuleSubstitution.id ids.modules;
+            }
         | Type (_, t) ->
-            { ids with types = Identifier.Sets.Type.add t.TypeDecl.id ids.types }
+            {
+              ids with
+              types = Identifier.Sets.Type.add t.TypeDecl.id ids.types;
+            }
         | TypeSubstitution t ->
-            { ids with types = Identifier.Sets.Type.add t.TypeDecl.id ids.types }
+            {
+              ids with
+              types = Identifier.Sets.Type.add t.TypeDecl.id ids.types;
+            }
         | Class (_, c) ->
-            { ids with classes = Identifier.Sets.Class.add c.Class.id ids.classes }
+            {
+              ids with
+              classes = Identifier.Sets.Class.add c.Class.id ids.classes;
+            }
         | ClassType (_, c) ->
-            { ids with class_types = Identifier.Sets.ClassType.add c.ClassType.id ids.class_types }
-        | TypExt _
-        | Exception _
-        | Value _
-        | Comment _
-        | External _ -> ids
-        | Include i ->
-            signature i.Include.expansion.content ids
+            {
+              ids with
+              class_types =
+                Identifier.Sets.ClassType.add c.ClassType.id ids.class_types;
+            }
+        | TypExt _ | Exception _ | Value _ | Comment _ | External _ -> ids
+        | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
       s ids
-
 end
 
 let core_type_ids =
   let open Odoc_model in
   let open Predefined in
   List.fold_right
-    (fun id acc -> Paths.Identifier.Maps.Type.add id (Ident.Of_Identifier.type_ id) acc)
+    (fun id acc ->
+      Paths.Identifier.Maps.Type.add id (Ident.Of_Identifier.type_ id) acc)
     [
       bool_identifier;
       int_identifier;
@@ -1211,7 +1230,10 @@ let core_constructors =
   let open Odoc_model in
   let open Predefined in
   List.fold_right
-    (fun id acc -> Paths.Identifier.Maps.Constructor.add id (Ident.Of_Identifier.constructor id) acc)
+    (fun id acc ->
+      Paths.Identifier.Maps.Constructor.add id
+        (Ident.Of_Identifier.constructor id)
+        acc)
     [
       false_identifier;
       true_identifier;
@@ -1227,7 +1249,10 @@ let core_exceptions =
   let open Odoc_model in
   let open Predefined in
   List.fold_right
-    (fun id acc -> Paths.Identifier.Maps.Exception.add id (Ident.Of_Identifier.exception_ id) acc)
+    (fun id acc ->
+      Paths.Identifier.Maps.Exception.add id
+        (Ident.Of_Identifier.exception_ id)
+        acc)
     [
       match_failure_identifier;
       assert_failure_identifier;
@@ -1252,7 +1277,8 @@ module Of_Lang = struct
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
     types : Ident.type_ Paths.Identifier.Maps.Type.t;
     path_types : Ident.path_type Paths.Identifier.Maps.Path.Type.t;
-    path_class_types : Ident.path_class_type Paths.Identifier.Maps.Path.ClassType.t;
+    path_class_types :
+      Ident.path_class_type Paths.Identifier.Maps.Path.ClassType.t;
     classes : Ident.class_ Paths.Identifier.Maps.Class.t;
     class_types : Ident.class_type Paths.Identifier.Maps.ClassType.t;
   }
@@ -1271,7 +1297,6 @@ module Of_Lang = struct
 
   let map_of_idents ids map =
     let open Paths.Identifier in
-
     let types_new =
       Sets.Type.fold
         (fun i acc -> Maps.Type.add i (Ident.Of_Identifier.type_ i) acc)
@@ -1284,7 +1309,8 @@ module Of_Lang = struct
     in
     let class_types_new =
       Sets.ClassType.fold
-        (fun i acc -> Maps.ClassType.add i (Ident.Of_Identifier.class_type i) acc)
+        (fun i acc ->
+          Maps.ClassType.add i (Ident.Of_Identifier.class_type i) acc)
         ids.LocalIdents.class_types Maps.ClassType.empty
     in
     let modules_new =
@@ -1294,36 +1320,60 @@ module Of_Lang = struct
     in
     let module_types_new =
       Sets.ModuleType.fold
-        (fun i acc -> Maps.ModuleType.add i (Ident.Of_Identifier.module_type i) acc)
+        (fun i acc ->
+          Maps.ModuleType.add i (Ident.Of_Identifier.module_type i) acc)
         ids.LocalIdents.module_types Maps.ModuleType.empty
     in
     let path_class_types_new =
-      Maps.Path.ClassType.empty |>
-      Maps.ClassType.fold (fun key v acc ->
-        Maps.Path.ClassType.add (key :> Path.ClassType.t) (v :> Ident.path_class_type) acc) class_types_new |>
-      Maps.Class.fold (fun key v acc ->
-        Maps.Path.ClassType.add (key :> Path.ClassType.t) (v :> Ident.path_class_type) acc) classes_new
+      Maps.Path.ClassType.empty
+      |> Maps.ClassType.fold
+           (fun key v acc ->
+             Maps.Path.ClassType.add
+               (key :> Path.ClassType.t)
+               (v :> Ident.path_class_type)
+               acc)
+           class_types_new
+      |> Maps.Class.fold
+           (fun key v acc ->
+             Maps.Path.ClassType.add
+               (key :> Path.ClassType.t)
+               (v :> Ident.path_class_type)
+               acc)
+           classes_new
     in
     let path_types_new =
-      Maps.Path.Type.empty |>
-      Maps.Path.ClassType.fold (fun key v acc ->
-        Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc) path_class_types_new |>
-      Maps.Type.fold (fun key v acc ->
-        Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc) types_new
+      Maps.Path.Type.empty
+      |> Maps.Path.ClassType.fold
+           (fun key v acc ->
+             Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc)
+           path_class_types_new
+      |> Maps.Type.fold
+           (fun key v acc ->
+             Maps.Path.Type.add (key :> Path.Type.t) (v :> Ident.path_type) acc)
+           types_new
     in
     let merge_fn _k v1 v2 =
-      match v1, v2 with
+      match (v1, v2) with
       | _, Some x -> Some x
       | None, None -> None
       | Some x, None -> Some x
     in
     let modules = Maps.Module.merge merge_fn modules_new map.modules in
-    let module_types = Maps.ModuleType.merge merge_fn module_types_new map.module_types in
+    let module_types =
+      Maps.ModuleType.merge merge_fn module_types_new map.module_types
+    in
     let types = Maps.Type.merge merge_fn types_new map.types in
     let classes = Maps.Class.merge merge_fn classes_new map.classes in
-    let class_types = Maps.ClassType.merge merge_fn class_types_new map.class_types in
-    let path_types = Maps.Path.Type.merge merge_fn path_types_new map.path_types in
-    let path_class_types = Maps.Path.ClassType.merge merge_fn path_class_types_new map.path_class_types in
+    let class_types =
+      Maps.ClassType.merge merge_fn class_types_new map.class_types
+    in
+    let path_types =
+      Maps.Path.Type.merge merge_fn path_types_new map.path_types
+    in
+    let path_class_types =
+      Maps.Path.ClassType.merge merge_fn path_class_types_new
+        map.path_class_types
+    in
     {
       modules;
       module_types;
@@ -1395,7 +1445,8 @@ module Of_Lang = struct
       Cpath.Resolved.class_type =
    fun ident_map p ->
     match p with
-    | `Identifier i -> identifier Maps.Path.ClassType.find ident_map.path_class_types i
+    | `Identifier i ->
+        identifier Maps.Path.ClassType.find ident_map.path_class_types i
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
     | `ClassType (p, name) ->
@@ -1644,7 +1695,10 @@ module Of_Lang = struct
                   let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
                   let id = Ident.Of_Identifier.module_ identifier in
                   let ident_map' =
-                    { ident_map with modules = Maps.Module.add identifier id ident_map.modules }
+                    {
+                      ident_map with
+                      modules = Maps.Module.add identifier id ident_map.modules;
+                    }
                   in
                   let arg' = functor_parameter ident_map' id arg in
                   (FunctorParameter.Named arg' :: args, ident_map')
@@ -1741,7 +1795,10 @@ module Of_Lang = struct
         let identifier = arg.Lang.FunctorParameter.id in
         let id = Ident.Of_Identifier.module_ identifier in
         let ident_map' =
-          { ident_map with modules = Identifier.Maps.Module.add identifier id ident_map.modules }
+          {
+            ident_map with
+            modules = Identifier.Maps.Module.add identifier id ident_map.modules;
+          }
         in
         let arg' = functor_parameter ident_map' id arg in
         let expr' = module_type_expr ident_map' expr in
@@ -1897,7 +1954,7 @@ module Of_Lang = struct
     let items =
       List.map
         (let open Odoc_model.Lang.Signature in
-         let open Odoc_model.Paths in
+        let open Odoc_model.Paths in
         function
         | Type (r, t) ->
             let id = Identifier.Maps.Type.find t.id ident_map.types in
@@ -1916,7 +1973,9 @@ module Of_Lang = struct
             let m' = module_substitution ident_map m in
             Signature.ModuleSubstitution (id, m')
         | ModuleType m ->
-            let id = Identifier.Maps.ModuleType.find m.id ident_map.module_types in
+            let id =
+              Identifier.Maps.ModuleType.find m.id ident_map.module_types
+            in
             let m' = Delayed.put (fun () -> module_type ident_map m) in
             Signature.ModuleType (id, m')
         | Value v ->
@@ -1935,7 +1994,9 @@ module Of_Lang = struct
             let id = Identifier.Maps.Class.find c.id ident_map.classes in
             Class (id, r, class_ ident_map c)
         | ClassType (r, c) ->
-            let id = Identifier.Maps.ClassType.find c.id ident_map.class_types in
+            let id =
+              Identifier.Maps.ClassType.find c.id ident_map.class_types
+            in
             ClassType (id, r, class_type ident_map c)
         | Open o -> Open (open_ ident_map o)
         | Include i -> Include (include_ ident_map i))
@@ -1952,7 +2013,8 @@ module Of_Lang = struct
       _ -> Odoc_model.Comment.block_element -> CComment.block_element =
    fun _ b ->
     match b with
-    | `Heading (l, id, content) -> `Heading (l, Ident.Of_Identifier.label id, content)
+    | `Heading (l, id, content) ->
+        `Heading (l, Ident.Of_Identifier.label id, content)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
 
