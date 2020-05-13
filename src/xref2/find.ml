@@ -51,6 +51,71 @@ let careful_type_in_sig (s : Signature.t) name =
   in
   inner s.items
 
+let any_in_type id (typ : TypeDecl.t) name =
+  let typename_of_typeid (`LType (n, _) | `LCoreType n) = n in
+  let rec inner = function
+    | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name ->
+        Some (`Constructor (typename_of_typeid id, typ, cons))
+    | _ :: tl -> inner tl
+    | [] -> None
+  in
+  match typ.representation with
+  | Some (Variant cons) -> inner cons
+  | Some (Record _ | Extensible) | None -> None
+
+let any_in_typext (typext : Extension.t) name =
+  let rec inner = function
+    | ({ Extension.Constructor.name = name'; _ } as cons) :: _ when name' = name
+      ->
+        Some (`ExtConstructor (typext, cons))
+    | _ :: tl -> inner tl
+    | [] -> None
+  in
+  inner typext.constructors
+
+let any_in_sig (s : Signature.t) name =
+  let module N = Ident.Name in
+  let rec inner_removed = function
+    | Signature.RModule (id, m) :: _ when N.module_ id = name ->
+        Some (`Removed (`Module (id, m)))
+    | RType (id, t) :: _ when N.type_ id = name -> Some (`Removed (`Type (id, t)))
+    | _ :: tl -> inner_removed tl
+    | [] -> None
+  in
+  let rec inner = function
+    | Signature.Module (id, rec_, m) :: _ when N.module_ id = name ->
+        Some (`Module (id, rec_, m))
+    | ModuleSubstitution (id, ms) :: _ when N.module_ id = name ->
+        Some (`ModuleSubstitution (id, ms))
+    | ModuleType (id, mt) :: _ when N.module_type id = name ->
+        Some (`ModuleType (id, mt))
+    | Type (id, rec_, t) :: _ when N.type_ id = name -> Some (`Type (id, rec_, t))
+    | TypeSubstitution (id, ts) :: _ when N.type_ id = name ->
+        Some (`TypeSubstitution (id, ts))
+    | Exception (id, exc) :: _ when N.exception_ id = name ->
+        Some (`Exception (id, exc))
+    | Value (id, v) :: _ when N.value id = name -> Some (`Value (id, v))
+    | External (id, vex) :: _ when N.value id = name -> Some (`External (id, vex))
+    | Class (id, rec_, c) :: _ when N.class_ id = name -> Some (`Class (id, rec_, c))
+    | ClassType (id, rec_, ct) :: _ when N.class_type id = name ->
+        Some (`ClassType (id, rec_, ct))
+    | Include inc :: tl -> (
+        match inner inc.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner tl )
+    | Type (id, _, t) :: tl -> (
+        match any_in_type id (Delayed.get t) name with
+        | Some _ as found -> found
+        | None -> inner tl )
+    | TypExt typext :: tl -> (
+        match any_in_typext typext name with
+        | Some _ as found -> found
+        | None -> inner tl )
+    | _ :: tl -> inner tl
+    | [] -> inner_removed s.removed
+  in
+  inner s.items
+
 let module_in_sig s name =
   match careful_module_in_sig s name with
   | Some (Found m) -> Some m
