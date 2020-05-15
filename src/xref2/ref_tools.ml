@@ -21,16 +21,7 @@ type type_lookup_result =
 type value_lookup_result = Resolved.Value.t
 
 type label_parent_lookup_result =
-  Resolved.LabelParent.t
-  * Cpath.Resolved.parent option
-  * [ `S of Component.Signature.t
-    | `CS of Component.ClassSignature.t
-    | `Page of (string * Identifier.Label.t) list ]
-
-type label_parent_result' =
-  [ `S of Resolved.Signature.t * Cpath.Resolved.parent * Component.Signature.t
-  | `CS of
-    Resolved.Parent.t * Cpath.Resolved.parent * Component.ClassSignature.t
+  [ `S of signature_lookup_result
   | `Page of Resolved.Page.t * (string * Identifier.Label.t) list ]
 
 let rec choose l =
@@ -38,38 +29,10 @@ let rec choose l =
   | [] -> None
   | x :: rest -> ( match x () with Some _ as x -> x | None -> choose rest )
 
-let restrict_label_parent_result : _ -> label_parent_result' option =
-  function
-  | ( ( ( `Identifier #Odoc_model.Paths.Identifier.Signature.t
-        | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ | `Hidden _
-          ) as parent_ref ),
-      Some parent_path,
-      `S parent_sg ) ->
-      Some (`S (parent_ref, parent_path, parent_sg))
-  | ( ( ( `Identifier #Odoc_model.Paths_types.Identifier.path_type
-        | `Type _ | `Class _ | `ClassType _ ) as parent_ref ),
-      Some parent_path,
-      `CS csg ) ->
-      Some (`CS (parent_ref, parent_path, csg))
-  | ( (`Identifier #Odoc_model.Paths_types.Identifier.page as parent_ref),
-      _,
-      `Page page ) ->
-      Some (`Page (parent_ref, page))
-  | _, _, _ -> None
-
 let signature_lookup_result_of_label_parent :
-    label_parent_lookup_result -> signature_lookup_result option =
- fun (rr, cp, c) ->
-  match (rr, cp, c) with
-  | (`Identifier #Odoc_model.Paths.Identifier.Signature.t as rr'), Some p, `S s
-    ->
-      Some (rr', p, s)
-  | ( ( (`SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ | `Hidden _)
-      as rr' ),
-      Some p,
-      `S s ) ->
-      Some (rr', p, s)
-  | _ -> None
+    label_parent_lookup_result -> signature_lookup_result option = function
+  | `S r -> Some r
+  | `Page _ -> None
 
 
 let module_lookup_to_signature_lookup :
@@ -256,7 +219,7 @@ and resolve_label_parent_reference :
   fun env r ->
     let label_parent_res_of_sig_res :
         signature_lookup_result -> label_parent_lookup_result option =
-     fun (r', cp, sg) -> return ((r' :> Resolved.LabelParent.t), Some cp, `S sg)
+     fun (r', cp, sg) -> return (`S (r', cp, sg))
     in
     match r with
     | `Resolved _ -> failwith "unimplemented"
@@ -293,10 +256,7 @@ and resolve_label_parent_reference :
               | _ -> l)
             p.Odoc_model.Lang.Page.content []
         in
-        return
-          ( `Identifier (p.Odoc_model.Lang.Page.name :> Identifier.LabelParent.t),
-            None,
-            `Page labels )
+        return (`Page (`Identifier p.Odoc_model.Lang.Page.name, labels))
     | _ -> None
 
 and resolve_signature_reference :
@@ -385,22 +345,21 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
         Env.lookup_label_by_name (UnitName.to_string name) env >>= function
         | `Label id -> return (`Identifier id) )
     | `Dot (parent, name) -> (
-        resolve_label_parent_reference env parent >>= fun (p, _env, sg) ->
-        match sg with
-        | `S sg ->
+        resolve_label_parent_reference env parent
+        >>= function
+        | `S (p, _, sg) ->
             Find.opt_label_in_sig sg name >>= fun _ ->
-            Some (`Label (p, LabelName.of_string name))
-        | `CS _sg -> None
-        | `Page p -> (
+            Some
+              (`Label ((p :> Resolved.LabelParent.t), LabelName.of_string name))
+        | `Page (_, p) -> (
             try Some (`Identifier (List.assoc name p)) with _ -> None ) )
     | `Label (parent, name) -> (
-        resolve_label_parent_reference env parent >>= fun (p, _, sg) ->
-        match sg with
-        | `S sg ->
+        resolve_label_parent_reference env parent
+        >>= function
+        | `S (p, _, sg) ->
             Find.opt_label_in_sig sg (LabelName.to_string name) >>= fun _ ->
-            Some (`Label (p, name))
-        | `CS _sg -> None
-        | `Page p -> (
+            Some (`Label ((p :> Resolved.LabelParent.t), name))
+        | `Page (_, p) -> (
             try Some (`Identifier (List.assoc (LabelName.to_string name) p))
             with _ -> None ) )
 
@@ -408,29 +367,26 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let resolved (r, _, _) = Some (r :> Resolved.t) in
   Find.any_in_sig parent_sg name >>= function
   | `Module (_, _, m) ->
-    let name = ModuleName.of_string name in
-    resolved
-      (module_of_component env
-          (Component.Delayed.get m)
-          (`Module (parent_path, name))
-          (`Module (parent_ref, name)))
+      let name = ModuleName.of_string name in
+      resolved
+        (module_of_component env (Component.Delayed.get m)
+           (`Module (parent_path, name))
+           (`Module (parent_ref, name)))
   | `ModuleType (_, mt) ->
-    let name = ModuleTypeName.of_string name in
-    resolved
-      (module_type_of_component env (Component.Delayed.get mt)
-          (`ModuleType (parent_path, name))
-          (`ModuleType (parent_ref, name)))
+      let name = ModuleTypeName.of_string name in
+      resolved
+        (module_type_of_component env (Component.Delayed.get mt)
+           (`ModuleType (parent_path, name))
+           (`ModuleType (parent_ref, name)))
   | _ -> None
 
 let resolve_reference_dot env parent name =
   resolve_label_parent_reference env parent
-  >>= restrict_label_parent_result
-  >>= function
-  | `S (parent_ref, parent_path, parent_sg) ->
-      let parent_path = Tools.reresolve_parent env parent_path in
-      let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
-      resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
-  | `CS _ | `Page _ -> None
+  >>= signature_lookup_result_of_label_parent
+  >>= fun (parent_ref, parent_path, parent_sg) ->
+  let parent_path = Tools.reresolve_parent env parent_path in
+  let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
+  resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
 
 let resolve_reference : Env.t -> t -> Resolved.t option =
   let resolved (r, _, _) = Some (r :> Resolved.t) in
