@@ -27,10 +27,35 @@ type label_parent_lookup_result =
     | `CS of Component.ClassSignature.t
     | `Page of (string * Identifier.Label.t) list ]
 
+type label_parent_result' =
+  [ `S of Resolved.Signature.t * Cpath.Resolved.parent * Component.Signature.t
+  | `CS of
+    Resolved.Parent.t * Cpath.Resolved.parent * Component.ClassSignature.t
+  | `Page of Resolved.Page.t * (string * Identifier.Label.t) list ]
+
 let rec choose l =
   match l with
   | [] -> None
   | x :: rest -> ( match x () with Some _ as x -> x | None -> choose rest )
+
+let restrict_label_parent_result : _ -> label_parent_result' option =
+  function
+  | ( ( ( `Identifier #Odoc_model.Paths.Identifier.Signature.t
+        | `SubstAlias _ | `Module _ | `Canonical _ | `ModuleType _ | `Hidden _
+          ) as parent_ref ),
+      Some parent_path,
+      `S parent_sg ) ->
+      Some (`S (parent_ref, parent_path, parent_sg))
+  | ( ( ( `Identifier #Odoc_model.Paths_types.Identifier.path_type
+        | `Type _ | `Class _ | `ClassType _ ) as parent_ref ),
+      Some parent_path,
+      `CS csg ) ->
+      Some (`CS (parent_ref, parent_path, csg))
+  | ( (`Identifier #Odoc_model.Paths_types.Identifier.page as parent_ref),
+      _,
+      `Page page ) ->
+      Some (`Page (parent_ref, page))
+  | _, _, _ -> None
 
 let signature_lookup_result_of_label_parent :
     label_parent_lookup_result -> signature_lookup_result option =
@@ -134,17 +159,6 @@ and module_in_env env name : module_lookup_result option =
       | _ -> None )
 
 (** Module type *)
-
-and resolve_module_type_reference env (r : ModuleType.t) :
-    module_type_lookup_result option =
-  match r with
-  | `Resolved _r -> failwith "What's going oN!?"
-  (*Some (resolve_resolved_module_type_reference env r)*)
-  | `Dot (parent, name) ->
-      module_type_in_label_parent' env parent name
-  | `ModuleType (parent, name) ->
-      module_type_in_signature_parent' env parent name
-  | `Root (name, _) -> module_type_in_env env name
 
 and module_type_of_component env mt base_path base_ref :
     module_type_lookup_result =
@@ -390,7 +404,35 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             try Some (`Identifier (List.assoc (LabelName.to_string name) p))
             with _ -> None ) )
 
-and resolve_reference : Env.t -> t -> Resolved.t option =
+let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
+  let resolved (r, _, _) = Some (r :> Resolved.t) in
+  Find.any_in_sig parent_sg name >>= function
+  | `Module (_, _, m) ->
+    let name = ModuleName.of_string name in
+    resolved
+      (module_of_component env
+          (Component.Delayed.get m)
+          (`Module (parent_path, name))
+          (`Module (parent_ref, name)))
+  | `ModuleType (_, mt) ->
+    let name = ModuleTypeName.of_string name in
+    resolved
+      (module_type_of_component env (Component.Delayed.get mt)
+          (`ModuleType (parent_path, name))
+          (`ModuleType (parent_ref, name)))
+  | _ -> None
+
+let resolve_reference_dot env parent name =
+  resolve_label_parent_reference env parent
+  >>= restrict_label_parent_result
+  >>= function
+  | `S (parent_ref, parent_path, parent_sg) ->
+      let parent_path = Tools.reresolve_parent env parent_path in
+      let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
+      resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
+  | `CS _ | `Page _ -> None
+
+let resolve_reference : Env.t -> t -> Resolved.t option =
   let resolved (r, _, _) = Some (r :> Resolved.t) in
   fun env r ->
     match r with
@@ -434,20 +476,13 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
         | Some p ->
             Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
         | None -> None )
-    | `Dot (_, _) as r ->
+    | `Dot (parent, name) as r ->
         choose
           [
+            (fun () -> resolve_reference_dot env parent name);
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying type reference\n%!"; *)
               resolve_type_reference env r >>= fun (x, _) ->
-              return (x :> Resolved.t));
-            (fun () ->
-              (* Format.fprintf Format.err_formatter "Trying module reference\n%!"; *)
-              resolve_module_reference env r >>= fun (x, _, _) ->
-              return (x :> Resolved.t));
-            (fun () ->
-              (* Format.fprintf Format.err_formatter "Trying module_type reference\n%!"; *)
-              resolve_module_type_reference env r >>= fun (x, _, _) ->
               return (x :> Resolved.t));
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying label reference\n%!"; *)
