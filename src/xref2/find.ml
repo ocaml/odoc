@@ -116,6 +116,24 @@ let any_in_sig (s : Signature.t) name =
   in
   inner s.items
 
+(** Search a module or module type *)
+let signature_in_sig (s : Signature.t) name =
+  let module N = Ident.Name in
+  let rec inner = function
+    | Signature.Module (id, rec_, m) :: _ when N.module_ id = name ->
+        Some (`Module (id, rec_, m))
+    | ModuleType (id, mt) :: _ when N.module_type id = name ->
+        Some (`ModuleType (id, mt))
+    | Include inc :: tl -> (
+        match inner inc.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner tl
+      )
+    | _ :: tl -> inner tl
+    | [] -> None
+  in
+  inner s.items
+
 let module_in_sig s name =
   match careful_module_in_sig s name with
   | Some (Found m) -> Some m
