@@ -133,6 +133,54 @@ and module_in_env env name : module_lookup_result option =
           module_of_element env (`Module (id, m))
       | _ -> None )
 
+(** Module type *)
+
+and resolve_module_type_reference env (r : ModuleType.t) :
+    module_type_lookup_result option =
+  match r with
+  | `Resolved _r -> failwith "What's going oN!?"
+  (*Some (resolve_resolved_module_type_reference env r)*)
+  | `Dot (parent, name) ->
+      module_type_in_label_parent' env parent name
+  | `ModuleType (parent, name) ->
+      module_type_in_signature_parent' env parent name
+  | `Root (name, _) -> module_type_in_env env name
+
+and module_type_in_signature_parent env
+    ((parent', cp, sg) : signature_lookup_result) name :
+    module_type_lookup_result option =
+  let sg = Tools.prefix_signature (cp, sg) in
+  Tools.handle_module_type_lookup env (ModuleTypeName.to_string name) cp sg
+  >>= fun (cp', m) ->
+  let resolved_ref =
+    let base = `ModuleType (parent', name) in
+    match m.expr >>= Tools.get_substituted_module_type env with
+    | Some _p -> base
+    | None -> base
+  in
+  Some (resolved_ref, cp', m)
+
+and module_type_in_signature_parent' env parent name :
+    module_type_lookup_result option =
+  resolve_signature_reference env parent >>= fun p ->
+  module_type_in_signature_parent env p name
+
+and module_type_in_label_parent' env parent name :
+    module_type_lookup_result option =
+  resolve_label_parent_reference env parent
+  >>= signature_lookup_result_of_label_parent
+  >>= fun p ->
+  let name = ModuleTypeName.of_string name in
+  module_type_in_signature_parent env p name
+
+and module_type_in_env env name : module_type_lookup_result option =
+  Env.lookup_module_type_by_name (UnitName.to_string name) env
+  >>= module_type_of_element env
+
+and module_type_of_element _env (`ModuleType (id, mt)) :
+    module_type_lookup_result option =
+  Some (`Identifier id, `Identifier id, mt)
+
 (**)
 
 and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
@@ -185,41 +233,6 @@ and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
         | `T _ as c -> return (`Type (parent', name), c)
         | _ -> None )
 
-and find_module_type :
-    Env.t -> LabelParent.t -> string -> module_type_lookup_result option =
- fun env parent name ->
-  let open Utils.OptionMonad in
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun (parent', cp, sg) ->
-  let sg = Tools.prefix_signature (cp, sg) in
-  Tools.handle_module_type_lookup env name cp sg >>= fun (cp', m) ->
-  let resolved_ref =
-    let base = `ModuleType (parent', ModuleTypeName.of_string name) in
-    match m.expr >>= Tools.get_substituted_module_type env with
-    | Some _p -> base
-    | None -> base
-  in
-  return (resolved_ref, cp', m)
-
-and resolve_module_type_reference :
-    Env.t -> ModuleType.t -> module_type_lookup_result option =
-  let open Utils.OptionMonad in
-  fun env r ->
-    match r with
-    | `Resolved _r ->
-        failwith "What's going oN!?"
-        (*Some (resolve_resolved_module_type_reference env r)*)
-    | `Dot (parent, name) -> find_module_type env parent name
-    | `ModuleType (parent, name) ->
-        find_module_type env
-          (parent :> LabelParent.t)
-          (Odoc_model.Names.ModuleTypeName.to_string name)
-    | `Root (name, _) ->
-        Env.lookup_module_type_by_name (UnitName.to_string name) env
-        >>= fun (`ModuleType (id, m)) ->
-        return (`Identifier id, `Identifier id, m)
-
 and resolve_label_parent_reference :
     Env.t -> LabelParent.t -> label_parent_lookup_result option =
   let open Utils.OptionMonad in
@@ -243,7 +256,9 @@ and resolve_label_parent_reference :
               >>= module_lookup_to_signature_lookup env
               >>= label_parent_res_of_sig_res);
             (fun () ->
-              find_module_type env parent name
+              resolve_label_parent_reference env parent
+              >>= signature_lookup_result_of_label_parent
+              >>= fun p -> module_type_in_signature_parent env p (ModuleTypeName.of_string name)
               >>= module_type_lookup_to_signature_lookup env
               >>= label_parent_res_of_sig_res);
           ]
@@ -281,8 +296,11 @@ and resolve_signature_reference :
       | `Module (parent, name) ->
           module_in_signature_parent' env parent name
           >>= module_lookup_to_signature_lookup env
-      | (`Root (_, `TModuleType) | `ModuleType (_, _)) as r ->
-          resolve_module_type_reference env r
+      | `Root (name, `TModuleType) ->
+          module_type_in_env env name
+          >>= module_type_lookup_to_signature_lookup env
+      | `ModuleType (parent, name) ->
+          module_type_in_signature_parent' env parent name
           >>= module_type_lookup_to_signature_lookup env
       | (`Root (_, `TUnknown) | `Dot (_, _)) as r ->
           choose
@@ -348,17 +366,15 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             with _ -> None ) )
 
 and resolve_reference : Env.t -> t -> Resolved.t option =
-  let open Utils.OptionMonad in
+  let resolved (r, _, _) = Some (r :> Resolved.t) in
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
         match Env.lookup_any_by_name (UnitName.to_string name) env with
         | (`Module (_, _) as e) :: _ ->
-            module_of_element env e >>= fun (r, _, _) ->
-            Some (r :> Resolved.t)
-        | `ModuleType (_, _) :: _ ->
-            resolve_module_type_reference env (`Root (name, `TModuleType))
-            >>= fun (r, _, _) -> Some (r :> Resolved.t)
+            module_of_element env e >>= resolved
+        | (`ModuleType (_, _) as e) :: _ ->
+            module_type_of_element env e >>= resolved
         | `Value (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | `Type (id, _) :: _ ->
@@ -375,13 +391,16 @@ and resolve_reference : Env.t -> t -> Resolved.t option =
     | `Resolved r -> Some r
     | `Root (name, `TModule) ->
         module_in_env env name
-        >>= fun (r, _, _) -> Some (r :> Resolved.t)
+        >>= resolved
     | `Module (parent, name) ->
         module_in_signature_parent' env parent name
-        >>= fun (r, _, _) -> Some (r :> Resolved.t)
-    | (`Root (_, `TModuleType) | `ModuleType (_, _)) as r ->
-        resolve_module_type_reference env r >>= fun (x, _, _) ->
-        return (x :> Resolved.t)
+        >>= resolved
+    | `Root (name, `TModuleType) ->
+        module_type_in_env env name
+        >>= resolved
+    | `ModuleType (parent, name) ->
+        module_type_in_signature_parent' env parent name
+        >>= resolved
     | (`Root (_, `TType) | `Type (_, _)) as r ->
         resolve_type_reference env r >>= fun (x, _) -> return (x :> Resolved.t)
     | (`Root (_, `TValue) | `Value (_, _)) as r ->
