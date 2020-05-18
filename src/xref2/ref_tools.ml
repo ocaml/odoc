@@ -310,28 +310,27 @@ and resolve_signature_reference :
     in
     resolve env'
 
-and resolve_value_reference : Env.t -> Value.t -> value_lookup_result option =
-  let open Utils.OptionMonad in
-  fun env r ->
-    match r with
-    | `Root (name, _) -> (
-        Env.lookup_value_by_name (UnitName.to_string name) env >>= function
-        | `Value (id, _x) -> return (`Identifier id)
-        | `External (id, _x) -> return (`Identifier id) )
-    | `Dot (parent, name) -> (
-        resolve_label_parent_reference env parent
-        >>= signature_lookup_result_of_label_parent
-        >>= fun (parent', _, sg) ->
-        match Find.opt_value_in_sig sg name with
-        | Some _v -> return (`Value (parent', ValueName.of_string name))
-        | None -> None )
-    | `Value (parent, name) -> (
-        resolve_signature_reference env parent >>= fun (parent', _, sg) ->
-        match Find.opt_value_in_sig sg (ValueName.to_string name) with
-        | Some _v -> return (`Value (parent', name))
-        | None -> None )
-    | `Resolved r -> Some r
+(** Value *)
 
+and value_in_env env name : value_lookup_result option =
+  Env.lookup_value_by_name (UnitName.to_string name) env >>= function
+  | `Value (id, _x) -> return (`Identifier id)
+  | `External (id, _x) -> return (`Identifier id)
+
+and value_of_component _env ~parent_ref name : value_lookup_result option =
+  Some (`Value (parent_ref, ValueName.of_string name))
+
+and external_of_component _env ~parent_ref name : value_lookup_result option =
+  (* Should add an [`External] reference ? *)
+  Some (`Value (parent_ref, ValueName.of_string name))
+
+and value_in_signature_parent' env parent name : value_lookup_result option =
+  resolve_signature_reference env parent
+  >>= fun (parent', _, sg) ->
+  Find.opt_value_in_sig sg (ValueName.to_string name) >>= fun _ ->
+  Some (`Value (parent', name))
+
+(***)
 and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
   let open Utils.OptionMonad in
   fun env r ->
@@ -359,19 +358,23 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
             try Some (`Identifier (List.assoc (LabelName.to_string name) p))
             with _ -> None ) )
 
+let resolved1 r = Some (r :> Resolved.t)
+
+let resolved3 (r, _, _) = resolved1 r
+
+and resolved2 (r, _) = resolved1 r
+
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
-  let resolved (r, _, _) = Some (r :> Resolved.t) in
-  let resolved2 (r, _) = Some (r :> Resolved.t) in
   Find.any_in_sig parent_sg name >>= function
   | `Module (_, _, m) ->
       let name = ModuleName.of_string name in
-      resolved
+      resolved3
         (module_of_component env (Component.Delayed.get m)
            (`Module (parent_path, name))
            (`Module (parent_ref, name)))
   | `ModuleType (_, mt) ->
       let name = ModuleTypeName.of_string name in
-      resolved
+      resolved3
         (module_type_of_component env (Component.Delayed.get mt)
            (`ModuleType (parent_path, name))
            (`ModuleType (parent_ref, name)))
@@ -383,6 +386,8 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       class_of_component env c ~parent_path ~parent_ref name >>= resolved2
   | `ClassType (_, _, ct) ->
       classtype_of_component env ct ~parent_path ~parent_ref name >>= resolved2
+  | `Value _ -> value_of_component env ~parent_ref name >>= resolved1
+  | `External _ -> external_of_component env ~parent_ref name >>= resolved1
   | _ -> None
 
 let resolve_reference_dot env parent name =
@@ -394,8 +399,7 @@ let resolve_reference_dot env parent name =
   resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
 
 let resolve_reference : Env.t -> t -> Resolved.t option =
-  let resolved (r, _, _) = Some (r :> Resolved.t) in
-  let resolved2 (r, _) = Some (r :> Resolved.t) in
+  let resolved = resolved3 in
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
@@ -434,8 +438,9 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         class_in_signature_parent' env parent name >>= resolved2
     | `ClassType (parent, name) ->
         classtype_in_signature_parent' env parent name >>= resolved2
-    | (`Root (_, `TValue) | `Value (_, _)) as r ->
-        resolve_value_reference env r >>= fun x -> return (x :> Resolved.t)
+    | `Root (name, `TValue) -> value_in_env env name >>= resolved1
+    | `Value (parent, name) ->
+        value_in_signature_parent' env parent name >>= resolved1
     | (`Root (_, `TLabel) | `Label (_, _)) as r ->
         resolve_label_reference env r >>= fun x -> return (x :> Resolved.t)
     | `Root (name, `TPage) -> (
@@ -450,9 +455,6 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying label reference\n%!"; *)
               resolve_label_reference env r >>= fun x -> return (x :> Resolved.t));
-            (fun () ->
-              (* Format.fprintf Format.err_formatter "Trying value reference\n%!"; *)
-              resolve_value_reference env r >>= fun x -> return (x :> Resolved.t));
           ]
     | _ -> None
 
