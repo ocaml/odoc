@@ -170,19 +170,20 @@ and type_in_env env name : type_lookup_result option =
   | `Class (id, t) -> Some ((`Identifier id :> Resolved.Type.t), `C t)
   | `ClassType (id, t) -> Some ((`Identifier id :> Resolved.Type.t), `CT t)
 
-and type_in_signature_parent _env
-    ((parent', parent_cp, sg) : signature_lookup_result) name :
+and class_of_component _env c ~parent_path ~parent_ref name :
     type_lookup_result option =
-  let sg = Tools.prefix_signature (parent_cp, sg) in
-  Find.type_in_sig sg (TypeName.to_string name) >>= fun t ->
-  Some (`Type (parent', name), t)
+  ignore parent_path;
+  Some (`Class (parent_ref, ClassName.of_string name), `C c)
 
-and type_in_label_parent' env parent name : type_lookup_result option =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun p ->
-  let name = TypeName.of_string name in
-  type_in_signature_parent env p name
+and classtype_of_component _env ct ~parent_path ~parent_ref name :
+    type_lookup_result option =
+  ignore parent_path;
+  Some (`ClassType (parent_ref, ClassTypeName.of_string name), `CT ct)
+
+and typedecl_of_component _env t ~parent_path ~parent_ref name :
+    type_lookup_result option =
+  ignore parent_path;
+  Some (`Type (parent_ref, TypeName.of_string name), `T t)
 
 (* Don't handle name collisions between class, class types and type decls *)
 and _type_in_signature_parent' env parent name =
@@ -206,15 +207,6 @@ and typedecl_in_signature_parent' env parent name : type_lookup_result option =
   _type_in_signature_parent' env parent (TypeName.to_string name) >>= function
   | parent', (`T _ as t) -> Some (`Type (parent', name), t)
   | _ -> None
-
-and resolve_type_reference env r : type_lookup_result option =
-  match r with
-  | `Resolved _r -> failwith "unhandled"
-  | `Root (name, `TType) -> type_in_env env name
-  | `Dot (parent, name) -> type_in_label_parent' env parent name
-  | `Class (parent, name) -> class_in_signature_parent' env parent name
-  | `ClassType (parent, name) -> classtype_in_signature_parent' env parent name
-  | `Type (parent, name) -> typedecl_in_signature_parent' env parent name
 
 (***)
 and resolve_label_parent_reference :
@@ -369,6 +361,7 @@ and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
 
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let resolved (r, _, _) = Some (r :> Resolved.t) in
+  let resolved2 (r, _) = Some (r :> Resolved.t) in
   Find.any_in_sig parent_sg name >>= function
   | `Module (_, _, m) ->
       let name = ModuleName.of_string name in
@@ -382,6 +375,14 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
         (module_type_of_component env (Component.Delayed.get mt)
            (`ModuleType (parent_path, name))
            (`ModuleType (parent_ref, name)))
+  | `Type (_, _, t) ->
+      typedecl_of_component env (Component.Delayed.get t) ~parent_path
+        ~parent_ref name
+      >>= resolved2
+  | `Class (_, _, c) ->
+      class_of_component env c ~parent_path ~parent_ref name >>= resolved2
+  | `ClassType (_, _, ct) ->
+      classtype_of_component env ct ~parent_path ~parent_ref name >>= resolved2
   | _ -> None
 
 let resolve_reference_dot env parent name =
@@ -446,10 +447,6 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         choose
           [
             (fun () -> resolve_reference_dot env parent name);
-            (fun () ->
-              (* Format.fprintf Format.err_formatter "Trying type reference\n%!"; *)
-              resolve_type_reference env r >>= fun (x, _) ->
-              return (x :> Resolved.t));
             (fun () ->
               (* Format.fprintf Format.err_formatter "Trying label reference\n%!"; *)
               resolve_label_reference env r >>= fun x -> return (x :> Resolved.t));
