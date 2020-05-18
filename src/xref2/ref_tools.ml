@@ -162,57 +162,61 @@ and module_type_of_element _env (`ModuleType (id, mt)) :
     module_type_lookup_result option =
   Some (`Identifier id, `Identifier id, mt)
 
-(***)
-and resolve_type_reference : Env.t -> Type.t -> type_lookup_result option =
-  let open Utils.OptionMonad in
-  fun env r ->
-    match r with
-    | `Resolved _r -> failwith "unhandled"
-    | `Root (name, _) -> (
-        Env.lookup_datatype_by_name
-          (Odoc_model.Names.UnitName.to_string name)
-          env
-        >>= function
-        | `Type (id, t) ->
-            return
-              ( `Identifier
-                  (id :> Odoc_model.Paths_types.Identifier.reference_type),
-                `T t )
-        | `Class (id, t) ->
-            return
-              ( `Identifier
-                  (id :> Odoc_model.Paths_types.Identifier.reference_type),
-                `C t )
-        | `ClassType (id, t) ->
-            return
-              ( `Identifier
-                  (id :> Odoc_model.Paths_types.Identifier.reference_type),
-                `CT t ) )
-    | `Dot (parent, name) ->
-        resolve_label_parent_reference env parent
-        >>= signature_lookup_result_of_label_parent
-        >>= fun (parent', cp, sg) ->
-        let sg = Tools.prefix_signature (cp, sg) in
-        Find.type_in_sig sg name >>= fun t ->
-        return (`Type (parent', TypeName.of_string name), t)
-    | `Class (parent, name) -> (
-        resolve_signature_reference env parent >>= fun (parent', _, sg) ->
-        Find.type_in_sig sg (ClassName.to_string name) >>= function
-        | `C _ as c -> return (`Class (parent', name), c)
-        | _ -> None )
-    | `ClassType (parent, name) -> (
-        resolve_signature_reference env parent >>= fun (parent', cp, sg) ->
-        let sg = Tools.prefix_signature (cp, sg) in
-        Find.type_in_sig sg (ClassTypeName.to_string name) >>= function
-        | `CT _ as c -> return (`ClassType (parent', name), c)
-        | _ -> None )
-    | `Type (parent, name) -> (
-        resolve_signature_reference env parent >>= fun (parent', cp, sg) ->
-        let sg = Tools.prefix_signature (cp, sg) in
-        Find.type_in_sig sg (TypeName.to_string name) >>= function
-        | `T _ as c -> return (`Type (parent', name), c)
-        | _ -> None )
+(** Type *)
 
+and type_in_env env name : type_lookup_result option =
+  Env.lookup_datatype_by_name (UnitName.to_string name) env >>= function
+  | `Type (id, t) -> Some ((`Identifier id :> Resolved.Type.t), `T t)
+  | `Class (id, t) -> Some ((`Identifier id :> Resolved.Type.t), `C t)
+  | `ClassType (id, t) -> Some ((`Identifier id :> Resolved.Type.t), `CT t)
+
+and type_in_signature_parent _env
+    ((parent', parent_cp, sg) : signature_lookup_result) name :
+    type_lookup_result option =
+  let sg = Tools.prefix_signature (parent_cp, sg) in
+  Find.type_in_sig sg (TypeName.to_string name) >>= fun t ->
+  Some (`Type (parent', name), t)
+
+and type_in_label_parent' env parent name : type_lookup_result option =
+  resolve_label_parent_reference env parent
+  >>= signature_lookup_result_of_label_parent
+  >>= fun p ->
+  let name = TypeName.of_string name in
+  type_in_signature_parent env p name
+
+(* Don't handle name collisions between class, class types and type decls *)
+and _type_in_signature_parent' env parent name =
+  resolve_signature_reference env parent
+  >>= fun (parent', parent_cp, sg) ->
+  let sg = Tools.prefix_signature (parent_cp, sg) in
+  Find.type_in_sig sg name >>= fun t -> Some (parent', t)
+
+and class_in_signature_parent' env parent name : type_lookup_result option =
+  _type_in_signature_parent' env parent (ClassName.to_string name) >>= function
+  | parent', (`C _ as c) -> Some (`Class (parent', name), c)
+  | _ -> None
+
+and classtype_in_signature_parent' env parent name : type_lookup_result option =
+  _type_in_signature_parent' env parent (ClassTypeName.to_string name)
+  >>= function
+  | parent', (`CT _ as ct) -> Some (`ClassType (parent', name), ct)
+  | _ -> None
+
+and typedecl_in_signature_parent' env parent name : type_lookup_result option =
+  _type_in_signature_parent' env parent (TypeName.to_string name) >>= function
+  | parent', (`T _ as t) -> Some (`Type (parent', name), t)
+  | _ -> None
+
+and resolve_type_reference env r : type_lookup_result option =
+  match r with
+  | `Resolved _r -> failwith "unhandled"
+  | `Root (name, `TType) -> type_in_env env name
+  | `Dot (parent, name) -> type_in_label_parent' env parent name
+  | `Class (parent, name) -> class_in_signature_parent' env parent name
+  | `ClassType (parent, name) -> classtype_in_signature_parent' env parent name
+  | `Type (parent, name) -> typedecl_in_signature_parent' env parent name
+
+(***)
 and resolve_label_parent_reference :
     Env.t -> LabelParent.t -> label_parent_lookup_result option =
   let open Utils.OptionMonad in
@@ -390,6 +394,7 @@ let resolve_reference_dot env parent name =
 
 let resolve_reference : Env.t -> t -> Resolved.t option =
   let resolved (r, _, _) = Some (r :> Resolved.t) in
+  let resolved2 (r, _) = Some (r :> Resolved.t) in
   fun env r ->
     match r with
     | `Root (name, `TUnknown) -> (
@@ -421,8 +426,13 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `ModuleType (parent, name) ->
         module_type_in_signature_parent' env parent name
         >>= resolved
-    | (`Root (_, `TType) | `Type (_, _)) as r ->
-        resolve_type_reference env r >>= fun (x, _) -> return (x :> Resolved.t)
+    | `Root (name, `TType) -> type_in_env env name >>= resolved2
+    | `Type (parent, name) ->
+        typedecl_in_signature_parent' env parent name >>= resolved2
+    | `Class (parent, name) ->
+        class_in_signature_parent' env parent name >>= resolved2
+    | `ClassType (parent, name) ->
+        classtype_in_signature_parent' env parent name >>= resolved2
     | (`Root (_, `TValue) | `Value (_, _)) as r ->
         resolve_value_reference env r >>= fun x -> return (x :> Resolved.t)
     | (`Root (_, `TLabel) | `Label (_, _)) as r ->
