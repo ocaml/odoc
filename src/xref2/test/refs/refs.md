@@ -30,6 +30,7 @@ Test data:
 ```ocaml
 let test_mli = {|
 
+  (** {1:L1} *)
   type t1 = C1
   type r1 = { f1 : int }
   val f1 : unit -> unit
@@ -48,6 +49,7 @@ let test_mli = {|
   type x1 += X1
 
   module M : sig
+    (** {1:L2} *)
     type t2 = C2
     type r2 = { f2 : int }
     val f2 : unit -> unit
@@ -132,6 +134,8 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "field:t1.f1"
 Exception: Failure "resolve_reference".
+# resolve_ref "section:L1"
+Exception: Failure "resolve_reference".
 ```
 
 Explicit, in sig:
@@ -170,6 +174,8 @@ Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:M.ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "field:M.t2.f2"
+Exception: Failure "resolve_reference".
+# resolve_ref "section:M.L2"
 Exception: Failure "resolve_reference".
 ```
 
@@ -210,6 +216,8 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "t1.f1"
 Exception: Failure "resolve_reference".
+# resolve_ref "L1"
+Exception: Failure "resolve_reference".
 ```
 
 Implicit, in sig:
@@ -247,6 +255,8 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.t2.f2"
 Exception: Failure "resolve_reference".
+# resolve_ref "M.L2"
+Exception: Failure "resolve_reference".
 ```
 
 Known kind:
@@ -280,6 +290,8 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "type-t1.f1"
 Exception: Failure "resolve_reference".
+# resolve_ref "section-L1"
+Exception: Failure "resolve_reference".
 # resolve_ref "M.type-t2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2)
 # resolve_ref "M.module-type-T2"
@@ -302,6 +314,8 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.type-t2.f2"
 Exception: Failure "resolve_reference".
+# resolve_ref "M.section-L2"
+Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2)
 # resolve_ref "module-M.module-type-T2"
@@ -323,5 +337,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "module-M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2.f2"
+Exception: Failure "resolve_reference".
+# resolve_ref "module-M.section-L2"
 Exception: Failure "resolve_reference".
 ```
