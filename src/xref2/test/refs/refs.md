@@ -151,9 +151,10 @@ Exception: Failure "resolve_reference".
 # resolve_ref "val:M.e2"
 - : ref = `Value (`Identifier (`Module (`Root (Common.root, Root), M)), e2)
 # resolve_ref "class:M.c2"
-Exception: Failure "resolve_reference".
+- : ref = `Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2)
 # resolve_ref "class-type:M.ct2"
-Exception: Failure "resolve_reference".
+- : ref =
+`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2)
 # resolve_ref "type:M.x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "constructor:M.X2" (* X2 is an extension constructor *)
@@ -284,9 +285,10 @@ Exception: Failure "resolve_reference".
 - : ref =
 `ModuleType (`Identifier (`Module (`Root (Common.root, Root), M)), T2)
 # resolve_ref "M.class-c2"
-Exception: Failure "resolve_reference".
+- : ref = `Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2)
 # resolve_ref "M.class-type-ct2"
-Exception: Failure "resolve_reference".
+- : ref =
+`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2)
 # resolve_ref "M.type-x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "M.class-c2.m2"
@@ -305,9 +307,10 @@ Exception: Failure "resolve_reference".
 - : ref =
 `ModuleType (`Identifier (`Module (`Root (Common.root, Root), M)), T2)
 # resolve_ref "module-M.class-c2"
-Exception: Failure "resolve_reference".
+- : ref = `Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2)
 # resolve_ref "module-M.class-type-ct2"
-Exception: Failure "resolve_reference".
+- : ref =
+`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2)
 # resolve_ref "module-M.type-x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "module-M.class-c2.m2"
