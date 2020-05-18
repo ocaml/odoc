@@ -73,6 +73,18 @@ let any_in_typext (typext : Extension.t) name =
   in
   inner typext.constructors
 
+let any_in_comment d name =
+  let rec inner xs =
+    match xs with
+    | elt :: rest -> (
+        match elt.Odoc_model.Location_.value with
+        | `Heading (_, label, _) when Ident.Name.label label = name ->
+          Some (`Label label)
+        | _ -> inner rest )
+    | [] -> None
+  in
+  inner d
+
 let any_in_sig (s : Signature.t) name =
   let module N = Ident.Name in
   let rec inner_removed = function
@@ -109,6 +121,10 @@ let any_in_sig (s : Signature.t) name =
         | None -> inner tl )
     | TypExt typext :: tl -> (
         match any_in_typext typext name with
+        | Some _ as found -> found
+        | None -> inner tl )
+    | Comment (`Docs d) :: tl -> (
+        match any_in_comment d name with
         | Some _ as found -> found
         | None -> inner tl )
     | _ :: tl -> inner tl
