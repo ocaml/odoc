@@ -330,33 +330,27 @@ and value_in_signature_parent' env parent name : value_lookup_result option =
   Find.opt_value_in_sig sg (ValueName.to_string name) >>= fun _ ->
   Some (`Value (parent', name))
 
+(** Label *)
+
+and label_in_env env name : Resolved.Label.t option =
+  Env.lookup_label_by_name (UnitName.to_string name) env >>= fun (`Label id) ->
+  Some (`Identifier id)
+
+and label_in_page _env (`Page (_, p)) name : Resolved.Label.t option =
+  try Some (`Identifier (List.assoc name p)) with Not_found -> None
+
+and label_of_component _env ~parent_ref name : Resolved.Label.t option =
+  Some
+    (`Label ((parent_ref :> Resolved.LabelParent.t), LabelName.of_string name))
+
+and label_in_label_parent' env parent name : Resolved.Label.t option =
+  resolve_label_parent_reference env parent >>= function
+  | `S (p, _, sg) ->
+      Find.opt_label_in_sig sg (LabelName.to_string name) >>= fun _ ->
+      Some (`Label ((p :> Resolved.LabelParent.t), name))
+  | `Page _ as page -> label_in_page env page (LabelName.to_string name)
+
 (***)
-and resolve_label_reference : Env.t -> Label.t -> Resolved.Label.t option =
-  let open Utils.OptionMonad in
-  fun env r ->
-    match r with
-    | `Resolved r -> Some r
-    | `Root (name, _) -> (
-        Env.lookup_label_by_name (UnitName.to_string name) env >>= function
-        | `Label id -> return (`Identifier id) )
-    | `Dot (parent, name) -> (
-        resolve_label_parent_reference env parent
-        >>= function
-        | `S (p, _, sg) ->
-            Find.opt_label_in_sig sg name >>= fun _ ->
-            Some
-              (`Label ((p :> Resolved.LabelParent.t), LabelName.of_string name))
-        | `Page (_, p) -> (
-            try Some (`Identifier (List.assoc name p)) with _ -> None ) )
-    | `Label (parent, name) -> (
-        resolve_label_parent_reference env parent
-        >>= function
-        | `S (p, _, sg) ->
-            Find.opt_label_in_sig sg (LabelName.to_string name) >>= fun _ ->
-            Some (`Label ((p :> Resolved.LabelParent.t), name))
-        | `Page (_, p) -> (
-            try Some (`Identifier (List.assoc (LabelName.to_string name) p))
-            with _ -> None ) )
 
 let resolved1 r = Some (r :> Resolved.t)
 
@@ -365,6 +359,8 @@ let resolved3 (r, _, _) = resolved1 r
 and resolved2 (r, _) = resolved1 r
 
 let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
+  let parent_path = Tools.reresolve_parent env parent_path in
+  let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
   Find.any_in_sig parent_sg name >>= function
   | `Module (_, _, m) ->
       let name = ModuleName.of_string name in
@@ -388,15 +384,17 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       classtype_of_component env ct ~parent_path ~parent_ref name >>= resolved2
   | `Value _ -> value_of_component env ~parent_ref name >>= resolved1
   | `External _ -> external_of_component env ~parent_ref name >>= resolved1
+  | `Label _ -> label_of_component env ~parent_ref name >>= resolved1
   | _ -> None
 
+let resolve_reference_dot_page env page name =
+  label_in_page env page name >>= resolved1
+
 let resolve_reference_dot env parent name =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun (parent_ref, parent_path, parent_sg) ->
-  let parent_path = Tools.reresolve_parent env parent_path in
-  let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
-  resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
+  resolve_label_parent_reference env parent >>= function
+  | `S (parent_ref, parent_path, parent_sg) ->
+      resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
+  | `Page _ as page -> resolve_reference_dot_page env page name
 
 let resolve_reference : Env.t -> t -> Resolved.t option =
   let resolved = resolved3 in
@@ -441,20 +439,14 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Root (name, `TValue) -> value_in_env env name >>= resolved1
     | `Value (parent, name) ->
         value_in_signature_parent' env parent name >>= resolved1
-    | (`Root (_, `TLabel) | `Label (_, _)) as r ->
-        resolve_label_reference env r >>= fun x -> return (x :> Resolved.t)
+    | `Root (name, `TLabel) -> label_in_env env name >>= resolved1
+    | `Label (parent, name) ->
+        label_in_label_parent' env parent name >>= resolved1
     | `Root (name, `TPage) -> (
         match Env.lookup_page (UnitName.to_string name) env with
         | Some p ->
             Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
         | None -> None )
-    | `Dot (parent, name) as r ->
-        choose
-          [
-            (fun () -> resolve_reference_dot env parent name);
-            (fun () ->
-              (* Format.fprintf Format.err_formatter "Trying label reference\n%!"; *)
-              resolve_label_reference env r >>= fun x -> return (x :> Resolved.t));
-          ]
+    | `Dot (parent, name) -> resolve_reference_dot env parent name
     | _ -> None
 
