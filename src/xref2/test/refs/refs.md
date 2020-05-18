@@ -229,9 +229,10 @@ Exception: Failure "resolve_reference".
 # resolve_ref "M.e2"
 - : ref = `Value (`Identifier (`Module (`Root (Common.root, Root), M)), e2)
 # resolve_ref "M.c2"
-- : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), c2)
+- : ref = `Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2)
 # resolve_ref "M.ct2"
-- : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), ct2)
+- : ref =
+`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2)
 # resolve_ref "M.x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "M.X2"
