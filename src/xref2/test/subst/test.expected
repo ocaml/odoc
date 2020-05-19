@@ -7,16 +7,16 @@ the equations for t, u and v point to SubTargets rather than SubstituteMe
 BEFORE
 ======
 S: sig
-type tt/27 = resolved(local(SubstituteMe/26)).t
-type uu/28 = resolved(local(SubstituteMe/26)).u
-type vv/29 = resolved(local(SubstituteMe/26)).v
+type tt/3 = resolved(local(SubstituteMe/2)).t
+type uu/4 = resolved(local(SubstituteMe/2)).u
+type vv/5 = resolved(local(SubstituteMe/2)).v
  (removed=[])end
 
 AFTER 
 ======
 S: sig
-type tt/30 = resolved(local(SubTargets/25)).t
-type uu/31 = resolved(local(SubTargets/25)).u
-type vv/32 = resolved(local(SubTargets/25)).v
+type tt/6 = resolved(local(SubTargets/1)).t
+type uu/7 = resolved(local(SubTargets/1)).u
+type vv/8 = resolved(local(SubTargets/1)).v
  (removed=[])end
 
