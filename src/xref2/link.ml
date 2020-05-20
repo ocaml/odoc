@@ -107,12 +107,13 @@ and module_type_path :
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
-  else
+  else 
     let cp = Component.Of_Lang.(module_path empty p) in
     match cp with
     | `Resolved p ->
+        let after = Tools.reresolve_module env p in
         `Resolved
-          (Tools.reresolve_module env p |> Cpath.resolved_module_path_of_cpath)
+          (Cpath.resolved_module_path_of_cpath after)
     | _ -> (
         match Tools.resolve_module env cp with
         | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
@@ -394,9 +395,9 @@ and module_ : Env.t -> Module.t -> Module.t =
   let open Module in
   let sg_id = (m.id :> Id.Signature.t) in
   let start_time = Unix.gettimeofday () in
-  (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
+  Format.fprintf Format.err_formatter "Processing Module %a\n%!"
      Component.Fmt.model_identifier
-     (m.id :> Id.t); *)
+     (m.id :> Id.t);
   if m.hidden then m
   else
     let t1 = Unix.gettimeofday () in
@@ -420,21 +421,19 @@ and module_ : Env.t -> Module.t -> Module.t =
     let self_canonical =
       match type_ with
       | Alias (`Resolved p) -> (
-          match Paths.Path.Resolved.Module.canonical_ident p with
-          | Some i -> i = m.id (* Self-canonical *)
-          | None -> false )
+          let i = Paths.Path.Resolved.Module.identifier p in
+          i = m.id (* Self-canonical *))
       | _ -> false
     in
     let expansion_needed = self_canonical || hidden_alias in
-    (* Format.fprintf Format.err_formatter "moduletype_expansion=%b self_canonical=%b hidden_alias=%b expansion_needed=%b\n%!" moduletype_expansion self_canonical hidden_alias expansion_needed; *)
     let env, expansion =
       match (m.expansion, expansion_needed) with
       | None, true ->
           let env, expansion =
-            match Expand_tools.expansion_of_module env m.id m' with
-            | Ok (env, ce) ->
+            match Expand_tools.expansion_of_module env m.id ~strengthen:(not (self_canonical || hidden_alias)) m' with
+            | Ok (env, recompile, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in
-                let compiled_e = Compile.expansion env sg_id e in
+                let compiled_e = if recompile then Compile.expansion env sg_id e else e in
                 (env, Some compiled_e)
             | Error `OpaqueModule -> (env, None)
             | Error _ ->
@@ -537,6 +536,8 @@ and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
   let decl = module_decl env i.parent i.decl in
+  (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
+        (Component.Of_Lang.(module_decl empty i.decl)); *)
   let hidden_rhs = should_hide_module_decl decl in
   let doc = comment_docs env i.doc in
   let should_be_inlined =
@@ -567,9 +568,9 @@ and functor_parameter_parameter :
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
-        | Ok (env, ce) ->
+        | Ok (env, recompile, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
-            let compiled_e = Compile.expansion env sg_id e in
+            let compiled_e = if recompile then Compile.expansion env sg_id e else e in
             Ok (env, Some compiled_e)
         | Error `OpaqueModule -> Ok (env, None)
         | Error _ -> Error "expand" )
@@ -723,6 +724,8 @@ and type_decl_representation :
 and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
  fun env parent t ->
   let open TypeDecl in
+  (* Format.eprintf "Handling type decl %a\n%!" Component.Fmt.model_identifier
+            (t.id :> Paths.Identifier.t); *)
   let equation = type_decl_equation env parent t.equation in
   let doc = comment_docs env t.doc in
   let hidden_path =
@@ -747,11 +750,13 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
             {
               default with
               equation =
+                try
                 Expand_tools.collapse_eqns default.equation
                   (Lang_of.type_decl_equation Lang_of.empty
                      (parent :> Id.Parent.t)
                      t'.equation)
                   params;
+                with _ -> default.equation
             }
         | _ -> default )
     | None -> default

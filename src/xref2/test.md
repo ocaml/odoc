@@ -351,10 +351,10 @@ val m : Component.ModuleType.t option =
                               private_ = false; manifest = None;
                               constraints = []};
                             representation = None};
-                         get = <fun>})];
+                         get = None})];
                      removed = []});
                 expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
-             get = <fun>});
+             get = None});
            Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
             Odoc_model.Lang.Signature.Ordinary,
             {Odoc_xref2.Component.Delayed.v =
@@ -366,7 +366,7 @@ val m : Component.ModuleType.t option =
                     (`Resolved (`Local (`LModuleType (N, 1)))));
                 canonical = None; hidden = false; display_type = None;
                 expansion = None};
-             get = <fun>})];
+             get = None})];
          removed = []});
     expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
@@ -515,11 +515,17 @@ let resolved = Compile.signature Env.empty id sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Dot
-      (`Dot
-         (`Resolved (`Identifier (`Module (`Root (Common.root, Root), A))),
-          "O"),
-       "t"),
+   (`Resolved
+      (`Type
+         (`Alias
+            (`Alias
+               (`Module
+                  (`Identifier (`Module (`Root (Common.root, Root), A)), M),
+                `Module
+                  (`Identifier (`Module (`Root (Common.root, Root), A)), N)),
+             `Module
+               (`Identifier (`Module (`Root (Common.root, Root), A)), O)),
+          t)),
    []))
 ```
 
@@ -627,7 +633,7 @@ Some
       (`Type
          (`Subst
             (`ModuleType
-               (`SubstAlias
+               (`Alias
                   (`Identifier (`Module (`Root (Common.root, Root), B)),
                    `Module
                      (`Identifier (`Module (`Root (Common.root, Root), C)),
@@ -761,13 +767,13 @@ let resolved = Compile.signature Env.empty id sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Dot
-      (`Dot
-         (`Dot
-            (`Resolved (`Identifier (`Module (`Root (Common.root, Root), M))),
-             "O"),
-          "N"),
-       "t"),
+   (`Resolved
+      (`Type
+         (`Module
+            (`Module
+               (`Identifier (`Module (`Root (Common.root, Root), M)), O),
+             N),
+          t)),
    []))
 ```
 
@@ -802,36 +808,16 @@ let resolved = Compile.signature Env.empty id sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Dot
-      (`Dot
-         (`Apply
-            (`Resolved
-               (`Subst
-                  (`SubstT
-                     (`ModuleType
-                        (`Module
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), M)),
-                            T),
-                         S),
-                      `ModuleType
-                        (`Apply
-                           (`Module
-                              (`Identifier
-                                 (`Module (`Root (Common.root, Root), M)),
-                               F),
-                            `Resolved
-                              (`Module
-                                 (`Identifier
-                                    (`Module (`Root (Common.root, Root), M)),
-                                  T))),
-                         S)),
-                   `Module
-                     (`Identifier (`Module (`Root (Common.root, Root), M)),
-                      O))),
-             `Resolved (`Identifier (`Module (`Root (Common.root, Root), M)))),
-          "N"),
-       "t"),
+   (`Resolved
+      (`Type
+         (`Module
+            (`Apply
+               (`Module
+                  (`Identifier (`Module (`Root (Common.root, Root), M)), O),
+                `Resolved
+                  (`Identifier (`Module (`Root (Common.root, Root), M)))),
+             N),
+          t)),
    []))
 ```
 
@@ -1001,36 +987,16 @@ let resolved = Compile.signature Env.empty id sg;;
 - : Odoc_model.Lang.TypeExpr.t option =
 Some
  (Odoc_model.Lang.TypeExpr.Constr
-   (`Dot
-      (`Dot
-         (`Apply
-            (`Resolved
-               (`Subst
-                  (`SubstT
-                     (`ModuleType
-                        (`Module
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), M)),
-                            T),
-                         S),
-                      `ModuleType
-                        (`Apply
-                           (`Module
-                              (`Identifier
-                                 (`Module (`Root (Common.root, Root), M)),
-                               F),
-                            `Resolved
-                              (`Module
-                                 (`Identifier
-                                    (`Module (`Root (Common.root, Root), M)),
-                                  T))),
-                         S)),
-                   `Module
-                     (`Identifier (`Module (`Root (Common.root, Root), M)),
-                      O))),
-             `Resolved (`Identifier (`Module (`Root (Common.root, Root), M)))),
-          "N"),
-       "t"),
+   (`Resolved
+      (`Type
+         (`Module
+            (`Apply
+               (`Module
+                  (`Identifier (`Module (`Root (Common.root, Root), M)), O),
+                `Resolved
+                  (`Identifier (`Module (`Root (Common.root, Root), M)))),
+             N),
+          t)),
    []))
 ```
 
@@ -1074,7 +1040,7 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`SubstAlias
+         (`Alias
             (`Subst
                (`ModuleType
                   (`Identifier (`Module (`Root (Common.root, Root), Dep1)),
@@ -1156,7 +1122,7 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`SubstAlias
+         (`Alias
             (`Identifier (`Module (`Root (Common.root, Root), Dep3)),
              `Module
                (`Module

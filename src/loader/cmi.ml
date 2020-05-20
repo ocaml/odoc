@@ -615,13 +615,9 @@ let read_type_constraints env params =
        else acc)
     params []
 
-let read_type_declaration env parent id vis decl =
+let read_type_declaration env parent id decl =
   let open TypeDecl in
-  let name = parenthesise (Ident.name id) in
-  let id = match vis with
-    | Odoc_model.Compat.Exported -> `Type(parent, TypeName.of_string name)
-    | Hidden -> `Type(parent, TypeName.internal_of_string name)
-  in
+  let id = Env.find_type_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.type_attributes in
   let params = mark_type_declaration decl in
@@ -783,8 +779,7 @@ let rec read_virtual = function
 
 let read_class_type_declaration env parent id cltd =
   let open ClassType in
-  let name = parenthesise (Ident.name id) in
-  let id = `ClassType(parent, Odoc_model.Names.ClassTypeName.of_string name) in
+  let id = Env.find_class_type_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cltd.clty_attributes in
     mark_class_type_declaration cltd;
@@ -794,7 +789,7 @@ let read_class_type_declaration env parent id cltd =
         cltd.clty_variance cltd.clty_params
     in
     let expr =
-      read_class_signature env id cltd.clty_params cltd.clty_type
+      read_class_signature env (id :> Identifier.ClassSignature.t) cltd.clty_params cltd.clty_type
     in
     let virtual_ = read_virtual cltd.clty_type in
     { id; doc; virtual_; params; expr; expansion = None }
@@ -819,8 +814,7 @@ let rec read_class_type env parent params =
 
 let read_class_declaration env parent id cld =
   let open Class in
-  let name = parenthesise (Ident.name id) in
-  let id = `Class(parent, Odoc_model.Names.ClassName.of_string name) in
+  let id = Env.find_class_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cld.cty_attributes in
     mark_class_declaration cld;
@@ -830,7 +824,7 @@ let read_class_declaration env parent id cld =
         cld.cty_variance cld.cty_params
     in
     let type_ =
-      read_class_type env id cld.cty_params cld.cty_type
+      read_class_type env (id :> Identifier.ClassSignature.t) cld.cty_params cld.cty_type
     in
     let virtual_ = cld.cty_new = None in
     { id; doc; virtual_; params; type_; expansion = None }
@@ -929,8 +923,8 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
         loop acc rest
-    | Sig_type(id, decl, rec_status, vis)::rest ->
-        let decl = read_type_declaration env parent id vis decl in
+    | Sig_type(id, decl, rec_status, _)::rest ->
+        let decl = read_type_declaration env parent id decl in
       loop (Type (read_type_rec_status rec_status, decl)::acc) rest
     | Sig_typext (id, ext, Text_first, _) :: rest ->
         let rec inner_loop inner_acc = function
@@ -975,7 +969,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     loop [] items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
-  let env = Env.add_signature_type_items parent items env in
+  let env = Env.handle_signature_type_items `Add parent items env in
   read_signature_noenv env parent items
 
 

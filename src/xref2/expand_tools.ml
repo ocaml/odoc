@@ -1,5 +1,5 @@
 open Utils.ResultMonad
-
+open Odoc_model
 type error =
   [ `OpaqueModule
   | `Unresolved_module of Cpath.module_
@@ -9,35 +9,76 @@ type expansion =
   | Signature of Component.Signature.t
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
-let rec aux_expansion_of_module :
-    Env.t -> Component.Module.t -> (expansion, error) Result.result =
-  let open Component.Module in
-  fun env m -> aux_expansion_of_module_decl env m.type_
+let rec module_needs_recompile : Component.Module.t -> bool =
+  fun m ->
+    module_decl_needs_recompile m.type_
 
-and aux_expansion_of_module_decl env ty =
+and module_decl_needs_recompile : Component.Module.decl -> bool =
+  function
+  | Alias _ -> false
+  | ModuleType expr -> module_type_expr_needs_recompile expr
+
+and module_type_expr_needs_recompile : Component.ModuleType.expr -> bool =
+  function
+  | Path _ -> false
+  | Signature _ -> false
+  | With (_, _) -> true
+  | Functor (_, expr) -> module_type_expr_needs_recompile expr
+  | TypeOf _ -> false
+
+and module_type_needs_recompile : Component.ModuleType.t -> bool =
+  fun m ->
+    match m.expr with
+    | None -> false
+    | Some expr -> module_type_expr_needs_recompile expr
+
+let rec aux_expansion_of_module :
+    Env.t -> strengthen:bool -> Component.Module.t -> (expansion, error) Result.result =
+  let open Component.Module in
+  fun env ~strengthen m ->
+    aux_expansion_of_module_decl env ~strengthen m.type_
+
+and aux_expansion_of_module_decl env ~strengthen ty =
   let open Component.Module in
   match ty with
-  | Alias path -> aux_expansion_of_module_alias env path
+  | Alias path -> aux_expansion_of_module_alias env ~strengthen path
   | ModuleType expr -> aux_expansion_of_module_type_expr env expr
 
-and aux_expansion_of_module_alias env path =
+and aux_expansion_of_module_alias env ~strengthen path =
+  (* Format.eprintf "aux_expansion_of_module_alias (strengthen=%b, path=%a)\n%!"
+    strengthen Component.Fmt.module_path path; *)
   match Tools.lookup_and_resolve_module_from_path false false env path with
   | Resolved (p, m) -> (
-      match (aux_expansion_of_module env m, m.doc) with
+      (* Don't strengthen if the alias is definitely hidden. We can't always resolve canonical
+         paths at this stage so use the weak canonical test that assumes all canonical paths
+         will resolve correctly *)
+      let strengthen = strengthen && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p) in
+
+      (* Strengthen=false here so if we're strengthening a chain of aliases
+         we only strengthen with the 'outer' (first) one. This covers cases
+         where we're aliasing e.g. Stdlib.List which is itself an alias for
+         Stdlib__list - we want to strengthen with Stdlib.List rather than
+         with Stdlib__list. *)
+      match (aux_expansion_of_module env ~strengthen:false m, m.doc) with
       | (Error _ as e), _ -> e
       | Ok (Signature sg), [] ->
-          Ok (Signature (Strengthen.signature (`Resolved p) sg))
+          (* Format.eprintf "Maybe strenthening now...\n%!"; *)
+          let sg' = if strengthen then Strengthen.signature ?canonical:m.canonical (`Resolved p) sg else sg in
+          Ok (Signature sg')
       | Ok (Signature sg), docs ->
-          let sg = Strengthen.signature (`Resolved p) sg in
-          Ok (Signature { sg with items = Comment (`Docs docs) :: sg.items })
-      | Ok (Functor _ as x), _ -> Ok x )
+          (* Format.eprintf "Maybe strenthening now...\n%!"; *)
+          let sg' = if strengthen then Strengthen.signature ?canonical:m.canonical (`Resolved p) sg else sg in
+          (* Format.eprintf "Before:\n%a\n\n%!After\n%a\n\n%!"
+            Component.Fmt.signature sg
+            Component.Fmt.signature sg'; *)
+          Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
+      | Ok (Functor _ as x), _ -> Ok x)
   | Unresolved p -> Error (`Unresolved_module p)
 
 (* We need to reresolve fragments in expansions as the root of the fragment
    may well change - so we turn resolved fragments back into unresolved ones
    here *)
 and unresolve_subs subs =
-  let open Odoc_model in
   let open Cfrag in
   let open Names in
   let rec unresolve_module_fragment : resolved_module -> module_ = function
@@ -86,7 +127,7 @@ and aux_expansion_of_module_type_expr env expr :
           | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)
           ) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
-  | TypeOf decl -> aux_expansion_of_module_decl env decl
+  | TypeOf decl -> aux_expansion_of_module_decl env ~strengthen:false decl
 
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
@@ -105,7 +146,7 @@ and handle_expansion env id expansion =
         let identifier =
           `Parameter
             ( parent,
-              Odoc_model.Names.ParameterName.of_string
+              Names.ParameterName.of_string
                 (Ident.Name.module_ arg.Component.FunctorParameter.id) )
         in
         let env' =
@@ -135,24 +176,31 @@ and handle_expansion env id expansion =
   expand id env [] expansion
 
 let expansion_of_module_type env id m =
-  let open Odoc_model.Paths.Identifier in
+  let open Paths.Identifier in
   aux_expansion_of_module_type env m
   >>= handle_expansion env (id : ModuleType.t :> Signature.t)
+  >>= fun (env, e) ->
+  Ok (env, module_type_needs_recompile m, e)
 
 let expansion_of_module_type_expr env id expr =
-  aux_expansion_of_module_type_expr env expr >>= handle_expansion env id
+  aux_expansion_of_module_type_expr env expr
+  >>= handle_expansion env id
+  >>= fun (env, e) ->
+  Ok (env, module_type_expr_needs_recompile expr, e)
 
-let expansion_of_module env id m =
-  let open Odoc_model.Paths.Identifier in
-  aux_expansion_of_module env m
+let expansion_of_module env id ~strengthen m =
+  let open Paths.Identifier in
+  aux_expansion_of_module env ~strengthen m
   >>= handle_expansion env (id : Module.t :> Signature.t)
+  >>= fun (env, r) ->
+  Ok (env, module_needs_recompile m, r)
 
 exception Clash
 
 let rec type_expr map t =
-  let open Odoc_model.Lang.TypeExpr in
+  let open Lang.TypeExpr in
   match t with
-  | Var v -> List.assoc v map
+  | Var v -> (try List.assoc v map with _ -> Format.eprintf "Failed to list assoc %s\n%!" v; failwith "bah")
   | Any -> Any
   | Alias (t, s) ->
       if List.mem_assoc s map then raise Clash else Alias (type_expr map t, s)
@@ -166,7 +214,7 @@ let rec type_expr map t =
   | Package p -> Package (package map p)
 
 and polymorphic_variant map pv =
-  let open Odoc_model.Lang.TypeExpr.Polymorphic_variant in
+  let open Lang.TypeExpr.Polymorphic_variant in
   let constructor c =
     {
       c with
@@ -180,7 +228,7 @@ and polymorphic_variant map pv =
   { kind = pv.kind; elements = List.map element pv.elements }
 
 and object_ map o =
-  let open Odoc_model.Lang.TypeExpr.Object in
+  let open Lang.TypeExpr.Object in
   let method_ m = { m with type_ = type_expr map m.type_ } in
   let field = function
     | Method m -> Method (method_ m)
@@ -189,12 +237,12 @@ and object_ map o =
   { o with fields = List.map field o.fields }
 
 and package map p =
-  let open Odoc_model.Lang.TypeExpr.Package in
+  let open Lang.TypeExpr.Package in
   let subst (frag, t) = (frag, type_expr map t) in
   { p with substitutions = List.map subst p.substitutions }
 
 let collapse_eqns eqn1 eqn2 params =
-  let open Odoc_model.Lang.TypeDecl in
+  let open Lang.TypeDecl in
   let map =
     List.map2
       (fun v p -> match v with Var x, _ -> Some (x, p) | Any, _ -> None)

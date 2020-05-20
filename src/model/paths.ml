@@ -441,32 +441,38 @@ module Path = struct
 
   let rec is_resolved_hidden : Paths_types.Resolved_path.any -> bool =
     let open Paths_types.Resolved_path in
-    function
+    let rec inner = function
+    | `Identifier (`ModuleType (_, m)) when Names.ModuleTypeName.is_internal m -> true
+    | `Identifier (`Type (_, t)) when Names.TypeName.is_internal t -> true
     | `Identifier _ -> false
     | `Canonical (_, `Resolved _) -> false
-    | `Canonical (x, _) -> is_resolved_hidden (x : module_ :> any)
+    | `Canonical (x, _) -> inner (x : module_ :> any)
     | `Hidden _ -> true
-    | `Subst(p1, p2) -> is_resolved_hidden (p1 : module_type :> any) || is_resolved_hidden (p2 : module_ :> any)
-    | `SubstAlias(p1, p2) -> is_resolved_hidden (p1 : module_ :> any) || is_resolved_hidden (p2 : module_ :> any)
-    | `Module (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `Apply (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `ModuleType (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `Type (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `Class (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `ClassType (p, _) -> is_resolved_hidden (p : module_ :> any)
-    | `Alias (p1, p2) -> is_resolved_hidden (p1 : module_ :> any) && (is_resolved_hidden (p2 : module_ :> any))
-    | `SubstT (p1, p2) -> is_resolved_hidden (p1 :> any) || is_resolved_hidden (p2 :> any)
-    | `OpaqueModule m -> is_resolved_hidden (m :> any)
-    | `OpaqueModuleType mt -> is_resolved_hidden (mt :> any)
+    | `Subst(p1, p2) -> inner (p1 : module_type :> any) || inner (p2 : module_ :> any)
+    | `SubstAlias(p1, p2) -> inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
+    | `Module (p, _) -> inner (p : module_ :> any)
+    | `Apply (p, _) -> inner (p : module_ :> any)
+    | `ModuleType (_, m) when Names.ModuleTypeName.is_internal m -> true
+    | `ModuleType (p, _) -> inner (p : module_ :> any)
+    | `Type (_, t) when Names.TypeName.is_internal t -> true
+    | `Type (p, _) -> inner (p : module_ :> any)
+    | `Class (p, _) -> inner (p : module_ :> any)
+    | `ClassType (p, _) -> inner (p : module_ :> any)
+    | `Alias (p1, p2) -> inner (p1 : module_ :> any) && (inner (p2 : module_ :> any))
+    | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
+    | `OpaqueModule m -> inner (m :> any)
+    | `OpaqueModuleType mt -> inner (mt :> any)
+    in inner
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
-    function
+    let rec inner = function
     | `Resolved r -> is_resolved_hidden r
     | `Root _ -> false
     | `Forward _ -> false
-    | `Dot(p, _) -> is_path_hidden (p : module_ :> any)
-    | `Apply(p1, p2) -> is_path_hidden (p1 : module_ :> any) || is_path_hidden (p2 : module_ :> any)
+    | `Dot(p, _) -> inner (p : module_ :> any)
+    | `Apply(p1, p2) -> inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
+    in inner
 
   module Resolved = struct
 
@@ -682,7 +688,7 @@ module Fragment = struct
           | `Root (`ModuleType i) -> (Path.Resolved.ModuleType.identifier i :> Identifier.Signature.t)
           | `Root (`Module i) -> (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
           | `Subst(s, _) -> (Path.Resolved.ModuleType.identifier s :> Identifier.Signature.t)
-          | `SubstAlias(_, p) -> identifier (sig_of_mod p)
+          | `SubstAlias(i, _) -> (Path.Resolved.Module.identifier i :> Identifier.Signature.t)
           | `Module(m, n) -> `Module (identifier m, n)
           | `OpaqueModule m -> identifier (sig_of_mod m)
 
@@ -732,12 +738,12 @@ module Fragment = struct
 
     let rec identifier : t -> Identifier.t =
        function
-        | `Root (`ModuleType r) -> (Path.Resolved.ModuleType.identifier r :> Identifier.t)
-        | `Root (`Module r) -> (Path.Resolved.Module.identifier r :> Identifier.t)
+        | `Root (`ModuleType _r) -> assert false
+        | `Root (`Module _r) -> assert false
         | `Subst(s, _) ->
-          Format.fprintf Format.err_formatter "Got a subst!\n%!";
           Path.Resolved.identifier (s :> Path.Resolved.t)
-        | `SubstAlias(_, p) -> identifier (p :> t)
+        | `SubstAlias(p, _) ->
+          (Path.Resolved.Module.identifier p :> Identifier.t)
         | `Module(m, n) -> `Module (Signature.identifier m, n)
         | `Type(m, n) -> `Type(Signature.identifier m, n)
         | `Class(m, n) -> `Class(Signature.identifier m, n)

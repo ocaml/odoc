@@ -87,6 +87,15 @@ let file_of_string ~filename str =
 let list_files path =
     Sys.readdir path |> Array.to_list
 
+let load_cmti filename =
+  let make_root = root_of_compilation_unit ~package:"nopackage" ~hidden:false in
+  Odoc_loader.read_cmti ~make_root ~filename
+
+let load_cmt filename =
+    let make_root = root_of_compilation_unit ~package:"nopackage" ~hidden:false in
+    Odoc_loader.read_cmt ~make_root ~filename
+  
+
 module Ident = Ident
 
 module LangUtils = struct

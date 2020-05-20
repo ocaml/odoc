@@ -253,6 +253,7 @@ end
 module Memos1 = Hashtbl.Make (Hashable)
 
 let module_lookup_cache = Memos1.create 10000
+let module_lookup_hits = Memos1.create 10000
 
 module Hashable2 = struct
   type t = bool * bool * Cpath.module_
@@ -280,6 +281,7 @@ let module_resolve_cache :
     * Env.lookup_type list )
     Memos2.t =
   Memos2.create 10000
+let module_resolve_hits = Memos2.create 10000
 
 let module_signature_cache :
     ( (Component.Signature.t, signature_of_module_error) Result.result
@@ -288,9 +290,11 @@ let module_signature_cache :
     Memos3.t =
   Memos3.create 10000
 
+let module_signature_hits = Memos3.create 10000
 let reset_cache () =
   Memos1.clear module_lookup_cache;
-  Memos2.clear module_resolve_cache
+  Memos2.clear module_resolve_cache;
+  Memos3.clear module_signature_cache
 
 let rec handle_apply is_resolve env func_path arg_path m =
   let rec find_functor mty =
@@ -367,9 +371,7 @@ and get_module_path_modifiers : Env.t -> bool -> Component.Module.t -> _ option
         lookup_and_resolve_module_from_path true add_canonical env alias_path
       with
       | Resolved (resolved_alias_path, _) ->
-          if Cpath.is_resolved_module_substituted resolved_alias_path then
-            Some (`SubstAliased resolved_alias_path)
-          else Some (`Aliased resolved_alias_path)
+          Some (`Aliased resolved_alias_path)
       | Unresolved _ -> None )
   | ModuleType t -> (
       match get_substituted_module_type env t with
@@ -475,15 +477,22 @@ and lookup_module :
   | [] ->
       let lookups, resolved = Env.with_recorded_lookups env' lookup in
       Memos1.add module_lookup_cache id (resolved, env_id, lookups);
+      Memos1.add module_lookup_hits id 1;
       resolved
   | xs ->
       let rec find_fast = function
-        | (result, id, _lookups) :: _ when id = env_id -> result
+        | (result, env_id', _lookups) :: _ when env_id' = env_id ->
+          Memos1.replace module_lookup_hits id (Memos1.find module_lookup_hits id + 1);
+          result
         | _ :: ys -> find_fast ys
         | [] -> find xs
       and find = function
         | (m, _, lookups) :: xs ->
-            if Env.verify_lookups env' lookups then m else find xs
+            if Env.verify_lookups env' lookups
+            then (
+              Memos1.replace module_lookup_hits id (Memos1.find module_lookup_hits id + 1);
+              m)
+            else find xs
         | [] ->
             let lookups, m = Env.with_recorded_lookups env' lookup in
             Memos1.add module_lookup_cache id (m, env_id, lookups);
@@ -679,20 +688,27 @@ and lookup_and_resolve_module_from_path :
       let lookups, resolved = Env.with_recorded_lookups env' resolve in
       (* Format.fprintf Format.err_formatter "Adding into hashtbl\n%!"; *)
       Memos2.add module_resolve_cache id (resolved, env_id, lookups);
+      Memos2.add module_resolve_hits id 1;
       resolved
   | xs ->
       let rec find_fast = function
-        | (result, id, _lookups) :: _ when id = env_id ->
+        | (result, env_id', _lookups) :: _ when env_id' = env_id ->
+        Memos2.replace module_resolve_hits id (Memos2.find module_resolve_hits id + 1);
+
             (* Format.fprintf Format.err_formatter "cached\n%!";*) result
         | _ :: ys -> find_fast ys
         | [] -> find xs
       and find = function
         | (r, _, lookups) :: xs ->
-            if Env.verify_lookups env' lookups then
+            if Env.verify_lookups env' lookups then (
+              Memos2.replace module_resolve_hits id (Memos2.find module_resolve_hits id + 1);
+
               (* Format.fprintf Format.err_formatter "cached\n%!"; *) r
+            )
             else find xs
         | [] ->
             let lookups, result = Env.with_recorded_lookups env' resolve in
+
             Memos2.add module_resolve_cache id (result, env_id, lookups);
             result
       in
@@ -1038,9 +1054,8 @@ and signature_of_module_alias :
   match lookup_and_resolve_module_from_path false true env path with
   | Resolved (p', m) ->
       (* p' is the path to the aliased module *)
-      signature_of_module_cached env p' false m >>= fun m' ->
-      let m'' = Strengthen.signature (`Resolved p') m' in
-      Ok m''
+      signature_of_module_cached env p' false m >>= fun sg ->
+      Ok (Strengthen.signature (`Resolved p') sg)
   | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
   | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
 
@@ -1123,10 +1138,13 @@ and signature_of_module_cached :
   | [] ->
       let lookups, sg = Env.with_recorded_lookups env' run in
       Memos3.add module_signature_cache id (sg, env_id, lookups);
+      Memos3.add module_signature_hits id 1;
       sg
   | xs ->
       let rec find_fast = function
-        | (result, id, _lookups) :: _ when id = env_id ->
+        | (result, env_id', _lookups) :: _ when env_id' = env_id ->
+        Memos3.replace module_signature_hits id (Memos3.find module_signature_hits id + 1);
+
             (* let cached = Format.asprintf "%a" Component.Fmt.signature result in *)
             (* let uncached = Format.asprintf "%a" Component.Fmt.signature (run env') in *)
             (* if (String.compare cached uncached) <> 0 then (
@@ -1141,7 +1159,9 @@ and signature_of_module_cached :
         | [] -> find xs
       and find = function
         | (result, _, lookups) :: xs ->
-            if Env.verify_lookups env' lookups then
+            if Env.verify_lookups env' lookups then (
+            Memos3.replace module_signature_hits id (Memos3.find module_signature_hits id + 1);
+
               (* let cached = Format.asprintf "%a" Component.Fmt.signature result in
                  let uncached = Format.asprintf "%a" Component.Fmt.signature (run env') in
                  if (String.compare cached uncached) <> 0 then (
@@ -1150,7 +1170,7 @@ and signature_of_module_cached :
                    Format.fprintf Format.err_formatter "lookups: %a\n%!" Env.pp_lookup_type_list lookups;
                    failwith "bah"
                  ); *)
-              result
+              result)
             else find xs
         | [] ->
             let lookups, sg = Env.with_recorded_lookups env' run in
@@ -1320,7 +1340,7 @@ and fragmap_type :
           (fun item (items, handled, removed) ->
             match item with
             | Component.Signature.Type (id, r, t)
-              when Ident.Name.type_ id = name -> (
+              when Ident.Name.unsafe_type id = name -> (
                 match mapfn (Component.Delayed.get t) with
                 | Left x ->
                     ( Component.Signature.Type
@@ -1564,6 +1584,7 @@ and resolve_mt_signature_fragment :
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
       of_result (signature_of_module env m') >>= fun parent_sg ->
+      (* Format.eprintf "Dot (%s): sig: %a\n%!" name Component.Fmt.signature sg; *)
       let sg = prefix_signature (`Module cp', parent_sg) in
       Some (f', `Module cp', sg)
 

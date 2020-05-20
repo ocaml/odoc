@@ -289,7 +289,7 @@ let rec signature_items id map items =
         let m = Component.Delayed.get m in
         inner rest (Odoc_model.Lang.Signature.Module (r, module_ map parent id m) :: acc)
     | ModuleType (id, m) :: rest ->
-        inner rest (ModuleType (module_type map parent id m) :: acc)
+        inner rest (Odoc_model.Lang.Signature.ModuleType (module_type map parent id m) :: acc)
     | Type (id, r, t) :: rest ->
         let t = Component.Delayed.get t in
         inner rest (Type (r, type_decl map parent id t) :: acc)

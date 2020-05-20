@@ -320,9 +320,7 @@ let rec read_class_expr env parent params cl =
 
 let read_class_declaration env parent cld =
   let open Class in
-  let open Odoc_model.Names in
-  let name = parenthesise (Ident.name cld.ci_id_class) in
-  let id = `Class(parent, ClassName.of_string name) in
+  let id = Env.find_class_identifier env cld.ci_id_class in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
@@ -335,7 +333,7 @@ let read_class_declaration env parent cld =
         (Cmi.read_type_parameter false Variance.null)
         clparams
     in
-    let type_ = read_class_expr env id clparams cld.ci_expr in
+    let type_ = read_class_expr env (id :> Identifier.ClassSignature.t) clparams cld.ci_expr in
       { id; doc; virtual_; params; type_; expansion = None }
 
 let read_class_declarations env parent clds =
@@ -407,7 +405,6 @@ let rec read_module_expr env parent label_parent mexpr =
         read_module_expr env parent label_parent mexpr
     | Tmod_unpack(_, mty) ->
         Cmi.read_module_type env parent (Odoc_model.Compat.module_type mty)
-
 and unwrap_module_expr_desc = function
   | Tmod_constraint(mexpr, _, Tmodtype_implicit, _) ->
       unwrap_module_expr_desc mexpr.mod_desc
@@ -579,3 +576,5 @@ let read_implementation root name impl =
     | _ -> Doc_attr.empty, items
   in
     (id, doc, items)
+
+let _ = Cmti.read_module_expr := read_module_expr

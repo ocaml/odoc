@@ -13,7 +13,8 @@ end
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
-  let cp = Component.Of_Lang.(type_path empty p) in
+  let cp' = Component.Of_Lang.(type_path empty p) in
+  let cp = Cpath.unresolve_type_path cp' in
   match Tools.lookup_type_from_path env cp with
   | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
   | Unresolved p -> Cpath.type_path_of_cpath p
@@ -21,14 +22,14 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
-  let cp = Component.Of_Lang.(module_type_path empty p) in
+  let cp = Component.Of_Lang.(module_type_path empty p) |> Cpath.unresolve_module_type_path in
   match Tools.resolve_module_type env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
   | Unresolved p -> Cpath.module_type_path_of_cpath p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
-  let cp = Component.Of_Lang.(module_path empty p) in
+  let cp = Component.Of_Lang.(module_path empty p) |> Cpath.unresolve_module_path in
   match Tools.resolve_module env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
@@ -243,8 +244,8 @@ and module_ : Env.t -> Module.t -> Module.t =
           let sg_id = (m.id :> Id.Signature.t) in
           if not extra_expansion_needed then m.expansion
           else
-            match Expand_tools.expansion_of_module env m.id m' with
-            | Ok (env, ce) ->
+            match Expand_tools.expansion_of_module env m.id ~strengthen:true m' with
+            | Ok (env, _, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in
                 Some (expansion env sg_id e)
             | Error `OpaqueModule -> None
@@ -264,7 +265,8 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias p -> (
-      let cp = Component.Of_Lang.(module_path empty p) in
+      let cp' = Component.Of_Lang.(module_path empty p) in
+      let cp = Cpath.unresolve_module_path cp' in
       match Tools.resolve_module env cp with
       | Resolved p' ->
           Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
@@ -278,18 +280,21 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
   let expand m' env =
     match m.expr with
-    | None -> Ok (env, None, None)
+    | None -> Ok (None, None)
+    | Some (Signature sg) ->
+      let sg' = signature env (m.id :> Id.Signature.t) sg in
+      Ok (Some (Module.Signature sg'), Some (Signature sg'))
     | Some expr ->
         ( match Expand_tools.expansion_of_module_type env m.id m' with
-        | Ok (env, ce) ->
+        | Ok (env, _, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
             Ok (env, Some e)
         | Error `OpaqueModule -> Ok (env, None)
         | Error _ -> Error `Expand )
-        >>= fun (env, expansion) ->
+        >>= fun (env, expansion') ->
         Ok
-          ( env,
-            expansion,
+          ( 
+            Opt.map (expansion env sg_id) expansion',
             Some (module_type_expr env (m.id :> Id.Signature.t) expr) )
   in
   match
@@ -297,11 +302,11 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     let env = Env.add_module_type_functor_args m' m.id env in
     expand m' env
   with
-  | Ok (env', expansion', expr') ->
+  | Ok (expansion, expr') ->
       {
         m with
         expr = expr';
-        expansion = Opt.map (expansion env' sg_id) expansion';
+        expansion;
       }
   | Error e ->
       lookup_failure ~what:(`Module_type m.id) e;
@@ -352,7 +357,7 @@ and include_ : Env.t -> Include.t -> Include.t =
   let decl = Component.Of_Lang.(module_decl empty i.decl) in
   match
     let open Utils.ResultMonad in
-    Expand_tools.aux_expansion_of_module_decl env decl
+    Expand_tools.aux_expansion_of_module_decl env ~strengthen:true decl
     >>= Expand_tools.handle_expansion env i.parent
   with
   | Error _ ->
@@ -361,16 +366,24 @@ and include_ : Env.t -> Include.t -> Include.t =
   | Ok (_, ce) ->
       let map = find_shadowed Lang_of.empty i.expansion.content in
       let e = Lang_of.(module_expansion map i.parent ce) in
-      let expansion =
+      (* Format.eprintf "Intermediate expansion: %a\n%!"
+        Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
+
+      let expansion_sg =
         match e with
-        | Module.Signature sg ->
+        | Module.Signature sg -> sg
+        | _ -> failwith "Expansion shouldn't be anything other than a signature"
+      in
+      let expansion =
             {
               resolved = true;
               content =
-                remove_top_doc_from_signature (signature env i.parent sg);
+                remove_top_doc_from_signature (signature env i.parent expansion_sg);
             }
-        | _ -> failwith "Expansion shouldn't be anything other than a signature"
       in
+      (* Format.eprintf "Final expansion: %a\n%!"
+        Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
+
       { i with decl = module_decl env i.parent i.decl; expansion }
 
 and expansion : Env.t -> Id.Signature.t -> Module.expansion -> Module.expansion
@@ -404,7 +417,7 @@ and functor_parameter_parameter :
     let env = Env.add_module_functor_args functor_arg a.id env' in
     get_module_type_expr functor_arg.type_ >>= fun expr ->
     match Expand_tools.expansion_of_module_type_expr env sg_id expr with
-    | Ok (env, ce) ->
+    | Ok (env, _, ce) ->
         let e = Lang_of.(module_expansion empty sg_id ce) in
         Ok (env, Some e)
     | Error `OpaqueModule -> Ok (env, None)
@@ -636,7 +649,8 @@ and type_expression_object env parent o =
 
 and type_expression_package env parent p =
   let open TypeExpr.Package in
-  let cp = Component.Of_Lang.(module_type_path empty p.path) in
+  let cp' = Component.Of_Lang.(module_type_path empty p.path) in
+  let cp = Cpath.unresolve_module_type_path cp' in
   match Tools.lookup_and_resolve_module_type_from_path true env cp with
   | Resolved (path, mt) -> (
       match Tools.signature_of_module_type env mt with
@@ -674,7 +688,8 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       Arrow (lbl, type_expression env parent t1, type_expression env parent t2)
   | Tuple ts -> Tuple (List.map (type_expression env parent) ts)
   | Constr (path, ts') -> (
-      let cp = Component.Of_Lang.(type_path empty path) in
+      let cp' = Component.Of_Lang.(type_path empty path) in
+      let cp = Cpath.unresolve_type_path cp' in
       let ts = List.map (type_expression env parent) ts' in
       match Tools.lookup_type_from_path env cp with
       | Resolved (cp, Found _t) ->

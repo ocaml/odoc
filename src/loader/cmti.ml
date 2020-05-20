@@ -27,6 +27,8 @@ module Env = Odoc_model.Ident_env
 module Paths = Odoc_model.Paths
 module Ident_env = Odoc_model.Ident_env
 
+let read_module_expr : (Ident_env.t -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
+
 let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
@@ -249,13 +251,11 @@ let read_type_equation env container decl =
 
 let read_type_declaration env parent decl =
   let open TypeDecl in
-  let open Odoc_model.Names in
-  let name = parenthesise (Ident.name decl.typ_id) in
-  let id = `Type(parent, TypeName.of_string name) in
+  let id = Env.find_type_identifier env decl.typ_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.typ_attributes in
   let equation = read_type_equation env container decl in
-  let representation = read_type_kind env id decl.typ_kind in
+  let representation = read_type_kind env (id :> Identifier.DataType.t) decl.typ_kind in
     {id; doc; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
@@ -392,13 +392,12 @@ and read_class_signature env parent label_parent cltyp =
 
 let read_class_type_declaration env parent cltd =
   let open ClassType in
-  let name = parenthesise (Ident.name cltd.ci_id_class_type) in
-  let id = `ClassType(parent, Odoc_model.Names.ClassTypeName.of_string name) in
+  let id = Env.find_class_type_identifier env cltd.ci_id_class_type in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
-  let expr = read_class_signature env id container cltd.ci_expr in
+  let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
   { id; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
@@ -431,13 +430,12 @@ let rec read_class_type env parent label_parent cty =
 
 let read_class_description env parent cld =
   let open Class in
-  let name = parenthesise (Ident.name cld.ci_id_class) in
-  let id = `Class(parent, Odoc_model.Names.ClassName.of_string name) in
+  let id = Env.find_class_identifier env cld.ci_id_class in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
-  let type_ = read_class_type env id container cld.ci_expr in
+  let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in
   { id; doc; virtual_; params; type_; expansion = None }
 
 let read_class_descriptions env parent clds =
@@ -531,7 +529,7 @@ and read_module_type env parent label_parent mty =
           | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
           | _ ->
               let mty =
-                Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
+                !read_module_expr env parent label_parent mexpr
               in
                 ModuleType mty
         in
@@ -540,11 +538,10 @@ and read_module_type env parent label_parent mty =
 
 and read_module_type_declaration env parent mtd =
   let open ModuleType in
-  let name = parenthesise (Ident.name mtd.mtd_id) in
-  let id = `ModuleType(parent, (Odoc_model.Names.ModuleTypeName.of_string name)) in
+  let id = Env.find_module_type env mtd.mtd_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
-  let expr = opt_map (read_module_type env id container) mtd.mtd_type in
+  let expr = opt_map (read_module_type env (id :> Identifier.Signature.t) container) mtd.mtd_type in
   let expansion =
     match expr with
     | Some (Signature _) -> Some Module.AlreadyASig
@@ -687,9 +684,11 @@ and read_include env parent incl =
   let open Include in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container incl.incl_attributes in
-  let expr = read_module_type env parent container incl.incl_mod in
-  let decl = Module.ModuleType expr in
   let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  (* Remove identifiers introduced by this include *)
+  let env' = Env.handle_signature_type_items `Remove parent (Odoc_model.Compat.signature incl.incl_type) env in
+  let expr = read_module_type env' parent container incl.incl_mod in
+  let decl = Module.ModuleType expr in
   let expansion = { content; resolved = false} in
     {parent; doc; decl; expansion; inline=false }
 

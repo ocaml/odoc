@@ -134,7 +134,7 @@ module type (root Root).M = sig
   module (root Root).M.B : resolved[global((root Root).M.N)]
   end
 module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A)].B.t
+type (root Root).u = resolved[global((root Root).A).B.t]
 
 Basic resolution 4
 Module type
@@ -176,7 +176,7 @@ module type (root Root).M = sig
     end
   end
 module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A)].X.B.t
+type (root Root).u = resolved[global((root Root).A).X.B.t]
 
 Module substitution
 Ensure a substitution is taken into account during resolution
@@ -224,7 +224,7 @@ module (root Root).B : sig
     end
   end
 module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M = = resolved[global((root Root).B)]]
-type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
+type (root Root).t = resolved[((global((root Root).B) -> global((root Root).C).M).S subst-> global((root Root).C).N).t]
 
 Module substitution2
 Ensure a destructive substitution is taken into account during resolution
@@ -272,7 +272,7 @@ module (root Root).B : sig
     end
   end
 module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M := resolved[global((root Root).B)]]
-type (root Root).t = resolved[(unimplemented resolved_path.S subst-> global((root Root).C).N).t]
+type (root Root).t = resolved[global((root Root).C).N.t]
 
 Module alias
 Resolve a module alias

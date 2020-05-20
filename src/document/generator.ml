@@ -101,6 +101,10 @@ struct
         let link1 = from_path (p1 :> Path.t) in
         let link2 = from_path (p2 :> Path.t) in
         link1 ++ O.txt "(" ++ link2 ++ O.txt ")"
+      | `Resolved _ when Paths.Path.is_hidden path ->
+        let txt = Url.render_path path in
+        Format.eprintf "Warning, resolved hidden path: %s\n%!" txt;
+        unresolved [inline @@ Text txt]
       | `Resolved rp ->
         (* If the path is pointing to an opaque module or module type
            there won't be a page generated - so we stop before; at
@@ -1147,6 +1151,12 @@ struct
     | `Type (_, name) when TypeName.is_internal name -> true
     | _ -> false
 
+    let internal_module_type t =
+      let open Lang.ModuleType in
+      match t.id with
+      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | _ -> false
+      
   let rec signature s : Item.t list =
     let rec loop l acc_items =
       match l with
@@ -1160,7 +1170,9 @@ struct
           loop rest acc_items
         | Type (_, t) when internal_type t ->
           loop rest acc_items
-        
+        | ModuleType m when internal_module_type m ->
+          loop rest acc_items
+
         | Module (recursive, m)    -> continue @@ module_ recursive m
         | ModuleType m             -> continue @@ module_type m
         | Class (recursive, c)     -> continue @@ class_ recursive c
@@ -1310,7 +1322,9 @@ struct
               begin match t.type_ with
               | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
                 Odoc_model.Lang.Module.Signature sg
-              | _ -> assert false
+              | _ ->
+                Format.eprintf "Inconsistent expansion: %s\n%!" modname;
+                assert false
               end
             | e -> e
           in

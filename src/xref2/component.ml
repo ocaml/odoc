@@ -37,20 +37,22 @@ end)
 module Delayed = struct
   let eager = ref false
 
-  type 'a t = { mutable v : 'a option; get : unit -> 'a }
+  type 'a t = { mutable v : 'a option; mutable get : (unit -> 'a) option }
 
   let get : 'a t -> 'a =
    fun x ->
-    match x.v with
-    | Some x -> x
-    | None ->
-        let v = x.get () in
+    match x.v, x.get with
+    | Some x, _ -> x
+    | None, Some get ->
+        let v = get () in
         x.v <- Some v;
+        x.get <- None;
         v
+    | _, _ -> failwith "bad delayed"
 
   let put : (unit -> 'a) -> 'a t =
    fun f ->
-    if !eager then { v = Some (f ()); get = f } else { v = None; get = f }
+    if !eager then { v = Some (f ()); get = None } else { v = None; get = Some f }
 end
 
 module Opt = struct
@@ -495,6 +497,12 @@ module Fmt = struct
     | ModuleType mt -> Format.fprintf ppf ": %a" module_type_expr mt
 
   and module_ ppf m = Format.fprintf ppf "%a" module_decl m.type_
+
+  and module_expansion ppf m =
+    match m with
+    | Module.AlreadyASig -> Format.fprintf ppf "AlreadyASig"
+    | Signature sg -> Format.fprintf ppf "sig: %a" signature sg
+    | Functor (_args, sg) -> Format.fprintf ppf "functor: (...) -> %a" signature sg
 
   and module_type ppf mt =
     match mt.expr with

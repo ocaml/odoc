@@ -50,10 +50,10 @@ File "cases/ast.mli", line 60, characters 4-11:
 Unknown tag '@Hidden'.
 File "cases/ast.mli", line 63, characters 4-23:
 Unknown tag '@IncludeDescription'.
-File "cases/ast.mli", line 65, characters 6-19:
-Unknown tag '@TxtAttribute'.
 File "cases/ast.mli", line 68, characters 6-22:
 Unknown tag '@TypeDeclaration'.
+File "cases/ast.mli", line 65, characters 6-19:
+Unknown tag '@TxtAttribute'.
 File "cases/ast.mli", line 68, characters 6-22:
 Unknown tag '@TypeDeclaration'.
 File "cases/ast.mli", line 71, characters 4-10:
