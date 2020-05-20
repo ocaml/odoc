@@ -197,9 +197,7 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
       let refs =
         List.map
           (fun r ->
-            match
-              Ref_tools.resolve_module_reference env ~add_canonical:false r
-            with
+            match Ref_tools.resolve_module_reference env r with
             | Some (r, _, _) -> `Resolved r
             | None -> r)
           refs
