@@ -219,6 +219,10 @@ module Name = struct
     | `LType (n, _) -> TypeName.to_string n
     | `LCoreType n -> TypeName.to_string n
 
+  let unsafe_type : type_ -> string = function
+    | `LType (n, _) -> TypeName.to_string_unsafe n
+    | `LCoreType n -> TypeName.to_string n
+
   let typed_type : type_ -> TypeName.t = function
     | `LType (n, _) -> n
     | _ -> failwith "Bad type ident"
