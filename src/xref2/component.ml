@@ -406,8 +406,18 @@ module Element = struct
 
   type external_ = [ `External of Identifier.Value.t * External.t ]
 
+  type constructor =
+    [ `Constructor of Identifier.Constructor.t * TypeDecl.Constructor.t ]
+
   type any =
-    [ signature | value | type_ | label | class_ | class_type | external_ ]
+    [ signature
+    | value
+    | type_
+    | label
+    | class_
+    | class_type
+    | external_
+    | constructor ]
 end
 
 module Fmt = struct

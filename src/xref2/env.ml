@@ -83,6 +83,7 @@ type t = {
   class_types : Component.ClassType.t Maps.ClassType.t;
   methods : Component.Method.t Maps.Method.t;
   instance_variables : Component.InstanceVariable.t Maps.InstanceVariable.t;
+  constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -176,6 +177,7 @@ let empty =
     class_types = Maps.ClassType.empty;
     methods = Maps.Method.empty;
     instance_variables = Maps.InstanceVariable.empty;
+    constructors = Maps.Constructor.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -210,17 +212,32 @@ let add_module identifier m env =
   }
 
 let add_type identifier t env =
+  let open Component in
+  let open_typedecl cs =
+    let add_cons (constructors, elts) (cons : TypeDecl.Constructor.t) =
+      let ident = `Constructor (identifier, ConstructorName.of_string cons.name) in 
+      Maps.Constructor.add ident cons constructors,
+      add_to_elts (Odoc_model.Paths.Identifier.name ident)
+        (`Constructor (ident, cons))
+        elts
+    in
+    match t.TypeDecl.representation with
+    | Some (Variant cons) -> List.fold_left add_cons cs cons 
+    | Some (Record _ | Extensible) | None -> cs
+  in
+  let constructors, elts = open_typedecl (env.constructors, env.elts) in
   {
     env with
     id =
       ( incr unique_id;
         !unique_id );
     types = Maps.Type.add identifier t env.types;
+    constructors;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
         (`Type (identifier, t))
-        env.elts;
+        elts;
   }
 
 let add_module_type identifier t env =
@@ -527,6 +544,14 @@ let lookup_label_by_name name env =
   let filter_fn : Component.Element.any -> Component.Element.label option =
     function
     | #Component.Element.label as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
+let lookup_constructor_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.constructor option =
+    function
+    | #Component.Element.constructor as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
