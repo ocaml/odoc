@@ -18,6 +18,8 @@ type type_lookup_result =
     | `C of Component.Class.t
     | `CT of Component.ClassType.t ]
 
+type datatype_lookup_result = Resolved.DataType.t * Component.TypeDecl.t
+
 type value_lookup_result = Resolved.Value.t
 
 type label_parent_lookup_result =
@@ -34,6 +36,33 @@ let signature_lookup_result_of_label_parent :
   | `S r -> Some r
   | `Page _ -> None
 
+let class_lookup_result_of_type = function r, `C c -> Some (r, c) | _ -> None
+
+let classtype_lookup_result_of_type = function
+  | r, `CT ct -> Some (r, ct)
+  | _ -> None
+
+module Hashable = struct
+  type t = bool * Resolved.Signature.t
+
+  let equal = ( = )
+
+  let hash = Hashtbl.hash
+end
+
+module Memos1 = Hashtbl.Make (Hashable)
+
+(*  let memo = Memos1.create 91*)
+
+module Hashable2 = struct
+  type t = bool * Signature.t
+
+  let equal = ( = )
+
+  let hash = Hashtbl.hash
+end
+
+module Memos2 = Hashtbl.Make (Hashable2)
 
 let module_lookup_to_signature_lookup :
     Env.t -> module_lookup_result -> signature_lookup_result option =
@@ -185,28 +214,53 @@ and typedecl_of_component _env t ~parent_path ~parent_ref name :
   ignore parent_path;
   Some (`Type (parent_ref, TypeName.of_string name), `T t)
 
-(* Don't handle name collisions between class, class types and type decls *)
-and _type_in_signature_parent' env parent name =
-  resolve_signature_reference env parent
-  >>= fun (parent', parent_cp, sg) ->
+and type_in_signature_parent _env
+    ((parent', parent_cp, sg) : signature_lookup_result) name :
+    type_lookup_result option =
   let sg = Tools.prefix_signature (parent_cp, sg) in
-  Find.type_in_sig sg name >>= fun t -> Some (parent', t)
+  Find.type_in_sig sg name >>= function
+  | `T _ as t -> Some (`Type (parent', TypeName.of_string name), t)
+  | `C _ as c -> Some (`Class (parent', ClassName.of_string name), c)
+  | `CT _ as ct -> Some (`ClassType (parent', ClassTypeName.of_string name), ct)
 
-and class_in_signature_parent' env parent name : type_lookup_result option =
-  _type_in_signature_parent' env parent (ClassName.to_string name) >>= function
-  | parent', (`C _ as c) -> Some (`Class (parent', name), c)
+(* Don't handle name collisions between class, class types and type decls *)
+and type_in_signature_parent' env parent name =
+  resolve_signature_reference env parent >>= fun p ->
+  type_in_signature_parent env p name
+
+and type_in_label_parent' env parent name =
+  resolve_label_parent_reference env parent
+  >>= signature_lookup_result_of_label_parent
+  >>= fun p -> type_in_signature_parent env p name
+
+and class_in_signature_parent' env parent name =
+  type_in_signature_parent' env parent (ClassName.to_string name)
+  >>= class_lookup_result_of_type
+
+and classtype_in_signature_parent' env parent name =
+  type_in_signature_parent' env parent (ClassTypeName.to_string name)
+  >>= classtype_lookup_result_of_type
+
+and datatype_in_env env name : datatype_lookup_result option =
+  Env.lookup_datatype_by_name (UnitName.to_string name) env >>= function
+  | `Type (id, t) -> Some (`Identifier id, t)
   | _ -> None
 
-and classtype_in_signature_parent' env parent name : type_lookup_result option =
-  _type_in_signature_parent' env parent (ClassTypeName.to_string name)
-  >>= function
-  | parent', (`CT _ as ct) -> Some (`ClassType (parent', name), ct)
-  | _ -> None
+and datatype_in_signature_parent _env
+    ((parent', parent_cp, sg) : signature_lookup_result) name :
+    datatype_lookup_result option =
+  let sg = Tools.prefix_signature (parent_cp, sg) in
+  Find.datatype_in_sig sg name >>= fun t ->
+  Some (`Type (parent', TypeName.of_string name), t)
 
-and typedecl_in_signature_parent' env parent name : type_lookup_result option =
-  _type_in_signature_parent' env parent (TypeName.to_string name) >>= function
-  | parent', (`T _ as t) -> Some (`Type (parent', name), t)
-  | _ -> None
+and datatype_in_signature_parent' env parent name =
+  resolve_signature_reference env parent >>= fun p ->
+  datatype_in_signature_parent env p (TypeName.to_string name)
+
+and datatype_in_label_parent' env parent name =
+  resolve_label_parent_reference env parent
+  >>= signature_lookup_result_of_label_parent
+  >>= fun p -> datatype_in_signature_parent env p name
 
 (***)
 and resolve_label_parent_reference :
@@ -310,6 +364,15 @@ and resolve_signature_reference :
     in
     resolve env'
 
+and resolve_datatype_reference :
+    Env.t -> DataType.t -> datatype_lookup_result option =
+ fun env r ->
+  match r with
+  | `Resolved _ -> failwith "TODO"
+  | `Root (name, (`TType | `TUnknown)) -> datatype_in_env env name
+  | `Type (parent, name) -> datatype_in_signature_parent' env parent name
+  | `Dot (parent, name) -> datatype_in_label_parent' env parent name
+
 (** Value *)
 
 and value_in_env env name : value_lookup_result option =
@@ -350,6 +413,22 @@ and label_in_label_parent' env parent name : Resolved.Label.t option =
       Some (`Label ((p :> Resolved.LabelParent.t), name))
   | `Page _ as page -> label_in_page env page (LabelName.to_string name)
 
+(** Constructor *)
+
+and constructor_in_env env name : Resolved.Constructor.t option =
+  Env.lookup_constructor_by_name (UnitName.to_string name) env
+  >>= fun (`Constructor (id, _)) ->
+  Some (`Identifier id :> Resolved.Constructor.t)
+
+and constructor_in_datatype _env ((parent', t) : datatype_lookup_result) name :
+    Resolved.Constructor.t option =
+  Find.any_in_type t (ConstructorName.to_string name) >>= function
+  | `Constructor _ -> Some (`Constructor (parent', name))
+
+and constructor_in_datatype' env parent name =
+  resolve_datatype_reference env parent >>= fun p ->
+  constructor_in_datatype env p name
+
 (***)
 
 let resolved1 r = Some (r :> Resolved.t)
@@ -385,6 +464,9 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `Value _ -> value_of_component env ~parent_ref name >>= resolved1
   | `External _ -> external_of_component env ~parent_ref name >>= resolved1
   | `Label _ -> label_of_component env ~parent_ref name >>= resolved1
+  | `Constructor (typ_name, _, _) ->
+      let datatype = `Type (parent_ref, typ_name) in
+      Some (`Constructor (datatype, ConstructorName.of_string name))
   | _ -> None
 
 let resolve_reference_dot_page env page name =
@@ -418,6 +500,8 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | `External (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
+        | `Constructor (id, _) :: _ ->
+            return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | [] -> None )
     | `Resolved r -> Some r
     | `Root (name, `TModule) ->
@@ -431,7 +515,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         >>= resolved
     | `Root (name, `TType) -> type_in_env env name >>= resolved2
     | `Type (parent, name) ->
-        typedecl_in_signature_parent' env parent name >>= resolved2
+        datatype_in_signature_parent' env parent name >>= resolved2
     | `Class (parent, name) ->
         class_in_signature_parent' env parent name >>= resolved2
     | `ClassType (parent, name) ->
@@ -448,5 +532,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
             Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
         | None -> None )
     | `Dot (parent, name) -> resolve_reference_dot env parent name
+    | `Root (name, `TConstructor) -> constructor_in_env env name >>= resolved1
+    | `Constructor (parent, name) ->
+        constructor_in_datatype' env parent name >>= resolved1
     | _ -> None
-

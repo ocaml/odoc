@@ -111,7 +111,8 @@ Explicit, root:
 # resolve_ref "exception:E1"
 Exception: Failure "resolve_reference".
 # resolve_ref "constructor:C1"
-Exception: Failure "resolve_reference".
+- : ref =
+`Identifier (`Constructor (`Type (`Root (Common.root, Root), t1), C1))
 # resolve_ref "val:e1"
 - : ref = `Identifier (`Value (`Root (Common.root, Root), e1))
 # resolve_ref "class:c1"
@@ -195,7 +196,8 @@ Implicit, root:
 # resolve_ref "E1"
 Exception: Failure "resolve_reference".
 # resolve_ref "C1"
-Exception: Failure "resolve_reference".
+- : ref =
+`Identifier (`Constructor (`Type (`Root (Common.root, Root), t1), C1))
 # resolve_ref "e1"
 - : ref = `Identifier (`Value (`Root (Common.root, Root), e1))
 # resolve_ref "c1"
@@ -233,7 +235,9 @@ Implicit, in sig:
 # resolve_ref "M.E2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.C2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2), C2)
 # resolve_ref "M.e2"
 - : ref = `Value (`Identifier (`Module (`Root (Common.root, Root), M)), e2)
 # resolve_ref "M.c2"
