@@ -265,3 +265,13 @@ let exception_in_sig s name =
   find_in_sig s (function
     | Signature.Exception (id, e) when Ident.Name.exception_ id = name -> Some e
     | _ -> None)
+
+let extension_in_sig s name =
+  let rec inner = function
+    | ec :: _ when ec.Extension.Constructor.name = name -> Some ec
+    | _ :: tl -> inner tl
+    | [] -> None
+  in
+  find_in_sig s (function
+    | Signature.TypExt t -> inner t.Extension.constructors
+    | _ -> None)

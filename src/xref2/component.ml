@@ -411,6 +411,9 @@ module Element = struct
 
   type exception_ = [ `Exception of Identifier.Exception.t * Exception.t ]
 
+  type extension =
+    [ `Extension of Identifier.Extension.t * Extension.Constructor.t ]
+
   type any =
     [ signature
     | value
@@ -420,7 +423,8 @@ module Element = struct
     | class_type
     | external_
     | constructor
-    | exception_ ]
+    | exception_
+    | extension ]
 end
 
 module Fmt = struct

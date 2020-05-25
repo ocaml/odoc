@@ -23,6 +23,7 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.ExceptionName.fmt;;
 #install_printer Odoc_model.Names.FieldName.fmt;;
 #install_printer Odoc_model.Names.ConstructorName.fmt;;
+#install_printer Odoc_model.Names.ExtensionName.fmt;;
 ```
 
 Test data:
@@ -124,7 +125,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "constructor:X1" (* X1 is an extension constructor *)
 Exception: Failure "resolve_reference".
 # resolve_ref "extension:X1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Extension (`Root (Common.root, Root), X1))
 # resolve_ref "method:c1.m1"
 Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:c1.v1"
@@ -166,7 +167,8 @@ Exception: Failure "resolve_reference".
 # resolve_ref "constructor:M.X2" (* X2 is an extension constructor *)
 Exception: Failure "resolve_reference".
 # resolve_ref "extension:M.X2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Extension (`Identifier (`Module (`Root (Common.root, Root), M)), X2)
 # resolve_ref "method:M.c2.m2"
 Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:M.c2.v2"
@@ -208,7 +210,7 @@ Implicit, root:
 # resolve_ref "x1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), x1))
 # resolve_ref "X1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Extension (`Root (Common.root, Root), X1))
 # resolve_ref "c1.m1"
 Exception: Failure "resolve_reference".
 # resolve_ref "c1.v1"
@@ -250,7 +252,8 @@ Implicit, in sig:
 # resolve_ref "M.x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "M.X2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Extension (`Identifier (`Module (`Root (Common.root, Root), M)), X2)
 # resolve_ref "M.c2.m2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.c2.v2"

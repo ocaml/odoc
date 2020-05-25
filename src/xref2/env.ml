@@ -85,6 +85,7 @@ type t = {
   instance_variables : Component.InstanceVariable.t Maps.InstanceVariable.t;
   constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
   exceptions : Component.Exception.t Maps.Exception.t;
+  extensions : Component.Extension.Constructor.t Maps.Extension.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -180,6 +181,7 @@ let empty =
     instance_variables = Maps.InstanceVariable.empty;
     constructors = Maps.Constructor.empty;
     exceptions = Maps.Exception.empty;
+    extensions = Maps.Extension.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -370,6 +372,20 @@ let add_exception identifier e env =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
         (`Exception (identifier, e))
+        env.elts;
+  }
+
+let add_extension_constructor identifier ec env =
+  {
+    env with
+    id =
+      ( incr unique_id;
+        !unique_id );
+    extensions = Maps.Extension.add identifier ec env.extensions;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Extension (identifier, ec))
         env.elts;
   }
 
@@ -583,6 +599,14 @@ let lookup_exception_by_name name env =
   in
   find filter_fn (lookup_any_by_name name env)
 
+let lookup_extension_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.extension option =
+    function
+    | #Component.Element.extension as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
 let add_functor_args' :
     Odoc_model.Paths.Identifier.Signature.t ->
     Component.ModuleType.expr ->
@@ -650,6 +674,7 @@ let open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t =
 let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
   let open Component in
   let open Of_Lang in
+  let module L = Odoc_model.Lang in
   fun s e ->
     List.fold_left
       (fun env orig ->
@@ -664,7 +689,12 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty = module_type empty t in
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
         | Odoc_model.Lang.Signature.Comment c -> add_comment c env
-        | Odoc_model.Lang.Signature.TypExt _ -> env
+        | Odoc_model.Lang.Signature.TypExt te ->
+            List.fold_left
+              (fun env tec ->
+                let ty = extension_constructor empty tec in
+                add_extension_constructor tec.L.Extension.Constructor.id ty env)
+              env te.L.Extension.constructors
         | Odoc_model.Lang.Signature.Exception e ->
             let ty = exception_ empty e in
             add_exception e.Odoc_model.Lang.Exception.id ty env
