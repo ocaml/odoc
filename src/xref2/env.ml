@@ -84,6 +84,7 @@ type t = {
   methods : Component.Method.t Maps.Method.t;
   instance_variables : Component.InstanceVariable.t Maps.InstanceVariable.t;
   constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
+  exceptions : Component.Exception.t Maps.Exception.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -178,6 +179,7 @@ let empty =
     methods = Maps.Method.empty;
     instance_variables = Maps.InstanceVariable.empty;
     constructors = Maps.Constructor.empty;
+    exceptions = Maps.Exception.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -215,14 +217,17 @@ let add_type identifier t env =
   let open Component in
   let open_typedecl cs =
     let add_cons (constructors, elts) (cons : TypeDecl.Constructor.t) =
-      let ident = `Constructor (identifier, ConstructorName.of_string cons.name) in 
-      Maps.Constructor.add ident cons constructors,
-      add_to_elts (Odoc_model.Paths.Identifier.name ident)
-        (`Constructor (ident, cons))
-        elts
+      let ident =
+        `Constructor (identifier, ConstructorName.of_string cons.name)
+      in
+      ( Maps.Constructor.add ident cons constructors,
+        add_to_elts
+          (Odoc_model.Paths.Identifier.name ident)
+          (`Constructor (ident, cons))
+          elts )
     in
     match t.TypeDecl.representation with
-    | Some (Variant cons) -> List.fold_left add_cons cs cons 
+    | Some (Variant cons) -> List.fold_left add_cons cs cons
     | Some (Record _ | Extensible) | None -> cs
   in
   let constructors, elts = open_typedecl (env.constructors, env.elts) in
@@ -352,6 +357,20 @@ let add_method identifier m env =
       ( incr unique_id;
         !unique_id );
     methods = Maps.Method.add identifier m env.methods;
+  }
+
+let add_exception identifier e env =
+  {
+    env with
+    id =
+      ( incr unique_id;
+        !unique_id );
+    exceptions = Maps.Exception.add identifier e env.exceptions;
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Exception (identifier, e))
+        env.elts;
   }
 
 let len = ref 0
@@ -549,9 +568,17 @@ let lookup_label_by_name name env =
   find filter_fn (lookup_any_by_name name env)
 
 let lookup_constructor_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.constructor option =
-    function
+  let filter_fn : Component.Element.any -> Component.Element.constructor option
+      = function
     | #Component.Element.constructor as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
+let lookup_exception_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.exception_ option =
+    function
+    | #Component.Element.exception_ as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
@@ -638,7 +665,9 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
         | Odoc_model.Lang.Signature.Comment c -> add_comment c env
         | Odoc_model.Lang.Signature.TypExt _ -> env
-        | Odoc_model.Lang.Signature.Exception _ -> env
+        | Odoc_model.Lang.Signature.Exception e ->
+            let ty = exception_ empty e in
+            add_exception e.Odoc_model.Lang.Exception.id ty env
         | Odoc_model.Lang.Signature.ModuleSubstitution m ->
             let _id = Ident.Of_Identifier.module_ m.id in
             let ty =

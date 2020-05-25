@@ -413,6 +413,23 @@ and label_in_label_parent' env parent name : Resolved.Label.t option =
       Some (`Label ((p :> Resolved.LabelParent.t), name))
   | `Page _ as page -> label_in_page env page (LabelName.to_string name)
 
+(** Exception *)
+
+and exception_in_env env name : Resolved.Exception.t option =
+  Env.lookup_exception_by_name (UnitName.to_string name) env
+  >>= fun (`Exception (id, _)) -> Some (`Identifier id)
+
+and exception_of_component _env ~parent_ref name : Resolved.Exception.t option =
+  Some (`Exception (parent_ref, ExceptionName.of_string name))
+
+and exception_in_signature_parent' env parent name : Resolved.Exception.t option
+    =
+  resolve_signature_reference env parent
+  >>= fun (parent', parent_cp, sg) ->
+  let sg = Tools.prefix_signature (parent_cp, sg) in
+  Find.exception_in_sig sg (ExceptionName.to_string name) >>= fun _ ->
+  Some (`Exception (parent', name))
+
 (** Constructor *)
 
 and constructor_in_env env name : Resolved.Constructor.t option =
@@ -467,6 +484,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `Constructor (typ_name, _, _) ->
       let datatype = `Type (parent_ref, typ_name) in
       Some (`Constructor (datatype, ConstructorName.of_string name))
+  | `Exception _ -> exception_of_component env ~parent_ref name >>= resolved1
   | _ -> None
 
 let resolve_reference_dot_page env page name =
@@ -502,6 +520,8 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | `Constructor (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
+        | `Exception (id, _) :: _ ->
+            return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | [] -> None )
     | `Resolved r -> Some r
     | `Root (name, `TModule) ->
@@ -535,4 +555,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Root (name, `TConstructor) -> constructor_in_env env name >>= resolved1
     | `Constructor (parent, name) ->
         constructor_in_datatype' env parent name >>= resolved1
+    | `Root (name, `TException) -> exception_in_env env name >>= resolved1
+    | `Exception (parent, name) ->
+        exception_in_signature_parent' env parent name >>= resolved1
     | _ -> None

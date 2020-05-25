@@ -113,6 +113,12 @@ val add_class_type :
   t ->
   t
 
+val add_exception :
+  Odoc_model.Paths_types.Identifier.exception_ ->
+  Component.Exception.t ->
+  t ->
+  t
+
 val add_docs : Odoc_model.Comment.docs -> t -> t
 
 val add_comment : Odoc_model.Comment.docs_or_stop -> t -> t
@@ -194,6 +200,8 @@ val lookup_value_by_name :
 val lookup_label_by_name : string -> t -> Component.Element.label option
 
 val lookup_constructor_by_name : string -> t -> Component.Element.constructor option
+
+val lookup_exception_by_name : string -> t -> Component.Element.exception_ option
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)

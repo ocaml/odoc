@@ -56,12 +56,11 @@ let typename_of_typeid (`LType (n, _) | `LCoreType n) = n
 let datatype_in_sig (s : Signature.t) name =
   let rec inner = function
     | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
-      Some (Component.Delayed.get m)
+        Some (Component.Delayed.get m)
     | Signature.Include i :: tl -> (
         match inner i.Include.expansion_.items with
         | Some _ as found -> found
-        | None -> inner tl
-      )
+        | None -> inner tl )
     | _ :: tl -> inner tl
     | [] -> None
   in
@@ -69,7 +68,8 @@ let datatype_in_sig (s : Signature.t) name =
 
 let any_in_type (typ : TypeDecl.t) name =
   let rec inner = function
-    | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name ->
+    | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name
+      ->
         Some (`Constructor cons)
     | _ :: tl -> inner tl
     | [] -> None
@@ -94,7 +94,7 @@ let any_in_comment d name =
     | elt :: rest -> (
         match elt.Odoc_model.Location_.value with
         | `Heading (_, label, _) when Ident.Name.label label = name ->
-          Some (`Label label)
+            Some (`Label label)
         | _ -> inner rest )
     | [] -> None
   in
@@ -105,7 +105,8 @@ let any_in_sig (s : Signature.t) name =
   let rec inner_removed = function
     | Signature.RModule (id, m) :: _ when N.module_ id = name ->
         Some (`Removed (`Module (id, m)))
-    | RType (id, t) :: _ when N.type_ id = name -> Some (`Removed (`Type (id, t)))
+    | RType (id, t) :: _ when N.type_ id = name ->
+        Some (`Removed (`Type (id, t)))
     | _ :: tl -> inner_removed tl
     | [] -> None
   in
@@ -116,14 +117,17 @@ let any_in_sig (s : Signature.t) name =
         Some (`ModuleSubstitution (id, ms))
     | ModuleType (id, mt) :: _ when N.module_type id = name ->
         Some (`ModuleType (id, mt))
-    | Type (id, rec_, t) :: _ when N.type_ id = name -> Some (`Type (id, rec_, t))
+    | Type (id, rec_, t) :: _ when N.type_ id = name ->
+        Some (`Type (id, rec_, t))
     | TypeSubstitution (id, ts) :: _ when N.type_ id = name ->
         Some (`TypeSubstitution (id, ts))
     | Exception (id, exc) :: _ when N.exception_ id = name ->
         Some (`Exception (id, exc))
     | Value (id, v) :: _ when N.value id = name -> Some (`Value (id, v))
-    | External (id, vex) :: _ when N.value id = name -> Some (`External (id, vex))
-    | Class (id, rec_, c) :: _ when N.class_ id = name -> Some (`Class (id, rec_, c))
+    | External (id, vex) :: _ when N.value id = name ->
+        Some (`External (id, vex))
+    | Class (id, rec_, c) :: _ when N.class_ id = name ->
+        Some (`Class (id, rec_, c))
     | ClassType (id, rec_, ct) :: _ when N.class_type id = name ->
         Some (`ClassType (id, rec_, ct))
     | Include inc :: tl -> (
@@ -160,8 +164,7 @@ let signature_in_sig (s : Signature.t) name =
     | Include inc :: tl -> (
         match inner inc.Include.expansion_.items with
         | Some _ as found -> found
-        | None -> inner tl
-      )
+        | None -> inner tl )
     | _ :: tl -> inner tl
     | [] -> None
   in
@@ -246,3 +249,19 @@ let opt_label_in_sig s name =
     | [] -> None
   in
   inner s.Signature.items
+
+let find_in_sig sg f =
+  let rec inner = function
+    | Signature.Include i :: tl -> (
+        match inner i.Include.expansion_.items with
+        | Some _ as x -> x
+        | None -> inner tl )
+    | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner tl )
+    | [] -> None
+  in
+  inner sg.Signature.items
+
+let exception_in_sig s name =
+  find_in_sig s (function
+    | Signature.Exception (id, e) when Ident.Name.exception_ id = name -> Some e
+    | _ -> None)
