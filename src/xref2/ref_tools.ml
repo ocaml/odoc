@@ -413,6 +413,24 @@ and label_in_label_parent' env parent name : Resolved.Label.t option =
       Some (`Label ((p :> Resolved.LabelParent.t), name))
   | `Page _ as page -> label_in_page env page (LabelName.to_string name)
 
+(** Extension constructor *)
+
+and extension_in_env env name : Resolved.Constructor.t option =
+  Env.lookup_extension_by_name (UnitName.to_string name) env
+  >>= fun (`Extension (id, _)) -> Some (`Identifier id :> Resolved.Constructor.t)
+
+and extension_of_component _env ~parent_ref name : Resolved.Constructor.t option
+    =
+  Some (`Extension (parent_ref, ExtensionName.of_string name))
+
+and extension_in_signature_parent' env parent name :
+    Resolved.Constructor.t option =
+  resolve_signature_reference env ~add_canonical:true parent
+  >>= fun (parent', parent_cp, sg) ->
+  let sg = Tools.prefix_signature (parent_cp, sg) in
+  Find.extension_in_sig sg (ExtensionName.to_string name) >>= fun _ ->
+  Some (`Extension (parent', name))
+
 (** Exception *)
 
 and exception_in_env env name : Resolved.Exception.t option =
@@ -485,6 +503,8 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       let datatype = `Type (parent_ref, typ_name) in
       Some (`Constructor (datatype, ConstructorName.of_string name))
   | `Exception _ -> exception_of_component env ~parent_ref name >>= resolved1
+  | `ExtConstructor _ ->
+      extension_of_component env ~parent_ref name >>= resolved1
   | _ -> None
 
 let resolve_reference_dot_page env page name =
@@ -522,6 +542,8 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | `Exception (id, _) :: _ ->
             return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
+        | `Extension (id, _) :: _ ->
+            return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         | [] -> None )
     | `Resolved r -> Some r
     | `Root (name, `TModule) ->
@@ -558,4 +580,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Root (name, `TException) -> exception_in_env env name >>= resolved1
     | `Exception (parent, name) ->
         exception_in_signature_parent' env parent name >>= resolved1
+    | `Root (name, `TExtension) -> extension_in_env env name >>= resolved1
+    | `Extension (parent, name) ->
+        extension_in_signature_parent' env parent name >>= resolved1
     | _ -> None
