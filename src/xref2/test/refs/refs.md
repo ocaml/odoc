@@ -33,7 +33,7 @@ let test_mli = {|
 
   (** {1:L1} *)
   type t1 = C1
-  type r1 = { f1 : int }
+  type r1 = { rf1 : int }
   val f1 : unit -> unit
   module type T1 = sig end
   exception E1
@@ -52,7 +52,7 @@ let test_mli = {|
   module M : sig
     (** {1:L2} *)
     type t2 = C2
-    type r2 = { f2 : int }
+    type r2 = { rf2 : int }
     val f2 : unit -> unit
     module type T2 = sig end
     exception E2
@@ -134,7 +134,9 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:ct1.tv1"
 Exception: Failure "resolve_reference".
-# resolve_ref "field:t1.f1"
+# resolve_ref "field:rf1"
+Exception: Failure "resolve_reference".
+# resolve_ref "field:t1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "section:L1"
 Exception: Failure "resolve_reference".
@@ -177,7 +179,9 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:M.ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "field:M.t2.f2"
+# resolve_ref "field:M.rf2"
+Exception: Failure "resolve_reference".
+# resolve_ref "field:M.t2.rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "section:M.L2"
 Exception: Failure "resolve_reference".
@@ -219,7 +223,9 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "ct1.tv1"
 Exception: Failure "resolve_reference".
-# resolve_ref "t1.f1"
+# resolve_ref "rf1"
+Exception: Failure "resolve_reference".
+# resolve_ref "t1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "L1"
 Exception: Failure "resolve_reference".
@@ -262,7 +268,9 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "M.t2.f2"
+# resolve_ref "M.rf2"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.t2.rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.L2"
 Exception: Failure "resolve_reference".
@@ -297,7 +305,11 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "class-type-ct1.tv1"
 Exception: Failure "resolve_reference".
-# resolve_ref "type-t1.f1"
+# resolve_ref "field-rf1"
+Exception: Failure "resolve_reference".
+# resolve_ref "type-t1.rf1"
+Exception: Failure "resolve_reference".
+# resolve_ref "type-t1.field-rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "section-L1"
 Exception: Failure "resolve_reference".
@@ -321,7 +333,11 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "M.type-t2.f2"
+# resolve_ref "M.type-t2.rf2"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.t2.field-rf2"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.type-t2.field-rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.section-L2"
 Exception: Failure "resolve_reference".
@@ -345,7 +361,9 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "module-M.type-t2.f2"
+# resolve_ref "module-M.type-t2.rf2"
+Exception: Failure "resolve_reference".
+# resolve_ref "module-M.field-rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.section-L2"
 Exception: Failure "resolve_reference".
