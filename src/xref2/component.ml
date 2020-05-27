@@ -416,6 +416,8 @@ module Element = struct
 
   type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
 
+  type label_parent = [ signature | datatype ]
+
   type any =
     [ signature
     | value

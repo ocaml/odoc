@@ -184,8 +184,10 @@ Exception: Failure "resolve_reference".
 - : ref =
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
-# resolve_ref "field:M.t2.rf2"
-Exception: Failure "resolve_reference".
+# resolve_ref "field:M.r2.rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "section:M.L2"
 Exception: Failure "resolve_reference".
 ```
@@ -275,8 +277,10 @@ Exception: Failure "resolve_reference".
 - : ref =
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
-# resolve_ref "M.t2.rf2"
-Exception: Failure "resolve_reference".
+# resolve_ref "M.r2.rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.L2"
 Exception: Failure "resolve_reference".
 ```
@@ -338,12 +342,18 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "M.type-t2.rf2"
-Exception: Failure "resolve_reference".
-# resolve_ref "M.t2.field-rf2"
-Exception: Failure "resolve_reference".
-# resolve_ref "M.type-t2.field-rf2"
-Exception: Failure "resolve_reference".
+# resolve_ref "M.type-r2.rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
+# resolve_ref "M.r2.field-rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
+# resolve_ref "M.type-r2.field-rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.field-rf2"
 - : ref =
 `Field
@@ -370,8 +380,10 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
-# resolve_ref "module-M.type-t2.rf2"
-Exception: Failure "resolve_reference".
+# resolve_ref "module-M.type-r2.rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
