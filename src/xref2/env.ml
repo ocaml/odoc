@@ -634,6 +634,14 @@ let lookup_field_by_name name env =
   in
   find filter_fn (lookup_any_by_name name env)
 
+let lookup_label_parent_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.label_parent option
+      = function
+    | #Component.Element.label_parent as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
 let add_functor_args' :
     Odoc_model.Paths.Identifier.Signature.t ->
     Component.ModuleType.expr ->

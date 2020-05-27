@@ -236,9 +236,12 @@ and classtype_in_signature_parent' env parent name =
   type_in_signature_parent' env parent (ClassTypeName.to_string name)
   >>= classtype_lookup_result_of_type
 
+and datatype_of_element _env (`Type (id, t)) : datatype_lookup_result option =
+  Some (`Identifier id, t)
+
 and datatype_in_env env name : datatype_lookup_result option =
   Env.lookup_datatype_by_name (UnitName.to_string name) env >>= function
-  | `Type (id, t) -> Some (`Identifier id, t)
+  | `Type _ as e -> datatype_of_element env e
   | _ -> None
 
 and datatype_in_signature_parent _env
@@ -258,6 +261,20 @@ and datatype_in_label_parent' env parent name =
   >>= fun p -> datatype_in_signature_parent env p (TypeName.of_string name)
 
 (***)
+and label_parent_in_env env name :
+    label_parent_lookup_result option =
+  Env.lookup_label_parent_by_name (UnitName.to_string name) env >>= function
+  | `Module _ as e ->
+      module_of_element env e
+      >>= module_lookup_to_signature_lookup env
+      >>= fun r -> Some (`S r)
+  | `ModuleType _ as e ->
+      module_type_of_element env e
+      >>= module_type_lookup_to_signature_lookup env
+      >>= fun r -> Some (`S r)
+  | `Type _ as e -> datatype_of_element env e >>= fun r -> Some (`T r)
+  | `Class _ | `ClassType _ -> None
+
 and resolve_label_parent_reference :
     Env.t -> LabelParent.t -> label_parent_lookup_result option =
   let open Utils.OptionMonad in
@@ -268,9 +285,11 @@ and resolve_label_parent_reference :
     in
     match r with
     | `Resolved _ -> failwith "unimplemented"
-    | ( `Module _ | `ModuleType _
-      | `Root (_, #Odoc_model.Paths_types.Reference.tag_module) ) as sr ->
-        resolve_signature_reference env sr >>= label_parent_res_of_sig_res
+    | `Root (name, `TUnknown) -> label_parent_in_env env name
+    | (`Module _ | `ModuleType _ | `Root (_, (`TModule | `TModuleType))) as sr
+      ->
+        resolve_signature_reference env sr
+        >>= label_parent_res_of_sig_res
     | `Root (name, `TType) -> datatype_in_env env name >>= fun r -> Some (`T r)
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
