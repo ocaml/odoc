@@ -89,7 +89,8 @@ let parse_ref ref_str =
 type ref = Odoc_model.Paths_types.Resolved_reference.any
 
 let resolve_ref ref_str : ref =
-  match Ref_tools.resolve_reference env (parse_ref ref_str) with
+  let unresolved = parse_ref ref_str in
+  match Ref_tools.resolve_reference env unresolved with
   | None -> failwith "resolve_reference"
   | Some r -> r
 ```
@@ -135,7 +136,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "field:rf1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
 # resolve_ref "field:t1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "section:L1"
@@ -180,7 +181,9 @@ Exception: Failure "resolve_reference".
 # resolve_ref "instance-variable:M.ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "field:M.rf2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "field:M.t2.rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "section:M.L2"
@@ -224,7 +227,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "rf1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
 # resolve_ref "t1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "L1"
@@ -269,7 +272,9 @@ Exception: Failure "resolve_reference".
 # resolve_ref "M.ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.rf2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.t2.rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.L2"
@@ -306,7 +311,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "class-type-ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "field-rf1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
 # resolve_ref "type-t1.rf1"
 Exception: Failure "resolve_reference".
 # resolve_ref "type-t1.field-rf1"
@@ -339,6 +344,10 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.type-t2.field-rf2"
 Exception: Failure "resolve_reference".
+# resolve_ref "M.field-rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.section-L2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2"
@@ -364,7 +373,13 @@ Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-t2.rf2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.field-rf2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "module-M.section-L2"
 Exception: Failure "resolve_reference".
+# resolve_ref "module-M.field-rf2"
+- : ref =
+`Field
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 ```

@@ -414,6 +414,8 @@ module Element = struct
   type extension =
     [ `Extension of Identifier.Extension.t * Extension.Constructor.t ]
 
+  type field = [ `Field of Identifier.Field.t * TypeDecl.Field.t ]
+
   type any =
     [ signature
     | value
@@ -424,7 +426,8 @@ module Element = struct
     | external_
     | constructor
     | exception_
-    | extension ]
+    | extension
+    | field ]
 end
 
 module Fmt = struct
