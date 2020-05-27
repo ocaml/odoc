@@ -213,6 +213,8 @@ val lookup_exception_by_name :
 
 val lookup_extension_by_name : string -> t -> Component.Element.extension option
 
+val lookup_field_by_name : string -> t -> Component.Element.field option
+
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
 

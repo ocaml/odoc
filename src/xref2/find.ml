@@ -67,16 +67,23 @@ let datatype_in_sig (s : Signature.t) name =
   inner s.items
 
 let any_in_type (typ : TypeDecl.t) name =
-  let rec inner = function
+  let rec find_cons = function
     | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name
       ->
         Some (`Constructor cons)
-    | _ :: tl -> inner tl
+    | _ :: tl -> find_cons tl
+    | [] -> None
+  in
+  let rec find_field = function
+    | ({ TypeDecl.Field.name = name'; _ } as field) :: _ when name' = name ->
+        Some (`Field field)
+    | _ :: tl -> find_field tl
     | [] -> None
   in
   match typ.representation with
-  | Some (Variant cons) -> inner cons
-  | Some (Record _ | Extensible) | None -> None
+  | Some (Variant cons) -> find_cons cons
+  | Some (Record fields) -> find_field fields
+  | Some Extensible | None -> None
 
 let any_in_typext (typext : Extension.t) name =
   let rec inner = function
@@ -139,6 +146,8 @@ let any_in_sig (s : Signature.t) name =
         match any_in_type typ name with
         | Some (`Constructor cons) ->
             Some (`Constructor (typename_of_typeid id, typ, cons))
+        | Some (`Field field) ->
+            Some (`Field (typename_of_typeid id, typ, field))
         | None -> inner tl )
     | TypExt typext :: tl -> (
         match any_in_typext typext name with
@@ -274,4 +283,12 @@ let extension_in_sig s name =
   in
   find_in_sig s (function
     | Signature.TypExt t -> inner t.Extension.constructors
+    | _ -> None)
+
+let any_in_type_in_sig s name =
+  find_in_sig s (function
+    | Signature.Type (id, _, t) -> (
+        match any_in_type (Component.Delayed.get t) name with
+        | Some x -> Some (typename_of_typeid id, x)
+        | None -> None )
     | _ -> None)

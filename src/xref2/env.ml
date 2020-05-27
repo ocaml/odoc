@@ -86,6 +86,7 @@ type t = {
   constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
   exceptions : Component.Exception.t Maps.Exception.t;
   extensions : Component.Extension.Constructor.t Maps.Extension.t;
+  fields : Component.TypeDecl.Field.t Maps.Field.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -180,6 +181,7 @@ let empty =
     methods = Maps.Method.empty;
     instance_variables = Maps.InstanceVariable.empty;
     constructors = Maps.Constructor.empty;
+    fields = Maps.Field.empty;
     exceptions = Maps.Exception.empty;
     extensions = Maps.Extension.empty;
     resolver = None;
@@ -218,21 +220,37 @@ let add_module identifier m env =
 let add_type identifier t env =
   let open Component in
   let open_typedecl cs =
-    let add_cons (constructors, elts) (cons : TypeDecl.Constructor.t) =
+    let add_cons (constructors, fields, elts) (cons : TypeDecl.Constructor.t) =
       let ident =
         `Constructor (identifier, ConstructorName.of_string cons.name)
       in
       ( Maps.Constructor.add ident cons constructors,
+        fields,
         add_to_elts
           (Odoc_model.Paths.Identifier.name ident)
           (`Constructor (ident, cons))
           elts )
+    and add_field (constructors, fields, elts) (field : TypeDecl.Field.t) =
+      let ident =
+        `Field
+          ( (identifier :> Odoc_model.Paths_types.Identifier.parent),
+            FieldName.of_string field.name )
+      in
+      ( constructors,
+        Maps.Field.add ident field fields,
+        add_to_elts
+          (Odoc_model.Paths.Identifier.name ident)
+          (`Field (ident, field))
+          elts )
     in
     match t.TypeDecl.representation with
     | Some (Variant cons) -> List.fold_left add_cons cs cons
-    | Some (Record _ | Extensible) | None -> cs
+    | Some (Record fields) -> List.fold_left add_field cs fields
+    | Some Extensible | None -> cs
   in
-  let constructors, elts = open_typedecl (env.constructors, env.elts) in
+  let constructors, fields, elts =
+    open_typedecl (env.constructors, env.fields, env.elts)
+  in
   {
     env with
     id =
@@ -240,6 +258,7 @@ let add_type identifier t env =
         !unique_id );
     types = Maps.Type.add identifier t env.types;
     constructors;
+    fields;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -603,6 +622,14 @@ let lookup_extension_by_name name env =
   let filter_fn : Component.Element.any -> Component.Element.extension option =
     function
     | #Component.Element.extension as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
+let lookup_field_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.field option =
+    function
+    | #Component.Element.field as item -> Some item
     | _ -> None
   in
   find filter_fn (lookup_any_by_name name env)
