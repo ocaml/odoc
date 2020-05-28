@@ -225,12 +225,12 @@ module Anchor = struct
         let anchor = LabelName.to_string anchor' in
         from_identifier (parent :> Identifier.t)
         >>= function
-        | { page; anchor = ""; kind } ->
+        | { page; anchor = _; kind } ->
           (* Really ad-hoc and shitty, but it works. *)
           if kind = "page" then Ok { page; anchor; kind }
           else Ok {page; anchor; kind = "" }
-        | _ ->
-          Error (Unexpected_anchor ("label " ^ anchor))
+        (* | _ ->
+          Error (Unexpected_anchor ("label " ^ anchor)) *)
 
   let polymorphic_variant ~type_ident elt =
     let name_of_type_constr te =
