@@ -24,6 +24,7 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.FieldName.fmt;;
 #install_printer Odoc_model.Names.ConstructorName.fmt;;
 #install_printer Odoc_model.Names.ExtensionName.fmt;;
+#install_printer Odoc_model.Names.MethodName.fmt;;
 ```
 
 Test data:
@@ -128,11 +129,12 @@ Exception: Failure "resolve_reference".
 # resolve_ref "extension:X1"
 - : ref = `Identifier (`Extension (`Root (Common.root, Root), X1))
 # resolve_ref "method:c1.m1"
-Exception: Failure "resolve_reference".
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), c1)), m1)
 # resolve_ref "instance-variable:c1.v1"
 Exception: Failure "resolve_reference".
 # resolve_ref "method:ct1.tm1" (* ct1 is a class type *)
-Exception: Failure "resolve_reference".
+- : ref =
+`Method (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tm1)
 # resolve_ref "instance-variable:ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "field:rf1"

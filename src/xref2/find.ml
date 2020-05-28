@@ -292,3 +292,20 @@ let any_in_type_in_sig s name =
         | Some x -> Some (typename_of_typeid id, x)
         | None -> None )
     | _ -> None)
+
+let any_in_class_signature cs f =
+  let rec inner = function
+    | ClassSignature.Inherit ct_expr :: tl -> (
+        match inner_inherit ct_expr with Some _ as x -> x | None -> inner tl )
+    | it :: tl -> ( match f it with Some _ as x -> x | None -> inner tl )
+    | [] -> None
+  and inner_inherit = function
+    | Constr _ -> None
+    | Signature cs -> inner cs.items
+  in
+  inner cs.ClassSignature.items
+
+let method_in_class_signature cs name =
+  any_in_class_signature cs (function
+    | ClassSignature.Method (id, m) when Ident.Name.method_ id = name -> Some m
+    | _ -> None)

@@ -583,6 +583,22 @@ let lookup_datatype_by_name name env =
   in
   find filter_fn (lookup_any_by_name name env)
 
+let lookup_class_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.class_ option =
+    function
+    | #Component.Element.class_ as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
+let lookup_class_type_by_name name env =
+  let filter_fn : Component.Element.any -> Component.Element.class_type option =
+    function
+    | #Component.Element.class_type as item -> Some item
+    | _ -> None
+  in
+  find filter_fn (lookup_any_by_name name env)
+
 let lookup_value_by_name name env =
   let filter_fn :
       Component.Element.any ->
