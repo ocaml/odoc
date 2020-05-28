@@ -196,6 +196,11 @@ val lookup_module_type_by_name :
 
 val lookup_datatype_by_name : string -> t -> Component.Element.datatype option
 
+val lookup_class_by_name : string -> t -> Component.Element.class_ option
+
+val lookup_class_type_by_name :
+  string -> t -> Component.Element.class_type option
+
 val lookup_value_by_name :
   string ->
   t ->
