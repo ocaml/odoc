@@ -96,12 +96,17 @@ module Subpages = struct
       | Subpage p -> [p]
     )
 
-  let walk_items (l : Item.t list) =
+  let rec walk_subpages (s : Subpage.t) =
+    match s.Subpage.content with
+    | Items is -> walk_items is
+    | _ -> [s]
+
+  and walk_items (l : Item.t list) =
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
       | Declaration { content ; _ } -> walk_documentedsrc content
-      | Subpage { content ; _ } -> [content]
+      | Subpage { content ; _ } -> walk_subpages content
     )
 
   let compute (p : Page.t) = walk_items (p.header @ p.items)
