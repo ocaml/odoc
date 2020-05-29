@@ -293,7 +293,7 @@ let any_in_type_in_sig s name =
         | None -> None )
     | _ -> None)
 
-let any_in_class_signature cs f =
+let find_in_class_signature cs f =
   let rec inner = function
     | ClassSignature.Inherit ct_expr :: tl -> (
         match inner_inherit ct_expr with Some _ as x -> x | None -> inner tl )
@@ -305,7 +305,13 @@ let any_in_class_signature cs f =
   in
   inner cs.ClassSignature.items
 
+let any_in_class_signature cs name =
+  find_in_class_signature cs (function
+    | ClassSignature.Method (id, m) when Ident.Name.method_ id = name ->
+        Some (`Method m)
+    | _ -> None)
+
 let method_in_class_signature cs name =
-  any_in_class_signature cs (function
+  find_in_class_signature cs (function
     | ClassSignature.Method (id, m) when Ident.Name.method_ id = name -> Some m
     | _ -> None)

@@ -174,12 +174,16 @@ Exception: Failure "resolve_reference".
 # resolve_ref "extension:M.X2"
 - : ref =
 `Extension (`Identifier (`Module (`Root (Common.root, Root), M)), X2)
-# resolve_ref "method:M.c2.m2"
-Exception: Failure "resolve_reference".
+# parse_ref "method:M.c2.m2"
+- : Odoc_model.Paths_types.Reference.any =
+`Method (`Dot (`Root (M, `TUnknown), "c2"), m2)
 # resolve_ref "instance-variable:M.c2.v2"
 Exception: Failure "resolve_reference".
 # resolve_ref "method:M.ct2.tm2" (* ct2 is a class type *)
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2),
+   tm2)
 # resolve_ref "instance-variable:M.ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "field:M.rf2"
@@ -223,11 +227,12 @@ Implicit, root:
 # resolve_ref "X1"
 - : ref = `Identifier (`Extension (`Root (Common.root, Root), X1))
 # resolve_ref "c1.m1"
-Exception: Failure "resolve_reference".
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), c1)), m1)
 # resolve_ref "c1.v1"
 Exception: Failure "resolve_reference".
 # resolve_ref "ct1.tm1" (* ct1 is a class type *)
-Exception: Failure "resolve_reference".
+- : ref =
+`Method (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tm1)
 # resolve_ref "ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "rf1"
@@ -268,11 +273,16 @@ Implicit, in sig:
 - : ref =
 `Extension (`Identifier (`Module (`Root (Common.root, Root), M)), X2)
 # resolve_ref "M.c2.m2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2), m2)
 # resolve_ref "M.c2.v2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.ct2.tm2" (* ct2 is a class type *)
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2),
+   tm2)
 # resolve_ref "M.ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.rf2"
@@ -309,11 +319,12 @@ Exception: Failure "resolve_reference".
 # resolve_ref "type-x1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), x1))
 # resolve_ref "class-c1.m1"
-Exception: Failure "resolve_reference".
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), c1)), m1)
 # resolve_ref "class-c1.v1"
 Exception: Failure "resolve_reference".
 # resolve_ref "class-type-ct1.tm1"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tm1)
 # resolve_ref "class-type-ct1.tv1"
 Exception: Failure "resolve_reference".
 # resolve_ref "field-rf1"
@@ -337,11 +348,16 @@ Exception: Failure "resolve_reference".
 # resolve_ref "M.type-x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "M.class-c2.m2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2), m2)
 # resolve_ref "M.class-c2.v2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.class-type-ct2.tm2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2),
+   tm2)
 # resolve_ref "M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.type-r2.rf2"
@@ -375,11 +391,16 @@ Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-x2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), x2)
 # resolve_ref "module-M.class-c2.m2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2), m2)
 # resolve_ref "module-M.class-c2.v2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.class-type-ct2.tm2"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), ct2),
+   tm2)
 # resolve_ref "module-M.class-type-ct2.tv2"
 Exception: Failure "resolve_reference".
 # resolve_ref "module-M.type-r2.rf2"

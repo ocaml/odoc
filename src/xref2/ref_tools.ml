@@ -350,10 +350,8 @@ and resolve_label_parent_reference :
               >>= module_type_lookup_to_signature_lookup env
               >>= label_parent_res_of_sig_res);
             (fun () ->
-              datatype_in_signature_parent env p (TypeName.of_string name)
-              >>= fun r -> Some (`T r));
-            (* TODO: Class *)
-            (* TODO: ClassType *)
+              ( type_in_signature_parent env p name
+                :> label_parent_lookup_result option ));
           ]
     | `Root (name, _) ->
         Env.lookup_page (UnitName.to_string name) env >>= fun p ->
@@ -561,6 +559,9 @@ and method_in_label_parent env parent name : Resolved.Method.t option =
       Some (`Method (parent', name))
   | `S _ | `Page _ -> None
 
+and method_of_component _env parent' name : Resolved.Method.t option =
+  Some (`Method (parent', MethodName.of_string name))
+
 (***)
 
 let resolved1 r = Some (r :> Resolved.t)
@@ -613,12 +614,17 @@ let resolve_reference_dot_type env ~parent_ref t name =
   | `Constructor _ -> constructor_of_component env parent_ref name >>= resolved1
   | `Field _ -> field_of_component env parent_ref name >>= resolved1
 
+let resolve_reference_dot_class env p name =
+  type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
+  Find.any_in_class_signature cs name >>= function
+  | `Method _ -> method_of_component env parent_ref name >>= resolved1
+
 let resolve_reference_dot env parent name =
   resolve_label_parent_reference env parent >>= function
   | `S (parent_ref, parent_path, parent_sg) ->
       resolve_reference_dot_sg ~parent_path ~parent_ref ~parent_sg env name
   | `T (parent_ref, t) -> resolve_reference_dot_type env ~parent_ref t name
-  | `C _ | `CT _ -> (* TODO *) None
+  | (`C _ | `CT _) as p -> resolve_reference_dot_class env p name
   | `Page _ as page -> resolve_reference_dot_page env page name
 
 let resolve_reference : Env.t -> t -> Resolved.t option =
