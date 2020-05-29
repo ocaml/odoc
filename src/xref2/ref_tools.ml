@@ -548,19 +548,47 @@ and field_of_component _env parent name : Resolved.Field.t option =
 
 (** Method *)
 
+and resolve_class_signature_reference env (r : ClassSignature.t) =
+  (* Casting from ClassSignature to LabelParent.
+     TODO: Add [resolve_class_signature_reference] when it's easier to implement. *)
+  resolve_label_parent_reference env (r :> LabelParent.t) >>= function
+  | (`T _ | `C _ | `CT _) as p -> type_lookup_to_class_signature_lookup env p
+  | `S _ | `Page _ -> None
+
 (* TODO: Resolve methods in env *)
 and method_in_env _env _name = None
 
-and method_in_label_parent env parent name : Resolved.Method.t option =
-  match parent with
-  | (`T _ | `C _ | `CT _) as p ->
-      type_lookup_to_class_signature_lookup env p >>= fun (parent', cs) ->
-      Find.method_in_class_signature cs (MethodName.to_string name) >>= fun _ ->
-      Some (`Method (parent', name))
-  | `S _ | `Page _ -> None
+and method_in_class_signature _env (parent', cs) name : Resolved.Method.t option
+    =
+  Find.method_in_class_signature cs (MethodName.to_string name) >>= fun _ ->
+  Some (`Method (parent', name))
 
 and method_of_component _env parent' name : Resolved.Method.t option =
   Some (`Method (parent', MethodName.of_string name))
+
+and method_in_class_signature' env parent name : Resolved.Method.t option =
+  resolve_class_signature_reference env parent >>= fun p ->
+  method_in_class_signature env p name
+
+(** Instance variable *)
+
+(* TODO: Resolve instance variables in env *)
+and instance_variable_in_env _env _name = None
+
+and instance_variable_in_class_signature _env (parent', cs) name :
+    Resolved.InstanceVariable.t option =
+  Find.instance_variable_in_class_signature cs
+    (InstanceVariableName.to_string name)
+  >>= fun _ -> Some (`InstanceVariable (parent', name))
+
+and instance_variable_of_component _env parent' name :
+    Resolved.InstanceVariable.t option =
+  Some (`InstanceVariable (parent', InstanceVariableName.of_string name))
+
+and instance_variable_in_class_signature' env parent name :
+    Resolved.InstanceVariable.t option =
+  resolve_class_signature_reference env parent >>= fun p ->
+  instance_variable_in_class_signature env p name
 
 (***)
 
@@ -618,6 +646,8 @@ let resolve_reference_dot_class env p name =
   type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
   Find.any_in_class_signature cs name >>= function
   | `Method _ -> method_of_component env parent_ref name >>= resolved1
+  | `InstanceVariable _ ->
+      instance_variable_of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot env parent name =
   resolve_label_parent_reference env parent >>= function
@@ -693,6 +723,9 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Field (parent, name) -> field_in_parent' env parent name >>= resolved1
     | `Root (name, `TMethod) -> method_in_env env name >>= resolved1
     | `Method (parent, name) ->
-        resolve_label_parent_reference env (parent :> LabelParent.t)
-        >>= fun p -> method_in_label_parent env p name >>= resolved1
+        method_in_class_signature' env parent name >>= resolved1
+    | `Root (name, `TInstanceVariable) ->
+        instance_variable_in_env env name >>= resolved1
+    | `InstanceVariable (parent, name) ->
+        instance_variable_in_class_signature' env parent name >>= resolved1
     | _ -> None

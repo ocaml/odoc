@@ -309,9 +309,18 @@ let any_in_class_signature cs name =
   find_in_class_signature cs (function
     | ClassSignature.Method (id, m) when Ident.Name.method_ id = name ->
         Some (`Method m)
+    | InstanceVariable (id, iv) when Ident.Name.instance_variable id = name ->
+        Some (`InstanceVariable iv)
     | _ -> None)
 
 let method_in_class_signature cs name =
   find_in_class_signature cs (function
     | ClassSignature.Method (id, m) when Ident.Name.method_ id = name -> Some m
+    | _ -> None)
+
+let instance_variable_in_class_signature cs name =
+  find_in_class_signature cs (function
+    | ClassSignature.InstanceVariable (id, iv)
+      when Ident.Name.instance_variable id = name ->
+        Some (`InstanceVariable iv)
     | _ -> None)
