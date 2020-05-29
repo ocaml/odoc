@@ -122,9 +122,9 @@ Explicit, root:
 # resolve_ref "val:e1"
 - : ref = `Identifier (`Value (`Root (Common.root, Root), e1))
 # resolve_ref "class:c1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Class (`Root (Common.root, Root), c1))
 # resolve_ref "class-type:ct1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`ClassType (`Root (Common.root, Root), ct1))
 # resolve_ref "type:x1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), x1))
 # resolve_ref "constructor:X1" (* X1 is an extension constructor *)
@@ -164,7 +164,7 @@ Explicit, in sig:
 # resolve_ref "exception:M.E2"
 - : ref =
 `Exception (`Identifier (`Module (`Root (Common.root, Root), M)), E2)
-# resolve_ref "constructor:M.C2"
+# resolve_ref "constructor:M.C2" (* Not allowed by types *)
 Exception: Failure "resolve_reference".
 # resolve_ref "val:M.e2"
 - : ref = `Value (`Identifier (`Module (`Root (Common.root, Root), M)), e2)
@@ -333,9 +333,9 @@ Known kind:
 # resolve_ref "module-type-T1"
 - : ref = `Identifier (`ModuleType (`Root (Common.root, Root), T1))
 # resolve_ref "class-c1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Class (`Root (Common.root, Root), c1))
 # resolve_ref "class-type-ct1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`ClassType (`Root (Common.root, Root), ct1))
 # resolve_ref "type-x1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), x1))
 # resolve_ref "class-c1.m1"
