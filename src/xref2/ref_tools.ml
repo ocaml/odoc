@@ -628,7 +628,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `Field (typ_name, _, _) ->
       let parent = `Type (parent_ref, typ_name) in
       F.of_component env parent name >>= resolved1
-  | _ -> None
+  | `ModuleSubstitution _ | `Removed _ | `TypeSubstitution _ -> None
 
 let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved1
@@ -691,10 +691,12 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         DT.in_signature env p name >>= resolved2
+    | `Root (name, `TClass) -> CL.in_env env name >>= resolved2
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         T.in_signature env p (ClassName.to_string name)
         >>= class_lookup_result_of_type >>= resolved2
+    | `Root (name, `TClassType) -> CT.in_env env name >>= resolved2
     | `ClassType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
         T.in_signature env p (ClassTypeName.to_string name)
@@ -737,4 +739,3 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `InstanceVariable (parent, name) ->
         resolve_class_signature_reference env parent >>= fun p ->
         MV.in_class_signature env p name >>= resolved1
-    | _ -> None
