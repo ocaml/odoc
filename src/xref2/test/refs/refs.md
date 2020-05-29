@@ -145,8 +145,8 @@ Exception: Failure "resolve_reference".
   (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tv1)
 # resolve_ref "field:rf1"
 - : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
-# resolve_ref "field:t1.rf1"
-Exception: Failure "resolve_reference".
+# resolve_ref "field:r1.rf1"
+- : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "section:L1"
 Exception: Failure "resolve_reference".
 ```
@@ -180,9 +180,10 @@ Exception: Failure "resolve_reference".
 # resolve_ref "extension:M.X2"
 - : ref =
 `Extension (`Identifier (`Module (`Root (Common.root, Root), M)), X2)
-# parse_ref "method:M.c2.m2"
-- : Odoc_model.Paths_types.Reference.any =
-`Method (`Dot (`Root (M, `TUnknown), "c2"), m2)
+# resolve_ref "method:M.c2.m2"
+- : ref =
+`Method
+  (`Class (`Identifier (`Module (`Root (Common.root, Root), M)), c2), m2)
 # resolve_ref "instance-variable:M.c2.v2"
 - : ref =
 `InstanceVariable
@@ -251,8 +252,8 @@ Implicit, root:
   (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tv1)
 # resolve_ref "rf1"
 - : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
-# resolve_ref "t1.rf1"
-Exception: Failure "resolve_reference".
+# resolve_ref "r1.rf1"
+- : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "L1"
 Exception: Failure "resolve_reference".
 ```
@@ -351,10 +352,10 @@ Exception: Failure "resolve_reference".
   (`Identifier (`ClassType (`Root (Common.root, Root), ct1)), tv1)
 # resolve_ref "field-rf1"
 - : ref = `Identifier (`Field (`Type (`Root (Common.root, Root), r1), rf1))
-# resolve_ref "type-t1.rf1"
-Exception: Failure "resolve_reference".
-# resolve_ref "type-t1.field-rf1"
-Exception: Failure "resolve_reference".
+# resolve_ref "type-r1.rf1"
+- : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
+# resolve_ref "type-r1.field-rf1"
+- : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "section-L1"
 Exception: Failure "resolve_reference".
 # resolve_ref "M.type-t2"
