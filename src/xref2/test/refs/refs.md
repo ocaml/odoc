@@ -26,14 +26,18 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.ExtensionName.fmt;;
 #install_printer Odoc_model.Names.MethodName.fmt;;
 #install_printer Odoc_model.Names.InstanceVariableName.fmt;;
+#install_printer Odoc_model.Names.SectionName.fmt;;
+#install_printer Odoc_model.Names.LabelName.fmt;;
 ```
 
 Test data:
 
 ```ocaml
 let test_mli = {|
+  (** First comment *)
 
-  (** {1:L1} *)
+  (** {1:L1 title} *)
+
   type t1 = C1
   type r1 = { rf1 : int }
   val f1 : unit -> unit
@@ -53,7 +57,9 @@ let test_mli = {|
   type s1 := r1
 
   module M : sig
-    (** {1:L2} *)
+
+    (** {1:L2 title2} *)
+
     type t2 = C2
     type r2 = { rf2 : int }
     val f2 : unit -> unit
@@ -148,7 +154,7 @@ Exception: Failure "resolve_reference".
 # resolve_ref "field:r1.rf1"
 - : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "section:L1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Label (`Root (Common.root, Root), L1))
 ```
 
 Explicit, in sig:
@@ -207,7 +213,7 @@ Exception: Failure "resolve_reference".
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "section:M.L2"
-Exception: Failure "resolve_reference".
+- : ref = `Label (`Identifier (`Module (`Root (Common.root, Root), M)), L2)
 ```
 
 Implicit, root:
@@ -255,7 +261,7 @@ Implicit, root:
 # resolve_ref "r1.rf1"
 - : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "L1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Label (`Root (Common.root, Root), L1))
 ```
 
 Implicit, in sig:
@@ -314,7 +320,7 @@ Implicit, in sig:
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.L2"
-Exception: Failure "resolve_reference".
+- : ref = `Label (`Identifier (`Module (`Root (Common.root, Root), M)), L2)
 ```
 
 Known kind:
@@ -357,7 +363,7 @@ Known kind:
 # resolve_ref "type-r1.field-rf1"
 - : ref = `Field (`Identifier (`Type (`Root (Common.root, Root), r1)), rf1)
 # resolve_ref "section-L1"
-Exception: Failure "resolve_reference".
+- : ref = `Identifier (`Label (`Root (Common.root, Root), L1))
 # resolve_ref "M.type-t2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2)
 # resolve_ref "M.module-type-T2"
@@ -405,7 +411,7 @@ Exception: Failure "resolve_reference".
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "M.section-L2"
-Exception: Failure "resolve_reference".
+- : ref = `Label (`Identifier (`Module (`Root (Common.root, Root), M)), L2)
 # resolve_ref "module-M.type-t2"
 - : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2)
 # resolve_ref "module-M.module-type-T2"
@@ -445,7 +451,7 @@ Exception: Failure "resolve_reference".
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 # resolve_ref "module-M.section-L2"
-Exception: Failure "resolve_reference".
+- : ref = `Label (`Identifier (`Module (`Root (Common.root, Root), M)), L2)
 # resolve_ref "module-M.field-rf2"
 - : ref =
 `Field
