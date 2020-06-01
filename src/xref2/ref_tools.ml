@@ -45,29 +45,6 @@ let signature_lookup_result_of_label_parent :
       Some (rr', p, s)
   | _ -> None
 
-module Hashable = struct
-  type t = bool * Resolved.Signature.t
-
-  let equal = ( = )
-
-  let hash = Hashtbl.hash
-end
-
-module Memos1 = Hashtbl.Make (Hashable)
-
-(*  let memo = Memos1.create 91*)
-
-module Hashable2 = struct
-  type t = Signature.t
-
-  let equal = ( = )
-
-  let hash = Hashtbl.hash
-end
-
-module Memos2 = Hashtbl.Make (Hashable2)
-
-let memo2 = Memos2.create 91
 
 let module_lookup_to_signature_lookup :
     Env.t -> module_lookup_result -> signature_lookup_result option =
@@ -282,7 +259,6 @@ and resolve_signature_reference :
     Env.t -> Signature.t -> signature_lookup_result option =
   let open Utils.OptionMonad in
   fun env' r ->
-    let id = r in
     (* Format.fprintf Format.err_formatter "lookup_and_resolve_module_from_resolved_path: looking up %a\n%!" Component.Fmt.resolved_path p; *)
     let resolve env =
       (* Format.fprintf Format.err_formatter "B"; *)
@@ -307,24 +283,7 @@ and resolve_signature_reference :
                 >>= module_type_lookup_to_signature_lookup env);
             ]
     in
-    (*        Memos2.add memo2 id result; *)
-    match Memos2.find_all memo2 id with
-    | [] ->
-        let lookups, resolved = Env.with_recorded_lookups env' resolve in
-        Memos2.add memo2 id (resolved, lookups);
-        resolved
-    | xs ->
-        let rec find = function
-          | [] ->
-              let lookups, resolved = Env.with_recorded_lookups env' resolve in
-              Memos2.add memo2 id (resolved, lookups);
-              resolved
-          | (resolved, lookups) :: xs ->
-              if Env.verify_lookups env' lookups then
-                (*Format.fprintf Format.err_formatter "G";*) resolved
-              else find xs
-        in
-        find xs
+    resolve env'
 
 and resolve_value_reference : Env.t -> Value.t -> value_lookup_result option =
   let open Utils.OptionMonad in
