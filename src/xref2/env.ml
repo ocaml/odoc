@@ -402,24 +402,17 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
       ty
   | Pack _ -> failwith "Unsupported"
 
-let roots = Hashtbl.create 91
-let roots_counts = Hashtbl.create 91
-
 let lookup_root_module name env =
   let result =
     match env.resolver with 
     | None -> None
     | Some r ->
-        let result =
           match r.lookup_unit name with
           | Forward_reference -> Some Forward
           | Not_found -> None
           | Found u ->
               let unit = r.resolve_unit u.root in
               Some (Resolved (u.root.digest, unit.id, module_of_unit unit))
-        in
-        Hashtbl.replace roots_counts name 1;
-        result
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
