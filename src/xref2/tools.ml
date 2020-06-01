@@ -667,7 +667,7 @@ and lookup_and_resolve_module_from_path :
     | `Root r -> (
         (* Format.fprintf Format.err_formatter "Looking up module %s by name...%!" r; *)
         match Env.lookup_root_module r env with
-        | Some (Env.Resolved (p, m)) ->
+        | Some (Env.Resolved (_, p, m)) ->
             (* Format.fprintf Format.err_formatter "Got it!\n%!"; *)
             return (process_module_path env add_canonical m (`Identifier p), m)
         | Some Env.Forward ->

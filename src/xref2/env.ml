@@ -9,7 +9,7 @@ type lookup_unit_result =
   | Not_found
 
 type root =
-  | Resolved of (Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+  | Resolved of (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -27,7 +27,7 @@ type lookup_type =
   | ModuleType of Odoc_model.Paths_types.Identifier.module_type * bool
   | RootModule of
       string
-      * [ `Forward | `Resolved of Odoc_model.Paths.Identifier.Module.t ] option
+      * [ `Forward | `Resolved of Digest.t ] option
   | ModuleByName of
       string * Odoc_model.Paths_types.Identifier.reference_module option
   | FragmentRoot of int
@@ -35,9 +35,8 @@ type lookup_type =
 let pp_lookup_type fmt =
   let fmtrm fmt = function
     | Some `Forward -> Format.fprintf fmt "Some (Forward)"
-    | Some (`Resolved id) ->
-        Format.fprintf fmt "Some (Resolved %a)" Component.Fmt.model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
+    | Some (`Resolved digest) ->
+        Format.fprintf fmt "Some (Resolved %s)" digest
     | None -> Format.fprintf fmt "None"
   in
   let id_opt fmt = function
@@ -85,7 +84,6 @@ type t = {
   methods : Component.Method.t Maps.Method.t;
   instance_variables : Component.InstanceVariable.t Maps.InstanceVariable.t;
   elts : Component.Element.any list StringMap.t;
-  roots : root StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
   fragmentroot : (int * Component.Signature.t) option;
@@ -174,7 +172,6 @@ let empty =
     externals = Maps.Value.empty;
     titles = Maps.Label.empty;
     elts = StringMap.empty;
-    roots = StringMap.empty;
     classes = Maps.Class.empty;
     class_types = Maps.ClassType.empty;
     methods = Maps.Method.empty;
@@ -340,8 +337,6 @@ let add_method identifier m env =
     methods = Maps.Method.add identifier m env.methods;
   }
 
-let add_root name ty env = { env with roots = StringMap.add name ty env.roots }
-
 let len = ref 0
 
 let n = ref 0
@@ -408,34 +403,29 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
   | Pack _ -> failwith "Unsupported"
 
 let roots = Hashtbl.create 91
+let roots_counts = Hashtbl.create 91
 
 let lookup_root_module name env =
   let result =
-    match StringMap.find name env.roots with
-    | x -> Some x
-    | exception Not_found -> (
-        match try Some (Hashtbl.find roots name) with _ -> None with
-        | Some x -> x
-        | None -> (
-            match env.resolver with
-            | None -> None
-            | Some r ->
-                let result =
-                  match r.lookup_unit name with
-                  | Forward_reference -> Some Forward
-                  | Not_found -> None
-                  | Found u ->
-                      let unit = r.resolve_unit u.root in
-                      Some (Resolved (unit.id, module_of_unit unit))
-                in
-                Hashtbl.add roots name result;
-                result ) )
+    match env.resolver with 
+    | None -> None
+    | Some r ->
+        let result =
+          match r.lookup_unit name with
+          | Forward_reference -> Some Forward
+          | Not_found -> None
+          | Found u ->
+              let unit = r.resolve_unit u.root in
+              Some (Resolved (u.root.digest, unit.id, module_of_unit unit))
+        in
+        Hashtbl.replace roots_counts name 1;
+        result
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <- RootModule (name, Some `Forward) :: r.lookups
-  | Some r, Some (Resolved (id, _)) ->
-      r.lookups <- RootModule (name, Some (`Resolved id)) :: r.lookups
+  | Some r, Some (Resolved (digest, _, _)) ->
+      r.lookups <- RootModule (name, Some (`Resolved digest)) :: r.lookups
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
   | None, _ -> () );
   result
@@ -447,7 +437,7 @@ let lookup_module_internal identifier env =
       match identifier with
       | `Root (_, name) -> (
           match lookup_root_module (UnitName.to_string name) env with
-          | Some (Resolved (_, m)) -> Some m
+          | Some (Resolved (_, _, m)) -> Some m
           | Some Forward | None -> None )
       | _ -> None )
 
@@ -499,21 +489,14 @@ let lookup_module_by_name_internal name env =
     | _ -> None
   in
   match find filter_fn (lookup_any_by_name name env) with
-  | None ->
-      None
-      (* (match lookup_root_module name env with
-         | Some (Resolved (id, m)) -> Some (Resolved (id, m))
-         | Some Forward -> Some Forward
-         | _ -> None) *)
-  | Some (`Module (id, m)) -> Some (Resolved (id, m))
+  | None -> None
+  | Some (`Module (id, m)) -> Some (id, m)
 
 let lookup_module_by_name name env =
   let maybe_record_result res =
     match (res, env.recorder) with
-    | Some (Resolved (id, _)), Some r ->
+    | Some (id, _), Some r ->
         r.lookups <- ModuleByName (name, Some id) :: r.lookups
-    | (None | Some Forward), Some r ->
-        r.lookups <- ModuleByName (name, None) :: r.lookups
     | _ -> ()
   in
   let result = lookup_module_by_name_internal name env in
@@ -680,7 +663,6 @@ let initial_env :
   let initial_env =
     let m = module_of_unit t in
     empty |> add_module t.id m
-    |> add_root (Odoc_model.Paths.Identifier.name t.id) (Resolved (t.id, m))
   in
   let initial_env = set_resolver initial_env resolver in
   List.fold_right
@@ -688,15 +670,11 @@ let initial_env :
       match import with
       | Import.Resolved root ->
           let unit = resolver.resolve_unit root in
+          Component.Delayed.eager := true;
           let m = module_of_unit unit in
+          Component.Delayed.eager := false;
           let env = add_module unit.id m env in
-          let env' =
-            add_root
-              (Odoc_model.Root.Odoc_file.name root.Odoc_model.Root.file)
-              (Resolved (unit.id, m))
-              env
-          in
-          (import :: imports, env')
+          (import :: imports, env)
       | Import.Unresolved (str, _) -> (
           match resolver.lookup_unit str with
           | Forward_reference -> (import :: imports, env)
@@ -714,11 +692,19 @@ let verify_lookups env lookups =
         in
         found <> actually_found
     | RootModule (name, res) -> (
-        let actual_result = lookup_root_module name env in
+        let actual_result =
+          match env.resolver with
+          | None -> None
+          | Some r ->
+            match r.lookup_unit name with
+            | Forward_reference -> Some `Forward
+            | Not_found -> None
+            | Found u -> Some (`Resolved u.root.digest)
+        in
         match (res, actual_result) with
         | None, None -> false
-        | Some `Forward, Some Forward -> false
-        | Some (`Resolved id1), Some (Resolved (id2, _)) -> id1 <> id2
+        | Some `Forward, Some `Forward -> false
+        | Some (`Resolved digest1), Some (`Resolved digest2) -> digest1 <> digest2
         | _ -> true )
     | ModuleType (id, found) ->
         let actually_found =
@@ -729,8 +715,7 @@ let verify_lookups env lookups =
         let actually_found = lookup_module_by_name name env in
         match (result, actually_found) with
         | None, None -> false
-        | Some id, Some (Resolved (id', _)) -> id <> id'
-        | None, Some Forward -> false
+        | Some id, Some (id', _) -> id <> id'
         | _ -> true )
     | FragmentRoot _i -> true
     (* begin
