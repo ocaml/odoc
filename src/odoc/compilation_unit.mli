@@ -24,6 +24,8 @@ val root : t -> Odoc_model.Root.t
 
 val save : Fs.File.t -> t -> unit
 
+val units_cache : (string, t) Hashtbl.t
+
 (** {2 Deserialization} *)
 
 val load : Fs.File.t -> (t, [> msg]) result

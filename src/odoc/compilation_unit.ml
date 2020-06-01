@@ -30,11 +30,12 @@ let save file t =
   Marshal.to_channel oc t [];
   close_out oc
 
+let units_cache = Hashtbl.create 23 (* because. *)
+
 let load =
-  let units = Hashtbl.create 23 (* because. *) in
   fun file ->
     let file = Fs.File.to_string file in
-    match Hashtbl.find units file with
+    match Hashtbl.find units_cache file with
     | unit -> Ok unit
     | exception Not_found ->
       try
@@ -42,7 +43,7 @@ let load =
         let _root = Root.load file ic in
         let res = Marshal.from_channel ic in
         close_in ic;
-        Hashtbl.add units file res;
+        Hashtbl.add units_cache file res;
         Ok res
       with exn ->
         let msg =
