@@ -212,11 +212,10 @@ and resolve_module_reference : Env.t -> Module.t -> module_lookup_result option
         try Some (process_module env m base base) with _ -> None
       in
       match Env.lookup_module_by_name (UnitName.to_string name) env with
-      | Some (Resolved (id, m)) -> resolved id m
-      | Some Forward -> None
+      | Some (id, m) -> resolved id m
       | None -> (
           match Env.lookup_root_module (UnitName.to_string name) env with
-          | Some (Env.Resolved (id, m)) -> resolved id m
+          | Some (Env.Resolved (_, id, m)) -> resolved id m
           | _ -> None ) )
 
 and resolve_module_type_reference :
