@@ -50,6 +50,7 @@ let test_mli = {|
   end
   type x1 = ..
   type x1 += X1
+  type s1 := r1
 
   module M : sig
     (** {1:L2} *)
@@ -70,6 +71,7 @@ let test_mli = {|
     type x2 = ..
     type x2 += X2
     module N : sig end
+    type s2 := r2
   end
 
 |}
@@ -447,4 +449,17 @@ Exception: Failure "resolve_reference".
 - : ref =
 `Field
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
+```
+
+Substitutions:
+
+```ocaml
+# resolve_ref "s1"
+- : ref = `Identifier (`Type (`Root (Common.root, Root), s1))
+# resolve_ref "s1.rf1"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.s2"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.s2.rf2"
+Exception: Failure "resolve_reference".
 ```
