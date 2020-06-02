@@ -38,7 +38,6 @@ let to_html_tree_compilation_unit ?theme_uri ~syntax v =
 
 let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
   Root.read input >>= fun root ->
-  (* Statmemprof_emacs.start 1E-4 30 5; *)
   let input_s = Fs.File.to_string input in
   match root.file with
   | Page page_name ->
@@ -105,35 +104,14 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
       |> Odoc_model.Error.shed_warnings
     in
-    let stats = Odoc_xref2.Tools.(Memos1.stats module_lookup_cache) in
-    Format.fprintf Format.err_formatter "module_lookup_cache: n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length;
-    let size = Odoc_xref2.Tools.(Memos1.fold (fun k v sz -> Obj.(reachable_words (repr k) + reachable_words (repr v) + sz)) module_lookup_cache 0) in
-    Format.eprintf "Total size: %d\n%!" size;
-    let sz = Obj.(reachable_words (repr Odoc_xref2.Tools.module_lookup_cache)) in
-    Format.eprintf "Easier size: %f Mb\n%!" (float_of_int sz *. 8.0 /. (1024.0 *. 1024.0));
-    Odoc_xref2.Tools.(Memos1.iter (fun _k v -> Format.eprintf "%d\n%!" v) module_lookup_hits);
+    
+    Odoc_xref2.Tools.reset_cache ();
+    Hashtbl.clear Compilation_unit.units_cache;
+    Gc.full_major ();
+ 
 
-    let stats = Odoc_xref2.Tools.(Memos2.stats module_resolve_cache) in
-    Format.fprintf Format.err_formatter "module_resolve_cache n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length;
-    let size = Odoc_xref2.Tools.(Memos2.fold (fun k v sz -> Obj.(reachable_words (repr k) + reachable_words (repr v) + sz)) module_resolve_cache 0) in
-    Format.eprintf "Total size: %d\n%!" size;
-    let sz = Obj.(reachable_words (repr Odoc_xref2.Tools.module_resolve_cache)) in
-    Format.eprintf "Easier size: %f Mb\n%!" (float_of_int sz *. 8.0 /. (1024.0 *. 1024.0));
-    Odoc_xref2.Tools.(Memos2.iter (fun _k v -> Format.eprintf "%d\n%!" v) module_resolve_hits);
+   Compilation_unit.save Fs.File.(set_ext ".odocl" input) odoctree;
 
-    let stats = Odoc_xref2.Tools.(Memos3.stats module_signature_cache) in
-    Format.fprintf Format.err_formatter "module_signature_cache: n=%d nb=%d maxb=%d\n%!" stats.num_bindings stats.num_buckets stats.max_bucket_length;
-    let size = Odoc_xref2.Tools.(Memos3.fold (fun k v sz -> Obj.(reachable_words (repr k) + reachable_words (repr v) + sz)) module_signature_cache 0) in
-    Format.eprintf "Total size: %d\n%!" size;
-    let sz = Obj.(reachable_words (repr Odoc_xref2.Tools.module_signature_cache)) in
-    Format.eprintf "Easier size: %f Mb\n%!" (float_of_int sz *. 8.0 /. (1024.0 *. 1024.0));
-
-    Odoc_xref2.Tools.(Memos3.iter (fun _k v -> Format.eprintf "%d\n%!" v) module_signature_hits);
-
-    (* let rec loop_forever () =
-      Thread.delay 1.0;
-      loop_forever ()
-    in ignore(loop_forever ()); *)
    let pkg_dir =
       Fs.Directory.reach_from ~dir:root_dir root.package
     in
@@ -155,6 +133,16 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       Format.fprintf fmt "%t@?" content;
       close_out oc
     );
+
+    Odoc_xref2.Tools.reset_cache ();
+    Hashtbl.clear Compilation_unit.units_cache;
+    Gc.full_major ();
+
+    (* let rec loop_forever () =
+      Thread.delay 1.0;
+      loop_forever ()
+    in ignore(loop_forever ()); *)
+
     Ok ()
 
 (* Used only for [--index-for] which is deprecated and available only for
