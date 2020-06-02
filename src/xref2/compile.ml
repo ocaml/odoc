@@ -15,22 +15,22 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   let cp' = Component.Of_Lang.(type_path empty p) in
   let cp = Cpath.unresolve_type_path cp' in
-  match Tools.lookup_type_from_path env cp with
-  | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
+  match Tools.resolve_type_path env cp with
+  | Resolved p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
   | Unresolved p -> Cpath.type_path_of_cpath p
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
   let cp = Component.Of_Lang.(module_type_path empty p) |> Cpath.unresolve_module_type_path in
-  match Tools.resolve_module_type env cp with
+  match Tools.resolve_module_type_path env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
   | Unresolved p -> Cpath.module_type_path_of_cpath p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
   let cp = Component.Of_Lang.(module_path empty p) |> Cpath.unresolve_module_path in
-  match Tools.resolve_module env cp with
+  match Tools.resolve_module_path env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
 
@@ -267,7 +267,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   | Alias p -> (
       let cp' = Component.Of_Lang.(module_path empty p) in
       let cp = Cpath.unresolve_module_path cp' in
-      match Tools.resolve_module env cp with
+      match Tools.resolve_module_path env cp with
       | Resolved p' ->
           Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
       | Unresolved p' -> Alias (Cpath.module_path_of_cpath p') )
@@ -452,7 +452,7 @@ and module_type_expr :
             ->
               let frag' =
                 match
-                  Tools.resolve_mt_module_fragment env (fragment_root, sg) frag
+                  Tools.resolve_module_fragment env (fragment_root, sg) frag
                 with
                 | Some cfrag ->
                     `Resolved
@@ -466,7 +466,7 @@ and module_type_expr :
           | TypeEq (frag, _), TypeEq (unresolved, eqn) ->
               let frag' =
                 match
-                  Tools.resolve_mt_type_fragment env (fragment_root, sg) frag
+                  Tools.resolve_type_fragment env (fragment_root, sg) frag
                 with
                 | Some cfrag ->
                     `Resolved
@@ -483,7 +483,7 @@ and module_type_expr :
           | ModuleSubst (frag, _), ModuleSubst (unresolved, mpath) ->
               let frag' =
                 match
-                  Tools.resolve_mt_module_fragment env (fragment_root, sg) frag
+                  Tools.resolve_module_fragment env (fragment_root, sg) frag
                 with
                 | Some cfrag ->
                     `Resolved
@@ -497,7 +497,7 @@ and module_type_expr :
           | TypeSubst (frag, _), TypeSubst (unresolved, eqn) ->
               let frag' =
                 match
-                  Tools.resolve_mt_type_fragment env (fragment_root, sg) frag
+                  Tools.resolve_type_fragment env (fragment_root, sg) frag
                 with
                 | Some cfrag ->
                     `Resolved
@@ -651,7 +651,7 @@ and type_expression_package env parent p =
   let open TypeExpr.Package in
   let cp' = Component.Of_Lang.(module_type_path empty p.path) in
   let cp = Cpath.unresolve_module_type_path cp' in
-  match Tools.lookup_and_resolve_module_type_from_path true env cp with
+  match Tools.resolve_module_type ~mark_substituted:true env cp with
   | Resolved (path, mt) -> (
       match Tools.signature_of_module_type env mt with
       | Error _ ->
@@ -662,7 +662,7 @@ and type_expression_package env parent p =
             let cfrag = Component.Of_Lang.(type_fragment empty frag) in
             let frag' =
               match
-                Tools.resolve_mt_type_fragment env (`ModuleType path, sg) cfrag
+                Tools.resolve_type_fragment env (`ModuleType path, sg) cfrag
               with
               | Some cfrag' ->
                   `Resolved (Lang_of.(Path.resolved_type_fragment empty) cfrag')
@@ -691,7 +691,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       let cp' = Component.Of_Lang.(type_path empty path) in
       let cp = Cpath.unresolve_type_path cp' in
       let ts = List.map (type_expression env parent) ts' in
-      match Tools.lookup_type_from_path env cp with
+      match Tools.resolve_type env cp with
       | Resolved (cp, Found _t) ->
           let p = Cpath.resolved_type_path_of_cpath cp in
           Constr (`Resolved p, ts)

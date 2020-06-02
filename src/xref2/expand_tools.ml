@@ -47,7 +47,7 @@ and aux_expansion_of_module_decl env ~strengthen ty =
 and aux_expansion_of_module_alias env ~strengthen path =
   (* Format.eprintf "aux_expansion_of_module_alias (strengthen=%b, path=%a)\n%!"
     strengthen Component.Fmt.module_path path; *)
-  match Tools.lookup_and_resolve_module_from_path false false env path with
+  match Tools.resolve_module env ~mark_substituted:false ~add_canonical:false path with
   | Resolved (p, m) -> (
       (* Don't strengthen if the alias is definitely hidden. We can't always resolve canonical
          paths at this stage so use the weak canonical test that assumes all canonical paths
@@ -112,7 +112,7 @@ and aux_expansion_of_module_type_expr env expr :
     (expansion, error) Result.result =
   match expr with
   | Path p -> (
-      match Tools.lookup_and_resolve_module_type_from_path false env p with
+      match Tools.resolve_module_type ~mark_substituted:false env p with
       | Resolved (_, mt) -> aux_expansion_of_module_type env mt
       | Unresolved p -> Error (`Unresolved_module_type p) )
   | Signature s -> Ok (Signature s)
