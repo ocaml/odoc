@@ -285,6 +285,22 @@ let extension_in_sig s name =
     | Signature.TypExt t -> inner t.Extension.constructors
     | _ -> None)
 
+let label_parent_in_sig s name =
+  let module N = Ident.Name in
+  find_in_sig s (function
+    | Signature.Module (id, _, m) when N.module_ id = name ->
+        Some (`M (Component.Delayed.get m))
+    | ModuleType (id, mt) when N.module_type id = name ->
+        Some (`MT (Component.Delayed.get mt))
+    | Type (id, _, t) when N.type_ id = name ->
+        Some (`T (Component.Delayed.get t))
+    | Class (id, _, c) when N.class_ id = name ->
+        Some (`C c)
+    | ClassType (id, _, c) when N.class_type id = name
+      ->
+        Some (`CT c)
+    | _ -> None)
+
 let any_in_type_in_sig s name =
   find_in_sig s (function
     | Signature.Type (id, _, t) -> (

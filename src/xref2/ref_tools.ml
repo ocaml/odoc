@@ -33,11 +33,6 @@ type label_parent_lookup_result =
 type class_signature_lookup_result =
   Resolved.ClassSignature.t * Component.ClassSignature.t
 
-let rec choose l =
-  match l with
-  | [] -> None
-  | x :: rest -> ( match x () with Some _ as x -> x | None -> choose rest )
-
 let signature_lookup_result_of_label_parent :
     label_parent_lookup_result -> signature_lookup_result option = function
   | `S r -> Some r
@@ -415,20 +410,51 @@ module MV = struct
     Some (`InstanceVariable (parent', InstanceVariableName.of_string name))
 end
 
-(***)
-let rec label_parent_in_env env name : label_parent_lookup_result option =
-  Env.lookup_label_parent_by_name (UnitName.to_string name) env >>= function
-  | `Module _ as e ->
-      M.of_element env e >>= module_lookup_to_signature_lookup env >>= fun r ->
-      Some (`S r)
-  | `ModuleType _ as e ->
-      MT.of_element env e >>= module_type_lookup_to_signature_lookup env
-      >>= fun r -> Some (`S r)
-  | `Type _ as e -> Some (`T (DT.of_element env e))
-  | `Class _ as e -> Some (`C (CL.of_element env e))
-  | `ClassType _ as e -> Some (`CT (CT.of_element env e))
+module LP = struct
+  (** Label parent *)
 
-and resolve_label_parent_reference :
+  type t = label_parent_lookup_result
+
+  let in_env env name : t option =
+    Env.lookup_label_parent_by_name (UnitName.to_string name) env >>= function
+    | `Module _ as e ->
+        M.of_element env e >>= module_lookup_to_signature_lookup env
+        >>= fun r -> Some (`S r)
+    | `ModuleType _ as e ->
+        MT.of_element env e >>= module_type_lookup_to_signature_lookup env
+        >>= fun r -> Some (`S r)
+    | `Type _ as e -> Some (`T (DT.of_element env e))
+    | `Class _ as e -> Some (`C (CL.of_element env e))
+    | `ClassType _ as e -> Some (`CT (CT.of_element env e))
+
+  let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
+      : t option =
+    let sg = Tools.prefix_signature (parent_cp, sg) in
+    Find.label_parent_in_sig sg name >>= function
+    | `M m ->
+        let name = ModuleName.of_string name in
+        module_lookup_to_signature_lookup env
+          (M.of_component env m
+             (`Module (parent_cp, name))
+             (`Module (parent', name)))
+        >>= fun s -> Some (`S s)
+    | `MT mt ->
+        let name = ModuleTypeName.of_string name in
+        module_type_lookup_to_signature_lookup env
+          (MT.of_component env mt
+             (`ModuleType (parent_cp, name))
+             (`ModuleType (parent', name)))
+        >>= fun s -> Some (`S s)
+    | `T t ->
+        DT.of_component env ~parent_ref:parent' t name >>= fun t -> Some (`T t)
+    | `C c ->
+        CL.of_component env ~parent_ref:parent' c name >>= fun c -> Some (`C c)
+    | `CT ct ->
+        CT.of_component env ~parent_ref:parent' ct name >>= fun ct ->
+        Some (`CT ct)
+end
+
+let rec resolve_label_parent_reference :
     Env.t -> LabelParent.t -> label_parent_lookup_result option =
   let open Utils.OptionMonad in
   fun env r ->
@@ -438,7 +464,7 @@ and resolve_label_parent_reference :
     in
     match r with
     | `Resolved _ -> failwith "unimplemented"
-    | `Root (name, `TUnknown) -> label_parent_in_env env name
+    | `Root (name, `TUnknown) -> LP.in_env env name
     | (`Module _ | `ModuleType _ | `Root (_, (`TModule | `TModuleType))) as sr
       ->
         resolve_signature_reference env sr >>= label_parent_res_of_sig_res
@@ -461,20 +487,7 @@ and resolve_label_parent_reference :
     | `Dot (parent, name) ->
         resolve_label_parent_reference env parent
         >>= signature_lookup_result_of_label_parent
-        >>= fun p ->
-        choose
-          [
-            (fun () ->
-              M.in_signature env p (ModuleName.of_string name)
-              >>= module_lookup_to_signature_lookup env
-              >>= label_parent_res_of_sig_res);
-            (fun () ->
-              MT.in_signature env p (ModuleTypeName.of_string name)
-              >>= module_type_lookup_to_signature_lookup env
-              >>= label_parent_res_of_sig_res);
-            (fun () ->
-              (T.in_signature env p name :> label_parent_lookup_result option));
-          ]
+        >>= fun p -> LP.in_signature env p name
     | `Root (name, _) ->
         Env.lookup_page (UnitName.to_string name) env >>= fun p ->
         let labels =
