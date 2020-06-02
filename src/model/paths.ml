@@ -466,13 +466,12 @@ module Path = struct
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
-    let rec inner = function
+    function
     | `Resolved r -> is_resolved_hidden r
     | `Root _ -> false
     | `Forward _ -> false
-    | `Dot(p, _) -> inner (p : module_ :> any)
-    | `Apply(p1, p2) -> inner (p1 : module_ :> any) || inner (p2 : module_ :> any)
-    in inner
+    | `Dot(p, _) -> is_path_hidden (p : module_ :> any)
+    | `Apply(p1, p2) -> is_path_hidden (p1 : module_ :> any) || is_path_hidden (p2 : module_ :> any)
 
   module Resolved = struct
 
