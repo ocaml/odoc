@@ -17,7 +17,7 @@ utop # Resolve.signature Env.empty sg
 let _ = Toploop.set_paths ()
 
 let cmti_of_string s =
-    Odoc_xref2.Tools.reset_cache ();
+    Odoc_xref2.Tools.reset_caches ();
     let env = Compmisc.initial_env () in
     let l = Lexing.from_string s in
     let p = Parse.interface l in

@@ -76,8 +76,8 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
         let result = Tools.reresolve_type env p in
         `Resolved (result |> Cpath.resolved_type_path_of_cpath)
     | _ -> (
-        match Tools.lookup_type_from_path env cp with
-        | Resolved (p', _) -> `Resolved (Cpath.resolved_type_path_of_cpath p')
+        match Tools.resolve_type_path env cp with
+        | Resolved p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
         | Unresolved unresolved ->
             Lookup_failures.report "Failed to lookup type %a"
               Component.Fmt.model_path
@@ -96,7 +96,7 @@ and module_type_path :
           ( Tools.reresolve_module_type env p
           |> Cpath.resolved_module_type_path_of_cpath )
     | _ -> (
-        match Tools.resolve_module_type env cp with
+        match Tools.resolve_module_type_path env cp with
         | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
         | Unresolved unresolved ->
             Lookup_failures.report "Failed to resolve module type %a"
@@ -115,7 +115,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         `Resolved
           (Cpath.resolved_module_path_of_cpath after)
     | _ -> (
-        match Tools.resolve_module env cp with
+        match Tools.resolve_module_path env cp with
         | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
         | Unresolved _ when is_forward p -> p
         | Unresolved unresolved ->
@@ -743,8 +743,8 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
         let p' =
           Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
         in
-        match Tools.lookup_type_from_resolved_path env p' with
-        | Ok (_, Found (`T t')) ->
+        match Tools.lookup_type env p' with
+        | Ok (Found (`T t')) ->
             {
               default with
               equation =
@@ -860,7 +860,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
       if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Constr (path, ts)
       else
         let cp = Component.Of_Lang.(type_path empty path') in
-        match Tools.lookup_type_from_path env cp with
+        match Tools.resolve_type env cp with
         | Resolved (cp', Found (`T t)) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             if List.mem p visited then raise Loop

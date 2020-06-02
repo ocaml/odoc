@@ -105,7 +105,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       |> Odoc_model.Error.shed_warnings
     in
     
-    Odoc_xref2.Tools.reset_cache ();
+    Odoc_xref2.Tools.reset_caches ();
     Hashtbl.clear Compilation_unit.units_cache;
     Gc.full_major ();
  
@@ -134,7 +134,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       close_out oc
     );
 
-    Odoc_xref2.Tools.reset_cache ();
+    Odoc_xref2.Tools.reset_caches ();
     Hashtbl.clear Compilation_unit.units_cache;
     Gc.full_major ();
 

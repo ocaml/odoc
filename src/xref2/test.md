@@ -889,7 +889,7 @@ Now let's lookup that module:
 
 ```ocaml env=e1
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env cp;;
-val p : Tools.Memos1.key =
+val p : Cpath.Resolved.module_ =
   `Apply
     (`Apply
        (`Apply
