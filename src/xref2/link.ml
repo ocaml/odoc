@@ -393,9 +393,9 @@ and module_ : Env.t -> Module.t -> Module.t =
   let open Module in
   let sg_id = (m.id :> Id.Signature.t) in
   let start_time = Unix.gettimeofday () in
-  Format.fprintf Format.err_formatter "Processing Module %a\n%!"
+  (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
      Component.Fmt.model_identifier
-     (m.id :> Id.t);
+     (m.id :> Id.t); *)
   if m.hidden then m
   else
     let t1 = Unix.gettimeofday () in
@@ -867,15 +867,15 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
             else if Cpath.is_resolved_type_hidden cp' then
               match t.Component.TypeDecl.equation with
               | { manifest = Some expr; params; _ } -> (
-                  let map =
-                    List.fold_left2
-                      (fun acc param sub ->
-                        match param with
-                        | Lang.TypeDecl.Var x, _ -> (x, sub) :: acc
-                        | Any, _ -> acc)
-                      [] params ts
-                  in
                   try
+                    let map =
+                      List.fold_left2
+                        (fun acc param sub ->
+                          match param with
+                          | Lang.TypeDecl.Var x, _ -> (x, sub) :: acc
+                          | Any, _ -> acc)
+                        [] params ts
+                    in
                     let t' =
                       Expand_tools.type_expr map
                         Lang_of.(type_expr empty (parent :> Id.Parent.t) expr)
@@ -883,7 +883,10 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                     type_expression env parent (p :: visited) t'
                   with
                   | Loop -> Constr (`Resolved p, ts)
-                  | _ -> Constr (`Resolved p, ts) )
+                  | e ->
+                    Format.eprintf "Caught unexpected exception when expanding type declaration (%s)\n%!"
+                      (Printexc.to_string e);
+                    Constr (`Resolved p, ts) )
               | _ -> Constr (`Resolved p, ts)
             else Constr (`Resolved p, ts)
         | Resolved (cp', Found _) ->
