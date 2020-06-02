@@ -126,8 +126,13 @@ and resolve_module_reference env (r : Module.t) : module_lookup_result option =
   match r with
   | `Resolved _r -> failwith "What's going on!?"
   (*        Some (resolve_resolved_module_reference env r ~add_canonical)*)
-  | `Dot (parent, name) -> module_in_label_parent' env parent name
-  | `Module (parent, name) -> module_in_signature_parent' env parent name
+  | `Dot (parent, name) ->
+      resolve_label_parent_reference env parent
+      >>= signature_lookup_result_of_label_parent
+      >>= fun p -> module_in_signature_parent env p (ModuleName.of_string name)
+  | `Module (parent, name) ->
+      resolve_signature_reference env parent >>= fun p ->
+      module_in_signature_parent env p name
   | `Root (name, _) -> module_in_env env name
 
 and module_in_signature_parent env
@@ -140,15 +145,6 @@ and module_in_signature_parent env
     (module_of_component env m
        (`Module (parent_cp, name))
        (`Module (parent, name)))
-
-and module_in_signature_parent' env parent name =
-  resolve_signature_reference env parent >>= fun p ->
-  module_in_signature_parent env p name
-
-and module_in_label_parent' env parent name =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun p -> module_in_signature_parent env p (ModuleName.of_string name)
 
 and module_of_element env (`Module (id, m)) : module_lookup_result option =
   let base = `Identifier id in
@@ -182,19 +178,6 @@ and module_type_in_signature_parent env
     (module_type_of_component env mt
        (`ModuleType (parent_cp, name))
        (`ModuleType (parent', name)))
-
-and module_type_in_signature_parent' env parent name :
-    module_type_lookup_result option =
-  resolve_signature_reference env parent >>= fun p ->
-  module_type_in_signature_parent env p name
-
-and module_type_in_label_parent' env parent name :
-    module_type_lookup_result option =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun p ->
-  let name = ModuleTypeName.of_string name in
-  module_type_in_signature_parent env p name
 
 and module_type_in_env env name : module_type_lookup_result option =
   Env.lookup_module_type_by_name (UnitName.to_string name) env
@@ -237,6 +220,7 @@ and datatype_of_component _env t ~parent_ref name :
     datatype_lookup_result option =
   Some (`Type (parent_ref, TypeName.of_string name), t)
 
+(* Don't handle name collisions between class, class types and type decls *)
 and type_in_signature_parent _env
     ((parent', parent_cp, sg) : signature_lookup_result) name :
     type_lookup_result option =
@@ -246,24 +230,6 @@ and type_in_signature_parent _env
   | `C c -> Some (`C (`Class (parent', ClassName.of_string name), c))
   | `CT ct ->
       Some (`CT (`ClassType (parent', ClassTypeName.of_string name), ct))
-
-(* Don't handle name collisions between class, class types and type decls *)
-and type_in_signature_parent' env parent name =
-  resolve_signature_reference env parent >>= fun p ->
-  type_in_signature_parent env p name
-
-and type_in_label_parent' env parent name =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun p -> type_in_signature_parent env p name
-
-and class_in_signature_parent' env parent name =
-  type_in_signature_parent' env parent (ClassName.to_string name)
-  >>= class_lookup_result_of_type
-
-and classtype_in_signature_parent' env parent name =
-  type_in_signature_parent' env parent (ClassTypeName.to_string name)
-  >>= class_type_lookup_result_of_type
 
 and datatype_of_element _env (`Type (id, t)) : datatype_lookup_result =
   (`Identifier id, t)
@@ -279,15 +245,6 @@ and datatype_in_signature_parent _env
   let sg = Tools.prefix_signature (parent_cp, sg) in
   Find.datatype_in_sig sg (TypeName.to_string name) >>= fun t ->
   Some (`Type (parent', name), t)
-
-and datatype_in_signature_parent' env parent name =
-  resolve_signature_reference env parent >>= fun p ->
-  datatype_in_signature_parent env p name
-
-and datatype_in_label_parent' env parent name =
-  resolve_label_parent_reference env parent
-  >>= signature_lookup_result_of_label_parent
-  >>= fun p -> datatype_in_signature_parent env p (TypeName.of_string name)
 
 (***)
 and label_parent_in_env env name : label_parent_lookup_result option =
@@ -380,13 +337,15 @@ and resolve_signature_reference :
       | `Root (name, `TModule) ->
           module_in_env env name >>= module_lookup_to_signature_lookup env
       | `Module (parent, name) ->
-          module_in_signature_parent' env parent name
+          resolve_signature_reference env parent >>= fun p ->
+          module_in_signature_parent env p name
           >>= module_lookup_to_signature_lookup env
       | `Root (name, `TModuleType) ->
           module_type_in_env env name
           >>= module_type_lookup_to_signature_lookup env
       | `ModuleType (parent, name) ->
-          module_type_in_signature_parent' env parent name
+          resolve_signature_reference env parent >>= fun p ->
+          module_type_in_signature_parent env p name
           >>= module_type_lookup_to_signature_lookup env
       | `Root (name, `TUnknown) -> (
           Env.lookup_signature_by_name (UnitName.to_string name) env
@@ -424,8 +383,13 @@ and resolve_datatype_reference :
   match r with
   | `Resolved _ -> failwith "TODO"
   | `Root (name, (`TType | `TUnknown)) -> datatype_in_env env name
-  | `Type (parent, name) -> datatype_in_signature_parent' env parent name
-  | `Dot (parent, name) -> datatype_in_label_parent' env parent name
+  | `Type (parent, name) ->
+      resolve_signature_reference env parent >>= fun p ->
+      datatype_in_signature_parent env p name
+  | `Dot (parent, name) ->
+      resolve_label_parent_reference env parent
+      >>= signature_lookup_result_of_label_parent
+      >>= fun p -> datatype_in_signature_parent env p (TypeName.of_string name)
 
 (** Value *)
 
@@ -441,8 +405,8 @@ and external_of_component _env ~parent_ref name : value_lookup_result option =
   (* Should add an [`External] reference ? *)
   Some (`Value (parent_ref, ValueName.of_string name))
 
-and value_in_signature_parent' env parent name : value_lookup_result option =
-  resolve_signature_reference env parent >>= fun (parent', _, sg) ->
+and value_in_signature_parent _env ((parent', _, sg) : signature_lookup_result)
+    name : value_lookup_result option =
   Find.opt_value_in_sig sg (ValueName.to_string name) >>= fun _ ->
   Some (`Value (parent', name))
 
@@ -459,8 +423,9 @@ and label_of_component _env ~parent_ref name : Resolved.Label.t option =
   Some
     (`Label ((parent_ref :> Resolved.LabelParent.t), LabelName.of_string name))
 
-and label_in_label_parent' env parent name : Resolved.Label.t option =
-  resolve_label_parent_reference env parent >>= function
+and label_in_label_parent env (parent : label_parent_lookup_result) name :
+    Resolved.Label.t option =
+  match parent with
   | `S (p, _, sg) ->
       Find.opt_label_in_sig sg (LabelName.to_string name) >>= fun _ ->
       Some (`Label ((p :> Resolved.LabelParent.t), name))
@@ -477,9 +442,9 @@ and extension_of_component _env ~parent_ref name : Resolved.Constructor.t option
     =
   Some (`Extension (parent_ref, ExtensionName.of_string name))
 
-and extension_in_signature_parent' env parent name :
+and extension_in_signature_parent _env
+    ((parent', parent_cp, sg) : signature_lookup_result) name :
     Resolved.Constructor.t option =
-  resolve_signature_reference env parent >>= fun (parent', parent_cp, sg) ->
   let sg = Tools.prefix_signature (parent_cp, sg) in
   Find.extension_in_sig sg (ExtensionName.to_string name) >>= fun _ ->
   Some (`Extension (parent', name))
@@ -493,9 +458,9 @@ and exception_in_env env name : Resolved.Exception.t option =
 and exception_of_component _env ~parent_ref name : Resolved.Exception.t option =
   Some (`Exception (parent_ref, ExceptionName.of_string name))
 
-and exception_in_signature_parent' env parent name : Resolved.Exception.t option
-    =
-  resolve_signature_reference env parent >>= fun (parent', parent_cp, sg) ->
+and exception_in_signature_parent _env
+    ((parent', parent_cp, sg) : signature_lookup_result) name :
+    Resolved.Exception.t option =
   let sg = Tools.prefix_signature (parent_cp, sg) in
   Find.exception_in_sig sg (ExceptionName.to_string name) >>= fun _ ->
   Some (`Exception (parent', name))
@@ -513,10 +478,6 @@ and constructor_in_datatype _env ((parent', t) : datatype_lookup_result) name :
   | `Constructor _ -> Some (`Constructor (parent', name))
   | `Field _ -> None
 
-and constructor_in_datatype' env parent name =
-  resolve_datatype_reference env parent >>= fun p ->
-  constructor_in_datatype env p name
-
 and constructor_of_component _env parent name =
   Some (`Constructor (parent, ConstructorName.of_string name))
 
@@ -526,9 +487,9 @@ and field_in_env env name : Resolved.Field.t option =
   Env.lookup_field_by_name (UnitName.to_string name) env
   >>= fun (`Field (id, _)) -> Some (`Identifier id :> Resolved.Field.t)
 
-and field_in_parent' env parent name : Resolved.Field.t option =
-  resolve_label_parent_reference env (parent : Parent.t :> LabelParent.t)
-  >>= function
+and field_in_parent _env (parent : label_parent_lookup_result) name :
+    Resolved.Field.t option =
+  match parent with
   | `S (parent', parent_cp, sg) -> (
       let sg = Tools.prefix_signature (parent_cp, sg) in
       Find.any_in_type_in_sig sg (FieldName.to_string name) >>= function
@@ -566,10 +527,6 @@ and method_in_class_signature _env (parent', cs) name : Resolved.Method.t option
 and method_of_component _env parent' name : Resolved.Method.t option =
   Some (`Method (parent', MethodName.of_string name))
 
-and method_in_class_signature' env parent name : Resolved.Method.t option =
-  resolve_class_signature_reference env parent >>= fun p ->
-  method_in_class_signature env p name
-
 (** Instance variable *)
 
 (* TODO: Resolve instance variables in env *)
@@ -584,11 +541,6 @@ and instance_variable_in_class_signature _env (parent', cs) name :
 and instance_variable_of_component _env parent' name :
     Resolved.InstanceVariable.t option =
   Some (`InstanceVariable (parent', InstanceVariableName.of_string name))
-
-and instance_variable_in_class_signature' env parent name :
-    Resolved.InstanceVariable.t option =
-  resolve_class_signature_reference env parent >>= fun p ->
-  instance_variable_in_class_signature env p name
 
 (***)
 
@@ -683,27 +635,36 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Resolved r -> Some r
     | `Root (name, `TModule) -> module_in_env env name >>= resolved
     | `Module (parent, name) ->
-        module_in_signature_parent' env parent name >>= resolved
+        resolve_signature_reference env parent >>= fun p ->
+        module_in_signature_parent env p name >>= resolved
     | `Root (name, `TModuleType) -> module_type_in_env env name >>= resolved
     | `ModuleType (parent, name) ->
-        module_type_in_signature_parent' env parent name >>= resolved
+        resolve_signature_reference env parent >>= fun p ->
+        module_type_in_signature_parent env p name >>= resolved
     | `Root (name, `TType) -> (
         type_in_env env name >>= function
         | `T (r, _) -> resolved1 r
         | `C (r, _) -> resolved1 r
         | `CT (r, _) -> resolved1 r )
     | `Type (parent, name) ->
-        datatype_in_signature_parent' env parent name >>= resolved2
+        resolve_signature_reference env parent >>= fun p ->
+        datatype_in_signature_parent env p name >>= resolved2
     | `Class (parent, name) ->
-        class_in_signature_parent' env parent name >>= resolved2
+        resolve_signature_reference env parent >>= fun p ->
+        type_in_signature_parent env p (ClassName.to_string name)
+        >>= class_lookup_result_of_type >>= resolved2
     | `ClassType (parent, name) ->
-        classtype_in_signature_parent' env parent name >>= resolved2
+        resolve_signature_reference env parent >>= fun p ->
+        type_in_signature_parent env p (ClassTypeName.to_string name)
+        >>= class_type_lookup_result_of_type >>= resolved2
     | `Root (name, `TValue) -> value_in_env env name >>= resolved1
     | `Value (parent, name) ->
-        value_in_signature_parent' env parent name >>= resolved1
+        resolve_signature_reference env parent >>= fun p ->
+        value_in_signature_parent env p name >>= resolved1
     | `Root (name, `TLabel) -> label_in_env env name >>= resolved1
     | `Label (parent, name) ->
-        label_in_label_parent' env parent name >>= resolved1
+        resolve_label_parent_reference env parent >>= fun p ->
+        label_in_label_parent env p name >>= resolved1
     | `Root (name, `TPage) -> (
         match Env.lookup_page (UnitName.to_string name) env with
         | Some p ->
@@ -712,20 +673,27 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> constructor_in_env env name >>= resolved1
     | `Constructor (parent, name) ->
-        constructor_in_datatype' env parent name >>= resolved1
+        resolve_datatype_reference env parent >>= fun p ->
+        constructor_in_datatype env p name >>= resolved1
     | `Root (name, `TException) -> exception_in_env env name >>= resolved1
     | `Exception (parent, name) ->
-        exception_in_signature_parent' env parent name >>= resolved1
+        resolve_signature_reference env parent >>= fun p ->
+        exception_in_signature_parent env p name >>= resolved1
     | `Root (name, `TExtension) -> extension_in_env env name >>= resolved1
     | `Extension (parent, name) ->
-        extension_in_signature_parent' env parent name >>= resolved1
+        resolve_signature_reference env parent >>= fun p ->
+        extension_in_signature_parent env p name >>= resolved1
     | `Root (name, `TField) -> field_in_env env name >>= resolved1
-    | `Field (parent, name) -> field_in_parent' env parent name >>= resolved1
+    | `Field (parent, name) ->
+        resolve_label_parent_reference env (parent : Parent.t :> LabelParent.t)
+        >>= fun p -> field_in_parent env p name >>= resolved1
     | `Root (name, `TMethod) -> method_in_env env name >>= resolved1
     | `Method (parent, name) ->
-        method_in_class_signature' env parent name >>= resolved1
+        resolve_class_signature_reference env parent >>= fun p ->
+        method_in_class_signature env p name >>= resolved1
     | `Root (name, `TInstanceVariable) ->
         instance_variable_in_env env name >>= resolved1
     | `InstanceVariable (parent, name) ->
-        instance_variable_in_class_signature' env parent name >>= resolved1
+        resolve_class_signature_reference env parent >>= fun p ->
+        instance_variable_in_class_signature env p name >>= resolved1
     | _ -> None
