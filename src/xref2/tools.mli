@@ -115,11 +115,6 @@ val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
 val handle_module_type_lookup : Env.t -> string -> Cpath.Resolved.parent -> Component.Signature.t -> (Cpath.Resolved.module_type * Component.ModuleType.t) option
 
-val handle_signature_with_subs :
-Env.t ->
-Component.Signature.t ->
-Component.ModuleType.substitution list ->
-(Component.Signature.t, handle_subs_error) Result.result
 
 val signature_of_module : Env.t ->
     Component.Module.t ->
@@ -129,15 +124,16 @@ val signature_of_module_type :     Env.t ->
     Component.ModuleType.t ->
     (Component.Signature.t, signature_of_module_error) Result.result
 
-    val signature_of_module_type_expr :     Env.t ->
-        Component.ModuleType.expr ->
-        (Component.Signature.t, signature_of_module_error) Result.result
+val signature_of_module_type_expr :     Env.t ->
+    Component.ModuleType.expr ->
+    (Component.Signature.t, signature_of_module_error) Result.result
     
 val class_signature_of_class_type :
     Env.t -> Component.ClassType.t -> Component.ClassSignature.t option
 
 val class_signature_of_class :
     Env.t -> Component.Class.t -> Component.ClassSignature.t option
+
 
 type module_modifiers =
     [ `Aliased of Cpath.Resolved.module_
@@ -147,8 +143,6 @@ type module_modifiers =
 val get_module_path_modifiers : Env.t -> add_canonical:bool -> Component.Module.t -> module_modifiers option
 
 val prefix_signature : Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t
-
-val get_substituted_module_type : Env.t -> Component.ModuleType.expr -> Cpath.Resolved.module_type option
 
 val resolve_module_fragment : Env.t ->
     Cfrag.root * Component.Signature.t ->
@@ -178,3 +172,9 @@ Cfrag.type_ ->
 Component.ModuleType.substitution ->
 Component.Signature.t ->
 Component.Signature.t
+
+val handle_signature_with_subs :
+Env.t ->
+Component.Signature.t ->
+Component.ModuleType.substitution list ->
+(Component.Signature.t, handle_subs_error) Result.result
