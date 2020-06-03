@@ -146,12 +146,8 @@ module MT = struct
 
   type t = module_type_lookup_result
 
-  let of_component env mt base_path base_ref : t =
-    match
-      mt.Component.ModuleType.expr >>= Tools.get_substituted_module_type env
-    with
-    | Some p -> (base_ref, `SubstT (p, base_path), mt)
-    | None -> (base_ref, base_path, mt)
+  let of_component _env mt base_path base_ref : t =
+    (base_ref, base_path, mt)
 
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
