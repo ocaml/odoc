@@ -26,7 +26,7 @@ type test = {
 }
 
 let test_resolve test =
-    Odoc_xref2.Tools.reset_cache ();
+    Odoc_xref2.Tools.reset_caches ();
     let _, _, sg = Common.model_of_string test.test_data in
     let open Format in
     fprintf std_formatter "%s\n%s\n%!" test.name test.description;
