@@ -408,6 +408,85 @@ let add_extension_constructor identifier ec env =
         env.elts;
   }
 
+type value_or_external =
+  [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
+  | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
+
+type 'a scope =
+  Component.Element.any -> ([< Component.Element.any ] as 'a) option
+
+let lookup_by_name scope name env =
+  let maybe_record_result result =
+    match env.recorder with
+    | Some r -> (
+        match (result :> Component.Element.any) with
+        | `Module (id, _) ->
+            r.lookups <- ModuleByName (name, Some id) :: r.lookups
+        | _ -> () )
+    | _ -> ()
+  in
+  try
+    match List.filter_map scope (StringMap.find name env.elts) with
+    | [] -> None
+    | x :: _ as results ->
+        List.iter maybe_record_result results;
+        Some x
+  with Not_found -> None
+
+let s_signature : Component.Element.signature scope = function
+  | #Component.Element.signature as r -> Some r
+  | _ -> None
+
+let s_module : Component.Element.module_ scope = function
+  | #Component.Element.module_ as r -> Some r
+  | _ -> None
+
+let s_any : Component.Element.any scope = fun r -> Some r
+
+let s_module_type : Component.Element.module_type scope = function
+  | #Component.Element.module_type as r -> Some r
+  | _ -> None
+
+let s_datatype : Component.Element.datatype scope = function
+  | #Component.Element.datatype as r -> Some r
+  | _ -> None
+
+let s_class : Component.Element.class_ scope = function
+  | #Component.Element.class_ as r -> Some r
+  | _ -> None
+
+let s_class_type : Component.Element.class_type scope = function
+  | #Component.Element.class_type as r -> Some r
+  | _ -> None
+
+let s_value : value_or_external scope = function
+  | #value_or_external as r -> Some r
+  | _ -> None
+
+let s_label : Component.Element.label scope = function
+  | #Component.Element.label as r -> Some r
+  | _ -> None
+
+let s_constructor : Component.Element.constructor scope = function
+  | #Component.Element.constructor as r -> Some r
+  | _ -> None
+
+let s_exception : Component.Element.exception_ scope = function
+  | #Component.Element.exception_ as r -> Some r
+  | _ -> None
+
+let s_extension : Component.Element.extension scope = function
+  | #Component.Element.extension as r -> Some r
+  | _ -> None
+
+let s_field : Component.Element.field scope = function
+  | #Component.Element.field as r -> Some r
+  | _ -> None
+
+let s_label_parent : Component.Element.label_parent scope = function
+  | #Component.Element.label_parent as r -> Some r
+  | _ -> None
+
 let len = ref 0
 
 let n = ref 0
@@ -526,137 +605,6 @@ let lookup_page name env =
       match r.lookup_page name with
       | None -> None
       | Some root -> Some (r.resolve_page root) )
-
-let find : ('a -> 'b option) -> 'a list -> 'b option =
- fun f ->
-  let rec inner acc = function
-    | x :: xs -> ( match f x with Some y -> Some y | None -> inner acc xs )
-    | [] -> None
-  in
-  inner []
-
-let lookup_any_by_name name env =
-  try StringMap.find name env.elts with _ -> []
-
-let lookup_signature_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.signature option =
-    function
-    | #Component.Element.signature as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_module_by_name_internal name env =
-  let filter_fn : Component.Element.any -> Component.Element.module_ option =
-    function
-    | #Component.Element.module_ as item -> Some item
-    | _ -> None
-  in
-  match find filter_fn (lookup_any_by_name name env) with
-  | None -> None
-  | Some (`Module (id, m)) -> Some (id, m)
-
-let lookup_module_by_name name env =
-  let maybe_record_result res =
-    match (res, env.recorder) with
-    | Some (id, _), Some r ->
-        r.lookups <- ModuleByName (name, Some id) :: r.lookups
-    | _ -> ()
-  in
-  let result = lookup_module_by_name_internal name env in
-  maybe_record_result result;
-  result
-
-let lookup_module_type_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.module_type option
-      = function
-    | #Component.Element.module_type as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_datatype_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.datatype option =
-    function
-    | #Component.Element.datatype as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_class_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.class_ option =
-    function
-    | #Component.Element.class_ as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_class_type_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.class_type option =
-    function
-    | #Component.Element.class_type as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_value_by_name name env =
-  let filter_fn :
-      Component.Element.any ->
-      [ Component.Element.value | Component.Element.external_ ] option =
-    function
-    | #Component.Element.value as item -> Some item
-    | #Component.Element.external_ as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_label_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.label option =
-    function
-    | #Component.Element.label as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_constructor_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.constructor option
-      = function
-    | #Component.Element.constructor as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_exception_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.exception_ option =
-    function
-    | #Component.Element.exception_ as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_extension_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.extension option =
-    function
-    | #Component.Element.extension as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_field_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.field option =
-    function
-    | #Component.Element.field as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
-
-let lookup_label_parent_by_name name env =
-  let filter_fn : Component.Element.any -> Component.Element.label_parent option
-      = function
-    | #Component.Element.label_parent as item -> Some item
-    | _ -> None
-  in
-  find filter_fn (lookup_any_by_name name env)
 
 let add_functor_args' :
     Odoc_model.Paths.Identifier.Signature.t ->
@@ -840,10 +788,10 @@ let verify_lookups env lookups =
         in
         found <> actually_found
     | ModuleByName (name, result) -> (
-        let actually_found = lookup_module_by_name name env in
+        let actually_found = lookup_by_name s_module name env in
         match (result, actually_found) with
         | None, None -> false
-        | Some id, Some (id', _) -> id <> id'
+        | Some id, Some (`Module (id', _)) -> id <> id'
         | _ -> true )
     | FragmentRoot _i -> true
     (* begin

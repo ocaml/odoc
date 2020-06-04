@@ -182,48 +182,43 @@ val module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t
 
 val lookup_root_module : string -> t -> root option
 
-val find : ('a -> 'b option) -> 'a list -> 'b option
-
-val lookup_any_by_name : string -> t -> Component.Element.any list
-
-val lookup_signature_by_name : string -> t -> Component.Element.signature option
-
-val lookup_module_by_name :
-  string ->
-  t ->
-  (Odoc_model.Paths.Identifier.Module.t * Component.Module.t) option
-
-val lookup_module_type_by_name :
-  string -> t -> Component.Element.module_type option
-
-val lookup_datatype_by_name : string -> t -> Component.Element.datatype option
-
-val lookup_class_by_name : string -> t -> Component.Element.class_ option
-
-val lookup_class_type_by_name :
-  string -> t -> Component.Element.class_type option
-
-val lookup_value_by_name :
-  string ->
-  t ->
+type value_or_external =
   [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
   | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
-  option
 
-val lookup_label_by_name : string -> t -> Component.Element.label option
+type 'a scope constraint 'a = [< Component.Element.any ]
+(** Target of a lookup *)
 
-val lookup_constructor_by_name :
-  string -> t -> Component.Element.constructor option
+val lookup_by_name : 'a scope -> string -> t -> 'a option
+(** Lookup an element in Env depending on the given [scope]. *)
 
-val lookup_exception_by_name :
-  string -> t -> Component.Element.exception_ option
+val s_any : Component.Element.any scope
 
-val lookup_extension_by_name : string -> t -> Component.Element.extension option
+val s_signature : Component.Element.signature scope
 
-val lookup_field_by_name : string -> t -> Component.Element.field option
+val s_module : Component.Element.module_ scope
 
-val lookup_label_parent_by_name :
-  string -> t -> Component.Element.label_parent option
+val s_module_type : Component.Element.module_type scope
+
+val s_datatype : Component.Element.datatype scope
+
+val s_class : Component.Element.class_ scope
+
+val s_class_type : Component.Element.class_type scope
+
+val s_value : value_or_external scope
+
+val s_label : Component.Element.label scope
+
+val s_constructor : Component.Element.constructor scope
+
+val s_exception : Component.Element.exception_ scope
+
+val s_extension : Component.Element.extension scope
+
+val s_field : Component.Element.field scope
+
+val s_label_parent : Component.Element.label_parent scope
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
