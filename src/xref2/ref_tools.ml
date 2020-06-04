@@ -133,8 +133,8 @@ module M = struct
     Some (of_component env m base base)
 
   let in_env env name : t option =
-    match Env.lookup_module_by_name (UnitName.to_string name) env with
-    | Some (id, m) -> of_element env (`Module (id, m))
+    match Env.(lookup_by_name s_module) (UnitName.to_string name) env with
+    | Some e -> of_element env e
     | None -> (
         match Env.lookup_root_module (UnitName.to_string name) env with
         | Some (Env.Resolved (_, id, m)) -> of_element env (`Module (id, m))
@@ -162,7 +162,7 @@ module MT = struct
     Some (`Identifier id, `Identifier id, mt)
 
   let in_env env name : t option =
-    Env.lookup_module_type_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_module_type) (UnitName.to_string name) env
     >>= of_element env
 end
 
@@ -174,7 +174,7 @@ module CL = struct
   let of_element _env (`Class (id, t)) : t = (`Identifier id, t)
 
   let in_env env name =
-    Env.lookup_class_by_name (UnitName.to_string name) env >>= fun e ->
+    Env.(lookup_by_name s_class) (UnitName.to_string name) env >>= fun e ->
     Some (of_element env e)
 
   let of_component _env c ~parent_ref name : t option =
@@ -188,7 +188,7 @@ module CT = struct
     ((`Identifier id :> Resolved.ClassType.t), t)
 
   let in_env env name =
-    Env.lookup_class_type_by_name (UnitName.to_string name) env >>= fun e ->
+    Env.(lookup_by_name s_class_type) (UnitName.to_string name) env >>= fun e ->
     Some (of_element env e)
 
   let of_component _env ct ~parent_ref name : t option =
@@ -206,7 +206,7 @@ module DT = struct
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
 
   let in_env env name : t option =
-    Env.lookup_datatype_by_name (UnitName.to_string name) env >>= function
+    Env.(lookup_by_name s_datatype) (UnitName.to_string name) env >>= function
     | `Type _ as e -> Some (of_element env e)
     | _ -> None
 
@@ -223,7 +223,7 @@ module T = struct
   type t = type_lookup_result
 
   let in_env env name : type_lookup_result option =
-    Env.lookup_datatype_by_name (UnitName.to_string name) env >>= function
+    Env.(lookup_by_name s_datatype) (UnitName.to_string name) env >>= function
     | `Type (id, t) -> Some (`T (`Identifier id, t))
     | `Class _ as e -> Some (`C (CL.of_element env e))
     | `ClassType _ as e -> Some (`CT (CT.of_element env e))
@@ -245,7 +245,7 @@ module V = struct
   type t = value_lookup_result
 
   let in_env env name : t option =
-    Env.lookup_value_by_name (UnitName.to_string name) env >>= function
+    Env.(lookup_by_name s_value) (UnitName.to_string name) env >>= function
     | `Value (id, _x) -> return (`Identifier id)
     | `External (id, _x) -> return (`Identifier id)
 
@@ -268,7 +268,7 @@ module L = struct
   type t = Resolved.Label.t
 
   let in_env env name : t option =
-    Env.lookup_label_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_label) (UnitName.to_string name) env
     >>= fun (`Label id) -> Some (`Identifier id)
 
   let in_page _env (`Page (_, p)) name : t option =
@@ -295,7 +295,7 @@ module EC = struct
   type t = Resolved.Constructor.t
 
   let in_env env name : t option =
-    Env.lookup_extension_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_extension) (UnitName.to_string name) env
     >>= fun (`Extension (id, _)) -> Some (`Identifier id :> t)
 
   let of_component _env ~parent_ref name : t option =
@@ -314,7 +314,7 @@ module EX = struct
   type t = Resolved.Exception.t
 
   let in_env env name : t option =
-    Env.lookup_exception_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_exception) (UnitName.to_string name) env
     >>= fun (`Exception (id, _)) -> Some (`Identifier id)
 
   let of_component _env ~parent_ref name : t option =
@@ -332,7 +332,7 @@ module CS = struct
   (** Constructor *)
 
   let in_env env name : t option =
-    Env.lookup_constructor_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_constructor) (UnitName.to_string name) env
     >>= fun (`Constructor (id, _)) -> Some (`Identifier id :> t)
 
   let in_datatype _env ((parent', t) : datatype_lookup_result) name : t option =
@@ -350,7 +350,7 @@ module F = struct
   type t = Resolved.Field.t
 
   let in_env env name : t option =
-    Env.lookup_field_by_name (UnitName.to_string name) env
+    Env.(lookup_by_name s_field) (UnitName.to_string name) env
     >>= fun (`Field (id, _)) -> Some (`Identifier id :> t)
 
   let in_parent _env (parent : label_parent_lookup_result) name : t option =
@@ -412,7 +412,7 @@ module LP = struct
   type t = label_parent_lookup_result
 
   let in_env env name : t option =
-    Env.lookup_label_parent_by_name (UnitName.to_string name) env >>= function
+    Env.(lookup_by_name s_label_parent) (UnitName.to_string name) env >>= function
     | `Module _ as e ->
         M.of_element env e >>= module_lookup_to_signature_lookup env
         >>= fun r -> Some (`S r)
@@ -520,7 +520,7 @@ and resolve_signature_reference :
           MT.in_signature env p name
           >>= module_type_lookup_to_signature_lookup env
       | `Root (name, `TUnknown) -> (
-          Env.lookup_signature_by_name (UnitName.to_string name) env
+          Env.(lookup_by_name s_signature) (UnitName.to_string name) env
           >>= function
           | `Module (_, _) as e ->
               M.of_element env e >>= module_lookup_to_signature_lookup env
@@ -656,20 +656,19 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         let identifier id =
           return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         in
-        match Env.lookup_any_by_name (UnitName.to_string name) env with
-        | (`Module (_, _) as e) :: _ -> M.of_element env e >>= resolved
-        | (`ModuleType (_, _) as e) :: _ -> MT.of_element env e >>= resolved
-        | `Value (id, _) :: _ -> identifier id
-        | `Type (id, _) :: _ -> identifier id
-        | `Label id :: _ -> identifier id
-        | `Class (id, _) :: _ -> identifier id
-        | `ClassType (id, _) :: _ -> identifier id
-        | `External (id, _) :: _ -> identifier id
-        | `Constructor (id, _) :: _ -> identifier id
-        | `Exception (id, _) :: _ -> identifier id
-        | `Extension (id, _) :: _ -> identifier id
-        | `Field (id, _) :: _ -> identifier id
-        | [] -> None )
+        Env.(lookup_by_name s_any) (UnitName.to_string name) env >>= function
+        | `Module (_, _) as e -> M.of_element env e >>= resolved
+        | `ModuleType (_, _) as e -> MT.of_element env e >>= resolved
+        | `Value (id, _) -> identifier id
+        | `Type (id, _) -> identifier id
+        | `Label id -> identifier id
+        | `Class (id, _) -> identifier id
+        | `ClassType (id, _) -> identifier id
+        | `External (id, _) -> identifier id
+        | `Constructor (id, _) -> identifier id
+        | `Exception (id, _) -> identifier id
+        | `Extension (id, _) -> identifier id
+        | `Field (id, _) -> identifier id )
     | `Resolved r -> Some r
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
