@@ -494,11 +494,11 @@ Ambiguous:
 # resolve_ref "t"
 Exception: Failure "Warnings have been generated.".
 File "tests":
-Reference to 't' is ambiguous
+Reference to 't' is ambiguous. Please specify its kind: val-t, type-t.
 # resolve_ref "X"
 Exception: Failure "Warnings have been generated.".
 File "tests":
-Reference to 'X' is ambiguous
+Reference to 'X' is ambiguous. Please specify its kind: module-X, constructor-X.
 ```
 
 Unambiguous:

@@ -70,11 +70,32 @@ end
 
 module Memos2 = Hashtbl.Make (Hashable2)
 
+let ref_kind_of_element = function
+  | `Module _ -> "module"
+  | `ModuleType _ -> "module-type"
+  | `Type _ -> "type"
+  | `Value _ | `External _ -> "val"
+  | `Label _ -> "section"
+  | `Class _ -> "class"
+  | `ClassType _ -> "class-type"
+  | `Constructor _ -> "constructor"
+  | `Exception _ -> "exception"
+  | `Extension _ -> "extension"
+  | `Field _ -> "field"
+
+let ambiguous_ref_warning name results =
+  let pp_sep pp () = Format.fprintf pp ", "
+  and pp_kind pp r = Format.fprintf pp "%s-%s" (ref_kind_of_element r) name in
+  Lookup_failures.report ~kind:`Warning
+    "Reference to '%s' is ambiguous. Please specify its kind: %a." name
+    (Format.pp_print_list ~pp_sep pp_kind)
+    results
+
 let env_lookup_by_name scope name env =
   match Env.lookup_by_name scope name env with
   | Ok x -> Some x
-  | Error (`Ambiguous (hd, _)) ->
-      Lookup_failures.report ~kind:`Warning "Reference to '%s' is ambiguous" name;
+  | Error (`Ambiguous (hd, tl)) ->
+      ambiguous_ref_warning name (hd :: tl);
       Some hd
   | Error `Not_found -> None
 
