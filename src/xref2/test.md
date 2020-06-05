@@ -26,6 +26,7 @@ run through some tests and describe the resolution process.
 #require "odoc.xref_test";;
 open Odoc_xref2;;
 open Odoc_xref_test;;
+open Odoc_model.Names;;
 #install_printer Common.root_pp;;
 #install_printer Odoc_model.Names.UnitName.fmt;;
 #install_printer Odoc_model.Names.ValueName.fmt;;
@@ -154,26 +155,24 @@ Some
 
 This path clearly already begins with `` `Resolved ``, so we don't expect to change it,
 but we _are_ going to check it exists. We convert the path into a `Cpath.t` and call
-`Tools.lookup_type_from_path`. This function starts approximately:
+`Tools.resolve_type`. This function starts approximately:
 
 ```
-   match p with
-    | `Resolved p -> Ok (lookup_type_from_resolved_path env p)
+    | `Resolved r as unresolved ->
+        of_result ~unresolved (lookup_type env r) >>=
+        fun t -> return (r, t)
 ```
 
-and `lookup_type_from_resolved_path` starts:
+and `lookup_type` starts:
 
 ```
-and lookup_type_from_resolved_path : Env.t -> Cpath.resolved -> type_lookup_result = fun env p ->
-    match p with
-    | `Identifier (#Odoc_model.Paths.Identifier.Type.t as i) ->
-        let t = Env.lookup_type i env in
-        (false, `Identifier i, t)
+
+    | `Identifier (`Type _ as i) ->
+        of_option ~error:(`Lookup_failure i) (Env.lookup_type i env)
+        >>= fun t -> Ok (Find.Found (`T t))
 ```
 
-and so we simply look up the type in the environment and return the same path we
-started with alongside the `Component.Type.t` that represents the type (which we
-ignore in this case).
+and so we simply look up the type in the environment, giving a `Component.Type.t` that represents the type.
 
 ```ocaml env=e1
 # Compile.signature Env.empty id sg;;
@@ -230,38 +229,73 @@ Some
 
 Here we can see that the path is not completely resolved. The `M` bit is resolved, but the `t`
 bit is not. So we have to do a bit more work when we look up the type in
-`Tools.lookup_type_from_path`.
+`Tools.resolve_type`.
 
 Let's look in more detail at that process. The first thing that happens is that the path is matched
 the [`Dot] is found:
 
 ```
-    | `Dot (m, x) -> begin
-        match lookup_module_from_path env m with
+   | `Dot (parent, id) ->
+        resolve_module ~mark_substituted:true ~add_canonical:true env parent
+        >>= fun (p, m) ->
 ```
 
 This implies that the thing before the dot is a module, so we call 
-`Tools.lookup_module_from_path`.  This is a resolved identifier so we can simply look this up from
+`Tools.resolve_module`.  This is a resolved identifier so we can simply look this up from
 the environment. This gets us back the path and a `Component.Module.t` representing the module M,
 which are:
 
 ```ocaml env=e1
-# let get_ok = function
+# let get_resolved = function
     | Tools.ResolvedMonad.Resolved x -> x
     | Unresolved _ -> failwith "Unresolved path" ;;
-val get_ok : ('a, 'b) Tools.ResolvedMonad.t -> 'a = <fun>
-# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (Common.root_module "M")));;
-Line 1, characters 33-62:
-Error: Unbound value Tools.lookup_module_from_path
+val get_resolved : ('a, 'b) Tools.ResolvedMonad.t -> 'a = <fun>
+# let get_ok = function
+    | Ok x -> x
+    | Error _ -> failwith "Found error";;
+val get_ok : ('a, 'b) result -> 'a = <fun>
+# let (path, module_) = get_resolved @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "M")));;
+val path : Cpath.Resolved.module_ =
+  `Identifier (`Module (`Root (Common.root, Root), M))
+val module_ : Component.Module.t =
+  {Odoc_xref2.Component.Module.doc = [];
+   type_ =
+    Odoc_xref2.Component.Module.ModuleType
+     (Odoc_xref2.Component.ModuleType.Signature
+       {Odoc_xref2.Component.Signature.items =
+         [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
+           Odoc_model.Lang.Signature.Ordinary,
+           {Odoc_xref2.Component.Delayed.v =
+             Some
+              {Odoc_xref2.Component.TypeDecl.doc = [];
+               equation =
+                {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+                 private_ = false; manifest = None; constraints = []};
+               representation = None};
+            get = None})];
+        removed = []});
+   canonical = None; hidden = false; display_type = None;
+   expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
 
-The three values returned are a boolean representing whether this path is dependent on a module substituted in a functor (see later), the resolved path to the module, and a representation of the module itself. We then turn the module into a signature via `signature_of_module`, which in this case is quite simple since the module contains an explicit signature:
+The values returned are the resolved path to the module, and a representation of the module itself. We then turn the module into a signature via `signature_of_module`, which in this case is quite simple since the module contains an explicit signature:
 
 ```ocaml env=e1
-# Tools.signature_of_module env (path, module_);;
-Line 1, characters 31-46:
-Error: This expression has type 'a * 'b
-       but an expression was expected of type Component.Module.t
+# Tools.signature_of_module env module_;;
+- : (Component.Signature.t, Tools.signature_of_module_error) result =
+Result.Ok
+ {Odoc_xref2.Component.Signature.items =
+   [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
+     Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_xref2.Component.Delayed.v =
+       Some
+        {Odoc_xref2.Component.TypeDecl.doc = [];
+         equation =
+          {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+           private_ = false; manifest = None; constraints = []};
+         representation = None};
+      get = None})];
+  removed = []}
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -291,9 +325,16 @@ It proceeds much as the previous example until we get the result
 of looking up the module `N`:
 
 ```ocaml env=e1
-# let (path, module_) = get_ok @@ Tools.lookup_module_from_path env (`Resolved (`Identifier (Common.root_module "N")));;
-Line 1, characters 33-62:
-Error: Unbound value Tools.lookup_module_from_path
+# let (path, module_) = get_resolved @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "N")));;
+val path : Cpath.Resolved.module_ =
+  `Identifier (`Module (`Root (Common.root, Root), N))
+val module_ : Component.Module.t =
+  {Odoc_xref2.Component.Module.doc = [];
+   type_ =
+    Odoc_xref2.Component.Module.ModuleType
+     (Odoc_xref2.Component.ModuleType.Path
+       (`Resolved (`Identifier (`ModuleType (`Root (Common.root, Root), M)))));
+   canonical = None; hidden = false; display_type = None; expansion = None}
 ```
 
 This time turning the module into a signature demonstrates why the function `signature_of_module` requires the environment. We need to lookup the module type `M` from the environment to determine the
@@ -371,13 +412,13 @@ val m : Component.ModuleType.t option =
     expansion = Some Odoc_xref2.Component.Module.AlreadyASig}
 ```
 
-We can see here that module `B` has type `` Path (`Local ("N", 1)) `` which refers to the module type defined just above it.
+We can see here that module `B` has type `` Path (`Resolved (`Local (`LModuleType (N, 1)))) `` which refers to the module type defined just above it.
 
 To look up we need to have fully qualified paths for all items so this needs some work.
 The way this is handled is that when we want to look up an element within a module,
 we don't just convert it blindly to a signature. Since we have the fully qualified
 path to the module, we prefix all the identifiers bound in that signature
-with that path to turn them into global paths.
+with that path to turn them into global identifiers.
 
 Concretely, we start here wanting to resolve the path for type `u`,
 which is `A.B.t`. The compiler has started us off by resolving the
@@ -399,31 +440,72 @@ Some
 we look up `A` from the environment:
 
 ```ocaml env=e1
-# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (Common.root_module "A")) in
-  Tools.signature_of_module env (p, m) |> Tools.prefix_signature;;
-Line 1, characters 14-52:
-Error: Unbound value Tools.lookup_module_from_resolved_path
+# let p = `Identifier (Common.root_module "A") in
+  let m = get_ok @@ Tools.lookup_module env p in
+  let sg = get_ok @@ Tools.signature_of_module env m in
+  Tools.prefix_signature (`Module p, sg);;
+- : Component.Signature.t =
+{Odoc_xref2.Component.Signature.items =
+  [Odoc_xref2.Component.Signature.ModuleType (`LModuleType (N, 4),
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.ModuleType.doc = [];
+        expr =
+         Some
+          (Odoc_xref2.Component.ModuleType.Signature
+            {Odoc_xref2.Component.Signature.items =
+              [Odoc_xref2.Component.Signature.Type (`LType (t, 3),
+                Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_xref2.Component.Delayed.v =
+                  Some
+                   {Odoc_xref2.Component.TypeDecl.doc = [];
+                    equation =
+                     {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+                      private_ = false; manifest = None; constraints = []};
+                    representation = None};
+                 get = None})];
+             removed = []});
+        expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+     get = None});
+   Odoc_xref2.Component.Signature.Module (`LModule (B, 5),
+    Odoc_model.Lang.Signature.Ordinary,
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.Module.doc = [];
+        type_ =
+         Odoc_xref2.Component.Module.ModuleType
+          (Odoc_xref2.Component.ModuleType.Path
+            (`Resolved
+               (`ModuleType
+                  (`Module
+                     (`Identifier (`Module (`Root (Common.root, Root), A))),
+                   N))));
+        canonical = None; hidden = false; display_type = None;
+        expansion = None};
+     get = None})];
+ removed = []}
 ```
 
 So before the prefixing operation we had that the type of the module was
 
 ```ocaml skip
-type_ =
-  Odoc_xref2.Component.Module.ModuleType
-    (Odoc_xref2.Component.ModuleType.Path (`Local ("N", 26)))
+   type_ =
+      Odoc_xref2.Component.Module.ModuleType
+      (Odoc_xref2.Component.ModuleType.Path
+         (`Resolved (`Local (`LModuleType (N, 1)))));
 ```
 
 and afterwards it is
 
 ```ocaml skip
-type_ = 
-  Odoc_xref2.Component.Module.ModuleType
-    (Odoc_xref2.Component.ModuleType.Path
-      (`Identifier
-          (`Resolved
-            (`ModuleType
-                (`Identifier (Common.root_module "A"),
-                "N")))))
+   type_ =
+   Odoc_xref2.Component.Module.ModuleType
+      (Odoc_xref2.Component.ModuleType.Path
+      (`Resolved
+         (`ModuleType
+            (`Module
+               (`Identifier (`Module (`Root (Common.root, Root), A))),
+               N))));
 ```
 
 We now look up module `B` from this signature, which once again
@@ -443,20 +525,8 @@ we then return along with the fully resolved identifier.
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : (Tools.type_lookup_result, Cpath.type_) Tools.ResolvedMonad.t =
-Odoc_xref2.Tools.ResolvedMonad.Resolved
- (`Type
-    (`Module
-       (`Module
-          (`Module (`Identifier (`Module (`Root (Common.root, Root), A))), B)),
-     t),
-  Odoc_xref2.Find.Found
-   (`T
-      {Odoc_xref2.Component.TypeDecl.doc = [];
-       equation =
-        {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-         private_ = false; manifest = None; constraints = []};
-       representation = None}))
+Line 1, characters 1-28:
+Error: Unbound value Tools.lookup_type_from_path
 ```
 
 ### Module aliases
@@ -594,31 +664,90 @@ Clearly there is no `type t` declared in here. Let's get the representation
 of module `C` we see the following:
 
 ```ocaml env=e1
-# let (p, m) = Tools.lookup_module_from_resolved_path env (`Identifier (Common.root_module "C"));;
-Line 1, characters 14-52:
-Error: Unbound value Tools.lookup_module_from_resolved_path
+# let m = get_ok @@ Tools.lookup_module env (`Identifier (Common.root_module "C"));;
+val m : Component.Module.t =
+  {Odoc_xref2.Component.Module.doc = [];
+   type_ =
+    Odoc_xref2.Component.Module.ModuleType
+     (Odoc_xref2.Component.ModuleType.With
+       (Odoc_xref2.Component.ModuleType.Path
+         (`Resolved
+            (`Identifier (`ModuleType (`Root (Common.root, Root), A)))),
+       [Odoc_xref2.Component.ModuleType.ModuleEq (`Dot (`Root, "M"),
+         Odoc_xref2.Component.Module.Alias
+          (`Resolved (`Identifier (`Module (`Root (Common.root, Root), B)))))]));
+   canonical = None; hidden = false; display_type = None; expansion = None}
 ```
 
 now we can ask for the signature of this module:
 
 ```ocaml env=e1
-# let sg = Tools.signature_of_module env (p, m);;
-Line 1, characters 40-46:
-Error: This expression has type 'a * 'b
-       but an expression was expected of type Component.Module.t
+# let sg = Tools.signature_of_module env m;;
+val sg : (Component.Signature.t, Tools.signature_of_module_error) result =
+  Result.Ok
+   {Odoc_xref2.Component.Signature.items =
+     [Odoc_xref2.Component.Signature.Module (`LModule (M, 49),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.Alias
+             (`Resolved
+                (`Substituted
+                   (`Identifier (`Module (`Root (Common.root, Root), B)))));
+           canonical = None; hidden = false; display_type = None;
+           expansion = None};
+        get = None});
+      Odoc_xref2.Component.Signature.Module (`LModule (N, 50),
+       Odoc_model.Lang.Signature.Ordinary,
+       {Odoc_xref2.Component.Delayed.v =
+         Some
+          {Odoc_xref2.Component.Module.doc = [];
+           type_ =
+            Odoc_xref2.Component.Module.ModuleType
+             (Odoc_xref2.Component.ModuleType.Path
+               (`Dot (`Resolved (`Local (`LModule (M, 49))), "S")));
+           canonical = None; hidden = false; display_type = None;
+           expansion = None};
+        get = None})];
+    removed = []}
 ```
 
-and we can see we've picked up the `type t` declaration in `M.S`. If we now ask for the signature of `C.N` we get:
+and we can see the module `M` is now an alias of the root module `B`. We can now
+look up module `N` from within this and find its signature:
 
 ```ocaml env=e1
-# let (p, m) = Tools.lookup_module_from_resolved_path env
-      (`Module (`Identifier (Common.root_module "C"), "N"));;
-Line 1, characters 14-52:
-Error: Unbound value Tools.lookup_module_from_resolved_path
-# Tools.signature_of_module env (p, m);;
-Line 1, characters 31-37:
-Error: This expression has type 'a * 'b
-       but an expression was expected of type Component.Module.t
+# let m = get_ok @@ Tools.lookup_module env
+      (`Module (`Module (`Identifier (Common.root_module "C")), ModuleName.of_string "N"));;
+val m : Component.Module.t =
+  {Odoc_xref2.Component.Module.doc = [];
+   type_ =
+    Odoc_xref2.Component.Module.ModuleType
+     (Odoc_xref2.Component.ModuleType.Path
+       (`Dot
+          (`Resolved
+             (`Module
+                (`Module
+                   (`Identifier (`Module (`Root (Common.root, Root), C))),
+                 M)),
+           "S")));
+   canonical = None; hidden = false; display_type = None; expansion = None}
+# Tools.signature_of_module env m;;
+- : (Component.Signature.t, Tools.signature_of_module_error) result =
+Result.Ok
+ {Odoc_xref2.Component.Signature.items =
+   [Odoc_xref2.Component.Signature.Type (`LType (t, 55),
+     Odoc_model.Lang.Signature.Ordinary,
+     {Odoc_xref2.Component.Delayed.v =
+       Some
+        {Odoc_xref2.Component.TypeDecl.doc = [];
+         equation =
+          {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+           private_ = false; manifest = None; constraints = []};
+         representation = None};
+      get = None})];
+  removed = []}
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -889,35 +1018,8 @@ Now let's lookup that module:
 
 ```ocaml env=e1
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env cp;;
-val p : Cpath.Resolved.module_ =
-  `Apply
-    (`Apply
-       (`Apply
-          (`Identifier (`Module (`Root (Common.root, Root), App)),
-           `Resolved
-             (`Substituted
-                (`Identifier (`Module (`Root (Common.root, Root), Bar))))),
-        `Resolved
-          (`Substituted
-             (`Identifier (`Module (`Root (Common.root, Root), Foo))))),
-     `Resolved
-       (`Substituted
-          (`Identifier (`Module (`Root (Common.root, Root), FooBarInt)))))
-val m : Component.Module.t =
-  {Odoc_xref2.Component.Module.doc = [];
-   type_ =
-    Odoc_xref2.Component.Module.ModuleType
-     (Odoc_xref2.Component.ModuleType.Path
-       (`Dot
-          (`Apply
-             (`Resolved
-                (`Substituted
-                   (`Identifier (`Module (`Root (Common.root, Root), Foo)))),
-              `Resolved
-                (`Substituted
-                   (`Identifier (`Module (`Root (Common.root, Root), Bar))))),
-           "T")));
-   canonical = None; hidden = false; display_type = None; expansion = None}
+Line 1, characters 24-65:
+Error: Unbound value Tools.lookup_and_resolve_module_from_path
 # let (p, sg') = Tools.signature_of_module env (p, m);;
 Line 1, characters 46-52:
 Error: This expression has type 'a * 'b
@@ -1580,7 +1682,8 @@ Error: This expression has type Odoc_odoc.Compilation_unit.t
          Odoc_model.Lang.Signature.t = Odoc_model.Lang.Signature.item list
 # let (p, m) = get_ok @@ Tools.lookup_and_resolve_module_from_path true true env (`Resolved
                (`Identifier (Common.root_module "N")));;
-Exception: Failure "Unresolved path".
+Line 1, characters 24-65:
+Error: Unbound value Tools.lookup_and_resolve_module_from_path
 # Tools.signature_of_module env (p, m);;
 Line 1, characters 31-37:
 Error: This expression has type 'a * 'b
@@ -2193,9 +2296,7 @@ Error: This expression has type 'a * 'b
             (`Resolved
                (`Identifier (Common.root_module "N")),
              "t"));;
-- : (Tools.type_lookup_result, Cpath.type_) Tools.ResolvedMonad.t =
-Odoc_xref2.Tools.ResolvedMonad.Unresolved
- (`Dot
-    (`Resolved (`Identifier (`Module (`Root (Common.root, Root), N))), "t"))
+Line 1, characters 1-28:
+Error: Unbound value Tools.lookup_type_from_path
 ```
 
