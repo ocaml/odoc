@@ -1,12 +1,16 @@
 let strict_mode = ref false
 
-type kind = [ `Root | `Internal ]
+type kind = [ `Root | `Internal | `Warning ]
 
-type 'a with_failures = 'a * (kind * string) list
+type loc = Odoc_model.Location_.span option
+
+type 'a with_failures = 'a * (kind * string * loc) list
 
 let failure_acc = ref []
 
-let add ~kind f = failure_acc := (kind, f) :: !failure_acc
+let loc_acc = ref None
+
+let add ~kind f = failure_acc := (kind, f, !loc_acc) :: !failure_acc
 
 let catch_failures f =
   let prev = !failure_acc in
@@ -26,12 +30,24 @@ let report ?(kind = `Internal) fmt = kasprintf (add ~kind) fmt
 let report_important ?(kind = `Internal) exn fmt =
   if !strict_mode then raise exn else kasprintf (add ~kind) fmt
 
+let with_location loc f =
+  let prev_loc = !loc_acc in
+  loc_acc := Some loc;
+  let r = f () in
+  loc_acc := prev_loc;
+  r
+
 let handle_failures ~warn_error ~filename (r, failures) =
   let open Odoc_model in
-  let error msg = Error.filename_only "%s" msg filename in
+  let error ~loc msg =
+    match loc with
+    | Some loc -> Error.make "%s" msg loc
+    | None -> Error.filename_only "%s" msg filename
+  in
   let handle_failure ~warnings = function
-    | `Internal, msg -> Error.warning warnings (error msg)
-    | `Root, msg -> prerr_endline (Error.to_string (error msg))
+    | `Internal, msg, loc -> Error.warning warnings (error ~loc msg)
+    | `Warning, msg, loc -> Error.warning warnings (error ~loc msg)
+    | `Root, msg, loc -> prerr_endline (Error.to_string (error ~loc msg))
   in
   Error.accumulate_warnings (fun warnings ->
       List.iter (handle_failure ~warnings) failures;

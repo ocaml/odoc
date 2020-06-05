@@ -197,7 +197,11 @@ and with_location :
     Env.t ->
     a Location_.with_location ->
     a Location_.with_location =
- fun fn env x -> { x with Location_.value = fn env x.Location_.value }
+ fun fn env x ->
+  let value =
+    Lookup_failures.with_location x.location (fun () -> fn env x.value)
+  in
+  { x with value }
 
 and comment_docs env d = List.map (with_location comment_block_element env) d
 

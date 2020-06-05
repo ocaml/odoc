@@ -60,21 +60,32 @@ Helpers:
 ```ocaml
 let parse_ref ref_str =
   let open Odoc_model in
-  let parse acc = Odoc_parser__Reference.parse acc (Location_.span []) ref_str in
-  match Error.handle_errors_and_warnings ~warn_error:true (Error.accumulate_warnings parse) with
+  let dummy_loc = Location_.span [] in
+  let parse acc = Odoc_parser__Reference.parse acc dummy_loc ref_str in
+  let parsed = Error.accumulate_warnings parse in
+  match Error.handle_errors_and_warnings ~warn_error:true parsed with
   | Ok ref -> ref
-  | Error (`Msg msg) -> failwith msg
+  | Error (`Msg e) -> failwith e
 
+(* Shorten type for nicer output *)
 type ref = Odoc_model.Paths_types.Resolved_reference.any
 
-let resolve_ref ref_str : ref =
+let resolve_ref' env ref_str : ref =
+  let open Odoc_model in
   let unresolved = parse_ref ref_str in
-  match Ref_tools.resolve_reference env unresolved with
-  | None -> failwith "resolve_reference"
-  | Some r -> r
-```
+  let resolved =
+    Lookup_failures.catch_failures (fun () ->
+        Ref_tools.resolve_reference env unresolved)
+  in
+  match
+    Lookup_failures.handle_failures ~warn_error:true ~filename:"tests" resolved
+  with
+  | Error (`Msg e) -> failwith e
+  | Ok None -> failwith "resolve_reference"
+  | Ok (Some r) -> r
 
-## Resolving
+let resolve_ref = resolve_ref' env
+```
 
 Explicit, root:
 
@@ -459,4 +470,61 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 # resolve_ref "M.s2.rf2"
 Exception: Failure "resolve_reference".
+```
+
+## Ambiguous references
+
+```ocaml
+let test_mli = {|
+  type t = X
+  val t : t
+
+  module X : sig end
+
+|}
+let sg = Common.signature_of_mli_string test_mli
+let env = Env.open_signature sg Env.empty
+
+let resolve_ref = resolve_ref' env
+```
+
+Ambiguous:
+
+```ocaml
+# resolve_ref "t"
+Exception: Failure "Warnings have been generated.".
+File "tests":
+Reference to 't' is ambiguous
+# resolve_ref "X"
+Exception: Failure "Warnings have been generated.".
+File "tests":
+Reference to 'X' is ambiguous
+```
+
+Unambiguous:
+
+```ocaml
+# resolve_ref "type-t"
+- : ref = `Identifier (`Type (`Root (Common.root, Root), t))
+# resolve_ref "val-t"
+- : ref = `Identifier (`Value (`Root (Common.root, Root), t))
+# resolve_ref "constructor-X"
+- : ref =
+`Identifier (`Constructor (`Type (`Root (Common.root, Root), t), X))
+# resolve_ref "module-X"
+- : ref = `Identifier (`Module (`Root (Common.root, Root), X))
+```
+
+Unambiguous 2:
+
+```ocaml
+# resolve_ref "type:t"
+- : ref = `Identifier (`Type (`Root (Common.root, Root), t))
+# resolve_ref "val:t"
+- : ref = `Identifier (`Value (`Root (Common.root, Root), t))
+# resolve_ref "constructor:X"
+- : ref =
+`Identifier (`Constructor (`Type (`Root (Common.root, Root), t), X))
+# resolve_ref "module:X"
+- : ref = `Identifier (`Module (`Root (Common.root, Root), X))
 ```

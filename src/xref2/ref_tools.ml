@@ -70,6 +70,14 @@ end
 
 module Memos2 = Hashtbl.Make (Hashable2)
 
+let env_lookup_by_name scope name env =
+  match Env.lookup_by_name scope name env with
+  | Ok x -> Some x
+  | Error (`Ambiguous (hd, _)) ->
+      Lookup_failures.report ~kind:`Warning "Reference to '%s' is ambiguous" name;
+      Some hd
+  | Error `Not_found -> None
+
 let module_lookup_to_signature_lookup :
     Env.t -> module_lookup_result -> signature_lookup_result option =
  fun env (ref, cp, m) ->
@@ -134,7 +142,7 @@ module M = struct
     Some (of_component env m base base)
 
   let in_env env name : t option =
-    match Env.(lookup_by_name s_module) name env with
+    match env_lookup_by_name Env.s_module name env with
     | Some e -> of_element env e
     | None -> (
         match Env.lookup_root_module name env with
@@ -162,7 +170,7 @@ module MT = struct
     Some (`Identifier id, `Identifier id, mt)
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_module_type) name env >>= of_element env
+    env_lookup_by_name Env.s_module_type name env >>= of_element env
 end
 
 module CL = struct
@@ -173,7 +181,7 @@ module CL = struct
   let of_element _env (`Class (id, t)) : t = (`Identifier id, t)
 
   let in_env env name =
-    Env.(lookup_by_name s_class) name env >>= fun e -> Some (of_element env e)
+    env_lookup_by_name Env.s_class name env >>= fun e -> Some (of_element env e)
 
   let of_component _env c ~parent_ref name : t option =
     Some (`Class (parent_ref, ClassName.of_string name), c)
@@ -186,8 +194,8 @@ module CT = struct
     ((`Identifier id :> Resolved.ClassType.t), t)
 
   let in_env env name =
-    Env.(lookup_by_name s_class_type) name env >>= fun e ->
-    Some (of_element env e)
+    env_lookup_by_name Env.s_class_type name env
+    >>= fun e -> Some (of_element env e)
 
   let of_component _env ct ~parent_ref name : t option =
     Some (`ClassType (parent_ref, ClassTypeName.of_string name), ct)
@@ -204,7 +212,7 @@ module DT = struct
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_datatype) name env >>= function
+    env_lookup_by_name Env.s_datatype name env >>= function
     | `Type _ as e -> Some (of_element env e)
     | _ -> None
 
@@ -220,7 +228,7 @@ module T = struct
   type t = type_lookup_result
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_datatype) name env >>= function
+    env_lookup_by_name Env.s_datatype name env >>= function
     | `Type (id, t) -> Some (`T (`Identifier id, t))
     | `Class _ as e -> Some (`C (CL.of_element env e))
     | `ClassType _ as e -> Some (`CT (CT.of_element env e))
@@ -241,7 +249,7 @@ module V = struct
   type t = value_lookup_result
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_value) name env >>= function
+    env_lookup_by_name Env.s_value name env >>= function
     | `Value (id, _x) -> return (`Identifier id)
     | `External (id, _x) -> return (`Identifier id)
 
@@ -264,7 +272,7 @@ module L = struct
   type t = Resolved.Label.t
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_label) name env >>= fun (`Label id) ->
+    env_lookup_by_name Env.s_label name env >>= fun (`Label id) ->
     Some (`Identifier id)
 
   let in_page _env (`Page (_, p)) name : t option =
@@ -291,7 +299,7 @@ module EC = struct
   type t = Resolved.Constructor.t
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_extension) name env >>= fun (`Extension (id, _)) ->
+    env_lookup_by_name Env.s_extension name env >>= fun (`Extension (id, _)) ->
     Some (`Identifier id :> t)
 
   let of_component _env ~parent_ref name : t option =
@@ -310,7 +318,7 @@ module EX = struct
   type t = Resolved.Exception.t
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_exception) name env >>= fun (`Exception (id, _)) ->
+    env_lookup_by_name Env.s_exception name env >>= fun (`Exception (id, _)) ->
     Some (`Identifier id)
 
   let of_component _env ~parent_ref name : t option =
@@ -328,7 +336,7 @@ module CS = struct
   (** Constructor *)
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_constructor) name env
+    env_lookup_by_name Env.s_constructor name env
     >>= fun (`Constructor (id, _)) -> Some (`Identifier id :> t)
 
   let in_datatype _env ((parent', t) : datatype_lookup_result) name : t option =
@@ -346,7 +354,7 @@ module F = struct
   type t = Resolved.Field.t
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_field) name env >>= fun (`Field (id, _)) ->
+    env_lookup_by_name Env.s_field name env >>= fun (`Field (id, _)) ->
     Some (`Identifier id :> t)
 
   let in_parent _env (parent : label_parent_lookup_result) name : t option =
@@ -408,7 +416,7 @@ module LP = struct
   type t = label_parent_lookup_result
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_label_parent) name env >>= function
+    env_lookup_by_name Env.s_label_parent name env >>= function
     | `Module _ as e ->
         M.of_element env e >>= module_lookup_to_signature_lookup env
         >>= fun r -> Some (`S r)
@@ -516,7 +524,7 @@ and resolve_signature_reference :
           MT.in_signature env p name
           >>= module_type_lookup_to_signature_lookup env
       | `Root (name, `TUnknown) -> (
-          Env.(lookup_by_name s_signature) name env >>= function
+          env_lookup_by_name Env.s_signature name env >>= function
           | `Module (_, _) as e ->
               M.of_element env e >>= module_lookup_to_signature_lookup env
           | `ModuleType (_, _) as e ->
@@ -643,6 +651,7 @@ let resolve_reference_dot env parent name =
   | (`C _ | `CT _) as p -> resolve_reference_dot_class env p name
   | `Page _ as page -> resolve_reference_dot_page env page name
 
+(** Warnings may be generated with [Error.implicit_warning] *)
 let resolve_reference : Env.t -> t -> Resolved.t option =
   let resolved = resolved3 in
   fun env r ->
@@ -651,7 +660,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         let identifier id =
           return (`Identifier (id :> Odoc_model.Paths.Identifier.t))
         in
-        Env.(lookup_by_name s_any) name env >>= function
+        env_lookup_by_name Env.s_any name env >>= function
         | `Module (_, _) as e -> M.of_element env e >>= resolved
         | `ModuleType (_, _) as e -> MT.of_element env e >>= resolved
         | `Value (id, _) -> identifier id

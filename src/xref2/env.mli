@@ -140,8 +140,12 @@ type value_or_external =
 type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
 
-val lookup_by_name : 'a scope -> string -> t -> 'a option
-(** Lookup an element in Env depending on the given [scope]. *)
+type 'a maybe_ambiguous =
+  ('a, [ `Ambiguous of ('a * 'a list) | `Not_found ]) Result.result
+
+val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
+(** Lookup an element in Env depending on the given [scope].
+    Return [Error (`Ambiguous _)] when two or more elements match the given scope and name. *)
 
 val lookup_by_id :
   'a scope -> [< Odoc_model.Paths_types.Identifier.any ] -> t -> 'a option

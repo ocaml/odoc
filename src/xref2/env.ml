@@ -378,6 +378,9 @@ type 'a scope = {
   root : string -> t -> 'a option;
 }
 
+type 'a maybe_ambiguous =
+  ('a, [ `Ambiguous of ('a * 'a list) | `Not_found ]) Result.result
+
 let make_scope ?(root = fun _ _ -> None)
     (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
   { filter; root }
@@ -402,10 +405,14 @@ let lookup_by_name scope name env =
     | None -> ()
   in
   match lookup_by_name' scope name env with
-  | x :: _ as results ->
+  | [ x ] as results ->
       record_lookup_results results;
-      Some x
-  | [] -> scope.root name env
+      Result.Ok x
+  | x :: tl as results ->
+      record_lookup_results results;
+      Error (`Ambiguous (x, tl))
+  | [] -> (
+      match scope.root name env with Some x -> Ok x | None -> Error `Not_found )
 
 open Odoc_model.Paths
 
@@ -754,8 +761,10 @@ let verify_lookups env lookups =
         true <> actually_found
     | ModuleByName (name, result) -> (
         match lookup_by_name s_module name env with
-        | None -> false
-        | Some (`Module (id', _)) -> result <> id' )
+        | Ok (`Module (id', _)) -> result <> id'
+        | Error `Not_found -> false
+        | Error (`Ambiguous (hd, tl)) ->
+            not (List.exists (fun (`Module (id', _)) -> result = id') (hd :: tl)) )
     | FragmentRoot _i -> true
     (* begin
          try
