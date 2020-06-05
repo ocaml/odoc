@@ -23,62 +23,89 @@ type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
 type handle_subs_error = [ `UnresolvedPath of [ `Module of Cpath.module_ ] ]
 
 type signature_of_module_error =
-    [ `OpaqueModule
-    | `UnresolvedForwardPath
-    | `UnresolvedPath of
+  [ `OpaqueModule
+  | `UnresolvedForwardPath
+  | `UnresolvedPath of
     [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
 
 type module_lookup_error =
-    [ `Local of Env.t * Ident.module_ (* Found local path *)
-    | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
-    | `Find_failure
-    | `Parent_module_type of module_type_lookup_error
-    | `Parent of module_lookup_error
-    | `Parent_sig of signature_of_module_error
-    | `Parent_expr of module_type_expr_of_module_error
-    | `Lookup_failure of Identifier.Module.t
-    | `Fragment_root ]
+  [ `Local of Env.t * Ident.module_ (* Found local path *)
+  | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
+  | `Find_failure
+  | `Lookup_failure of Identifier.Module.t
+  | `Fragment_root
+  | `Parent_sig of signature_of_module_error
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent_module of module_lookup_error
+  | `Parent of module_lookup_error
+  | `Parent_expr of module_type_expr_of_module_error ]
+
+and parent_lookup_error =
+  [ `Parent_sig of signature_of_module_error
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent of module_lookup_error
+  | `Parent_expr of module_type_expr_of_module_error
+  | `Parent_module of module_lookup_error
+  | `Fragment_root
+  ]
 
 and module_type_expr_of_module_error =
-    [ `ApplyNotFunctor
-    | `OpaqueModule
-    | `UnresolvedForwardPath
-    | handle_subs_error
-    | `Parent_module of module_lookup_error ]
+  [ `ApplyNotFunctor
+  | `OpaqueModule
+  | `UnresolvedForwardPath
+  | handle_subs_error
+  | `Parent_module of module_lookup_error ]
 
 and module_type_lookup_error =
-    [ `Local of Env.t * Cpath.Resolved.module_type
-    | `Find_failure
-    | `Parent_module of module_lookup_error
-    | `Parent of module_type_lookup_error
-    | `Parent_sig of signature_of_module_error
-    | `Lookup_failure of Identifier.ModuleType.t
-    | `Fragment_root ]
+  [ `LocalMT of Env.t * Cpath.Resolved.module_type
+  | `Find_failure
+  | `Parent_sig of signature_of_module_error
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent_module of module_lookup_error
+  | `Parent of module_lookup_error
+  | `Parent_expr of module_type_expr_of_module_error
+  | `Lookup_failureMT of Identifier.ModuleType.t
+  | `Fragment_root
+  | `Unresolved_apply ]
 
 and type_lookup_error =
-    [ `Local of Env.t * Cpath.Resolved.type_
-    | `Unhandled of Cpath.Resolved.type_
-    | `Parent_module of module_lookup_error
-    | `Parent_sig of signature_of_module_error
-    | `Find_failure
-    | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_type ]
+  [ `Local of Env.t * Cpath.Resolved.type_
+  | `Unhandled of Cpath.Resolved.type_
+  | `Parent_sig of signature_of_module_error
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent_module of module_lookup_error
+
+  | `Parent of module_lookup_error
+  | `Parent_expr of module_type_expr_of_module_error
+  | `Fragment_root
+
+  | `Find_failure
+  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_type ]
 
 and class_type_lookup_error =
-    [ `Local of Env.t * Cpath.Resolved.class_type
-    | `Unhandled of Cpath.Resolved.class_type
-    | `Parent_module of module_lookup_error
-    | `Parent_sig of signature_of_module_error
-    | `Find_failure
-    | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_class_type ]
+  [ `Local of Env.t * Cpath.Resolved.class_type
+  | `Unhandled of Cpath.Resolved.class_type
+  | `Parent_module of module_lookup_error
+  | `Parent_module_type of module_type_lookup_error
+  | `Parent_sig of signature_of_module_error
+  | `Parent of module_lookup_error
+  | `Parent_expr of module_type_expr_of_module_error
+  | `Fragment_root
+
+  | `Find_failure
+  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_class_type ]
 
 val reset_caches : unit -> unit
 
 
-val lookup_module : Env.t ->
+val lookup_module :
+    mark_substituted:bool ->
+    Env.t ->
     Cpath.Resolved.module_ ->
     (Component.Module.t, module_lookup_error) Result.result
 
-val lookup_module_type : Env.t ->
+val lookup_module_type :
+    mark_substituted:bool -> Env.t ->
     Cpath.Resolved.module_type ->
     (Component.ModuleType.t, module_type_lookup_error) Result.result
 
