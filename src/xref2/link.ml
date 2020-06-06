@@ -694,7 +694,7 @@ and module_type_expr :
   | Path p -> Path (module_type_path env p)
   | With (expr, subs) as unresolved -> (
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-      match Tools.signature_of_module_type_expr env cexpr with
+      match Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr with
       | Ok sg ->
           With (module_type_expr env id expr, handle_fragments env id sg subs)
       | Error _ ->

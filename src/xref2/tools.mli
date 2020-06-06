@@ -140,18 +140,20 @@ val reresolve_module_type : Env.t -> Cpath.Resolved.module_type -> Cpath.Resolve
 val reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_
 val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
-val handle_module_type_lookup : Env.t -> string -> Cpath.Resolved.parent -> Component.Signature.t -> (Cpath.Resolved.module_type * Component.ModuleType.t) option
+val handle_module_type_lookup : Env.t -> string -> Cpath.Resolved.parent -> Component.Signature.t -> Component.Substitution.t -> (Cpath.Resolved.module_type * Component.ModuleType.t) option
 
 
-val signature_of_module : Env.t ->
+val signature_of_module :
+    Env.t ->
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result
 
-val signature_of_module_type :     Env.t ->
+val signature_of_module_type :
+    Env.t ->
     Component.ModuleType.t ->
     (Component.Signature.t, signature_of_module_error) Result.result
 
-val signature_of_module_type_expr :     Env.t ->
+val signature_of_module_type_expr :  mark_substituted:bool ->    Env.t ->
     Component.ModuleType.expr ->
     (Component.Signature.t, signature_of_module_error) Result.result
     
