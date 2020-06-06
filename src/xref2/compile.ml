@@ -277,7 +277,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   let open Utils.ResultMonad in
   let sg_id = (m.id :> Id.Signature.t) in
-  (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
+  Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Id.t);
   let expand m' env =
     match m.expr with
     | None -> Ok (None, None)
@@ -444,6 +444,7 @@ and module_type_expr :
     match sg_res with
     | Error _ -> (sg_res, env, lsub :: subs)
     | Ok sg -> (
+        Format.eprintf "compile.module_type_expr: sig=%a\n%!" Component.Fmt.signature sg;
         let lang_of_map = Lang_of.with_fragment_root fragment_root in
         let env = Env.add_fragment_root sg env in
         let sg_and_sub =
@@ -544,7 +545,7 @@ and module_type_expr :
         match find_parent cexpr with
         | None -> With (expr, subs)
         | Some parent -> (
-            match Tools.signature_of_module_type_expr env cexpr with
+            match Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr with
             | Error _ ->
                 lookup_failure ~what:(`Module_type id) `Lookup;
                 With (expr, subs)

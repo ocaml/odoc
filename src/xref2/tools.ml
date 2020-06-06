@@ -316,12 +316,12 @@ module LookupAndResolveMemo = MakeMemo (struct
 end)
 
 module SignatureOfModuleMemo = MakeMemo (struct
-  type t = bool * Cpath.Resolved.module_
+  type t = Cpath.Resolved.module_
 
   type result = (Component.Signature.t, signature_of_module_error) Result.result
   let equal = ( = )
 
-  let hash (b, p) = Hashtbl.hash (b, Cpath.resolved_module_hash p)
+  let hash p = Cpath.resolved_module_hash p
 end)
 
 let reset_caches () =
@@ -345,8 +345,9 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
   module_type_expr_of_module env m >>= fun mty' ->
   find_functor mty' >>= fun (arg_id, result) ->
   let new_module = { m with Component.Module.type_ = ModuleType result } in
-  let path = `Apply (func_path, `Resolved (`Substituted arg_path)) in
   let substitution = if mark_substituted then `Substituted arg_path else arg_path in
+
+  let path = `Apply (func_path, `Resolved substitution) in
   Ok
     ( path,
       Subst.module_
@@ -371,15 +372,15 @@ and get_substituted_module_type :
  fun env expr ->
   (* Format.fprintf Format.err_formatter ">>>expr=%a\n%!"  Component.Fmt.module_type_expr expr; *)
   match expr with
-  | Component.ModuleType.Path p' -> (
-      match resolve_module_type ~mark_substituted:true env p' with
-      | Resolved (resolved_path, _) ->
-          (* Format.fprintf Format.err_formatter "<<<resolved_path: %a\n%!" Component.Fmt.resolved_module_type_path resolved_path; *)
-          if Cpath.is_resolved_module_type_substituted resolved_path then
+  | Component.ModuleType.Path p' ->
+      if Cpath.is_module_type_substituted p'
+      then
+        match resolve_module_type ~mark_substituted:true env p' with
+        | Resolved (resolved_path, _) ->
             Some resolved_path
-          else None
-      | Unresolved _ ->
-          (* Format.fprintf Format.err_formatter "<<<Unresolved!?\n%!";*) None )
+        | Unresolved _ ->
+          (* Format.fprintf Format.err_formatter "<<<Unresolved!?\n%!";*) None
+      else None
   | _ -> (* Format.fprintf Format.err_formatter "<<<wtf!?\n%!"; *) None
 
 and process_module_type env m p' =
@@ -423,21 +424,22 @@ and process_module_path env ~add_canonical m p =
   let p'' = if add_canonical then add_canonical_path env m p' else p' in
   p''
 
-and handle_module_lookup env ~add_canonical id parent sg =
+and handle_module_lookup env ~add_canonical id parent sg sub =
   match Find.careful_module_in_sig sg id with
-  | Some (Find.Found m') ->
+  | Some (Find.Found m) ->
       let p' = `Module (parent, Odoc_model.Names.ModuleName.of_string id) in
+      let m' = Subst.module_ sub m in
       Some (process_module_path env ~add_canonical m' p', m')
   | Some (Replaced p) -> (
       match lookup_module ~mark_substituted:false env p with Ok m -> Some (p, m) | Error _ -> None )
   | None -> None
 
-and handle_module_type_lookup env id p sg =
+and handle_module_type_lookup env id p sg sub =
   let open OptionMonad in
   Find.module_type_in_sig sg id >>= fun mt ->
   let p' = `ModuleType (p, Odoc_model.Names.ModuleTypeName.of_string id) in
   let p'' = process_module_type env mt p' in
-  Some (p'', mt)
+  Some (p'', Subst.module_type sub mt)
 
 and handle_type_lookup id p sg =
   match Find.careful_type_in_sig sg id with
@@ -602,10 +604,10 @@ and resolve_module :
         resolve_module ~mark_substituted ~add_canonical env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        signature_of_module_cached env p ~mark_substituted m |> of_result ~unresolved
+        signature_of_module_cached env p m |> of_result ~unresolved
         >>= fun parent_sig ->
-        let sg = prefix_signature (`Module p, parent_sig) in
-        handle_module_lookup env ~add_canonical id (`Module p) sg
+        let sub = prefix_substitution (`Module p) parent_sig in
+        handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub 
         |> of_option ~unresolved
     | `Apply (m1, m2) -> (
         let func =
@@ -672,10 +674,10 @@ and resolve_module_type :
         resolve_module ~mark_substituted ~add_canonical:true env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        of_result ~unresolved (signature_of_module_cached env p ~mark_substituted m)
+        of_result ~unresolved (signature_of_module_cached env p m)
         >>= fun parent_sg ->
-        let sg = prefix_signature (`Module p, parent_sg) in
-        of_option ~unresolved (handle_module_type_lookup env id (`Module p) sg)
+        let sub = prefix_substitution (`Module p) parent_sg in
+        of_option ~unresolved (handle_module_type_lookup env id (`Module p) parent_sg sub)
         >>= fun (p', mt) -> return (p', mt)
     | `Resolved r as unresolved ->
         of_result ~unresolved (lookup_module_type ~mark_substituted env r) >>= fun m ->
@@ -739,7 +741,7 @@ and lookup_parent :
       | `Module p ->
         lookup_module ~mark_substituted env p |> map_error (fun p -> `Parent_module p)
         >>= fun m ->
-        signature_of_module_cached env p ~mark_substituted m
+        signature_of_module_cached env p m
         |> map_error (fun e -> `Parent_sig e) >>= fun sg ->
         Ok (sg, prefix_substitution parent sg)
       | `ModuleType p ->
@@ -764,7 +766,7 @@ and resolve_type :
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
         (* let time1 = Unix.gettimeofday () in *)
-        of_result ~unresolved (signature_of_module_cached env p ~mark_substituted:true m)
+        of_result ~unresolved (signature_of_module_cached env p m)
         >>= fun sg ->
         (* let time1point5 = Unix.gettimeofday () in *)
         let sub = prefix_substitution (`Module p) sg in
@@ -830,7 +832,7 @@ and resolve_class_type :
         resolve_module ~mark_substituted:true ~add_canonical:true env parent
         |> map_unresolved (fun p' -> `Dot (p', id))
         >>= fun (p, m) ->
-        of_result ~unresolved (signature_of_module_cached env p ~mark_substituted:true m)
+        of_result ~unresolved (signature_of_module_cached env p m)
         >>= fun sg ->
         let sub = prefix_substitution (`Module p) sg in
         of_result ~unresolved (handle_class_type_lookup id (`Module p) sg)  >>= fun (p, t') ->
@@ -882,7 +884,7 @@ and signature_of_module_alias :
   match resolve_module ~mark_substituted:false ~add_canonical:true env path with
   | Resolved (p', m) ->
       (* p' is the path to the aliased module *)
-      signature_of_module_cached env p' ~mark_substituted:false m >>= fun sg ->
+      signature_of_module_cached env p' m >>= fun sg ->
       Ok (Strengthen.signature (`Resolved p') sg)
   | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
   | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
@@ -906,26 +908,27 @@ and handle_signature_with_subs :
     (Ok sg) subs
 
 and signature_of_module_type_expr :
+    mark_substituted:bool ->
     Env.t ->
     Component.ModuleType.expr ->
     (Component.Signature.t, signature_of_module_error) Result.result =
- fun env m ->
+ fun ~mark_substituted env m ->
   match m with
   | Component.ModuleType.Path p -> (
-      match resolve_module_type ~mark_substituted:false env p with
+      match resolve_module_type ~mark_substituted env p with
       | Resolved (_, mt) -> signature_of_module_type env mt
       | Unresolved _p -> Error (`UnresolvedPath (`ModuleType p)) )
   | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With (s, subs) -> (
-      signature_of_module_type_expr env s >>= fun sg ->
+      signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
       match handle_signature_with_subs env sg subs with
       | Ok x -> Ok x
       | Error y -> Error (y :> signature_of_module_error) )
   | Component.ModuleType.Functor (Unit, expr) ->
-      signature_of_module_type_expr env expr
+      signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.Functor (Named arg, expr) ->
       ignore arg;
-      signature_of_module_type_expr env expr
+      signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.TypeOf decl -> signature_of_module_decl env decl
 
 and signature_of_module_type :
@@ -935,7 +938,7 @@ and signature_of_module_type :
  fun env m ->
   match m.expr with
   | None -> Error `OpaqueModule
-  | Some expr -> signature_of_module_type_expr env expr
+  | Some expr -> signature_of_module_type_expr ~mark_substituted:false env expr
 
 and signature_of_module_decl :
     Env.t ->
@@ -944,7 +947,7 @@ and signature_of_module_decl :
  fun env decl ->
   match decl with
   | Component.Module.Alias path -> signature_of_module_alias env path
-  | Component.Module.ModuleType expr -> signature_of_module_type_expr env expr
+  | Component.Module.ModuleType expr -> signature_of_module_type_expr ~mark_substituted:false env expr
 
 and signature_of_module :
     Env.t ->
@@ -955,11 +958,10 @@ and signature_of_module :
 and signature_of_module_cached :
     Env.t ->
     Cpath.Resolved.module_ ->
-    mark_substituted:bool ->
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result =
- fun env' path ~mark_substituted m ->
-  let id = (mark_substituted, path) in
+ fun env' path m ->
+  let id = path in
   let run env _id = signature_of_module env m in
   SignatureOfModuleMemo.memoize run env' id
 
@@ -1477,7 +1479,7 @@ let resolve_module_path env p =
   let open ResolvedMonad in
   (* Format.fprintf Format.err_formatter "resolve_module: %a\n%!" Component.Fmt.module_path p; *)
   resolve_module ~mark_substituted:true ~add_canonical:true env p >>= fun (p, m) ->
-  match signature_of_module_cached env p ~mark_substituted:true m with
+  match signature_of_module_cached env p m with
   | Ok _ -> return p
   | Error `OpaqueModule -> return (`OpaqueModule p)
   | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p
