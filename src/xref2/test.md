@@ -284,7 +284,9 @@ The values returned are the resolved path to the module, and a representation of
 
 ```ocaml env=e1
 # Tools.signature_of_module env module_;;
-- : (Component.Signature.t, Tools.signature_of_module_error) result =
+- : (Component.Signature.t, Odoc_xref2.Errors.signature_of_module_error)
+    result
+=
 Result.Ok
  {Odoc_xref2.Component.Signature.items =
    [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
@@ -527,7 +529,10 @@ we then return along with the fully resolved identifier.
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : Tools.resolve_type_result =
+- : (Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
+     Cpath.type_)
+    Tools.ResolvedMonad.t
+=
 Odoc_xref2.Tools.ResolvedMonad.Resolved
  (`Type
     (`Module
@@ -697,7 +702,7 @@ now we can ask for the signature of this module:
 
 ```ocaml env=e1
 # let sg = Tools.signature_of_module env m;;
-val sg : (Component.Signature.t, Tools.signature_of_module_error) result =
+val sg : (Component.Signature.t, Errors.signature_of_module_error) result =
   Result.Ok
    {Odoc_xref2.Component.Signature.items =
      [Odoc_xref2.Component.Signature.Module (`LModule (M, 32),
@@ -747,7 +752,7 @@ val m : Component.Module.t =
            "S")));
    canonical = None; hidden = false; display_type = None; expansion = None}
 # Tools.signature_of_module env m;;
-- : (Component.Signature.t, Tools.signature_of_module_error) result =
+- : (Component.Signature.t, Errors.signature_of_module_error) result =
 Result.Ok
  {Odoc_xref2.Component.Signature.items =
    [Odoc_xref2.Component.Signature.Type (`LType (t, 40),
@@ -1032,7 +1037,7 @@ val m : Component.Module.t =
            "T")));
    canonical = None; hidden = false; display_type = None; expansion = None}
 # let sg' = Tools.signature_of_module env m;;
-val sg' : (Component.Signature.t, Tools.signature_of_module_error) result =
+val sg' : (Component.Signature.t, Errors.signature_of_module_error) result =
   Result.Ok
    {Odoc_xref2.Component.Signature.items =
      [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 14),

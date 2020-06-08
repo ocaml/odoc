@@ -1,92 +1,10 @@
 (** Tools for manipulating the component data structures *)
 
-open Odoc_model.Paths
+open Errors
 
 module ResolvedMonad : sig
     type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
 end
-
-(** {2 Errors} *)
-
-type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
-
-type handle_subs_error = [ `UnresolvedPath of [ `Module of Cpath.module_ ] ]
-
-type signature_of_module_error =
-  [ `OpaqueModule
-  | `UnresolvedForwardPath
-  | `UnresolvedPath of
-    [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
-
-type module_lookup_error =
-  [ `Local of Env.t * Ident.module_ (* Found local path *)
-  | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
-  | `Find_failure
-  | `Lookup_failure of Identifier.Module.t
-  | `Fragment_root
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error ]
-
-and parent_lookup_error =
-  [ `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Parent_module of module_lookup_error
-  | `Fragment_root
-  ]
-
-and module_type_expr_of_module_error =
-  [ `ApplyNotFunctor
-  | `OpaqueModule
-  | `UnresolvedForwardPath
-  | handle_subs_error
-  | `Parent_module of module_lookup_error ]
-
-and module_type_lookup_error =
-  [ `LocalMT of Env.t * Cpath.Resolved.module_type
-  | `Find_failure
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Lookup_failureMT of Identifier.ModuleType.t
-  | `Fragment_root
-  | `Unresolved_apply ]
-
-and type_lookup_error =
-  [ `Local of Env.t * Cpath.Resolved.type_
-  | `Unhandled of Cpath.Resolved.type_
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Fragment_root
-
-  | `Find_failure
-  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_type ]
-
-and class_type_lookup_error =
-  [ `Local of Env.t * Cpath.Resolved.class_type
-  | `Unhandled of Cpath.Resolved.class_type
-  | `Parent_module of module_lookup_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_sig of signature_of_module_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Fragment_root
-
-  | `Find_failure
-  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_class_type ]
-
-
-
 
 (** {2 Lookup and resolve functions} *)
 
@@ -124,7 +42,7 @@ val lookup_module :
     mark_substituted:bool ->
     Env.t ->
     Cpath.Resolved.module_ ->
-    (Component.Module.t, module_lookup_error) Result.result
+    (Component.Module.t, [simple_module_lookup_error | parent_lookup_error]) Result.result
 
 (** [lookup_module_type ~mark_substituted env p] takes a resolved module type
     cpath and an environment and returns a representation of the module type.
@@ -132,14 +50,14 @@ val lookup_module :
 val lookup_module_type :
     mark_substituted:bool -> Env.t ->
     Cpath.Resolved.module_type ->
-    (Component.ModuleType.t, module_type_lookup_error) Result.result
+    (Component.ModuleType.t, [simple_module_type_lookup_error | parent_lookup_error]) Result.result
 
 (** [lookup_type env p] takes a resolved type path and an environment and returns
     a representation of the type. The type can be an ordinary type, a class type
     or a class. If the type has been destructively substituted, the path to the
     replacement type will be returned instead. *)
 val lookup_type : Env.t -> Cpath.Resolved.type_ ->
-    ((Find.type_, Component.TypeExpr.t) Find.found, type_lookup_error) Result.result
+    ((Find.type_, Component.TypeExpr.t) Find.found, [simple_type_lookup_error | parent_lookup_error]) Result.result
 
 
 

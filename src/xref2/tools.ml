@@ -1,5 +1,4 @@
 open Odoc_model.Names
-open Odoc_model.Paths
 
 (* Add [result] and a bind operator over it in scope *)
 open Utils
@@ -164,84 +163,7 @@ type resolve_module_type_result =
 type resolve_type_result =
   (Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found, Cpath.type_) ResolvedMonad.t
 
-type resolve_class_type_result =
-  (Cpath.Resolved.class_type * Find.class_type, Cpath.class_type) ResolvedMonad.t
-
-type process_error = [ `OpaqueModule | `UnresolvedForwardPath ]
-
-type handle_subs_error = [ `UnresolvedPath of [ `Module of Cpath.module_ ] ]
-
-type signature_of_module_error =
-  [ `OpaqueModule
-  | `UnresolvedForwardPath
-  | `UnresolvedPath of
-    [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
-
-type module_lookup_error =
-  [ `Local of Env.t * Ident.module_ (* Found local path *)
-  | `Unresolved_apply (* [`Apply] argument is not [`Resolved] *)
-  | `Find_failure
-  | `Lookup_failure of Identifier.Module.t
-  | `Fragment_root
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-  | `Parent of module_lookup_error
-  | `Fragment_root
-  | `Parent_expr of module_type_expr_of_module_error ]
-
-and parent_lookup_error =
-  [ `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Parent_module of module_lookup_error
-  | `Fragment_root
-  ]
-
-and module_type_expr_of_module_error =
-  [ `ApplyNotFunctor
-  | `OpaqueModule
-  | `UnresolvedForwardPath
-  | handle_subs_error
-  | `Parent_module of module_lookup_error ]
-
-and module_type_lookup_error =
-  [ `LocalMT of Env.t * Cpath.Resolved.module_type
-  | `Find_failure
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Lookup_failureMT of Identifier.ModuleType.t
-  | `Fragment_root
-  | `Unresolved_apply ]
-
-and type_lookup_error =
-  [ `Local of Env.t * Cpath.Resolved.type_
-  | `Unhandled of Cpath.Resolved.type_
-  | `Parent_sig of signature_of_module_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_module of module_lookup_error
-
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Fragment_root
-  | `Find_failure
-  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_type ]
-
-and class_type_lookup_error =
-  [ `Local of Env.t * Cpath.Resolved.class_type
-  | `Unhandled of Cpath.Resolved.class_type
-  | `Parent_module of module_lookup_error
-  | `Parent_module_type of module_type_lookup_error
-  | `Parent_sig of signature_of_module_error
-  | `Parent of module_lookup_error
-  | `Parent_expr of module_type_expr_of_module_error
-  | `Fragment_root
-  | `Find_failure
-  | `Lookup_failure of Odoc_model.Paths_types.Identifier.path_class_type ]
+open Errors
 
 module type MEMO = sig
   type result
@@ -306,7 +228,7 @@ end
 module LookupModuleMemo = MakeMemo (struct
   type t = bool * Cpath.Resolved.module_
 
-  type result = (Component.Module.t, module_lookup_error) Result.result
+  type result = (Component.Module.t, [simple_module_lookup_error | parent_lookup_error]) Result.result
   let equal = ( = )
   let hash (b, m) = Hashtbl.hash (b, Cpath.resolved_module_hash m)
 end)
@@ -470,17 +392,11 @@ and handle_type_lookup id p sg =
   | Some mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
   | None -> Error `Find_failure
 
-and handle_class_type_lookup id p sg =
-  match Find.class_type_in_sig sg id with
-  | Some c ->
-      Ok (`ClassType (p, Odoc_model.Names.ClassTypeName.of_string id), c)
-  | None -> Error `Find_failure
-
 and lookup_module :
     mark_substituted:bool ->
     Env.t ->
     Cpath.Resolved.module_ ->
-    (Component.Module.t, module_lookup_error) Result.result =
+    (Component.Module.t, [simple_module_lookup_error | parent_lookup_error]) Result.result =
     fun ~mark_substituted:m env' path' ->
     let lookup env (mark_substituted, path) =
       match path with
@@ -492,7 +408,7 @@ and lookup_module :
           match lookup_module ~mark_substituted env functor_path with
           | Ok functor_module ->
               handle_apply ~mark_substituted:false env functor_path argument_path functor_module
-              |> map_error (fun e -> `Parent_expr e)
+              |> map_error (function | #simple_module_type_expr_of_module_error as e-> `Parent_expr e | #parent_lookup_error as x -> x)
               >>= fun (_, m) -> Ok m
           | Error _ as e -> e )
       | `Module (parent, name) -> (
@@ -502,7 +418,8 @@ and lookup_module :
             | Some (Find.Found m) -> Ok (Subst.module_ sub m)
             | Some (Replaced p) -> lookup_module ~mark_substituted env p
           in
-          lookup_parent ~mark_substituted env parent |> map_error (fun e -> (e :> module_lookup_error))
+          lookup_parent ~mark_substituted env parent
+          |> map_error (fun e -> (e :> [ simple_module_lookup_error | parent_lookup_error]))
           >>= fun (sg, sub) -> find_in_sg sg sub)
       | `Alias (_, p) -> lookup_module ~mark_substituted env p
       | `Subst (_, p) -> lookup_module ~mark_substituted env p
@@ -589,7 +506,7 @@ and lookup_module_type :
     mark_substituted:bool ->
     Env.t ->
     Cpath.Resolved.module_type ->
-    (Component.ModuleType.t, module_type_lookup_error) Result.result =
+    (Component.ModuleType.t, [simple_module_type_lookup_error | parent_lookup_error]) Result.result =
  fun ~mark_substituted env path ->
   let lookup env =
     match path with
@@ -604,7 +521,8 @@ and lookup_module_type :
           | None -> Error `Find_failure
           | Some mt -> Ok (Subst.module_type sub mt)
         in
-        lookup_parent ~mark_substituted:true env parent |> map_error (fun e -> (e :> module_type_lookup_error))
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> [simple_module_type_lookup_error | parent_lookup_error]))
         >>= fun (sg, sub) ->
         find_in_sg sg sub)
     | `OpaqueModuleType m -> lookup_module_type ~mark_substituted env m
@@ -715,10 +633,11 @@ and resolve_module_type :
 and lookup_type :
     Env.t ->
     Cpath.Resolved.type_ ->
-    ((Find.type_, Component.TypeExpr.t) Find.found, type_lookup_error) Result.result =
+    ((Find.type_, Component.TypeExpr.t) Find.found, [simple_type_lookup_error | parent_lookup_error]) Result.result =
  fun env p ->
   let do_type p name =
-    lookup_parent ~mark_substituted:true env p |> map_error (fun e -> (e :> type_lookup_error)) >>= fun (sg, sub) ->
+    lookup_parent ~mark_substituted:true env p
+    |> map_error (fun e -> (e :> [simple_type_lookup_error | parent_lookup_error])) >>= fun (sg, sub) ->
     handle_type_lookup name p sg >>= fun (_, t') ->
     let t =
       match t' with
@@ -731,7 +650,7 @@ and lookup_type :
   in
   let res =
     match p with
-    | `Local _id -> Error (`Local (env, p))
+    | `Local _id -> Error (`LocalType (env, p))
     | `Identifier (`CoreType name) ->
         (* CoreTypes aren't put into the environment, so they can't be handled by the
               next clause. We just look them up here in the list of core types *)
@@ -764,13 +683,15 @@ and lookup_parent :
       let lookup env (mark_substituted, parent) =
       match parent with
       | `Module p ->
-        lookup_module ~mark_substituted env p |> map_error (fun p -> `Parent_module p)
+        lookup_module ~mark_substituted env p
+        |> map_error (function | #parent_lookup_error as p -> p | #simple_module_lookup_error as p -> `Parent_module p)
         >>= fun m ->
         signature_of_module env m
         |> map_error (fun e -> `Parent_sig e) >>= fun sg ->
         Ok (sg, prefix_substitution parent sg)
       | `ModuleType p ->
-        lookup_module_type ~mark_substituted env p |> map_error (fun e -> `Parent_module_type e)
+        lookup_module_type ~mark_substituted env p
+        |> map_error (function | #parent_lookup_error as p -> p | #simple_module_type_lookup_error as p -> `Parent_module_type p)
         >>= fun mt ->
         signature_of_module_type env mt
         |> map_error (fun e -> `Parent_sig e) >>= fun sg ->
@@ -818,75 +739,18 @@ and resolve_type :
         |> map_unresolved (fun p' -> `Substituted p')
         >>= fun (p, m) -> return (`Substituted p, m)
 
-and lookup_class_type_from_resolved_path :
-    Env.t ->
-    Cpath.Resolved.class_type ->
-    (Find.class_type, class_type_lookup_error) Result.result =
- fun env p ->
-  let do_lookup p name =
-    lookup_parent ~mark_substituted:true env p |> map_error (fun e -> (e :> class_type_lookup_error)) >>= fun (sg, sub) ->
-    handle_class_type_lookup name p sg  >>= fun (_, t') ->
-    let t =
-      match t' with
-      | `C c -> `C (Subst.class_ sub c)
-      | `CT ct -> `CT (Subst.class_type sub ct)
-    in
-    Ok t
-  in
-  match p with
-  | `Local _id -> Error (`Local (env, p))
-  | `Identifier (`Class _ as c) ->
-      of_option ~error:(`Lookup_failure c) (Env.lookup_class c env) >>= fun t ->
-      Ok (`C t)
-  | `Identifier (`ClassType _ as c) ->
-      of_option ~error:(`Lookup_failure c) (Env.lookup_class_type c env)
-      >>= fun t -> Ok (`CT t)
-  | `Substituted s ->
-      lookup_class_type_from_resolved_path env s 
-  | `Class (p, id) ->
-      do_lookup p (ClassName.to_string id)
-  | `ClassType (p, id) ->
-      do_lookup p (ClassTypeName.to_string id)
-
-and resolve_class_type :
-    Env.t ->
-    Cpath.class_type ->
-    resolve_class_type_result =
-  let open ResolvedMonad in
-  fun env p ->
-    match p with
-    | `Dot (parent, id) as unresolved ->
-        resolve_module ~mark_substituted:true ~add_canonical:true env parent
-        |> map_unresolved (fun p' -> `Dot (p', id))
-        >>= fun (p, m) ->
-        of_result ~unresolved (signature_of_module_cached env p m)
-        >>= fun sg ->
-        let sub = prefix_substitution (`Module p) sg in
-        of_result ~unresolved (handle_class_type_lookup id (`Module p) sg)  >>= fun (p, t') ->
-        let t =
-          match t' with
-          | `C c -> `C (Subst.class_ sub c)
-          | `CT ct -> `CT (Subst.class_type sub ct)
-        in
-        Resolved (p,t)
-    | `Resolved r as unresolved ->
-        of_result ~unresolved (lookup_class_type_from_resolved_path env r) >>= fun x ->
-        return (r, x)
-    | `Substituted s ->
-        resolve_class_type env s
-        |> map_unresolved (fun p' -> `Substituted p')
-        >>= fun (p, c) -> return (`Substituted p, c)
-
 
 and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result
+    (Component.ModuleType.expr, [simple_module_type_expr_of_module_error | parent_lookup_error]) Result.result
     =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
-      lookup_module ~mark_substituted:false env r |> map_error (fun e -> `Parent_module e) >>= fun m ->
+      lookup_module ~mark_substituted:false env r
+      |> map_error (function | #parent_lookup_error as e -> e | #simple_module_lookup_error as e -> `Parent_module e)
+      >>= fun m ->
       module_type_expr_of_module_decl env m.type_
   | Component.Module.Alias path -> (
       match resolve_module ~mark_substituted:false ~add_canonical:true env path with
@@ -899,7 +763,7 @@ and module_type_expr_of_module_decl :
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
-    (Component.ModuleType.expr, module_type_expr_of_module_error) Result.result
+    (Component.ModuleType.expr, [simple_module_type_expr_of_module_error | parent_lookup_error]) Result.result
     =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
@@ -1375,7 +1239,7 @@ and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
     string ->
-    (Component.Module.t, module_lookup_error) Result.result =
+    (Component.Module.t, [simple_module_lookup_error | parent_lookup_error]) Result.result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
   | Some (Found m) -> Ok m
@@ -1517,9 +1381,9 @@ and class_signature_of_class_type_expr :
   match e with
   | Signature s -> Some s
   | Constr (p, _) -> (
-      match resolve_class_type env p with
-      | Resolved (_, `C c) -> class_signature_of_class env c
-      | Resolved (_, `CT c) -> class_signature_of_class_type env c
+      match resolve_type env (p :> Cpath.type_) with
+      | Resolved (_, Found (`C c)) -> class_signature_of_class env c
+      | Resolved (_, Found (`CT c)) -> class_signature_of_class_type env c
       | _ -> None )
 
 and class_signature_of_class_type :
