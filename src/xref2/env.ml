@@ -415,7 +415,7 @@ type value_or_external =
 type 'a scope =
   Component.Element.any -> ([< Component.Element.any ] as 'a) option
 
-let lookup_by_name scope name env =
+let lookup_by_name' scope name env =
   let maybe_record_result result =
     match env.recorder with
     | Some r -> (
@@ -425,13 +425,40 @@ let lookup_by_name scope name env =
         | _ -> () )
     | _ -> ()
   in
-  try
-    match List.filter_map scope (StringMap.find name env.elts) with
-    | [] -> None
-    | x :: _ as results ->
-        List.iter maybe_record_result results;
-        Some x
-  with Not_found -> None
+  let found = try (StringMap.find name env.elts) with Not_found -> [] in
+  let found = List.filter_map scope found in
+  List.iter maybe_record_result found;
+  found
+
+let lookup_by_name scope name env =
+  match lookup_by_name' scope name env with
+  | x :: _ -> Some x
+  | [] -> None
+
+open Odoc_model.Paths
+
+let ident_of_element = function
+  | `Module (id, _) -> (id :> Identifier.t)
+  | `ModuleType (id, _) -> (id :> Identifier.t)
+  | `Type (id, _) -> (id :> Identifier.t)
+  | `Value (id, _) -> (id :> Identifier.t)
+  | `Label id -> (id :> Identifier.t)
+  | `Class (id, _) -> (id :> Identifier.t)
+  | `ClassType (id, _) -> (id :> Identifier.t)
+  | `External (id, _) -> (id :> Identifier.t)
+  | `Constructor (id, _) -> (id :> Identifier.t)
+  | `Exception (id, _) -> (id :> Identifier.t)
+  | `Extension (id, _) -> (id :> Identifier.t)
+  | `Field (id, _) -> (id :> Identifier.t)
+
+let rec disam_id id = function
+  | hd :: tl ->
+      if ident_of_element hd = (id :> Identifier.t) then Some hd
+      else disam_id id tl
+  | [] -> None
+
+let lookup_by_id scope id env =
+  disam_id id (lookup_by_name' scope (Identifier.name id) env)
 
 let s_signature : Component.Element.signature scope = function
   | #Component.Element.signature as r -> Some r

@@ -192,6 +192,10 @@ type 'a scope constraint 'a = [< Component.Element.any ]
 val lookup_by_name : 'a scope -> string -> t -> 'a option
 (** Lookup an element in Env depending on the given [scope]. *)
 
+val lookup_by_id :
+  'a scope -> [< Odoc_model.Paths_types.Identifier.any ] -> t -> 'a option
+(** Like [lookup_by_name] but use an identifier as key. *)
+
 val s_any : Component.Element.any scope
 
 val s_signature : Component.Element.signature scope
