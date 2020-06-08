@@ -23,13 +23,13 @@ type resolver = {
 let unique_id = ref 0
 
 type lookup_type =
-  | Module of Odoc_model.Paths_types.Identifier.reference_module * bool
-  | ModuleType of Odoc_model.Paths_types.Identifier.module_type * bool
+  | Module of Odoc_model.Paths_types.Identifier.reference_module
+  | ModuleType of Odoc_model.Paths_types.Identifier.module_type
   | RootModule of
       string
       * [ `Forward | `Resolved of Digest.t ] option
   | ModuleByName of
-      string * Odoc_model.Paths_types.Identifier.reference_module option
+      string * Odoc_model.Paths_types.Identifier.reference_module
   | FragmentRoot of int
 
 let pp_lookup_type fmt =
@@ -39,23 +39,17 @@ let pp_lookup_type fmt =
         Format.fprintf fmt "Some (Resolved %s)" digest
     | None -> Format.fprintf fmt "None"
   in
-  let id_opt fmt = function
-    | Some id ->
-        Format.fprintf fmt "Some %a" Component.Fmt.model_identifier
-          (id :> Odoc_model.Paths.Identifier.t)
-    | None -> Format.fprintf fmt "None"
-  in
   function
-  | Module (r, b) ->
-      Format.fprintf fmt "Module %a, %b" Component.Fmt.model_identifier
+  | Module r ->
+      Format.fprintf fmt "Module %a" Component.Fmt.model_identifier
         (r :> Odoc_model.Paths.Identifier.t)
-        b
-  | ModuleType (r, b) ->
-      Format.fprintf fmt "ModuleType %a, %b" Component.Fmt.model_identifier
+  | ModuleType r ->
+      Format.fprintf fmt "ModuleType %a" Component.Fmt.model_identifier
         (r :> Odoc_model.Paths.Identifier.t)
-        b
   | RootModule (str, res) -> Format.fprintf fmt "RootModule %s %a" str fmtrm res
-  | ModuleByName (n, r) -> Format.fprintf fmt "ModuleByName %s, %a" n id_opt r
+  | ModuleByName (n, r) ->
+      Format.fprintf fmt "ModuleByName %s, %a" n
+        Component.Fmt.model_identifier (r :> Odoc_model.Paths.Identifier.t)
   | FragmentRoot i -> Format.fprintf fmt "FragmentRoot %d" i
 
 let pp_lookup_type_list fmt ls =
@@ -73,7 +67,6 @@ module StringMap = Map.Make (String)
 
 type t = {
   id : int;
-  modules : Component.Module.t Maps.Module.t;
   module_types : Component.ModuleType.t Maps.ModuleType.t;
   types : Component.TypeDecl.t Maps.Type.t;
   values : Component.Value.t Maps.Value.t;
@@ -115,14 +108,6 @@ let with_recorded_lookups env f =
     restore ();
     raise e
 
-let pp_modules ppf modules =
-  List.iter
-    (fun (i, m) ->
-      Format.fprintf ppf "ENV MODULE %a: %a @," Component.Fmt.model_identifier
-        (i :> Odoc_model.Paths.Identifier.t)
-        Component.Fmt.module_ m)
-    (Maps.Module.bindings modules)
-
 let pp_module_types ppf module_types =
   List.iter
     (fun (i, m) ->
@@ -158,18 +143,16 @@ let pp_externals ppf exts =
 let pp ppf env =
   Format.fprintf ppf
     "@[<v>@,\
-     ENV modules: %a @,\
      ENV module_types: %a @,\
      ENV types: %a@,\
      ENV values: %a@,\
      ENV externals: %a@,\
-     END OF ENV" pp_modules env.modules pp_module_types env.module_types
+     END OF ENV" pp_module_types env.module_types
     pp_types env.types pp_values env.values pp_externals env.externals
 
 let empty =
   {
     id = 0;
-    modules = Maps.Module.empty;
     module_types = Maps.ModuleType.empty;
     types = Maps.Type.empty;
     values = Maps.Value.empty;
@@ -209,7 +192,6 @@ let add_module identifier m env =
       ( incr unique_id;
         (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
         !unique_id );
-    modules = Maps.Module.add identifier m env.modules;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -416,23 +398,25 @@ type 'a scope =
   Component.Element.any -> ([< Component.Element.any ] as 'a) option
 
 let lookup_by_name' scope name env =
-  let maybe_record_result result =
-    match env.recorder with
-    | Some r -> (
-        match (result :> Component.Element.any) with
-        | `Module (id, _) ->
-            r.lookups <- ModuleByName (name, Some id) :: r.lookups
-        | _ -> () )
-    | _ -> ()
-  in
   let found = try (StringMap.find name env.elts) with Not_found -> [] in
-  let found = List.filter_map scope found in
-  List.iter maybe_record_result found;
-  found
+  List.filter_map scope found
 
 let lookup_by_name scope name env =
+  let record_lookup_results results =
+    match env.recorder with
+    | Some r ->
+        List.iter
+          (function
+            | `Module (id, _) ->
+                r.lookups <- ModuleByName (name, id) :: r.lookups
+            | _ -> ())
+          (results :> Component.Element.any list)
+    | None -> ()
+  in
   match lookup_by_name' scope name env with
-  | x :: _ -> Some x
+  | x :: _ as results ->
+      record_lookup_results results;
+      Some x
   | [] -> None
 
 open Odoc_model.Paths
@@ -458,7 +442,20 @@ let rec disam_id id = function
   | [] -> None
 
 let lookup_by_id scope id env =
-  disam_id id (lookup_by_name' scope (Identifier.name id) env)
+  let record_lookup_result result =
+    match env.recorder with
+    | Some r -> (
+        match (result :> Component.Element.any) with
+        | `Module (id, _) -> r.lookups <- Module id :: r.lookups
+        | `ModuleType (id, _) -> r.lookups <- ModuleType id :: r.lookups
+        | _ -> () )
+    | None -> ()
+  in
+  match disam_id id (lookup_by_name' scope (Identifier.name id) env) with
+  | Some result as x ->
+      record_lookup_result result;
+      x
+  | None -> None
 
 let s_signature : Component.Element.signature scope = function
   | #Component.Element.signature as r -> Some r
@@ -541,10 +538,10 @@ let lookup_module_type identifier env =
   in
   match Maps.ModuleType.find identifier env.module_types with
   | result ->
-      maybe_record_result (ModuleType (identifier, true));
+      maybe_record_result (ModuleType identifier);
       Some result
   | exception _ ->
-      maybe_record_result (ModuleType (identifier, false));
+      maybe_record_result (ModuleType identifier);
       None
 
 let lookup_value identifier env =
@@ -600,9 +597,9 @@ let lookup_root_module name env =
   | None, _ -> () );
   result
 
-let lookup_module_internal identifier env =
-  match try Some (Maps.Module.find identifier env.modules) with _ -> None with
-  | Some _ as result -> result
+let lookup_module identifier env =
+  match lookup_by_id s_module identifier env with
+  | Some (`Module (_, m)) -> Some m
   | None -> (
       match identifier with
       | `Root (_, name) -> (
@@ -610,20 +607,6 @@ let lookup_module_internal identifier env =
           | Some (Resolved (_, _, m)) -> Some m
           | Some Forward | None -> None )
       | _ -> None )
-
-let lookup_module identifier env =
-  let maybe_record_result res =
-    match env.recorder with
-    | Some r -> r.lookups <- res :: r.lookups
-    | None -> ()
-  in
-  match lookup_module_internal identifier env with
-  | Some _ as result ->
-      maybe_record_result (Module (identifier, true));
-      result
-  | None ->
-      maybe_record_result (Module (identifier, false));
-      None
 
 let lookup_page name env =
   match env.resolver with
@@ -785,15 +768,20 @@ let initial_env :
           | Not_found -> (import :: imports, env) ))
     t.imports ([], initial_env)
 
-let modules_of env = Maps.Module.bindings env.modules
+let modules_of env =
+  let f acc = function
+    | `Module (id, m) -> (id, m) :: acc
+    | _ -> acc
+  in
+  StringMap.fold (fun _ e acc -> List.fold_left f acc e) env.elts []
 
 let verify_lookups env lookups =
   let bad_lookup = function
-    | Module (id, found) ->
+    | Module id ->
         let actually_found =
           match lookup_module id env with Some _ -> true | None -> false
         in
-        found <> actually_found
+        true <> actually_found
     | RootModule (name, res) -> (
         let actual_result =
           match env.resolver with
@@ -809,17 +797,15 @@ let verify_lookups env lookups =
         | Some `Forward, Some `Forward -> false
         | Some (`Resolved digest1), Some (`Resolved digest2) -> digest1 <> digest2
         | _ -> true )
-    | ModuleType (id, found) ->
+    | ModuleType id ->
         let actually_found =
           match lookup_module_type id env with Some _ -> true | None -> false
         in
-        found <> actually_found
+        true <> actually_found
     | ModuleByName (name, result) -> (
-        let actually_found = lookup_by_name s_module name env in
-        match (result, actually_found) with
-        | None, None -> false
-        | Some id, Some (`Module (id', _)) -> id <> id'
-        | _ -> true )
+        match lookup_by_name s_module name env with
+        | None -> false
+        | Some (`Module (id', _)) -> result <> id' )
     | FragmentRoot _i -> true
     (* begin
          try
