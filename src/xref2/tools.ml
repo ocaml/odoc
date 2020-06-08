@@ -256,6 +256,8 @@ module MakeMemo(X : MEMO) = struct
   let cache : (X.result * int * Env.lookup_type list) M.t = M.create 10000
   let cache_hits : int M.t = M.create 10000
 
+  let enabled = ref true
+
   let bump_counter arg =
     try
       let new_val = M.find cache_hits arg + 1 in
@@ -266,35 +268,39 @@ module MakeMemo(X : MEMO) = struct
       1
 
   let memoize f env arg =
-    let env_id = Env.id env in
-    let n = bump_counter arg in
-    let no_memo () =
-      let lookups, result = Env.with_recorded_lookups env (fun env' -> f env' arg) in
-      if n>1 then
-        M.add cache arg (result, env_id, lookups);
-      result
-    in
-    match M.find_all cache arg with
-    | [] -> no_memo ()
-    | xs ->
-      let rec find_fast = function
-        | (result, env_id', _) :: _ when env_id' = env_id ->
-          M.replace cache_hits arg (M.find cache_hits arg + 1);
-          result
-        | _ :: ys -> find_fast ys
-        | [] -> find xs
-      and find = function
-        | (m, _, lookups) :: xs ->
-          if Env.verify_lookups env lookups
-          then m
-          else find xs
-        | [] -> no_memo ()
+    if not !enabled then begin
+      f env arg
+    end else begin
+      let env_id = Env.id env in
+      let n = bump_counter arg in
+      let no_memo () =
+        let lookups, result = Env.with_recorded_lookups env (fun env' -> f env' arg) in
+        if n>1 then
+          M.add cache arg (result, env_id, lookups);
+        result
       in
-      find_fast xs
+      match M.find_all cache arg with
+      | [] -> no_memo ()
+      | xs ->
+        let rec find_fast = function
+          | (result, env_id', _) :: _ when env_id' = env_id ->
+            M.replace cache_hits arg (M.find cache_hits arg + 1);
+            result
+          | _ :: ys -> find_fast ys
+          | [] -> find xs
+        and find = function
+          | (m, _, lookups) :: xs ->
+            if Env.verify_lookups env lookups
+            then m
+            else find xs
+          | [] -> no_memo ()
+        in
+        find_fast xs
+    end
     
-    let clear () =
-      M.clear cache;
-      M.clear cache_hits
+  let clear () =
+    M.clear cache;
+    M.clear cache_hits
 end
 
 module LookupModuleMemo = MakeMemo (struct
@@ -304,6 +310,17 @@ module LookupModuleMemo = MakeMemo (struct
   let equal = ( = )
   let hash (b, m) = Hashtbl.hash (b, Cpath.resolved_module_hash m)
 end)
+
+module LookupParentMemo = MakeMemo (struct
+  type t = bool * Cpath.Resolved.parent
+
+  type result = (Component.Signature.t * Component.Substitution.t, parent_lookup_error) Result.result
+
+  let equal = ( = )
+
+  let hash (b,p) = Hashtbl.hash (b, Cpath.resolved_parent_hash p)
+end
+)
 
 module LookupAndResolveMemo = MakeMemo (struct
   type t = bool * bool * Cpath.module_
@@ -324,10 +341,17 @@ module SignatureOfModuleMemo = MakeMemo (struct
   let hash p = Cpath.resolved_module_hash p
 end)
 
+let disable_all_caches () =
+    LookupModuleMemo.enabled := false;
+    LookupAndResolveMemo.enabled := false;
+    SignatureOfModuleMemo.enabled := false;
+    LookupParentMemo.enabled := false
+
 let reset_caches () =
   LookupModuleMemo.clear ();
   LookupAndResolveMemo.clear ();
-  SignatureOfModuleMemo.clear ()
+  SignatureOfModuleMemo.clear ();
+  LookupParentMemo.clear ()
 
 let rec handle_apply ~mark_substituted env func_path arg_path m =
   let rec find_functor mty =
@@ -736,12 +760,13 @@ and lookup_type :
 and lookup_parent :
     mark_substituted:bool ->
     Env.t -> Cpath.Resolved.parent -> (Component.Signature.t * Component.Substitution.t, parent_lookup_error) Result.result =
-    fun ~mark_substituted env parent ->
+    fun ~mark_substituted:m env' parent' ->
+      let lookup env (mark_substituted, parent) =
       match parent with
       | `Module p ->
         lookup_module ~mark_substituted env p |> map_error (fun p -> `Parent_module p)
         >>= fun m ->
-        signature_of_module_cached env p m
+        signature_of_module env m
         |> map_error (fun e -> `Parent_sig e) >>= fun sg ->
         Ok (sg, prefix_substitution parent sg)
       | `ModuleType p ->
@@ -754,6 +779,8 @@ and lookup_parent :
         Env.lookup_fragment_root env |> of_option ~error:(`Fragment_root)
         >>= fun (_,sg) -> 
         Ok (sg, prefix_substitution parent sg)
+      in
+    LookupParentMemo.memoize lookup env' (m,parent')
           
 and resolve_type :
     Env.t -> Cpath.type_ -> resolve_type_result =
@@ -890,19 +917,20 @@ and signature_of_module_alias :
   | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
 
 and handle_signature_with_subs :
+    mark_substituted:bool ->
     Env.t ->
     Component.Signature.t ->
     Component.ModuleType.substitution list ->
     (Component.Signature.t, handle_subs_error) Result.result =
- fun env sg subs ->
+ fun ~mark_substituted env sg subs ->
   let open ResultMonad in
   List.fold_left
     (fun sg_opt sub ->
       sg_opt >>= fun sg ->
       match sub with
       | Component.ModuleType.ModuleEq (frag, _) ->
-          fragmap_module env frag sub sg
-      | ModuleSubst (frag, _) -> fragmap_module env frag sub sg
+          fragmap_module ~mark_substituted env frag sub sg
+      | ModuleSubst (frag, _) -> fragmap_module ~mark_substituted env frag sub sg
       | TypeEq (frag, _) -> Ok (fragmap_type env frag sub sg)
       | TypeSubst (frag, _) -> Ok (fragmap_type env frag sub sg))
     (Ok sg) subs
@@ -921,7 +949,7 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With (s, subs) -> (
       signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
-      match handle_signature_with_subs env sg subs with
+      match handle_signature_with_subs ~mark_substituted env sg subs with
       | Ok x -> Ok x
       | Error y -> Error (y :> signature_of_module_error) )
   | Component.ModuleType.Functor (Unit, expr) ->
@@ -966,12 +994,13 @@ and signature_of_module_cached :
   SignatureOfModuleMemo.memoize run env' id
 
 and fragmap_module :
+    mark_substituted:bool ->
     Env.t ->
     Cfrag.module_ ->
     Component.ModuleType.substitution ->
     Component.Signature.t ->
     (Component.Signature.t, handle_subs_error) Result.result =
- fun env frag sub sg ->
+ fun ~mark_substituted env frag sub sg ->
   let name, frag' = Cfrag.module_split frag in
   let map_module m =
     match (frag', sub) with
@@ -979,7 +1008,12 @@ and fragmap_module :
         let type_ =
           match type_ with
           | Alias (`Resolved p) ->
-              Component.Module.Alias (`Resolved (`Substituted p))
+              let new_p =
+                if mark_substituted
+                then `Substituted p
+                else p
+              in
+              Component.Module.Alias (`Resolved new_p)
           | Alias _ | ModuleType _ -> type_
         in
         (* Finished the substitution *)
@@ -1043,7 +1077,7 @@ and fragmap_module :
   in
   let rec handle_items items =
     List.fold_right
-      (fun item (items, handled, removed) ->
+      (fun item (items, handled, removed, sub) ->
         match item with
         | Component.Signature.Module (id, r, m)
           when Ident.Name.module_ id = name -> (
@@ -1054,11 +1088,12 @@ and fragmap_module :
                     (id, r, Component.Delayed.put (fun () -> m))
                   :: items,
                   true,
-                  removed )
+                  removed,
+                  id :: sub )
             | Right p ->
-                (items, true, Component.Signature.RModule (id, p) :: removed) )
+                (items, true, Component.Signature.RModule (id, p) :: removed, sub) )
         | Component.Signature.Include i ->
-            let items', handled', removed' = handle_items i.expansion_.items in
+            let items', handled', removed', sub' = handle_items i.expansion_.items in
             let expansion =
               Component.Signature.{ items = items'; removed = removed' }
             in
@@ -1067,12 +1102,12 @@ and fragmap_module :
                 Component.Signature.Include (map_include i expansion)
               else Component.Signature.Include { i with expansion_ = expansion }
             in
-            (component :: items, handled || handled', removed @ removed')
-        | x -> (x :: items, handled, removed))
-      items ([], false, [])
+            (component :: items, handled || handled', removed @ removed', sub @ sub')
+        | x -> (x :: items, handled, removed, sub))
+      items ([], false, [], [])
   in
   try
-    let items, _handled, removed = handle_items sg.items in
+    let items, _handled, removed, substituted = handle_items sg.items in
 
     let sub_of_removed removed sub =
       match removed with
@@ -1080,6 +1115,23 @@ and fragmap_module :
       | _ -> sub
     in
     let sub = List.fold_right sub_of_removed removed Subst.identity in
+    let items =
+      if not mark_substituted
+      then items
+      else begin
+        (* Mark things that have been substituted as such - See the `With11`
+          test for an example of why this is necessary *)
+        let sub_of_substituted x sub =
+          Subst.add_module x (`Substituted (`Local x)) sub
+        in
+        let substituted_sub = List.fold_right sub_of_substituted substituted Subst.identity in
+        (* Need to call `apply_sig_map` directly as we're substituting for an item
+          that's declared within the signature *)
+        let sg = Subst.apply_sig_map substituted_sub items [] in
+        (* Finished marking substituted stuff *)
+        sg.items
+      end
+    in
     let res =
       Subst.signature sub
         { Component.Signature.items; removed = removed @ sg.removed }

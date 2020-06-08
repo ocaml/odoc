@@ -630,7 +630,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap_module env cfrag
+            Tools.fragmap_module ~mark_substituted:true env cfrag
               Component.Of_Lang.(module_type_substitution empty lsub)
               sg
           in
@@ -660,7 +660,7 @@ and handle_fragments env id sg subs =
             | _ -> frag
           in
           let sg' =
-            Tools.fragmap_module env cfrag
+            Tools.fragmap_module ~mark_substituted:true env cfrag
               Component.Of_Lang.(module_type_substitution empty lsub)
               sg
           in

@@ -122,7 +122,7 @@ and aux_expansion_of_module_type_expr env expr :
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
       | Ok (Signature sg) -> (
           let subs = unresolve_subs subs in
-          match Tools.handle_signature_with_subs env sg subs with
+          match Tools.handle_signature_with_subs ~mark_substituted:false env sg subs with
           | Ok sg -> Ok (Signature sg)
           | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)
           ) )
