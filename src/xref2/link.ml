@@ -13,18 +13,6 @@ end
 
 exception Loop
 
-let with_dummy_location v =
-  Location_.
-    {
-      location =
-        {
-          file = "";
-          start = { line = 0; column = 0 };
-          end_ = { line = 0; column = 1 };
-        };
-      value = v;
-    }
-
 let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Resolved _ -> false
   | `Root _ -> false
@@ -58,13 +46,6 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
 
-let add_module_docs m expn =
-  let open Lang in
-  match expn with
-  | Module.Signature sg ->
-      let doc = Signature.Comment (`Docs m.Module.doc) in
-      Module.Signature (doc :: sg)
-  | _ -> expn
 
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->

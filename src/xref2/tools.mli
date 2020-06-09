@@ -1,9 +1,14 @@
-(** Tools for manipulating the component data structures *)
+(** Tools for manipulating the component data structures
+
+    This module contains tools for manipulating the {!module:Component}
+    data structures, for example, resolving paths and fragments, obtaining
+    signatures, handling fragment substitution and others.
+*)
 
 open Errors
 
 module ResolvedMonad : sig
-    type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
+  type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
 end
 
 (** {2 Lookup and resolve functions} *)
@@ -35,64 +40,72 @@ end
     with no component.
 *)
 
+val lookup_module :
+  mark_substituted:bool ->
+  Env.t ->
+  Cpath.Resolved.module_ ->
+  ( Component.Module.t,
+    [ simple_module_lookup_error | parent_lookup_error ] )
+  Result.result
 (** [lookup_module ~mark_substituted env p] takes a resolved module cpath [p] and
     an environment and returns a representation of the module. 
 *)
-val lookup_module :
-    mark_substituted:bool ->
-    Env.t ->
-    Cpath.Resolved.module_ ->
-    (Component.Module.t, [simple_module_lookup_error | parent_lookup_error]) Result.result
 
+val lookup_module_type :
+  mark_substituted:bool ->
+  Env.t ->
+  Cpath.Resolved.module_type ->
+  ( Component.ModuleType.t,
+    [ simple_module_type_lookup_error | parent_lookup_error ] )
+  Result.result
 (** [lookup_module_type ~mark_substituted env p] takes a resolved module type
     cpath and an environment and returns a representation of the module type.
 *)
-val lookup_module_type :
-    mark_substituted:bool -> Env.t ->
-    Cpath.Resolved.module_type ->
-    (Component.ModuleType.t, [simple_module_type_lookup_error | parent_lookup_error]) Result.result
 
+val lookup_type :
+  Env.t ->
+  Cpath.Resolved.type_ ->
+  ( (Find.type_, Component.TypeExpr.t) Find.found,
+    [ simple_type_lookup_error | parent_lookup_error ] )
+  Result.result
 (** [lookup_type env p] takes a resolved type path and an environment and returns
     a representation of the type. The type can be an ordinary type, a class type
     or a class. If the type has been destructively substituted, the path to the
     replacement type will be returned instead. *)
-val lookup_type : Env.t -> Cpath.Resolved.type_ ->
-    ((Find.type_, Component.TypeExpr.t) Find.found, [simple_type_lookup_error | parent_lookup_error]) Result.result
 
-
-
+val resolve_module :
+  mark_substituted:bool ->
+  add_canonical:bool ->
+  Env.t ->
+  Cpath.module_ ->
+  (Cpath.Resolved.module_ * Component.Module.t, Cpath.module_) ResolvedMonad.t
 (** [resolve_module ~mark_substituted ~add_canonical env p] takes an unresolved
     module path and an environment and returns a tuple of the resolved module
     path alongside a representation of the module itself. *)
-val resolve_module : mark_substituted:bool ->
-    add_canonical:bool ->
-    Env.t ->
-    Cpath.module_ ->
-    (Cpath.Resolved.module_ * Component.Module.t, Cpath.module_) ResolvedMonad.t
 
-
-    
+val resolve_module_type :
+  mark_substituted:bool ->
+  Env.t ->
+  Cpath.module_type ->
+  ( Cpath.Resolved.module_type * Component.ModuleType.t,
+    Cpath.module_type )
+  ResolvedMonad.t
 (** [resolve_module_type ~mark_substituted env p] takes an unresolved module
     type path and an environment and returns a tuple of the resolved module type
     path alongside a representation of the module type itself. *)
-val resolve_module_type :
-    mark_substituted:bool ->
-    Env.t ->
-    Cpath.module_type ->
-    (Cpath.Resolved.module_type * Component.ModuleType.t, Cpath.module_type) ResolvedMonad.t
 
-
-
+val resolve_type :
+  Env.t ->
+  Cpath.type_ ->
+  ( Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
+    Cpath.type_ )
+  ResolvedMonad.t
 (** [resolve_type env p] takes an unresolved
     type path and an environment and returns a tuple of the resolved type
     path alongside a representation of the type itself. As with {!val:lookup_type}
     the returned type is either the type, class or class type, or if has been
     destructively substituted the return value is the path
     to the replaced type, class or class type. *)
-val resolve_type : Env.t -> Cpath.type_ ->
-    (Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found, Cpath.type_) ResolvedMonad.t
-
-
 
 (** {3 Convenience functions } *)
 
@@ -102,9 +115,18 @@ val resolve_type : Env.t -> Cpath.type_ ->
     additionally prepend an [OpaqueModule] or [OpaqueModuleType] constructor to the
     path if the module or module type cannot be expanded *)
 
-val resolve_module_path : Env.t -> Cpath.module_ -> (Cpath.Resolved.module_, Cpath.module_) ResolvedMonad.t
-val resolve_module_type_path : Env.t -> Cpath.module_type -> (Cpath.Resolved.module_type, Cpath.module_type) ResolvedMonad.t
-val resolve_type_path : Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.type_) ResolvedMonad.t
+val resolve_module_path :
+  Env.t ->
+  Cpath.module_ ->
+  (Cpath.Resolved.module_, Cpath.module_) ResolvedMonad.t
+
+val resolve_module_type_path :
+  Env.t ->
+  Cpath.module_type ->
+  (Cpath.Resolved.module_type, Cpath.module_type) ResolvedMonad.t
+
+val resolve_type_path :
+  Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.type_) ResolvedMonad.t
 
 (** {2 Re-resolve functions} *)
 
@@ -114,7 +136,10 @@ val resolve_type_path : Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.typ
     similar, and then passed to {!reresolve_module} *)
 
 val reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
-val reresolve_module_type : Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type
+
+val reresolve_module_type :
+  Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type
+
 val reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_
 
 (** {2 Ref_tools helpers} *)
@@ -125,39 +150,48 @@ val reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_
 
 val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
-val handle_module_type_lookup : Env.t -> string -> Cpath.Resolved.parent -> Component.Signature.t -> Component.Substitution.t -> (Cpath.Resolved.module_type * Component.ModuleType.t) option
+val handle_module_type_lookup :
+  Env.t ->
+  string ->
+  Cpath.Resolved.parent ->
+  Component.Signature.t ->
+  Component.Substitution.t ->
+  (Cpath.Resolved.module_type * Component.ModuleType.t) option
 
 type module_modifiers =
-    [ `Aliased of Cpath.Resolved.module_
-    | `SubstAliased of Cpath.Resolved.module_
-    | `SubstMT of Cpath.Resolved.module_type
-    ]
-val get_module_path_modifiers : Env.t -> add_canonical:bool -> Component.Module.t -> module_modifiers option
+  [ `Aliased of Cpath.Resolved.module_
+  | `SubstAliased of Cpath.Resolved.module_
+  | `SubstMT of Cpath.Resolved.module_type ]
 
-val prefix_signature : Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t
+val get_module_path_modifiers :
+  Env.t -> add_canonical:bool -> Component.Module.t -> module_modifiers option
+
+val prefix_signature :
+  Cpath.Resolved.parent * Component.Signature.t -> Component.Signature.t
 
 val signature_of_module :
-    Env.t ->
-    Component.Module.t ->
-    (Component.Signature.t, signature_of_module_error) Result.result
+  Env.t ->
+  Component.Module.t ->
+  (Component.Signature.t, signature_of_module_error) Result.result
 
 val signature_of_module_type :
-    Env.t ->
-    Component.ModuleType.t ->
-    (Component.Signature.t, signature_of_module_error) Result.result
+  Env.t ->
+  Component.ModuleType.t ->
+  (Component.Signature.t, signature_of_module_error) Result.result
 
-
-
-    
 val class_signature_of_class_type :
-    Env.t -> Component.ClassType.t -> Component.ClassSignature.t option
+  Env.t -> Component.ClassType.t -> Component.ClassSignature.t option
 
 val class_signature_of_class :
-    Env.t -> Component.Class.t -> Component.ClassSignature.t option
-
+  Env.t -> Component.Class.t -> Component.ClassSignature.t option
 
 (** {2 Fragment resolution} *)
- 
+
+val signature_of_module_type_expr :
+  mark_substituted:bool ->
+  Env.t ->
+  Component.ModuleType.expr ->
+  (Component.Signature.t, signature_of_module_error) Result.result
 (** The following functions are use for the resolution of {{!type:Odoc_model.Paths.Fragment.t}Fragments}
     Whilst resolving fragments it is necessary to process them in order, applying
     the 'with' expression of module or type equality or substitution, before resolving
@@ -166,24 +200,24 @@ val class_signature_of_class :
     be [true]. As for the path resolution functions above, the resolve functions may
     be called during compile or link, whereas the reresolve functions should only be called
     during the link phase. *)
-val signature_of_module_type_expr :  mark_substituted:bool ->    Env.t ->
-    Component.ModuleType.expr ->
-    (Component.Signature.t, signature_of_module_error) Result.result
-    
-val resolve_module_fragment : Env.t ->
-    Cfrag.root * Component.Signature.t ->
-    Cfrag.module_ ->
-    Cfrag.resolved_module option 
 
-val resolve_type_fragment : 
-    Env.t ->
-    Cfrag.root * Component.Signature.t ->
-    Cfrag.type_ ->
-    Cfrag.resolved_type option
+val resolve_module_fragment :
+  Env.t ->
+  Cfrag.root * Component.Signature.t ->
+  Cfrag.module_ ->
+  Cfrag.resolved_module option
 
-val reresolve_module_fragment : Env.t -> Cfrag.resolved_module -> Cfrag.resolved_module
+val resolve_type_fragment :
+  Env.t ->
+  Cfrag.root * Component.Signature.t ->
+  Cfrag.type_ ->
+  Cfrag.resolved_type option
 
-val reresolve_type_fragment : Env.t -> Cfrag.resolved_type -> Cfrag.resolved_type
+val reresolve_module_fragment :
+  Env.t -> Cfrag.resolved_module -> Cfrag.resolved_module
+
+val reresolve_type_fragment :
+  Env.t -> Cfrag.resolved_type -> Cfrag.resolved_type
 
 (** {2 Fragmap functions} *)
 
@@ -217,46 +251,45 @@ val reresolve_type_fragment : Env.t -> Cfrag.resolved_type -> Cfrag.resolved_typ
     applied.
 *)
 
+val fragmap_module :
+  mark_substituted:bool ->
+  Env.t ->
+  Cfrag.module_ ->
+  Component.ModuleType.substitution ->
+  Component.Signature.t ->
+  (Component.Signature.t, handle_subs_error) Result.result
 (** [fragmap_module ~mark_substituted env frag sub sg] takes an environment [env]
     and signature [sg], a type fragment [frag] and a fragment substitution (e.g.
     [ModuleSubst] to destructively substitute a module), and returns the substituted
     signature. *)
-val fragmap_module :
-mark_substituted:bool ->
-Env.t ->
-Cfrag.module_ ->
-Component.ModuleType.substitution ->
-Component.Signature.t ->
-(Component.Signature.t, handle_subs_error) Result.result
 
+val fragmap_type :
+  Env.t ->
+  Cfrag.type_ ->
+  Component.ModuleType.substitution ->
+  Component.Signature.t ->
+  Component.Signature.t
 (** [fragmap_type ~mark_substituted env frag sub sg] takes an environment [env]
     and signature [sg], a module fragment [frag] and a fragment substitution (e.g.
     [TypeSubst] to destructively substitute a type), and returns the substituted
     signature. *)
-val fragmap_type :
-Env.t ->
-Cfrag.type_ ->
-Component.ModuleType.substitution ->
-Component.Signature.t ->
-Component.Signature.t
 
+val handle_signature_with_subs :
+  mark_substituted:bool ->
+  Env.t ->
+  Component.Signature.t ->
+  Component.ModuleType.substitution list ->
+  (Component.Signature.t, handle_subs_error) Result.result
 (** [handle_signature_with_subs ~mark_substituted env sg subs] applies the
     fragment modifiers [subs], in order, to the supplied signature [sg]. *)
-val handle_signature_with_subs :
-mark_substituted : bool ->
-Env.t ->
-Component.Signature.t ->
-Component.ModuleType.substitution list ->
-(Component.Signature.t, handle_subs_error) Result.result
-
-
 
 (** {2 Cache handling} *)
 
 (** In order to resolve paths quickly, several imperative caches are used.
     The following functions are used to manipulate the caches *)
 
-val reset_caches : unit -> unit (** Empty the caches completely *)
+val reset_caches : unit -> unit
+(** Empty the caches completely *)
 
-val disable_all_caches : unit -> unit (** Disable the caches completely *)
-
+val disable_all_caches : unit -> unit
+(** Disable the caches completely *)
