@@ -68,7 +68,6 @@ module StringMap = Map.Make (String)
 type t = {
   id : int;
   titles : Odoc_model.Comment.link_content Maps.Label.t;
-  methods : Component.Method.t Maps.Method.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -102,7 +101,6 @@ let empty =
     id = 0;
     titles = Maps.Label.empty;
     elts = StringMap.empty;
-    methods = Maps.Method.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -275,14 +273,9 @@ let add_docs (docs : Odoc_model.Comment.docs) env =
 let add_comment (com : Odoc_model.Comment.docs_or_stop) env =
   match com with `Docs doc -> add_docs doc env | `Stop -> env
 
-let add_method identifier m env =
-  {
-    env with
-    id =
-      ( incr unique_id;
-        !unique_id );
-    methods = Maps.Method.add identifier m env.methods;
-  }
+let add_method _identifier _t env =
+  (* TODO *)
+  env
 
 let add_exception identifier e env =
   {
