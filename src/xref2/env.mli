@@ -8,7 +8,8 @@ type lookup_unit_result =
   | Not_found
 
 type root =
-  | Resolved of (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+  | Resolved of
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -22,9 +23,7 @@ type resolver = {
 type lookup_type =
   | Module of Odoc_model.Paths_types.Identifier.reference_module * bool
   | ModuleType of Odoc_model.Paths_types.Identifier.module_type * bool
-  | RootModule of
-      string
-      * [ `Forward | `Resolved of Digest.t ] option
+  | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
   | ModuleByName of
       string * Odoc_model.Paths_types.Identifier.reference_module option
   | FragmentRoot of int
@@ -189,7 +188,10 @@ val lookup_any_by_name : string -> t -> Component.Element.any list
 
 val lookup_signature_by_name : string -> t -> Component.Element.signature option
 
-val lookup_module_by_name : string -> t -> (Odoc_model.Paths.Identifier.Module.t * Component.Module.t) option
+val lookup_module_by_name :
+  string ->
+  t ->
+  (Odoc_model.Paths.Identifier.Module.t * Component.Module.t) option
 
 val lookup_module_type_by_name :
   string -> t -> Component.Element.module_type option

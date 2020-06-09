@@ -1,6 +1,3 @@
-(* The following types are identical in structure to those in
-    {!Lang}, which may well be too complex for our use, we'll
-    see as we expand on this *)
 
 module Maps = Odoc_model.Paths.Identifier.Maps
 
@@ -435,14 +432,6 @@ end
 module Fmt = struct
   open Odoc_model.Names
 
-  let option formatter fmt x =
-    match x with Some x' -> Format.fprintf fmt "%a" formatter x' | None -> ()
-
-  let string_of fmt c =
-    let b = Buffer.create 100 in
-    Format.fprintf (Format.formatter_of_buffer b) "%a%!" fmt c;
-    Buffer.contents b
-
   let rec signature ppf sg =
     let open Signature in
     Format.fprintf ppf "@[<v>";
@@ -638,7 +627,11 @@ module Fmt = struct
     | Arrow (_l, t1, t2) ->
         Format.fprintf ppf "%a -> %a" type_expr t1 type_expr t2
     | Tuple ts -> Format.fprintf ppf "(%a)" type_expr_list ts
-    | Constr (p, _args) -> type_path ppf p
+    | Constr (p, args) -> begin
+      match args with
+      | [] -> Format.fprintf ppf "%a" type_path p
+      | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p
+    end
     | Polymorphic_variant poly ->
         Format.fprintf ppf "(poly_var %a)" type_expr_polymorphic_variant poly
     | Object x -> type_object ppf x
@@ -1346,10 +1339,6 @@ module Of_Lang = struct
 
   let option conv ident_map x =
     match x with None -> None | Some x' -> Some (conv ident_map x')
-
-  let optvalue o ~default = match o with None -> default | Some x -> x
-
-  let optmap o f = match o with Some x -> Some (f x) | None -> None
 
   let identifier lookup map i =
     match lookup i map with

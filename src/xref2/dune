@@ -5,6 +5,7 @@
  (libraries compiler-libs.common odoc_model odoc_loader 
 ; landmarks 
  unix)
+ (modules_without_implementation errors)
  )
 (alias
  (name   runtest)
