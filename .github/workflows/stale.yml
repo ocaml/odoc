@@ -29,7 +29,7 @@ jobs:
             again. PRs addressing issues closed as stale are as welcome as PRs
             for open issues. They will be given the same review attention, and
             any other help.
-          days-before-stale: 30
-          days-before-close: 7
+          days-before-stale: 365
+          days-before-close: 30
           exempt-issue-labels: "bug,not stale"
           stale-issue-label: "stale"
