@@ -32,24 +32,7 @@ val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
 
 type t
 
-val pp_types :
-  Format.formatter ->
-  Component.TypeDecl.t Odoc_model.Paths.Identifier.Maps.Type.t ->
-  unit
-
-val pp_values :
-  Format.formatter ->
-  Component.Value.t Odoc_model.Paths.Identifier.Maps.Value.t ->
-  unit
-
-val pp_externals :
-  Format.formatter ->
-  Component.External.t Odoc_model.Paths.Identifier.Maps.Value.t ->
-  unit
-
 val with_recorded_lookups : t -> (t -> 'a) -> lookup_type list * 'a
-
-val pp : Format.formatter -> t -> unit
 
 val set_resolver : t -> resolver -> t
 
@@ -140,26 +123,10 @@ val lookup_module :
   t ->
   Component.Module.t option
 
-val lookup_type :
-  Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t option
-
-val lookup_value :
-  Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t option
-
 val lookup_section_title :
   Odoc_model.Paths_types.Identifier.reference_label ->
   t ->
   Odoc_model.Comment.link_content option
-
-val lookup_class :
-  Odoc_model.Paths_types.Identifier.reference_class ->
-  t ->
-  Component.Class.t option
-
-val lookup_class_type :
-  Odoc_model.Paths_types.Identifier.class_type ->
-  t ->
-  Component.ClassType.t option
 
 val lookup_page : string -> t -> Odoc_model.Lang.Page.t option
 
@@ -190,6 +157,8 @@ val s_module : Component.Element.module_ scope
 val s_module_type : Component.Element.module_type scope
 
 val s_datatype : Component.Element.datatype scope
+
+val s_type : Component.Element.type_ scope
 
 val s_class : Component.Element.class_ scope
 

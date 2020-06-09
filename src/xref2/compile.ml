@@ -123,7 +123,7 @@ and class_type env parent c =
   let expansion =
     match
       let open Utils.OptionMonad in
-      Env.lookup_class_type c.id env >>= fun c' ->
+      Env.(lookup_by_id s_class_type) c.id env >>= fun (`ClassType (_, c')) ->
       Tools.class_signature_of_class_type env c' >>= fun sg ->
       Some
         (Lang_of.class_signature Lang_of.empty
@@ -171,7 +171,7 @@ and class_ env parent c =
   let expansion =
     match
       let open Utils.OptionMonad in
-      Env.lookup_class c.id env >>= fun c' ->
+      Env.(lookup_by_id s_class) c.id env >>= fun (`Class (_, c')) ->
       Tools.class_signature_of_class env c' >>= fun sg ->
       Some
         (Lang_of.class_signature Lang_of.empty
