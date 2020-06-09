@@ -69,8 +69,6 @@ type t = {
   id : int;
   titles : Odoc_model.Comment.link_content Maps.Label.t;
   methods : Component.Method.t Maps.Method.t;
-  constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
-  fields : Component.TypeDecl.Field.t Maps.Field.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
   recorder : recorder option;
@@ -105,8 +103,6 @@ let empty =
     titles = Maps.Label.empty;
     elts = StringMap.empty;
     methods = Maps.Method.empty;
-    constructors = Maps.Constructor.empty;
-    fields = Maps.Field.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -142,44 +138,36 @@ let add_module identifier m env =
 let add_type identifier t env =
   let open Component in
   let open_typedecl cs =
-    let add_cons (constructors, fields, elts) (cons : TypeDecl.Constructor.t) =
+    let add_cons elts (cons : TypeDecl.Constructor.t) =
       let ident =
         `Constructor (identifier, ConstructorName.of_string cons.name)
       in
-      ( Maps.Constructor.add ident cons constructors,
-        fields,
-        add_to_elts
-          (Odoc_model.Paths.Identifier.name ident)
-          (`Constructor (ident, cons))
-          elts )
-    and add_field (constructors, fields, elts) (field : TypeDecl.Field.t) =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name ident)
+        (`Constructor (ident, cons))
+        elts
+    and add_field elts (field : TypeDecl.Field.t) =
       let ident =
         `Field
           ( (identifier :> Odoc_model.Paths_types.Identifier.parent),
             FieldName.of_string field.name )
       in
-      ( constructors,
-        Maps.Field.add ident field fields,
-        add_to_elts
-          (Odoc_model.Paths.Identifier.name ident)
-          (`Field (ident, field))
-          elts )
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name ident)
+        (`Field (ident, field))
+        elts
     in
     match t.TypeDecl.representation with
     | Some (Variant cons) -> List.fold_left add_cons cs cons
     | Some (Record fields) -> List.fold_left add_field cs fields
     | Some Extensible | None -> cs
   in
-  let constructors, fields, elts =
-    open_typedecl (env.constructors, env.fields, env.elts)
-  in
+  let elts = open_typedecl env.elts in
   {
     env with
     id =
       ( incr unique_id;
         !unique_id );
-    constructors;
-    fields;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
