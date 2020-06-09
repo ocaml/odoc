@@ -67,7 +67,6 @@ module StringMap = Map.Make (String)
 
 type t = {
   id : int;
-  module_types : Component.ModuleType.t Maps.ModuleType.t;
   types : Component.TypeDecl.t Maps.Type.t;
   values : Component.Value.t Maps.Value.t;
   externals : Component.External.t Maps.Value.t;
@@ -108,14 +107,6 @@ let with_recorded_lookups env f =
     restore ();
     raise e
 
-let pp_module_types ppf module_types =
-  List.iter
-    (fun (i, m) ->
-      Format.fprintf ppf "%a: %a @," Component.Fmt.model_identifier
-        (i :> Odoc_model.Paths.Identifier.t)
-        Component.Fmt.module_type m)
-    (Maps.ModuleType.bindings module_types)
-
 let pp_types ppf types =
   List.iter
     (fun (i, m) ->
@@ -143,17 +134,15 @@ let pp_externals ppf exts =
 let pp ppf env =
   Format.fprintf ppf
     "@[<v>@,\
-     ENV module_types: %a @,\
      ENV types: %a@,\
      ENV values: %a@,\
      ENV externals: %a@,\
-     END OF ENV" pp_module_types env.module_types
+     END OF ENV"
     pp_types env.types pp_values env.values pp_externals env.externals
 
 let empty =
   {
     id = 0;
-    module_types = Maps.ModuleType.empty;
     types = Maps.Type.empty;
     values = Maps.Value.empty;
     externals = Maps.Value.empty;
@@ -254,7 +243,6 @@ let add_module_type identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    module_types = Maps.ModuleType.add identifier t env.module_types;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -530,20 +518,6 @@ let lookup_fragment_root env =
 let lookup_type identifier env =
   try Some (Maps.Type.find identifier env.types) with _ -> None
 
-let lookup_module_type identifier env =
-  let maybe_record_result res =
-    match env.recorder with
-    | Some r -> r.lookups <- res :: r.lookups
-    | None -> ()
-  in
-  match Maps.ModuleType.find identifier env.module_types with
-  | result ->
-      maybe_record_result (ModuleType identifier);
-      Some result
-  | exception _ ->
-      maybe_record_result (ModuleType identifier);
-      None
-
 let lookup_value identifier env =
   try Some (Maps.Value.find identifier env.values) with _ -> None
 
@@ -799,7 +773,7 @@ let verify_lookups env lookups =
         | _ -> true )
     | ModuleType id ->
         let actually_found =
-          match lookup_module_type id env with Some _ -> true | None -> false
+          match lookup_by_id s_module_type id env with Some _ -> true | None -> false
         in
         true <> actually_found
     | ModuleByName (name, result) -> (
