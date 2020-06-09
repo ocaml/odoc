@@ -681,14 +681,14 @@ and lookup_type :
         Ok
           (Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
     | `Identifier (`Type _ as i) ->
-        of_option ~error:(`Lookup_failureT i) (Env.lookup_type i env)
-        >>= fun t -> Ok (Find.Found (`T t))
+        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_type) i env)
+        >>= fun (`Type (_, t)) -> Ok (Find.Found (`T t))
     | `Identifier (`Class _ as i) ->
-        of_option ~error:(`Lookup_failureT i) (Env.lookup_class i env)
-        >>= fun t -> Ok (Find.Found (`C t))
+        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
+        >>= fun (`Class (_, t)) -> Ok (Find.Found (`C t))
     | `Identifier (`ClassType _ as i) ->
-        of_option ~error:(`Lookup_failureT i) (Env.lookup_class_type i env)
-        >>= fun t -> Ok (Find.Found (`CT t))
+        of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class_type) i env)
+        >>= fun (`ClassType (_, t)) -> Ok (Find.Found (`CT t))
     | `Substituted s ->
         lookup_type env s
     | `Type (p, id) ->

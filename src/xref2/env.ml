@@ -67,17 +67,9 @@ module StringMap = Map.Make (String)
 
 type t = {
   id : int;
-  types : Component.TypeDecl.t Maps.Type.t;
-  values : Component.Value.t Maps.Value.t;
-  externals : Component.External.t Maps.Value.t;
   titles : Odoc_model.Comment.link_content Maps.Label.t;
-  classes : Component.Class.t Maps.Class.t;
-  class_types : Component.ClassType.t Maps.ClassType.t;
   methods : Component.Method.t Maps.Method.t;
-  instance_variables : Component.InstanceVariable.t Maps.InstanceVariable.t;
   constructors : Component.TypeDecl.Constructor.t Maps.Constructor.t;
-  exceptions : Component.Exception.t Maps.Exception.t;
-  extensions : Component.Extension.Constructor.t Maps.Extension.t;
   fields : Component.TypeDecl.Field.t Maps.Field.t;
   elts : Component.Element.any list StringMap.t;
   resolver : resolver option;
@@ -107,55 +99,14 @@ let with_recorded_lookups env f =
     restore ();
     raise e
 
-let pp_types ppf types =
-  List.iter
-    (fun (i, m) ->
-      Format.fprintf ppf "%a: %a @," Component.Fmt.model_identifier
-        (i :> Odoc_model.Paths.Identifier.t)
-        Component.Fmt.type_decl m)
-    (Maps.Type.bindings types)
-
-let pp_values ppf values =
-  List.iter
-    (fun (i, v) ->
-      Format.fprintf ppf "%a: %a @," Component.Fmt.model_identifier
-        (i :> Odoc_model.Paths.Identifier.t)
-        Component.Fmt.value v)
-    (Maps.Value.bindings values)
-
-let pp_externals ppf exts =
-  List.iter
-    (fun (i, e) ->
-      Format.fprintf ppf "%a: %a @," Component.Fmt.model_identifier
-        (i :> Odoc_model.Paths.Identifier.t)
-        Component.Fmt.external_ e)
-    (Maps.Value.bindings exts)
-
-let pp ppf env =
-  Format.fprintf ppf
-    "@[<v>@,\
-     ENV types: %a@,\
-     ENV values: %a@,\
-     ENV externals: %a@,\
-     END OF ENV"
-    pp_types env.types pp_values env.values pp_externals env.externals
-
 let empty =
   {
     id = 0;
-    types = Maps.Type.empty;
-    values = Maps.Value.empty;
-    externals = Maps.Value.empty;
     titles = Maps.Label.empty;
     elts = StringMap.empty;
-    classes = Maps.Class.empty;
-    class_types = Maps.ClassType.empty;
     methods = Maps.Method.empty;
-    instance_variables = Maps.InstanceVariable.empty;
     constructors = Maps.Constructor.empty;
     fields = Maps.Field.empty;
-    exceptions = Maps.Exception.empty;
-    extensions = Maps.Extension.empty;
     resolver = None;
     recorder = None;
     fragmentroot = None;
@@ -227,7 +178,6 @@ let add_type identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    types = Maps.Type.add identifier t env.types;
     constructors;
     fields;
     elts =
@@ -256,7 +206,6 @@ let add_value identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    values = Maps.Value.add identifier t env.values;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -270,7 +219,6 @@ let add_external identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    externals = Maps.Value.add identifier t env.externals;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -305,7 +253,6 @@ let add_class identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    classes = Maps.Class.add identifier t env.classes;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -319,7 +266,6 @@ let add_class_type identifier t env =
     id =
       ( incr unique_id;
         !unique_id );
-    class_types = Maps.ClassType.add identifier t env.class_types;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -356,7 +302,6 @@ let add_exception identifier e env =
     id =
       ( incr unique_id;
         !unique_id );
-    exceptions = Maps.Exception.add identifier e env.exceptions;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -370,7 +315,6 @@ let add_extension_constructor identifier ec env =
     id =
       ( incr unique_id;
         !unique_id );
-    extensions = Maps.Extension.add identifier ec env.extensions;
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -463,6 +407,10 @@ let s_datatype : Component.Element.datatype scope = function
   | #Component.Element.datatype as r -> Some r
   | _ -> None
 
+let s_type : Component.Element.type_ scope = function
+  | #Component.Element.type_ as r -> Some r
+  | _ -> None
+
 let s_class : Component.Element.class_ scope = function
   | #Component.Element.class_ as r -> Some r
   | _ -> None
@@ -515,20 +463,8 @@ let lookup_fragment_root env =
       result
   | None -> None
 
-let lookup_type identifier env =
-  try Some (Maps.Type.find identifier env.types) with _ -> None
-
-let lookup_value identifier env =
-  try Some (Maps.Value.find identifier env.values) with _ -> None
-
 let lookup_section_title identifier env =
   try Some (Maps.Label.find identifier env.titles) with _ -> None
-
-let lookup_class identifier env =
-  try Some (Maps.Class.find identifier env.classes) with _ -> None
-
-let lookup_class_type identifier env =
-  try Some (Maps.ClassType.find identifier env.class_types) with _ -> None
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
