@@ -535,7 +535,8 @@ and lookup_module_type :
     match path with
     | `Local _ -> Error (`LocalMT (env, path))
     | `Identifier i ->
-        of_option ~error:(`Lookup_failureMT i) (Env.lookup_module_type i env)
+        of_option ~error:(`Lookup_failureMT i) (Env.(lookup_by_id s_module_type) i env)
+        >>= fun (`ModuleType (_, mt)) -> Ok mt
     | `Substituted s
     | `SubstT (_, s) -> lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) -> (

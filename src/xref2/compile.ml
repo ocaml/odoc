@@ -298,7 +298,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
             Some (module_type_expr env (m.id :> Id.Signature.t) expr) )
   in
   match
-    Env.lookup_module_type m.id env |> of_option ~error:`Lookup >>= fun m' ->
+    Env.(lookup_by_id s_module_type) m.id env |> of_option ~error:`Lookup
+    >>= fun (`ModuleType (_, m')) ->
     let env = Env.add_module_type_functor_args m' m.id env in
     expand m' env
   with

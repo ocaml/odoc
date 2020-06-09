@@ -32,16 +32,6 @@ val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit
 
 type t
 
-(*val pp_modules :
-    Format.formatter ->
-      (Odoc_model.Paths.Identifier.Module.t *
-       Component.Module.t) list -> unit
-*)
-val pp_module_types :
-  Format.formatter ->
-  Component.ModuleType.t Odoc_model.Paths.Identifier.Maps.ModuleType.t ->
-  unit
-
 val pp_types :
   Format.formatter ->
   Component.TypeDecl.t Odoc_model.Paths.Identifier.Maps.Type.t ->
@@ -152,11 +142,6 @@ val lookup_module :
 
 val lookup_type :
   Odoc_model.Paths_types.Identifier.type_ -> t -> Component.TypeDecl.t option
-
-val lookup_module_type :
-  Odoc_model.Paths_types.Identifier.reference_module_type ->
-  t ->
-  Component.ModuleType.t option
 
 val lookup_value :
   Odoc_model.Paths_types.Identifier.value -> t -> Component.Value.t option

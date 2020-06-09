@@ -470,13 +470,13 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let sg_id = (m.id :> Id.Signature.t) in
   let open ModuleType in
-  match Env.lookup_module_type m.id env with
+  match Env.(lookup_by_id s_module_type) m.id env with
   | None ->
       Lookup_failures.report "Failed to lookup module type %a"
         Component.Fmt.model_identifier
         (m.id :> Id.t);
       m
-  | Some m' ->
+  | Some (`ModuleType (_, m')) ->
       let env' = Env.add_module_type_functor_args m' m.id env in
       let expr' =
         match m.expr with
