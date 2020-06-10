@@ -14,6 +14,29 @@ type module_modifiers =
   | `SubstMT of Cpath.Resolved.module_type
   ]
 
+module Fmt = struct
+  let rec error : Format.formatter -> Errors.any -> unit = fun fmt err ->
+    match err with
+    | `OpaqueModule -> Format.fprintf fmt "OpaqueModule"
+    | `UnresolvedForwardPath -> Format.fprintf fmt "Unresolved forward path"
+    | `UnresolvedPath ( `Module p ) -> Format.fprintf fmt "Unresolved module path %a" Component.Fmt.module_path p
+    | `UnresolvedPath ( `ModuleType p ) -> Format.fprintf fmt "Unresolved module type path %a" Component.Fmt.module_type_path p
+    | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Component.Fmt.resolved_module_type_path id
+    | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
+    | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Component.Fmt.resolved_type_path id
+    | `Unresolved_apply -> Format.fprintf fmt "Unresolved apply"
+    | `Find_failure -> Format.fprintf fmt "Find failure"
+    | `Lookup_failure m -> Format.fprintf fmt "Lookup failure (module): %a" Component.Fmt.model_identifier (m :> Odoc_model.Paths.Identifier.t)
+    | `Lookup_failureMT m -> Format.fprintf fmt "Lookup failure (module type): %a" Component.Fmt.model_identifier (m :> Odoc_model.Paths.Identifier.t)
+    | `Lookup_failureT m -> Format.fprintf fmt "Lookup failure (type): %a" Component.Fmt.model_identifier (m :> Odoc_model.Paths.Identifier.t)
+    | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
+    | `Parent_sig e -> Format.fprintf fmt "Parent_sig: %a" error (e :> Errors.any)
+    | `Parent_module_type e -> Format.fprintf fmt "Parent_module_type: %a" error (e :> Errors.any)
+    | `Parent_expr e -> Format.fprintf fmt "Parent_expr: %a" error (e :> Errors.any)
+    | `Parent_module e -> Format.fprintf fmt "Parent_module: %a" error (e :> Errors.any)
+    | `Fragment_root -> Format.fprintf fmt "Fragment root"
+end
+
 
 module ResolvedMonad = struct
   type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
@@ -657,13 +680,13 @@ and lookup_type :
         Ok
           (Find.Found (`T (List.assoc (TypeName.to_string name) core_types)) )
     | `Identifier (`Type _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_type i env)
+        of_option ~error:(`Lookup_failureT i) (Env.lookup_type i env)
         >>= fun t -> Ok (Find.Found (`T t))
     | `Identifier (`Class _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_class i env)
+        of_option ~error:(`Lookup_failureT i) (Env.lookup_class i env)
         >>= fun t -> Ok (Find.Found (`C t))
     | `Identifier (`ClassType _ as i) ->
-        of_option ~error:(`Lookup_failure i) (Env.lookup_class_type i env)
+        of_option ~error:(`Lookup_failureT i) (Env.lookup_class_type i env)
         >>= fun t -> Ok (Find.Found (`CT t))
     | `Substituted s ->
         lookup_type env s
