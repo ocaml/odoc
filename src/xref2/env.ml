@@ -303,150 +303,6 @@ let add_extension_constructor identifier ec env =
         env.elts;
   }
 
-type value_or_external =
-  [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
-  | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
-
-type 'a scope =
-  Component.Element.any -> ([< Component.Element.any ] as 'a) option
-
-let lookup_by_name' scope name env =
-  let found = try (StringMap.find name env.elts) with Not_found -> [] in
-  List.filter_map scope found
-
-let lookup_by_name scope name env =
-  let record_lookup_results results =
-    match env.recorder with
-    | Some r ->
-        List.iter
-          (function
-            | `Module (id, _) ->
-                r.lookups <- ModuleByName (name, id) :: r.lookups
-            | _ -> ())
-          (results :> Component.Element.any list)
-    | None -> ()
-  in
-  match lookup_by_name' scope name env with
-  | x :: _ as results ->
-      record_lookup_results results;
-      Some x
-  | [] -> None
-
-open Odoc_model.Paths
-
-let ident_of_element = function
-  | `Module (id, _) -> (id :> Identifier.t)
-  | `ModuleType (id, _) -> (id :> Identifier.t)
-  | `Type (id, _) -> (id :> Identifier.t)
-  | `Value (id, _) -> (id :> Identifier.t)
-  | `Label id -> (id :> Identifier.t)
-  | `Class (id, _) -> (id :> Identifier.t)
-  | `ClassType (id, _) -> (id :> Identifier.t)
-  | `External (id, _) -> (id :> Identifier.t)
-  | `Constructor (id, _) -> (id :> Identifier.t)
-  | `Exception (id, _) -> (id :> Identifier.t)
-  | `Extension (id, _) -> (id :> Identifier.t)
-  | `Field (id, _) -> (id :> Identifier.t)
-
-let rec disam_id id = function
-  | hd :: tl ->
-      if ident_of_element hd = (id :> Identifier.t) then Some hd
-      else disam_id id tl
-  | [] -> None
-
-let lookup_by_id scope id env =
-  let record_lookup_result result =
-    match env.recorder with
-    | Some r -> (
-        match (result :> Component.Element.any) with
-        | `Module (id, _) -> r.lookups <- Module id :: r.lookups
-        | `ModuleType (id, _) -> r.lookups <- ModuleType id :: r.lookups
-        | _ -> () )
-    | None -> ()
-  in
-  match disam_id id (lookup_by_name' scope (Identifier.name id) env) with
-  | Some result as x ->
-      record_lookup_result result;
-      x
-  | None -> None
-
-let s_signature : Component.Element.signature scope = function
-  | #Component.Element.signature as r -> Some r
-  | _ -> None
-
-let s_module : Component.Element.module_ scope = function
-  | #Component.Element.module_ as r -> Some r
-  | _ -> None
-
-let s_any : Component.Element.any scope = fun r -> Some r
-
-let s_module_type : Component.Element.module_type scope = function
-  | #Component.Element.module_type as r -> Some r
-  | _ -> None
-
-let s_datatype : Component.Element.datatype scope = function
-  | #Component.Element.datatype as r -> Some r
-  | _ -> None
-
-let s_type : Component.Element.type_ scope = function
-  | #Component.Element.type_ as r -> Some r
-  | _ -> None
-
-let s_class : Component.Element.class_ scope = function
-  | #Component.Element.class_ as r -> Some r
-  | _ -> None
-
-let s_class_type : Component.Element.class_type scope = function
-  | #Component.Element.class_type as r -> Some r
-  | _ -> None
-
-let s_value : value_or_external scope = function
-  | #value_or_external as r -> Some r
-  | _ -> None
-
-let s_label : Component.Element.label scope = function
-  | #Component.Element.label as r -> Some r
-  | _ -> None
-
-let s_constructor : Component.Element.constructor scope = function
-  | #Component.Element.constructor as r -> Some r
-  | _ -> None
-
-let s_exception : Component.Element.exception_ scope = function
-  | #Component.Element.exception_ as r -> Some r
-  | _ -> None
-
-let s_extension : Component.Element.extension scope = function
-  | #Component.Element.extension as r -> Some r
-  | _ -> None
-
-let s_field : Component.Element.field scope = function
-  | #Component.Element.field as r -> Some r
-  | _ -> None
-
-let s_label_parent : Component.Element.label_parent scope = function
-  | #Component.Element.label_parent as r -> Some r
-  | _ -> None
-
-let len = ref 0
-
-let n = ref 0
-
-let lookup_fragment_root env =
-  let maybe_record_result res =
-    match env.recorder with
-    | Some r -> r.lookups <- res :: r.lookups
-    | None -> ()
-  in
-  match env.fragmentroot with
-  | Some (i, _) as result ->
-      maybe_record_result (FragmentRoot i);
-      result
-  | None -> None
-
-let lookup_section_title identifier env =
-  try Some (Maps.Label.find identifier env.titles) with _ -> None
-
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
   match unit.content with
@@ -488,16 +344,166 @@ let lookup_root_module name env =
   | None, _ -> () );
   result
 
-let lookup_module identifier env =
-  match lookup_by_id s_module identifier env with
-  | Some (`Module (_, m)) -> Some m
-  | None -> (
-      match identifier with
-      | `Root (_, name) -> (
-          match lookup_root_module (UnitName.to_string name) env with
-          | Some (Resolved (_, _, m)) -> Some m
-          | Some Forward | None -> None )
-      | _ -> None )
+type value_or_external =
+  [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
+  | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
+
+type 'a scope = {
+  filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
+  root : string -> t -> 'a option;
+}
+
+let make_scope ?(root = fun _ _ -> None)
+    (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
+  { filter; root }
+
+let lookup_by_name' scope name env =
+  let found = try StringMap.find name env.elts with Not_found -> [] in
+  List.filter_map scope.filter found
+
+let lookup_by_name scope name env =
+  let record_lookup_results results =
+    match env.recorder with
+    | Some r ->
+        List.iter
+          (function
+            | `Module (id, _) ->
+                r.lookups <- ModuleByName (name, id) :: r.lookups
+            | _ -> ())
+          (results :> Component.Element.any list)
+    | None -> ()
+  in
+  match lookup_by_name' scope name env with
+  | x :: _ as results ->
+      record_lookup_results results;
+      Some x
+  | [] -> scope.root name env
+
+open Odoc_model.Paths
+
+let ident_of_element = function
+  | `Module (id, _) -> (id :> Identifier.t)
+  | `ModuleType (id, _) -> (id :> Identifier.t)
+  | `Type (id, _) -> (id :> Identifier.t)
+  | `Value (id, _) -> (id :> Identifier.t)
+  | `Label id -> (id :> Identifier.t)
+  | `Class (id, _) -> (id :> Identifier.t)
+  | `ClassType (id, _) -> (id :> Identifier.t)
+  | `External (id, _) -> (id :> Identifier.t)
+  | `Constructor (id, _) -> (id :> Identifier.t)
+  | `Exception (id, _) -> (id :> Identifier.t)
+  | `Extension (id, _) -> (id :> Identifier.t)
+  | `Field (id, _) -> (id :> Identifier.t)
+
+let rec disam_id id = function
+  | hd :: tl ->
+      if ident_of_element hd = (id :> Identifier.t) then Some hd
+      else disam_id id tl
+  | [] -> None
+
+let lookup_by_id (scope : 'a scope) id env : 'a option =
+  let record_lookup_result result =
+    match env.recorder with
+    | Some r -> (
+        match (result :> Component.Element.any) with
+        | `Module (id, _) -> r.lookups <- Module id :: r.lookups
+        | `ModuleType (id, _) -> r.lookups <- ModuleType id :: r.lookups
+        | _ -> () )
+    | None -> ()
+  in
+  match disam_id id (lookup_by_name' scope (Identifier.name id) env) with
+  | Some result as x ->
+      record_lookup_result result;
+      x
+  | None ->
+      match (id :> Identifier.t) with
+      | `Root (_, name) -> scope.root (UnitName.to_string name) env
+      | _ -> None
+
+let lookup_root_module_fallback name t =
+  match lookup_root_module name t with
+  | Some (Resolved (_, id, m)) -> Some (`Module (id, m))
+  | Some Forward | None -> None
+
+let s_signature : Component.Element.signature scope =
+  make_scope ~root:lookup_root_module_fallback (function
+    | #Component.Element.signature as r -> Some r
+    | _ -> None)
+
+let s_module : Component.Element.module_ scope =
+  make_scope ~root:lookup_root_module_fallback (function
+    | #Component.Element.module_ as r -> Some r
+    | _ -> None)
+
+let s_any : Component.Element.any scope =
+  make_scope ~root:lookup_root_module_fallback (fun r -> Some r)
+
+let s_module_type : Component.Element.module_type scope =
+  make_scope (function
+    | #Component.Element.module_type as r -> Some r
+    | _ -> None)
+
+let s_datatype : Component.Element.datatype scope =
+  make_scope (function #Component.Element.datatype as r -> Some r | _ -> None)
+
+let s_type : Component.Element.type_ scope =
+  make_scope (function #Component.Element.type_ as r -> Some r | _ -> None)
+
+let s_class : Component.Element.class_ scope =
+  make_scope (function #Component.Element.class_ as r -> Some r | _ -> None)
+
+let s_class_type : Component.Element.class_type scope =
+  make_scope (function
+    | #Component.Element.class_type as r -> Some r
+    | _ -> None)
+
+let s_value : value_or_external scope =
+  make_scope (function #value_or_external as r -> Some r | _ -> None)
+
+let s_label : Component.Element.label scope =
+  make_scope (function #Component.Element.label as r -> Some r | _ -> None)
+
+let s_constructor : Component.Element.constructor scope =
+  make_scope (function
+    | #Component.Element.constructor as r -> Some r
+    | _ -> None)
+
+let s_exception : Component.Element.exception_ scope =
+  make_scope (function
+    | #Component.Element.exception_ as r -> Some r
+    | _ -> None)
+
+let s_extension : Component.Element.extension scope =
+  make_scope (function
+    | #Component.Element.extension as r -> Some r
+    | _ -> None)
+
+let s_field : Component.Element.field scope =
+  make_scope (function #Component.Element.field as r -> Some r | _ -> None)
+
+let s_label_parent : Component.Element.label_parent scope =
+  make_scope ~root:lookup_root_module_fallback (function
+    | #Component.Element.label_parent as r -> Some r
+    | _ -> None)
+
+let len = ref 0
+
+let n = ref 0
+
+let lookup_fragment_root env =
+  let maybe_record_result res =
+    match env.recorder with
+    | Some r -> r.lookups <- res :: r.lookups
+    | None -> ()
+  in
+  match env.fragmentroot with
+  | Some (i, _) as result ->
+      maybe_record_result (FragmentRoot i);
+      result
+  | None -> None
+
+let lookup_section_title identifier env =
+  try Some (Maps.Label.find identifier env.titles) with _ -> None
 
 let lookup_page name env =
   match env.resolver with
@@ -670,7 +676,7 @@ let verify_lookups env lookups =
   let bad_lookup = function
     | Module id ->
         let actually_found =
-          match lookup_module id env with Some _ -> true | None -> false
+          match lookup_by_id s_module id env with Some _ -> true | None -> false
         in
         true <> actually_found
     | RootModule (name, res) -> (

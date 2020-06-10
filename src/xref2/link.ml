@@ -380,8 +380,8 @@ and module_ : Env.t -> Module.t -> Module.t =
   if m.hidden then m
   else
     let t1 = Unix.gettimeofday () in
-    let m' =
-      match Env.lookup_module m.id env with
+    let `Module (_, m') =
+      match Env.(lookup_by_id s_module) m.id env with
       | Some m' -> m'
       | None ->
           kasprintf failwith "Failed to lookup module %a"
@@ -541,8 +541,8 @@ and functor_parameter_parameter :
   let sg_id = (a.id :> Id.Signature.t) in
   match
     let open Utils.ResultMonad in
-    Env.lookup_module a.id env' |> of_option ~error:"lookup"
-    >>= fun functor_arg ->
+    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:"lookup"
+    >>= fun (`Module (_, functor_arg)) ->
     let env = Env.add_module_functor_args functor_arg a.id env' in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (

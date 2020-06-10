@@ -118,12 +118,6 @@ val add_module_type_functor_args :
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
-val lookup_module :
-  Odoc_model.Paths_types.Identifier.reference_module ->
-  t ->
-  Component.Module.t option
-(** Lookup a module by identifier or, if not found, lookup a root module. *)
-
 val lookup_section_title :
   Odoc_model.Paths_types.Identifier.reference_label ->
   t ->
