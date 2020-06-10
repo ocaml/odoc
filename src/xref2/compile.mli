@@ -19,9 +19,9 @@ val build_resolver :
   ?hash:(Odoc_model.Root.t -> int) ->
   string list ->
   (string -> Env.lookup_unit_result) ->
-  (Odoc_model.Root.t -> (Odoc_model.Lang.Compilation_unit.t, msg) result) ->
+  (Odoc_model.Root.t -> (Odoc_model.Lang.Compilation_unit.t, msg) Result.result) ->
   (string -> Odoc_model.Root.t option) ->
-  (Odoc_model.Root.t -> (Odoc_model.Lang.Page.t, msg) result) ->
+  (Odoc_model.Root.t -> (Odoc_model.Lang.Page.t, msg) Result.result) ->
   Env.resolver
 
 val compile :

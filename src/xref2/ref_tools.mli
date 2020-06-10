@@ -51,55 +51,7 @@ module Hashable : sig
   val hash : 'a -> int
 end
 
-module Memos1 : sig
-  type key = Hashable.t
-
-  type 'a t = 'a Hashtbl.Make(Hashable).t
-
-  val create : int -> 'a t
-
-  val clear : 'a t -> unit
-
-  val reset : 'a t -> unit
-
-  val copy : 'a t -> 'a t
-
-  val add : 'a t -> key -> 'a -> unit
-
-  val remove : 'a t -> key -> unit
-
-  val find : 'a t -> key -> 'a
-
-  val find_opt : 'a t -> key -> 'a option
-
-  val find_all : 'a t -> key -> 'a list
-
-  val replace : 'a t -> key -> 'a -> unit
-
-  val mem : 'a t -> key -> bool
-
-  val iter : (key -> 'a -> unit) -> 'a t -> unit
-
-  val filter_map_inplace : (key -> 'a -> 'a option) -> 'a t -> unit
-
-  val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
-
-  val length : 'a t -> int
-
-  val stats : 'a t -> Hashtbl.statistics
-
-  val to_seq : 'a t -> (key * 'a) Seq.t
-
-  val to_seq_keys : 'a t -> key Seq.t
-
-  val to_seq_values : 'a t -> 'a Seq.t
-
-  val add_seq : 'a t -> (key * 'a) Seq.t -> unit
-
-  val replace_seq : 'a t -> (key * 'a) Seq.t -> unit
-
-  val of_seq : (key * 'a) Seq.t -> 'a t
-end
+module Memos1 : Hashtbl.S with type key = Hashable.t
 
 module Hashable2 : sig
   type t = bool * Signature.t
@@ -109,55 +61,8 @@ module Hashable2 : sig
   val hash : 'a -> int
 end
 
-module Memos2 : sig
-  type key = Hashable2.t
+module Memos2 : Hashtbl.S with type key = Hashable2.t
 
-  type 'a t = 'a Hashtbl.Make(Hashable2).t
-
-  val create : int -> 'a t
-
-  val clear : 'a t -> unit
-
-  val reset : 'a t -> unit
-
-  val copy : 'a t -> 'a t
-
-  val add : 'a t -> key -> 'a -> unit
-
-  val remove : 'a t -> key -> unit
-
-  val find : 'a t -> key -> 'a
-
-  val find_opt : 'a t -> key -> 'a option
-
-  val find_all : 'a t -> key -> 'a list
-
-  val replace : 'a t -> key -> 'a -> unit
-
-  val mem : 'a t -> key -> bool
-
-  val iter : (key -> 'a -> unit) -> 'a t -> unit
-
-  val filter_map_inplace : (key -> 'a -> 'a option) -> 'a t -> unit
-
-  val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
-
-  val length : 'a t -> int
-
-  val stats : 'a t -> Hashtbl.statistics
-
-  val to_seq : 'a t -> (key * 'a) Seq.t
-
-  val to_seq_keys : 'a t -> key Seq.t
-
-  val to_seq_values : 'a t -> 'a Seq.t
-
-  val add_seq : 'a t -> (key * 'a) Seq.t -> unit
-
-  val replace_seq : 'a t -> (key * 'a) Seq.t -> unit
-
-  val of_seq : (key * 'a) Seq.t -> 'a t
-end
 
 val module_lookup_to_signature_lookup :
   Env.t -> module_lookup_result -> signature_lookup_result option
