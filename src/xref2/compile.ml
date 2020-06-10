@@ -234,11 +234,11 @@ and module_ : Env.t -> Module.t -> Module.t =
       (* Aliases are expanded if necessary during link *)
     in
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
-    match Env.lookup_module m.id env with
+    match Env.(lookup_by_id s_module) m.id env with
     | None ->
         lookup_failure ~what:(`Module m.id) `Lookup;
         m
-    | Some m' ->
+    | Some (`Module (_, m')) ->
         let env' = Env.add_module_functor_args m' m.id env in
         let expansion =
           let sg_id = (m.id :> Id.Signature.t) in
@@ -413,8 +413,8 @@ and functor_parameter_parameter :
     | _ -> Error `Resolve_module_type
   in
   match
-    Env.lookup_module a.id env' |> of_option ~error:`Lookup
-    >>= fun functor_arg ->
+    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
+    >>= fun (`Module (_, functor_arg)) ->
     let env = Env.add_module_functor_args functor_arg a.id env' in
     get_module_type_expr functor_arg.type_ >>= fun expr ->
     match Expand_tools.expansion_of_module_type_expr env sg_id expr with

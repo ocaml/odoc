@@ -166,7 +166,7 @@ let simplify_resolved_module_path :
   let path = Lang_of.(Path.resolved_module empty cpath) in
   let id = Odoc_model.Paths.Path.Resolved.Module.identifier path in
   let rec check_ident id =
-    match Env.lookup_module id env with
+    match Env.(lookup_by_id s_module) id env with
     | Some _ -> `Identifier id
     | None -> (
         match id with
@@ -425,7 +425,8 @@ and lookup_module :
       match path with
       | `Local lpath -> Error (`Local (env, lpath))
       | `Identifier i ->
-          of_option ~error:(`Lookup_failure i) (Env.lookup_module i env)
+          of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
+          >>= fun (`Module (_, m)) -> Ok m
       | `Substituted x -> lookup_module ~mark_substituted env x
       | `Apply (functor_path, `Resolved argument_path) -> (
           match lookup_module ~mark_substituted env functor_path with
@@ -596,7 +597,8 @@ and resolve_module :
         | Unresolved func_path', Unresolved arg_path' ->
             Unresolved (`Apply (func_path', arg_path')) )
     | `Resolved (`Identifier i as resolved_path) as unresolved ->
-        of_option ~unresolved (Env.lookup_module i env) >>= fun m ->
+        of_option ~unresolved (Env.(lookup_by_id s_module) i env)
+        >>= fun (`Module (_, m)) ->
         return (process_module_path env ~add_canonical m resolved_path, m)
     | `Resolved r as unresolved -> (
         match lookup_module ~mark_substituted env r with
