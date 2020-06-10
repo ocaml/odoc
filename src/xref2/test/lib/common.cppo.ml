@@ -138,6 +138,20 @@ module LangUtils = struct
             let set a (x, _) = (x, a) in
             {get; set}
  
+        let hd : ('a list, 'a) prism =
+            let preview = function
+                | x::_ -> Some x
+                | _ -> None
+            in
+            let review x = [x]
+            in
+            { review ; preview }
+
+        let nth n : ('a list, 'a) prism =
+            let preview l = try Some (List.nth l n) with _ -> None in
+            let review x = [x]
+            in { review; preview }
+
         let (|--) = compose
 
         let (|-~) = compose_prism
@@ -220,6 +234,18 @@ module LangUtils = struct
                     in inner
                 in
                 { get; set }
+            
+            let includes : (t, Lang.Include.t list) lens =
+                let get l =
+                    List.fold_left (fun acc item ->
+                        match item with
+                        | (Include i) -> i::acc
+                        | _ -> acc) [] l |> List.rev
+                in
+                let set _ _ =
+                    raise (Invalid_argument "set includes")
+                in
+                {get; set }
             end
 
             module Module = struct
@@ -249,6 +275,15 @@ module LangUtils = struct
                     let review x = Signature x in
                     let preview = function | Signature x -> Some x | _ -> None in
                     {review; preview}
+            end
+
+            module Include = struct
+                open Lang.Include
+
+                let expansion_sig : (t, Lang.Signature.t) lens =
+                    let get x = x.expansion.content in
+                    let set x i = {i with expansion = {i.expansion with content=x}} in
+                    {get; set}
             end
 
             module ModuleType = struct

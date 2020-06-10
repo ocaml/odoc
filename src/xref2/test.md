@@ -1602,3 +1602,210 @@ let module_M_expansion =
          res = None}])})]
 ```
 
+# Shadowing
+
+Let's see what happens when we have nested shadowing:
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+let test_data = {|
+module Foo : sig
+  type t
+  val id : t
+end
+
+module Foo2 : sig
+  include module type of struct include Foo end
+  type t
+  val id2 : t
+end
+
+module Foo3 : sig
+  include module type of struct include Foo2 end
+  type t
+  val id3 : t
+end
+|};;
+let sg = Common.signature_of_mli_string test_data;;
+let module_expansion_include_sig name n =
+  let open Common.LangUtils.Lens in
+  Signature.module_ name |-- Module.type_ |-~ Module.decl_moduletype |-~ ModuleType.expr_signature |-- Signature.includes |-~ nth n |-- Include.expansion_sig
+let m_e_i_s_value mod_name n val_name =
+  let open Common.LangUtils.Lens in
+   module_expansion_include_sig mod_name n |-- Signature.value val_name
+```
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+# Common.LangUtils.Lens.get (m_e_i_s_value "Foo3" 0 "id") sg;;
+- : Odoc_model.Lang.Value.t =
+{Odoc_model.Lang.Value.id =
+  `Value (`Module (`Root (Common.root, Root), Foo3), id);
+ doc = [];
+ type_ =
+  Odoc_model.Lang.TypeExpr.Constr
+   (`Dot
+      (`Resolved (`Identifier (`Module (`Root (Common.root, Root), Foo))),
+       "t"),
+   [])}
+# Common.LangUtils.Lens.get (m_e_i_s_value "Foo3" 0 "id2") sg;;
+- : Odoc_model.Lang.Value.t =
+{Odoc_model.Lang.Value.id =
+  `Value (`Module (`Root (Common.root, Root), Foo3), id2);
+ doc = [];
+ type_ =
+  Odoc_model.Lang.TypeExpr.Constr
+   (`Resolved
+      (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+   [])}
+```
+
+
+And what happens when we include multiple things defining a `t`?
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+let test_data = {|
+module Foo : sig
+  type t
+  val id : t
+end
+
+module Foo2 : sig
+  type t
+  val id2 : t
+end
+
+module Foo3 : sig
+  include module type of struct include Foo end
+  include module type of struct include Foo2 end
+  type t
+  val id3 : t
+end
+|};;
+let sg = Common.signature_of_mli_string test_data;;
+```
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+# Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
+- : Odoc_model.Lang.Signature.t =
+[Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+   doc = [];
+   equation =
+    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+     manifest =
+      Some
+       (Odoc_model.Lang.TypeExpr.Constr
+         (`Dot
+            (`Resolved
+               (`Identifier (`Module (`Root (Common.root, Root), Foo))),
+             "t"),
+         []));
+     constraints = []};
+   representation = None});
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id =
+    `Value (`Module (`Root (Common.root, Root), Foo3), id);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.TypeExpr.Constr
+     (`Resolved
+        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+     [])}]
+# Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
+- : Odoc_model.Lang.Signature.t =
+[Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+   doc = [];
+   equation =
+    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+     manifest =
+      Some
+       (Odoc_model.Lang.TypeExpr.Constr
+         (`Dot
+            (`Resolved
+               (`Identifier (`Module (`Root (Common.root, Root), Foo2))),
+             "t"),
+         []));
+     constraints = []};
+   representation = None});
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id =
+    `Value (`Module (`Root (Common.root, Root), Foo3), id2);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.TypeExpr.Constr
+     (`Resolved
+        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+     [])}]
+```
+
+
+And what happens when we override values?
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+let test_data = {|
+module Foo : sig
+  type t
+  val x : int
+  val id : t
+end
+
+module Foo2 : sig
+  type t
+  val id2 : t
+end
+
+module Foo3 : sig
+  include module type of struct include Foo end
+  include module type of struct include Foo2 end
+  type t
+  val x : float
+  val id3 : t
+end
+|};;
+let sg = Common.signature_of_mli_string test_data;;
+```
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+# Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
+- : Odoc_model.Lang.Signature.t =
+[Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+  {Odoc_model.Lang.TypeDecl.id =
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+   doc = [];
+   equation =
+    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+     manifest =
+      Some
+       (Odoc_model.Lang.TypeExpr.Constr
+         (`Dot
+            (`Resolved
+               (`Identifier (`Module (`Root (Common.root, Root), Foo))),
+             "t"),
+         []));
+     constraints = []};
+   representation = None});
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id =
+    `Value (`Module (`Root (Common.root, Root), Foo3), x);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.TypeExpr.Constr (`Resolved (`Identifier (`CoreType int)),
+     [])};
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id =
+    `Value (`Module (`Root (Common.root, Root), Foo3), id);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.TypeExpr.Constr
+     (`Resolved
+        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+     [])}]
+```
