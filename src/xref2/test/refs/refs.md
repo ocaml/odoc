@@ -54,7 +54,6 @@ let test_mli = {|
   end
   type x1 = ..
   type x1 += X1
-  type s1 := r1
 
   module M : sig
 
@@ -77,7 +76,6 @@ let test_mli = {|
     type x2 = ..
     type x2 += X2
     module N : sig end
-    type s2 := r2
   end
 
 |}
@@ -458,9 +456,30 @@ Known kind:
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 ```
 
-Substitutions:
+Substitutions are only available in 4.08 onwards:
 
-```ocaml
+<!-- $MDX version>=4.08 -->
+```ocaml version>=4.08
+let test_mli = {|
+  type r1 = { rf1 : int }
+  type s1 := r1
+
+  module M : sig
+    type r2 = { rf2 : int }
+    type s2 := r2
+  end
+|}
+let sg = Common.signature_of_mli_string test_mli
+let env = Env.open_signature sg Env.empty
+let resolve_ref ref_str : ref =
+  let unresolved = parse_ref ref_str in
+  match Ref_tools.resolve_reference env unresolved with
+  | None -> failwith "resolve_reference"
+  | Some r -> r
+```
+
+<!-- $MDX version>=4.08 -->
+```ocaml version>=4.08
 # resolve_ref "s1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), s1))
 # resolve_ref "s1.rf1"
