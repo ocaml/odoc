@@ -73,7 +73,7 @@ scripts:
         fi
 
     install:
-      - npm --global install esy@0.5.x
+      - npm --global install esy@0.6.x
       - $(npm bin --global)/esy --version
       - ESY=$(npm bin --global)/esy
       - $ESY install --verbose
