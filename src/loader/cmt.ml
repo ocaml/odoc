@@ -546,13 +546,13 @@ and read_include env parent incl =
     | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
     | _ -> ModuleType (read_module_expr env parent container incl.incl_mod)
   in
-  let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  let expansion = { content; resolved = false } in
+  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let expansion = { content; shadowed; resolved = false } in
     {parent; doc; decl; expansion; inline=false }
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
-  let expansion = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
+  let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
   Open.{expansion}
 #endif
 

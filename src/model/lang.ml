@@ -123,7 +123,11 @@ end =
 (** {3 Includes} *)
 
 and Include : sig
-  type expansion = { resolved : bool; content : Signature.t }
+  type expansion = {
+    resolved : bool;
+    shadowed : (string * Identifier.t) list;
+    content : Signature.t
+  }
 
   type t = {
     parent : Identifier.Signature.t;

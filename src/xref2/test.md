@@ -1435,8 +1435,7 @@ Some
    (`Resolved
       (`Type
          (`Hidden
-            (`Hidden
-               (`Identifier (`Module (`Root (Common.root, Root), Hidden__)))),
+            (`Identifier (`Module (`Root (Common.root, Root), Hidden__))),
           t)),
    []))
 ```
@@ -1653,7 +1652,7 @@ let m_e_i_s_value mod_name n val_name =
  type_ =
   Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
-      (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+      (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t$2))),
    [])}
 ```
 
@@ -1689,7 +1688,7 @@ let sg = Common.signature_of_mli_string test_data;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id =
-    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t$3);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1710,13 +1709,14 @@ let sg = Common.signature_of_mli_string test_data;;
    type_ =
     Odoc_model.Lang.TypeExpr.Constr
      (`Resolved
-        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+        (`Identifier
+           (`Type (`Module (`Root (Common.root, Root), Foo3), $t$3))),
      [])}]
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 1) sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id =
-    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t$4);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1737,7 +1737,8 @@ let sg = Common.signature_of_mli_string test_data;;
    type_ =
     Odoc_model.Lang.TypeExpr.Constr
      (`Resolved
-        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+        (`Identifier
+           (`Type (`Module (`Root (Common.root, Root), Foo3), $t$4))),
      [])}]
 ```
 
@@ -1775,7 +1776,7 @@ let sg = Common.signature_of_mli_string test_data;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id =
-    `Type (`Module (`Root (Common.root, Root), Foo3), $t);
+    `Type (`Module (`Root (Common.root, Root), Foo3), $t$5);
    doc = [];
    equation =
     {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
@@ -1803,6 +1804,63 @@ let sg = Common.signature_of_mli_string test_data;;
    type_ =
     Odoc_model.Lang.TypeExpr.Constr
      (`Resolved
-        (`Identifier (`Type (`Module (`Root (Common.root, Root), Foo3), $t))),
+        (`Identifier
+           (`Type (`Module (`Root (Common.root, Root), Foo3), $t$5))),
+     [])}]
+```
+
+
+And overriding modules?
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+let test_data = {|
+module Foo : sig
+   module Bar : sig
+     type t
+   end
+
+   val id : Bar.t
+end
+
+module Foo3 : sig
+  include module type of struct include Foo end
+
+  module Bar : sig
+    type u
+  end
+
+  val id3 : Bar.u
+end
+|};;
+let sg = Common.signature_of_mli_string test_data;;
+```
+
+<!-- $MDX version>=4.08 -->
+```ocaml env=e1
+# Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
+- : Odoc_model.Lang.Signature.t =
+[Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
+  {Odoc_model.Lang.Module.id =
+    `Module (`Module (`Root (Common.root, Root), Foo3), $Bar$7);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.Module.Alias
+     (`Dot
+        (`Resolved (`Identifier (`Module (`Root (Common.root, Root), Foo))),
+         "Bar"));
+   canonical = None; hidden = false; display_type = None; expansion = None});
+ Odoc_model.Lang.Signature.Value
+  {Odoc_model.Lang.Value.id =
+    `Value (`Module (`Root (Common.root, Root), Foo3), id);
+   doc = [];
+   type_ =
+    Odoc_model.Lang.TypeExpr.Constr
+     (`Dot
+        (`Resolved
+           (`Hidden
+              (`Identifier
+                 (`Module (`Module (`Root (Common.root, Root), Foo3), $Bar$7)))),
+         "t"),
      [])}]
 ```

@@ -15,9 +15,11 @@ type maps = {
     list;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
-  s_modules : string list;
-  s_module_types : string list;
-  s_types : string list;
+  s_modules : (string * Identifier.Module.t) list;
+  s_module_types : (string * Identifier.ModuleType.t) list;
+  s_types : (string * Identifier.Type.t) list;
+  s_classes : (string * Identifier.Class.t) list;
+  s_class_types : (string * Identifier.ClassType.t) list;
 }
 
 let empty =
@@ -33,6 +35,8 @@ let empty =
     s_modules = [];
     s_module_types = [];
     s_types = [];
+    s_classes = [];
+    s_class_types = [];
   }
 
 let with_fragment_root r = { empty with fragment_root = Some r }
@@ -193,21 +197,21 @@ module ExtractIDs = struct
   let rec type_decl parent map id =
     let name = Ident.Name.type_ id in
     let identifier =
-      if List.mem name map.s_types then
-        `Type (parent, TypeName.internal_of_string name)
+      if List.mem_assoc name map.s_types then
+        List.assoc name map.s_types
       else `Type (parent, Ident.Name.typed_type id)
     in
     {
       map with
       type_ = (id, identifier) :: map.type_;
-      path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
+      path_type = ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t)) :: map.path_type;
     }
 
   and module_ parent map id =
     let name = Ident.Name.module_ id in
     let identifier =
-      if List.mem name map.s_modules then
-        `Module (parent, ModuleName.internal_of_string name)
+      if List.mem_assoc name map.s_modules then
+        List.assoc name map.s_modules
       else `Module (parent, Ident.Name.typed_module id)
     in
     { map with module_ = (id, identifier) :: map.module_ }
@@ -215,30 +219,39 @@ module ExtractIDs = struct
   and module_type parent map id =
     let name = Ident.Name.module_type id in
     let identifier =
-      if List.mem name map.s_module_types then
-        `ModuleType (parent, ModuleTypeName.internal_of_string name)
+      if List.mem_assoc name map.s_module_types then
+        List.assoc name map.s_module_types
       else `ModuleType (parent, Ident.Name.typed_module_type id)
     in
     { map with module_type = (id, identifier) :: map.module_type }
 
   and class_ parent map id =
-    let identifier = `Class (parent, Ident.Name.typed_class id) in
+    let name = Ident.Name.class_ id in
+    let identifier =
+      if List.mem_assoc name map.s_classes then
+        List.assoc name map.s_classes
+      else `Class (parent, Ident.Name.typed_class id) in
     {
       map with
       class_ = (id, identifier) :: map.class_;
       path_class_type =
-        ((id :> Ident.path_class_type), identifier) :: map.path_class_type;
-      path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
+        ((id :> Ident.path_class_type), (identifier :> Identifier.Path.ClassType.t)) :: map.path_class_type;
+      path_type = ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t)) :: map.path_type;
     }
 
   and class_type parent map (id : Ident.class_type) =
-    let identifier = `ClassType (parent, Ident.Name.typed_class_type id) in
-    {
+  let name = Ident.Name.class_type id in
+  let identifier =
+    if List.mem_assoc name map.s_class_types then
+      List.assoc name map.s_class_types
+    else `ClassType (parent, Ident.Name.typed_class_type id)
+  in 
+  {
       map with
       class_type = ((id :> Ident.class_type), identifier) :: map.class_type;
       path_class_type =
-        ((id :> Ident.path_class_type), identifier) :: map.path_class_type;
-      path_type = ((id :> Ident.path_type), identifier) :: map.path_type;
+        ((id :> Ident.path_class_type), (identifier:> Identifier.Path.ClassType.t)) :: map.path_class_type;
+      path_type = ((id :> Ident.path_type), (identifier:> Identifier.Path.Type.t)) :: map.path_type;
     }
 
   and include_ parent map i =
@@ -456,8 +469,8 @@ and module_expansion :
             | Named arg ->
                 let name = Ident.Name.module_ arg.id in
                 let identifier' =
-                  if List.mem name map.s_modules then
-                    `Parameter (id, ParameterName.internal_of_string name)
+                  if List.mem_assoc name map.s_modules then
+                    List.assoc name map.s_modules
                   else `Parameter (id, ParameterName.of_string name)
                 in
                 let identifier_result = `Result id in
@@ -480,7 +493,7 @@ and include_ parent map i =
     doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     decl = module_decl map parent i.decl;
     expansion =
-      { resolved = false; content = signature parent map i.expansion_ };
+      { resolved = false; shadowed = i.shadowed; content = signature parent map i.expansion_ };
     inline = false;
   }
 
@@ -599,8 +612,8 @@ and module_type_expr map identifier =
   | Functor (Named arg, expr) ->
       let name = Ident.Name.module_ arg.id in
       let identifier' =
-        if List.mem name map.s_modules then
-          `Parameter (identifier, ParameterName.internal_of_string name)
+        if List.mem_assoc name map.s_modules then
+          List.assoc name map.s_modules
         else `Parameter (identifier, ParameterName.of_string name)
       in
       let map = { map with module_ = (arg.id, identifier') :: map.module_ } in
