@@ -1528,6 +1528,15 @@ struct
             type_expr te
 
   and include_ (t : Odoc_model.Lang.Include.t) =
+    (* Special-case the construct 'include module type of struct include X end'
+       by rendering the inner include contents *)
+    let content_t =
+      let open Odoc_model.Lang in
+      match t.decl with
+      | Module.ModuleType (ModuleType.TypeOf (Module.ModuleType (ModuleType.Signature [Include t]))) ->
+        t
+      | _ -> t
+    in
     let status =
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
@@ -1537,12 +1546,11 @@ struct
       else `Default
     in
     let content =
-      Subpage.Items (signature t.expansion.content)
+      Subpage.Items (signature content_t.expansion.content)
     in
-    let summary =
-      if t.inline
-      then O.render (O.txt "")
-      else
+    let summary = match t.inline with
+      | true -> O.render (O.txt "")
+      | false  ->
         O.render (
           O.keyword "include" ++
             O.txt " " ++
