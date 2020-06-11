@@ -63,12 +63,15 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       close_out oc
     );
     Ok ()
-  | Compilation_unit {hidden = true; _} ->
-    Ok ()
-  | Compilation_unit {hidden = _; _} ->
+  | Compilation_unit {hidden; _} ->
     (* If hidden, we should not generate HTML. See
          https://github.com/ocaml/odoc/issues/99. *)
     Compilation_unit.load input >>= fun unit ->
+    let unit =
+      if hidden
+      then {unit with content = Odoc_model.Lang.Compilation_unit.Module []; expansion=None }
+      else unit
+    in
 (*    let unit = Odoc_xref.Lookup.lookup unit in *)
     let odoctree =
       let env = Env.build env (`Unit unit) in
