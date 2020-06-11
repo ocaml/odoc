@@ -163,7 +163,7 @@ let extract_signature_tree_item item =
           (fun md items ->
             match md.md_id with
             | Some id -> `Module (id, false) :: items
-            | None -> env)
+            | None -> items)
           mds []
 #else
     | Tsig_module { md_id; _ } ->
