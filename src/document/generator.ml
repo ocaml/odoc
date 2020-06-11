@@ -1540,12 +1540,15 @@ struct
       Subpage.Items (signature t.expansion.content)
     in
     let summary =
-      O.render (
-        O.keyword "include" ++
-          O.txt " " ++
-          module_decl' t.parent t.decl ++
-          (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
-      )
+      if t.inline
+      then O.render (O.txt "")
+      else
+        O.render (
+          O.keyword "include" ++
+            O.txt " " ++
+            module_decl' t.parent t.decl ++
+            (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
+        )
     in
     let content = {Subpage. content; status; summary} in
     let kind = Some "include" in
