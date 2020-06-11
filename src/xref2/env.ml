@@ -358,8 +358,11 @@ let make_scope ?(root = fun _ _ -> None)
   { filter; root }
 
 let lookup_by_name' scope name env =
+  let filter acc r =
+    match scope.filter r with Some r' -> r' :: acc | None -> acc
+  in
   let found = try StringMap.find name env.elts with Not_found -> [] in
-  List.filter_map scope.filter found
+  List.fold_left filter [] found |> List.rev
 
 let lookup_by_name scope name env =
   let record_lookup_results results =
