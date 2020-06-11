@@ -64,28 +64,6 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
     );
     Ok ()
   | Compilation_unit {hidden = true; _} ->
-    Compilation_unit.load input >>= fun unit ->
-    let pkg_dir =
-      Fs.Directory.reach_from ~dir:root_dir root.package
-    in
-    let pages = to_html_tree_compilation_unit ?theme_uri ~syntax unit in
-    Renderer.traverse pages ~f:(fun ~parents name _content ->
-      let directory =
-        let dir =
-          List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
-            parents ~init:pkg_dir
-        in
-        Fs.Directory.reach_from ~dir name
-      in
-      let oc =
-        Fs.Directory.mkdir_p directory;
-        let file = Fs.File.create ~directory ~name:"index.html" in
-        open_out (Fs.File.to_string file)
-      in
-      let fmt = Format.formatter_of_out_channel oc in
-      Format.fprintf fmt "placeholder\n";
-      close_out oc
-    );
     Ok ()
   | Compilation_unit {hidden = _; _} ->
     (* If hidden, we should not generate HTML. See
