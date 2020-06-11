@@ -684,17 +684,15 @@ and read_include env parent incl =
   let open Include in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container incl.incl_attributes in
-  let content = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  (* Remove identifiers introduced by this include *)
-  let env' = Env.handle_signature_type_items `Remove parent (Odoc_model.Compat.signature incl.incl_type) env in
-  let expr = read_module_type env' parent container incl.incl_mod in
+  let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
+  let expr = read_module_type env parent container incl.incl_mod in
   let decl = Module.ModuleType expr in
-  let expansion = { content; resolved = false} in
+  let expansion = { content; shadowed; resolved = false} in
     {parent; doc; decl; expansion; inline=false }
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
-  let expansion = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
+  let expansion, _ = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature o.open_bound_items) in
   { expansion }
 #endif
 

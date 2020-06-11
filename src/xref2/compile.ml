@@ -314,38 +314,19 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
       m
 
 and find_shadowed map =
-  let open Odoc_model.Names in
-  let open Signature in
-  let hidden_name : Id.t -> string option = function
-    | `Module (_, m) when ModuleName.is_internal m ->
-        Some (ModuleName.to_string_unsafe m)
-    | `Parameter (_, m) when ParameterName.is_internal m ->
-        Some (ParameterName.to_string_unsafe m)
-    | `ModuleType (_, m) when ModuleTypeName.is_internal m ->
-        Some (ModuleTypeName.to_string_unsafe m)
-    | `Type (_, t) when TypeName.is_internal t ->
-        Some (TypeName.to_string_unsafe t)
-    | _ -> None
-  in
   function
-  | Module (_, m) :: rest -> (
-      match hidden_name (m.id :> Id.t) with
-      | Some n ->
-          find_shadowed Lang_of.{ map with s_modules = n :: map.s_modules } rest
-      | None -> find_shadowed map rest )
-  | ModuleType m :: rest -> (
-      match hidden_name (m.id :> Id.t) with
-      | Some n ->
-          find_shadowed
-            Lang_of.{ map with s_module_types = n :: map.s_module_types }
-            rest
-      | None -> find_shadowed map rest )
-  | Type (_, t) :: rest -> (
-      match hidden_name (t.id :> Id.t) with
-      | Some n ->
-          find_shadowed Lang_of.{ map with s_types = n :: map.s_types } rest
-      | None -> find_shadowed map rest )
-  | _ :: rest -> find_shadowed map rest
+  | (_, `Module (_, _) as ident) :: rest ->
+    find_shadowed Lang_of.{ map with s_modules = ident :: map.s_modules } rest
+  | (_, `ModuleType (_, _) as ident):: rest ->
+    find_shadowed Lang_of.{ map with s_module_types = ident :: map.s_module_types } rest
+  | (_, `Type (_, _) as ident) :: rest ->
+    find_shadowed Lang_of.{ map with s_types = ident :: map.s_types } rest
+  | (_, `Class (_, _) as ident) :: rest ->
+    find_shadowed Lang_of.{ map with s_classes = ident :: map.s_classes } rest
+  | (_, `ClassType (_, _) as ident) :: rest ->
+    find_shadowed Lang_of.{ map with s_class_types = ident :: map.s_class_types } rest
+  | _ :: _ ->
+    assert false
   | [] -> map
 
 and include_ : Env.t -> Include.t -> Include.t =
@@ -365,7 +346,7 @@ and include_ : Env.t -> Include.t -> Include.t =
       lookup_failure ~what:(`Include decl) `Expand;
       i
   | Ok (_, ce) ->
-      let map = find_shadowed Lang_of.empty i.expansion.content in
+      let map = find_shadowed Lang_of.empty i.expansion.shadowed in
       let e = Lang_of.(module_expansion map i.parent ce) in
       (* Format.eprintf "Intermediate expansion: %a\n%!"
         Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
@@ -378,6 +359,7 @@ and include_ : Env.t -> Include.t -> Include.t =
       let expansion =
             {
               resolved = true;
+              shadowed = i.expansion.shadowed;
               content =
                 remove_top_doc_from_signature (signature env i.parent expansion_sg);
             }

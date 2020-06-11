@@ -25,28 +25,30 @@ module type Name = sig
     val is_hidden : t -> bool
 end
 
+let internal_counter = ref 0
+
 module Name : Name = struct
 
     type t =
-        | Internal of string
+        | Internal of string * int
         | Std of string
 
     let to_string = function
         | Std s -> s
-        | Internal s -> Printf.sprintf "$%s" s
+        | Internal (s,i) -> Printf.sprintf "$%s$%d" s i
 
     let to_string_unsafe = function
         | Std s -> s
-        | Internal s -> s
+        | Internal (s,_i) -> s
 
     let of_string s =
-      if String.length s > 0 && s.[0] = '$' then
-        Internal (String.sub s 1 (String.length s - 1))
-      else Std s
+      if String.length s > 0 && s.[0] = '$' then begin
+        raise (Invalid_argument s)
+      end else Std s
 
     let of_ident id = of_string (Ident.name id)
 
-    let internal_of_string id = Internal id
+    let internal_of_string id = incr internal_counter; Internal (id, !internal_counter)
 
     let internal_of_ident id = internal_of_string (Ident.name id)
 
@@ -56,7 +58,7 @@ module Name : Name = struct
 
     let compare x y =
         match x, y with
-        | Internal x, Internal y -> String.compare x y
+        | Internal (x, _), Internal (y, _) -> String.compare x y
         | Std x, Std y -> String.compare x y
         | Internal _, Std _ -> -1
         | Std _, Internal _ -> 1

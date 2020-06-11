@@ -281,6 +281,7 @@ and Include : sig
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
     doc : CComment.docs;
+    shadowed : (string * Odoc_model.Paths.Identifier.t) list;
     expansion_ : Signature.t;
     decl : Module.decl;
   }
@@ -1781,6 +1782,7 @@ module Of_Lang = struct
     {
       Include.parent = i.parent;
       doc = docs ident_map i.doc;
+      shadowed = i.expansion.shadowed;
       expansion_ = apply_sig_map ident_map i.expansion.content;
       decl;
     }

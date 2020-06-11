@@ -913,19 +913,20 @@ and read_module_rec_status rec_status =
   | Trec_next -> And
 
 and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
-  let rec loop acc items =
+  let rec loop (acc,shadowed) items =
     let open Signature in
     let open Odoc_model.Compat in
     match items with
     | Sig_value(id, v, _) :: rest ->
         let vd = read_value_description env parent id v in
-          loop (vd :: acc) rest
+          loop (vd :: acc, shadowed) rest
     | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
-        loop acc rest
+        loop (acc, shadowed) rest
     | Sig_type(id, decl, rec_status, _)::rest ->
         let decl = read_type_declaration env parent id decl in
-      loop (Type (read_type_rec_status rec_status, decl)::acc) rest
+        let shadowed = if Env.is_shadowed env id then (Ident.name id, (decl.id :> Identifier.t)) :: shadowed else shadowed in
+        loop (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
     | Sig_typext (id, ext, Text_first, _) :: rest ->
         let rec inner_loop inner_acc = function
           | Sig_typext(id, ext, Text_next, _) :: rest ->
@@ -934,28 +935,32 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
               let ext =
                 read_type_extension env parent id ext (List.rev inner_acc)
               in
-                loop (TypExt ext :: acc) rest
+                loop (TypExt ext :: acc, shadowed) rest
         in
           inner_loop [] rest
     | Sig_typext (id, ext, Text_next, _) :: rest ->
         let ext = read_type_extension env parent id ext [] in
-          loop (TypExt ext :: acc) rest
+          loop (TypExt ext :: acc, shadowed) rest
     | Sig_typext (id, ext, Text_exception, _) :: rest ->
         let exn = read_exception env parent id ext in
-          loop (Exception exn :: acc) rest
+          loop (Exception exn :: acc, shadowed) rest
     | Sig_module (id, _, md, rec_status, _)::rest ->
           let md = read_module_declaration env parent id md in
-          loop (Module (read_module_rec_status rec_status, md)::acc) rest
+          let shadowed = if Env.is_shadowed env id then (Ident.name id, (md.id :> Identifier.t)) :: shadowed else shadowed in
+          loop (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
     | Sig_modtype(id, mtd, _) :: rest ->
           let mtd = read_module_type_declaration env parent id mtd in
-          loop (ModuleType mtd :: acc) rest
+          let shadowed = if Env.is_shadowed env id then (Ident.name id, (mtd.id :> Identifier.t)) :: shadowed else shadowed in
+          loop (ModuleType mtd :: acc, shadowed) rest
     | Sig_class(id, cl, rec_status, _) :: Sig_class_type _
       :: Sig_type _ :: Sig_type _ :: rest ->
           let cl = read_class_declaration env parent id cl in
-          loop (Class (read_type_rec_status rec_status, cl)::acc) rest
+          let shadowed = if Env.is_shadowed env id then (Ident.name id, (cl.id :> Identifier.t)) :: shadowed else shadowed in
+          loop (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
     | Sig_class_type(id, cltyp, rec_status, _)::Sig_type _::Sig_type _::rest ->
         let cltyp = read_class_type_declaration env parent id cltyp in
-        loop (ClassType (read_type_rec_status rec_status, cltyp)::acc) rest
+        let shadowed = if Env.is_shadowed env id then (Ident.name id, (cltyp.id :> Identifier.t)) :: shadowed else shadowed in
+        loop (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest
     (* Skip all of the hidden sig items *)
 
 
@@ -964,13 +969,13 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
-    | [] -> List.rev acc
+    | [] -> (List.rev acc, List.rev shadowed)
   in
-    loop [] items
+    loop ([],[]) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
-  let env = Env.handle_signature_type_items `Add parent items env in
-  read_signature_noenv env parent items
+  let env = Env.handle_signature_type_items parent items env in
+  fst @@ read_signature_noenv env parent items
 
 
 let read_interface root name intf =

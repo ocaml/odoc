@@ -529,6 +529,7 @@ and include_ : Env.t -> Include.t -> Include.t =
     expansion =
       {
         resolved = true;
+        shadowed = i.expansion.shadowed;
         content = signature_items env i.parent i.expansion.content;
       };
     inline = should_be_inlined || hidden_rhs;
