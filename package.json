@@ -52,7 +52,7 @@
     "@opam/sexplib": "bryphe/sexplib:opam#548f94d"
   },
   "devDependencies": {
-    "@opam/merlin": "^3.3.4",
+    "@opam/merlin": "^3.0.3",
     "ocaml": "~4.2.0"
   },
   "license": "ISC",
