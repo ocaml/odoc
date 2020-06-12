@@ -96,14 +96,18 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_type id in
         get_sub (Subst.add_type id (`Type (path, name)) sub') rest
     | Module (id, _, _) :: rest ->
-        let name = Ident.Name.typed_module id in
-        get_sub (Subst.add_module id (`Module (path, name)) sub') rest
+        let name = Ident.Name.typed_module' id in
+        get_sub
+          (Subst.add_module (id :> Ident.module_) (`Module (path, name)) sub')
+          rest
     | ModuleType (id, _) :: rest ->
         let name = Ident.Name.typed_module_type id in
         get_sub (Subst.add_module_type id (`ModuleType (path, name)) sub') rest
     | ModuleSubstitution (id, _) :: rest ->
-        let name = Ident.Name.typed_module id in
-        get_sub (Subst.add_module id (`Module (path, name)) sub') rest
+        let name = Ident.Name.typed_module' id in
+        get_sub
+          (Subst.add_module (id :> Ident.module_) (`Module (path, name)) sub')
+          rest
     | TypeSubstitution (id, _) :: rest ->
         let name = Ident.Name.typed_type id in
         get_sub (Subst.add_type id (`Type (path, name)) sub') rest
@@ -127,8 +131,8 @@ let prefix_substitution path sg =
       (fun item map ->
         match item with
         | Component.Signature.RModule (id, _) ->
-            let name = Ident.Name.typed_module id in
-            Subst.add_module id (`Module (path, name)) map
+            let name = Ident.Name.typed_module' id in
+            Subst.add_module (id :> Ident.module_) (`Module (path, name)) map
         | Component.Signature.RType (id, _) ->
             let name = Ident.Name.typed_type id in
             Subst.add_type id (`Type (path, name)) map)
@@ -144,7 +148,7 @@ let prefix_signature (path, sg) =
       (function
         | Module (id, r, m) ->
             Module
-              ( Ident.Rename.module_ id,
+              ( Ident.Rename.typed_module id,
                 r,
                 Component.Delayed.put (fun () ->
                     Subst.module_ sub (Component.Delayed.get m)) )
@@ -163,7 +167,7 @@ let prefix_signature (path, sg) =
             TypeSubstitution (Ident.Rename.type_ id, Subst.type_ sub t)
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution
-              (Ident.Rename.module_ id, Subst.module_substitution sub m)
+              (Ident.Rename.typed_module id, Subst.module_substitution sub m)
         | Exception (id, e) -> Exception (id, Subst.exception_ sub e)
         | TypExt t -> TypExt (Subst.extension sub t)
         | Value (id, v) -> Value (id, Component.Delayed.put (fun () -> Subst.value sub (Component.Delayed.get v)))
@@ -350,7 +354,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
   Ok
     ( path,
       Subst.module_
-        (Subst.add_module arg_id substitution Subst.identity)
+        (Subst.add_module (arg_id :> Ident.module_) substitution Subst.identity)
         new_module )
 
 and add_canonical_path :
@@ -452,7 +456,7 @@ and lookup_module :
       [ simple_module_lookup_error | parent_lookup_error ] )
     Result.result =
  fun ~mark_substituted:m env' path' ->
-  let lookup env (mark_substituted, path) =
+  let lookup env (mark_substituted, (path : SignatureOfModuleMemo.M.key)) =
     match path with
     | `Local lpath -> Error (`Local (env, lpath))
     | `Identifier i ->
@@ -1013,7 +1017,7 @@ and fragmap_module :
       (fun item (items, handled, removed, sub) ->
         match item with
         | Component.Signature.Module (id, r, m)
-          when Ident.Name.module_ id = name -> (
+          when Ident.Name.typed_module id = name -> (
             let m = Component.Delayed.get m in
             match map_module m with
             | Left m ->
@@ -1052,7 +1056,8 @@ and fragmap_module :
 
     let sub_of_removed removed sub =
       match removed with
-      | Component.Signature.RModule (id, p) -> Subst.add_module id p sub
+      | Component.Signature.RModule (id, p) ->
+          Subst.add_module (id :> Ident.module_) p sub
       | _ -> sub
     in
     let sub = List.fold_right sub_of_removed removed Subst.identity in
@@ -1062,6 +1067,7 @@ and fragmap_module :
         (* Mark things that have been substituted as such - See the `With11`
            test for an example of why this is necessary *)
         let sub_of_substituted x sub =
+          let x = (x :> Ident.module_) in
           Subst.add_module x (`Substituted (`Local x)) sub
         in
         let substituted_sub =
@@ -1198,7 +1204,7 @@ and fragmap_type :
           (fun item (items, handled) ->
             match item with
             | Component.Signature.Module (id, r, m)
-              when Ident.Name.module_ id = name ->
+              when Ident.Name.typed_module id = name ->
                 let m = Component.Delayed.get m in
                 let item =
                   Component.Signature.Module

@@ -2,7 +2,7 @@ open Result
 
 open Odoc_model.Paths
 
-val functor_arg_pos : Identifier.Module.t -> int
+val functor_arg_pos : Identifier.FunctorParameter.t -> int
 
 
 module Error : sig

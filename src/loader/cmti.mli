@@ -22,7 +22,7 @@ val read_interface :
   Odoc_model.Root.t ->
   string ->
   Typedtree.signature ->
-  Paths.Identifier.Module.t
+  Paths.Identifier.RootModule.t
   * Odoc_model.Comment.docs
   * Odoc_model.Lang.Signature.t
 

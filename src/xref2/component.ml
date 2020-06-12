@@ -160,7 +160,7 @@ end =
 
 and FunctorParameter : sig
   type parameter = {
-    id : Ident.module_;
+    id : Ident.functor_parameter;
     expr : ModuleType.expr;
     expansion : Module.expansion option;
   }
@@ -247,8 +247,8 @@ and Signature : sig
   type recursive = Odoc_model.Lang.Signature.recursive
 
   type item =
-    | Module of Ident.module_ * recursive * Module.t Delayed.t
-    | ModuleSubstitution of Ident.module_ * ModuleSubstitution.t
+    | Module of Ident.typed_module * recursive * Module.t Delayed.t
+    | ModuleSubstitution of Ident.typed_module * ModuleSubstitution.t
     | ModuleType of Ident.module_type * ModuleType.t Delayed.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
@@ -265,7 +265,7 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
+    | RModule of Ident.typed_module * Cpath.Resolved.module_
     | RType of Ident.type_ * TypeExpr.t
 
   type t = { items : item list; removed : removed_item list }
@@ -1154,7 +1154,7 @@ module LocalIdents = struct
       except within them, so we only do that on demand. *)
 
   type t = {
-    modules : Paths.Identifier.Sets.Module.t;
+    modules : Paths.Identifier.Sets.TypedModule.t;
     module_types : Paths.Identifier.Sets.ModuleType.t;
     types : Paths.Identifier.Sets.Type.t;
     classes : Paths.Identifier.Sets.Class.t;
@@ -1164,7 +1164,7 @@ module LocalIdents = struct
   let empty =
     let open Paths.Identifier.Sets in
     {
-      modules = Module.empty;
+      modules = TypedModule.empty;
       module_types = ModuleType.empty;
       types = Type.empty;
       classes = Class.empty;
@@ -1179,10 +1179,10 @@ module LocalIdents = struct
     List.fold_right
       (fun c ids ->
         match c with
-        | Module (_, m) ->
+        | Module (_, { Module.id = #Identifier.TypedModule.t as id; _ }) ->
             {
               ids with
-              modules = Identifier.Sets.Module.add m.Module.id ids.modules;
+              modules = Identifier.Sets.TypedModule.add id ids.modules;
             }
         | ModuleType m ->
             {
@@ -1190,12 +1190,14 @@ module LocalIdents = struct
               module_types =
                 Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types;
             }
-        | ModuleSubstitution m ->
+        | ModuleSubstitution
+            { ModuleSubstitution.id = #Identifier.TypedModule.t as id; _ } ->
             {
               ids with
-              modules =
-                Identifier.Sets.Module.add m.ModuleSubstitution.id ids.modules;
+              modules = Identifier.Sets.TypedModule.add id ids.modules;
             }
+        | Module _ | ModuleSubstitution _ ->
+            ids (* root modules and functor parameters ? *)
         | Type (_, t) ->
             {
               ids with
@@ -1227,8 +1229,9 @@ module Of_Lang = struct
   open Odoc_model
 
   type map = {
-    modules : Ident.module_ Paths.Identifier.Maps.Module.t;
+    modules : Ident.typed_module Paths.Identifier.Maps.Module.t;
     module_types : Ident.module_type Paths.Identifier.Maps.ModuleType.t;
+    functor_parameters : Ident.functor_parameter Paths.Identifier.Maps.Module.t;
     types : Ident.type_ Paths.Identifier.Maps.Type.t;
     path_types : Ident.path_type Paths.Identifier.Maps.Path.Type.t;
     path_class_types :
@@ -1242,6 +1245,7 @@ module Of_Lang = struct
     {
       modules = Module.empty;
       module_types = ModuleType.empty;
+      functor_parameters = Module.empty;
       types = Type.empty;
       path_types = Path.Type.empty;
       path_class_types = Path.ClassType.empty;
@@ -1268,8 +1272,12 @@ module Of_Lang = struct
         ids.LocalIdents.class_types Maps.ClassType.empty
     in
     let modules_new =
-      Sets.Module.fold
-        (fun i acc -> Maps.Module.add i (Ident.Of_Identifier.module_ i) acc)
+      Sets.TypedModule.fold
+        (fun i acc ->
+          Maps.Module.add
+            (i :> Module.t)
+            (Ident.Of_Identifier.typed_module i)
+            acc)
         ids.LocalIdents.modules Maps.Module.empty
     in
     let module_types_new =
@@ -1316,6 +1324,7 @@ module Of_Lang = struct
     let module_types =
       Maps.ModuleType.merge merge_fn module_types_new map.module_types
     in
+    let functor_parameters = map.functor_parameters in
     let types = Maps.Type.merge merge_fn types_new map.types in
     let classes = Maps.Class.merge merge_fn classes_new map.classes in
     let class_types =
@@ -1331,6 +1340,7 @@ module Of_Lang = struct
     {
       modules;
       module_types;
+      functor_parameters;
       types;
       classes;
       class_types;
@@ -1346,12 +1356,20 @@ module Of_Lang = struct
     | x -> `Local x
     | exception Not_found -> `Identifier i
 
+  let find_any_module i ident_map =
+    match i with
+    | #Paths.Identifier.TypedModule.t as id ->
+        (Maps.Module.find id ident_map.modules :> Ident.module_)
+    | #Paths.Identifier.FunctorParameter.t as id ->
+        (Maps.Module.find id ident_map.functor_parameters :> Ident.module_)
+    | _ -> raise Not_found
+
   let rec resolved_module_path :
       _ -> Odoc_model.Paths.Path.Resolved.Module.t -> Cpath.Resolved.module_ =
    fun ident_map p ->
     let recurse p = resolved_module_path ident_map p in
     match p with
-    | `Identifier i -> identifier Maps.Module.find ident_map.modules i
+    | `Identifier i -> identifier find_any_module ident_map i
     | `Module (p, name) -> `Module (`Module (recurse p), name)
     | `Apply (p1, p2) -> `Apply (recurse p1, module_path ident_map p2)
     | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
@@ -1643,11 +1661,14 @@ module Of_Lang = struct
               match arg with
               | Named arg ->
                   let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
-                  let id = Ident.Of_Identifier.module_ identifier in
+                  let id = Ident.Of_Identifier.functor_parameter identifier in
                   let ident_map' =
                     {
                       ident_map with
-                      modules = Maps.Module.add identifier id ident_map.modules;
+                      functor_parameters =
+                        Maps.Module.add
+                          (identifier :> Odoc_model.Paths.Identifier.Module.t)
+                          id ident_map.functor_parameters;
                     }
                   in
                   let arg' = functor_parameter ident_map' id arg in
@@ -1743,11 +1764,14 @@ module Of_Lang = struct
             List.map (module_type_substitution ident_map) subs )
     | Lang.ModuleType.Functor (Named arg, expr) ->
         let identifier = arg.Lang.FunctorParameter.id in
-        let id = Ident.Of_Identifier.module_ identifier in
+        let id = Ident.Of_Identifier.functor_parameter identifier in
         let ident_map' =
           {
             ident_map with
-            modules = Identifier.Maps.Module.add identifier id ident_map.modules;
+            functor_parameters =
+              Identifier.Maps.Module.add
+                (identifier :> Identifier.Module.t)
+                id ident_map.functor_parameters;
           }
         in
         let arg' = functor_parameter ident_map' id arg in
@@ -1916,7 +1940,11 @@ module Of_Lang = struct
             let t' = type_decl ident_map t in
             Signature.TypeSubstitution (id, t')
         | Module (r, m) ->
-            let id = Identifier.Maps.Module.find m.id ident_map.modules in
+            let id =
+              Identifier.Maps.Module.find
+                (m.id :> Identifier.Module.t)
+                ident_map.modules
+            in
             let m' = Delayed.put (fun () -> module_ ident_map m) in
             Signature.Module (id, r, m')
         | ModuleSubstitution m ->

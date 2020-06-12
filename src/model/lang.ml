@@ -27,7 +27,7 @@ module rec Module : sig
   type decl = Alias of Path.Module.t | ModuleType of ModuleType.expr
 
   type t = {
-    id : Identifier.Module.t;
+    id : Paths_types.Identifier.direct_module;
     doc : Comment.docs;
     type_ : decl;
     canonical : (Path.Module.t * Reference.Module.t) option;
@@ -44,7 +44,7 @@ end =
 
 and FunctorParameter : sig
   type parameter = {
-    id : Identifier.Module.t;
+    id : Identifier.FunctorParameter.t;
     expr : ModuleType.expr;
     display_expr : ModuleType.expr option;
     expansion : Module.expansion option;
@@ -392,7 +392,7 @@ module rec Compilation_unit : sig
   type content = Module of Signature.t | Pack of Packed.t
 
   type t = {
-    id : Identifier.Module.t;
+    id : Identifier.RootModule.t;
     doc : Comment.docs;
     digest : Digest.t;
     imports : Import.t list;

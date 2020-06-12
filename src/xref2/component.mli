@@ -153,7 +153,7 @@ end
 
 and FunctorParameter : sig
   type parameter = {
-    id : Ident.module_;
+    id : Ident.functor_parameter;
     expr : ModuleType.expr;
     expansion : Module.expansion option;
   }
@@ -236,8 +236,8 @@ and Signature : sig
   type recursive = Odoc_model.Lang.Signature.recursive
 
   type item =
-    | Module of Ident.module_ * recursive * Module.t Delayed.t
-    | ModuleSubstitution of Ident.module_ * ModuleSubstitution.t
+    | Module of Ident.typed_module * recursive * Module.t Delayed.t
+    | ModuleSubstitution of Ident.typed_module * ModuleSubstitution.t
     | ModuleType of Ident.module_type * ModuleType.t Delayed.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
@@ -254,7 +254,7 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.module_ * Cpath.Resolved.module_
+    | RModule of Ident.typed_module * Cpath.Resolved.module_
     | RType of Ident.type_ * TypeExpr.t
 
   type t = { items : item list; removed : removed_item list }
@@ -637,7 +637,7 @@ module Of_Lang : sig
 
   val functor_parameter :
     map ->
-    Ident.module_ ->
+    Ident.functor_parameter ->
     Odoc_model.Lang.FunctorParameter.parameter ->
     FunctorParameter.parameter
 

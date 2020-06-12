@@ -3,17 +3,15 @@ open Odoc_model.Paths
 open Odoc_model.Names
 module Root = Odoc_model.Root
 
-let functor_arg_pos id =
-  let rec inner = function
-    | `Parameter (p, _) -> inner_sig p
-    | _ -> failwith "wtf"
-  and inner_sig = function
+let functor_arg_pos (`Parameter (p, _)) =
+  let rec inner_sig = function
     | `Result p -> 1 + inner_sig p
     | `Module _
     | `ModuleType _
     | `Root _
     | `Parameter _ -> 1
-  in inner id
+  in
+  inner_sig p
 
 let render_path : Odoc_model.Paths.Path.t -> string =
   let open Odoc_model.Paths.Path in

@@ -191,6 +191,50 @@ module Identifier = struct
 
   end
 
+  module RootModule =
+  struct
+    type t = Paths_types.Identifier.root_module
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+
+  end
+
+  module TypedModule =
+  struct
+    type t = Paths_types.Identifier.typed_module
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+
+  end
+
+  module DirectModule =
+  struct
+    type t = Paths_types.Identifier.direct_module
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+
+  end
+
+  module FunctorParameter =
+  struct
+    type t = Paths_types.Identifier.functor_parameter
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+
+  end
+
   module ModuleType =
   struct
     type t = Paths_types.Identifier.module_type
@@ -380,6 +424,9 @@ module Identifier = struct
     module DataType = Set.Make(DataType)
     module Parent = Set.Make(Parent)
     module LabelParent = Set.Make(LabelParent)
+    module RootModule = Set.Make(RootModule)
+    module TypedModule = Set.Make(TypedModule)
+    module FunctorParameter = Set.Make(FunctorParameter)
     module Module = Set.Make(Module)
     module ModuleType = Set.Make(ModuleType)
     module Type = Set.Make(Type)
@@ -408,6 +455,9 @@ module Identifier = struct
     module DataType = Map.Make(DataType)
     module Parent = Map.Make(Parent)
     module LabelParent = Map.Make(LabelParent)
+    module RootModule = Map.Make(RootModule)
+    module TypedModule = Map.Make(TypedModule)
+    module FunctorParameter = Map.Make(FunctorParameter)
     module Module = Map.Make(Module)
     module ModuleType = Map.Make(ModuleType)
     module Type = Map.Make(Type)

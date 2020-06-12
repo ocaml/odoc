@@ -307,7 +307,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
       let m =
         Odoc_model.Lang.Module.
           {
-            id = unit.id;
+            id = (unit.id :> Odoc_model.Paths.Identifier.DirectModule.t);
             doc = unit.doc;
             type_ = ModuleType (Signature s);
             canonical = None;
@@ -330,7 +330,11 @@ let lookup_root_module name env =
         | Not_found -> None
         | Found u ->
             let unit = r.resolve_unit u.root in
-            Some (Resolved (u.root.digest, unit.id, module_of_unit unit)) )
+            Some
+              (Resolved
+                 ( u.root.digest,
+                   (unit.id :> Odoc_model.Paths_types.Identifier.module_),
+                   module_of_unit unit )) )
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
@@ -526,8 +530,8 @@ let add_functor_args' :
           ( arg.Component.FunctorParameter.id,
             `Parameter
               ( parent,
-                Odoc_model.Names.ParameterName.of_string
-                  (Ident.Name.module_ arg.Component.FunctorParameter.id) ),
+                Ident.Name.functor_parameter' arg.Component.FunctorParameter.id
+              ),
             {
               Component.Module.doc = [];
               display_type = None;
@@ -544,6 +548,9 @@ let add_functor_args' :
        components in the environment are 'self-contained' - that is, they only contain
        local idents for things that are declared within themselves *)
     let fold_fn (env, subst) (ident, identifier, m) =
+      let ident, identifier =
+        ((ident, identifier) :> Ident.module_ * Identifier.Module.t)
+      in
       let env' = add_module identifier (Subst.module_ subst m) env in
       (env', Subst.add_module ident (`Identifier identifier) subst)
     in
@@ -590,7 +597,9 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             add_type t.Odoc_model.Lang.TypeDecl.id ty env
         | Odoc_model.Lang.Signature.Module (_, t) ->
             let ty = module_ empty t in
-            add_module t.Odoc_model.Lang.Module.id ty env
+            add_module
+              (t.Odoc_model.Lang.Module.id :> Identifier.Module.t)
+              ty env
         | Odoc_model.Lang.Signature.ModuleType t ->
             let ty = module_type empty t in
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
@@ -645,7 +654,7 @@ let initial_env :
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
     let m = module_of_unit t in
-    empty |> add_module t.id m
+    empty |> add_module (t.id :> Identifier.Module.t) m
   in
   let initial_env = set_resolver initial_env resolver in
   List.fold_right
@@ -656,7 +665,7 @@ let initial_env :
           Component.Delayed.eager := true;
           let m = module_of_unit unit in
           Component.Delayed.eager := false;
-          let env = add_module unit.id m env in
+          let env = add_module (unit.id :> Identifier.Module.t) m env in
           (import :: imports, env)
       | Import.Unresolved (str, _) -> (
           match resolver.lookup_unit str with
