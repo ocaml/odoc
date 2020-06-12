@@ -162,8 +162,7 @@ and handle_expansion env id expansion =
         let identifier =
           `Parameter
             ( parent,
-              Names.ParameterName.of_string
-                (Ident.Name.module_ arg.Component.FunctorParameter.id) )
+              Ident.Name.functor_parameter' arg.Component.FunctorParameter.id )
         in
         let env' =
           Env.add_module identifier
@@ -171,7 +170,9 @@ and handle_expansion env id expansion =
             env
         in
         let subst =
-          Subst.add_module arg.id (`Identifier identifier) Subst.identity
+          Subst.add_module
+            (arg.id :> Ident.module_)
+            (`Identifier identifier) Subst.identity
         in
         (env', Subst.module_type_expr subst expr)
   in

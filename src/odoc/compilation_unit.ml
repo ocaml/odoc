@@ -21,7 +21,6 @@ type t = Odoc_model.Lang.Compilation_unit.t
 let root (t : Odoc_model.Lang.Compilation_unit.t) =
   match t.Odoc_model.Lang.Compilation_unit.id with
   | `Root (root, _) -> root
-  | _ -> assert false
 
 let save file t =
   Fs.Directory.mkdir_p (Fs.File.dirname file);

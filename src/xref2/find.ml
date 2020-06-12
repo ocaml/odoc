@@ -10,13 +10,13 @@ type ('a, 'b) found = Found of 'a | Replaced of 'b
 
 let careful_module_in_sig (s : Signature.t) name =
   let rec inner_removed = function
-    | Signature.RModule (id, p) :: _ when Ident.Name.module_ id = name ->
+    | Signature.RModule (id, p) :: _ when Ident.Name.typed_module id = name ->
         Some (Replaced p)
     | _ :: rest -> inner_removed rest
     | [] -> None
   in
   let rec inner = function
-    | Signature.Module (id, _, m) :: _ when Ident.Name.module_ id = name ->
+    | Signature.Module (id, _, m) :: _ when Ident.Name.typed_module id = name ->
         Some (Found (Delayed.get m))
     | Signature.Include i :: rest -> (
         match inner i.Include.expansion_.items with
@@ -110,7 +110,7 @@ let any_in_comment d name =
 let any_in_sig (s : Signature.t) name =
   let module N = Ident.Name in
   let rec inner_removed = function
-    | Signature.RModule (id, m) :: _ when N.module_ id = name ->
+    | Signature.RModule (id, m) :: _ when N.typed_module id = name ->
         Some (`Removed (`Module (id, m)))
     | RType (id, t) :: _ when N.type_ id = name ->
         Some (`Removed (`Type (id, t)))
@@ -118,9 +118,9 @@ let any_in_sig (s : Signature.t) name =
     | [] -> None
   in
   let rec inner = function
-    | Signature.Module (id, rec_, m) :: _ when N.module_ id = name ->
+    | Signature.Module (id, rec_, m) :: _ when N.typed_module id = name ->
         Some (`Module (id, rec_, m))
-    | ModuleSubstitution (id, ms) :: _ when N.module_ id = name ->
+    | ModuleSubstitution (id, ms) :: _ when N.typed_module id = name ->
         Some (`ModuleSubstitution (id, ms))
     | ModuleType (id, mt) :: _ when N.module_type id = name ->
         Some (`ModuleType (id, mt))
@@ -166,7 +166,7 @@ let any_in_sig (s : Signature.t) name =
 let signature_in_sig (s : Signature.t) name =
   let module N = Ident.Name in
   let rec inner = function
-    | Signature.Module (id, rec_, m) :: _ when N.module_ id = name ->
+    | Signature.Module (id, rec_, m) :: _ when N.typed_module id = name ->
         Some (`Module (id, rec_, m))
     | ModuleType (id, mt) :: _ when N.module_type id = name ->
         Some (`ModuleType (id, mt))
@@ -288,7 +288,7 @@ let extension_in_sig s name =
 let label_parent_in_sig s name =
   let module N = Ident.Name in
   find_in_sig s (function
-    | Signature.Module (id, _, m) when N.module_ id = name ->
+    | Signature.Module (id, _, m) when N.typed_module id = name ->
         Some (`M (Component.Delayed.get m))
     | ModuleType (id, mt) when N.module_type id = name ->
         Some (`MT (Component.Delayed.get mt))

@@ -559,6 +559,7 @@ and read_module_declaration env parent md =
 #else
   let id = Env.find_module_identifier env md.md_id in
 #endif
+  let id = (id :> Identifier.DirectModule.t) in
 
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in

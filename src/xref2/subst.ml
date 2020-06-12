@@ -57,7 +57,10 @@ let rec resolved_module_path :
  fun s p ->
   match p with
   | `Local id -> (
-      match try Some (ModuleMap.find id s.module_) with _ -> None with
+      match
+        try Some (ModuleMap.find (id :> Ident.module_) s.module_)
+        with _ -> None
+      with
       | Some x -> x
       | None -> `Local id )
   | `Identifier _ -> p
@@ -450,15 +453,15 @@ and rename_bound_idents s sg =
   function
   | [] -> (s, List.rev sg)
   | Module (id, r, m) :: rest ->
-      let id' = Ident.Rename.module_ id in
+      let id' = Ident.Rename.typed_module id in
       rename_bound_idents
-        (add_module id (`Local id') s)
+        (add_module (id :> Ident.module_) (`Local (id' :> Ident.module_)) s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
-      let id' = Ident.Rename.module_ id in
+      let id' = Ident.Rename.typed_module id in
       rename_bound_idents
-        (add_module id (`Local id') s)
+        (add_module (id :> Ident.module_) (`Local (id' :> Ident.module_)) s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
@@ -525,8 +528,10 @@ and removed_items s items =
   let open Component.Signature in
   List.map
     (function
-      | RModule (id, _) when ModuleMap.mem id s.module_ ->
-          RModule (id, ModuleMap.find id s.module_)
+      | RModule (id, _) as x -> (
+          match ModuleMap.find_opt (id :> Ident.module_) s.module_ with
+          | Some m -> RModule (id, m)
+          | None -> x )
       | x -> x)
     items
 

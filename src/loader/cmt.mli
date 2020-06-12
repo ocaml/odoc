@@ -15,6 +15,6 @@
  *)
 
 val read_implementation: Odoc_model.Root.t -> string -> Typedtree.structure ->
-  Odoc_model.Paths.Identifier.Module.t *
+  Odoc_model.Paths.Identifier.RootModule.t *
   Odoc_model.Comment.docs *
   Odoc_model.Lang.Signature.t

@@ -3,8 +3,10 @@ open Paths
 open Names
 
 type maps = {
-  module_ : (Ident.module_ * Identifier.Module.t) list;
+  module_ : (Ident.typed_module * Identifier.TypedModule.t) list;
   module_type : (Ident.module_type * Identifier.ModuleType.t) list;
+  functor_parameter :
+    (Ident.functor_parameter * Identifier.FunctorParameter.t) list;
   type_ : (Ident.type_ * Identifier.Type.t) list;
   path_type :
     (Ident.path_type * Odoc_model.Paths_types.Identifier.path_type) list;
@@ -15,8 +17,9 @@ type maps = {
     list;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
-  s_modules : (string * Identifier.Module.t) list;
+  s_modules : (string * Identifier.TypedModule.t) list;
   s_module_types : (string * Identifier.ModuleType.t) list;
+  s_functor_parameters : (string * Identifier.FunctorParameter.t) list;
   s_types : (string * Identifier.Type.t) list;
   s_classes : (string * Identifier.Class.t) list;
   s_class_types : (string * Identifier.ClassType.t) list;
@@ -26,6 +29,7 @@ let empty =
   {
     module_ = [];
     module_type = [];
+    functor_parameter = [];
     type_ = [];
     path_type = [];
     class_ = [];
@@ -34,12 +38,21 @@ let empty =
     fragment_root = None;
     s_modules = [];
     s_module_types = [];
+    s_functor_parameters = [];
     s_types = [];
     s_classes = [];
     s_class_types = [];
   }
 
 let with_fragment_root r = { empty with fragment_root = Some r }
+
+(** Raises [Not_found] *)
+let lookup_module map : Ident.module_ -> _ = function
+  | #Ident.typed_module as id ->
+      (List.assoc id map.module_ :> Identifier.Module.t)
+  | #Ident.functor_parameter as id ->
+      (List.assoc id map.functor_parameter :> Identifier.Module.t)
+  | _ -> raise Not_found
 
 module Opt = Component.Opt
 
@@ -78,7 +91,7 @@ module Path = struct
     match p with
     | `Local id ->
         `Identifier
-          ( try List.assoc id map.module_
+          ( try lookup_module map id
             with Not_found ->
               failwith (Format.asprintf "Not_found: %a" Ident.fmt id) )
     | `Substituted x -> resolved_module map x
@@ -209,10 +222,11 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name = Ident.Name.module_ id in
+    let name' = Ident.Name.typed_module' id in
+    let name = ModuleName.to_string name' in
     let identifier =
       if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
-      else `Module (parent, Ident.Name.typed_module id)
+      else `Module (parent, name')
     in
     { map with module_ = (id, identifier) :: map.module_ }
 
@@ -479,15 +493,21 @@ and module_expansion :
           (fun (id, args, map) arg ->
             match arg with
             | Named arg ->
-                let name = Ident.Name.module_ arg.id in
+                let name = Ident.Name.functor_parameter' arg.id in
                 let identifier' =
-                  if List.mem_assoc name map.s_modules then
-                    List.assoc name map.s_modules
-                  else `Parameter (id, ParameterName.of_string name)
+                  try
+                    List.assoc
+                      (ParameterName.to_string name)
+                      map.s_functor_parameters
+                  with Not_found -> `Parameter (id, name)
                 in
                 let identifier_result = `Result id in
                 let map =
-                  { map with module_ = (arg.id, identifier') :: map.module_ }
+                  {
+                    map with
+                    functor_parameter =
+                      (arg.id, identifier') :: map.functor_parameter;
+                  }
                 in
                 let arg = functor_parameter map arg in
                 ( identifier_result,
@@ -550,25 +570,19 @@ and extension_constructor map parent c =
 and module_ map parent id m =
   try
     let open Component.Module in
-    let identifier =
-      (List.assoc id map.module_ :> Odoc_model.Paths_types.Identifier.signature)
+    let id =
+      (List.assoc id map.module_ :> Paths_types.Identifier.direct_module)
     in
+    let identifier = (id :> Odoc_model.Paths_types.Identifier.signature) in
     let canonical = function
       | Some (p, r) -> Some (Path.module_ map p, r)
       | None -> None
     in
-    let expansion =
-      Opt.map
-        (module_expansion map (identifier :> Identifier.Signature.t))
-        m.expansion
-    in
+    let expansion = Opt.map (module_expansion map identifier) m.expansion in
     {
-      Odoc_model.Lang.Module.id = List.assoc id map.module_;
+      Odoc_model.Lang.Module.id;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
-      type_ =
-        module_decl map
-          (identifier :> Odoc_model.Paths_types.Identifier.signature)
-          m.type_;
+      type_ = module_decl map identifier m.type_;
       canonical = canonical m.canonical;
       hidden = m.hidden;
       display_type = Opt.map (module_decl map identifier) m.display_type;
@@ -583,7 +597,8 @@ and module_ map parent id m =
 and module_substitution map parent id m =
   let open Component.ModuleSubstitution in
   {
-    Odoc_model.Lang.ModuleSubstitution.id = List.assoc id map.module_;
+    Odoc_model.Lang.ModuleSubstitution.id =
+      (List.assoc id map.module_ :> Identifier.Module.t);
     doc = docs (parent :> Identifier.LabelParent.t) m.doc;
     manifest = Path.module_ map m.manifest;
   }
@@ -626,12 +641,17 @@ and module_type_expr map identifier =
   | With (expr, subs) ->
       With (module_type_expr map identifier expr, List.map substitution subs)
   | Functor (Named arg, expr) ->
-      let name = Ident.Name.module_ arg.id in
+      let name = Ident.Name.functor_parameter' arg.id in
       let identifier' =
-        if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
-        else `Parameter (identifier, ParameterName.of_string name)
+        try List.assoc (ParameterName.to_string name) map.s_functor_parameters
+        with Not_found -> `Parameter (identifier, name)
       in
-      let map = { map with module_ = (arg.id, identifier') :: map.module_ } in
+      let map =
+        {
+          map with
+          functor_parameter = (arg.id, identifier') :: map.functor_parameter;
+        }
+      in
       Functor
         ( Named (functor_parameter map arg),
           module_type_expr map (`Result identifier) expr )
@@ -804,7 +824,7 @@ and type_expr_object map parent o =
   { Lang.TypeExpr.Object.fields = List.map field o.fields; open_ = o.open_ }
 
 and functor_parameter map f =
-  let identifier = List.assoc f.id map.module_ in
+  let identifier = List.assoc f.id map.functor_parameter in
   let expansion =
     Opt.map
       (module_expansion map (identifier :> Identifier.Signature.t))

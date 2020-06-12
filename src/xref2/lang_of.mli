@@ -2,8 +2,10 @@
 open Odoc_model.Paths
 
 type maps = {
-  module_ : (Ident.module_ * Identifier.Module.t) list;
+  module_ : (Ident.typed_module * Identifier.TypedModule.t) list;
   module_type : (Ident.module_type * Identifier.ModuleType.t) list;
+  functor_parameter :
+    (Ident.functor_parameter * Identifier.FunctorParameter.t) list;
   type_ : (Ident.type_ * Identifier.Type.t) list;
   path_type :
     (Ident.path_type * Odoc_model.Paths_types.Identifier.path_type) list;
@@ -14,8 +16,9 @@ type maps = {
     list;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
-  s_modules : (string * Identifier.Module.t) list;
+  s_modules : (string * Identifier.TypedModule.t) list;
   s_module_types : (string * Identifier.ModuleType.t) list;
+  s_functor_parameters : (string * Identifier.FunctorParameter.t) list;
   s_types : (string * Identifier.Type.t) list;
   s_classes : (string * Identifier.Class.t) list;
   s_class_types : (string * Identifier.ClassType.t) list;
@@ -166,14 +169,14 @@ val extension_constructor :
 val module_ :
   maps ->
   Identifier.Signature.t ->
-  Ident.module_ ->
+  Ident.typed_module ->
   Component.Module.t ->
   Odoc_model.Lang.Module.t
 
 val module_substitution :
   maps ->
   Identifier.Signature.t ->
-  Ident.module_ ->
+  Ident.typed_module ->
   Component.ModuleSubstitution.t ->
   Odoc_model.Lang.ModuleSubstitution.t
 

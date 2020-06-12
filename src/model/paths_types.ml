@@ -33,10 +33,18 @@ struct
     | `Page of Root.t * PageName.t
   ]
 
+  type root_module = [ `Root of Root.t * UnitName.t ]
+
+  type typed_module = [ `Module of signature * ModuleName.t ]
+
+  type direct_module = [ root_module | typed_module ]
+
+  type functor_parameter = [ `Parameter of signature * ParameterName.t ]
+
   type module_ = [
-    | `Root of Root.t * UnitName.t
-    | `Module of signature * ModuleName.t
-    | `Parameter of signature * ParameterName.t
+    | root_module
+    | typed_module
+    | functor_parameter
     | `Result of signature
   ]
 

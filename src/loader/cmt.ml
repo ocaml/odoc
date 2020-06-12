@@ -420,6 +420,7 @@ and read_module_binding env parent mb =
 #else
   let id = Env.find_module_identifier env mb.mb_id in
 #endif
+  let id = (id :> Identifier.DirectModule.t) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mb.mb_attributes in
   let canonical =

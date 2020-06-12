@@ -339,11 +339,12 @@ and module_expansion :
             | Named arg ->
                 let identifier = arg.FunctorParameter.id in
                 let env' =
-                  Env.add_module identifier
+                  Env.add_module
+                    (identifier :> Id.Module.t)
                     (Component.module_of_functor_argument
                        (Component.Of_Lang.functor_parameter
                           Component.Of_Lang.empty
-                          (Ident.Of_Identifier.module_ arg.id)
+                          (Ident.Of_Identifier.functor_parameter arg.id)
                           arg))
                     env
                 in
@@ -393,7 +394,7 @@ and module_ : Env.t -> Module.t -> Module.t =
             Component.Fmt.model_identifier
             (m.id :> Id.t)
     in
-    let env = Env.add_module_functor_args m' m.id env in
+    let env = Env.add_module_functor_args m' (m.id :> Id.Module.t) env in
     let t2 = Unix.gettimeofday () in
     let type_ = module_decl env sg_id m.type_ in
     let t3 = Unix.gettimeofday () in
@@ -406,7 +407,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       match type_ with
       | Alias (`Resolved p) ->
           let i = Paths.Path.Resolved.Module.identifier p in
-          i = m.id
+          i = (m.id :> Paths.Identifier.Module.t)
           (* Self-canonical *)
       | _ -> false
     in
@@ -416,7 +417,8 @@ and module_ : Env.t -> Module.t -> Module.t =
       | None, true ->
           let env, expansion =
             match
-              Expand_tools.expansion_of_module env m.id
+              Expand_tools.expansion_of_module env
+                (m.id :> Paths.Identifier.Module.t)
                 ~strengthen:(not (self_canonical || hidden_alias))
                 m'
             with
@@ -556,7 +558,9 @@ and functor_parameter_parameter :
     let open Utils.ResultMonad in
     Env.(lookup_by_id s_module) a.id env' |> of_option ~error:"lookup"
     >>= fun (`Module (_, functor_arg)) ->
-    let env = Env.add_module_functor_args functor_arg a.id env' in
+    let env =
+      Env.add_module_functor_args functor_arg (a.id :> Id.Module.t) env'
+    in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
