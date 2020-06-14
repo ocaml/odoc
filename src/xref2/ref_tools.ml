@@ -146,8 +146,7 @@ module MT = struct
 
   type t = module_type_lookup_result
 
-  let of_component _env mt base_path base_ref : t =
-    (base_ref, base_path, mt)
+  let of_component _env mt base_path base_ref : t = (base_ref, base_path, mt)
 
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
@@ -412,7 +411,8 @@ module LP = struct
   type t = label_parent_lookup_result
 
   let in_env env name : t option =
-    Env.(lookup_by_name s_label_parent) (UnitName.to_string name) env >>= function
+    Env.(lookup_by_name s_label_parent) (UnitName.to_string name) env
+    >>= function
     | `Module _ as e ->
         M.of_element env e >>= module_lookup_to_signature_lookup env
         >>= fun r -> Some (`S r)

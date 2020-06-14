@@ -1,4 +1,3 @@
-
 module Maps = Odoc_model.Paths.Identifier.Maps
 
 module ModuleMap = Map.Make (struct
@@ -38,7 +37,7 @@ module Delayed = struct
 
   let get : 'a t -> 'a =
    fun x ->
-    match x.v, x.get with
+    match (x.v, x.get) with
     | Some x, _ -> x
     | None, Some get ->
         let v = get () in
@@ -49,7 +48,8 @@ module Delayed = struct
 
   let put : (unit -> 'a) -> 'a t =
    fun f ->
-    if !eager then { v = Some (f ()); get = None } else { v = None; get = Some f }
+    if !eager then { v = Some (f ()); get = None }
+    else { v = None; get = Some f }
 end
 
 module Opt = struct
@@ -514,7 +514,8 @@ module Fmt = struct
     match m with
     | Module.AlreadyASig -> Format.fprintf ppf "AlreadyASig"
     | Signature sg -> Format.fprintf ppf "sig: %a" signature sg
-    | Functor (_args, sg) -> Format.fprintf ppf "functor: (...) -> %a" signature sg
+    | Functor (_args, sg) ->
+        Format.fprintf ppf "functor: (...) -> %a" signature sg
 
   and module_type ppf mt =
     match mt.expr with
@@ -628,11 +629,10 @@ module Fmt = struct
     | Arrow (_l, t1, t2) ->
         Format.fprintf ppf "%a -> %a" type_expr t1 type_expr t2
     | Tuple ts -> Format.fprintf ppf "(%a)" type_expr_list ts
-    | Constr (p, args) -> begin
-      match args with
-      | [] -> Format.fprintf ppf "%a" type_path p
-      | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p
-    end
+    | Constr (p, args) -> (
+        match args with
+        | [] -> Format.fprintf ppf "%a" type_path p
+        | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p )
     | Polymorphic_variant poly ->
         Format.fprintf ppf "(poly_var %a)" type_expr_polymorphic_variant poly
     | Object x -> type_object ppf x

@@ -1,5 +1,6 @@
 open Utils.ResultMonad
 open Odoc_model
+
 type error =
   [ `OpaqueModule
   | `Unresolved_module of Cpath.module_
@@ -10,11 +11,9 @@ type expansion =
   | Functor of Component.FunctorParameter.t * Component.ModuleType.expr
 
 let rec module_needs_recompile : Component.Module.t -> bool =
-  fun m ->
-    module_decl_needs_recompile m.type_
+ fun m -> module_decl_needs_recompile m.type_
 
-and module_decl_needs_recompile : Component.Module.decl -> bool =
-  function
+and module_decl_needs_recompile : Component.Module.decl -> bool = function
   | Alias _ -> false
   | ModuleType expr -> module_type_expr_needs_recompile expr
 
@@ -27,16 +26,18 @@ and module_type_expr_needs_recompile : Component.ModuleType.expr -> bool =
   | TypeOf _ -> false
 
 and module_type_needs_recompile : Component.ModuleType.t -> bool =
-  fun m ->
-    match m.expr with
-    | None -> false
-    | Some expr -> module_type_expr_needs_recompile expr
+ fun m ->
+  match m.expr with
+  | None -> false
+  | Some expr -> module_type_expr_needs_recompile expr
 
 let rec aux_expansion_of_module :
-    Env.t -> strengthen:bool -> Component.Module.t -> (expansion, error) Result.result =
+    Env.t ->
+    strengthen:bool ->
+    Component.Module.t ->
+    (expansion, error) Result.result =
   let open Component.Module in
-  fun env ~strengthen m ->
-    aux_expansion_of_module_decl env ~strengthen m.type_
+  fun env ~strengthen m -> aux_expansion_of_module_decl env ~strengthen m.type_
 
 and aux_expansion_of_module_decl env ~strengthen ty =
   let open Component.Module in
@@ -46,13 +47,18 @@ and aux_expansion_of_module_decl env ~strengthen ty =
 
 and aux_expansion_of_module_alias env ~strengthen path =
   (* Format.eprintf "aux_expansion_of_module_alias (strengthen=%b, path=%a)\n%!"
-    strengthen Component.Fmt.module_path path; *)
-  match Tools.resolve_module env ~mark_substituted:false ~add_canonical:false path with
+     strengthen Component.Fmt.module_path path; *)
+  match
+    Tools.resolve_module env ~mark_substituted:false ~add_canonical:false path
+  with
   | Resolved (p, m) -> (
       (* Don't strengthen if the alias is definitely hidden. We can't always resolve canonical
          paths at this stage so use the weak canonical test that assumes all canonical paths
          will resolve correctly *)
-      let strengthen = strengthen && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p) in
+      let strengthen =
+        strengthen
+        && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p)
+      in
 
       (* Strengthen=false here so if we're strengthening a chain of aliases
          we only strengthen with the 'outer' (first) one. This covers cases
@@ -63,16 +69,24 @@ and aux_expansion_of_module_alias env ~strengthen path =
       | (Error _ as e), _ -> e
       | Ok (Signature sg), [] ->
           (* Format.eprintf "Maybe strenthening now...\n%!"; *)
-          let sg' = if strengthen then Strengthen.signature ?canonical:m.canonical (`Resolved p) sg else sg in
+          let sg' =
+            if strengthen then
+              Strengthen.signature ?canonical:m.canonical (`Resolved p) sg
+            else sg
+          in
           Ok (Signature sg')
       | Ok (Signature sg), docs ->
           (* Format.eprintf "Maybe strenthening now...\n%!"; *)
-          let sg' = if strengthen then Strengthen.signature ?canonical:m.canonical (`Resolved p) sg else sg in
+          let sg' =
+            if strengthen then
+              Strengthen.signature ?canonical:m.canonical (`Resolved p) sg
+            else sg
+          in
           (* Format.eprintf "Before:\n%a\n\n%!After\n%a\n\n%!"
-            Component.Fmt.signature sg
-            Component.Fmt.signature sg'; *)
+             Component.Fmt.signature sg
+             Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
-      | Ok (Functor _ as x), _ -> Ok x)
+      | Ok (Functor _ as x), _ -> Ok x )
   | Unresolved p -> Error (`Unresolved_module p)
 
 (* We need to reresolve fragments in expansions as the root of the fragment
@@ -122,7 +136,9 @@ and aux_expansion_of_module_type_expr env expr :
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
       | Ok (Signature sg) -> (
           let subs = unresolve_subs subs in
-          match Tools.handle_signature_with_subs ~mark_substituted:false env sg subs with
+          match
+            Tools.handle_signature_with_subs ~mark_substituted:false env sg subs
+          with
           | Ok sg -> Ok (Signature sg)
           | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)
           ) )
@@ -179,28 +195,28 @@ let expansion_of_module_type env id m =
   let open Paths.Identifier in
   aux_expansion_of_module_type env m
   >>= handle_expansion env (id : ModuleType.t :> Signature.t)
-  >>= fun (env, e) ->
-  Ok (env, module_type_needs_recompile m, e)
+  >>= fun (env, e) -> Ok (env, module_type_needs_recompile m, e)
 
 let expansion_of_module_type_expr env id expr =
-  aux_expansion_of_module_type_expr env expr
-  >>= handle_expansion env id
-  >>= fun (env, e) ->
-  Ok (env, module_type_expr_needs_recompile expr, e)
+  aux_expansion_of_module_type_expr env expr >>= handle_expansion env id
+  >>= fun (env, e) -> Ok (env, module_type_expr_needs_recompile expr, e)
 
 let expansion_of_module env id ~strengthen m =
   let open Paths.Identifier in
   aux_expansion_of_module env ~strengthen m
   >>= handle_expansion env (id : Module.t :> Signature.t)
-  >>= fun (env, r) ->
-  Ok (env, module_needs_recompile m, r)
+  >>= fun (env, r) -> Ok (env, module_needs_recompile m, r)
 
 exception Clash
 
 let rec type_expr map t =
   let open Lang.TypeExpr in
   match t with
-  | Var v -> (try List.assoc v map with _ -> Format.eprintf "Failed to list assoc %s\n%!" v; failwith "bah")
+  | Var v -> (
+      try List.assoc v map
+      with _ ->
+        Format.eprintf "Failed to list assoc %s\n%!" v;
+        failwith "bah" )
   | Any -> Any
   | Alias (t, s) ->
       if List.mem_assoc s map then raise Clash else Alias (type_expr map t, s)

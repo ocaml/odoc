@@ -46,7 +46,6 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
 and should_resolve : Paths.Path.t -> bool =
  fun p -> match p with `Resolved p -> should_reresolve p | _ -> true
 
-
 let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
  fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
@@ -88,13 +87,12 @@ and module_type_path :
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
   if not (should_resolve (p :> Paths.Path.t)) then p
-  else 
+  else
     let cp = Component.Of_Lang.(module_path empty p) in
     match cp with
     | `Resolved p ->
         let after = Tools.reresolve_module env p in
-        `Resolved
-          (Cpath.resolved_module_path_of_cpath after)
+        `Resolved (Cpath.resolved_module_path_of_cpath after)
     | _ -> (
         match Tools.resolve_module_path env cp with
         | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
@@ -380,7 +378,7 @@ and module_ : Env.t -> Module.t -> Module.t =
   if m.hidden then m
   else
     let t1 = Unix.gettimeofday () in
-    let `Module (_, m') =
+    let (`Module (_, m')) =
       match Env.(lookup_by_id s_module) m.id env with
       | Some m' -> m'
       | None ->
@@ -399,9 +397,10 @@ and module_ : Env.t -> Module.t -> Module.t =
     in
     let self_canonical =
       match type_ with
-      | Alias (`Resolved p) -> (
+      | Alias (`Resolved p) ->
           let i = Paths.Path.Resolved.Module.identifier p in
-          i = m.id (* Self-canonical *))
+          i = m.id
+          (* Self-canonical *)
       | _ -> false
     in
     let expansion_needed = self_canonical || hidden_alias in
@@ -409,10 +408,16 @@ and module_ : Env.t -> Module.t -> Module.t =
       match (m.expansion, expansion_needed) with
       | None, true ->
           let env, expansion =
-            match Expand_tools.expansion_of_module env m.id ~strengthen:(not (self_canonical || hidden_alias)) m' with
+            match
+              Expand_tools.expansion_of_module env m.id
+                ~strengthen:(not (self_canonical || hidden_alias))
+                m'
+            with
             | Ok (env, recompile, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in
-                let compiled_e = if recompile then Compile.expansion env sg_id e else e in
+                let compiled_e =
+                  if recompile then Compile.expansion env sg_id e else e
+                in
                 (env, Some compiled_e)
             | Error `OpaqueModule -> (env, None)
             | Error _ ->
@@ -550,7 +555,9 @@ and functor_parameter_parameter :
         match Expand_tools.expansion_of_module_type_expr env sg_id expr with
         | Ok (env, recompile, ce) ->
             let e = Lang_of.(module_expansion empty sg_id ce) in
-            let compiled_e = if recompile then Compile.expansion env sg_id e else e in
+            let compiled_e =
+              if recompile then Compile.expansion env sg_id e else e
+            in
             Ok (env, Some compiled_e)
         | Error `OpaqueModule -> Ok (env, None)
         | Error _ -> Error "expand" )
@@ -676,7 +683,9 @@ and module_type_expr :
   | Path p -> Path (module_type_path env p)
   | With (expr, subs) as unresolved -> (
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-      match Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr with
+      match
+        Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr
+      with
       | Ok sg ->
           With (module_type_expr env id expr, handle_fragments env id sg subs)
       | Error _ ->
@@ -730,13 +739,13 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
             {
               default with
               equation =
-                try
-                Expand_tools.collapse_eqns default.equation
-                  (Lang_of.type_decl_equation Lang_of.empty
-                     (parent :> Id.Parent.t)
-                     t'.equation)
-                  params;
-                with _ -> default.equation
+                ( try
+                    Expand_tools.collapse_eqns default.equation
+                      (Lang_of.type_decl_equation Lang_of.empty
+                         (parent :> Id.Parent.t)
+                         t'.equation)
+                      params
+                  with _ -> default.equation );
             }
         | _ -> default )
     | None -> default
@@ -866,9 +875,12 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                   with
                   | Loop -> Constr (`Resolved p, ts)
                   | e ->
-                    Format.eprintf "Caught unexpected exception when expanding type declaration (%s)\n%!"
-                      (Printexc.to_string e);
-                    Constr (`Resolved p, ts) )
+                      Format.eprintf
+                        "Caught unexpected exception when expanding type \
+                         declaration (%s)\n\
+                         %!"
+                        (Printexc.to_string e);
+                      Constr (`Resolved p, ts) )
               | _ -> Constr (`Resolved p, ts)
             else Constr (`Resolved p, ts)
         | Resolved (cp', Found _) ->

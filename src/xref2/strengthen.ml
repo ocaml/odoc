@@ -17,8 +17,12 @@ this is probably the best thing to produce in this case.
 open Component
 open Delayed
 
-let rec signature : Cpath.module_ -> ?canonical:(Cpath.module_ * Odoc_model.Paths.Reference.Module.t) -> Signature.t -> Signature.t =
-  fun prefix  ?canonical sg ->
+let rec signature :
+    Cpath.module_ ->
+    ?canonical:Cpath.module_ * Odoc_model.Paths.Reference.Module.t ->
+    Signature.t ->
+    Signature.t =
+ fun prefix ?canonical sg ->
   let open Signature in
   let items =
     List.map
@@ -26,17 +30,21 @@ let rec signature : Cpath.module_ -> ?canonical:(Cpath.module_ * Odoc_model.Path
         match item with
         | Module (id, r, m) ->
             let name = Ident.Name.module_ id in
-            let canonical = match canonical with
-              | Some (p, r) -> Some (`Dot (p, name), `Dot ((r :> Odoc_model.Paths.Reference.LabelParent.t), name))
+            let canonical =
+              match canonical with
+              | Some (p, r) ->
+                  Some
+                    ( `Dot (p, name),
+                      `Dot
+                        ((r :> Odoc_model.Paths.Reference.LabelParent.t), name)
+                    )
               | None -> None
             in
             Module
               ( id,
                 r,
-                put (fun () ->
-                    module_ ?canonical
-                      (`Dot (prefix, name ))
-                      (get m)) )
+                put (fun () -> module_ ?canonical (`Dot (prefix, name)) (get m))
+              )
         | ModuleType (id, mt) ->
             ModuleType
               ( id,
@@ -59,20 +67,22 @@ let rec signature : Cpath.module_ -> ?canonical:(Cpath.module_ * Odoc_model.Path
   (* The identity substitution used here is to rename all of the bound idents in the signature *)
   Subst.signature Subst.identity { items; removed = sg.removed }
 
-and module_ : ?canonical:(Cpath.module_ * Odoc_model.Paths.Reference.Module.t) -> Cpath.module_ -> Component.Module.t -> Component.Module.t
-    =
+and module_ :
+    ?canonical:Cpath.module_ * Odoc_model.Paths.Reference.Module.t ->
+    Cpath.module_ ->
+    Component.Module.t ->
+    Component.Module.t =
  fun ?canonical prefix m ->
   match m.type_ with
   | Alias _ -> m
-  | ModuleType _ -> { m with canonical; type_ = Alias prefix; expansion = None } (* nuke the expansion as this could otherwise lead to inconsistencies - e.g. 'AlreadyASig' *)
+  | ModuleType _ -> { m with canonical; type_ = Alias prefix; expansion = None }
 
+(* nuke the expansion as this could otherwise lead to inconsistencies - e.g. 'AlreadyASig' *)
 and module_type :
     Cpath.module_type -> Component.ModuleType.t -> Component.ModuleType.t =
  fun prefix m ->
   let expr =
-    match m.expr with
-    | None -> Some (ModuleType.Path prefix)
-    | Some _ -> m.expr
+    match m.expr with None -> Some (ModuleType.Path prefix) | Some _ -> m.expr
   in
   { m with expr }
 

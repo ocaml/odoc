@@ -294,8 +294,7 @@ val reset_caches : unit -> unit
 val disable_all_caches : unit -> unit
 (** Disable the caches completely *)
 
-
 module Fmt : sig
-    (** Format function for errors declared in the {!module:Errors} module *)
-    val error : Format.formatter -> Errors.any -> unit
+  val error : Format.formatter -> Errors.any -> unit
+  (** Format function for errors declared in the {!module:Errors} module *)
 end
