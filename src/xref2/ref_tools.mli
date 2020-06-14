@@ -63,7 +63,6 @@ end
 
 module Memos2 : Hashtbl.S with type key = Hashable2.t
 
-
 val module_lookup_to_signature_lookup :
   Env.t -> module_lookup_result -> signature_lookup_result option
 

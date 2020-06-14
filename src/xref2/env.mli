@@ -24,8 +24,7 @@ type lookup_type =
   | Module of Odoc_model.Paths_types.Identifier.reference_module
   | ModuleType of Odoc_model.Paths_types.Identifier.module_type
   | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
-  | ModuleByName of
-      string * Odoc_model.Paths_types.Identifier.reference_module
+  | ModuleByName of string * Odoc_model.Paths_types.Identifier.reference_module
   | FragmentRoot of int
 
 val pp_lookup_type_list : Format.formatter -> lookup_type list -> unit

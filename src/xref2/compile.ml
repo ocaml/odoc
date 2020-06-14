@@ -22,14 +22,19 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
  fun env p ->
-  let cp = Component.Of_Lang.(module_type_path empty p) |> Cpath.unresolve_module_type_path in
+  let cp =
+    Component.Of_Lang.(module_type_path empty p)
+    |> Cpath.unresolve_module_type_path
+  in
   match Tools.resolve_module_type_path env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
   | Unresolved p -> Cpath.module_type_path_of_cpath p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
-  let cp = Component.Of_Lang.(module_path empty p) |> Cpath.unresolve_module_path in
+  let cp =
+    Component.Of_Lang.(module_path empty p) |> Cpath.unresolve_module_path
+  in
   match Tools.resolve_module_path env cp with
   | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
@@ -244,7 +249,9 @@ and module_ : Env.t -> Module.t -> Module.t =
           let sg_id = (m.id :> Id.Signature.t) in
           if not extra_expansion_needed then m.expansion
           else
-            match Expand_tools.expansion_of_module env m.id ~strengthen:true m' with
+            match
+              Expand_tools.expansion_of_module env m.id ~strengthen:true m'
+            with
             | Ok (env, _, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in
                 Some (expansion env sg_id e)
@@ -282,8 +289,8 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     match m.expr with
     | None -> Ok (None, None)
     | Some (Signature sg) ->
-      let sg' = signature env (m.id :> Id.Signature.t) sg in
-      Ok (Some (Module.Signature sg'), Some (Signature sg'))
+        let sg' = signature env (m.id :> Id.Signature.t) sg in
+        Ok (Some (Module.Signature sg'), Some (Signature sg'))
     | Some expr ->
         ( match Expand_tools.expansion_of_module_type env m.id m' with
         | Ok (env, _, ce) ->
@@ -293,8 +300,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
         | Error _ -> Error `Expand )
         >>= fun (env, expansion') ->
         Ok
-          ( 
-            Opt.map (expansion env sg_id) expansion',
+          ( Opt.map (expansion env sg_id) expansion',
             Some (module_type_expr env (m.id :> Id.Signature.t) expr) )
   in
   match
@@ -303,30 +309,27 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     let env = Env.add_module_type_functor_args m' m.id env in
     expand m' env
   with
-  | Ok (expansion, expr') ->
-      {
-        m with
-        expr = expr';
-        expansion;
-      }
+  | Ok (expansion, expr') -> { m with expr = expr'; expansion }
   | Error e ->
       lookup_failure ~what:(`Module_type m.id) e;
       m
 
-and find_shadowed map =
-  function
-  | (_, `Module (_, _) as ident) :: rest ->
-    find_shadowed Lang_of.{ map with s_modules = ident :: map.s_modules } rest
-  | (_, `ModuleType (_, _) as ident):: rest ->
-    find_shadowed Lang_of.{ map with s_module_types = ident :: map.s_module_types } rest
-  | (_, `Type (_, _) as ident) :: rest ->
-    find_shadowed Lang_of.{ map with s_types = ident :: map.s_types } rest
-  | (_, `Class (_, _) as ident) :: rest ->
-    find_shadowed Lang_of.{ map with s_classes = ident :: map.s_classes } rest
-  | (_, `ClassType (_, _) as ident) :: rest ->
-    find_shadowed Lang_of.{ map with s_class_types = ident :: map.s_class_types } rest
-  | _ :: _ ->
-    assert false
+and find_shadowed map = function
+  | ((_, `Module (_, _)) as ident) :: rest ->
+      find_shadowed Lang_of.{ map with s_modules = ident :: map.s_modules } rest
+  | ((_, `ModuleType (_, _)) as ident) :: rest ->
+      find_shadowed
+        Lang_of.{ map with s_module_types = ident :: map.s_module_types }
+        rest
+  | ((_, `Type (_, _)) as ident) :: rest ->
+      find_shadowed Lang_of.{ map with s_types = ident :: map.s_types } rest
+  | ((_, `Class (_, _)) as ident) :: rest ->
+      find_shadowed Lang_of.{ map with s_classes = ident :: map.s_classes } rest
+  | ((_, `ClassType (_, _)) as ident) :: rest ->
+      find_shadowed
+        Lang_of.{ map with s_class_types = ident :: map.s_class_types }
+        rest
+  | _ :: _ -> assert false
   | [] -> map
 
 and include_ : Env.t -> Include.t -> Include.t =
@@ -348,25 +351,25 @@ and include_ : Env.t -> Include.t -> Include.t =
   | Ok (_, ce) ->
       let map = find_shadowed Lang_of.empty i.expansion.shadowed in
       let e = Lang_of.(module_expansion map i.parent ce) in
-      (* Format.eprintf "Intermediate expansion: %a\n%!"
-        Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
 
+      (* Format.eprintf "Intermediate expansion: %a\n%!"
+         Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
       let expansion_sg =
         match e with
         | Module.Signature sg -> sg
         | _ -> failwith "Expansion shouldn't be anything other than a signature"
       in
       let expansion =
-            {
-              resolved = true;
-              shadowed = i.expansion.shadowed;
-              content =
-                remove_top_doc_from_signature (signature env i.parent expansion_sg);
-            }
+        {
+          resolved = true;
+          shadowed = i.expansion.shadowed;
+          content =
+            remove_top_doc_from_signature (signature env i.parent expansion_sg);
+        }
       in
-      (* Format.eprintf "Final expansion: %a\n%!"
-        Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
 
+      (* Format.eprintf "Final expansion: %a\n%!"
+         Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
       { i with decl = module_decl env i.parent i.decl; expansion }
 
 and expansion : Env.t -> Id.Signature.t -> Module.expansion -> Module.expansion
@@ -445,8 +448,8 @@ and module_type_expr :
                     lookup_failure ~what:(`With_module frag) `Resolve;
                     unresolved
               in
-              Tools.fragmap_module ~mark_substituted:true env frag csub sg >>= fun sg' ->
-              Ok (sg', ModuleEq (frag', module_decl env id decl))
+              Tools.fragmap_module ~mark_substituted:true env frag csub sg
+              >>= fun sg' -> Ok (sg', ModuleEq (frag', module_decl env id decl))
           | TypeEq (frag, _), TypeEq (unresolved, eqn) ->
               let frag' =
                 match
@@ -476,8 +479,8 @@ and module_type_expr :
                     lookup_failure ~what:(`With_module frag) `Resolve;
                     unresolved
               in
-              Tools.fragmap_module ~mark_substituted:true env frag csub sg >>= fun sg' ->
-              Ok (sg', ModuleSubst (frag', module_path env mpath))
+              Tools.fragmap_module ~mark_substituted:true env frag csub sg
+              >>= fun sg' -> Ok (sg', ModuleSubst (frag', module_path env mpath))
           | TypeSubst (frag, _), TypeSubst (unresolved, eqn) ->
               let frag' =
                 match
@@ -528,7 +531,10 @@ and module_type_expr :
         match find_parent cexpr with
         | None -> With (expr, subs)
         | Some parent -> (
-            match Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr with
+            match
+              Tools.signature_of_module_type_expr ~mark_substituted:true env
+                cexpr
+            with
             | Error _ ->
                 lookup_failure ~what:(`Module_type id) `Lookup;
                 With (expr, subs)

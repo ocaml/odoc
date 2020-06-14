@@ -30,7 +30,7 @@ and simple_module_type_expr_of_module_error =
   | `UnresolvedForwardPath
     (** The module signature depends upon a forward path *)
   | `UnresolvedPath of
-      [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
+    [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
 
 and simple_module_type_lookup_error =
   [ `LocalMT of Env.t * Cpath.Resolved.module_type
@@ -59,11 +59,10 @@ and parent_lookup_error =
     (** Error found while looking up parent module *)
   | `Fragment_root (* Encountered unexpected fragment root *) ]
 
-type any = [
-    | parent_lookup_error
-    | simple_type_lookup_error
-    | simple_module_type_lookup_error
-    | simple_module_type_expr_of_module_error
-    | simple_module_lookup_error
-    | signature_of_module_error
-]
+type any =
+  [ parent_lookup_error
+  | simple_type_lookup_error
+  | simple_module_type_lookup_error
+  | simple_module_type_expr_of_module_error
+  | simple_module_lookup_error
+  | signature_of_module_error ]

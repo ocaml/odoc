@@ -197,21 +197,21 @@ module ExtractIDs = struct
   let rec type_decl parent map id =
     let name = Ident.Name.type_ id in
     let identifier =
-      if List.mem_assoc name map.s_types then
-        List.assoc name map.s_types
+      if List.mem_assoc name map.s_types then List.assoc name map.s_types
       else `Type (parent, Ident.Name.typed_type id)
     in
     {
       map with
       type_ = (id, identifier) :: map.type_;
-      path_type = ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t)) :: map.path_type;
+      path_type =
+        ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t))
+        :: map.path_type;
     }
 
   and module_ parent map id =
     let name = Ident.Name.module_ id in
     let identifier =
-      if List.mem_assoc name map.s_modules then
-        List.assoc name map.s_modules
+      if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
       else `Module (parent, Ident.Name.typed_module id)
     in
     { map with module_ = (id, identifier) :: map.module_ }
@@ -228,30 +228,38 @@ module ExtractIDs = struct
   and class_ parent map id =
     let name = Ident.Name.class_ id in
     let identifier =
-      if List.mem_assoc name map.s_classes then
-        List.assoc name map.s_classes
-      else `Class (parent, Ident.Name.typed_class id) in
+      if List.mem_assoc name map.s_classes then List.assoc name map.s_classes
+      else `Class (parent, Ident.Name.typed_class id)
+    in
     {
       map with
       class_ = (id, identifier) :: map.class_;
       path_class_type =
-        ((id :> Ident.path_class_type), (identifier :> Identifier.Path.ClassType.t)) :: map.path_class_type;
-      path_type = ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t)) :: map.path_type;
+        ( (id :> Ident.path_class_type),
+          (identifier :> Identifier.Path.ClassType.t) )
+        :: map.path_class_type;
+      path_type =
+        ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t))
+        :: map.path_type;
     }
 
   and class_type parent map (id : Ident.class_type) =
-  let name = Ident.Name.class_type id in
-  let identifier =
-    if List.mem_assoc name map.s_class_types then
-      List.assoc name map.s_class_types
-    else `ClassType (parent, Ident.Name.typed_class_type id)
-  in 
-  {
+    let name = Ident.Name.class_type id in
+    let identifier =
+      if List.mem_assoc name map.s_class_types then
+        List.assoc name map.s_class_types
+      else `ClassType (parent, Ident.Name.typed_class_type id)
+    in
+    {
       map with
       class_type = ((id :> Ident.class_type), identifier) :: map.class_type;
       path_class_type =
-        ((id :> Ident.path_class_type), (identifier:> Identifier.Path.ClassType.t)) :: map.path_class_type;
-      path_type = ((id :> Ident.path_type), (identifier:> Identifier.Path.Type.t)) :: map.path_type;
+        ( (id :> Ident.path_class_type),
+          (identifier :> Identifier.Path.ClassType.t) )
+        :: map.path_class_type;
+      path_type =
+        ((id :> Ident.path_type), (identifier :> Identifier.Path.Type.t))
+        :: map.path_type;
     }
 
   and include_ parent map i =
@@ -303,7 +311,9 @@ let rec signature_items id map items =
         inner rest
           (Odoc_model.Lang.Signature.Module (r, module_ map parent id m) :: acc)
     | ModuleType (id, m) :: rest ->
-        inner rest (Odoc_model.Lang.Signature.ModuleType (module_type map parent id m) :: acc)
+        inner rest
+          ( Odoc_model.Lang.Signature.ModuleType (module_type map parent id m)
+          :: acc )
     | Type (id, r, t) :: rest ->
         let t = Component.Delayed.get t in
         inner rest (Type (r, type_decl map parent id t) :: acc)
@@ -493,7 +503,11 @@ and include_ parent map i =
     doc = docs (parent :> Identifier.LabelParent.t) i.doc;
     decl = module_decl map parent i.decl;
     expansion =
-      { resolved = false; shadowed = i.shadowed; content = signature parent map i.expansion_ };
+      {
+        resolved = false;
+        shadowed = i.shadowed;
+        content = signature parent map i.expansion_;
+      };
     inline = false;
   }
 
@@ -612,8 +626,7 @@ and module_type_expr map identifier =
   | Functor (Named arg, expr) ->
       let name = Ident.Name.module_ arg.id in
       let identifier' =
-        if List.mem_assoc name map.s_modules then
-          List.assoc name map.s_modules
+        if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
         else `Parameter (identifier, ParameterName.of_string name)
       in
       let map = { map with module_ = (arg.id, identifier') :: map.module_ } in

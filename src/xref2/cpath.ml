@@ -267,29 +267,29 @@ let rec is_module_hidden : module_ -> bool = function
   | `Forward _ -> false
   | `Root _ -> false
 
-and is_resolved_module_hidden : weak_canonical_test:bool -> Resolved.module_ -> bool =
-  fun ~weak_canonical_test ->
+and is_resolved_module_hidden :
+    weak_canonical_test:bool -> Resolved.module_ -> bool =
+ fun ~weak_canonical_test ->
   let rec inner = function
     | `Local _ -> false
     | `Identifier _ -> false
     | `Hidden _ -> true
     | `Canonical (_, `Resolved _) -> false
     | `Canonical (p, _) -> weak_canonical_test || inner p
-    | `Substituted p | `Apply (p, _) ->
-        inner p
+    | `Substituted p | `Apply (p, _) -> inner p
     | `Module (p, _) -> is_resolved_parent_hidden ~weak_canonical_test p
-    | `Subst (p1, p2) ->
-        is_resolved_module_type_hidden p1 || inner p2
-    | `SubstAlias (p1, p2) | `Alias (p1, p2) ->
-        inner p1 || inner p2
+    | `Subst (p1, p2) -> is_resolved_module_type_hidden p1 || inner p2
+    | `SubstAlias (p1, p2) | `Alias (p1, p2) -> inner p1 || inner p2
     | `OpaqueModule m -> inner m
-  in inner
+  in
+  inner
 
-and is_resolved_parent_hidden : weak_canonical_test:bool -> Resolved.parent -> bool =
-  fun ~weak_canonical_test -> function
-    | `Module m -> is_resolved_module_hidden ~weak_canonical_test m
-    | `ModuleType m -> is_resolved_module_type_hidden m
-    | `FragmentRoot -> false
+and is_resolved_parent_hidden :
+    weak_canonical_test:bool -> Resolved.parent -> bool =
+ fun ~weak_canonical_test -> function
+  | `Module m -> is_resolved_module_hidden ~weak_canonical_test m
+  | `ModuleType m -> is_resolved_module_type_hidden m
+  | `FragmentRoot -> false
 
 and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
@@ -321,7 +321,8 @@ and is_resolved_class_type_hidden : Resolved.class_type -> bool = function
   | `Local _ -> false
   | `Identifier _ -> false
   | `Substituted p -> is_resolved_class_type_hidden p
-  | `Class (p, _) | `ClassType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
+  | `Class (p, _) | `ClassType (p, _) ->
+      is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_class_type_hidden : class_type -> bool = function
   | `Resolved r -> is_resolved_class_type_hidden r
@@ -368,49 +369,52 @@ and module_of_module_reference : Reference.Module.t -> module_ = function
   | _ -> failwith "Not a module reference"
 
 let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
-  | `Identifier _
-  | `Local _
-  | `Hidden (`Identifier _)
-  | `Hidden (`Local _) as p -> `Resolved p
+  | (`Identifier _ | `Local _ | `Hidden (`Identifier _) | `Hidden (`Local _)) as
+    p ->
+      `Resolved p
   | `Substituted x -> unresolve_resolved_module_path x
   | `Subst (_, x) -> unresolve_resolved_module_path x
   | `SubstAlias (_, x) -> unresolve_resolved_module_path x
   | `Hidden x -> unresolve_resolved_module_path x
-  | `Module (p, m) -> `Dot (unresolve_resolved_parent_path p, ModuleName.to_string m)
+  | `Module (p, m) ->
+      `Dot (unresolve_resolved_parent_path p, ModuleName.to_string m)
   | `Canonical (m, _) -> unresolve_resolved_module_path m
-  | `Apply (m, `Resolved a) -> `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
+  | `Apply (m, `Resolved a) ->
+      `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
   | `Apply (m, p) -> `Apply (unresolve_resolved_module_path m, p)
   | `Alias (_, m) -> unresolve_resolved_module_path m
   | `OpaqueModule m -> unresolve_resolved_module_path m
 
-and unresolve_resolved_module_type_path : Resolved.module_type -> module_type = function
-  | `Local _
-  | `Identifier _ as p -> `Resolved p
+and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
+  function
+  | (`Local _ | `Identifier _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_module_type_path x
-  | `ModuleType (p, n) -> `Dot (unresolve_resolved_parent_path p, ModuleTypeName.to_string n)
+  | `ModuleType (p, n) ->
+      `Dot (unresolve_resolved_parent_path p, ModuleTypeName.to_string n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m
   | `OpaqueModuleType m -> unresolve_resolved_module_type_path m
 
-and unresolve_resolved_parent_path : Resolved.parent -> module_ =
-  function
+and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
   | `Module m -> unresolve_resolved_module_path m
-  | `FragmentRoot
-  | `ModuleType _ -> assert false
+  | `FragmentRoot | `ModuleType _ -> assert false
 
 and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
-  | `Identifier _
-  | `Local _ as p -> `Resolved p
+  | (`Identifier _ | `Local _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
   | `Type (p, n) -> `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
-  | `Class (p, n) ->`Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
-  | `ClassType (p, n) ->`Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
+  | `Class (p, n) ->
+      `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
+  | `ClassType (p, n) ->
+      `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
 
-and unresolve_resolved_class_type_path : Resolved.class_type -> class_type = function
-  | `Local _
-  | `Identifier _ as p -> `Resolved p
+and unresolve_resolved_class_type_path : Resolved.class_type -> class_type =
+  function
+  | (`Local _ | `Identifier _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_class_type_path x
-  | `Class (p, n) -> `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
-  | `ClassType (p, n) -> `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
+  | `Class (p, n) ->
+      `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)
+  | `ClassType (p, n) ->
+      `Dot (unresolve_resolved_parent_path p, ClassTypeName.to_string n)
 
 and unresolve_module_path : module_ -> module_ = function
   | `Resolved m -> unresolve_resolved_module_path m

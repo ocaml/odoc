@@ -9,7 +9,8 @@ type lookup_unit_result =
   | Not_found
 
 type root =
-  | Resolved of (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+  | Resolved of
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -25,18 +26,14 @@ let unique_id = ref 0
 type lookup_type =
   | Module of Odoc_model.Paths_types.Identifier.reference_module
   | ModuleType of Odoc_model.Paths_types.Identifier.module_type
-  | RootModule of
-      string
-      * [ `Forward | `Resolved of Digest.t ] option
-  | ModuleByName of
-      string * Odoc_model.Paths_types.Identifier.reference_module
+  | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
+  | ModuleByName of string * Odoc_model.Paths_types.Identifier.reference_module
   | FragmentRoot of int
 
 let pp_lookup_type fmt =
   let fmtrm fmt = function
     | Some `Forward -> Format.fprintf fmt "Some (Forward)"
-    | Some (`Resolved digest) ->
-        Format.fprintf fmt "Some (Resolved %s)" digest
+    | Some (`Resolved digest) -> Format.fprintf fmt "Some (Resolved %s)" digest
     | None -> Format.fprintf fmt "None"
   in
   function
@@ -48,8 +45,8 @@ let pp_lookup_type fmt =
         (r :> Odoc_model.Paths.Identifier.t)
   | RootModule (str, res) -> Format.fprintf fmt "RootModule %s %a" str fmtrm res
   | ModuleByName (n, r) ->
-      Format.fprintf fmt "ModuleByName %s, %a" n
-        Component.Fmt.model_identifier (r :> Odoc_model.Paths.Identifier.t)
+      Format.fprintf fmt "ModuleByName %s, %a" n Component.Fmt.model_identifier
+        (r :> Odoc_model.Paths.Identifier.t)
   | FragmentRoot i -> Format.fprintf fmt "FragmentRoot %d" i
 
 let pp_lookup_type_list fmt ls =
@@ -325,15 +322,15 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
 
 let lookup_root_module name env =
   let result =
-    match env.resolver with 
+    match env.resolver with
     | None -> None
-    | Some r ->
-          match r.lookup_unit name with
-          | Forward_reference -> Some Forward
-          | Not_found -> None
-          | Found u ->
-              let unit = r.resolve_unit u.root in
-              Some (Resolved (u.root.digest, unit.id, module_of_unit unit))
+    | Some r -> (
+        match r.lookup_unit name with
+        | Forward_reference -> Some Forward
+        | Not_found -> None
+        | Found u ->
+            let unit = r.resolve_unit u.root in
+            Some (Resolved (u.root.digest, unit.id, module_of_unit unit)) )
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
@@ -418,10 +415,10 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
   | Some result as x ->
       record_lookup_result result;
       x
-  | None ->
+  | None -> (
       match (id :> Identifier.t) with
       | `Root (_, name) -> scope.root (UnitName.to_string name) env
-      | _ -> None
+      | _ -> None )
 
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
@@ -669,37 +666,39 @@ let initial_env :
     t.imports ([], initial_env)
 
 let modules_of env =
-  let f acc = function
-    | `Module (id, m) -> (id, m) :: acc
-    | _ -> acc
-  in
+  let f acc = function `Module (id, m) -> (id, m) :: acc | _ -> acc in
   StringMap.fold (fun _ e acc -> List.fold_left f acc e) env.elts []
 
 let verify_lookups env lookups =
   let bad_lookup = function
     | Module id ->
         let actually_found =
-          match lookup_by_id s_module id env with Some _ -> true | None -> false
+          match lookup_by_id s_module id env with
+          | Some _ -> true
+          | None -> false
         in
         true <> actually_found
     | RootModule (name, res) -> (
         let actual_result =
           match env.resolver with
           | None -> None
-          | Some r ->
-            match r.lookup_unit name with
-            | Forward_reference -> Some `Forward
-            | Not_found -> None
-            | Found u -> Some (`Resolved u.root.digest)
+          | Some r -> (
+              match r.lookup_unit name with
+              | Forward_reference -> Some `Forward
+              | Not_found -> None
+              | Found u -> Some (`Resolved u.root.digest) )
         in
         match (res, actual_result) with
         | None, None -> false
         | Some `Forward, Some `Forward -> false
-        | Some (`Resolved digest1), Some (`Resolved digest2) -> digest1 <> digest2
+        | Some (`Resolved digest1), Some (`Resolved digest2) ->
+            digest1 <> digest2
         | _ -> true )
     | ModuleType id ->
         let actually_found =
-          match lookup_by_id s_module_type id env with Some _ -> true | None -> false
+          match lookup_by_id s_module_type id env with
+          | Some _ -> true
+          | None -> false
         in
         true <> actually_found
     | ModuleByName (name, result) -> (

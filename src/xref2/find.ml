@@ -294,11 +294,8 @@ let label_parent_in_sig s name =
         Some (`MT (Component.Delayed.get mt))
     | Type (id, _, t) when N.type_ id = name ->
         Some (`T (Component.Delayed.get t))
-    | Class (id, _, c) when N.class_ id = name ->
-        Some (`C c)
-    | ClassType (id, _, c) when N.class_type id = name
-      ->
-        Some (`CT c)
+    | Class (id, _, c) when N.class_ id = name -> Some (`C c)
+    | ClassType (id, _, c) when N.class_type id = name -> Some (`CT c)
     | _ -> None)
 
 let any_in_type_in_sig s name =
