@@ -1,3 +1,10 @@
+1.5.1
+-----
+
+Additions
+
+- Compatibility with OCaml 4.11 (#434, @kit-ty-kate)
+
 1.5.0
 -----
 
