@@ -130,7 +130,7 @@ let any_in_sig (s : Signature.t) name =
         Some (`TypeSubstitution (id, ts))
     | Exception (id, exc) :: _ when N.exception_ id = name ->
         Some (`Exception (id, exc))
-    | Value (id, v) :: _ when N.value id = name -> Some (`Value (id, v))
+    | Value (id, v) :: _ when N.value id = name -> Some (`Value (id, Delayed.get v))
     | External (id, vex) :: _ when N.value id = name ->
         Some (`External (id, vex))
     | Class (id, rec_, c) :: _ when N.class_ id = name ->
@@ -203,7 +203,7 @@ let opt_module_type_in_sig s name =
 let opt_value_in_sig s name : value option =
   let rec inner = function
     | Signature.Value (id, m) :: _ when Ident.Name.value id = name ->
-        Some (`V m)
+        Some (`V (Delayed.get m))
     | Signature.External (id, e) :: _ when Ident.Name.value id = name ->
         Some (`E e)
     | Signature.Include i :: rest -> (

@@ -243,7 +243,7 @@ and Signature : sig
     | TypeSubstitution of Ident.type_ * TypeDecl.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
-    | Value of Ident.value * Value.t
+    | Value of Ident.value * Value.t Delayed.t
     | External of Ident.value * External.t
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t

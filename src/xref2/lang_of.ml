@@ -325,7 +325,9 @@ let rec signature_items id map items =
                  id' e)
           :: acc )
     | TypExt t :: rest -> inner rest (TypExt (typ_ext map id t) :: acc)
-    | Value (id, v) :: rest -> inner rest (Value (value_ map parent id v) :: acc)
+    | Value (id, v) :: rest ->
+      let v = Component.Delayed.get v in
+      inner rest (Value (value_ map parent id v) :: acc)
     | Include i :: rest -> inner rest (Include (include_ id map i) :: acc)
     | Open o :: rest -> inner rest (Open (open_ id map o) :: acc)
     | External (id, e) :: rest ->

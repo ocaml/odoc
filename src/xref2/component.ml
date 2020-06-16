@@ -254,7 +254,7 @@ and Signature : sig
     | TypeSubstitution of Ident.type_ * TypeDecl.t
     | Exception of Ident.exception_ * Exception.t
     | TypExt of Extension.t
-    | Value of Ident.value * Value.t
+    | Value of Ident.value * Value.t Delayed.t
     | External of Ident.value * External.t
     | Class of Ident.class_ * recursive * Class.t
     | ClassType of Ident.class_type * recursive * ClassType.t
@@ -459,7 +459,7 @@ module Fmt = struct
         | TypExt e ->
             Format.fprintf ppf "@[<v 2>type_extension %a@]@," extension e
         | Value (id, v) ->
-            Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value v
+            Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value (Delayed.get v)
         | External (id, e) ->
             Format.fprintf ppf "@[<v 2>external %a %a@]@," Ident.fmt id
               external_ e
@@ -1931,7 +1931,7 @@ module Of_Lang = struct
             Signature.ModuleType (id, m')
         | Value v ->
             let id = Ident.Of_Identifier.value v.id in
-            let v' = value ident_map v in
+            let v' = Delayed.put (fun () -> value ident_map v) in
             Signature.Value (id, v')
         | Comment c -> Comment (docs_or_stop ident_map c)
         | TypExt e -> TypExt (extension ident_map e)

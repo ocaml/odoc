@@ -574,7 +574,7 @@ and apply_sig_map s items removed =
               let e' = extension s e in
               TypExt e' :: acc
             with TypeReplacement _ -> acc )
-    | Value (id, v) :: rest -> inner rest (Value (id, value s v) :: acc)
+    | Value (id, v) :: rest -> inner rest (Value (id, (Component.Delayed.put (fun () -> value s (Component.Delayed.get v)))) :: acc)
     | External (id, e) :: rest ->
         inner rest (External (id, external_ s e) :: acc)
     | Class (id, r, c) :: rest -> inner rest (Class (id, r, class_ s c) :: acc)
