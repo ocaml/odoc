@@ -12,7 +12,7 @@ let filter_map f m =
 let resolve_module_name sg name =
   let rec check = function
     | Component.Signature.Module (id, _r, _m) :: _rest
-      when Ident.Name.module_ id = name ->
+      when Ident.Name.typed_module id = name ->
         id
     | _ :: rest -> check rest
     | [] -> failwith "Unknown"
@@ -62,8 +62,8 @@ let module_substitution () =
   let subst_targets_mod = resolve_module_name c "SubTargets" in
 
   let subst =
-    let target = `Local subst_targets_mod in
-    Subst.add_module subst_idents_mod target Subst.identity
+    let target = `Local (subst_targets_mod :> Ident.module_) in
+    Subst.add_module (subst_idents_mod :> Ident.module_) target Subst.identity
   in
 
   let m =
