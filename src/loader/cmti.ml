@@ -672,8 +672,7 @@ and read_signature_item env parent item =
 
 and read_module_substitution env parent ms =
   let open ModuleSubstitution in
-  let name = parenthesise (Ident.name ms.ms_id) in
-  let id = `Module(parent, (Odoc_model.Names.ModuleName.of_string name)) in
+  let id = Env.find_module_identifier env ms.ms_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container ms.ms_attributes in
   let manifest = Env.Path.read_module env ms.ms_manifest in

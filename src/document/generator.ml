@@ -1151,12 +1151,18 @@ struct
     | `Type (_, name) when TypeName.is_internal name -> true
     | _ -> false
 
-    let internal_module_type t =
-      let open Lang.ModuleType in
+  let internal_module_type t =
+    let open Lang.ModuleType in
+    match t.id with
+    | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+    | _ -> false
+
+  let internal_module_substitution t =
+      let open Lang.ModuleSubstitution in
       match t.id with
-      | `ModuleType (_, name) when ModuleTypeName.is_internal name -> true
+      | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
-      
+
   let rec signature s : Item.t list =
     let rec loop l acc_items =
       match l with
@@ -1171,6 +1177,8 @@ struct
         | Type (_, t) when internal_type t ->
           loop rest acc_items
         | ModuleType m when internal_module_type m ->
+          loop rest acc_items
+        | ModuleSubstitution m when internal_module_substitution m ->
           loop rest acc_items
 
         | Module (recursive, m)    -> continue @@ module_ recursive m
