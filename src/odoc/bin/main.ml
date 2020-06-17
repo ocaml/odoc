@@ -207,6 +207,27 @@ module Css = struct
     Term.info ~doc "css"
 end
 
+module Odoc_link : sig
+  val cmd : unit Term.t
+  val info : Term.info
+end = struct
+  let link directories input_file warn_error =
+    ignore(warn_error);
+    let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
+    let file = Fs.File.of_string input_file in
+    Odoc_link.from_odoc ~env file
+
+  let cmd =
+    let input =
+      let doc = "Input file" in
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
+    in
+    Term.(const handle_error $ (const link $ odoc_file_directories $ input $ warn_error))
+
+  let info =
+    Term.info ~doc:"Link odoc files together" "link"
+end
+
 module Odoc_html : sig
   val cmd : unit Term.t
   val info: Term.info
@@ -459,6 +480,7 @@ let () =
     ; Targets.Compile.(cmd, info)
     ; Targets.Odoc_html.(cmd, info)
     ; Targets.Support_files.(cmd, info)
+    ; Odoc_link.(cmd, info)
     ]
   in
   let default =
