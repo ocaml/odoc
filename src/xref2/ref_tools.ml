@@ -153,7 +153,7 @@ module M = struct
       : t option =
     let parent_cp = Tools.reresolve_parent env parent_cp in
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.module_in_sig sg name >>= fun m ->
+    Find.module_in_sig sg name >>= fun (`M (name, m)) ->
     Some
       (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
@@ -181,7 +181,7 @@ module MT = struct
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.module_type_in_sig sg name >>= fun mt ->
+    Find.module_type_in_sig sg name >>= fun (`MT (name, mt)) ->
     Some
       (of_component env mt
          (`ModuleType (parent_cp, name))
@@ -205,7 +205,7 @@ module CL = struct
     env_lookup_by_name Env.s_class name env >>= fun e -> Some (of_element env e)
 
   let of_component _env c ~parent_ref name : t option =
-    Some (`Class (parent_ref, ClassName.of_string name), c)
+    Some (`Class (parent_ref, name), c)
 end
 
 module CT = struct
@@ -219,7 +219,7 @@ module CT = struct
     >>= fun e -> Some (of_element env e)
 
   let of_component _env ct ~parent_ref name : t option =
-    Some (`ClassType (parent_ref, ClassTypeName.of_string name), ct)
+    Some (`ClassType (parent_ref, name), ct)
 end
 
 module DT = struct
@@ -228,7 +228,7 @@ module DT = struct
   type t = datatype_lookup_result
 
   let of_component _env t ~parent_ref name : t option =
-    Some (`Type (parent_ref, TypeName.of_string name), t)
+    Some (`Type (parent_ref, name), t)
 
   let of_element _env (`Type (id, t)) : t = (`Identifier id, t)
 
@@ -240,7 +240,8 @@ module DT = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.datatype_in_sig sg name >>= fun t -> Some (`Type (parent', name), t)
+    Find.datatype_in_sig sg (TypeName.to_string name) >>= fun (`T (name, t)) ->
+    Some (`Type (parent', name), t)
 end
 
 module T = struct
@@ -283,7 +284,7 @@ module V = struct
 
   let in_signature _env ((parent', _, sg) : signature_lookup_result) name :
       t option =
-    Find.opt_value_in_sig sg (ValueName.to_string name) >>= fun _ ->
+    Find.value_in_sig sg (ValueName.to_string name) >>= fun _ ->
     Some (`Value (parent', name))
 end
 
@@ -308,7 +309,7 @@ module L = struct
       =
     match parent with
     | `S (p, _, sg) ->
-        Find.opt_label_in_sig sg (LabelName.to_string name) >>= fun _ ->
+        Find.label_in_sig sg (LabelName.to_string name) >>= fun _ ->
         Some (`Label ((p :> Resolved.LabelParent.t), name))
     | `T _ | `C _ | `CT _ -> None
     | `Page _ as page -> in_page env page (LabelName.to_string name)
@@ -362,8 +363,8 @@ module CS = struct
 
   let in_datatype _env ((parent', t) : datatype_lookup_result) name : t option =
     Find.any_in_type t (ConstructorName.to_string name) >>= function
-    | `Constructor _ -> Some (`Constructor (parent', name))
-    | `Field _ -> None
+    | `Cs _ -> Some (`Constructor (parent', name))
+    | `Fd _ -> None
 
   let of_component _env parent name : t option =
     Some (`Constructor (parent, ConstructorName.of_string name))
@@ -383,13 +384,13 @@ module F = struct
     | `S (parent', parent_cp, sg) -> (
         let sg = Tools.prefix_signature (parent_cp, sg) in
         Find.any_in_type_in_sig sg (FieldName.to_string name) >>= function
-        | _, `Constructor _ -> None
-        | typ_name, `Field _ -> Some (`Field (`Type (parent', typ_name), name))
+        | _, `Cs _ -> None
+        | typ_name, `Fd _ -> Some (`Field (`Type (parent', typ_name), name))
         )
     | `T (parent', t) -> (
         Find.any_in_type t (FieldName.to_string name) >>= function
-        | `Constructor _ -> None
-        | `Field _ -> Some (`Field ((parent' :> Resolved.Parent.t), name)) )
+        | `Cs _ -> None
+        | `Fd _ -> Some (`Field ((parent' :> Resolved.Parent.t), name)) )
     | `C _ | `CT _ | `Page _ -> None
 
   let of_component _env parent name : t option =
@@ -452,25 +453,23 @@ module LP = struct
       : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
     Find.label_parent_in_sig sg name >>= function
-    | `M m ->
-        let name = ModuleName.of_string name in
+    | `M (name, m) ->
         module_lookup_to_signature_lookup env
           (M.of_component env m
              (`Module (parent_cp, name))
              (`Module (parent', name)))
         >>= fun s -> Some (`S s)
-    | `MT mt ->
-        let name = ModuleTypeName.of_string name in
+    | `MT (name, mt) ->
         module_type_lookup_to_signature_lookup env
           (MT.of_component env mt
              (`ModuleType (parent_cp, name))
              (`ModuleType (parent', name)))
         >>= fun s -> Some (`S s)
-    | `T t ->
+    | `T (name, t) ->
         DT.of_component env ~parent_ref:parent' t name >>= fun t -> Some (`T t)
-    | `C c ->
+    | `C (name, c) ->
         CL.of_component env ~parent_ref:parent' c name >>= fun c -> Some (`C c)
-    | `CT ct ->
+    | `CT (name, ct) ->
         CT.of_component env ~parent_ref:parent' ct name >>= fun ct ->
         Some (`CT ct)
 end
@@ -558,16 +557,14 @@ and resolve_signature_reference :
           let parent_cp = Tools.reresolve_parent env parent_cp in
           let sg = Tools.prefix_signature (parent_cp, sg) in
           Find.signature_in_sig sg name >>= function
-          | `Module (_, _, m) ->
-              let name = ModuleName.of_string name in
+          | `M (name, m) ->
               module_lookup_to_signature_lookup env
-                (M.of_component env (Component.Delayed.get m)
+                (M.of_component env m
                    (`Module (parent_cp, name))
                    (`Module (parent, name)))
-          | `ModuleType (_, mt) ->
-              let name = ModuleTypeName.of_string name in
+          | `MT (name, mt) ->
               module_type_lookup_to_signature_lookup env
-                (MT.of_component env (Component.Delayed.get mt)
+                (MT.of_component env mt
                    (`ModuleType (parent_cp, name))
                    (`ModuleType (parent, name))) )
     in
@@ -619,50 +616,46 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   let parent_path = Tools.reresolve_parent env parent_path in
   let parent_sg = Tools.prefix_signature (parent_path, parent_sg) in
   Find.any_in_sig parent_sg name >>= function
-  | `Module (_, _, m) ->
-      let name = ModuleName.of_string name in
+  | `M (name, m) ->
       resolved3
-        (M.of_component env (Component.Delayed.get m)
+        (M.of_component env m
            (`Module (parent_path, name))
            (`Module (parent_ref, name)))
-  | `ModuleType (_, mt) ->
-      let name = ModuleTypeName.of_string name in
+  | `MT (name, mt) ->
       resolved3
-        (MT.of_component env (Component.Delayed.get mt)
+        (MT.of_component env mt
            (`ModuleType (parent_path, name))
            (`ModuleType (parent_ref, name)))
-  | `Type (_, _, t) ->
-      DT.of_component env (Component.Delayed.get t) ~parent_ref name
+  | `T (name, t) ->
+      DT.of_component env t ~parent_ref name
       >>= resolved2
-  | `Class (_, _, c) -> CL.of_component env c ~parent_ref name >>= resolved2
-  | `ClassType (_, _, ct) ->
-      CT.of_component env ct ~parent_ref name >>= resolved2
-  | `Value _ -> V.of_component env ~parent_ref name >>= resolved1
-  | `External _ -> V.external_of_component env ~parent_ref name >>= resolved1
-  | `Label _ -> L.of_component env ~parent_ref name >>= resolved1
-  | `Constructor (typ_name, _, _) ->
+  | `C (name, c) -> CL.of_component env c ~parent_ref name >>= resolved2
+  | `CT (name, ct) -> CT.of_component env ct ~parent_ref name >>= resolved2
+  | `V _ -> V.of_component env ~parent_ref name >>= resolved1
+  | `E _ -> V.external_of_component env ~parent_ref name >>= resolved1
+  | `L _ -> L.of_component env ~parent_ref name >>= resolved1
+  | `Exn _ -> EX.of_component env ~parent_ref name >>= resolved1
+  | `Ext _ -> EC.of_component env ~parent_ref name >>= resolved1
+  | `In_type (typ_name, _, r) -> (
       let parent = `Type (parent_ref, typ_name) in
-      CS.of_component env parent name >>= resolved1
-  | `Exception _ -> EX.of_component env ~parent_ref name >>= resolved1
-  | `ExtConstructor _ -> EC.of_component env ~parent_ref name >>= resolved1
-  | `Field (typ_name, _, _) ->
-      let parent = `Type (parent_ref, typ_name) in
-      F.of_component env parent name >>= resolved1
-  | `ModuleSubstitution _ | `Removed _ | `TypeSubstitution _ -> None
+      match r with
+      | `Cs _ -> CS.of_component env parent name >>= resolved1
+      | `Fd _ -> F.of_component env parent name >>= resolved1 )
+  | `Msub _ | `Tsub _ -> None
 
 let resolve_reference_dot_page env page name =
   L.in_page env page name >>= resolved1
 
 let resolve_reference_dot_type env ~parent_ref t name =
   Find.any_in_type t name >>= function
-  | `Constructor _ -> CS.of_component env parent_ref name >>= resolved1
-  | `Field _ -> F.of_component env parent_ref name >>= resolved1
+  | `Cs _ -> CS.of_component env parent_ref name >>= resolved1
+  | `Fd _ -> F.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot_class env p name =
   type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
   Find.any_in_class_signature cs name >>= function
-  | `Method _ -> MM.of_component env parent_ref name >>= resolved1
-  | `InstanceVariable _ -> MV.of_component env parent_ref name >>= resolved1
+  | `Mm _ -> MM.of_component env parent_ref name >>= resolved1
+  | `Mv _ -> MV.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot env parent name =
   resolve_label_parent_reference env parent >>= function
