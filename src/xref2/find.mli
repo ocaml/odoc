@@ -1,178 +1,111 @@
 (* Find *)
 open Odoc_model.Names
 
-type class_type = [ `C of Component.Class.t | `CT of Component.ClassType.t ]
+open Component
 
-type type_ =
-  [ `C of Component.Class.t
-  | `CT of Component.ClassType.t
-  | `T of Component.TypeDecl.t ]
+type module_ = [ `M of ModuleName.t * Module.t ]
 
-type value = [ `E of Component.External.t | `V of Component.Value.t ]
+type module_type = [ `MT of ModuleTypeName.t * ModuleType.t ]
 
-type ('a, 'b) found = Found of 'a | Replaced of 'b
+type datatype = [ `T of TypeName.t * TypeDecl.t ]
 
-val careful_module_in_sig :
-  Component.Signature.t ->
-  ModuleName.t ->
-  (ModuleName.t * Component.Module.t, Cpath.Resolved.module_) found option
+type class_ = [ `C of ClassName.t * Class.t | `CT of ClassTypeName.t * ClassType.t ]
 
-val careful_type_in_sig :
-  Component.Signature.t ->
-  string ->
-  ( [> `C of ClassName.t * Component.Class.t
-    | `CT of ClassTypeName.t * Component.ClassType.t
-    | `T of TypeName.t * Component.TypeDecl.t ],
-    TypeName.t * Component.TypeExpr.t )
-  found
-  option
+type value = [ `E of External.t | `V of Value.t ]
 
-val careful_class_type_in_sig :
-  Component.Signature.t ->
-  string ->
-  ( [> `C of ClassName.t * Component.Class.t
-    | `CT of ClassTypeName.t * Component.ClassType.t ],
-    TypeName.t * Component.TypeExpr.t )
-  found
-  option
+type label = [ `L of Ident.label ]
 
-val typename_of_typeid : [< `LCoreType of 'a | `LType of 'a * 'b ] -> 'a
+type exception_ = [ `Exn of Exception.t ]
 
-val datatype_in_sig :
-  Component.Signature.t -> TypeName.t -> Component.TypeDecl.t option
+type extension = [ `Ext of Extension.t * Extension.Constructor.t ]
 
-val any_in_type :
-  Component.TypeDecl.t ->
-  string ->
-  [> `Constructor of Component.TypeDecl.Constructor.t
-  | `Field of Component.TypeDecl.Field.t ]
-  option
+type substitution = [ `Msub of ModuleSubstitution.t | `Tsub of TypeDecl.t ]
 
-val any_in_typext :
-  Component.Extension.t ->
-  string ->
-  [> `ExtConstructor of
-     Component.Extension.t * Component.Extension.Constructor.t ]
-  option
+type signature = [ module_ | module_type ]
 
-val any_in_comment :
-  [> `Heading of 'a * Ident.label * 'b ] Odoc_model.Location_.with_location list ->
-  string ->
-  [> `Label of Ident.label ] option
+type type_ = [ datatype | class_ ]
 
-val any_in_sig :
-  Component.Signature.t ->
-  string ->
-  [> `Class of Ident.class_ * Component.Signature.recursive * Component.Class.t
-  | `ClassType of
-    Ident.class_type * Component.Signature.recursive * Component.ClassType.t
-  | `Constructor of
-    TypeName.t * Component.TypeDecl.t * Component.TypeDecl.Constructor.t
-  | `Exception of Ident.exception_ * Component.Exception.t
-  | `ExtConstructor of Component.Extension.t * Component.Extension.Constructor.t
-  | `External of Ident.value * Component.External.t
-  | `Field of TypeName.t * Component.TypeDecl.t * Component.TypeDecl.Field.t
-  | `Label of Ident.label
-  | `Module of
-    Ident.module_
-    * Component.Signature.recursive
-    * Component.Module.t Component.Delayed.t
-  | `ModuleSubstitution of Ident.module_ * Component.ModuleSubstitution.t
-  | `ModuleType of
-    Ident.module_type * Component.ModuleType.t Component.Delayed.t
-  | `Removed of
-    [> `Module of Ident.module_ * Cpath.Resolved.module_
-    | `Type of Ident.type_ * Component.TypeExpr.t ]
-  | `Type of
-    Ident.type_
-    * Component.Signature.recursive
-    * Component.TypeDecl.t Component.Delayed.t
-  | `TypeSubstitution of Ident.type_ * Component.TypeDecl.t
-  | `Value of Ident.value * Component.Value.t ]
-  option
+type label_parent = [ signature | type_ ]
 
-val signature_in_sig :
-  Component.Signature.t ->
-  string ->
-  [> `Module of
-     Ident.module_
-     * Component.Signature.recursive
-     * Component.Module.t Component.Delayed.t
-  | `ModuleType of
-    Ident.module_type * Component.ModuleType.t Component.Delayed.t ]
-  option
+type constructor = [ `Cs of TypeDecl.Constructor.t ]
 
-val module_in_sig :
-  Component.Signature.t -> ModuleName.t -> Component.Module.t option
+type field = [ `Fd of TypeDecl.Field.t ]
 
-val module_type_in_sig :
-  Component.Signature.t -> ModuleTypeName.t -> Component.ModuleType.t option
+type any_in_type = [ constructor | field ]
 
-val opt_module_type_in_sig :
-  Component.Signature.t ->
-  ModuleTypeName.t ->
-  Component.ModuleType.t option option
+type any_in_type_in_sig =
+  [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
 
-val opt_value_in_sig : Component.Signature.t -> string -> value option
+type any_in_sig =
+  [ label_parent
+  | value
+  | label
+  | exception_
+  | extension
+  | substitution
+  | any_in_type_in_sig ]
 
-val type_in_sig :
-  Component.Signature.t ->
-  string ->
-  [> `C of ClassName.t * Component.Class.t
-  | `CT of ClassTypeName.t * Component.ClassType.t
-  | `T of TypeName.t * Component.TypeDecl.t ]
-  option
+type instance_variable = [ `Mv of InstanceVariable.t ]
 
-val class_type_in_sig :
-  Component.Signature.t ->
-  string ->
-  [> `C of Component.Class.t | `CT of Component.ClassType.t ] option
+type method_ = [ `Mm of Method.t ]
 
-val opt_label_in_sig : Component.Signature.t -> string -> Ident.label option
+type any_in_class_sig = [ instance_variable | method_ ]
 
-val find_in_sig :
-  Component.Signature.t -> (Component.Signature.item -> 'a option) -> 'a option
+(** Lookup by name, unambiguous *)
 
-val exception_in_sig :
-  Component.Signature.t -> string -> Component.Exception.t option
+val module_in_sig : Signature.t -> ModuleName.t -> module_ option
 
-val extension_in_sig :
-  Component.Signature.t -> string -> Component.Extension.Constructor.t option
+val type_in_sig : Signature.t -> string -> type_ option
 
-val label_parent_in_sig :
-  Component.Signature.t ->
-  string ->
-  [> `C of Component.Class.t
-  | `CT of Component.ClassType.t
-  | `M of Component.Module.t
-  | `MT of Component.ModuleType.t
-  | `T of Component.TypeDecl.t ]
-  option
+val datatype_in_sig : Signature.t -> string -> datatype option
 
-val any_in_type_in_sig :
-  Component.Signature.t ->
-  string ->
-  ( TypeName.t
-  * [> `Constructor of Component.TypeDecl.Constructor.t
-    | `Field of Component.TypeDecl.Field.t ] )
-  option
+val module_type_in_sig : Signature.t -> ModuleTypeName.t -> module_type option
 
-val find_in_class_signature :
-  Component.ClassSignature.t ->
-  (Component.ClassSignature.item -> 'a option) ->
-  'a option
+val exception_in_sig : Signature.t -> string -> exception_ option
 
-val any_in_class_signature :
-  Component.ClassSignature.t ->
-  string ->
-  [> `InstanceVariable of Component.InstanceVariable.t
-  | `Method of Component.Method.t ]
-  option
+val extension_in_sig : Signature.t -> string -> extension option
 
-val method_in_class_signature :
-  Component.ClassSignature.t -> string -> Component.Method.t option
+val any_in_type : TypeDecl.t -> string -> any_in_type option
+
+val any_in_typext : Extension.t -> string -> extension option
+
+val method_in_class_signature : ClassSignature.t -> string -> method_ option
 
 val instance_variable_in_class_signature :
-  Component.ClassSignature.t ->
-  string ->
-  [> `InstanceVariable of Component.InstanceVariable.t ] option
+  ClassSignature.t -> string -> instance_variable option
+
+(** Maybe ambiguous *)
+
+val class_in_sig : Signature.t -> string -> class_ option
+
+val signature_in_sig : Signature.t -> string -> signature option
+
+val value_in_sig : Signature.t -> string -> value option
+
+val label_in_sig : Signature.t -> string -> label option
+
+val label_parent_in_sig : Signature.t -> string -> label_parent option
+
+val any_in_sig : Signature.t -> string -> any_in_sig option
+
+val any_in_type_in_sig :
+  Signature.t -> string -> (Odoc_model.Names.TypeName.t * any_in_type) option
+
+val any_in_class_signature :
+  ClassSignature.t -> string -> any_in_class_sig option
+
+(** Lookup removed items *)
+
+type removed_type = [ `T_removed of TypeName.t * TypeExpr.t ]
+
+type careful_module = [ module_ | `M_removed of Cpath.Resolved.module_ ]
+
+type careful_type = [ type_ | removed_type ]
+
+type careful_class = [ class_ | removed_type ]
+
+val careful_module_in_sig : Signature.t -> ModuleName.t -> careful_module option
+
+val careful_type_in_sig : Signature.t -> string -> careful_type option
+
+val careful_class_in_sig : Signature.t -> string -> careful_class option
