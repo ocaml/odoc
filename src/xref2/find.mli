@@ -76,23 +76,22 @@ val instance_variable_in_class_signature :
 
 (** Maybe ambiguous *)
 
-val class_in_sig : Signature.t -> string -> class_ option
+val class_in_sig : Signature.t -> string -> class_ list
 
-val signature_in_sig : Signature.t -> string -> signature option
+val signature_in_sig : Signature.t -> string -> signature list
 
-val value_in_sig : Signature.t -> string -> value option
+val value_in_sig : Signature.t -> string -> value list
 
-val label_in_sig : Signature.t -> string -> label option
+val label_in_sig : Signature.t -> string -> label list
 
-val label_parent_in_sig : Signature.t -> string -> label_parent option
+val label_parent_in_sig : Signature.t -> string -> label_parent list
 
-val any_in_sig : Signature.t -> string -> any_in_sig option
+val any_in_sig : Signature.t -> string -> any_in_sig list
 
-val any_in_type_in_sig :
-  Signature.t -> string -> (Odoc_model.Names.TypeName.t * any_in_type) option
+val any_in_type_in_sig : Signature.t -> string -> any_in_type_in_sig list
 
 val any_in_class_signature :
-  ClassSignature.t -> string -> any_in_class_sig option
+  ClassSignature.t -> string -> any_in_class_sig list
 
 (** Lookup removed items *)
 
