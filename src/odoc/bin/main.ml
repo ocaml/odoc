@@ -228,6 +228,53 @@ end = struct
     Term.info ~doc:"Link odoc files together" "link"
 end
 
+module Generate : sig
+  val cmd : unit Term.t
+  val info: Term.info
+end = struct
+  let generate semantic_uris closed_details output_dir
+        syntax theme_uri input_file _warn_error =
+    Odoc_html.Link.semantic_uris := semantic_uris;
+    Odoc_html.Tree.open_details := not closed_details;
+    let file = Fs.File.of_string input_file in
+    Odoc_generate.from_odocl ~syntax ~theme_uri ~output:output_dir file
+
+  let cmd =
+    let input =
+      let doc = "Input file" in
+      Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odocl" [])
+    in
+    let semantic_uris =
+      let doc = "Generate pretty (semantic) links" in
+      Arg.(value & flag (info ~doc ["semantic-uris";"pretty-uris"]))
+    in
+    let closed_details =
+      let doc = "If this flag is passed <details> tags (used for includes) will \
+                 be closed by default."
+      in
+      Arg.(value & flag (info ~doc ["closed-details"]))
+    in
+    let theme_uri =
+      let doc = "Where to look for theme files (e.g. `URI/odoc.css'). \
+                 Relative URIs are resolved using `--output-dir' as a target." in
+      let default = Odoc_html.Tree.Relative "./" in
+      Arg.(value & opt convert_uri default & info ~docv:"URI" ~doc ["theme-uri"])
+    in
+    let syntax =
+      let doc = "Available options: ml | re" in
+      let env = Arg.env_var "ODOC_SYNTAX"
+      in
+      Arg.(value & opt (pconv convert_syntax) (Odoc_document.Renderer.OCaml) @@ info ~docv:"SYNTAX" ~doc ~env ["syntax"])
+    in
+    Term.(const handle_error $ (const generate $ semantic_uris $ closed_details $
+          dst ~create:true () $ syntax $
+          theme_uri $ input $ warn_error))
+
+  let info =
+    Term.info ~doc:"Generates an html file from an odocl one" "generate"
+end
+
+
 module Odoc_html : sig
   val cmd : unit Term.t
   val info: Term.info
@@ -481,6 +528,7 @@ let () =
     ; Targets.Odoc_html.(cmd, info)
     ; Targets.Support_files.(cmd, info)
     ; Odoc_link.(cmd, info)
+    ; Generate.(cmd, info)
     ]
   in
   let default =
