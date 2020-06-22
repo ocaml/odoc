@@ -709,7 +709,7 @@ and read_signature env parent sg =
     List.rev items
 
 let read_interface root name intf =
-  let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
+  let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
   let items = read_signature Env.empty id intf in
   let doc, items =
     let open Signature in

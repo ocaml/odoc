@@ -93,7 +93,7 @@ let read_cmt ~make_root ~filename =
       in
       let hidden = Odoc_model.Root.contains_double_underscore name in
       let root = make_root ~module_name:name ~digest in
-      let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
+      let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
       let items =
         List.map (fun file ->
           let pref = Misc.chop_extensions file in

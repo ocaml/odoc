@@ -845,7 +845,7 @@ module Fmt = struct
     match p with
     | `Root (_, unit_name) ->
         Format.fprintf ppf "(root %s)"
-          (Odoc_model.Names.UnitName.to_string unit_name)
+          (Odoc_model.Names.ModuleName.to_string unit_name)
     | `Module (parent, name) ->
         Format.fprintf ppf "%a.%s" model_identifier
           (parent :> Odoc_model.Paths.Identifier.t)

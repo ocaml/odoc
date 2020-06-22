@@ -89,7 +89,7 @@ module Path = struct
     | `Root (abstr, unit_name) ->
       let parent = mk "package" abstr.Root.package in
       let kind = "module" in
-      let page = UnitName.to_string unit_name in
+      let page = ModuleName.to_string unit_name in
       mk ~parent kind page
     | `Page (abstr, page_name) ->
       let parent = mk "package" abstr.Root.package in

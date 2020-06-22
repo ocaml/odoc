@@ -62,7 +62,7 @@ let rec from_identifier : stop_before:bool ->
         { page; anchor = unit_name; kind }
       else
       *)
-      { page = UnitName.to_string unit_name :: page; anchor = ""; kind }
+      { page = ModuleName.to_string unit_name :: page; anchor = ""; kind }
     | `Page (abstr, page_name) ->
       begin try Ok abstr.package
       with exn -> Error (Uncaught_exn (Printexc.to_string exn))

@@ -21,7 +21,7 @@ module Identifier = struct
   type t = Paths_types.Identifier.any
 
   let rec name_aux : t -> string = function
-    | `Root(_, name) -> UnitName.to_string name
+    | `Root(_, name) -> ModuleName.to_string name
     | `Page(_, name) -> PageName.to_string name
     | `Module(_, name) -> ModuleName.to_string name
     | `Parameter(_, name) -> ParameterName.to_string name
@@ -98,7 +98,7 @@ module Identifier = struct
   let rec compare : t -> t -> int =
     fun x y ->
       match x,y with
-      | `Root(r, s), `Root(r', s') -> let s = UnitName.compare s s' in if s<>0 then s else Root.compare r r'
+      | `Root(r, s), `Root(r', s') -> let s = ModuleName.compare s s' in if s<>0 then s else Root.compare r r'
       | `Page(r, s), `Page(r', s') -> let s = PageName.compare s s' in if s<>0 then s else Root.compare r r'
       | `Module (p, s), `Module (p', s') -> let s = ModuleName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
       | `Parameter (p, s), `Parameter (p', s') -> let s = ParameterName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
