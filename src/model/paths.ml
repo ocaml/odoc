@@ -180,17 +180,6 @@ module Identifier = struct
 
   end
 
-  module Module =
-  struct
-    type t = Paths_types.Identifier.module_
-    let equal x y = equal (x :> any) (y :> any)
-
-    let hash x = hash (x :> any)
-
-    let compare x y = compare (x :> any) (y :> any)
-
-  end
-
   module RootModule =
   struct
     type t = Paths_types.Identifier.root_module
@@ -202,20 +191,9 @@ module Identifier = struct
 
   end
 
-  module TypedModule =
+  module Module =
   struct
-    type t = Paths_types.Identifier.typed_module
-    let equal x y = equal (x :> any) (y :> any)
-
-    let hash x = hash (x :> any)
-
-    let compare x y = compare (x :> any) (y :> any)
-
-  end
-
-  module DirectModule =
-  struct
-    type t = Paths_types.Identifier.direct_module
+    type t = Paths_types.Identifier.module_
     let equal x y = equal (x :> any) (y :> any)
 
     let hash x = hash (x :> any)
@@ -425,7 +403,6 @@ module Identifier = struct
     module Parent = Set.Make(Parent)
     module LabelParent = Set.Make(LabelParent)
     module RootModule = Set.Make(RootModule)
-    module TypedModule = Set.Make(TypedModule)
     module FunctorParameter = Set.Make(FunctorParameter)
     module Module = Set.Make(Module)
     module ModuleType = Set.Make(ModuleType)
@@ -456,7 +433,6 @@ module Identifier = struct
     module Parent = Map.Make(Parent)
     module LabelParent = Map.Make(LabelParent)
     module RootModule = Map.Make(RootModule)
-    module TypedModule = Map.Make(TypedModule)
     module FunctorParameter = Map.Make(FunctorParameter)
     module Module = Map.Make(Module)
     module ModuleType = Map.Make(ModuleType)
@@ -535,7 +511,7 @@ module Path = struct
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
 
     and parent_module_identifier : Paths_types.Resolved_path.module_ -> Identifier.Signature.t = function
-      | `Identifier id -> (id : Identifier.Module.t :> Identifier.Signature.t)
+      | `Identifier id -> (id : Identifier.Path.Module.t :> Identifier.Signature.t)
       | `Subst(sub, _) -> parent_module_type_identifier sub
       | `SubstAlias(sub, _) -> parent_module_identifier sub
       | `Hidden p -> parent_module_identifier p
@@ -557,7 +533,7 @@ module Path = struct
 
       let is_hidden m = is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
 
-        let rec identifier : t -> Identifier.Module.t = function
+        let rec identifier : t -> Identifier.Path.Module.t = function
         | `Identifier id -> id
         | `Subst(_, p) -> identifier p
         | `SubstAlias(_, p) -> identifier p
@@ -571,8 +547,8 @@ module Path = struct
           then identifier orig
           else identifier sub
         | `OpaqueModule m -> identifier m
-          
-      let rec canonical_ident : t -> Identifier.Module.t option = function
+
+      let rec canonical_ident : t -> Identifier.Path.Module.t option = function
         | `Identifier _id -> None
         | `Subst(_,_) -> None
         | `SubstAlias(_,_) -> None

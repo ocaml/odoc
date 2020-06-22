@@ -41,7 +41,7 @@ end
 
 val find_module : t -> Ident.t -> Paths.Path.Resolved.Module.t
 
-val find_module_identifier : t -> Ident.t -> Paths.Identifier.TypedModule.t
+val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 
 val find_module_type : t -> Ident.t -> Paths.Identifier.ModuleType.t
 

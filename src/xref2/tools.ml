@@ -96,17 +96,23 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_type id in
         get_sub (Subst.add_type id (`Type (path, name)) sub') rest
     | Module (id, _, _) :: rest ->
-        let name = Ident.Name.typed_module' id in
+        let name = Ident.Name.module_' id in
         get_sub
-          (Subst.add_module (id :> Ident.module_) (`Module (path, name)) sub')
+          (Subst.add_module
+             (id :> Ident.path_module)
+             (`Module (path, name))
+             sub')
           rest
     | ModuleType (id, _) :: rest ->
         let name = Ident.Name.typed_module_type id in
         get_sub (Subst.add_module_type id (`ModuleType (path, name)) sub') rest
     | ModuleSubstitution (id, _) :: rest ->
-        let name = Ident.Name.typed_module' id in
+        let name = Ident.Name.module_' id in
         get_sub
-          (Subst.add_module (id :> Ident.module_) (`Module (path, name)) sub')
+          (Subst.add_module
+             (id :> Ident.path_module)
+             (`Module (path, name))
+             sub')
           rest
     | TypeSubstitution (id, _) :: rest ->
         let name = Ident.Name.typed_type id in
@@ -131,8 +137,11 @@ let prefix_substitution path sg =
       (fun item map ->
         match item with
         | Component.Signature.RModule (id, _) ->
-            let name = Ident.Name.typed_module' id in
-            Subst.add_module (id :> Ident.module_) (`Module (path, name)) map
+            let name = Ident.Name.module_' id in
+            Subst.add_module
+              (id :> Ident.path_module)
+              (`Module (path, name))
+              map
         | Component.Signature.RType (id, _) ->
             let name = Ident.Name.typed_type id in
             Subst.add_type id (`Type (path, name)) map)
@@ -148,7 +157,7 @@ let prefix_signature (path, sg) =
       (function
         | Module (id, r, m) ->
             Module
-              ( Ident.Rename.typed_module id,
+              ( Ident.Rename.module_ id,
                 r,
                 Component.Delayed.put (fun () ->
                     Subst.module_ sub (Component.Delayed.get m)) )
@@ -167,7 +176,7 @@ let prefix_signature (path, sg) =
             TypeSubstitution (Ident.Rename.type_ id, Subst.type_ sub t)
         | ModuleSubstitution (id, m) ->
             ModuleSubstitution
-              (Ident.Rename.typed_module id, Subst.module_substitution sub m)
+              (Ident.Rename.module_ id, Subst.module_substitution sub m)
         | Exception (id, e) -> Exception (id, Subst.exception_ sub e)
         | TypExt t -> TypExt (Subst.extension sub t)
         | Value (id, v) -> Value (id, Component.Delayed.put (fun () -> Subst.value sub (Component.Delayed.get v)))
@@ -354,7 +363,9 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
   Ok
     ( path,
       Subst.module_
-        (Subst.add_module (arg_id :> Ident.module_) substitution Subst.identity)
+        (Subst.add_module
+           (arg_id :> Ident.path_module)
+           substitution Subst.identity)
         new_module )
 
 and add_canonical_path :
@@ -658,7 +669,11 @@ and resolve_module :
         match Env.lookup_root_module r env with
         | Some (Env.Resolved (_, p, m)) ->
             (* Format.fprintf Format.err_formatter "Got it!\n%!"; *)
-            return (process_module_path env ~add_canonical m (`Identifier p), m)
+            return
+              ( process_module_path env ~add_canonical m
+                  (`Identifier
+                    (p :> Odoc_model.Paths_types.Identifier.path_module)),
+                m )
         | Some Env.Forward ->
             (* Format.fprintf Format.err_formatter "Forward :-(!\n%!"; *)
             Unresolved (`Forward r)
@@ -1017,7 +1032,7 @@ and fragmap_module :
       (fun item (items, handled, removed, sub) ->
         match item with
         | Component.Signature.Module (id, r, m)
-          when Ident.Name.typed_module id = name -> (
+          when Ident.Name.module_ id = name -> (
             let m = Component.Delayed.get m in
             match map_module m with
             | Left m ->
@@ -1057,7 +1072,7 @@ and fragmap_module :
     let sub_of_removed removed sub =
       match removed with
       | Component.Signature.RModule (id, p) ->
-          Subst.add_module (id :> Ident.module_) p sub
+          Subst.add_module (id :> Ident.path_module) p sub
       | _ -> sub
     in
     let sub = List.fold_right sub_of_removed removed Subst.identity in
@@ -1067,7 +1082,7 @@ and fragmap_module :
         (* Mark things that have been substituted as such - See the `With11`
            test for an example of why this is necessary *)
         let sub_of_substituted x sub =
-          let x = (x :> Ident.module_) in
+          let x = (x :> Ident.path_module) in
           Subst.add_module x (`Substituted (`Local x)) sub
         in
         let substituted_sub =
@@ -1204,7 +1219,7 @@ and fragmap_type :
           (fun item (items, handled) ->
             match item with
             | Component.Signature.Module (id, r, m)
-              when Ident.Name.typed_module id = name ->
+              when Ident.Name.module_ id = name ->
                 let m = Component.Delayed.get m in
                 let item =
                   Component.Signature.Module

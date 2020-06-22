@@ -871,7 +871,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
-  let id = (Env.find_module_identifier env ident :> Identifier.DirectModule.t) in
+  let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in
   let canonical =

@@ -23,7 +23,7 @@ module Rp = Paths.Path.Resolved
 type type_ident = Paths.Identifier.Path.Type.t
 
 type t =
-  { modules : Id.TypedModule.t Ident.tbl;
+  { modules : Id.Module.t Ident.tbl;
     module_paths : Rp.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : Id.DataType.t Ident.tbl;

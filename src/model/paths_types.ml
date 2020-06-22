@@ -35,18 +35,11 @@ struct
 
   type root_module = [ `Root of Root.t * ModuleName.t ]
 
-  type typed_module = [ `Module of signature * ModuleName.t ]
-
-  type direct_module = [ root_module | typed_module ]
+  type module_ = [ root_module | `Module of signature * ModuleName.t ]
 
   type functor_parameter = [ `Parameter of signature * ParameterName.t ]
 
-  type module_ = [
-    | root_module
-    | typed_module
-    | functor_parameter
-    | `Result of signature
-  ]
+  type functor_result = [ `Result of signature ]
 
   type module_type = [
     | `ModuleType of signature * ModuleTypeName.t
@@ -109,6 +102,8 @@ struct
     | parent
     | label_parent
     | module_
+    | functor_parameter
+    | functor_result
     | module_type
     | type_
     | constructor
@@ -124,7 +119,11 @@ struct
     | page
   ]
 
-  type path_module = module_
+  type path_module = [
+    | module_
+    | functor_parameter
+    | functor_result
+  ]
 
   type path_module_type = module_type
 
@@ -715,7 +714,7 @@ sig
   ]
 
   and module_ = [
-    | `Identifier of Identifier.module_
+    | `Identifier of Identifier.path_module
     | `Hidden of module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t

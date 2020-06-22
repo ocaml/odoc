@@ -62,15 +62,8 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
-  module TypedModule : sig
-    type t = Paths_types.Identifier.typed_module
-    val equal : t -> t -> bool
-    val hash : t -> int
-    val compare : t -> t -> int
-  end
-
-  module DirectModule : sig
-    type t = Paths_types.Identifier.direct_module
+  module Module : sig
+    type t = Paths_types.Identifier.module_
     val equal : t -> t -> bool
     val hash : t -> int
     val compare : t -> t -> int
@@ -78,13 +71,6 @@ module Identifier : sig
 
   module FunctorParameter : sig
     type t = Paths_types.Identifier.functor_parameter
-    val equal : t -> t -> bool
-    val hash : t -> int
-    val compare : t -> t -> int
-  end
-
-  module Module : sig
-    type t = Paths_types.Identifier.module_
     val equal : t -> t -> bool
     val hash : t -> int
     val compare : t -> t -> int
@@ -231,7 +217,6 @@ module Identifier : sig
     module DataType: Set.S with type elt = DataType.t
     module Parent: Set.S with type elt = Parent.t
     module LabelParent: Set.S with type elt = LabelParent.t
-    module TypedModule: Set.S with type elt = TypedModule.t
     module Module: Set.S with type elt = Module.t
     module ModuleType: Set.S with type elt = ModuleType.t
     module Type: Set.S with type elt = Type.t
@@ -254,7 +239,7 @@ module Identifier : sig
     module DataType: Map.S with type key = DataType.t
     module Parent: Map.S with type key = Parent.t
     module LabelParent: Map.S with type key = LabelParent.t
-    module TypedModule: Map.S with type key = TypedModule.t
+    module FunctorParameter : Map.S with type key = FunctorParameter.t
     module Module: Map.S with type key = Module.t
     module ModuleType: Map.S with type key = ModuleType.t
     module Type: Map.S with type key = Type.t

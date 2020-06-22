@@ -29,7 +29,7 @@ let rec signature :
       (fun item ->
         match item with
         | Module (id, r, m) ->
-            let name = Ident.Name.typed_module id in
+            let name = Ident.Name.module_ id in
             let canonical =
               match canonical with
               | Some (p, r) ->

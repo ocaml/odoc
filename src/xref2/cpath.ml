@@ -6,8 +6,8 @@ module rec Resolved : sig
     [ `Module of module_ | `ModuleType of module_type | `FragmentRoot ]
 
   and module_ =
-    [ `Local of Ident.module_
-    | `Identifier of Identifier.Module.t
+    [ `Local of Ident.path_module
+    | `Identifier of Identifier.Path.Module.t
     | `Substituted of module_
     | `Subst of module_type * module_
     | `SubstAlias of module_ * module_
@@ -129,7 +129,7 @@ let rec resolved_module_path_of_cpath :
     Resolved.module_ -> Path.Resolved.Module.t = function
   | `Local _ as y -> raise (LocalPath (ErrModule (`Resolved y)))
   | `Substituted y -> resolved_module_path_of_cpath y
-  | `Identifier (#Identifier.Module.t as x) -> `Identifier x
+  | `Identifier (#Identifier.Path.Module.t as x) -> `Identifier x
   | `Subst (a, b) ->
       `Subst
         (resolved_module_type_path_of_cpath a, resolved_module_path_of_cpath b)

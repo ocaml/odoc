@@ -251,7 +251,7 @@ module LangUtils = struct
             module Module = struct
                 open Lang.Module
 
-                let id : (t, Paths.Identifier.DirectModule.t) lens =
+                let id : (t, Paths.Identifier.Module.t) lens =
                     let get m = m.id in
                     let set id t = {t with id} in
                     {get; set}

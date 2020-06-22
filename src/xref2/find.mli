@@ -69,14 +69,14 @@ val any_in_sig :
     * Component.TypeDecl.Field.t
   | `Label of Ident.label
   | `Module of
-    Ident.typed_module
+    Ident.module_
     * Component.Signature.recursive
     * Component.Module.t Component.Delayed.t
-  | `ModuleSubstitution of Ident.typed_module * Component.ModuleSubstitution.t
+  | `ModuleSubstitution of Ident.module_ * Component.ModuleSubstitution.t
   | `ModuleType of
     Ident.module_type * Component.ModuleType.t Component.Delayed.t
   | `Removed of
-    [> `Module of Ident.typed_module * Cpath.Resolved.module_
+    [> `Module of Ident.module_ * Cpath.Resolved.module_
     | `Type of Ident.type_ * Component.TypeExpr.t ]
   | `Type of
     Ident.type_
@@ -90,7 +90,7 @@ val signature_in_sig :
   Component.Signature.t ->
   string ->
   [> `Module of
-     Ident.typed_module
+     Ident.module_
      * Component.Signature.recursive
      * Component.Module.t Component.Delayed.t
   | `ModuleType of
