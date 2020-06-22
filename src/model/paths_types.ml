@@ -5,7 +5,7 @@ module Identifier =
 struct
 
   type signature = [
-    | `Root of Root.t * UnitName.t
+    | `Root of Root.t * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ParameterName.t
     | `Result of signature
@@ -33,7 +33,7 @@ struct
     | `Page of Root.t * PageName.t
   ]
 
-  type root_module = [ `Root of Root.t * UnitName.t ]
+  type root_module = [ `Root of Root.t * ModuleName.t ]
 
   type typed_module = [ `Module of signature * ModuleName.t ]
 

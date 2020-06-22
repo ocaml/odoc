@@ -568,7 +568,7 @@ and read_structure env parent str =
     List.rev items
 
 let read_implementation root name impl =
-  let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
+  let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
   let items = read_structure Env.empty id impl in
   let doc, items =
     let open Signature in

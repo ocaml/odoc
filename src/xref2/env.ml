@@ -421,7 +421,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
       x
   | None -> (
       match (id :> Identifier.t) with
-      | `Root (_, name) -> scope.root (UnitName.to_string name) env
+      | `Root (_, name) -> scope.root (ModuleName.to_string name) env
       | _ -> None )
 
 let lookup_root_module_fallback name t =

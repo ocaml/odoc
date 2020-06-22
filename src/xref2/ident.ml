@@ -5,7 +5,7 @@ open Odoc_model.Paths
 let counter = ref 0
 
 type signature =
-  [ `LRoot of UnitName.t * int
+  [ `LRoot of ModuleName.t * int
   | `LModule of ModuleName.t * int
   | `LResult of signature * int
   | `LParameter of ParameterName.t * int
@@ -25,7 +25,7 @@ type typed_module = [ `LModule of ModuleName.t * int ]
 type functor_parameter = [ `LParameter of ParameterName.t * int ]
 
 type module_ =
-  [ `LRoot of UnitName.t * int
+  [ `LRoot of ModuleName.t * int
   | typed_module
   | `LResult of signature * int
   | functor_parameter ]
@@ -213,14 +213,14 @@ end
 
 module Name = struct
   let rec signature : signature -> string = function
-    | `LRoot (n, _) -> UnitName.to_string n
+    | `LRoot (n, _) -> ModuleName.to_string n
     | `LModule (n, _) -> ModuleName.to_string n
     | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
 
   let module_ : module_ -> string = function
-    | `LRoot (n, _) -> UnitName.to_string n
+    | `LRoot (n, _) -> ModuleName.to_string n
     | `LModule (n, _) -> ModuleName.to_string n
     | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
@@ -371,7 +371,7 @@ let reset () = counter := 0
 
 let rec fmt_aux ppf (id : any) =
   match id with
-  | `LRoot (n, i) -> Format.fprintf ppf "%s/%d" (UnitName.to_string n) i
+  | `LRoot (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
   | `LModule (n, i) -> Format.fprintf ppf "%s/%d" (ModuleName.to_string n) i
   | `LParameter (n, i) ->
       Format.fprintf ppf "%s/%d" (ParameterName.to_string n) i

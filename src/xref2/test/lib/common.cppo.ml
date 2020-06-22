@@ -45,7 +45,7 @@ let root =
         ~module_name:"Root"
         ~digest:"nodigest"
 
-let root_with_name = `Root (root, Odoc_model.Names.UnitName.of_string "Root")
+let root_with_name = `Root (root, Odoc_model.Names.ModuleName.of_string "Root")
 
 let root_identifier = `Identifier root_with_name
 

@@ -30,7 +30,7 @@ struct
     let rec traverse : sexp list -> Identifier.t -> sexp =
         fun acc -> function
       | `Root (root, s) ->
-        List ((List [Atom "root"; Root_to_sexp.root root; Atom (UnitName.to_string s)])::acc)
+        List ((List [Atom "root"; Root_to_sexp.root root; Atom (ModuleName.to_string s)])::acc)
       | `Page (root, s) ->
         List ((List [Atom "root"; Root_to_sexp.root root; Atom (PageName.to_string s)])::acc)
       | `Module (parent, s) ->

@@ -979,7 +979,7 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
 
 
 let read_interface root name intf =
-  let id = `Root(root, Odoc_model.Names.UnitName.of_string name) in
+  let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
   let doc = Doc_attr.empty in
   let items = read_signature Env.empty id intf in
     (id, doc, items)
