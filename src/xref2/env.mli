@@ -107,7 +107,7 @@ val add_method :
   t
 
 val add_module_functor_args :
-  Component.Module.t -> Odoc_model.Paths_types.Identifier.module_ -> t -> t
+  Component.Module.t -> Odoc_model.Paths_types.Identifier.path_module -> t -> t
 
 val add_module_type_functor_args :
   Component.ModuleType.t ->
@@ -187,7 +187,7 @@ val initial_env :
   Odoc_model.Lang.Compilation_unit.Import.t list * t
 
 val modules_of :
-  t -> (Odoc_model.Paths.Identifier.Module.t * Component.Module.t) list
+  t -> (Odoc_model.Paths.Identifier.Path.Module.t * Component.Module.t) list
 
 val len : int ref
 

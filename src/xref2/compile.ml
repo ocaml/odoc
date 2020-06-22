@@ -244,7 +244,9 @@ and module_ : Env.t -> Module.t -> Module.t =
         lookup_failure ~what:(`Module m.id) `Lookup;
         m
     | Some (`Module (_, m')) ->
-        let env' = Env.add_module_functor_args m' (m.id :> Id.Module.t) env in
+        let env' =
+          Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env
+        in
         let expansion =
           let sg_id = (m.id :> Id.Signature.t) in
           if not extra_expansion_needed then m.expansion
@@ -403,7 +405,7 @@ and functor_parameter_parameter :
     Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
     >>= fun (`Module (_, functor_arg)) ->
     let env =
-      Env.add_module_functor_args functor_arg (a.id :> Id.Module.t) env'
+      Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
     in
     get_module_type_expr functor_arg.type_ >>= fun expr ->
     match Expand_tools.expansion_of_module_type_expr env sg_id expr with

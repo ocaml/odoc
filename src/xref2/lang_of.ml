@@ -3,7 +3,7 @@ open Paths
 open Names
 
 type maps = {
-  module_ : (Ident.typed_module * Identifier.TypedModule.t) list;
+  module_ : (Ident.module_ * Identifier.Module.t) list;
   module_type : (Ident.module_type * Identifier.ModuleType.t) list;
   functor_parameter :
     (Ident.functor_parameter * Identifier.FunctorParameter.t) list;
@@ -17,7 +17,7 @@ type maps = {
     list;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
-  s_modules : (string * Identifier.TypedModule.t) list;
+  s_modules : (string * Identifier.Module.t) list;
   s_module_types : (string * Identifier.ModuleType.t) list;
   s_functor_parameters : (string * Identifier.FunctorParameter.t) list;
   s_types : (string * Identifier.Type.t) list;
@@ -47,11 +47,11 @@ let empty =
 let with_fragment_root r = { empty with fragment_root = Some r }
 
 (** Raises [Not_found] *)
-let lookup_module map : Ident.module_ -> _ = function
-  | #Ident.typed_module as id ->
-      (List.assoc id map.module_ :> Identifier.Module.t)
+let lookup_module map : Ident.path_module -> _ = function
+  | #Ident.module_ as id ->
+      (List.assoc id map.module_ :> Identifier.Path.Module.t)
   | #Ident.functor_parameter as id ->
-      (List.assoc id map.functor_parameter :> Identifier.Module.t)
+      (List.assoc id map.functor_parameter :> Identifier.Path.Module.t)
   | _ -> raise Not_found
 
 module Opt = Component.Opt
@@ -91,11 +91,12 @@ module Path = struct
     match p with
     | `Local id ->
         `Identifier
-          ( try lookup_module map id
+          ( try lookup_module map (id :> Ident.path_module)
             with Not_found ->
               failwith (Format.asprintf "Not_found: %a" Ident.fmt id) )
     | `Substituted x -> resolved_module map x
-    | `Identifier (#Odoc_model.Paths.Identifier.Module.t as y) -> `Identifier y
+    | `Identifier (#Odoc_model.Paths.Identifier.Path.Module.t as y) ->
+        `Identifier y
     | `Subst (mty, m) ->
         `Subst (resolved_module_type map mty, resolved_module map m)
     | `SubstAlias (m1, m2) ->
@@ -222,7 +223,7 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name' = Ident.Name.typed_module' id in
+    let name' = Ident.Name.module_' id in
     let name = ModuleName.to_string name' in
     let identifier =
       if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
@@ -570,9 +571,7 @@ and extension_constructor map parent c =
 and module_ map parent id m =
   try
     let open Component.Module in
-    let id =
-      (List.assoc id map.module_ :> Paths_types.Identifier.direct_module)
-    in
+    let id = (List.assoc id map.module_ :> Paths_types.Identifier.module_) in
     let identifier = (id :> Odoc_model.Paths_types.Identifier.signature) in
     let canonical = function
       | Some (p, r) -> Some (Path.module_ map p, r)

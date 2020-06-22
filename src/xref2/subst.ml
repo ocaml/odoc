@@ -58,7 +58,7 @@ let rec resolved_module_path :
   match p with
   | `Local id -> (
       match
-        try Some (ModuleMap.find (id :> Ident.module_) s.module_)
+        try Some (ModuleMap.find (id :> Ident.path_module) s.module_)
         with _ -> None
       with
       | Some x -> x
@@ -453,15 +453,21 @@ and rename_bound_idents s sg =
   function
   | [] -> (s, List.rev sg)
   | Module (id, r, m) :: rest ->
-      let id' = Ident.Rename.typed_module id in
+      let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        (add_module (id :> Ident.module_) (`Local (id' :> Ident.module_)) s)
+        (add_module
+           (id :> Ident.path_module)
+           (`Local (id' :> Ident.path_module))
+           s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
-      let id' = Ident.Rename.typed_module id in
+      let id' = Ident.Rename.module_ id in
       rename_bound_idents
-        (add_module (id :> Ident.module_) (`Local (id' :> Ident.module_)) s)
+        (add_module
+           (id :> Ident.path_module)
+           (`Local (id' :> Ident.path_module))
+           s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
@@ -529,7 +535,7 @@ and removed_items s items =
   List.map
     (function
       | RModule (id, _) as x -> (
-          match ModuleMap.find_opt (id :> Ident.module_) s.module_ with
+          match ModuleMap.find_opt (id :> Ident.path_module) s.module_ with
           | Some m -> RModule (id, m)
           | None -> x )
       | x -> x)

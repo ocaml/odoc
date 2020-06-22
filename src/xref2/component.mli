@@ -1,6 +1,6 @@
 (** Component module *)
 
-module ModuleMap : Map.S with type key = Ident.module_
+module ModuleMap : Map.S with type key = Ident.path_module
 (** Useful maps *)
 
 module ModuleTypeMap : Map.S with type key = Ident.module_type
@@ -236,8 +236,8 @@ and Signature : sig
   type recursive = Odoc_model.Lang.Signature.recursive
 
   type item =
-    | Module of Ident.typed_module * recursive * Module.t Delayed.t
-    | ModuleSubstitution of Ident.typed_module * ModuleSubstitution.t
+    | Module of Ident.module_ * recursive * Module.t Delayed.t
+    | ModuleSubstitution of Ident.module_ * ModuleSubstitution.t
     | ModuleType of Ident.module_type * ModuleType.t Delayed.t
     | Type of Ident.type_ * recursive * TypeDecl.t Delayed.t
     | TypeSubstitution of Ident.type_ * TypeDecl.t
@@ -254,7 +254,7 @@ and Signature : sig
   (* When doing destructive substitution we keep track of the items that have been removed,
        and the path they've been substituted with *)
   type removed_item =
-    | RModule of Ident.typed_module * Cpath.Resolved.module_
+    | RModule of Ident.module_ * Cpath.Resolved.module_
     | RType of Ident.type_ * TypeExpr.t
 
   type t = { items : item list; removed : removed_item list }
@@ -362,7 +362,7 @@ end
 module Element : sig
   open Odoc_model.Paths
 
-  type module_ = [ `Module of Identifier.Module.t * Module.t ]
+  type module_ = [ `Module of Identifier.Path.Module.t * Module.t ]
 
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
 

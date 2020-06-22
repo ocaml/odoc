@@ -340,7 +340,7 @@ and module_expansion :
                 let identifier = arg.FunctorParameter.id in
                 let env' =
                   Env.add_module
-                    (identifier :> Id.Module.t)
+                    (identifier :> Id.Path.Module.t)
                     (Component.module_of_functor_argument
                        (Component.Of_Lang.functor_parameter
                           Component.Of_Lang.empty
@@ -394,7 +394,7 @@ and module_ : Env.t -> Module.t -> Module.t =
             Component.Fmt.model_identifier
             (m.id :> Id.t)
     in
-    let env = Env.add_module_functor_args m' (m.id :> Id.Module.t) env in
+    let env = Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env in
     let t2 = Unix.gettimeofday () in
     let type_ = module_decl env sg_id m.type_ in
     let t3 = Unix.gettimeofday () in
@@ -407,7 +407,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       match type_ with
       | Alias (`Resolved p) ->
           let i = Paths.Path.Resolved.Module.identifier p in
-          i = (m.id :> Paths.Identifier.Module.t)
+          i = (m.id :> Paths.Identifier.Path.Module.t)
           (* Self-canonical *)
       | _ -> false
     in
@@ -559,7 +559,7 @@ and functor_parameter_parameter :
     Env.(lookup_by_id s_module) a.id env' |> of_option ~error:"lookup"
     >>= fun (`Module (_, functor_arg)) ->
     let env =
-      Env.add_module_functor_args functor_arg (a.id :> Id.Module.t) env'
+      Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
     in
     match (a.expansion, functor_arg.type_) with
     | None, ModuleType expr -> (

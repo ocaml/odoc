@@ -3,7 +3,7 @@
 val identity : Component.Substitution.t
 
 val add_module :
-  Ident.module_ ->
+  Ident.path_module ->
   Cpath.Resolved.module_ ->
   Component.Substitution.t ->
   Component.Substitution.t

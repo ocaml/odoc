@@ -129,7 +129,7 @@ module M = struct
       (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
   let of_element env (`Module (id, m)) : t option =
-    let base = `Identifier id in
+    let base = `Identifier (id :> Odoc_model.Paths.Identifier.Path.Module.t) in
     Some (of_component env m base base)
 
   let in_env env name : t option =

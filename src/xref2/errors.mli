@@ -15,12 +15,12 @@ type signature_of_module_error =
     (** The path to the module or module type could not be resolved *) ]
 
 type simple_module_lookup_error =
-  [ `Local of Env.t * Ident.module_
+  [ `Local of Env.t * Ident.path_module
     (** Internal error: Found local path during lookup *)
   | `Unresolved_apply  (** [`Apply] argument is not [`Resolved] *)
   | `Find_failure
     (*** Internal error: the module was not found in the parent signature *)
-  | `Lookup_failure of Identifier.Module.t
+  | `Lookup_failure of Identifier.Path.Module.t
     (** Could not find the module in the environment *) ]
 
 and simple_module_type_expr_of_module_error =
