@@ -1,4 +1,5 @@
 (* A bunch of association lists. Let's hashtbl them up later *)
+open Odoc_model
 open Odoc_model.Names
 
 type lookup_result_found = { root : Odoc_model.Root.t; hidden : bool }
@@ -333,7 +334,7 @@ let lookup_root_module name env =
             Some
               (Resolved
                  ( u.root.digest,
-                   (unit.id :> Odoc_model.Paths_types.Identifier.module_),
+                   (unit.id :> Paths.Identifier.Module.t),
                    module_of_unit unit )) )
   in
   ( match (env.recorder, result) with
@@ -553,10 +554,7 @@ let add_functor_args' :
         ((ident, identifier) :> Ident.path_module * Identifier.Path.Module.t)
       in
       let env' = add_module identifier (Subst.module_ subst m) env in
-      ( env',
-        Subst.add_module ident
-          (`Identifier (identifier :> Identifier.Path.Module.t))
-          subst )
+      (env', Subst.add_module ident (`Identifier identifier) subst)
     in
     let env', _subst =
       List.fold_left fold_fn (env, Subst.identity) (find_args id expr)

@@ -252,9 +252,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           if not extra_expansion_needed then m.expansion
           else
             match
-              Expand_tools.expansion_of_module env
-                (m.id :> Id.Module.t)
-                ~strengthen:true m'
+              Expand_tools.expansion_of_module env m.id ~strengthen:true m'
             with
             | Ok (env, _, ce) ->
                 let e = Lang_of.(module_expansion empty sg_id ce) in

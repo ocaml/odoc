@@ -417,8 +417,7 @@ and module_ : Env.t -> Module.t -> Module.t =
       | None, true ->
           let env, expansion =
             match
-              Expand_tools.expansion_of_module env
-                (m.id :> Paths.Identifier.Module.t)
+              Expand_tools.expansion_of_module env m.id
                 ~strengthen:(not (self_canonical || hidden_alias))
                 m'
             with
