@@ -19,8 +19,8 @@ Some additional comments\.
 .sp 
 .nf 
 .sp 
-.in 4
-\fB1\.1 Parameters\fR
+.in 3
+\fB1 Parameters\fR
 .in 
 .sp 
 \f[CB]module\fR Arg1 : \f[CB]sig\fR
@@ -28,7 +28,7 @@ Some additional comments\.
 .ti +2
 .sp 
 .ti +2
-\fBType\fR
+\fB1\.1\.1 Type\fR
 .sp 
 .ti +2
 \f[CB]type\fR t
@@ -39,7 +39,7 @@ Some type\.
 .nf 
 .sp 
 .ti +2
-\fBValues\fR
+\fB1\.1\.2 Values\fR
 .sp 
 .ti +2
 \f[CB]val\fR y : t
@@ -57,7 +57,7 @@ The value of y\.
 .ti +2
 .sp 
 .ti +2
-\fBType\fR
+\fB1\.1\.3 Type\fR
 .sp 
 .ti +2
 \f[CB]type\fR t
