@@ -12,8 +12,8 @@ test_package+ml\.Functor\.F2
 .sp 
 .nf 
 .sp 
-.in 4
-\fB1\.1 Parameters\fR
+.in 3
+\fB1 Parameters\fR
 .in 
 .sp 
 \f[CB]module\fR Arg : \f[CB]sig\fR

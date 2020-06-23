@@ -23,7 +23,7 @@ test_package+ml\.Functor
 .ti +2
 .sp 
 .ti +2
-\fB1\.1\.1 Parameters\fR
+\fB1\.1 Parameters\fR
 .sp 
 .ti +2
 \f[CB]module\fR _ : \f[CB]sig\fR

@@ -1324,7 +1324,7 @@ struct
         let prelude =
           Item.Heading {
             label = Some "parameters" ;
-            level = 2 ;
+            level = 1 ;
             title = [inline @@ Text "Parameters"];
           }
           :: params
