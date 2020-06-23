@@ -91,12 +91,11 @@ module Path = struct
     match p with
     | `Local id ->
         `Identifier
-          ( try lookup_module map (id :> Ident.path_module)
+          ( try lookup_module map id
             with Not_found ->
               failwith (Format.asprintf "Not_found: %a" Ident.fmt id) )
     | `Substituted x -> resolved_module map x
-    | `Identifier (#Odoc_model.Paths.Identifier.Path.Module.t as y) ->
-        `Identifier y
+    | `Identifier y -> `Identifier y
     | `Subst (mty, m) ->
         `Subst (resolved_module_type map mty, resolved_module map m)
     | `SubstAlias (m1, m2) ->

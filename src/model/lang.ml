@@ -27,7 +27,7 @@ module rec Module : sig
   type decl = Alias of Path.Module.t | ModuleType of ModuleType.expr
 
   type t = {
-    id : Paths_types.Identifier.module_;
+    id : Identifier.Module.t;
     doc : Comment.docs;
     type_ : decl;
     canonical : (Path.Module.t * Reference.Module.t) option;

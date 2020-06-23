@@ -1179,7 +1179,7 @@ module LocalIdents = struct
     List.fold_right
       (fun c ids ->
         match c with
-        | Module (_, { Module.id = #Identifier.Module.t as id; _ }) ->
+        | Module (_, { Module.id; _ }) ->
             { ids with modules = Identifier.Sets.Module.add id ids.modules }
         | ModuleType m ->
             {
@@ -1187,8 +1187,7 @@ module LocalIdents = struct
               module_types =
                 Identifier.Sets.ModuleType.add m.ModuleType.id ids.module_types;
             }
-        | ModuleSubstitution
-            { ModuleSubstitution.id = #Identifier.Module.t as id; _ } ->
+        | ModuleSubstitution { ModuleSubstitution.id; _ } ->
             { ids with modules = Identifier.Sets.Module.add id ids.modules }
         | Type (_, t) ->
             {
