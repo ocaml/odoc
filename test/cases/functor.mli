@@ -15,3 +15,6 @@ sig
 end
 
 module F4 (Arg : S) : S
+
+module F5 : functor () -> S
+
