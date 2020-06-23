@@ -214,7 +214,7 @@ module Name = struct
     | `LParameter (n, _) -> ParameterName.to_string n
     | `LModuleType (n, _) -> ModuleTypeName.to_string n
 
-  let module_' : module_ -> ModuleName.t = function
+  let typed_module : module_ -> ModuleName.t = function
     | `LRoot (n, _) | `LModule (n, _) -> n
 
   let module_ : module_ -> string = function
@@ -226,7 +226,7 @@ module Name = struct
     | `LResult (x, _) -> signature x
     | `LParameter (n, _) -> ParameterName.to_string n
 
-  let functor_parameter' : functor_parameter -> ParameterName.t =
+  let typed_functor_parameter : functor_parameter -> ParameterName.t =
    fun (`LParameter (n, _)) -> n
 
   let functor_parameter : functor_parameter -> string =
