@@ -1458,7 +1458,7 @@ struct
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       | Functor (Unit, expr) ->
         (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
-          O.txt " () " ++
+          O.txt " () " ++ Syntax.Type.arrow ++ O.txt " " ++
           mty base expr
       | Functor (Named arg, expr) ->
         let arg_expr = match arg.display_expr with | Some e -> e | None -> arg.expr in
