@@ -532,8 +532,8 @@ let add_functor_args' :
           ( arg.Component.FunctorParameter.id,
             `Parameter
               ( parent,
-                Ident.Name.functor_parameter' arg.Component.FunctorParameter.id
-              ),
+                Ident.Name.typed_functor_parameter
+                  arg.Component.FunctorParameter.id ),
             {
               Component.Module.doc = [];
               display_type = None;

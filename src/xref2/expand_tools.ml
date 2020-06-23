@@ -162,7 +162,8 @@ and handle_expansion env id expansion =
         let identifier =
           `Parameter
             ( parent,
-              Ident.Name.functor_parameter' arg.Component.FunctorParameter.id )
+              Ident.Name.typed_functor_parameter
+                arg.Component.FunctorParameter.id )
         in
         let env' =
           Env.add_module identifier

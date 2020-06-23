@@ -222,7 +222,7 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name' = Ident.Name.module_' id in
+    let name' = Ident.Name.typed_module id in
     let name = ModuleName.to_string name' in
     let identifier =
       if List.mem_assoc name map.s_modules then List.assoc name map.s_modules
@@ -493,7 +493,7 @@ and module_expansion :
           (fun (id, args, map) arg ->
             match arg with
             | Named arg ->
-                let name = Ident.Name.functor_parameter' arg.id in
+                let name = Ident.Name.typed_functor_parameter arg.id in
                 let identifier' =
                   try
                     List.assoc
@@ -639,7 +639,7 @@ and module_type_expr map identifier =
   | With (expr, subs) ->
       With (module_type_expr map identifier expr, List.map substitution subs)
   | Functor (Named arg, expr) ->
-      let name = Ident.Name.functor_parameter' arg.id in
+      let name = Ident.Name.typed_functor_parameter arg.id in
       let identifier' =
         try List.assoc (ParameterName.to_string name) map.s_functor_parameters
         with Not_found -> `Parameter (identifier, name)

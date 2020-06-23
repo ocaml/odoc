@@ -96,7 +96,7 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_type id in
         get_sub (Subst.add_type id (`Type (path, name)) sub') rest
     | Module (id, _, _) :: rest ->
-        let name = Ident.Name.module_' id in
+        let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
              (id :> Ident.path_module)
@@ -107,7 +107,7 @@ let prefix_substitution path sg =
         let name = Ident.Name.typed_module_type id in
         get_sub (Subst.add_module_type id (`ModuleType (path, name)) sub') rest
     | ModuleSubstitution (id, _) :: rest ->
-        let name = Ident.Name.module_' id in
+        let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
              (id :> Ident.path_module)
@@ -137,7 +137,7 @@ let prefix_substitution path sg =
       (fun item map ->
         match item with
         | Component.Signature.RModule (id, _) ->
-            let name = Ident.Name.module_' id in
+            let name = Ident.Name.typed_module id in
             Subst.add_module
               (id :> Ident.path_module)
               (`Module (path, name))
