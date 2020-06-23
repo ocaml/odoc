@@ -160,7 +160,7 @@ body {
   background-color: var(--main-background);
 }
 
-.content {
+body {
   max-width: 90ex;
   margin-left: calc(10vw + 20ex);
   margin-right: 4ex;
@@ -170,11 +170,11 @@ body {
   line-height: 1.5;
 }
 
-.content>header {
+header {
   margin-bottom: 30px;
 }
 
-.content>header nav {
+nav {
   font-family: "Fira Sans", Helvetica, Arial, sans-serif;
 }
 
