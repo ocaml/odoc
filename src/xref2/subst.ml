@@ -535,9 +535,8 @@ and removed_items s items =
   List.map
     (function
       | RModule (id, _) as x -> (
-          match ModuleMap.find_opt (id :> Ident.path_module) s.module_ with
-          | Some m -> RModule (id, m)
-          | None -> x )
+          try RModule (id, ModuleMap.find (id :> Ident.path_module) s.module_)
+          with Not_found -> x )
       | x -> x)
     items
 
