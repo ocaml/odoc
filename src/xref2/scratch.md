@@ -74,8 +74,7 @@ val sg :
   Odoc_model.Lang.Signature.t =
   (`Root (Common.root, Root), <<docs>>,
    [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, Root), M);
-      doc = <<docs>>;
+     {Odoc_model.Lang.Module.id = (root Root).M; doc = <<docs>>;
       type_ =
        Odoc_model.Lang.Module.ModuleType
         (Odoc_model.Lang.ModuleType.Signature
@@ -105,9 +104,7 @@ val sg :
       canonical = None; hidden = false; display_type = None;
       expansion = Some Odoc_model.Lang.Module.AlreadyASig});
     Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-     {Odoc_model.Lang.Module.id =
-       `Module (`Root (Common.root, Root), Mextended);
-      doc = <<docs>>;
+     {Odoc_model.Lang.Module.id = (root Root).Mextended; doc = <<docs>>;
       type_ =
        Odoc_model.Lang.Module.ModuleType
         (Odoc_model.Lang.ModuleType.Signature
@@ -126,7 +123,9 @@ val sg :
                         doc = <<docs>>;
                         decl =
                          Odoc_model.Lang.Module.Alias
-                          (`Resolved (`Identifier (root Root).M));
+                          (`Resolved
+                             (`Identifier
+                                (`Module (`Root (Common.root, Root), M))));
                         inline = false;
                         expansion =
                          {Odoc_model.Lang.Include.resolved = false;
@@ -144,7 +143,11 @@ val sg :
                                  Some
                                   (Odoc_model.Lang.TypeExpr.Constr
                                     (`Dot
-                                       (`Resolved (`Identifier (root Root).M),
+                                       (`Resolved
+                                          (`Identifier
+                                             (`Module
+                                                (`Root (Common.root, Root),
+                                                 M))),
                                         "t"),
                                     []));
                                 constraints = []};
@@ -191,7 +194,11 @@ val sg :
                      manifest =
                       Some
                        (Odoc_model.Lang.TypeExpr.Constr
-                         (`Dot (`Resolved (`Identifier (root Root).M), "t"),
+                         (`Dot
+                            (`Resolved
+                               (`Identifier
+                                  (`Module (`Root (Common.root, Root), M))),
+                             "t"),
                          []));
                      constraints = []};
                    representation = None});
@@ -248,8 +255,7 @@ val sg :
 =
 (`Root (Common.root, Root), <<docs>>,
  [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-   {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, Root), M);
-    doc = <<docs>>;
+   {Odoc_model.Lang.Module.id = (root Root).M; doc = <<docs>>;
     type_ =
      Odoc_model.Lang.Module.ModuleType
       (Odoc_model.Lang.ModuleType.Signature
@@ -278,9 +284,7 @@ val sg :
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig});
   Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-   {Odoc_model.Lang.Module.id =
-     `Module (`Root (Common.root, Root), Mextended);
-    doc = <<docs>>;
+   {Odoc_model.Lang.Module.id = (root Root).Mextended; doc = <<docs>>;
     type_ =
      Odoc_model.Lang.Module.ModuleType
       (Odoc_model.Lang.ModuleType.Signature
@@ -299,7 +303,9 @@ val sg :
                       doc = <<docs>>;
                       decl =
                        Odoc_model.Lang.Module.Alias
-                        (`Resolved (`Identifier (root Root).M));
+                        (`Resolved
+                           (`Identifier
+                              (`Module (`Root (Common.root, Root), M))));
                       inline = false;
                       expansion =
                        {Odoc_model.Lang.Include.resolved = false;
@@ -317,7 +323,10 @@ val sg :
                                Some
                                 (Odoc_model.Lang.TypeExpr.Constr
                                   (`Dot
-                                     (`Resolved (`Identifier (root Root).M),
+                                     (`Resolved
+                                        (`Identifier
+                                           (`Module
+                                              (`Root (Common.root, Root), M))),
                                       "t"),
                                   []));
                               constraints = []};
@@ -364,7 +373,11 @@ val sg :
                    manifest =
                     Some
                      (Odoc_model.Lang.TypeExpr.Constr
-                       (`Dot (`Resolved (`Identifier (root Root).M), "t"),
+                       (`Dot
+                          (`Resolved
+                             (`Identifier
+                                (`Module (`Root (Common.root, Root), M))),
+                           "t"),
                        []));
                    constraints = []};
                  representation = None});
@@ -420,8 +433,7 @@ val sg :
 =
 (`Root (Common.root, Root), <<docs>>,
  [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-   {Odoc_model.Lang.Module.id = `Module (`Root (Common.root, Root), M);
-    doc = <<docs>>;
+   {Odoc_model.Lang.Module.id = (root Root).M; doc = <<docs>>;
     type_ =
      Odoc_model.Lang.Module.ModuleType
       (Odoc_model.Lang.ModuleType.Signature
@@ -450,9 +462,7 @@ val sg :
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig});
   Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,
-   {Odoc_model.Lang.Module.id =
-     `Module (`Root (Common.root, Root), Mextended);
-    doc = <<docs>>;
+   {Odoc_model.Lang.Module.id = (root Root).Mextended; doc = <<docs>>;
     type_ =
      Odoc_model.Lang.Module.ModuleType
       (Odoc_model.Lang.ModuleType.Signature
@@ -471,7 +481,9 @@ val sg :
                       doc = <<docs>>;
                       decl =
                        Odoc_model.Lang.Module.Alias
-                        (`Resolved (`Identifier (root Root).M));
+                        (`Resolved
+                           (`Identifier
+                              (`Module (`Root (Common.root, Root), M))));
                       inline = false;
                       expansion =
                        {Odoc_model.Lang.Include.resolved = false;
@@ -489,7 +501,10 @@ val sg :
                                Some
                                 (Odoc_model.Lang.TypeExpr.Constr
                                   (`Dot
-                                     (`Resolved (`Identifier (root Root).M),
+                                     (`Resolved
+                                        (`Identifier
+                                           (`Module
+                                              (`Root (Common.root, Root), M))),
                                       "t"),
                                   []));
                               constraints = []};
@@ -536,7 +551,11 @@ val sg :
                    manifest =
                     Some
                      (Odoc_model.Lang.TypeExpr.Constr
-                       (`Dot (`Resolved (`Identifier (root Root).M), "t"),
+                       (`Dot
+                          (`Resolved
+                             (`Identifier
+                                (`Module (`Root (Common.root, Root), M))),
+                           "t"),
                        []));
                    constraints = []};
                  representation = None});

@@ -92,7 +92,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- Module.id) sg);;
-- : Odoc_model.Paths_types.Identifier.reference_module =
+- : Odoc_model.Paths_types.Identifier.module_ =
 `Module (`Root (Common.root, Root), M)
 ```
 
@@ -100,7 +100,7 @@ Here we have:
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "F" |-- Module.id) sg);;
-- : Odoc_model.Paths_types.Identifier.reference_module =
+- : Odoc_model.Paths_types.Identifier.module_ =
 `Module (`Root (Common.root, Root), F)
 ```
 
