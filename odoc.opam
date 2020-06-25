@@ -32,11 +32,11 @@ depends: [
   "result"
   "tyxml" {>= "4.3.0"}
 
-  "alcotest" {dev & >= "0.8.3"}
-  "fmt" {dev}
-  "markup" {dev & >= "0.8.0"}
-  "ocamlfind" {dev}
-  "sexplib" {dev & >= "113.33.00"}
+  "alcotest" {with-test & >= "0.8.3"}
+  "fmt" {with-test}
+  "markup" {with-test & >= "0.8.0"}
+  "ocamlfind" {with-test}
+  "sexplib" {with-test & >= "113.33.00"}
 
   "mdx" {with-test & >= "1.5.0"}
   "bisect_ppx" {with-test & >= "1.3.0"}
