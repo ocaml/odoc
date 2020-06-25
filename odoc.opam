@@ -31,9 +31,9 @@ depends: [
   "ocaml" {>= "4.02.0"}
   "result"
   "tyxml" {>= "4.3.0"}
+  "fmt"
 
   "alcotest" {with-test & >= "0.8.3"}
-  "fmt" {with-test}
   "markup" {with-test & >= "0.8.0"}
   "ocamlfind" {with-test}
   "sexplib" {with-test & >= "113.33.00"}
