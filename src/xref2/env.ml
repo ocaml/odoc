@@ -664,9 +664,7 @@ let initial_env :
       match import with
       | Import.Resolved root ->
           let unit = resolver.resolve_unit root in
-          Component.Delayed.eager := true;
           let m = module_of_unit unit in
-          Component.Delayed.eager := false;
           let env = add_module (unit.id :> Identifier.Path.Module.t) m env in
           (import :: imports, env)
       | Import.Unresolved (str, _) -> (
