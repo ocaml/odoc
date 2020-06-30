@@ -28,7 +28,6 @@ open Odoc_xref2;;
 open Odoc_xref_test;;
 open Odoc_model.Names;;
 #install_printer Common.root_pp;;
-#install_printer Odoc_model.Names.UnitName.fmt;;
 #install_printer Odoc_model.Names.ValueName.fmt;;
 #install_printer Odoc_model.Names.ModuleName.fmt;;
 #install_printer Odoc_model.Names.ModuleTypeName.fmt;;
@@ -1477,7 +1476,7 @@ let resolved = Compile.signature Env.empty id sg;;
           {Odoc_model.Location_.file = "";
            start = {Odoc_model.Location_.line = 3; column = 10};
            end_ = {Odoc_model.Location_.line = 3; column = 14}};
-         value = `Reference (`Root (t, `TUnknown), [])}]}];
+         value = `Reference (`Root ("t", `TUnknown), [])}]}];
  equation =
   {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
    manifest = None; constraints = []};

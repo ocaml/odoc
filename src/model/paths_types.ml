@@ -458,7 +458,7 @@ sig
 
   type signature = [
     | `Resolved of Resolved_reference.signature
-    | `Root of UnitName.t * tag_signature
+    | `Root of string * tag_signature
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
@@ -466,7 +466,7 @@ sig
 
   and class_signature = [
     | `Resolved of Resolved_reference.class_signature
-    | `Root of UnitName.t * tag_class_signature
+    | `Root of string * tag_class_signature
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
@@ -474,14 +474,14 @@ sig
 
   and datatype = [
     | `Resolved of Resolved_reference.datatype
-    | `Root of UnitName.t * tag_datatype
+    | `Root of string * tag_datatype
     | `Dot of label_parent * string
     | `Type of signature * TypeName.t
   ]
 
   and parent = [
     | `Resolved of Resolved_reference.parent
-    | `Root of UnitName.t * tag_parent
+    | `Root of string * tag_parent
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
@@ -492,7 +492,7 @@ sig
 
   and label_parent = [
     | `Resolved of Resolved_reference.label_parent
-    | `Root of UnitName.t * tag_label_parent
+    | `Root of string * tag_label_parent
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t
@@ -508,7 +508,7 @@ sig
 
   type module_ = [
     | `Resolved of Resolved_reference.module_
-    | `Root of UnitName.t * tag_module
+    | `Root of string * tag_module
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
   ]
@@ -519,7 +519,7 @@ sig
   ]
   type module_type = [
     | `Resolved of Resolved_reference.module_type
-    | `Root of UnitName.t * tag_module_type
+    | `Root of string * tag_module_type
     | `Dot of label_parent * string
     | `ModuleType of signature * ModuleTypeName.t
   ]
@@ -533,7 +533,7 @@ sig
 
   type type_ = [
     | `Resolved of Resolved_reference.type_
-    | `Root of UnitName.t * tag_type
+    | `Root of string * tag_type
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
@@ -549,7 +549,7 @@ sig
 
   type constructor = [
     | `Resolved of Resolved_reference.constructor
-    | `Root of UnitName.t * tag_constructor
+    | `Root of string * tag_constructor
     | `Dot of label_parent * string
     | `Constructor of datatype * ConstructorName.t
     | `Extension of signature * ExtensionName.t
@@ -563,7 +563,7 @@ sig
 
   type field = [
     | `Resolved of Resolved_reference.field
-    | `Root of UnitName.t * tag_field
+    | `Root of string * tag_field
     | `Dot of label_parent * string
     | `Field of parent * FieldName.t
   ]
@@ -575,7 +575,7 @@ sig
   ]
   type extension = [
     | `Resolved of Resolved_reference.extension
-    | `Root of UnitName.t * tag_extension
+    | `Root of string * tag_extension
     | `Dot of label_parent * string
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t
@@ -588,7 +588,7 @@ sig
 
   type exception_ = [
     | `Resolved of Resolved_reference.exception_
-    | `Root of UnitName.t * tag_exception
+    | `Root of string * tag_exception
     | `Dot of label_parent * string
     | `Exception of signature * ExceptionName.t
   ]
@@ -600,7 +600,7 @@ sig
 
   type value = [
     | `Resolved of Resolved_reference.value
-    | `Root of UnitName.t * tag_value
+    | `Root of string * tag_value
     | `Dot of label_parent * string
     | `Value of signature * ValueName.t
   ]
@@ -612,7 +612,7 @@ sig
 
   type class_ = [
     | `Resolved of Resolved_reference.class_
-    | `Root of UnitName.t * tag_class
+    | `Root of string * tag_class
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
   ]
@@ -625,7 +625,7 @@ sig
 
   type class_type = [
     | `Resolved of Resolved_reference.class_type
-    | `Root of UnitName.t * tag_class_type
+    | `Root of string * tag_class_type
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
@@ -638,7 +638,7 @@ sig
 
   type method_ = [
     | `Resolved of Resolved_reference.method_
-    | `Root of UnitName.t * tag_method
+    | `Root of string * tag_method
     | `Dot of label_parent * string
     | `Method of class_signature * MethodName.t
   ]
@@ -650,7 +650,7 @@ sig
 
   type instance_variable = [
     | `Resolved of Resolved_reference.instance_variable
-    | `Root of UnitName.t * tag_instance_variable
+    | `Root of string * tag_instance_variable
     | `Dot of label_parent * string
     | `InstanceVariable of class_signature * InstanceVariableName.t
   ]
@@ -662,7 +662,7 @@ sig
 
   type label = [
     | `Resolved of Resolved_reference.label
-    | `Root of UnitName.t * tag_label
+    | `Root of string * tag_label
     | `Dot of label_parent * string
     | `Label of label_parent * LabelName.t
   ]
@@ -674,13 +674,13 @@ sig
 
   type page = [
     | `Resolved of Resolved_reference.page
-    | `Root of UnitName.t * tag_page
+    | `Root of string * tag_page
     | `Dot of label_parent * string
   ]
 
   type any = [
     | `Resolved of Resolved_reference.any
-    | `Root of UnitName.t * tag_any
+    | `Root of string * tag_any
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t

@@ -147,8 +147,6 @@ module MethodName = SimpleName
 
 module InstanceVariableName = SimpleName
 
-module UnitName = SimpleName
-
 module LabelName = SimpleName
 
 module PageName = SimpleName

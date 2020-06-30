@@ -179,7 +179,11 @@ let prefix_signature (path, sg) =
               (Ident.Rename.module_ id, Subst.module_substitution sub m)
         | Exception (id, e) -> Exception (id, Subst.exception_ sub e)
         | TypExt t -> TypExt (Subst.extension sub t)
-        | Value (id, v) -> Value (id, Component.Delayed.put (fun () -> Subst.value sub (Component.Delayed.get v)))
+        | Value (id, v) ->
+            Value
+              ( id,
+                Component.Delayed.put (fun () ->
+                    Subst.value sub (Component.Delayed.get v)) )
         | External (id, e) -> External (id, Subst.external_ sub e)
         | Class (id, r, c) ->
             Class (Ident.Rename.class_ id, r, Subst.class_ sub c)

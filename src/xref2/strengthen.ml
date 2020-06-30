@@ -58,9 +58,9 @@ let rec signature :
                 r,
                 put (fun () ->
                     type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) )
-        | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
-        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _
-        | Open _ ->
+        | Exception _ | TypExt _ | Value _ | External _ | Class _
+        | ClassType _ | Include _ | ModuleSubstitution _ | TypeSubstitution _
+        | Comment _ | Open _ ->
             item)
       sg.items
   in

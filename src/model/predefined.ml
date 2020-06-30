@@ -491,7 +491,7 @@ let floatarray_decl =
     [`Paragraph (
       words ["This"; "type"; "is"; "used"; "to"; "implement"; "the"] @
       [`Space;
-       `Reference (`Module (`Root (UnitName.of_string "Array", `TModule), ModuleName.of_string "Floatarray"), []);
+       `Reference (`Module (`Root ("Array", `TModule), ModuleName.of_string "Floatarray"), []);
        `Space] @
       words ["module."; "It"; "should"; "not"; "be"; "used"; "directly."]
       |> List.map (Location_.at predefined_location)
