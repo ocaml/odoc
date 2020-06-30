@@ -274,7 +274,7 @@ module Anchor = struct
     let fail () = failwith "Only modules allowed inside {!modules: ...}"
 
     let rec from_reference : Reference.t -> t = function
-      | `Root (name, _) -> { kind = "xref-unresolved"; name = Odoc_model.Names.UnitName.to_string name }
+      | `Root (name, _) -> { kind = "xref-unresolved"; name }
       | `Dot (parent, suffix) ->
         let { name; _ } = from_reference (parent :> Reference.t) in
         { kind = "xref-unresolved"; name = Printf.sprintf "%s.%s" name suffix }

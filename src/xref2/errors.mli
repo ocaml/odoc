@@ -19,8 +19,9 @@ type simple_module_lookup_error =
     (** Internal error: Found local path during lookup *)
   | `Unresolved_apply  (** [`Apply] argument is not [`Resolved] *)
   | `Find_failure
-    (*** Internal error: the module was not found in the parent signature *)
-  | `Lookup_failure of Identifier.Path.Module.t
+  | (*** Internal error: the module was not found in the parent signature *)
+    `Lookup_failure of
+    Identifier.Path.Module.t
     (** Could not find the module in the environment *) ]
 
 and simple_module_type_expr_of_module_error =

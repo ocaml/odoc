@@ -158,7 +158,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     match tokens with
     | [] ->
       begin match kind with
-      | `TUnknown | `TModule | `TModuleType as kind -> `Root (UnitName.of_string identifier, kind)
+      | `TUnknown | `TModule | `TModuleType as kind -> `Root (identifier, kind)
       | _ ->
         expected ["module"; "module-type"] location |> Error.raise_exception
       end
@@ -178,7 +178,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     | [] ->
       begin match kind with
       | `TUnknown | `TModule | `TModuleType | `TType | `TClass
-      | `TClassType as kind -> `Root (UnitName.of_string identifier, kind)
+      | `TClassType as kind -> `Root (identifier, kind)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"] location
@@ -206,7 +206,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     match tokens with
     | [] ->
       begin match kind with
-      | `TUnknown | `TClass | `TClassType as kind -> `Root (UnitName.of_string identifier, kind)
+      | `TUnknown | `TClass | `TClassType as kind -> `Root (identifier, kind)
       | _ -> expected ["class"; "class-type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
@@ -224,7 +224,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     match tokens with
     | [] ->
       begin match kind with
-      | `TUnknown | `TType as kind -> `Root (UnitName.of_string identifier, kind)
+      | `TUnknown | `TType as kind -> `Root (identifier, kind)
       | _ -> expected ["type"] location |> Error.raise_exception
       end
     | next_token::tokens ->
@@ -242,7 +242,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     | [] ->
       begin match kind with
       | `TUnknown | `TModule | `TModuleType | `TType | `TClass | `TClassType
-      | `TPage as kind -> `Root (UnitName.of_string identifier, kind)
+      | `TPage as kind -> `Root (identifier, kind)
       | _ ->
         expected
           ["module"; "module-type"; "type"; "class"; "class-type"; "page"]
@@ -291,7 +291,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
     in
 
     match tokens with
-    | [] -> `Root (UnitName.of_string identifier, kind)
+    | [] -> `Root (identifier, kind)
     | next_token::tokens ->
       match kind with
       | `TUnknown -> `Dot (label_parent next_token tokens, identifier)

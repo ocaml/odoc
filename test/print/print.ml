@@ -154,7 +154,7 @@ struct
     | `Resolved parent ->
       List [Atom "resolved"; resolved (parent :> Reference.Resolved.t)]
     | `Root (s, k) ->
-      List [Atom "root"; Atom (UnitName.to_string s); tag k]
+      List [Atom "root"; Atom s; tag k]
     | `Dot (parent, s) ->
       List [Atom "dot"; Atom (s); reference (parent :> Reference.t)]
     | `Module (parent, s) ->

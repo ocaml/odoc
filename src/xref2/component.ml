@@ -459,7 +459,8 @@ module Fmt = struct
         | TypExt e ->
             Format.fprintf ppf "@[<v 2>type_extension %a@]@," extension e
         | Value (id, v) ->
-            Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value (Delayed.get v)
+            Format.fprintf ppf "@[<v 2>val %a %a@]@," Ident.fmt id value
+              (Delayed.get v)
         | External (id, e) ->
             Format.fprintf ppf "@[<v 2>external %a %a@]@," Ident.fmt id
               external_ e
@@ -1083,8 +1084,7 @@ module Fmt = struct
     match r with
     | `Resolved r' ->
         Format.fprintf ppf "resolved(%a)" model_resolved_reference r'
-    | `Root (name, _) ->
-        Format.fprintf ppf "unresolvedroot(%s)" (UnitName.to_string name)
+    | `Root (name, _) -> Format.fprintf ppf "unresolvedroot(%s)" name
     | `Dot (parent, str) ->
         Format.fprintf ppf "%a.%s" model_reference (parent :> t) str
     | `Module (parent, name) ->
@@ -1884,10 +1884,7 @@ module Of_Lang = struct
   and module_of_module_substitution ident_map
       (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let manifest = module_path ident_map t.manifest in
-    let canonical =
-      Some
-        (manifest, `Root (Odoc_model.Names.UnitName.of_string "dummy", `TModule))
-    in
+    let canonical = Some (manifest, `Root ("dummy", `TModule)) in
     {
       Module.doc = docs ident_map t.doc;
       type_ = Alias manifest;

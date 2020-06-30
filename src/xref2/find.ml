@@ -130,7 +130,8 @@ let any_in_sig (s : Signature.t) name =
         Some (`TypeSubstitution (id, ts))
     | Exception (id, exc) :: _ when N.exception_ id = name ->
         Some (`Exception (id, exc))
-    | Value (id, v) :: _ when N.value id = name -> Some (`Value (id, Delayed.get v))
+    | Value (id, v) :: _ when N.value id = name ->
+        Some (`Value (id, Delayed.get v))
     | External (id, vex) :: _ when N.value id = name ->
         Some (`External (id, vex))
     | Class (id, rec_, c) :: _ when N.class_ id = name ->

@@ -57,7 +57,7 @@ module Reference = struct
   let rec ref_to_string : Reference.t -> string =
     let open Reference in
     function
-    | `Root (s, _) -> UnitName.to_string s
+    | `Root (s, _) -> s
     | `Dot (parent, s) -> ref_to_string (parent :> t) ^ "." ^ s
     | `Module (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ModuleName.to_string s)
     | `ModuleType (parent, s) -> ref_to_string (parent :> t) ^ "." ^ (ModuleTypeName.to_string s)
@@ -88,7 +88,7 @@ module Reference = struct
     | `Root (s, _) ->
       begin match text with
         | None ->
-          let s = source_of_code (Odoc_model.Names.UnitName.to_string s) in
+          let s = source_of_code s in
           [inline @@ Inline.Source s]
         | Some s ->
           [inline @@ Inline.InternalLink (InternalLink.Unresolved s)]
