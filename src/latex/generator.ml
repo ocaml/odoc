@@ -45,6 +45,7 @@ type elt =
   | Description of (t * t) list
   | Subpage of t
   | Table of table
+  | Ligaturable of string
 
 and section = {level:int; label:string option; content:t }
 and list_info = { typ : Block.list_type; items: t list }
@@ -243,9 +244,8 @@ let filter_map f x =
     | None -> acc)
     [] x
 
-
 let elt_size (x:elt) = match x with
-  | Txt _ | Internal_ref _ | External_ref _ | Label _ | Style _ | Inlined_code _ | Code_fragment _ | Tag _ | Break _ -> Small
+  | Txt _ | Internal_ref _ | External_ref _ | Label _ | Style _ | Inlined_code _ | Code_fragment _ | Tag _ | Break _ | Ligaturable _ -> Small
   | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Subpage _ | Description _-> Large
   | Table _  -> Huge
 
@@ -268,6 +268,11 @@ let txt ~verbatim ~in_source ws =
     | [] -> []
     | l -> [ Txt l ]
 
+let entity ~in_source ~verbatim x =
+  if in_source && not verbatim then
+    Ligaturable (escape_entity x)
+  else
+    Txt [escape_entity x]
 
 let rec pp_elt ppf = function
   | Txt words ->
@@ -296,6 +301,7 @@ let rec pp_elt ppf = function
   | Table { row_size=Small|Empty; tbl } -> small_table ppf tbl
   | Label x -> mlabel ppf x
   | Subpage x ->  sub pp ppf x
+  | Ligaturable s -> Fmt.string ppf s
 
 and pp ppf = function
   | [] -> ()
@@ -304,6 +310,8 @@ and pp ppf = function
     pp ppf ( t :: q )
   | Break a :: (Break b :: q) ->
     pp ppf ( Break (max a b) :: q)
+  | Ligaturable "-" :: Ligaturable ">" :: q ->
+     Fmt.string ppf {|$\rightarrow$|}; pp ppf q
   | a :: q ->
     pp_elt ppf a; pp ppf q
 
@@ -391,7 +399,7 @@ and inline ~in_source ~verbatim (l : Inline.t) =
     | Source c ->
       [Inlined_code (source (inline ~verbatim:false ~in_source:true) c)]
     | Raw_markup r -> raw_markup r
-    | Entity s -> txt ~in_source ~verbatim:true [escape_entity s] in
+    | Entity s -> [entity ~in_source ~verbatim s] in
 
   let take_text (l: Inline.t) =
     Doctree.Take.until l ~classify:(function
