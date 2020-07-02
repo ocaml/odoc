@@ -475,38 +475,44 @@ and read_row env _px row =
 and read_object env fi nm =
   let open TypeExpr in
   let open TypeExpr.Object in
-  match nm with
-  | None ->
-      let (fields, rest) = Ctype.flatten_fields fi in
-      let present_fields =
-        List.fold_right
-          (fun (n, k, t) l ->
-             match Btype.field_kind_repr k with
-             | Fpresent -> (n, t) :: l
-             | _ -> l)
-          fields []
-      in
-      let sorted_fields =
-        List.sort (fun (n, _) (n', _) -> compare n n') present_fields
-      in
-      let methods =
-        List.map
-          (fun (name, typ) -> Method {name; type_ = read_type_expr env typ})
-          sorted_fields
-      in
-      let open_ =
-        match rest.desc with
-        | Tvar _ | Tunivar _ -> true
-        | Tconstr _ -> true
-        | Tnil -> false
-        | _ -> assert false
-      in
-      Object {fields = methods; open_}
-  | Some (p, _ :: params) ->
-      let p = Env.Path.read_class_type env p in
-      let params = List.map (read_type_expr env) params in
-      Class (p, params)
-  | _ -> assert false
+  let fi = Btype.repr fi in
+  let px = Btype.proxy fi in
+  if used_alias px then Var (name_of_type fi)
+  else begin
+    use_alias px;
+    match nm with
+    | None ->
+        let (fields, rest) = Ctype.flatten_fields fi in
+        let present_fields =
+          List.fold_right
+            (fun (n, k, t) l ->
+               match Btype.field_kind_repr k with
+               | Fpresent -> (n, t) :: l
+               | _ -> l)
+            fields []
+        in
+        let sorted_fields =
+          List.sort (fun (n, _) (n', _) -> compare n n') present_fields
+        in
+        let methods =
+          List.map
+            (fun (name, typ) -> Method {name; type_ = read_type_expr env typ})
+            sorted_fields
+        in
+        let open_ =
+          match rest.desc with
+          | Tvar _ | Tunivar _ -> true
+          | Tconstr _ -> true
+          | Tnil -> false
+          | _ -> assert false
+        in
+        Object {fields = methods; open_}
+    | Some (p, _ :: params) ->
+        let p = Env.Path.read_class_type env p in
+        let params = List.map (read_type_expr env) params in
+        Class (p, params)
+    | _ -> assert false
+  end
 
 let read_value_description env parent id vd =
   let open Signature in
