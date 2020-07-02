@@ -1,0 +1,16 @@
+(executable
+ (name test)
+ (libraries odoc_xref2 odoc_xref_test))
+
+(rule
+ (targets test.output)
+ (deps test.bc)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ./test.bc))))
+
+(alias
+ (name runtest)
+ (action
+  (diff test.expected test.output)))

@@ -1,6 +1,7 @@
 (rule
  (targets refs.output)
- (deps (package odoc))
+ (deps
+  (package odoc))
  (action
   (run ocaml-mdx test -o %{targets} %{dep:refs.md})))
 
