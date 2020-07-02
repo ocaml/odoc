@@ -6,9 +6,11 @@
  (targets test.output)
  (deps test.bc)
  (action
-    (with-stdout-to %{targets} (run ./test.bc))))
+  (with-stdout-to
+   %{targets}
+   (run ./test.bc))))
 
 (alias
  (name runtest)
- (action (diff test.expected test.output)))
-
+ (action
+  (diff test.expected test.output)))
