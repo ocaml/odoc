@@ -74,7 +74,6 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       then {unit with content = Odoc_model.Lang.Compilation_unit.Module []; expansion=None }
       else unit
     in
-(*    let unit = Odoc_xref.Lookup.lookup unit in *)
     let odoctree =
       let env = Env.build env (`Unit unit) in
       (* let startlink = Unix.gettimeofday () in *)
@@ -90,8 +89,6 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
     
     Odoc_xref2.Tools.reset_caches ();
     Hashtbl.clear Compilation_unit.units_cache;
-    Gc.full_major ();
- 
 
    Compilation_unit.save Fs.File.(set_ext ".odocl" input) odoctree;
 
@@ -116,15 +113,6 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
       Format.fprintf fmt "%t@?" content;
       close_out oc
     );
-
-    Odoc_xref2.Tools.reset_caches ();
-    Hashtbl.clear Compilation_unit.units_cache;
-    Gc.full_major ();
-
-    (* let rec loop_forever () =
-      Thread.delay 1.0;
-      loop_forever ()
-    in ignore(loop_forever ()); *)
 
     Ok ()
 
