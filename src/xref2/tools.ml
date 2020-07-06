@@ -476,7 +476,7 @@ and lookup_module :
     | `Local lpath -> Error (`Local (env, lpath))
     | `Identifier i ->
         of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
-        >>= fun (`Module (_, m)) -> Ok m
+        >>= fun (`Module (_, m)) -> Ok (Component.Delayed.get m)
     | `Substituted x -> lookup_module ~mark_substituted env x
     | `Apply (functor_path, `Resolved argument_path) -> (
         match lookup_module ~mark_substituted env functor_path with
@@ -659,6 +659,7 @@ and resolve_module :
     | `Resolved (`Identifier i as resolved_path) as unresolved ->
         of_option ~unresolved (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) ->
+        let m = Component.Delayed.get m in
         return (process_module_path env ~add_canonical m resolved_path, m)
     | `Resolved r as unresolved -> (
         match lookup_module ~mark_substituted env r with
@@ -672,6 +673,7 @@ and resolve_module :
         (* Format.fprintf Format.err_formatter "Looking up module %s by name...%!" r; *)
         match Env.lookup_root_module r env with
         | Some (Env.Resolved (_, p, m)) ->
+            let m = Component.Delayed.get m in
             (* Format.fprintf Format.err_formatter "Got it!\n%!"; *)
             return
               ( process_module_path env ~add_canonical m

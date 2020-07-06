@@ -50,6 +50,10 @@ module Delayed = struct
    fun f ->
     if !eager then { v = Some (f ()); get = None }
     else { v = None; get = Some f }
+
+  let put_val : 'a -> 'a t =
+   fun v -> { v = Some v; get = None }
+
 end
 
 module Opt = struct
@@ -384,7 +388,7 @@ end =
 module Element = struct
   open Odoc_model.Paths
 
-  type module_ = [ `Module of Identifier.Path.Module.t * Module.t ]
+  type module_ = [ `Module of Identifier.Path.Module.t * Module.t Delayed.t ]
 
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
 

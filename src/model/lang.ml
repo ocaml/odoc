@@ -376,7 +376,9 @@ end =
 
 module rec Compilation_unit : sig
   module Import : sig
-    type t = Unresolved of string * Digest.t option | Resolved of Root.t
+    type t =
+        Unresolved of string * Digest.t option
+      | Resolved of Root.t * Names.ModuleName.t
   end
 
   module Source : sig

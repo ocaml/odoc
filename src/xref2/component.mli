@@ -23,6 +23,8 @@ module Delayed : sig
   val get : 'a t -> 'a
 
   val put : (unit -> 'a) -> 'a t
+
+  val put_val : 'a -> 'a t
 end
 
 module Opt : sig
@@ -362,7 +364,7 @@ end
 module Element : sig
   open Odoc_model.Paths
 
-  type module_ = [ `Module of Identifier.Path.Module.t * Module.t ]
+  type module_ = [ `Module of Identifier.Path.Module.t * Module.t Delayed.t ]
 
   type module_type = [ `ModuleType of Identifier.ModuleType.t * ModuleType.t ]
 

@@ -337,14 +337,17 @@ and module_expansion :
             | FunctorParameter.Unit -> env
             | Named arg ->
                 let identifier = arg.FunctorParameter.id in
+                let m =
+                  Component.module_of_functor_argument
+                    (Component.Of_Lang.functor_parameter
+                       Component.Of_Lang.empty
+                       (Ident.Of_Identifier.functor_parameter arg.id)
+                       arg)
+                in
                 let env' =
                   Env.add_module
                     (identifier :> Id.Path.Module.t)
-                    (Component.module_of_functor_argument
-                       (Component.Of_Lang.functor_parameter
-                          Component.Of_Lang.empty
-                          (Ident.Of_Identifier.functor_parameter arg.id)
-                          arg))
+                    (Component.Delayed.put_val m)
                     env
                 in
                 env')
@@ -393,6 +396,7 @@ and module_ : Env.t -> Module.t -> Module.t =
             Component.Fmt.model_identifier
             (m.id :> Id.t)
     in
+    let m' = Component.Delayed.get m' in
     let env = Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env in
     let t2 = Unix.gettimeofday () in
     let type_ = module_decl env sg_id m.type_ in
@@ -556,6 +560,7 @@ and functor_parameter_parameter :
     let open Utils.ResultMonad in
     Env.(lookup_by_id s_module) a.id env' |> of_option ~error:"lookup"
     >>= fun (`Module (_, functor_arg)) ->
+    let functor_arg = Component.Delayed.get functor_arg in
     let env =
       Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
     in
