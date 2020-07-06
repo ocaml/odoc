@@ -41,3 +41,18 @@
 (alias
  (name runtest)
  (action (diff expect/parser_errors_fatal.txt parser_errors_fatal.output)))
+
+(rule
+ (deps cases/impl_only.ml)
+ (targets impl_only.output)
+ (action
+  (progn
+   (run %{ocamlc} -bin-annot -o impl_only.cmt -c cases/impl_only.ml)
+   (with-stderr-to
+    impl_only.output
+    (run odoc compile --package foo impl_only.cmt)))))
+
+(alias
+ (name runtest)
+ (action
+  (diff expect/impl_only.txt impl_only.output)))
