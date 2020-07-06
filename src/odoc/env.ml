@@ -121,7 +121,19 @@ module Accessible_paths = struct
       Odoc_model.Root.Hash_table.find t.root_map root
 end
 
-let rec lookup_unit ~important_digests ap target_name =
+module StringMap = Map.Make(String)
+
+let build_imports_map imports =
+  List.fold_left
+    (fun map import ->
+       match import with
+       | Odoc_model.Lang.Compilation_unit.Import.Unresolved (name, _) ->
+         StringMap.add name import map
+       | Odoc_model.Lang.Compilation_unit.Import.Resolved (_, name) ->
+         StringMap.add (Odoc_model.Names.ModuleName.to_string name) import map)
+    StringMap.empty imports
+
+let lookup_unit ~important_digests ap target_name import_map =
   let handle_root (root : Odoc_model.Root.t) = match root.file with
     | Compilation_unit {hidden; _} -> Odoc_xref2.Env.Found {root; hidden}
     | Page _ -> assert false
@@ -147,25 +159,20 @@ let rec lookup_unit ~important_digests ap target_name =
       try handle_root @@ List.find (fun root -> root.Odoc_model.Root.digest = d) roots
       with Not_found -> Odoc_xref2.Env.Not_found
   in
-  function
-  | [] when important_digests -> Odoc_xref2.Env.Not_found
-  | [] -> find_root ~digest:None
-  | import :: imports ->
-    match import with
-    | Odoc_model.Lang.Compilation_unit.Import.Unresolved (name, digest)
-      when name = target_name ->
-      begin match digest with
-      | None when important_digests -> Forward_reference
+  match StringMap.find target_name import_map with
+  | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, digest) -> begin
+      match digest with
+      | None when important_digests -> Odoc_xref2.Env.Forward_reference
       | _ -> find_root ~digest
-      end
-    | Odoc_model.Lang.Compilation_unit.Import.Resolved root
-      when Odoc_model.Root.Odoc_file.name root.file =
-          target_name -> begin
-        match root.file with
-        | Compilation_unit {hidden; _} -> Found {root; hidden}
-        | Page _ -> assert false
-      end
-    | _ -> lookup_unit ~important_digests ap target_name imports
+    end
+  | Odoc_model.Lang.Compilation_unit.Import.Resolved(root, _) -> begin
+      match root.file with
+      | Compilation_unit {hidden; _} -> Found {root; hidden}
+      | Page _ -> assert false
+    end
+  | exception Not_found ->
+    if important_digests then Odoc_xref2.Env.Not_found
+    else find_root ~digest:None
 
 let lookup_page ap target_name =
   match Accessible_paths.find_root ap ~filename:("page-" ^ target_name) with
@@ -196,27 +203,33 @@ type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 let create ?(important_digests=true) ~directories ~open_modules : builder =
   let ap = Accessible_paths.create ~directories in
   fun unit_or_page ->
-    let lookup_unit target_name : Odoc_xref2.Env.lookup_unit_result =
-      match unit_or_page with
-      | `Page _ -> lookup_unit ~important_digests:false ap target_name []
-      | `Unit unit ->
-        let lookup_result =
-          lookup_unit
-            ~important_digests
-            ap
-            target_name
-            unit.Odoc_model.Lang.Compilation_unit.imports
+    let lookup_unit =
+    match unit_or_page with
+    | `Page _ ->
+      fun target_name ->
+        lookup_unit ~important_digests:false ap target_name StringMap.empty
+    | `Unit unit ->
+        let imports_map =
+          build_imports_map unit.Odoc_model.Lang.Compilation_unit.imports
         in
-        match lookup_result with
-        | Not_found -> begin
-            let root = Compilation_unit.root unit in
-            match root.file with
-            | Page _ -> assert false
-            | Compilation_unit {name;hidden} when target_name = name ->
-              Found { root; hidden }
-            | Compilation_unit _ -> Not_found
-          end
-        | x -> x
+        fun target_name ->
+          let lookup_result =
+            lookup_unit
+              ~important_digests
+              ap
+              target_name
+              imports_map
+          in
+          match lookup_result with
+          | Not_found -> begin
+              let root = Compilation_unit.root unit in
+              match root.file with
+              | Page _ -> assert false
+              | Compilation_unit {name;hidden} when target_name = name ->
+                Found { root; hidden }
+              | Compilation_unit _ -> Not_found
+            end
+          | x -> x
     in
     let fetch_unit root : (Odoc_model.Lang.Compilation_unit.t, _) Result.result =
       match unit_or_page with

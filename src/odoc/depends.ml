@@ -73,7 +73,7 @@ let deps_of_odoc_file ~deps input =
     List.iter odoctree.Odoc_model.Lang.Compilation_unit.imports ~f:(fun import ->
         match import with
         | Odoc_model.Lang.Compilation_unit.Import.Unresolved _  -> ()
-        | Odoc_model.Lang.Compilation_unit.Import.Resolved root ->
+        | Odoc_model.Lang.Compilation_unit.Import.Resolved(root, _) ->
             Hash_set.add deps root
       );
     Ok ()

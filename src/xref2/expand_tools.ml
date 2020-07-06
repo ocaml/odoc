@@ -167,7 +167,8 @@ and handle_expansion env id expansion =
         in
         let env' =
           Env.add_module identifier
-            (Component.module_of_functor_argument arg)
+            (Component.Delayed.put_val
+               (Component.module_of_functor_argument arg))
             env
         in
         let subst =

@@ -244,6 +244,7 @@ and module_ : Env.t -> Module.t -> Module.t =
         lookup_failure ~what:(`Module m.id) `Lookup;
         m
     | Some (`Module (_, m')) ->
+        let m' = Component.Delayed.get m' in
         let env' =
           Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env
         in
@@ -402,6 +403,7 @@ and functor_parameter_parameter :
   match
     Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
     >>= fun (`Module (_, functor_arg)) ->
+    let functor_arg = Component.Delayed.get functor_arg in
     let env =
       Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
     in

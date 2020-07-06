@@ -9,7 +9,8 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t
+       * Component.Module.t Component.Delayed.t)
   | Forward
 
 type resolver = {
@@ -45,7 +46,7 @@ val add_fragment_root : Component.Signature.t -> t -> t
 
 val add_module :
   Odoc_model.Paths_types.Identifier.reference_module ->
-  Component.Module.t ->
+  Component.Module.t Component.Delayed.t ->
   t ->
   t
 
@@ -187,7 +188,9 @@ val initial_env :
   Odoc_model.Lang.Compilation_unit.Import.t list * t
 
 val modules_of :
-  t -> (Odoc_model.Paths.Identifier.Path.Module.t * Component.Module.t) list
+  t ->
+  (Odoc_model.Paths.Identifier.Path.Module.t
+   * Component.Module.t Component.Delayed.t) list
 
 val len : int ref
 
