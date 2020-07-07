@@ -69,11 +69,18 @@ let path_to_id path =
   | Error _ -> None
   | Ok url -> Some url
 
-let attach_expansion ?(status=`Default) page text = match page with
-  | None -> O.documentedSrc text
-  | Some content ->
+let attach_expansion ?(status=`Default) (eq, o, e) page text =
+  match page with
+  | None -> O.documentedSrc (text)
+  | Some (page : Page.t) ->
+    let url = page.url in
     let summary = O.render text in
-    [DocumentedSrc.Subpage { summary ; content ; status }]
+    let expansion =
+      O.documentedSrc (O.txt eq ++ O.keyword o)
+      @ DocumentedSrc.[Subpage { status ; content = page }]
+      @ O.documentedSrc (O.keyword e)
+    in
+    DocumentedSrc.[Alternative (Expansion { summary; url ; status; expansion })]
 
 include Generator_signatures
 
@@ -1058,12 +1065,14 @@ struct
         let items = class_signature csig in
         let url = Url.Path.from_identifier t.id in
         let header = format_title `Class (make_name_from_path url) @ doc in
-        let page = Subpage.Page { title = name ; header ; items ; url } in
+        let page = { Page.title = name ; header ; items ; url } in
         O.documentedSrc @@ path url [inline @@ Text name],
         Some page
     in
-    let cd = attach_expansion expansion
-        (O.txt Syntax.Type.annotation_separator ++ class_decl t.type_)
+    let summary = O.txt Syntax.Type.annotation_separator ++ class_decl t.type_ in
+    let cd =
+      attach_expansion
+        (Syntax.Type.annotation_separator,"object","end") expansion summary
     in
     let content =
       let open Lang.Signature in
@@ -1101,12 +1110,14 @@ struct
         let doc = Comment.standalone t.doc in
         let items = class_signature csig in
         let header = format_title `Cty (make_name_from_path url) @ doc in
-        let page = Subpage.Page { title = name ; header ; items ; url } in
+        let page = { Page.title = name ; header ; items ; url } in
         O.documentedSrc @@ path url [inline @@ Text name],
         Some page
     in
     let expr =
-      attach_expansion expansion (O.txt " = " ++ class_type_expr t.expr)
+      attach_expansion
+        (" = ","object","end")
+        expansion (class_type_expr t.expr)
     in
     let content =
       let open Lang.Signature in
@@ -1244,14 +1255,20 @@ struct
               format_title `Arg (make_name_from_path url) @ prelude
             in
             let title = name in
-            let content = Subpage.Page { items ; title ; header ; url } in
+            let content = { Page.items ; title ; header ; url } in
             let summary =
               O.render (
                 O.txt Syntax.Type.annotation_separator
                 ++ mty (arg.id :> Paths.Identifier.Signature.t) render_ty)
             in
             let status = `Default in
-            [DocumentedSrc.Subpage { content ; summary ; status }]
+            let expansion =
+              O.documentedSrc
+                (O.txt Syntax.Type.annotation_separator ++ O.keyword "sig")
+              @ DocumentedSrc.[Subpage { content ; status }]
+              @ O.documentedSrc (O.keyword "end")
+            in
+            DocumentedSrc.[ Alternative (Expansion {status=`Default; summary; url; expansion })]
           in
           O.documentedSrc (O.keyword "module" ++ O.txt " " ++ modname)
           @ modtyp
@@ -1303,11 +1320,11 @@ struct
         in
         let prelude =
           [Item.Heading {
-            label = Some "heading" ; level = 2 ; title = [inline @@ Text "Parameters"];
+            label = Some "parameters" ; level = 2 ; title = [inline @@ Text "Parameters"];
           }]
           @ params
           @ [Item.Heading {
-            label = Some "heading" ; level = 2 ; title = [inline @@ Text "Signature"];
+            label = Some "signature" ; level = 2 ; title = [inline @@ Text "Signature"];
           }]
         in
         prelude, content
@@ -1318,23 +1335,24 @@ struct
       Item.t
     = fun recursive t ->
       let modname = Paths.Identifier.name t.id in
-      let modname, expansion =
+      let modname, status, expansion =
         match t.expansion with
         | None ->
           O.documentedSrc (O.txt modname),
+          `Default,
           None
         | Some expansion ->
-          let expansion =
+          let status, expansion =
             match expansion with
             | AlreadyASig ->
               begin match t.type_ with
               | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
-                Odoc_model.Lang.Module.Signature sg
+                `Inline, Odoc_model.Lang.Module.Signature sg
               | _ ->
                 Format.eprintf "Inconsistent expansion: %s\n%!" modname;
                 assert false
               end
-            | e -> e
+            | e -> `Default, e
           in
           let doc = Comment.standalone t.doc in
           let prelude, items = module_expansion expansion in
@@ -1344,15 +1362,20 @@ struct
           let header =
             format_title `Mod (make_name_from_path url) @ doc @ prelude
           in
-          let page = Subpage.Page {items ; title ; header ; url } in
-          O.documentedSrc link, Some page
+          let page = {Page.items ; title ; header ; url } in
+          O.documentedSrc link, status, Some page
       in
-      let modexpr =
-        attach_expansion expansion @@
+      let summary =
         module_decl (t.id :> Paths.Identifier.Signature.t)
           (match t.display_type with
             | None -> t.type_
             | Some t -> t)
+      in
+      let modexpr =
+        attach_expansion
+          ~status
+          (Syntax.Type.annotation_separator,"sig","end")
+          expansion summary
       in
       let content =
         let keyword' =
@@ -1423,15 +1446,17 @@ struct
         let header =
           format_title `Mty (make_name_from_path url) @ doc @ prelude
         in
-        let page = Subpage.Page {items ; title ; header ; url } in
+        let page = {Page.items ; title ; header ; url } in
         O.documentedSrc link, Some page
     in
-    let mty =
-      attach_expansion expansion @@
-      match expr with
+    let summary =
+      match t.expr with
       | None -> O.noop
       | Some expr ->
         O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
+    in
+    let mty =
+      attach_expansion (" = ","sig","end") expansion summary
     in
     let content =
       O.documentedSrc (
@@ -1538,13 +1563,6 @@ struct
   and include_ (t : Odoc_model.Lang.Include.t) =
     (* Special-case the construct 'include module type of struct include X end'
        by rendering the inner include contents *)
-    let content_t =
-      let open Odoc_model.Lang in
-      match t.decl with
-      | Module.ModuleType (ModuleType.TypeOf (Module.ModuleType (ModuleType.Signature [Include t]))) ->
-        t
-      | _ -> t
-    in
     let status =
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
@@ -1553,24 +1571,27 @@ struct
       else if List.exists is_closed_tag t.doc then `Closed
       else `Default
     in
-    let content =
-      Subpage.Items (signature content_t.expansion.content)
+    let content_t =
+      let open Odoc_model.Lang in
+      match t.decl with
+      | Module.ModuleType (ModuleType.TypeOf (Module.ModuleType (ModuleType.Signature [Include t]))) ->
+        t
+      | _ -> t
     in
-    let summary = match t.inline with
-      | true -> O.render (O.txt "")
-      | false  ->
-        O.render (
-          O.keyword "include" ++
-            O.txt " " ++
-            module_decl' t.parent t.decl ++
-            (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
-        )
+    let content = signature content_t.expansion.content in
+    let summary =
+      O.render (
+        O.keyword "include" ++
+          O.txt " " ++
+          module_decl' t.parent t.decl ++
+          (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
+      )
     in
-    let content = {Subpage. content; status; summary} in
+    let content = {Include. content; status; summary} in
     let kind = Some "include" in
     let anchor = None in
     let doc = Comment.first_to_ir t.doc in
-    Item.Subpage {kind ; anchor ; doc ; content}
+    Item.Include {kind ; anchor ; doc ; content}
 
 end
 open Module

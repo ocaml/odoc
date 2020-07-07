@@ -15,6 +15,8 @@ type style = [
 
 type raw_markup_target = [
   | `Html
+  | `Latex
+  | `Manpage
 ]
 
 type leaf_inline_element = [

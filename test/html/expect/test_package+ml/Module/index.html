@@ -25,16 +25,16 @@
    </p>
   </header>
   <div class="content">
-   <dl>
-    <dt class="spec value" id="val-foo">
+   <div>
+    <div class="spec value" id="val-foo">
      <a href="#val-foo" class="anchor"></a><code><span class="keyword">val</span> foo : unit</code>
-    </dt>
-    <dd>
+    </div>
+    <div>
      <p>
       The module needs at least one signature item, otherwise a bug causes the compiler to drop the module comment (above). See <a href="https://caml.inria.fr/mantis/view.php?id=7701">https://caml.inria.fr/mantis/view.php?id=7701</a>.
      </p>
-    </dd>
-   </dl>
+    </div>
+   </div>
    <div class="spec module-type" id="module-type-S">
     <a href="#module-type-S" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S/index.html">S</a> = <span class="keyword">sig</span> ... <span class="keyword">end</span></code>
    </div>
@@ -53,11 +53,9 @@
    <div class="spec module-type" id="module-type-S5">
     <a href="#module-type-S5" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S5/index.html">S5</a> = <a href="module-type-S/index.html">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <span>'a <a href="module-type-S/index.html#type-v">v</a></span> := <span><span class="type-var">'a</span> list</span></code>
    </div>
-   <dl>
-    <dt class="spec type" id="type-result">
-     <a href="#type-result" class="anchor"></a><code><span class="keyword">type</span> <span>('a, 'b) result</span></code>
-    </dt>
-   </dl>
+   <div class="spec type" id="type-result">
+    <a href="#type-result" class="anchor"></a><code><span class="keyword">type</span> <span>('a, 'b) result</span></code>
+   </div>
    <div class="spec module-type" id="module-type-S6">
     <a href="#module-type-S6" class="anchor"></a><code><span class="keyword">module</span> <span class="keyword">type</span> <a href="module-type-S6/index.html">S6</a> = <a href="module-type-S/index.html">S</a> <span class="keyword">with</span> <span class="keyword">type</span> <span>('a, 'b) <a href="module-type-S/index.html#type-w">w</a></span> := <span><span>(<span class="type-var">'a</span>,&nbsp;<span class="type-var">'b</span>)</span> <a href="index.html#type-result">result</a></span></code>
    </div>

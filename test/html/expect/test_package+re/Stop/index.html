@@ -25,16 +25,16 @@
    </p>
   </header>
   <div class="content">
-   <dl>
-    <dt class="spec value" id="val-foo">
+   <div>
+    <div class="spec value" id="val-foo">
      <a href="#val-foo" class="anchor"></a><code><span class="keyword">let</span> foo: int;</code>
-    </dt>
-    <dd>
+    </div>
+    <div>
      <p>
       This is normal commented text.
      </p>
-    </dd>
-   </dl>
+    </div>
+   </div>
    <aside>
     <p>
      The next value is <code>bar</code>, and it should be missing from the documentation. There is also an entire module, <code>M</code>, which should also be hidden. It contains a nested stop comment, but that stop comment should not turn documentation back on in this outer module, because stop comments respect scope.
@@ -49,11 +49,9 @@
    <div class="spec module" id="module-N">
     <a href="#module-N" class="anchor"></a><code><span class="keyword">module</span> <a href="N/index.html">N</a>: { ... };</code>
    </div>
-   <dl>
-    <dt class="spec value" id="val-lol">
-     <a href="#val-lol" class="anchor"></a><code><span class="keyword">let</span> lol: int;</code>
-    </dt>
-   </dl>
+   <div class="spec value" id="val-lol">
+    <a href="#val-lol" class="anchor"></a><code><span class="keyword">let</span> lol: int;</code>
+   </div>
   </div>
  </body>
 </html>

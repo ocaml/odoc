@@ -112,24 +112,41 @@ and DocumentedSrc : sig
     | Documented of Inline.t documented
     | Nested of t documented
     | Subpage of Subpage.t
+    | Alternative of Alternative.t
 
 end = DocumentedSrc
+
+and Alternative : sig
+  type expansion = { status:[ `Inline | `Open | `Closed | `Default ]; summary: Source.t; expansion: DocumentedSrc.t; url: Url.Path.t }
+  type t =
+    | Expansion of expansion
+
+end =
+  Alternative
 
 and Subpage : sig
 
   type status = [ `Inline | `Open | `Closed | `Default ]
 
   type t = {
-    summary : Source.t ;
     status : status ;
-    content : content ;
+    content : Page.t ;
   }
 
-  and content =
-    | Items of Item.t list
-    | Page of Page.t
 
 end = Subpage
+
+and Include : sig
+
+  type status = [ `Inline | `Open | `Closed | `Default ]
+
+  type t = {
+    status : status ;
+    content : Item.t list ;
+    summary: Source.t
+  }
+
+end = Include
 
 
 and Item : sig
@@ -148,7 +165,7 @@ and Item : sig
     | Text of text
     | Heading of Heading.t
     | Declaration of DocumentedSrc.t item
-    | Subpage of Subpage.t item
+    | Include of Include.t item
 
 end = Item
 
