@@ -408,14 +408,13 @@ let heading ~nested {Heading. label = _ ; level ; title } =
   else
     font "B" (prefix ++ inline (strip title))
 
-let subpage_not_inlined p = match p.Subpage.content with
-  | Page p -> not (Link.should_inline p.url)
-  | _ -> true
+let expansion_not_inlined url = not (Link.should_inline url)
 
 let take_code l =
   let c, _, rest = Take.until l ~classify:(function
     | DocumentedSrc.Code c -> Accum c
-    | DocumentedSrc.Subpage p when subpage_not_inlined p -> Accum p.summary
+    | DocumentedSrc.Alternative (Expansion e)
+      when expansion_not_inlined e.url -> Accum e.summary
     | _ -> Stop_and_keep)
   in
   c, rest
@@ -434,17 +433,19 @@ let rec documentedSrc (l : DocumentedSrc.t) = match l with
       let c, rest = take_code l in
       source_code c
       ++ continue rest
-    | Subpage p ->
-      begin match p.content with
-      | Page p when Link.should_inline p.url ->
-        let p = subpage p in
-        p
-        ++ continue rest
-      | _ ->
-        let c, rest = take_code l in
-        source_code c
-        ++ continue rest
+    | Alternative alt -> begin
+        match alt with
+        | Expansion { expansion; url; _ } ->
+          if expansion_not_inlined url then
+            let c, rest = take_code l in
+            source_code c
+            ++ continue rest
+          else
+            documentedSrc expansion
       end
+    | Subpage p ->
+       subpage p.content
+       ++ continue rest
     | Documented _
     | Nested _ ->
       let lines, _, rest = Take.until l ~classify:(function
@@ -471,23 +472,13 @@ let rec documentedSrc (l : DocumentedSrc.t) = match l with
       ++ break_if_nonempty rest
       ++ continue rest
 
-and subpage { title = _; header = _ ; items; url } =
+and subpage { title = _; header = _ ; items; url = _ } =
   let content = items in
   let surround body =
-    let mk sep s1 s2 =
-      if content = [] then
-        sp ++ str sep ++ sp ++ font "CB" (str s1) ++ sp ++ font "CB" (str s2)
-      else
-        indent 2 (sp ++ str sep ++ sp ++ font "CB" (str s1) ++ break ++ body)
-        ++ break
-        ++ font "CB" (str s2)
-    in
-    match url.kind with
-    | "module" | "argument" -> mk ":" "sig" "end"
-    | "module-type"         -> mk "=" "sig" "end"
-    | "class"               -> mk ":" "object" "end"
-    | "class-type"          -> mk "=" "object" "end"
-    | _                     -> mk ":" "begin" "end"
+    if content = [] then sp
+    else
+      indent 2 (break ++ body)
+      ++ break
   in
   surround @@ item ~nested:true content
 
@@ -512,13 +503,10 @@ and item ~nested (l : Item.t list) = match l with
         | doc -> env "fi" "nf" "" (indent 2 (break ++ block doc))
       in
       decl ++ doc ++ continue rest
-    | Subpage { kind = _; anchor = _;
+    | Include { kind = _; anchor = _;
       content = { summary; status; content }; doc } ->
       let d = if inline_subpage status then
-          begin match content with
-          | Items i -> item ~nested i
-          | Page p -> item ~nested p.items
-          end
+          item ~nested content
         else
           let s = source_code summary in
           match doc with
@@ -527,12 +515,12 @@ and item ~nested (l : Item.t list) = match l with
       in
       d ++ continue rest
 
-let on_sub (subp : Subpage.t) =
-  match subp.content with
-  | Page p ->
-    if Link.should_inline p.url then Some 1 else None
-  | Items _ ->
-    if inline_subpage subp.status then Some 0 else None
+let on_sub subp =
+  match subp with
+  | `Page p ->
+    if Link.should_inline p.Subpage.content.url then Some 1 else None
+  | `Include incl ->
+    if inline_subpage incl.Include.status then Some 0 else None
 
 let page {Page. title ; header ; items = i ; url} =
   reset_heading ();
@@ -547,14 +535,12 @@ let page {Page. title ; header ; items = i ; url} =
   ++ macro "nf" ""
   ++ item ~nested:false i
 
-let rec subpage p =
-  match p.Subpage.content with
-  | Page p ->
-    if Link.should_inline p.url then
-      []
-    else
-      [render p]
-  | _ -> []
+let rec subpage subp =
+  let p = subp.Subpage.content in
+  if Link.should_inline p.url then
+    []
+  else
+    [render p]
 
 and render (p : Page.t) =
   let content ppf =

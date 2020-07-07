@@ -68,9 +68,9 @@ module Toc = struct
     | Text _
     | Declaration _
       -> Skip
-    | Subpage { content = { status; content; _ }; _ } ->
+    | Include { content = { status; content; _ }; _ } ->
       if on_sub status then
-        Rec (match content with Items i -> i | Page p -> p.items)
+        Rec content
       else Skip
     | Heading { label = None ; _ } -> Skip
     | Heading { label = Some label; level; title } ->
@@ -94,19 +94,16 @@ module Subpages = struct
       | Documented _ -> []
       | Nested { code ; _ } -> walk_documentedsrc code
       | Subpage p -> [p]
+      | Alternative Expansion r -> walk_documentedsrc r.expansion
     )
 
-  let rec walk_subpages (s : Subpage.t) =
-    match s.Subpage.content with
-    | Items is -> walk_items is
-    | _ -> [s]
 
-  and walk_items (l : Item.t list) =
+  let rec walk_items (l : Item.t list) =
     Utils.flatmap l ~f:(function
       | Item.Text _ -> []
       | Heading _ -> []
       | Declaration { content ; _ } -> walk_documentedsrc content
-      | Subpage { content ; _ } -> walk_subpages content
+      | Include i -> walk_items i.content.content
     )
 
   let compute (p : Page.t) = walk_items (p.header @ p.items)
@@ -146,21 +143,30 @@ module Shift = struct
     | Subpage subp :: rest ->
       let subp = subpage ~on_sub shift_state subp in
       Subpage subp :: walk_documentedsrc ~on_sub shift_state rest
+   | Alternative Expansion r :: rest ->
+      let expansion =  walk_documentedsrc ~on_sub shift_state r.expansion in
+      Alternative (Expansion { r with expansion }) :: walk_documentedsrc ~on_sub shift_state rest
 
   and subpage ~on_sub shift_state (subp : Subpage.t) =
-    match on_sub subp with
+    match on_sub (`Page subp) with
     | None -> subp
     | Some i ->
       let shift_state = enter shift_state i in
-      let content = match subp.content with
-        | Items i ->
-          Subpage.Items (walk_item ~on_sub shift_state i)
-        | Page p ->
-          Page {p with
-            header = walk_item ~on_sub shift_state p.header ;
-            items = walk_item ~on_sub shift_state p.items ;
-          }
+      let page = subp.content in
+      let content =
+        {page with
+          header = walk_item ~on_sub shift_state page.header ;
+          items = walk_item ~on_sub shift_state page.items ;
+        }
       in
+      {subp with content}
+
+  and include_ ~on_sub shift_state (subp : Include.t) =
+    match on_sub (`Include subp) with
+    | None -> subp
+    | Some i ->
+      let shift_state = enter shift_state i in
+      let content = walk_item ~on_sub shift_state subp.content in
       {subp with content}
 
   and walk_item ~on_sub shift_state (l : Item.t list) = match l with
@@ -169,10 +175,10 @@ module Shift = struct
       let shift_state, level = shift shift_state level in
       Item.Heading { label; level; title }
       :: walk_item ~on_sub shift_state rest
-    | Subpage subp :: rest ->
-      let content = subpage ~on_sub shift_state subp.content in
+    | Include subp :: rest ->
+      let content = include_ ~on_sub shift_state subp.content in
       let subp = {subp with content} in
-      Item.Subpage subp :: walk_item ~on_sub shift_state rest
+      Item.Include subp :: walk_item ~on_sub shift_state rest
     | Declaration decl :: rest ->
       let decl =
         { decl with content = walk_documentedsrc ~on_sub shift_state decl.content }
