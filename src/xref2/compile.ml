@@ -39,6 +39,14 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
   | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
   | Unresolved p -> Cpath.module_path_of_cpath p
 
+and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t =
+    fun env p ->
+    let cp' = Component.Of_Lang.(class_type_path empty p) in
+    let cp = Cpath.unresolve_class_type_path cp' in
+    match Tools.resolve_class_type_path env cp with
+    | Resolved p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
+    | Unresolved p -> Cpath.class_type_path_of_cpath p
+  
 let lookup_failure ~what =
   let r action =
     let r subject pp_a a =
@@ -120,31 +128,34 @@ and class_type_expr env parent =
   let container = (parent :> Id.Parent.t) in
   function
   | Constr (path, texps) ->
-      Constr (path, List.map (type_expression env container) texps)
+      Constr (class_type_path env path, List.map (type_expression env container) texps)
   | Signature s -> Signature (class_signature env parent s)
 
-and class_type env parent c =
+and class_type env c =
   let open ClassType in
   let expansion =
     match
       let open Utils.OptionMonad in
       Env.(lookup_by_id s_class_type) c.id env >>= fun (`ClassType (_, c')) ->
       Tools.class_signature_of_class_type env c' >>= fun sg ->
-      Some
-        (Lang_of.class_signature Lang_of.empty
-           (c.id :> Paths_types.Identifier.path_class_type)
-           sg)
+      let cs = 
+        Lang_of.class_signature Lang_of.empty
+          (c.id :> Paths_types.Identifier.path_class_type)
+        sg
+      in
+      let compiled = class_signature env (c.id :> Id.ClassSignature.t) cs in
+      Some compiled
     with
     | Some _ as exp -> exp
     | None ->
         lookup_failure ~what:(`Class_type c.id) `Expand;
         c.expansion
   in
-  { c with expr = class_type_expr env parent c.expr; expansion }
+  { c with expr = class_type_expr env (c.id :> Id.ClassSignature.t) c.expr; expansion }
 
 and class_signature env parent c =
   let open ClassSignature in
-  let container = (parent :> Id.Parent.t) in
+  let container = (parent : Id.ClassSignature.t :> Id.Parent.t) in
   let env = Env.open_class_signature c env in
   let map_item = function
     | Method m -> Method (method_ env parent m)
@@ -178,10 +189,10 @@ and class_ env parent c =
       let open Utils.OptionMonad in
       Env.(lookup_by_id s_class) c.id env >>= fun (`Class (_, c')) ->
       Tools.class_signature_of_class env c' >>= fun sg ->
-      Some
-        (Lang_of.class_signature Lang_of.empty
-           (c.id :> Paths_types.Identifier.path_class_type)
-           sg)
+      let cs = Lang_of.class_signature Lang_of.empty
+        (c.id :> Paths_types.Identifier.path_class_type) sg
+      in
+      Some (class_signature env (c.id :> Id.ClassSignature.t) cs)
     with
     | Some _ as exp -> exp
     | None ->
@@ -189,7 +200,7 @@ and class_ env parent c =
         c.expansion
   in
   let rec map_decl = function
-    | ClassType expr -> ClassType (class_type_expr env parent expr)
+    | ClassType expr -> ClassType (class_type_expr env (c.id :> Id.ClassSignature.t) expr)
     | Arrow (lbl, expr, decl) ->
         Arrow (lbl, type_expression env container expr, map_decl decl)
   in
@@ -216,7 +227,7 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.t -> _ =
       | Exception e -> Exception (exception_ env id e)
       | External e -> External (external_ env id e)
       | Class (r, c) -> Class (r, class_ env id c)
-      | ClassType (r, c) -> ClassType (r, class_type env id c)
+      | ClassType (r, c) -> ClassType (r, class_type env c)
       | Include i -> Include (include_ env i)
       | Open o -> Open o)
     s

@@ -27,6 +27,15 @@ val careful_type_in_sig :
   found
   option
 
+val careful_class_type_in_sig :
+  Component.Signature.t ->
+  string ->
+    ( [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
+      | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t ],
+      Odoc_model.Names.TypeName.t * Component.TypeExpr.t )
+  found
+  option
+
 val typename_of_typeid : [< `LCoreType of 'a | `LType of 'a * 'b ] -> 'a
 
 val datatype_in_sig :
