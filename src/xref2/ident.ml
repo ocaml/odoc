@@ -217,8 +217,10 @@ module Name = struct
   let typed_module : module_ -> ModuleName.t = function
     | `LRoot (n, _) | `LModule (n, _) -> n
 
-  let module_ : module_ -> string = function
-    | `LRoot (n, _) | `LModule (n, _) -> ModuleName.to_string n
+  let module' : module_ -> ModuleName.t = function
+    | `LRoot (n, _) | `LModule (n, _) -> n
+
+  let module_ m = ModuleName.to_string (module' m)
 
   let path_module : path_module -> string = function
     | `LRoot (n, _) -> ModuleName.to_string n
@@ -232,9 +234,11 @@ module Name = struct
   let functor_parameter : functor_parameter -> string =
    fun (`LParameter (n, _)) -> ParameterName.to_string n
 
-  let type_ : type_ -> string = function
-    | `LType (n, _) -> TypeName.to_string n
-    | `LCoreType n -> TypeName.to_string n
+  let type' : type_ -> TypeName.t = function
+    | `LType (n, _) -> n
+    | `LCoreType n -> n
+
+  let type_ t = TypeName.to_string (type' t)
 
   let unsafe_type : type_ -> string = function
     | `LType (n, _) -> TypeName.to_string_unsafe n
@@ -250,8 +254,10 @@ module Name = struct
     | `LType (n, _) -> TypeName.to_string n
     | `LCoreType n -> TypeName.to_string n
 
-  let class_ : class_ -> string = function
-    | `LClass (n, _) -> ClassName.to_string n
+  let class' : class_ -> ClassName.t = function
+    | `LClass (n, _) -> n
+
+  let class_ c = ClassName.to_string (class' c)
 
   let typed_class : class_ -> ClassName.t = function `LClass (n, _) -> n
 
@@ -265,8 +271,10 @@ module Name = struct
     | `LClass (n, _) -> ClassName.to_string n
     | `LClassType (n, _) -> ClassTypeName.to_string n
 
-  let class_type : class_type -> string = function
-    | `LClassType (n, _) -> ClassTypeName.to_string n
+  let class_type' : class_type -> ClassTypeName.t = function
+    | `LClassType (n, _) -> n
+
+  let class_type c = ClassTypeName.to_string (class_type' c)
 
   let typed_class_type : class_type -> ClassTypeName.t = function
     | `LClassType (n, _) -> n

@@ -441,8 +441,8 @@ and process_module_path env ~add_canonical m p =
 
 and handle_module_lookup env ~add_canonical id parent sg sub =
   match Find.careful_module_in_sig sg id with
-  | Some (Find.Found m) ->
-      let p' = `Module (parent, Odoc_model.Names.ModuleName.of_string id) in
+  | Some (Find.Found (name, m)) ->
+      let p' = `Module (parent, name) in
       let m' = Subst.module_ sub m in
       let md' = Component.Delayed.put_val m' in
       Some (process_module_path env ~add_canonical m' p', md')
@@ -461,7 +461,10 @@ and handle_module_type_lookup env id p sg sub =
 
 and handle_type_lookup id p sg =
   match Find.careful_type_in_sig sg id with
-  | Some mt -> Ok (`Type (p, Odoc_model.Names.TypeName.of_string id), mt)
+  | Some (Found (`C (name, _)) as t) -> Ok (`Class (p, name), t)
+  | Some (Found (`CT (name, _)) as t) -> Ok (`ClassType (p, name), t)
+  | Some (Found (`T (name, _)) as t) -> Ok (`Type (p, name), t)
+  | Some (Replaced(name, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
 and lookup_module :
@@ -495,7 +498,7 @@ and lookup_module :
         let find_in_sg sg sub =
           match Find.careful_module_in_sig sg (ModuleName.to_string name) with
           | None -> Error `Find_failure
-          | Some (Find.Found m) ->
+          | Some (Find.Found (_, m)) ->
             Ok (Component.Delayed.put_val (Subst.module_ sub m))
           | Some (Replaced p) -> lookup_module ~mark_substituted env p
         in
@@ -592,10 +595,10 @@ and lookup_type :
     handle_type_lookup name p sg >>= fun (_, t') ->
     let t =
       match t' with
-      | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
-      | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
-      | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
-      | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr)
+      | Find.Found (`C(_, c)) -> Find.Found (`C (Subst.class_ sub c))
+      | Find.Found (`CT(_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+      | Find.Found (`T(_, t)) -> Find.Found (`T (Subst.type_ sub t))
+      | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
     in
     Ok t
   in
@@ -755,10 +758,10 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         >>= fun (p', t') ->
         let t =
           match t' with
-          | Find.Found (`C c) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT ct) -> Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Found (`T t) -> Find.Found (`T (Subst.type_ sub t))
-          | Find.Replaced texpr -> Find.Replaced (Subst.type_expr sub texpr)
+          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+          | Find.Found (`CT (_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+          | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
+          | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
         in
         (* let time3 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
@@ -1373,7 +1376,7 @@ and find_module_with_replacement :
     Result.result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
-  | Some (Found m) -> Ok (Component.Delayed.put_val m)
+  | Some (Found (_, m)) -> Ok (Component.Delayed.put_val m)
   | Some (Replaced path) ->
     lookup_module ~mark_substituted:false env path
   | None -> Error `Find_failure

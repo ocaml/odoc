@@ -231,10 +231,9 @@ module T = struct
       name : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
     Find.type_in_sig sg name >>= function
-    | `T t -> Some (`T (`Type (parent', TypeName.of_string name), t))
-    | `C c -> Some (`C (`Class (parent', ClassName.of_string name), c))
-    | `CT ct ->
-        Some (`CT (`ClassType (parent', ClassTypeName.of_string name), ct))
+    | `T (name, t) -> Some (`T (`Type (parent', name), t))
+    | `C (name, c) -> Some (`C (`Class (parent', name), c))
+    | `CT (name, ct) -> Some (`CT (`ClassType (parent', name), ct))
 end
 
 module V = struct
