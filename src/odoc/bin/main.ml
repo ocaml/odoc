@@ -550,7 +550,6 @@ end
 
 let () =
   Printexc.record_backtrace true;
-
   let subcommands =
     [ Compile.(cmd, info)
     ; Odoc_html.(cmd, info)

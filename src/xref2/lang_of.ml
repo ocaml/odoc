@@ -60,6 +60,12 @@ module Path = struct
   let rec module_ map (p : Cpath.module_) : Odoc_model.Paths.Path.Module.t =
     match p with
     | `Substituted x -> module_ map x
+    | `Local(id, b) ->
+        `Identifier
+          ((try lookup_module map id
+            with Not_found ->
+              failwith (Format.asprintf "Not_found: %a" Ident.fmt id)), b)
+    | `Identifier(i, b) -> `Identifier(i, b)
     | `Resolved x -> `Resolved (resolved_module map x)
     | `Root x -> `Root x
     | `Dot (p, s) -> `Dot (module_ map p, s)
@@ -70,12 +76,18 @@ module Path = struct
       Odoc_model.Paths.Path.ModuleType.t =
     match p with
     | `Substituted x -> module_type map x
+    | `Identifier (#Odoc_model.Paths.Identifier.ModuleType.t as y, b) ->
+        `Identifier (y, b)
+    | `Local (id, b) -> `Identifier (List.assoc id map.module_type, b)
     | `Resolved x -> `Resolved (resolved_module_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
 
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
     | `Substituted x -> type_ map x
+    | `Identifier (#Odoc_model.Paths_types.Identifier.path_type as y, b) ->
+        `Identifier(y, b)
+    | `Local(id, b) -> `Identifier (List.assoc id map.path_type, b)
     | `Resolved x -> `Resolved (resolved_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
 
@@ -83,6 +95,9 @@ module Path = struct
       =
     match p with
     | `Substituted x -> class_type map x
+    | `Identifier (#Odoc_model.Paths_types.Identifier.path_class_type as y, b) ->
+        `Identifier (y, b)
+    | `Local(id, b) -> `Identifier (List.assoc id map.path_class_type, b)
     | `Resolved x -> `Resolved (resolved_class_type map x)
     | `Dot (p, n) -> `Dot (module_ map p, n)
 

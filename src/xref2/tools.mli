@@ -44,7 +44,7 @@ val lookup_module :
   mark_substituted:bool ->
   Env.t ->
   Cpath.Resolved.module_ ->
-  ( Component.Module.t,
+  ( Component.Module.t Component.Delayed.t,
     [ simple_module_lookup_error | parent_lookup_error ] )
   Result.result
 (** [lookup_module ~mark_substituted env p] takes a resolved module cpath [p] and
@@ -78,7 +78,8 @@ val resolve_module :
   add_canonical:bool ->
   Env.t ->
   Cpath.module_ ->
-  (Cpath.Resolved.module_ * Component.Module.t, Cpath.module_) ResolvedMonad.t
+  (Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
+   Cpath.module_) ResolvedMonad.t
 (** [resolve_module ~mark_substituted ~add_canonical env p] takes an unresolved
     module path and an environment and returns a tuple of the resolved module
     path alongside a representation of the module itself. *)

@@ -519,6 +519,7 @@ module Path = struct
     let open Paths_types.Path in
     function
     | `Resolved r -> is_resolved_hidden r
+    | `Identifier (_,hidden) -> hidden
     | `Root _ -> false
     | `Forward _ -> false
     | `Dot(p, _) -> is_path_hidden (p : module_ :> any)

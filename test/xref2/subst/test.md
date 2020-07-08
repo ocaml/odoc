@@ -66,9 +66,9 @@ the equations for t, u and v point to SubTargets rather than SubstituteMe
 BEFORE
 ======
 S: sig
-type tt/3 = resolved(local(SubstituteMe/2)).t
-type uu/4 = resolved(local(SubstituteMe/2)).u
-type vv/5 = resolved(local(SubstituteMe/2)).v
+type tt/3 = local(SubstituteMe/2,false).t
+type uu/4 = local(SubstituteMe/2,false).u
+type vv/5 = local(SubstituteMe/2,false).v
  (removed=[])end
 
 AFTER

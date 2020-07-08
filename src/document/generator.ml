@@ -99,6 +99,8 @@ struct
   let rec from_path : Path.t -> text =
     fun path ->
       match path with
+      | `Identifier (id, _) ->
+        unresolved [inline @@ Text (Identifier.name id)]
       | `Root root -> unresolved [inline @@ Text root]
       | `Forward root -> unresolved [inline @@ Text root] (* FIXME *)
       | `Dot (prefix, suffix) ->

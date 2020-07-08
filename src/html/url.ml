@@ -233,6 +233,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `OpaqueModuleType m -> render_resolved (m :> t)
   and render_path : Odoc_model.Paths.Path.t -> string =
     function
+    | `Identifier (id, _) -> Identifier.name id
     | `Root root -> root
     | `Forward root -> root
     | `Dot (prefix, suffix) -> render_path (prefix :> t) ^ "." ^ suffix

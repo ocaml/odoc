@@ -18,13 +18,13 @@ open Predefined
 open Names
 
 module Id = Paths.Identifier
-module Rp = Paths.Path.Resolved
+module P = Paths.Path
 
 type type_ident = Paths.Identifier.Path.Type.t
 
 type t =
   { modules : Id.Module.t Ident.tbl;
-    module_paths : Rp.Module.t Ident.tbl;
+    module_paths : P.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : Id.DataType.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
@@ -339,11 +339,7 @@ let env_of_items parent items env =
         then `Module(parent, ModuleName.internal_of_string name), t :: env.shadowed
         else `Module(parent, ModuleName.of_string name), env.shadowed
       in
-      let path =
-        if is_shadowed
-        then `Hidden (`Identifier identifier)
-        else `Identifier identifier
-      in
+      let path = `Identifier(identifier, is_shadowed) in
       let modules = Ident.add t identifier env.modules in
       let module_paths = Ident.add t path env.module_paths in
       inner rest { env with modules; module_paths; shadowed }
@@ -393,9 +389,9 @@ let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signatu
     env_of_items parent items env
 
 let add_parameter parent id name env =
-  let ident = `Identifier (`Parameter(parent, name)) in
-  let module_ = if ParameterName.is_hidden name then `Hidden ident else ident in
-  let module_paths = Ident.add id module_ env.module_paths in
+  let hidden = ParameterName.is_hidden name in
+  let path = `Identifier (`Parameter(parent, name), hidden) in
+  let module_paths = Ident.add id path env.module_paths in
   { env with module_paths }
 
 let find_module env id =
@@ -448,22 +444,22 @@ module Path = struct
   let read_module_ident env id =
     if Ident.persistent id then `Root (Ident.name id)
     else
-      try `Resolved (find_module env id)
+      try find_module env id
       with Not_found -> assert false
 
   let read_module_type_ident env id =
     try
-      `Resolved (`Identifier (find_module_type env id))
+      `Identifier (find_module_type env id, false)
     with Not_found -> assert false
 
   let read_type_ident env id =
     try
-      `Resolved (`Identifier (find_type env id))
+      `Identifier (find_type env id, false)
     with Not_found -> assert false
 
   let read_class_type_ident env id : Paths.Path.ClassType.t =
     try
-      `Resolved (`Identifier (find_class_type env id))
+      `Identifier (find_class_type env id, false)
     with Not_found ->
       `Dot(`Root "*", (Ident.name id))
       (* TODO remove this hack once the fix for PR#6650
