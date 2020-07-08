@@ -17,6 +17,7 @@ let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Resolved _ -> false
   | `Root _ -> false
   | `Forward _ -> true
+  | `Identifier _ -> false
   | `Dot (p, _) -> is_forward p
   | `Apply (p1, p2) -> is_forward p1 || is_forward p2
 
@@ -348,6 +349,7 @@ and module_expansion :
                   Env.add_module
                     (identifier :> Id.Path.Module.t)
                     (Component.Delayed.put_val m)
+                    m.doc
                     env
                 in
                 env')

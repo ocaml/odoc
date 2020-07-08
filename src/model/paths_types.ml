@@ -178,6 +178,7 @@ module rec Path :
 sig
   type module_ = [
     | `Resolved of Resolved_path.module_
+    | `Identifier of Identifier.path_module * bool
     | `Root of string
     | `Forward of string
     | `Dot of module_ * string
@@ -185,18 +186,22 @@ sig
   ]
   type module_type = [
     | `Resolved of Resolved_path.module_type
+    | `Identifier of Identifier.path_module_type * bool
     | `Dot of module_ * string
   ]
   type type_ = [
     | `Resolved of Resolved_path.type_
+    | `Identifier of Identifier.path_type * bool
     | `Dot of module_ * string
   ]
   type class_type = [
     | `Resolved of Resolved_path.class_type
+    | `Identifier of Identifier.path_class_type * bool
     | `Dot of module_ * string
   ]
   type any = [
     | `Resolved of Resolved_path.any
+    | `Identifier of Identifier.path_any * bool
     | `Root of string
     | `Forward of string
     | `Dot of module_ * string

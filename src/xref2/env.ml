@@ -11,7 +11,7 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * bool
        * Component.Module.t Component.Delayed.t)
   | Forward
 
@@ -165,7 +165,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
       | _ -> env)
     docs env
 
-let add_module identifier m env =
+let add_module identifier m docs env =
   {
     env with
     id =
@@ -178,7 +178,7 @@ let add_module identifier m env =
         (`Module (identifier, m))
         env.elts;
   }
-  |> add_cdocs identifier m.doc
+  |> add_cdocs identifier docs
 
 let add_type identifier t env =
   let open Component in
@@ -359,12 +359,12 @@ let lookup_root_module name env =
                  let unit = r.resolve_unit u.root in
                  module_of_unit unit)
           in
-          Some (Resolved(u.root.digest, id, m)))
+          Some (Resolved(u.root.digest, id, u.hidden, m)))
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <- RootModule (name, Some `Forward) :: r.lookups
-  | Some r, Some (Resolved (digest, _, _)) ->
+  | Some r, Some (Resolved (digest, _, _, _)) ->
       r.lookups <- RootModule (name, Some (`Resolved digest)) :: r.lookups
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
   | None, _ -> () );
@@ -451,7 +451,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
 
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
-  | Some (Resolved (_, id, m)) ->
+  | Some (Resolved (_, id, _, m)) ->
       Some (`Module ((id :> Identifier.Path.Module.t), m))
   | Some Forward | None -> None
 
@@ -577,8 +577,9 @@ let add_functor_args' :
       let ident, identifier =
         ((ident, identifier) :> Ident.path_module * Identifier.Path.Module.t)
       in
+      let doc = m.Component.Module.doc in
       let m = Component.Delayed.put_val (Subst.module_ subst m) in
-      let env' = add_module identifier m env in
+      let env' = add_module identifier m doc env in
       (env', Subst.add_module ident (`Identifier identifier) subst)
     in
     let env', _subst =
@@ -626,7 +627,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty = Component.Delayed.put (fun () -> module_ empty t) in
             add_module
               (t.Odoc_model.Lang.Module.id :> Identifier.Path.Module.t)
-              ty env
+              ty (docs empty t.L.Module.doc) env
         | Odoc_model.Lang.Signature.ModuleType t ->
             let ty = module_type empty t in
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
@@ -642,6 +643,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             add_exception e.Odoc_model.Lang.Exception.id ty env
         | Odoc_model.Lang.Signature.ModuleSubstitution m ->
             let _id = Ident.Of_Identifier.module_ m.id in
+            let doc = docs empty m.doc in
             let ty =
               Component.Delayed.put (fun () -> 
               Of_Lang.(
@@ -649,7 +651,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
                   (*                  { empty with modules = [ (m.id, id) ] } *)
                   empty m))
             in
-            add_module (m.id :> Identifier.Path.Module.t) ty env
+            add_module (m.id :> Identifier.Path.Module.t) ty doc env
         | Odoc_model.Lang.Signature.TypeSubstitution t ->
             let ty = type_decl empty t in
             add_type t.Odoc_model.Lang.TypeDecl.id ty env
@@ -681,21 +683,16 @@ let initial_env :
  fun t resolver ->
   let open Odoc_model.Lang.Compilation_unit in
   let initial_env =
-    let m = Component.Delayed.put (fun () -> module_of_unit t) in
-    empty |> add_module (t.id :> Identifier.Path.Module.t) m
+    let m = module_of_unit t in
+
+    let dm = Component.Delayed.put (fun () -> m) in
+    empty |> add_module (t.id :> Identifier.Path.Module.t) dm m.doc
   in
   let initial_env = set_resolver initial_env resolver in
   List.fold_right
     (fun import (imports, env) ->
       match import with
-      | Import.Resolved (root, name) ->
-          let id = `Root(root, name) in
-          let m =
-            Component.Delayed.put (fun () ->
-              let unit = resolver.resolve_unit root in
-              module_of_unit unit)
-          in
-          let env = add_module id m env in
+      | Import.Resolved (_root, _name) ->
           (import :: imports, env)
       | Import.Unresolved (str, _) -> (
           match resolver.lookup_unit str with

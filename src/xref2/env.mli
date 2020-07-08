@@ -9,7 +9,7 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * bool
        * Component.Module.t Component.Delayed.t)
   | Forward
 
@@ -47,6 +47,7 @@ val add_fragment_root : Component.Signature.t -> t -> t
 val add_module :
   Odoc_model.Paths_types.Identifier.reference_module ->
   Component.Module.t Component.Delayed.t ->
+  Component.CComment.docs ->
   t ->
   t
 

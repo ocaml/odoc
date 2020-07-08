@@ -39,7 +39,7 @@ module Path : sig
   val read_class_type : t -> Path.t -> Paths.Path.ClassType.t
 end
 
-val find_module : t -> Ident.t -> Paths.Path.Resolved.Module.t
+val find_module : t -> Ident.t -> Paths.Path.Module.t
 
 val find_module_identifier : t -> Ident.t -> Paths.Identifier.Module.t
 

@@ -81,7 +81,7 @@ Simplest possible resolution:
 BEFORE
 ======
 type (root Root).t
-type (root Root).u = resolved[global((root Root).t)]
+type (root Root).u = identifier((root Root).t,false)
 
 AFTER
 =====
@@ -169,7 +169,7 @@ BEFORE
 module (root Root).M : sig
   type (root Root).M.t
   end
-type (root Root).u = resolved[global((root Root).M)].t
+type (root Root).u = identifier((root Root).M,false).t
 
 AFTER
 =====
@@ -232,8 +232,8 @@ BEFORE
 module type (root Root).M = sig
   type (root Root).M.t
   end
-module (root Root).N : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).N)].t
+module (root Root).N : identifier((root Root).M,false)
+type (root Root).u = identifier((root Root).N,false).t
 
 AFTER
 =====
@@ -277,8 +277,8 @@ module type (root Root).M = sig
     type (root Root).M.N.t
     end
   end
-module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A)].N.t
+module (root Root).A : identifier((root Root).M,false)
+type (root Root).u = identifier((root Root).A,false).N.t
 
 AFTER
 =====
@@ -359,10 +359,10 @@ module type (root Root).M = sig
   module type (root Root).M.N = sig
     type (root Root).M.N.t
     end
-  module (root Root).M.B : resolved[global((root Root).M.N)]
+  module (root Root).M.B : identifier((root Root).M.N,false)
   end
-module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A)].B.t
+module (root Root).A : identifier((root Root).M,false)
+type (root Root).u = identifier((root Root).A,false).B.t
 
 AFTER
 =====
@@ -398,11 +398,11 @@ module type (root Root).M = sig
     type (root Root).M.N.t
     end
   module (root Root).M.X : sig
-    module (root Root).M.X.B : resolved[global((root Root).M.N)]
+    module (root Root).M.X.B : identifier((root Root).M.N,false)
     end
   end
-module (root Root).A : resolved[global((root Root).M)]
-type (root Root).u = resolved[global((root Root).A)].X.B.t
+module (root Root).A : identifier((root Root).M,false)
+type (root Root).u = identifier((root Root).A,false).X.B.t
 
 AFTER
 =====
@@ -441,15 +441,15 @@ module type (root Root).A = sig
   module (root Root).A.M : sig
     module type (root Root).A.M.S
     end
-  module (root Root).A.N : resolved[global((root Root).A.M)].S
+  module (root Root).A.N : identifier((root Root).A.M,false).S
   end
 module (root Root).B : sig
   module type (root Root).B.S = sig
     type (root Root).B.S.t
     end
   end
-module (root Root).C : resolved[global((root Root).A)] with [*.M = = resolved[global((root Root).B)]]
-type (root Root).t = resolved[global((root Root).C)].N.t
+module (root Root).C : identifier((root Root).A,false) with [*.M = = identifier((root Root).B,false)]
+type (root Root).t = identifier((root Root).C,false).N.t
 
 AFTER
 =====
@@ -491,15 +491,15 @@ module type (root Root).A = sig
   module (root Root).A.M : sig
     module type (root Root).A.M.S
     end
-  module (root Root).A.N : resolved[global((root Root).A.M)].S
+  module (root Root).A.N : identifier((root Root).A.M,false).S
   end
 module (root Root).B : sig
   module type (root Root).B.S = sig
     type (root Root).B.S.t
     end
   end
-module (root Root).C : resolved[global((root Root).A)] with [*.M := resolved[global((root Root).B)]]
-type (root Root).t = resolved[global((root Root).C)].N.t
+module (root Root).C : identifier((root Root).A,false) with [*.M := identifier((root Root).B,false)]
+type (root Root).t = identifier((root Root).C,false).N.t
 
 AFTER
 =====
@@ -535,8 +535,8 @@ BEFORE
 module (root Root).A : sig
   type (root Root).A.t
   end
-module (root Root).B = resolved[global((root Root).A)]
-type (root Root).t = resolved[global((root Root).B)].t
+module (root Root).B = identifier((root Root).A,false)
+type (root Root).t = identifier((root Root).B,false).t
 
 AFTER
 =====
@@ -565,9 +565,9 @@ BEFORE
 module (root Root).A : sig
   type (root Root).A.t
   end
-module (root Root).B = resolved[global((root Root).A)]
-module (root Root).C = resolved[global((root Root).B)]
-type (root Root).t = resolved[global((root Root).C)].t
+module (root Root).B = identifier((root Root).A,false)
+module (root Root).C = identifier((root Root).B,false)
+type (root Root).t = identifier((root Root).C,false).t
 
 AFTER
 =====
@@ -600,10 +600,10 @@ BEFORE
 module type (root Root).S = sig
   type (root Root).S.t
   end
-module (root Root).F : ((param (root Root).F X) : resolved[global((root Root).S)]) -> ((param (root Root).F.result Y) : resolved[global((root Root).S)]) -> sig
-  type (root Root).F.result.result.x_t = resolved[global((param (root Root).F X))].t
-  type (root Root).F.result.result.y_t = resolved[global((param (root Root).F.result Y))].t
-  type (root Root).F.result.result.f_t = resolved[global((root Root).F.result.result.x_t)]
+module (root Root).F : ((param (root Root).F X) : identifier((root Root).S,false)) -> ((param (root Root).F.result Y) : identifier((root Root).S,false)) -> sig
+  type (root Root).F.result.result.x_t = identifier((param (root Root).F X),false).t
+  type (root Root).F.result.result.y_t = identifier((param (root Root).F.result Y),false).t
+  type (root Root).F.result.result.f_t = identifier((root Root).F.result.result.x_t,false)
   end
 
 AFTER
@@ -661,23 +661,23 @@ BEFORE
 module type (root Root).S = sig
   type (root Root).S.t
   end
-module type (root Root).S1 = ((param (root Root).S1 _) : resolved[global((root Root).S)]) -> resolved[global((root Root).S)]
-module (root Root).F1 : ((param (root Root).F1 Arg) : resolved[global((root Root).S)]) -> resolved[global((root Root).S)]
-module (root Root).F2 : ((param (root Root).F2 Arg) : resolved[global((root Root).S)]) -> resolved[global((root Root).S)] with [*.t = resolved[global((param (root Root).F2 Arg))].t]
-module (root Root).F3 : ((param (root Root).F3 Arg) : resolved[global((root Root).S)]) -> sig
-  type (root Root).F3.result.t = resolved[global((param (root Root).F3 Arg))].t
+module type (root Root).S1 = ((param (root Root).S1 _) : identifier((root Root).S,false)) -> identifier((root Root).S,false)
+module (root Root).F1 : ((param (root Root).F1 Arg) : identifier((root Root).S,false)) -> identifier((root Root).S,false)
+module (root Root).F2 : ((param (root Root).F2 Arg) : identifier((root Root).S,false)) -> identifier((root Root).S,false) with [*.t = identifier((param (root Root).F2 Arg),false).t]
+module (root Root).F3 : ((param (root Root).F3 Arg) : identifier((root Root).S,false)) -> sig
+  type (root Root).F3.result.t = identifier((param (root Root).F3 Arg),false).t
   end
-module (root Root).F4 : ((param (root Root).F4 Arg) : resolved[global((root Root).S)]) -> resolved[global((root Root).S)]
-module (root Root).F5 : ((param (root Root).F5 Arg1) : resolved[global((root Root).S)]) -> ((param (root Root).F5.result Arg2) : resolved[global((root Root).S)]) -> ((param (root Root).F5.result.result Arg3) : resolved[global((root Root).S)]) -> sig
-  type (root Root).F5.result.result.result.t = resolved[global((param (root Root).F5 Arg1))].t
-  type (root Root).F5.result.result.result.u = resolved[global((param (root Root).F5.result Arg2))].t
-  type (root Root).F5.result.result.result.v = resolved[global((param (root Root).F5.result.result Arg3))].t
-  type (root Root).F5.result.result.result.z = resolved[global((root Root).F5.result.result.result.t)]
+module (root Root).F4 : ((param (root Root).F4 Arg) : identifier((root Root).S,false)) -> identifier((root Root).S,false)
+module (root Root).F5 : ((param (root Root).F5 Arg1) : identifier((root Root).S,false)) -> ((param (root Root).F5.result Arg2) : identifier((root Root).S,false)) -> ((param (root Root).F5.result.result Arg3) : identifier((root Root).S,false)) -> sig
+  type (root Root).F5.result.result.result.t = identifier((param (root Root).F5 Arg1),false).t
+  type (root Root).F5.result.result.result.u = identifier((param (root Root).F5.result Arg2),false).t
+  type (root Root).F5.result.result.result.v = identifier((param (root Root).F5.result.result Arg3),false).t
+  type (root Root).F5.result.result.result.z = identifier((root Root).F5.result.result.result.t,false)
   end
-module (root Root).F6 : resolved[global((root Root).S1)]
-module type (root Root).F7 = ((param (root Root).F7 Arg) : resolved[global((root Root).S)]) -> sig
-  type (root Root).F7.result.t = resolved[global((param (root Root).F7 Arg))].t
-  type (root Root).F7.result.u = resolved[global((root Root).F7.result.t)]
+module (root Root).F6 : identifier((root Root).S1,false)
+module type (root Root).F7 = ((param (root Root).F7 Arg) : identifier((root Root).S,false)) -> sig
+  type (root Root).F7.result.t = identifier((param (root Root).F7 Arg),false).t
+  type (root Root).F7.result.u = identifier((root Root).F7.result.t,false)
   end
 
 AFTER
@@ -766,23 +766,23 @@ BEFORE
 module type (root Root).Type = sig
   module type (root Root).Type.T
   end
-module (root Root).App : ((param (root Root).App T) : resolved[global((root Root).Type)]) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : resolved[global((root Root).Type)]) -> resolved[global((root Root).Type)]) -> ((param (root Root).App.result.result M) : resolved[global((param (root Root).App.result F))](resolved[global((param (root Root).App T))]).T) -> resolved[global((param (root Root).App.result F))](resolved[global((param (root Root).App T))]).T
+module (root Root).App : ((param (root Root).App T) : identifier((root Root).Type,false)) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : identifier((root Root).Type,false)) -> identifier((root Root).Type,false)) -> ((param (root Root).App.result.result M) : identifier((param (root Root).App.result F),false)(identifier((param (root Root).App T),false)).T) -> identifier((param (root Root).App.result F),false)(identifier((param (root Root).App T),false)).T
 module (root Root).Bar : sig
   module type (root Root).Bar.T = sig
     type (root Root).Bar.T.bar
     end
   end
-module (root Root).Foo : ((param (root Root).Foo T) : resolved[global((root Root).Type)]) -> sig
+module (root Root).Foo : ((param (root Root).Foo T) : identifier((root Root).Type,false)) -> sig
   module type (root Root).Foo.result.T = sig
-    module (root Root).Foo.result.T.Foo : resolved[global((param (root Root).Foo T))].T
+    module (root Root).Foo.result.T.Foo : identifier((param (root Root).Foo T),false).T
     end
   end
 module (root Root).FooBarInt : sig
   module (root Root).FooBarInt.Foo : sig
-    type (root Root).FooBarInt.Foo.bar = resolved[global(int)]
+    type (root Root).FooBarInt.Foo.bar = identifier(int,false)
     end
   end
-type (root Root).t = resolved[global((root Root).App)](resolved[global((root Root).Bar)])(resolved[global((root Root).Foo)])(resolved[global((root Root).FooBarInt)]).Foo.bar
+type (root Root).t = identifier((root Root).App,false)(identifier((root Root).Bar,false))(identifier((root Root).Foo,false))(identifier((root Root).FooBarInt,false)).Foo.bar
 
 AFTER
 =====

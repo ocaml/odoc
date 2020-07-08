@@ -92,14 +92,12 @@ val sg :
              type_ =
               Odoc_model.Lang.TypeExpr.Arrow (None,
                Odoc_model.Lang.TypeExpr.Constr
-                (`Resolved
-                   (`Identifier
-                      (`Type (`Module (`Root (Common.root, Root), M), t))),
+                (`Identifier
+                   (`Type (`Module (`Root (Common.root, Root), M), t), false),
                 []),
                Odoc_model.Lang.TypeExpr.Constr
-                (`Resolved
-                   (`Identifier
-                      (`Type (`Module (`Root (Common.root, Root), M), t))),
+                (`Identifier
+                   (`Type (`Module (`Root (Common.root, Root), M), t), false),
                 []))}]);
       canonical = None; hidden = false; display_type = None;
       expansion = Some Odoc_model.Lang.Module.AlreadyASig});
@@ -123,9 +121,8 @@ val sg :
                         doc = <<docs>>;
                         decl =
                          Odoc_model.Lang.Module.Alias
-                          (`Resolved
-                             (`Identifier
-                                (`Module (`Root (Common.root, Root), M))));
+                          (`Identifier
+                             (`Module (`Root (Common.root, Root), M), false));
                         inline = false;
                         expansion =
                          {Odoc_model.Lang.Include.resolved = false;
@@ -143,11 +140,10 @@ val sg :
                                  Some
                                   (Odoc_model.Lang.TypeExpr.Constr
                                     (`Dot
-                                       (`Resolved
-                                          (`Identifier
-                                             (`Module
-                                                (`Root (Common.root, Root),
-                                                 M))),
+                                       (`Identifier
+                                          (`Module
+                                             (`Root (Common.root, Root), M),
+                                           false),
                                         "t"),
                                     []));
                                 constraints = []};
@@ -162,22 +158,22 @@ val sg :
                               type_ =
                                Odoc_model.Lang.TypeExpr.Arrow (None,
                                 Odoc_model.Lang.TypeExpr.Constr
-                                 (`Resolved
-                                    (`Identifier
-                                       (`Type
-                                          (`Module
-                                             (`Root (Common.root, Root),
-                                              Mextended),
-                                           t))),
+                                 (`Identifier
+                                    (`Type
+                                       (`Module
+                                          (`Root (Common.root, Root),
+                                           Mextended),
+                                        t),
+                                     false),
                                  []),
                                 Odoc_model.Lang.TypeExpr.Constr
-                                 (`Resolved
-                                    (`Identifier
-                                       (`Type
-                                          (`Module
-                                             (`Root (Common.root, Root),
-                                              Mextended),
-                                           t))),
+                                 (`Identifier
+                                    (`Type
+                                       (`Module
+                                          (`Root (Common.root, Root),
+                                           Mextended),
+                                        t),
+                                     false),
                                  []))}]}}])));
              inline = false;
              expansion =
@@ -195,9 +191,9 @@ val sg :
                       Some
                        (Odoc_model.Lang.TypeExpr.Constr
                          (`Dot
-                            (`Resolved
-                               (`Identifier
-                                  (`Module (`Root (Common.root, Root), M))),
+                            (`Identifier
+                               (`Module (`Root (Common.root, Root), M),
+                                false),
                              "t"),
                          []));
                      constraints = []};
@@ -210,20 +206,18 @@ val sg :
                    type_ =
                     Odoc_model.Lang.TypeExpr.Arrow (None,
                      Odoc_model.Lang.TypeExpr.Constr
-                      (`Resolved
-                         (`Identifier
-                            (`Type
-                               (`Module
-                                  (`Root (Common.root, Root), Mextended),
-                                $t$1))),
+                      (`Identifier
+                         (`Type
+                            (`Module (`Root (Common.root, Root), Mextended),
+                             $t$1),
+                          false),
                       []),
                      Odoc_model.Lang.TypeExpr.Constr
-                      (`Resolved
-                         (`Identifier
-                            (`Type
-                               (`Module
-                                  (`Root (Common.root, Root), Mextended),
-                                $t$1))),
+                      (`Identifier
+                         (`Type
+                            (`Module (`Root (Common.root, Root), Mextended),
+                             $t$1),
+                          false),
                       []))}]}};
            Odoc_model.Lang.Signature.Type
             (Odoc_model.Lang.Signature.Ordinary,
@@ -240,13 +234,12 @@ val sg :
              type_ =
               Odoc_model.Lang.TypeExpr.Arrow (None,
                Odoc_model.Lang.TypeExpr.Constr
-                (`Resolved
-                   (`Identifier
-                      (`Type
-                         (`Module (`Root (Common.root, Root), Mextended), t))),
+                (`Identifier
+                   (`Type (`Module (`Root (Common.root, Root), Mextended), t),
+                    false),
                 []),
                Odoc_model.Lang.TypeExpr.Constr
-                (`Resolved (`Identifier (`CoreType unit)), []))}]);
+                (`Identifier (`CoreType unit, false), []))}]);
       canonical = None; hidden = false; display_type = None;
       expansion = Some Odoc_model.Lang.Module.AlreadyASig})])
 # sg;;
@@ -272,14 +265,12 @@ val sg :
            type_ =
             Odoc_model.Lang.TypeExpr.Arrow (None,
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type (`Module (`Root (Common.root, Root), M), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), M), t), false),
               []),
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type (`Module (`Root (Common.root, Root), M), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), M), t), false),
               []))}]);
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig});
@@ -303,9 +294,8 @@ val sg :
                       doc = <<docs>>;
                       decl =
                        Odoc_model.Lang.Module.Alias
-                        (`Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), M))));
+                        (`Identifier
+                           (`Module (`Root (Common.root, Root), M), false));
                       inline = false;
                       expansion =
                        {Odoc_model.Lang.Include.resolved = false;
@@ -323,10 +313,10 @@ val sg :
                                Some
                                 (Odoc_model.Lang.TypeExpr.Constr
                                   (`Dot
-                                     (`Resolved
-                                        (`Identifier
-                                           (`Module
-                                              (`Root (Common.root, Root), M))),
+                                     (`Identifier
+                                        (`Module
+                                           (`Root (Common.root, Root), M),
+                                         false),
                                       "t"),
                                   []));
                               constraints = []};
@@ -341,22 +331,22 @@ val sg :
                             type_ =
                              Odoc_model.Lang.TypeExpr.Arrow (None,
                               Odoc_model.Lang.TypeExpr.Constr
-                               (`Resolved
-                                  (`Identifier
-                                     (`Type
-                                        (`Module
-                                           (`Root (Common.root, Root),
-                                            Mextended),
-                                         t))),
+                               (`Identifier
+                                  (`Type
+                                     (`Module
+                                        (`Root (Common.root, Root),
+                                         Mextended),
+                                      t),
+                                   false),
                                []),
                               Odoc_model.Lang.TypeExpr.Constr
-                               (`Resolved
-                                  (`Identifier
-                                     (`Type
-                                        (`Module
-                                           (`Root (Common.root, Root),
-                                            Mextended),
-                                         t))),
+                               (`Identifier
+                                  (`Type
+                                     (`Module
+                                        (`Root (Common.root, Root),
+                                         Mextended),
+                                      t),
+                                   false),
                                []))}]}}])));
            inline = false;
            expansion =
@@ -374,9 +364,8 @@ val sg :
                     Some
                      (Odoc_model.Lang.TypeExpr.Constr
                        (`Dot
-                          (`Resolved
-                             (`Identifier
-                                (`Module (`Root (Common.root, Root), M))),
+                          (`Identifier
+                             (`Module (`Root (Common.root, Root), M), false),
                            "t"),
                        []));
                    constraints = []};
@@ -388,18 +377,18 @@ val sg :
                  type_ =
                   Odoc_model.Lang.TypeExpr.Arrow (None,
                    Odoc_model.Lang.TypeExpr.Constr
-                    (`Resolved
-                       (`Identifier
-                          (`Type
-                             (`Module (`Root (Common.root, Root), Mextended),
-                              $t$1))),
+                    (`Identifier
+                       (`Type
+                          (`Module (`Root (Common.root, Root), Mextended),
+                           $t$1),
+                        false),
                     []),
                    Odoc_model.Lang.TypeExpr.Constr
-                    (`Resolved
-                       (`Identifier
-                          (`Type
-                             (`Module (`Root (Common.root, Root), Mextended),
-                              $t$1))),
+                    (`Identifier
+                       (`Type
+                          (`Module (`Root (Common.root, Root), Mextended),
+                           $t$1),
+                        false),
                     []))}]}};
          Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
           {Odoc_model.Lang.TypeDecl.id = (root Root).Mextended.t;
@@ -415,13 +404,12 @@ val sg :
            type_ =
             Odoc_model.Lang.TypeExpr.Arrow (None,
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type
-                       (`Module (`Root (Common.root, Root), Mextended), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), Mextended), t),
+                  false),
               []),
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved (`Identifier (`CoreType unit)), []))}]);
+              (`Identifier (`CoreType unit, false), []))}]);
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig})])
 ```
@@ -450,14 +438,12 @@ val sg :
            type_ =
             Odoc_model.Lang.TypeExpr.Arrow (None,
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type (`Module (`Root (Common.root, Root), M), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), M), t), false),
               []),
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type (`Module (`Root (Common.root, Root), M), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), M), t), false),
               []))}]);
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig});
@@ -481,9 +467,8 @@ val sg :
                       doc = <<docs>>;
                       decl =
                        Odoc_model.Lang.Module.Alias
-                        (`Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), M))));
+                        (`Identifier
+                           (`Module (`Root (Common.root, Root), M), false));
                       inline = false;
                       expansion =
                        {Odoc_model.Lang.Include.resolved = false;
@@ -501,10 +486,10 @@ val sg :
                                Some
                                 (Odoc_model.Lang.TypeExpr.Constr
                                   (`Dot
-                                     (`Resolved
-                                        (`Identifier
-                                           (`Module
-                                              (`Root (Common.root, Root), M))),
+                                     (`Identifier
+                                        (`Module
+                                           (`Root (Common.root, Root), M),
+                                         false),
                                       "t"),
                                   []));
                               constraints = []};
@@ -519,22 +504,22 @@ val sg :
                             type_ =
                              Odoc_model.Lang.TypeExpr.Arrow (None,
                               Odoc_model.Lang.TypeExpr.Constr
-                               (`Resolved
-                                  (`Identifier
-                                     (`Type
-                                        (`Module
-                                           (`Root (Common.root, Root),
-                                            Mextended),
-                                         t))),
+                               (`Identifier
+                                  (`Type
+                                     (`Module
+                                        (`Root (Common.root, Root),
+                                         Mextended),
+                                      t),
+                                   false),
                                []),
                               Odoc_model.Lang.TypeExpr.Constr
-                               (`Resolved
-                                  (`Identifier
-                                     (`Type
-                                        (`Module
-                                           (`Root (Common.root, Root),
-                                            Mextended),
-                                         t))),
+                               (`Identifier
+                                  (`Type
+                                     (`Module
+                                        (`Root (Common.root, Root),
+                                         Mextended),
+                                      t),
+                                   false),
                                []))}]}}])));
            inline = false;
            expansion =
@@ -552,9 +537,8 @@ val sg :
                     Some
                      (Odoc_model.Lang.TypeExpr.Constr
                        (`Dot
-                          (`Resolved
-                             (`Identifier
-                                (`Module (`Root (Common.root, Root), M))),
+                          (`Identifier
+                             (`Module (`Root (Common.root, Root), M), false),
                            "t"),
                        []));
                    constraints = []};
@@ -566,18 +550,18 @@ val sg :
                  type_ =
                   Odoc_model.Lang.TypeExpr.Arrow (None,
                    Odoc_model.Lang.TypeExpr.Constr
-                    (`Resolved
-                       (`Identifier
-                          (`Type
-                             (`Module (`Root (Common.root, Root), Mextended),
-                              $t$1))),
+                    (`Identifier
+                       (`Type
+                          (`Module (`Root (Common.root, Root), Mextended),
+                           $t$1),
+                        false),
                     []),
                    Odoc_model.Lang.TypeExpr.Constr
-                    (`Resolved
-                       (`Identifier
-                          (`Type
-                             (`Module (`Root (Common.root, Root), Mextended),
-                              $t$1))),
+                    (`Identifier
+                       (`Type
+                          (`Module (`Root (Common.root, Root), Mextended),
+                           $t$1),
+                        false),
                     []))}]}};
          Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
           {Odoc_model.Lang.TypeDecl.id = (root Root).Mextended.t;
@@ -593,13 +577,12 @@ val sg :
            type_ =
             Odoc_model.Lang.TypeExpr.Arrow (None,
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved
-                 (`Identifier
-                    (`Type
-                       (`Module (`Root (Common.root, Root), Mextended), t))),
+              (`Identifier
+                 (`Type (`Module (`Root (Common.root, Root), Mextended), t),
+                  false),
               []),
              Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved (`Identifier (`CoreType unit)), []))}]);
+              (`Identifier (`CoreType unit, false), []))}]);
     canonical = None; hidden = false; display_type = None;
     expansion = Some Odoc_model.Lang.Module.AlreadyASig})])
 ```

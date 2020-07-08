@@ -89,6 +89,16 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Resolved p' -> `Resolved (resolved_module_path s p')
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
+  | `Local(id, b) -> (
+      match
+        try Some (ModuleMap.find (id :> Ident.path_module) s.module_)
+        with _ -> None
+      with
+      | Some x ->
+        if b then `Resolved(`Hidden x)
+        else `Resolved x
+      | None -> `Local(id, b) )
+  | `Identifier _ -> p
   | `Substituted p -> `Substituted (module_path s p)
   | `Forward _ -> p
   | `Root _ -> p
@@ -113,6 +123,14 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
   match p with
   | `Resolved r -> `Resolved (resolved_module_type_path s r)
   | `Substituted p -> `Substituted (module_type_path s p)
+  | `Local(id, b) -> (
+      match
+        try Some (ModuleTypeMap.find id s.module_type)
+        with _ -> None
+      with
+      | Some x -> `Resolved x
+      | None -> `Local(id, b) )
+  | `Identifier _ -> p
   | `Dot (p, n) -> `Dot (module_path s p, n)
 
 and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
@@ -135,6 +153,13 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ =
   match p with
   | `Resolved r -> `Resolved (resolved_type_path s r)
   | `Substituted p -> `Substituted (type_path s p)
+  | `Local(id, b) -> (
+      if TypeMap.mem id s.type_replacement then
+        raise (TypeReplacement (TypeMap.find id s.type_replacement));
+      match try Some (TypeMap.find id s.type_) with Not_found -> None with
+      | Some x -> `Resolved x
+      | None -> `Local(id, b) )
+  | `Identifier _ -> p
   | `Dot (p, n) -> `Dot (module_path s p, n)
 
 and resolved_class_type_path :
@@ -154,6 +179,11 @@ and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
  fun s p ->
   match p with
   | `Resolved r -> `Resolved (resolved_class_type_path s r)
+  | `Local(id, b) -> (
+      match try Some (ClassTypeMap.find id s.class_type) with _ -> None with
+      | Some x -> `Resolved x
+      | None -> `Local(id, b) )
+  | `Identifier _ -> p
   | `Substituted p -> `Substituted (class_type_path s p)
   | `Dot (p, n) -> `Dot (module_path s p, n)
 

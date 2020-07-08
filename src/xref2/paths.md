@@ -164,20 +164,17 @@ and now we can get the paths for all three type declarations:
 ```ocaml env=e1
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- Signature.module_ "N" |-- mod_sig |-- type_constr_path "x1") sg);;
 - : Odoc_model.Paths_types.Path.type_ =
-`Resolved
-  (`Identifier
-     (`Type (`Module (`Module (`Root (Common.root, Root), M), N), t)))
+`Identifier
+  (`Type (`Module (`Module (`Root (Common.root, Root), M), N), t), false)
 # Common.LangUtils.Lens.(get (Signature.module_ "M" |-- mod_sig |-- type_constr_path "x2") sg);;
 - : Odoc_model.Paths_types.Path.type_ =
 `Dot
-  (`Resolved
-     (`Identifier (`Module (`Module (`Root (Common.root, Root), M), N))),
+  (`Identifier (`Module (`Module (`Root (Common.root, Root), M), N), false),
    "t")
 # Common.LangUtils.Lens.(get (type_constr_path "x3") sg);;
 - : Odoc_model.Paths_types.Path.type_ =
 `Dot
-  (`Dot
-     (`Resolved (`Identifier (`Module (`Root (Common.root, Root), M))), "N"),
+  (`Dot (`Identifier (`Module (`Root (Common.root, Root), M), false), "N"),
    "t")
 ```
 

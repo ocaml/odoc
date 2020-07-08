@@ -138,7 +138,7 @@ module M = struct
     | Some e -> of_element env e
     | None -> (
         match Env.lookup_root_module name env with
-        | Some (Env.Resolved (_, id, m)) -> of_element env (`Module (id, m))
+        | Some (Env.Resolved (_, id, _, m)) -> of_element env (`Module (id, m))
         | _ -> None )
 end
 

@@ -59,7 +59,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
         strengthen
         && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p)
       in
-
+      let m = Component.Delayed.get m in
       (* Strengthen=false here so if we're strengthening a chain of aliases
          we only strengthen with the 'outer' (first) one. This covers cases
          where we're aliasing e.g. Stdlib.List which is itself an alias for
@@ -165,10 +165,11 @@ and handle_expansion env id expansion =
               Ident.Name.typed_functor_parameter
                 arg.Component.FunctorParameter.id )
         in
+        let m = Component.module_of_functor_argument arg in
         let env' =
           Env.add_module identifier
-            (Component.Delayed.put_val
-               (Component.module_of_functor_argument arg))
+            (Component.Delayed.put_val m)
+            m.doc
             env
         in
         let subst =

@@ -25,7 +25,7 @@ type equations for all abstract types.
 BEFORE
 ======
 type t/0
-type u/1 = resolved(t/0)
+type u/1 = local(t/0,false)
  (removed=[])
 AFTER
 ======

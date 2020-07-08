@@ -90,6 +90,8 @@ struct
       List [Atom "forward"; Atom s]
     | `Dot (parent, s) ->
       List [Atom "dot"; Atom s; path (parent :> Path.t)]
+    | `Identifier (i, b) ->
+      List [Atom "identifier"; Identifier_to_sexp.identifier (i :> Odoc_model.Paths.Identifier.t); Atom (string_of_bool b)]
     | `Apply (m, m') ->
       List [Atom "apply"; path (m :> Path.t); path (m' :> Path.t)]
 

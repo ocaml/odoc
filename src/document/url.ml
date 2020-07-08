@@ -39,6 +39,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `ClassType (p, s) -> render_resolved (p :> t) ^ "." ^ (ClassTypeName.to_string s)
   and render_path : Odoc_model.Paths.Path.t -> string =
     function
+    | `Identifier (id, _) -> Identifier.name id
     | `Root root -> root
     | `Forward root -> root
     | `Dot (prefix, suffix) -> render_path (prefix :> t) ^ "." ^ suffix
