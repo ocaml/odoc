@@ -17,7 +17,7 @@ let careful_module_in_sig (s : Signature.t) name =
   in
   let rec inner = function
     | Signature.Module (id, _, m) :: _ when Ident.Name.module_ id = name ->
-        Some (Found (Delayed.get m))
+        Some (Found (Ident.Name.module' id, Delayed.get m))
     | Signature.Include i :: rest -> (
         match inner i.Include.expansion_.items with
         | Some _ as found -> found
@@ -30,18 +30,18 @@ let careful_module_in_sig (s : Signature.t) name =
 let careful_type_in_sig (s : Signature.t) name =
   let rec inner_removed = function
     | Signature.RType (id, p) :: _ when Ident.Name.type_ id = name ->
-        Some (Replaced p)
+        Some (Replaced (Ident.Name.type' id, p))
     | _ :: rest -> inner_removed rest
     | [] -> None
   in
   let rec inner = function
     | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
-        Some (Found (`T (Component.Delayed.get m)))
+        Some (Found (`T (Ident.Name.type' id, Component.Delayed.get m)))
     | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
-        Some (Found (`C c))
+        Some (Found (`C (Ident.Name.class' id, c)))
     | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
       ->
-        Some (Found (`CT c))
+        Some (Found (`CT (Ident.Name.class_type' id, c)))
     | Signature.Include i :: rest -> (
         match inner i.Include.expansion_.items with
         | Some _ as found -> found
@@ -182,7 +182,7 @@ let signature_in_sig (s : Signature.t) name =
 
 let module_in_sig s name =
   match careful_module_in_sig s name with
-  | Some (Found m) -> Some m
+  | Some (Found (_, m)) -> Some m
   | Some (Replaced _) | None -> None
 
 let module_type_in_sig (s : Signature.t) name =
