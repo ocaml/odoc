@@ -44,6 +44,8 @@ and simple_module_type_lookup_error =
 and simple_type_lookup_error =
   [ `LocalType of Env.t * Cpath.Resolved.type_
     (** Internal error: Found local path during lookup *)
+  | `Class_replaced
+    (** Class was replaced with a destructive substitution and we're not sure what to do now *)
   | `Find_failure
     (** Internal error: the type was not found in the parent signature *)
   | `Lookup_failureT of Identifier.Path.Type.t

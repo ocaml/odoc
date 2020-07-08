@@ -73,6 +73,16 @@ val lookup_type :
     or a class. If the type has been destructively substituted, the path to the
     replacement type will be returned instead. *)
 
+val lookup_class_type :
+  Env.t ->
+  Cpath.Resolved.class_type ->
+  ( (Find.class_type, Component.TypeExpr.t) Find.found,
+    [ simple_type_lookup_error | parent_lookup_error ] )
+  Result.result
+(** [lookup_class_type env p] takes a resolved class type path and an environment and returns
+    a representation of the class type. The type can be a class type
+    or a class. *)
+
 val resolve_module :
   mark_substituted:bool ->
   add_canonical:bool ->
@@ -108,6 +118,17 @@ val resolve_type :
     destructively substituted the return value is the path
     to the replaced type, class or class type. *)
 
+val resolve_class_type :
+    Env.t ->
+    Cpath.class_type ->
+    ( Cpath.Resolved.class_type * (Find.class_type, Component.TypeExpr.t) Find.found,
+      Cpath.class_type )
+    ResolvedMonad.t
+  (** [resolve_class_type env p] takes an unresolved
+      class type path and an environment and returns a tuple of the resolved class type
+      path alongside a representation of the class type itself. As with {!val:lookup_type}
+      the returned type is either the class or class type. *)
+  
 (** {3 Convenience functions } *)
 
 (** The following functions are convenience functions called from {!module:Compile}
@@ -128,6 +149,9 @@ val resolve_module_type_path :
 
 val resolve_type_path :
   Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.type_) ResolvedMonad.t
+
+val resolve_class_type_path :
+  Env.t -> Cpath.class_type -> (Cpath.Resolved.class_type, Cpath.class_type) ResolvedMonad.t
 
 (** {2 Re-resolve functions} *)
 

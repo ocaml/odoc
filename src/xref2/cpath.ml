@@ -189,6 +189,15 @@ and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   | `Class (p, m) -> `Class (resolved_module_path_of_cpath_parent p, m)
   | `ClassType (p, m) -> `ClassType (resolved_module_path_of_cpath_parent p, m)
 
+and resolved_class_type_path_of_cpath : Resolved.class_type -> Path.Resolved.ClassType.t =
+  function
+  | `Identifier (#Odoc_model.Paths_types.Identifier.path_class_type as x) ->
+      `Identifier x
+  | `Local ident -> raise (LocalPath (ErrType (`Resolved (`Local (ident :> Ident.path_type)))))
+  | `Substituted y -> resolved_class_type_path_of_cpath y
+  | `Class (p, m) -> `Class (resolved_module_path_of_cpath_parent p, m)
+  | `ClassType (p, m) -> `ClassType (resolved_module_path_of_cpath_parent p, m)
+
 and module_path_of_cpath : module_ -> Path.Module.t = function
   | `Resolved r -> `Resolved (resolved_module_path_of_cpath r)
   | `Dot (p, x) -> `Dot (module_path_of_cpath p, x)
@@ -211,6 +220,13 @@ and type_path_of_cpath : type_ -> Path.Type.t = function
   | `Identifier (x, b) -> `Identifier(x, b)
   | `Local _ as y -> raise (LocalPath (ErrType y))
   | `Substituted r -> type_path_of_cpath r
+  | `Dot (p, x) -> `Dot (module_path_of_cpath p, x)
+
+  and class_type_path_of_cpath : class_type -> Path.ClassType.t = function
+  | `Resolved r -> `Resolved (resolved_class_type_path_of_cpath r)
+  | `Identifier (x, b) -> `Identifier(x, b)
+  | `Local (ident,b) -> raise (LocalPath (ErrType (`Local ((ident :> Ident.path_type),b))))
+  | `Substituted r -> class_type_path_of_cpath r
   | `Dot (p, x) -> `Dot (module_path_of_cpath p, x)
 
 let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
