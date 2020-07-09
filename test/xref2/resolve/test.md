@@ -14,12 +14,6 @@ in the definition of `u`, the compiler tells us precisely which `M` is on the
 right hand side but doesn't we need to which which `t` it is referring to.
 
 ```ocaml
-(* Prelude *)
-#require "odoc.xref2";;
-#require "odoc.xref_test";;
-open Odoc_xref2
-open Odoc_xref_test
-
 let test_resolve test_data =
     Odoc_xref2.Tools.reset_caches ();
     let _, _, sg = Common.model_of_string test_data in
