@@ -1,16 +1,11 @@
-(executable
- (name test)
- (libraries odoc_xref2 odoc_xref_test))
-
 (rule
  (targets test.output)
- (deps test.bc)
+ (deps
+  (package odoc))
  (action
-  (with-stdout-to
-   %{targets}
-   (run ./test.bc))))
+  (run ocaml-mdx test -o %{targets} %{dep:test.md})))
 
 (alias
  (name runtest)
  (action
-  (diff test.expected test.output)))
+  (diff test.md test.output)))
