@@ -1,4 +1,5 @@
 (* Find *)
+open Odoc_model.Names
 
 type class_type = [ `C of Component.Class.t | `CT of Component.ClassType.t ]
 
@@ -13,35 +14,32 @@ type ('a, 'b) found = Found of 'a | Replaced of 'b
 
 val careful_module_in_sig :
   Component.Signature.t ->
-  string ->
-  ( Odoc_model.Names.ModuleName.t * Component.Module.t,
-    Cpath.Resolved.module_ )
-  found
-  option
+  ModuleName.t ->
+  (ModuleName.t * Component.Module.t, Cpath.Resolved.module_) found option
 
 val careful_type_in_sig :
   Component.Signature.t ->
   string ->
-  ( [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
-    | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t
-    | `T of Odoc_model.Names.TypeName.t * Component.TypeDecl.t ],
-    Odoc_model.Names.TypeName.t * Component.TypeExpr.t )
+  ( [> `C of ClassName.t * Component.Class.t
+    | `CT of ClassTypeName.t * Component.ClassType.t
+    | `T of TypeName.t * Component.TypeDecl.t ],
+    TypeName.t * Component.TypeExpr.t )
   found
   option
 
 val careful_class_type_in_sig :
   Component.Signature.t ->
   string ->
-  ( [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
-    | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t ],
-    Odoc_model.Names.TypeName.t * Component.TypeExpr.t )
+  ( [> `C of ClassName.t * Component.Class.t
+    | `CT of ClassTypeName.t * Component.ClassType.t ],
+    TypeName.t * Component.TypeExpr.t )
   found
   option
 
 val typename_of_typeid : [< `LCoreType of 'a | `LType of 'a * 'b ] -> 'a
 
 val datatype_in_sig :
-  Component.Signature.t -> string -> Component.TypeDecl.t option
+  Component.Signature.t -> TypeName.t -> Component.TypeDecl.t option
 
 val any_in_type :
   Component.TypeDecl.t ->
@@ -69,16 +67,11 @@ val any_in_sig :
   | `ClassType of
     Ident.class_type * Component.Signature.recursive * Component.ClassType.t
   | `Constructor of
-    Odoc_model.Names.TypeName.t
-    * Component.TypeDecl.t
-    * Component.TypeDecl.Constructor.t
+    TypeName.t * Component.TypeDecl.t * Component.TypeDecl.Constructor.t
   | `Exception of Ident.exception_ * Component.Exception.t
   | `ExtConstructor of Component.Extension.t * Component.Extension.Constructor.t
   | `External of Ident.value * Component.External.t
-  | `Field of
-    Odoc_model.Names.TypeName.t
-    * Component.TypeDecl.t
-    * Component.TypeDecl.Field.t
+  | `Field of TypeName.t * Component.TypeDecl.t * Component.TypeDecl.Field.t
   | `Label of Ident.label
   | `Module of
     Ident.module_
@@ -109,22 +102,25 @@ val signature_in_sig :
     Ident.module_type * Component.ModuleType.t Component.Delayed.t ]
   option
 
-val module_in_sig : Component.Signature.t -> string -> Component.Module.t option
+val module_in_sig :
+  Component.Signature.t -> ModuleName.t -> Component.Module.t option
 
 val module_type_in_sig :
-  Component.Signature.t -> string -> Component.ModuleType.t option
+  Component.Signature.t -> ModuleTypeName.t -> Component.ModuleType.t option
 
 val opt_module_type_in_sig :
-  Component.Signature.t -> string -> Component.ModuleType.t option option
+  Component.Signature.t ->
+  ModuleTypeName.t ->
+  Component.ModuleType.t option option
 
 val opt_value_in_sig : Component.Signature.t -> string -> value option
 
 val type_in_sig :
   Component.Signature.t ->
   string ->
-  [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
-  | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t
-  | `T of Odoc_model.Names.TypeName.t * Component.TypeDecl.t ]
+  [> `C of ClassName.t * Component.Class.t
+  | `CT of ClassTypeName.t * Component.ClassType.t
+  | `T of TypeName.t * Component.TypeDecl.t ]
   option
 
 val class_type_in_sig :
@@ -156,7 +152,7 @@ val label_parent_in_sig :
 val any_in_type_in_sig :
   Component.Signature.t ->
   string ->
-  ( Odoc_model.Names.TypeName.t
+  ( TypeName.t
   * [> `Constructor of Component.TypeDecl.Constructor.t
     | `Field of Component.TypeDecl.Field.t ] )
   option
