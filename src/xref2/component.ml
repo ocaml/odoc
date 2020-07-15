@@ -679,6 +679,8 @@ module Fmt = struct
     match p with
     | `Resolved p -> Format.fprintf ppf "resolved(%a)" resolved_module_path p
     | `Dot (p, str) -> Format.fprintf ppf "%a.%s" module_path p str
+    | `Module (p, n) ->
+        Format.fprintf ppf "%a.%a" resolved_parent_path p ModuleName.fmt n
     | `Apply (p1, p2) ->
         Format.fprintf ppf "%a(%a)" module_path p1 module_path p2
     | `Identifier (id, b) ->
@@ -721,6 +723,8 @@ module Fmt = struct
     | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
     | `Substituted s -> Format.fprintf ppf "substituted(%a)" module_type_path s
     | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `ModuleType (m, n) ->
+        Format.fprintf ppf "%a.%a" resolved_parent_path m ModuleTypeName.fmt n
 
   and resolved_type_path : Format.formatter -> Cpath.Resolved.type_ -> unit =
    fun ppf p ->
@@ -759,6 +763,15 @@ module Fmt = struct
     | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
     | `Substituted s -> Format.fprintf ppf "substituted(%a)" type_path s
     | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `Class (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ClassName.to_string t)
+    | `ClassType (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ClassTypeName.to_string t)
+    | `Type (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.TypeName.to_string t)
 
   and resolved_class_type_path :
       Format.formatter -> Cpath.Resolved.class_type -> unit =
@@ -788,6 +801,12 @@ module Fmt = struct
     | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
     | `Substituted s -> Format.fprintf ppf "substituted(%a)" class_type_path s
     | `Dot (m, s) -> Format.fprintf ppf "%a.%s" module_path m s
+    | `Class (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ClassName.to_string t)
+    | `ClassType (p, t) ->
+        Format.fprintf ppf "%a.%s" resolved_parent_path p
+          (Odoc_model.Names.ClassTypeName.to_string t)
 
   and model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit =
    fun ppf (p : Odoc_model.Paths.Path.t) ->
@@ -982,11 +1001,14 @@ module Fmt = struct
         Format.fprintf ppf "opaquemodule(%a)" model_resolved_fragment
           (m :> Odoc_model.Paths.Fragment.Resolved.t)
 
+  and resolved_root_fragment ppf (f : Cfrag.root) =
+    match f with
+    | `ModuleType p -> Format.fprintf ppf "root(%a)" resolved_module_type_path p
+    | `Module p -> Format.fprintf ppf "root(%a)" resolved_module_path p
+
   and resolved_signature_fragment ppf (f : Cfrag.resolved_signature) =
     match f with
-    | `Root (`ModuleType p) ->
-        Format.fprintf ppf "root(%a)" resolved_module_type_path p
-    | `Root (`Module p) -> Format.fprintf ppf "root(%a)" resolved_module_path p
+    | `Root r -> Format.fprintf ppf "%a" resolved_root_fragment r
     | (`Subst _ | `SubstAlias _ | `Module _) as x ->
         resolved_module_fragment ppf x
     | `OpaqueModule m ->

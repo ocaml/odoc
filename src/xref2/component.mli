@@ -507,6 +507,8 @@ module Fmt : sig
   val model_resolved_fragment :
     Format.formatter -> Odoc_model.Paths_types.Resolved_fragment.any -> unit
 
+  val resolved_root_fragment : Format.formatter -> Cfrag.root -> unit
+
   val resolved_signature_fragment :
     Format.formatter -> Cfrag.resolved_signature -> unit
 

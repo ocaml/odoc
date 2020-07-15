@@ -100,6 +100,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
   | `Substituted p -> `Substituted (module_path s p)
   | `Forward _ -> p
   | `Root _ -> p
+  | `Module _ -> failwith "Unimplemented"
 
 and resolved_module_type_path :
     t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
@@ -127,6 +128,7 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
       | None -> `Local (id, b) )
   | `Identifier _ -> p
   | `Dot (p, n) -> `Dot (module_path s p, n)
+  | `ModuleType _ -> failwith "Unimplemented"
 
 and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
  fun s p ->
@@ -156,6 +158,7 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ =
       | None -> `Local (id, b) )
   | `Identifier _ -> p
   | `Dot (p, n) -> `Dot (module_path s p, n)
+  | `Type _ | `ClassType _ | `Class _ -> failwith "Unimplemented"
 
 and resolved_class_type_path :
     t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
@@ -181,6 +184,7 @@ and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
   | `Identifier _ -> p
   | `Substituted p -> `Substituted (class_type_path s p)
   | `Dot (p, n) -> `Dot (module_path s p, n)
+  | `ClassType _ | `Class _ -> failwith "Unimplemented"
 
 let rec resolved_signature_fragment :
     t -> Cfrag.resolved_signature -> Cfrag.resolved_signature =

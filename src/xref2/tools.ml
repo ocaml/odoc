@@ -701,6 +701,7 @@ and resolve_module :
         let sub = prefix_substitution (`Module p) parent_sig in
         handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub
         |> of_option ~unresolved
+    | `Module _ -> failwith "Unimplemented"
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -777,6 +778,7 @@ and resolve_module_type :
         of_option ~unresolved
           (handle_module_type_lookup env id (`Module p) parent_sg sub)
         >>= fun (p', mt) -> return (p', mt)
+    | `ModuleType _ -> failwith "Unimplemented"
     | `Identifier (i, _) as unresolved ->
         of_option ~unresolved (Env.(lookup_by_id s_module_type) i env)
         >>= fun (`ModuleType (_, mt)) ->
@@ -821,6 +823,7 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         (* let time3 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
         return (p', t)
+    | `Type _ | `ClassType _ | `Class _ -> failwith "Unimplemented"
     | `Identifier (i, _) as unresolved ->
         of_result ~unresolved (lookup_type env (`Identifier i)) >>= fun t ->
         return (`Identifier i, t)
@@ -870,6 +873,7 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     | `Substituted s ->
         resolve_class_type env s |> map_unresolved (fun p' -> `Substituted p')
         >>= fun (p, m) -> return (`Substituted p, m)
+    | `ClassType _ | `Class _ -> failwith "Unimplemented"
 
 and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
     =
