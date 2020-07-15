@@ -19,7 +19,9 @@ let module_substitution ~idents ~targets m test_data =
 
   let subst =
     let target = `Local (subst_targets_mod :> Ident.path_module) in
-    Subst.add_module (subst_idents_mod :> Ident.path_module) target Subst.identity
+    Subst.add_module
+      (subst_idents_mod :> Ident.path_module)
+      (`Resolved target) target Subst.identity
   in
 
   let m =

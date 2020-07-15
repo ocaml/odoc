@@ -175,6 +175,7 @@ and handle_expansion env id expansion =
         let subst =
           Subst.add_module
             (arg.id :> Ident.path_module)
+            (`Resolved (`Identifier identifier))
             (`Identifier identifier) Subst.identity
         in
         (env', Subst.module_type_expr subst expr)

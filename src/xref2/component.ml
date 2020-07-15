@@ -358,11 +358,28 @@ end =
   InstanceVariable
 
 and Substitution : sig
+  type subst_module =
+    [ `Prefixed of Cpath.module_ * Cpath.Resolved.module_
+    | `Substituted
+    | `Renamed of Ident.path_module ]
+
+  type subst_module_type =
+    [ `Prefixed of Cpath.module_type * Cpath.Resolved.module_type
+    | `Renamed of Ident.module_type ]
+
+  type subst_type =
+    [ `Prefixed of Cpath.type_ * Cpath.Resolved.type_
+    | `Renamed of Ident.path_type ]
+
+  type subst_class_type =
+    [ `Prefixed of Cpath.class_type * Cpath.Resolved.class_type
+    | `Renamed of Ident.path_class_type ]
+
   type t = {
-    module_ : Cpath.Resolved.module_ ModuleMap.t;
-    module_type : Cpath.Resolved.module_type ModuleTypeMap.t;
-    type_ : Cpath.Resolved.type_ TypeMap.t;
-    class_type : Cpath.Resolved.class_type ClassTypeMap.t;
+    module_ : subst_module ModuleMap.t;
+    module_type : subst_module_type ModuleTypeMap.t;
+    type_ : subst_type TypeMap.t;
+    class_type : subst_class_type ClassTypeMap.t;
     type_replacement : TypeExpr.t TypeMap.t;
   }
 end =
