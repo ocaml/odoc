@@ -4,8 +4,6 @@ open Odoc_model.Names
 open Utils
 open ResultMonad
 
-exception ModuleLookup of Cpath.module_
-
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 type module_modifiers =
@@ -1100,19 +1098,12 @@ and handle_signature_with_subs :
     Env.t ->
     Component.Signature.t ->
     Component.ModuleType.substitution list ->
-    (Component.Signature.t, handle_subs_error) Result.result =
+    (Component.Signature.t, signature_of_module_error) Result.result =
  fun ~mark_substituted env sg subs ->
   let open ResultMonad in
   List.fold_left
     (fun sg_opt sub ->
-      sg_opt >>= fun sg ->
-      match sub with
-      | Component.ModuleType.ModuleEq (frag, _) ->
-          fragmap_module ~mark_substituted env frag sub sg
-      | ModuleSubst (frag, _) ->
-          fragmap_module ~mark_substituted env frag sub sg
-      | TypeEq (frag, _) -> Ok (fragmap_type env frag sub sg)
-      | TypeSubst (frag, _) -> Ok (fragmap_type env frag sub sg))
+      sg_opt >>= fun sg -> fragmap ~mark_substituted env sub sg)
     (Ok sg) subs
 
 and signature_of_module_type_expr :
@@ -1127,11 +1118,9 @@ and signature_of_module_type_expr :
       | Resolved (_, mt) -> signature_of_module_type env mt
       | Unresolved _p -> Error (`UnresolvedPath (`ModuleType p)) )
   | Component.ModuleType.Signature s -> Ok s
-  | Component.ModuleType.With (s, subs) -> (
+  | Component.ModuleType.With (s, subs) ->
       signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
-      match handle_signature_with_subs ~mark_substituted env sg subs with
-      | Ok x -> Ok x
-      | Error y -> Error (y :> signature_of_module_error) )
+      handle_signature_with_subs ~mark_substituted env sg subs
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.Functor (Named arg, expr) ->
@@ -1174,302 +1163,193 @@ and signature_of_module_cached :
   let run env _id = signature_of_module env m in
   SignatureOfModuleMemo.memoize run env' id
 
-and fragmap_module :
+and fragmap :
     mark_substituted:bool ->
     Env.t ->
-    Cfrag.module_ ->
     Component.ModuleType.substitution ->
     Component.Signature.t ->
-    (Component.Signature.t, handle_subs_error) Result.result =
- fun ~mark_substituted env frag sub sg ->
-  let name, frag' = Cfrag.module_split frag in
-  let map_module m =
-    match (frag', sub) with
-    | None, ModuleEq (_, type_) ->
-        let type_ =
-          match type_ with
-          | Alias (`Resolved p) ->
-              let new_p = if mark_substituted then `Substituted p else p in
-              Component.Module.Alias (`Resolved new_p)
-          | Alias _ | ModuleType _ -> type_
-        in
-        (* Finished the substitution *)
-        Left { m with Component.Module.type_; expansion = None }
-    | None, ModuleSubst (_, p) -> (
-        match
-          resolve_module ~mark_substituted:true ~add_canonical:false env p
-        with
-        | Resolved (p, _) -> Right p
-        | Unresolved p ->
-            Format.fprintf Format.err_formatter "failed to resolve path: %a\n%!"
-              Component.Fmt.module_path p;
-            raise (ModuleLookup p) )
-    | Some f, subst -> (
-        let new_subst =
-          match subst with
-          | ModuleEq (_, type_) -> Component.ModuleType.ModuleEq (f, type_)
-          | ModuleSubst (_, path) -> ModuleSubst (f, path)
-          | TypeEq _ | TypeSubst _ -> failwith "Can't happen"
-        in
-        match m.type_ with
-        | Alias path ->
-            Left
-              {
-                m with
-                type_ =
-                  ModuleType
-                    Component.(
-                      ModuleType.(
-                        With (TypeOf (Module.Alias path), [ new_subst ])));
-                expansion = None;
-              }
-            (* Can this one happen? *)
-        | ModuleType (With (mty', subs')) ->
-            Left
-              {
-                m with
-                type_ =
-                  ModuleType
-                    (Component.ModuleType.With (mty', subs' @ [ new_subst ]));
-                expansion = None;
-              }
-        | ModuleType mty ->
-            Left
-              {
-                m with
-                type_ =
-                  ModuleType (Component.ModuleType.With (mty, [ new_subst ]));
-                expansion = None;
-              } )
-    | _, TypeEq _ | _, TypeSubst _ -> failwith "Can't happen"
+    (Component.Signature.t, signature_of_module_error) Result.result =
+ fun ~mark_substituted env sub sg ->
+  (* Used when we haven't finished the substitution. For example, if the
+     substitution is `M.t = u`, this function is used to map the declaration
+     of `M` to be `M : ... with type t = u` *)
+  let map_module_decl decl subst =
+    let open Component.Module in
+    match decl with
+    | Alias path ->
+        signature_of_module_alias env path >>= fun sg ->
+        fragmap ~mark_substituted env subst sg >>= fun sg ->
+        Ok (ModuleType (Signature sg))
+    | ModuleType (With (mty', subs')) ->
+        Ok (ModuleType (With (mty', subs' @ [ subst ])))
+    | ModuleType mty' -> Ok (ModuleType (With (mty', [ subst ])))
   in
-  let map_include i expansion_ =
-    let decl =
-      match i.Component.Include.decl with
-      | Component.Module.Alias p ->
-          Component.Module.ModuleType (With (TypeOf (Alias p), [ sub ]))
-      | Component.Module.ModuleType (With (p, subs)) ->
-          ModuleType (With (p, sub :: subs))
-      | Component.Module.ModuleType expr -> ModuleType (With (expr, [ sub ]))
-    in
-    { i with decl; expansion_ }
+  let map_module m new_subst =
+    let open Component.Module in
+    map_module_decl m.type_ new_subst >>= fun type_ ->
+    Ok (Left { m with type_; expansion = None })
   in
-  let rec handle_items items =
+  let rec map_signature tymap modmap items =
     List.fold_right
-      (fun item (items, handled, removed, sub) ->
-        match item with
-        | Component.Signature.Module (id, r, m)
-          when Ident.Name.module_ id = name -> (
-            let m = Component.Delayed.get m in
-            match map_module m with
-            | Left m ->
-                ( Component.Signature.Module
-                    (id, r, Component.Delayed.put (fun () -> m))
-                  :: items,
-                  true,
-                  removed,
-                  id :: sub )
-            | Right p ->
-                ( items,
-                  true,
-                  Component.Signature.RModule (id, p) :: removed,
-                  sub ) )
-        | Component.Signature.Include i ->
-            let items', handled', removed', sub' =
-              handle_items i.expansion_.items
-            in
-            let expansion =
-              Component.Signature.{ items = items'; removed = removed' }
-            in
+      (fun item acc ->
+        acc >>= fun (items, handled, subbed_modules, removed) ->
+        match (item, tymap, modmap) with
+        | Component.Signature.Type (id, r, t), Some (id', fn), _
+          when Ident.Name.type_ id = id' -> (
+            fn (Component.Delayed.get t) >>= function
+            | Left x ->
+                Ok
+                  ( Component.Signature.Type
+                      (id, r, Component.Delayed.put (fun () -> x))
+                    :: items,
+                    true,
+                    subbed_modules,
+                    removed )
+            | Right y ->
+                Ok
+                  ( items,
+                    true,
+                    subbed_modules,
+                    Component.Signature.RType (id, y) :: removed ) )
+        | Component.Signature.Module (id, r, m), _, Some (id', fn)
+          when Ident.Name.module_ id = id' -> (
+            fn (Component.Delayed.get m) >>= function
+            | Left x ->
+                Ok
+                  ( Component.Signature.Module
+                      (id, r, Component.Delayed.put (fun () -> x))
+                    :: items,
+                    true,
+                    id :: subbed_modules,
+                    removed )
+            | Right y ->
+                Ok
+                  ( items,
+                    true,
+                    subbed_modules,
+                    Component.Signature.RModule (id, y) :: removed ) )
+        | Component.Signature.Include ({ expansion_; _ } as i), _, _ ->
+            map_signature tymap modmap expansion_.items
+            >>= fun (items', handled', subbed_modules', removed') ->
             let component =
               if handled' then
-                Component.Signature.Include (map_include i expansion)
-              else Component.Signature.Include { i with expansion_ = expansion }
-            in
-            ( component :: items,
-              handled || handled',
-              removed @ removed',
-              sub @ sub' )
-        | x -> (x :: items, handled, removed, sub))
-      items ([], false, [], [])
-  in
-  try
-    let items, _handled, removed, substituted = handle_items sg.items in
-
-    let sub_of_removed removed sub =
-      match removed with
-      | Component.Signature.RModule (id, p) ->
-          Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
-      | _ -> sub
-    in
-    let sub = List.fold_right sub_of_removed removed Subst.identity in
-    let items =
-      if not mark_substituted then items
-      else
-        (* Mark things that have been substituted as such - See the `With11`
-           test for an example of why this is necessary *)
-        let sub_of_substituted x sub =
-          let x = (x :> Ident.path_module) in
-          Subst.add_module_substitution x sub
-        in
-        let substituted_sub =
-          List.fold_right sub_of_substituted substituted Subst.identity
-        in
-        (* Need to call `apply_sig_map` directly as we're substituting for an item
-           that's declared within the signature *)
-        let sg = Subst.apply_sig_map substituted_sub items [] in
-        (* Finished marking substituted stuff *)
-        sg.items
-    in
-    let res =
-      Subst.signature sub
-        { Component.Signature.items; removed = removed @ sg.removed }
-    in
-    Ok res
-    (* Format.(
-       fprintf err_formatter "after sig=%a\n%!" Component.Fmt.(signature) res); *)
-  with ModuleLookup p -> Error (`UnresolvedPath (`Module p))
-
-and fragmap_type :
-    Env.t ->
-    Cfrag.type_ ->
-    Component.ModuleType.substitution ->
-    Component.Signature.t ->
-    Component.Signature.t =
- fun _env frag sub sg ->
-  let name, frag' = Cfrag.type_split frag in
-  let map_include i expansion_ =
-    let decl =
-      match i.Component.Include.decl with
-      | Component.Module.Alias p ->
-          Component.Module.ModuleType (With (TypeOf (Alias p), [ sub ]))
-      | Component.Module.ModuleType (With (p, subs)) ->
-          ModuleType (With (p, sub :: subs))
-      | Component.Module.ModuleType expr -> ModuleType (With (expr, [ sub ]))
-    in
-    { i with decl; expansion_ }
-  in
-  match frag' with
-  | None ->
-      let mapfn t =
-        match sub with
-        | TypeEq (_, equation) ->
-            (* Finished the substitution *)
-            Left { t with Component.TypeDecl.equation }
-        | TypeSubst (_, { Component.TypeDecl.Equation.manifest = Some x; _ }) ->
-            Right x
-        | _ -> failwith "Can't happen"
-      in
-      let rec handle_items items init =
-        List.fold_right
-          (fun item (items, handled, removed) ->
-            match item with
-            | Component.Signature.Type (id, r, t)
-              when Ident.Name.unsafe_type id = name -> (
-                match mapfn (Component.Delayed.get t) with
-                | Left x ->
-                    ( Component.Signature.Type
-                        (id, r, Component.Delayed.put (fun () -> x))
-                      :: items,
-                      true,
-                      removed )
-                | Right y ->
-                    (items, true, Component.Signature.RType (id, y) :: removed)
-                )
-            | Component.Signature.Include ({ expansion_; _ } as i) ->
-                let items', handled', removed' =
-                  handle_items expansion_.items ([], false, [])
-                in
+                map_module_decl i.decl sub >>= fun decl ->
                 let expansion_ =
                   Component.Signature.{ items = items'; removed = removed' }
                 in
-                let component =
-                  if handled' then
-                    Component.Signature.Include (map_include i expansion_)
-                  else Component.Signature.Include { i with expansion_ }
-                in
-                (component :: items, handled' || handled, removed' @ removed)
-            | x -> (x :: items, handled, removed))
-          items init
-      in
-      let items, _, removed = handle_items sg.items ([], false, []) in
-      let subst =
-        List.fold_right
-          (fun ty subst ->
-            match ty with
-            | Component.Signature.RType (id, replacement) ->
-                Subst.add_type_replacement
-                  (id :> Ident.path_type)
-                  replacement subst
-            | _ -> subst)
-          removed Subst.identity
-      in
-      Subst.signature subst { items; removed = removed @ sg.removed }
-  | Some f ->
-      let mapfn m =
-        let new_subst =
-          match sub with
-          | ModuleEq _ | ModuleSubst _ -> failwith "Can't happen"
-          | TypeEq (_, eqn) -> Component.ModuleType.TypeEq (f, eqn)
-          | TypeSubst (_, eqn) -> Component.ModuleType.TypeSubst (f, eqn)
-        in
-        match m.Component.Module.type_ with
-        | Alias path ->
-            {
-              m with
-              type_ =
-                ModuleType
-                  Component.(
-                    ModuleType.(
-                      With (TypeOf (Module.Alias path), [ new_subst ])));
-              expansion = None;
-            }
-            (* Can this one happen? *)
-        | ModuleType (With (mty', subs')) ->
-            {
-              m with
-              type_ =
-                ModuleType
-                  (Component.ModuleType.With (mty', subs' @ [ new_subst ]));
-              expansion = None;
-            }
-        | ModuleType mty ->
-            {
-              m with
-              type_ =
-                ModuleType (Component.ModuleType.With (mty, [ new_subst ]));
-              expansion = None;
-            }
-      in
-      let rec handle_items items =
-        List.fold_right
-          (fun item (items, handled) ->
-            match item with
-            | Component.Signature.Module (id, r, m)
-              when Ident.Name.module_ id = name ->
-                let m = Component.Delayed.get m in
-                let item =
-                  Component.Signature.Module
-                    (id, r, Component.Delayed.put (fun () -> mapfn m))
-                in
-                (item :: items, true)
-            | Component.Signature.Include ({ expansion_; _ } as i) ->
-                let items', handled' = handle_items expansion_.items in
-                let expansion_ =
-                  Component.Signature.
-                    { items = items'; removed = expansion_.removed }
-                in
-                let component =
-                  if handled' then
-                    Component.Signature.Include (map_include i expansion_)
-                  else Component.Signature.Include { i with expansion_ }
-                in
-                (component :: items, handled' || handled)
-            | x -> (x :: items, handled))
-          items ([], false)
-      in
-      let items, _ = handle_items sg.items in
-      { sg with items }
+                Ok (Component.Signature.Include { i with decl; expansion_ })
+              else Ok item
+            in
+            component >>= fun c ->
+            Ok
+              ( c :: items,
+                handled' || handled,
+                subbed_modules' @ subbed_modules,
+                removed' @ removed )
+        | x, _, _ -> Ok (x :: items, handled, subbed_modules, removed))
+      items
+      (Ok ([], false, [], []))
+  in
+  let handle_intermediate name new_subst =
+    let modmaps = Some (name, fun m -> map_module m new_subst) in
+    map_signature None modmaps sg.items
+  in
+  let new_sg =
+    match sub with
+    | ModuleEq (frag, type_) -> (
+        match Cfrag.module_split frag with
+        | name, Some frag' ->
+            let new_subst = Component.ModuleType.ModuleEq (frag', type_) in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn m =
+              let type_ =
+                let open Component.Module in
+                match type_ with
+                | Alias (`Resolved p) ->
+                    let new_p =
+                      if mark_substituted then `Substituted p else p
+                    in
+                    Alias (`Resolved new_p)
+                | Alias _ | ModuleType _ -> type_
+              in
+              Ok (Left { m with Component.Module.type_; expansion = None })
+            in
+            map_signature None (Some (name, mapfn)) sg.items )
+    | ModuleSubst (frag, p) -> (
+        match Cfrag.module_split frag with
+        | name, Some frag' ->
+            let new_subst = Component.ModuleType.ModuleSubst (frag', p) in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn _ =
+              match
+                resolve_module ~mark_substituted ~add_canonical:false env p
+              with
+              | Resolved (p, _) -> Ok (Right p)
+              | Unresolved p ->
+                  Format.fprintf Format.err_formatter
+                    "failed to resolve path: %a\n%!" Component.Fmt.module_path p;
+                  Error (`UnresolvedPath (`Module p))
+            in
+            map_signature None (Some (name, mapfn)) sg.items )
+    | TypeEq (frag, equation) -> (
+        match Cfrag.type_split frag with
+        | name, Some frag' ->
+            let new_subst = Component.ModuleType.TypeEq (frag', equation) in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn t = Ok (Left { t with Component.TypeDecl.equation }) in
+            map_signature (Some (name, mapfn)) None sg.items )
+    | TypeSubst
+        ( frag,
+          ({ Component.TypeDecl.Equation.manifest = Some x; _ } as equation) )
+      -> (
+        match Cfrag.type_split frag with
+        | name, Some frag' ->
+            let new_subst = Component.ModuleType.TypeSubst (frag', equation) in
+            handle_intermediate name new_subst
+        | name, None ->
+            let mapfn _t = Ok (Right x) in
+            map_signature (Some (name, mapfn)) None sg.items )
+    | TypeSubst (_, { Component.TypeDecl.Equation.manifest = None; _ }) ->
+        failwith "Unhandled condition: TypeSubst with no manifest"
+  in
+  new_sg >>= fun (items, _handled, subbed_modules, removed) ->
+  let sub_of_removed removed sub =
+    match removed with
+    | Component.Signature.RModule (id, p) ->
+        Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
+    | Component.Signature.RType (id, replacement) ->
+        Subst.add_type_replacement (id :> Ident.path_type) replacement sub
+  in
+
+  let sub = List.fold_right sub_of_removed removed Subst.identity in
+
+  let map_items subfn items =
+    (* Invalidate resolved paths containing substituted idents - See the `With11`
+       test for an example of why this is necessary *)
+    let sub_of_substituted x sub =
+      let x = (x :> Ident.path_module) in
+      subfn x sub
+    in
+    let substituted_sub =
+      List.fold_right sub_of_substituted subbed_modules Subst.identity
+    in
+    (* Need to call `apply_sig_map` directly as we're substituting for an item
+       that's declared within the signature *)
+    let sg = Subst.apply_sig_map substituted_sub items [] in
+    (* Finished marking substituted stuff *)
+    sg.items
+  in
+
+  let items = map_items Subst.add_module_substitution items in
+
+  let res =
+    Subst.signature sub
+      { Component.Signature.items; removed = removed @ sg.removed }
+  in
+  Ok res
 
 and find_external_module_path :
     Cpath.Resolved.module_ -> Cpath.Resolved.module_ option =
@@ -1592,7 +1472,7 @@ and resolve_signature_fragment :
       of_result
         (find_module_with_replacement env sg (ModuleName.of_string name))
       >>= fun m' ->
-      let mname = Odoc_model.Names.ModuleName.of_string name in
+      let mname = ModuleName.of_string name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
@@ -1614,7 +1494,6 @@ and resolve_signature_fragment :
       in
       (* Don't use the cached one - `FragmentRoot` is not unique *)
       of_result (signature_of_module env m') >>= fun parent_sg ->
-      (* Format.eprintf "Dot (%s): sig: %a\n%!" name Component.Fmt.signature sg; *)
       let sg = prefix_signature (`Module cp', parent_sg) in
       Some (f', `Module cp', sg)
 
@@ -1633,7 +1512,7 @@ and resolve_module_fragment :
       of_result
         (find_module_with_replacement env sg (ModuleName.of_string name))
       >>= fun m' ->
-      let mname = Odoc_model.Names.ModuleName.of_string name in
+      let mname = ModuleName.of_string name in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
       let modifier = get_module_path_modifiers env ~add_canonical:false m' in

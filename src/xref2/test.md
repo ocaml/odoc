@@ -682,10 +682,11 @@ val m : Component.Module.t Component.Delayed.t =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
           (`Dot
-             (`Module
+             (`Substituted
                 (`Module
-                   (`Identifier (`Module (`Root (Common.root, Root), C))),
-                 M),
+                   (`Module
+                      (`Identifier (`Module (`Root (Common.root, Root), C))),
+                    M)),
               "S")));
       canonical = None; hidden = false; display_type = None;
       expansion = None};
@@ -706,7 +707,16 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Module (`Identifier (`Module (`Root (Common.root, Root), C)), N),
+         (`Subst
+            (`ModuleType
+               (`Alias
+                  (`Identifier (`Module (`Root (Common.root, Root), B)),
+                   `Module
+                     (`Identifier (`Module (`Root (Common.root, Root), C)),
+                      M)),
+                S),
+             `Module
+               (`Identifier (`Module (`Root (Common.root, Root), C)), N)),
           t)),
    []))
 ```

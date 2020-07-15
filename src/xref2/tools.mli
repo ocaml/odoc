@@ -280,27 +280,15 @@ val reresolve_type_fragment :
     applied.
 *)
 
-val fragmap_module :
+val fragmap :
   mark_substituted:bool ->
   Env.t ->
-  Cfrag.module_ ->
   Component.ModuleType.substitution ->
   Component.Signature.t ->
-  (Component.Signature.t, handle_subs_error) Result.result
-(** [fragmap_module ~mark_substituted env frag sub sg] takes an environment [env]
-    and signature [sg], a type fragment [frag] and a fragment substitution (e.g.
+  (Component.Signature.t, signature_of_module_error) Result.result
+(** [fragmap ~mark_substituted env sub sg] takes an environment [env]
+    and signature [sg], and a fragment substitution (e.g.
     [ModuleSubst] to destructively substitute a module), and returns the substituted
-    signature. *)
-
-val fragmap_type :
-  Env.t ->
-  Cfrag.type_ ->
-  Component.ModuleType.substitution ->
-  Component.Signature.t ->
-  Component.Signature.t
-(** [fragmap_type ~mark_substituted env frag sub sg] takes an environment [env]
-    and signature [sg], a module fragment [frag] and a fragment substitution (e.g.
-    [TypeSubst] to destructively substitute a type), and returns the substituted
     signature. *)
 
 val handle_signature_with_subs :
@@ -308,7 +296,7 @@ val handle_signature_with_subs :
   Env.t ->
   Component.Signature.t ->
   Component.ModuleType.substitution list ->
-  (Component.Signature.t, handle_subs_error) Result.result
+  (Component.Signature.t, signature_of_module_error) Result.result
 (** [handle_signature_with_subs ~mark_substituted env sg subs] applies the
     fragment modifiers [subs], in order, to the supplied signature [sg]. *)
 

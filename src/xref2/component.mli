@@ -361,6 +361,7 @@ and Substitution : sig
     type_ : subst_type TypeMap.t;
     class_type : subst_class_type ClassTypeMap.t;
     type_replacement : TypeExpr.t TypeMap.t;
+    invalidated_modules : Ident.path_module list;
   }
 end
 

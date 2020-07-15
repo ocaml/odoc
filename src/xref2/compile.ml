@@ -453,7 +453,7 @@ and module_type_expr :
  fun env id expr ->
   let open ModuleType in
   let open Utils.ResultMonad in
-  let resolve_sub ~fragment_root (sg_res, env, subs) csub lsub =
+  let resolve_sub ~fragment_root (sg_res, env, subs) lsub =
     match sg_res with
     | Error _ -> (sg_res, env, lsub :: subs)
     | Ok sg -> (
@@ -461,71 +461,92 @@ and module_type_expr :
         let lang_of_map = Lang_of.with_fragment_root fragment_root in
         let env = Env.add_fragment_root sg env in
         let sg_and_sub =
-          match (csub, lsub) with
-          | Component.ModuleType.ModuleEq (frag, _), ModuleEq (unresolved, decl)
-            ->
-              let frag' =
+          match lsub with
+          | ModuleEq (frag, decl) ->
+              let cfrag = Component.Of_Lang.(module_fragment empty frag) in
+              let cfrag', frag' =
                 match
-                  Tools.resolve_module_fragment env (fragment_root, sg) frag
+                  Tools.resolve_module_fragment env (fragment_root, sg) cfrag
+                with
+                | Some cfrag' ->
+                    ( `Resolved cfrag',
+                      `Resolved
+                        (Lang_of.Path.resolved_module_fragment lang_of_map
+                           cfrag') )
+                | None ->
+                    lookup_failure ~what:(`With_module cfrag) `Resolve;
+                    (cfrag, frag)
+              in
+              let decl' = module_decl env id decl in
+              let cdecl' = Component.Of_Lang.(module_decl empty decl') in
+              let resolved_csub =
+                Component.ModuleType.ModuleEq (cfrag', cdecl')
+              in
+              Tools.fragmap ~mark_substituted:true env resolved_csub sg
+              >>= fun sg' -> Ok (sg', ModuleEq (frag', decl'))
+          | TypeEq (frag, eqn) ->
+              let cfrag = Component.Of_Lang.(type_fragment empty frag) in
+              let cfrag', frag' =
+                match
+                  Tools.resolve_type_fragment env (fragment_root, sg) cfrag
+                with
+                | Some cfrag' ->
+                    ( `Resolved cfrag',
+                      `Resolved
+                        (Lang_of.Path.resolved_type_fragment lang_of_map cfrag')
+                    )
+                | None ->
+                    lookup_failure ~what:(`With_type cfrag) `Compile;
+                    (cfrag, frag)
+              in
+              let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
+              let ceqn' = Component.Of_Lang.(type_equation empty eqn') in
+              Tools.fragmap ~mark_substituted:true env
+                (Component.ModuleType.TypeEq (cfrag', ceqn'))
+                sg
+              >>= fun sg' -> Ok (sg', TypeEq (frag', eqn'))
+          | ModuleSubst (frag, mpath) ->
+              let cfrag = Component.Of_Lang.(module_fragment empty frag) in
+              let cfrag', frag' =
+                match
+                  Tools.resolve_module_fragment env (fragment_root, sg) cfrag
                 with
                 | Some cfrag ->
-                    `Resolved
-                      (Lang_of.Path.resolved_module_fragment lang_of_map cfrag)
+                    ( `Resolved cfrag,
+                      `Resolved
+                        (Lang_of.Path.resolved_module_fragment lang_of_map
+                           cfrag) )
                 | None ->
-                    lookup_failure ~what:(`With_module frag) `Resolve;
-                    unresolved
+                    lookup_failure ~what:(`With_module cfrag) `Resolve;
+                    (cfrag, frag)
               in
-              Tools.fragmap_module ~mark_substituted:true env frag csub sg
-              >>= fun sg' -> Ok (sg', ModuleEq (frag', module_decl env id decl))
-          | TypeEq (frag, _), TypeEq (unresolved, eqn) ->
-              let frag' =
+              let mpath' = module_path env mpath in
+              let cmpath' = Component.Of_Lang.(module_path empty mpath') in
+              Tools.fragmap ~mark_substituted:true env
+                (Component.ModuleType.ModuleSubst (cfrag', cmpath'))
+                sg
+              >>= fun sg' -> Ok (sg', ModuleSubst (frag', mpath'))
+          | TypeSubst (frag, eqn) ->
+              let cfrag = Component.Of_Lang.(type_fragment empty frag) in
+              let cfrag', frag' =
                 match
-                  Tools.resolve_type_fragment env (fragment_root, sg) frag
+                  Tools.resolve_type_fragment env (fragment_root, sg) cfrag
                 with
                 | Some cfrag ->
-                    `Resolved
-                      (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
+                    ( `Resolved cfrag,
+                      `Resolved
+                        (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
+                    )
                 | None ->
-                    lookup_failure ~what:(`With_type frag) `Compile;
-                    unresolved
+                    lookup_failure ~what:(`With_type cfrag) `Compile;
+                    (cfrag, frag)
               in
-              let sg' = Tools.fragmap_type env frag csub sg in
-              Ok
-                ( sg',
-                  TypeEq (frag', type_decl_equation env (id :> Id.Parent.t) eqn)
-                )
-          | ModuleSubst (frag, _), ModuleSubst (unresolved, mpath) ->
-              let frag' =
-                match
-                  Tools.resolve_module_fragment env (fragment_root, sg) frag
-                with
-                | Some cfrag ->
-                    `Resolved
-                      (Lang_of.Path.resolved_module_fragment lang_of_map cfrag)
-                | None ->
-                    lookup_failure ~what:(`With_module frag) `Resolve;
-                    unresolved
-              in
-              Tools.fragmap_module ~mark_substituted:true env frag csub sg
-              >>= fun sg' -> Ok (sg', ModuleSubst (frag', module_path env mpath))
-          | TypeSubst (frag, _), TypeSubst (unresolved, eqn) ->
-              let frag' =
-                match
-                  Tools.resolve_type_fragment env (fragment_root, sg) frag
-                with
-                | Some cfrag ->
-                    `Resolved
-                      (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
-                | None ->
-                    lookup_failure ~what:(`With_type frag) `Compile;
-                    unresolved
-              in
-              let sg' = Tools.fragmap_type env frag csub sg in
-              Ok
-                ( sg',
-                  TypeSubst
-                    (frag', type_decl_equation env (id :> Id.Parent.t) eqn) )
-          | _ -> failwith "This is pretty unusual"
+              let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
+              let ceqn' = Component.Of_Lang.(type_equation empty eqn') in
+              Tools.fragmap ~mark_substituted:true env
+                (Component.ModuleType.TypeSubst (cfrag', ceqn'))
+                sg
+              >>= fun sg' -> Ok (sg', TypeSubst (frag', eqn'))
         in
         match sg_and_sub with
         | Ok (sg', sub') -> (Ok sg', env, sub' :: subs)
@@ -540,9 +561,6 @@ and module_type_expr :
     | With (expr, subs) -> (
         let expr = inner false expr in
         let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-        let csubs =
-          List.map Component.Of_Lang.(module_type_substitution empty) subs
-        in
         let rec find_parent : Component.ModuleType.expr -> Cfrag.root option =
          fun expr ->
           match expr with
@@ -570,9 +588,9 @@ and module_type_expr :
                   match parent with (`ModuleType _ | `Module _) as x -> x
                 in
                 let _, _, subs =
-                  List.fold_left2
+                  List.fold_left
                     (resolve_sub ~fragment_root)
-                    (Ok sg, env, []) csubs subs
+                    (Ok sg, env, []) subs
                 in
                 let subs = List.rev subs in
                 With (inner false expr, subs) ) )

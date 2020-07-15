@@ -1,5 +1,7 @@
 exception TypeReplacement of Component.TypeExpr.t
 
+exception Invalidated
+
 open Component
 open Substitution
 
@@ -12,6 +14,7 @@ let identity =
     type_ = TypeMap.empty;
     class_type = ClassTypeMap.empty;
     type_replacement = TypeMap.empty;
+    invalidated_modules = [];
   }
 
 let add_module id p rp t =
@@ -70,7 +73,12 @@ let add_type_replacement : Ident.path_type -> Component.TypeExpr.t -> t -> t =
   { t with type_replacement = TypeMap.add id texp t.type_replacement }
 
 let add_module_substitution : Ident.path_module -> t -> t =
- fun id t -> { t with module_ = ModuleMap.add id `Substituted t.module_ }
+ fun id t ->
+  {
+    t with
+    invalidated_modules = id :: t.invalidated_modules;
+    module_ = ModuleMap.add id `Substituted t.module_;
+  }
 
 let rename_module : Ident.path_module -> Ident.path_module -> t -> t =
  fun id id' t ->
@@ -94,6 +102,7 @@ let rec resolved_module_path :
  fun s p ->
   match p with
   | `Local id -> (
+      if List.mem id s.invalidated_modules then raise Invalidated;
       match
         try Some (ModuleMap.find (id :> Ident.path_module) s.module_)
         with _ -> None
@@ -125,7 +134,11 @@ and resolved_parent_path s = function
 and module_path : t -> Cpath.module_ -> Cpath.module_ =
  fun s p ->
   match p with
-  | `Resolved p' -> `Resolved (resolved_module_path s p')
+  | `Resolved p' -> (
+      try `Resolved (resolved_module_path s p')
+      with Invalidated ->
+        let path' = Cpath.unresolve_resolved_module_path p' in
+        module_path s (`Substituted path') )
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Module (p', str) -> `Module (resolved_parent_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
@@ -162,7 +175,11 @@ and resolved_module_type_path :
 and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
  fun s p ->
   match p with
-  | `Resolved r -> `Resolved (resolved_module_type_path s r)
+  | `Resolved r -> (
+      try `Resolved (resolved_module_type_path s r)
+      with Invalidated ->
+        let path' = Cpath.unresolve_resolved_module_type_path r in
+        module_type_path s (`Substituted path') )
   | `Substituted p -> `Substituted (module_type_path s p)
   | `Local (id, b) -> (
       match try Some (ModuleTypeMap.find id s.module_type) with _ -> None with
@@ -192,7 +209,11 @@ and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
 and type_path : t -> Cpath.type_ -> Cpath.type_ =
  fun s p ->
   match p with
-  | `Resolved r -> `Resolved (resolved_type_path s r)
+  | `Resolved r -> (
+      try `Resolved (resolved_type_path s r)
+      with Invalidated ->
+        let path' = Cpath.unresolve_resolved_type_path r in
+        type_path s (`Substituted path') )
   | `Substituted p -> `Substituted (type_path s p)
   | `Local (id, b) -> (
       if TypeMap.mem id s.type_replacement then
@@ -224,7 +245,11 @@ and resolved_class_type_path :
 and class_type_path : t -> Cpath.class_type -> Cpath.class_type =
  fun s p ->
   match p with
-  | `Resolved r -> `Resolved (resolved_class_type_path s r)
+  | `Resolved r -> (
+      try `Resolved (resolved_class_type_path s r)
+      with Invalidated ->
+        let path' = Cpath.unresolve_resolved_class_type_path r in
+        class_type_path s path' )
   | `Local (id, b) -> (
       match try Some (ClassTypeMap.find id s.class_type) with _ -> None with
       | Some (`Prefixed (p, _rp)) -> p
