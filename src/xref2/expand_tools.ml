@@ -1,10 +1,6 @@
 open Utils.ResultMonad
 open Odoc_model
-
-type error =
-  [ `OpaqueModule
-  | `Unresolved_module of Cpath.module_
-  | `Unresolved_module_type of Cpath.module_type ]
+open Errors
 
 type expansion =
   | Signature of Component.Signature.t
@@ -35,7 +31,7 @@ let rec aux_expansion_of_module :
     Env.t ->
     strengthen:bool ->
     Component.Module.t ->
-    (expansion, error) Result.result =
+    (expansion, signature_of_module_error) Result.result =
   let open Component.Module in
   fun env ~strengthen m -> aux_expansion_of_module_decl env ~strengthen m.type_
 
@@ -87,7 +83,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
              Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
       | Ok (Functor _ as x), _ -> Ok x )
-  | Unresolved p -> Error (`Unresolved_module p)
+  | Unresolved p -> Error (`UnresolvedPath (`Module p))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
    may well change - so we turn resolved fragments back into unresolved ones
@@ -123,25 +119,21 @@ and unresolve_subs subs =
     subs
 
 and aux_expansion_of_module_type_expr env expr :
-    (expansion, error) Result.result =
+    (expansion, signature_of_module_error) Result.result =
   match expr with
   | Path p -> (
       match Tools.resolve_module_type ~mark_substituted:false env p with
       | Resolved (_, mt) -> aux_expansion_of_module_type env mt
-      | Unresolved p -> Error (`Unresolved_module_type p) )
+      | Unresolved p -> Error (`UnresolvedPath (`ModuleType p)) )
   | Signature s -> Ok (Signature s)
   | With (s, subs) -> (
       match aux_expansion_of_module_type_expr env s with
       | Error _ as e -> e
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
-      | Ok (Signature sg) -> (
-          let subs = unresolve_subs subs in
-          match
-            Tools.handle_signature_with_subs ~mark_substituted:false env sg subs
-          with
-          | Ok sg -> Ok (Signature sg)
-          | Error (`UnresolvedPath (`Module m)) -> Error (`Unresolved_module m)
-          ) )
+      | Ok (Signature sg) ->
+          (let subs = unresolve_subs subs in
+           Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
+          >>= fun sg -> Ok (Signature sg) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
   | TypeOf decl -> aux_expansion_of_module_decl env ~strengthen:false decl
 
