@@ -254,8 +254,7 @@ module Name = struct
     | `LType (n, _) -> TypeName.to_string n
     | `LCoreType n -> TypeName.to_string n
 
-  let class' : class_ -> ClassName.t = function
-    | `LClass (n, _) -> n
+  let class' : class_ -> ClassName.t = function `LClass (n, _) -> n
 
   let class_ c = ClassName.to_string (class' c)
 

@@ -340,8 +340,7 @@ and module_expansion :
                 let identifier = arg.FunctorParameter.id in
                 let m =
                   Component.module_of_functor_argument
-                    (Component.Of_Lang.functor_parameter
-                       Component.Of_Lang.empty
+                    (Component.Of_Lang.functor_parameter Component.Of_Lang.empty
                        (Ident.Of_Identifier.functor_parameter arg.id)
                        arg)
                 in

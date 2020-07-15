@@ -11,8 +11,10 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t * Odoc_model.Paths.Identifier.Module.t * bool
-       * Component.Module.t Component.Delayed.t)
+      ( Digest.t
+      * Odoc_model.Paths.Identifier.Module.t
+      * bool
+      * Component.Module.t Component.Delayed.t )
   | Forward
 
 type resolver = {
@@ -352,14 +354,13 @@ let lookup_root_module name env =
         | Forward_reference -> Some Forward
         | Not_found -> None
         | Found u ->
-          let id = `Root(u.root, ModuleName.of_string name) in
-          let m =
-            Component.Delayed.put
-              (fun () ->
-                 let unit = r.resolve_unit u.root in
-                 module_of_unit unit)
-          in
-          Some (Resolved(u.root.digest, id, u.hidden, m)))
+            let id = `Root (u.root, ModuleName.of_string name) in
+            let m =
+              Component.Delayed.put (fun () ->
+                  let unit = r.resolve_unit u.root in
+                  module_of_unit unit)
+            in
+            Some (Resolved (u.root.digest, id, u.hidden, m)) )
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
@@ -645,11 +646,11 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let _id = Ident.Of_Identifier.module_ m.id in
             let doc = docs empty m.doc in
             let ty =
-              Component.Delayed.put (fun () -> 
-              Of_Lang.(
-                module_of_module_substitution
-                  (*                  { empty with modules = [ (m.id, id) ] } *)
-                  empty m))
+              Component.Delayed.put (fun () ->
+                  Of_Lang.(
+                    module_of_module_substitution
+                      (*                  { empty with modules = [ (m.id, id) ] } *)
+                      empty m))
             in
             add_module (m.id :> Identifier.Path.Module.t) ty doc env
         | Odoc_model.Lang.Signature.TypeSubstitution t ->
@@ -698,8 +699,8 @@ let initial_env :
           match resolver.lookup_unit str with
           | Forward_reference -> (import :: imports, env)
           | Found x ->
-            let name = Names.ModuleName.of_string str in
-            (Import.Resolved (x.root, name) :: imports, env)
+              let name = Names.ModuleName.of_string str in
+              (Import.Resolved (x.root, name) :: imports, env)
           | Not_found -> (import :: imports, env) ))
     t.imports ([], initial_env)
 

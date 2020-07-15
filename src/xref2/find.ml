@@ -51,28 +51,28 @@ let careful_type_in_sig (s : Signature.t) name =
   in
   inner s.items
 
-  let careful_class_type_in_sig (s : Signature.t) name =
-    let rec inner_removed = function
-      | Signature.RType (id, p) :: _ when Ident.Name.type_ id = name ->
-         Some (Replaced (Ident.Name.type' id, p))
-      | _ :: rest -> inner_removed rest
-      | [] -> None
-    in
-    let rec inner = function
-      | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
-          Some (Found (`C (Ident.Name.class' id, c)))
-      | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
-        ->
-          Some (Found (`CT (Ident.Name.class_type' id, c)))
-      | Signature.Include i :: rest -> (
-          match inner i.Include.expansion_.items with
-          | Some _ as found -> found
-          | None -> inner rest )
-      | _ :: rest -> inner rest
-      | [] -> inner_removed s.removed
-    in
-    inner s.items
-  
+let careful_class_type_in_sig (s : Signature.t) name =
+  let rec inner_removed = function
+    | Signature.RType (id, p) :: _ when Ident.Name.type_ id = name ->
+        Some (Replaced (Ident.Name.type' id, p))
+    | _ :: rest -> inner_removed rest
+    | [] -> None
+  in
+  let rec inner = function
+    | Signature.Class (id, _, c) :: _ when Ident.Name.class_ id = name ->
+        Some (Found (`C (Ident.Name.class' id, c)))
+    | Signature.ClassType (id, _, c) :: _ when Ident.Name.class_type id = name
+      ->
+        Some (Found (`CT (Ident.Name.class_type' id, c)))
+    | Signature.Include i :: rest -> (
+        match inner i.Include.expansion_.items with
+        | Some _ as found -> found
+        | None -> inner rest )
+    | _ :: rest -> inner rest
+    | [] -> inner_removed s.removed
+  in
+  inner s.items
+
 let typename_of_typeid (`LType (n, _) | `LCoreType n) = n
 
 let datatype_in_sig (s : Signature.t) name =
