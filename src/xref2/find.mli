@@ -14,8 +14,10 @@ type ('a, 'b) found = Found of 'a | Replaced of 'b
 val careful_module_in_sig :
   Component.Signature.t ->
   string ->
-  ((Odoc_model.Names.ModuleName.t
-    * Component.Module.t, Cpath.Resolved.module_) found) option
+  ( Odoc_model.Names.ModuleName.t * Component.Module.t,
+    Cpath.Resolved.module_ )
+  found
+  option
 
 val careful_type_in_sig :
   Component.Signature.t ->
@@ -30,9 +32,9 @@ val careful_type_in_sig :
 val careful_class_type_in_sig :
   Component.Signature.t ->
   string ->
-    ( [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
-      | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t ],
-      Odoc_model.Names.TypeName.t * Component.TypeExpr.t )
+  ( [> `C of Odoc_model.Names.ClassName.t * Component.Class.t
+    | `CT of Odoc_model.Names.ClassTypeName.t * Component.ClassType.t ],
+    Odoc_model.Names.TypeName.t * Component.TypeExpr.t )
   found
   option
 

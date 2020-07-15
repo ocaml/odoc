@@ -88,8 +88,9 @@ val resolve_module :
   add_canonical:bool ->
   Env.t ->
   Cpath.module_ ->
-  (Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
-   Cpath.module_) ResolvedMonad.t
+  ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
+    Cpath.module_ )
+  ResolvedMonad.t
 (** [resolve_module ~mark_substituted ~add_canonical env p] takes an unresolved
     module path and an environment and returns a tuple of the resolved module
     path alongside a representation of the module itself. *)
@@ -119,16 +120,17 @@ val resolve_type :
     to the replaced type, class or class type. *)
 
 val resolve_class_type :
-    Env.t ->
-    Cpath.class_type ->
-    ( Cpath.Resolved.class_type * (Find.class_type, Component.TypeExpr.t) Find.found,
-      Cpath.class_type )
-    ResolvedMonad.t
-  (** [resolve_class_type env p] takes an unresolved
+  Env.t ->
+  Cpath.class_type ->
+  ( Cpath.Resolved.class_type
+    * (Find.class_type, Component.TypeExpr.t) Find.found,
+    Cpath.class_type )
+  ResolvedMonad.t
+(** [resolve_class_type env p] takes an unresolved
       class type path and an environment and returns a tuple of the resolved class type
       path alongside a representation of the class type itself. As with {!val:lookup_type}
       the returned type is either the class or class type. *)
-  
+
 (** {3 Convenience functions } *)
 
 (** The following functions are convenience functions called from {!module:Compile}
@@ -151,7 +153,9 @@ val resolve_type_path :
   Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.type_) ResolvedMonad.t
 
 val resolve_class_type_path :
-  Env.t -> Cpath.class_type -> (Cpath.Resolved.class_type, Cpath.class_type) ResolvedMonad.t
+  Env.t ->
+  Cpath.class_type ->
+  (Cpath.Resolved.class_type, Cpath.class_type) ResolvedMonad.t
 
 (** {2 Re-resolve functions} *)
 
