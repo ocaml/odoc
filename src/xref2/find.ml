@@ -10,13 +10,13 @@ type ('a, 'b) found = Found of 'a | Replaced of 'b
 
 let careful_module_in_sig (s : Signature.t) name =
   let rec inner_removed = function
-    | Signature.RModule (id, p) :: _ when Ident.Name.module_ id = name ->
+    | Signature.RModule (id, p) :: _ when Ident.Name.typed_module id = name ->
         Some (Replaced p)
     | _ :: rest -> inner_removed rest
     | [] -> None
   in
   let rec inner = function
-    | Signature.Module (id, _, m) :: _ when Ident.Name.module_ id = name ->
+    | Signature.Module (id, _, m) :: _ when Ident.Name.typed_module id = name ->
         Some (Found (Ident.Name.module' id, Delayed.get m))
     | Signature.Include i :: rest -> (
         match inner i.Include.expansion_.items with
@@ -77,7 +77,7 @@ let typename_of_typeid (`LType (n, _) | `LCoreType n) = n
 
 let datatype_in_sig (s : Signature.t) name =
   let rec inner = function
-    | Signature.Type (id, _, m) :: _ when Ident.Name.type_ id = name ->
+    | Signature.Type (id, _, m) :: _ when Ident.Name.typed_type id = name ->
         Some (Component.Delayed.get m)
     | Signature.Include i :: tl -> (
         match inner i.Include.expansion_.items with
@@ -209,7 +209,8 @@ let module_in_sig s name =
 
 let module_type_in_sig (s : Signature.t) name =
   let rec inner = function
-    | Signature.ModuleType (id, m) :: _ when Ident.Name.module_type id = name ->
+    | Signature.ModuleType (id, m) :: _
+      when Ident.Name.typed_module_type id = name ->
         Some (Delayed.get m)
     | Signature.Include i :: rest -> (
         match inner i.Include.expansion_.items with

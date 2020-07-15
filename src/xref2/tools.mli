@@ -181,7 +181,7 @@ val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
 val handle_module_type_lookup :
   Env.t ->
-  string ->
+  Odoc_model.Names.ModuleTypeName.t ->
   Cpath.Resolved.parent ->
   Component.Signature.t ->
   Component.Substitution.t ->

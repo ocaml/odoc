@@ -124,7 +124,7 @@ module M = struct
       : t option =
     let parent_cp = Tools.reresolve_parent env parent_cp in
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.module_in_sig sg (ModuleName.to_string name) >>= fun m ->
+    Find.module_in_sig sg name >>= fun m ->
     Some
       (of_component env m (`Module (parent_cp, name)) (`Module (parent, name)))
 
@@ -152,7 +152,7 @@ module MT = struct
   let in_signature env ((parent', parent_cp, sg) : signature_lookup_result) name
       : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.module_type_in_sig sg (ModuleTypeName.to_string name) >>= fun mt ->
+    Find.module_type_in_sig sg name >>= fun mt ->
     Some
       (of_component env mt
          (`ModuleType (parent_cp, name))
@@ -211,8 +211,7 @@ module DT = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.datatype_in_sig sg (TypeName.to_string name) >>= fun t ->
-    Some (`Type (parent', name), t)
+    Find.datatype_in_sig sg name >>= fun t -> Some (`Type (parent', name), t)
 end
 
 module T = struct

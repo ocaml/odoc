@@ -464,7 +464,7 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
 and handle_module_type_lookup env id p sg sub =
   let open OptionMonad in
   Find.module_type_in_sig sg id >>= fun mt ->
-  let p' = `ModuleType (p, Odoc_model.Names.ModuleTypeName.of_string id) in
+  let p' = `ModuleType (p, id) in
   let p'' = process_module_type env mt p' in
   Some (p'', Subst.module_type sub mt)
 
@@ -512,7 +512,7 @@ and lookup_module :
         | Error _ as e -> e )
     | `Module (parent, name) ->
         let find_in_sg sg sub =
-          match Find.careful_module_in_sig sg (ModuleName.to_string name) with
+          match Find.careful_module_in_sig sg name with
           | None -> Error `Find_failure
           | Some (Find.Found (_, m)) ->
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -551,7 +551,7 @@ and lookup_module_type :
         lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) ->
         let find_in_sg sg sub =
-          match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
+          match Find.module_type_in_sig sg name with
           | None -> Error `Find_failure
           | Some mt -> Ok (Subst.module_type sub mt)
         in
@@ -699,7 +699,8 @@ and resolve_module :
         signature_of_module_cached env p m |> of_result ~unresolved
         >>= fun parent_sig ->
         let sub = prefix_substitution (`Module p) parent_sig in
-        handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub
+        handle_module_lookup env ~add_canonical (ModuleName.of_string id)
+          (`Module p) parent_sig sub
         |> of_option ~unresolved
     | `Module _ -> failwith "Unimplemented"
     | `Apply (m1, m2) -> (
@@ -776,7 +777,9 @@ and resolve_module_type :
         >>= fun parent_sg ->
         let sub = prefix_substitution (`Module p) parent_sg in
         of_option ~unresolved
-          (handle_module_type_lookup env id (`Module p) parent_sg sub)
+          (handle_module_type_lookup env
+             (ModuleTypeName.of_string id)
+             (`Module p) parent_sg sub)
         >>= fun (p', mt) -> return (p', mt)
     | `ModuleType _ -> failwith "Unimplemented"
     | `Identifier (i, _) as unresolved ->
@@ -1469,7 +1472,7 @@ and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
 and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
-    string ->
+    ModuleName.t ->
     ( Component.Module.t Component.Delayed.t,
       [ simple_module_lookup_error | parent_lookup_error ] )
     Result.result =
@@ -1495,7 +1498,9 @@ and resolve_signature_fragment :
       let open OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, ppath, sg) ->
-      of_result (find_module_with_replacement env sg name) >>= fun m' ->
+      of_result
+        (find_module_with_replacement env sg (ModuleName.of_string name))
+      >>= fun m' ->
       let mname = Odoc_model.Names.ModuleName.of_string name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
@@ -1534,7 +1539,9 @@ and resolve_module_fragment :
       let open OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
-      of_result (find_module_with_replacement env sg name) >>= fun m' ->
+      of_result
+        (find_module_with_replacement env sg (ModuleName.of_string name))
+      >>= fun m' ->
       let mname = Odoc_model.Names.ModuleName.of_string name in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
