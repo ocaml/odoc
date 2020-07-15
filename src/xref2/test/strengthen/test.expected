@@ -1,0 +1,16 @@
+Simple strengthening
+
+This tests that strengthening works. When we strengthen a signature we recursively add
+type equations for all abstract types.
+
+
+BEFORE
+======
+type t/0 
+type u/1 = local(t/0,false)
+ (removed=[])
+AFTER 
+======
+type t/2 = resolved(identifier((root Root))).t
+type u/3 = local(t/2,false)
+ (removed=[])

@@ -95,29 +95,40 @@ let prefix_substitution path sg =
     | [] -> sub'
     | Type (id, _, _) :: rest ->
         let name = Ident.Name.typed_type id in
-        get_sub (Subst.add_type id (`Type (path, name)) sub') rest
+        get_sub
+          (Subst.add_type id (`Type (path, name)) (`Type (path, name)) sub')
+          rest
     | Module (id, _, _) :: rest ->
         let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
              (id :> Ident.path_module)
              (`Module (path, name))
+             (`Module (path, name))
              sub')
           rest
     | ModuleType (id, _) :: rest ->
         let name = Ident.Name.typed_module_type id in
-        get_sub (Subst.add_module_type id (`ModuleType (path, name)) sub') rest
+        get_sub
+          (Subst.add_module_type id
+             (`ModuleType (path, name))
+             (`ModuleType (path, name))
+             sub')
+          rest
     | ModuleSubstitution (id, _) :: rest ->
         let name = Ident.Name.typed_module id in
         get_sub
           (Subst.add_module
              (id :> Ident.path_module)
              (`Module (path, name))
+             (`Module (path, name))
              sub')
           rest
     | TypeSubstitution (id, _) :: rest ->
         let name = Ident.Name.typed_type id in
-        get_sub (Subst.add_type id (`Type (path, name)) sub') rest
+        get_sub
+          (Subst.add_type id (`Type (path, name)) (`Type (path, name)) sub')
+          rest
     | Exception _ :: rest
     | TypExt _ :: rest
     | Value (_, _) :: rest
@@ -126,10 +137,17 @@ let prefix_substitution path sg =
         get_sub sub' rest
     | Class (id, _, _) :: rest ->
         let name = Ident.Name.typed_class id in
-        get_sub (Subst.add_class id (`Class (path, name)) sub') rest
+        get_sub
+          (Subst.add_class id (`Class (path, name)) (`Class (path, name)) sub')
+          rest
     | ClassType (id, _, _) :: rest ->
         let name = Ident.Name.typed_class_type id in
-        get_sub (Subst.add_class_type id (`ClassType (path, name)) sub') rest
+        get_sub
+          (Subst.add_class_type id
+             (`ClassType (path, name))
+             (`ClassType (path, name))
+             sub')
+          rest
     | Include i :: rest -> get_sub (get_sub sub' i.expansion_.items) rest
     | Open o :: rest -> get_sub (get_sub sub' o.expansion.items) rest
   in
@@ -142,10 +160,11 @@ let prefix_substitution path sg =
             Subst.add_module
               (id :> Ident.path_module)
               (`Module (path, name))
+              (`Module (path, name))
               map
         | Component.Signature.RType (id, _) ->
             let name = Ident.Name.typed_type id in
-            Subst.add_type id (`Type (path, name)) map)
+            Subst.add_type id (`Type (path, name)) (`Type (path, name)) map)
       removed sub
   in
   get_sub Subst.identity sg.items |> extend_sub_removed sg.removed
@@ -378,7 +397,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
       Subst.module_
         (Subst.add_module
            (arg_id :> Ident.path_module)
-           substitution Subst.identity)
+           (`Resolved substitution) substitution Subst.identity)
         new_module )
 
 and add_canonical_path :
@@ -702,7 +721,12 @@ and resolve_module :
         handle_module_lookup env ~add_canonical (ModuleName.of_string id)
           (`Module p) parent_sig sub
         |> of_option ~unresolved
-    | `Module _ -> failwith "Unimplemented"
+    | `Module (parent, id) as unresolved -> (
+        match lookup_parent ~mark_substituted env parent with
+        | Ok (parent_sig, sub) ->
+            handle_module_lookup env ~add_canonical id parent parent_sig sub
+            |> of_option ~unresolved
+        | Error _e -> Unresolved unresolved )
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -781,7 +805,11 @@ and resolve_module_type :
              (ModuleTypeName.of_string id)
              (`Module p) parent_sg sub)
         >>= fun (p', mt) -> return (p', mt)
-    | `ModuleType _ -> failwith "Unimplemented"
+    | `ModuleType (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted env parent)
+        >>= fun (parent_sig, sub) ->
+        handle_module_type_lookup env id parent parent_sig sub
+        |> of_option ~unresolved
     | `Identifier (i, _) as unresolved ->
         of_option ~unresolved (Env.(lookup_by_id s_module_type) i env)
         >>= fun (`ModuleType (_, mt)) ->
@@ -826,7 +854,43 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         (* let time3 = Unix.gettimeofday () in *)
         (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
         return (p', t)
-    | `Type _ | `ClassType _ | `Class _ -> failwith "Unimplemented"
+    | `Type (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
+        >>= fun (parent_sig, sub) ->
+        let result =
+          match Find.datatype_in_sig parent_sig id with
+          | Some t ->
+              Some (`Type (parent, id), Find.Found (`T (Subst.type_ sub t)))
+          | None -> None
+        in
+        of_option ~unresolved result
+    | `Class (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
+        >>= fun (parent_sig, sub) ->
+        let t =
+          match Find.type_in_sig parent_sig (ClassName.to_string id) with
+          | Some (`C (_, t)) ->
+              Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
+          | Some _ -> None
+          | None -> None
+        in
+        of_option ~unresolved t
+    | `ClassType (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
+        >>= fun (parent_sg, sub) ->
+        of_result ~unresolved
+          (handle_type_lookup (ClassTypeName.to_string id) parent parent_sg)
+        >>= fun (p', t') ->
+        let t =
+          match t' with
+          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+          | Find.Found (`CT (_, ct)) ->
+              Find.Found (`CT (Subst.class_type sub ct))
+          | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
+          | Find.Replaced (_, texpr) ->
+              Find.Replaced (Subst.type_expr sub texpr)
+        in
+        return (p', t)
     | `Identifier (i, _) as unresolved ->
         of_result ~unresolved (lookup_type env (`Identifier i)) >>= fun t ->
         return (`Identifier i, t)
@@ -876,7 +940,34 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     | `Substituted s ->
         resolve_class_type env s |> map_unresolved (fun p' -> `Substituted p')
         >>= fun (p, m) -> return (`Substituted p, m)
-    | `ClassType _ | `Class _ -> failwith "Unimplemented"
+    | `Class (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
+        >>= fun (parent_sig, sub) ->
+        let t =
+          match Find.type_in_sig parent_sig (ClassName.to_string id) with
+          | Some (`C (_, t)) ->
+              Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
+          | Some _ -> None
+          | None -> None
+        in
+        of_option ~unresolved t
+    | `ClassType (parent, id) as unresolved ->
+        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
+        >>= fun (parent_sg, sub) ->
+        of_result ~unresolved
+          (handle_class_type_lookup
+             (ClassTypeName.to_string id)
+             parent parent_sg)
+        >>= fun (p', t') ->
+        let t =
+          match t' with
+          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+          | Find.Found (`CT (_, ct)) ->
+              Find.Found (`CT (Subst.class_type sub ct))
+          | Find.Replaced (_, texpr) ->
+              Find.Replaced (Subst.type_expr sub texpr)
+        in
+        return (p', t)
 
 and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
     =
@@ -1208,7 +1299,7 @@ and fragmap_module :
     let sub_of_removed removed sub =
       match removed with
       | Component.Signature.RModule (id, p) ->
-          Subst.add_module (id :> Ident.path_module) p sub
+          Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
       | _ -> sub
     in
     let sub = List.fold_right sub_of_removed removed Subst.identity in
@@ -1219,7 +1310,7 @@ and fragmap_module :
            test for an example of why this is necessary *)
         let sub_of_substituted x sub =
           let x = (x :> Ident.path_module) in
-          Subst.add_module x (`Substituted (`Local x)) sub
+          Subst.add_module_substitution x sub
         in
         let substituted_sub =
           List.fold_right sub_of_substituted substituted Subst.identity

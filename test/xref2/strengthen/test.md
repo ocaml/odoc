@@ -30,7 +30,7 @@ type u/1 = local(t/0,false)
 AFTER
 ======
 type t/2 = resolved(identifier((root Root))).t
-type u/3 = resolved(t/2)
+type u/3 = local(t/2,false)
  (removed=[])
 - : unit = ()
 ```

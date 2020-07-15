@@ -565,8 +565,11 @@ Some
    (`Resolved
       (`Type
          (`Alias
-            (`Module
-               (`Identifier (`Module (`Root (Common.root, Root), A)), N),
+            (`Alias
+               (`Module
+                  (`Identifier (`Module (`Root (Common.root, Root), A)), M),
+                `Module
+                  (`Identifier (`Module (`Root (Common.root, Root), A)), N)),
              `Module
                (`Identifier (`Module (`Root (Common.root, Root), A)), O)),
           t)),
@@ -679,11 +682,10 @@ val m : Component.Module.t Component.Delayed.t =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
           (`Dot
-             (`Resolved
+             (`Module
                 (`Module
-                   (`Module
-                      (`Identifier (`Module (`Root (Common.root, Root), C))),
-                    M)),
+                   (`Identifier (`Module (`Root (Common.root, Root), C))),
+                 M),
               "S")));
       canonical = None; hidden = false; display_type = None;
       expansion = None};
@@ -1215,20 +1217,25 @@ Some
    (`Resolved
       (`Type
          (`Subst
-            (`ModuleType
-               (`Subst
-                  (`ModuleType
-                     (`Identifier (`Module (`Root (Common.root, Root), Dep6)),
-                      T),
-                   `Module
-                     (`Apply
+            (`SubstT
+               (`ModuleType
+                  (`Identifier (`Module (`Root (Common.root, Root), Dep6)),
+                   S),
+                `ModuleType
+                  (`Subst
+                     (`ModuleType
                         (`Identifier
-                           (`Module (`Root (Common.root, Root), Dep7)),
-                         `Resolved
+                           (`Module (`Root (Common.root, Root), Dep6)),
+                         T),
+                      `Module
+                        (`Apply
                            (`Identifier
-                              (`Module (`Root (Common.root, Root), Dep6)))),
-                      M)),
-                R),
+                              (`Module (`Root (Common.root, Root), Dep7)),
+                            `Resolved
+                              (`Identifier
+                                 (`Module (`Root (Common.root, Root), Dep6)))),
+                         M)),
+                   R)),
              `Module
                (`Subst
                   (`ModuleType
