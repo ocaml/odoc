@@ -1180,8 +1180,8 @@ and fragmap :
         signature_of_module_alias env path >>= fun sg ->
         fragmap ~mark_substituted env subst sg >>= fun sg ->
         Ok (ModuleType (Signature sg))
-    | ModuleType (With (mty', subs')) ->
-        Ok (ModuleType (With (mty', subs' @ [ subst ])))
+    (* | ModuleType (With (mty', subs')) ->
+        Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
     | ModuleType mty' -> Ok (ModuleType (With (mty', [ subst ])))
   in
   let map_module m new_subst =
