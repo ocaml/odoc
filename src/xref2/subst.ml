@@ -554,34 +554,74 @@ and instance_variable s i =
 
 and rename_bound_idents s sg =
   let open Component.Signature in
+  let new_module_id id =
+    try
+      match ModuleMap.find (id :> Ident.path_module) s.module_ with
+      | `Renamed (`LModule _ as x) -> x
+      | _ -> failwith "Error"
+    with Not_found ->
+      Ident.Rename.module_ id
+  in
+  let new_module_type_id id =
+    try
+      match ModuleTypeMap.find id s.module_type with 
+      | `Renamed x -> x
+      | _ -> failwith "Error"
+    with Not_found ->
+      Ident.Rename.module_type id
+  in
+  let new_type_id id =
+    try
+      match TypeMap.find (id :> Ident.path_type) s.type_ with
+      | `Renamed (`LType _ as x) -> x
+      | _ -> failwith "Error"
+    with Not_found ->
+      Ident.Rename.type_ id
+  in
+  let new_class_id id =
+    try begin
+      match ClassTypeMap.find (id :> Ident.path_class_type) s.class_type with
+      | `Renamed (`LClass _ as x) -> x
+      | _ -> failwith "Error"
+    end with Not_found ->
+      Ident.Rename.class_ id
+  in
+  let new_class_type_id id =
+    try
+      match ClassTypeMap.find (id :> Ident.path_class_type) s.class_type with
+      | `Renamed (`LClassType _ as x) -> x
+      | _ -> failwith "Error!"
+    with Not_found ->
+      Ident.Rename.class_type id
+  in
   function
   | [] -> (s, List.rev sg)
   | Module (id, r, m) :: rest ->
-      let id' = Ident.Rename.module_ id in
+      let id' = new_module_id id in
       rename_bound_idents
         (rename_module (id :> Ident.path_module) (id' :> Ident.path_module) s)
         (Module (id', r, m) :: sg)
         rest
   | ModuleSubstitution (id, m) :: rest ->
-      let id' = Ident.Rename.module_ id in
+      let id' = new_module_id id in
       rename_bound_idents
         (rename_module (id :> Ident.path_module) (id' :> Ident.path_module) s)
         (ModuleSubstitution (id', m) :: sg)
         rest
   | ModuleType (id, mt) :: rest ->
-      let id' = Ident.Rename.module_type id in
+      let id' = new_module_type_id id in        
       rename_bound_idents
         (rename_module_type id id' s)
         (ModuleType (id', mt) :: sg)
         rest
   | Type (id, r, t) :: rest ->
-      let id' = Ident.Rename.type_ id in
+      let id' = new_type_id id in
       rename_bound_idents
         (rename_type (id :> Ident.path_type) (id' :> Ident.path_type) s)
         (Type (id', r, t) :: sg)
         rest
   | TypeSubstitution (id, t) :: rest ->
-      let id' = Ident.Rename.type_ id in
+      let id' = new_type_id id in
       rename_bound_idents
         (rename_type (id :> Ident.path_type) (id' :> Ident.path_type) s)
         (TypeSubstitution (id', t) :: sg)
@@ -599,7 +639,7 @@ and rename_bound_idents s sg =
         rename_bound_idents s (External (id', e) :: sg) rest
       with TypeReplacement _ -> rename_bound_idents s sg rest )
   | Class (id, r, c) :: rest ->
-      let id' = Ident.Rename.class_ id in
+      let id' = new_class_id id in
       rename_bound_idents
         (rename_class_type
            (id :> Ident.path_class_type)
@@ -608,7 +648,7 @@ and rename_bound_idents s sg =
         (Class (id', r, c) :: sg)
         rest
   | ClassType (id, r, c) :: rest ->
-      let id' = Ident.Rename.class_type id in
+      let id' = new_class_type_id id in
       rename_bound_idents
         (rename_class_type
            (id :> Ident.path_class_type)
@@ -648,8 +688,9 @@ and removed_items s items =
     items
 
 and signature s sg =
-  let s, items = rename_bound_idents s [] sg.items in
-  apply_sig_map s items sg.removed
+  let s2, items = rename_bound_idents identity [] sg.items in
+  let sg = apply_sig_map s items sg.removed in
+  apply_sig_map s2 sg.items sg.removed
 
 and apply_sig_map s items removed =
   let open Component.Signature in
