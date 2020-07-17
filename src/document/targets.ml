@@ -24,6 +24,7 @@ and signature (t : Odoc_model.Lang.Signature.t) =
         add_items ~don't (module_type mty :: acc) is
       | Include incl ->
         add_items ~don't (include_ incl :: acc) is
+      | Open _
       | ModuleSubstitution _
       | TypeSubstitution _
       | Type _
