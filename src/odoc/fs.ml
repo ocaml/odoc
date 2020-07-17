@@ -26,6 +26,8 @@ module File = struct
   let dirname = Fpath.parent
   let basename = Fpath.base
 
+  let append = Fpath.append
+
   let set_ext e p = Fpath.set_ext e p
   let has_ext e p = Fpath.has_ext e p
 

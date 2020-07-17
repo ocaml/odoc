@@ -1,5 +1,4 @@
 (* Odoc_generate *)
-open StdLabels
 open Or_error
 open Odoc_document
 
@@ -28,31 +27,18 @@ let from_odocl ?(syntax=Renderer.OCaml) ?theme_uri ~output:root_dir input =
     | Page page_name ->
       Format.eprintf "Page name should be: %s.html\n%!" page_name; 
       Page.load input >>= fun odoctree ->
-      Ok (to_html_tree_page ?theme_uri ~syntax odoctree, false, page_name ^ ".html")
+      Ok (to_html_tree_page ?theme_uri ~syntax odoctree)
     | Compilation_unit _ ->
       Compilation_unit.load input >>= fun odoctree ->
-      Ok (to_html_tree_compilation_unit ?theme_uri ~syntax odoctree, true, "index.html")
+      Ok (to_html_tree_compilation_unit ?theme_uri ~syntax odoctree)
   in
-  pages >>= fun (pages, name_is_dir, filename) ->
-  let base_dir =
-    Fs.Directory.reach_from ~dir:root_dir root.package
-  in
-  Renderer.traverse pages ~f:(fun ~parents name content ->
-    let directory =
-      let dir =
-        List.fold_right ~f:(fun name dir -> Fs.Directory.reach_from ~dir name)
-          parents ~init:base_dir
-      in
-      if name_is_dir
-      then Fs.Directory.reach_from ~dir name
-      else dir
-    in
-    let oc =
-      Fs.Directory.mkdir_p directory;
-      let f = Fs.File.create ~directory ~name:filename in
-      open_out (Fs.File.to_string f)
-    in
+  pages >>= fun pages ->
+  Renderer.traverse pages ~f:(fun filename content ->
+    let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+    let directory = Fs.File.dirname filename in
+    Fs.Directory.mkdir_p directory;
+    let oc = open_out (Fs.File.to_string filename) in
     let fmt = Format.formatter_of_out_channel oc in
     Format.fprintf fmt "%t@?" content;
     close_out oc);
-Ok ()
+  Ok ()
