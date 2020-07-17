@@ -283,12 +283,14 @@ let source_files_all = [
   ("alias.ml", [
       "Alias/index.html";
       "Alias/X/index.html";
-    ])
+    ]);
 ]
 
 let source_files_post408 =
   [ ("recent.mli", ["Recent/index.html"; "Recent/X/index.html"])
-  ; ("recent_impl.ml", ["Recent_impl/index.html"]) ]
+  ; ("recent_impl.ml", ["Recent_impl/index.html"])
+  ; ("labels.mli", ["Labels/index.html"])
+  ]
 
 let source_files_pre410 =
   [ ("bugs_pre_410.ml", ["Bugs_pre_410/index.html"]) ]
