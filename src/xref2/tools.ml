@@ -1151,7 +1151,10 @@ and signature_of_module :
     Env.t ->
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result =
- fun env m -> signature_of_module_decl env m.type_
+ fun env m ->
+    match m.expansion with
+    | Some (Signature sg) -> Ok sg
+    | _ -> signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
     Env.t ->
