@@ -218,6 +218,7 @@ let add_type identifier t env =
         (`Type (identifier, t))
         elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_module_type identifier t env =
   {
@@ -231,6 +232,7 @@ let add_module_type identifier t env =
         (`ModuleType (identifier, t))
         env.elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_value identifier t env =
   {
@@ -244,6 +246,7 @@ let add_value identifier t env =
         (`Value (identifier, t))
         env.elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_external identifier t env =
   {
@@ -257,6 +260,7 @@ let add_external identifier t env =
         (`External (identifier, t))
         env.elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_class identifier t env =
   {
@@ -270,6 +274,7 @@ let add_class identifier t env =
         (`Class (identifier, t))
         env.elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_class_type identifier t env =
   {
@@ -283,6 +288,7 @@ let add_class_type identifier t env =
         (`ClassType (identifier, t))
         env.elts;
   }
+  |> add_cdocs identifier t.doc
 
 let add_method _identifier _t env =
   (* TODO *)
@@ -300,6 +306,7 @@ let add_exception identifier e env =
         (`Exception (identifier, e))
         env.elts;
   }
+  |> add_cdocs identifier e.doc
 
 let add_extension_constructor identifier ec env =
   {
@@ -313,6 +320,7 @@ let add_extension_constructor identifier ec env =
         (`Extension (identifier, ec))
         env.elts;
   }
+  |> add_cdocs identifier ec.doc
 
 let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
  fun unit ->
