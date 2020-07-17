@@ -43,7 +43,32 @@ module Identifier = struct
 
   let name : [< t] -> string = fun n -> name_aux (n :> t)
 
-  
+  let rec label_parent_aux =
+    let open Paths_types.Identifier in
+    fun (n : any) ->
+      match n with
+      | `Result i -> label_parent_aux (i :> any)
+      | `CoreType _ | `CoreException _ -> assert false
+      | `Root _ as p -> (p :> label_parent)
+      | `Page _ as p -> (p :> label_parent)
+      | `Module (p, _)
+      | `ModuleType (p, _)
+      | `Parameter (p, _)
+      | `Class (p, _)
+      | `ClassType (p, _)
+      | `Type (p, _)
+      | `Extension (p, _)
+      | `Exception (p, _)
+      | `Value (p, _) ->
+          (p : signature :> label_parent)
+      | `Label (p, _) -> p
+      | `Method (p, _) | `InstanceVariable (p, _) ->
+          (p : class_signature :> label_parent)
+      | `Constructor (p, _) -> (p : datatype :> label_parent)
+      | `Field (p, _) -> (p : parent :> label_parent)
+
+  let label_parent n = label_parent_aux (n :> t)
+
   let rec hash (id : t) =
     let open Paths_types.Identifier in
     match id with

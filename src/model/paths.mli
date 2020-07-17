@@ -211,6 +211,8 @@ module Identifier : sig
 
   val equal : t -> t -> bool
 
+  val label_parent : [< t] -> LabelParent.t
+
   module Sets : sig
     module Signature : Set.S with type elt = Signature.t
     module ClassSignature : Set.S with type elt = ClassSignature.t
