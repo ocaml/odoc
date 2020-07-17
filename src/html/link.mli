@@ -15,5 +15,5 @@ module Path : sig
   val is_page : Url.Path.t -> bool
   val for_printing : Url.Path.t -> string list
   val for_linking : Url.Path.t -> string list
-  val as_filename : Url.Path.t -> string
+  val as_filename : Url.Path.t -> Fpath.t
 end

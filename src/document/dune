@@ -13,5 +13,5 @@ let () =
  (name odoc_document)
  (public_name odoc.document)
     |} ^ preprocess ^ {|
- (libraries odoc_model fmt)
+ (libraries odoc_model fmt fpath)
 )|}
