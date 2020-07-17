@@ -117,6 +117,53 @@ let add_to_elts name v elts =
     StringMap.add name (v :: cur) elts
   with Not_found -> StringMap.add name [ v ] elts
 
+let add_label identifier env =
+  {
+    env with
+    id =
+      ( incr unique_id;
+        !unique_id );
+    elts =
+      add_to_elts
+        (Odoc_model.Paths.Identifier.name identifier)
+        (`Label identifier) env.elts;
+  }
+
+let add_label_title label elts env =
+  {
+    env with
+    id =
+      ( incr unique_id;
+        !unique_id );
+    titles = Maps.Label.add label elts env.titles;
+  }
+
+let add_docs (docs : Odoc_model.Comment.docs) env =
+  List.fold_right
+    (fun element env ->
+      match element.Odoc_model.Location_.value with
+      | `Heading (_, label, nested_elements) ->
+          let env = add_label label env in
+          let env = add_label_title label nested_elements env in
+          env
+      | _ -> env)
+    docs env
+
+let add_comment (com : Odoc_model.Comment.docs_or_stop) env =
+  match com with `Docs doc -> add_docs doc env | `Stop -> env
+
+let add_cdocs p (docs : Component.CComment.docs) env =
+  List.fold_right
+    (fun element env ->
+      match element.Odoc_model.Location_.value with
+      | `Heading (_, `LLabel (name, _), nested_elements) ->
+          let label = `Label (Paths.Identifier.label_parent p, name) in
+          let env = add_label label env in
+          let env = add_label_title label nested_elements env in
+          env
+      | _ -> env)
+    docs env
+
 let add_module identifier m env =
   {
     env with
@@ -130,6 +177,7 @@ let add_module identifier m env =
         (`Module (identifier, m))
         env.elts;
   }
+  |> add_cdocs identifier m.doc
 
 let add_type identifier t env =
   let open Component in
@@ -210,27 +258,6 @@ let add_external identifier t env =
         env.elts;
   }
 
-let add_label identifier env =
-  {
-    env with
-    id =
-      ( incr unique_id;
-        !unique_id );
-    elts =
-      add_to_elts
-        (Odoc_model.Paths.Identifier.name identifier)
-        (`Label identifier) env.elts;
-  }
-
-let add_label_title label elts env =
-  {
-    env with
-    id =
-      ( incr unique_id;
-        !unique_id );
-    titles = Maps.Label.add label elts env.titles;
-  }
-
 let add_class identifier t env =
   {
     env with
@@ -256,20 +283,6 @@ let add_class_type identifier t env =
         (`ClassType (identifier, t))
         env.elts;
   }
-
-let add_docs (docs : Odoc_model.Comment.docs) env =
-  List.fold_right
-    (fun element env ->
-      match element.Odoc_model.Location_.value with
-      | `Heading (_, label, nested_elements) ->
-          let env = add_label label env in
-          let env = add_label_title label nested_elements env in
-          env
-      | _ -> env)
-    docs env
-
-let add_comment (com : Odoc_model.Comment.docs_or_stop) env =
-  match com with `Docs doc -> add_docs doc env | `Stop -> env
 
 let add_method _identifier _t env =
   (* TODO *)
