@@ -14,14 +14,24 @@ module Path = struct
   let for_printing url = List.map snd @@ to_list url
 
   let segment_to_string (kind, name) =
-    if kind = "module" || kind = "package"
+    if kind = "module" || kind = "package" || kind = "page"
     then name
     else Printf.sprintf "%s-%s" kind name
   let for_linking url = List.map segment_to_string @@ to_list url
-  let as_filename (url : Url.Path.t) = segment_to_string (url.kind, url.name)
 
   let is_page url = (url.Url.Path.kind = "page")
 
+  let rec get_dir {Url.Path. parent ; name ; kind} =
+    let s = segment_to_string (kind, name) in
+    match parent with
+    | None -> Fpath.v s
+    | Some p -> Fpath.(get_dir p / s)
+
+  let as_filename (url : Url.Path.t) =
+    if is_page url then
+      Fpath.(get_dir url + ".html")
+    else
+      Fpath.(get_dir url / "index.html")
 end
 
 let semantic_uris = ref false

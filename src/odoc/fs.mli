@@ -18,7 +18,7 @@ open Or_error
 
 (** Utilities to manipulate files and paths. *)
 
-type file
+type file = Fpath.t
 
 type directory
 
@@ -58,6 +58,8 @@ module File : sig
 
   val dirname : t -> Directory.t
   val basename : t -> t
+
+  val append : Directory.t -> t -> t
 
   val set_ext : string -> t -> t
   val has_ext : string -> t -> bool

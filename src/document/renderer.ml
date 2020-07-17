@@ -7,14 +7,29 @@ let string_of_syntax = function
   | Reason -> "re"
 
 type page = {
-  filename : string;
+  filename : Fpath.t;
   content : Format.formatter -> unit;
   children : page list
 }
 
 let traverse ~f t =
-  let rec aux parents node =
-    f ~parents node.filename node.content;
-    List.iter (aux (node.filename :: parents)) node.children
+  let rec aux node =
+    f node.filename node.content;
+    List.iter aux node.children
   in
-  aux [] t
+  aux t
+
+type 'a renderer = {
+  render : Types.Page.t -> page ;
+}
+
+
+let document_of_page ~syntax v =
+  match syntax with
+  | Reason -> Reason.page v
+  | OCaml -> ML.page v
+
+let document_of_compilation_unit ~syntax v =
+  match syntax with
+  | Reason -> Reason.compilation_unit v
+  | OCaml -> ML.compilation_unit v

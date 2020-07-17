@@ -1,5 +1,4 @@
 
-open StdLabels
 open Or_error
 open Odoc_document
 
@@ -25,7 +24,7 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
   Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
   match root.file with
-  | Page page_name ->
+  | Page _ ->
     Page.load input >>= fun page ->
     let odoctree =
       let resolve_env = Env.build env (`Page page) in
@@ -33,16 +32,13 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
       |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
       |> Odoc_model.Error.shed_warnings
     in
-    let pkg_name = root.package in
     let pages = mk_page ~syntax odoctree in
-    let pkg_dir = Fs.Directory.reach_from ~dir:root_dir pkg_name in
-    Fs.Directory.mkdir_p pkg_dir;
-    Renderer.traverse pages ~f:(fun ~parents _pkg_name content ->
-      assert (parents = []);
-      let oc =
-        let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".3o") in
-        open_out (Fs.File.to_string f)
-      in
+    Renderer.traverse pages ~f:(fun filename content ->
+      let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+      Format.eprintf "%s@." (Fpath.to_string filename);
+      let directory = Fs.File.dirname filename in
+      Fs.Directory.mkdir_p directory;
+      let oc = open_out (Fs.File.to_string filename) in
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%t@?" content;
       close_out oc
@@ -61,12 +57,12 @@ let from_odoc ~env ?(syntax=Renderer.OCaml) ~output:root_dir input =
     let pkg_dir = Fs.Directory.reach_from ~dir:root_dir root.package in
     Fs.Directory.mkdir_p pkg_dir;
     let pages = mk_compilation_unit ~syntax odoctree in
-    Renderer.traverse pages ~f:(fun ~parents name content ->
-      let page_name = String.concat ~sep:"." (parents @ [name]) in
-      let oc =
-        let f = Fs.File.create ~directory:pkg_dir ~name:(page_name ^ ".3o") in
-        open_out (Fs.File.to_string f)
-      in
+    Renderer.traverse pages ~f:(fun filename content ->
+      let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+      Format.eprintf "%s@." (Fpath.to_string filename);
+      let directory = Fs.File.dirname filename in
+      Fs.Directory.mkdir_p directory;
+      let oc = open_out (Fs.File.to_string filename) in
       let fmt = Format.formatter_of_out_channel oc in
       Format.fprintf fmt "%t@?" content;
       close_out oc
