@@ -560,40 +560,52 @@ and items l =
 
 module Doc = struct
 
-let make url filename content children =
-  let label = Label (Link.page url) in
+let link_children ppf children =
+  let input_child ppf child =
+    macro "input" Fpath.pp ppf child.Odoc_document.Renderer.filename
+  in
+  Fmt.list input_child ppf children
+
+let make ~with_children url content children =
+  let p = Link.page url in
+  let filename = Fpath.(v p + ".tex") in
+  let label = Label p in
   let content = match content with
     | [] -> [label]
     | Section _ as s  :: q -> s :: label :: q
     | q -> label :: q in
-  let content ppf = Fmt.pf ppf "@[<v>%a@]@." pp content in
+  let children_input ppf =
+    if with_children then link_children ppf children else ()
+  in
+  let content ppf = Fmt.pf ppf "@[<v>%a@,%t@]@." pp content children_input in
   {Odoc_document.Renderer. filename; content; children }
 end
 
 module Page = struct
 
-
-
   let on_sub = function
     | `Page _ -> Some 1
     | `Include _ -> None
 
+  let rec subpage ~with_children (p:Subpage.t) =
+    if Link.should_inline p.status p.content.url then
+      []
+    else
+      [ page ~with_children p.content ]
 
-  let rec subpage (p:Subpage.t) = if Link.should_inline p.status p.content.url then [] else [ page p.content ]
+  and subpages ~with_children i =
+    List.flatten @@ List.map (subpage ~with_children) @@ Doctree.Subpages.compute i
 
-  and subpages i =
-    List.flatten @@ List.map subpage @@ Doctree.Subpages.compute i
-
-  and page ({Page. title; header; items = i; url } as p) =
+  and page ~with_children ({Page. title = _; header; items = i; url } as p) =
     let i = Doctree.Shift.compute ~on_sub i in
-    let subpages = subpages p in
+    let subpages = subpages ~with_children p in
     let header = items header in
     let content = items i in
     let page =
-      Doc.make url title (header@content) subpages
+      Doc.make ~with_children url (header@content) subpages
     in
     page
 
 end
 
-let render page = Page.page page
+let render ~with_children page = Page.page ~with_children page
