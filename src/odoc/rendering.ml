@@ -55,7 +55,7 @@ let render_document renderer ~output:root_dir ~extra odoctree =
   );
   Ok ()
 
-let urls_of_input ~env input =
+let urls_of_input input =
   Root.read input >>= function
   | { file = Page _; _ } ->
       Page.load input >>= fun odoctree ->
@@ -63,18 +63,20 @@ let urls_of_input ~env input =
       Ok targets
   | { file = Compilation_unit _; _ } ->
       Compilation_unit.load input >>= fun unit ->
-      let env = Env.build env (`Unit unit) in
-      Odoc_xref.resolve (Env.resolver env) unit >>=
-      Odoc_xref.expand (Env.expander env) >>= fun odoctree ->
-      let targets = Targets.unit odoctree in
-      Ok targets
+      if unit.hidden
+      then Ok []
+      else
+        (* let root = Compilation_unit.root unit in
+         * let package = root.package in *)
+        let targets = Targets.unit (* ~package *) unit in
+        Ok targets
 
 let render_odoc ~env ~syntax ~renderer ~output extra file =
   document_of_input ~env ~syntax file
   >>= render_document renderer ~output ~extra
 
-let targets_odoc ~env ~renderer ~output:root_dir input =
-  urls_of_input ~env input >>= fun urls ->
+let targets_odoc ~renderer ~output:root_dir input =
+  urls_of_input input >>= fun urls ->
   let targets = Utils.flatmap urls ~f:(fun url ->
     let filenames = renderer.Renderer.files_of_url url in
     List.map (fun filename ->
