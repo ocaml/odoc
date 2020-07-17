@@ -13,12 +13,12 @@ let document_of_compilation_unit ~syntax v =
   | Renderer.Reason -> Odoc_document.Reason.compilation_unit v
   | Renderer.OCaml -> Odoc_document.ML.compilation_unit v
 
-let mk_page ~syntax v =
-  Odoc_latex.Generator.render @@
+let mk_page ~syntax ~with_children v =
+  Odoc_latex.Generator.render ~with_children @@
   document_of_page ~syntax v
 
-let mk_compilation_unit ~syntax v =
-  Odoc_latex.Generator.render @@
+let mk_compilation_unit ~syntax ~with_children v =
+  Odoc_latex.Generator.render ~with_children @@
   document_of_compilation_unit ~syntax v
 
 
