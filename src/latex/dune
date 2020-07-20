@@ -13,5 +13,5 @@ let () =
  (name odoc_latex)
  (public_name odoc.latex)
     |} ^ preprocess ^ {|
- (libraries odoc_model odoc_document))
+ (libraries odoc_model odoc_document odoc_compat))
     |}

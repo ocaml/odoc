@@ -357,9 +357,10 @@ and small_table ppf tbl =
     Fmt.pf ppf {|{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%a}|}
     table tbl
 
-let raw_markup (t:Raw_markup.t) =
-  match t with
-  | `Latex, c -> [Raw c]
+let raw_markup (t : Raw_markup.t) =
+  let target, content = t in
+  match Odoc_compat.String.lowercase_ascii target with
+  | "latex" | "tex" -> [Raw content]
   | _ -> []
 
 let source k (t : Source.t) =

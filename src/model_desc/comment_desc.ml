@@ -50,11 +50,7 @@ and general_tag =
 and general_docs = general_block_element with_location list
 
 let rec inline_element : general_inline_element t =
-  let raw_markup_target =
-    Variant
-      (function
-      | `Html -> C0 "`Html" | `Latex -> C0 "`Latex" | `Manpage -> C0 "`Manpage")
-  and style =
+  let style =
     Variant
       (function
       | `Bold -> C0 "`Bold"
@@ -69,7 +65,7 @@ let rec inline_element : general_inline_element t =
     | `Word x -> C ("`Word", x, string)
     | `Code_span x -> C ("`Code_span", x, string)
     | `Raw_markup (x1, x2) ->
-        C ("`Raw_markup", (x1, x2), Pair (raw_markup_target, string))
+        C ("`Raw_markup", (x1, x2), Pair (string, string))
     | `Styled (x1, x2) -> C ("`Styled", (x1, x2), Pair (style, link_content))
     | `Reference (x1, x2) ->
         C ("`Reference", (x1, x2), Pair (reference, link_content))

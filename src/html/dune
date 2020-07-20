@@ -13,5 +13,5 @@ let () =
  (name odoc_html)
  (public_name odoc.html)
     |} ^ preprocess ^ {|
- (libraries odoc_model odoc_document tyxml))
+ (libraries odoc_model odoc_document odoc_compat tyxml))
     |}
