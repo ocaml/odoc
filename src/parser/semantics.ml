@@ -50,19 +50,23 @@ let leaf_inline_element
   | { value = `Space _; _ } ->
     Location.same element `Space
 
-  | { value = `Raw_markup (Some "html", s); _ } ->
-    Location.same element (`Raw_markup (`Html, s))
-
   | { value = `Raw_markup (target, s); location } ->
-    let error =
-      match target with
-      | Some invalid_target ->
-        Parse_error.invalid_raw_markup_target invalid_target location
-      | None ->
-        Parse_error.default_raw_markup_target_not_supported location
-    in
-    Error.warning status.warnings error;
-    Location.same element (`Code_span s)
+    begin match target with
+    | Some invalid_target when
+        String.trim invalid_target = ""
+      || String.contains invalid_target '%'
+      || String.contains invalid_target '}'
+      ->
+      Error.warning status.warnings
+        (Parse_error.invalid_raw_markup_target invalid_target location);
+      Location.same element (`Code_span s)
+    | None ->
+      Error.warning status.warnings 
+        (Parse_error.default_raw_markup_target_not_supported location);
+      Location.same element (`Code_span s)
+    | Some target -> 
+      Location.same element (`Raw_markup (target, s))
+    end
 
 
 

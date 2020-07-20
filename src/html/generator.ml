@@ -39,10 +39,14 @@ let class_ (l : Class.t) =
 
 and raw_markup (t : Raw_markup.t) =
   let target, content = t in
-  if `Html = target then
-    [Html.Unsafe.data content] (* This is wrong *)
-  else
-    []
+  match Odoc_compat.String.lowercase_ascii target with
+  | "html" ->
+    (* This is OK because we output *textual* HTML. 
+       In theory, we should try to parse the HTML with lambdasoup and rebuild
+       the HTML tree from there.
+    *)
+    [Html.Unsafe.data content]
+  | _ -> []
 
 and source k ?a (t : Source.t) =
   let rec token (x : Source.token) = match x with

@@ -259,6 +259,12 @@ let entity e = match e with
   | "#8288" -> noop
   | s -> str "&%s;" s (* Should hopefully make people notice and report *)
 
+let raw_markup (t : Raw_markup.t) =
+  let target, content = t in
+  match Odoc_compat.String.lowercase_ascii target with
+  | "manpage" | "troff" | "roff" -> String content
+  | _ -> noop
+
 let rec source_code (s : Source.t) =
   match s with
   | [] -> noop
@@ -304,8 +310,9 @@ and inline (l : Inline.t) = match l with
     | Source content ->
       source_code content
       ++ inline rest
-    | Raw_markup _ ->
-      inline rest
+    | Raw_markup t ->
+      raw_markup t
+      ++ inline rest
 
 let rec block (l : Block.t) = match l with
   | [] -> noop
@@ -343,8 +350,8 @@ let rec block (l : Block.t) = match l with
     | Verbatim content ->
       env "EX" "EE" "" (str "%s" content)
       ++ continue rest
-    | Raw_markup _ ->
-      noop
+    | Raw_markup t ->
+      raw_markup t
       ++ continue rest
 
 let next_heading, reset_heading =

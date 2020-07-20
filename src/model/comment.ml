@@ -13,11 +13,7 @@ type style = [
   | `Subscript
 ]
 
-type raw_markup_target = [
-  | `Html
-  | `Latex
-  | `Manpage
-]
+type raw_markup_target = string
 
 type leaf_inline_element = [
   | `Space

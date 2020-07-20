@@ -49,9 +49,6 @@ val o : int
 (** ] unpaired *)
 val p : int
 
-(** {%invalid: raw markup target %} *)
-val q : int
-
 (** This comment has bad
     } markup on the second line. *)
 val r : int

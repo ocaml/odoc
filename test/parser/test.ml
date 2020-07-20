@@ -255,8 +255,6 @@ let tests : test_suite list = [
     t "no-target" "{%foo%}";
     t "empty-target" "{%:foo%}";
     t "whitespace-target" "{% :foo%}";
-    t "invalid-target" "{%xml:foo%}";
-    t "incorrect-case-target" "{%HTML:foo%}";
     t "multiline-target" "{%\n:foo%}";
     t "percent-in-target" "{%%:%}";
     t "percent-in-payload" "{%html:%%}";
