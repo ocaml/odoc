@@ -63,12 +63,16 @@ and ModuleType : sig
     | ModuleSubst of Fragment.Module.t * Path.Module.t
     | TypeSubst of Fragment.Type.t * TypeDecl.Equation.t
 
+  type type_of_desc =
+    | MPath of Path.Module.t
+    | Struct_include of Path.Module.t
+
   type expr =
     | Path of Path.ModuleType.t
     | Signature of Signature.t
     | Functor of FunctorParameter.t * expr
     | With of expr * substitution list
-    | TypeOf of Module.decl
+    | TypeOf of type_of_desc
 
   type t = {
     id : Identifier.ModuleType.t;

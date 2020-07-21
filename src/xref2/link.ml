@@ -358,7 +358,8 @@ and module_expansion :
 
 and should_hide_moduletype : ModuleType.expr -> bool = function
   | Signature _ -> false
-  | TypeOf x -> should_hide_module_decl x
+  | TypeOf (MPath p)
+  | TypeOf (Struct_include p) -> Paths.Path.is_hidden (p :> Paths.Path.t)
   | With (e, _) -> should_hide_moduletype e
   | Functor (_, e) -> should_hide_moduletype e
   | Path p -> Paths.Path.is_hidden (p :> Paths.Path.t)
@@ -717,7 +718,8 @@ and module_type_expr :
       let arg' = functor_argument env arg in
       let res' = module_type_expr env (`Result id) res in
       Functor (arg', res')
-  | TypeOf decl -> TypeOf (module_decl env id decl)
+  | TypeOf (Struct_include p) -> TypeOf (Struct_include (module_path env p))
+  | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
 
 and type_decl_representation :
     Env.t ->

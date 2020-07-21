@@ -174,12 +174,16 @@ and ModuleType : sig
     | TypeEq of Cfrag.type_ * TypeDecl.Equation.t
     | TypeSubst of Cfrag.type_ * TypeDecl.Equation.t
 
+  type type_of_desc =
+    | MPath of Cpath.module_
+    | Struct_include of Cpath.module_
+
   type expr =
     | Path of Cpath.module_type
     | Signature of Signature.t
     | With of expr * substitution list
     | Functor of FunctorParameter.t * expr
-    | TypeOf of Module.decl
+    | TypeOf of type_of_desc
 
   type t = {
     doc : CComment.docs;
