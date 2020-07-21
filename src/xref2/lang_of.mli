@@ -2,18 +2,17 @@
 open Odoc_model.Paths
 
 type maps = {
-  module_ : (Ident.module_ * Identifier.Module.t) list;
-  module_type : (Ident.module_type * Identifier.ModuleType.t) list;
+  module_ : Identifier.Module.t Component.ModuleMap.t;
+  module_type : Identifier.ModuleType.t Component.ModuleTypeMap.t;
   functor_parameter :
     (Ident.functor_parameter * Identifier.FunctorParameter.t) list;
-  type_ : (Ident.type_ * Identifier.Type.t) list;
+  type_ : Identifier.Type.t Component.TypeMap.t;
   path_type :
-    (Ident.path_type * Odoc_model.Paths_types.Identifier.path_type) list;
+    Identifier.Path.Type.t Component.PathTypeMap.t;
   class_ : (Ident.class_ * Identifier.Class.t) list;
   class_type : (Ident.class_type * Identifier.ClassType.t) list;
   path_class_type :
-    (Ident.path_class_type * Odoc_model.Paths_types.Identifier.path_class_type)
-    list;
+    Identifier.Path.ClassType.t Component.PathClassTypeMap.t;
   fragment_root : Cfrag.root option;
   (* Shadowed items *)
   s_modules : (string * Identifier.Module.t) list;
