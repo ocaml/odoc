@@ -1,6 +1,18 @@
 module Maps = Odoc_model.Paths.Identifier.Maps
 
 module ModuleMap = Map.Make (struct
+  type t = Ident.module_
+
+  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+end)
+
+module TypeMap = Map.Make (struct
+  type t = Ident.type_
+
+  let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
+end)
+
+module PathModuleMap = Map.Make (struct
   type t = Ident.path_module
 
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
@@ -12,13 +24,13 @@ module ModuleTypeMap = Map.Make (struct
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
-module TypeMap = Map.Make (struct
+module PathTypeMap = Map.Make (struct
   type t = Ident.path_type
 
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
 end)
 
-module ClassTypeMap = Map.Make (struct
+module PathClassTypeMap = Map.Make (struct
   type t = Ident.path_class_type
 
   let compare a b = Ident.compare (a :> Ident.any) (b :> Ident.any)
@@ -376,11 +388,11 @@ and Substitution : sig
     | `Renamed of Ident.path_class_type ]
 
   type t = {
-    module_ : subst_module ModuleMap.t;
+    module_ : subst_module PathModuleMap.t;
     module_type : subst_module_type ModuleTypeMap.t;
-    type_ : subst_type TypeMap.t;
-    class_type : subst_class_type ClassTypeMap.t;
-    type_replacement : TypeExpr.t TypeMap.t;
+    type_ : subst_type PathTypeMap.t;
+    class_type : subst_class_type PathClassTypeMap.t;
+    type_replacement : TypeExpr.t PathTypeMap.t;
     invalidated_modules : Ident.path_module list;
   }
 end =
