@@ -689,7 +689,8 @@ and module_type_expr map identifier =
           module_type_expr map (`Result identifier) expr )
   | Functor (Unit, expr) ->
       Functor (Unit, module_type_expr map (`Result identifier) expr)
-  | TypeOf decl -> TypeOf (module_decl map identifier decl)
+  | TypeOf (MPath p) -> TypeOf (MPath (Path.module_ map p))
+  | TypeOf (Struct_include p) -> TypeOf (Struct_include (Path.module_ map p))
 
 and module_type :
     maps ->

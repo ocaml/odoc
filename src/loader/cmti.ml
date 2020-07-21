@@ -526,14 +526,20 @@ and read_module_type env parent label_parent mty =
         let decl =
           let open Module in
           match mexpr.mod_desc with
-          | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+          | Tmod_ident(p, _) ->
+            Format.eprintf "typeof mpath\n%!";
+            TypeOf (MPath (Env.Path.read_module env p))
           | _ ->
-              let mty =
-                !read_module_expr env parent label_parent mexpr
-              in
-                ModuleType mty
+              match !read_module_expr env parent label_parent mexpr with
+              | Signature [Odoc_model.Lang.Signature.Include {Include.decl = Alias p; _}] ->
+                Format.eprintf "typeof struct_include\n%!";
+                TypeOf (Struct_include p)
+              | Signature [Odoc_model.Lang.Signature.Include {Include.decl = ModuleType (Signature items); _}] ->
+                Signature items
+              | s ->
+                s 
         in
-          TypeOf decl
+          decl
     | Tmty_alias _ -> assert false
 
 and read_module_type_declaration env parent mtd =

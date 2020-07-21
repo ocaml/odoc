@@ -190,12 +190,16 @@ and ModuleType : sig
     | TypeEq of Cfrag.type_ * TypeDecl.Equation.t
     | TypeSubst of Cfrag.type_ * TypeDecl.Equation.t
 
+  type type_of_desc =
+    | MPath of Cpath.module_
+    | Struct_include of Cpath.module_
+
   type expr =
     | Path of Cpath.module_type
     | Signature of Signature.t
     | With of expr * substitution list
     | Functor of FunctorParameter.t * expr
-    | TypeOf of Module.decl
+    | TypeOf of type_of_desc
 
   type t = {
     doc : CComment.docs;
@@ -566,7 +570,8 @@ module Fmt = struct
     | Functor (arg, res) ->
         Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr
           res
-    | TypeOf decl -> Format.fprintf ppf "module type of %a" module_decl decl
+    | TypeOf (MPath p) -> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf (Struct_include p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
 
   and functor_parameter ppf x =
     let open FunctorParameter in
@@ -1864,10 +1869,13 @@ module Of_Lang = struct
     | Lang.ModuleType.Functor (Unit, expr) ->
         let expr' = module_type_expr ident_map expr in
         ModuleType.Functor (Unit, expr')
-    | Lang.ModuleType.TypeOf decl ->
-        let decl' = module_decl ident_map decl in
-        ModuleType.TypeOf decl'
-
+    | Lang.ModuleType.TypeOf (MPath p) ->
+        let p' = module_path ident_map p in
+        ModuleType.(TypeOf (MPath p'))
+    | Lang.ModuleType.TypeOf (Struct_include p) ->
+        let p' = module_path ident_map p in
+        ModuleType.(TypeOf (Struct_include p')) 
+    
   and module_type ident_map m =
     let expr =
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr

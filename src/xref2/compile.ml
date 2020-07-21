@@ -574,9 +574,9 @@ and module_type_expr :
           | Path _ -> None
           | With (e, _) -> find_parent e
           | Functor _ -> failwith "Impossible"
-          | TypeOf (Alias (`Resolved p)) -> Some (`Module p)
-          | TypeOf (Alias _) -> None
-          | TypeOf (ModuleType t) -> find_parent t
+          | TypeOf (MPath (`Resolved p)) 
+          | TypeOf (Struct_include (`Resolved p)) -> Some (`Module p)
+          | TypeOf _ -> None
         in
         match find_parent cexpr with
         | None -> With (expr, subs)
@@ -598,14 +598,13 @@ and module_type_expr :
                     (Ok sg, env, []) subs
                 in
                 let subs = List.rev subs in
-                With (inner false expr, subs) ) )
+                With (expr, subs) ) )
     | Functor (param, res) ->
         let param' = functor_parameter env param in
         let res' = module_type_expr env id res in
         Functor (param', res')
-    | TypeOf (ModuleType expr) ->
-        TypeOf (ModuleType (inner resolve_signatures expr))
-    | TypeOf (Alias p) -> TypeOf (Alias (module_path env p))
+    | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
+    | TypeOf (Struct_include p) -> TypeOf (Struct_include (module_path env p))
   in
   inner true expr
 

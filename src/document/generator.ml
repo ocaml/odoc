@@ -1410,10 +1410,8 @@ struct
     | Path (`Resolved r) ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
     | With (mt, _) -> extract_path_from_mt ~default mt
-    | TypeOf (Odoc_model.Lang.Module.Alias (`Resolved r)) ->
+    | TypeOf (MPath (`Resolved r)) ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
-    | TypeOf (Odoc_model.Lang.Module.ModuleType mt) ->
-      extract_path_from_mt ~default mt
     | _ -> default
 
   and module_decl'
@@ -1513,14 +1511,28 @@ struct
             ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
             ~f:(substitution base)
             substitutions
-      | TypeOf md ->
+      | TypeOf (MPath m) ->
         O.keyword "module" ++
           O.txt " " ++
           O.keyword "type" ++
           O.txt " " ++
           O.keyword "of" ++
           O.txt " " ++
-          module_decl' base md
+          Link.from_path (m :> Paths.Path.t)
+      | TypeOf (Struct_include m) ->
+        O.keyword "module" ++
+          O.txt " " ++
+          O.keyword "type" ++
+          O.txt " " ++
+          O.keyword "of" ++
+          O.txt " " ++
+          O.keyword "struct" ++
+          O.txt " " ++
+          O.keyword "include" ++
+          O.txt " " ++
+          Link.from_path (m :> Paths.Path.t) ++
+          O.txt " " ++
+          O.keyword "end"
 
   (* TODO : Centralize the list juggling for type parameters *)
   and type_expr_in_subst ~base td typath =
@@ -1573,14 +1585,8 @@ struct
       else if List.exists is_closed_tag t.doc then `Closed
       else `Default
     in
-    let content_t =
-      let open Odoc_model.Lang in
-      match t.decl with
-      | Module.ModuleType (ModuleType.TypeOf (Module.ModuleType (ModuleType.Signature [Include t]))) ->
-        t
-      | _ -> t
-    in
-    let content = signature content_t.expansion.content in
+    
+    let content = signature t.expansion.content in
     let summary =
       O.render (
         O.keyword "include" ++

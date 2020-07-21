@@ -118,6 +118,12 @@ and unresolve_subs subs =
       | x -> x)
     subs
 
+and aux_expansion_of_module_type_type_of_desc env t : (expansion, signature_of_module_error) Result.result =
+  match t with
+  | Component.ModuleType.MPath p ->  aux_expansion_of_module_alias env ~strengthen:false p
+  | Struct_include p ->  aux_expansion_of_module_alias env ~strengthen:true p
+ 
+
 and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
   match expr with
@@ -135,7 +141,7 @@ and aux_expansion_of_module_type_expr env expr :
            Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
           >>= fun sg -> Ok (Signature sg) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
-  | TypeOf decl -> aux_expansion_of_module_decl env ~strengthen:false decl
+  | TypeOf desc -> aux_expansion_of_module_type_type_of_desc env desc
 
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in

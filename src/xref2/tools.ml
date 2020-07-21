@@ -1079,17 +1079,20 @@ and module_type_expr_of_module :
     Result.result =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
-and signature_of_module_alias :
+and signature_of_module_path :
     Env.t ->
+    strengthen:bool ->
     Cpath.module_ ->
     (Component.Signature.t, signature_of_module_error) Result.result =
- fun env path ->
+ fun env ~strengthen path ->
   match resolve_module ~mark_substituted:false ~add_canonical:true env path with
   | Resolved (p', m) ->
       let m = Component.Delayed.get m in
       (* p' is the path to the aliased module *)
       signature_of_module_cached env p' m >>= fun sg ->
-      Ok (Strengthen.signature (`Resolved p') sg)
+      if strengthen
+      then Ok (Strengthen.signature (`Resolved p') sg)
+      else Ok sg
   | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
   | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
 
@@ -1126,7 +1129,9 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Functor (Named arg, expr) ->
       ignore arg;
       signature_of_module_type_expr ~mark_substituted env expr
-  | Component.ModuleType.TypeOf decl -> signature_of_module_decl env decl
+  | Component.ModuleType.TypeOf (Struct_include p) -> signature_of_module_path env ~strengthen:true p
+  | Component.ModuleType.TypeOf (MPath p) -> signature_of_module_path env ~strengthen:false p
+    
 
 and signature_of_module_type :
     Env.t ->
@@ -1143,7 +1148,7 @@ and signature_of_module_decl :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
-  | Component.Module.Alias path -> signature_of_module_alias env path
+  | Component.Module.Alias path -> signature_of_module_path env ~strengthen:true path
   | Component.Module.ModuleType expr ->
       signature_of_module_type_expr ~mark_substituted:false env expr
 
@@ -1180,7 +1185,7 @@ and fragmap :
     let open Component.Module in
     match decl with
     | Alias path ->
-        signature_of_module_alias env path >>= fun sg ->
+        signature_of_module_path env ~strengthen:true path >>= fun sg ->
         fragmap ~mark_substituted env subst sg >>= fun sg ->
         Ok (ModuleType (Signature sg))
     (* | ModuleType (With (mty', subs')) ->

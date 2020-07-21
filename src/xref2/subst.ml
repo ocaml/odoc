@@ -407,6 +407,12 @@ and functor_parameter s t =
       Named { arg with expr = module_type_expr s arg.expr; expansion }
   | Unit -> Unit
 
+and module_type_type_of_desc s t =
+  let open Component.ModuleType in
+  match t with
+  | MPath p -> MPath (module_path s p)
+  | Struct_include p -> Struct_include (module_path s p)
+
 and module_type_expr s t =
   let open Component.ModuleType in
   match t with
@@ -416,7 +422,7 @@ and module_type_expr s t =
       Functor (functor_parameter s arg, module_type_expr s expr)
   | With (e, args) ->
       With (module_type_expr s e, List.map (module_type_substitution s) args)
-  | TypeOf decl -> TypeOf (module_decl s decl)
+  | TypeOf decl -> TypeOf (module_type_type_of_desc s decl)
 
 and module_type_substitution s sub =
   let open Component.ModuleType in
