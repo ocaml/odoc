@@ -319,7 +319,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     | None -> Ok (None, None)
     | Some (Signature sg) ->
         let sg' = signature env (m.id :> Id.Signature.t) sg in
-        Ok (Some (Module.Signature sg'), Some (Signature sg'))
+        Ok (Some Module.AlreadyASig, Some (Signature sg'))
     | Some expr ->
         ( match Expand_tools.expansion_of_module_type env m.id m' with
         | Ok (env, _, ce) ->
