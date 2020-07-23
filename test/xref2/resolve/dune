@@ -7,5 +7,6 @@
 
 (alias
  (name runtest)
+ (enabled_if (>= %{ocaml_version} 4.03))
  (action
   (diff test.md test.output)))
