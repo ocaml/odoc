@@ -2,7 +2,35 @@ Testing resolution of references
 
 ## Env
 
-Test data:
+Helpers:
+
+```ocaml
+let parse_ref ref_str =
+  let open Odoc_model in
+  let parse acc = Odoc_parser__Reference.parse acc (Location_.span []) ref_str in
+  match Error.handle_errors_and_warnings ~warn_error:true (Error.accumulate_warnings parse) with
+  | Ok ref -> ref
+  | Error (`Msg e) -> failwith e
+
+(* Shorten type for nicer output *)
+type ref = Odoc_model.Paths_types.Resolved_reference.any
+
+let resolve_ref' env ref_str : ref =
+  let open Odoc_model in
+  let unresolved = parse_ref ref_str in
+  let resolve () = Ref_tools.resolve_reference env unresolved in
+  match
+    Lookup_failures.catch_failures resolve
+    |> Lookup_failures.handle_failures ~warn_error:true ~filename:"tests"
+  with
+  | Error (`Msg e) -> failwith e
+  | Ok None -> failwith "resolve_reference"
+  | Ok (Some r) -> r
+```
+
+## Resolving
+
+Env:
 
 ```ocaml
 let test_mli = {|

@@ -527,19 +527,7 @@ we then return along with the fully resolved identifier.
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : Cpath.Resolved.type_ * Odoc_xref2.Find.careful_type =
-(`Type
-   (`Module
-      (`Module
-         (`Module (`Identifier (`Module (`Root (Common.root, Root), A))), B)),
-    t),
- `T
-   (t,
-    {Odoc_xref2.Component.TypeDecl.doc = [];
-     equation =
-      {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
-       manifest = None; constraints = []};
-     representation = None}))
+...
 ```
 
 ### Module aliases
