@@ -1,0 +1,17 @@
+{
+  "build": [
+    [
+      "bash",
+      "-c",
+      "#{os == 'windows' ? './winconfigure' : 'true' }"
+    ],
+    [
+      "jbuilder",
+      "build",
+      "-p",
+      "sexplib",
+      "-j",
+      "4"
+    ]
+  ]
+}
