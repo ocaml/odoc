@@ -34,26 +34,25 @@
     "@opam/bisect_ppx": "2.4.1",
     "@opam/cmdliner": "1.0.2",
     "@opam/cppo": "1.6.5",
-    "@opam/dune": "1.11.4",
+    "@opam/dune": "2.6.1",
     "@opam/fpath": "0.7.2",
     "@opam/js-build-tools": "113.33.04",
     "@opam/lambdasoup": "0.7.1",
     "@opam/markup": "*",
     "@opam/ocamlfind": "1.8.1",
     "@opam/result": "1.4",
-    "@opam/sexplib": "113.33.03",
+    "@opam/sexplib": "*",
     "@opam/tyxml": "4.3.0",
     "@opam/mdx": "1.6.0",
     "@opam/ocamlfind-secondary":"1.8.1",
     "ocaml": "~4.2.0"
   },
   "resolutions": {
-    "@opam/markup": "aantron/markup.ml:markup.opam#9f8e77",
-    "@opam/sexplib": "bryphe/sexplib:opam#548f94d"
+    "@opam/markup": "aantron/markup.ml:markup.opam#9f8e77"
   },
   "devDependencies": {
     "@opam/merlin": "^3.0.3",
-    "ocaml": "~4.2.0"
+    "ocaml": "~4.6.0"
   },
   "license": "ISC",
   "private": false
