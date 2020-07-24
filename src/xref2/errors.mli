@@ -22,7 +22,8 @@ type simple_module_lookup_error =
   | (*** Internal error: the module was not found in the parent signature *)
     `Lookup_failure of
     Identifier.Path.Module.t
-    (** Could not find the module in the environment *) ]
+    (** Could not find the module in the environment *)
+  | `Parent of parent_lookup_error ]
 
 and simple_module_type_expr_of_module_error =
   [ `ApplyNotFunctor
@@ -31,25 +32,28 @@ and simple_module_type_expr_of_module_error =
   | `UnresolvedForwardPath
     (** The module signature depends upon a forward path *)
   | `UnresolvedPath of
-    [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ] ]
+    [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ]
+  | `Parent of parent_lookup_error ]
 
 and simple_module_type_lookup_error =
-  [ `LocalMT of Env.t * Cpath.Resolved.module_type
+  [ `LocalMT of Env.t * Ident.module_type
     (** Internal error: Found local path during lookup *)
   | `Find_failure
     (** Internal error: the module was not found in the parent signature *)
   | `Lookup_failureMT of Identifier.ModuleType.t
-    (** Could not find the module in the environment *) ]
+    (** Could not find the module in the environment *)
+  | `Parent of parent_lookup_error ]
 
 and simple_type_lookup_error =
-  [ `LocalType of Env.t * Cpath.Resolved.type_
+  [ `LocalType of Env.t * Ident.path_type
     (** Internal error: Found local path during lookup *)
   | `Class_replaced
     (** Class was replaced with a destructive substitution and we're not sure what to do now *)
   | `Find_failure
     (** Internal error: the type was not found in the parent signature *)
   | `Lookup_failureT of Identifier.Path.Type.t
-    (** Could not find the module in the environment *) ]
+    (** Could not find the module in the environment *)
+  | `Parent of parent_lookup_error ]
 
 and parent_lookup_error =
   [ `Parent_sig of signature_of_module_error
@@ -60,11 +64,11 @@ and parent_lookup_error =
     (** Error found while evaluating parent module expression *)
   | `Parent_module of simple_module_lookup_error
     (** Error found while looking up parent module *)
-  | `Fragment_root (* Encountered unexpected fragment root *) ]
+  | `Fragment_root (* Encountered unexpected fragment root *)
+  | `Parent of parent_lookup_error ]
 
 type any =
-  [ parent_lookup_error
-  | simple_type_lookup_error
+  [ simple_type_lookup_error
   | simple_module_type_lookup_error
   | simple_module_type_expr_of_module_error
   | simple_module_lookup_error

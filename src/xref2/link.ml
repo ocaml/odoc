@@ -58,14 +58,16 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
         `Resolved (result |> Cpath.resolved_type_path_of_cpath)
     | _ -> (
         match Tools.resolve_type_path env cp with
-        | Resolved p' ->
+        | Ok p' ->
             let result = Tools.reresolve_type env p' in
             `Resolved (Cpath.resolved_type_path_of_cpath result)
-        | Unresolved unresolved ->
-            Lookup_failures.report "Failed to lookup type %a"
+        | Error e ->
+            Lookup_failures.report "Failed to lookup type %a: %a"
               Component.Fmt.model_path
-              (p :> Paths.Path.t);
-            Cpath.type_path_of_cpath unresolved )
+              (p :> Paths.Path.t)
+              Tools.Fmt.error
+              (e :> Errors.any);
+            Cpath.type_path_of_cpath cp )
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -80,14 +82,16 @@ and module_type_path :
           |> Cpath.resolved_module_type_path_of_cpath )
     | _ -> (
         match Tools.resolve_module_type_path env cp with
-        | Resolved p' ->
+        | Ok p' ->
             let result = Tools.reresolve_module_type env p' in
             `Resolved (Cpath.resolved_module_type_path_of_cpath result)
-        | Unresolved unresolved ->
-            Lookup_failures.report "Failed to resolve module type %a"
+        | Error e ->
+            Lookup_failures.report "Failed to resolve module type %a: %a"
               Component.Fmt.model_path
-              (p :> Paths.Path.t);
-            Cpath.module_type_path_of_cpath unresolved )
+              (p :> Paths.Path.t)
+              Tools.Fmt.error
+              (e :> Errors.any);
+            Cpath.module_type_path_of_cpath cp )
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -100,15 +104,17 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         `Resolved (Cpath.resolved_module_path_of_cpath after)
     | _ -> (
         match Tools.resolve_module_path env cp with
-        | Resolved p' ->
+        | Ok p' ->
             let result = Tools.reresolve_module env p' in
             `Resolved (Cpath.resolved_module_path_of_cpath result)
-        | Unresolved _ when is_forward p -> p
-        | Unresolved unresolved ->
-            Lookup_failures.report "Failed to resolve module %a"
+        | Error _ when is_forward p -> p
+        | Error e ->
+            Lookup_failures.report "Failed to resolve module %a: %a"
               Component.Fmt.model_path
-              (p :> Paths.Path.t);
-            Cpath.module_path_of_cpath unresolved )
+              (p :> Paths.Path.t)
+              Tools.Fmt.error
+              (e :> Errors.any);
+            Cpath.module_path_of_cpath cp )
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
@@ -875,7 +881,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
       else
         let cp = Component.Of_Lang.(type_path empty path') in
         match Tools.resolve_type env cp with
-        | Resolved (cp', Found (`T t)) ->
+        | Ok (cp', Found (`T t)) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             if List.mem p visited then raise Loop
             else if Cpath.is_resolved_type_hidden cp' then
@@ -906,12 +912,12 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                       Constr (`Resolved p, ts) )
               | _ -> Constr (`Resolved p, ts)
             else Constr (`Resolved p, ts)
-        | Resolved (cp', Found _) ->
+        | Ok (cp', Found _) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             Constr (`Resolved p, ts)
-        | Resolved (_cp, Replaced x) ->
+        | Ok (_cp, Replaced x) ->
             Lang_of.(type_expr empty (parent :> Id.Parent.t) x)
-        | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
+        | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent visited v)
   | Object o -> Object (type_expression_object env parent visited o)

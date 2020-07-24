@@ -23,13 +23,9 @@ module Fmt = struct
     | `UnresolvedPath (`ModuleType p) ->
         Format.fprintf fmt "Unresolved module type path %a"
           Component.Fmt.module_type_path p
-    | `LocalMT (_, id) ->
-        Format.fprintf fmt "Local id found: %a"
-          Component.Fmt.resolved_module_type_path id
+    | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `LocalType (_, id) ->
-        Format.fprintf fmt "Local id found: %a" Component.Fmt.resolved_type_path
-          id
+    | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
     | `Unresolved_apply -> Format.fprintf fmt "Unresolved apply"
     | `Find_failure -> Format.fprintf fmt "Find failure"
     | `Lookup_failure m ->
@@ -45,6 +41,13 @@ module Fmt = struct
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
+    | `Class_replaced -> Format.fprintf fmt "Class replaced"
+    | `Parent p -> parent fmt p
+
+  and parent : Format.formatter -> Errors.parent_lookup_error -> unit =
+   fun fmt err ->
+    match err with
+    | `Parent p -> parent fmt p
     | `Parent_sig e ->
         Format.fprintf fmt "Parent_sig: %a" error (e :> Errors.any)
     | `Parent_module_type e ->
@@ -54,28 +57,6 @@ module Fmt = struct
     | `Parent_module e ->
         Format.fprintf fmt "Parent_module: %a" error (e :> Errors.any)
     | `Fragment_root -> Format.fprintf fmt "Fragment root"
-    | `Class_replaced -> Format.fprintf fmt "Class replaced"
-end
-
-module ResolvedMonad = struct
-  type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
-
-  let return x = Resolved x
-
-  let bind m f = match m with Resolved x -> f x | Unresolved y -> Unresolved y
-
-  let ( >>= ) = bind
-
-  let map_unresolved f m =
-    match m with Resolved x -> Resolved x | Unresolved y -> Unresolved (f y)
-
-  let of_result ~unresolved = function
-    | Ok x -> Resolved x
-    | Error _ -> Unresolved unresolved
-
-  let of_option ~unresolved = function
-    | Some x -> Resolved x
-    | None -> Unresolved unresolved
 end
 
 let core_types =
@@ -231,28 +212,28 @@ let simplify_resolved_module_path :
   in
   check_ident id
 
+open Errors
+
 type resolve_module_result =
   ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
-    Cpath.module_ )
-  ResolvedMonad.t
+    simple_module_lookup_error )
+  Result.result
 
 type resolve_module_type_result =
   ( Cpath.Resolved.module_type * Component.ModuleType.t,
-    Cpath.module_type )
-  ResolvedMonad.t
+    simple_module_type_lookup_error )
+  Result.result
 
 type resolve_type_result =
   ( Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
-    Cpath.type_ )
-  ResolvedMonad.t
+    simple_type_lookup_error )
+  Result.result
 
 type resolve_class_type_result =
   ( Cpath.Resolved.class_type
     * (Find.class_type, Component.TypeExpr.t) Find.found,
-    Cpath.class_type )
-  ResolvedMonad.t
-
-open Errors
+    simple_type_lookup_error )
+  Result.result
 
 module type MEMO = sig
   type result
@@ -316,7 +297,7 @@ module LookupModuleMemo = MakeMemo (struct
 
   type result =
     ( Component.Module.t Component.Delayed.t,
-      [ simple_module_lookup_error | parent_lookup_error ] )
+      simple_module_lookup_error )
     Result.result
 
   let equal = ( = )
@@ -329,7 +310,7 @@ module LookupParentMemo = MakeMemo (struct
 
   type result =
     ( Component.Signature.t * Component.Substitution.t,
-      parent_lookup_error )
+      [ `Parent of parent_lookup_error ] )
     Result.result
 
   let equal = ( = )
@@ -376,8 +357,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
         Ok (arg.Component.FunctorParameter.id, expr)
     | Component.ModuleType.Path mty_path -> (
         match resolve_module_type ~mark_substituted:false env mty_path with
-        | ResolvedMonad.Resolved
-            (_, { Component.ModuleType.expr = Some mty'; _ }) ->
+        | Result.Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule )
     | _ -> Error `ApplyNotFunctor
@@ -419,8 +399,8 @@ and get_substituted_module_type :
   | Component.ModuleType.Path p' ->
       if Cpath.is_module_type_substituted p' then
         match resolve_module_type ~mark_substituted:true env p' with
-        | Resolved (resolved_path, _) -> Some resolved_path
-        | Unresolved _ ->
+        | Ok (resolved_path, _) -> Some resolved_path
+        | Error _ ->
             (* Format.fprintf Format.err_formatter "<<<Unresolved!?\n%!";*) None
       else None
   | _ -> (* Format.fprintf Format.err_formatter "<<<wtf!?\n%!"; *) None
@@ -446,8 +426,8 @@ and get_module_path_modifiers :
       match
         resolve_module ~mark_substituted:true ~add_canonical env alias_path
       with
-      | Resolved (resolved_alias_path, _) -> Some (`Aliased resolved_alias_path)
-      | Unresolved _ -> None )
+      | Ok (resolved_alias_path, _) -> Some (`Aliased resolved_alias_path)
+      | Error _ -> None )
   | ModuleType t -> (
       match get_substituted_module_type env t with
       | Some s -> Some (`SubstMT s)
@@ -505,7 +485,7 @@ and lookup_module :
     Env.t ->
     Cpath.Resolved.module_ ->
     ( Component.Module.t Component.Delayed.t,
-      [ simple_module_lookup_error | parent_lookup_error ] )
+      simple_module_lookup_error )
     Result.result =
  fun ~mark_substituted:m env' path' ->
   let lookup env (mark_substituted, (path : SignatureOfModuleMemo.M.key)) =
@@ -521,10 +501,7 @@ and lookup_module :
             let functor_module = Component.Delayed.get functor_module in
             handle_apply ~mark_substituted:false env functor_path argument_path
               functor_module
-            |> map_error (function
-                 | #simple_module_type_expr_of_module_error as e ->
-                     `Parent_expr e
-                 | #parent_lookup_error as x -> x)
+            |> map_error (fun e -> `Parent (`Parent_expr e))
             >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
         | Error _ as e -> e )
     | `Module (parent, name) ->
@@ -536,8 +513,7 @@ and lookup_module :
           | Some (Replaced p) -> lookup_module ~mark_substituted env p
         in
         lookup_parent ~mark_substituted env parent
-        |> map_error (fun e ->
-               (e :> [ simple_module_lookup_error | parent_lookup_error ]))
+        |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (sg, sub) -> find_in_sg sg sub
     | `Alias (_, p) -> lookup_module ~mark_substituted env p
     | `Subst (_, p) -> lookup_module ~mark_substituted env p
@@ -553,13 +529,11 @@ and lookup_module_type :
     mark_substituted:bool ->
     Env.t ->
     Cpath.Resolved.module_type ->
-    ( Component.ModuleType.t,
-      [ simple_module_type_lookup_error | parent_lookup_error ] )
-    Result.result =
+    (Component.ModuleType.t, simple_module_type_lookup_error) Result.result =
  fun ~mark_substituted env path ->
   let lookup env =
     match path with
-    | `Local _ -> Error (`LocalMT (env, path))
+    | `Local l -> Error (`LocalMT (env, l))
     | `Identifier i ->
         of_option ~error:(`Lookup_failureMT i)
           (Env.(lookup_by_id s_module_type) i env)
@@ -573,8 +547,7 @@ and lookup_module_type :
           | Some mt -> Ok (Subst.module_type sub mt)
         in
         lookup_parent ~mark_substituted:true env parent
-        |> map_error (fun e ->
-               (e :> [ simple_module_type_lookup_error | parent_lookup_error ]))
+        |> map_error (fun e -> (e :> simple_module_type_lookup_error))
         >>= fun (sg, sub) -> find_in_sg sg sub
     | `OpaqueModuleType m -> lookup_module_type ~mark_substituted env m
   in
@@ -585,30 +558,29 @@ and lookup_parent :
     Env.t ->
     Cpath.Resolved.parent ->
     ( Component.Signature.t * Component.Substitution.t,
-      parent_lookup_error )
+      [ `Parent of parent_lookup_error ] )
     Result.result =
  fun ~mark_substituted:m env' parent' ->
   let lookup env (mark_substituted, parent) =
     match parent with
     | `Module p ->
         lookup_module ~mark_substituted env p
-        |> map_error (function
-             | #parent_lookup_error as p -> p
-             | #simple_module_lookup_error as p -> `Parent_module p)
+        |> map_error (fun e -> `Parent (`Parent_module e))
         >>= fun m ->
         let m = Component.Delayed.get m in
-        signature_of_module env m |> map_error (fun e -> `Parent_sig e)
+        signature_of_module env m
+        |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= fun sg -> Ok (sg, prefix_substitution parent sg)
     | `ModuleType p ->
         lookup_module_type ~mark_substituted env p
-        |> map_error (function
-             | #parent_lookup_error as p -> p
-             | #simple_module_type_lookup_error as p -> `Parent_module_type p)
+        |> map_error (fun e -> `Parent (`Parent_module_type e))
         >>= fun mt ->
-        signature_of_module_type env mt |> map_error (fun e -> `Parent_sig e)
+        signature_of_module_type env mt
+        |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= fun sg -> Ok (sg, prefix_substitution parent sg)
     | `FragmentRoot ->
-        Env.lookup_fragment_root env |> of_option ~error:`Fragment_root
+        Env.lookup_fragment_root env
+        |> of_option ~error:(`Parent `Fragment_root)
         >>= fun (_, sg) -> Ok (sg, prefix_substitution parent sg)
   in
   LookupParentMemo.memoize lookup env' (m, parent')
@@ -617,13 +589,12 @@ and lookup_type :
     Env.t ->
     Cpath.Resolved.type_ ->
     ( (Find.type_, Component.TypeExpr.t) Find.found,
-      [ simple_type_lookup_error | parent_lookup_error ] )
+      simple_type_lookup_error )
     Result.result =
  fun env p ->
   let do_type p name =
     lookup_parent ~mark_substituted:true env p
-    |> map_error (fun e ->
-           (e :> [ simple_type_lookup_error | parent_lookup_error ]))
+    |> map_error (fun e -> (e :> simple_type_lookup_error))
     >>= fun (sg, sub) ->
     handle_type_lookup name p sg >>= fun (_, t') ->
     let t =
@@ -637,7 +608,7 @@ and lookup_type :
   in
   let res =
     match p with
-    | `Local _id -> Error (`LocalType (env, p))
+    | `Local id -> Error (`LocalType (env, id))
     | `Identifier (`CoreType name) ->
         (* CoreTypes aren't put into the environment, so they can't be handled by the
               next clause. We just look them up here in the list of core types *)
@@ -663,13 +634,12 @@ and lookup_class_type :
     Env.t ->
     Cpath.Resolved.class_type ->
     ( (Find.class_type, Component.TypeExpr.t) Find.found,
-      [ simple_type_lookup_error | parent_lookup_error ] )
+      simple_type_lookup_error )
     Result.result =
  fun env p ->
   let do_type p name =
     lookup_parent ~mark_substituted:true env p
-    |> map_error (fun e ->
-           (e :> [ simple_type_lookup_error | parent_lookup_error ]))
+    |> map_error (fun e -> (e :> simple_type_lookup_error))
     >>= fun (sg, sub) ->
     handle_class_type_lookup name p sg >>= fun (_, t') ->
     let t =
@@ -682,7 +652,7 @@ and lookup_class_type :
   in
   let res =
     match p with
-    | `Local _id -> Error (`LocalType (env, (p :> Cpath.Resolved.type_)))
+    | `Local id -> Error (`LocalType (env, (id :> Ident.path_type)))
     | `Identifier (`Class _ as i) ->
         of_option ~error:(`Lookup_failureT i) (Env.(lookup_by_id s_class) i env)
         >>= fun (`Class (_, t)) -> Ok (Find.Found (`C t))
@@ -703,63 +673,62 @@ and resolve_module :
     Cpath.module_ ->
     resolve_module_result =
  fun ~mark_substituted ~add_canonical env' path ->
-  let open ResolvedMonad in
   let id = (mark_substituted, add_canonical, path) in
   (* Format.fprintf Format.err_formatter "resolve_module: looking up %a\n%!" Component.Fmt.path p; *)
   let resolve env (mark_substituted, add_canonical, p) =
     match p with
-    | `Dot (parent, id) as unresolved ->
+    | `Dot (parent, id) ->
         resolve_module ~mark_substituted ~add_canonical env parent
-        |> map_unresolved (fun p' -> `Dot (p', id))
+        |> map_error (fun e' -> `Parent (`Parent_module e'))
         >>= fun (p, m) ->
         let m = Component.Delayed.get m in
-        signature_of_module_cached env p m |> of_result ~unresolved
+        signature_of_module_cached env p m
+        |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= fun parent_sig ->
         let sub = prefix_substitution (`Module p) parent_sig in
         handle_module_lookup env ~add_canonical (ModuleName.of_string id)
           (`Module p) parent_sig sub
-        |> of_option ~unresolved
-    | `Module (parent, id) as unresolved -> (
-        match lookup_parent ~mark_substituted env parent with
-        | Ok (parent_sig, sub) ->
-            handle_module_lookup env ~add_canonical id parent parent_sig sub
-            |> of_option ~unresolved
-        | Error _e -> Unresolved unresolved )
+        |> of_option ~error:`Find_failure
+    | `Module (parent, id) ->
+        lookup_parent ~mark_substituted env parent
+        |> map_error (fun e -> (e :> simple_module_lookup_error))
+        >>= fun (parent_sig, sub) ->
+        handle_module_lookup env ~add_canonical id parent parent_sig sub
+        |> of_option ~error:`Find_failure
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
         match (func, arg) with
-        | Resolved (func_path', m), Resolved (arg_path', _) -> (
+        | Ok (func_path', m), Ok (arg_path', _) -> (
             let m = Component.Delayed.get m in
             match handle_apply ~mark_substituted env func_path' arg_path' m with
-            | Ok (p, m) -> return (p, Component.Delayed.put_val m)
-            | Error _ ->
-                Unresolved (`Apply (`Resolved func_path', `Resolved arg_path'))
-            )
-        | Unresolved func_path', Resolved (arg_path', _) ->
-            Unresolved (`Apply (func_path', `Resolved arg_path'))
-        | Resolved (func_path', _), Unresolved arg_path' ->
-            Unresolved (`Apply (`Resolved func_path', arg_path'))
-        | Unresolved func_path', Unresolved arg_path' ->
-            Unresolved (`Apply (func_path', arg_path')) )
-    | `Identifier (i, hidden) as unresolved ->
-        of_option ~unresolved (Env.(lookup_by_id s_module) i env)
+            | Ok (p, m) -> Ok (p, Component.Delayed.put_val m)
+            (* | Error _ -> *)
+            (*     Error (`Best_effort ( *)
+            (*       `Apply (`Resolved func_path', `Resolved arg_path'))) *)
+            | Error e -> Error (`Parent (`Parent_expr e)) )
+        | _ -> Error `Unresolved_apply
+        (* | Error _, Ok (arg_path', _) -> *)
+        (*     Error (`Best_effort (`Apply (m1, `Resolved arg_path'))) *)
+        (* | Ok (func_path', _), Error _ -> *)
+        (*     Error (`Best_effort (`Apply (`Resolved func_path', m2))) *)
+        (* | Error _, Error _ -> *)
+        (*     Error (`Best_effort (`Apply (m1, m2)))) *) )
+    | `Identifier (i, hidden) ->
+        of_option ~error:`Find_failure (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) ->
         let p = if hidden then `Hidden (`Identifier i) else `Identifier i in
-        return
+        Ok
           (process_module_path env ~add_canonical (Component.Delayed.get m) p, m)
-    | `Local _ as unresolved -> Unresolved unresolved
-    | `Resolved (`Identifier i as resolved_path) as unresolved ->
-        of_option ~unresolved (Env.(lookup_by_id s_module) i env)
-        >>= fun (`Module (_, m)) -> return (resolved_path, m)
-    | `Resolved r as unresolved -> (
-        match lookup_module ~mark_substituted env r with
-        | Ok m -> return (r, m)
-        | Error _ -> Unresolved unresolved )
+    | `Local (p, _) -> Error (`Local (env, p))
+    | `Resolved (`Identifier i as resolved_path) ->
+        of_option ~error:`Find_failure (Env.(lookup_by_id s_module) i env)
+        >>= fun (`Module (_, m)) -> Ok (resolved_path, m)
+    | `Resolved r -> lookup_module ~mark_substituted env r >>= fun m -> Ok (r, m)
     | `Substituted s ->
         resolve_module ~mark_substituted ~add_canonical env s
-        |> map_unresolved (fun p -> `Substituted p)
-        >>= fun (p, m) -> return (`Substituted p, m)
+        |> map_error (fun e -> `Parent (`Parent_module e))
+        >>= fun (p, m) -> Ok (`Substituted p, m)
     | `Root r -> (
         (* Format.fprintf Format.err_formatter "Looking up module %s by name...%!" r; *)
         match Env.lookup_root_module r env with
@@ -768,16 +737,15 @@ and resolve_module :
               `Identifier (p :> Odoc_model.Paths.Identifier.Path.Module.t)
             in
             let p = if hidden then `Hidden p else p in
-            return (p, m)
+            Ok (p, m)
         | Some Env.Forward ->
-            (* Format.fprintf Format.err_formatter "Forward :-(!\n%!"; *)
-            Unresolved (`Forward r)
+            Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None ->
             (* Format.fprintf Format.err_formatter "Unresolved!\n%!"; *)
-            Unresolved p )
+            Error `Find_failure )
     | `Forward f ->
         resolve_module ~mark_substituted ~add_canonical env (`Root f)
-        |> map_unresolved (fun _ -> `Forward f)
+        |> map_error (fun e -> `Parent (`Parent_module e))
   in
   LookupAndResolveMemo.memoize resolve env' id
 
@@ -786,186 +754,171 @@ and resolve_module_type :
     Env.t ->
     Cpath.module_type ->
     resolve_module_type_result =
-  let open ResolvedMonad in
-  fun ~mark_substituted env p ->
-    (* Format.fprintf Format.err_formatter "resolve_module_type: looking up %a\n%!" Component.Fmt.module_type_path p; *)
-    match p with
-    | `Dot (parent, id) as unresolved ->
-        resolve_module ~mark_substituted ~add_canonical:true env parent
-        |> map_unresolved (fun p' -> `Dot (p', id))
-        >>= fun (p, m) ->
-        let m = Component.Delayed.get m in
-        of_result ~unresolved (signature_of_module_cached env p m)
-        >>= fun parent_sg ->
-        let sub = prefix_substitution (`Module p) parent_sg in
-        of_option ~unresolved
-          (handle_module_type_lookup env
-             (ModuleTypeName.of_string id)
-             (`Module p) parent_sg sub)
-        >>= fun (p', mt) -> return (p', mt)
-    | `ModuleType (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted env parent)
-        >>= fun (parent_sig, sub) ->
-        handle_module_type_lookup env id parent parent_sig sub
-        |> of_option ~unresolved
-    | `Identifier (i, _) as unresolved ->
-        of_option ~unresolved (Env.(lookup_by_id s_module_type) i env)
-        >>= fun (`ModuleType (_, mt)) ->
-        let p = `Identifier i in
-        let p' = process_module_type env mt p in
-        return (p', mt)
-    | `Local _ as unresolved -> Unresolved unresolved
-    | `Resolved r as unresolved ->
-        of_result ~unresolved (lookup_module_type ~mark_substituted env r)
-        >>= fun m -> return (r, m)
-    | `Substituted s ->
-        resolve_module_type ~mark_substituted env s
-        |> map_unresolved (fun p' -> `Substituted p')
-        >>= fun (p, m) -> return (`Substituted p, m)
+ fun ~mark_substituted env p ->
+  (* Format.fprintf Format.err_formatter "resolve_module_type: looking up %a\n%!" Component.Fmt.module_type_path p; *)
+  match p with
+  | `Dot (parent, id) ->
+      resolve_module ~mark_substituted ~add_canonical:true env parent
+      |> map_error (fun e -> `Parent (`Parent_module e))
+      >>= fun (p, m) ->
+      let m = Component.Delayed.get m in
+      signature_of_module_cached env p m
+      |> map_error (fun e -> `Parent (`Parent_sig e))
+      >>= fun parent_sg ->
+      let sub = prefix_substitution (`Module p) parent_sg in
+      of_option ~error:`Find_failure
+        (handle_module_type_lookup env
+           (ModuleTypeName.of_string id)
+           (`Module p) parent_sg sub)
+      >>= fun (p', mt) -> Ok (p', mt)
+  | `ModuleType (parent, id) ->
+      lookup_parent ~mark_substituted env parent
+      |> map_error (fun e -> (e :> simple_module_type_lookup_error))
+      >>= fun (parent_sig, sub) ->
+      handle_module_type_lookup env id parent parent_sig sub
+      |> of_option ~error:`Find_failure
+  | `Identifier (i, _) ->
+      of_option ~error:`Find_failure (Env.(lookup_by_id s_module_type) i env)
+      >>= fun (`ModuleType (_, mt)) ->
+      let p = `Identifier i in
+      let p' = process_module_type env mt p in
+      Ok (p', mt)
+  | `Local (l, _) -> Error (`LocalMT (env, l))
+  | `Resolved r ->
+      lookup_module_type ~mark_substituted env r >>= fun m -> Ok (r, m)
+  | `Substituted s ->
+      resolve_module_type ~mark_substituted env s
+      |> map_error (fun e -> `Parent (`Parent_module_type e))
+      >>= fun (p, m) -> Ok (`Substituted p, m)
 
 and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
-  let open ResolvedMonad in
-  fun env p ->
-    match p with
-    | `Dot (parent, id) as unresolved ->
-        (* let start_time = Unix.gettimeofday () in *)
-        resolve_module ~mark_substituted:true ~add_canonical:true env parent
-        |> map_unresolved (fun p' -> `Dot (p', id))
-        >>= fun (p, m) ->
-        let m = Component.Delayed.get m in
-        (* let time1 = Unix.gettimeofday () in *)
-        of_result ~unresolved (signature_of_module_cached env p m) >>= fun sg ->
-        (* let time1point5 = Unix.gettimeofday () in *)
-        let sub = prefix_substitution (`Module p) sg in
-        (* let time2 = Unix.gettimeofday () in *)
-        of_result ~unresolved (handle_type_lookup id (`Module p) sg)
-        >>= fun (p', t') ->
-        let t =
-          match t' with
-          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT (_, ct)) ->
-              Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
-          | Find.Replaced (_, texpr) ->
-              Find.Replaced (Subst.type_expr sub texpr)
-        in
-        (* let time3 = Unix.gettimeofday () in *)
-        (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
-        return (p', t)
-    | `Type (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
-        >>= fun (parent_sig, sub) ->
-        let result =
-          match Find.datatype_in_sig parent_sig id with
-          | Some t ->
-              Some (`Type (parent, id), Find.Found (`T (Subst.type_ sub t)))
-          | None -> None
-        in
-        of_option ~unresolved result
-    | `Class (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
-        >>= fun (parent_sig, sub) ->
-        let t =
-          match Find.type_in_sig parent_sig (ClassName.to_string id) with
-          | Some (`C (_, t)) ->
-              Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
-          | Some _ -> None
-          | None -> None
-        in
-        of_option ~unresolved t
-    | `ClassType (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
-        >>= fun (parent_sg, sub) ->
-        of_result ~unresolved
-          (handle_type_lookup (ClassTypeName.to_string id) parent parent_sg)
-        >>= fun (p', t') ->
-        let t =
-          match t' with
-          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT (_, ct)) ->
-              Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
-          | Find.Replaced (_, texpr) ->
-              Find.Replaced (Subst.type_expr sub texpr)
-        in
-        return (p', t)
-    | `Identifier (i, _) as unresolved ->
-        of_result ~unresolved (lookup_type env (`Identifier i)) >>= fun t ->
-        return (`Identifier i, t)
-    | `Resolved r as unresolved ->
-        of_result ~unresolved (lookup_type env r) >>= fun t -> return (r, t)
-    | `Local _ as unresolved -> Unresolved unresolved
-    | `Substituted s ->
-        resolve_type env s |> map_unresolved (fun p' -> `Substituted p')
-        >>= fun (p, m) -> return (`Substituted p, m)
+ fun env p ->
+  match p with
+  | `Dot (parent, id) ->
+      (* let start_time = Unix.gettimeofday () in *)
+      resolve_module ~mark_substituted:true ~add_canonical:true env parent
+      |> map_error (fun e -> `Parent (`Parent_module e))
+      >>= fun (p, m) ->
+      let m = Component.Delayed.get m in
+      (* let time1 = Unix.gettimeofday () in *)
+      signature_of_module_cached env p m
+      |> map_error (fun e -> `Parent (`Parent_sig e))
+      >>= fun sg ->
+      (* let time1point5 = Unix.gettimeofday () in *)
+      let sub = prefix_substitution (`Module p) sg in
+      (* let time2 = Unix.gettimeofday () in *)
+      handle_type_lookup id (`Module p) sg >>= fun (p', t') ->
+      let t =
+        match t' with
+        | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+        | Find.Found (`CT (_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+        | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
+        | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
+      in
+      (* let time3 = Unix.gettimeofday () in *)
+      (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
+      Ok (p', t)
+  | `Type (parent, id) ->
+      lookup_parent ~mark_substituted:true env parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent_sig, sub) ->
+      let result =
+        match Find.datatype_in_sig parent_sig id with
+        | Some t ->
+            Some (`Type (parent, id), Find.Found (`T (Subst.type_ sub t)))
+        | None -> None
+      in
+      of_option ~error:`Find_failure result
+  | `Class (parent, id) ->
+      lookup_parent ~mark_substituted:true env parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent_sig, sub) ->
+      let t =
+        match Find.type_in_sig parent_sig (ClassName.to_string id) with
+        | Some (`C (_, t)) ->
+            Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
+        | Some _ -> None
+        | None -> None
+      in
+      of_option ~error:`Find_failure t
+  | `ClassType (parent, id) ->
+      lookup_parent ~mark_substituted:true env parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent_sg, sub) ->
+      handle_type_lookup (ClassTypeName.to_string id) parent parent_sg
+      >>= fun (p', t') ->
+      let t =
+        match t' with
+        | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+        | Find.Found (`CT (_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+        | Find.Found (`T (_, t)) -> Find.Found (`T (Subst.type_ sub t))
+        | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
+      in
+      Ok (p', t)
+  | `Identifier (i, _) ->
+      lookup_type env (`Identifier i) >>= fun t -> Ok (`Identifier i, t)
+  | `Resolved r -> lookup_type env r >>= fun t -> Ok (r, t)
+  | `Local (l, _) -> Error (`LocalType (env, l))
+  | `Substituted s -> resolve_type env s >>= fun (p, m) -> Ok (`Substituted p, m)
 
 and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     =
-  let open ResolvedMonad in
-  fun env p ->
-    match p with
-    | `Dot (parent, id) as unresolved ->
-        (* let start_time = Unix.gettimeofday () in *)
-        resolve_module ~mark_substituted:true ~add_canonical:true env parent
-        |> map_unresolved (fun p' -> `Dot (p', id))
-        >>= fun (p, m) ->
-        let m = Component.Delayed.get m in
-        (* let time1 = Unix.gettimeofday () in *)
-        of_result ~unresolved (signature_of_module_cached env p m) >>= fun sg ->
-        (* let time1point5 = Unix.gettimeofday () in *)
-        let sub = prefix_substitution (`Module p) sg in
-        (* let time2 = Unix.gettimeofday () in *)
-        of_result ~unresolved (handle_class_type_lookup id (`Module p) sg)
-        >>= fun (p', t') ->
-        let t =
-          match t' with
-          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT (_, ct)) ->
-              Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Replaced (_, texpr) ->
-              Find.Replaced (Subst.type_expr sub texpr)
-        in
-        (* let time3 = Unix.gettimeofday () in *)
-        (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
-        return (p', t)
-    | `Identifier (i, _) as unresolved ->
-        of_result ~unresolved (lookup_class_type env (`Identifier i))
-        >>= fun t -> return (`Identifier i, t)
-    | `Resolved r as unresolved ->
-        of_result ~unresolved (lookup_class_type env r) >>= fun t ->
-        return (r, t)
-    | `Local _ as unresolved -> Unresolved unresolved
-    | `Substituted s ->
-        resolve_class_type env s |> map_unresolved (fun p' -> `Substituted p')
-        >>= fun (p, m) -> return (`Substituted p, m)
-    | `Class (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
-        >>= fun (parent_sig, sub) ->
-        let t =
-          match Find.type_in_sig parent_sig (ClassName.to_string id) with
-          | Some (`C (_, t)) ->
-              Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
-          | Some _ -> None
-          | None -> None
-        in
-        of_option ~unresolved t
-    | `ClassType (parent, id) as unresolved ->
-        of_result ~unresolved (lookup_parent ~mark_substituted:true env parent)
-        >>= fun (parent_sg, sub) ->
-        of_result ~unresolved
-          (handle_class_type_lookup
-             (ClassTypeName.to_string id)
-             parent parent_sg)
-        >>= fun (p', t') ->
-        let t =
-          match t' with
-          | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
-          | Find.Found (`CT (_, ct)) ->
-              Find.Found (`CT (Subst.class_type sub ct))
-          | Find.Replaced (_, texpr) ->
-              Find.Replaced (Subst.type_expr sub texpr)
-        in
-        return (p', t)
+ fun env p ->
+  match p with
+  | `Dot (parent, id) ->
+      (* let start_time = Unix.gettimeofday () in *)
+      resolve_module ~mark_substituted:true ~add_canonical:true env parent
+      |> map_error (fun e -> `Parent (`Parent_module e))
+      >>= fun (p, m) ->
+      let m = Component.Delayed.get m in
+      (* let time1 = Unix.gettimeofday () in *)
+      signature_of_module_cached env p m
+      |> map_error (fun e -> `Parent (`Parent_sig e))
+      >>= fun sg ->
+      (* let time1point5 = Unix.gettimeofday () in *)
+      let sub = prefix_substitution (`Module p) sg in
+      (* let time2 = Unix.gettimeofday () in *)
+      handle_class_type_lookup id (`Module p) sg >>= fun (p', t') ->
+      let t =
+        match t' with
+        | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+        | Find.Found (`CT (_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+        | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
+      in
+      (* let time3 = Unix.gettimeofday () in *)
+      (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
+      Ok (p', t)
+  | `Identifier (i, _) ->
+      lookup_class_type env (`Identifier i) >>= fun t -> Ok (`Identifier i, t)
+  | `Resolved r -> lookup_class_type env r >>= fun t -> Ok (r, t)
+  | `Local (l, _) -> Error (`LocalType (env, (l :> Ident.path_type)))
+  | `Substituted s ->
+      resolve_class_type env s >>= fun (p, m) -> Ok (`Substituted p, m)
+  | `Class (parent, id) ->
+      lookup_parent ~mark_substituted:true env parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent_sig, sub) ->
+      let t =
+        match Find.type_in_sig parent_sig (ClassName.to_string id) with
+        | Some (`C (_, t)) ->
+            Some (`Class (parent, id), Find.Found (`C (Subst.class_ sub t)))
+        | Some _ -> None
+        | None -> None
+      in
+      of_option ~error:`Find_failure t
+  | `ClassType (parent, id) ->
+      lookup_parent ~mark_substituted:true env parent
+      |> map_error (fun e -> (e :> simple_type_lookup_error))
+      >>= fun (parent_sg, sub) ->
+      handle_class_type_lookup (ClassTypeName.to_string id) parent parent_sg
+      >>= fun (p', t') ->
+      let t =
+        match t' with
+        | Find.Found (`C (_, c)) -> Find.Found (`C (Subst.class_ sub c))
+        | Find.Found (`CT (_, ct)) -> Find.Found (`CT (Subst.class_type sub ct))
+        | Find.Replaced (_, texpr) -> Find.Replaced (Subst.type_expr sub texpr)
+      in
+      Ok (p', t)
 
 and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
     =
@@ -992,24 +945,24 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       match
         resolve_module ~mark_substituted:true ~add_canonical:false env p2
       with
-      | Resolved (`Alias (_, p2'), _) ->
+      | Ok (`Alias (_, p2'), _) ->
           `Canonical
             ( reresolve_module env p,
               `Resolved (simplify_resolved_module_path env p2') )
-      | Resolved (p2', _) ->
+      | Ok (p2', _) ->
           (* See, e.g. Base.Sexp for an example of where the canonical path might not be
              a simple alias *)
           `Canonical
             ( reresolve_module env p,
               `Resolved (simplify_resolved_module_path env p2') )
-      | Unresolved _ -> `Canonical (reresolve_module env p, p2)
+      | Error _ -> `Canonical (reresolve_module env p, p2)
       | exception _ -> `Canonical (reresolve_module env p, p2) )
   | `Apply (p, p2) -> (
       match
         resolve_module ~mark_substituted:true ~add_canonical:false env p2
       with
-      | Resolved (p2', _) -> `Apply (reresolve_module env p, `Resolved p2')
-      | Unresolved p2' -> `Apply (reresolve_module env p, p2') )
+      | Ok (p2', _) -> `Apply (reresolve_module env p, `Resolved p2')
+      | Error _ -> `Apply (reresolve_module env p, p2) )
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and reresolve_module_type :
@@ -1047,15 +1000,13 @@ and module_type_expr_of_module_decl :
     Env.t ->
     Component.Module.decl ->
     ( Component.ModuleType.expr,
-      [ simple_module_type_expr_of_module_error | parent_lookup_error ] )
+      simple_module_type_expr_of_module_error )
     Result.result =
  fun env decl ->
   match decl with
   | Component.Module.Alias (`Resolved r) ->
       lookup_module ~mark_substituted:false env r
-      |> map_error (function
-           | #parent_lookup_error as e -> e
-           | #simple_module_lookup_error as e -> `Parent_module e)
+      |> map_error (fun e -> `Parent (`Parent_module e))
       >>= fun m ->
       let m = Component.Delayed.get m in
       module_type_expr_of_module_decl env m.type_
@@ -1063,19 +1014,19 @@ and module_type_expr_of_module_decl :
       match
         resolve_module ~mark_substituted:false ~add_canonical:true env path
       with
-      | Resolved (_, m) ->
+      | Ok (_, m) ->
           let m = Component.Delayed.get m in
           module_type_expr_of_module env m
-      | Unresolved p when Cpath.is_module_forward p ->
+      | Error _ when Cpath.is_module_forward path ->
           Error `UnresolvedForwardPath
-      | Unresolved p' -> Error (`UnresolvedPath (`Module p')) )
+      | Error _ -> Error (`UnresolvedPath (`Module path)) )
   | Component.Module.ModuleType expr -> Ok expr
 
 and module_type_expr_of_module :
     Env.t ->
     Component.Module.t ->
     ( Component.ModuleType.expr,
-      [ simple_module_type_expr_of_module_error | parent_lookup_error ] )
+      simple_module_type_expr_of_module_error )
     Result.result =
  fun env m -> module_type_expr_of_module_decl env m.type_
 
@@ -1086,15 +1037,13 @@ and signature_of_module_path :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env ~strengthen path ->
   match resolve_module ~mark_substituted:false ~add_canonical:true env path with
-  | Resolved (p', m) ->
+  | Ok (p', m) ->
       let m = Component.Delayed.get m in
       (* p' is the path to the aliased module *)
       signature_of_module_cached env p' m >>= fun sg ->
-      if strengthen
-      then Ok (Strengthen.signature (`Resolved p') sg)
-      else Ok sg
-  | Unresolved p when Cpath.is_module_forward p -> Error `UnresolvedForwardPath
-  | Unresolved p' -> Error (`UnresolvedPath (`Module p'))
+      if strengthen then Ok (Strengthen.signature (`Resolved p') sg) else Ok sg
+  | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
+  | Error _ -> Error (`UnresolvedPath (`Module path))
 
 and handle_signature_with_subs :
     mark_substituted:bool ->
@@ -1118,8 +1067,8 @@ and signature_of_module_type_expr :
   match m with
   | Component.ModuleType.Path p -> (
       match resolve_module_type ~mark_substituted env p with
-      | Resolved (_, mt) -> signature_of_module_type env mt
-      | Unresolved _p -> Error (`UnresolvedPath (`ModuleType p)) )
+      | Ok (_, mt) -> signature_of_module_type env mt
+      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
   | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With (s, subs) ->
       signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
@@ -1129,9 +1078,10 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Functor (Named arg, expr) ->
       ignore arg;
       signature_of_module_type_expr ~mark_substituted env expr
-  | Component.ModuleType.TypeOf (Struct_include p) -> signature_of_module_path env ~strengthen:true p
-  | Component.ModuleType.TypeOf (MPath p) -> signature_of_module_path env ~strengthen:false p
-    
+  | Component.ModuleType.TypeOf (Struct_include p) ->
+      signature_of_module_path env ~strengthen:true p
+  | Component.ModuleType.TypeOf (MPath p) ->
+      signature_of_module_path env ~strengthen:false p
 
 and signature_of_module_type :
     Env.t ->
@@ -1148,7 +1098,8 @@ and signature_of_module_decl :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
-  | Component.Module.Alias path -> signature_of_module_path env ~strengthen:true path
+  | Component.Module.Alias path ->
+      signature_of_module_path env ~strengthen:true path
   | Component.Module.ModuleType expr ->
       signature_of_module_type_expr ~mark_substituted:false env expr
 
@@ -1157,9 +1108,9 @@ and signature_of_module :
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env m ->
-    match m.expansion with
-    | Some (Signature sg) -> Ok sg
-    | _ -> signature_of_module_decl env m.type_
+  match m.expansion with
+  | Some (Signature sg) -> Ok sg
+  | _ -> signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
     Env.t ->
@@ -1294,8 +1245,8 @@ and fragmap :
               match
                 resolve_module ~mark_substituted ~add_canonical:false env p
               with
-              | Resolved (p, _) -> Ok (Right p)
-              | Unresolved p ->
+              | Ok (p, _) -> Ok (Right p)
+              | Error _ ->
                   Format.fprintf Format.err_formatter
                     "failed to resolve path: %a\n%!" Component.Fmt.module_path p;
                   Error (`UnresolvedPath (`Module p))
@@ -1453,7 +1404,7 @@ and find_module_with_replacement :
     Component.Signature.t ->
     ModuleName.t ->
     ( Component.Module.t Component.Delayed.t,
-      [ simple_module_lookup_error | parent_lookup_error ] )
+      simple_module_lookup_error )
     Result.result =
  fun env sg name ->
   match Find.careful_module_in_sig sg name with
@@ -1602,8 +1553,8 @@ and class_signature_of_class_type_expr :
   | Signature s -> Some s
   | Constr (p, _) -> (
       match resolve_type env (p :> Cpath.type_) with
-      | Resolved (_, Found (`C c)) -> class_signature_of_class env c
-      | Resolved (_, Found (`CT c)) -> class_signature_of_class_type env c
+      | Ok (_, Found (`C c)) -> class_signature_of_class env c
+      | Ok (_, Found (`CT c)) -> class_signature_of_class_type env c
       | _ -> None )
 
 and class_signature_of_class_type :
@@ -1611,31 +1562,26 @@ and class_signature_of_class_type :
  fun env c -> class_signature_of_class_type_expr env c.expr
 
 let resolve_module_path env p =
-  let open ResolvedMonad in
   (* Format.fprintf Format.err_formatter "resolve_module: %a\n%!" Component.Fmt.module_path p; *)
   resolve_module ~mark_substituted:true ~add_canonical:true env p
   >>= fun (p, m) ->
   match p with
-  | `Identifier (`Root _) | `Hidden (`Identifier (`Root _)) -> return p
+  | `Identifier (`Root _) | `Hidden (`Identifier (`Root _)) -> Ok p
   | _ -> (
       let m = Component.Delayed.get m in
       match signature_of_module_cached env p m with
-      | Ok _ -> return p
-      | Error `OpaqueModule -> return (`OpaqueModule p)
-      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p )
+      | Ok _ -> Ok p
+      | Error `OpaqueModule -> Ok (`OpaqueModule p)
+      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p )
 
 let resolve_module_type_path env p =
-  let open ResolvedMonad in
   resolve_module_type ~mark_substituted:true env p >>= fun (p, mt) ->
   match signature_of_module_type env mt with
-  | Ok _ -> return p
-  | Error `OpaqueModule -> return (`OpaqueModuleType p)
-  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> return p
+  | Ok _ -> Ok p
+  | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
 
-let resolve_type_path env p =
-  let open ResolvedMonad in
-  resolve_type env p >>= fun (p, _) -> return p
+let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 
 let resolve_class_type_path env p =
-  let open ResolvedMonad in
-  resolve_class_type env p >>= fun (p, _) -> return p
+  resolve_class_type env p >>= fun (p, _) -> Ok p
