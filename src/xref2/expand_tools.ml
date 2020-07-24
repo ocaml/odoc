@@ -47,7 +47,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
   match
     Tools.resolve_module env ~mark_substituted:false ~add_canonical:false path
   with
-  | Resolved (p, m) -> (
+  | Ok (p, m) -> (
       (* Don't strengthen if the alias is definitely hidden. We can't always resolve canonical
          paths at this stage so use the weak canonical test that assumes all canonical paths
          will resolve correctly *)
@@ -83,7 +83,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
              Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
       | Ok (Functor _ as x), _ -> Ok x )
-  | Unresolved p -> Error (`UnresolvedPath (`Module p))
+  | Error _ -> Error (`UnresolvedPath (`Module path))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
    may well change - so we turn resolved fragments back into unresolved ones
@@ -129,8 +129,8 @@ and aux_expansion_of_module_type_expr env expr :
   match expr with
   | Path p -> (
       match Tools.resolve_module_type ~mark_substituted:false env p with
-      | Resolved (_, mt) -> aux_expansion_of_module_type env mt
-      | Unresolved p -> Error (`UnresolvedPath (`ModuleType p)) )
+      | Ok (_, mt) -> aux_expansion_of_module_type env mt
+      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
   | Signature s -> Ok (Signature s)
   | With (s, subs) -> (
       match aux_expansion_of_module_type_expr env s with

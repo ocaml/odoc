@@ -7,10 +7,6 @@
 
 open Errors
 
-module ResolvedMonad : sig
-  type ('a, 'b) t = Resolved of 'a | Unresolved of 'b
-end
-
 (** {2 Lookup and resolve functions} *)
 
 (** The following lookup and resolve functions take {{!module:Cpath.Resolved}resolved paths}
@@ -45,7 +41,7 @@ val lookup_module :
   Env.t ->
   Cpath.Resolved.module_ ->
   ( Component.Module.t Component.Delayed.t,
-    [ simple_module_lookup_error | parent_lookup_error ] )
+    simple_module_lookup_error )
   Result.result
 (** [lookup_module ~mark_substituted env p] takes a resolved module cpath [p] and
     an environment and returns a representation of the module. 
@@ -55,9 +51,7 @@ val lookup_module_type :
   mark_substituted:bool ->
   Env.t ->
   Cpath.Resolved.module_type ->
-  ( Component.ModuleType.t,
-    [ simple_module_type_lookup_error | parent_lookup_error ] )
-  Result.result
+  (Component.ModuleType.t, simple_module_type_lookup_error) Result.result
 (** [lookup_module_type ~mark_substituted env p] takes a resolved module type
     cpath and an environment and returns a representation of the module type.
 *)
@@ -66,7 +60,7 @@ val lookup_type :
   Env.t ->
   Cpath.Resolved.type_ ->
   ( (Find.type_, Component.TypeExpr.t) Find.found,
-    [ simple_type_lookup_error | parent_lookup_error ] )
+    simple_type_lookup_error )
   Result.result
 (** [lookup_type env p] takes a resolved type path and an environment and returns
     a representation of the type. The type can be an ordinary type, a class type
@@ -77,7 +71,7 @@ val lookup_class_type :
   Env.t ->
   Cpath.Resolved.class_type ->
   ( (Find.class_type, Component.TypeExpr.t) Find.found,
-    [ simple_type_lookup_error | parent_lookup_error ] )
+    simple_type_lookup_error )
   Result.result
 (** [lookup_class_type env p] takes a resolved class type path and an environment and returns
     a representation of the class type. The type can be a class type
@@ -89,8 +83,8 @@ val resolve_module :
   Env.t ->
   Cpath.module_ ->
   ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,
-    Cpath.module_ )
-  ResolvedMonad.t
+    simple_module_lookup_error )
+  Result.result
 (** [resolve_module ~mark_substituted ~add_canonical env p] takes an unresolved
     module path and an environment and returns a tuple of the resolved module
     path alongside a representation of the module itself. *)
@@ -100,8 +94,8 @@ val resolve_module_type :
   Env.t ->
   Cpath.module_type ->
   ( Cpath.Resolved.module_type * Component.ModuleType.t,
-    Cpath.module_type )
-  ResolvedMonad.t
+    simple_module_type_lookup_error )
+  Result.result
 (** [resolve_module_type ~mark_substituted env p] takes an unresolved module
     type path and an environment and returns a tuple of the resolved module type
     path alongside a representation of the module type itself. *)
@@ -110,8 +104,8 @@ val resolve_type :
   Env.t ->
   Cpath.type_ ->
   ( Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
-    Cpath.type_ )
-  ResolvedMonad.t
+    simple_type_lookup_error )
+  Result.result
 (** [resolve_type env p] takes an unresolved
     type path and an environment and returns a tuple of the resolved type
     path alongside a representation of the type itself. As with {!val:lookup_type}
@@ -124,8 +118,8 @@ val resolve_class_type :
   Cpath.class_type ->
   ( Cpath.Resolved.class_type
     * (Find.class_type, Component.TypeExpr.t) Find.found,
-    Cpath.class_type )
-  ResolvedMonad.t
+    simple_type_lookup_error )
+  Result.result
 (** [resolve_class_type env p] takes an unresolved
       class type path and an environment and returns a tuple of the resolved class type
       path alongside a representation of the class type itself. As with {!val:lookup_type}
@@ -142,20 +136,22 @@ val resolve_class_type :
 val resolve_module_path :
   Env.t ->
   Cpath.module_ ->
-  (Cpath.Resolved.module_, Cpath.module_) ResolvedMonad.t
+  (Cpath.Resolved.module_, simple_module_lookup_error) Result.result
 
 val resolve_module_type_path :
   Env.t ->
   Cpath.module_type ->
-  (Cpath.Resolved.module_type, Cpath.module_type) ResolvedMonad.t
+  (Cpath.Resolved.module_type, simple_module_type_lookup_error) Result.result
 
 val resolve_type_path :
-  Env.t -> Cpath.type_ -> (Cpath.Resolved.type_, Cpath.type_) ResolvedMonad.t
+  Env.t ->
+  Cpath.type_ ->
+  (Cpath.Resolved.type_, simple_type_lookup_error) Result.result
 
 val resolve_class_type_path :
   Env.t ->
   Cpath.class_type ->
-  (Cpath.Resolved.class_type, Cpath.class_type) ResolvedMonad.t
+  (Cpath.Resolved.class_type, simple_type_lookup_error) Result.result
 
 (** {2 Re-resolve functions} *)
 

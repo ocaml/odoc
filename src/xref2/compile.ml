@@ -18,8 +18,8 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
   | _ ->
     let cp = Component.Of_Lang.(type_path empty p) in
     match Tools.resolve_type_path env cp with
-    | Resolved p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
-    | Unresolved p -> Cpath.type_path_of_cpath p
+    | Ok p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
+    | Error _ -> Cpath.type_path_of_cpath cp
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -29,8 +29,8 @@ and module_type_path :
   | _ ->
     let cp = Component.Of_Lang.(module_type_path empty p) in
     match Tools.resolve_module_type_path env cp with
-    | Resolved p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
-    | Unresolved p -> Cpath.module_type_path_of_cpath p
+    | Ok p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
+    | Error _ -> Cpath.module_type_path_of_cpath cp
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -39,8 +39,8 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
   | _ ->
     let cp = Component.Of_Lang.(module_path empty p) in
     match Tools.resolve_module_path env cp with
-    | Resolved p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
-    | Unresolved p -> Cpath.module_path_of_cpath p
+    | Ok p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
+    | Error _ -> Cpath.module_path_of_cpath cp
 
 and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     =
@@ -50,8 +50,8 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
   | _ ->
     let cp = Component.Of_Lang.(class_type_path empty p) in
     match Tools.resolve_class_type_path env cp with
-    | Resolved p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
-    | Unresolved p -> Cpath.class_type_path_of_cpath p
+    | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
+    | Error _ -> Cpath.class_type_path_of_cpath cp
 
 let lookup_failure ~what =
   let r action =
@@ -304,9 +304,9 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
       let cp' = Component.Of_Lang.(module_path empty p) in
       let cp = Cpath.unresolve_module_path cp' in
       match Tools.resolve_module_path env cp with
-      | Resolved p' ->
+      | Ok p' ->
           Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
-      | Unresolved p' -> Alias (Cpath.module_path_of_cpath p') )
+      | Error _ -> Alias (Cpath.module_path_of_cpath cp) )
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
@@ -691,7 +691,7 @@ and type_expression_package env parent p =
   let cp' = Component.Of_Lang.(module_type_path empty p.path) in
   let cp = Cpath.unresolve_module_type_path cp' in
   match Tools.resolve_module_type ~mark_substituted:true env cp with
-  | Resolved (path, mt) -> (
+  | Ok (path, mt) -> (
       match Tools.signature_of_module_type env mt with
       | Error _ ->
           lookup_failure ~what:(`Package cp) `Lookup;
@@ -715,7 +715,7 @@ and type_expression_package env parent p =
             path = module_type_path env p.path;
             substitutions = List.map substitution p.substitutions;
           } )
-  | Unresolved p' -> { p with path = Cpath.module_type_path_of_cpath p' }
+  | Error _ -> { p with path = Cpath.module_type_path_of_cpath cp }
 
 and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
  fun env parent texpr ->
@@ -731,11 +731,11 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       let cp = Cpath.unresolve_type_path cp' in
       let ts = List.map (type_expression env parent) ts' in
       match Tools.resolve_type env cp with
-      | Resolved (cp, Found _t) ->
+      | Ok (cp, Found _t) ->
           let p = Cpath.resolved_type_path_of_cpath cp in
           Constr (`Resolved p, ts)
-      | Resolved (_cp, Replaced x) -> Lang_of.(type_expr empty parent x)
-      | Unresolved p -> Constr (Cpath.type_path_of_cpath p, ts) )
+      | Ok (_cp, Replaced x) -> Lang_of.(type_expr empty parent x)
+      | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
   | Object o -> Object (type_expression_object env parent o)
