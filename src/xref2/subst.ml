@@ -95,7 +95,9 @@ let rename_type : Ident.path_type -> Ident.path_type -> t -> t =
 let rename_class_type : Ident.path_class_type -> Ident.path_class_type -> t -> t
     =
  fun id id' t ->
-  { t with class_type = PathClassTypeMap.add id (`Renamed id') t.class_type }
+  { t with
+    class_type = PathClassTypeMap.add id (`Renamed id') t.class_type;
+    type_ = PathTypeMap.add (id :> Ident.path_type) (`Renamed (id' :> Ident.path_type)) t.type_ }
 
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
