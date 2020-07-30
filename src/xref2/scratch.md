@@ -69,7 +69,6 @@ end
 
 ```ocaml env=e1
 # let sg = Common.model_of_string test_data;;
-typeof struct_include
 val sg :
   Odoc_model.Paths_types.Identifier.root_module * Odoc_model.Comment.docs *
   Odoc_model.Lang.Signature.t =

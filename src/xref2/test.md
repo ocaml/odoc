@@ -246,15 +246,11 @@ the environment. This gets us back the path and a `Component.Module.t` represent
 which are:
 
 ```ocaml env=e1
-# let get_resolved = function
-    | Tools.ResolvedMonad.Resolved x -> x
-    | Unresolved _ -> failwith "Unresolved path" ;;
-val get_resolved : ('a, 'b) Tools.ResolvedMonad.t -> 'a = <fun>
 # let get_ok = function
     | Ok x -> x
     | Error _ -> failwith "Found error";;
 val get_ok : ('a, 'b) result -> 'a = <fun>
-# let (path, module_) = get_resolved @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "M")));;
+# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "M")));;
 val path : Cpath.Resolved.module_ =
   `Identifier (`Module (`Root (Common.root, Root), M))
 val module_ : Component.Module.t Component.Delayed.t =
@@ -317,7 +313,7 @@ It proceeds much as the previous example until we get the result
 of looking up the module `N`:
 
 ```ocaml env=e1
-# let (path, module_) = get_resolved @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "N")));;
+# let (path, module_) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env (`Resolved (`Identifier (Common.root_module "N")));;
 val path : Cpath.Resolved.module_ =
   `Identifier (`Module (`Root (Common.root, Root), N))
 val module_ : Component.Module.t Component.Delayed.t =
@@ -488,10 +484,10 @@ we then return along with the fully resolved identifier.
           "B"),
        "t"));;
 - : (Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
-     Cpath.type_)
-    Tools.ResolvedMonad.t
+     Odoc_xref2.Errors.simple_type_lookup_error)
+    result
 =
-Odoc_xref2.Tools.ResolvedMonad.Resolved
+Result.Ok
  (`Type
     (`Module
        (`Module
@@ -943,7 +939,7 @@ let cp = Component.Of_Lang.(module_path empty test_path);;
 Now let's lookup that module:
 
 ```ocaml env=e1
-# let (p,m) = get_resolved @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env cp;;
+# let (p,m) = get_ok @@ Tools.resolve_module ~mark_substituted:true ~add_canonical:true env cp;;
 val p : Cpath.Resolved.module_ =
   `Apply
     (`Apply
