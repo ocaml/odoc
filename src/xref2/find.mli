@@ -12,11 +12,11 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `FExternal of External.t | `FValue of Value.t ]
+type value = [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
 
 type label = [ `FLabel of Ident.label ]
 
-type exception_ = [ `FExn of Exception.t ]
+type exception_ = [ `FExn of ExceptionName.t * Exception.t ]
 
 type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
@@ -35,8 +35,7 @@ type field = [ `FField of TypeDecl.Field.t ]
 
 type any_in_type = [ constructor | field ]
 
-type any_in_type_in_sig =
-  [ `In_type of Odoc_model.Names.TypeName.t * TypeDecl.t * any_in_type ]
+type any_in_type_in_sig = [ `In_type of TypeName.t * TypeDecl.t * any_in_type ]
 
 type any_in_sig =
   [ label_parent
@@ -47,9 +46,9 @@ type any_in_sig =
   | substitution
   | any_in_type_in_sig ]
 
-type instance_variable = [ `FInstance_variable of InstanceVariable.t ]
+type instance_variable = [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
 
-type method_ = [ `FMethod of Method.t ]
+type method_ = [ `FMethod of MethodName.t * Method.t ]
 
 type any_in_class_sig = [ instance_variable | method_ ]
 
