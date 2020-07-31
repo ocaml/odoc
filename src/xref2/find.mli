@@ -54,13 +54,13 @@ type any_in_class_sig = [ instance_variable | method_ ]
 
 (** Lookup by name, unambiguous *)
 
-val module_in_sig : Signature.t -> ModuleName.t -> module_ option
+val module_in_sig : Signature.t -> string -> module_ option
 
 val type_in_sig : Signature.t -> string -> type_ option
 
 val datatype_in_sig : Signature.t -> string -> datatype option
 
-val module_type_in_sig : Signature.t -> ModuleTypeName.t -> module_type option
+val module_type_in_sig : Signature.t -> string -> module_type option
 
 val exception_in_sig : Signature.t -> string -> exception_ option
 
@@ -103,7 +103,7 @@ type careful_type = [ type_ | removed_type ]
 
 type careful_class = [ class_ | removed_type ]
 
-val careful_module_in_sig : Signature.t -> ModuleName.t -> careful_module option
+val careful_module_in_sig : Signature.t -> string -> careful_module option
 
 val careful_type_in_sig : Signature.t -> string -> careful_type option
 

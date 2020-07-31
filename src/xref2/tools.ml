@@ -459,7 +459,7 @@ and lookup_module :
         | Error _ as e -> e )
     | `Module (parent, name) ->
         let find_in_sg sg sub =
-          match Find.careful_module_in_sig sg name with
+          match Find.careful_module_in_sig sg (ModuleName.to_string name) with
           | None -> Error `Find_failure
           | Some (`FModule (_, m)) ->
               Ok (Component.Delayed.put_val (Subst.module_ sub m))
@@ -494,7 +494,7 @@ and lookup_module_type :
         lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) ->
         let find_in_sg sg sub =
-          match Find.module_type_in_sig sg name with
+          match Find.module_type_in_sig sg (ModuleTypeName.to_string name) with
           | None -> Error `Find_failure
           | Some (`FModuleType (_, mt)) -> Ok (Subst.module_type sub mt)
         in
@@ -639,13 +639,13 @@ and resolve_module :
         |> map_error (fun e -> `Parent (`Parent_sig e))
         >>= fun parent_sig ->
         let sub = prefix_substitution (`Module p) parent_sig in
-        handle_module_lookup env ~add_canonical (ModuleName.of_string id)
-          (`Module p) parent_sig sub
+        handle_module_lookup env ~add_canonical id (`Module p) parent_sig sub
     | `Module (parent, id) ->
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
-        handle_module_lookup env ~add_canonical id parent parent_sig sub
+        handle_module_lookup env ~add_canonical (ModuleName.to_string id)
+              parent parent_sig sub
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -709,15 +709,15 @@ and resolve_module_type :
       >>= fun parent_sg ->
       let sub = prefix_substitution (`Module p) parent_sg in
       of_option ~error:`Find_failure
-        (handle_module_type_lookup env
-           (ModuleTypeName.of_string id)
-           (`Module p) parent_sg sub)
+        (handle_module_type_lookup env id (`Module p) parent_sg sub)
       >>= fun (p', mt) -> Ok (p', mt)
   | `ModuleType (parent, id) ->
       lookup_parent ~mark_substituted env parent
       |> map_error (fun e -> (e :> simple_module_type_lookup_error))
       >>= fun (parent_sig, sub) ->
-      handle_module_type_lookup env id parent parent_sig sub
+      handle_module_type_lookup env
+        (ModuleTypeName.to_string id)
+        parent parent_sig sub
       |> of_option ~error:`Find_failure
   | `Identifier (i, _) ->
       of_option ~error:(`Lookup_failureMT i) (Env.(lookup_by_id s_module_type) i env)
@@ -1381,7 +1381,7 @@ and fixup_type_cfrag (f : Cfrag.resolved_type) : Cfrag.resolved_type =
 and find_module_with_replacement :
     Env.t ->
     Component.Signature.t ->
-    ModuleName.t ->
+    string ->
     ( Component.Module.t Component.Delayed.t,
       simple_module_lookup_error )
     Result.result =
@@ -1408,9 +1408,7 @@ and resolve_signature_fragment :
       let open OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, ppath, sg) ->
-      of_result
-        (find_module_with_replacement env sg (ModuleName.of_string name))
-      >>= fun m' ->
+      of_result (find_module_with_replacement env sg name) >>= fun m' ->
       let mname = ModuleName.of_string name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
@@ -1448,9 +1446,7 @@ and resolve_module_fragment :
       let open OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
-      of_result
-        (find_module_with_replacement env sg (ModuleName.of_string name))
-      >>= fun m' ->
+      of_result (find_module_with_replacement env sg name) >>= fun m' ->
       let mname = ModuleName.of_string name in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in

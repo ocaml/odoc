@@ -25,7 +25,7 @@ let module_substitution ~idents ~targets m test_data =
   in
 
   let m =
-    match Find.module_in_sig c (Odoc_model.Names.ModuleName.of_string "S") with
+    match Find.module_in_sig c "S" with
     | Some (`FModule (name, m)) -> m
     | None -> failwith "Error finding module!"
   in
