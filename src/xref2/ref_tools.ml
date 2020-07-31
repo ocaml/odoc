@@ -263,7 +263,7 @@ module DT = struct
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
     let sg = Tools.prefix_signature (parent_cp, sg) in
-    Find.datatype_in_sig sg (TypeName.to_string name)
+    Find.datatype_in_sig sg name
     >>= fun (`FType (name, t)) -> Some (`Type (parent', name), t)
 end
 
@@ -436,8 +436,7 @@ module MM = struct
     Find.method_in_class_signature cs (MethodName.to_string name) >>= fun _ ->
     Some (`Method (parent', name))
 
-  let of_component _env parent' name : t option =
-    Some (`Method (parent', name))
+  let of_component _env parent' name : t option = Some (`Method (parent', name))
 end
 
 module MV = struct
@@ -515,7 +514,7 @@ let rec resolve_label_parent_reference :
     | `Root (name, `TType) -> DT.in_env env name >>= fun r -> Some (`T r)
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        DT.in_signature env p name >>= fun r -> Some (`T r)
+        DT.in_signature env p (TypeName.to_string name) >>= fun r -> Some (`T r)
     | `Root (name, `TClass) -> CL.in_env env name >>= fun r -> Some (`C r)
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
@@ -560,12 +559,13 @@ and resolve_signature_reference :
           M.in_env env name >>= module_lookup_to_signature_lookup env
       | `Module (parent, name) ->
           resolve_signature_reference env parent >>= fun p ->
-          M.in_signature env p name >>= module_lookup_to_signature_lookup env
+          M.in_signature env p (ModuleName.to_string name)
+          >>= module_lookup_to_signature_lookup env
       | `Root (name, `TModuleType) ->
           MT.in_env env name >>= module_type_lookup_to_signature_lookup env
       | `ModuleType (parent, name) ->
           resolve_signature_reference env parent >>= fun p ->
-          MT.in_signature env p name
+          MT.in_signature env p (ModuleTypeName.to_string name)
           >>= module_type_lookup_to_signature_lookup env
       | `Root (name, `TUnknown) -> (
           env_lookup_by_name Env.s_signature name env >>= function
@@ -602,11 +602,11 @@ and resolve_datatype_reference :
   | `Root (name, (`TType | `TUnknown)) -> DT.in_env env name
   | `Type (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      DT.in_signature env p name
+      DT.in_signature env p (TypeName.to_string name)
   | `Dot (parent, name) ->
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
-      >>= fun p -> DT.in_signature env p (TypeName.of_string name)
+      >>= fun p -> DT.in_signature env p name
 
 and resolve_module_reference env (r : Module.t) : M.t option =
   match r with
@@ -615,10 +615,10 @@ and resolve_module_reference env (r : Module.t) : M.t option =
   | `Dot (parent, name) ->
       resolve_label_parent_reference env parent
       >>= signature_lookup_result_of_label_parent
-      >>= fun p -> M.in_signature env p (ModuleName.of_string name)
+      >>= fun p -> M.in_signature env p name
   | `Module (parent, name) ->
       resolve_signature_reference env parent >>= fun p ->
-      M.in_signature env p name
+      M.in_signature env p (ModuleName.to_string name)
   | `Root (name, _) -> M.in_env env name
 
 let resolve_class_signature_reference env (r : ClassSignature.t) =
@@ -714,11 +714,11 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        M.in_signature env p name >>= resolved
+        M.in_signature env p (ModuleName.to_string name) >>= resolved
     | `Root (name, `TModuleType) -> MT.in_env env name >>= resolved
     | `ModuleType (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        MT.in_signature env p name >>= resolved
+        MT.in_signature env p (ModuleTypeName.to_string name) >>= resolved
     | `Root (name, `TType) -> (
         T.in_env env name >>= function
         | `T (r, _) -> resolved1 r
@@ -726,7 +726,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | `CT (r, _) -> resolved1 r )
     | `Type (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
-        DT.in_signature env p name >>= resolved2
+        DT.in_signature env p (TypeName.to_string name) >>= resolved2
     | `Root (name, `TClass) -> CL.in_env env name >>= resolved2
     | `Class (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->

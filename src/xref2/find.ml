@@ -81,7 +81,7 @@ let filter_in_sig sg f =
 
 let module_in_sig sg name =
   find_in_sig sg (function
-    | Signature.Module (id, _, m) when N.typed_module id = name ->
+    | Signature.Module (id, _, m) when N.module_ id = name ->
         Some (`FModule (N.typed_module id, Delayed.get m))
     | _ -> None)
 
@@ -113,7 +113,7 @@ type careful_class = [ class_ | removed_type ]
 
 let careful_module_in_sig sg name =
   let removed_module = function
-    | Signature.RModule (id, p) when N.typed_module id = name ->
+    | Signature.RModule (id, p) when N.module_ id = name ->
         Some (`FModule_removed p)
     | _ -> None
   in
@@ -231,7 +231,7 @@ let signature_in_sig sg name =
 
 let module_type_in_sig sg name =
   find_in_sig sg (function
-    | Signature.ModuleType (id, m) when N.typed_module_type id = name ->
+    | Signature.ModuleType (id, m) when N.module_type id = name ->
         Some (`FModuleType (N.typed_module_type id, Delayed.get m))
     | _ -> None)
 
