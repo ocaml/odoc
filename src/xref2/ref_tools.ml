@@ -299,11 +299,11 @@ module V = struct
     | `External (id, _x) -> return (`Identifier id)
 
   let of_component _env ~parent_ref name : t option =
-    Some (`Value (parent_ref, ValueName.of_string name))
+    Some (`Value (parent_ref, name))
 
   let external_of_component _env ~parent_ref name : t option =
     (* Should add an [`External] reference ? *)
-    Some (`Value (parent_ref, ValueName.of_string name))
+    Some (`Value (parent_ref, name))
 
   let in_signature _env ((parent', _, sg) : signature_lookup_result) name :
       t option =
@@ -323,10 +323,10 @@ module L = struct
   let in_page _env (`Page (_, p)) name : t option =
     try Some (`Identifier (List.assoc name p)) with Not_found -> None
 
-  let of_component _env ~parent_ref name : t option =
+  let of_component _env ~parent_ref label : t option =
     Some
       (`Label
-        ((parent_ref :> Resolved.LabelParent.t), LabelName.of_string name))
+        ((parent_ref :> Resolved.LabelParent.t), Ident.Name.typed_label label))
 
   let in_label_parent env (parent : label_parent_lookup_result) name : t option
       =
@@ -367,7 +367,7 @@ module EX = struct
     Some (`Identifier id)
 
   let of_component _env ~parent_ref name : t option =
-    Some (`Exception (parent_ref, ExceptionName.of_string name))
+    Some (`Exception (parent_ref, name))
 
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
@@ -437,7 +437,7 @@ module MM = struct
     Some (`Method (parent', name))
 
   let of_component _env parent' name : t option =
-    Some (`Method (parent', MethodName.of_string name))
+    Some (`Method (parent', name))
 end
 
 module MV = struct
@@ -453,7 +453,7 @@ module MV = struct
     >>= fun _ -> Some (`InstanceVariable (parent', name))
 
   let of_component _env parent' name : t option =
-    Some (`InstanceVariable (parent', InstanceVariableName.of_string name))
+    Some (`InstanceVariable (parent', name))
 end
 
 module LP = struct
@@ -654,10 +654,10 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
   | `FClass (name, c) -> CL.of_component env c ~parent_ref name >>= resolved2
   | `FClassType (name, ct) ->
       CT.of_component env ct ~parent_ref name >>= resolved2
-  | `FValue _ -> V.of_component env ~parent_ref name >>= resolved1
-  | `FExternal _ -> V.external_of_component env ~parent_ref name >>= resolved1
-  | `FLabel _ -> L.of_component env ~parent_ref name >>= resolved1
-  | `FExn _ -> EX.of_component env ~parent_ref name >>= resolved1
+  | `FValue (name, _) -> V.of_component env ~parent_ref name >>= resolved1
+  | `FExternal (name, _) -> V.external_of_component env ~parent_ref name >>= resolved1
+  | `FLabel label -> L.of_component env ~parent_ref label >>= resolved1
+  | `FExn (name, _) -> EX.of_component env ~parent_ref name >>= resolved1
   | `FExt _ -> EC.of_component env ~parent_ref name >>= resolved1
   | `In_type (typ_name, _, r) -> (
       let parent = `Type (parent_ref, typ_name) in
@@ -677,8 +677,8 @@ let resolve_reference_dot_type env ~parent_ref t name =
 let resolve_reference_dot_class env p name =
   type_lookup_to_class_signature_lookup env p >>= fun (parent_ref, cs) ->
   find_ambiguous Find.any_in_class_signature cs name >>= function
-  | `FMethod _ -> MM.of_component env parent_ref name >>= resolved1
-  | `FInstance_variable _ -> MV.of_component env parent_ref name >>= resolved1
+  | `FMethod (name, _) -> MM.of_component env parent_ref name >>= resolved1
+  | `FInstance_variable (name, _) -> MV.of_component env parent_ref name >>= resolved1
 
 let resolve_reference_dot env parent name =
   resolve_label_parent_reference env parent >>= function
