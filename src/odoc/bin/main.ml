@@ -189,18 +189,31 @@ module Odoc_link : sig
   val cmd : unit Term.t
   val info : Term.info
 end = struct
-  let link directories input_file warn_error =
-    ignore(warn_error);
-    let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
-    let file = Fs.File.of_string input_file in
-    Odoc_link.from_odoc ~env file
+  let get_output_file ~output_file ~input = match output_file with
+  | Some file -> Fs.File.of_string file
+  | None -> Fs.File.(set_ext ".odocl" input)
 
-  let cmd =
+  let link directories input_file output_file warn_error =
+    ignore(warn_error);
+    let input = Fs.File.of_string input_file in
+    let output = get_output_file ~output_file ~input in
+    let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
+    Odoc_link.from_odoc ~env input output
+
+
+    let dst =
+      let doc = "Output file path. Non-existing intermediate directories are
+                   created. If absent outputs a .odocl file in the same
+                   directory as the input file."
+      in
+      Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
+
+    let cmd =
     let input =
       let doc = "Input file" in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
     in
-    Term.(const handle_error $ (const link $ odoc_file_directories $ input $ warn_error))
+    Term.(const handle_error $ (const link $ odoc_file_directories $ input $ dst $ warn_error))
 
   let info =
     Term.info ~doc:"Link odoc files together" "link"

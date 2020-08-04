@@ -1,6 +1,6 @@
 open Or_error
 
-let from_odoc ~env input =
+let from_odoc ~env input output =
   Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
   match root.file with
@@ -12,7 +12,7 @@ let from_odoc ~env input =
       |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
       |> Odoc_model.Error.shed_warnings
     in
-    Page.save Fs.File.(set_ext ".odocl" input) odoctree;
+    Page.save output odoctree;
 
     Ok ()
   | Compilation_unit {hidden; _} ->
@@ -30,6 +30,6 @@ let from_odoc ~env input =
       |> Odoc_model.Error.shed_warnings
     in
 
-    Compilation_unit.save Fs.File.(set_ext ".odocl" input) odoctree;
+    Compilation_unit.save output odoctree;
 
     Ok ()
