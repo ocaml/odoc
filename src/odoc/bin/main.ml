@@ -279,17 +279,12 @@ end = struct
   let generate = Generate.(cmd, info)    
   
   module Targets = struct
-    let list_targets output_dir odoc_file =
-      let open Or_error in
+    let list_targets output_dir extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
-      Rendering.targets_odoc ~renderer:R.renderer ~output:output_dir odoc_file
-      >>= fun targets ->
-      let targets = List.map ~f:Fs.File.to_string targets in
-      Printf.printf "%s\n%!" (String.concat ~sep:"\n" targets);
-      Ok ()
+      Rendering.targets ~renderer:R.renderer ~output:output_dir ~extra odoc_file
     
     let cmd =
-      Term.(const handle_error $ (const list_targets $ dst () $ input))
+      Term.(const handle_error $ (const list_targets $ dst () $ R.extra_args $ input))
     
     let info =
       Term.info (R.renderer.name ^ "-targets") ~doc:"TODO: Fill in."
