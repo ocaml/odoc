@@ -18,3 +18,15 @@ _esy
 
 # Generated docs
 docs/
+
+# Duniverse
+astring/
+cmdliner/
+cppo/
+dune-local/
+fmt/
+fpath/
+ocaml-re/
+result/
+tyxml/
+uutf/
