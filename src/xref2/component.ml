@@ -511,6 +511,46 @@ module Fmt = struct
       sg.items;
     Format.fprintf ppf "@] (removed=[%a])" removed_item_list sg.removed
 
+  and option pp ppf x =
+    match x with
+    | Some x -> Format.fprintf ppf "Some(%a)" pp x
+    | None -> Format.fprintf ppf "None"
+
+  and class_signature ppf sg =
+    let open ClassSignature in
+    Format.fprintf ppf "@[<v>self=%a@," (option type_expr) sg.self;
+    List.iter
+      (function
+        | Method (id, m) ->
+          Format.fprintf ppf "@[<v 2>method %a : %a@]@," Ident.fmt id method_ m
+        | InstanceVariable (id, i) ->
+          Format.fprintf ppf "@[<v 2>instance variable %a : %a@]@," Ident.fmt id instance_variable i
+        | Constraint (t1, t2) ->
+          Format.fprintf ppf "@[<v 2>constraint %a = %a@]@," type_expr t1 type_expr t2
+        | Inherit i ->
+          Format.fprintf ppf "@[<v 2>inherit %a" class_type_expr i
+        | Comment _ -> ()) sg.items
+
+  and method_ ppf m =
+    let open Method in
+    Format.fprintf ppf "%s%s%a" (if m.private_ then "private " else "") (if m.virtual_ then "virtual " else "") type_expr m.type_
+
+  and instance_variable ppf i =
+    let open InstanceVariable in
+    Format.fprintf ppf "%s%s%a" (if i.mutable_ then "mutable " else "") (if i.virtual_ then "virtual " else "") type_expr i.type_
+
+  and list pp ppf ls =
+    match ls with
+    | x::y::rest -> Format.fprintf ppf "%a, %a" pp x (list pp) (y::rest)
+    | [x] -> Format.fprintf ppf "%a" pp x
+    | [] -> ()
+
+  and class_type_expr ppf c =
+    let open ClassType in
+    match c with
+    | Constr (p, ts) -> Format.fprintf ppf "constr(%a,%a)" class_type_path p (list type_expr) ts
+    | Signature sg -> Format.fprintf ppf "(%a)" class_signature sg
+
   and removed_item ppf r =
     let open Signature in
     match r with
@@ -528,7 +568,13 @@ module Fmt = struct
 
   and external_ ppf _ = Format.fprintf ppf "<todo>"
 
-  and class_ ppf _c = Format.fprintf ppf "<todo>"
+  and class_decl ppf c =
+    let open Class in
+    match c with
+    | ClassType cty -> Format.fprintf ppf "%a" class_type_expr cty
+    | Arrow (lbl, ty, decl) -> Format.fprintf ppf "%a%a -> %a" type_expr_label lbl type_expr ty class_decl decl
+
+  and class_ ppf c = Format.fprintf ppf "%a" class_decl c.type_
 
   and class_type ppf _c = Format.fprintf ppf "<todo>"
 
@@ -620,6 +666,12 @@ module Fmt = struct
     | sub :: subs ->
         Format.fprintf ppf "%a; %a" substitution sub substitution_list subs
     | [] -> ()
+
+  and type_expr_label ppf l =
+    match l with
+    | Some (Odoc_model.Lang.TypeExpr.Label l) -> Format.fprintf ppf "%s:" l
+    | Some (Optional o) -> Format.fprintf ppf "?%s:" o
+    | None -> ()
 
   and type_expr_list ppf l =
     match l with
