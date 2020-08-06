@@ -703,17 +703,8 @@ and resolve_module :
             let m = Component.Delayed.get m in
             match handle_apply ~mark_substituted env func_path' arg_path' m with
             | Ok (p, m) -> Ok (p, Component.Delayed.put_val m)
-            (* | Error _ -> *)
-            (*     Error (`Best_effort ( *)
-            (*       `Apply (`Resolved func_path', `Resolved arg_path'))) *)
             | Error e -> Error (`Parent (`Parent_expr e)) )
-        | _ -> Error `Unresolved_apply
-        (* | Error _, Ok (arg_path', _) -> *)
-        (*     Error (`Best_effort (`Apply (m1, `Resolved arg_path'))) *)
-        (* | Ok (func_path', _), Error _ -> *)
-        (*     Error (`Best_effort (`Apply (`Resolved func_path', m2))) *)
-        (* | Error _, Error _ -> *)
-        (*     Error (`Best_effort (`Apply (m1, m2)))) *) )
+        | _ -> Error `Unresolved_apply )
     | `Identifier (i, hidden) ->
         of_option ~error:`Find_failure (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) ->
