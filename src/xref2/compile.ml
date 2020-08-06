@@ -19,7 +19,7 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
     let cp = Component.Of_Lang.(type_path empty p) in
     match Tools.resolve_type_path env cp with
     | Ok p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
-    | Error _ -> Cpath.type_path_of_cpath cp
+    | Error _ -> p
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -30,7 +30,7 @@ and module_type_path :
     let cp = Component.Of_Lang.(module_type_path empty p) in
     match Tools.resolve_module_type_path env cp with
     | Ok p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
-    | Error _ -> Cpath.module_type_path_of_cpath cp
+    | Error _ -> p
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -40,7 +40,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
     let cp = Component.Of_Lang.(module_path empty p) in
     match Tools.resolve_module_path env cp with
     | Ok p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
-    | Error _ -> Cpath.module_path_of_cpath cp
+    | Error _ -> p
 
 and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     =
@@ -306,7 +306,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
       match Tools.resolve_module_path env cp with
       | Ok p' ->
           Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
-      | Error _ -> Alias (Cpath.module_path_of_cpath cp) )
+      | Error _ -> Alias p )
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
