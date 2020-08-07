@@ -1,25 +1,27 @@
 (* Find *)
 open Odoc_model.Names
-
 open Component
 
-type module_ = [ `M of ModuleName.t * Module.t ]
+type module_ = [ `FModule of ModuleName.t * Module.t ]
 
-type module_type = [ `MT of ModuleTypeName.t * ModuleType.t ]
+type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 
-type datatype = [ `T of TypeName.t * TypeDecl.t ]
+type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
-type class_ = [ `C of ClassName.t * Class.t | `CT of ClassTypeName.t * ClassType.t ]
+type class_ =
+  [ `FClass of ClassName.t * Class.t
+  | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `E of External.t | `V of Value.t ]
+type value = [ `FExternal of External.t | `FValue of Value.t ]
 
-type label = [ `L of Ident.label ]
+type label = [ `FLabel of Ident.label ]
 
-type exception_ = [ `Exn of Exception.t ]
+type exception_ = [ `FExn of Exception.t ]
 
-type extension = [ `Ext of Extension.t * Extension.Constructor.t ]
+type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
-type substitution = [ `Msub of ModuleSubstitution.t | `Tsub of TypeDecl.t ]
+type substitution =
+  [ `FModule_subst of ModuleSubstitution.t | `FType_subst of TypeDecl.t ]
 
 type signature = [ module_ | module_type ]
 
@@ -27,9 +29,9 @@ type type_ = [ datatype | class_ ]
 
 type label_parent = [ signature | type_ ]
 
-type constructor = [ `Cs of TypeDecl.Constructor.t ]
+type constructor = [ `FConstructor of TypeDecl.Constructor.t ]
 
-type field = [ `Fd of TypeDecl.Field.t ]
+type field = [ `FField of TypeDecl.Field.t ]
 
 type any_in_type = [ constructor | field ]
 
@@ -45,9 +47,9 @@ type any_in_sig =
   | substitution
   | any_in_type_in_sig ]
 
-type instance_variable = [ `Mv of InstanceVariable.t ]
+type instance_variable = [ `FInstance_variable of InstanceVariable.t ]
 
-type method_ = [ `Mm of Method.t ]
+type method_ = [ `FMethod of Method.t ]
 
 type any_in_class_sig = [ instance_variable | method_ ]
 
@@ -90,14 +92,13 @@ val any_in_sig : Signature.t -> string -> any_in_sig list
 
 val any_in_type_in_sig : Signature.t -> string -> any_in_type_in_sig list
 
-val any_in_class_signature :
-  ClassSignature.t -> string -> any_in_class_sig list
+val any_in_class_signature : ClassSignature.t -> string -> any_in_class_sig list
 
 (** Lookup removed items *)
 
-type removed_type = [ `T_removed of TypeName.t * TypeExpr.t ]
+type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t ]
 
-type careful_module = [ module_ | `M_removed of Cpath.Resolved.module_ ]
+type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
 type careful_type = [ type_ | removed_type ]
 

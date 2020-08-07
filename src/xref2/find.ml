@@ -1,24 +1,26 @@
 open Odoc_model.Names
-
 open Component
 
-type module_ = [ `M of ModuleName.t * Module.t ]
+type module_ = [ `FModule of ModuleName.t * Module.t ]
 
-type module_type = [ `MT of ModuleTypeName.t * ModuleType.t ]
+type module_type = [ `FModuleType of ModuleTypeName.t * ModuleType.t ]
 
-type datatype = [ `T of TypeName.t * TypeDecl.t ]
+type datatype = [ `FType of TypeName.t * TypeDecl.t ]
 
-type class_ = [ `C of ClassName.t * Class.t | `CT of ClassTypeName.t * ClassType.t ]
+type class_ =
+  [ `FClass of ClassName.t * Class.t
+  | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `E of External.t | `V of Value.t ]
+type value = [ `FExternal of External.t | `FValue of Value.t ]
 
-type label = [ `L of Ident.label ]
+type label = [ `FLabel of Ident.label ]
 
-type exception_ = [ `Exn of Exception.t ]
+type exception_ = [ `FExn of Exception.t ]
 
-type extension = [ `Ext of Extension.t * Extension.Constructor.t ]
+type extension = [ `FExt of Extension.t * Extension.Constructor.t ]
 
-type substitution = [ `Msub of ModuleSubstitution.t | `Tsub of TypeDecl.t ]
+type substitution =
+  [ `FModule_subst of ModuleSubstitution.t | `FType_subst of TypeDecl.t ]
 
 type signature = [ module_ | module_type ]
 
@@ -26,9 +28,9 @@ type type_ = [ datatype | class_ ]
 
 type label_parent = [ signature | type_ ]
 
-type constructor = [ `Cs of TypeDecl.Constructor.t ]
+type constructor = [ `FConstructor of TypeDecl.Constructor.t ]
 
-type field = [ `Fd of TypeDecl.Field.t ]
+type field = [ `FField of TypeDecl.Field.t ]
 
 type any_in_type = [ constructor | field ]
 
@@ -44,9 +46,9 @@ type any_in_sig =
   | substitution
   | any_in_type_in_sig ]
 
-type instance_variable = [ `Mv of InstanceVariable.t ]
+type instance_variable = [ `FInstance_variable of InstanceVariable.t ]
 
-type method_ = [ `Mm of Method.t ]
+type method_ = [ `FMethod of Method.t ]
 
 type any_in_class_sig = [ instance_variable | method_ ]
 
@@ -80,26 +82,30 @@ let filter_in_sig sg f =
 let module_in_sig sg name =
   find_in_sig sg (function
     | Signature.Module (id, _, m) when N.typed_module id = name ->
-        Some (`M (N.typed_module id, Delayed.get m))
+        Some (`FModule (N.typed_module id, Delayed.get m))
     | _ -> None)
 
 let type_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, m) when N.type_ id = name ->
-        Some (`T (N.type' id, Delayed.get m))
-    | Class (id, _, c) when N.class_ id = name -> Some (`C (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name -> Some (`CT (N.class_type' id, c))
+        Some (`FType (N.type' id, Delayed.get m))
+    | Class (id, _, c) when N.class_ id = name ->
+        Some (`FClass (N.class' id, c))
+    | ClassType (id, _, c) when N.class_type id = name ->
+        Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
 let class_in_sig sg name =
   find_in_sig sg (function
-    | Signature.Class (id, _, c) when N.class_ id = name -> Some (`C (N.class' id, c))
-    | Signature.ClassType (id, _, c) when N.class_type id = name -> Some (`CT (N.class_type' id, c))
+    | Signature.Class (id, _, c) when N.class_ id = name ->
+        Some (`FClass (N.class' id, c))
+    | Signature.ClassType (id, _, c) when N.class_type id = name ->
+        Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
-type removed_type = [ `T_removed of TypeName.t * TypeExpr.t ]
+type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t ]
 
-type careful_module = [ module_ | `M_removed of Cpath.Resolved.module_ ]
+type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
 type careful_type = [ type_ | removed_type ]
 
@@ -108,7 +114,7 @@ type careful_class = [ class_ | removed_type ]
 let careful_module_in_sig sg name =
   let removed_module = function
     | Signature.RModule (id, p) when N.typed_module id = name ->
-        Some (`M_removed p)
+        Some (`FModule_removed p)
     | _ -> None
   in
   match module_in_sig sg name with
@@ -118,7 +124,7 @@ let careful_module_in_sig sg name =
 let removed_type_in_sig sg name =
   let removed_type = function
     | Signature.RType (id, p) when N.type_ id = name ->
-      Some (`T_removed (N.type' id, p))
+        Some (`FType_removed (N.type' id, p))
     | _ -> None
   in
   find_map removed_type sg.Signature.removed
@@ -136,26 +142,28 @@ let careful_class_in_sig sg name =
 let datatype_in_sig sg name =
   find_in_sig sg (function
     | Signature.Type (id, _, t) when N.type_ id = name ->
-        Some (`T (N.type' id, Component.Delayed.get t))
+        Some (`FType (N.type' id, Component.Delayed.get t))
     | _ -> None)
 
 let class_in_sig sg name =
   filter_in_sig sg (function
-    | Signature.Class (id, _, c) when N.class_ id = name -> Some (`C (N.class' id, c))
-    | Signature.ClassType (id, _, c) when N.class_type id = name -> Some (`CT (N.class_type' id, c))
+    | Signature.Class (id, _, c) when N.class_ id = name ->
+        Some (`FClass (N.class' id, c))
+    | Signature.ClassType (id, _, c) when N.class_type id = name ->
+        Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
 let any_in_type (typ : TypeDecl.t) name =
   let rec find_cons = function
     | ({ TypeDecl.Constructor.name = name'; _ } as cons) :: _ when name' = name
       ->
-        Some (`Cs cons)
+        Some (`FConstructor cons)
     | _ :: tl -> find_cons tl
     | [] -> None
   in
   let rec find_field = function
     | ({ TypeDecl.Field.name = name'; _ } as field) :: _ when name' = name ->
-        Some (`Fd field)
+        Some (`FField field)
     | _ :: tl -> find_field tl
     | [] -> None
   in
@@ -168,7 +176,7 @@ let any_in_typext (typext : Extension.t) name =
   let rec inner = function
     | ({ Extension.Constructor.name = name'; _ } as cons) :: _ when name' = name
       ->
-        Some (`Ext (typext, cons))
+        Some (`FExt (typext, cons))
     | _ :: tl -> inner tl
     | [] -> None
   in
@@ -180,7 +188,7 @@ let any_in_comment d name =
     | elt :: rest -> (
         match elt.Odoc_model.Location_.value with
         | `Heading (_, label, _) when Ident.Name.label label = name ->
-            Some (`L label)
+            Some (`FLabel label)
         | _ -> inner rest )
     | [] -> None
   in
@@ -189,18 +197,21 @@ let any_in_comment d name =
 let any_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`M (N.typed_module id, Delayed.get m))
+        Some (`FModule (N.typed_module id, Delayed.get m))
     | ModuleSubstitution (id, ms) when N.module_ id = name ->
-        Some (`Msub ms)
+        Some (`FModule_subst ms)
     | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`MT (N.typed_module_type id, Delayed.get mt))
-    | Type (id, _, t) when N.type_ id = name -> Some (`T (N.type' id, Delayed.get t))
-    | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`Tsub ts)
-    | Exception (id, exc) when N.exception_ id = name -> Some (`Exn exc)
-    | Value (id, v) when N.value id = name -> Some (`V (Delayed.get v))
-    | External (id, vex) when N.value id = name -> Some (`E vex)
-    | Class (id, _, c) when N.class_ id = name -> Some (`C (N.class' id, c))
-    | ClassType (id, _, ct) when N.class_type id = name -> Some (`CT (N.class_type' id, ct))
+        Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
+    | Type (id, _, t) when N.type_ id = name ->
+        Some (`FType (N.type' id, Delayed.get t))
+    | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`FType_subst ts)
+    | Exception (id, exc) when N.exception_ id = name -> Some (`FExn exc)
+    | Value (id, v) when N.value id = name -> Some (`FValue (Delayed.get v))
+    | External (id, vex) when N.value id = name -> Some (`FExternal vex)
+    | Class (id, _, c) when N.class_ id = name ->
+        Some (`FClass (N.class' id, c))
+    | ClassType (id, _, ct) when N.class_type id = name ->
+        Some (`FClassType (N.class_type' id, ct))
     | Type (id, _, t) -> (
         let typ = Delayed.get t in
         match any_in_type typ name with
@@ -213,22 +224,22 @@ let any_in_sig sg name =
 let signature_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`M (N.typed_module id, Delayed.get m))
+        Some (`FModule (N.typed_module id, Delayed.get m))
     | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`MT (N.typed_module_type id, Delayed.get mt))
+        Some (`FModuleType (N.typed_module_type id, Delayed.get mt))
     | _ -> None)
 
 let module_type_in_sig sg name =
   find_in_sig sg (function
     | Signature.ModuleType (id, m) when N.typed_module_type id = name ->
-        Some (`MT (N.typed_module_type id, Delayed.get m))
+        Some (`FModuleType (N.typed_module_type id, Delayed.get m))
     | _ -> None)
 
 let value_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Value (id, m) when N.value id = name ->
-        Some (`V (Delayed.get m))
-    | External (id, e) when N.value id = name -> Some (`E e)
+        Some (`FValue (Delayed.get m))
+    | External (id, e) when N.value id = name -> Some (`FExternal e)
     | _ -> None)
 
 let label_in_sig sg name =
@@ -238,12 +249,12 @@ let label_in_sig sg name =
 
 let exception_in_sig sg name =
   find_in_sig sg (function
-    | Signature.Exception (id, e) when N.exception_ id = name -> Some (`Exn e)
+    | Signature.Exception (id, e) when N.exception_ id = name -> Some (`FExn e)
     | _ -> None)
 
 let extension_in_sig sg name =
   let rec inner t = function
-    | ec :: _ when ec.Extension.Constructor.name = name -> Some (`Ext (t, ec))
+    | ec :: _ when ec.Extension.Constructor.name = name -> Some (`FExt (t, ec))
     | _ :: tl -> inner t tl
     | [] -> None
   in
@@ -254,13 +265,15 @@ let extension_in_sig sg name =
 let label_parent_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Module (id, _, m) when N.module_ id = name ->
-        Some (`M (N.typed_module id, Component.Delayed.get m))
+        Some (`FModule (N.typed_module id, Component.Delayed.get m))
     | ModuleType (id, mt) when N.module_type id = name ->
-        Some (`MT (N.typed_module_type id, Component.Delayed.get mt))
+        Some (`FModuleType (N.typed_module_type id, Component.Delayed.get mt))
     | Type (id, _, t) when N.type_ id = name ->
-        Some (`T (N.type' id, Component.Delayed.get t))
-    | Class (id, _, c) when N.class_ id = name -> Some (`C (N.class' id, c))
-    | ClassType (id, _, c) when N.class_type id = name -> Some (`CT (N.class_type' id, c))
+        Some (`FType (N.type' id, Component.Delayed.get t))
+    | Class (id, _, c) when N.class_ id = name ->
+        Some (`FClass (N.class' id, c))
+    | ClassType (id, _, c) when N.class_type id = name ->
+        Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
 let any_in_type_in_sig sg name =
@@ -274,9 +287,9 @@ let any_in_type_in_sig sg name =
 
 let filter_in_class_signature cs f =
   let rec inner = function
-    | ClassSignature.Inherit ct_expr :: tl -> (
-        inner_inherit ct_expr @ inner tl )
-    | it :: tl -> ( match f it with Some x -> x :: inner tl | None -> inner tl )
+    | ClassSignature.Inherit ct_expr :: tl -> inner_inherit ct_expr @ inner tl
+    | it :: tl -> (
+        match f it with Some x -> x :: inner tl | None -> inner tl )
     | [] -> []
   and inner_inherit = function
     | Constr _ -> []
@@ -285,27 +298,25 @@ let filter_in_class_signature cs f =
   inner cs.ClassSignature.items
 
 let find_in_class_signature cs f =
-  match filter_in_class_signature cs f with
-  | [] -> None
-  | x :: _ -> Some x
+  match filter_in_class_signature cs f with [] -> None | x :: _ -> Some x
 
 let any_in_class_signature cs name =
   filter_in_class_signature cs (function
     | ClassSignature.Method (id, m) when N.method_ id = name ->
-        Some (`Mm m)
+        Some (`FMethod m)
     | InstanceVariable (id, iv) when N.instance_variable id = name ->
-        Some (`Mv iv)
+        Some (`FInstance_variable iv)
     | _ -> None)
 
 let method_in_class_signature cs name =
   find_in_class_signature cs (function
     | ClassSignature.Method (id, m) when N.method_ id = name ->
-        Some (`Mm m)
+        Some (`FMethod m)
     | _ -> None)
 
 let instance_variable_in_class_signature cs name =
   find_in_class_signature cs (function
     | ClassSignature.InstanceVariable (id, iv)
       when N.instance_variable id = name ->
-        Some (`Mv iv)
+        Some (`FInstance_variable iv)
     | _ -> None)
