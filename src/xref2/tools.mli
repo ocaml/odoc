@@ -61,9 +61,7 @@ val lookup_module_type :
 val lookup_type :
   Env.t ->
   Cpath.Resolved.type_ ->
-  ( Find.careful_type,
-    simple_type_lookup_error )
-  Result.result
+  (Find.careful_type, simple_type_lookup_error) Result.result
 (** [lookup_type env p] takes a resolved type path and an environment and returns
     a representation of the type. The type can be an ordinary type, a class type
     or a class. If the type has been destructively substituted, the path to the
@@ -72,9 +70,7 @@ val lookup_type :
 val lookup_class_type :
   Env.t ->
   Cpath.Resolved.class_type ->
-  ( Find.careful_class,
-    simple_type_lookup_error )
-  Result.result
+  (Find.careful_class, simple_type_lookup_error) Result.result
 (** [lookup_class_type env p] takes a resolved class type path and an environment and returns
     a representation of the class type. The type can be a class type
     or a class. *)
@@ -105,7 +101,9 @@ val resolve_module_type :
 val resolve_type :
   Env.t ->
   Cpath.type_ ->
-  ( Cpath.Resolved.type_ * Find.careful_type, simple_type_lookup_error ) Result.result
+  ( Cpath.Resolved.type_ * Find.careful_type,
+    simple_type_lookup_error )
+  Result.result
 (** [resolve_type env p] takes an unresolved
     type path and an environment and returns a tuple of the resolved type
     path alongside a representation of the type itself. As with {!val:lookup_type}

@@ -671,10 +671,10 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       let cp = Component.Of_Lang.(type_path empty path) in
       let ts = List.map (type_expression env parent) ts' in
       match Tools.resolve_type env cp with
-      | Ok (cp, (`T _ | `C _ | `CT _)) ->
+      | Ok (cp, (`FType _ | `FClass _ | `FClassType _)) ->
           let p = Cpath.resolved_type_path_of_cpath cp in
           Constr (`Resolved p, ts)
-      | Ok (_cp, `T_removed (_, x)) -> Lang_of.(type_expr empty parent x)
+      | Ok (_cp, `FType_removed (_, x)) -> Lang_of.(type_expr empty parent x)
       | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
