@@ -660,11 +660,18 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
         | Odoc_model.Lang.Signature.Comment c -> add_comment c env
         | Odoc_model.Lang.Signature.TypExt te ->
+            let parent =
+              match te.L.Extension.constructors with
+              | [] -> assert false
+              | { id = `Extension (parent, _); _ } :: _ -> parent
+            in
+            let doc = docs empty te.doc in
             List.fold_left
               (fun env tec ->
                 let ty = extension_constructor empty tec in
                 add_extension_constructor tec.L.Extension.Constructor.id ty env)
               env te.L.Extension.constructors
+            |> add_cdocs parent doc
         | Odoc_model.Lang.Signature.Exception e ->
             let ty = exception_ empty e in
             add_exception e.Odoc_model.Lang.Exception.id ty env
