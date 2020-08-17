@@ -343,24 +343,6 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
       lookup_failure ~what:(`Module_type m.id) e;
       m
 
-and find_shadowed map = function
-  | ((_, `Module (_, _)) as ident) :: rest ->
-      find_shadowed Lang_of.{ map with s_modules = ident :: map.s_modules } rest
-  | ((_, `ModuleType (_, _)) as ident) :: rest ->
-      find_shadowed
-        Lang_of.{ map with s_module_types = ident :: map.s_module_types }
-        rest
-  | ((_, `Type (_, _)) as ident) :: rest ->
-      find_shadowed Lang_of.{ map with s_types = ident :: map.s_types } rest
-  | ((_, `Class (_, _)) as ident) :: rest ->
-      find_shadowed Lang_of.{ map with s_classes = ident :: map.s_classes } rest
-  | ((_, `ClassType (_, _)) as ident) :: rest ->
-      find_shadowed
-        Lang_of.{ map with s_class_types = ident :: map.s_class_types }
-        rest
-  | _ :: _ -> assert false
-  | [] -> map
-
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
@@ -378,11 +360,11 @@ and include_ : Env.t -> Include.t -> Include.t =
       lookup_failure ~what:(`Include decl) `Expand;
       i
   | Ok (_, ce) ->
-      let map = find_shadowed Lang_of.empty i.expansion.shadowed in
+
+      let map = { Lang_of.empty with shadowed = i.expansion.shadowed } in
+
       let e = Lang_of.(module_expansion map i.parent ce) in
 
-      (* Format.eprintf "Intermediate expansion: %a\n%!"
-         Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
       let expansion_sg =
         match e with
         | Module.Signature sg -> sg
@@ -397,8 +379,6 @@ and include_ : Env.t -> Include.t -> Include.t =
         }
       in
 
-      (* Format.eprintf "Final expansion: %a\n%!"
-         Component.Fmt.module_expansion (Component.Of_Lang.(module_expansion empty e)); *)
       { i with decl = module_decl env i.parent i.decl; expansion }
 
 and expansion : Env.t -> Id.Signature.t -> Module.expansion -> Module.expansion

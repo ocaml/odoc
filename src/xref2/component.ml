@@ -299,7 +299,7 @@ and Include : sig
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
     doc : CComment.docs;
-    shadowed : (string * Odoc_model.Paths.Identifier.t) list;
+    shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
     decl : Module.decl;
   }
