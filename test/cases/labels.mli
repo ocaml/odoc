@@ -37,6 +37,10 @@ module S := A
 (** {1:L11 Attached to type subst} *)
 type s := t
 
+type u = A' (** {1:L12 Attached to constructor} *)
+
+type v = { f : t (** {1:L13 Attached to field} *) }
+
 (** Testing that labels can be referenced
     - {!L1}
     - {!L2}
@@ -49,4 +53,6 @@ type s := t
     - {!L9}
     - {!L10}
     - {!L11}
+    - {!L12}
+    - {!L13}
   *)
