@@ -882,6 +882,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
         let cp = Component.Of_Lang.(type_path empty path') in
         match Tools.resolve_type env cp with
         | Ok (cp', Found (`T t)) ->
+            let cp' = Tools.reresolve_type env cp' in
             let p = Cpath.resolved_type_path_of_cpath cp' in
             if List.mem p visited then raise Loop
             else if Cpath.is_resolved_type_hidden cp' then
