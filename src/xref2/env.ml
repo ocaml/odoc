@@ -204,12 +204,17 @@ let add_type identifier t env =
         (`Field (ident, field))
         elts
     in
-    match t.TypeDecl.representation with
-    | Some (Variant cons) -> List.fold_left add_cons cs cons
-    | Some (Record fields) -> List.fold_left add_field cs fields
-    | Some Extensible | None -> cs
+    let open TypeDecl in
+    match t.representation with
+    | Some (Variant cons) ->
+        ( List.fold_left add_cons cs cons,
+          List.map (fun t -> t.Constructor.doc) cons )
+    | Some (Record fields) ->
+        ( List.fold_left add_field cs fields,
+          List.map (fun t -> t.Field.doc) fields )
+    | Some Extensible | None -> (cs, [])
   in
-  let elts = open_typedecl env.elts in
+  let elts, docs = open_typedecl env.elts in
   {
     env with
     id =
@@ -221,7 +226,7 @@ let add_type identifier t env =
         (`Type (identifier, t))
         elts;
   }
-  |> add_cdocs identifier t.doc
+  |> List.fold_right (add_cdocs identifier) (t.doc :: docs)
 
 let add_module_type identifier t env =
   {
@@ -631,7 +636,9 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
             let ty = Component.Delayed.put (fun () -> module_ empty t) in
             add_module
               (t.Odoc_model.Lang.Module.id :> Identifier.Path.Module.t)
-              ty (docs empty t.L.Module.doc) env
+              ty
+              (docs empty t.L.Module.doc)
+              env
         | Odoc_model.Lang.Signature.ModuleType t ->
             let ty = module_type empty t in
             add_module_type t.Odoc_model.Lang.ModuleType.id ty env
@@ -696,8 +703,7 @@ let initial_env :
   List.fold_right
     (fun import (imports, env) ->
       match import with
-      | Import.Resolved (_root, _name) ->
-          (import :: imports, env)
+      | Import.Resolved (_root, _name) -> (import :: imports, env)
       | Import.Unresolved (str, _) -> (
           match resolver.lookup_unit str with
           | Forward_reference -> (import :: imports, env)
