@@ -560,9 +560,18 @@ struct
 
 
   let extension_constructor (t : Odoc_model.Lang.Extension.Constructor.t) =
-    (* TODO doc *)
-    let doc = constructor (t.id :> Paths.Identifier.t) t.args t.res in
-    O.documentedSrc (O.txt "| ") @ doc
+    let id = (t.id :> Paths.Identifier.t) in
+    match Url.from_identifier ~stop_before:true id with
+    | Error e -> failwith (Url.Error.to_string e)
+    | Ok url ->
+       let anchor = Some url in
+       let attrs = ["def"; url.kind] in
+       let code =
+         O.documentedSrc (O.txt "| ")
+         @ constructor id t.args t.res
+       in
+       let doc = Comment.to_ir t.doc in
+       DocumentedSrc.Nested { anchor; attrs; code; doc }
 
   let extension (t : Odoc_model.Lang.Extension.t) =
     let content =
@@ -570,11 +579,8 @@ struct
           O.txt " " ++
           Link.from_path (t.type_path :> Paths.Path.t) ++
           O.txt " += ")
-      @
-        Utils.flatmap t.constructors
-          ~f:extension_constructor
-      @
-        O.documentedSrc
+      @ List.map extension_constructor t.constructors
+      @ O.documentedSrc
           (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
     in
     let kind = Some "extension" in

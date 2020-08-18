@@ -125,7 +125,9 @@ type as_ = (int as 'a) * 'a
 
 type extensible = ..
 
-type extensible += Extension | Another_extension
+type extensible +=
+   | Extension (** Documentation for {!Extension}. *)
+   | Another_extension (** Documentation for {!Another_extension}. *)
 
 type mutually = A of recursive
 and recursive = B of mutually
