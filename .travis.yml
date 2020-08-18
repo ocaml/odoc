@@ -39,7 +39,7 @@ scripts:
             opam switch create . $OCAML $REPOSITORIES --no-install
         fi
       - eval `opam env`
-      - opam install -y --deps-only .
+      - opam install -y --deps-only -t .
       - opam --version
       - ocaml -version
 
