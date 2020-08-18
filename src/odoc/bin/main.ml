@@ -279,12 +279,19 @@ end = struct
   let generate = Generate.(cmd, info)    
   
   module Targets = struct
-    let list_targets output_dir extra odoc_file =
+    let list_targets output_dir _ extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
       Rendering.targets ~renderer:R.renderer ~output:output_dir ~extra odoc_file
     
+    let back_compat =
+      let doc =
+        "For backwards compatibility. Ignored."
+      in
+      Arg.(value & opt_all (convert_directory ()) [] &
+        info ~docs ~docv:"DIR" ~doc ["I"])
+
     let cmd =
-      Term.(const handle_error $ (const list_targets $ dst () $ R.extra_args $ input))
+      Term.(const handle_error $ (const list_targets $ dst () $ back_compat $ R.extra_args $ input))
     
     let info =
       Term.info (R.renderer.name ^ "-targets") ~doc:"TODO: Fill in."
@@ -427,7 +434,7 @@ module Depends = struct
             reported in the output."
   end
 
-  module Render = struct
+  module Link = struct
     let list_dependencies input_file =
       let open Or_error in
       Depends.for_rendering_step
@@ -449,13 +456,28 @@ module Depends = struct
       Term.(const handle_error $ (const list_dependencies $ input))
 
     let info =
-      Term.info "render-deps"
-        ~doc:"lists the packages which need to be in odoc's load path to render \
+      Term.info "link-deps"
+        ~doc:"lists the packages which need to be in odoc's load path to link \
               the .odoc files in the given directory"
   end
 
   module Odoc_html = struct
-    let cmd = Render.cmd
+
+    let includes =
+      let doc =
+        "For backwards compatibility. Ignored."
+    in
+    Arg.(value & opt_all (convert_directory ()) [] &
+      info ~docs ~docv:"DIR" ~doc ["I"])
+
+    let cmd =
+      let input =
+        let doc = "Input directory" in
+        Arg.(required & pos 0 (some file) None & info ~doc ~docv:"PKG_DIR" [])
+      in
+      let cmd _ = Link.list_dependencies in
+      Term.(const handle_error $ (const cmd $ includes $ input))
+
     let info =
       Term.info "html-deps"
         ~doc:"DEPRECATED: alias for render-deps"
@@ -508,7 +530,7 @@ let () =
     ; Support_files_command.(cmd, info)
     ; Css.(cmd, info)
     ; Depends.Compile.(cmd, info)
-    ; Depends.Render.(cmd, info)
+    ; Depends.Link.(cmd, info)
     ; Depends.Odoc_html.(cmd, info)
     ; Targets.Compile.(cmd, info)
     ; Targets.Support_files.(cmd, info)
