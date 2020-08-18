@@ -225,7 +225,20 @@ e : a\. \f[CB]'a\fR;
 .sp 
 \f[CB]type\fR extensible = \.\.
 .sp 
-\f[CB]type\fR extensible += | \f[CB]Extension\fR| \f[CB]Another_extension\fR
+\f[CB]type\fR extensible += 
+.br 
+.ti +2
+| \f[CB]Extension\fR
+.br 
+.ti +4
+(* Documentation for \f[CI]Extension\fR\. *)
+.br 
+.ti +2
+| \f[CB]Another_extension\fR
+.br 
+.ti +4
+(* Documentation for \f[CI]Another_extension\fR\. *)
+.br 
 .sp 
 \f[CB]type\fR mutually = 
 .br 
