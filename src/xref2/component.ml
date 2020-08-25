@@ -736,7 +736,7 @@ module Fmt = struct
     match p with
     | `Local ident -> Format.fprintf ppf "local(%a)" Ident.fmt ident
     | `Apply (p1, p2) ->
-        Format.fprintf ppf "%a(%a)" resolved_module_path p1 module_path p2
+        Format.fprintf ppf "%a(%a)" resolved_module_path p1 resolved_module_path p2
     | `Identifier p ->
         Format.fprintf ppf "identifier(%a)" model_identifier
           (p :> Odoc_model.Paths.Identifier.t)
@@ -951,8 +951,8 @@ module Fmt = struct
     | `Apply (funct, arg) ->
         Format.fprintf ppf "%a(%a)" model_resolved_path
           (funct :> t)
-          model_path
-          (arg :> Odoc_model.Paths.Path.t)
+          model_resolved_path
+          (arg :> t)
     | `Canonical (p1, p2) ->
         Format.fprintf ppf "canonical(%a,%a)" model_resolved_path
           (p1 :> t)
@@ -1496,7 +1496,7 @@ module Of_Lang = struct
     match p with
     | `Identifier i -> identifier find_any_module ident_map i
     | `Module (p, name) -> `Module (`Module (recurse p), name)
-    | `Apply (p1, p2) -> `Apply (recurse p1, module_path ident_map p2)
+    | `Apply (p1, p2) -> `Apply (recurse p1, recurse p2)
     | `Alias (p1, p2) -> `Alias (recurse p1, recurse p2)
     | `Subst (p1, p2) ->
         `Subst (resolved_module_type_path ident_map p1, recurse p2)

@@ -773,10 +773,9 @@ Some
                   (`Module
                      (`Identifier (`Module (`Root (Common.root, Root), M)),
                       F),
-                   `Resolved
-                     (`Module
-                        (`Identifier (`Module (`Root (Common.root, Root), M)),
-                         T))),
+                   `Module
+                     (`Identifier (`Module (`Root (Common.root, Root), M)),
+                      T)),
                 N)),
           t)),
    []))
@@ -864,10 +863,8 @@ Some
             (`Apply
                (`Module
                   (`Identifier (`Module (`Root (Common.root, Root), M)), O),
-                `Resolved
-                  (`Module
-                     (`Identifier (`Module (`Root (Common.root, Root), M)),
-                      T))),
+                `Module
+                  (`Identifier (`Module (`Root (Common.root, Root), M)), T)),
              N),
           t)),
    []))
@@ -945,15 +942,11 @@ val p : Cpath.Resolved.module_ =
     (`Apply
        (`Apply
           (`Identifier (`Module (`Root (Common.root, Root), App)),
-           `Resolved
-             (`Substituted
-                (`Identifier (`Module (`Root (Common.root, Root), Bar))))),
-        `Resolved
-          (`Substituted
-             (`Identifier (`Module (`Root (Common.root, Root), Foo))))),
-     `Resolved
-       (`Substituted
-          (`Identifier (`Module (`Root (Common.root, Root), FooBarInt)))))
+           `Substituted
+             (`Identifier (`Module (`Root (Common.root, Root), Bar)))),
+        `Substituted (`Identifier (`Module (`Root (Common.root, Root), Foo)))),
+     `Substituted
+       (`Identifier (`Module (`Root (Common.root, Root), FooBarInt))))
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -1001,15 +994,11 @@ Some
                      (`Apply
                         (`Identifier
                            (`Module (`Root (Common.root, Root), App)),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), Bar)))),
-                      `Resolved
-                        (`Identifier
-                           (`Module (`Root (Common.root, Root), Foo)))),
-                   `Resolved
-                     (`Identifier
-                        (`Module (`Root (Common.root, Root), FooBarInt)))),
+                         `Identifier
+                           (`Module (`Root (Common.root, Root), Bar))),
+                      `Identifier (`Module (`Root (Common.root, Root), Foo))),
+                   `Identifier
+                     (`Module (`Root (Common.root, Root), FooBarInt))),
                 Foo)),
           bar)),
    []))
@@ -1047,8 +1036,7 @@ Some
             (`Apply
                (`Module
                   (`Identifier (`Module (`Root (Common.root, Root), M)), O),
-                `Resolved
-                  (`Identifier (`Module (`Root (Common.root, Root), M)))),
+                `Identifier (`Module (`Root (Common.root, Root), M))),
              N),
           t)),
    []))
@@ -1099,16 +1087,14 @@ Some
                      (`Apply
                         (`Identifier
                            (`Module (`Root (Common.root, Root), Dep2)),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), Dep1)))),
+                         `Identifier
+                           (`Module (`Root (Common.root, Root), Dep1))),
                       A),
                    Y)),
              `Module
                (`Apply
                   (`Identifier (`Module (`Root (Common.root, Root), Dep2)),
-                   `Resolved
-                     (`Identifier (`Module (`Root (Common.root, Root), Dep1)))),
+                   `Identifier (`Module (`Root (Common.root, Root), Dep1))),
                 B)),
           c)),
    []))
@@ -1158,9 +1144,7 @@ Some
                (`Module
                   (`Apply
                      (`Identifier (`Module (`Root (Common.root, Root), Dep5)),
-                      `Resolved
-                        (`Identifier
-                           (`Module (`Root (Common.root, Root), Dep4)))),
+                      `Identifier (`Module (`Root (Common.root, Root), Dep4))),
                    Z),
                 X)),
           b)),
@@ -1177,9 +1161,7 @@ Some
                (`Module
                   (`Apply
                      (`Identifier (`Module (`Root (Common.root, Root), Dep5)),
-                      `Resolved
-                        (`Identifier
-                           (`Module (`Root (Common.root, Root), Dep4)))),
+                      `Identifier (`Module (`Root (Common.root, Root), Dep4))),
                    Z),
                 Y)),
           a)),
@@ -1237,9 +1219,8 @@ Some
                         (`Apply
                            (`Identifier
                               (`Module (`Root (Common.root, Root), Dep7)),
-                            `Resolved
-                              (`Identifier
-                                 (`Module (`Root (Common.root, Root), Dep6)))),
+                            `Identifier
+                              (`Module (`Root (Common.root, Root), Dep6))),
                          M)),
                    R)),
              `Module
@@ -1251,9 +1232,8 @@ Some
                      (`Apply
                         (`Identifier
                            (`Module (`Root (Common.root, Root), Dep7)),
-                         `Resolved
-                           (`Identifier
-                              (`Module (`Root (Common.root, Root), Dep6)))),
+                         `Identifier
+                           (`Module (`Root (Common.root, Root), Dep6))),
                       M)),
                 Y)),
           d)),
@@ -1512,9 +1492,7 @@ let module_M_expansion =
                 (`Type
                    (`Apply
                       (`Identifier (`Module (`Root (Common.root, Root), Foo)),
-                       `Resolved
-                         (`Identifier
-                            (`Module (`Root (Common.root, Root), Bar)))),
+                       `Identifier (`Module (`Root (Common.root, Root), Bar))),
                     t)),
              [])];
          res = None}])})]

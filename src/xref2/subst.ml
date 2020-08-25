@@ -114,7 +114,7 @@ let rec resolved_module_path :
       | Some `Substituted -> `Substituted p
       | None -> p )
   | `Identifier _ -> p
-  | `Apply (p1, p2) -> `Apply (resolved_module_path s p1, module_path s p2)
+  | `Apply (p1, p2) -> `Apply (resolved_module_path s p1, resolved_module_path s p2)
   | `Substituted p -> `Substituted (resolved_module_path s p)
   | `Module (p, n) -> `Module (resolved_parent_path s p, n)
   | `Alias (p1, p2) ->

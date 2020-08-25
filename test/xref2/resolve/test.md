@@ -789,7 +789,7 @@ AFTER
 module type (root Root).Type = sig
   module type (root Root).Type.T
   end
-module (root Root).App : ((param (root Root).App T) : resolved[global((root Root).Type)]) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : resolved[global((root Root).Type)]) -> resolved[global((root Root).Type)]) -> ((param (root Root).App.result.result M) : resolved[opaquemoduletype(global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T)]) -> resolved[opaquemoduletype(global((param (root Root).App.result F))(resolved[global((param (root Root).App T))]).T)]
+module (root Root).App : ((param (root Root).App T) : resolved[global((root Root).Type)]) -> ((param (root Root).App.result F) : ((param (param (root Root).App.result F) _) : resolved[global((root Root).Type)]) -> resolved[global((root Root).Type)]) -> ((param (root Root).App.result.result M) : resolved[opaquemoduletype(global((param (root Root).App.result F))(global((param (root Root).App T))).T)]) -> resolved[opaquemoduletype(global((param (root Root).App.result F))(global((param (root Root).App T))).T)]
 module (root Root).Bar : sig
   module type (root Root).Bar.T = sig
     type (root Root).Bar.T.bar
@@ -805,7 +805,7 @@ module (root Root).FooBarInt : sig
     type (root Root).FooBarInt.Foo.bar = resolved[global(int)]
     end
   end
-type (root Root).t = resolved[(global((root Root).Bar).T subst-> global((root Root).App)(resolved[global((root Root).Bar)])(resolved[global((root Root).Foo)])(resolved[global((root Root).FooBarInt)]).Foo).bar]
+type (root Root).t = resolved[(global((root Root).Bar).T subst-> global((root Root).App)(global((root Root).Bar))(global((root Root).Foo))(global((root Root).FooBarInt)).Foo).bar]
 
 - : unit = ()
 ```

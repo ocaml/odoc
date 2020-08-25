@@ -109,7 +109,7 @@ struct
     |`Canonical (m, p) ->
       List [Atom "canonical"; resolved (m :> Resolved.t); path (p :> Path.t)]
     |`Apply (m, p) ->
-      List [Atom "apply"; resolved (m :> Resolved.t); path (p :> Path.t)]
+      List [Atom "apply"; resolved (m :> Resolved.t); resolved (p :> Resolved.t)]
     |`ModuleType (m, s) ->
       List [Atom "module_type"; Atom (ModuleTypeName.to_string s); resolved (m :> Resolved.t)]
     |`Type (m, s) ->

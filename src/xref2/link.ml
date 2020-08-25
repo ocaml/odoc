@@ -32,7 +32,7 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `Canonical (x, y) ->
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
   | `Apply (x, y) ->
-      should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
+      should_reresolve (x :> t) || should_reresolve (y :> Paths.Path.Resolved.t)
   | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Alias (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)
   | `Type (p, _)

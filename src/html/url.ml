@@ -219,7 +219,7 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Module (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleName.to_string s)
     | `Canonical (_, `Resolved p) -> render_resolved (p :> t)
     | `Canonical (p, _) -> render_resolved (p :> t)
-    | `Apply (rp, p) -> render_resolved (rp :> t) ^ "(" ^ render_path (p :> Odoc_model.Paths.Path.t) ^ ")"
+    | `Apply (rp, p) -> render_resolved (rp :> t) ^ "(" ^ render_resolved (p :> Odoc_model.Paths.Path.Resolved.t) ^ ")"
     | `ModuleType (p, s) -> render_resolved (p :> t) ^ "." ^ (ModuleTypeName.to_string s)
     | `SubstT (_, p) -> render_resolved (p :> t)
     | `Type (p, s) -> render_resolved (p :> t) ^ "." ^ (TypeName.to_string s)

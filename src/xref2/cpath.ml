@@ -14,7 +14,7 @@ module rec Resolved : sig
     | `Hidden of module_
     | `Module of parent * ModuleName.t
     | `Canonical of module_ * Cpath.module_
-    | `Apply of module_ * Cpath.module_
+    | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_ ]
 
@@ -102,7 +102,7 @@ let rec resolved_module_hash : Resolved.module_ -> int = function
   | `Module (m, n) -> Hashtbl.hash (6, resolved_parent_hash m, n)
   | `Canonical (m, m2) ->
       Hashtbl.hash (7, resolved_module_hash m, module_hash m2)
-  | `Apply (m1, m2) -> Hashtbl.hash (8, resolved_module_hash m1, module_hash m2)
+  | `Apply (m1, m2) -> Hashtbl.hash (8, resolved_module_hash m1, resolved_module_hash m2)
   | `Alias (m1, m2) ->
       Hashtbl.hash (9, resolved_module_hash m1, resolved_module_hash m2)
   | `OpaqueModule m -> Hashtbl.hash (10, resolved_module_hash m)
@@ -162,7 +162,7 @@ let rec resolved_module_path_of_cpath :
   | `Canonical (a, b) ->
       `Canonical (resolved_module_path_of_cpath a, module_path_of_cpath b)
   | `Apply (a, b) ->
-      `Apply (resolved_module_path_of_cpath a, module_path_of_cpath b)
+      `Apply (resolved_module_path_of_cpath a, resolved_module_path_of_cpath b)
   | `Alias (a, b) ->
       `Alias (resolved_module_path_of_cpath a, resolved_module_path_of_cpath b)
   | `Module (p, m) -> `Module (resolved_module_path_of_cpath_parent p, m)
@@ -474,9 +474,8 @@ let rec unresolve_resolved_module_path : Resolved.module_ -> module_ = function
   | `Module (p, m) ->
       `Dot (unresolve_resolved_parent_path p, ModuleName.to_string m)
   | `Canonical (m, _) -> unresolve_resolved_module_path m
-  | `Apply (m, `Resolved a) ->
+  | `Apply (m, a) ->
       `Apply (unresolve_resolved_module_path m, unresolve_resolved_module_path a)
-  | `Apply (m, p) -> `Apply (unresolve_resolved_module_path m, p)
   | `Alias (_, m) -> unresolve_resolved_module_path m
   | `OpaqueModule m -> unresolve_resolved_module_path m
 
