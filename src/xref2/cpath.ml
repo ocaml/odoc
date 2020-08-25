@@ -343,6 +343,8 @@ and is_resolved_module_hidden :
  fun ~weak_canonical_test ->
   let rec inner = function
     | `Local _ -> false
+    | `Identifier (`Module (_, t)) when ModuleName.is_internal t -> true
+    | `Identifier (`Module _) -> false
     | `Identifier _ -> false
     | `Hidden _ -> true
     | `Canonical (_, `Resolved _) -> false
@@ -364,7 +366,7 @@ and is_resolved_parent_hidden :
 
 and is_module_type_hidden : module_type -> bool = function
   | `Resolved r -> is_resolved_module_type_hidden r
-  | `Identifier (_, b) -> b
+  | `Identifier (id, b) -> b || is_resolved_module_type_hidden (`Identifier id)
   | `Local (_, b) -> b
   | `Substituted p -> is_module_type_hidden p
   | `Dot (p, _) -> is_module_hidden p
@@ -372,7 +374,8 @@ and is_module_type_hidden : module_type -> bool = function
 
 and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `Local _ -> false
-  | `Identifier _ -> false
+  | `Identifier (`ModuleType (_, t)) when ModuleTypeName.is_internal t -> true
+  | `Identifier (`ModuleType _) -> false
   | `Substituted p -> is_resolved_module_type_hidden p
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
@@ -381,7 +384,7 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
-  | `Identifier (_, b) -> b
+  | `Identifier (id, b) -> b || is_resolved_type_hidden (`Identifier (id :> Identifier.Path.Type.t))
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
   | `Dot (p, _) -> is_module_hidden p
@@ -390,14 +393,23 @@ and is_type_hidden : type_ -> bool = function
 
 and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `Local _ -> false
-  | `Identifier _ -> false
+  | `Identifier (`Type (_, t)) when TypeName.is_internal t -> true
+  | `Identifier (`ClassType (_, t)) when ClassTypeName.is_internal t -> true
+  | `Identifier (`Class (_, t)) when ClassName.is_internal t -> true
+  | `Identifier (`Type (_, _)) -> false
+  | `Identifier (`ClassType (_, _)) -> false
+  | `Identifier (`Class (_, _)) -> false
+  | `Identifier (`CoreType _) -> false
   | `Substituted p -> is_resolved_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
 and is_resolved_class_type_hidden : Resolved.class_type -> bool = function
   | `Local _ -> false
-  | `Identifier _ -> false
+  | `Identifier (`ClassType (_, t)) when ClassTypeName.is_internal t -> true
+  | `Identifier (`Class (_, t)) when ClassName.is_internal t -> true
+  | `Identifier (`ClassType _) -> false
+  | `Identifier (`Class (_, _)) -> false
   | `Substituted p -> is_resolved_class_type_hidden p
   | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
