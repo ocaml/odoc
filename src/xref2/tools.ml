@@ -369,7 +369,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
     if mark_substituted then `Substituted arg_path else arg_path
   in
 
-  let path = `Apply (func_path, `Resolved substitution) in
+  let path = `Apply (func_path, substitution) in
   Ok
     ( path,
       Subst.module_
@@ -495,7 +495,7 @@ and lookup_module :
         of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) -> Ok m
     | `Substituted x -> lookup_module ~mark_substituted env x
-    | `Apply (functor_path, `Resolved argument_path) -> (
+    | `Apply (functor_path, argument_path) -> (
         match lookup_module ~mark_substituted env functor_path with
         | Ok functor_module ->
             let functor_module = Component.Delayed.get functor_module in
@@ -520,7 +520,6 @@ and lookup_module :
     | `SubstAlias (_, p) -> lookup_module ~mark_substituted env p
     | `Hidden p -> lookup_module ~mark_substituted env p
     | `Canonical (p, _) -> lookup_module ~mark_substituted env p
-    | `Apply (_, _) -> Error `Unresolved_apply
     | `OpaqueModule m -> lookup_module ~mark_substituted env m
   in
   LookupModuleMemo.memoize lookup env' (m, path')
@@ -917,10 +916,10 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
   match path with
   | `Local _ | `Identifier _ -> path
   | `Substituted x -> `Substituted (reresolve_module env x)
-  | `Apply (functor_path, `Resolved argument_path) ->
+  | `Apply (functor_path, argument_path) ->
       `Apply
         ( reresolve_module env functor_path,
-          `Resolved (reresolve_module env argument_path) )
+          (reresolve_module env argument_path) )
   | `Module (parent, name) -> `Module (reresolve_parent env parent, name)
   | `Alias (p1, p2) -> `Alias (reresolve_module env p1, reresolve_module env p2)
   | `Subst (p1, p2) ->
@@ -948,12 +947,6 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
               `Resolved (simplify_resolved_module_path env p2') )
       | Error _ -> `Canonical (reresolve_module env p, p2)
       | exception _ -> `Canonical (reresolve_module env p, p2) )
-  | `Apply (p, p2) -> (
-      match
-        resolve_module ~mark_substituted:true ~add_canonical:false env p2
-      with
-      | Ok (p2', _) -> `Apply (reresolve_module env p, `Resolved p2')
-      | Error _ -> `Apply (reresolve_module env p, p2) )
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
 
 and reresolve_module_type :
@@ -1329,11 +1322,9 @@ and find_external_module_path :
       | Some x, None -> Some x
       | None, Some x -> Some x
       | None, None -> None )
-  | `Apply (x, `Resolved y) ->
-      find_external_module_path x >>= fun x ->
-      find_external_module_path y >>= fun y -> Some (`Apply (x, `Resolved y))
   | `Apply (x, y) ->
-      find_external_module_path x >>= fun x -> Some (`Apply (x, y))
+      find_external_module_path x >>= fun x ->
+      find_external_module_path y >>= fun y -> Some (`Apply (x, y))
   | `Identifier x -> Some (`Identifier x)
   | `OpaqueModule m ->
       find_external_module_path m >>= fun x -> Some (`OpaqueModule x)

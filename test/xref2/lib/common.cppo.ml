@@ -506,7 +506,7 @@ module LangUtils = struct
         and resolved_path : Format.formatter -> Odoc_model.Paths.Path.Resolved.t -> unit = fun ppf p ->
             let cast p = (p :> Odoc_model.Paths.Path.Resolved.t) in 
             match p with
-            | `Apply (p1, p2) -> Format.fprintf ppf "%a(%a)" resolved_path (cast p1) path (p2 :> Odoc_model.Paths.Path.t)
+            | `Apply (p1, p2) -> Format.fprintf ppf "%a(%a)" resolved_path (cast p1) resolved_path (cast p2)
             | `Identifier p -> Format.fprintf ppf "global(%a)" identifier p
             | `Alias (path, realpath) -> Format.fprintf ppf "(%a -> %a)" resolved_path (cast path) resolved_path (cast realpath)
             | `Subst (modty, m) -> Format.fprintf ppf "(%a subst-> %a)" resolved_path (cast modty) resolved_path (cast m)

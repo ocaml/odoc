@@ -495,6 +495,7 @@ module Path = struct
     let rec inner = function
     | `Identifier (`ModuleType (_, m)) when Names.ModuleTypeName.is_internal m -> true
     | `Identifier (`Type (_, t)) when Names.TypeName.is_internal t -> true
+    | `Identifier (`Module (_, m)) when Names.ModuleName.is_internal m -> true
     | `Identifier _ -> false
     | `Canonical (_, `Resolved _) -> false
     | `Canonical (x, _) -> inner (x : module_ :> any)

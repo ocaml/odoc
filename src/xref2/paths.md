@@ -261,8 +261,7 @@ path as this `` `Subst `` constructor:
          `Module
            (`Apply
               (`Identifier (`Module (`Root (Common.root, Root), F)),
-               `Resolved
-                 (`Identifier (`Module (`Root (Common.root, Root), M)))),
+               `Identifier (`Module (`Root (Common.root, Root), M))),
             N)),
       t))
 ```

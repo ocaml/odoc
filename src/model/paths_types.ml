@@ -219,7 +219,7 @@ sig
     | `Module of module_ * ModuleName.t
     (* TODO: The canonical path should be a reference not a path *)
     | `Canonical of module_ * Path.module_
-    | `Apply of module_ * Path.module_
+    | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_
     ]
@@ -237,7 +237,7 @@ sig
     | `Hidden of module_
     | `Module of module_ * ModuleName.t
     | `Canonical of module_ * Path.module_
-    | `Apply of module_ * Path.module_
+    | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_
     ]
