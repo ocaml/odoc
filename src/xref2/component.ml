@@ -771,7 +771,7 @@ module Fmt = struct
     | `Apply (p1, p2) ->
         Format.fprintf ppf "%a(%a)" module_path p1 module_path p2
     | `Identifier (id, b) ->
-        Format.fprintf ppf "resolved(%a, %b)" model_identifier
+        Format.fprintf ppf "identifier(%a, %b)" model_identifier
           (id :> Odoc_model.Paths.Identifier.t)
           b
     | `Local (id, b) -> Format.fprintf ppf "local(%a,%b)" Ident.fmt id b
