@@ -72,8 +72,8 @@ let truncated_before : Location.span -> Error.t =
 let truncated_param : Location.span -> Error.t =
   Error.make "'@param' expects parameter name on the same line."
 
-let truncated_raise : Location.span -> Error.t =
-  Error.make "'@raise' expects exception constructor on the same line."
+let truncated_raise : string -> Location.span -> Error.t =
+  Error.make "'%s' expects exception constructor on the same line."
 
 let truncated_see : Location.span -> Error.t =
   Error.make

@@ -32,7 +32,10 @@ val j : int
 val k : int
 
 (** @raise *)
-val l : int
+val l1 : int
+
+(** @raises *)
+val l2 : int
 
 (** @see *)
 val m : int

@@ -365,10 +365,10 @@ rule token input = parse
   | "@param" horizontal_space+ ((_ # space_char)+ as name)
     { emit input (`Tag (`Param name)) }
 
-  | "@raise" horizontal_space+ ((_ # space_char)+ as name)
+  | ("@raise" | "@raises") horizontal_space+ ((_ # space_char)+ as name)
     { emit input (`Tag (`Raise name)) }
 
-  | "@return"
+  | ("@return" | "@returns")
     { emit input (`Tag `Return) }
 
   | "@see" horizontal_space* '<' ([^ '>']* as url) '>'
@@ -420,8 +420,8 @@ rule token input = parse
     { warning input Parse_error.truncated_param;
       emit input (`Tag (`Param "")) }
 
-  | "@raise"
-    { warning input Parse_error.truncated_raise;
+  | ("@raise" | "@raises") as tag
+    { warning input (Parse_error.truncated_raise tag);
       emit input (`Tag (`Raise "")) }
 
   | "@before"

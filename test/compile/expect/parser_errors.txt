@@ -23,22 +23,24 @@ File "cases/parser_errors.mli", line 31, characters 4-10:
 '@param' expects parameter name on the same line.
 File "cases/parser_errors.mli", line 34, characters 4-10:
 '@raise' expects exception constructor on the same line.
-File "cases/parser_errors.mli", line 37, characters 4-8:
+File "cases/parser_errors.mli", line 37, characters 4-11:
+'@raises' expects exception constructor on the same line.
+File "cases/parser_errors.mli", line 40, characters 4-8:
 '@see' should be followed by <url>, 'file', or "document title".
-File "cases/parser_errors.mli", line 40, characters 4-15:
+File "cases/parser_errors.mli", line 43, characters 4-15:
 Unknown tag '@UnknownTag'.
-File "cases/parser_errors.mli", line 43, characters 4-5:
+File "cases/parser_errors.mli", line 46, characters 4-5:
 Unpaired '}' (end of markup).
 Suggestion: try '\}'.
-File "cases/parser_errors.mli", line 46, characters 4-5:
+File "cases/parser_errors.mli", line 49, characters 4-5:
 Unpaired ']' (end of code).
 Suggestion: try '\]'.
-File "cases/parser_errors.mli", line 49, characters 4-35:
+File "cases/parser_errors.mli", line 52, characters 4-35:
 '{%invalid:': bad raw markup target.
 Suggestion: try '{%html:...%}'.
-File "cases/parser_errors.mli", line 53, characters 4-5:
+File "cases/parser_errors.mli", line 56, characters 4-5:
 Unpaired '}' (end of markup).
 Suggestion: try '\}'.
-File "cases/parser_errors.mli", line 56, characters 4-18:
+File "cases/parser_errors.mli", line 59, characters 4-18:
 '{x bad markup}': bad markup.
 Suggestion: did you mean '{!x bad markup}' or '[x bad markup]'?
