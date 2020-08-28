@@ -1450,7 +1450,7 @@ struct
         O.documentedSrc link, Some page
     in
     let summary =
-      match t.expr with
+      match expr with
       | None -> O.noop
       | Some expr ->
         O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
