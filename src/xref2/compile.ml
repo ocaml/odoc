@@ -227,91 +227,36 @@ and module_ : Env.t -> Module.t -> Module.t =
   let open Module in
   if m.hidden then m
   else
-    let extra_expansion_needed =
-      match m.type_ with
-      | ModuleType (Signature _) -> false (* AlreadyASig *)
-      | ModuleType _ -> true
-      | Alias _ -> false
-      (* Aliases are expanded if necessary during link *)
-    in
-    (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
-    match Env.(lookup_by_id s_module) m.id env with
-    | None ->
-        Errors.report ~what:(`Module m.id) `Lookup;
-        m
-    | Some (`Module (_, m')) ->
-        let m' = Component.Delayed.get m' in
-        let env' =
-          Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env
-        in
-        let expansion =
-          let sg_id = (m.id :> Id.Signature.t) in
-          if not extra_expansion_needed then m.expansion
-          else
-            match
-              Expand_tools.expansion_of_module env m.id ~strengthen:true m'
-            with
-            | Ok (env, _, ce) ->
-                let e = Lang_of.(module_expansion empty sg_id ce) in
-                Some (expansion env sg_id e)
-            | Error `OpaqueModule -> None
-            | Error e ->
-                Errors.report ~what:(`Module m.id) ~tools_error:e `Expand;
-                m.expansion
-        in
         {
           m with
-          type_ = module_decl env' (m.id :> Id.Signature.t) m.type_;
-          expansion;
-        }
+          type_ = module_decl env (m.id :> Id.Signature.t) m.type_;
+          }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
   let open Module in
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias p -> (
+  | Alias (p, expn) -> (
       let cp' = Component.Of_Lang.(module_path empty p) in
       let cp = Cpath.unresolve_module_path cp' in
       match Tools.resolve_module_path env cp with
       | Ok p' ->
-          Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
-      | Error _ -> Alias p )
+          Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'), expn)
+      | Error _ -> Alias (p, expn ))
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let open ModuleType in
-  let open Utils.ResultMonad in
   let sg_id = (m.id :> Id.Signature.t) in
   (* Format.fprintf Format.err_formatter "Handling module type: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
-  let expand m' env =
+  let expr =
     match m.expr with
-    | None -> Ok (None, None)
-    | Some (Signature sg) ->
-        let sg' = signature env (m.id :> Id.Signature.t) sg in
-        Ok (Some Module.AlreadyASig, Some (Signature sg'))
-    | Some expr ->
-        ( match Expand_tools.expansion_of_module_type env m.id m' with
-        | Ok (env, _, ce) ->
-            let e = Lang_of.(module_expansion empty sg_id ce) in
-            Ok (env, Some e)
-        | Error `OpaqueModule -> Ok (env, None)
-        | Error e -> Error (Some e, `Expand) )
-        >>= fun (env, expansion') ->
-        Ok
-          ( Opt.map (expansion env sg_id) expansion',
-            Some (module_type_expr env (m.id :> Id.Signature.t) expr) )
+    | None -> None
+    | Some e -> Some (module_type_expr env sg_id e)
   in
-  match
-    Env.(lookup_by_id s_module_type) m.id env |> of_option ~error:(None, `Lookup)
-    >>= fun (`ModuleType (_, m')) ->
-    let env = Env.add_module_type_functor_args m' m.id env in
-    expand m' env
-  with
-  | Ok (expansion, expr') -> { m with expr = expr'; expansion }
-  | Error (tools_error, action) ->
-      Errors.report ~what:(`Module_type m.id) ?tools_error action;
-      m
+  {m with expr}
+
 
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
@@ -330,14 +275,12 @@ and include_ : Env.t -> Include.t -> Include.t =
       Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
       i
   | Ok (_, ce) ->
-
       let map = { Lang_of.empty with shadowed = i.expansion.shadowed } in
-
-      let e = Lang_of.(module_expansion map i.parent ce) in
+      let e = Lang_of.(simple_expansion map i.parent ce) in
 
       let expansion_sg =
         match e with
-        | Module.Signature sg -> sg
+        | ModuleType.Signature sg -> sg
         | _ -> failwith "Expansion shouldn't be anything other than a signature"
       in
       let expansion =
@@ -351,15 +294,14 @@ and include_ : Env.t -> Include.t -> Include.t =
 
       { i with decl = module_decl env i.parent i.decl; expansion }
 
-and expansion : Env.t -> Id.Signature.t -> Module.expansion -> Module.expansion
+and simple_expansion : Env.t -> Id.Signature.t -> ModuleType.simple_expansion -> ModuleType.simple_expansion
     =
-  let open Module in
   fun env id e ->
     match e with
-    | AlreadyASig -> AlreadyASig
     | Signature sg -> Signature (signature env id sg)
-    | Functor (args, sg) ->
-        Functor (List.map (functor_parameter env) args, signature env id sg)
+    | Functor (param, sg) ->
+        let env' = Env.add_functor_parameter param env in
+        Functor (functor_parameter env param, simple_expansion env' (`Result id) sg)
 
 and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
  fun env param ->
@@ -369,39 +311,9 @@ and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
 
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
- fun env' a ->
-  let open Utils.ResultMonad in
-  let sg_id = (a.id :> Id.Signature.t) in
-  let get_module_type_expr = function
-    | Component.Module.ModuleType expr -> Ok expr
-    | _ -> Error `Resolve_module_type
-  in
-  match
-    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
-    >>= fun (`Module (_, functor_arg)) ->
-    let functor_arg = Component.Delayed.get functor_arg in
-    let env =
-      Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
-    in
-    get_module_type_expr functor_arg.type_ >>= fun expr ->
-    match Expand_tools.expansion_of_module_type_expr env sg_id expr with
-    | Ok (env, _, ce) ->
-        let e = Lang_of.(module_expansion empty sg_id ce) in
-        Ok (env, Some e)
-    | Error `OpaqueModule -> Ok (env, None)
-    | Error e ->
-        Errors.report ~what:(`Functor_parameter a.id) ~tools_error:e `Expand;
-        Ok (env, None)
-  with
-  | Ok (env, expn) ->
-      {
-        a with
-        expr = module_type_expr env (a.id :> Id.Signature.t) a.expr;
-        expansion = Component.Opt.map (expansion env sg_id) expn;
-      }
-  | Error e ->
-      Errors.report ~what:(`Functor_parameter a.id) e;
-      a
+ fun env a ->
+  { a with
+    expr = module_type_expr env (a.id :> Id.Signature.t) a.expr }
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -508,36 +420,52 @@ and module_type_expr :
         | Error _ -> (sg_res, env, lsub :: subs) )
   in
 
+  let get_expansion e =
+    let ce = Component.Of_Lang.(module_type_expr empty e) in
+    match Expand_tools.expansion_of_module_type_expr env id ce with
+    | Ok (_, _, ce) ->
+      let e = Lang_of.simple_expansion Lang_of.empty id ce in
+      Some (simple_expansion env id e)
+    | Error _ ->
+      None
+  in
+
   let rec inner resolve_signatures = function
     | Signature s ->
         if resolve_signatures then Signature (signature env id s)
         else Signature s
-    | Path p -> Path (module_type_path env p)
-    | With (expr, subs) -> (
+    | Path {p_path; _} as e ->
+      let p_expansion = get_expansion e in
+      Path {p_path = module_type_path env p_path; p_expansion }
+    | With ({w_substitutions; _} as w, expr) as e -> (
         let expr = inner false expr in
         let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
+        (* Format.eprintf "Handling with expression (%a)\n%!"
+          Component.Fmt.module_type_expr cexpr; *)
+
         let rec find_parent : Component.ModuleType.expr -> Cfrag.root option =
          fun expr ->
           match expr with
           | Component.ModuleType.Signature _ -> None
-          | Path (`Resolved p) -> Some (`ModuleType p)
+          | Path {p_path=`Resolved p; _} -> Some (`ModuleType p)
           | Path _ -> None
-          | With (e, _) -> find_parent e
+          | With (_, e) -> find_parent e
           | Functor _ -> failwith "Impossible"
-          | TypeOf (MPath (`Resolved p)) 
-          | TypeOf (Struct_include (`Resolved p)) -> Some (`Module p)
+          | TypeOf {t_desc=MPath (`Resolved p); _}
+          | TypeOf {t_desc=Struct_include (`Resolved p); _} -> Some (`Module p)
           | TypeOf _ -> None
         in
+        let w_expansion = get_expansion e in
         match find_parent cexpr with
-        | None -> With (expr, subs)
+        | None -> With ({w_substitutions; w_expansion}, expr)
         | Some parent -> (
             match
               Tools.signature_of_module_type_expr ~mark_substituted:true env
                 cexpr
             with
             | Error e ->
-                Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
-                With (expr, subs)
+            Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
+            With (w, expr)
             | Ok sg ->
                 let fragment_root =
                   match parent with (`ModuleType _ | `Module _) as x -> x
@@ -545,16 +473,22 @@ and module_type_expr :
                 let _, _, subs =
                   List.fold_left
                     (resolve_sub ~fragment_root)
-                    (Ok sg, env, []) subs
+                    (Ok sg, env, []) w_substitutions
                 in
                 let subs = List.rev subs in
-                With (expr, subs) ) )
+                With ({w_substitutions=subs; w_expansion}, expr)))
     | Functor (param, res) ->
         let param' = functor_parameter env param in
-        let res' = module_type_expr env id res in
+        let env' = Env.add_functor_parameter param env in
+        let res' = module_type_expr env' id res in
         Functor (param', res')
-    | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
-    | TypeOf (Struct_include p) -> TypeOf (Struct_include (module_path env p))
+    | TypeOf {t_desc; _} as e ->
+      let t_expansion = get_expansion e in
+      let t_desc = match t_desc with
+        | MPath p -> MPath (module_path env p)
+        | Struct_include p -> Struct_include (module_path env p)
+      in
+      TypeOf {t_desc; t_expansion}
   in
   inner true expr
 

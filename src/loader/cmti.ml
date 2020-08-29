@@ -487,11 +487,11 @@ let rec read_with_constraint env parent (_, frag, constr) =
 and read_module_type env parent label_parent mty =
   let open ModuleType in
     match mty.mty_desc with
-    | Tmty_ident(p, _) -> Path (Env.Path.read_module_type env p)
+    | Tmty_ident(p, _) -> Path { p_path = Env.Path.read_module_type env p; p_expansion = None }
     | Tmty_signature sg -> Signature (read_signature env parent sg)
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     | Tmty_functor(parameter, res) ->
-        let parameter, env =
+        let f_parameter, env =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
@@ -503,18 +503,13 @@ and read_module_type env parent label_parent mty =
             in
             let id = `Parameter(parent, ParameterName.of_string name) in
             let arg = read_module_type env id label_parent arg in
-            let expansion =
-                match arg with
-                | Signature _ -> Some Module.AlreadyASig
-                | _ -> None
-              in
-            Named { id; expr = arg; expansion; display_expr=None }, env
+            Named { id; expr = arg; }, env
         in
         let res = read_module_type env (`Result parent) label_parent res in
-        Functor(parameter, res)
+        Functor (f_parameter, res)
 #else
     | Tmty_functor(id, _, arg, res) ->
-        let arg =
+        let f_parameter =
           match arg with
           | None -> Odoc_model.Lang.FunctorParameter.Unit
           | Some arg ->
@@ -526,24 +521,24 @@ and read_module_type env parent label_parent mty =
                 | Signature _ -> Some Module.AlreadyASig
                 | _ -> None
               in
-              Named { FunctorParameter. id; expr = arg; expansion; display_expr = None }
+              Named { FunctorParameter. id; expr = arg }
         in
         let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
         let res = read_module_type env (`Result parent) label_parent res in
-        Functor(arg, res)
+        Functor( f_parameter, res)
 #endif
     | Tmty_with(body, subs) ->
       let body = read_module_type env parent label_parent body in
       let subs = List.map (read_with_constraint env label_parent) subs in
-          With(body, subs)
+          With({w_substitutions=subs; w_expansion=None}, body)
     | Tmty_typeof mexpr ->
         let decl =
           match mexpr.mod_desc with
           | Tmod_ident(p, _) ->
-            TypeOf (MPath (Env.Path.read_module env p))
+            TypeOf {t_desc = MPath (Env.Path.read_module env p); t_expansion=None}
           | Tmod_structure {str_items = [{str_desc = Tstr_include {incl_mod; _}; _}]; _} -> begin
             match Typemod.path_of_module incl_mod with
-            | Some p -> TypeOf (Struct_include (Env.Path.read_module env p))
+            | Some p -> TypeOf {t_desc=Struct_include (Env.Path.read_module env p); t_expansion=None}
             | None ->
               !read_module_expr env parent label_parent mexpr 
             end
@@ -559,12 +554,7 @@ and read_module_type_declaration env parent mtd =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t) container) mtd.mtd_type in
-  let expansion =
-    match expr with
-    | Some (Signature _) -> Some Module.AlreadyASig
-    | _ -> None
-  in
-    {id; doc; expr; display_expr=None; expansion}
+    {id; doc; expr;}
 
 and read_module_declaration env parent md =
   let open Module in
@@ -589,7 +579,7 @@ and read_module_declaration env parent md =
   in
   let type_ =
     match md.md_type.mty_desc with
-    | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p)
+    | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p, None)
     | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) container md.md_type)
   in
   let hidden =
@@ -603,12 +593,8 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  let expansion =
-    match type_ with
-    | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
-    | _ -> None
-  in
-  Some {id; doc; type_; expansion; canonical; hidden; display_type = None}
+  
+  Some {id; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -626,7 +612,7 @@ and read_module_declarations env parent mds =
 
 and read_module_equation env p =
   let open Module in
-    Alias (Env.Path.read_module env p)
+    Alias (Env.Path.read_module env p, None)
 
 and read_signature_item env parent item =
   let open Signature in

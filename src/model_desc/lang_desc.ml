@@ -10,20 +10,11 @@ end
 
 (** {3 Module} *)
 
-let rec module_expansion =
+let rec module_decl =
   let open Lang.Module in
   Variant
     (function
-    | AlreadyASig -> C0 "AlreadyASig"
-    | Signature x -> C ("Signature", x, signature_t)
-    | Functor (x1, x2) ->
-        C ("Functor", (x1, x2), Pair (List functorparameter_t, signature_t)))
-
-and module_decl =
-  let open Lang.Module in
-  Variant
-    (function
-    | Alias x -> C ("Alias", (x :> Paths.Path.t), path)
+    | Alias (x, y) -> C ("Alias", ((x :> Paths.Path.t), y), Pair (path, Option simple_expansion))
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
 
 and module_t =
@@ -38,8 +29,6 @@ and module_t =
           (fun t -> (t.canonical :> (Paths.Path.t * Paths.Reference.t) option)),
           Option (Pair (path, reference)) );
       F ("hidden", (fun t -> t.hidden), bool);
-      F ("display_type", (fun t -> t.display_type), Option module_decl);
-      F ("expansion", (fun t -> t.expansion), Option module_expansion);
     ]
 
 (** {3 FunctorParameter} *)
@@ -49,8 +38,6 @@ and functorparameter_parameter =
     [
       F ("id", (fun t -> t.id), identifier);
       F ("expr", (fun t -> t.expr), moduletype_expr);
-      F ("display_expr", (fun t -> t.display_expr), Option moduletype_expr);
-      F ("expansion", (fun t -> t.expansion), Option module_expansion);
     ]
 
 and functorparameter_t =
@@ -80,20 +67,48 @@ and moduletype_type_of_desc =
     | MPath x -> C ("MPath", (x :> Paths.Path.t), path)
     | Struct_include x -> C ("Struct_include", (x :> Paths.Path.t), path))
 
+and simple_expansion =
+  let open Lang.ModuleType in
+  Variant
+    (function
+    | Signature sg -> C ("Signature", sg, signature_t)
+    | Functor (p, e) -> C ("Functor", (p, e), Pair (functorparameter_t, simple_expansion)))
+
+and moduletype_path_t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("p_expansion", (fun t -> t.p_expansion), Option simple_expansion);
+      F ("p_path", (fun t -> (t.p_path :> Paths.Path.t)), path);
+    ]
+
+and moduletype_with_t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("w_substitutions", (fun t -> t.w_substitutions), List moduletype_substitution);
+      F ("w_expansion", (fun t -> t.w_expansion), Option simple_expansion);
+    ]
+
+and moduletype_typeof_t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("t_desc", (fun t -> t.t_desc), moduletype_type_of_desc);
+      F ("t_expansion", (fun t -> t.t_expansion), Option simple_expansion);
+    ]
+
 and moduletype_expr =
   let open Lang.ModuleType in
   Variant
     (function
-    | Path x -> C ("Path", (x :> Paths.Path.t), path)
+    | Path x -> C ("Path", x, moduletype_path_t)
     | Signature x -> C ("Signature", x, signature_t)
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
-    | With (x1, x2) ->
-        C
-          ( "With",
-            (x1, x2),
-            Pair (moduletype_expr, List moduletype_substitution) )
-    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc))
+    | With (t, e) ->
+        C ( "With", (t, e), Pair (moduletype_with_t, moduletype_expr) )
+    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
 
 and moduletype_t =
   let open Lang.ModuleType in
@@ -102,11 +117,6 @@ and moduletype_t =
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), docs);
       F ("expr", (fun t -> t.expr), Option moduletype_expr);
-      F
-        ( "display_expr",
-          (fun t -> t.display_expr),
-          Option (Option moduletype_expr) );
-      F ("expansion", (fun t -> t.expansion), Option module_expansion);
     ]
 
 (** {3 ModuleSubstitution} *)

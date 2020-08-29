@@ -307,9 +307,10 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
     match mty with
     | Component.ModuleType.Functor (Named arg, expr) ->
         Ok (arg.Component.FunctorParameter.id, expr)
-    | Component.ModuleType.Path mty_path -> (
-        match resolve_module_type ~mark_substituted:false env mty_path with
-        | Result.Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
+    | Component.ModuleType.Path { p_path; _ }-> (
+        match resolve_module_type ~mark_substituted:false env p_path with
+        | Ok
+            (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule )
     | _ -> Error `ApplyNotFunctor
@@ -348,9 +349,9 @@ and get_substituted_module_type :
  fun env expr ->
   (* Format.fprintf Format.err_formatter ">>>expr=%a\n%!"  Component.Fmt.module_type_expr expr; *)
   match expr with
-  | Component.ModuleType.Path p' ->
-      if Cpath.is_module_type_substituted p' then
-        match resolve_module_type ~mark_substituted:true env p' with
+  | Component.ModuleType.Path {p_path; _} ->
+      if Cpath.is_module_type_substituted p_path then
+        match resolve_module_type ~mark_substituted:true env p_path with
         | Ok (resolved_path, _) -> Some resolved_path
         | Error _ ->
             (* Format.fprintf Format.err_formatter "<<<Unresolved!?\n%!";*) None
@@ -373,7 +374,7 @@ and get_module_path_modifiers :
     Env.t -> add_canonical:bool -> Component.Module.t -> _ option =
  fun env ~add_canonical m ->
   match m.type_ with
-  | Alias alias_path -> (
+  | Alias (alias_path, _) -> (
       (* Format.fprintf Format.err_formatter "alias to path: %a\n%!" Component.Fmt.module_path alias_path; *)
       match
         resolve_module ~mark_substituted:true ~add_canonical env alias_path
@@ -938,13 +939,13 @@ and module_type_expr_of_module_decl :
     Result.result =
  fun env decl ->
   match decl with
-  | Component.Module.Alias (`Resolved r) ->
+  | Component.Module.Alias (`Resolved r, _) ->
       lookup_module ~mark_substituted:false env r
       |> map_error (fun e -> `Parent (`Parent_module e))
       >>= fun m ->
       let m = Component.Delayed.get m in
       module_type_expr_of_module_decl env m.type_
-  | Component.Module.Alias path -> (
+  | Component.Module.Alias (path, _) -> (
       match
         resolve_module ~mark_substituted:false ~add_canonical:true env path
       with
@@ -999,23 +1000,22 @@ and signature_of_module_type_expr :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun ~mark_substituted env m ->
   match m with
-  | Component.ModuleType.Path p -> (
-      match resolve_module_type ~mark_substituted env p with
+  | Component.ModuleType.Path {p_path; _} -> (
+      match resolve_module_type ~mark_substituted env p_path with
       | Ok (_, mt) -> signature_of_module_type env mt
-      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
+      | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
   | Component.ModuleType.Signature s -> Ok s
-  | Component.ModuleType.With (s, subs) ->
+  | Component.ModuleType.With ({w_substitutions; _}, s) ->
       signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
-      handle_signature_with_subs ~mark_substituted env sg subs
+      handle_signature_with_subs ~mark_substituted env sg w_substitutions
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.Functor (Named arg, expr) ->
       ignore arg;
       signature_of_module_type_expr ~mark_substituted env expr
-  | Component.ModuleType.TypeOf (Struct_include p) ->
-      signature_of_module_path env ~strengthen:true p
-  | Component.ModuleType.TypeOf (MPath p) ->
-      signature_of_module_path env ~strengthen:false p
+  | Component.ModuleType.TypeOf { t_desc = Struct_include p; _} -> signature_of_module_path env ~strengthen:true p
+  | Component.ModuleType.TypeOf { t_desc = MPath p; _} -> signature_of_module_path env ~strengthen:false p
+    
 
 and signature_of_module_type :
     Env.t ->
@@ -1032,8 +1032,7 @@ and signature_of_module_decl :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
-  | Component.Module.Alias path ->
-      signature_of_module_path env ~strengthen:true path
+  | Component.Module.Alias (p, _) -> signature_of_module_path env ~strengthen:true p
   | Component.Module.ModuleType expr ->
       signature_of_module_type_expr ~mark_substituted:false env expr
 
@@ -1042,9 +1041,7 @@ and signature_of_module :
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env m ->
-  match m.expansion with
-  | Some (Signature sg) -> Ok sg
-  | _ -> signature_of_module_decl env m.type_
+   signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
     Env.t ->
@@ -1069,18 +1066,18 @@ and fragmap :
   let map_module_decl decl subst =
     let open Component.Module in
     match decl with
-    | Alias path ->
+    | Alias (path, _) ->
         signature_of_module_path env ~strengthen:true path >>= fun sg ->
         fragmap ~mark_substituted env subst sg >>= fun sg ->
         Ok (ModuleType (Signature sg))
     (* | ModuleType (With (mty', subs')) ->
         Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
-    | ModuleType mty' -> Ok (ModuleType (With (mty', [ subst ])))
+    | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, mty')))
   in
   let map_module m new_subst =
     let open Component.Module in
     map_module_decl m.type_ new_subst >>= fun type_ ->
-    Ok (Left { m with type_; expansion = None })
+    Ok (Left { m with type_ })
   in
   let rec map_signature tymap modmap items =
     List.fold_right
@@ -1159,14 +1156,14 @@ and fragmap :
               let type_ =
                 let open Component.Module in
                 match type_ with
-                | Alias (`Resolved p) ->
+                | Alias (`Resolved p, _) ->
                     let new_p =
                       if mark_substituted then `Substituted p else p
                     in
-                    Alias (`Resolved new_p)
+                    Alias (`Resolved new_p, None)
                 | Alias _ | ModuleType _ -> type_
               in
-              Ok (Left { m with Component.Module.type_; expansion = None })
+              Ok (Left { m with Component.Module.type_ })
             in
             map_signature None (Some (name, mapfn)) sg.items )
     | ModuleSubst (frag, p) -> (

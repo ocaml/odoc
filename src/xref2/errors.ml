@@ -155,7 +155,7 @@ let report ~what ?tools_error action =
     | Some e -> kind_of_error (e :> Tools_error.any)
     | None -> (
         match what with
-        | `Include (Component.Module.Alias cp) -> kind_of_module_cpath cp
+        | `Include (Component.Module.Alias (cp, _)) -> kind_of_module_cpath cp
         | `Module (`Root _) -> Some `Root
         | _ -> None )
   in

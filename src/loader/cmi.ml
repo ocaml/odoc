@@ -841,10 +841,10 @@ let read_class_declaration env parent id cld =
 let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
   let open ModuleType in
     match mty with
-    | Mty_ident p -> Path (Env.Path.read_module_type env p)
+    | Mty_ident p -> Path {p_path = Env.Path.read_module_type env p; p_expansion=None }
     | Mty_signature sg -> Signature (read_signature env parent sg)
     | Mty_functor(parameter, res) ->
-        let parameter, env =
+        let f_parameter, env =
           match parameter with
           | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
           | Named (id_opt, arg) ->
@@ -854,15 +854,10 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
               in
               let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
               let arg = read_module_type env id arg in
-              let expansion =
-                match arg with
-                | Signature _ -> Some Module.AlreadyASig
-                | _ -> None
-              in
-              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg; expansion; display_expr = None }), env
+              Odoc_model.Lang.FunctorParameter.Named ({ FunctorParameter. id; expr = arg }), env
         in
         let res = read_module_type env (`Result parent) res in
-        Functor(parameter, res)
+        Functor( f_parameter, res)
     | Mty_alias _ -> assert false
 
 and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_declaration) =
@@ -871,12 +866,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  let expansion =
-    match expr with
-    | Some (Signature _) -> Some Module.AlreadyASig
-    | _ -> None
-  in
-    {id; doc; expr; display_expr=None; expansion}
+  {id; doc; expr }
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
@@ -892,7 +882,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
   in
   let type_ =
     match md.md_type with
-    | Mty_alias p -> Alias (Env.Path.read_module env p)
+    | Mty_alias p -> Alias (Env.Path.read_module env p, None)
     | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) md.md_type)
   in
   let hidden =
@@ -900,12 +890,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
     | Some _ -> false
     | None -> Odoc_model.Root.contains_double_underscore (Ident.name ident)
   in
-  let expansion =
-    match type_ with
-    | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
-    | _ -> None
-  in
-    {id; doc; type_; expansion; canonical; hidden; display_type = None}
+    {id; doc; type_; canonical; hidden }
 
 and read_type_rec_status rec_status =
   let open Signature in

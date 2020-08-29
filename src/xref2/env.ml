@@ -337,8 +337,6 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
             type_ = ModuleType (Signature s);
             canonical = None;
             hidden = unit.hidden;
-            display_type = None;
-            expansion = Some AlreadyASig;
           }
       in
       let ty = Component.Of_Lang.(module_ empty m) in
@@ -544,6 +542,19 @@ let lookup_page name env =
       | None -> None
       | Some root -> Some (r.resolve_page root) )
 
+let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t = fun p t ->
+  match p with
+  | Unit -> t
+  | Named n ->
+    let m = Component.Module.{
+      doc = [];
+      type_ = ModuleType (Component.Of_Lang.(module_type_expr empty n.expr));
+      canonical = None;
+      hidden = false;
+    } in
+    add_module (n.id :> Paths_types.Identifier.reference_module)
+      (Component.Delayed.put_val m) [] t
+
 let add_functor_args' :
     Odoc_model.Paths.Identifier.Signature.t ->
     Component.ModuleType.expr ->
@@ -561,11 +572,9 @@ let add_functor_args' :
                   arg.Component.FunctorParameter.id ),
             {
               Component.Module.doc = [];
-              display_type = None;
               type_ = ModuleType arg.expr;
               canonical = None;
               hidden = false;
-              expansion = None;
             } )
           :: find_args (`Result parent) res
       | ModuleType.Functor (Unit, res) -> find_args (`Result parent) res

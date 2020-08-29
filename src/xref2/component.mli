@@ -61,20 +61,14 @@ end
 *)
 
 module rec Module : sig
-  type expansion =
-    | AlreadyASig
-    | Signature of Signature.t
-    | Functor of FunctorParameter.t list * Signature.t
 
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.expr
+  type decl = Alias of Cpath.module_ * ModuleType.simple_expansion option | ModuleType of ModuleType.expr
 
   type t = {
     doc : CComment.docs;
     type_ : decl;
     canonical : (Cpath.module_ * Odoc_model.Paths.Reference.Module.t) option;
     hidden : bool;
-    display_type : decl option;
-    expansion : expansion option;
   }
 end
 
@@ -161,7 +155,6 @@ and FunctorParameter : sig
   type parameter = {
     id : Ident.functor_parameter;
     expr : ModuleType.expr;
-    expansion : Module.expansion option;
   }
 
   type t = Named of parameter | Unit
@@ -178,17 +171,35 @@ and ModuleType : sig
     | MPath of Cpath.module_
     | Struct_include of Cpath.module_
 
-  type expr =
-    | Path of Cpath.module_type
+  type simple_expansion =
     | Signature of Signature.t
-    | With of expr * substitution list
+    | Functor of FunctorParameter.t * simple_expansion
+  
+  type path_t = {
+    p_expansion : simple_expansion option;
+    p_path : Cpath.module_type
+  }
+
+  type with_t = {
+    w_substitutions : substitution list;
+    w_expansion : simple_expansion option;
+  }
+
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option
+  }
+
+  type expr =
+    | Path of path_t
+    | Signature of Signature.t
+    | With of with_t * expr
     | Functor of FunctorParameter.t * expr
-    | TypeOf of type_of_desc
+    | TypeOf of typeof_t
 
   type t = {
     doc : CComment.docs;
     expr : expr option;
-    expansion : Module.expansion option;
   }
 end
 
@@ -459,10 +470,10 @@ module Fmt : sig
 
   val module_ : Format.formatter -> Module.t -> unit
 
-  val module_expansion : Format.formatter -> Module.expansion -> unit
-
   val module_type : Format.formatter -> ModuleType.t -> unit
 
+  val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
+  
   val module_type_expr : Format.formatter -> ModuleType.expr -> unit
 
   val functor_parameter : Format.formatter -> FunctorParameter.t -> unit
@@ -656,9 +667,6 @@ module Of_Lang : sig
     * Odoc_model.Paths_types.Reference.module_ )
     option ->
     (Cpath.module_ * Odoc_model.Paths_types.Reference.module_) option
-
-  val module_expansion :
-    map -> Odoc_model.Lang.Module.expansion -> Module.expansion
 
   val module_ : map -> Odoc_model.Lang.Module.t -> Module.t
 

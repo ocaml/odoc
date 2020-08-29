@@ -385,28 +385,25 @@ and type_expr s t =
     | Package p -> Package (type_package s p)
   with TypeReplacement y -> y
 
-and module_expansion s t =
-  let open Component.Module in
+and simple_expansion : t -> Component.ModuleType.simple_expansion -> Component.ModuleType.simple_expansion = fun s t ->
+  let open Component.ModuleType in
   match t with
-  | AlreadyASig -> AlreadyASig
   | Signature sg -> Signature (signature s sg)
   | Functor (arg, sg) ->
-      Functor (List.map (functor_parameter s) arg, signature s sg)
+      Functor (functor_parameter s arg, simple_expansion s sg)
 
 and module_type s t =
   let open Component.ModuleType in
   let expr =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
-  let expansion = option_ module_expansion s t.expansion in
-  { expr; expansion; doc = t.doc }
+  { expr; doc = t.doc }
 
 and functor_parameter s t =
   let open Component.FunctorParameter in
   match t with
   | Named arg ->
-      let expansion = option_ module_expansion s arg.expansion in
-      Named { arg with expr = module_type_expr s arg.expr; expansion }
+      Named { arg with expr = module_type_expr s arg.expr }
   | Unit -> Unit
 
 and module_type_type_of_desc s t =
@@ -418,13 +415,13 @@ and module_type_type_of_desc s t =
 and module_type_expr s t =
   let open Component.ModuleType in
   match t with
-  | Path p -> Path (module_type_path s p)
+  | Path {p_path; p_expansion} -> Path {p_path=module_type_path s p_path; p_expansion = option_ simple_expansion s p_expansion }
   | Signature sg -> Signature (signature s sg)
   | Functor (arg, expr) ->
       Functor (functor_parameter s arg, module_type_expr s expr)
-  | With (e, args) ->
-      With (module_type_expr s e, List.map (module_type_substitution s) args)
-  | TypeOf decl -> TypeOf (module_type_type_of_desc s decl)
+  | With ({ w_substitutions; w_expansion }, e) ->
+      With ({ w_substitutions = List.map (module_type_substitution s) w_substitutions; w_expansion = option_ simple_expansion s w_expansion}, module_type_expr s e)
+  | TypeOf { t_desc; t_expansion } -> TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = option_ simple_expansion s t_expansion}
 
 and module_type_substitution s sub =
   let open Component.ModuleType in
@@ -436,17 +433,16 @@ and module_type_substitution s sub =
 
 and module_decl s t =
   match t with
-  | Alias p -> Alias (module_path s p)
+  | Alias (p, e) -> Alias (module_path s p, option_ simple_expansion s e)
   | ModuleType t -> ModuleType (module_type_expr s t)
 
 and module_ s t =
   let open Component.Module in
   let type_ = module_decl s t.type_ in
-  let expansion = option_ module_expansion s t.expansion in
   let canonical =
     option_ (fun s (m1, m2) -> (module_path s m1, m2)) s t.canonical
   in
-  { t with type_; expansion; canonical; doc = t.doc }
+  { t with type_; canonical; doc = t.doc }
 
 and module_substitution s m =
   let open Component.ModuleSubstitution in
