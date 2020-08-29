@@ -19,12 +19,9 @@ open Paths
 (** {3 Modules} *)
 
 module rec Module : sig
-  type expansion =
-    | AlreadyASig
-    | Signature of Signature.t
-    | Functor of FunctorParameter.t list * Signature.t
-
-  type decl = Alias of Path.Module.t | ModuleType of ModuleType.expr
+  type decl =
+    | Alias of (Path.Module.t * ModuleType.simple_expansion option)
+    | ModuleType of ModuleType.expr
 
   type t = {
     id : Identifier.Module.t;
@@ -32,8 +29,6 @@ module rec Module : sig
     type_ : decl;
     canonical : (Path.Module.t * Reference.Module.t) option;
     hidden : bool;
-    display_type : decl option;
-    expansion : expansion option;
   }
 
   module Equation : sig
@@ -46,8 +41,6 @@ and FunctorParameter : sig
   type parameter = {
     id : Identifier.FunctorParameter.t;
     expr : ModuleType.expr;
-    display_expr : ModuleType.expr option;
-    expansion : Module.expansion option;
   }
 
   type t = Unit | Named of parameter
@@ -67,20 +60,37 @@ and ModuleType : sig
     | MPath of Path.Module.t
     | Struct_include of Path.Module.t
 
+  type simple_expansion =
+    | Signature of Signature.t
+    | Functor of FunctorParameter.t * simple_expansion
+
+  type path_t = {
+    p_expansion : simple_expansion option;
+    p_path : Path.ModuleType.t
+  }
+
+  type with_t = {
+    w_substitutions : substitution list;
+    w_expansion : simple_expansion option
+  }
+
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option
+  }
+
   type expr =
-    | Path of Path.ModuleType.t
+    | Path of path_t
     | Signature of Signature.t
     | Functor of FunctorParameter.t * expr
-    | With of expr * substitution list
-    | TypeOf of type_of_desc
+    | With of with_t * expr
+    | TypeOf of typeof_t
 
   type t = {
     id : Identifier.ModuleType.t;
     doc : Comment.docs;
     expr : expr option;
-    display_expr : expr option option;
     (* Optional override *)
-    expansion : Module.expansion option;
   }
 end =
   ModuleType

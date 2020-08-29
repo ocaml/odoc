@@ -265,16 +265,6 @@ module LangUtils = struct
                     let review x = ModuleType x in
                     let preview = function | ModuleType x -> Some x | _ -> None in
                     {review; preview}
-
-                let expansion : (t, expansion option) lens =
-                    let get m = m.expansion in
-                    let set expansion t = {t with expansion} in
-                    {get; set}
-                
-                let expansion_signature : (expansion, Lang.Signature.t) prism =
-                    let review x = Signature x in
-                    let preview = function | Signature x -> Some x | _ -> None in
-                    {review; preview}
             end
 
             module Include = struct
@@ -438,7 +428,7 @@ module LangUtils = struct
         and module_decl ppf d =
             let open Module in
             match d with
-            | Alias p ->
+            | Alias (p, _) ->
                 Format.fprintf ppf "= %a" path (p :> Odoc_model.Paths.Path.t)
             | ModuleType mt ->
                 Format.fprintf ppf ": %a" module_type_expr mt
@@ -454,9 +444,9 @@ module LangUtils = struct
         and module_type_expr ppf mt =
             let open ModuleType in
             match mt with
-            | Path p -> path ppf (p :> Odoc_model.Paths.Path.t)
+            | Path {p_path; _} -> path ppf (p_path :> Odoc_model.Paths.Path.t)
             | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
-            | With (expr,subs) -> Format.fprintf ppf "%a with [%a]" module_type_expr expr substitution_list subs
+            | With ({w_substitutions; _}, expr) -> Format.fprintf ppf "%a with [%a]" module_type_expr expr substitution_list w_substitutions
             | Functor (arg, res) -> Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr res
             | _ -> Format.fprintf ppf "unhandled module_type_expr"
 

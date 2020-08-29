@@ -110,6 +110,7 @@ val add_method :
   t ->
   t
 
+
 val add_module_functor_args :
   Component.Module.t -> Odoc_model.Paths_types.Identifier.path_module -> t -> t
 
@@ -178,6 +179,8 @@ val s_label_parent : Component.Element.label_parent scope
 
 (* val open_component_signature :
   Odoc_model.Paths_types.Identifier.signature -> Component.Signature.t -> t -> t *)
+
+val add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t
 
 val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 

@@ -509,41 +509,30 @@ and external_ map parent id e =
     primitives = e.primitives;
   }
 
-and module_expansion :
+and simple_expansion :
     maps ->
     Identifier.Signature.t ->
-    Component.Module.expansion ->
-    Lang.Module.expansion =
+    Component.ModuleType.simple_expansion ->
+    Lang.ModuleType.simple_expansion =
  fun map id e ->
-  let open Component.Module in
   let open Component.FunctorParameter in
   match e with
-  | AlreadyASig -> Lang.Module.AlreadyASig
   | Signature sg -> Signature (signature id map sg)
-  | Functor (args, sg) ->
-      let identifier, rev_args, map =
-        List.fold_left
-          (fun (id, args, map) arg ->
-            match arg with
-            | Named arg ->
-                let name = Ident.Name.typed_functor_parameter arg.id in
-                let identifier' = `Parameter (id, name) in
-                let identifier_result = `Result id in
-                let map =
-                  {
-                    map with
-                    functor_parameter =
-                      (arg.id, identifier') :: map.functor_parameter;
-                  }
-                in
-                let arg = functor_parameter map arg in
-                ( identifier_result,
-                  Odoc_model.Lang.FunctorParameter.Named arg :: args,
-                  map )
-            | Unit -> (`Result id, Unit :: args, map))
-          (id, [], map) args
+  | Functor (Named arg, sg) ->
+      let identifier = `Result id in
+      let name = Ident.Name.typed_functor_parameter arg.id in
+      let param_identifier = `Parameter (id, name) in
+      let map =
+        {
+          map with
+          functor_parameter =
+            (arg.id, param_identifier) :: map.functor_parameter;
+        }
       in
-      Functor (List.rev rev_args, signature identifier map sg)
+      let arg = functor_parameter map arg in
+      Functor (Named arg, simple_expansion map identifier sg)
+  | Functor (Unit, sg) ->
+      Functor (Unit, simple_expansion map (`Result id) sg)
 
 and combine_shadowed s1 s2 =
   let open Odoc_model.Lang.Include in
@@ -612,15 +601,12 @@ and module_ map parent id m =
       | None -> None
     in
     let map = { map with shadowed = empty_shadow } in
-    let expansion = Opt.map (module_expansion map identifier) m.expansion in
     {
       Odoc_model.Lang.Module.id;
       doc = docs (parent :> Identifier.LabelParent.t) m.doc;
       type_ = module_decl map identifier m.type_;
       canonical = canonical m.canonical;
       hidden = m.hidden;
-      display_type = Opt.map (module_decl map identifier) m.display_type;
-      expansion;
     }
   with e ->
     let bt = Printexc.get_backtrace () in
@@ -644,8 +630,8 @@ and module_decl :
     Odoc_model.Lang.Module.decl =
  fun map identifier d ->
   match d with
-  | Component.Module.Alias p ->
-      Odoc_model.Lang.Module.Alias (Path.module_ map p)
+  | Component.Module.Alias (p, s) ->
+      Odoc_model.Lang.Module.Alias (Path.module_ map p, Opt.map (simple_expansion map identifier) s)
   | ModuleType mty -> ModuleType (module_type_expr map identifier mty)
 
 and module_type_expr map identifier =
@@ -665,15 +651,15 @@ and module_type_expr map identifier =
             type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
   in
   function
-  | Component.ModuleType.Path p ->
-      Odoc_model.Lang.ModuleType.Path (Path.module_type map p)
+  | Component.ModuleType.Path {p_path; p_expansion} ->
+      Odoc_model.Lang.ModuleType.Path {p_path=Path.module_type map p_path; p_expansion=Opt.map (simple_expansion map identifier) p_expansion}
   | Signature s ->
       Signature
         (signature
            (identifier :> Odoc_model.Paths.Identifier.Signature.t)
            map s)
-  | With (expr, subs) ->
-      With (module_type_expr map identifier expr, List.map substitution subs)
+  | With ({w_substitutions; w_expansion}, expr) ->
+      With ({w_substitutions = List.map substitution w_substitutions; w_expansion=Opt.map (simple_expansion map identifier) w_expansion}, module_type_expr map identifier expr)
   | Functor (Named arg, expr) ->
       let name = Ident.Name.typed_functor_parameter arg.id in
       let identifier' = `Parameter (identifier, name) in
@@ -688,8 +674,8 @@ and module_type_expr map identifier =
           module_type_expr map (`Result identifier) expr )
   | Functor (Unit, expr) ->
       Functor (Unit, module_type_expr map (`Result identifier) expr)
-  | TypeOf (MPath p) -> TypeOf (MPath (Path.module_ map p))
-  | TypeOf (Struct_include p) -> TypeOf (Struct_include (Path.module_ map p))
+  | TypeOf {t_desc=MPath p; t_expansion} -> TypeOf {t_desc=MPath (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
+  | TypeOf {t_desc=Struct_include p; t_expansion} -> TypeOf {t_desc=Struct_include (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
 
 and module_type :
     maps ->
@@ -702,13 +688,10 @@ and module_type :
   let mty = Component.Delayed.get mty in
   let sig_id = (identifier :> Odoc_model.Paths.Identifier.Signature.t) in
   let map = { map with shadowed = empty_shadow } in
-  let expansion = Opt.map (module_expansion map sig_id) mty.expansion in
   {
     Odoc_model.Lang.ModuleType.id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
-    display_expr = None;
-    expansion;
   }
 
 and type_decl_constructor_argument :
@@ -856,21 +839,14 @@ and type_expr_object map parent o =
   in
   { Lang.TypeExpr.Object.fields = List.map field o.fields; open_ = o.open_ }
 
-and functor_parameter map f =
+and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
   let identifier = List.assoc f.id map.functor_parameter in
-  let expansion =
-    Opt.map
-      (module_expansion map (identifier :> Identifier.Signature.t))
-      f.expansion
-  in
   {
     Odoc_model.Lang.FunctorParameter.id = identifier;
     expr =
       module_type_expr map
         (identifier :> Odoc_model.Paths_types.Identifier.signature)
         f.expr;
-    display_expr = None;
-    expansion;
   }
 
 and exception_ map parent id (e : Component.Exception.t) :

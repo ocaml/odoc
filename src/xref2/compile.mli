@@ -6,12 +6,6 @@ val signature :
   Odoc_model.Lang.Signature.t ->
   Odoc_model.Lang.Signature.t
 
-val expansion :
-  Env.t ->
-  Odoc_model.Paths.Identifier.Signature.t ->
-  Odoc_model.Lang.Module.expansion ->
-  Odoc_model.Lang.Module.expansion
-
 type msg = [ `Msg of string ]
 
 val build_resolver :

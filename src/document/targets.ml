@@ -38,61 +38,53 @@ and signature (t : Odoc_model.Lang.Signature.t) =
   in
   add_items ~don't:false [] t
 
-and functor_argument arg =
-  let open Odoc_model.Lang.FunctorParameter in
-  match arg.expansion with
-  | None -> []
-  | Some expansion ->
-    let url = Url.Path.from_identifier arg.id in
-    let subpages = module_expansion expansion in
-    url :: subpages
-
-and module_expansion (t : Odoc_model.Lang.Module.expansion) =
+and simple_expansion (t : Odoc_model.Lang.ModuleType.simple_expansion) =
   match t with
-  | AlreadyASig -> [] (* FIXME. *)
   | Signature sg -> signature sg
-  | Functor (args, sg) ->
-    let subpages = signature sg in
-    List.fold_left args ~init:subpages ~f:(fun subpages arg ->
-      match arg with
-      | Odoc_model.Lang.FunctorParameter.Unit -> subpages
-      | Named arg ->
-        let arg_subpages = functor_argument arg in
-        arg_subpages @ subpages
-    )
+  | Functor (p, expn) ->
+    let subpages =
+      match p with
+      | Unit -> []
+      | Named { expr; _ } -> module_type_expr expr
+    in
+    subpages @ simple_expansion expn
+
+and module_type_expr (t : Odoc_model.Lang.ModuleType.expr) =
+  let open Odoc_model.Lang.ModuleType in
+  let opt_expansion e_opt =
+    match e_opt with
+    | Some e -> simple_expansion e
+    | None -> []
+  in
+  match t with
+  | Signature sg -> signature sg
+  | Functor (f_parameter, e) ->
+    let sub = 
+      match f_parameter with
+      | Unit -> []
+      | Named f -> module_type_expr f.expr
+    in
+    sub @ module_type_expr e
+  | Path { p_expansion = e_opt; _ } -> opt_expansion e_opt
+  | With ({ w_expansion = e_opt; _ }, _) (* Note, explicitly ignore RHS of With expression *)
+  | TypeOf {t_expansion = e_opt; _} ->
+    opt_expansion e_opt
 
 and module_ (t : Odoc_model.Lang.Module.t) =
-  match t.expansion with
-  | None -> []
-  | Some expansion ->
-    let expansion =
-      match expansion with
-      | AlreadyASig ->
-        begin match t.type_ with
-        | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
-          Odoc_model.Lang.Module.Signature sg
-        | _ -> assert false
-        end
-      | e -> e
-    in
-    let url = Url.Path.from_identifier t.id in
-    let subpages = module_expansion expansion in
-    url :: subpages
+  let url = Url.Path.from_identifier t.id in
+  let subpages = match t.type_ with
+    | Alias (_, Some e) -> simple_expansion e
+    | Alias (_, None) -> []
+    | ModuleType expr -> module_type_expr expr
+  in
+  url :: subpages
 
 and module_type (t : Odoc_model.Lang.ModuleType.t) =
-  match t.expansion with
+  match t.expr with
   | None -> []
-  | Some expansion ->
-    let expansion = match expansion with
-      | AlreadyASig ->
-        begin match t.expr with
-        | Some (Signature sg) -> Odoc_model.Lang.Module.Signature sg
-        | _ -> assert false
-        end
-      | e -> e
-    in
+  | Some expr ->
     let url = Url.Path.from_identifier t.id in
-    let subpages = module_expansion expansion in
+    let subpages = module_type_expr expr in
     url :: subpages
 
 and include_ (t : Odoc_model.Lang.Include.t) =

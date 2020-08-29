@@ -357,7 +357,7 @@ let rec read_module_expr env parent label_parent mexpr =
     | Tmod_structure str -> Signature (read_structure env parent str)
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     | Tmod_functor(parameter, res) ->
-        let parameter, env =
+        let f_parameter, env =
           match parameter with
           | Unit -> FunctorParameter.Unit, env
           | Named (id_opt, _, arg) ->
@@ -368,34 +368,25 @@ let rec read_module_expr env parent label_parent mexpr =
               in
               let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
               let arg = Cmti.read_module_type env id label_parent arg in
-              let expansion =
-                match arg with
-                | Signature _ -> Some Module.AlreadyASig
-                | _ -> None
-              in
-              Named { id; expr=arg; expansion; display_expr=None }, env
+              
+              Named { id; expr=arg }, env
           in
         let res = read_module_expr env (`Result parent) label_parent res in
-        Functor(parameter, res)
+        Functor (f_parameter, res)
 #else
     | Tmod_functor(id, _, arg, res) ->
-        let arg =
+        let f_parameter =
           match arg with
           | None -> FunctorParameter.Unit
           | Some arg ->
               let name = parenthesise (Ident.name id) in
               let id = `Parameter(parent, ParameterName.of_string name) in
           let arg = Cmti.read_module_type env id label_parent arg in
-          let expansion =
-            match arg with
-            | Signature _ -> Some Module.AlreadyASig
-            | _ -> None
-          in
-          Named { FunctorParameter. id; expr = arg; expansion; display_expr=None }
+          Named { FunctorParameter. id; expr = arg; display_expr=None }
         in
         let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
         let res = read_module_expr env (`Result parent) label_parent res in
-        Functor(arg, res)
+        Functor(f_parameter, res)
 #endif
     | Tmod_apply _ ->
         Cmi.read_module_type env parent (Odoc_model.Compat.module_type mexpr.mod_type)
@@ -432,7 +423,7 @@ and read_module_binding env parent mb =
   in
   let type_ =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p, None)
     | _ -> ModuleType (read_module_expr env (id :> Identifier.Signature.t) container mb.mb_expr)
   in
   let hidden =
@@ -446,12 +437,7 @@ and read_module_binding env parent mb =
     | _ -> false
 #endif
   in
-  let expansion =
-    match type_ with
-    | ModuleType (ModuleType.Signature _) -> Some AlreadyASig
-    | _ -> None
-  in
-  Some {id; doc; type_; expansion; canonical; hidden; display_type = None}
+  Some {id; doc; type_; canonical; hidden; }
 
 and read_module_bindings env parent mbs =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t)
@@ -544,7 +530,7 @@ and read_include env parent incl =
   let decl =
     let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p, None)
     | _ -> ModuleType (read_module_expr env parent container incl.incl_mod)
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in

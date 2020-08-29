@@ -71,20 +71,13 @@ module Opt = struct
 end
 
 module rec Module : sig
-  type expansion =
-    | AlreadyASig
-    | Signature of Signature.t
-    | Functor of FunctorParameter.t list * Signature.t
-
-  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.expr
+  type decl = Alias of Cpath.module_ * ModuleType.simple_expansion option | ModuleType of ModuleType.expr
 
   type t = {
     doc : CComment.docs;
     type_ : decl;
     canonical : (Cpath.module_ * Odoc_model.Paths.Reference.Module.t) option;
     hidden : bool;
-    display_type : decl option;
-    expansion : expansion option;
   }
 end =
   Module
@@ -176,7 +169,6 @@ and FunctorParameter : sig
   type parameter = {
     id : Ident.functor_parameter;
     expr : ModuleType.expr;
-    expansion : Module.expansion option;
   }
 
   type t = Named of parameter | Unit
@@ -193,19 +185,37 @@ and ModuleType : sig
   type type_of_desc =
     | MPath of Cpath.module_
     | Struct_include of Cpath.module_
-
-  type expr =
-    | Path of Cpath.module_type
-    | Signature of Signature.t
-    | With of expr * substitution list
-    | Functor of FunctorParameter.t * expr
-    | TypeOf of type_of_desc
-
-  type t = {
-    doc : CComment.docs;
-    expr : expr option;
-    expansion : Module.expansion option;
-  }
+  
+    type simple_expansion =
+      | Signature of Signature.t
+      | Functor of FunctorParameter.t * simple_expansion
+    
+    type path_t = {
+      p_expansion : simple_expansion option;
+      p_path : Cpath.module_type
+    }
+  
+    type with_t = {
+      w_substitutions : substitution list;
+      w_expansion : simple_expansion option;
+    }
+  
+    type typeof_t = {
+      t_desc : type_of_desc;
+      t_expansion : simple_expansion option
+    }
+  
+    type expr =
+      | Path of path_t
+      | Signature of Signature.t
+      | With of with_t * expr
+      | Functor of FunctorParameter.t * expr
+      | TypeOf of typeof_t
+  
+    type t = {
+      doc : CComment.docs;
+      expr : expr option;
+    }
 end =
   ModuleType
 
@@ -588,17 +598,16 @@ module Fmt = struct
   and module_decl ppf d =
     let open Module in
     match d with
-    | Alias p -> Format.fprintf ppf "= %a" module_path p
+    | Alias (p, _) -> Format.fprintf ppf "= %a" module_path p
     | ModuleType mt -> Format.fprintf ppf ": %a" module_type_expr mt
 
   and module_ ppf m = Format.fprintf ppf "%a" module_decl m.type_
 
-  and module_expansion ppf m =
+  and simple_expansion ppf (m : ModuleType.simple_expansion) =
     match m with
-    | Module.AlreadyASig -> Format.fprintf ppf "AlreadyASig"
-    | Signature sg -> Format.fprintf ppf "sig: %a" signature sg
+    | ModuleType.Signature sg -> Format.fprintf ppf "sig: %a" signature sg
     | Functor (_args, sg) ->
-        Format.fprintf ppf "functor: (...) -> %a" signature sg
+        Format.fprintf ppf "functor: (...) -> %a" simple_expansion sg
 
   and module_type ppf mt =
     match mt.expr with
@@ -608,16 +617,16 @@ module Fmt = struct
   and module_type_expr ppf mt =
     let open ModuleType in
     match mt with
-    | Path p -> module_type_path ppf p
+    | Path {p_path; _} -> module_type_path ppf p_path
     | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
-    | With (expr, subs) ->
+    | With ({w_substitutions=subs; _}, expr) ->
         Format.fprintf ppf "%a with [%a]" module_type_expr expr
           substitution_list subs
     | Functor (arg, res) ->
         Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr
           res
-    | TypeOf (MPath p) -> Format.fprintf ppf "module type of %a" module_path p
-    | TypeOf (Struct_include p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
+    | TypeOf {t_desc=MPath p; _} -> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf {t_desc=Struct_include p; _} -> Format.fprintf ppf "module type of struct include %a end" module_path p
 
   and functor_parameter ppf x =
     let open FunctorParameter in
@@ -1779,7 +1788,7 @@ module Of_Lang = struct
 
   and module_decl ident_map m =
     match m with
-    | Odoc_model.Lang.Module.Alias p -> Module.Alias (module_path ident_map p)
+    | Odoc_model.Lang.Module.Alias (p, e) -> Module.Alias (module_path ident_map p, option simple_expansion ident_map e)
     | Odoc_model.Lang.Module.ModuleType s ->
         Module.ModuleType (module_type_expr ident_map s)
 
@@ -1791,49 +1800,36 @@ module Of_Lang = struct
     | Some (p, r) -> Some (module_path ident_map p, r)
     | None -> None
 
-  and module_expansion ident_map f =
-    let open Odoc_model.Lang.Module in
+  and simple_expansion ident_map (f : Odoc_model.Lang.ModuleType.simple_expansion) : ModuleType.simple_expansion =
+    let open Odoc_model.Lang.ModuleType in
     let open Odoc_model.Lang.FunctorParameter in
     match f with
-    | AlreadyASig -> Module.AlreadyASig
     | Signature t -> Signature (signature ident_map t)
-    | Functor (args, sg) ->
-        let rev_args, ident_map =
-          List.fold_left
-            (fun (args, ident_map) arg ->
-              match arg with
-              | Named arg ->
-                  let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
-                  let id = Ident.Of_Identifier.functor_parameter identifier in
-                  let ident_map' =
-                    {
-                      ident_map with
-                      functor_parameters =
-                        Maps.FunctorParameter.add identifier id
-                          ident_map.functor_parameters;
-                    }
-                  in
-                  let arg' = functor_parameter ident_map' id arg in
-                  (FunctorParameter.Named arg' :: args, ident_map')
-              | Unit -> (FunctorParameter.Unit :: args, ident_map))
-            ([], ident_map) args
-        in
-        Functor (List.rev rev_args, signature ident_map sg)
-
+    | Functor (arg, sg) ->
+        match arg with
+        | Named arg ->
+          let identifier = arg.Odoc_model.Lang.FunctorParameter.id in
+          let id = Ident.Of_Identifier.functor_parameter identifier in
+          let ident_map' =
+            {
+              ident_map with
+              functor_parameters =
+                Maps.FunctorParameter.add identifier id
+                  ident_map.functor_parameters;
+            }
+          in
+          let arg' = functor_parameter ident_map' id arg in
+          Functor (FunctorParameter.Named arg', simple_expansion ident_map' sg)
+        | Unit -> Functor (FunctorParameter.Unit, simple_expansion ident_map sg)
+  
   and module_ ident_map m =
     let type_ = module_decl ident_map m.Odoc_model.Lang.Module.type_ in
     let canonical = canonical ident_map m.Odoc_model.Lang.Module.canonical in
-    let display_type =
-      Opt.map (module_decl ident_map) m.Odoc_model.Lang.Module.display_type
-    in
-    let expansion = Opt.map (module_expansion ident_map) m.expansion in
     {
       Module.doc = docs ident_map m.doc;
       type_;
       canonical;
       hidden = m.hidden;
-      display_type;
-      expansion;
     }
 
   and module_type_substitution ident_map m =
@@ -1856,8 +1852,7 @@ module Of_Lang = struct
     let expr' =
       module_type_expr ident_map a.Odoc_model.Lang.FunctorParameter.expr
     in
-    let expansion = Opt.map (module_expansion ident_map) a.expansion in
-    { FunctorParameter.id; expr = expr'; expansion }
+    { FunctorParameter.id; expr = expr' }
 
   and extension ident_map e =
     let open Odoc_model.Lang.Extension in
@@ -1898,12 +1893,18 @@ module Of_Lang = struct
         let s = signature ident_map s in
         ModuleType.Signature s
     | Lang.ModuleType.Path p ->
-        let p' = module_type_path ident_map p in
+        let p' = ModuleType.{
+          p_path = module_type_path ident_map p.p_path;
+          p_expansion = option simple_expansion ident_map p.p_expansion
+         }
+        in
         ModuleType.Path p'
-    | Lang.ModuleType.With (e, subs) ->
-        ModuleType.With
-          ( module_type_expr ident_map e,
-            List.map (module_type_substitution ident_map) subs )
+    | Lang.ModuleType.With (w, e) ->
+        let w' = ModuleType.{
+          w_substitutions = List.map (module_type_substitution ident_map) w.w_substitutions;
+          w_expansion = option simple_expansion ident_map w.w_expansion
+        } in
+        ModuleType.With (w', module_type_expr ident_map e)
     | Lang.ModuleType.Functor (Named arg, expr) ->
         let identifier = arg.Lang.FunctorParameter.id in
         let id = Ident.Of_Identifier.functor_parameter identifier in
@@ -1921,19 +1922,19 @@ module Of_Lang = struct
     | Lang.ModuleType.Functor (Unit, expr) ->
         let expr' = module_type_expr ident_map expr in
         ModuleType.Functor (Unit, expr')
-    | Lang.ModuleType.TypeOf (MPath p) ->
-        let p' = module_path ident_map p in
-        ModuleType.(TypeOf (MPath p'))
-    | Lang.ModuleType.TypeOf (Struct_include p) ->
-        let p' = module_path ident_map p in
-        ModuleType.(TypeOf (Struct_include p')) 
+    | Lang.ModuleType.TypeOf {t_desc; t_expansion} ->
+        let t_desc = match t_desc with
+          | MPath p -> ModuleType.MPath (module_path ident_map p)
+          | Struct_include p -> Struct_include (module_path ident_map p)
+        in
+        let t_expansion = option simple_expansion ident_map t_expansion in
+        ModuleType.(TypeOf {t_desc; t_expansion}) 
     
   and module_type ident_map m =
     let expr =
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr
     in
-    let expansion = Opt.map (module_expansion ident_map) m.expansion in
-    { ModuleType.doc = docs ident_map m.doc; expr; expansion }
+    { ModuleType.doc = docs ident_map m.doc; expr; }
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Odoc_model.Lang.Value.type_ in
@@ -2043,11 +2044,9 @@ module Of_Lang = struct
     let canonical = Some (manifest, `Root ("dummy", `TModule)) in
     {
       Module.doc = docs ident_map t.doc;
-      type_ = Alias manifest;
+      type_ = Alias (manifest, None);
       canonical;
       hidden = true;
-      display_type = None;
-      expansion = None;
     }
 
   and signature : _ -> Odoc_model.Lang.Signature.t -> Signature.t =
@@ -2148,9 +2147,7 @@ end
 let module_of_functor_argument (arg : FunctorParameter.parameter) =
   {
     Module.doc = [];
-    display_type = None;
     type_ = ModuleType arg.expr;
     canonical = None;
     hidden = false;
-    expansion = None;
   }

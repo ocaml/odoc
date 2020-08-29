@@ -1237,9 +1237,9 @@ struct
     = fun arg ->
       let open Odoc_model.Lang.FunctorParameter in
       let name = Paths.Identifier.name arg.id in
-      let render_ty = match arg.display_expr with | Some e -> e | None -> arg.expr in
+      let render_ty = arg.expr in
       let content =
-        match arg.expansion with
+        match expansion_of_module_type_expr arg.expr with
         | None ->
           O.documentedSrc (
             O.keyword "module" ++ O.txt " " ++
@@ -1247,20 +1247,10 @@ struct
               O.txt Syntax.Type.annotation_separator ++
               mty (arg.id :> Paths.Identifier.Signature.t) render_ty
           )
-        | Some expansion ->
-          let expansion =
-            match expansion with
-            | AlreadyASig ->
-              begin match render_ty with
-              | Signature sg -> Odoc_model.Lang.Module.Signature sg
-              | _ -> assert false
-              end
-            | e -> e
-          in
+        | Some (prelude, items) ->
           let url = Url.Path.from_identifier arg.id in
           let modname = path url [inline @@ Text name] in
           let modtyp =
-            let prelude, items = module_expansion expansion in
             let header =
               format_title `Arg (make_name_from_path url) @ prelude
             in
@@ -1302,22 +1292,31 @@ struct
     let doc = Comment.to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  and module_expansion
-    : Odoc_model.Lang.Module.expansion
+  and simple_expansion
+    : Odoc_model.Lang.ModuleType.simple_expansion
       -> Item.t list * Item.t list
     = fun t ->
-      match t with
-      | AlreadyASig -> assert false
-      | Signature sg ->
+      let rec extract_functor_params (f : Odoc_model.Lang.ModuleType.simple_expansion) =
+        match f with
+        | Signature sg -> None, sg
+        | Functor (p, expansion) -> (
+          let add_to params =
+            match p with
+            | Unit -> params
+            | Named p -> p :: params
+          in
+          let params, sg = extract_functor_params expansion in
+          let params = match params with | None -> [] | Some p -> p in
+          Some (add_to params), sg)
+      in
+      match extract_functor_params t with
+      | None, sg ->
         let expansion = signature sg in
         [], expansion
-      | Functor (args, sg) ->
+      | Some params, sg ->
         let content = signature sg in
         let params =
-          Utils.flatmap args ~f:(fun arg ->
-            match arg with
-            | Odoc_model.Lang.FunctorParameter.Unit -> []
-            | Named arg ->
+          Utils.flatmap params ~f:(fun arg ->
               let content = functor_argument arg in
               let kind = Some "parameter" in
               let anchor =
@@ -1328,7 +1327,7 @@ struct
               [Item.Declaration { content ; anchor ; kind ; doc }]
           )
         in
-        let prelude =
+        let prelude = 
           [Item.Heading {
             label = Some "parameters" ; level = 2 ; title = [inline @@ Text "Parameters"];
           }]
@@ -1338,6 +1337,26 @@ struct
           }]
         in
         prelude, content
+  
+  and expansion_of_module_type_expr : Odoc_model.Lang.ModuleType.expr -> (Item.t list * Item.t list) option
+    = fun t ->
+      let rec simple_expansion_of (t : Odoc_model.Lang.ModuleType.expr ) =
+        match t with
+        | Path {p_expansion=None ; _}
+        | TypeOf {t_expansion=None ; _}
+        | With ({w_expansion=None ; _}, _) -> None
+        | Path {p_expansion=Some e; _}
+        | TypeOf {t_expansion=Some e; _}
+        | With ({w_expansion=Some e; _}, _) -> Some e
+        | Signature sg -> Some (Signature sg)
+        | Functor (f_parameter, e) ->
+          match simple_expansion_of e with
+          | Some e -> Some (Functor (f_parameter, e))
+          | None -> None
+      in
+      match simple_expansion_of t with
+      | None -> None
+      | Some e -> Some (simple_expansion e)
 
   and module_
     : Odoc_model.Lang.Signature.recursive ->
@@ -1345,27 +1364,21 @@ struct
       Item.t
     = fun recursive t ->
       let modname = Paths.Identifier.name t.id in
+      let expansion =
+        match t.type_ with
+        | Alias (_, Some e) -> Some (simple_expansion e)
+        | Alias (_, None) -> None
+        | ModuleType e -> expansion_of_module_type_expr e
+      in
       let modname, status, expansion =
-        match t.expansion with
+        match expansion with
         | None ->
           O.documentedSrc (O.txt modname),
           `Default,
           None
-        | Some expansion ->
-          let status, expansion =
-            match expansion with
-            | AlreadyASig ->
-              begin match t.type_ with
-              | ModuleType (Odoc_model.Lang.ModuleType.Signature sg) ->
-                `Inline, Odoc_model.Lang.Module.Signature sg
-              | _ ->
-                Format.eprintf "Inconsistent expansion: %s\n%!" modname;
-                assert false
-              end
-            | e -> `Default, e
-          in
+        | Some (prelude, items) ->
           let doc = Comment.standalone t.doc in
-          let prelude, items = module_expansion expansion in
+          let status = match t.type_ with | ModuleType (Signature _) -> `Inline | _ -> `Default in
           let url = Url.Path.from_identifier t.id in
           let link = path url [inline @@ Text modname] in
           let title = modname in
@@ -1376,10 +1389,7 @@ struct
           O.documentedSrc link, status, Some page
       in
       let summary =
-        module_decl (t.id :> Paths.Identifier.Signature.t)
-          (match t.display_type with
-            | None -> t.type_
-            | Some t -> t)
+        module_decl t.id t.type_
       in
       let modexpr =
         attach_expansion
@@ -1405,49 +1415,49 @@ struct
       let doc = Comment.first_to_ir t.doc in
       Item.Declaration {kind ; anchor ; doc ; content}
 
-  and module_decl (base : Paths.Identifier.Signature.t) md =
-    begin match md with
-    | Alias _ -> O.txt " = "
-    | ModuleType _ -> O.txt Syntax.Type.annotation_separator
-    end ++
-      module_decl' base md
+  and module_decl (base : Paths.Identifier.Module.t) md =
+    let is_canonical p =
+      let i = Paths.Path.Resolved.Module.identifier p in
+      i = (base :> Paths.Identifier.Path.Module.t)
+    in
+    let sig_dotdotdot = O.txt Syntax.Type.annotation_separator ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag in
+    match md with
+    | Alias (`Resolved p, _) when is_canonical p -> sig_dotdotdot
+    | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) -> O.txt " = " ++ module_decl' (base :> Paths.Identifier.Signature.t) md
+    | Alias _ -> sig_dotdotdot
+    | ModuleType _ -> O.txt Syntax.Type.annotation_separator ++ module_decl' (base :> Paths.Identifier.Signature.t) md
+
 
   and extract_path_from_mt ~(default: Paths.Identifier.Signature.t) =
     let open Odoc_model.Lang.ModuleType in
     function
-    | Path (`Resolved r) ->
+    | Path {p_path=`Resolved r; _} ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
-    | With (mt, _) -> extract_path_from_mt ~default mt
-    | TypeOf (MPath (`Resolved r)) ->
+    | With (_, mt) -> extract_path_from_mt ~default mt
+    | TypeOf {t_desc=MPath (`Resolved r); _} ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
   and module_decl'
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
     fun base -> function
-      | Alias mod_path ->
+      | Alias (mod_path, _) ->
         Link.from_path (mod_path :> Paths.Path.t)
       | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
 
   and module_type (t : Odoc_model.Lang.ModuleType.t) =
     let modname = Paths.Identifier.name t.id in
-    let expr = match t.display_expr with | Some x -> x | None -> t.expr in
+    let expansion =
+      match t.expr with
+      | None -> None
+      | Some e -> expansion_of_module_type_expr e
+    in
     let modname, expansion =
-      match t.expansion with
+      match expansion with
       | None ->
         O.documentedSrc @@ O.txt modname, None
-      | Some expansion ->
-        let expansion =
-          match expansion with
-          | AlreadyASig ->
-            begin match expr with
-            | Some (Signature sg) -> Odoc_model.Lang.Module.Signature sg
-            | _ -> assert false
-            end
-          | e -> e
-        in
+      | Some (prelude,items) ->
         let doc = Comment.standalone t.doc in
-        let prelude, items = module_expansion expansion in
         let url = Url.Path.from_identifier t.id in
         let link = path url [inline @@ Text modname] in
         let title = modname in
@@ -1458,7 +1468,7 @@ struct
         O.documentedSrc link, Some page
     in
     let summary =
-      match expr with
+      match t.expr with
       | None -> O.noop
       | Some expr ->
         O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
@@ -1482,65 +1492,83 @@ struct
     let doc = Comment.first_to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
+  and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool
+    = function
+    | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
+    | With (_, expr) -> mty_hidden expr
+    | TypeOf { t_desc=MPath m; _ } 
+    | TypeOf { t_desc=Struct_include m; _ } -> Paths.Path.(is_hidden (m :> t))
+    | _ -> false
+
+  and module_decl_hidden : Odoc_model.Lang.Module.decl -> bool
+    = function
+    | Alias (p, _) -> Paths.Path.(is_hidden (p :> t))
+    | ModuleType mty -> mty_hidden mty
+
   and mty
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
-    = fun base -> function
-      | Path mty_path ->
-        Link.from_path (mty_path :> Paths.Path.t)
-      | Signature _ ->
-        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
-      | Functor (Unit, expr) ->
-        (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
-          O.txt " () " ++ Syntax.Type.arrow ++ O.txt " " ++
-          mty base expr
-      | Functor (Named arg, expr) ->
-        let arg_expr = match arg.display_expr with | Some e -> e | None -> arg.expr in
-        let name =
-          let open Odoc_model.Lang.FunctorParameter in
-          let name = Paths.Identifier.name arg.id in
-          match
-            Url.from_identifier
-              ~stop_before:(arg.expansion = None) (arg.id :> Paths.Identifier.t)
-          with
-          | Error _ -> O.txt name
-          | Ok href -> resolved href [inline @@ Text name]
-        in
-        (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
-          O.txt " (" ++ name ++ O.txt Syntax.Type.annotation_separator ++
-          mty base arg_expr ++
-          O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
-          mty base expr
-      | With (expr, substitutions) ->
-        mty base expr ++
-          O.txt " " ++
-          O.keyword "with" ++
-          O.txt " " ++
-          O.list
-            ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-            ~f:(substitution base)
-            substitutions
-      | TypeOf (MPath m) ->
-        O.keyword "module" ++
-          O.txt " " ++
-          O.keyword "type" ++
-          O.txt " " ++
-          O.keyword "of" ++
-          O.txt " " ++
-          Link.from_path (m :> Paths.Path.t)
-      | TypeOf (Struct_include m) ->
-        O.keyword "module" ++
-          O.txt " " ++
-          O.keyword "type" ++
-          O.txt " " ++
-          O.keyword "of" ++
-          O.txt " " ++
-          O.keyword "struct" ++
-          O.txt " " ++
-          O.keyword "include" ++
-          O.txt " " ++
-          Link.from_path (m :> Paths.Path.t) ++
-          O.txt " " ++
-          O.keyword "end"
+    = fun base m ->
+      if mty_hidden m
+      then Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
+      else
+        match m with
+        | Path { p_path = mty_path; _ } ->
+          Link.from_path (mty_path :> Paths.Path.t)
+        | Functor (Unit, expr) ->
+          (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
+            O.txt " () " ++ Syntax.Type.arrow ++ O.txt " " ++
+            mty base expr
+        | Functor (Named arg, expr) ->
+          let arg_expr = arg.expr in
+          let stop_before = (expansion_of_module_type_expr arg_expr) = None in
+          let name =
+            let open Odoc_model.Lang.FunctorParameter in
+            let name = Paths.Identifier.name arg.id in
+            match
+              Url.from_identifier
+                ~stop_before (arg.id :> Paths.Identifier.t)
+            with
+            | Error _ -> O.txt name
+            | Ok href -> resolved href [inline @@ Text name]
+          in
+          (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop) ++
+            O.txt " (" ++ name ++ O.txt Syntax.Type.annotation_separator ++
+            mty base arg_expr ++
+            O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
+            mty base expr
+        | With (with_t, expr) ->
+          mty base expr ++
+            O.txt " " ++
+            O.keyword "with" ++
+            O.txt " " ++
+            O.list
+              ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
+              ~f:(substitution base)
+              with_t.w_substitutions
+        | TypeOf { t_desc=MPath m; _ } ->
+          O.keyword "module" ++
+            O.txt " " ++
+            O.keyword "type" ++
+            O.txt " " ++
+            O.keyword "of" ++
+            O.txt " " ++
+            Link.from_path (m :> Paths.Path.t)
+        | TypeOf { t_desc=Struct_include m; _} ->
+          O.keyword "module" ++
+            O.txt " " ++
+            O.keyword "type" ++
+            O.txt " " ++
+            O.keyword "of" ++
+            O.txt " " ++
+            O.keyword "struct" ++
+            O.txt " " ++
+            O.keyword "include" ++
+            O.txt " " ++
+            Link.from_path (m :> Paths.Path.t) ++
+            O.txt " " ++
+            O.keyword "end"
+        | Signature _ ->
+          Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
   (* TODO : Centralize the list juggling for type parameters *)
   and type_expr_in_subst ~base td typath =
@@ -1583,12 +1611,10 @@ struct
             type_expr te
 
   and include_ (t : Odoc_model.Lang.Include.t) =
-    (* Special-case the construct 'include module type of struct include X end'
-       by rendering the inner include contents *)
     let status =
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
-      if t.inline then `Inline
+      if t.inline || (module_decl_hidden t.decl) then `Inline
       else if List.exists is_open_tag t.doc then `Open
       else if List.exists is_closed_tag t.doc then `Closed
       else `Default

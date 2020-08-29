@@ -38,7 +38,7 @@ let rec aux_expansion_of_module :
 and aux_expansion_of_module_decl env ~strengthen ty =
   let open Component.Module in
   match ty with
-  | Alias path -> aux_expansion_of_module_alias env ~strengthen path
+  | Alias (path, _) -> aux_expansion_of_module_alias env ~strengthen path
   | ModuleType expr -> aux_expansion_of_module_type_expr env expr
 
 and aux_expansion_of_module_alias env ~strengthen path =
@@ -127,21 +127,21 @@ and aux_expansion_of_module_type_type_of_desc env t : (expansion, signature_of_m
 and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
   match expr with
-  | Path p -> (
-      match Tools.resolve_module_type ~mark_substituted:false env p with
+  | Path {p_path; _} -> (
+      match Tools.resolve_module_type ~mark_substituted:false env p_path with
       | Ok (_, mt) -> aux_expansion_of_module_type env mt
-      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
+      | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
   | Signature s -> Ok (Signature s)
-  | With (s, subs) -> (
+  | With ({w_substitutions; _}, s) -> (
       match aux_expansion_of_module_type_expr env s with
       | Error _ as e -> e
       | Ok (Functor _) -> failwith "This shouldn't be possible!"
       | Ok (Signature sg) ->
-          (let subs = unresolve_subs subs in
+          (let subs = unresolve_subs w_substitutions in
            Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
           >>= fun sg -> Ok (Signature sg) )
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
-  | TypeOf desc -> aux_expansion_of_module_type_type_of_desc env desc
+  | TypeOf {t_desc; _} -> aux_expansion_of_module_type_type_of_desc env t_desc
 
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
@@ -178,21 +178,16 @@ and handle_expansion env id expansion =
         in
         (env', Subst.module_type_expr subst expr)
   in
-  let rec expand id env args expansion =
+  let rec expand id env expansion : (Env.t * Component.ModuleType.simple_expansion, _) Result.result =
     match expansion with
-    | Signature sg -> (
-        match args with
-        | [] -> Ok (env, Component.Module.Signature sg)
-        | args -> Ok (env, Component.Module.Functor (List.rev args, sg)) )
+    | Signature sg -> Ok (env, (Component.ModuleType.Signature sg : Component.ModuleType.simple_expansion))
     | Functor (arg, expr) -> (
         let env', expr' = handle_argument id arg expr env in
-        let cont = expand (`Result id) env' (arg :: args) in
-        match aux_expansion_of_module_type_expr env' expr' with
-        | Ok res -> cont res
-        | Error `OpaqueModule -> cont (Signature { items = []; removed = [] })
-        | Error _ as e -> e )
+        aux_expansion_of_module_type_expr env' expr' >>= fun res ->
+        expand (`Result id) env res >>= fun (env, res) ->
+        Ok (env, (Component.ModuleType.Functor (arg, res) : Component.ModuleType.simple_expansion)))
   in
-  expand id env [] expansion
+  expand id env expansion
 
 let expansion_of_module_type env id m =
   let open Paths.Identifier in
@@ -204,11 +199,14 @@ let expansion_of_module_type_expr env id expr =
   aux_expansion_of_module_type_expr env expr >>= handle_expansion env id
   >>= fun (env, e) -> Ok (env, module_type_expr_needs_recompile expr, e)
 
-let expansion_of_module env id ~strengthen m =
+let expansion_of_module_alias env id path =
   let open Paths.Identifier in
-  aux_expansion_of_module env ~strengthen m
+  aux_expansion_of_module_alias ~strengthen:false env path
   >>= handle_expansion env (id : Module.t :> Signature.t)
-  >>= fun (env, r) -> Ok (env, module_needs_recompile m, r)
+  >>= fun (env, r) -> Ok (env, false, r)
+
+let expansion_of_module_type_of_desc env id t_desc =
+  aux_expansion_of_module_type_type_of_desc env t_desc >>= handle_expansion env id
 
 exception Clash
 

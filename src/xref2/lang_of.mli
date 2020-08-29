@@ -126,12 +126,6 @@ val external_ :
   Component.External.t ->
   Odoc_model.Lang.External.t
 
-val module_expansion :
-  maps ->
-  Identifier.Signature.t ->
-  Component.Module.expansion ->
-  Odoc_model.Lang.Module.expansion
-
 val include_ :
   Identifier.Signature.t ->
   maps ->
@@ -192,6 +186,12 @@ val module_type :
   Ident.module_type ->
   Component.ModuleType.t Component.Delayed.t ->
   Odoc_model.Lang.ModuleType.t
+
+val simple_expansion :
+  maps ->
+  Identifier.Signature.t ->
+  Component.ModuleType.simple_expansion ->
+  Odoc_model.Lang.ModuleType.simple_expansion
 
 val type_decl_constructor_argument :
   maps ->

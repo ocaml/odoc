@@ -75,14 +75,14 @@ and module_ :
  fun ?canonical prefix m ->
   match m.type_ with
   | Alias _ -> m
-  | ModuleType _ -> { m with canonical; type_ = Alias prefix; expansion = None }
+  | ModuleType _ -> { m with canonical; type_ = Alias (prefix, None) }
 
 (* nuke the expansion as this could otherwise lead to inconsistencies - e.g. 'AlreadyASig' *)
 and module_type :
     Cpath.module_type -> Component.ModuleType.t -> Component.ModuleType.t =
  fun prefix m ->
   let expr =
-    match m.expr with None -> Some (ModuleType.Path prefix) | Some _ -> m.expr
+    match m.expr with None -> Some (ModuleType.Path {p_path=prefix; p_expansion=None}) | Some _ -> m.expr
   in
   { m with expr }
 

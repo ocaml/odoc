@@ -4,8 +4,8 @@ open Lang
 module Id = Paths.Identifier
 
 (* for < 4.03 *)
-let kasprintf k fmt =
-  Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
+(* let kasprintf k fmt =
+  Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt) *)
 
 module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
@@ -317,157 +317,70 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.t -> _ =
       | Open o -> Open o)
     s
 
-and module_expansion :
-    Env.t -> Id.Signature.t -> Module.expansion -> Module.expansion =
+and simple_expansion :
+    Env.t -> Id.Signature.t -> ModuleType.simple_expansion -> ModuleType.simple_expansion =
  fun env id m ->
-  let open Module in
   match m with
-  | AlreadyASig -> AlreadyASig
   | Signature sg -> Signature (signature env id sg)
-  | Functor (args, sg) ->
-      let env' =
-        List.fold_right
-          (fun arg env ->
-            match arg with
-            | FunctorParameter.Unit -> env
-            | Named arg ->
-                let identifier = arg.FunctorParameter.id in
-                let m =
-                  Component.module_of_functor_argument
-                    (Component.Of_Lang.functor_parameter Component.Of_Lang.empty
-                       (Ident.Of_Identifier.functor_parameter arg.id)
-                       arg)
-                in
-                let env' =
-                  Env.add_module
-                    (identifier :> Id.Path.Module.t)
-                    (Component.Delayed.put_val m)
-                    m.doc
-                    env
-                in
-                env')
-          args env
-      in
-      Functor (List.map (functor_argument env') args, signature env' id sg)
+  | Functor (arg, sg) ->
+      let env' = Env.add_functor_parameter arg env in
+      Functor (functor_argument env arg, simple_expansion env' id sg)
 
-and should_hide_moduletype : ModuleType.expr -> bool = function
-  | Signature _ -> false
-  | TypeOf (MPath p)
-  | TypeOf (Struct_include p) -> Paths.Path.is_hidden (p :> Paths.Path.t)
-  | With (e, _) -> should_hide_moduletype e
-  | Functor (_, e) -> should_hide_moduletype e
-  | Path p -> Paths.Path.is_hidden (p :> Paths.Path.t)
-
-and build_hidden_moduletype : ModuleType.expr -> ModuleType.expr = function
-  | Signature x -> Signature x
-  | TypeOf _ -> Signature []
-  | With (_, _) -> Signature []
-  | Functor (x, e) -> Functor (x, build_hidden_moduletype e)
-  | Path _ -> Signature []
-
-and should_hide_module_decl : Module.decl -> bool = function
-  | ModuleType t -> should_hide_moduletype t
-  | Alias p -> Paths.Path.is_hidden (p :> Paths.Path.t)
-
-and build_hidden_module_decl : Module.decl -> Module.decl = function
-  | ModuleType t -> ModuleType (build_hidden_moduletype t)
-  | Alias p -> Alias p
+and extract_doc : Module.decl -> (Comment.docs * Module.decl) =
+  let map_expansion : ModuleType.simple_expansion option -> Comment.docs * ModuleType.simple_expansion option =
+    function
+    | Some (Signature (Comment (`Docs _doc) :: Comment (`Docs d2) :: sg)) ->
+        d2, Some (Signature sg)
+    | e -> [], e
+  in
+  function
+  | Alias (p, expansion) ->
+    (match map_expansion expansion with | d, e -> d, Alias (p, e))
+  | ModuleType (Path {p_path; p_expansion}) ->
+    (match map_expansion p_expansion with | d, e -> d, ModuleType (Path {p_path; p_expansion=e}) )
+  | ModuleType (With ({w_substitutions; w_expansion}, e2)) ->
+    (match map_expansion w_expansion with | d, e -> d, ModuleType (With ({w_substitutions; w_expansion=e}, e2) ))
+  | mty -> [], mty
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
   let sg_id = (m.id :> Id.Signature.t) in
-  let start_time = Unix.gettimeofday () in
   (* Format.fprintf Format.err_formatter "Processing Module %a\n%!"
      Component.Fmt.model_identifier
      (m.id :> Id.t); *)
   if m.hidden then m
   else
-    let t1 = Unix.gettimeofday () in
-    let (`Module (_, m')) =
-      match Env.(lookup_by_id s_module) m.id env with
-      | Some m' -> m'
-      | None ->
-          kasprintf failwith "Failed to lookup module %a"
-            Component.Fmt.model_identifier
-            (m.id :> Id.t)
-    in
-    let m' = Component.Delayed.get m' in
-    let env = Env.add_module_functor_args m' (m.id :> Id.Path.Module.t) env in
-    let t2 = Unix.gettimeofday () in
     let type_ = module_decl env sg_id m.type_ in
-    let t3 = Unix.gettimeofday () in
-    let hidden_alias =
+    let type_ =
       match type_ with
-      | Alias p when Paths.Path.is_hidden (p :> Paths.Path.t) -> true
-      | _ -> false
-    in
-    let self_canonical =
-      match type_ with
-      | Alias (`Resolved p) ->
+      | Alias (`Resolved p, e) ->
+        let hidden_alias = Paths.Path.is_hidden (`Resolved (p :> Paths.Path.Resolved.t)) in
+        let self_canonical =
           let i = Paths.Path.Resolved.Module.identifier p in
           i = (m.id :> Paths.Identifier.Path.Module.t)
-          (* Self-canonical *)
-      | _ -> false
+        in
+        let expansion_needed = self_canonical || hidden_alias in
+        if expansion_needed
+        then begin
+          let cp = Component.Of_Lang.(resolved_module_path empty p) in
+          match Expand_tools.expansion_of_module_alias env m.id (`Resolved cp) with
+          | Ok (_,_,e) ->
+            let le = Lang_of.(simple_expansion empty sg_id e) in
+            Alias (`Resolved p, Some (simple_expansion env sg_id le))
+          | Error _ ->
+            Alias (`Resolved p, e)
+        end else Alias (`Resolved p, e)
+      | Alias _ -> type_
+      | ModuleType mty -> ModuleType mty
     in
-    let expansion_needed = self_canonical || hidden_alias in
-    let env, expansion =
-      match (m.expansion, expansion_needed) with
-      | None, true ->
-          let env, expansion =
-            match
-              Expand_tools.expansion_of_module env m.id
-                ~strengthen:(not (self_canonical || hidden_alias))
-                m'
-            with
-            | Ok (env, recompile, ce) ->
-                let e = Lang_of.(module_expansion empty sg_id ce) in
-                let compiled_e =
-                  if recompile then Compile.expansion env sg_id e else e
-                in
-                (env, Some compiled_e)
-            | Error `OpaqueModule -> (env, None)
-            | Error _ ->
-                kasprintf failwith "Failed to expand module %a"
-                  Component.Fmt.model_identifier
-                  (m.id :> Id.t)
-          in
-          (env, expansion)
-      | _ -> (env, m.expansion)
-    in
-    let t4 = Unix.gettimeofday () in
-    let expansion = Opt.map (module_expansion env sg_id) expansion in
-    let doc, expansion =
+    let doc, type_ =
       match m.doc with
-      | _ :: _ -> (m.doc, expansion)
-      | [] -> (
-          match expansion with
-          | Some
-              (Signature
-                (Comment (`Docs _doc) :: Comment (`Docs d2) :: expansion)) ->
-              (d2, Some (Signature expansion))
-          | _ -> ([], expansion) )
-    in
-    let override_display_type =
-      self_canonical || should_hide_module_decl type_
-    in
-    let display_type =
-      match (override_display_type, expansion) with
-      | true, Some (Signature sg) -> Some (ModuleType (Signature sg))
-      | true, Some (Functor _) -> Some (build_hidden_module_decl type_)
-      | _ -> None
+      | [] -> extract_doc type_
+      | _ -> m.doc, type_
     in
     let result =
-      { m with doc = comment_docs env doc; type_; display_type; expansion }
-    in
-    let end_time = Unix.gettimeofday () in
-    let _timing =
-      Format.asprintf
-        "%f seconds for module %a (t0-1=%f t1-2=%f t2-3=%f t3-4=%f t4-end=%f)\n\
-         %!"
-        (end_time -. start_time) Component.Fmt.model_identifier
-        (m.id :> Id.t)
-        (t1 -. start_time) (t2 -. t1) (t3 -. t2) (t4 -. t3) (end_time -. t4)
+      { m with doc = comment_docs env doc; type_ }
     in
     result
 
@@ -476,22 +389,16 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   let open Module in
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias p -> Alias (module_path env p)
+  | Alias (p, e) -> Alias (module_path env p, Option.map (simple_expansion env id) e)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let sg_id = (m.id :> Id.Signature.t) in
   let open ModuleType in
-  match Env.(lookup_by_id s_module_type) m.id env with
-  | None ->
-      Errors.report ~what:(`Module_type m.id) `Lookup;
-      m
-  | Some (`ModuleType (_, m')) ->
-      let env' = Env.add_module_type_functor_args m' m.id env in
       let expr' =
         match m.expr with
         | None -> None
-        | Some expr -> Some (module_type_expr env' sg_id expr)
+        | Some expr -> Some (module_type_expr env sg_id expr)
       in
       (* let self_canonical =
            match m.expr with
@@ -499,25 +406,10 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
              true
            | _ -> false
          in*)
-      let display_expr =
-        match expr' with
-        | None -> None
-        | Some expr -> (
-            match (should_hide_moduletype expr, m.expansion) with
-            | false, _ -> None
-            | true, None -> None
-            | true, Some Lang.Module.AlreadyASig -> None
-            | true, Some (Lang.Module.Signature sg) ->
-                Some (Some (Lang.ModuleType.Signature sg))
-            | true, Some (Lang.Module.Functor _) ->
-                Some (Some (build_hidden_moduletype expr)) )
-      in
       let doc = comment_docs env m.doc in
       {
         m with
         expr = expr';
-        expansion = Opt.map (module_expansion env' sg_id) m.expansion;
-        display_expr;
         doc;
       }
 
@@ -527,7 +419,6 @@ and include_ : Env.t -> Include.t -> Include.t =
   let decl = module_decl env i.parent i.decl in
   (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
         (Component.Of_Lang.(module_decl empty i.decl)); *)
-  let hidden_rhs = should_hide_module_decl decl in
   let doc = comment_docs env i.doc in
   let should_be_inlined =
     let is_inline_tag element = element.Location_.value = `Tag `Inline in
@@ -542,56 +433,17 @@ and include_ : Env.t -> Include.t -> Include.t =
         shadowed = i.expansion.shadowed;
         content = signature_items env i.parent i.expansion.content;
       };
-    inline = should_be_inlined || hidden_rhs;
+    inline = should_be_inlined;
     doc;
   }
 
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
- fun env' a ->
+ fun env a ->
   let sg_id = (a.id :> Id.Signature.t) in
-  match
-    let open Utils.ResultMonad in
-    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
-    >>= fun (`Module (_, functor_arg)) ->
-    let functor_arg = Component.Delayed.get functor_arg in
-    let env =
-      Env.add_module_functor_args functor_arg (a.id :> Id.Path.Module.t) env'
-    in
-    match (a.expansion, functor_arg.type_) with
-    | None, ModuleType expr -> (
-        match Expand_tools.expansion_of_module_type_expr env sg_id expr with
-        | Ok (env, recompile, ce) ->
-            let e = Lang_of.(module_expansion empty sg_id ce) in
-            let compiled_e =
-              if recompile then Compile.expansion env sg_id e else e
-            in
-            Ok (env, Some compiled_e)
-        | Error `OpaqueModule -> Ok (env, None)
-        | Error e -> Error (`Expand e) )
-    | x, _ -> Ok (env, x)
-  with
-  | Ok (env, expn) ->
-      let expr = module_type_expr env sg_id a.expr in
-      let display_expr =
-        match (should_hide_moduletype expr, expn) with
-        | false, _ -> None
-        | true, None -> None
-        | true, Some Lang.Module.AlreadyASig -> None
-        | true, Some (Lang.Module.Signature sg) ->
-            Some (Lang.ModuleType.Signature sg)
-        | true, Some (Lang.Module.Functor _) ->
-            Some (build_hidden_moduletype expr)
-      in
-      let expansion = Opt.map (module_expansion env sg_id) expn in
-      { a with expr; display_expr; expansion }
-  | Error `Lookup ->
-      Errors.report ~what:(`Functor_parameter a.id) `Lookup;
-      a
-  | Error (`Expand e) ->
-      Errors.report ~what:(`Functor_parameter a.id) ~tools_error:e `Expand;
-      a
-
+  let expr = module_type_expr env sg_id a.expr in
+  { a with expr; }
+ 
 and functor_argument env a =
   match a with
   | FunctorParameter.Unit -> FunctorParameter.Unit
@@ -693,25 +545,28 @@ and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
  fun env id expr ->
   let open ModuleType in
+  let do_expn e =
+    Opt.map (simple_expansion env (id :> Paths.Identifier.Signature.t)) e in
   match expr with
   | Signature s -> Signature (signature env id s)
-  | Path p -> Path (module_type_path env p)
-  | With (expr, subs) as unresolved -> (
+  | Path {p_path; p_expansion} ->
+    Path {p_path=module_type_path env p_path; p_expansion = do_expn p_expansion}
+  | With ({w_substitutions; w_expansion}, expr) as unresolved -> (
       let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
       match
         Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr
       with
       | Ok sg ->
-          With (module_type_expr env id expr, handle_fragments env id sg subs)
-      | Error e ->
+          With ({w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion}, module_type_expr env id expr)
+          | Error e ->
           Errors.report ~what:(`Module_type_expr cexpr) ~tools_error:e `Resolve_module_type;
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
       let res' = module_type_expr env (`Result id) res in
       Functor (arg', res')
-  | TypeOf (Struct_include p) -> TypeOf (Struct_include (module_path env p))
-  | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
+  | TypeOf {t_desc=Struct_include p; t_expansion} -> TypeOf {t_desc=Struct_include (module_path env p); t_expansion=do_expn t_expansion}
+  | TypeOf {t_desc=MPath p; t_expansion} -> TypeOf {t_desc=MPath (module_path env p); t_expansion=do_expn t_expansion}
 
 and type_decl_representation :
     Env.t ->
@@ -749,6 +604,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
         let p' =
           Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
         in
+        Format.eprintf "found hidden path: %a\n%!" Component.Fmt.resolved_type_path p';
         match Tools.lookup_type env p' with
         | Ok (Found (`T t')) ->
             {
@@ -897,8 +753,9 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                          %!"
                         (Printexc.to_string e);
                       Constr (`Resolved p, ts) )
-              | _ -> Constr (`Resolved p, ts)
-            else Constr (`Resolved p, ts)
+              | _ ->
+                Constr (`Resolved p, ts)
+            else ( Format.eprintf "not hidden...?"; Constr (`Resolved p, ts))
         | Ok (cp', Found _) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             Constr (`Resolved p, ts)
