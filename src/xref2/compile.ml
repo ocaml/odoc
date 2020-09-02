@@ -229,14 +229,15 @@ and module_ : Env.t -> Module.t -> Module.t =
   else
         {
           m with
-          type_ = module_decl env (m.id :> Id.Signature.t) m.type_;
+          type_ = module_decl env (m.id :> Id.Signature.t) true m.type_;
           }
 
-and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
- fun env id decl ->
+and module_decl : Env.t -> Id.Signature.t -> bool -> Module.decl -> Module.decl
+    =
+ fun env id expand decl ->
   let open Module in
   match decl with
-  | ModuleType expr -> ModuleType (module_type_expr env id expr)
+  | ModuleType expr -> ModuleType (module_type_expr env id expand expr)
   | Alias (p, expn) -> (
       let cp' = Component.Of_Lang.(module_path empty p) in
       let cp = Cpath.unresolve_module_path cp' in
@@ -253,7 +254,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let expr =
     match m.expr with
     | None -> None
-    | Some e -> Some (module_type_expr env sg_id e)
+    | Some e -> Some (module_type_expr env sg_id true e)
   in
   {m with expr}
 
@@ -291,8 +292,7 @@ and include_ : Env.t -> Include.t -> Include.t =
             remove_top_doc_from_signature (signature env i.parent expansion_sg);
         }
       in
-
-      { i with decl = module_decl env i.parent i.decl; expansion }
+      { i with decl = module_decl env i.parent false i.decl; expansion }
 
 and simple_expansion : Env.t -> Id.Signature.t -> ModuleType.simple_expansion -> ModuleType.simple_expansion
     =
@@ -312,12 +312,11 @@ and functor_parameter : Env.t -> FunctorParameter.t -> FunctorParameter.t =
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
  fun env a ->
-  { a with
-    expr = module_type_expr env (a.id :> Id.Signature.t) a.expr }
+  { a with expr = module_type_expr env (a.id :> Id.Signature.t) true a.expr }
 
 and module_type_expr :
-    Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
- fun env id expr ->
+    Env.t -> Id.Signature.t -> bool -> ModuleType.expr -> ModuleType.expr =
+ fun env id expand expr ->
   let open ModuleType in
   let open Utils.ResultMonad in
   let resolve_sub ~fragment_root (sg_res, env, subs) lsub =
@@ -344,7 +343,7 @@ and module_type_expr :
                     Errors.report ~what:(`With_module cfrag) `Resolve;
                     (cfrag, frag)
               in
-              let decl' = module_decl env id decl in
+              let decl' = module_decl env id false decl in
               let cdecl' = Component.Of_Lang.(module_decl empty decl') in
               let resolved_csub =
                 Component.ModuleType.ModuleEq (cfrag', cdecl')
@@ -420,25 +419,26 @@ and module_type_expr :
         | Error _ -> (sg_res, env, lsub :: subs) )
   in
 
-  let get_expansion e =
-    let ce = Component.Of_Lang.(module_type_expr empty e) in
-    match Expand_tools.expansion_of_module_type_expr env id ce with
-    | Ok (_, _, ce) ->
-      let e = Lang_of.simple_expansion Lang_of.empty id ce in
-      Some (simple_expansion env id e)
-    | Error _ ->
-      None
-  in
-
-  let rec inner resolve_signatures = function
+  let rec inner resolve_signatures do_expansions =
+    let get_expansion e =
+      if not do_expansions then None
+      else
+        let ce = Component.Of_Lang.(module_type_expr empty e) in
+        match Expand_tools.expansion_of_module_type_expr env id ce with
+        | Ok (_, _, ce) ->
+            let e = Lang_of.simple_expansion Lang_of.empty id ce in
+            Some (simple_expansion env id e)
+        | Error _ -> None
+    in
+    function
     | Signature s ->
         if resolve_signatures then Signature (signature env id s)
         else Signature s
-    | Path {p_path; _} as e ->
-      let p_expansion = get_expansion e in
-      Path {p_path = module_type_path env p_path; p_expansion }
-    | With ({w_substitutions; _} as w, expr) as e -> (
-        let expr = inner false expr in
+    | Path { p_path; _ } as e ->
+        let p_expansion = get_expansion e in
+        Path { p_path = module_type_path env p_path; p_expansion }
+    | With (({ w_substitutions; _ } as w), expr) as e -> (
+        let expr = inner false false expr in
         let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
         (* Format.eprintf "Handling with expression (%a)\n%!"
           Component.Fmt.module_type_expr cexpr; *)
@@ -480,7 +480,7 @@ and module_type_expr :
     | Functor (param, res) ->
         let param' = functor_parameter env param in
         let env' = Env.add_functor_parameter param env in
-        let res' = module_type_expr env' id res in
+        let res' = module_type_expr env' id do_expansions res in
         Functor (param', res')
     | TypeOf {t_desc; _} as e ->
       let t_expansion = get_expansion e in
@@ -490,7 +490,7 @@ and module_type_expr :
       in
       TypeOf {t_desc; t_expansion}
   in
-  inner true expr
+  inner true expand expr
 
 and type_decl : Env.t -> TypeDecl.t -> TypeDecl.t =
  fun env t ->
