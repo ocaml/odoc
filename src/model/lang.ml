@@ -60,6 +60,14 @@ and ModuleType : sig
     | MPath of Path.Module.t
     | Struct_include of Path.Module.t
 
+  module U : sig
+    type expr =
+        | Path of Path.ModuleType.t
+        | Signature of Signature.t
+        | With of substitution list * expr
+        | TypeOf of type_of_desc
+  end
+  
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
@@ -83,14 +91,13 @@ and ModuleType : sig
     | Path of path_t
     | Signature of Signature.t
     | Functor of FunctorParameter.t * expr
-    | With of with_t * expr
+    | With of with_t * U.expr
     | TypeOf of typeof_t
 
   type t = {
     id : Identifier.ModuleType.t;
     doc : Comment.docs;
     expr : expr option;
-    (* Optional override *)
   }
 end =
   ModuleType
@@ -437,3 +444,11 @@ module rec Page : sig
   }
 end =
   Page
+
+let umty_of_mty : ModuleType.expr -> ModuleType.U.expr =
+  function
+  | Signature sg -> Signature sg
+  | Path { p_path; _} -> Path p_path
+  | Functor _ -> assert false
+  | TypeOf { t_desc; _} -> TypeOf t_desc
+  | With ({w_substitutions; _}, e) -> With (w_substitutions, e)

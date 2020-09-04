@@ -122,24 +122,43 @@ and aux_expansion_of_module_type_type_of_desc env t : (expansion, signature_of_m
   match t with
   | Component.ModuleType.MPath p ->  aux_expansion_of_module_alias env ~strengthen:false p
   | Struct_include p ->  aux_expansion_of_module_alias env ~strengthen:true p
- 
+
+and assert_not_functor =
+  function (Signature sg) -> Ok sg | _ -> assert false
+
+and aux_expansion_of_u_module_type_expr env expr :
+    (Component.Signature.t, signature_of_module_error) Result.result =
+  let open Utils.ResultMonad in
+  match expr with
+  | Component.ModuleType.U.Path p ->
+    Tools.resolve_module_type ~mark_substituted:false env p
+    |> map_error (fun _ -> (`UnresolvedPath (`ModuleType p) : signature_of_module_error))
+    >>= fun (_, mt) -> aux_expansion_of_module_type env mt
+    >>= assert_not_functor
+  | Signature sg -> Ok (sg)
+  | With (subs, s) -> (
+    aux_expansion_of_u_module_type_expr env s
+    >>= fun sg ->
+    let subs = unresolve_subs subs in
+    Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
+  | TypeOf t_desc ->
+    aux_expansion_of_module_type_type_of_desc env t_desc
+    >>= assert_not_functor
 
 and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
   match expr with
-  | Path {p_path; _} -> (
-      match Tools.resolve_module_type ~mark_substituted:false env p_path with
-      | Ok (_, mt) -> aux_expansion_of_module_type env mt
-      | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
+  | Path {p_path; _} ->
+      Tools.resolve_module_type ~mark_substituted:false env p_path
+      |> map_error (fun _ -> (`UnresolvedPath (`ModuleType p_path) : signature_of_module_error))
+      >>= fun (_, mt) -> aux_expansion_of_module_type env mt
   | Signature s -> Ok (Signature s)
   | With ({w_substitutions; _}, s) -> (
-      match aux_expansion_of_module_type_expr env s with
-      | Error _ as e -> e
-      | Ok (Functor _) -> failwith "This shouldn't be possible!"
-      | Ok (Signature sg) ->
-          (let subs = unresolve_subs w_substitutions in
-           Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
-          >>= fun sg -> Ok (Signature sg) )
+      aux_expansion_of_u_module_type_expr env s
+      >>= fun sg ->
+      let subs = unresolve_subs w_substitutions in
+      Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
+      >>= fun sg -> Ok (Signature sg)
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
   | TypeOf {t_desc; _} -> aux_expansion_of_module_type_type_of_desc env t_desc
 

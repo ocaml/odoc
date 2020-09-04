@@ -1428,13 +1428,25 @@ struct
     | ModuleType _ -> O.txt Syntax.Type.annotation_separator ++ module_decl' (base :> Paths.Identifier.Signature.t) md
 
 
+  and extract_path_from_umt ~(default: Paths.Identifier.Signature.t) =
+    let open Odoc_model.Lang.ModuleType.U in
+    function
+    | With (_, umt) -> extract_path_from_umt ~default umt
+    | Path (`Resolved r) ->
+      (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
+    | TypeOf (MPath (`Resolved r)) 
+    | TypeOf (Struct_include (`Resolved r)) ->
+      (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
+    | _ -> default
+
   and extract_path_from_mt ~(default: Paths.Identifier.Signature.t) =
     let open Odoc_model.Lang.ModuleType in
     function
     | Path {p_path=`Resolved r; _} ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
-    | With (_, mt) -> extract_path_from_mt ~default mt
-    | TypeOf {t_desc=MPath (`Resolved r); _} ->
+    | With (_, umt) -> extract_path_from_umt ~default umt
+    | TypeOf {t_desc=MPath (`Resolved r); _}
+    | TypeOf {t_desc=Struct_include (`Resolved r); _} ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
@@ -1492,10 +1504,19 @@ struct
     let doc = Comment.first_to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
+  and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool
+    = function
+    | Path p -> Paths.Path.(is_hidden (p :> t))
+    | With (_, expr) -> umty_hidden expr
+    | TypeOf (MPath m)
+    | TypeOf (Struct_include m) ->
+      Paths.Path.(is_hidden (m :> t))
+    | Signature _ -> false
+  
   and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool
     = function
     | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
-    | With (_, expr) -> mty_hidden expr
+    | With (_, expr) -> umty_hidden expr
     | TypeOf { t_desc=MPath m; _ } 
     | TypeOf { t_desc=Struct_include m; _ } -> Paths.Path.(is_hidden (m :> t))
     | _ -> false
@@ -1504,6 +1525,50 @@ struct
     = function
     | Alias (p, _) -> Paths.Path.(is_hidden (p :> t))
     | ModuleType mty -> mty_hidden mty
+
+  and mty_with base subs expr =
+    umty base expr ++
+            O.txt " " ++
+            O.keyword "with" ++
+            O.txt " " ++
+            O.list
+              ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
+              ~f:(substitution base)
+              subs
+  and mty_typeof t_desc =
+    match t_desc with
+    | Odoc_model.Lang.ModuleType.MPath m ->
+      O.keyword "module" ++
+      O.txt " " ++
+      O.keyword "type" ++
+      O.txt " " ++
+      O.keyword "of" ++
+      O.txt " " ++
+      Link.from_path (m :> Paths.Path.t)
+    | Struct_include m ->
+      O.keyword "module" ++
+      O.txt " " ++
+      O.keyword "type" ++
+      O.txt " " ++
+      O.keyword "of" ++
+      O.txt " " ++
+      O.keyword "struct" ++
+      O.txt " " ++
+      O.keyword "include" ++
+      O.txt " " ++
+      Link.from_path (m :> Paths.Path.t) ++
+      O.txt " " ++
+      O.keyword "end"
+
+  and umty
+    : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.U.expr -> text
+    = fun base m ->
+      match m with
+      | Path p -> Link.from_path (p :> Paths.Path.t)
+      | With (subs, expr) -> mty_with base subs expr
+      | TypeOf t_desc -> mty_typeof t_desc
+      | Signature _ ->
+        Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
   and mty
     : Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
@@ -1537,36 +1602,9 @@ struct
             O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
             mty base expr
         | With (with_t, expr) ->
-          mty base expr ++
-            O.txt " " ++
-            O.keyword "with" ++
-            O.txt " " ++
-            O.list
-              ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-              ~f:(substitution base)
-              with_t.w_substitutions
-        | TypeOf { t_desc=MPath m; _ } ->
-          O.keyword "module" ++
-            O.txt " " ++
-            O.keyword "type" ++
-            O.txt " " ++
-            O.keyword "of" ++
-            O.txt " " ++
-            Link.from_path (m :> Paths.Path.t)
-        | TypeOf { t_desc=Struct_include m; _} ->
-          O.keyword "module" ++
-            O.txt " " ++
-            O.keyword "type" ++
-            O.txt " " ++
-            O.keyword "of" ++
-            O.txt " " ++
-            O.keyword "struct" ++
-            O.txt " " ++
-            O.keyword "include" ++
-            O.txt " " ++
-            Link.from_path (m :> Paths.Path.t) ++
-            O.txt " " ++
-            O.keyword "end"
+          mty_with base with_t.w_substitutions expr
+        | TypeOf { t_desc; _ } ->
+          mty_typeof t_desc        
         | Signature _ ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 

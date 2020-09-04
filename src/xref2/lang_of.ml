@@ -634,22 +634,36 @@ and module_decl :
       Odoc_model.Lang.Module.Alias (Path.module_ map p, Opt.map (simple_expansion map identifier) s)
   | ModuleType mty -> ModuleType (module_type_expr map identifier mty)
 
+and mty_substitution map identifier = function
+  | Component.ModuleType.ModuleEq (frag, decl) ->
+      Odoc_model.Lang.ModuleType.ModuleEq
+        (Path.module_fragment map frag, module_decl map identifier decl)
+  | ModuleSubst (frag, path) ->
+      ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
+  | TypeEq (frag, eqn) ->
+      TypeEq
+        ( Path.type_fragment map frag,
+          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+  | TypeSubst (frag, eqn) ->
+      TypeSubst
+        ( Path.type_fragment map frag,
+          type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
+
+and u_module_type_expr map identifier =
+  function
+  | Component.ModuleType.U.Path p_path ->
+      Odoc_model.Lang.ModuleType.U.Path (Path.module_type map p_path)
+  | Signature s ->
+      Signature
+        (signature
+          (identifier :> Odoc_model.Paths.Identifier.Signature.t)
+          map s)
+  | With (subs, expr) ->
+      With (List.map (mty_substitution map identifier) subs, u_module_type_expr map identifier expr)
+  | TypeOf (MPath p) -> TypeOf (MPath (Path.module_ map p))
+  | TypeOf (Struct_include p)-> TypeOf (Struct_include (Path.module_ map p))
+
 and module_type_expr map identifier =
-  let substitution = function
-    | Component.ModuleType.ModuleEq (frag, decl) ->
-        Odoc_model.Lang.ModuleType.ModuleEq
-          (Path.module_fragment map frag, module_decl map identifier decl)
-    | ModuleSubst (frag, path) ->
-        ModuleSubst (Path.module_fragment map frag, Path.module_ map path)
-    | TypeEq (frag, eqn) ->
-        TypeEq
-          ( Path.type_fragment map frag,
-            type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
-    | TypeSubst (frag, eqn) ->
-        TypeSubst
-          ( Path.type_fragment map frag,
-            type_decl_equation map (identifier :> Identifier.Parent.t) eqn )
-  in
   function
   | Component.ModuleType.Path {p_path; p_expansion} ->
       Odoc_model.Lang.ModuleType.Path {p_path=Path.module_type map p_path; p_expansion=Opt.map (simple_expansion map identifier) p_expansion}
@@ -659,7 +673,7 @@ and module_type_expr map identifier =
            (identifier :> Odoc_model.Paths.Identifier.Signature.t)
            map s)
   | With ({w_substitutions; w_expansion}, expr) ->
-      With ({w_substitutions = List.map substitution w_substitutions; w_expansion=Opt.map (simple_expansion map identifier) w_expansion}, module_type_expr map identifier expr)
+      With ({w_substitutions = List.map (mty_substitution map identifier) w_substitutions; w_expansion=Opt.map (simple_expansion map identifier) w_expansion}, u_module_type_expr map identifier expr)
   | Functor (Named arg, expr) ->
       let name = Ident.Name.typed_functor_parameter arg.id in
       let identifier' = `Parameter (identifier, name) in

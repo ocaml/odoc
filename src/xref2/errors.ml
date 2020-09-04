@@ -194,3 +194,4 @@ let report ~what ?tools_error action =
   | `With_module frag -> r "module substitution" module_fragment frag
   | `With_type frag -> r "type substitution" type_fragment frag
   | `Module_type_expr cexpr -> r "module type expression" module_type_expr cexpr
+  | `Module_type_u_expr cexpr -> r "module type u expression" u_module_type_expr cexpr
