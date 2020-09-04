@@ -444,6 +444,11 @@ and module_decl s t =
   | Alias (p, e) -> Alias (module_path s p, option_ simple_expansion s e)
   | ModuleType t -> ModuleType (module_type_expr s t)
 
+and include_decl s t =
+  match t with
+  | Include.Alias p -> Include.Alias (module_path s p)
+  | ModuleType t -> ModuleType (u_module_type_expr s t)
+
 and module_ s t =
   let open Component.Module in
   let type_ = module_decl s t.type_ in
@@ -506,7 +511,7 @@ and include_ s i =
   let open Component.Include in
   {
     i with
-    decl = module_decl s i.decl;
+    decl = include_decl s i.decl;
     expansion_ = apply_sig_map s i.expansion_.items i.expansion_.removed;
   }
 

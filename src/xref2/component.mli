@@ -294,12 +294,14 @@ and Open : sig
 end
 
 and Include : sig
+  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr
+
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
     doc : CComment.docs;
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
-    decl : Module.decl;
+    decl : decl;
   }
 end
 
@@ -475,6 +477,8 @@ module Fmt : sig
   val value : Format.formatter -> Value.t -> unit
 
   val module_decl : Format.formatter -> Module.decl -> unit
+
+  val include_decl : Format.formatter -> Include.decl -> unit
 
   val module_ : Format.formatter -> Module.t -> unit
 
@@ -670,6 +674,8 @@ module Of_Lang : sig
   val type_expression : map -> Odoc_model.Lang.TypeExpr.t -> TypeExpr.t
 
   val module_decl : map -> Odoc_model.Lang.Module.decl -> Module.decl
+
+  val include_decl : map -> Odoc_model.Lang.Include.decl -> Include.decl
 
   val canonical :
     map ->

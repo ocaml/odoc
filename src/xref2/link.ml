@@ -391,6 +391,13 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias (p, e) -> Alias (module_path env p, Option.map (simple_expansion env id) e)
 
+and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
+ fun env id decl ->
+  let open Include in
+  match decl with
+  | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
+  | Alias p -> Alias (module_path env p)
+
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
   let sg_id = (m.id :> Id.Signature.t) in
@@ -416,7 +423,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
-  let decl = module_decl env i.parent i.decl in
+  let decl = include_decl env i.parent i.decl in
   (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
         (Component.Of_Lang.(module_decl empty i.decl)); *)
   let doc = comment_docs env i.doc in

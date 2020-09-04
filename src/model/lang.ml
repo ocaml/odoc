@@ -158,10 +158,15 @@ and Include : sig
     content : Signature.t
   }
 
+  (* Explicitly unexpanded decl *)
+  type decl =
+    | Alias of Path.Module.t
+    | ModuleType of ModuleType.U.expr
+
   type t = {
     parent : Identifier.Signature.t;
     doc : Comment.docs;
-    decl : Module.decl;
+    decl : decl;
     inline : bool;
     expansion : expansion;
   }

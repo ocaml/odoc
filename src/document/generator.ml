@@ -1521,11 +1521,6 @@ struct
     | TypeOf { t_desc=Struct_include m; _ } -> Paths.Path.(is_hidden (m :> t))
     | _ -> false
 
-  and module_decl_hidden : Odoc_model.Lang.Module.decl -> bool
-    = function
-    | Alias (p, _) -> Paths.Path.(is_hidden (p :> t))
-    | ModuleType mty -> mty_hidden mty
-
   and mty_with base subs expr =
     umty base expr ++
             O.txt " " ++
@@ -1649,21 +1644,33 @@ struct
             type_expr te
 
   and include_ (t : Odoc_model.Lang.Include.t) =
+    let decl_hidden =
+      match t.decl with
+      | Alias p -> Paths.Path.(is_hidden (p :> t))
+      | ModuleType mty -> umty_hidden mty
+    in
     let status =
       let is_open_tag element = element.Odoc_model.Location_.value = `Tag `Open in
       let is_closed_tag element = element.Odoc_model.Location_.value = `Tag `Closed in
-      if t.inline || (module_decl_hidden t.decl) then `Inline
+      if t.inline || decl_hidden  then `Inline
       else if List.exists is_open_tag t.doc then `Open
       else if List.exists is_closed_tag t.doc then `Closed
       else `Default
     in
-    
+
+    let include_decl =
+      match t.decl with
+      | Odoc_model.Lang.Include.Alias mod_path ->
+        Link.from_path (mod_path :> Paths.Path.t)
+      | ModuleType mt -> umty (extract_path_from_umt ~default:t.parent mt) mt
+    in
+
     let content = signature t.expansion.content in
     let summary =
       O.render (
         O.keyword "include" ++
           O.txt " " ++
-          module_decl' t.parent t.decl ++
+          include_decl ++
           (if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
       )
     in
