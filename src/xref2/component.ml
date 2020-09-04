@@ -314,12 +314,13 @@ end =
   Open
 
 and Include : sig
+  type decl = Alias of Cpath.module_ | ModuleType of ModuleType.U.expr
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
     doc : CComment.docs;
     shadowed : Odoc_model.Lang.Include.shadowed;
     expansion_ : Signature.t;
-    decl : Module.decl;
+    decl : decl;
   }
 end =
   Include
@@ -597,7 +598,13 @@ module Fmt = struct
   and class_type ppf _c = Format.fprintf ppf "<todo>"
 
   and include_ ppf i =
-    Format.fprintf ppf "%a (sig = %a)" module_decl i.decl signature i.expansion_
+    Format.fprintf ppf "%a (sig = %a)" include_decl i.decl signature i.expansion_
+
+  and include_decl ppf =
+    let open Include in
+    function
+    | Alias p -> Format.fprintf ppf "= %a" module_path p
+    | ModuleType mt -> Format.fprintf ppf ": %a" u_module_type_expr mt
 
   and value ppf v =
     let open Value in
@@ -1811,6 +1818,12 @@ module Of_Lang = struct
     | Odoc_model.Lang.Module.ModuleType s ->
         Module.ModuleType (module_type_expr ident_map s)
 
+  and include_decl ident_map m =
+    match m with
+    | Odoc_model.Lang.Include.Alias p-> Include.Alias (module_path ident_map p)
+    | ModuleType s ->
+        ModuleType (u_module_type_expr ident_map s)
+    
   and canonical ident_map
       (canonical :
         (Odoc_model.Paths.Path.Module.t * Odoc_model.Paths.Reference.Module.t)
@@ -1985,7 +1998,7 @@ module Of_Lang = struct
 
   and include_ ident_map i =
     let open Odoc_model.Lang.Include in
-    let decl = module_decl ident_map i.decl in
+    let decl = include_decl ident_map i.decl in
     {
       Include.parent = i.parent;
       doc = docs ident_map i.doc;

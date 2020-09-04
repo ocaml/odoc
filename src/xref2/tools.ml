@@ -1100,6 +1100,15 @@ and fragmap :
         Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
     | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
   in
+  let map_include_decl decl subst =
+    let open Component.Include in
+    match decl with
+    | Alias p ->
+      signature_of_module_path env ~strengthen:true p >>= fun sg ->
+      fragmap ~mark_substituted env subst sg >>= fun sg ->
+      Ok (ModuleType (Signature sg))
+    | ModuleType mty' -> Ok (ModuleType (With ([ subst ], mty')))
+  in
   let map_module m new_subst =
     let open Component.Module in
     map_module_decl m.type_ new_subst >>= fun type_ ->
@@ -1149,7 +1158,7 @@ and fragmap :
             >>= fun (items', handled', subbed_modules', removed') ->
             let component =
               if handled' then
-                map_module_decl i.decl sub >>= fun decl ->
+                map_include_decl i.decl sub >>= fun decl ->
                 let expansion_ =
                   Component.Signature.{ items = items'; removed = removed' }
                 in

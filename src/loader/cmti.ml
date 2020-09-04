@@ -689,7 +689,8 @@ and read_include env parent incl =
   let doc = Doc_attr.attached container incl.incl_attributes in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expr = read_module_type env parent container incl.incl_mod in
-  let decl = Module.ModuleType expr in
+  let uexpr = Odoc_model.Lang.umty_of_mty expr in
+  let decl = Include.ModuleType uexpr in
   let expansion = { content; shadowed; resolved = false} in
     {parent; doc; decl; expansion; inline=false }
 

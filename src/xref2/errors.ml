@@ -155,7 +155,7 @@ let report ~what ?tools_error action =
     | Some e -> kind_of_error (e :> Tools_error.any)
     | None -> (
         match what with
-        | `Include (Component.Module.Alias (cp, _)) -> kind_of_module_cpath cp
+        | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
         | `Module (`Root _) -> Some `Root
         | _ -> None )
   in
@@ -186,7 +186,7 @@ let report ~what ?tools_error action =
   | `Module_type id -> r "module type" fmt_id id
   | `Module_path path -> r "module path" module_path path
   | `Module_type_path path -> r "module type path" module_type_path path
-  | `Include decl -> r "include" module_decl decl
+  | `Include decl -> r "include" include_decl decl
   | `Package path ->
       r "module package" module_type_path (path :> Cpath.module_type)
   | `Type cfrag -> r "type" type_fragment cfrag

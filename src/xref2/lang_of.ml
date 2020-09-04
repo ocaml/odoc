@@ -542,12 +542,23 @@ and combine_shadowed s1 s2 =
     s_classes = s1.s_classes @ s2.s_classes;
     s_class_types = s1.s_class_types @ s2.s_class_types }
 
+and include_decl :
+maps ->
+Odoc_model.Paths_types.Identifier.signature ->
+Component.Include.decl ->
+Odoc_model.Lang.Include.decl =
+fun map identifier d ->
+match d with
+| Alias p ->
+  Alias (Path.module_ map p)
+| ModuleType mty -> ModuleType (u_module_type_expr map identifier mty)
+
 and include_ parent map i =
   let open Component.Include in
   {
     Odoc_model.Lang.Include.parent;
     doc = docs (parent :> Identifier.LabelParent.t) i.doc;
-    decl = module_decl map parent i.decl;
+    decl = include_decl map parent i.decl;
     expansion =
       {
         resolved = false;

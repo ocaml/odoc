@@ -208,6 +208,12 @@ and include_expansion =
       F ("shadowed", (fun t -> t.shadowed), include_shadowed);
       F ("content", (fun t -> t.content), signature_t);
     ]
+and include_decl =
+  let open Lang.Include in
+  Variant
+    (function
+    | Alias p -> C ("Alias", (p :> Paths.Path.t), path)
+    | ModuleType e -> C ("ModuleType", e, moduletype_u_expr))
 
 and include_t =
   let open Lang.Include in
@@ -215,7 +221,7 @@ and include_t =
     [
       F ("parent", (fun t -> t.parent), identifier);
       F ("doc", (fun t -> t.doc), docs);
-      F ("decl", (fun t -> t.decl), module_decl);
+      F ("decl", (fun t -> t.decl), include_decl);
       F ("inline", (fun t -> t.inline), bool);
       F ("expansion", (fun t -> t.expansion), include_expansion);
     ]

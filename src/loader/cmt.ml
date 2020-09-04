@@ -528,10 +528,11 @@ and read_include env parent incl =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container incl.incl_attributes in
   let decl =
-    let open Module in
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p, None)
-    | _ -> ModuleType (read_module_expr env parent container incl.incl_mod)
+    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+    | _ ->
+      let mty = read_module_expr env parent container incl.incl_mod in
+      ModuleType (umty_of_mty mty)
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expansion = { content; shadowed; resolved = false } in
