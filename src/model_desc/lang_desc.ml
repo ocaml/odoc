@@ -107,8 +107,18 @@ and moduletype_expr =
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
     | With (t, e) ->
-        C ( "With", (t, e), Pair (moduletype_with_t, moduletype_expr) )
+        C ( "With", (t, e), Pair (moduletype_with_t, moduletype_u_expr) )
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
+
+and moduletype_u_expr =
+  let open Lang.ModuleType.U in
+  Variant
+    (function
+    | Path x -> C ("Path", (x :> Paths.Path.t), path)
+    | Signature x -> C ("Signature", x, signature_t)
+    | With (t, e) ->
+      C ("With", (t, e), Pair (List moduletype_substitution, moduletype_u_expr))
+    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc))
 
 and moduletype_t =
   let open Lang.ModuleType in

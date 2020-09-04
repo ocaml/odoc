@@ -186,6 +186,14 @@ and ModuleType : sig
     | MPath of Cpath.module_
     | Struct_include of Cpath.module_
   
+  module U : sig
+    type expr =
+      | Path of Cpath.module_type
+      | Signature of Signature.t
+      | With of substitution list * expr
+      | TypeOf of type_of_desc
+  end
+
     type simple_expansion =
       | Signature of Signature.t
       | Functor of FunctorParameter.t * simple_expansion
@@ -208,7 +216,7 @@ and ModuleType : sig
     type expr =
       | Path of path_t
       | Signature of Signature.t
-      | With of with_t * expr
+      | With of with_t * U.expr
       | Functor of FunctorParameter.t * expr
       | TypeOf of typeof_t
   
@@ -614,13 +622,24 @@ module Fmt = struct
     | Some x -> Format.fprintf ppf "= %a" module_type_expr x
     | None -> ()
 
+  and u_module_type_expr ppf mt =
+    let open ModuleType.U in
+    match mt with
+    | Path p -> module_type_path ppf p
+    | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
+    | With (subs, e) ->
+      Format.fprintf ppf "%a with [%a]" u_module_type_expr e
+        substitution_list subs
+    | TypeOf (MPath p) -> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf (Struct_include p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
+
   and module_type_expr ppf mt =
     let open ModuleType in
     match mt with
     | Path {p_path; _} -> module_type_path ppf p_path
     | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
     | With ({w_substitutions=subs; _}, expr) ->
-        Format.fprintf ppf "%a with [%a]" module_type_expr expr
+        Format.fprintf ppf "%a with [%a]" u_module_type_expr expr
           substitution_list subs
     | Functor (arg, res) ->
         Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr
@@ -1885,6 +1904,25 @@ module Of_Lang = struct
     let res = Opt.map (type_expression ident_map) e.res in
     { Exception.doc = docs ident_map e.doc; args; res }
 
+  and u_module_type_expr ident_map m =
+  let open Odoc_model in
+  match m with
+  | Lang.ModuleType.U.Signature s ->
+    let s = signature ident_map s in
+    ModuleType.U.Signature s
+  | Path p ->
+    let p' = module_type_path ident_map p in
+    Path p'
+  | With (w, e) ->
+    let w' = List.map (module_type_substitution ident_map) w in
+    With (w', u_module_type_expr ident_map e)
+  | TypeOf t_desc ->
+    let t_desc = match t_desc with
+    | MPath p -> ModuleType.MPath (module_path ident_map p)
+    | Struct_include p -> Struct_include (module_path ident_map p)
+    in
+    TypeOf t_desc
+
   and module_type_expr ident_map m =
     let open Odoc_model in
     let open Paths in
@@ -1904,7 +1942,7 @@ module Of_Lang = struct
           w_substitutions = List.map (module_type_substitution ident_map) w.w_substitutions;
           w_expansion = option simple_expansion ident_map w.w_expansion
         } in
-        ModuleType.With (w', module_type_expr ident_map e)
+        ModuleType.With (w', u_module_type_expr ident_map e)
     | Lang.ModuleType.Functor (Named arg, expr) ->
         let identifier = arg.Lang.FunctorParameter.id in
         let id = Ident.Of_Identifier.functor_parameter identifier in

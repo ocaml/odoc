@@ -307,7 +307,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
     match mty with
     | Component.ModuleType.Functor (Named arg, expr) ->
         Ok (arg.Component.FunctorParameter.id, expr)
-    | Component.ModuleType.Path { p_path; _ }-> (
+    | Component.ModuleType.(Path { p_path; _ }) -> (
         match resolve_module_type ~mark_substituted:false env p_path with
         | Ok
             (_, { Component.ModuleType.expr = Some mty'; _ }) ->
@@ -993,6 +993,24 @@ and handle_signature_with_subs :
       sg_opt >>= fun sg -> fragmap ~mark_substituted env sub sg)
     (Ok sg) subs
 
+and signature_of_u_module_type_expr :
+  mark_substituted:bool ->
+  Env.t ->
+  Component.ModuleType.U.expr ->
+  (Component.Signature.t, signature_of_module_error) Result.result =
+  fun ~mark_substituted env m ->
+  match m with
+  | Component.ModuleType.U.Path p -> (
+      match resolve_module_type ~mark_substituted env p with
+      | Ok (_, mt) -> signature_of_module_type env mt
+      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
+  | Signature s -> Ok s
+  | With (subs, s) ->
+      signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
+      handle_signature_with_subs ~mark_substituted env sg subs
+  | TypeOf (Struct_include p) -> signature_of_module_path env ~strengthen:true p
+  | TypeOf (MPath p) -> signature_of_module_path env ~strengthen:false p
+    
 and signature_of_module_type_expr :
     mark_substituted:bool ->
     Env.t ->
@@ -1006,7 +1024,7 @@ and signature_of_module_type_expr :
       | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
   | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With ({w_substitutions; _}, s) ->
-      signature_of_module_type_expr ~mark_substituted env s >>= fun sg ->
+      signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg w_substitutions
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr ~mark_substituted env expr
@@ -1053,6 +1071,14 @@ and signature_of_module_cached :
   let run env _id = signature_of_module env m in
   SignatureOfModuleMemo.memoize run env' id
 
+and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
+    function
+    | Signature sg -> Signature sg
+    | Path { p_path; _ } -> Path p_path
+    | TypeOf { t_desc; _ } -> TypeOf t_desc
+    | With ( {w_substitutions; _}, e) -> With (w_substitutions, e)
+    | Functor _ -> assert false
+
 and fragmap :
     mark_substituted:bool ->
     Env.t ->
@@ -1072,7 +1098,7 @@ and fragmap :
         Ok (ModuleType (Signature sg))
     (* | ModuleType (With (mty', subs')) ->
         Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
-    | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, mty')))
+    | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
   in
   let map_module m new_subst =
     let open Component.Module in

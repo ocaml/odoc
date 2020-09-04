@@ -530,7 +530,7 @@ and read_module_type env parent label_parent mty =
     | Tmty_with(body, subs) ->
       let body = read_module_type env parent label_parent body in
       let subs = List.map (read_with_constraint env label_parent) subs in
-          With({w_substitutions=subs; w_expansion=None}, body)
+          With({w_substitutions=subs; w_expansion=None}, Odoc_model.Lang.umty_of_mty body)
     | Tmty_typeof mexpr ->
         let decl =
           match mexpr.mod_desc with

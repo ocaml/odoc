@@ -441,12 +441,20 @@ module LangUtils = struct
             | Some x -> Format.fprintf ppf "%a = %a" identifier mt.id module_type_expr x
             | None -> Format.fprintf ppf "%a" identifier mt.id
 
+        and u_module_type_expr ppf mt =
+            let open ModuleType.U in
+            match mt with
+            | Path p -> path ppf (p :> Odoc_model.Paths.Path.t)
+            | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
+            | With (subs, expr) -> Format.fprintf ppf "%a with [%a]" u_module_type_expr expr substitution_list subs
+            | _ -> Format.fprintf ppf "unhandled module_type_expr"
+
         and module_type_expr ppf mt =
             let open ModuleType in
             match mt with
             | Path {p_path; _} -> path ppf (p_path :> Odoc_model.Paths.Path.t)
             | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
-            | With ({w_substitutions; _}, expr) -> Format.fprintf ppf "%a with [%a]" module_type_expr expr substitution_list w_substitutions
+            | With ({w_substitutions; _}, expr) -> Format.fprintf ppf "%a with [%a]" u_module_type_expr expr substitution_list w_substitutions
             | Functor (arg, res) -> Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr res
             | _ -> Format.fprintf ppf "unhandled module_type_expr"
 

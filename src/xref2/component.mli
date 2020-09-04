@@ -171,6 +171,14 @@ and ModuleType : sig
     | MPath of Cpath.module_
     | Struct_include of Cpath.module_
 
+  module U : sig
+    type expr =
+    | Path of Cpath.module_type
+    | Signature of Signature.t
+    | With of substitution list * expr
+    | TypeOf of type_of_desc
+  end
+
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
@@ -193,7 +201,7 @@ and ModuleType : sig
   type expr =
     | Path of path_t
     | Signature of Signature.t
-    | With of with_t * expr
+    | With of with_t * U.expr
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
 
@@ -474,6 +482,8 @@ module Fmt : sig
 
   val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
   
+  val u_module_type_expr : Format.formatter -> ModuleType.U.expr -> unit
+
   val module_type_expr : Format.formatter -> ModuleType.expr -> unit
 
   val functor_parameter : Format.formatter -> FunctorParameter.t -> unit
@@ -685,6 +695,9 @@ module Of_Lang : sig
     map -> Odoc_model.Lang.Extension.Constructor.t -> Extension.Constructor.t
 
   val exception_ : map -> Odoc_model.Lang.Exception.t -> Exception.t
+
+  val u_module_type_expr :
+  map -> Odoc_model.Lang.ModuleType.U.expr -> ModuleType.U.expr
 
   val module_type_expr :
     map -> Odoc_model.Lang.ModuleType.expr -> ModuleType.expr

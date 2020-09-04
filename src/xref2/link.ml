@@ -541,6 +541,27 @@ and handle_fragments env id sg subs =
     (Ok sg, []) subs
   |> snd |> List.rev
 
+and u_module_type_expr :
+  Env.t -> Id.Signature.t -> ModuleType.U.expr -> ModuleType.U.expr =
+  fun env id expr ->
+  match expr with
+  | Signature s -> Signature (signature env id s)
+  | Path p ->
+    Path (module_type_path env p)
+  | With (subs, expr) as unresolved -> (
+      let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
+      match
+        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
+      with
+      | Ok sg ->
+          With (handle_fragments env id sg subs, u_module_type_expr env id expr)
+      | Error _ ->
+          Lookup_failures.report "Failed to resolve module type %a"
+            Component.Fmt.u_module_type_expr cexpr;
+          unresolved )
+  | TypeOf (Struct_include p)-> TypeOf (Struct_include (module_path env p))
+  | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
+
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
  fun env id expr ->
@@ -552,14 +573,14 @@ and module_type_expr :
   | Path {p_path; p_expansion} ->
     Path {p_path=module_type_path env p_path; p_expansion = do_expn p_expansion}
   | With ({w_substitutions; w_expansion}, expr) as unresolved -> (
-      let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
+      let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
       match
-        Tools.signature_of_module_type_expr ~mark_substituted:true env cexpr
+        Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
       with
       | Ok sg ->
-          With ({w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion}, module_type_expr env id expr)
+          With ({w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion}, u_module_type_expr env id expr)
           | Error e ->
-          Errors.report ~what:(`Module_type_expr cexpr) ~tools_error:e `Resolve_module_type;
+          Errors.report ~what:(`Module_type_u_expr cexpr) ~tools_error:e `Resolve_module_type;
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
