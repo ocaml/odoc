@@ -119,7 +119,10 @@ val sg :
              inline = false;
              expansion =
               {Odoc_model.Lang.Include.resolved = false;
-               shadowed = [("t", (root Root).Mextended.$t$1)];
+               shadowed =
+                {Odoc_model.Lang.Include.s_modules = []; s_module_types = [];
+                 s_types = [("t", (root Root).Mextended.$t$1)];
+                 s_classes = []; s_class_types = []};
                content =
                 [Odoc_model.Lang.Signature.Type
                   (Odoc_model.Lang.Signature.Ordinary,
@@ -232,7 +235,10 @@ val sg :
            inline = false;
            expansion =
             {Odoc_model.Lang.Include.resolved = false;
-             shadowed = [("t", (root Root).Mextended.$t$1)];
+             shadowed =
+              {Odoc_model.Lang.Include.s_modules = []; s_module_types = [];
+               s_types = [("t", (root Root).Mextended.$t$1)]; s_classes = [];
+               s_class_types = []};
              content =
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,
@@ -345,7 +351,10 @@ val sg :
            inline = false;
            expansion =
             {Odoc_model.Lang.Include.resolved = false;
-             shadowed = [("t", (root Root).Mextended.$t$1)];
+             shadowed =
+              {Odoc_model.Lang.Include.s_modules = []; s_module_types = [];
+               s_types = [("t", (root Root).Mextended.$t$1)]; s_classes = [];
+               s_class_types = []};
              content =
               [Odoc_model.Lang.Signature.Type
                 (Odoc_model.Lang.Signature.Ordinary,

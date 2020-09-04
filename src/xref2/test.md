@@ -1524,8 +1524,8 @@ let module_M_expansion =
 
 Let's see what happens when we have nested shadowing:
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 let test_data = {|
 module Foo : sig
   type t
@@ -1553,8 +1553,8 @@ let m_e_i_s_value mod_name n val_name =
    module_expansion_include_sig mod_name n |-- Signature.value val_name
 ```
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 # Common.LangUtils.Lens.get (m_e_i_s_value "Foo3" 0 "id") sg;;
 - : Odoc_model.Lang.Value.t =
 {Odoc_model.Lang.Value.id =
@@ -1579,8 +1579,8 @@ let m_e_i_s_value mod_name n val_name =
 
 And what happens when we include multiple things defining a `t`?
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 let test_data = {|
 module Foo : sig
   type t
@@ -1602,8 +1602,8 @@ end
 let sg = Common.signature_of_mli_string test_data;;
 ```
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
@@ -1661,8 +1661,8 @@ let sg = Common.signature_of_mli_string test_data;;
 
 And what happens when we override values?
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 let test_data = {|
 module Foo : sig
   type t
@@ -1686,8 +1686,8 @@ end
 let sg = Common.signature_of_mli_string test_data;;
 ```
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
@@ -1725,8 +1725,8 @@ let sg = Common.signature_of_mli_string test_data;;
 
 And overriding modules?
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 let test_data = {|
 module Foo : sig
    module Bar : sig
@@ -1749,8 +1749,8 @@ end
 let sg = Common.signature_of_mli_string test_data;;
 ```
 
-<!-- $MDX version>=4.08 -->
-```ocaml env=e1
+<!-- $MDX version>=4.08,env=e1 -->
+```ocaml
 # Common.LangUtils.Lens.get (module_expansion_include_sig "Foo3" 0) sg;;
 - : Odoc_model.Lang.Signature.t =
 [Odoc_model.Lang.Signature.Module (Odoc_model.Lang.Signature.Ordinary,

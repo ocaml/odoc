@@ -431,7 +431,7 @@ Known kind:
 Substitutions are only available in 4.08 onwards:
 
 <!-- $MDX version>=4.08 -->
-```ocaml version>=4.08
+```ocaml
 let test_mli = {|
   type r1 = { rf1 : int }
   type s1 := r1
@@ -451,7 +451,7 @@ let resolve_ref ref_str : ref =
 ```
 
 <!-- $MDX version>=4.08 -->
-```ocaml version>=4.08
+```ocaml
 # resolve_ref "s1"
 - : ref = `Identifier (`Type (`Root (Common.root, Root), s1))
 # resolve_ref "s1.rf1"
