@@ -47,7 +47,7 @@ let rec resolved_signature_split_parent :
   | `OpaqueModule m -> resolved_signature_split_parent (m :> resolved_signature)
   | `Module (p, name) -> (
       match resolved_signature_split_parent p with
-      | RBase i -> RBranch (name, `Root i)
+      | RBase i -> RBranch (name, `Module (`Root i, name))
       | RBranch (base, m) -> RBranch (base, `Module (m, name)) )
 
 (* Note that this returns an unresolved fragment by design *)
