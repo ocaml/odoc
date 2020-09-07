@@ -504,6 +504,16 @@ and u_module_type_expr :
     | Signature s ->
       Signature s
     | Path p -> Path (module_type_path env p)
+    | With (_, Signature _) as u -> begin
+        (* Explicitly handle 'sig ... end with ...' - replace with a plain signature *)
+        let cu = Component.Of_Lang.(u_module_type_expr empty u) in
+        let result =
+          Expand_tools.aux_expansion_of_u_module_type_expr env cu
+        in
+        match result with
+        | Ok sg -> Signature (Lang_of.(signature id empty sg))
+        | _ -> u
+      end
     | With (subs, expr) -> (
         let expr = inner expr in
         let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
@@ -538,6 +548,12 @@ and module_type_expr :
   | Path { p_path; _ } as e ->
     let p_expansion = get_expansion e in
     Path { p_path = module_type_path env p_path; p_expansion }
+  | With (_, Signature _) as e -> (
+      let w_expansion = get_expansion e in
+      match w_expansion with
+      | Some (Signature sg) -> Signature sg
+      | _ -> e
+    )
   | With ({ w_substitutions; _ }, expr) as e -> (
     let w_expansion = get_expansion e in
     let expr = u_module_type_expr env id expr in

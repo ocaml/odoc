@@ -1098,6 +1098,13 @@ and fragmap :
         Ok (ModuleType (Signature sg))
     (* | ModuleType (With (mty', subs')) ->
         Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
+    | ModuleType (Signature sg as mty') -> begin
+      match fragmap ~mark_substituted env subst sg with
+      | Ok sg' ->
+        Ok (ModuleType (Signature sg'))
+      | Error _ ->
+        Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
+      end
     | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
   in
   let map_include_decl decl subst =
