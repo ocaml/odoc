@@ -17,6 +17,9 @@ let identity =
     invalidated_modules = [];
   }
 
+let invalidate_module id t =
+  { t with invalidated_modules = id :: t.invalidated_modules }
+
 let add_module id p rp t =
   { t with module_ = PathModuleMap.add id (`Prefixed (p, rp)) t.module_ }
 
@@ -297,16 +300,24 @@ let rec signature_fragment : t -> Cfrag.signature -> Cfrag.signature =
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
   | `Root -> `Root
 
-let module_fragment : t -> Cfrag.module_ -> Cfrag.module_ =
+let rec module_fragment : t -> Cfrag.module_ -> Cfrag.module_ =
  fun t r ->
   match r with
-  | `Resolved r -> `Resolved (resolved_module_fragment t r)
+  | `Resolved r -> (
+    try `Resolved (resolved_module_fragment t r)
+    with Invalidated ->
+      let frag' = Cfrag.unresolve_module r in
+      module_fragment t frag')
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
 
-let type_fragment : t -> Cfrag.type_ -> Cfrag.type_ =
+let rec type_fragment : t -> Cfrag.type_ -> Cfrag.type_ =
  fun t r ->
   match r with
-  | `Resolved r -> `Resolved (resolved_type_fragment t r)
+  | `Resolved r -> (
+      try `Resolved (resolved_type_fragment t r)
+      with Invalidated ->
+        let frag' = Cfrag.unresolve_type r in
+        type_fragment t frag' )
   | `Dot (sg, n) -> `Dot (signature_fragment t sg, n)
 
 let option_ conv s x = match x with Some x -> Some (conv s x) | None -> None

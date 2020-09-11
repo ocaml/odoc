@@ -24,11 +24,11 @@ let rec signature :
     Signature.t =
  fun prefix ?canonical sg ->
   let open Signature in
-  let items =
-    List.map
-      (fun item ->
-        match item with
-        | Module (id, r, m) ->
+  let (items, strengthened_modules) =
+    List.fold_left
+      (fun (items, s) item ->
+        match item with 
+        | Module (id, r, m) -> begin
             let name = Ident.Name.module_ id in
             let canonical =
               match canonical with
@@ -40,42 +40,47 @@ let rec signature :
                     )
               | None -> None
             in
-            Module
-              ( id,
-                r,
-                put (fun () -> module_ ?canonical (`Dot (prefix, name)) (get m))
-              )
+            match module_ ?canonical (`Dot (prefix, name)) (get m) with
+            | None -> (item :: items, s)
+            | Some m' ->
+              (Module
+                ( id,
+                  r,
+                  put (fun () -> m')
+                ) :: items, id :: s)
+            end
         | ModuleType (id, mt) ->
-            ModuleType
+            (ModuleType
               ( id,
                 put (fun () ->
                     module_type
                       (`Dot (prefix, Ident.Name.module_type id))
-                      (get mt)) )
+                      (get mt)) ) :: items, s)
         | Type (id, r, t) ->
-            Type
+            (Type
               ( id,
                 r,
                 put (fun () ->
-                    type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) )
+                    type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) ) :: items, s)
         | Exception _ | TypExt _ | Value _ | External _ | Class _
         | ClassType _ | Include _ | ModuleSubstitution _ | TypeSubstitution _
         | Comment _ | Open _ ->
-            item)
-      sg.items
+            (item :: items, s))
+      ([],[]) sg.items
   in
-  (* The identity substitution used here is to rename all of the bound idents in the signature *)
-  Subst.signature Subst.identity { items; removed = sg.removed }
+  (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
+  let substs = List.fold_left (fun s mid -> Subst.invalidate_module (mid :> Ident.path_module) s) Subst.identity strengthened_modules in
+  Subst.signature substs { items = List.rev items; removed = sg.removed }
 
 and module_ :
     ?canonical:Cpath.module_ * Odoc_model.Paths.Reference.Module.t ->
     Cpath.module_ ->
     Component.Module.t ->
-    Component.Module.t =
+    Component.Module.t option =
  fun ?canonical prefix m ->
   match m.type_ with
-  | Alias _ -> m
-  | ModuleType _ -> { m with canonical; type_ = Alias (prefix, None) }
+  | Alias _ -> None
+  | ModuleType _ -> Some { m with canonical; type_ = Alias (prefix, None) }
 
 (* nuke the expansion as this could otherwise lead to inconsistencies - e.g. 'AlreadyASig' *)
 and module_type :
