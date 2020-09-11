@@ -110,3 +110,19 @@ let type_split : type_ -> string * type_ option = function
       match signature_split_parent m with
       | Base _ -> (name, None)
       | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))) )
+
+let rec unresolve_module : resolved_module -> module_ = function
+    | `OpaqueModule m | `Subst (_, m) | `SubstAlias (_, m) ->
+        unresolve_module m
+    | `Module (parent, m) ->
+        `Dot (unresolve_signature parent, ModuleName.to_string m)
+  and unresolve_signature : resolved_signature -> signature = function
+    | #resolved_module as m -> (unresolve_module m :> signature)
+    | `Root _ -> `Root
+  and unresolve_type : resolved_type -> type_ = function
+    | `Type (parent, name) ->
+        `Dot (unresolve_signature parent, TypeName.to_string name)
+    | `ClassType (parent, name) ->
+        `Dot (unresolve_signature parent, ClassTypeName.to_string name)
+    | `Class (parent, name) ->
+        `Dot (unresolve_signature parent, ClassName.to_string name)
