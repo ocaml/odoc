@@ -523,27 +523,30 @@ and u_module_type_expr :
 and module_type_expr :
   Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
   fun env id expr ->
-  let get_expansion e =
-    let ce = Component.Of_Lang.(module_type_expr empty e) in
-    match Expand_tools.expansion_of_module_type_expr env id ce with
-    | Ok (_, _, ce) ->
-        let e = Lang_of.simple_expansion Lang_of.empty id ce in
-        Some (simple_expansion env id e)
-    | Error _ -> None
+  let get_expansion cur e =
+    match cur with
+    | Some e -> Some (simple_expansion env id e)
+    | None ->
+      let ce = Component.Of_Lang.(module_type_expr empty e) in
+      match Expand_tools.expansion_of_module_type_expr env id ce with
+      | Ok (_, _, ce) ->
+          let e = Lang_of.simple_expansion Lang_of.empty id ce in
+          Some (simple_expansion env id e)
+      | Error _ -> None
   in
   match expr with
   | Signature s -> Signature (signature env id s)
-  | Path { p_path; _ } as e ->
-    let p_expansion = get_expansion e in
+  | Path { p_path; p_expansion } as e ->
+    let p_expansion = get_expansion p_expansion e in
     Path { p_path = module_type_path env p_path; p_expansion }
-  | With (_, Signature _) as e -> (
-      let w_expansion = get_expansion e in
+  | With ({ w_expansion; _ }, Signature _) as e -> (
+      let w_expansion = get_expansion w_expansion e in
       match w_expansion with
       | Some (Signature sg) -> Signature sg
       | _ -> e
     )
-  | With ({ w_substitutions; _ }, expr) as e -> (
-    let w_expansion = get_expansion e in
+  | With ({ w_substitutions; w_expansion }, expr) as e -> (
+    let w_expansion = get_expansion w_expansion e in
     let expr = u_module_type_expr env id expr in
     let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
     (* Format.eprintf "Handling with expression (%a)\n%!"
@@ -558,8 +561,8 @@ and module_type_expr :
     let env' = Env.add_functor_parameter param env in
     let res' = module_type_expr env' id res in
     Functor (param', res')
-  | TypeOf {t_desc; _} as e ->
-    let t_expansion = get_expansion e in
+  | TypeOf {t_desc; t_expansion } as e ->
+    let t_expansion = get_expansion t_expansion e in
     let t_desc = match t_desc with
       | MPath p -> ModuleType.MPath (module_path env p)
       | Struct_include p -> Struct_include (module_path env p)

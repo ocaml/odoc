@@ -1011,6 +1011,11 @@ and signature_of_u_module_type_expr :
   | TypeOf (Struct_include p) -> signature_of_module_path env ~strengthen:true p
   | TypeOf (MPath p) -> signature_of_module_path env ~strengthen:false p
     
+and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
+    function
+    | Signature sg -> sg
+    | Functor (_, e) -> signature_of_simple_expansion e
+
 and signature_of_module_type_expr :
     mark_substituted:bool ->
     Env.t ->
@@ -1018,11 +1023,15 @@ and signature_of_module_type_expr :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun ~mark_substituted env m ->
   match m with
+  | Component.ModuleType.Path {p_expansion=Some e; _} ->
+    Ok (signature_of_simple_expansion e)
   | Component.ModuleType.Path {p_path; _} -> (
       match resolve_module_type ~mark_substituted env p_path with
       | Ok (_, mt) -> signature_of_module_type env mt
       | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
   | Component.ModuleType.Signature s -> Ok s
+  | Component.ModuleType.With ({w_expansion=Some e; _}, _) ->
+    Ok (signature_of_simple_expansion e)
   | Component.ModuleType.With ({w_substitutions; _}, s) ->
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg w_substitutions
@@ -1031,6 +1040,8 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Functor (Named arg, expr) ->
       ignore arg;
       signature_of_module_type_expr ~mark_substituted env expr
+  | Component.ModuleType.TypeOf { t_expansion = Some e; _ } ->
+    Ok (signature_of_simple_expansion e)
   | Component.ModuleType.TypeOf { t_desc = Struct_include p; _} -> signature_of_module_path env ~strengthen:true p
   | Component.ModuleType.TypeOf { t_desc = MPath p; _} -> signature_of_module_path env ~strengthen:false p
     
@@ -1050,6 +1061,7 @@ and signature_of_module_decl :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
+  | Component.Module.Alias (_, Some e) -> Ok (signature_of_simple_expansion e)
   | Component.Module.Alias (p, _) -> signature_of_module_path env ~strengthen:true p
   | Component.Module.ModuleType expr ->
       signature_of_module_type_expr ~mark_substituted:false env expr
