@@ -299,17 +299,18 @@ and include_ : Env.t -> Include.t -> Include.t =
     function Comment (`Docs _) :: xs -> xs | xs -> xs
   in
   let decl = Component.Of_Lang.(include_decl empty i.decl) in
-  match
-    let open Utils.ResultMonad in
-    (match decl with
-    | Alias p ->
-      Expand_tools.aux_expansion_of_module_alias env ~strengthen:true p
-      >>= Expand_tools.assert_not_functor
-    | ModuleType mty -> Expand_tools.aux_expansion_of_u_module_type_expr env mty)
-  with
-  | Error e ->
-      Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
-      i
+  let get_expansion () =
+    match
+      let open Utils.ResultMonad in
+      (match decl with
+      | Alias p ->
+        Expand_tools.aux_expansion_of_module_alias env ~strengthen:true p
+        >>= Expand_tools.assert_not_functor
+      | ModuleType mty -> Expand_tools.aux_expansion_of_u_module_type_expr env mty)
+    with
+  | Error _ ->
+      lookup_failure ~what:(`Include decl) `Expand;
+      i.expansion
   | Ok (sg) ->
       let map = { Lang_of.empty with shadowed = i.expansion.shadowed } in
       let e = Lang_of.(simple_expansion map i.parent (Signature sg)) in
@@ -319,15 +320,16 @@ and include_ : Env.t -> Include.t -> Include.t =
         | ModuleType.Signature sg -> sg
         | _ -> failwith "Expansion shouldn't be anything other than a signature"
       in
-      let expansion =
-        {
+      {
           resolved = true;
           shadowed = i.expansion.shadowed;
           content =
             remove_top_doc_from_signature (signature env i.parent expansion_sg);
         }
-      in
-      { i with decl = include_decl env i.parent i.decl; expansion }
+    in
+    let expansion =
+      if i.expansion.resolved then i.expansion else get_expansion () in
+    { i with decl = include_decl env i.parent i.decl; expansion }
 
 and simple_expansion : Env.t -> Id.Signature.t -> ModuleType.simple_expansion -> ModuleType.simple_expansion
     =
