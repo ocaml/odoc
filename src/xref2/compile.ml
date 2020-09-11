@@ -268,13 +268,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl
   let open Module in
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias (p, expn) -> (
-      let cp' = Component.Of_Lang.(module_path empty p) in
-      let cp = Cpath.unresolve_module_path cp' in
-      match Tools.resolve_module_path env cp with
-      | Ok p' ->
-          Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'), expn)
-      | Error _ -> Alias (p, expn ))
+  | Alias (p, expn) -> Alias (module_path env p, expn)
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl
     =
@@ -282,13 +276,7 @@ and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl
   let open Include in
   match decl with
   | ModuleType expr -> ModuleType (u_module_type_expr env id expr)
-  | Alias p -> (
-      let cp' = Component.Of_Lang.(module_path empty p) in
-      let cp = Cpath.unresolve_module_path cp' in
-      match Tools.resolve_module_path env cp with
-      | Ok p' ->
-          Alias (`Resolved (Cpath.resolved_module_path_of_cpath p'))
-      | Error _ -> Alias p)
+  | Alias p -> Alias (module_path env p)
 
 and module_type : Env.t -> ModuleType.t -> ModuleType.t =
  fun env m ->
@@ -658,8 +646,7 @@ and type_expression_object env parent o =
 
 and type_expression_package env parent p =
   let open TypeExpr.Package in
-  let cp' = Component.Of_Lang.(module_type_path empty p.path) in
-  let cp = Cpath.unresolve_module_type_path cp' in
+  let cp = Component.Of_Lang.(module_type_path empty p.path) in
   match Tools.resolve_module_type ~mark_substituted:true env cp with
   | Ok (path, mt) -> (
       match Tools.signature_of_module_type env mt with
@@ -697,8 +684,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       Arrow (lbl, type_expression env parent t1, type_expression env parent t2)
   | Tuple ts -> Tuple (List.map (type_expression env parent) ts)
   | Constr (path, ts') -> (
-      let cp' = Component.Of_Lang.(type_path empty path) in
-      let cp = Cpath.unresolve_type_path cp' in
+      let cp = Component.Of_Lang.(type_path empty path) in
       let ts = List.map (type_expression env parent) ts' in
       match Tools.resolve_type env cp with
       | Ok (cp, Found _t) ->
