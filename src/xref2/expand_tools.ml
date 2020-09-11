@@ -89,32 +89,14 @@ and aux_expansion_of_module_alias env ~strengthen path =
    may well change - so we turn resolved fragments back into unresolved ones
    here *)
 and unresolve_subs subs =
-  let open Cfrag in
-  let open Names in
-  let rec unresolve_module_fragment : resolved_module -> module_ = function
-    | `OpaqueModule m | `Subst (_, m) | `SubstAlias (_, m) ->
-        unresolve_module_fragment m
-    | `Module (parent, m) ->
-        `Dot (unresolve_signature_fragment parent, ModuleName.to_string m)
-  and unresolve_signature_fragment : resolved_signature -> signature = function
-    | #resolved_module as m -> (unresolve_module_fragment m :> signature)
-    | `Root _ -> `Root
-  and unresolve_type_fragment : resolved_type -> type_ = function
-    | `Type (parent, name) ->
-        `Dot (unresolve_signature_fragment parent, TypeName.to_string name)
-    | `ClassType (parent, name) ->
-        `Dot (unresolve_signature_fragment parent, ClassTypeName.to_string name)
-    | `Class (parent, name) ->
-        `Dot (unresolve_signature_fragment parent, ClassName.to_string name)
-  in
   List.map
     (function
       | Component.ModuleType.ModuleEq (`Resolved f, m) ->
-          Component.ModuleType.ModuleEq (unresolve_module_fragment f, m)
+          Component.ModuleType.ModuleEq (Cfrag.unresolve_module f, m)
       | ModuleSubst (`Resolved f, m) ->
-          ModuleSubst (unresolve_module_fragment f, m)
-      | TypeEq (`Resolved f, t) -> TypeEq (unresolve_type_fragment f, t)
-      | TypeSubst (`Resolved f, t) -> TypeSubst (unresolve_type_fragment f, t)
+          ModuleSubst (Cfrag.unresolve_module f, m)
+      | TypeEq (`Resolved f, t) -> TypeEq (Cfrag.unresolve_type f, t)
+      | TypeSubst (`Resolved f, t) -> TypeSubst (Cfrag.unresolve_type f, t)
       | x -> x)
     subs
 
