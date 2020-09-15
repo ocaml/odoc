@@ -169,13 +169,13 @@ let inline_code = macro "inlinecode"
 let mhyperref pp r ppf =
   match r.target, r.text with
   | "", None -> ()
-  | "", Some content ->  pp ppf content
+  | "", Some content ->  inline_code pp ppf content
   | s, None ->
     macro "ref" escape_ref ppf s
   | s, Some content ->
       let pp =
-        if r.short then pp else
-          fun ppf x -> Fmt.pf ppf "%a[p%a]" pp x (macro "pageref*" escape_ref) s in
+        if r.short then inline_code pp else
+          fun ppf x -> Fmt.pf ppf "%a[p%a]" (inline_code pp) x (macro "pageref*" escape_ref) s in
       macro "hyperref" ~options:[bind escape_ref s] pp ppf content
 
 let label = function
