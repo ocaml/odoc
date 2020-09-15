@@ -43,7 +43,7 @@ type elt =
   | Break of break_hierarchy
   | List of list_info
   | Description of (t * t) list
-  | Subpage of t
+  | Indented of t
   | Table of table
   | Ligaturable of string
 
@@ -142,6 +142,30 @@ let mlabel ppf = macro "label" escape_ref ppf
 let verbatim = macro "verbatim" Fmt.string
 let mbegin ?options = macro "begin" ?options Fmt.string
 let mend = macro "end" Fmt.string
+let code_fragment = macro "codefragment"
+let break ppf level =
+  let pre: _ format6 = match level with
+    | Aesthetic -> "%%"
+    | Line -> {|\\|}
+    | Separation -> {|\medbreak|}
+    | _ -> "" in
+  let post: _ format6 = match level with
+    | Line | Separation | Aesthetic | Simple -> ""
+    | Paragraph -> "@," in
+  Fmt.pf ppf (pre ^^ "@," ^^ post)
+
+
+let env name pp ?(with_break=false) ?(opts=[]) ?(args=[]) ppf content =
+  mbegin ppf name;
+  List.iter (Fmt.pf ppf "[%t]") opts;
+  List.iter (Fmt.pf ppf "{%t}") args;
+  pp ppf content;
+  mend ppf name;
+  break ppf (if with_break then Simple else Aesthetic)
+
+let indent pp ppf x = env "ocamlindent" pp ppf x
+let inline_code = macro "inlinecode"
+
 let mhyperref pp r ppf =
   match r.target, r.text with
   | "", None -> ()
@@ -167,27 +191,6 @@ let mstyle = function
   | `Superscript -> macro "textsuperscript"
 
 
-
-let break ppf level =
-  let pre: _ format6 = match level with
-    | Aesthetic -> "%%"
-    | Line -> {|\\|}
-    | Separation -> {|\medbreak|}
-    | _ -> "" in
-  let post: _ format6 = match level with
-    | Line | Separation | Aesthetic | Simple -> ""
-    | Paragraph -> "@," in
-  Fmt.pf ppf (pre ^^ "@," ^^ post)
-
-let env name pp ?(with_break=false) ?(opts=[]) ?(args=[]) ppf content =
-  mbegin ppf name;
-  List.iter (Fmt.pf ppf "[%t]") opts;
-  List.iter (Fmt.pf ppf "{%t}") args;
-  pp ppf content;
-  mend ppf name;
-  break ppf (if with_break then Simple else Aesthetic)
-
-let inline_code = macro "inlinecode"
 let code_block pp ppf x =
   let name = "ocamlcodeblock" in
   mbegin ppf name;
@@ -195,10 +198,6 @@ let code_block pp ppf x =
   pp ppf x;
   Fmt.cut ppf ();
   mend ppf name
-
-let code_fragment = macro "codefragment"
-let sub pp ppf x = env "adjustwidth" ~args:[const "2em"; const "0pt"] pp ppf x
-
 
 let level_macro = function
   | 0 ->  macro "section"
@@ -246,7 +245,7 @@ let filter_map f x =
 
 let elt_size (x:elt) = match x with
   | Txt _ | Internal_ref _ | External_ref _ | Label _ | Style _ | Inlined_code _ | Code_fragment _ | Tag _ | Break _ | Ligaturable _ -> Small
-  | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Subpage _ | Description _-> Large
+  | List _ | Section _ | Verbatim _ | Raw _ | Code_block _ | Indented _ | Description _-> Large
   | Table _  -> Huge
 
 let table = function
@@ -300,7 +299,7 @@ let rec pp_elt ppf = function
   | Table { row_size=Large|Huge as size; tbl } -> large_table size ppf tbl
   | Table { row_size=Small|Empty; tbl } -> small_table ppf tbl
   | Label x -> mlabel ppf x
-  | Subpage x ->  sub pp ppf x
+  | Indented x ->  indent pp ppf x
   | Ligaturable s -> Fmt.string ppf s
 
 and pp ppf = function
@@ -333,13 +332,13 @@ and large_table size ppf tbl =
         Fmt.pf ppf "%a%a%a"
           pp a
           break Aesthetic
-          (sub row) q  in
+          (indent row) q  in
     let matrix ppf m =
 
       List.iter (row ppf) m in
     match size with
     | Huge -> break ppf Line; matrix ppf tbl
-    | Large | _ -> sub matrix ppf tbl
+    | Large | _ -> indent matrix ppf tbl
 
 and small_table ppf tbl =
     let columns = List.length (List.hd tbl) in
@@ -490,7 +489,7 @@ let rec documentedSrc (t : DocumentedSrc.t) =
     end
         @ to_latex rest
     | Subpage subp :: rest ->
-      Subpage (items subp.content.items)
+      Indented (items subp.content.items)
       :: to_latex rest
     | (Documented _ | Nested _) :: _ ->
       let take_descr l =
@@ -550,7 +549,7 @@ and items l =
       let content =  label anchor @ documentedSrc content in
       let elts = match doc with
         | [] -> content @ [Break Line]
-        | docs -> content @ Break Line :: block ~in_source:true docs @ [Break Separation]
+        | docs -> content @ [ Indented (block ~in_source:true docs); Break Separation]
       in
       continue_with rest elts
 
