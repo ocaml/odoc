@@ -348,10 +348,11 @@ and small_table ppf tbl =
       break ppf Line in
     let matrix ppf m = List.iter (row ppf) m in
     let rec repeat n s ppf = if n = 0 then () else
-        Fmt.pf ppf "%c%t" s (repeat (n - 1) s) in
+        Fmt.pf ppf "%t%t" s (repeat (n - 1) s) in
+    let cell ppf = Fmt.pf ppf "p{%.3f\\textwidth}" (1.0 /. float_of_int columns) in
     let table ppf tbl = env "longtable"
       ~opts:[const "l"]
-      ~args:[ repeat columns 'l' ]
+      ~args:[ repeat columns cell ]
       matrix ppf tbl in
     Fmt.pf ppf {|{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%a}|}
     table tbl
