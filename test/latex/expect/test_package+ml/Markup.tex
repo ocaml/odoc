@@ -1,4 +1,4 @@
-\section{Module \inlinecode{Markup}}\label{package-test+u+package+++ml-module-Markup}%
+\section{Module \ocamlinlinecode{Markup}}\label{package-test+u+package+++ml-module-Markup}%
 Here, we test the rendering of comment markup.
 
 \subsection{Sections\label{sections}}%
@@ -13,7 +13,7 @@ and
 but odoc has banned deeper headings. There are also title headings, but they are only allowed in mld files.
 
 \subsubsection{Anchors\label{anchors}}%
-Sections can have attached \hyperref[package-test+u+package+++ml-module-Markup-anchors]{\inlinecode{Anchors}[p\pageref*{package-test+u+package+++ml-module-Markup-anchors}]}, and it is possible to \hyperref[package-test+u+package+++ml-module-Markup-anchors]{\inlinecode{link}[p\pageref*{package-test+u+package+++ml-module-Markup-anchors}]} to them. Links to section headers should not be set in source code style.
+Sections can have attached \hyperref[package-test+u+package+++ml-module-Markup-anchors]{\ocamlinlinecode{Anchors}[p\pageref*{package-test+u+package+++ml-module-Markup-anchors}]}, and it is possible to \hyperref[package-test+u+package+++ml-module-Markup-anchors]{\ocamlinlinecode{link}[p\pageref*{package-test+u+package+++ml-module-Markup-anchors}]} to them. Links to section headers should not be set in source code style.
 
 \subsubsection{Paragraph\label{paragraph}}%
 Individual paragraphs can have a heading.
@@ -22,22 +22,22 @@ Individual paragraphs can have a heading.
 Parts of a longer paragraph that can be considered alone can also have headings.
 
 \subsection{Styling\label{styling}}%
-This paragraph has some styled elements: \textbf{bold} and \emph{italic}, \textbf{\emph{bold italic}}, \emph{emphasis}, \emph{\emph{emphasis} within emphasis}, \textbf{\emph{bold italic}}, super\textsuperscript{script}, sub\textsubscript{script}. The line spacing should be enough for superscripts and subscripts not to look odd.
+This paragraph has some styled elements: \bold{bold} and \emph{italic}, \bold{\emph{bold italic}}, \emph{emphasis}, \emph{\emph{emphasis} within emphasis}, \bold{\emph{bold italic}}, super\textsuperscript{script}, sub\textsubscript{script}. The line spacing should be enough for superscripts and subscripts not to look odd.
 
 Note: \emph{In italics \emph{emphasis} is rendered as normal text while \emph{emphasis \emph{in} emphasis} is rendered in italics.} \emph{It also work the same in \href{\#}{links in italics with \emph{emphasis \emph{in} emphasis}.}\footnote{\url{\#}}}
 
-\inlinecode{code} is a different kind of markup that doesn't allow nested markup.
+\ocamlinlinecode{code} is a different kind of markup that doesn't allow nested markup.
 
-It's possible for two markup elements to appear \textbf{next} \emph{to} each other and have a space, and appear \textbf{next}\emph{to} each other with no space. It doesn't matter \textbf{how} \emph{much} space it was in the source: in this sentence, it was two space characters. And in this one, there is \textbf{a} \emph{newline}.
+It's possible for two markup elements to appear \bold{next} \emph{to} each other and have a space, and appear \bold{next}\emph{to} each other with no space. It doesn't matter \bold{how} \emph{much} space it was in the source: in this sentence, it was two space characters. And in this one, there is \bold{a} \emph{newline}.
 
-This is also true between \emph{non-}\inlinecode{code} markup \emph{and} \inlinecode{code}.
+This is also true between \emph{non-}\ocamlinlinecode{code} markup \emph{and} \ocamlinlinecode{code}.
 
-Code can appear \textbf{inside \inlinecode{other} markup}. Its display shouldn't be affected.
+Code can appear \bold{inside \ocamlinlinecode{other} markup}. Its display shouldn't be affected.
 
 \subsection{Links and references\label{links-and-references}}%
-This is a \href{\#}{link}\footnote{\url{\#}}. It sends you to the top of this page. Links can have markup inside them: \href{\#}{\textbf{bold}}\footnote{\url{\#}}, \href{\#}{\emph{italics}}\footnote{\url{\#}}, \href{\#}{\emph{emphasis}}\footnote{\url{\#}}, \href{\#}{super\textsuperscript{script}}\footnote{\url{\#}}, \href{\#}{sub\textsubscript{script}}\footnote{\url{\#}}, and \href{\#}{\inlinecode{code}}\footnote{\url{\#}}. Links can also be nested \emph{\href{\#}{inside}\footnote{\url{\#}}} markup. Links cannot be nested inside each other. This link has no replacement text: \href{\#}{\#}\footnote{\url{\#}}. The text is filled in by odoc. This is a shorthand link: \href{\#}{\#}\footnote{\url{\#}}. The text is also filled in by odoc in this case.
+This is a \href{\#}{link}\footnote{\url{\#}}. It sends you to the top of this page. Links can have markup inside them: \href{\#}{\bold{bold}}\footnote{\url{\#}}, \href{\#}{\emph{italics}}\footnote{\url{\#}}, \href{\#}{\emph{emphasis}}\footnote{\url{\#}}, \href{\#}{super\textsuperscript{script}}\footnote{\url{\#}}, \href{\#}{sub\textsubscript{script}}\footnote{\url{\#}}, and \href{\#}{\ocamlinlinecode{code}}\footnote{\url{\#}}. Links can also be nested \emph{\href{\#}{inside}\footnote{\url{\#}}} markup. Links cannot be nested inside each other. This link has no replacement text: \href{\#}{\#}\footnote{\url{\#}}. The text is filled in by odoc. This is a shorthand link: \href{\#}{\#}\footnote{\url{\#}}. The text is also filled in by odoc in this case.
 
-This is a reference to \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\inlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. References can have replacement text: \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{the value foo}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\textbf{bold}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\emph{italic}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\emph{emphasis}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{super\textsuperscript{script}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{sub\textsubscript{script}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, and \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\inlinecode{code}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. It's also possible to surround a reference in a style: \textbf{\hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\inlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}}. References can't be nested inside references, and links and references can't be nested inside each other.
+This is a reference to \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. References can have replacement text: \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{the value foo}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. Except for the special lookup support, references are pretty much just like links. The replacement text can have nested styles: \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\bold{bold}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\emph{italic}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\emph{emphasis}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{super\textsuperscript{script}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{sub\textsubscript{script}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}, and \hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{code}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}. It's also possible to surround a reference in a style: \bold{\hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}}. References can't be nested inside references, and links and references can't be nested inside each other.
 
 \subsection{Preformatted text\label{preformatted-text}}%
 This is a code block:\medbreak
@@ -74,7 +74,7 @@ can use explicitly-delimited lists.
 \begin{itemize}\item{\begin{itemize}\item{lists}%
 \item{can be nested}%
 \item{and can include references}%
-\item{\hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\inlinecode{\inlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}}\end{itemize}%
+\item{\hyperref[package-test+u+package+++ml-module-Markup-val-foo]{\ocamlinlinecode{\ocamlinlinecode{foo}}[p\pageref*{package-test+u+package+++ml-module-Markup-val-foo}]}}\end{itemize}%
 }\end{itemize}%
 \subsection{Unicode\label{unicode}}%
 The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
@@ -83,10 +83,10 @@ The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
 Raw HTML can be  as inline elements into sentences.
 
 \subsection{Modules\label{modules}}%
-\begin{itemize}\item{\inlinecode{X}}\end{itemize}%
-\begin{itemize}\item{\inlinecode{X}}%
-\item{\inlinecode{Y}}%
-\item{\inlinecode{Z}}\end{itemize}%
+\begin{itemize}\item{\ocamlinlinecode{X}}\end{itemize}%
+\begin{itemize}\item{\ocamlinlinecode{X}}%
+\item{\ocamlinlinecode{Y}}%
+\item{\ocamlinlinecode{Z}}\end{itemize}%
 \subsection{Tags\label{tags}}%
 Each comment can end with zero or more tags. Here are some examples:
 
@@ -120,7 +120,7 @@ Each comment can end with zero or more tags. Here are some examples:
 }\end{description}%
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
-\item[see \inlinecode{foo.\allowbreak{}ml}]{this file
+\item[see \ocamlinlinecode{foo.\allowbreak{}ml}]{this file
 
 }\end{description}%
 \begin{description}\kern-\topsep
@@ -139,8 +139,7 @@ Each comment can end with zero or more tags. Here are some examples:
 \begin{description}\kern-\topsep
 \makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
 \item[version]{-1}\end{description}%
-\label{package-test+u+package+++ml-module-Markup-val-foo}\codefragment{\begin{keyword}val\end{keyword}
- foo : unit}\begin{ocamlindent}Comments in structure items \textbf{support} \emph{markup}, t\textsuperscript{o}\textsubscript{o}.\end{ocamlindent}%
+\label{package-test+u+package+++ml-module-Markup-val-foo}\ocamlcodefragment{\ocamltag{keyword}{val} foo : unit}\begin{ocamlindent}Comments in structure items \bold{support} \emph{markup}, t\textsuperscript{o}\textsubscript{o}.\end{ocamlindent}%
 \medbreak
 
 

@@ -17,20 +17,23 @@
 \usepackage{lmodern}
 \usepackage[T1]{fontenc}
 
-\newcommand{\codefragment}[1]{{\ttfamily\setlength{\parindent}{0cm}%
+\newcommand{\ocamlcodefragment}[1]{{\ttfamily\setlength{\parindent}{0cm}%
 \raggedright#1}}
-\newcommand{\inlinecode}[1]{{\ttfamily#1}}
+\newcommand{\ocamlinlinecode}[1]{{\ttfamily#1}}
 \newcommand{\bold}[1]{{\bfseries#1}}
 \newenvironment{ocamlexception}{\bfseries}{}
 \newenvironment{ocamlextension}{\bfseries}{}
 
-\newenvironment{keyword}{\bfseries}{}
-\newenvironment{constructor}{\bfseries}{}
-\newenvironment{type-var}{\itshape\ttfamily}{}
+\newenvironment{ocamlkeyword}{\bfseries}{}
+
+\newenvironment{ocamlconstructor}{\bfseries}{}
+\newenvironment{ocamltype-var}{\itshape\ttfamily}{}
 
 \newcommand{\ocamlhighlight}{\bfseries\uline}
 \newcommand{\ocamlerror}{\bfseries}
 \newcommand{\ocamlwarning}{\bfseries}
+
+\newcommand{\ocamltag}[2]{\begin{ocaml#1}#2\end{ocaml#1}}
 
 \definecolor{lightgray}{gray}{0.97}
 \definecolor{gray}{gray}{0.5}
@@ -51,7 +54,7 @@
     stringstyle=\ocamlstring,
     commentstyle=\ocamlcomment,
     keepspaces=true,
-    keywordstyle=\keyword,
+    keywordstyle=\ocamlkeyword,
     moredelim=[is][\ocamlhighlight]{<<}{>>},
     moredelim=[s][\ocamlstring]{\{|}{|\}},
     moredelim=[s][\ocamlstring]{\{delimiter|}{|delimiter\}},
