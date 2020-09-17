@@ -39,6 +39,9 @@ scripts:
             opam switch create . $OCAML $REPOSITORIES --no-install
         fi
       - eval `opam env`
+      # The next command won't install it.
+      # This installs the released version of Odoc.
+      - opam install -y mdx
       - opam install -y --deps-only -t .
       - opam --version
       - ocaml -version
