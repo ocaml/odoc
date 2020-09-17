@@ -454,7 +454,7 @@ module LangUtils = struct
             match mt with
             | Path {p_path; _} -> path ppf (p_path :> Odoc_model.Paths.Path.t)
             | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
-            | With ({w_substitutions; _}, expr) -> Format.fprintf ppf "%a with [%a]" u_module_type_expr expr substitution_list w_substitutions
+            | With {w_substitutions; w_expr; _} -> Format.fprintf ppf "%a with [%a]" u_module_type_expr w_expr substitution_list w_substitutions
             | Functor (arg, res) -> Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr res
             | _ -> Format.fprintf ppf "unhandled module_type_expr"
 

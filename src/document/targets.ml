@@ -65,8 +65,8 @@ and module_type_expr (t : Odoc_model.Lang.ModuleType.expr) =
       | Named f -> module_type_expr f.expr
     in
     sub @ module_type_expr e
-  | Path { p_expansion = e_opt; _ } -> opt_expansion e_opt
-  | With ({ w_expansion = e_opt; _ }, _) (* Note, explicitly ignore RHS of With expression *)
+  | Path { p_expansion = e_opt; _ }
+  | With { w_expansion = e_opt; _ }
   | TypeOf {t_expansion = e_opt; _} ->
     opt_expansion e_opt
 

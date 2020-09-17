@@ -671,8 +671,8 @@ and u_module_type_expr map identifier =
           map s)
   | With (subs, expr) ->
       With (List.map (mty_substitution map identifier) subs, u_module_type_expr map identifier expr)
-  | TypeOf (MPath p) -> TypeOf (MPath (Path.module_ map p))
-  | TypeOf (Struct_include p)-> TypeOf (Struct_include (Path.module_ map p))
+  | TypeOf (ModPath p) -> TypeOf (ModPath (Path.module_ map p))
+  | TypeOf (StructInclude p)-> TypeOf (StructInclude (Path.module_ map p))
 
 and module_type_expr map identifier =
   function
@@ -683,8 +683,8 @@ and module_type_expr map identifier =
         (signature
            (identifier :> Odoc_model.Paths.Identifier.Signature.t)
            map s)
-  | With ({w_substitutions; w_expansion}, expr) ->
-      With ({w_substitutions = List.map (mty_substitution map identifier) w_substitutions; w_expansion=Opt.map (simple_expansion map identifier) w_expansion}, u_module_type_expr map identifier expr)
+  | With {w_substitutions; w_expansion; w_expr} ->
+      With {w_substitutions = List.map (mty_substitution map identifier) w_substitutions; w_expansion=Opt.map (simple_expansion map identifier) w_expansion; w_expr = u_module_type_expr map identifier w_expr }
   | Functor (Named arg, expr) ->
       let name = Ident.Name.typed_functor_parameter arg.id in
       let identifier' = `Parameter (identifier, name) in
@@ -699,8 +699,8 @@ and module_type_expr map identifier =
           module_type_expr map (`Result identifier) expr )
   | Functor (Unit, expr) ->
       Functor (Unit, module_type_expr map (`Result identifier) expr)
-  | TypeOf {t_desc=MPath p; t_expansion} -> TypeOf {t_desc=MPath (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
-  | TypeOf {t_desc=Struct_include p; t_expansion} -> TypeOf {t_desc=Struct_include (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
+  | TypeOf {t_desc=ModPath p; t_expansion} -> TypeOf {t_desc=ModPath (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
+  | TypeOf {t_desc=StructInclude p; t_expansion} -> TypeOf {t_desc=StructInclude (Path.module_ map p); t_expansion=Opt.map (simple_expansion map identifier) t_expansion}
 
 and module_type :
     maps ->

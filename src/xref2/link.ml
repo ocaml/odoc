@@ -338,8 +338,8 @@ and extract_doc : Module.decl -> (Comment.docs * Module.decl) =
     (match map_expansion expansion with | d, e -> d, Alias (p, e))
   | ModuleType (Path {p_path; p_expansion}) ->
     (match map_expansion p_expansion with | d, e -> d, ModuleType (Path {p_path; p_expansion=e}) )
-  | ModuleType (With ({w_substitutions; w_expansion}, e2)) ->
-    (match map_expansion w_expansion with | d, e -> d, ModuleType (With ({w_substitutions; w_expansion=e}, e2) ))
+  | ModuleType (With {w_substitutions; w_expansion; w_expr}) ->
+    (match map_expansion w_expansion with | d, e -> d, ModuleType (With ({w_substitutions; w_expansion=e; w_expr} )))
   | mty -> [], mty
 
 and module_ : Env.t -> Module.t -> Module.t =
@@ -566,8 +566,8 @@ and u_module_type_expr :
           Lookup_failures.report "Failed to resolve module type %a"
             Component.Fmt.u_module_type_expr cexpr;
           unresolved )
-  | TypeOf (Struct_include p)-> TypeOf (Struct_include (module_path env p))
-  | TypeOf (MPath p) -> TypeOf (MPath (module_path env p))
+  | TypeOf (StructInclude p)-> TypeOf (StructInclude (module_path env p))
+  | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
 
 and module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.expr -> ModuleType.expr =
@@ -579,22 +579,23 @@ and module_type_expr :
   | Signature s -> Signature (signature env id s)
   | Path {p_path; p_expansion} ->
     Path {p_path=module_type_path env p_path; p_expansion = do_expn p_expansion}
-  | With ({w_substitutions; w_expansion}, expr) as unresolved -> (
-      let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
+  | With {w_substitutions; w_expansion; w_expr} as unresolved -> (
+      let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
       match
         Tools.signature_of_u_module_type_expr ~mark_substituted:true env cexpr
       with
       | Ok sg ->
-          With ({w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion}, u_module_type_expr env id expr)
-          | Error e ->
-          Errors.report ~what:(`Module_type_u_expr cexpr) ~tools_error:e `Resolve_module_type;
+          With {w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion; w_expr=u_module_type_expr env id w_expr}
+      | Error _ ->
+          Lookup_failures.report "Failed to resolve module type %a"
+            Component.Fmt.u_module_type_expr cexpr;
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
       let res' = module_type_expr env (`Result id) res in
       Functor (arg', res')
-  | TypeOf {t_desc=Struct_include p; t_expansion} -> TypeOf {t_desc=Struct_include (module_path env p); t_expansion=do_expn t_expansion}
-  | TypeOf {t_desc=MPath p; t_expansion} -> TypeOf {t_desc=MPath (module_path env p); t_expansion=do_expn t_expansion}
+  | TypeOf {t_desc=StructInclude p; t_expansion} -> TypeOf {t_desc=StructInclude (module_path env p); t_expansion=do_expn t_expansion}
+  | TypeOf {t_desc=ModPath p; t_expansion} -> TypeOf {t_desc=ModPath (module_path env p); t_expansion=do_expn t_expansion}
 
 and type_decl_representation :
     Env.t ->

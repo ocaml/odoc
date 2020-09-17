@@ -17,7 +17,7 @@ and module_type_expr_needs_recompile : Component.ModuleType.expr -> bool =
   function
   | Path _ -> false
   | Signature _ -> false
-  | With (_, _) -> true
+  | With _ -> true
   | Functor (_, expr) -> module_type_expr_needs_recompile expr
   | TypeOf _ -> false
 
@@ -102,8 +102,8 @@ and unresolve_subs subs =
 
 and aux_expansion_of_module_type_type_of_desc env t : (expansion, signature_of_module_error) Result.result =
   match t with
-  | Component.ModuleType.MPath p ->  aux_expansion_of_module_alias env ~strengthen:false p
-  | Struct_include p ->  aux_expansion_of_module_alias env ~strengthen:true p
+  | Component.ModuleType.ModPath p ->  aux_expansion_of_module_alias env ~strengthen:false p
+  | StructInclude p ->  aux_expansion_of_module_alias env ~strengthen:true p
 
 and assert_not_functor =
   function (Signature sg) -> Ok sg | _ -> assert false
@@ -135,8 +135,8 @@ and aux_expansion_of_module_type_expr env expr :
       |> map_error (fun _ -> (`UnresolvedPath (`ModuleType p_path) : signature_of_module_error))
       >>= fun (_, mt) -> aux_expansion_of_module_type env mt
   | Signature s -> Ok (Signature s)
-  | With ({w_substitutions; _}, s) -> (
-      aux_expansion_of_u_module_type_expr env s
+  | With {w_substitutions; w_expr; _} -> (
+      aux_expansion_of_u_module_type_expr env w_expr
       >>= fun sg ->
       let subs = unresolve_subs w_substitutions in
       Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)

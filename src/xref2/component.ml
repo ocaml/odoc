@@ -183,8 +183,8 @@ and ModuleType : sig
     | TypeSubst of Cfrag.type_ * TypeDecl.Equation.t
 
   type type_of_desc =
-    | MPath of Cpath.module_
-    | Struct_include of Cpath.module_
+    | ModPath of Cpath.module_
+    | StructInclude of Cpath.module_
   
   module U : sig
     type expr =
@@ -206,6 +206,7 @@ and ModuleType : sig
     type with_t = {
       w_substitutions : substitution list;
       w_expansion : simple_expansion option;
+      w_expr : U.expr;
     }
   
     type typeof_t = {
@@ -216,7 +217,7 @@ and ModuleType : sig
     type expr =
       | Path of path_t
       | Signature of Signature.t
-      | With of with_t * U.expr
+      | With of with_t
       | Functor of FunctorParameter.t * expr
       | TypeOf of typeof_t
   
@@ -637,22 +638,22 @@ module Fmt = struct
     | With (subs, e) ->
       Format.fprintf ppf "%a with [%a]" u_module_type_expr e
         substitution_list subs
-    | TypeOf (MPath p) -> Format.fprintf ppf "module type of %a" module_path p
-    | TypeOf (Struct_include p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
+    | TypeOf (ModPath p) -> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf (StructInclude p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
 
   and module_type_expr ppf mt =
     let open ModuleType in
     match mt with
     | Path {p_path; _} -> module_type_path ppf p_path
     | Signature sg -> Format.fprintf ppf "sig@,@[<v 2>%a@]end" signature sg
-    | With ({w_substitutions=subs; _}, expr) ->
-        Format.fprintf ppf "%a with [%a]" u_module_type_expr expr
+    | With {w_substitutions=subs; w_expr; _} ->
+        Format.fprintf ppf "%a with [%a]" u_module_type_expr w_expr
           substitution_list subs
     | Functor (arg, res) ->
         Format.fprintf ppf "(%a) -> %a" functor_parameter arg module_type_expr
           res
-    | TypeOf {t_desc=MPath p; _} -> Format.fprintf ppf "module type of %a" module_path p
-    | TypeOf {t_desc=Struct_include p; _} -> Format.fprintf ppf "module type of struct include %a end" module_path p
+    | TypeOf {t_desc=ModPath p; _} -> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf {t_desc=StructInclude p; _} -> Format.fprintf ppf "module type of struct include %a end" module_path p
 
   and functor_parameter ppf x =
     let open FunctorParameter in
@@ -1931,8 +1932,8 @@ module Of_Lang = struct
     With (w', u_module_type_expr ident_map e)
   | TypeOf t_desc ->
     let t_desc = match t_desc with
-    | MPath p -> ModuleType.MPath (module_path ident_map p)
-    | Struct_include p -> Struct_include (module_path ident_map p)
+    | ModPath p -> ModuleType.ModPath (module_path ident_map p)
+    | StructInclude p -> StructInclude (module_path ident_map p)
     in
     TypeOf t_desc
 
@@ -1950,12 +1951,13 @@ module Of_Lang = struct
          }
         in
         ModuleType.Path p'
-    | Lang.ModuleType.With (w, e) ->
+    | Lang.ModuleType.With w ->
         let w' = ModuleType.{
           w_substitutions = List.map (module_type_substitution ident_map) w.w_substitutions;
-          w_expansion = option simple_expansion ident_map w.w_expansion
+          w_expansion = option simple_expansion ident_map w.w_expansion;
+          w_expr = u_module_type_expr ident_map w.w_expr
         } in
-        ModuleType.With (w', u_module_type_expr ident_map e)
+        ModuleType.With w'
     | Lang.ModuleType.Functor (Named arg, expr) ->
         let identifier = arg.Lang.FunctorParameter.id in
         let id = Ident.Of_Identifier.functor_parameter identifier in
@@ -1975,8 +1977,8 @@ module Of_Lang = struct
         ModuleType.Functor (Unit, expr')
     | Lang.ModuleType.TypeOf {t_desc; t_expansion} ->
         let t_desc = match t_desc with
-          | MPath p -> ModuleType.MPath (module_path ident_map p)
-          | Struct_include p -> Struct_include (module_path ident_map p)
+          | ModPath p -> ModuleType.ModPath (module_path ident_map p)
+          | StructInclude p -> StructInclude (module_path ident_map p)
         in
         let t_expansion = option simple_expansion ident_map t_expansion in
         ModuleType.(TypeOf {t_desc; t_expansion}) 

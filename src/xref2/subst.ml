@@ -420,8 +420,8 @@ and functor_parameter s t =
 and module_type_type_of_desc s t =
   let open Component.ModuleType in
   match t with
-  | MPath p -> MPath (module_path s p)
-  | Struct_include p -> Struct_include (module_path s p)
+  | ModPath p -> ModPath (module_path s p)
+  | StructInclude p -> StructInclude (module_path s p)
 
 and u_module_type_expr s t =
   let open Component.ModuleType.U in
@@ -438,8 +438,8 @@ and module_type_expr s t =
   | Signature sg -> Signature (signature s sg)
   | Functor (arg, expr) ->
       Functor (functor_parameter s arg, module_type_expr s expr)
-  | With ({ w_substitutions; w_expansion }, e) ->
-      With ({ w_substitutions = List.map (module_type_substitution s) w_substitutions; w_expansion = option_ simple_expansion s w_expansion}, u_module_type_expr s e)
+  | With { w_substitutions; w_expansion; w_expr } ->
+      With { w_substitutions = List.map (module_type_substitution s) w_substitutions; w_expansion = option_ simple_expansion s w_expansion; w_expr = u_module_type_expr s w_expr }
   | TypeOf { t_desc; t_expansion } -> TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = option_ simple_expansion s t_expansion}
 
 and module_type_substitution s sub =

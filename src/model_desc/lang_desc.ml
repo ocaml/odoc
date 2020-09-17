@@ -64,8 +64,8 @@ and moduletype_type_of_desc =
   let open Lang.ModuleType in
   Variant
     (function
-    | MPath x -> C ("MPath", (x :> Paths.Path.t), path)
-    | Struct_include x -> C ("Struct_include", (x :> Paths.Path.t), path))
+    | ModPath x -> C ("ModPath", (x :> Paths.Path.t), path)
+    | StructInclude x -> C ("StructInclude", (x :> Paths.Path.t), path))
 
 and simple_expansion =
   let open Lang.ModuleType in
@@ -88,6 +88,7 @@ and moduletype_with_t =
     [
       F ("w_substitutions", (fun t -> t.w_substitutions), List moduletype_substitution);
       F ("w_expansion", (fun t -> t.w_expansion), Option simple_expansion);
+      F ("w_expr", (fun t -> t.w_expr), moduletype_u_expr);
     ]
 
 and moduletype_typeof_t =
@@ -106,8 +107,8 @@ and moduletype_expr =
     | Signature x -> C ("Signature", x, signature_t)
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
-    | With (t, e) ->
-        C ( "With", (t, e), Pair (moduletype_with_t, moduletype_u_expr) )
+    | With t ->
+        C ( "With", t, moduletype_with_t)
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
 
 and moduletype_u_expr =

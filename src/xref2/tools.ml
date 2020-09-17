@@ -1008,8 +1008,8 @@ and signature_of_u_module_type_expr :
   | With (subs, s) ->
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
-  | TypeOf (Struct_include p) -> signature_of_module_path env ~strengthen:true p
-  | TypeOf (MPath p) -> signature_of_module_path env ~strengthen:false p
+  | TypeOf (StructInclude p) -> signature_of_module_path env ~strengthen:true p
+  | TypeOf (ModPath p) -> signature_of_module_path env ~strengthen:false p
     
 and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
     function
@@ -1030,10 +1030,10 @@ and signature_of_module_type_expr :
       | Ok (_, mt) -> signature_of_module_type env mt
       | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
   | Component.ModuleType.Signature s -> Ok s
-  | Component.ModuleType.With ({w_expansion=Some e; _}, _) ->
+  | Component.ModuleType.With {w_expansion=Some e; _} ->
     Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.With ({w_substitutions; _}, s) ->
-      signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
+  | Component.ModuleType.With {w_substitutions; w_expr; _} ->
+      signature_of_u_module_type_expr ~mark_substituted env w_expr >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg w_substitutions
   | Component.ModuleType.Functor (Unit, expr) ->
       signature_of_module_type_expr ~mark_substituted env expr
@@ -1042,8 +1042,8 @@ and signature_of_module_type_expr :
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.TypeOf { t_expansion = Some e; _ } ->
     Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.TypeOf { t_desc = Struct_include p; _} -> signature_of_module_path env ~strengthen:true p
-  | Component.ModuleType.TypeOf { t_desc = MPath p; _} -> signature_of_module_path env ~strengthen:false p
+  | Component.ModuleType.TypeOf { t_desc = StructInclude p; _} -> signature_of_module_path env ~strengthen:true p
+  | Component.ModuleType.TypeOf { t_desc = ModPath p; _} -> signature_of_module_path env ~strengthen:false p
     
 
 and signature_of_module_type :
@@ -1088,7 +1088,7 @@ and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
     | Signature sg -> Signature sg
     | Path { p_path; _ } -> Path p_path
     | TypeOf { t_desc; _ } -> TypeOf t_desc
-    | With ( {w_substitutions; _}, e) -> With (w_substitutions, e)
+    | With {w_substitutions; w_expr; _} -> With (w_substitutions, w_expr)
     | Functor _ -> assert false
 
 and fragmap :
@@ -1115,9 +1115,9 @@ and fragmap :
       | Ok sg' ->
         Ok (ModuleType (Signature sg'))
       | Error _ ->
-        Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
+        Ok (ModuleType (With {w_substitutions=[ subst ]; w_expansion=None; w_expr=umty_of_mty mty'}))
       end
-    | ModuleType mty' -> Ok (ModuleType (With ({w_substitutions=[ subst ]; w_expansion=None}, umty_of_mty mty')))
+    | ModuleType mty' -> Ok (ModuleType (With {w_substitutions=[ subst ]; w_expansion=None; w_expr = umty_of_mty mty'}))
   in
   let map_include_decl decl subst =
     let open Component.Include in

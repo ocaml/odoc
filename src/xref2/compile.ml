@@ -459,8 +459,8 @@ let rec find_parent : Component.ModuleType.U.expr -> Cfrag.root option =
    | Path (`Resolved p) -> Some (`ModuleType p)
    | Path _ -> None
    | With (_, e) -> find_parent e
-   | TypeOf MPath (`Resolved p)
-   | TypeOf Struct_include (`Resolved p) -> Some (`Module p)
+   | TypeOf ModPath (`Resolved p)
+   | TypeOf StructInclude (`Resolved p) -> Some (`Module p)
    | TypeOf _ -> None
 in
   match find_parent cexpr with
@@ -515,8 +515,8 @@ and u_module_type_expr :
         | Some s -> With (s, expr))
     | TypeOf t_desc ->
       let t_desc = match t_desc with
-        | MPath p -> MPath (module_path env p)
-        | Struct_include p -> Struct_include (module_path env p)
+        | ModPath p -> ModPath (module_path env p)
+        | StructInclude p -> StructInclude (module_path env p)
       in
       TypeOf t_desc
   in
@@ -541,22 +541,22 @@ and module_type_expr :
   | Path { p_path; p_expansion } as e ->
     let p_expansion = get_expansion p_expansion e in
     Path { p_path = module_type_path env p_path; p_expansion }
-  | With ({ w_expansion; _ }, Signature _) as e -> (
+  | With { w_expansion; w_expr=Signature _; _} as e -> (
       let w_expansion = get_expansion w_expansion e in
       match w_expansion with
       | Some (Signature sg) -> Signature sg
       | _ -> e
     )
-  | With ({ w_substitutions; w_expansion }, expr) as e -> (
+  | With { w_substitutions; w_expansion; w_expr} as e -> (
     let w_expansion = get_expansion w_expansion e in
-    let expr = u_module_type_expr env id expr in
-    let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
+    let w_expr = u_module_type_expr env id w_expr in
+    let cexpr = Component.Of_Lang.(u_module_type_expr empty w_expr) in
     (* Format.eprintf "Handling with expression (%a)\n%!"
       Component.Fmt.module_type_expr cexpr; *)
     let subs' = module_type_map_subs env id cexpr w_substitutions in
     match subs' with
-    | None -> With ({w_substitutions; w_expansion}, expr)
-    | Some s -> With ({w_substitutions=s; w_expansion}, expr))
+    | None -> With {w_substitutions; w_expansion; w_expr}
+    | Some s -> With {w_substitutions=s; w_expansion; w_expr})
 
   | Functor (param, res) ->
     let param' = functor_parameter env param in
@@ -566,8 +566,8 @@ and module_type_expr :
   | TypeOf {t_desc; t_expansion } as e ->
     let t_expansion = get_expansion t_expansion e in
     let t_desc = match t_desc with
-      | MPath p -> ModuleType.MPath (module_path env p)
-      | Struct_include p -> Struct_include (module_path env p)
+      | ModPath p -> ModuleType.ModPath (module_path env p)
+      | StructInclude p -> StructInclude (module_path env p)
     in
     TypeOf {t_desc; t_expansion}
 

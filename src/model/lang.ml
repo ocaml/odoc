@@ -57,8 +57,8 @@ and ModuleType : sig
     | TypeSubst of Fragment.Type.t * TypeDecl.Equation.t
 
   type type_of_desc =
-    | MPath of Path.Module.t
-    | Struct_include of Path.Module.t
+    | ModPath of Path.Module.t
+    | StructInclude of Path.Module.t
 
   module U : sig
     type expr =
@@ -79,7 +79,8 @@ and ModuleType : sig
 
   type with_t = {
     w_substitutions : substitution list;
-    w_expansion : simple_expansion option
+    w_expansion : simple_expansion option;
+    w_expr : U.expr
   }
 
   type typeof_t = {
@@ -91,7 +92,7 @@ and ModuleType : sig
     | Path of path_t
     | Signature of Signature.t
     | Functor of FunctorParameter.t * expr
-    | With of with_t * U.expr
+    | With of with_t
     | TypeOf of typeof_t
 
   type t = {
@@ -456,4 +457,4 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr =
   | Path { p_path; _} -> Path p_path
   | Functor _ -> assert false
   | TypeOf { t_desc; _} -> TypeOf t_desc
-  | With ({w_substitutions; _}, e) -> With (w_substitutions, e)
+  | With {w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
