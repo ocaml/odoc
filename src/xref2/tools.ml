@@ -307,7 +307,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
     match mty with
     | Component.ModuleType.Functor (Named arg, expr) ->
         Ok (arg.Component.FunctorParameter.id, expr)
-    | Component.ModuleType.(Path { p_path; _ }) -> (
+    | Component.ModuleType.Path { p_path; _ } -> (
         match resolve_module_type ~mark_substituted:false env p_path with
         | Ok
             (_, { Component.ModuleType.expr = Some mty'; _ }) ->

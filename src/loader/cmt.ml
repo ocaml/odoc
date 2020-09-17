@@ -382,7 +382,7 @@ let rec read_module_expr env parent label_parent mexpr =
               let name = parenthesise (Ident.name id) in
               let id = `Parameter(parent, ParameterName.of_string name) in
           let arg = Cmti.read_module_type env id label_parent arg in
-          Named { FunctorParameter. id; expr = arg; display_expr=None }
+          Named { FunctorParameter. id; expr = arg; }
         in
         let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
         let res = read_module_expr env (`Result parent) label_parent res in
