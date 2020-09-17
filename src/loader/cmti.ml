@@ -530,15 +530,15 @@ and read_module_type env parent label_parent mty =
     | Tmty_with(body, subs) ->
       let body = read_module_type env parent label_parent body in
       let subs = List.map (read_with_constraint env label_parent) subs in
-          With({w_substitutions=subs; w_expansion=None}, Odoc_model.Lang.umty_of_mty body)
+          With {w_substitutions=subs; w_expansion=None; w_expr = Odoc_model.Lang.umty_of_mty body}
     | Tmty_typeof mexpr ->
         let decl =
           match mexpr.mod_desc with
           | Tmod_ident(p, _) ->
-            TypeOf {t_desc = MPath (Env.Path.read_module env p); t_expansion=None}
+            TypeOf {t_desc = ModPath (Env.Path.read_module env p); t_expansion=None}
           | Tmod_structure {str_items = [{str_desc = Tstr_include {incl_mod; _}; _}]; _} -> begin
             match Typemod.path_of_module incl_mod with
-            | Some p -> TypeOf {t_desc=Struct_include (Env.Path.read_module env p); t_expansion=None}
+            | Some p -> TypeOf {t_desc=StructInclude (Env.Path.read_module env p); t_expansion=None}
             | None ->
               !read_module_expr env parent label_parent mexpr 
             end

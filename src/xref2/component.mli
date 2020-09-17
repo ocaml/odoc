@@ -168,8 +168,8 @@ and ModuleType : sig
     | TypeSubst of Cfrag.type_ * TypeDecl.Equation.t
 
   type type_of_desc =
-    | MPath of Cpath.module_
-    | Struct_include of Cpath.module_
+    | ModPath of Cpath.module_
+    | StructInclude of Cpath.module_
 
   module U : sig
     type expr =
@@ -191,6 +191,7 @@ and ModuleType : sig
   type with_t = {
     w_substitutions : substitution list;
     w_expansion : simple_expansion option;
+    w_expr : U.expr;
   }
 
   type typeof_t = {
@@ -201,7 +202,7 @@ and ModuleType : sig
   type expr =
     | Path of path_t
     | Signature of Signature.t
-    | With of with_t * U.expr
+    | With of with_t
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
 

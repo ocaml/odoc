@@ -1344,10 +1344,10 @@ struct
         match t with
         | Path {p_expansion=None ; _}
         | TypeOf {t_expansion=None ; _}
-        | With ({w_expansion=None ; _}, _) -> None
+        | With {w_expansion=None ; _} -> None
         | Path {p_expansion=Some e; _}
         | TypeOf {t_expansion=Some e; _}
-        | With ({w_expansion=Some e; _}, _) -> Some e
+        | With {w_expansion=Some e; _} -> Some e
         | Signature sg -> Some (Signature sg)
         | Functor (f_parameter, e) ->
           match simple_expansion_of e with
@@ -1434,8 +1434,8 @@ struct
     | With (_, umt) -> extract_path_from_umt ~default umt
     | Path (`Resolved r) ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
-    | TypeOf (MPath (`Resolved r)) 
-    | TypeOf (Struct_include (`Resolved r)) ->
+    | TypeOf (ModPath (`Resolved r)) 
+    | TypeOf (StructInclude (`Resolved r)) ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
@@ -1444,9 +1444,9 @@ struct
     function
     | Path {p_path=`Resolved r; _} ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
-    | With (_, umt) -> extract_path_from_umt ~default umt
-    | TypeOf {t_desc=MPath (`Resolved r); _}
-    | TypeOf {t_desc=Struct_include (`Resolved r); _} ->
+    | With { w_expr; _ } -> extract_path_from_umt ~default w_expr
+    | TypeOf {t_desc=ModPath (`Resolved r); _}
+    | TypeOf {t_desc=StructInclude (`Resolved r); _} ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
@@ -1508,17 +1508,17 @@ struct
     = function
     | Path p -> Paths.Path.(is_hidden (p :> t))
     | With (_, expr) -> umty_hidden expr
-    | TypeOf (MPath m)
-    | TypeOf (Struct_include m) ->
+    | TypeOf (ModPath m)
+    | TypeOf (StructInclude m) ->
       Paths.Path.(is_hidden (m :> t))
     | Signature _ -> false
   
   and mty_hidden : Odoc_model.Lang.ModuleType.expr -> bool
     = function
     | Path { p_path = mty_path; _ } -> Paths.Path.(is_hidden (mty_path :> t))
-    | With (_, expr) -> umty_hidden expr
-    | TypeOf { t_desc=MPath m; _ } 
-    | TypeOf { t_desc=Struct_include m; _ } -> Paths.Path.(is_hidden (m :> t))
+    | With { w_expr; _ } -> umty_hidden w_expr
+    | TypeOf { t_desc=ModPath m; _ } 
+    | TypeOf { t_desc=StructInclude m; _ } -> Paths.Path.(is_hidden (m :> t))
     | _ -> false
 
   and mty_with base subs expr =
@@ -1532,7 +1532,7 @@ struct
               subs
   and mty_typeof t_desc =
     match t_desc with
-    | Odoc_model.Lang.ModuleType.MPath m ->
+    | Odoc_model.Lang.ModuleType.ModPath m ->
       O.keyword "module" ++
       O.txt " " ++
       O.keyword "type" ++
@@ -1540,7 +1540,7 @@ struct
       O.keyword "of" ++
       O.txt " " ++
       Link.from_path (m :> Paths.Path.t)
-    | Struct_include m ->
+    | StructInclude m ->
       O.keyword "module" ++
       O.txt " " ++
       O.keyword "type" ++
@@ -1596,8 +1596,8 @@ struct
             mty base arg_expr ++
             O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++
             mty base expr
-        | With (with_t, expr) ->
-          mty_with base with_t.w_substitutions expr
+        | With { w_substitutions; w_expr; _ } ->
+          mty_with base w_substitutions w_expr
         | TypeOf { t_desc; _ } ->
           mty_typeof t_desc        
         | Signature _ ->
