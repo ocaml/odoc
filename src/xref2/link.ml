@@ -389,7 +389,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   let open Module in
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
-  | Alias (p, e) -> Alias (module_path env p, Option.map (simple_expansion env id) e)
+  | Alias (p, e) -> Alias (module_path env p, Opt.map (simple_expansion env id) e)
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->

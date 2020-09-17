@@ -516,11 +516,6 @@ and read_module_type env parent label_parent mty =
               let name = parenthesise (Ident.name id) in
               let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
               let arg = read_module_type env id label_parent arg in
-              let expansion =
-                match arg with
-                | Signature _ -> Some Module.AlreadyASig
-                | _ -> None
-              in
               Named { FunctorParameter. id; expr = arg }
         in
         let env = Env.add_parameter parent id (ParameterName.of_ident id) env in
