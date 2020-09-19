@@ -171,18 +171,23 @@ and ModuleType : sig
     | ModPath of Cpath.module_
     | StructInclude of Cpath.module_
 
+  type simple_expansion =
+    | Signature of Signature.t
+    | Functor of FunctorParameter.t * simple_expansion
+  
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option
+  }
+  
   module U : sig
     type expr =
     | Path of Cpath.module_type
     | Signature of Signature.t
     | With of substitution list * expr
-    | TypeOf of type_of_desc
+    | TypeOf of typeof_t
   end
 
-  type simple_expansion =
-    | Signature of Signature.t
-    | Functor of FunctorParameter.t * simple_expansion
-  
   type path_t = {
     p_expansion : simple_expansion option;
     p_path : Cpath.module_type
@@ -194,10 +199,6 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
-  type typeof_t = {
-    t_desc : type_of_desc;
-    t_expansion : simple_expansion option
-  }
 
   type expr =
     | Path of path_t

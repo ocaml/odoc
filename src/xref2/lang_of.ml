@@ -671,8 +671,8 @@ and u_module_type_expr map identifier =
           map s)
   | With (subs, expr) ->
       With (List.map (mty_substitution map identifier) subs, u_module_type_expr map identifier expr)
-  | TypeOf (ModPath p) -> TypeOf (ModPath (Path.module_ map p))
-  | TypeOf (StructInclude p)-> TypeOf (StructInclude (Path.module_ map p))
+  | TypeOf { t_desc = ModPath p; t_expansion } -> TypeOf { t_desc = ModPath (Path.module_ map p); t_expansion = Opt.map (simple_expansion map identifier) t_expansion }
+  | TypeOf { t_desc = StructInclude p; t_expansion }-> TypeOf { t_desc = StructInclude (Path.module_ map p); t_expansion = Opt.map (simple_expansion map identifier) t_expansion }
 
 and module_type_expr map identifier =
   function

@@ -1434,8 +1434,8 @@ struct
     | With (_, umt) -> extract_path_from_umt ~default umt
     | Path (`Resolved r) ->
       (Paths.Path.Resolved.ModuleType.identifier r :> Paths.Identifier.Signature.t)
-    | TypeOf (ModPath (`Resolved r)) 
-    | TypeOf (StructInclude (`Resolved r)) ->
+    | TypeOf { t_desc = ModPath (`Resolved r); _ } 
+    | TypeOf { t_desc = StructInclude (`Resolved r); _ } ->
       (Paths.Path.Resolved.Module.identifier r :> Paths.Identifier.Signature.t)
     | _ -> default
 
@@ -1508,8 +1508,8 @@ struct
     = function
     | Path p -> Paths.Path.(is_hidden (p :> t))
     | With (_, expr) -> umty_hidden expr
-    | TypeOf (ModPath m)
-    | TypeOf (StructInclude m) ->
+    | TypeOf { t_desc = ModPath m; _}
+    | TypeOf { t_desc = StructInclude m; _} ->
       Paths.Path.(is_hidden (m :> t))
     | Signature _ -> false
   
@@ -1561,7 +1561,7 @@ struct
       match m with
       | Path p -> Link.from_path (p :> Paths.Path.t)
       | With (subs, expr) -> mty_with base subs expr
-      | TypeOf t_desc -> mty_typeof t_desc
+      | TypeOf { t_desc; _ } -> mty_typeof t_desc
       | Signature _ ->
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 

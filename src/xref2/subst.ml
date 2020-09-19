@@ -429,7 +429,7 @@ and u_module_type_expr s t =
   | Path p -> Path (module_type_path s p)
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) -> With (List.map (module_type_substitution s) subs, u_module_type_expr s e)
-  | TypeOf desc -> TypeOf (module_type_type_of_desc s desc)
+  | TypeOf { t_desc; t_expansion } -> TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = option_ simple_expansion s t_expansion }
 
 and module_type_expr s t =
   let open Component.ModuleType in
