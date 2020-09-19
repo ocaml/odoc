@@ -185,18 +185,24 @@ and ModuleType : sig
   type type_of_desc =
     | ModPath of Cpath.module_
     | StructInclude of Cpath.module_
+
+  type simple_expansion =
+    | Signature of Signature.t
+    | Functor of FunctorParameter.t * simple_expansion
+
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option
+  }
   
   module U : sig
     type expr =
       | Path of Cpath.module_type
       | Signature of Signature.t
       | With of substitution list * expr
-      | TypeOf of type_of_desc
+      | TypeOf of typeof_t
   end
 
-    type simple_expansion =
-      | Signature of Signature.t
-      | Functor of FunctorParameter.t * simple_expansion
     
     type path_t = {
       p_expansion : simple_expansion option;
@@ -207,11 +213,6 @@ and ModuleType : sig
       w_substitutions : substitution list;
       w_expansion : simple_expansion option;
       w_expr : U.expr;
-    }
-  
-    type typeof_t = {
-      t_desc : type_of_desc;
-      t_expansion : simple_expansion option
     }
   
     type expr =
@@ -638,8 +639,8 @@ module Fmt = struct
     | With (subs, e) ->
       Format.fprintf ppf "%a with [%a]" u_module_type_expr e
         substitution_list subs
-    | TypeOf (ModPath p) -> Format.fprintf ppf "module type of %a" module_path p
-    | TypeOf (StructInclude p) -> Format.fprintf ppf "module type of struct include %a end" module_path p
+    | TypeOf { t_desc = ModPath p; _ }-> Format.fprintf ppf "module type of %a" module_path p
+    | TypeOf { t_desc = StructInclude p; _ } -> Format.fprintf ppf "module type of struct include %a end" module_path p
 
   and module_type_expr ppf mt =
     let open ModuleType in
@@ -1930,12 +1931,13 @@ module Of_Lang = struct
   | With (w, e) ->
     let w' = List.map (module_type_substitution ident_map) w in
     With (w', u_module_type_expr ident_map e)
-  | TypeOf t_desc ->
+  | TypeOf { t_desc; t_expansion } ->
     let t_desc = match t_desc with
     | ModPath p -> ModuleType.ModPath (module_path ident_map p)
     | StructInclude p -> StructInclude (module_path ident_map p)
     in
-    TypeOf t_desc
+    let t_expansion = Opt.map (simple_expansion ident_map) t_expansion in
+    TypeOf { t_desc; t_expansion }
 
   and module_type_expr ident_map m =
     let open Odoc_model in

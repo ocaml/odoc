@@ -60,17 +60,23 @@ and ModuleType : sig
     | ModPath of Path.Module.t
     | StructInclude of Path.Module.t
 
+  type simple_expansion =
+    | Signature of Signature.t
+    | Functor of FunctorParameter.t * simple_expansion
+  
+  type typeof_t = {
+    t_desc : type_of_desc;
+    t_expansion : simple_expansion option
+  }
+  
   module U : sig
     type expr =
         | Path of Path.ModuleType.t
         | Signature of Signature.t
         | With of substitution list * expr
-        | TypeOf of type_of_desc
+        | TypeOf of typeof_t (* Nb. this may have an expansion! *)
   end
   
-  type simple_expansion =
-    | Signature of Signature.t
-    | Functor of FunctorParameter.t * simple_expansion
 
   type path_t = {
     p_expansion : simple_expansion option;
@@ -83,10 +89,6 @@ and ModuleType : sig
     w_expr : U.expr
   }
 
-  type typeof_t = {
-    t_desc : type_of_desc;
-    t_expansion : simple_expansion option
-  }
 
   type expr =
     | Path of path_t
@@ -456,5 +458,5 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr =
   | Signature sg -> Signature sg
   | Path { p_path; _} -> Path p_path
   | Functor _ -> assert false
-  | TypeOf { t_desc; _} -> TypeOf t_desc
+  | TypeOf t -> TypeOf t
   | With {w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)

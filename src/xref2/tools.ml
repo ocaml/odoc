@@ -1008,8 +1008,8 @@ and signature_of_u_module_type_expr :
   | With (subs, s) ->
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
-  | TypeOf (StructInclude p) -> signature_of_module_path env ~strengthen:true p
-  | TypeOf (ModPath p) -> signature_of_module_path env ~strengthen:false p
+  | TypeOf { t_desc = StructInclude p; _ } -> signature_of_module_path env ~strengthen:true p
+  | TypeOf { t_desc = ModPath p; _ } -> signature_of_module_path env ~strengthen:false p
     
 and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
     function
@@ -1087,7 +1087,7 @@ and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
     function
     | Signature sg -> Signature sg
     | Path { p_path; _ } -> Path p_path
-    | TypeOf { t_desc; _ } -> TypeOf t_desc
+    | TypeOf t -> TypeOf t
     | With {w_substitutions; w_expr; _} -> With (w_substitutions, w_expr)
     | Functor _ -> assert false
 

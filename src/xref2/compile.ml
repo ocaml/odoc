@@ -429,8 +429,8 @@ let rec find_parent : Component.ModuleType.U.expr -> Cfrag.root option =
    | Path (`Resolved p) -> Some (`ModuleType p)
    | Path _ -> None
    | With (_, e) -> find_parent e
-   | TypeOf ModPath (`Resolved p)
-   | TypeOf StructInclude (`Resolved p) -> Some (`Module p)
+   | TypeOf {t_desc = ModPath (`Resolved p); _}
+   | TypeOf { t_desc = StructInclude (`Resolved p); _ } -> Some (`Module p)
    | TypeOf _ -> None
 in
   match find_parent cexpr with
@@ -483,12 +483,12 @@ and u_module_type_expr :
         match subs' with
         | None -> With (subs, expr)
         | Some s -> With (s, expr))
-    | TypeOf t_desc ->
+    | TypeOf { t_desc; t_expansion } ->
       let t_desc = match t_desc with
         | ModPath p -> ModPath (module_path env p)
         | StructInclude p -> StructInclude (module_path env p)
       in
-      TypeOf t_desc
+      TypeOf { t_desc; t_expansion }
   in
   inner expr
 
