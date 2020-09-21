@@ -1,0 +1,622 @@
+open Type_desc
+open Odoc_model
+module T = Type_desc
+
+(** Dummy implementation for paths *)
+
+(* TODO *)
+let identifier : [< Paths.Identifier.t ] t = To_string (fun _ -> "<identifier>")
+
+let path = To_string (fun _ -> "<path>")
+
+let reference = To_string (fun _ -> "<reference>")
+
+let fragment = To_string (fun _ -> "<fragment>")
+
+module Names = struct
+  open Names
+
+  module ModuleName = struct
+    let t = To_string ModuleName.to_string
+  end
+end
+
+module Comment = struct
+  let docs : Comment.docs t = To_string (fun _ -> "<docs>")
+
+  let docs_or_stop : Comment.docs_or_stop t = To_string (fun _ -> "<docs>")
+end
+
+module Digest = struct
+  let t : Digest.t t = To_string (fun _ -> "<digest>")
+end
+
+module Root = struct
+  let t : Root.t t = To_string (fun _ -> "<root>")
+end
+
+(** {3 Module} *)
+
+let rec module_expansion =
+  let open Lang.Module in
+  Variant
+    (function
+    | AlreadyASig -> C0 "AlreadyASig"
+    | Signature x -> C ("Signature", x, signature_t)
+    | Functor (x1, x2) ->
+        C ("Functor", (x1, x2), Pair (List functorparameter_t, signature_t)))
+
+and module_decl =
+  let open Lang.Module in
+  Variant
+    (function
+    | Alias x -> C ("Alias", x, path)
+    | ModuleType x -> C ("ModuleType", x, moduletype_expr))
+
+and module_t =
+  let open Lang.Module in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("type_", (fun t -> t.type_), module_decl);
+      F ("canonical", (fun t -> t.canonical), Option (Pair (path, reference)));
+      F ("hidden", (fun t -> t.hidden), bool);
+      F ("display_type", (fun t -> t.display_type), Option module_decl);
+      F ("expansion", (fun t -> t.expansion), Option module_expansion);
+    ]
+
+(** {3 FunctorParameter} *)
+and functorparameter_parameter =
+  let open Lang.FunctorParameter in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("expr", (fun t -> t.expr), moduletype_expr);
+      F ("display_expr", (fun t -> t.display_expr), Option moduletype_expr);
+      F ("expansion", (fun t -> t.expansion), Option module_expansion);
+    ]
+
+and functorparameter_t =
+  let open Lang.FunctorParameter in
+  Variant
+    (function
+    | Unit -> C0 "Unit" | Named x -> C ("Named", x, functorparameter_parameter))
+
+(** {3 ModuleType} *)
+
+and moduletype_substitution =
+  let open Lang.ModuleType in
+  Variant
+    (function
+    | ModuleEq (x1, x2) -> C ("ModuleEq", (x1, x2), Pair (fragment, module_decl))
+    | TypeEq (x1, x2) ->
+        C ("TypeEq", (x1, x2), Pair (fragment, typedecl_equation))
+    | ModuleSubst (x1, x2) ->
+        C ("ModuleSubst", (x1, x2), Pair (fragment, path))
+    | TypeSubst (x1, x2) ->
+        C ("TypeSubst", (x1, x2), Pair (fragment, typedecl_equation)))
+
+and moduletype_type_of_desc =
+  let open Lang.ModuleType in
+  Variant
+    (function
+    | MPath x -> C ("MPath", x, path)
+    | Struct_include x -> C ("Struct_include", x, path))
+
+and moduletype_expr =
+  let open Lang.ModuleType in
+  Variant
+    (function
+    | Path x -> C ("Path", x, path)
+    | Signature x -> C ("Signature", x, signature_t)
+    | Functor (x1, x2) ->
+        C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
+    | With (x1, x2) ->
+        C
+          ( "With",
+            (x1, x2),
+            Pair (moduletype_expr, List moduletype_substitution) )
+    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc))
+
+and moduletype_t =
+  let open Lang.ModuleType in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("expr", (fun t -> t.expr), Option moduletype_expr);
+      F
+        ( "display_expr",
+          (fun t -> t.display_expr),
+          Option (Option moduletype_expr) );
+      F ("expansion", (fun t -> t.expansion), Option module_expansion);
+    ]
+
+(** {3 ModuleSubstitution} *)
+
+and modulesubstitution_t =
+  let open Lang.ModuleSubstitution in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("manifest", (fun t -> t.manifest), path);
+    ]
+
+(** {3 Signature} *)
+
+and signature_recursive =
+  let open Lang.Signature in
+  Variant
+    (function
+    | Ordinary -> C0 "Ordinary"
+    | And -> C0 "And"
+    | Nonrec -> C0 "Nonrec"
+    | Rec -> C0 "Rec")
+
+and signature_item =
+  let open Lang.Signature in
+  Variant
+    (function
+    | Module (x1, x2) ->
+        C ("Module", (x1, x2), Pair (signature_recursive, module_t))
+    | ModuleType x -> C ("ModuleType", x, moduletype_t)
+    | ModuleSubstitution x -> C ("ModuleSubstitution", x, modulesubstitution_t)
+    | Open x -> C ("Open", x, open_t)
+    | Type (x1, x2) ->
+        C ("Type", (x1, x2), Pair (signature_recursive, typedecl_t))
+    | TypeSubstitution x -> C ("TypeSubstitution", x, typedecl_t)
+    | TypExt x -> C ("TypExt", x, extension_t)
+    | Exception x -> C ("Exception", x, exception_t)
+    | Value x -> C ("Value", x, value_t)
+    | External x -> C ("External", x, external_t)
+    | Class (x1, x2) ->
+        C ("Class", (x1, x2), Pair (signature_recursive, class_t))
+    | ClassType (x1, x2) ->
+        C ("ClassType", (x1, x2), Pair (signature_recursive, classtype_t))
+    | Include x -> C ("Include", x, include_t)
+    | Comment x -> C ("Comment", x, Comment.docs_or_stop))
+
+and signature_t = List signature_item
+
+(** {3 Open} *)
+and open_t =
+  let open Lang.Open in
+  Record [ F ("expansion", (fun t -> t.expansion), signature_t) ]
+
+(** {3 Include} *)
+
+and include_shadowed =
+  let open Lang.Include in
+  Record
+    [
+      F ("s_modules", (fun t -> t.s_modules), List (Pair (string, identifier)));
+      F
+        ( "s_module_types",
+          (fun t -> t.s_module_types),
+          List (Pair (string, identifier)) );
+      F ("s_types", (fun t -> t.s_types), List (Pair (string, identifier)));
+      F ("s_classes", (fun t -> t.s_classes), List (Pair (string, identifier)));
+      F
+        ( "s_class_types",
+          (fun t -> t.s_class_types),
+          List (Pair (string, identifier)) );
+    ]
+
+and include_expansion =
+  let open Lang.Include in
+  Record
+    [
+      F ("resolved", (fun t -> t.resolved), bool);
+      F ("shadowed", (fun t -> t.shadowed), include_shadowed);
+      F ("content", (fun t -> t.content), signature_t);
+    ]
+
+and include_t =
+  let open Lang.Include in
+  Record
+    [
+      F ("parent", (fun t -> t.parent), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("decl", (fun t -> t.decl), module_decl);
+      F ("inline", (fun t -> t.inline), bool);
+      F ("expansion", (fun t -> t.expansion), include_expansion);
+    ]
+
+(** {3 TypeDecl} *)
+and typedecl_field =
+  let open Lang.TypeDecl.Field in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("mutable_", (fun t -> t.mutable_), bool);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
+and typedecl_constructor_argument =
+  let open Lang.TypeDecl.Constructor in
+  T.Variant
+    (function
+    | Tuple x -> C ("Tuple", x, List typeexpr_t)
+    | Record x -> C ("Record", x, List typedecl_field))
+
+and typedecl_constructor =
+  let open Lang.TypeDecl.Constructor in
+  T.Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("args", (fun t -> t.args), typedecl_constructor_argument);
+      F ("res", (fun t -> t.res), Option typeexpr_t);
+    ]
+
+and typedecl_representation =
+  let open Lang.TypeDecl.Representation in
+  T.Variant
+    (function
+    | Variant x -> C ("Variant", x, List typedecl_constructor)
+    | Record x -> C ("Record", x, List typedecl_field)
+    | Extensible -> C0 "Extensible")
+
+and typedecl_variance =
+  let open Lang.TypeDecl in
+  Variant (function Pos -> C0 "Pos" | Neg -> C0 "Neg")
+
+and typedecl_param_desc =
+  let open Lang.TypeDecl in
+  Variant (function Any -> C0 "Any" | Var x -> C ("Var", x, string))
+
+and typedecl_param =
+  let open Lang.TypeDecl in
+  Record
+    [
+      F ("desc", (fun t -> t.desc), typedecl_param_desc);
+      F ("variance", (fun t -> t.variance), Option typedecl_variance);
+      F ("injectivity", (fun t -> t.injectivity), bool);
+    ]
+
+and typedecl_equation =
+  let open Lang.TypeDecl.Equation in
+  Record
+    [
+      F ("params", (fun t -> t.params), List typedecl_param);
+      F ("private_", (fun t -> t.private_), bool);
+      F ("manifest", (fun t -> t.manifest), Option typeexpr_t);
+      F
+        ( "constraints",
+          (fun t -> t.constraints),
+          List (Pair (typeexpr_t, typeexpr_t)) );
+    ]
+
+and typedecl_t =
+  let open Lang.TypeDecl in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("equation", (fun t -> t.equation), typedecl_equation);
+      F
+        ( "representation",
+          (fun t -> t.representation),
+          Option typedecl_representation );
+    ]
+
+(** {3 Extension} *)
+and extension_constructor =
+  let open Lang.Extension.Constructor in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("args", (fun t -> t.args), typedecl_constructor_argument);
+      F ("res", (fun t -> t.res), Option typeexpr_t);
+    ]
+
+and extension_t =
+  let open Lang.Extension in
+  Record
+    [
+      F ("type_path", (fun t -> t.type_path), path);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("type_params", (fun t -> t.type_params), List typedecl_param);
+      F ("private_", (fun t -> t.private_), bool);
+      F ("constructors", (fun t -> t.constructors), List extension_constructor);
+    ]
+
+(** {3 Exception} *)
+
+and exception_t =
+  let open Lang.Exception in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("args", (fun t -> t.args), typedecl_constructor_argument);
+      F ("res", (fun t -> t.res), Option typeexpr_t);
+    ]
+
+(** {3 Value} *)
+
+and value_t =
+  let open Lang.Value in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
+(** {3 External} *)
+
+and external_t =
+  let open Lang.External in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+      F ("primitives", (fun t -> t.primitives), List string);
+    ]
+
+(** {3 Class} *)
+
+and class_decl =
+  let open Lang.Class in
+  Variant
+    (function
+    | ClassType x -> C ("ClassType", x, classtype_expr)
+    | Arrow (x1, x2, x3) ->
+        C
+          ( "Arrow",
+            (x1, x2, x3),
+            Triple (Option typeexpr_label, typeexpr_t, class_decl) ))
+
+and class_t =
+  let open Lang.Class in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("virtual_", (fun t -> t.virtual_), bool);
+      F ("params", (fun t -> t.params), List typedecl_param);
+      F ("type_", (fun t -> t.type_), class_decl);
+      F ("expansion", (fun t -> t.expansion), Option classsignature_t);
+    ]
+
+(** {3 ClassType} *)
+
+and classtype_expr =
+  let open Lang.ClassType in
+  Variant
+    (function
+    | Constr (x1, x2) ->
+        C ("Constr", (x1, x2), Pair (path, List typeexpr_t))
+    | Signature x -> C ("Signature", x, classsignature_t))
+
+and classtype_t =
+  let open Lang.ClassType in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("virtual_", (fun t -> t.virtual_), bool);
+      F ("params", (fun t -> t.params), List typedecl_param);
+      F ("expr", (fun t -> t.expr), classtype_expr);
+      F ("expansion", (fun t -> t.expansion), Option classsignature_t);
+    ]
+
+(** {3 ClassSignature} *)
+
+and classsignature_item =
+  let open Lang.ClassSignature in
+  Variant
+    (function
+    | Method x -> C ("Method", x, method_t)
+    | InstanceVariable x -> C ("InstanceVariable", x, instancevariable_t)
+    | Constraint (x1, x2) ->
+        C ("Constraint", (x1, x2), Pair (typeexpr_t, typeexpr_t))
+    | Inherit x -> C ("Inherit", x, classtype_expr)
+    | Comment x -> C ("Comment", x, Comment.docs_or_stop))
+
+and classsignature_t =
+  let open Lang.ClassSignature in
+  Record
+    [
+      F ("self", (fun t -> t.self), Option typeexpr_t);
+      F ("items", (fun t -> t.items), List classsignature_item);
+    ]
+
+(** {3 Method} *)
+
+and method_t =
+  let open Lang.Method in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("private_", (fun t -> t.private_), bool);
+      F ("virtual_", (fun t -> t.virtual_), bool);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
+(** {3 InstanceVariable} *)
+
+and instancevariable_t =
+  let open Lang.InstanceVariable in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("mutable_", (fun t -> t.mutable_), bool);
+      F ("virtual_", (fun t -> t.virtual_), bool);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
+(** {3 TypeExpr} *)
+
+and typeexpr_polymorphic_variant_kind =
+  let open Lang.TypeExpr.Polymorphic_variant in
+  Variant
+    (function
+    | Fixed -> C0 "Fixed"
+    | Closed x -> C ("Closed", x, List string)
+    | Open -> C0 "Open")
+
+and typeexpr_polymorphic_variant_constructor =
+  let open Lang.TypeExpr.Polymorphic_variant.Constructor in
+  Record
+    [
+      F ("name", (fun t -> t.name), string);
+      F ("constant", (fun t -> t.constant), bool);
+      F ("arguments", (fun t -> t.arguments), List typeexpr_t);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+    ]
+
+and typeexpr_polymorphic_variant_element =
+  let open Lang.TypeExpr.Polymorphic_variant in
+  Variant
+    (function
+    | Type x -> C ("Type", x, typeexpr_t)
+    | Constructor x ->
+        C ("Constructor", x, typeexpr_polymorphic_variant_constructor))
+
+and typeexpr_polymorphic_variant =
+  let open Lang.TypeExpr.Polymorphic_variant in
+  Record
+    [
+      F ("kind", (fun t -> t.kind), typeexpr_polymorphic_variant_kind);
+      F
+        ( "elements",
+          (fun t -> t.elements),
+          List typeexpr_polymorphic_variant_element );
+    ]
+
+and typeexpr_object_method_ =
+  let open Lang.TypeExpr.Object in
+  Record
+    [
+      F ("name", (fun t -> t.name), string);
+      F ("type_", (fun t -> t.type_), typeexpr_t);
+    ]
+
+and typeexpr_object_field =
+  let open Lang.TypeExpr.Object in
+  Variant
+    (function
+    | Method x -> C ("Method", x, typeexpr_object_method_)
+    | Inherit x -> C ("Inherit", x, typeexpr_t))
+
+and typeexpr_object =
+  let open Lang.TypeExpr.Object in
+  Record
+    [
+      F ("fields", (fun t -> t.fields), List typeexpr_object_field);
+      F ("open_", (fun t -> t.open_), bool);
+    ]
+
+and typeexpr_package_substitution = Pair (fragment, typeexpr_t)
+
+and typeexpr_package =
+  let open Lang.TypeExpr.Package in
+  Record
+    [
+      F ("path", (fun t -> t.path), path);
+      F
+        ( "substitutions",
+          (fun t -> t.substitutions),
+          List typeexpr_package_substitution );
+    ]
+
+and typeexpr_label =
+  let open Lang.TypeExpr in
+  Variant
+    (function
+    | Label x -> C ("Label", x, string) | Optional x -> C ("Optional", x, string))
+
+and typeexpr_t =
+  let open Lang.TypeExpr in
+  Variant
+    (function
+    | Var x -> C ("Var", x, string)
+    | Any -> C0 "Any"
+    | Alias (x1, x2) -> C ("Alias", (x1, x2), Pair (typeexpr_t, string))
+    | Arrow (x1, x2, x3) ->
+        C
+          ( "Arrow",
+            (x1, x2, x3),
+            Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
+    | Tuple x -> C ("Tuple", x, List typeexpr_t)
+    | Constr (x1, x2) ->
+        C ("Constr", (x1, x2), Pair (path, List typeexpr_t))
+    | Polymorphic_variant x ->
+        C ("Polymorphic_variant", x, typeexpr_polymorphic_variant)
+    | Object x -> C ("Object", x, typeexpr_object)
+    | Class (x1, x2) ->
+        C ("Class", (x1, x2), Pair (path, List typeexpr_t))
+    | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
+    | Package x -> C ("Package", x, typeexpr_package))
+
+(** {3 Compilation_unit} *)
+
+and compilation_unit_import =
+  let open Lang.Compilation_unit.Import in
+  Variant
+    (function
+    | Unresolved (x1, x2) ->
+        C ("Unresolved", (x1, x2), Pair (string, Option Digest.t))
+    | Resolved (x1, x2) ->
+        C ("Resolved", (x1, x2), Pair (Root.t, Names.ModuleName.t)))
+
+and compilation_unit_source =
+  let open Lang.Compilation_unit.Source in
+  Record
+    [
+      F ("file", (fun t -> t.file), string);
+      F ("build_dir", (fun t -> t.build_dir), string);
+      F ("digest", (fun t -> t.digest), Digest.t);
+    ]
+
+and compilation_unit_packed_item =
+  let open Lang.Compilation_unit.Packed in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("path", (fun t -> t.path), path);
+    ]
+
+and compilation_unit_packed = List compilation_unit_packed_item
+
+and compilation_unit_content =
+  let open Lang.Compilation_unit in
+  Variant
+    (function
+    | Module x -> C ("Module", x, signature_t)
+    | Pack x -> C ("Pack", x, compilation_unit_packed))
+
+and compilation_unit_t =
+  let open Lang.Compilation_unit in
+  Record
+    [
+      F ("id", (fun t -> t.id), identifier);
+      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("digest", (fun t -> t.digest), Digest.t);
+      F ("imports", (fun t -> t.imports), List compilation_unit_import);
+      F ("source", (fun t -> t.source), Option compilation_unit_source);
+      F ("interface", (fun t -> t.interface), bool);
+      F ("hidden", (fun t -> t.hidden), bool);
+      F ("content", (fun t -> t.content), compilation_unit_content);
+      F ("expansion", (fun t -> t.expansion), Option signature_t);
+    ]
+
+(** {3 Page} *)
+
+and page_t =
+  let open Lang.Page in
+  Record
+    [
+      F ("name", (fun t -> t.name), identifier);
+      F ("content", (fun t -> t.content), Comment.docs);
+      F ("digest", (fun t -> t.digest), Digest.t);
+    ]
