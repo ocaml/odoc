@@ -69,6 +69,13 @@ module Identifier = struct
 
   let label_parent n = label_parent_aux (n :> t)
 
+  let split n =
+    let name = name n in
+    match (n :> t) with
+    | `Root (root, _) -> (`Root (Some root), name)
+    | `CoreType _ | `CoreException _ -> (`Root None, name)
+    | n -> (`Parent (label_parent n :> Paths_types.Identifier.label_parent), name)
+
   let rec hash (id : t) =
     let open Paths_types.Identifier in
     match id with
