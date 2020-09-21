@@ -590,6 +590,7 @@ and module_type_expr :
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
+      let env = Env.add_functor_parameter arg env in
       let res' = module_type_expr env (`Result id) res in
       Functor (arg', res')
   | TypeOf {t_desc=StructInclude p; t_expansion} -> TypeOf {t_desc=StructInclude (module_path env p); t_expansion=do_expn t_expansion}
