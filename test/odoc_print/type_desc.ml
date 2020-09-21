@@ -9,6 +9,7 @@ type 'a t =
   | List : 'a t -> 'a list t
   | Option : 'a t -> 'a option t
   | To_string : ('a -> string) -> 'a t
+  | Indirect : ('a -> 'b) * 'b t -> 'a t
 
 and 'a field = F : string * ('a -> 'b) * 'b t -> 'a field
 

@@ -27,3 +27,4 @@ let rec to_yojson : type a. a t -> a -> yojson =
       let opt = match a with Some a' -> [ to_yojson t a' ] | None -> [] in
       `List opt
   | To_string to_string -> `String (to_string a)
+  | Indirect (f, t) -> to_yojson t (f a)
