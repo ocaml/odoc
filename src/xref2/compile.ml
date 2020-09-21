@@ -61,7 +61,10 @@ let rec unit (resolver : Env.resolver) t =
 and content env id =
   let open Compilation_unit in
   function
-  | Module m -> Module (signature env (id :> Id.Signature.t) m)
+  | Module m ->
+    let sg = Type_of.signature env m in
+    Tools.reset_caches ();
+    Module (signature env (id :> Id.Signature.t) sg)
   | Pack _ -> failwith "Unhandled content"
 
 and value_ env parent t =

@@ -123,6 +123,7 @@ and aux_expansion_of_u_module_type_expr env expr :
     >>= fun sg ->
     let subs = unresolve_subs subs in
     Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
+  | TypeOf { t_expansion = Some (Signature sg); _} -> Ok sg
   | TypeOf { t_desc; _ } ->
     aux_expansion_of_module_type_type_of_desc env t_desc
     >>= assert_not_functor
@@ -142,6 +143,7 @@ and aux_expansion_of_module_type_expr env expr :
       Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
       >>= fun sg -> Ok (Signature sg)
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
+  | TypeOf {t_expansion = Some (Signature sg); _} -> Ok (Signature sg)
   | TypeOf {t_desc; _} -> aux_expansion_of_module_type_type_of_desc env t_desc
 
 and aux_expansion_of_module_type env mt =
@@ -200,6 +202,11 @@ let expansion_of_module_type_expr env id expr =
   aux_expansion_of_module_type_expr env expr >>= handle_expansion env id
   >>= fun (env, e) -> Ok (env, module_type_expr_needs_recompile expr, e)
 
+let expansion_of_u_module_type_expr env id expr =
+  aux_expansion_of_u_module_type_expr env expr
+  >>= fun sg -> handle_expansion env id (Signature sg)
+  >>= fun (env, e) -> Ok (env, false, e)
+  
 let expansion_of_module_alias env id path =
   let open Paths.Identifier in
   aux_expansion_of_module_alias ~strengthen:false env path
