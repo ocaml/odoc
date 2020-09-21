@@ -1008,6 +1008,7 @@ and signature_of_u_module_type_expr :
   | With (subs, s) ->
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
+  | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
   | TypeOf { t_desc = StructInclude p; _ } -> signature_of_module_path env ~strengthen:true p
   | TypeOf { t_desc = ModPath p; _ } -> signature_of_module_path env ~strengthen:false p
     
