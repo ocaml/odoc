@@ -1,6 +1,7 @@
 exception TypeReplacement of Component.TypeExpr.t
 
 exception Invalidated
+exception MTOInvalidated
 
 open Component
 open Substitution
@@ -15,11 +16,14 @@ let identity =
     class_type = PathClassTypeMap.empty;
     type_replacement = PathTypeMap.empty;
     path_invalidating_modules = [];
-
+    module_type_of_invalidating_modules = [];
   }
 
-let invalidate_module id t =
+let path_invalidate_module id t =
   { t with path_invalidating_modules = id :: t.path_invalidating_modules }
+
+let mto_invalidate_module id t =
+  { t with module_type_of_invalidating_modules = id :: t.module_type_of_invalidating_modules }
 
 let add_module id p rp t =
   { t with module_ = PathModuleMap.add id (`Prefixed (p, rp)) t.module_ }
@@ -80,6 +84,7 @@ let add_module_substitution : Ident.path_module -> t -> t =
  fun id t ->
   {
     t with
+    module_type_of_invalidating_modules = id :: t.module_type_of_invalidating_modules;
     path_invalidating_modules = id :: t.path_invalidating_modules;
     module_ = PathModuleMap.add id `Substituted t.module_;
   }
@@ -421,8 +426,48 @@ and functor_parameter s t =
 and module_type_type_of_desc s t =
   let open Component.ModuleType in
   match t with
+  | ModPath p ->
+    if mto_module_path_invalidated s p
+    then raise MTOInvalidated
+    else ModPath (module_path s p)
+  | StructInclude p ->
+    if mto_module_path_invalidated s p
+    then raise MTOInvalidated
+    else StructInclude (module_path s p)
+
+and module_type_type_of_desc_noexn s t =
+  let open Component.ModuleType in
+  match t with
   | ModPath p -> ModPath (module_path s p)
   | StructInclude p -> StructInclude (module_path s p)
+
+and mto_module_path_invalidated : t -> Cpath.module_ -> bool = fun s p ->
+  match p with
+  | `Resolved p' -> mto_resolved_module_path_invalidated s p'
+  | `Substituted p'
+  | `Dot (p', _) -> mto_module_path_invalidated s p'
+  | `Module (`Module p', _) -> mto_resolved_module_path_invalidated s p'
+  | `Module (_, _) -> false
+  | `Apply (p1, p2) -> mto_module_path_invalidated s p1 || mto_module_path_invalidated s p2
+  | `Local (id, _) -> List.mem id s.module_type_of_invalidating_modules 
+  | `Identifier _ -> false
+  | `Forward _ -> false
+  | `Root _ -> false
+
+and mto_resolved_module_path_invalidated s p =
+  match p with
+  | `Local id -> List.mem id s.module_type_of_invalidating_modules
+  | `Identifier _ -> false
+  | `Apply (p1, p2) -> mto_resolved_module_path_invalidated s p1 || mto_resolved_module_path_invalidated s p2
+  | `Module (`Module p, _) 
+  | `Substituted p -> mto_resolved_module_path_invalidated s p
+  | `Module (_, _) -> false
+  | `Alias (p1, _p2) -> mto_resolved_module_path_invalidated s p1
+  | `Subst (_p1, p2) -> mto_resolved_module_path_invalidated s p2
+  | `SubstAlias (p1, _p2) -> mto_resolved_module_path_invalidated s p1
+  | `Hidden p ->  mto_resolved_module_path_invalidated s p
+  | `Canonical (p1, _p2) ->  mto_resolved_module_path_invalidated s p1
+  | `OpaqueModule p ->  mto_resolved_module_path_invalidated s p
 
 and u_module_type_expr s t =
   let open Component.ModuleType.U in
@@ -430,7 +475,18 @@ and u_module_type_expr s t =
   | Path p -> Path (module_type_path s p)
   | Signature sg -> Signature (signature s sg)
   | With (subs, e) -> With (List.map (module_type_substitution s) subs, u_module_type_expr s e)
-  | TypeOf { t_desc; t_expansion } -> TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = option_ simple_expansion s t_expansion }
+  | TypeOf { t_desc; t_expansion = Some (Signature e) } -> (
+    try
+      TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = Some (simple_expansion s (Signature e)) }
+    with MTOInvalidated ->
+      u_module_type_expr s (Signature e))
+  | TypeOf { t_expansion = Some (Functor _); _ } -> assert false
+  | TypeOf { t_desc; t_expansion = None } -> TypeOf { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None}
+
+and module_type_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.ModuleType.expr =
+  function
+  | Signature sg -> Signature sg
+  | Functor (arg, e) -> Functor (arg, module_type_of_simple_expansion e)
 
 and module_type_expr s t =
   let open Component.ModuleType in
@@ -441,7 +497,13 @@ and module_type_expr s t =
       Functor (functor_parameter s arg, module_type_expr s expr)
   | With { w_substitutions; w_expansion; w_expr } ->
       With { w_substitutions = List.map (module_type_substitution s) w_substitutions; w_expansion = option_ simple_expansion s w_expansion; w_expr = u_module_type_expr s w_expr }
-  | TypeOf { t_desc; t_expansion } -> TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = option_ simple_expansion s t_expansion}
+  | TypeOf { t_desc; t_expansion = Some e } ->
+    (try
+      TypeOf { t_desc = module_type_type_of_desc s t_desc; t_expansion = Some (simple_expansion s e)}
+    with MTOInvalidated ->
+      module_type_expr s (module_type_of_simple_expansion e))
+  | TypeOf { t_desc; t_expansion = None } ->
+    TypeOf { t_desc = module_type_type_of_desc_noexn s t_desc; t_expansion = None }
 
 and module_type_substitution s sub =
   let open Component.ModuleType in

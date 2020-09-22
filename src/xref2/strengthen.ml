@@ -69,7 +69,7 @@ let rec signature :
       ([],[]) sg.items
   in
   (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
-  let substs = List.fold_left (fun s mid -> Subst.invalidate_module (mid :> Ident.path_module) s) Subst.identity strengthened_modules in
+  let substs = List.fold_left (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s) Subst.identity strengthened_modules in
   Subst.signature substs { items = List.rev items; removed = sg.removed }
 
 and module_ :
