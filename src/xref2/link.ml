@@ -892,9 +892,9 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                     let map =
                       List.fold_left2
                         (fun acc param sub ->
-                          match param with
-                          | Lang.TypeDecl.Var x, _ -> (x, sub) :: acc
-                          | Any, _ -> acc)
+                          match param.Lang.TypeDecl.desc with
+                          | Lang.TypeDecl.Var x -> (x, sub) :: acc
+                          | Any -> acc)
                         [] params ts
                     in
                     let t' =

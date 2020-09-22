@@ -93,7 +93,7 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
     let open TypeDecl.Equation in
     let constr_params =
       List.map
-        (fun (desc, _) ->
+        (fun {Odoc_model.Lang.TypeDecl.desc; _} ->
           match desc with
           | Odoc_model.Lang.TypeDecl.Var x -> TypeExpr.Var x
           | Any -> Any)

@@ -56,3 +56,4 @@ module type PolyS =
   sig type a = [ `A ] type t = [ a | `B ] end with type a := [ `A ]
 
 
+type (!+'a, !-'b,'c) injective

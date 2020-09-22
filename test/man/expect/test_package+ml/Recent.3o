@@ -127,3 +127,5 @@ a : int;
  ]
 .br 
 \f[CB]end\fR
+.sp 
+\f[CB]type\fR (!+'a, !-'b, 'c) injective
