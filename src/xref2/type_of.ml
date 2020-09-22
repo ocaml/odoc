@@ -6,6 +6,7 @@ open Odoc_model
 open Lang
 module Id = Odoc_model.Paths.Identifier
 
+let again = ref false
 
 let rec signature : Env.t -> Signature.t -> Signature.t =
   fun env sg ->
@@ -34,6 +35,20 @@ and module_type env m =
   | None -> m
   | Some expr -> { m with expr = Some (module_type_expr env (m.id :> Id.Signature.t) expr) }
 
+and module_type_expr_typeof env (id : Id.Signature.t) t =
+  let open Odoc_model.Lang.ModuleType in
+  let p, strengthen =
+    match t.t_desc with
+    | ModPath p -> p, false
+    | StructInclude p -> p, true
+  in
+  let cp = Component.Of_Lang.(module_path empty p) in
+  let open Expand_tools in
+  let open Utils.ResultMonad in
+  aux_expansion_of_module_alias env ~strengthen cp
+  >>= handle_expansion env id
+  >>= fun (_env, e) -> Ok e 
+
 and module_type_expr env (id : Id.Signature.t) expr =
   match expr with
   | Path _ -> expr
@@ -44,14 +59,10 @@ and module_type_expr env (id : Id.Signature.t) expr =
   | Signature sg -> Signature (signature env sg)
   | With w -> With {w with w_expr = u_module_type_expr env id w.w_expr }
   | TypeOf t ->
-    let cexpr = Component.Of_Lang.(module_type_expr empty expr) in
-    match Expand_tools.expansion_of_module_type_expr env id cexpr with
-    | Ok (_, _, cexpansion) ->
-      let t_expansion = Some (Lang_of.(simple_expansion empty id cexpansion)) in
-      TypeOf { t with t_expansion }
-    | Error e ->
-      Format.eprintf "Couldn't expand module_type_of expression: %a\n%!" Tools.Fmt.error (e :> Errors.any);
-      failwith "Couldn't expand module_type_of expression"
+    match module_type_expr_typeof env id t with
+    | Ok e -> TypeOf {t with t_expansion = Some (Lang_of.(simple_expansion empty id e)) }
+    | Error _ -> expr
+    | exception _ -> again := true; expr
 
 and u_module_type_expr env id expr =
   match expr with
@@ -59,13 +70,10 @@ and u_module_type_expr env id expr =
   | Signature sg -> Signature (signature env sg)
   | With (subs, w) -> With ( subs, u_module_type_expr env id w)
   | TypeOf t ->
-    let cexpr = Component.Of_Lang.(u_module_type_expr empty expr) in
-    match Expand_tools.expansion_of_u_module_type_expr env id cexpr with
-    | Ok (_, _, cexpansion) ->
-      let t_expansion = Some (Lang_of.(simple_expansion empty id cexpansion)) in
-      TypeOf { t with t_expansion }
-    | Error _ ->
-      failwith "Couldn't expand u_module_type_of expression"
+    match module_type_expr_typeof env id t with
+    | Ok e -> TypeOf {t with t_expansion = Some (Lang_of.(simple_expansion empty id e)) }
+    | Error _ -> expr
+    | exception _ -> again := true; expr
 
 and functor_parameter env p =
   { p with expr = module_type_expr env (p.id :> Id.Signature.t) p.expr}

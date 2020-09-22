@@ -124,9 +124,7 @@ and aux_expansion_of_u_module_type_expr env expr :
     let subs = unresolve_subs subs in
     Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
   | TypeOf { t_expansion = Some (Signature sg); _} -> Ok sg
-  | TypeOf { t_desc; _ } ->
-    aux_expansion_of_module_type_type_of_desc env t_desc
-    >>= assert_not_functor
+  | TypeOf _ -> raise Tools.UnexpandedTypeOf
 
 and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
@@ -144,8 +142,8 @@ and aux_expansion_of_module_type_expr env expr :
       >>= fun sg -> Ok (Signature sg)
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
   | TypeOf {t_expansion = Some (Signature sg); _} -> Ok (Signature sg)
-  | TypeOf {t_desc; _} -> aux_expansion_of_module_type_type_of_desc env t_desc
-
+  | TypeOf _ -> raise Tools.UnexpandedTypeOf
+  
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
   match mt.expr with

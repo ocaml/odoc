@@ -783,7 +783,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                       Constr (`Resolved p, ts) )
               | _ ->
                 Constr (`Resolved p, ts)
-            else ( Format.eprintf "not hidden...?"; Constr (`Resolved p, ts))
+            else (Constr (`Resolved p, ts))
         | Ok (cp', Found _) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             Constr (`Resolved p, ts)

@@ -4,6 +4,7 @@ open Odoc_model.Names
 open Utils
 open ResultMonad
 
+exception UnexpandedTypeOf
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 type module_modifiers =
@@ -1009,9 +1010,8 @@ and signature_of_u_module_type_expr :
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
   | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
-  | TypeOf { t_desc = StructInclude p; _ } -> signature_of_module_path env ~strengthen:true p
-  | TypeOf { t_desc = ModPath p; _ } -> signature_of_module_path env ~strengthen:false p
-    
+  | TypeOf _ -> raise UnexpandedTypeOf
+
 and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
     function
     | Signature sg -> sg
@@ -1043,9 +1043,7 @@ and signature_of_module_type_expr :
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.TypeOf { t_expansion = Some e; _ } ->
     Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.TypeOf { t_desc = StructInclude p; _} -> signature_of_module_path env ~strengthen:true p
-  | Component.ModuleType.TypeOf { t_desc = ModPath p; _} -> signature_of_module_path env ~strengthen:false p
-    
+  | Component.ModuleType.TypeOf _ -> raise UnexpandedTypeOf
 
 and signature_of_module_type :
     Env.t ->
