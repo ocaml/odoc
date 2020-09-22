@@ -393,6 +393,7 @@ and Substitution : sig
     class_type : subst_class_type PathClassTypeMap.t;
     type_replacement : TypeExpr.t PathTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
+    module_type_of_invalidating_modules : Ident.path_module list;
   }
 end
 
