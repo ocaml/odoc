@@ -1,38 +1,16 @@
 open Type_desc
 open Odoc_model
+open Paths_desc
 module T = Type_desc
 
-(** Dummy implementation for paths *)
-
-(* TODO *)
-let identifier : [< Paths.Identifier.t ] t = To_string (fun _ -> "<identifier>")
-
-let path = To_string (fun _ -> "<path>")
-
-let reference = To_string (fun _ -> "<reference>")
-
-let fragment = To_string (fun _ -> "<fragment>")
-
-module Names = struct
-  open Names
-
-  module ModuleName = struct
-    let t = To_string ModuleName.to_string
-  end
+module Digest = struct
+  let t : Digest.t t = To_string (fun _ -> "<digest>")
 end
 
 module Comment = struct
   let docs : Comment.docs t = To_string (fun _ -> "<docs>")
 
   let docs_or_stop : Comment.docs_or_stop t = To_string (fun _ -> "<docs>")
-end
-
-module Digest = struct
-  let t : Digest.t t = To_string (fun _ -> "<digest>")
-end
-
-module Root = struct
-  let t : Root.t t = To_string (fun _ -> "<root>")
 end
 
 (** {3 Module} *)
@@ -50,7 +28,7 @@ and module_decl =
   let open Lang.Module in
   Variant
     (function
-    | Alias x -> C ("Alias", x, path)
+    | Alias x -> C ("Alias", (x :> Paths.Path.t), path)
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
 
 and module_t =
@@ -60,7 +38,10 @@ and module_t =
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), Comment.docs);
       F ("type_", (fun t -> t.type_), module_decl);
-      F ("canonical", (fun t -> t.canonical), Option (Pair (path, reference)));
+      F
+        ( "canonical",
+          (fun t -> (t.canonical :> (Paths.Path.t * Paths.Reference.t) option)),
+          Option (Pair (path, reference)) );
       F ("hidden", (fun t -> t.hidden), bool);
       F ("display_type", (fun t -> t.display_type), Option module_decl);
       F ("expansion", (fun t -> t.expansion), Option module_expansion);
@@ -93,7 +74,7 @@ and moduletype_substitution =
     | TypeEq (x1, x2) ->
         C ("TypeEq", (x1, x2), Pair (fragment, typedecl_equation))
     | ModuleSubst (x1, x2) ->
-        C ("ModuleSubst", (x1, x2), Pair (fragment, path))
+        C ("ModuleSubst", (x1, (x2 :> Paths.Path.t)), Pair (fragment, path))
     | TypeSubst (x1, x2) ->
         C ("TypeSubst", (x1, x2), Pair (fragment, typedecl_equation)))
 
@@ -101,14 +82,14 @@ and moduletype_type_of_desc =
   let open Lang.ModuleType in
   Variant
     (function
-    | MPath x -> C ("MPath", x, path)
-    | Struct_include x -> C ("Struct_include", x, path))
+    | MPath x -> C ("MPath", (x :> Paths.Path.t), path)
+    | Struct_include x -> C ("Struct_include", (x :> Paths.Path.t), path))
 
 and moduletype_expr =
   let open Lang.ModuleType in
   Variant
     (function
-    | Path x -> C ("Path", x, path)
+    | Path x -> C ("Path", (x :> Paths.Path.t), path)
     | Signature x -> C ("Signature", x, signature_t)
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
@@ -141,7 +122,7 @@ and modulesubstitution_t =
     [
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), Comment.docs);
-      F ("manifest", (fun t -> t.manifest), path);
+      F ("manifest", (fun t -> (t.manifest :> Paths.Path.t)), path);
     ]
 
 (** {3 Signature} *)
@@ -318,7 +299,7 @@ and extension_t =
   let open Lang.Extension in
   Record
     [
-      F ("type_path", (fun t -> t.type_path), path);
+      F ("type_path", (fun t -> (t.type_path :> Paths.Path.t)), path);
       F ("doc", (fun t -> t.doc), Comment.docs);
       F ("type_params", (fun t -> t.type_params), List typedecl_param);
       F ("private_", (fun t -> t.private_), bool);
@@ -392,7 +373,7 @@ and classtype_expr =
   Variant
     (function
     | Constr (x1, x2) ->
-        C ("Constr", (x1, x2), Pair (path, List typeexpr_t))
+        C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Signature x -> C ("Signature", x, classsignature_t))
 
 and classtype_t =
@@ -522,7 +503,7 @@ and typeexpr_package =
   let open Lang.TypeExpr.Package in
   Record
     [
-      F ("path", (fun t -> t.path), path);
+      F ("path", (fun t -> (t.path :> Paths.Path.t)), path);
       F
         ( "substitutions",
           (fun t -> t.substitutions),
@@ -549,12 +530,12 @@ and typeexpr_t =
             Triple (Option typeexpr_label, typeexpr_t, typeexpr_t) )
     | Tuple x -> C ("Tuple", x, List typeexpr_t)
     | Constr (x1, x2) ->
-        C ("Constr", (x1, x2), Pair (path, List typeexpr_t))
+        C ("Constr", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Polymorphic_variant x ->
         C ("Polymorphic_variant", x, typeexpr_polymorphic_variant)
     | Object x -> C ("Object", x, typeexpr_object)
     | Class (x1, x2) ->
-        C ("Class", (x1, x2), Pair (path, List typeexpr_t))
+        C ("Class", ((x1 :> Paths.Path.t), x2), Pair (path, List typeexpr_t))
     | Poly (x1, x2) -> C ("Poly", (x1, x2), Pair (List string, typeexpr_t))
     | Package x -> C ("Package", x, typeexpr_package))
 
@@ -567,7 +548,7 @@ and compilation_unit_import =
     | Unresolved (x1, x2) ->
         C ("Unresolved", (x1, x2), Pair (string, Option Digest.t))
     | Resolved (x1, x2) ->
-        C ("Resolved", (x1, x2), Pair (Root.t, Names.ModuleName.t)))
+        C ("Resolved", (x1, x2), Pair (Root.t, Names.modulename)))
 
 and compilation_unit_source =
   let open Lang.Compilation_unit.Source in
@@ -583,7 +564,7 @@ and compilation_unit_packed_item =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("path", (fun t -> t.path), path);
+      F ("path", (fun t -> (t.path :> Paths.Path.t)), path);
     ]
 
 and compilation_unit_packed = List compilation_unit_packed_item
