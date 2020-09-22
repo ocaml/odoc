@@ -687,16 +687,18 @@ struct
     : 'row. ?delim:[`parens | `brackets] -> Odoc_model.Lang.TypeDecl.param list
     -> text
   = fun ?(delim=`parens) params ->
-    let format_param (desc, variance_opt) =
-      let param_desc =
+    let format_param {Odoc_model.Lang.TypeDecl.desc; variance; injectivity} =
+      let desc =
         match desc with
-        | Odoc_model.Lang.TypeDecl.Any -> "_"
-        | Var s -> "'" ^ s
+        | Odoc_model.Lang.TypeDecl.Any -> ["_"]
+        | Var s -> ["'"; s]
       in
-      match variance_opt with
-      | None -> param_desc
-      | Some Odoc_model.Lang.TypeDecl.Pos -> "+" ^ param_desc
-      | Some Odoc_model.Lang.TypeDecl.Neg -> "-" ^ param_desc
+      let var_desc = match variance with
+        | None -> desc
+        | Some Odoc_model.Lang.TypeDecl.Pos -> "+" :: desc
+        | Some Odoc_model.Lang.TypeDecl.Neg -> "-" ::desc in
+      let final = if injectivity then "!" :: var_desc else var_desc in
+      String.concat "" final
     in
     O.txt (
       match params with

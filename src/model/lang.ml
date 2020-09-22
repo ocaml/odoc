@@ -185,7 +185,7 @@ and TypeDecl : sig
 
   type param_desc = Any | Var of string
 
-  type param = param_desc * variance option
+  type param = { desc: param_desc; variance:variance option; injectivity:bool }
 
   module Equation : sig
     type t = {

@@ -264,7 +264,7 @@ let collapse_eqns eqn1 eqn2 params =
   let open Lang.TypeDecl in
   let map =
     List.map2
-      (fun v p -> match v with Var x, _ -> Some (x, p) | Any, _ -> None)
+      (fun v p -> match v.desc with Var x-> Some (x, p) | Any -> None)
       eqn2.Equation.params params
   in
   let map =
