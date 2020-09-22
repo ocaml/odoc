@@ -7,6 +7,8 @@
 
 open Errors.Tools_error
 
+exception UnexpandedTypeOf
+
 (** {2 Lookup and resolve functions} *)
 
 (** The following lookup and resolve functions take {{!module:Cpath.Resolved}resolved paths}

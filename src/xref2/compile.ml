@@ -62,8 +62,14 @@ and content env id =
   let open Compilation_unit in
   function
   | Module m ->
-    let sg = Type_of.signature env m in
-    Tools.reset_caches ();
+    let rec loop sg =
+      Type_of.again := false;
+      let sg' = Type_of.signature env sg in
+      Tools.reset_caches ();
+      if !Type_of.again
+      then loop sg'
+      else sg' in
+    let sg = loop m in
     Module (signature env (id :> Id.Signature.t) sg)
   | Pack _ -> failwith "Unhandled content"
 
