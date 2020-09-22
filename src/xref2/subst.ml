@@ -14,11 +14,12 @@ let identity =
     type_ = PathTypeMap.empty;
     class_type = PathClassTypeMap.empty;
     type_replacement = PathTypeMap.empty;
-    invalidated_modules = [];
+    path_invalidating_modules = [];
+
   }
 
 let invalidate_module id t =
-  { t with invalidated_modules = id :: t.invalidated_modules }
+  { t with path_invalidating_modules = id :: t.path_invalidating_modules }
 
 let add_module id p rp t =
   { t with module_ = PathModuleMap.add id (`Prefixed (p, rp)) t.module_ }
@@ -79,7 +80,7 @@ let add_module_substitution : Ident.path_module -> t -> t =
  fun id t ->
   {
     t with
-    invalidated_modules = id :: t.invalidated_modules;
+    path_invalidating_modules = id :: t.path_invalidating_modules;
     module_ = PathModuleMap.add id `Substituted t.module_;
   }
 
@@ -107,7 +108,7 @@ let rec resolved_module_path :
  fun s p ->
   match p with
   | `Local id -> (
-      if List.mem id s.invalidated_modules then raise Invalidated;
+      if List.mem id s.path_invalidating_modules then raise Invalidated;
       match
         try Some (PathModuleMap.find (id :> Ident.path_module) s.module_)
         with _ -> None

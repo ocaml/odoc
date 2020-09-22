@@ -418,7 +418,7 @@ and Substitution : sig
     type_ : subst_type PathTypeMap.t;
     class_type : subst_class_type PathClassTypeMap.t;
     type_replacement : TypeExpr.t PathTypeMap.t;
-    invalidated_modules : Ident.path_module list;
+    path_invalidating_modules : Ident.path_module list;
   }
 end =
   Substitution
