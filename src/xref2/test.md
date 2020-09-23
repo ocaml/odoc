@@ -280,10 +280,20 @@ val module_ : Component.Module.t Component.Delayed.t =
 The values returned are the resolved path to the module, and a representation of the module itself. We then turn the module into a signature via `signature_of_module`, which in this case is quite simple since the module contains an explicit signature:
 
 ```ocaml env=e1
-# get_ok @@ Tools.signature_of_module env module_;;
-Line 1, characters 41-48:
-Error: This expression has type Component.Module.t Component.Delayed.t
-       but an expression was expected of type Component.Module.t
+# get_ok @@ Tools.signature_of_module env (Component.Delayed.get module_);;
+- : Component.Signature.t =
+{Odoc_xref2.Component.Signature.items =
+  [Odoc_xref2.Component.Signature.Type (`LType (t, 0),
+    Odoc_model.Lang.Signature.Ordinary,
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.TypeDecl.doc = [];
+        equation =
+         {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+          private_ = false; manifest = None; constraints = []};
+        representation = None};
+     get = None})];
+ removed = []}
 ```
 
 We're now in a position to verify the existence of the type `t` we're
@@ -437,11 +447,47 @@ we look up `A` from the environment:
 ```ocaml env=e1
 # let p = `Identifier (Common.root_module "A") in
   let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env p in
-  let sg = get_ok @@ Tools.signature_of_module env m in
+  let sg = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m) in
   Tools.prefix_signature (`Module p, sg);;
-Line 3, characters 52-53:
-Error: This expression has type Component.Module.t Component.Delayed.t
-       but an expression was expected of type Component.Module.t
+- : Component.Signature.t =
+{Odoc_xref2.Component.Signature.items =
+  [Odoc_xref2.Component.Signature.ModuleType (`LModuleType (N, 4),
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.ModuleType.doc = [];
+        expr =
+         Some
+          (Odoc_xref2.Component.ModuleType.Signature
+            {Odoc_xref2.Component.Signature.items =
+              [Odoc_xref2.Component.Signature.Type (`LType (t, 3),
+                Odoc_model.Lang.Signature.Ordinary,
+                {Odoc_xref2.Component.Delayed.v =
+                  Some
+                   {Odoc_xref2.Component.TypeDecl.doc = [];
+                    equation =
+                     {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+                      private_ = false; manifest = None; constraints = []};
+                    representation = None};
+                 get = None})];
+             removed = []});
+        expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+     get = None});
+   Odoc_xref2.Component.Signature.Module (`LModule (B, 5),
+    Odoc_model.Lang.Signature.Ordinary,
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.Module.doc = [];
+        type_ =
+         Odoc_xref2.Component.Module.ModuleType
+          (Odoc_xref2.Component.ModuleType.Path
+            (`ModuleType
+               (`Module
+                  (`Identifier (`Module (`Root (Common.root, Root), A))),
+                N)));
+        canonical = None; hidden = false; display_type = None;
+        expansion = None};
+     get = None})];
+ removed = []}
 ```
 
 So before the prefixing operation we had that the type of the module was
@@ -476,30 +522,26 @@ now no local identifiers.) Finally we can now look up `t`, which
 we then return along with the fully resolved identifier.
 
 ```ocaml env=e1
-# Tools.resolve_type env
+# get_ok @@ Tools.resolve_type env
     (`Dot
       (`Dot
          (`Resolved
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : (Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found,
-     Odoc_xref2.Errors.simple_type_lookup_error)
-    result
-=
-Result.Ok
- (`Type
-    (`Module
-       (`Module
-          (`Module (`Identifier (`Module (`Root (Common.root, Root), A))), B)),
-     t),
-  Odoc_xref2.Find.Found
-   (`T
-      {Odoc_xref2.Component.TypeDecl.doc = [];
-       equation =
-        {Odoc_xref2.Component.TypeDecl.Equation.params = [];
-         private_ = false; manifest = None; constraints = []};
-       representation = None}))
+- : Cpath.Resolved.type_ * (Find.type_, Component.TypeExpr.t) Find.found =
+(`Type
+   (`Module
+      (`Module
+         (`Module (`Identifier (`Module (`Root (Common.root, Root), A))), B)),
+    t),
+ Odoc_xref2.Find.Found
+  (`T
+     {Odoc_xref2.Component.TypeDecl.doc = [];
+      equation =
+       {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
+        manifest = None; constraints = []};
+      representation = None}))
 ```
 
 ### Module aliases
@@ -658,10 +700,33 @@ val m : Component.Module.t Component.Delayed.t =
 now we can ask for the signature of this module:
 
 ```ocaml env=e1
-# let sg = get_ok @@ Tools.signature_of_module env m;;
-Line 1, characters 50-51:
-Error: This expression has type Component.Module.t Component.Delayed.t
-       but an expression was expected of type Component.Module.t
+# let sg = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
+val sg : Component.Signature.t =
+  {Odoc_xref2.Component.Signature.items =
+    [Odoc_xref2.Component.Signature.Module (`LModule (M, 41),
+      Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_xref2.Component.Delayed.v =
+        Some
+         {Odoc_xref2.Component.Module.doc = [];
+          type_ =
+           Odoc_xref2.Component.Module.Alias
+            (`Identifier (`Module (`Root (Common.root, Root), B), false));
+          canonical = None; hidden = false; display_type = None;
+          expansion = None};
+       get = None});
+     Odoc_xref2.Component.Signature.Module (`LModule (N, 42),
+      Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_xref2.Component.Delayed.v =
+        Some
+         {Odoc_xref2.Component.Module.doc = [];
+          type_ =
+           Odoc_xref2.Component.Module.ModuleType
+            (Odoc_xref2.Component.ModuleType.Path
+              (`Dot (`Substituted (`Local (`LModule (M, 41), false)), "S")));
+          canonical = None; hidden = false; display_type = None;
+          expansion = None};
+       get = None})];
+   removed = []}
 ```
 
 and we can see the module `M` is now an alias of the root module `B`. We can now
@@ -687,10 +752,20 @@ val m : Component.Module.t Component.Delayed.t =
       canonical = None; hidden = false; display_type = None;
       expansion = None};
    get = None}
-# get_ok @@ Tools.signature_of_module env m;;
-Line 1, characters 41-42:
-Error: This expression has type Component.Module.t Component.Delayed.t
-       but an expression was expected of type Component.Module.t
+# get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
+- : Component.Signature.t =
+{Odoc_xref2.Component.Signature.items =
+  [Odoc_xref2.Component.Signature.Type (`LType (t, 50),
+    Odoc_model.Lang.Signature.Ordinary,
+    {Odoc_xref2.Component.Delayed.v =
+      Some
+       {Odoc_xref2.Component.TypeDecl.doc = [];
+        equation =
+         {Odoc_xref2.Component.TypeDecl.Equation.params = [];
+          private_ = false; manifest = None; constraints = []};
+        representation = None};
+     get = None})];
+ removed = []}
 ```
 
 where we've correctly identified that a type `t` exists in the signature. The path in
@@ -966,10 +1041,27 @@ val m : Component.Module.t Component.Delayed.t =
       canonical = None; hidden = false; display_type = None;
       expansion = None};
    get = None}
-# let sg' = get_ok @@ Tools.signature_of_module env m;;
-Line 1, characters 51-52:
-Error: This expression has type Component.Module.t Component.Delayed.t
-       but an expression was expected of type Component.Module.t
+# let sg' = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
+val sg' : Component.Signature.t =
+  {Odoc_xref2.Component.Signature.items =
+    [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 15),
+      Odoc_model.Lang.Signature.Ordinary,
+      {Odoc_xref2.Component.Delayed.v =
+        Some
+         {Odoc_xref2.Component.Module.doc = [];
+          type_ =
+           Odoc_xref2.Component.Module.ModuleType
+            (Odoc_xref2.Component.ModuleType.Path
+              (`Dot
+                 (`Resolved
+                    (`Substituted
+                       (`Identifier
+                          (`Module (`Root (Common.root, Root), Bar)))),
+                  "T")));
+          canonical = None; hidden = false; display_type = None;
+          expansion = None};
+       get = None})];
+   removed = []}
 ```
 
 ```ocaml env=e1
