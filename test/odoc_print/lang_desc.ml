@@ -1,16 +1,11 @@
 open Type_desc
 open Odoc_model
 open Paths_desc
+open Comment_desc
 module T = Type_desc
 
 module Digest = struct
   let t : Digest.t t = To_string (fun _ -> "<digest>")
-end
-
-module Comment = struct
-  let docs : Comment.docs t = To_string (fun _ -> "<docs>")
-
-  let docs_or_stop : Comment.docs_or_stop t = To_string (fun _ -> "<docs>")
 end
 
 (** {3 Module} *)
@@ -36,7 +31,7 @@ and module_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), module_decl);
       F
         ( "canonical",
@@ -105,7 +100,7 @@ and moduletype_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("expr", (fun t -> t.expr), Option moduletype_expr);
       F
         ( "display_expr",
@@ -121,7 +116,7 @@ and modulesubstitution_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("manifest", (fun t -> (t.manifest :> Paths.Path.t)), path);
     ]
 
@@ -157,7 +152,7 @@ and signature_item =
     | ClassType (x1, x2) ->
         C ("ClassType", (x1, x2), Pair (signature_recursive, classtype_t))
     | Include x -> C ("Include", x, include_t)
-    | Comment x -> C ("Comment", x, Comment.docs_or_stop))
+    | Comment x -> C ("Comment", x, docs_or_stop))
 
 and signature_t = List signature_item
 
@@ -199,7 +194,7 @@ and include_t =
   Record
     [
       F ("parent", (fun t -> t.parent), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("decl", (fun t -> t.decl), module_decl);
       F ("inline", (fun t -> t.inline), bool);
       F ("expansion", (fun t -> t.expansion), include_expansion);
@@ -211,7 +206,7 @@ and typedecl_field =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("mutable_", (fun t -> t.mutable_), bool);
       F ("type_", (fun t -> t.type_), typeexpr_t);
     ]
@@ -228,7 +223,7 @@ and typedecl_constructor =
   T.Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("args", (fun t -> t.args), typedecl_constructor_argument);
       F ("res", (fun t -> t.res), Option typeexpr_t);
     ]
@@ -276,7 +271,7 @@ and typedecl_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("equation", (fun t -> t.equation), typedecl_equation);
       F
         ( "representation",
@@ -290,7 +285,7 @@ and extension_constructor =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("args", (fun t -> t.args), typedecl_constructor_argument);
       F ("res", (fun t -> t.res), Option typeexpr_t);
     ]
@@ -300,7 +295,7 @@ and extension_t =
   Record
     [
       F ("type_path", (fun t -> (t.type_path :> Paths.Path.t)), path);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("type_params", (fun t -> t.type_params), List typedecl_param);
       F ("private_", (fun t -> t.private_), bool);
       F ("constructors", (fun t -> t.constructors), List extension_constructor);
@@ -313,7 +308,7 @@ and exception_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("args", (fun t -> t.args), typedecl_constructor_argument);
       F ("res", (fun t -> t.res), Option typeexpr_t);
     ]
@@ -325,7 +320,7 @@ and value_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), typeexpr_t);
     ]
 
@@ -336,7 +331,7 @@ and external_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("type_", (fun t -> t.type_), typeexpr_t);
       F ("primitives", (fun t -> t.primitives), List string);
     ]
@@ -359,7 +354,7 @@ and class_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("virtual_", (fun t -> t.virtual_), bool);
       F ("params", (fun t -> t.params), List typedecl_param);
       F ("type_", (fun t -> t.type_), class_decl);
@@ -381,7 +376,7 @@ and classtype_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("virtual_", (fun t -> t.virtual_), bool);
       F ("params", (fun t -> t.params), List typedecl_param);
       F ("expr", (fun t -> t.expr), classtype_expr);
@@ -399,7 +394,7 @@ and classsignature_item =
     | Constraint (x1, x2) ->
         C ("Constraint", (x1, x2), Pair (typeexpr_t, typeexpr_t))
     | Inherit x -> C ("Inherit", x, classtype_expr)
-    | Comment x -> C ("Comment", x, Comment.docs_or_stop))
+    | Comment x -> C ("Comment", x, docs_or_stop))
 
 and classsignature_t =
   let open Lang.ClassSignature in
@@ -416,7 +411,7 @@ and method_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("private_", (fun t -> t.private_), bool);
       F ("virtual_", (fun t -> t.virtual_), bool);
       F ("type_", (fun t -> t.type_), typeexpr_t);
@@ -429,7 +424,7 @@ and instancevariable_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("mutable_", (fun t -> t.mutable_), bool);
       F ("virtual_", (fun t -> t.virtual_), bool);
       F ("type_", (fun t -> t.type_), typeexpr_t);
@@ -452,7 +447,7 @@ and typeexpr_polymorphic_variant_constructor =
       F ("name", (fun t -> t.name), string);
       F ("constant", (fun t -> t.constant), bool);
       F ("arguments", (fun t -> t.arguments), List typeexpr_t);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
     ]
 
 and typeexpr_polymorphic_variant_element =
@@ -581,7 +576,7 @@ and compilation_unit_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
-      F ("doc", (fun t -> t.doc), Comment.docs);
+      F ("doc", (fun t -> t.doc), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("imports", (fun t -> t.imports), List compilation_unit_import);
       F ("source", (fun t -> t.source), Option compilation_unit_source);
@@ -598,6 +593,6 @@ and page_t =
   Record
     [
       F ("name", (fun t -> t.name), identifier);
-      F ("content", (fun t -> t.content), Comment.docs);
+      F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
     ]
