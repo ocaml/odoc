@@ -1,0 +1,3 @@
+[submodule "mdx"]
+	path = mdx
+	url = https://github.com/realworldocaml/mdx
