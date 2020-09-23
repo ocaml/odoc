@@ -13,7 +13,7 @@
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
  (action (progn
-           (run ocaml-mdx test %{x})
+           (run ocaml-mdx-test %{x})
            (diff? %{x} %{x}.corrected)
 )))
 (rule
@@ -22,7 +22,7 @@
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
  (action (progn
-           (run ocaml-mdx test %{x})
+           (run ocaml-mdx-test %{x})
            (diff? %{x} %{x}.corrected)
 )))
 (rule
@@ -31,7 +31,7 @@
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
  (action (progn
-           (run ocaml-mdx test %{x})
+           (run ocaml-mdx-test %{x})
            (diff? %{x} %{x}.corrected)
 )))
 (rule
@@ -40,6 +40,6 @@
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
  (action (progn
-           (run ocaml-mdx test %{x})
+           (run ocaml-mdx-test %{x})
            (diff? %{x} %{x}.corrected)
 )))
