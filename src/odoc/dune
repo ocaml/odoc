@@ -15,7 +15,7 @@
   ;statmemprof-emacs
   unix))
 
-(documentation)
+(documentation (package odoc))
 
 (rule
  (targets css_file.ml)
@@ -39,6 +39,7 @@
 
 ; Install theme files for odig.
 (install
+ (package odoc)
  (section share)
  (files
   (etc/odoc.css as odoc-theme/default/odoc.css)
