@@ -1,11 +1,11 @@
-(library
- (name ocamlary)
- (modules ocamlary))
+;(library
+; (name ocamlary)
+; (modules ocamlary))
 
-(executables
- (names testCmi testCmti testCmt)
- (modules testCmi testCmti testCmt testCommon)
- (libraries doc_model))
+;(executables
+; (names testCmi testCmti testCmt)
+; (modules testCmi testCmti testCmt testCommon)
+; (libraries doc_model))
 
 ; (alias
 ;  ((name   runtest)

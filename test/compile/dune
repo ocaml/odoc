@@ -8,8 +8,8 @@
 	  (run
      %{workspace_root}/src/odoc/bin/main.exe compile --package foo ast.cmti)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff expect/ast.txt ast.output)))
 
 (rule
@@ -23,8 +23,8 @@
       %{workspace_root}/src/odoc/bin/main.exe compile
        --package foo parser_errors.cmti)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff expect/parser_errors.txt parser_errors.output)))
 
 ;; Test --warn-error
@@ -38,8 +38,8 @@
    (with-stderr-to parser_errors_fatal.output
 	  (system "! %{bin:odoc} compile --package foo --warn-error parser_errors_fatal.cmti")))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff expect/parser_errors_fatal.txt parser_errors_fatal.output)))
 
 (rule
@@ -52,7 +52,7 @@
     impl_only.output
     (run odoc compile --package foo impl_only.cmt)))))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff expect/impl_only.txt impl_only.output)))

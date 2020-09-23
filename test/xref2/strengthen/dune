@@ -4,7 +4,7 @@
  (action
    (run ocaml-mdx test --prelude=%{dep:../lib/prelude.ml} -o %{targets} %{dep:test.md})))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action
   (diff test.md test.output)))

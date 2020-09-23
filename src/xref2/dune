@@ -7,8 +7,8 @@
  unix)
  (modules_without_implementation errors)
  )
-(alias
- (name   runtest)
+(rule
+ (alias   runtest)
  (deps   (:x paths.md)
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
@@ -16,8 +16,8 @@
            (run ocaml-mdx test %{x})
            (diff? %{x} %{x}.corrected)
 )))
-(alias
- (name   runtest)
+(rule
+ (alias   runtest)
  (deps   (:x test.md)
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
@@ -25,8 +25,8 @@
            (run ocaml-mdx test %{x})
            (diff? %{x} %{x}.corrected)
 )))
-(alias
- (name   runtest)
+(rule
+ (alias   runtest)
  (deps   (:x notes.md)
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
@@ -34,8 +34,8 @@
            (run ocaml-mdx test %{x})
            (diff? %{x} %{x}.corrected)
 )))
-(alias
- (name   runtest)
+(rule
+ (alias   runtest)
  (deps   (:x scratch.md)
          (package odoc))
  (enabled_if (> %{ocaml_version} 4.08))
