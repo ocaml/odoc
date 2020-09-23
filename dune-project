@@ -1,2 +1,6 @@
-(lang dune 1.1)
+(lang dune 2.7)
 (name odoc)
+(formatting disabled)
+(using mdx 0.1)
+
+
