@@ -1,3 +1,4 @@
+open Type_desc
 open Odoc_model
 
 module Root = struct
@@ -16,6 +17,22 @@ module Names = struct
   let classname = To_string ClassName.to_string
 
   let classtypename = To_string ClassTypeName.to_string
+
+  let constructorname = To_string ConstructorName.to_string
+
+  let fieldname = To_string FieldName.to_string
+
+  let exceptionname = To_string ExceptionName.to_string
+
+  let extensionname = To_string ExtensionName.to_string
+
+  let valuename = To_string ValueName.to_string
+
+  let methodname = To_string MethodName.to_string
+
+  let instancevariablename = To_string InstanceVariableName.to_string
+
+  let labelname = To_string LabelName.to_string
 end
 
 let rec identifier =
@@ -30,6 +47,23 @@ let rec identifier =
 
 module General_paths = struct
   (** Simplified paths types that can be coerced to. *)
+
+  type reference_tag =
+    [ `TClass
+    | `TClassType
+    | `TConstructor
+    | `TException
+    | `TExtension
+    | `TField
+    | `TInstanceVariable
+    | `TLabel
+    | `TMethod
+    | `TModule
+    | `TModuleType
+    | `TPage
+    | `TType
+    | `TUnknown
+    | `TValue ]
 
   type path =
     [ `Resolved of resolved_path
@@ -58,6 +92,43 @@ module General_paths = struct
     | `Class of resolved_path * Names.ClassName.t
     | `ClassType of resolved_path * Names.ClassTypeName.t ]
 
+  and reference =
+    [ `Resolved of resolved_reference
+    | `Root of string * reference_tag
+    | `Dot of reference * string
+    | `Module of reference * Names.ModuleName.t
+    | `ModuleType of reference * Names.ModuleTypeName.t
+    | `Type of reference * Names.TypeName.t
+    | `Constructor of reference * Names.ConstructorName.t
+    | `Field of reference * Names.FieldName.t
+    | `Extension of reference * Names.ExtensionName.t
+    | `Exception of reference * Names.ExceptionName.t
+    | `Value of reference * Names.ValueName.t
+    | `Class of reference * Names.ClassName.t
+    | `ClassType of reference * Names.ClassTypeName.t
+    | `Method of reference * Names.MethodName.t
+    | `InstanceVariable of reference * Names.InstanceVariableName.t
+    | `Label of reference * Names.LabelName.t ]
+
+  and resolved_reference =
+    [ `Canonical of resolved_reference * reference
+    | `Class of resolved_reference * Names.ClassName.t
+    | `ClassType of resolved_reference * Names.ClassTypeName.t
+    | `Constructor of resolved_reference * Names.ConstructorName.t
+    | `Exception of resolved_reference * Names.ExceptionName.t
+    | `Extension of resolved_reference * Names.ExtensionName.t
+    | `Field of resolved_reference * Names.FieldName.t
+    | `Hidden of resolved_reference
+    | `Identifier of Paths.Identifier.t
+    | `InstanceVariable of resolved_reference * Names.InstanceVariableName.t
+    | `Label of resolved_reference * Names.LabelName.t
+    | `Method of resolved_reference * Names.MethodName.t
+    | `Module of resolved_reference * Names.ModuleName.t
+    | `ModuleType of resolved_reference * Names.ModuleTypeName.t
+    | `SubstAlias of resolved_path * resolved_reference
+    | `Type of resolved_reference * Names.TypeName.t
+    | `Value of resolved_reference * Names.ValueName.t ]
+
   type resolved_fragment_root =
     [ `ModuleType of resolved_path | `Module of resolved_path ]
 
@@ -73,6 +144,25 @@ module General_paths = struct
 
   type fragment =
     [ `Resolved of resolved_fragment | `Dot of fragment * string | `Root ]
+
+  let reference_tag : reference_tag t =
+    Variant
+      (function
+      | `TClass -> C0 "`TClass"
+      | `TClassType -> C0 "`TClassType"
+      | `TConstructor -> C0 "`TConstructor"
+      | `TException -> C0 "`TException"
+      | `TExtension -> C0 "`TExtension"
+      | `TField -> C0 "`TField"
+      | `TInstanceVariable -> C0 "`TInstanceVariable"
+      | `TLabel -> C0 "`TLabel"
+      | `TMethod -> C0 "`TMethod"
+      | `TModule -> C0 "`TModule"
+      | `TModuleType -> C0 "`TModuleType"
+      | `TPage -> C0 "`TPage"
+      | `TType -> C0 "`TType"
+      | `TUnknown -> C0 "`TUnknown"
+      | `TValue -> C0 "`TValue")
 
   let rec path : path t =
     Variant
@@ -114,6 +204,95 @@ module General_paths = struct
           C ("`Class", (x1, x2), Pair (resolved_path, Names.classname))
       | `ClassType (x1, x2) ->
           C ("`ClassType", (x1, x2), Pair (resolved_path, Names.classtypename)))
+
+  and reference : reference t =
+    Variant
+      (function
+      | `Resolved x -> C ("`Resolved", x, resolved_reference)
+      | `Root (x1, x2) -> C ("`Root", (x1, x2), Pair (string, reference_tag))
+      | `Dot (x1, x2) -> C ("`Dot", (x1, x2), Pair (reference, string))
+      | `Module (x1, x2) ->
+          C ("`Module", (x1, x2), Pair (reference, Names.modulename))
+      | `ModuleType (x1, x2) ->
+          C ("`ModuleType", (x1, x2), Pair (reference, Names.moduletypename))
+      | `Type (x1, x2) -> C ("`Type", (x1, x2), Pair (reference, Names.typename))
+      | `Constructor (x1, x2) ->
+          C ("`Constructor", (x1, x2), Pair (reference, Names.constructorname))
+      | `Field (x1, x2) ->
+          C ("`Field", (x1, x2), Pair (reference, Names.fieldname))
+      | `Extension (x1, x2) ->
+          C ("`Extension", (x1, x2), Pair (reference, Names.extensionname))
+      | `Exception (x1, x2) ->
+          C ("`Exception", (x1, x2), Pair (reference, Names.exceptionname))
+      | `Value (x1, x2) ->
+          C ("`Value", (x1, x2), Pair (reference, Names.valuename))
+      | `Class (x1, x2) ->
+          C ("`Class", (x1, x2), Pair (reference, Names.classname))
+      | `ClassType (x1, x2) ->
+          C ("`ClassType", (x1, x2), Pair (reference, Names.classtypename))
+      | `Method (x1, x2) ->
+          C ("`Method", (x1, x2), Pair (reference, Names.methodname))
+      | `InstanceVariable (x1, x2) ->
+          C
+            ( "`InstanceVariable",
+              (x1, x2),
+              Pair (reference, Names.instancevariablename) )
+      | `Label (x1, x2) ->
+          C ("`Label", (x1, x2), Pair (reference, Names.labelname)))
+
+  and resolved_reference : resolved_reference t =
+    Variant
+      (function
+      | `Canonical (x1, x2) ->
+          C ("`Canonical", (x1, x2), Pair (resolved_reference, reference))
+      | `Class (x1, x2) ->
+          C ("`Class", (x1, x2), Pair (resolved_reference, Names.classname))
+      | `ClassType (x1, x2) ->
+          C
+            ( "`ClassType",
+              (x1, x2),
+              Pair (resolved_reference, Names.classtypename) )
+      | `Constructor (x1, x2) ->
+          C
+            ( "`Constructor",
+              (x1, x2),
+              Pair (resolved_reference, Names.constructorname) )
+      | `Exception (x1, x2) ->
+          C
+            ( "`Exception",
+              (x1, x2),
+              Pair (resolved_reference, Names.exceptionname) )
+      | `Extension (x1, x2) ->
+          C
+            ( "`Extension",
+              (x1, x2),
+              Pair (resolved_reference, Names.extensionname) )
+      | `Field (x1, x2) ->
+          C ("`Field", (x1, x2), Pair (resolved_reference, Names.fieldname))
+      | `Hidden x -> C ("`Hidden", x, resolved_reference)
+      | `Identifier x -> C ("`Identifier", x, identifier)
+      | `InstanceVariable (x1, x2) ->
+          C
+            ( "`InstanceVariable",
+              (x1, x2),
+              Pair (resolved_reference, Names.instancevariablename) )
+      | `Label (x1, x2) ->
+          C ("`Label", (x1, x2), Pair (resolved_reference, Names.labelname))
+      | `Method (x1, x2) ->
+          C ("`Method", (x1, x2), Pair (resolved_reference, Names.methodname))
+      | `Module (x1, x2) ->
+          C ("`Module", (x1, x2), Pair (resolved_reference, Names.modulename))
+      | `ModuleType (x1, x2) ->
+          C
+            ( "`ModuleType",
+              (x1, x2),
+              Pair (resolved_reference, Names.moduletypename) )
+      | `SubstAlias (x1, x2) ->
+          C ("`SubstAlias", (x1, x2), Pair (resolved_path, resolved_reference))
+      | `Type (x1, x2) ->
+          C ("`Type", (x1, x2), Pair (resolved_reference, Names.typename))
+      | `Value (x1, x2) ->
+          C ("`Value", (x1, x2), Pair (resolved_reference, Names.valuename)))
 
   let resolved_fragment_root : resolved_fragment_root t =
     Variant
@@ -173,4 +352,7 @@ let fragment =
     ( (fun n -> ((n :> Paths.Fragment.t) :> General_paths.fragment)),
       General_paths.fragment )
 
-let reference : [> Paths.Reference.t ] t = To_string (fun _ -> "<reference>")
+let reference =
+  Indirect
+    ( (fun n -> ((n :> Paths.Reference.t) :> General_paths.reference)),
+      General_paths.reference )
