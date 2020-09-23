@@ -20,3 +20,5 @@ and case =
 let bool : bool t = To_string string_of_bool
 
 let string : string t = To_string (fun s -> s)
+
+let int : int t = To_string string_of_int
