@@ -493,7 +493,7 @@ module Depends = struct
 
     let info =
       Term.info "html-deps"
-        ~doc:"DEPRECATED: alias for render-deps"
+        ~doc:"DEPRECATED: alias for link-deps"
   end
 end
 
