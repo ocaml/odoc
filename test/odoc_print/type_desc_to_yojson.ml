@@ -1,6 +1,6 @@
 (** Generic converter to Yojson. *)
 
-open Type_desc
+open Odoc_model_desc.Type_desc
 
 type yojson = Yojson.Basic.t
 
