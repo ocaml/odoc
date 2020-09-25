@@ -43,7 +43,8 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   match Fs.File.read input with
   | Error _ as e -> e
   | Ok str ->
-    match Odoc_loader.read_string name location str with
-    | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
-    | Ok (`Docs content) -> to_html content
-    | Ok `Stop -> to_html [] (* TODO: Error? *)
+    Odoc_loader.read_string name location str
+    |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+    >>= function
+    | `Docs content -> to_html content
+    | `Stop -> to_html [] (* TODO: Error? *)

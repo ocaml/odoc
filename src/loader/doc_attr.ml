@@ -66,7 +66,7 @@ let attached parent attrs =
                 ~containing_definition:parent
                 ~location:start_pos
                 ~text:str
-              |> Odoc_model.Error.shed_warnings
+              |> Odoc_model.Error.raise_warnings
             in
             loop false 0 (acc @ parsed) rest
           end
@@ -90,7 +90,7 @@ let read_string parent loc str : Odoc_model.Comment.docs_or_stop =
       ~containing_definition:parent
       ~location:start_pos
       ~text:str
-    |> Odoc_model.Error.shed_warnings
+    |> Odoc_model.Error.raise_warnings
   in
   `Docs doc
 

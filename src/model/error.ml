@@ -95,6 +95,32 @@ let accumulate_warnings f =
 let warning accumulator error =
   accumulator := error::!accumulator
 
+let with_ref r f =
+  let saved = !r in
+  try
+    let v = f () in
+    r := saved;
+    v
+  with e ->
+    r := saved;
+    raise e
+
+let raised_warnings = ref []
+
+let raise_warnings with_warnings =
+  raised_warnings := List.rev_append with_warnings.warnings !raised_warnings;
+  with_warnings.value
+
+let catch_warnings f =
+  with_ref raised_warnings (fun () ->
+      raised_warnings := [];
+      let value = f () in
+      let warnings = List.rev !raised_warnings in
+      { value; warnings })
+
+let catch_errors_and_warnings f =
+  catch_warnings (fun () -> catch f)
+
 let warn_error = ref false
 
 (* TODO This is a temporary measure until odoc is ported to handle warnings
@@ -108,10 +134,22 @@ let shed_warnings with_warnings =
 
 let set_warn_error b = warn_error := b
 
-let handle_warnings ~warn_error with_warnings =
-  match with_warnings.warnings with
-  | [] -> Ok with_warnings.value
-  | _ :: _ as warnings ->
-      warnings |> List.iter (fun w -> prerr_endline (to_string w));
-      if warn_error then Error (`Msg "Warnings have been generated.")
-      else Ok with_warnings.value
+let print_warnings = List.iter (fun w -> prerr_endline (to_string w))
+
+(* When there is warnings. *)
+let handle_warn_error ~warn_error warnings ok =
+  print_warnings warnings;
+  if warn_error then Error (`Msg "Warnings have been generated.")
+  else Ok ok
+
+let handle_warnings ~warn_error ww =
+  match ww.warnings with
+  | [] -> Ok ww.value
+  | _ :: _ as warnings -> handle_warn_error ~warn_error warnings ww.value
+
+let handle_errors_and_warnings ~warn_error = function
+  | { value = Error e; warnings } ->
+    print_warnings warnings;
+    Error (`Msg (to_string e))
+  | { value = (Ok _ as ok); warnings = [] } -> ok
+  | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
