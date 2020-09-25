@@ -1,17 +1,16 @@
 open Or_error
 
-let from_odoc ~env input output =
+let from_odoc ~env ~warn_error input output =
   Root.read input >>= fun root ->
   let input_s = Fs.File.to_string input in
   match root.file with
   | Page _ ->
     Page.load input >>= fun page ->
-    let odoctree =
-      let resolve_env = Env.build env (`Page page) in
-      Odoc_xref2.Link.resolve_page resolve_env page
-      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-      |> Odoc_model.Error.shed_warnings
-    in
+    let resolve_env = Env.build env (`Page page) in
+    Odoc_xref2.Link.resolve_page resolve_env page
+    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+    |> Odoc_model.Error.handle_warnings ~warn_error
+    >>= fun odoctree ->
     Page.save output odoctree;
 
     Ok ()
@@ -23,12 +22,11 @@ let from_odoc ~env input output =
       else unit
     in
 
-    let odoctree =
-      let env = Env.build env (`Unit unit) in
-      Odoc_xref2.Link.link env unit
-      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-      |> Odoc_model.Error.shed_warnings
-    in
+    let env = Env.build env (`Unit unit) in
+    Odoc_xref2.Link.link env unit
+    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+    |> Odoc_model.Error.handle_warnings ~warn_error
+    >>= fun odoctree ->
 
     Compilation_unit.save output odoctree;
 

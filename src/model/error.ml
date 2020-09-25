@@ -107,3 +107,11 @@ let shed_warnings with_warnings =
   with_warnings.value
 
 let set_warn_error b = warn_error := b
+
+let handle_warnings ~warn_error with_warnings =
+  match with_warnings.warnings with
+  | [] -> Ok with_warnings.value
+  | _ :: _ as warnings ->
+      warnings |> List.iter (fun w -> prerr_endline (to_string w));
+      if warn_error then Error (`Msg "Warnings have been generated.")
+      else Ok with_warnings.value
