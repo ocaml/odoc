@@ -194,21 +194,20 @@ end = struct
   | None -> Fs.File.(set_ext ".odocl" input)
 
   let link directories input_file output_file warn_error =
-    ignore(warn_error);
     let input = Fs.File.of_string input_file in
     let output = get_output_file ~output_file ~input in
     let env = Env.create ~important_digests:false ~directories ~open_modules:[] in
-    Odoc_link.from_odoc ~env input output
+    Odoc_link.from_odoc ~env ~warn_error input output
 
 
-    let dst =
-      let doc = "Output file path. Non-existing intermediate directories are
-                   created. If absent outputs a .odocl file in the same
-                   directory as the input file."
-      in
-      Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
+  let dst =
+    let doc = "Output file path. Non-existing intermediate directories are
+                 created. If absent outputs a .odocl file in the same
+                 directory as the input file."
+    in
+    Arg.(value & opt (some string) None & info ~docs ~docv:"PATH" ~doc ["o"])
 
-    let cmd =
+  let cmd =
     let input =
       let doc = "Input file" in
       Arg.(required & pos 0 (some file) None & info ~doc ~docv:"file.odoc" [])
@@ -237,14 +236,14 @@ end = struct
 
   module Process = struct
     let process extra _hidden directories output_dir
-        syntax input_file =
+        syntax input_file warn_error =
       let env =
         Env.create ~important_digests:false ~directories ~open_modules:[]
       in
       let file = Fs.File.of_string input_file in
       Rendering.render_odoc
         ~renderer:R.renderer
-        ~env ~syntax ~output:output_dir extra file
+        ~env ~warn_error ~syntax ~output:output_dir extra file
 
     let cmd =
       let syntax =
@@ -256,7 +255,7 @@ end = struct
       in
       Term.(const handle_error $ (const process $ R.extra_args $ hidden $
           odoc_file_directories $ dst ~create:true () $ syntax $
-          input))
+          input $ warn_error))
 
     let info =
       let doc = Format.sprintf "Render %s files from an odoc one" R.renderer.name in

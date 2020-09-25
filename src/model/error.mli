@@ -25,3 +25,7 @@ val shed_warnings : 'a with_warnings -> 'a
 (** When set to [true],
    [shed_warnings] will raise [Failure] if it had to print warnings. *)
 val set_warn_error : bool -> unit
+
+val handle_warnings :
+  warn_error:bool -> 'a with_warnings -> ('a, [> `Msg of string ]) Result.result
+(** Print warnings to stderr. If [warn_error] is [true] and there was warnings, returns an [Error]. *)

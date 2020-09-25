@@ -32,11 +32,11 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
             " Using %S while you should use the .cmti file" filename)
     );
     let env = Env.build env (`Unit unit) in
-    let compiled =
-      Odoc_xref2.Compile.compile env unit
-      |> Odoc_xref2.Lookup_failures.to_warning ~filename
-      |> Odoc_model.Error.shed_warnings
-    in
+
+    Odoc_xref2.Compile.compile env unit
+    |> Odoc_xref2.Lookup_failures.to_warning ~filename
+    |> Odoc_model.Error.handle_warnings ~warn_error
+    >>= fun compiled ->
 
     (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
        defined, elements. We'd rather it got back the resolved bit so we rebuild an

@@ -27,11 +27,10 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let env = Env.build env (`Page page) in
-    let resolved =
-      Odoc_xref2.Link.resolve_page env page
-      |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-      |> Odoc_model.Error.shed_warnings
-    in
+    Odoc_xref2.Link.resolve_page env page
+    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
+    |> Odoc_model.Error.handle_warnings ~warn_error
+    >>= fun resolved ->
 
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in
