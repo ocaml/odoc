@@ -15,7 +15,6 @@ type filename_only_payload = {
 type t = [
   | `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload
-  | `Without_location of string
 ]
 
 let kasprintf k fmt =
@@ -36,10 +35,6 @@ let filename_only ?suggestion format =
   let k message file = `With_filename_only {file; message} in
   kmake k ?suggestion format
 
-(** Only used internally *)
-let without_location message =
-  `Without_location message
-
 let to_string = function
   | `With_full_location {location; message} ->
     let location_string =
@@ -59,10 +54,6 @@ let to_string = function
 
   | `With_filename_only {file; message} ->
     Printf.sprintf "File \"%s\":\n%s" file message
-
-  | `Without_location message ->
-    message
-
 
 
 exception Conveyed_by_exception of t
@@ -120,19 +111,6 @@ let catch_warnings f =
 
 let catch_errors_and_warnings f =
   catch_warnings (fun () -> catch f)
-
-let warn_error = ref false
-
-(* TODO This is a temporary measure until odoc is ported to handle warnings
-   throughout. *)
-let shed_warnings with_warnings =
-  with_warnings.warnings
-  |> List.iter (fun warning -> warning |> to_string |> prerr_endline);
-  if !warn_error && with_warnings.warnings <> [] then
-    raise_exception (without_location "Warnings have been generated.");
-  with_warnings.value
-
-let set_warn_error b = warn_error := b
 
 let print_warnings = List.iter (fun w -> prerr_endline (to_string w))
 

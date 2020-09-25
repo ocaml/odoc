@@ -18,7 +18,6 @@ open Or_error
 
 
 let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
-  Odoc_model.Error.set_warn_error warn_error;
   let filename = Fs.File.to_string input_file in
 
   read_file ~filename |> Odoc_model.Error.handle_errors_and_warnings ~warn_error >>= fun unit ->
@@ -69,7 +68,6 @@ let cmi ~env ~package ~hidden ~output ~warn_error input =
 
 (* TODO: move most of this to doc-ock. *)
 let mld ~env:_ ~package ~output ~warn_error input =
-  Odoc_model.Error.set_warn_error warn_error;
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))

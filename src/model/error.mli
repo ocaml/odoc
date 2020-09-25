@@ -20,7 +20,6 @@ type warning_accumulator
 
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 val warning : warning_accumulator -> t -> unit
-val shed_warnings : 'a with_warnings -> 'a
 
 val raise_warnings : 'a with_warnings -> 'a
 (** Accumulate warnings into a global variable. See [catch_warnings]. *)
@@ -31,10 +30,6 @@ val catch_warnings : (unit -> 'a) -> 'a with_warnings
 val catch_errors_and_warnings :
   (unit -> 'a) -> ('a, t) Result.result with_warnings
 (** Combination of [catch] and [catch_warnings]. *)
-
-(** When set to [true],
-   [shed_warnings] will raise [Failure] if it had to print warnings. *)
-val set_warn_error : bool -> unit
 
 val handle_warnings :
   warn_error:bool -> 'a with_warnings -> ('a, [> `Msg of string ]) Result.result
