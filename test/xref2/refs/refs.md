@@ -60,11 +60,10 @@ Helpers:
 ```ocaml
 let parse_ref ref_str =
   let open Odoc_model in
-  Error.set_warn_error true;
   let parse acc = Odoc_parser__Reference.parse acc (Location_.span []) ref_str in
-  match Error.shed_warnings (Error.accumulate_warnings parse) with
+  match Error.handle_errors_and_warnings ~warn_error:true (Error.accumulate_warnings parse) with
   | Ok ref -> ref
-  | Error e -> failwith (Error.to_string e)
+  | Error (`Msg msg) -> failwith msg
 
 type ref = Odoc_model.Paths_types.Resolved_reference.any
 
