@@ -17,36 +17,35 @@ open Or_error
  *)
 
 
-
 let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
   Odoc_model.Error.set_warn_error warn_error;
   let filename = Fs.File.to_string input_file in
-  match read_file ~filename:filename with
-  | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
-  | Ok unit ->
-    if not unit.Odoc_model.Lang.Compilation_unit.interface then (
-      Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
-        (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
-         else
-          Printf.sprintf
-            " Using %S while you should use the .cmti file" filename)
-    );
-    let env = Env.build env (`Unit unit) in
 
-    Odoc_xref2.Compile.compile env unit
-    |> Odoc_xref2.Lookup_failures.to_warning ~filename
-    |> Odoc_model.Error.handle_warnings ~warn_error
-    >>= fun compiled ->
+  read_file ~filename |> Odoc_model.Error.handle_errors_and_warnings ~warn_error >>= fun unit ->
 
-    (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
-       defined, elements. We'd rather it got back the resolved bit so we rebuild an
-       environment with the resolved unit.
-       Note that this is bad and once rewritten expand should not fetch the unit it is
-       working on. *)
+  if not unit.Odoc_model.Lang.Compilation_unit.interface then (
+    Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
+      (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
+       else
+        Printf.sprintf
+          " Using %S while you should use the .cmti file" filename)
+  );
+  let env = Env.build env (`Unit unit) in
+
+  Odoc_xref2.Compile.compile env unit
+  |> Odoc_xref2.Lookup_failures.to_warning ~filename
+  |> Odoc_model.Error.handle_warnings ~warn_error
+  >>= fun compiled ->
+
+  (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
+     defined, elements. We'd rather it got back the resolved bit so we rebuild an
+     environment with the resolved unit.
+     Note that this is bad and once rewritten expand should not fetch the unit it is
+     working on. *)
 (*    let expand_env = Env.build env (`Unit resolved) in*)
 (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-    Compilation_unit.save output compiled;
-    Ok ()
+  Compilation_unit.save output compiled;
+  Ok ()
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   let file_representation : Odoc_model.Root.Odoc_file.t =
@@ -102,7 +101,7 @@ let mld ~env:_ ~package ~output ~warn_error input =
     Ok ()
   in
   Fs.File.read input >>= fun str ->
-  match Odoc_loader.read_string name location str with
-  | Error e -> Error (`Msg (Odoc_model.Error.to_string e))
-  | Ok `Stop -> resolve [] (* TODO: Error? *)
-  | Ok (`Docs content) -> resolve content
+  Odoc_loader.read_string name location str |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+  >>= function
+  | `Stop -> resolve [] (* TODO: Error? *)
+  | `Docs content -> resolve content
