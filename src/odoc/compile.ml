@@ -32,8 +32,7 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
   let env = Env.build env (`Unit unit) in
 
   Odoc_xref2.Compile.compile env unit
-  |> Odoc_xref2.Lookup_failures.to_warning ~filename
-  |> Odoc_model.Error.handle_warnings ~warn_error
+  |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename
   >>= fun compiled ->
 
   (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
