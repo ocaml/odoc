@@ -53,8 +53,21 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
     | Error _ -> Cpath.class_type_path_of_cpath cp
 
+let rec cpath_is_root_unresolved = function
+  | `Root _ -> true
+  | `Substituted p' | `Dot (p', _) -> cpath_is_root_unresolved p'
+  | `Apply (a, b) -> cpath_is_root_unresolved a || cpath_is_root_unresolved b
+  | _ -> false
+
 let lookup_failure ~what =
-  let r ?kind action =
+  let kind =
+    match what with
+    | `Include (Component.Include.Alias cpath)
+      when cpath_is_root_unresolved cpath ->
+        Some `Root
+    | _ -> None
+  in
+  let r ?(kind = kind) action =
     let r subject pp_a a =
       Lookup_failures.report ?kind "Failed to %s %s %a" action subject pp_a a
     in
@@ -79,9 +92,9 @@ let lookup_failure ~what =
   function
   | `Lookup ->
       let kind =
-        match what with `Module (`Root _) -> Some `Root | _ -> None
+        match what with `Module (`Root _) -> Some `Root | _ -> kind
       in
-      r ?kind "lookup"
+      r ~kind "lookup"
   | `Expand -> r "compile expansion for"
   | `Resolve_module_type -> r "resolve type of"
   | `Resolve -> r "resolve"
