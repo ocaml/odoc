@@ -13,6 +13,20 @@ end
 
 exception Loop
 
+let report_tool_error type_s path e =
+  let rec kind_of_error = function
+    | `Lookup_failure (`Root _) | `Lookup_failure_root _ -> Some `Root
+    | `Parent (`Parent_sig e) -> kind_of_error (e :> Errors.any)
+    | `Parent (`Parent_module_type e) -> kind_of_error (e :> Errors.any)
+    | `Parent (`Parent_expr e) -> kind_of_error (e :> Errors.any)
+    | `Parent (`Parent_module e) -> kind_of_error (e :> Errors.any)
+    | `Parent (`Parent _ as e) -> kind_of_error (e :> Errors.any)
+    | _ -> None
+  in
+  let kind = kind_of_error e in
+  Lookup_failures.report ?kind "Failed to lookup %s %a: %a" type_s
+    Component.Fmt.model_path path Tools.Fmt.error e
+
 let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Resolved _ -> false
   | `Root _ -> false
@@ -62,11 +76,7 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             let result = Tools.reresolve_type env p' in
             `Resolved (Cpath.resolved_type_path_of_cpath result)
         | Error e ->
-            Lookup_failures.report "Failed to lookup type %a: %a"
-              Component.Fmt.model_path
-              (p :> Paths.Path.t)
-              Tools.Fmt.error
-              (e :> Errors.any);
+            report_tool_error "type" (p :> Paths.Path.t) (e :> Errors.any);
             Cpath.type_path_of_cpath cp )
 
 and module_type_path :
@@ -86,11 +96,7 @@ and module_type_path :
             let result = Tools.reresolve_module_type env p' in
             `Resolved (Cpath.resolved_module_type_path_of_cpath result)
         | Error e ->
-            Lookup_failures.report "Failed to resolve module type %a: %a"
-              Component.Fmt.model_path
-              (p :> Paths.Path.t)
-              Tools.Fmt.error
-              (e :> Errors.any);
+            report_tool_error "module type" (p :> Paths.Path.t) (e :> Errors.any);
             Cpath.module_type_path_of_cpath cp )
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
@@ -109,11 +115,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             `Resolved (Cpath.resolved_module_path_of_cpath result)
         | Error _ when is_forward p -> p
         | Error e ->
-            Lookup_failures.report "Failed to resolve module %a: %a"
-              Component.Fmt.model_path
-              (p :> Paths.Path.t)
-              Tools.Fmt.error
-              (e :> Errors.any);
+            report_tool_error "path" (p :> Paths.Path.t) (e :> Errors.any);
             Cpath.module_path_of_cpath cp )
 
 let rec unit (resolver : Env.resolver) t =

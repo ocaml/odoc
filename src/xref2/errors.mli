@@ -23,6 +23,7 @@ type simple_module_lookup_error =
     `Lookup_failure of
     Identifier.Path.Module.t
     (** Could not find the module in the environment *)
+  | `Lookup_failure_root of string (** Could not find the root module *)
   | `Parent of parent_lookup_error ]
 
 and simple_module_type_expr_of_module_error =
