@@ -20,8 +20,7 @@ let document_of_input ~env ~warn_error ~syntax input =
     Page.load input >>= fun page ->
     let resolve_env = Env.build env (`Page page) in
     Odoc_xref2.Link.resolve_page resolve_env page
-    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-    |> Odoc_model.Error.handle_warnings ~warn_error
+    |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun odoctree ->
     Ok (Renderer.document_of_page ~syntax odoctree)
   | Compilation_unit {hidden; _} ->
@@ -41,8 +40,7 @@ let document_of_input ~env ~warn_error ~syntax input =
     (* Format.fprintf Format.err_formatter "**** Finished: Link=%f\n%!" (finishlink -. startlink); *)
     (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
     linked
-    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-    |> Odoc_model.Error.handle_warnings ~warn_error
+    |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun odoctree ->
 
     Odoc_xref2.Tools.reset_caches ();

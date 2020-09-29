@@ -27,8 +27,7 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
     let page = Odoc_model.Lang.Page.{ name; content; digest } in
     let env = Env.build env (`Page page) in
     Odoc_xref2.Link.resolve_page env page
-    |> Odoc_xref2.Lookup_failures.to_warning ~filename:input_s
-    |> Odoc_model.Error.handle_warnings ~warn_error
+    |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun resolved ->
 
     let page = Odoc_document.Comment.to_ir resolved.content in

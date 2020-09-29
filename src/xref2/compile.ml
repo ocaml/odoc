@@ -54,9 +54,9 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     | Error _ -> Cpath.class_type_path_of_cpath cp
 
 let lookup_failure ~what =
-  let r action =
+  let r ?kind action =
     let r subject pp_a a =
-      Lookup_failures.report "Failed to %s %s %a" action subject pp_a a
+      Lookup_failures.report ?kind "Failed to %s %s %a" action subject pp_a a
     in
     let r_id subject id =
       r subject Component.Fmt.model_identifier (id :> Id.t)
@@ -77,7 +77,11 @@ let lookup_failure ~what =
     | `With_type frag -> r "type substitution" type_fragment frag
   in
   function
-  | `Lookup -> r "lookup"
+  | `Lookup ->
+      let kind =
+        match what with `Module (`Root _) -> Some `Root | _ -> None
+      in
+      r ?kind "lookup"
   | `Expand -> r "compile expansion for"
   | `Resolve_module_type -> r "resolve type of"
   | `Resolve -> r "resolve"
