@@ -272,8 +272,7 @@ val module_ : Component.Module.t Component.Delayed.t =
                   representation = None};
                get = None})];
            removed = []});
-      canonical = None; hidden = false; display_type = None;
-      expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+      canonical = None; hidden = false};
    get = None}
 ```
 
@@ -333,9 +332,10 @@ val module_ : Component.Module.t Component.Delayed.t =
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
-          (`Identifier (`ModuleType (`Root (Common.root, Root), M), false)));
-      canonical = None; hidden = false; display_type = None;
-      expansion = None};
+          {Odoc_xref2.Component.ModuleType.p_expansion = None;
+           p_path =
+            `Identifier (`ModuleType (`Root (Common.root, Root), M), false)});
+      canonical = None; hidden = false};
    get = None}
 ```
 
@@ -399,8 +399,7 @@ val m : Component.Element.module_type option =
                                   constraints = []};
                                 representation = None};
                              get = None})];
-                         removed = []});
-                    expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+                         removed = []})};
                  get = None});
                Odoc_xref2.Component.Signature.Module (`LModule (B, 0),
                 Odoc_model.Lang.Signature.Ordinary,
@@ -410,12 +409,11 @@ val m : Component.Element.module_type option =
                     type_ =
                      Odoc_xref2.Component.Module.ModuleType
                       (Odoc_xref2.Component.ModuleType.Path
-                        (`Local (`LModuleType (N, 1), false)));
-                    canonical = None; hidden = false; display_type = None;
-                    expansion = None};
+                        {Odoc_xref2.Component.ModuleType.p_expansion = None;
+                         p_path = `Local (`LModuleType (N, 1), false)});
+                    canonical = None; hidden = false};
                  get = None})];
-             removed = []});
-        expansion = Some Odoc_xref2.Component.Module.AlreadyASig}))
+             removed = []})}))
 ```
 
 We can see here that module `B` has type `` Path (`Resolved (`Local (`LModuleType (N, 1)))) `` which refers to the module type defined just above it.
@@ -469,8 +467,7 @@ we look up `A` from the environment:
                       private_ = false; manifest = None; constraints = []};
                     representation = None};
                  get = None})];
-             removed = []});
-        expansion = Some Odoc_xref2.Component.Module.AlreadyASig};
+             removed = []})};
      get = None});
    Odoc_xref2.Component.Signature.Module (`LModule (B, 5),
     Odoc_model.Lang.Signature.Ordinary,
@@ -480,12 +477,13 @@ we look up `A` from the environment:
         type_ =
          Odoc_xref2.Component.Module.ModuleType
           (Odoc_xref2.Component.ModuleType.Path
-            (`ModuleType
-               (`Module
-                  (`Identifier (`Module (`Root (Common.root, Root), A))),
-                N)));
-        canonical = None; hidden = false; display_type = None;
-        expansion = None};
+            {Odoc_xref2.Component.ModuleType.p_expansion = None;
+             p_path =
+              `ModuleType
+                (`Module
+                   (`Identifier (`Module (`Root (Common.root, Root), A))),
+                 N)});
+        canonical = None; hidden = false};
      get = None})];
  removed = []}
 ```
@@ -667,12 +665,15 @@ val module_C_lens :
  type_ =
   Odoc_model.Lang.Module.ModuleType
    (Odoc_model.Lang.ModuleType.With
-     (Odoc_model.Lang.ModuleType.Path
-       (`Identifier (`ModuleType (`Root (Common.root, Root), A), false)),
-     [Odoc_model.Lang.ModuleType.ModuleEq (`Dot (`Root, "M"),
-       Odoc_model.Lang.Module.Alias
-        (`Identifier (`Module (`Root (Common.root, Root), B), false)))]));
- canonical = None; hidden = false; display_type = None; expansion = None}
+     {Odoc_model.Lang.ModuleType.w_substitutions =
+       [Odoc_model.Lang.ModuleType.ModuleEq (`Dot (`Root, "M"),
+         Odoc_model.Lang.Module.Alias
+          (`Identifier (`Module (`Root (Common.root, Root), B), false), None))];
+      w_expansion = None;
+      w_expr =
+       Odoc_model.Lang.ModuleType.U.Path
+        (`Identifier (`ModuleType (`Root (Common.root, Root), A), false))});
+ canonical = None; hidden = false}
 ```
 
 Clearly there is no `type t` declared in here. Let's get the representation
@@ -687,13 +688,16 @@ val m : Component.Module.t Component.Delayed.t =
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.With
-          (Odoc_xref2.Component.ModuleType.Path
-            (`Identifier (`ModuleType (`Root (Common.root, Root), A), false)),
-          [Odoc_xref2.Component.ModuleType.ModuleEq (`Dot (`Root, "M"),
-            Odoc_xref2.Component.Module.Alias
-             (`Identifier (`Module (`Root (Common.root, Root), B), false)))]));
-      canonical = None; hidden = false; display_type = None;
-      expansion = None};
+          {Odoc_xref2.Component.ModuleType.w_substitutions =
+            [Odoc_xref2.Component.ModuleType.ModuleEq (`Dot (`Root, "M"),
+              Odoc_xref2.Component.Module.Alias
+               (`Identifier (`Module (`Root (Common.root, Root), B), false),
+               None))];
+           w_expansion = None;
+           w_expr =
+            Odoc_xref2.Component.ModuleType.U.Path
+             (`Identifier (`ModuleType (`Root (Common.root, Root), A), false))});
+      canonical = None; hidden = false};
    get = None}
 ```
 
@@ -710,9 +714,9 @@ val sg : Component.Signature.t =
          {Odoc_xref2.Component.Module.doc = [];
           type_ =
            Odoc_xref2.Component.Module.Alias
-            (`Identifier (`Module (`Root (Common.root, Root), B), false));
-          canonical = None; hidden = false; display_type = None;
-          expansion = None};
+            (`Identifier (`Module (`Root (Common.root, Root), B), false),
+            None);
+          canonical = None; hidden = false};
        get = None});
      Odoc_xref2.Component.Signature.Module (`LModule (N, 42),
       Odoc_model.Lang.Signature.Ordinary,
@@ -722,9 +726,10 @@ val sg : Component.Signature.t =
           type_ =
            Odoc_xref2.Component.Module.ModuleType
             (Odoc_xref2.Component.ModuleType.Path
-              (`Dot (`Substituted (`Local (`LModule (M, 41), false)), "S")));
-          canonical = None; hidden = false; display_type = None;
-          expansion = None};
+              {Odoc_xref2.Component.ModuleType.p_expansion = None;
+               p_path =
+                `Dot (`Substituted (`Local (`LModule (M, 41), false)), "S")});
+          canonical = None; hidden = false};
        get = None})];
    removed = []}
 ```
@@ -742,15 +747,16 @@ val m : Component.Module.t Component.Delayed.t =
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
-          (`Dot
-             (`Substituted
-                (`Module
-                   (`Module
-                      (`Identifier (`Module (`Root (Common.root, Root), C))),
-                    M)),
-              "S")));
-      canonical = None; hidden = false; display_type = None;
-      expansion = None};
+          {Odoc_xref2.Component.ModuleType.p_expansion = None;
+           p_path =
+            `Dot
+              (`Substituted
+                 (`Module
+                    (`Module
+                       (`Identifier (`Module (`Root (Common.root, Root), C))),
+                     M)),
+               "S")});
+      canonical = None; hidden = false};
    get = None}
 # get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 - : Component.Signature.t =
@@ -1029,17 +1035,20 @@ val m : Component.Module.t Component.Delayed.t =
       type_ =
        Odoc_xref2.Component.Module.ModuleType
         (Odoc_xref2.Component.ModuleType.Path
-          (`Dot
-             (`Apply
-                (`Resolved
-                   (`Substituted
-                      (`Identifier (`Module (`Root (Common.root, Root), Foo)))),
-                 `Resolved
-                   (`Substituted
-                      (`Identifier (`Module (`Root (Common.root, Root), Bar))))),
-              "T")));
-      canonical = None; hidden = false; display_type = None;
-      expansion = None};
+          {Odoc_xref2.Component.ModuleType.p_expansion = None;
+           p_path =
+            `Dot
+              (`Apply
+                 (`Resolved
+                    (`Substituted
+                       (`Identifier
+                          (`Module (`Root (Common.root, Root), Foo)))),
+                  `Resolved
+                    (`Substituted
+                       (`Identifier
+                          (`Module (`Root (Common.root, Root), Bar))))),
+               "T")});
+      canonical = None; hidden = false};
    get = None}
 # let sg' = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 val sg' : Component.Signature.t =
@@ -1052,14 +1061,15 @@ val sg' : Component.Signature.t =
           type_ =
            Odoc_xref2.Component.Module.ModuleType
             (Odoc_xref2.Component.ModuleType.Path
-              (`Dot
-                 (`Resolved
-                    (`Substituted
-                       (`Identifier
-                          (`Module (`Root (Common.root, Root), Bar)))),
-                  "T")));
-          canonical = None; hidden = false; display_type = None;
-          expansion = None};
+              {Odoc_xref2.Component.ModuleType.p_expansion = None;
+               p_path =
+                `Dot
+                  (`Resolved
+                     (`Substituted
+                        (`Identifier
+                           (`Module (`Root (Common.root, Root), Bar)))),
+                   "T")});
+          canonical = None; hidden = false};
        get = None})];
    removed = []}
 ```
@@ -1511,8 +1521,7 @@ let sg = Common.signature_of_mli_string test_data;;
           equation =
            {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
             manifest = None; constraints = []};
-          representation = None})]);
-   display_expr = None; expansion = Some Odoc_model.Lang.Module.AlreadyASig};
+          representation = None})])};
  Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
   {Odoc_model.Lang.TypeDecl.id = `Type (`Root (Common.root, Root), u);
    doc = [];
@@ -1527,18 +1536,21 @@ let sg = Common.signature_of_mli_string test_data;;
    expr =
     Some
      (Odoc_model.Lang.ModuleType.With
-       (Odoc_model.Lang.ModuleType.Path
-         (`Resolved
-            (`Identifier (`ModuleType (`Root (Common.root, Root), M)))),
-       [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
-         {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-          manifest =
-           Some
-            (Odoc_model.Lang.TypeExpr.Constr
-              (`Resolved (`Identifier (`Type (`Root (Common.root, Root), u))),
-              []));
-          constraints = []})]));
-   display_expr = None; expansion = None}]
+       {Odoc_model.Lang.ModuleType.w_substitutions =
+         [Odoc_model.Lang.ModuleType.TypeEq (`Dot (`Root, "t"),
+           {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+            manifest =
+             Some
+              (Odoc_model.Lang.TypeExpr.Constr
+                (`Resolved
+                   (`Identifier (`Type (`Root (Common.root, Root), u))),
+                []));
+            constraints = []})];
+        w_expansion = None;
+        w_expr =
+         Odoc_model.Lang.ModuleType.U.Path
+          (`Resolved
+             (`Identifier (`ModuleType (`Root (Common.root, Root), M))))})}]
 ```
 
 # Expansion continued
@@ -1557,37 +1569,51 @@ let resolved = Compile.signature Env.empty id sg;;
 let expanded = Link.signature Env.empty id resolved;;
 let module_M_expansion =
   let open Common.LangUtils.Lens in
-  Signature.module_ "M" |-- Module.expansion |-~ option |-~ Module.expansion_signature
+  Signature.module_ "M" |-- Module.type_ |-~ Module.decl_moduletype
 ```
 
 ```ocaml env=e1
 # Common.LangUtils.Lens.get module_M_expansion expanded
-- : Odoc_model.Lang.Signature.t =
-[Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
-  {Odoc_model.Lang.TypeDecl.id =
-    `Type (`Module (`Root (Common.root, Root), M), s);
-   doc = [];
-   equation =
-    {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
-     manifest = None; constraints = []};
-   representation =
-    Some
-     (Odoc_model.Lang.TypeDecl.Representation.Variant
-       [{Odoc_model.Lang.TypeDecl.Constructor.id =
-          `Constructor
-            (`Type (`Module (`Root (Common.root, Root), M), s), <abstr>);
+- : Odoc_model.Lang.ModuleType.expr =
+Odoc_model.Lang.ModuleType.Path
+ {Odoc_model.Lang.ModuleType.p_expansion =
+   Some
+    (Odoc_model.Lang.ModuleType.Signature
+      [Odoc_model.Lang.Signature.Type (Odoc_model.Lang.Signature.Ordinary,
+        {Odoc_model.Lang.TypeDecl.id =
+          `Type (`Module (`Root (Common.root, Root), M), s);
          doc = [];
-         args =
-          Odoc_model.Lang.TypeDecl.Constructor.Tuple
-           [Odoc_model.Lang.TypeExpr.Constr
-             (`Resolved
-                (`Type
-                   (`Apply
-                      (`Identifier (`Module (`Root (Common.root, Root), Foo)),
-                       `Identifier (`Module (`Root (Common.root, Root), Bar))),
-                    t)),
-             [])];
-         res = None}])})]
+         equation =
+          {Odoc_model.Lang.TypeDecl.Equation.params = []; private_ = false;
+           manifest = None; constraints = []};
+         representation =
+          Some
+           (Odoc_model.Lang.TypeDecl.Representation.Variant
+             [{Odoc_model.Lang.TypeDecl.Constructor.id =
+                `Constructor
+                  (`Type (`Module (`Root (Common.root, Root), M), s),
+                   <abstr>);
+               doc = [];
+               args =
+                Odoc_model.Lang.TypeDecl.Constructor.Tuple
+                 [Odoc_model.Lang.TypeExpr.Constr
+                   (`Resolved
+                      (`Type
+                         (`Apply
+                            (`Identifier
+                               (`Module (`Root (Common.root, Root), Foo)),
+                             `Identifier
+                               (`Module (`Root (Common.root, Root), Bar))),
+                          t)),
+                   [])];
+               res = None}])})]);
+  p_path =
+   `Resolved
+     (`ModuleType
+        (`Apply
+           (`Identifier (`Module (`Root (Common.root, Root), Foo)),
+            `Identifier (`Module (`Root (Common.root, Root), Bar))),
+         S))}
 ```
 
 # Shadowing
@@ -1831,8 +1857,9 @@ let sg = Common.signature_of_mli_string test_data;;
     Odoc_model.Lang.Module.Alias
      (`Dot
         (`Identifier (`Module (`Root (Common.root, Root), Foo), false),
-         "Bar"));
-   canonical = None; hidden = false; display_type = None; expansion = None});
+         "Bar"),
+      None);
+   canonical = None; hidden = false});
  Odoc_model.Lang.Signature.Value
   {Odoc_model.Lang.Value.id =
     `Value (`Module (`Root (Common.root, Root), Foo3), id);
