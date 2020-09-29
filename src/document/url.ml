@@ -87,13 +87,22 @@ module Path = struct
   let mk ?parent kind name = { kind ; parent ; name }
 
   let rec from_identifier : source -> t = function
-    | `Root (abstr, unit_name) ->
-      let parent = mk "package" abstr.Root.package in
+    | `Root (parent, unit_name) ->
+      let parent = from_identifier (parent :> source) in
       let kind = "module" in
       let page = ModuleName.to_string unit_name in
       mk ~parent kind page
-    | `Page (abstr, page_name) ->
-      let parent = mk "package" abstr.Root.package in
+    | `RootPage page_name ->
+      let kind = "cpage" in
+      let page = PageName.to_string page_name in
+      mk kind page
+    | `Page (parent, page_name) ->
+      let parent = from_identifier (parent :> source) in
+      let kind = "cpage" in
+      let page = PageName.to_string page_name in
+      mk ~parent kind page
+    | `LeafPage (parent, page_name) ->
+      let parent = from_identifier (parent :> source) in
       let kind = "page" in
       let page = PageName.to_string page_name in
       mk ~parent kind page
@@ -161,7 +170,13 @@ module Anchor = struct
       | `Root _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page ; kind = "module" ; anchor = "" }
+      | `RootPage _ as p ->
+        let page = Path.from_identifier (p :> Path.source) in
+        Ok { page ; kind = "cpage" ; anchor = "" }
       | `Page _ as p ->
+        let page = Path.from_identifier (p :> Path.source) in
+        Ok { page ; kind = "cpage" ; anchor = "" }
+      | `LeafPage _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page ; kind = "page" ; anchor = "" }
       (* For all these identifiers, page names and anchors are the same *)

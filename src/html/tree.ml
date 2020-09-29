@@ -21,7 +21,7 @@ type uri =
   | Relative of string
 
 let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
-  let is_page = Link.Path.is_page url in
+  let is_leaf_page = Link.Path.is_leaf_page url in
   let path = Link.Path.for_printing url in
   let rec add_dotdot ~n acc =
     if n <= 0 then
@@ -40,7 +40,7 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
     let n =
       List.length path - (
         (* This is just horrible. *)
-        if is_page then 1 else 0)
+        if is_leaf_page then 1 else 0)
     in
     add_dotdot uri ~n
   in
@@ -74,7 +74,7 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   let breadcrumbs =
     let dot = if !Link.semantic_uris then "" else "index.html" in
     let dotdot = add_dotdot ~n:1 dot in
-    let up_href = if is_page && name <> "index" then dot else dotdot in
+    let up_href = if is_leaf_page && name <> "index" then dot else dotdot in
     let has_parent = List.length path > 1 in
     if has_parent then
       let l =
@@ -87,11 +87,11 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
           (* Create breadcrumbs *)
           let space = Html.txt " " in
           let breadcrumb_spec =
-            if is_page
+            if is_leaf_page
             then (fun n x -> n, dot, x)
             else (fun n x -> n, add_dotdot ~n dot, x)
           in
-          let rev_path = if is_page && name = "index"
+          let rev_path = if is_leaf_page && name = "index"
             then List.tl (List.rev path)
             else List.rev path
           in

@@ -3,14 +3,14 @@ open Or_error
 let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   (* Internal names, they don't have effect on the output. *)
   let page_name = "__fragment_page__" in
-  let package = "__fragment_package__" in
+  let id = `RootPage (Odoc_model.Names.PageName.of_string page_name) in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page page_name in
-    {Odoc_model.Root.package; file; digest}
+    {Odoc_model.Root.id; file; digest}
   in
-  let name = `Page (root, Odoc_model.Names.PageName.of_string page_name) in
+  let name = `RootPage (Odoc_model.Names.PageName.of_string page_name) in
   let location =
     let pos =
       Lexing.{
@@ -24,7 +24,7 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   in
   let to_html content =
     (* This is a mess. *)
-    let page = Odoc_model.Lang.Page.{ name; content; digest } in
+    let page = Odoc_model.Lang.Page.{ name=id; root; content; digest } in
     let env = Env.build env (`Page page) in
     Odoc_xref2.Link.resolve_page env page
     |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s

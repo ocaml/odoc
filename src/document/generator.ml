@@ -1775,7 +1775,9 @@ struct
   let page (t : Odoc_model.Lang.Page.t) : Page.t =
     let name =
       match t.name with
-      | `Page (_, name) -> name
+      | `RootPage name
+      | `Page (_, name)
+      | `LeafPage (_, name) -> name
     in
     let title = Odoc_model.Names.PageName.to_string name in
     let url = Url.Path.from_identifier t.name in

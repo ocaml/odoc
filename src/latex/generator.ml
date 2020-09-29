@@ -31,7 +31,7 @@ module Link = struct
        anchor
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) = match url.kind with
-    | "module" | "package" | "class" ->
+    | "module" | "page" | "class" | "cpage" ->
       begin match url.parent with
       | None -> true
       | Some url -> is_class_or_module_path url
@@ -43,19 +43,34 @@ module Link = struct
     | `Closed -> false
     | `Default -> not @@ is_class_or_module_path url
 
-  let rec filepath (url: Odoc_document.Url.Path.t) = match url.kind with
-    | "package" -> url.name, []
-    | _ ->
-      match url.parent with
-      | None -> "", [url.name]
-      | Some p ->
-        let dir, path = filepath p in
-        dir, url.name :: path
+  let rec dir (url : Odoc_document.Url.Path.t) =
+    match url.parent with
+    | None -> Fpath.v url.name
+    | Some p ->
+      let pdir = dir p in
+      match url.kind with
+      | "cpage" -> Fpath.(pdir / url.name)
+      | _ -> pdir
+
+  let file url =
+    let rec l (url : Odoc_document.Url.Path.t) acc =
+      match url.kind with
+      | "cpage" -> acc
+      | _ ->
+        match url.parent with
+        | None -> assert false (* Only cpage's are allowed to have no parent *)
+        | Some p ->
+          l p (url.name :: acc)
+    in
+    String.concat "." (l url [])
 
   let filename url =
-    let dir, p = filepath url in
-    Fpath.(v dir / String.concat "." (List.rev p) + ".tex")
-
+    let dir = dir url in
+    let file = file url in
+    Format.eprintf "dir=%a file=%s\n%!" Fpath.pp dir file;
+    if file = ""
+    then Fpath.add_ext "tex" dir
+    else Fpath.(add_ext "tex" (dir / file))
 end
 
 

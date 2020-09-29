@@ -52,7 +52,9 @@ Check that the expansion of `T` contains only 2 modules (the module `X` should h
             "`ModuleType": [
               {
                 "`Root": [
-                  "<root>",
+                  {
+                    "`RootPage": "test"
+                  },
                   "M"
                 ]
               },
@@ -70,7 +72,9 @@ Check that the expansion of `T` contains only 2 modules (the module `X` should h
             "`ModuleType": [
               {
                 "`Root": [
-                  "<root>",
+                  {
+                    "`RootPage": "test"
+                  },
                   "M"
                 ]
               },
@@ -111,7 +115,9 @@ But that T.Z.t _has_ been strengthened
                   "`Module": [
                     {
                       "`Root": [
-                        "<root>",
+                        {
+                          "`RootPage": "test"
+                        },
                         "M"
                       ]
                     },

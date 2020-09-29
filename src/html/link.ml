@@ -14,12 +14,12 @@ module Path = struct
   let for_printing url = List.map snd @@ to_list url
 
   let segment_to_string (kind, name) =
-    if kind = "module" || kind = "package" || kind = "page"
+    if kind = "module" || kind = "cpage" || kind = "page"
     then name
     else Printf.sprintf "%s-%s" kind name
   let for_linking url = List.map segment_to_string @@ to_list url
 
-  let is_page url = (url.Url.Path.kind = "page")
+  let is_leaf_page url = (url.Url.Path.kind = "page")
 
   let rec get_dir {Url.Path. parent ; name ; kind} =
     let s = segment_to_string (kind, name) in
@@ -28,7 +28,7 @@ module Path = struct
     | Some p -> Fpath.(get_dir p / s)
 
   let as_filename (url : Url.Path.t) =
-    if is_page url then
+    if is_leaf_page url then
       Fpath.(get_dir url + ".html")
     else
       Fpath.(get_dir url / "index.html")
@@ -60,7 +60,7 @@ let href ~resolve { Url.Anchor. page; anchor; kind } =
   | Current path ->
     let current_loc =
       let l = Path.for_linking path in
-      if Path.is_page path then
+      if Path.is_leaf_page path then
         (* Sadness. *)
         List.tl l
       else l

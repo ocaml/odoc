@@ -7,10 +7,10 @@ Every references in `Good_references` should resolve:
   $ jq_scan_references() { jq -c '.. | .["`Reference"]? | select(.) | .[0]'; }
 
   $ odoc_print good_references.odocl | jq_scan_references
-  {"`Resolved":{"`Identifier":{"`Page":["<root>","p"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`Page":["<root>","p"]},"P1"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`Page":["<root>","p"]},"P2"]}}}
-  {"`Resolved":{"`Identifier":{"`Label":[{"`Page":["<root>","p"]},"P1"]}}}
+  {"`Resolved":{"`Identifier":{"`LeafPage":[{"`RootPage":"test"},"p"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P1"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P2"]}}}
+  {"`Resolved":{"`Identifier":{"`Label":[{"`LeafPage":[{"`RootPage":"test"},"p"]},"P1"]}}}
 
 Every references in `Bad_references` should not:
 

@@ -33,10 +33,14 @@ let cmt_of_string s =
     let p = Parse.implementation l in
     Typemod.type_implementation "" "" "" env p
 
+let parent = `RootPage (Odoc_model.Names.PageName.of_string "None")
+let id = `Root (parent, Odoc_model.Names.ModuleName.of_string "Root")
+
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
+  ignore(package);
   let file_representation : Odoc_model.Root.Odoc_file.t =
   Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  {Odoc_model.Root.package; file = file_representation; digest}
+  {Odoc_model.Root.id; file = file_representation; digest}
 
 let root = 
     root_of_compilation_unit
@@ -45,21 +49,20 @@ let root =
         ~module_name:"Root"
         ~digest:"nodigest"
 
-let root_with_name = `Root (root, Odoc_model.Names.ModuleName.of_string "Root")
 
-let root_identifier = `Identifier root_with_name
+let root_identifier = `Identifier id
 
-let root_module name = `Module (root_with_name, Odoc_model.Names.ModuleName.of_string name)
+let root_module name = `Module (id, Odoc_model.Names.ModuleName.of_string name)
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
 let model_of_string str = 
     let cmti = cmti_of_string str in
-    Odoc_loader__Cmti.read_interface root "Root" cmti
+    Odoc_loader__Cmti.read_interface parent "Root" cmti
 
 let model_of_string_impl str =
     let (cmt,_) = cmt_of_string str in
-    Odoc_loader__Cmt.read_implementation root "Root" cmt
+    Odoc_loader__Cmt.read_implementation parent "Root" cmt
 
 let signature_of_mli_string str =
     Odoc_xref2.Ident.reset ();
@@ -575,6 +578,7 @@ end
 let my_compilation_unit id docs s =
     { Odoc_model.Lang.Compilation_unit.
       id = id
+    ; root = root
     ; doc = docs
     ; digest = "nodigest"
     ; imports = []

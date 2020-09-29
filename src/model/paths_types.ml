@@ -4,8 +4,23 @@ open Names
 module Identifier =
 struct
 
+  type container_page = [
+    | `RootPage of PageName.t
+    | `Page of container_page * PageName.t
+  ]
+
+  type page = [
+    | container_page
+    | `LeafPage of container_page * PageName.t
+  ]
+
+  type odoc_id = [
+    | page
+    | `Root of container_page * ModuleName.t
+  ]
+
   type signature = [
-    | `Root of Root.t * ModuleName.t
+    | `Root of container_page * ModuleName.t
     | `Module of signature * ModuleName.t
     | `Parameter of signature * ParameterName.t
     | `Result of signature
@@ -30,10 +45,10 @@ struct
 
   type label_parent = [
     | parent
-    | `Page of Root.t * PageName.t
+    | page
   ]
 
-  type root_module = [ `Root of Root.t * ModuleName.t ]
+  type root_module = [ `Root of container_page * ModuleName.t ]
 
   type module_ = [ root_module | `Module of signature * ModuleName.t ]
 
@@ -89,10 +104,6 @@ struct
 
   type label = [
     | `Label of label_parent * LabelName.t
-  ]
-
-  type page = [
-    | `Page of Root.t * PageName.t
   ]
 
   type any = [

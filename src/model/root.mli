@@ -41,13 +41,13 @@ sig
 end
 
 type t = {
-  package : Package.t;
+  id : Paths.Identifier.OdocId.t;
   file : Odoc_file.t;
   digest : Digest.t;
 }
 
 val equal : t -> t -> bool
-val hash  : t -> int
+val hash : t -> int
 val compare : t -> t -> int
 
 val to_string : t -> string

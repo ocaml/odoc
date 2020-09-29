@@ -3,25 +3,6 @@ type sexp = Sexplib0.Sexp.t =
   | Atom of string
   | List of sexp list
 
-
-
-module Root_to_sexp =
-struct
-  module Root = Odoc_model.Root
-
-  let odoc_file : Root.Odoc_file.t -> sexp = function
-    | Page p ->
-      List [Atom "page"; Atom p]
-    | Compilation_unit {name; hidden} ->
-      let hidden = if hidden then [Atom "hidden"] else [] in
-      List ((Atom "compilation_unit")::(Atom name)::hidden)
-
-  let root : Root.t -> sexp = fun {package; file; digest} ->
-    List [Atom package; odoc_file file; Atom (Digest.to_hex digest)]
-end
-
-
-
 module Identifier_to_sexp =
 struct
   module Identifier = Odoc_model.Paths.Identifier
@@ -29,10 +10,14 @@ struct
   let identifier : Identifier.t -> sexp =
     let rec traverse : sexp list -> Identifier.t -> sexp =
         fun acc -> function
-      | `Root (root, s) ->
-        List ((List [Atom "root"; Root_to_sexp.root root; Atom (ModuleName.to_string s)])::acc)
-      | `Page (root, s) ->
-        List ((List [Atom "root"; Root_to_sexp.root root; Atom (PageName.to_string s)])::acc)
+      | `Root (_, s) ->
+        List ((List [Atom (ModuleName.to_string s)])::acc)
+      | `RootPage s ->
+        List ((List [Atom (PageName.to_string s)])::acc)
+      | `Page (_, s) ->
+        List ((List [Atom (PageName.to_string s)])::acc)
+      | `LeafPage (_, s) ->
+        List ((List [Atom (PageName.to_string s)])::acc)
       | `Module (parent, s) ->
         traverse ((List [Atom "module"; Atom (ModuleName.to_string s)])::acc) (parent :> Identifier.t)
       | `Parameter (parent, s) ->

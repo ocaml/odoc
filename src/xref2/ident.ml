@@ -18,7 +18,7 @@ type datatype = [ `LType of TypeName.t * int | `LCoreType of TypeName.t ]
 
 type parent = [ signature | datatype | class_signature ]
 
-type label_parent = [ parent | `LPage of PageName.t * int ]
+type label_parent = [ parent | `LRootPage of PageName.t * int | `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
 
 type module_ = [ `LRoot of ModuleName.t * int | `LModule of ModuleName.t * int ]
 
@@ -55,7 +55,9 @@ type instance_variable = [ `LInstanceVariable of InstanceVariableName.t * int ]
 
 type label = [ `LLabel of LabelName.t * int ]
 
-type page = [ `LPage of PageName.t * int ]
+type page = [ `LRootPage of PageName.t * int 
+            | `LPage of PageName.t * int
+            | `LLeafPage of PageName.t * int ]
 
 type any =
   [ signature
@@ -88,7 +90,7 @@ let int_of_any : any -> int = function
   | `LModule (_, i)
   | `LException (_, i)
   | `LConstructor (_, i)
-  | `LPage (_, i)
+  | `LRootPage (_, i)
   | `LClassType (_, i)
   | `LMethod (_, i)
   | `LClass (_, i)
@@ -100,6 +102,8 @@ let int_of_any : any -> int = function
   | `LResult (_, i)
   | `LLabel (_, i)
   | `LModuleType (_, i)
+  | `LPage (_, i)
+  | `LLeafPage (_, i)
   | `LExtension (_, i) ->
       i
   | `LCoreException _ | `LCoreType _ -> failwith "error"
@@ -140,7 +144,9 @@ module Of_Identifier = struct
    fun p ->
     match p with
     | #Parent.t as s -> (parent s :> label_parent)
+    | `RootPage n -> `LRootPage (n, fresh_int ())
     | `Page (_, n) -> `LPage (n, fresh_int ())
+    | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
 
   let module_ : Odoc_model.Paths_types.Identifier.module_ -> module_ =
    fun (`Module (_, n) | `Root (_, n)) ->
@@ -203,7 +209,12 @@ module Of_Identifier = struct
    fun l -> match l with `Label (_, n) -> `LLabel (n, fresh_int ())
 
   let page : Page.t -> page =
-   fun p -> match p with `Page (_, n) -> `LPage (n, fresh_int ())
+   fun p ->
+    match p with
+    | `RootPage n -> `LRootPage (n, fresh_int ())
+    | `Page (_, n) -> `LPage (n, fresh_int ())
+    | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
+
 end
 
 module Name = struct
@@ -400,7 +411,10 @@ let rec fmt_aux ppf (id : any) =
   | `LInstanceVariable (n, i) ->
       Format.fprintf ppf "%s/%d" (InstanceVariableName.to_string n) i
   | `LLabel (n, i) -> Format.fprintf ppf "%s/%d" (LabelName.to_string n) i
+  | `LRootPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
   | `LPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
+  | `LLeafPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
+
 
 let fmt : Format.formatter -> [< any ] -> unit =
  fun ppf id -> fmt_aux ppf (id :> any)

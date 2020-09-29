@@ -18,14 +18,10 @@ open Or_error
 
 type t = Odoc_model.Lang.Compilation_unit.t
 
-let root (t : Odoc_model.Lang.Compilation_unit.t) =
-  match t.Odoc_model.Lang.Compilation_unit.id with
-  | `Root (root, _) -> root
-
 let save file t =
   Fs.Directory.mkdir_p (Fs.File.dirname file);
   let oc = open_out_bin (Fs.File.to_string file) in
-  Root.save oc (root t);
+  Root.save oc t.Odoc_model.Lang.Compilation_unit.root;
   Marshal.to_channel oc t [];
   close_out oc
 

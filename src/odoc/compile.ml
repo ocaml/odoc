@@ -17,10 +17,10 @@ open Or_error
  *)
 
 
-let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
+let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file =
   let filename = Fs.File.to_string input_file in
 
-  read_file ~filename |> Odoc_model.Error.handle_errors_and_warnings ~warn_error >>= fun unit ->
+  read_file ~parent ~filename |> Odoc_model.Error.handle_errors_and_warnings ~warn_error >>= fun unit ->
 
   if not unit.Odoc_model.Lang.Compilation_unit.interface then (
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
@@ -45,28 +45,32 @@ let resolve_and_substitute ~env ~output ~warn_error input_file read_file =
   Compilation_unit.save output compiled;
   Ok ()
 
-let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
+let root_of_compilation_unit ~parent ~hidden ~module_name ~digest =
   let file_representation : Odoc_model.Root.Odoc_file.t =
     Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  {Odoc_model.Root.package; file = file_representation; digest}
+  {Odoc_model.Root.id = `Root (parent, Odoc_model.Names.ModuleName.of_string module_name); file = file_representation; digest}
 
 let cmti ~env ~package ~hidden ~output ~warn_error input =
-  let make_root = root_of_compilation_unit ~package ~hidden in
+  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
+  let make_root = root_of_compilation_unit ~parent ~hidden in
   let read_file = Odoc_loader.read_cmti ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error input read_file
+  resolve_and_substitute ~env ~output ~warn_error parent input read_file
 
 let cmt ~env ~package ~hidden ~output ~warn_error input =
-  let make_root = root_of_compilation_unit ~package ~hidden in
+  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
+  let make_root = root_of_compilation_unit ~parent ~hidden in
   let read_file = Odoc_loader.read_cmt ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error input read_file
+  resolve_and_substitute ~env ~output ~warn_error parent input read_file
 
 let cmi ~env ~package ~hidden ~output ~warn_error input =
-  let make_root = root_of_compilation_unit ~package ~hidden in
+  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
+  let make_root = root_of_compilation_unit ~parent ~hidden in
   let read_file = Odoc_loader.read_cmi ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error input read_file
+  resolve_and_substitute ~env ~output ~warn_error parent input read_file
 
 (* TODO: move most of this to doc-ock. *)
 let mld ~env:_ ~package ~output ~warn_error input =
+  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
@@ -76,11 +80,12 @@ let mld ~env:_ ~package ~output ~warn_error input =
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
+  let page_name = Odoc_model.Names.PageName.of_string root_name in
+  let name = `LeafPage (parent, page_name) in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
-    {Odoc_model.Root.package; file; digest}
+    {Odoc_model.Root.id = name; file; digest}
   in
-  let name = `Page (root, Odoc_model.Names.PageName.of_string root_name) in
   let location =
     let pos =
       Lexing.{
@@ -93,7 +98,7 @@ let mld ~env:_ ~package ~output ~warn_error input =
     Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
   let resolve content =
-    let page = Odoc_model.Lang.Page.{ name; content; digest } in
+    let page = Odoc_model.Lang.Page.{ name; root; content; digest } in
     Page.save output page;
     Ok ()
   in

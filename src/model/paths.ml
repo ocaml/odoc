@@ -22,7 +22,9 @@ module Identifier = struct
 
   let rec name_aux : t -> string = function
     | `Root(_, name) -> ModuleName.to_string name
+    | `RootPage name -> PageName.to_string name
     | `Page(_, name) -> PageName.to_string name
+    | `LeafPage(_, name) -> PageName.to_string name
     | `Module(_, name) -> ModuleName.to_string name
     | `Parameter(_, name) -> ParameterName.to_string name
     | `Result x -> name_aux (x :> t)
@@ -50,7 +52,9 @@ module Identifier = struct
       | `Result i -> label_parent_aux (i :> any)
       | `CoreType _ | `CoreException _ -> assert false
       | `Root _ as p -> (p :> label_parent)
+      | `RootPage _ as p -> (p :> label_parent)
       | `Page _ as p -> (p :> label_parent)
+      | `LeafPage _ as p -> (p :> label_parent)
       | `Module (p, _)
       | `ModuleType (p, _)
       | `Parameter (p, _)
@@ -73,9 +77,13 @@ module Identifier = struct
     let open Paths_types.Identifier in
     match id with
     | `Root(r, s) ->
-      Hashtbl.hash (1, Root.hash r, s)
+      Hashtbl.hash (1, hash (r : container_page :> any), s)
+    | `RootPage s ->
+      Hashtbl.hash (2, s)
     | `Page(r, s) ->
-      Hashtbl.hash (2, Root.hash r, s)
+      Hashtbl.hash (0, hash (r : container_page :> any), s)
+    | `LeafPage(r, s) ->
+      Hashtbl.hash (20, hash (r : container_page :> any), s)
     | `Module(id, s) ->
       Hashtbl.hash (3, hash (id : signature :> any), s)
     | `Parameter(id, s) ->
@@ -112,19 +120,22 @@ module Identifier = struct
       Hashtbl.hash (19, hash (id : label_parent :> any ), s)
 
   let constructor_id : t -> int = function
-    | `Root _ -> 1 | `Page _ -> 2 | `Module _ -> 3 | `Parameter _ -> 4
+    | `Root _ -> 1 | `RootPage _ -> 2 | `Module _ -> 3 | `Parameter _ -> 4
     | `Result _ -> 5 | `ModuleType _ -> 6 | `Type _ -> 7 | `CoreType _ -> 8
     | `Constructor _ -> 9 | `Field _ -> 10 | `Extension _ -> 11 | `Exception _ -> 12
     | `CoreException _ -> 13 | `Value _ -> 14 | `Class _ -> 15 | `ClassType _ -> 16
-    | `Method _ -> 17 | `InstanceVariable _ -> 18 | `Label _ -> 19
+    | `Method _ -> 17 | `InstanceVariable _ -> 18 | `Label _ -> 19 | `Page _ -> 20
+    | `LeafPage _ -> 21
 
   let std_compare = compare
 
   let rec compare : t -> t -> int =
     fun x y ->
       match x,y with
-      | `Root(r, s), `Root(r', s') -> let s = ModuleName.compare s s' in if s<>0 then s else Root.compare r r'
-      | `Page(r, s), `Page(r', s') -> let s = PageName.compare s s' in if s<>0 then s else Root.compare r r'
+      | `Root(r, s), `Root(r', s') -> let s = ModuleName.compare s s' in if s<>0 then s else compare (r :> t) (r' :> t)
+      | `RootPage s, `RootPage s' -> PageName.compare s s'
+      | `Page(r, s), `Page(r', s') -> let s = PageName.compare s s' in if s<>0 then s else compare (r :> t) (r' :> t)
+      | `LeafPage(r, s), `LeafPage(r', s') -> let s = PageName.compare s s' in if s<>0 then s else compare (r :> t) (r' :> t)
       | `Module (p, s), `Module (p', s') -> let s = ModuleName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
       | `Parameter (p, s), `Parameter (p', s') -> let s = ParameterName.compare s s' in if s<>0 then s else compare (p :> t) (p' :> t)
       | `Result p, `Result p' -> compare (p :> t) (p' :> t)
@@ -374,6 +385,26 @@ module Identifier = struct
     let compare x y = compare (x :> any) (y :> any)
   end
 
+  module ContainerPage =
+  struct
+    type t = Paths_types.Identifier.container_page
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+  end
+
+  module OdocId =
+  struct
+    type t = Paths_types.Identifier.odoc_id
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)
+  end
+
   module Path =
   struct
     module Module =
@@ -443,6 +474,7 @@ module Identifier = struct
     module InstanceVariable = Set.Make(InstanceVariable)
     module Label = Set.Make(Label)
     module Page = Set.Make(Page)
+    module ContainerPage = Set.Make(ContainerPage)
     module Path = struct
       module Module = Set.Make(Path.Module)
       module ModuleType = Set.Make(Path.ModuleType)
@@ -473,6 +505,7 @@ module Identifier = struct
     module InstanceVariable = Map.Make(InstanceVariable)
     module Label = Map.Make(Label)
     module Page = Map.Make(Page)
+    module ContainerPage = Map.Make(ContainerPage)
     module Path = struct
       module Module = Map.Make(Path.Module)
       module ModuleType = Map.Make(Path.ModuleType)

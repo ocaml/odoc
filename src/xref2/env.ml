@@ -356,14 +356,18 @@ let lookup_root_module name env =
         match r.lookup_unit name with
         | Forward_reference -> Some Forward
         | Not_found -> None
-        | Found u ->
-            let id = `Root (u.root, ModuleName.of_string name) in
+        | Found u -> begin
+          match u.root.id with
+          | `Root _ as id ->
             let m =
               Component.Delayed.put (fun () ->
                   let unit = r.resolve_unit u.root in
                   module_of_unit unit)
             in
-            Some (Resolved (u.root.digest, id, u.hidden, m)) )
+            Some (Resolved (u.root.digest, id, u.hidden, m))
+          | _ ->
+            failwith "Expecting root module!"
+          end )
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->

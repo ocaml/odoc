@@ -698,11 +698,15 @@ let build_resolver :
   let resolve_unit root =
     match resolve_unit root with
     | Ok unit -> unit
-    | Error e -> raise (Fetch_failed e)
+    | Error (`Msg s) ->
+      Format.eprintf "Fetch_failed: %s\n%!" s;
+      raise (Fetch_failed (`Msg s))
   and resolve_page root =
     match resolve_page root with
     | Ok page -> page
-    | Error e -> raise (Fetch_failed e)
+    | Error (`Msg s) ->
+    Format.eprintf "Fetch_failed (resolving page): %s\n%!" s;
+    raise (Fetch_failed (`Msg s))
   in
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page; open_units }
 
