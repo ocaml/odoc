@@ -119,7 +119,7 @@ and moduletype_u_expr =
     | Signature x -> C ("Signature", x, signature_t)
     | With (t, e) ->
       C ("With", (t, e), Pair (List moduletype_substitution, moduletype_u_expr))
-    | TypeOf x -> C ("TypeOf", x, moduletype_type_of_desc))
+    | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
 
 and moduletype_t =
   let open Lang.ModuleType in
