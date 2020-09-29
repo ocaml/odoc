@@ -311,3 +311,10 @@ module Fmt : sig
   val error : Format.formatter -> Errors.any -> unit
   (** Format function for errors declared in the {!module:Errors} module *)
 end
+
+val kind_of_error : Errors.any -> [> `Root ] option
+(** To use as [Lookup_failures.kind]. *)
+
+val kind_of_module_cpath : Cpath.module_ -> [> `Root ] option
+
+val kind_of_module_type_cpath : Cpath.module_ -> [> `Root ] option

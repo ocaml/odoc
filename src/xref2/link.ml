@@ -14,16 +14,7 @@ end
 exception Loop
 
 let report_tool_error type_s path e =
-  let rec kind_of_error = function
-    | `Lookup_failure (`Root _) | `Lookup_failure_root _ -> Some `Root
-    | `Parent (`Parent_sig e) -> kind_of_error (e :> Errors.any)
-    | `Parent (`Parent_module_type e) -> kind_of_error (e :> Errors.any)
-    | `Parent (`Parent_expr e) -> kind_of_error (e :> Errors.any)
-    | `Parent (`Parent_module e) -> kind_of_error (e :> Errors.any)
-    | `Parent (`Parent _ as e) -> kind_of_error (e :> Errors.any)
-    | _ -> None
-  in
-  let kind = kind_of_error e in
+  let kind = Tools.kind_of_error e in
   Lookup_failures.report ?kind "Failed to lookup %s %a: %a" type_s
     Component.Fmt.model_path path Tools.Fmt.error e
 

@@ -53,26 +53,30 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
     | Error _ -> Cpath.class_type_path_of_cpath cp
 
-let rec cpath_is_root_unresolved = function
-  | `Root _ -> true
-  | `Substituted p' | `Dot (p', _) -> cpath_is_root_unresolved p'
-  | `Apply (a, b) -> cpath_is_root_unresolved a || cpath_is_root_unresolved b
-  | _ -> false
-
 let lookup_failure ~what =
   let kind =
     match what with
-    | `Include (Component.Include.Alias cpath)
-      when cpath_is_root_unresolved cpath ->
-        Some `Root
+    | `Include (Component.Module.Alias cp) -> Tools.kind_of_module_cpath cp
+    | `Module (`Root _) -> Some `Root
     | _ -> None
   in
-  let r ?(kind = kind) action =
-    let r subject pp_a a =
-      Lookup_failures.report ?kind "Failed to %s %s %a" action subject pp_a a
+  let r action =
+    let pp_reason fmt = function
+      | Some r -> Format.fprintf fmt " %a" r ()
+      | None -> ()
+    in
+    let r ?(kind = kind) ?reason subject pp_a a =
+      Lookup_failures.report ?kind "Failed to %s %s %a%a" action subject pp_a a
+        pp_reason reason
     in
     let r_id subject id =
       r subject Component.Fmt.model_identifier (id :> Id.t)
+    in
+    let r_tool_id subject id error =
+      (* Handle errors from [Tools]. *)
+      let kind = Tools.kind_of_error error in
+      let reason fmt () = Tools.Fmt.error fmt error in
+      r ~kind ~reason subject Component.Fmt.model_identifier (id :> Id.t)
     in
     let open Component.Fmt in
     match what with
@@ -88,13 +92,12 @@ let lookup_failure ~what =
     | `Type cfrag -> r "type" type_fragment cfrag
     | `With_module frag -> r "module substitution" module_fragment frag
     | `With_type frag -> r "type substitution" type_fragment frag
+    | `Tool (`Module (e, id)) -> r_tool_id "module" id (e :> Errors.any)
+    | `Tool (`Module_type (e, id)) ->
+        r_tool_id "module type" id (e :> Errors.any)
   in
   function
-  | `Lookup ->
-      let kind =
-        match what with `Module (`Root _) -> Some `Root | _ -> kind
-      in
-      r ~kind "lookup"
+  | `Lookup -> r "lookup"
   | `Expand -> r "compile expansion for"
   | `Resolve_module_type -> r "resolve type of"
   | `Resolve -> r "resolve"
@@ -302,8 +305,8 @@ and module_ : Env.t -> Module.t -> Module.t =
                 let e = Lang_of.(module_expansion empty sg_id ce) in
                 Some (expansion env sg_id e)
             | Error `OpaqueModule -> None
-            | Error _ ->
-                lookup_failure ~what:(`Module m.id) `Expand;
+            | Error e ->
+                lookup_failure ~what:(`Tool (`Module (e, m.id))) `Expand;
                 m.expansion
         in
         {
@@ -343,7 +346,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
             let e = Lang_of.(module_expansion empty sg_id ce) in
             Ok (env, Some e)
         | Error `OpaqueModule -> Ok (env, None)
-        | Error _ -> Error `Expand )
+        | Error e -> Error (`Expand e) )
         >>= fun (env, expansion') ->
         Ok
           ( Opt.map (expansion env sg_id) expansion',
@@ -356,8 +359,11 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
     expand m' env
   with
   | Ok (expansion, expr') -> { m with expr = expr'; expansion }
-  | Error e ->
-      lookup_failure ~what:(`Module_type m.id) e;
+  | Error `Lookup ->
+      lookup_failure ~what:(`Module_type m.id) `Lookup;
+      m
+  | Error (`Expand e) ->
+      lookup_failure ~what:(`Tool (`Module_type (e, m.id))) `Expand;
       m
 
 and include_ : Env.t -> Include.t -> Include.t =
