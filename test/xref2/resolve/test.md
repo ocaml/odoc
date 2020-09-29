@@ -19,7 +19,7 @@ let test_resolve test_data =
     let _, _, sg = Common.model_of_string test_data in
     let open Format in
     fprintf std_formatter "BEFORE\n======\n%!%a\n%!" Common.LangUtils.Fmt.signature sg;
-    let sg' = Compile.signature Env.empty Common.root_with_name sg in
+    let sg' = Compile.signature Env.empty Common.id sg in
     fprintf std_formatter "AFTER \n===== \n%!%a\n%!" Common.LangUtils.Fmt.signature sg'
 ```
 

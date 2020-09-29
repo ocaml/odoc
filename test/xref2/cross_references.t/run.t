@@ -22,7 +22,9 @@ Check that references are resolved:
               "`Resolved": {
                 "`Identifier": {
                   "`Root": [
-                    "<root>",
+                    {
+                      "`RootPage": "test"
+                    },
                     "B"
                   ]
                 }
@@ -45,7 +47,9 @@ Check that references are resolved:
               "`Resolved": {
                 "`Identifier": {
                   "`Root": [
-                    "<root>",
+                    {
+                      "`RootPage": "test"
+                    },
                     "A"
                   ]
                 }

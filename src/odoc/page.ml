@@ -16,13 +16,7 @@
 
 open Or_error
 
-
-
 type t = Odoc_model.Lang.Page.t
-
-let root (t : Odoc_model.Lang.Page.t) =
-  match t.Odoc_model.Lang.Page.name with
-  | `Page (root, _) -> root
 
 let save file t =
   let dir = Fs.File.dirname file in
@@ -35,7 +29,7 @@ let save file t =
   in
   Fs.Directory.mkdir_p dir;
   let oc = open_out_bin (Fs.File.to_string file) in
-  Root.save oc (root t);
+  Root.save oc t.Odoc_model.Lang.Page.root;
   Marshal.to_channel oc t [];
   close_out oc
 

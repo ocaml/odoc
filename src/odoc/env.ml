@@ -222,7 +222,7 @@ let create ?(important_digests=true) ~directories ~open_modules : builder =
           in
           match lookup_result with
           | Not_found -> begin
-              let root = Compilation_unit.root unit in
+              let root = unit.root in
               match root.file with
               | Page _ -> assert false
               | Compilation_unit {name;hidden} when target_name = name ->
@@ -235,7 +235,7 @@ let create ?(important_digests=true) ~directories ~open_modules : builder =
       match unit_or_page with
       | `Page _ -> fetch_unit ap root
       | `Unit unit ->
-        let current_root = Compilation_unit.root unit in
+        let current_root = unit.root in
         if Odoc_model.Root.equal root current_root then
           Ok unit
         else
@@ -246,7 +246,7 @@ let create ?(important_digests=true) ~directories ~open_modules : builder =
       match unit_or_page with
       | `Unit _ -> fetch_page ap root
       | `Page page ->
-        let current_root = Page.root page in
+        let current_root = page.Odoc_model.Lang.Page.root in
         if Odoc_model.Root.equal root current_root then
           Ok page
         else

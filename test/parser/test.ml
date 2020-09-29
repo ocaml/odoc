@@ -1134,13 +1134,7 @@ let () =
         let dummy_filename = "f.ml" in
 
         let dummy_page =
-          let root : Odoc_model.Root.t = {
-            package = dummy_filename;
-            file = Page dummy_filename;
-            digest = String.make 16 '\000';
-          }
-          in
-          `Page (root, Odoc_model.Names.PageName.of_string dummy_filename)
+          `RootPage (Odoc_model.Names.PageName.of_string dummy_filename)
         in
 
         let location =

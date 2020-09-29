@@ -433,6 +433,7 @@ module rec Compilation_unit : sig
 
   type t = {
     id : Identifier.RootModule.t;
+    root : Root.t;
     doc : Comment.docs;
     digest : Digest.t;
     imports : Import.t list;
@@ -448,6 +449,7 @@ end =
 module rec Page : sig
   type t = {
     name : Identifier.Page.t;
+    root : Root.t;
     content : Comment.docs;
     digest : Digest.t;
   }

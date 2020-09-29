@@ -167,6 +167,20 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
+  module ContainerPage : sig
+    type t = Paths_types.Identifier.container_page
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+  end
+
+  module OdocId : sig
+    type t = Paths_types.Identifier.odoc_id
+    val equal : t -> t -> bool
+    val hash : t -> int
+    val compare : t -> t -> int
+    end
+
   module Path : sig
 
     module Module : sig
@@ -233,6 +247,7 @@ module Identifier : sig
     module InstanceVariable: Set.S with type elt = InstanceVariable.t
     module Label: Set.S with type elt = Label.t
     module Page: Set.S with type elt = Page.t
+    module ContainerPage: Set.S with type elt = ContainerPage.t
   end
 
   module Maps : sig
@@ -256,6 +271,7 @@ module Identifier : sig
     module InstanceVariable: Map.S with type key = InstanceVariable.t
     module Label: Map.S with type key = Label.t
     module Page: Map.S with type key = Page.t
+    module ContainerPage : Map.S with type key = ContainerPage.t
     module Path : sig
       module Module: Map.S with type key = Path.Module.t
       module ModuleType: Map.S with type key = Path.ModuleType.t

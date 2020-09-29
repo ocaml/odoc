@@ -18,8 +18,6 @@ open Or_error
 
 type t = Odoc_model.Lang.Compilation_unit.t
 
-val root : t -> Odoc_model.Root.t
-
 (** {2 Serialization} *)
 
 val save : Fs.File.t -> t -> unit

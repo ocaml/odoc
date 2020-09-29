@@ -21,7 +21,7 @@ module Ident_env = Odoc_model.Ident_env
 
 
 
-val read_interface: Odoc_model.Root.t -> string -> Odoc_model.Compat.signature ->
+val read_interface: Odoc_model.Paths.Identifier.ContainerPage.t -> string -> Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t *
   Odoc_model.Comment.docs *
   Odoc_model.Lang.Signature.t

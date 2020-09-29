@@ -603,6 +603,7 @@ and compilation_unit_t =
   Record
     [
       F ("id", (fun t -> t.id), identifier);
+      F ("root", (fun t -> t.root), Root.t);
       F ("doc", (fun t -> t.doc), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("imports", (fun t -> t.imports), List compilation_unit_import);
@@ -620,6 +621,7 @@ and page_t =
   Record
     [
       F ("name", (fun t -> t.name), identifier);
+      F ("root", (fun t -> t.root), Root.t);
       F ("content", (fun t -> t.content), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
     ]

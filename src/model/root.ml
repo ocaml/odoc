@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
-
 let contains_double_underscore s =
   let len = String.length s in
   let rec aux i =
@@ -56,16 +54,27 @@ struct
 end
 
 type t = {
-  package : Package.t;
+  id : Paths.Identifier.OdocId.t;
   file : Odoc_file.t;
   digest : Digest.t;
 }
 
-
 let equal : t -> t -> bool = (=)
 let hash : t -> int = Hashtbl.hash
 
-let to_string t = Printf.sprintf "%s::%s" t.package (Odoc_file.name t.file)
+let to_string t =
+  let rec pp fmt (id : Paths.Identifier.OdocId.t) =
+    match id with
+    | `RootPage p -> Format.fprintf fmt "%a" Names.PageName.fmt p
+    | `LeafPage (parent, name)
+    | `Page (parent, name) ->
+      Format.fprintf fmt "%a::%a" pp (parent :> Paths.Identifier.OdocId.t) Names.PageName.fmt name
+    | `Root (parent, name) ->
+      Format.fprintf fmt "%a::%a" pp (parent :> Paths.Identifier.OdocId.t) Names.ModuleName.fmt name
+  in
+
+  Format.asprintf "%a"
+    pp t.id
 
 let compare x y = String.compare x.digest y.digest
 

@@ -20,5 +20,6 @@ open Odoc_xref_test;;
 #install_printer Odoc_model.Names.ExtensionName.fmt;;
 #install_printer Odoc_model.Names.MethodName.fmt;;
 #install_printer Odoc_model.Names.InstanceVariableName.fmt;;
-#install_printer Odoc_model.Names.SectionName.fmt;;
 #install_printer Odoc_model.Names.LabelName.fmt;;
+#install_printer Odoc_model.Names.PageName.fmt;;
+#install_printer Odoc_model.Names.SectionName.fmt;;

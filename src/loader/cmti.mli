@@ -19,7 +19,7 @@ module Ident_env = Odoc_model.Ident_env
 
 val read_module_expr : (Ident_env.t -> Paths.Identifier.Signature.t -> Paths.Identifier.LabelParent.t -> Typedtree.module_expr -> Odoc_model.Lang.ModuleType.expr) ref
 val read_interface :
-  Odoc_model.Root.t ->
+  Odoc_model.Paths.Identifier.ContainerPage.t ->
   string ->
   Typedtree.signature ->
   Paths.Identifier.RootModule.t
