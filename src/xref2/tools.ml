@@ -32,6 +32,8 @@ module Fmt = struct
         Format.fprintf fmt "Lookup failure (module): %a"
           Component.Fmt.model_identifier
           (m :> Odoc_model.Paths.Identifier.t)
+    | `Lookup_failure_root r ->
+        Format.fprintf fmt "Lookup failure (root module): %s" r
     | `Lookup_failureMT m ->
         Format.fprintf fmt "Lookup failure (module type): %a"
           Component.Fmt.model_identifier
@@ -451,12 +453,12 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
       let p' = `Module (parent, name) in
       let m' = Subst.module_ sub m in
       let md' = Component.Delayed.put_val m' in
-      Some (process_module_path env ~add_canonical m' p', md')
+      Ok (process_module_path env ~add_canonical m' p', md')
   | Some (Replaced p) -> (
       match lookup_module ~mark_substituted:false env p with
-      | Ok m -> Some (p, m)
-      | Error _ -> None )
-  | None -> None
+      | Ok m -> Ok (p, m)
+      | Error _ as e -> e )
+  | None -> Error `Find_failure
 
 and handle_module_type_lookup env id p sg sub =
   let open OptionMonad in
@@ -687,13 +689,11 @@ and resolve_module :
         let sub = prefix_substitution (`Module p) parent_sig in
         handle_module_lookup env ~add_canonical (ModuleName.of_string id)
           (`Module p) parent_sig sub
-        |> of_option ~error:`Find_failure
     | `Module (parent, id) ->
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
         handle_module_lookup env ~add_canonical id parent parent_sig sub
-        |> of_option ~error:`Find_failure
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -705,14 +705,14 @@ and resolve_module :
             | Error e -> Error (`Parent (`Parent_expr e)) )
         | _ -> Error `Unresolved_apply )
     | `Identifier (i, hidden) ->
-        of_option ~error:`Find_failure (Env.(lookup_by_id s_module) i env)
+        of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) ->
         let p = if hidden then `Hidden (`Identifier i) else `Identifier i in
         Ok
           (process_module_path env ~add_canonical (Component.Delayed.get m) p, m)
     | `Local (p, _) -> Error (`Local (env, p))
     | `Resolved (`Identifier i as resolved_path) ->
-        of_option ~error:`Find_failure (Env.(lookup_by_id s_module) i env)
+        of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) -> Ok (resolved_path, m)
     | `Resolved r -> lookup_module ~mark_substituted env r >>= fun m -> Ok (r, m)
     | `Substituted s ->
@@ -732,7 +732,7 @@ and resolve_module :
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None ->
             (* Format.fprintf Format.err_formatter "Unresolved!\n%!"; *)
-            Error `Find_failure )
+            Error (`Lookup_failure_root r) )
     | `Forward f ->
         resolve_module ~mark_substituted ~add_canonical env (`Root f)
         |> map_error (fun e -> `Parent (`Parent_module e))
@@ -768,7 +768,7 @@ and resolve_module_type :
       handle_module_type_lookup env id parent parent_sig sub
       |> of_option ~error:`Find_failure
   | `Identifier (i, _) ->
-      of_option ~error:`Find_failure (Env.(lookup_by_id s_module_type) i env)
+      of_option ~error:(`Lookup_failureMT i) (Env.(lookup_by_id s_module_type) i env)
       >>= fun (`ModuleType (_, mt)) ->
       let p = `Identifier i in
       let p' = process_module_type env mt p in
