@@ -61,6 +61,31 @@ module Fmt = struct
     | `Fragment_root -> Format.fprintf fmt "Fragment root"
 end
 
+let rec kind_of_module_cpath = function
+  | `Root _ -> Some `Root
+  | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
+  | `Apply (a, b) -> (
+      match kind_of_module_cpath a with
+      | Some _ as a -> a
+      | None -> kind_of_module_cpath b )
+  | _ -> None
+
+let rec kind_of_module_type_cpath = function
+  | `Substituted p' -> kind_of_module_type_cpath p'
+  | `Dot (p', _) -> kind_of_module_cpath p'
+  | _ -> None
+
+let rec kind_of_error = function
+  | `UnresolvedPath (`Module cp) -> kind_of_module_cpath cp
+  | `UnresolvedPath (`ModuleType cp) -> kind_of_module_type_cpath cp
+  | `Lookup_failure (`Root _) | `Lookup_failure_root _ -> Some `Root
+  | `Parent (`Parent_sig e) -> kind_of_error (e :> Errors.any)
+  | `Parent (`Parent_module_type e) -> kind_of_error (e :> Errors.any)
+  | `Parent (`Parent_expr e) -> kind_of_error (e :> Errors.any)
+  | `Parent (`Parent_module e) -> kind_of_error (e :> Errors.any)
+  | `Parent (`Parent _ as e) -> kind_of_error (e :> Errors.any)
+  | _ -> None
+
 let core_types =
   let open Odoc_model.Lang.TypeDecl in
   let open Odoc_model.Paths in
