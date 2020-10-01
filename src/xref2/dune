@@ -5,7 +5,6 @@
  (libraries compiler-libs.common odoc_model
 ; landmarks 
  unix)
- (modules_without_implementation errors)
  )
 (rule
  (alias   runtest)

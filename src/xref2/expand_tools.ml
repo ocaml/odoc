@@ -1,6 +1,6 @@
 open Utils.ResultMonad
 open Odoc_model
-open Errors
+open Errors.Tools_error
 
 type expansion =
   | Signature of Component.Signature.t
