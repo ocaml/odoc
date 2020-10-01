@@ -53,56 +53,6 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
     | Error _ -> Cpath.class_type_path_of_cpath cp
 
-let lookup_failure ~what =
-  let kind =
-    match what with
-    | `Include (Component.Module.Alias cp) -> Tools.kind_of_module_cpath cp
-    | `Module (`Root _) -> Some `Root
-    | _ -> None
-  in
-  let r action =
-    let pp_reason fmt = function
-      | Some r -> Format.fprintf fmt " %a" r ()
-      | None -> ()
-    in
-    let r ?(kind = kind) ?reason subject pp_a a =
-      Lookup_failures.report ?kind "Failed to %s %s %a%a" action subject pp_a a
-        pp_reason reason
-    in
-    let r_id subject id =
-      r subject Component.Fmt.model_identifier (id :> Id.t)
-    in
-    let r_tool_id subject id error =
-      (* Handle errors from [Tools]. *)
-      let kind = Tools.kind_of_error error in
-      let reason fmt () = Tools.Fmt.error fmt error in
-      r ~kind ~reason subject Component.Fmt.model_identifier (id :> Id.t)
-    in
-    let open Component.Fmt in
-    match what with
-    | `Functor_parameter id -> r_id "functor parameter" id
-    | `Value id -> r_id "value" id
-    | `Class id -> r_id "class" id
-    | `Class_type id -> r_id "class type" id
-    | `Module id -> r_id "module" id
-    | `Module_type id -> r_id "module type" id
-    | `Include decl -> r "include" module_decl decl
-    | `Package path ->
-        r "module package" module_type_path (path :> Cpath.module_type)
-    | `Type cfrag -> r "type" type_fragment cfrag
-    | `With_module frag -> r "module substitution" module_fragment frag
-    | `With_type frag -> r "type substitution" type_fragment frag
-    | `Tool (`Module (e, id)) -> r_tool_id "module" id (e :> Errors.any)
-    | `Tool (`Module_type (e, id)) ->
-        r_tool_id "module type" id (e :> Errors.any)
-  in
-  function
-  | `Lookup -> r "lookup"
-  | `Expand -> r "compile expansion for"
-  | `Resolve_module_type -> r "resolve type of"
-  | `Resolve -> r "resolve"
-  | `Compile -> r "compile"
-
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
   let imports, env = Env.initial_env t resolver in
@@ -119,7 +69,7 @@ and value_ env parent t =
   let container = (parent :> Id.Parent.t) in
   try { t with type_ = type_expression env container t.type_ }
   with _ ->
-    lookup_failure ~what:(`Value t.id) `Compile;
+    Errors.report ~what:(`Value t.id) `Compile;
     t
 
 and exception_ env parent e =
@@ -176,7 +126,7 @@ and class_type env c =
     with
     | Some _ as exp -> exp
     | None ->
-        lookup_failure ~what:(`Class_type c.id) `Expand;
+        Errors.report ~what:(`Class_type c.id) `Expand;
         c.expansion
   in
   {
@@ -230,7 +180,7 @@ and class_ env parent c =
     with
     | Some _ as exp -> exp
     | None ->
-        lookup_failure ~what:(`Class c.id) `Expand;
+        Errors.report ~what:(`Class c.id) `Expand;
         c.expansion
   in
   let rec map_decl = function
@@ -287,7 +237,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     (* Format.fprintf Format.err_formatter "Handling module: %a\n" Component.Fmt.model_identifier (m.id :> Id.t); *)
     match Env.(lookup_by_id s_module) m.id env with
     | None ->
-        lookup_failure ~what:(`Module m.id) `Lookup;
+        Errors.report ~what:(`Module m.id) `Lookup;
         m
     | Some (`Module (_, m')) ->
         let m' = Component.Delayed.get m' in
@@ -306,7 +256,7 @@ and module_ : Env.t -> Module.t -> Module.t =
                 Some (expansion env sg_id e)
             | Error `OpaqueModule -> None
             | Error e ->
-                lookup_failure ~what:(`Tool (`Module (e, m.id))) `Expand;
+                Errors.report ~what:(`Module m.id) ~tools_error:e `Expand;
                 m.expansion
         in
         {
@@ -346,24 +296,21 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
             let e = Lang_of.(module_expansion empty sg_id ce) in
             Ok (env, Some e)
         | Error `OpaqueModule -> Ok (env, None)
-        | Error e -> Error (`Expand e) )
+        | Error e -> Error (Some e, `Expand) )
         >>= fun (env, expansion') ->
         Ok
           ( Opt.map (expansion env sg_id) expansion',
             Some (module_type_expr env (m.id :> Id.Signature.t) expr) )
   in
   match
-    Env.(lookup_by_id s_module_type) m.id env |> of_option ~error:`Lookup
+    Env.(lookup_by_id s_module_type) m.id env |> of_option ~error:(None, `Lookup)
     >>= fun (`ModuleType (_, m')) ->
     let env = Env.add_module_type_functor_args m' m.id env in
     expand m' env
   with
   | Ok (expansion, expr') -> { m with expr = expr'; expansion }
-  | Error `Lookup ->
-      lookup_failure ~what:(`Module_type m.id) `Lookup;
-      m
-  | Error (`Expand e) ->
-      lookup_failure ~what:(`Tool (`Module_type (e, m.id))) `Expand;
+  | Error (tools_error, action) ->
+      Errors.report ~what:(`Module_type m.id) ?tools_error action;
       m
 
 and include_ : Env.t -> Include.t -> Include.t =
@@ -379,8 +326,8 @@ and include_ : Env.t -> Include.t -> Include.t =
     Expand_tools.aux_expansion_of_module_decl env ~strengthen:true decl
     >>= Expand_tools.handle_expansion env i.parent
   with
-  | Error _ ->
-      lookup_failure ~what:(`Include decl) `Expand;
+  | Error e ->
+      Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
       i
   | Ok (_, ce) ->
 
@@ -442,8 +389,8 @@ and functor_parameter_parameter :
         let e = Lang_of.(module_expansion empty sg_id ce) in
         Ok (env, Some e)
     | Error `OpaqueModule -> Ok (env, None)
-    | Error _ ->
-        lookup_failure ~what:(`Functor_parameter a.id) `Expand;
+    | Error e ->
+        Errors.report ~what:(`Functor_parameter a.id) ~tools_error:e `Expand;
         Ok (env, None)
   with
   | Ok (env, expn) ->
@@ -453,7 +400,7 @@ and functor_parameter_parameter :
         expansion = Component.Opt.map (expansion env sg_id) expn;
       }
   | Error e ->
-      lookup_failure ~what:(`Functor_parameter a.id) e;
+      Errors.report ~what:(`Functor_parameter a.id) e;
       a
 
 and module_type_expr :
@@ -482,7 +429,7 @@ and module_type_expr :
                         (Lang_of.Path.resolved_module_fragment lang_of_map
                            cfrag') )
                 | None ->
-                    lookup_failure ~what:(`With_module cfrag) `Resolve;
+                    Errors.report ~what:(`With_module cfrag) `Resolve;
                     (cfrag, frag)
               in
               let decl' = module_decl env id decl in
@@ -504,7 +451,7 @@ and module_type_expr :
                         (Lang_of.Path.resolved_type_fragment lang_of_map cfrag')
                     )
                 | None ->
-                    lookup_failure ~what:(`With_type cfrag) `Compile;
+                    Errors.report ~what:(`With_type cfrag) `Compile;
                     (cfrag, frag)
               in
               let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
@@ -525,7 +472,7 @@ and module_type_expr :
                         (Lang_of.Path.resolved_module_fragment lang_of_map
                            cfrag) )
                 | None ->
-                    lookup_failure ~what:(`With_module cfrag) `Resolve;
+                    Errors.report ~what:(`With_module cfrag) `Resolve;
                     (cfrag, frag)
               in
               let mpath' = module_path env mpath in
@@ -546,7 +493,7 @@ and module_type_expr :
                         (Lang_of.Path.resolved_type_fragment lang_of_map cfrag)
                     )
                 | None ->
-                    lookup_failure ~what:(`With_type cfrag) `Compile;
+                    Errors.report ~what:(`With_type cfrag) `Compile;
                     (cfrag, frag)
               in
               let eqn' = type_decl_equation env (id :> Id.Parent.t) eqn in
@@ -588,8 +535,8 @@ and module_type_expr :
               Tools.signature_of_module_type_expr ~mark_substituted:true env
                 cexpr
             with
-            | Error _ ->
-                lookup_failure ~what:(`Module_type id) `Lookup;
+            | Error e ->
+                Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
                 With (expr, subs)
             | Ok sg ->
                 let fragment_root =
@@ -696,8 +643,8 @@ and type_expression_package env parent p =
   match Tools.resolve_module_type ~mark_substituted:true env cp with
   | Ok (path, mt) -> (
       match Tools.signature_of_module_type env mt with
-      | Error _ ->
-          lookup_failure ~what:(`Package cp) `Lookup;
+      | Error e ->
+          Errors.report ~what:(`Package cp) ~tools_error:e `Lookup;
           p
       | Ok sg ->
           let substitution (frag, t) =
@@ -709,7 +656,7 @@ and type_expression_package env parent p =
               | Some cfrag' ->
                   `Resolved (Lang_of.(Path.resolved_type_fragment empty) cfrag')
               | None ->
-                  lookup_failure ~what:(`Type cfrag) `Compile;
+                  Errors.report ~what:(`Type cfrag) `Compile;
                   frag
             in
             (frag', type_expression env parent t)

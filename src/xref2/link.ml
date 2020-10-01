@@ -13,11 +13,6 @@ end
 
 exception Loop
 
-let report_tool_error type_s path e =
-  let kind = Tools.kind_of_error e in
-  Lookup_failures.report ?kind "Failed to lookup %s %a: %a" type_s
-    Component.Fmt.model_path path Tools.Fmt.error e
-
 let rec is_forward : Paths.Path.Module.t -> bool = function
   | `Resolved _ -> false
   | `Root _ -> false
@@ -67,7 +62,7 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             let result = Tools.reresolve_type env p' in
             `Resolved (Cpath.resolved_type_path_of_cpath result)
         | Error e ->
-            report_tool_error "type" (p :> Paths.Path.t) (e :> Errors.any);
+            Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
             Cpath.type_path_of_cpath cp )
 
 and module_type_path :
@@ -87,7 +82,7 @@ and module_type_path :
             let result = Tools.reresolve_module_type env p' in
             `Resolved (Cpath.resolved_module_type_path_of_cpath result)
         | Error e ->
-            report_tool_error "module type" (p :> Paths.Path.t) (e :> Errors.any);
+            Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
             Cpath.module_type_path_of_cpath cp )
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
@@ -106,7 +101,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             `Resolved (Cpath.resolved_module_path_of_cpath result)
         | Error _ when is_forward p -> p
         | Error e ->
-            report_tool_error "path" (p :> Paths.Path.t) (e :> Errors.any);
+            Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             Cpath.module_path_of_cpath cp )
 
 let rec unit (resolver : Env.resolver) t =
@@ -489,9 +484,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
   let open ModuleType in
   match Env.(lookup_by_id s_module_type) m.id env with
   | None ->
-      Lookup_failures.report "Failed to lookup module type %a"
-        Component.Fmt.model_identifier
-        (m.id :> Id.t);
+      Errors.report ~what:(`Module_type m.id) `Lookup;
       m
   | Some (`ModuleType (_, m')) ->
       let env' = Env.add_module_type_functor_args m' m.id env in
@@ -559,7 +552,7 @@ and functor_parameter_parameter :
   let sg_id = (a.id :> Id.Signature.t) in
   match
     let open Utils.ResultMonad in
-    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:"lookup"
+    Env.(lookup_by_id s_module) a.id env' |> of_option ~error:`Lookup
     >>= fun (`Module (_, functor_arg)) ->
     let functor_arg = Component.Delayed.get functor_arg in
     let env =
@@ -575,7 +568,7 @@ and functor_parameter_parameter :
             in
             Ok (env, Some compiled_e)
         | Error `OpaqueModule -> Ok (env, None)
-        | Error _ -> Error "expand" )
+        | Error e -> Error (`Expand e) )
     | x, _ -> Ok (env, x)
   with
   | Ok (env, expn) ->
@@ -592,10 +585,11 @@ and functor_parameter_parameter :
       in
       let expansion = Opt.map (module_expansion env sg_id) expn in
       { a with expr; display_expr; expansion }
-  | Error s ->
-      Lookup_failures.report "Failed to %s functor parameter %a" s
-        Component.Fmt.model_identifier
-        (a.id :> Id.t);
+  | Error `Lookup ->
+      Errors.report ~what:(`Functor_parameter a.id) `Lookup;
+      a
+  | Error (`Expand e) ->
+      Errors.report ~what:(`Functor_parameter a.id) ~tools_error:e `Expand;
       a
 
 and functor_argument env a =
@@ -709,9 +703,8 @@ and module_type_expr :
       with
       | Ok sg ->
           With (module_type_expr env id expr, handle_fragments env id sg subs)
-      | Error _ ->
-          Lookup_failures.report "Failed to resolve module type %a"
-            Component.Fmt.module_type_expr cexpr;
+      | Error e ->
+          Errors.report ~what:(`Module_type_expr cexpr) ~tools_error:e `Resolve_module_type;
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in

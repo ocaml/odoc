@@ -11,81 +11,6 @@ type module_modifiers =
   | `SubstAliased of Cpath.Resolved.module_
   | `SubstMT of Cpath.Resolved.module_type ]
 
-module Fmt = struct
-  let rec error : Format.formatter -> Errors.any -> unit =
-   fun fmt err ->
-    match err with
-    | `OpaqueModule -> Format.fprintf fmt "OpaqueModule"
-    | `UnresolvedForwardPath -> Format.fprintf fmt "Unresolved forward path"
-    | `UnresolvedPath (`Module p) ->
-        Format.fprintf fmt "Unresolved module path %a" Component.Fmt.module_path
-          p
-    | `UnresolvedPath (`ModuleType p) ->
-        Format.fprintf fmt "Unresolved module type path %a"
-          Component.Fmt.module_type_path p
-    | `LocalMT (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `Local (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `LocalType (_, id) -> Format.fprintf fmt "Local id found: %a" Ident.fmt id
-    | `Unresolved_apply -> Format.fprintf fmt "Unresolved apply"
-    | `Find_failure -> Format.fprintf fmt "Find failure"
-    | `Lookup_failure m ->
-        Format.fprintf fmt "Lookup failure (module): %a"
-          Component.Fmt.model_identifier
-          (m :> Odoc_model.Paths.Identifier.t)
-    | `Lookup_failure_root r ->
-        Format.fprintf fmt "Lookup failure (root module): %s" r
-    | `Lookup_failureMT m ->
-        Format.fprintf fmt "Lookup failure (module type): %a"
-          Component.Fmt.model_identifier
-          (m :> Odoc_model.Paths.Identifier.t)
-    | `Lookup_failureT m ->
-        Format.fprintf fmt "Lookup failure (type): %a"
-          Component.Fmt.model_identifier
-          (m :> Odoc_model.Paths.Identifier.t)
-    | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
-    | `Class_replaced -> Format.fprintf fmt "Class replaced"
-    | `Parent p -> parent fmt p
-
-  and parent : Format.formatter -> Errors.parent_lookup_error -> unit =
-   fun fmt err ->
-    match err with
-    | `Parent p -> parent fmt p
-    | `Parent_sig e ->
-        Format.fprintf fmt "Parent_sig: %a" error (e :> Errors.any)
-    | `Parent_module_type e ->
-        Format.fprintf fmt "Parent_module_type: %a" error (e :> Errors.any)
-    | `Parent_expr e ->
-        Format.fprintf fmt "Parent_expr: %a" error (e :> Errors.any)
-    | `Parent_module e ->
-        Format.fprintf fmt "Parent_module: %a" error (e :> Errors.any)
-    | `Fragment_root -> Format.fprintf fmt "Fragment root"
-end
-
-let rec kind_of_module_cpath = function
-  | `Root _ -> Some `Root
-  | `Substituted p' | `Dot (p', _) -> kind_of_module_cpath p'
-  | `Apply (a, b) -> (
-      match kind_of_module_cpath a with
-      | Some _ as a -> a
-      | None -> kind_of_module_cpath b )
-  | _ -> None
-
-let rec kind_of_module_type_cpath = function
-  | `Substituted p' -> kind_of_module_type_cpath p'
-  | `Dot (p', _) -> kind_of_module_cpath p'
-  | _ -> None
-
-let rec kind_of_error = function
-  | `UnresolvedPath (`Module cp) -> kind_of_module_cpath cp
-  | `UnresolvedPath (`ModuleType cp) -> kind_of_module_type_cpath cp
-  | `Lookup_failure (`Root _) | `Lookup_failure_root _ -> Some `Root
-  | `Parent (`Parent_sig e) -> kind_of_error (e :> Errors.any)
-  | `Parent (`Parent_module_type e) -> kind_of_error (e :> Errors.any)
-  | `Parent (`Parent_expr e) -> kind_of_error (e :> Errors.any)
-  | `Parent (`Parent_module e) -> kind_of_error (e :> Errors.any)
-  | `Parent (`Parent _ as e) -> kind_of_error (e :> Errors.any)
-  | _ -> None
-
 let core_types =
   let open Odoc_model.Lang.TypeDecl in
   let open Odoc_model.Paths in
@@ -239,7 +164,7 @@ let simplify_resolved_module_path :
   in
   check_ident id
 
-open Errors
+open Errors.Tools_error
 
 type resolve_module_result =
   ( Cpath.Resolved.module_ * Component.Module.t Component.Delayed.t,

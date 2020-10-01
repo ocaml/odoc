@@ -5,7 +5,7 @@
     signatures, handling fragment substitution and others.
 *)
 
-open Errors
+open Errors.Tools_error
 
 (** {2 Lookup and resolve functions} *)
 
@@ -306,15 +306,3 @@ val reset_caches : unit -> unit
 
 val disable_all_caches : unit -> unit
 (** Disable the caches completely *)
-
-module Fmt : sig
-  val error : Format.formatter -> Errors.any -> unit
-  (** Format function for errors declared in the {!module:Errors} module *)
-end
-
-val kind_of_error : Errors.any -> [> `Root ] option
-(** To use as [Lookup_failures.kind]. *)
-
-val kind_of_module_cpath : Cpath.module_ -> [> `Root ] option
-
-val kind_of_module_type_cpath : Cpath.module_ -> [> `Root ] option
