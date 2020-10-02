@@ -13,7 +13,7 @@ their relationships.
 
 {1:bucklescript BuckleScript}
 
-You can use the {{:https://ostera.github.io/bsdoc}[bsdoc]} npm package to use
+You can use the {{:https://reasonml-community.github.io/bsdoc}[bsdoc]} npm package to use
 `odoc` in your BuckleScript projects.
 
 {1:manual-usage Manual Usage}
