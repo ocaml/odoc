@@ -65,7 +65,7 @@ The generated docs can then be found locally at
 
 ## Using `odoc` with BuckleScript/Reason
 
-You can use the [`bsdoc`](https://reuniverse.github.io/bsdoc) npm package to use
+You can use the [`bsdoc`](https://reasonml-community.github.io/bsdoc) npm package to use
 `odoc` in your BuckleScript projects.
 
 <br/>
