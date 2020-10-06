@@ -562,9 +562,8 @@ and u_module_type_expr :
       with
       | Ok sg ->
           With (handle_fragments env id sg subs, u_module_type_expr env id expr)
-      | Error _ ->
-          Lookup_failures.report "Failed to resolve module type %a"
-            Component.Fmt.u_module_type_expr cexpr;
+      | Error e ->
+          Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Resolve;
           unresolved )
   | TypeOf (StructInclude p)-> TypeOf (StructInclude (module_path env p))
   | TypeOf (ModPath p) -> TypeOf (ModPath (module_path env p))
@@ -586,9 +585,8 @@ and module_type_expr :
       with
       | Ok sg ->
           With {w_substitutions=handle_fragments env id sg w_substitutions; w_expansion=do_expn w_expansion; w_expr=u_module_type_expr env id w_expr}
-      | Error _ ->
-          Lookup_failures.report "Failed to resolve module type %a"
-            Component.Fmt.u_module_type_expr cexpr;
+      | Error e ->
+          Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Expand;
           unresolved )
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in

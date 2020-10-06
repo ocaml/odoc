@@ -186,6 +186,7 @@ let report ~what ?tools_error action =
   | `Module_type id -> r "module type" fmt_id id
   | `Module_path path -> r "module path" module_path path
   | `Module_type_path path -> r "module type path" module_type_path path
+  | `Module_type_U expr -> r "module type expr" u_module_type_expr expr
   | `Include decl -> r "include" include_decl decl
   | `Package path ->
       r "module package" module_type_path (path :> Cpath.module_type)
