@@ -53,36 +53,6 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
     | Error _ -> Cpath.class_type_path_of_cpath cp
 
-let lookup_failure ~what =
-  let r action =
-    let r subject pp_a a =
-      Lookup_failures.report "Failed to %s %s %a" action subject pp_a a
-    in
-    let r_id subject id =
-      r subject Component.Fmt.model_identifier (id :> Id.t)
-    in
-    let open Component.Fmt in
-    match what with
-    | `Functor_parameter id -> r_id "functor parameter" id
-    | `Value id -> r_id "value" id
-    | `Class id -> r_id "class" id
-    | `Class_type id -> r_id "class type" id
-    | `Module id -> r_id "module" id
-    | `Module_type id -> r_id "module type" id
-    | `Include decl -> r "include" include_decl decl
-    | `Package path ->
-        r "module package" module_type_path (path :> Cpath.module_type)
-    | `Type cfrag -> r "type" type_fragment cfrag
-    | `With_module frag -> r "module substitution" module_fragment frag
-    | `With_type frag -> r "type substitution" type_fragment frag
-  in
-  function
-  | `Lookup -> r "lookup"
-  | `Expand -> r "compile expansion for"
-  | `Resolve_module_type -> r "resolve type of"
-  | `Resolve -> r "resolve"
-  | `Compile -> r "compile"
-
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
   let imports, env = Env.initial_env t resolver in
@@ -308,8 +278,8 @@ and include_ : Env.t -> Include.t -> Include.t =
         >>= Expand_tools.assert_not_functor
       | ModuleType mty -> Expand_tools.aux_expansion_of_u_module_type_expr env mty)
     with
-  | Error _ ->
-      lookup_failure ~what:(`Include decl) `Expand;
+  | Error e ->
+      Errors.report ~what:(`Include decl) ~tools_error:e `Expand;
       i.expansion
   | Ok (sg) ->
       let map = { Lang_of.empty with shadowed = i.expansion.shadowed } in
@@ -470,8 +440,8 @@ in
         Tools.signature_of_u_module_type_expr ~mark_substituted:true env
           cexpr
       with
-      | Error _ ->
-          lookup_failure ~what:(`Module_type id) `Lookup;
+      | Error e ->
+          Errors.report ~what:(`Module_type id) ~tools_error:e `Lookup;
           None
       | Ok sg ->
           let fragment_root =
