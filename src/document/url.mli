@@ -40,7 +40,7 @@ module Anchor : sig
   type t = {
     page : Path.t ;
     anchor : string;
-    (** Anchor in {!page} where the element is attached *)
+    (** Anchor in {!field-page} where the element is attached *)
 
     kind : string;
     (** What kind of element the path points to.
