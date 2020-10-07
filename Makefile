@@ -39,19 +39,11 @@ ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
 dune-test : build
 	(cd test/dune && PATH=$(ODOC_RELATIVE_PATH):$$PATH dune build @doc)
 
-COVERAGE := _coverage
-BISECT_FILES_PATTERN := _build/default/test/*/bisect*.out
-
 .PHONY : coverage
 coverage :
-	find . -name 'bisect*.out' | xargs rm -f
-	BISECT_ENABLE=yes dune build @test/parser/runtest --no-buffer -j 1 --force
-	BISECT_ENABLE=yes dune build @test/html/runtest --no-buffer -j 1 --force
-	@bisect-ppx-report \
-	    -I _build/default/ -html $(COVERAGE)/ \
-	    -text - -summary-only \
-	    $(BISECT_FILES_PATTERN)
-	@echo See $(COVERAGE)/index.html
+	BISECT_ENABLE=yes dune build @test/runtest --no-buffer -j 1 --force || true
+	bisect-ppx-report html
+	@echo See _coverage/index.html
 
 .PHONY : clean
 clean :
