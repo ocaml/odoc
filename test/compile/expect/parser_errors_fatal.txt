@@ -33,9 +33,6 @@ Suggestion: try '\}'.
 File "cases/parser_errors_fatal.mli", line 46, characters 4-5:
 Unpaired ']' (end of code).
 Suggestion: try '\]'.
-File "cases/parser_errors_fatal.mli", line 49, characters 4-35:
-'{%invalid:': bad raw markup target.
-Suggestion: try '{%html:...%}'.
 File "cases/parser_errors_fatal.mli", line 53, characters 4-5:
 Unpaired '}' (end of markup).
 Suggestion: try '\}'.
