@@ -681,7 +681,7 @@ let read_type_extension env parent id ext rest =
     List.map (read_type_parameter false Variance.null) type_params
   in
   let private_ = (ext.ext_private = Private) in
-    { type_path; type_params;
+    { parent; type_path; type_params;
       doc; private_;
       constructors; }
 

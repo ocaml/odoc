@@ -321,7 +321,7 @@ let read_type_extension env parent tyext =
   let constructors =
     List.map (read_extension_constructor env parent) tyext.tyext_constructors
   in
-    { type_path; doc; type_params; private_; constructors; }
+    { parent; type_path; doc; type_params; private_; constructors; }
 
 let read_exception env parent (ext : extension_constructor) =
   let open Exception in
