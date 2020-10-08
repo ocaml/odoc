@@ -243,6 +243,7 @@ and Extension : sig
   end
 
   type t = {
+    parent : Identifier.Signature.t;
     type_path : Path.Type.t;
     doc : Comment.docs;
     type_params : TypeDecl.param list;

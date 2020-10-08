@@ -130,7 +130,7 @@ let read_type_extension env parent tyext =
            env parent ext.ext_id ext.ext_type)
       tyext.tyext_constructors
   in
-    { type_path; doc; type_params; private_; constructors; }
+    { parent; type_path; doc; type_params; private_; constructors; }
 
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in

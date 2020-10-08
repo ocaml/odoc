@@ -584,6 +584,7 @@ and value_ map parent id v =
 and typ_ext map parent t =
   let open Component.Extension in
   {
+    parent;
     type_path = Path.type_ map t.type_path;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
     type_params = t.type_params;
