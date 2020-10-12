@@ -100,14 +100,14 @@ end = struct
       in
       Fs.File.(set_ext ".odoc" output)
 
-  let compile hidden directories resolve_fwd_refs dst package_opt parent_name_opt open_modules input warn_error =
+  let compile hidden directories resolve_fwd_refs dst package_opt parent_name_opt open_modules children input warn_error =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories ~open_modules
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    Compile.compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~output ~warn_error input
+    Compile.compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~children ~output ~warn_error input
 
   let input =
     let doc = "Input cmti, cmt, cmi or mld file" in
@@ -128,6 +128,11 @@ end = struct
     in
     Arg.(value & opt_all string default & info ~docv:"MODULE" ~doc ["open"])
 
+  let children =
+    let doc = "Specify the odoc file as a child. Can be used multiple times. Only applies to mld files" in
+    let default = [] in
+    Arg.(value & opt_all string default & info ~docv:"CHILD" ~doc ["child"])
+
   let cmd =
     let package_opt =
       let doc = "Package the input is part of (deprecated - use '--parent')" in
@@ -144,7 +149,7 @@ end = struct
       Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const handle_error $ (const compile $ hidden $ odoc_file_directories $
-          resolve_fwd_refs $ dst $ package_opt $ parent_opt $ open_modules $ input $ warn_error))
+          resolve_fwd_refs $ dst $ package_opt $ parent_opt $ open_modules $ children $ input $ warn_error))
 
   let info =
     Term.info "compile"
