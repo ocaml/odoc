@@ -213,9 +213,6 @@ module Identifier : sig
 
   val label_parent : [< t] -> LabelParent.t
 
-  val split :
-    [< t ] -> [ `Root of Root.t option | `Parent of LabelParent.t ] * string
-
   module Sets : sig
     module Signature : Set.S with type elt = Signature.t
     module ClassSignature : Set.S with type elt = ClassSignature.t
