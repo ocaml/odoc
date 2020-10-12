@@ -139,7 +139,6 @@ end
 
 let bind pp x ppf = pp ppf x
 let mlabel ppf = macro "label" escape_ref ppf
-let verbatim = macro "verbatim" Fmt.string
 let mbegin ?options = macro "begin" ?options Fmt.string
 let mend = macro "end" Fmt.string
 let code_fragment = macro "codefragment"
@@ -165,6 +164,7 @@ let env name pp ?(with_break=false) ?(opts=[]) ?(args=[]) ppf content =
 
 let indent pp ppf x = env "ocamlindent" pp ppf x
 let inline_code = macro "inlinecode"
+let verbatim = env "verbatim" Fmt.string
 
 let mhyperref pp r ppf =
   match r.target, r.text with
