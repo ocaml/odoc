@@ -25,7 +25,7 @@ This will have produced a file called 'page-package.odoc'. Now we can compile th
 
 Link and generate the HTML:
 
-  $ for i in *.odoc; do odoc link $i; done
+  $ for i in *.odoc; do odoc link -I . $i; done
   $ for i in *.odocl; do odoc html-generate $i -o html; done
 
 We should see a directory structure here where the module 'Test' is found underneath the top-level directory 'package'. Also, the contents of the

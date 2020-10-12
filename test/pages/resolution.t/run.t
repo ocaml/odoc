@@ -1,27 +1,83 @@
 Check resolution works
 
+  $ cat top1.mld
+  {0 Top1}
+  {!child-sub1}
+  {!child:sub2}
+  $ cat sub1.mld
+  {0 Sub1}
+  {!child:M1}
+  $ cat sub2.mld
+  {0 Sub2}
+
   $ ocamlc -c -bin-annot m1.mli
-  $ odoc compile top1.mld --child sub1
-  $ odoc compile sub1.mld -I . --parent top1
-  $ odoc link -I . page-top1.odoc
-  odoc: internal error, uncaught exception:
-        Failure("Child unimplemented")
-        Raised at Stdlib.failwith in file "stdlib.ml", line 29, characters 17-33
-        Called from Odoc_xref2__Link.comment_inline_element in file "src/xref2/link.ml", line 144, characters 12-45
-        Called from Odoc_xref2__Lookup_failures.with_location in file "src/xref2/lookup_failures.ml", line 36, characters 10-14
-        Called from Odoc_xref2__Link.with_location in file "src/xref2/link.ml", line 201, characters 4-71
-        Called from Stdlib__list.map in file "list.ml", line 92, characters 20-23
-        Called from Odoc_xref2__Link.comment_nestable_block_element in file "src/xref2/link.ml", line 167, characters 17-75
-        Called from Odoc_xref2__Lookup_failures.with_location in file "src/xref2/lookup_failures.ml", line 36, characters 10-14
-        Called from Odoc_xref2__Link.with_location in file "src/xref2/link.ml", line 201, characters 4-71
-        Called from Stdlib__list.map in file "list.ml", line 92, characters 20-23
-        Called from Stdlib__list.map in file "list.ml", line 92, characters 32-39
-        Called from Stdlib__list.map in file "list.ml", line 92, characters 32-39
-        Called from Odoc_xref2__Link.resolve_page.(fun) in file "src/xref2/link.ml", line 823, characters 10-75
-        Called from Odoc_xref2__Lookup_failures.catch_failures in file "src/xref2/lookup_failures.ml", line 18, characters 10-14
-        Called from Odoc_odoc__Odoc_link.from_odoc.(fun) in file "src/odoc/odoc_link.ml", line 10, characters 4-49
-        Called from Cmdliner_term.app.(fun) in file "cmdliner_term.ml", line 25, characters 19-24
-        Called from Cmdliner_term.app.(fun) in file "cmdliner_term.ml", line 23, characters 12-19
-        Called from Cmdliner.Term.run in file "cmdliner.ml", line 117, characters 32-39
-  [2]
-  $ odoc link -I . page-sub1.odoc
+  $ odoc compile top1.mld --child sub1 --child sub2
+  $ odoc compile sub1.mld -I . --parent top1 --child m1
+  $ odoc compile sub2.mld -I . --parent top1
+  $ odoc compile m1.cmti -I . --parent sub1
+  $ for i in *.odoc; do odoc link -I . $i; done
+  $ for i in *.odocl; do odoc html-generate -o html $i; done
+
+If everything has worked to plan, we'll have resolved references for all of the 'child' refs in the various pages. Additionally, the
+references should be to the correct identifiers - so top1 should be a RootPage, sub1 is a Page, sub2 is a LeafPage, and m1 is a Root.
+
+This is the '{!child-sub1}' reference
+  $ odoc_print page-top1.odocl | jq '.content[1][1]["`Paragraph"][0][1]["`Reference"][0]'
+  {
+    "`Resolved": {
+      "`Identifier": {
+        "`Page": [
+          {
+            "`RootPage": "top1"
+          },
+          "sub1"
+        ]
+      }
+    }
+  }
+
+This is the '{!child:sub2}' reference
+  $ odoc_print page-top1.odocl | jq '.content[1][1]["`Paragraph"][2][1]["`Reference"][0]'
+  {
+    "`Resolved": {
+      "`Identifier": {
+        "`LeafPage": [
+          {
+            "`RootPage": "top1"
+          },
+          "sub2"
+        ]
+      }
+    }
+  }
+
+This is the '{!child:M1}' reference
+  $ odoc_print page-sub1.odocl | jq '.content[1][1]["`Paragraph"][0][1]["`Reference"][0]'
+  {
+    "`Resolved": {
+      "`Identifier": {
+        "`Root": [
+          {
+            "`Page": [
+              {
+                "`RootPage": "top1"
+              },
+              "sub1"
+            ]
+          },
+          "M1"
+        ]
+      }
+    }
+  }
+
+Let's also check the hierarchy of files produced:
+
+  $ odoc support-files -o html
+  $ find html -type f
+  html/top1/index.html
+  html/top1/sub2.html
+  html/top1/sub1/M1/index.html
+  html/top1/sub1/index.html
+  html/highlight.pack.js
+  html/odoc.css

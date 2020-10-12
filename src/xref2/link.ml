@@ -815,9 +815,8 @@ let build_resolver :
 *)
 let link x y = Lookup_failures.catch_failures (fun () -> unit x y)
 
-let resolve_page resolver y =
-  let env = Env.set_resolver Env.empty resolver in
-  Lookup_failures.catch_failures (fun () ->
+let resolve_page env y =
+   Lookup_failures.catch_failures (fun () ->
       {
         y with
         Page.content =

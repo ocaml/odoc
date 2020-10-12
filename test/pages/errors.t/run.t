@@ -30,5 +30,8 @@ And these need to specify compilation unit children as well as mld children
 
 Linking checks the children are all present:
   $ odoc compile top1.mld --child foo
-  $ odoc link page-top1.odoc
+  $ odoc link page-top1.odoc -I .
+  ERROR: Couldn't find child: foo
+  
+  [1]
 

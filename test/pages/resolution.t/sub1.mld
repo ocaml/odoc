@@ -1,2 +1,2 @@
 {0 Sub1}
-This is sub1
+{!child:M1}

@@ -12,6 +12,6 @@ val link :
   Odoc_model.Lang.Compilation_unit.t Lookup_failures.with_failures
 
 val resolve_page :
-  Env.resolver ->
+  Env.t ->
   Odoc_model.Lang.Page.t ->
   Odoc_model.Lang.Page.t Lookup_failures.with_failures
