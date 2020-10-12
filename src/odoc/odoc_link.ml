@@ -7,7 +7,17 @@ let from_odoc ~env ~warn_error input output =
   | Page _ ->
     Page.load input >>= fun page ->
     let resolve_env = Env.build env (`Page page) in
-    Odoc_xref2.Link.resolve_page resolve_env page
+    let env = Odoc_xref2.Env.set_resolver Odoc_xref2.Env.empty resolve_env in
+    let res = List.fold_right (fun child res ->
+      res >>= fun _ ->
+      match Odoc_xref2.Env.lookup_page child env with
+      | Some _ -> Ok ()
+      | None ->
+      match Odoc_xref2.Env.lookup_root_module child env with
+      | Some _ -> Ok ()
+      | None -> Error (`Msg (Format.sprintf "Couldn't find child: %s\n%!" child ))) page.Odoc_model.Lang.Page.children (Ok ()) in
+    res >>= fun _ ->
+    Odoc_xref2.Link.resolve_page env page
     |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun odoctree ->
     Page.save output odoctree;
