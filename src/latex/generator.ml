@@ -203,7 +203,7 @@ let level_macro = function
   | 0 ->  macro "section"
   | 1 -> macro "subsection"
   | 2 -> macro "subsubsection"
-  | 3 | _ -> macro "paragraph"
+  | 3 | _ -> macro "subsubsection"
 
 let none _ppf () = ()
 
