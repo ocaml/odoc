@@ -324,7 +324,7 @@ and href ppf (l,txt) =
   let footnote = macro "footnote" url in
   match txt with
   | Some txt ->
-    Fmt.pf ppf {|\href{%s}{%a}%a|} l pp txt footnote l
+    Fmt.pf ppf {|\href{%s}{%a}%a|} (escape_text ~code_hyphenation:false l) pp txt footnote l
   | None ->  url ppf l
 
 and large_table size ppf tbl =
