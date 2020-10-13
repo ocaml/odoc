@@ -213,10 +213,13 @@ let list kind pp ppf x =
     | Block.Ordered -> env "enumerate"
     | Unordered -> env "itemize" in
   let elt ppf = macro "item" pp ppf in
-  list
-    (Fmt.list ~sep:(fun ppf () -> break ppf Aesthetic) elt)
-    ppf
-    x
+  match x with
+  | [] -> (* empty list are not supported *) ()
+  | _ ->
+    list
+      (Fmt.list ~sep:(fun ppf () -> break ppf Aesthetic) elt)
+      ppf
+      x
 
 let description pp ppf x =
   let elt ppf (d,elt) = macro "item" ~options:[bind pp d] pp ppf elt in
