@@ -31,6 +31,7 @@ test : build
 	dune build @test/compile/runtest --no-buffer -j 1
 	dune build @test/html/runtest --no-buffer -j 1
 	dune build @test/man/runtest --no-buffer -j 1
+	dune build @test/latex/runtest --no-buffer -j 1
 	dune build @test/xref2/runtest --no-buffer -j 1
 
 ODOC_RELATIVE_PATH := ../../_build/install/default/bin/
