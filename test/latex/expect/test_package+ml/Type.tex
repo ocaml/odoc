@@ -1,0 +1,223 @@
+\section{Module \inlinecode{Type}}\label{package-test+u+package+++ml-module-Type}%
+\label{package-test+u+package+++ml-module-Type-type-abstract}\codefragment{\begin{keyword}type\end{keyword}
+ abstract}\begin{ocamlindent}Some \emph{documentation}.\end{ocamlindent}%
+\medbreak
+\label{package-test+u+package+++ml-module-Type-type-alias}\codefragment{\begin{keyword}type\end{keyword}
+ alias = int}\\
+\label{package-test+u+package+++ml-module-Type-type-private+u+}\codefragment{\begin{keyword}type\end{keyword}
+ private\_\allowbreak{} = \begin{keyword}private\end{keyword}
+ int}\\
+\label{package-test+u+package+++ml-module-Type-type-constructor}\codefragment{\begin{keyword}type\end{keyword}
+ 'a constructor = \begin{type-var}'a\end{type-var}
+}\\
+\label{package-test+u+package+++ml-module-Type-type-arrow}\codefragment{\begin{keyword}type\end{keyword}
+ arrow = int $\rightarrow$ int}\\
+\label{package-test+u+package+++ml-module-Type-type-higher+u+order}\codefragment{\begin{keyword}type\end{keyword}
+ higher\_\allowbreak{}order = (int $\rightarrow$ int) $\rightarrow$ int}\\
+\label{package-test+u+package+++ml-module-Type-type-labeled}\codefragment{\begin{keyword}type\end{keyword}
+ labeled = l:int $\rightarrow$ int}\\
+\label{package-test+u+package+++ml-module-Type-type-optional}\codefragment{\begin{keyword}type\end{keyword}
+ optional = ?l:int $\rightarrow$ int}\\
+\label{package-test+u+package+++ml-module-Type-type-labeled+u+higher+u+order}\codefragment{\begin{keyword}type\end{keyword}
+ labeled\_\allowbreak{}higher\_\allowbreak{}order = (l:int $\rightarrow$ int) $\rightarrow$ (?l:int $\rightarrow$ int) $\rightarrow$ int}\\
+\label{package-test+u+package+++ml-module-Type-type-pair}\codefragment{\begin{keyword}type\end{keyword}
+ pair = int * int}\\
+\label{package-test+u+package+++ml-module-Type-type-parens+u+dropped}\codefragment{\begin{keyword}type\end{keyword}
+ parens\_\allowbreak{}dropped = int * int}\\
+\label{package-test+u+package+++ml-module-Type-type-triple}\codefragment{\begin{keyword}type\end{keyword}
+ triple = int * int * int}\\
+\label{package-test+u+package+++ml-module-Type-type-nested+u+pair}\codefragment{\begin{keyword}type\end{keyword}
+ nested\_\allowbreak{}pair = (int * int) * int}\\
+\label{package-test+u+package+++ml-module-Type-type-instance}\codefragment{\begin{keyword}type\end{keyword}
+ instance = int \hyperref[package-test+u+package+++ml-module-Type-type-constructor]{\inlinecode{constructor}}}\\
+\label{package-test+u+package+++ml-module-Type-type-variant+u+e}\codefragment{\begin{keyword}type\end{keyword}
+ variant\_\allowbreak{}e = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+e.a}\\
+\end{longtable}%
+}\codefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-variant}\codefragment{\begin{keyword}type\end{keyword}
+ variant = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\codefragment{| \begin{constructor}A\end{constructor}
+}\label{package-test+u+package+++ml-module-Type-type-variant.A}& \\
+\codefragment{| \begin{constructor}B\end{constructor}
+ \begin{keyword}of\end{keyword}
+ int}\label{package-test+u+package+++ml-module-Type-type-variant.B}& \\
+\codefragment{| \begin{constructor}C\end{constructor}
+}\label{package-test+u+package+++ml-module-Type-type-variant.C}& foo\\
+\codefragment{| \begin{constructor}D\end{constructor}
+}\label{package-test+u+package+++ml-module-Type-type-variant.D}& \emph{bar}\\
+\codefragment{| \begin{constructor}E\end{constructor}
+ \begin{keyword}of\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-type-variant+u+e]{\inlinecode{variant\_\allowbreak{}e}}}\label{package-test+u+package+++ml-module-Type-type-variant.E}& \\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-variant+u+c}\codefragment{\begin{keyword}type\end{keyword}
+ variant\_\allowbreak{}c = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+c.a}\\
+\end{longtable}%
+}\codefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-gadt}\codefragment{\begin{keyword}type\end{keyword}
+ \_\allowbreak{} gadt = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}A\end{constructor}
+ : int \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.A}\\
+\codefragment{| \begin{constructor}B\end{constructor}
+ : int $\rightarrow$ string \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.B}\\
+\codefragment{| \begin{constructor}C\end{constructor}
+ : \hyperref[package-test+u+package+++ml-module-Type-type-variant+u+c]{\inlinecode{variant\_\allowbreak{}c}} $\rightarrow$ unit \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.C}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt}\codefragment{\begin{keyword}type\end{keyword}
+ degenerate\_\allowbreak{}gadt = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}A\end{constructor}
+ : \hyperref[package-test+u+package+++ml-module-Type-type-degenerate+u+gadt]{\inlinecode{degenerate\_\allowbreak{}gadt}}}\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt.A}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-private+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ private\_\allowbreak{}variant = \begin{keyword}private\end{keyword}
+ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}A\end{constructor}
+}\label{package-test+u+package+++ml-module-Type-type-private+u+variant.A}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-record}\codefragment{\begin{keyword}type\end{keyword}
+ record = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\inlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.a}& \\
+\inlinecode{\begin{keyword}mutable\end{keyword}
+ b : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.b}& \\
+\inlinecode{c : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.c}& foo\\
+\inlinecode{d : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.d}& \emph{bar}\\
+\inlinecode{e : a.\allowbreak{} \begin{type-var}'a\end{type-var}
+;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.e}& \\
+\end{longtable}%
+}\codefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ polymorphic\_\allowbreak{}variant = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{| }\inlinecode{`A}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.A}\\
+\inlinecode{| }\inlinecode{`B \begin{keyword}of\end{keyword}
+ int}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.B}\\
+\inlinecode{| }\inlinecode{`C \begin{keyword}of\end{keyword}
+ int * unit}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.C}\\
+\inlinecode{| }\inlinecode{`D}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.D}\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension}\codefragment{\begin{keyword}type\end{keyword}
+ polymorphic\_\allowbreak{}variant\_\allowbreak{}extension = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{| }\inlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\inlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension.polymorphic+u+variant}\\
+\inlinecode{| }\inlinecode{`E}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension.E}\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ nested\_\allowbreak{}polymorphic\_\allowbreak{}variant = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{| }\inlinecode{`A \begin{keyword}of\end{keyword}
+ [ `B | `C ]}\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant.A}\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-private+u+extenion#row}\codefragment{\begin{keyword}type\end{keyword}
+ private\_\allowbreak{}extenion\#row}\\
+\label{package-test+u+package+++ml-module-Type-type-private+u+extenion}\codefragment{\begin{keyword}and\end{keyword}
+ private\_\allowbreak{}extenion = \begin{keyword}private\end{keyword}
+ [> }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{| }\inlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\inlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-private+u+extenion.polymorphic+u+variant}\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-object+u+}\codefragment{\begin{keyword}type\end{keyword}
+ object\_\allowbreak{} = < a : int;\allowbreak{} b : int;\allowbreak{} c : int;\allowbreak{} >}\\
+\label{package-test+u+package+++ml-module-Type-module-type-X}\codefragment{\begin{keyword}module\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-module-type-X]{\inlinecode{X}}}\codefragment{ = \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Type-module-type-X-type-t}\codefragment{\begin{keyword}type\end{keyword}
+ t}\\
+\label{package-test+u+package+++ml-module-Type-module-type-X-type-u}\codefragment{\begin{keyword}type\end{keyword}
+ u}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\label{package-test+u+package+++ml-module-Type-type-module+u+}\codefragment{\begin{keyword}type\end{keyword}
+ module\_\allowbreak{} = (\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-module-type-X]{\inlinecode{X}})}\\
+\label{package-test+u+package+++ml-module-Type-type-module+u+substitution}\codefragment{\begin{keyword}type\end{keyword}
+ module\_\allowbreak{}substitution = (\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-module-type-X]{\inlinecode{X}} \begin{keyword}with\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-module-type-X-type-t]{\inlinecode{t}} = int \begin{keyword}and\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-module-type-X-type-u]{\inlinecode{u}} = unit)}\\
+\label{package-test+u+package+++ml-module-Type-type-covariant}\codefragment{\begin{keyword}type\end{keyword}
+ +'a covariant}\\
+\label{package-test+u+package+++ml-module-Type-type-contravariant}\codefragment{\begin{keyword}type\end{keyword}
+ -'a contravariant}\\
+\label{package-test+u+package+++ml-module-Type-type-bivariant}\codefragment{\begin{keyword}type\end{keyword}
+ \_\allowbreak{} bivariant = int}\\
+\label{package-test+u+package+++ml-module-Type-type-binary}\codefragment{\begin{keyword}type\end{keyword}
+ ('a,\allowbreak{} 'b) binary}\\
+\label{package-test+u+package+++ml-module-Type-type-using+u+binary}\codefragment{\begin{keyword}type\end{keyword}
+ using\_\allowbreak{}binary = (int,\allowbreak{} int) \hyperref[package-test+u+package+++ml-module-Type-type-binary]{\inlinecode{binary}}}\\
+\label{package-test+u+package+++ml-module-Type-type-name}\codefragment{\begin{keyword}type\end{keyword}
+ 'custom name}\\
+\label{package-test+u+package+++ml-module-Type-type-constrained}\codefragment{\begin{keyword}type\end{keyword}
+ 'a constrained = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = int}\\
+\label{package-test+u+package+++ml-module-Type-type-exact+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ 'a exact\_\allowbreak{}variant = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = [ `A | `B of int ]}\\
+\label{package-test+u+package+++ml-module-Type-type-lower+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ 'a lower\_\allowbreak{}variant = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = [> `A | `B of int ]}\\
+\label{package-test+u+package+++ml-module-Type-type-any+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ 'a any\_\allowbreak{}variant = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = [>  ]}\\
+\label{package-test+u+package+++ml-module-Type-type-upper+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ 'a upper\_\allowbreak{}variant = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = [< `A | `B of int ]}\\
+\label{package-test+u+package+++ml-module-Type-type-named+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ 'a named\_\allowbreak{}variant = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = [< \hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\inlinecode{polymorphic\_\allowbreak{}variant}} ]}\\
+\label{package-test+u+package+++ml-module-Type-type-exact+u+object}\codefragment{\begin{keyword}type\end{keyword}
+ 'a exact\_\allowbreak{}object = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = < a : int;\allowbreak{} b : int;\allowbreak{} >}\\
+\label{package-test+u+package+++ml-module-Type-type-lower+u+object}\codefragment{\begin{keyword}type\end{keyword}
+ 'a lower\_\allowbreak{}object = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = < a : int;\allowbreak{} b : int;\allowbreak{} .\allowbreak{}.\allowbreak{} >}\\
+\label{package-test+u+package+++ml-module-Type-type-poly+u+object}\codefragment{\begin{keyword}type\end{keyword}
+ 'a poly\_\allowbreak{}object = \begin{type-var}'a\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = < a : a.\allowbreak{} \begin{type-var}'a\end{type-var}
+;\allowbreak{} >}\\
+\label{package-test+u+package+++ml-module-Type-type-double+u+constrained}\codefragment{\begin{keyword}type\end{keyword}
+ ('a,\allowbreak{} 'b) double\_\allowbreak{}constrained = \begin{type-var}'a\end{type-var}
+ * \begin{type-var}'b\end{type-var}
+ \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'a\end{type-var}
+ = int \begin{keyword}constraint\end{keyword}
+ \begin{type-var}'b\end{type-var}
+ = unit}\\
+\label{package-test+u+package+++ml-module-Type-type-as+u+}\codefragment{\begin{keyword}type\end{keyword}
+ as\_\allowbreak{} = int \begin{keyword}as\end{keyword}
+ 'a * \begin{type-var}'a\end{type-var}
+}\\
+\label{package-test+u+package+++ml-module-Type-type-extensible}\codefragment{\begin{keyword}type\end{keyword}
+ extensible = .\allowbreak{}.\allowbreak{}}\\
+\codefragment{\begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-type-extensible]{\inlinecode{extensible}} += }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\codefragment{| \begin{extension}Extension\end{extension}
+}\label{package-test+u+package+++ml-module-Type-extension-Extension}& Documentation for \hyperref[package-test+u+package+++ml-module-Type-extension-Extension]{\inlinecode{\inlinecode{Extension}}[p\pageref*{package-test+u+package+++ml-module-Type-extension-Extension}]}.\\
+\codefragment{| \begin{extension}Another\_\allowbreak{}extension\end{extension}
+}\label{package-test+u+package+++ml-module-Type-extension-Another+u+extension}& Documentation for \hyperref[package-test+u+package+++ml-module-Type-extension-Another+u+extension]{\inlinecode{\inlinecode{Another\_\allowbreak{}extension}}[p\pageref*{package-test+u+package+++ml-module-Type-extension-Another+u+extension}]}.\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-mutually}\codefragment{\begin{keyword}type\end{keyword}
+ mutually = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}A\end{constructor}
+ \begin{keyword}of\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-type-recursive]{\inlinecode{recursive}}}\label{package-test+u+package+++ml-module-Type-type-mutually.A}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-type-recursive}\codefragment{\begin{keyword}and\end{keyword}
+ recursive = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}B\end{constructor}
+ \begin{keyword}of\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Type-type-mutually]{\inlinecode{mutually}}}\label{package-test+u+package+++ml-module-Type-type-recursive.B}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Type-exception-Foo}\codefragment{\begin{keyword}exception\end{keyword}
+ \begin{exception}Foo\end{exception}
+ \begin{keyword}of\end{keyword}
+ int * int}\\
+
+

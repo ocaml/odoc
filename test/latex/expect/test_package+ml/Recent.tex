@@ -1,0 +1,124 @@
+\section{Module \inlinecode{Recent}}\label{package-test+u+package+++ml-module-Recent}%
+\label{package-test+u+package+++ml-module-Recent-module-type-S}\codefragment{\begin{keyword}module\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-type-S]{\inlinecode{S}}}\codefragment{ = \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\label{package-test+u+package+++ml-module-Recent-module-type-S1}\codefragment{\begin{keyword}module\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-type-S1]{\inlinecode{S1}}}\codefragment{ = \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\subsubsection{Parameters\label{parameters}}%
+\label{package-test+u+package+++ml-module-Recent-module-type-S1-argument-1-+u+}\codefragment{\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-type-S1-argument-1-+u+]{\inlinecode{\_\allowbreak{}}}}\codefragment{ : \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\subsubsection{Signature\label{signature}}%
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\label{package-test+u+package+++ml-module-Recent-type-variant}\codefragment{\begin{keyword}type\end{keyword}
+ variant = }\\
+\codefragment{| \begin{constructor}A\end{constructor}
+}\label{package-test+u+package+++ml-module-Recent-type-variant.A}%
+\begin{ocamlindent}\end{ocamlindent}%
+\codefragment{| \begin{constructor}B\end{constructor}
+ \begin{keyword}of\end{keyword}
+ int}\label{package-test+u+package+++ml-module-Recent-type-variant.B}%
+\begin{ocamlindent}\end{ocamlindent}%
+\codefragment{| \begin{constructor}C\end{constructor}
+}\label{package-test+u+package+++ml-module-Recent-type-variant.C}%
+\begin{ocamlindent}foo\end{ocamlindent}%
+\codefragment{| \begin{constructor}D\end{constructor}
+}\label{package-test+u+package+++ml-module-Recent-type-variant.D}%
+\begin{ocamlindent}\emph{bar}\end{ocamlindent}%
+\codefragment{| \begin{constructor}E\end{constructor}
+ \begin{keyword}of\end{keyword}
+ \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Recent-type-variant.a}\\
+\end{longtable}%
+}\codefragment{\}}\label{package-test+u+package+++ml-module-Recent-type-variant.E}%
+\begin{ocamlindent}\end{ocamlindent}%
+\label{package-test+u+package+++ml-module-Recent-type-gadt}\codefragment{\begin{keyword}type\end{keyword}
+ \_\allowbreak{} gadt = }\\
+\codefragment{| \begin{constructor}A\end{constructor}
+ : int \hyperref[package-test+u+package+++ml-module-Recent-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Recent-type-gadt.A}%
+\begin{ocamlindent}\end{ocamlindent}%
+\codefragment{| \begin{constructor}B\end{constructor}
+ : int $\rightarrow$ string \hyperref[package-test+u+package+++ml-module-Recent-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Recent-type-gadt.B}%
+\begin{ocamlindent}foo\end{ocamlindent}%
+\codefragment{| \begin{constructor}C\end{constructor}
+ : \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Recent-type-gadt.a}\\
+\end{longtable}%
+}\codefragment{\} $\rightarrow$ unit \hyperref[package-test+u+package+++ml-module-Recent-type-gadt]{\inlinecode{gadt}}}\label{package-test+u+package+++ml-module-Recent-type-gadt.C}%
+\begin{ocamlindent}\end{ocamlindent}%
+\label{package-test+u+package+++ml-module-Recent-type-polymorphic+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ polymorphic\_\allowbreak{}variant = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\inlinecode{| }\inlinecode{`A}\label{package-test+u+package+++ml-module-Recent-type-polymorphic+u+variant.A}& \\
+\inlinecode{| }\inlinecode{`B \begin{keyword}of\end{keyword}
+ int}\label{package-test+u+package+++ml-module-Recent-type-polymorphic+u+variant.B}& \\
+\inlinecode{| }\inlinecode{`C}\label{package-test+u+package+++ml-module-Recent-type-polymorphic+u+variant.C}& foo\\
+\inlinecode{| }\inlinecode{`D}\label{package-test+u+package+++ml-module-Recent-type-polymorphic+u+variant.D}& bar\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Recent-type-empty+u+variant}\codefragment{\begin{keyword}type\end{keyword}
+ empty\_\allowbreak{}variant = |}\\
+\label{package-test+u+package+++ml-module-Recent-type-nonrec+u+}\codefragment{\begin{keyword}type\end{keyword}
+ \begin{keyword}nonrec\end{keyword}
+ nonrec\_\allowbreak{} = int}\\
+\label{package-test+u+package+++ml-module-Recent-type-empty+u+conj}\codefragment{\begin{keyword}type\end{keyword}
+ empty\_\allowbreak{}conj = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}X\end{constructor}
+ : [< `X of \& \begin{type-var}'a\end{type-var}
+ \& int * float ] $\rightarrow$ \hyperref[package-test+u+package+++ml-module-Recent-type-empty+u+conj]{\inlinecode{empty\_\allowbreak{}conj}}}\label{package-test+u+package+++ml-module-Recent-type-empty+u+conj.X}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Recent-type-conj}\codefragment{\begin{keyword}type\end{keyword}
+ conj = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\codefragment{| \begin{constructor}X\end{constructor}
+ : [< `X of int \& [< `B of int \& float ] ] $\rightarrow$ \hyperref[package-test+u+package+++ml-module-Recent-type-conj]{\inlinecode{conj}}}\label{package-test+u+package+++ml-module-Recent-type-conj.X}\\
+\end{longtable}%
+}\label{package-test+u+package+++ml-module-Recent-val-empty+u+conj}\codefragment{\begin{keyword}val\end{keyword}
+ empty\_\allowbreak{}conj : [< `X of \& \begin{type-var}'a\end{type-var}
+ \& int * float ]}\\
+\label{package-test+u+package+++ml-module-Recent-val-conj}\codefragment{\begin{keyword}val\end{keyword}
+ conj : [< `X of int \& [< `B of int \& float ] ]}\\
+\label{package-test+u+package+++ml-module-Recent-module-Z}\codefragment{\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-Z]{\inlinecode{Z}}}\codefragment{ : \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Recent-module-Z-module-Y}\codefragment{\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-Z-module-Y]{\inlinecode{Y}}}\codefragment{ : \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Recent-module-Z-module-Y-module-X}\codefragment{\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-Z-module-Y-module-X]{\inlinecode{X}}}\codefragment{ : \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Recent-module-Z-module-Y-module-X-type-t}\codefragment{\begin{keyword}type\end{keyword}
+ 'a t}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\label{package-test+u+package+++ml-module-Recent-module-X}\codefragment{\begin{keyword}module\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-X]{\inlinecode{X}}}\codefragment{ : \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Recent-module-X-module-L}\codefragment{\begin{keyword}module\end{keyword}
+ L := \hyperref[package-test+u+package+++ml-module-Recent-module-Z-module-Y]{\inlinecode{Z.\allowbreak{}Y}}}\\
+\label{package-test+u+package+++ml-module-Recent-module-X-type-t}\codefragment{\begin{keyword}type\end{keyword}
+ t = int \hyperref[package-test+u+package+++ml-module-Recent-module-Z-module-Y-module-X-type-t]{\inlinecode{Z.\allowbreak{}Y.\allowbreak{}X.\allowbreak{}t}}}\\
+\label{package-test+u+package+++ml-module-Recent-module-X-type-u}\codefragment{\begin{keyword}type\end{keyword}
+ u := int}\\
+\label{package-test+u+package+++ml-module-Recent-module-X-type-v}\codefragment{\begin{keyword}type\end{keyword}
+ v = \hyperref[package-test+u+package+++ml-module-Recent-module-X-type-u]{\inlinecode{u}} \hyperref[package-test+u+package+++ml-module-Recent-module-Z-module-Y-module-X-type-t]{\inlinecode{Z.\allowbreak{}Y.\allowbreak{}X.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+\label{package-test+u+package+++ml-module-Recent-module-type-PolyS}\codefragment{\begin{keyword}module\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Recent-module-type-PolyS]{\inlinecode{PolyS}}}\codefragment{ = \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Recent-module-type-PolyS-type-t}\codefragment{\begin{keyword}type\end{keyword}
+ t = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{longtable}[l]{p{1.000\textwidth}}\inlinecode{| }\inlinecode{`A}\label{package-test+u+package+++ml-module-Recent-module-type-PolyS-type-t.A}\\
+\inlinecode{| }\inlinecode{`B}\label{package-test+u+package+++ml-module-Recent-module-type-PolyS-type-t.B}\\
+\end{longtable}%
+}\codefragment{ ]}\\
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\\
+
+

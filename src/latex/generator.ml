@@ -132,9 +132,20 @@ module Link = struct
     | `Closed -> false
     | `Default -> not @@ is_class_or_module_path url
 
+  let rec filepath (url: Odoc_document.Url.Path.t) = match url.kind with
+    | "package" -> url.name, []
+    | _ ->
+      match url.parent with
+      | None -> "", [url.name]
+      | Some p ->
+        let dir, path = filepath p in
+        dir, url.name :: path
+
+  let filename url =
+    let dir, p = filepath url in
+    Fpath.(v dir / String.concat "." (List.rev p) + ".tex")
 
 end
-
 
 
 let bind pp x ppf = pp ppf x
@@ -571,9 +582,8 @@ let link_children ppf children =
   Fmt.list input_child ppf children
 
 let make ~with_children url content children =
-  let p = Link.page url in
-  let filename = Fpath.(v p + ".tex") in
-  let label = Label p in
+  let filename = Link.filename url in
+  let label = Label (Link.page url) in
   let content = match content with
     | [] -> [label]
     | Section _ as s  :: q -> s :: label :: q
@@ -612,9 +622,10 @@ module Page = struct
 
 end
 
-let files_of_url url = 
-  let p = Link.page url in
-  let filename = Fpath.(v p + ".tex") in
-  [filename]
-
 let render ~with_children page = Page.page ~with_children page
+
+
+  let files_of_url url =
+    if Link.is_class_or_module_path url then
+      [Link.filename url]
+    else []

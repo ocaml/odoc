@@ -1,0 +1,94 @@
+\section{Module \inlinecode{Include\_\allowbreak{}sections}}\label{package-test+u+package+++ml-module-Include+u+sections}%
+\label{package-test+u+package+++ml-module-Include+u+sections-module-type-Something}\codefragment{\begin{keyword}module\end{keyword}
+ \begin{keyword}type\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{Something}}}\codefragment{ = \begin{keyword}sig\end{keyword}
+}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Include+u+sections-module-type-Something-val-something}\codefragment{\begin{keyword}val\end{keyword}
+ something : unit}\\
+\subsubsection{Something 1\label{something-1}}%
+foo
+
+\label{package-test+u+package+++ml-module-Include+u+sections-module-type-Something-val-foo}\codefragment{\begin{keyword}val\end{keyword}
+ foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{package-test+u+package+++ml-module-Include+u+sections-module-type-Something-val-bar}\codefragment{\begin{keyword}val\end{keyword}
+ bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsubsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\end{ocamlindent}%
+\codefragment{\begin{keyword}end\end{keyword}
+}\begin{ocamlindent}A module type.\end{ocamlindent}%
+\medbreak
+Let's include \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{\inlinecode{Something}}[p\pageref*{package-test+u+package+++ml-module-Include+u+sections-module-type-Something}]} once
+
+\begin{keyword}include\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{Something}}\label{package-test+u+package+++ml-module-Include+u+sections-val-something}\codefragment{\begin{keyword}val\end{keyword}
+ something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{package-test+u+package+++ml-module-Include+u+sections-val-foo}\codefragment{\begin{keyword}val\end{keyword}
+ foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{package-test+u+package+++ml-module-Include+u+sections-val-bar}\codefragment{\begin{keyword}val\end{keyword}
+ bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\subsection{Second include\label{second-include}}%
+Let's include \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{\inlinecode{Something}}[p\pageref*{package-test+u+package+++ml-module-Include+u+sections-module-type-Something}]} a second time: the heading level should be shift here.
+
+\begin{keyword}include\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{Something}}\label{package-test+u+package+++ml-module-Include+u+sections-val-something}\codefragment{\begin{keyword}val\end{keyword}
+ something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{package-test+u+package+++ml-module-Include+u+sections-val-foo}\codefragment{\begin{keyword}val\end{keyword}
+ foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{package-test+u+package+++ml-module-Include+u+sections-val-bar}\codefragment{\begin{keyword}val\end{keyword}
+ bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+\subsubsection{Third include\label{third-include}}%
+Shifted some more.
+
+\begin{keyword}include\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{Something}}\label{package-test+u+package+++ml-module-Include+u+sections-val-something}\codefragment{\begin{keyword}val\end{keyword}
+ something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{package-test+u+package+++ml-module-Include+u+sections-val-foo}\codefragment{\begin{keyword}val\end{keyword}
+ foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{package-test+u+package+++ml-module-Include+u+sections-val-bar}\codefragment{\begin{keyword}val\end{keyword}
+ bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+And let's include it again, but without inlining it this time: the ToC shouldn't grow.
+
+\begin{keyword}include\end{keyword}
+ \hyperref[package-test+u+package+++ml-module-Include+u+sections-module-type-Something]{\inlinecode{Something}}\label{package-test+u+package+++ml-module-Include+u+sections-val-something}\codefragment{\begin{keyword}val\end{keyword}
+ something : unit}\\
+\subsection{Something 1\label{something-1}}%
+foo
+
+\label{package-test+u+package+++ml-module-Include+u+sections-val-foo}\codefragment{\begin{keyword}val\end{keyword}
+ foo : unit}\\
+\subsubsection{Something 2\label{something-2}}%
+\label{package-test+u+package+++ml-module-Include+u+sections-val-bar}\codefragment{\begin{keyword}val\end{keyword}
+ bar : unit}\begin{ocamlindent}foo bar\end{ocamlindent}%
+\medbreak
+\subsection{Something 1-bis\label{something-1-bis}}%
+Some text.
+
+
+
