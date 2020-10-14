@@ -4,10 +4,10 @@ open Comment
 open Paths_desc
 
 let location =
-  (* Do not show field names. *)
   let open Location_ in
-  let point = Indirect ((fun p -> (p.line, p.column)), Pair (int, int)) in
-  Indirect ((fun s -> (s.file, s.start, s.end_)), Triple (string, point, point))
+  let point () p = Printf.sprintf "%d:%d" p.line p.column in
+  To_string
+    (fun s -> Printf.sprintf "%s %a %a" s.file point s.start point s.end_)
 
 let loc_to_pair x = (x.Location_.location, x.value)
 
