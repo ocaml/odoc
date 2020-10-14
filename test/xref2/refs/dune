@@ -1,5 +1,6 @@
 (rule
  (targets refs.output)
+ (enabled_if (>= %{ocaml_version} 4.08))
  (deps
   (package odoc))
  (action
@@ -7,5 +8,6 @@
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.08))
  (action
   (diff refs.md refs.output)))
