@@ -1,7 +1,12 @@
+(executable
+ (name compile)
+ (modules compile))
+
 (env
  (_
   (binaries
-   (../odoc_print/odoc_print.exe as odoc_print))))
+   (../odoc_print/odoc_print.exe as odoc_print)
+   (./compile.exe as compile))))
 
 (cram
- (deps %{bin:odoc_print}))
+ (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))

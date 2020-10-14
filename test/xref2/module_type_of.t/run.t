@@ -33,9 +33,7 @@ This is the test file we're using. We declare a module type S, which contains a 
 Compile
 -------
 
-  $ ocamlc -bin-annot -c m.mli
-  $ odoc compile --package test m.cmti  
-  $ odoc link m.odoc
+  $ compile m.mli
   Starting link
 
 Tests
