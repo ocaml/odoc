@@ -2,5 +2,4 @@
 (name odoc)
 (formatting disabled)
 (using mdx 0.1)
-
-
+(cram enable)
