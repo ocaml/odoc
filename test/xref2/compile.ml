@@ -11,19 +11,23 @@ let run_command cmd args =
   let r = Sys.command (Filename.quote_command cmd args) in
   if r <> 0 then never_returns (die "Command failed: %s" cmd)
 
+let cmt_filename f =
+  let b = Filename.remove_extension f in
+  match Filename.extension f with
+  | ".ml" -> b ^ ".cmt"
+  | ".mli" -> b ^ ".cmti"
+  | _ -> never_returns (die "Don't know what to do with '%s'" f)
+
+let odoc_filename f = Filename.remove_extension f ^ ".odoc"
+
 let () =
-  if Array.length Sys.argv <> 2 then
-    never_returns (die "Usage: %s <input_file>" Sys.argv.(0));
-  let input_file = Sys.argv.(1) in
-  let cmt_file, odoc_file =
-    let base = Filename.remove_extension input_file in
-    match Filename.extension input_file with
-    | ".ml" -> (base ^ ".cmt", base ^ ".odoc")
-    | ".mli" -> (base ^ ".cmti", base ^ ".odoc")
-    | e ->
-        never_returns
-          (die "Don't know what to do with file with extension '%s'" e)
-  in
-  run_command "ocamlc" [ "-bin-annot"; "-c"; input_file ];
-  run_command "odoc" [ "compile"; "--package"; "test"; cmt_file ];
-  run_command "odoc" [ "link"; odoc_file ]
+  let input_files = List.tl (Array.to_list Sys.argv) in
+  let odoc_files = List.map odoc_filename input_files in
+  let cmt_files = List.map cmt_filename input_files in
+  List.iter
+    (fun f -> run_command "ocamlc" [ "-bin-annot"; "-c"; f ])
+    input_files;
+  List.iter
+    (fun f -> run_command "odoc" [ "compile"; "--package"; "test"; f ])
+    cmt_files;
+  List.iter (fun f -> run_command "odoc" [ "link"; "-I"; "."; f ]) odoc_files
