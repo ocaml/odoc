@@ -28,7 +28,6 @@ serve :
 .PHONY : test
 test : build
 	dune build @test/parser/runtest --no-buffer -j 1
-	dune build @test/compile/runtest --no-buffer -j 1
 	dune build @test/html/runtest --no-buffer -j 1
 	dune build @test/man/runtest --no-buffer -j 1
 	dune build @test/xref2/runtest --no-buffer -j 1
