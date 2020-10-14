@@ -1,8 +1,10 @@
 Two modules that reference each other:
 
   $ cat a.mli
+  type t
   (** {!B} *)
   $ cat b.mli
+  type t
   (** {!A} *)
 
   $ compile a.mli b.mli
@@ -11,35 +13,49 @@ Two modules that reference each other:
 
 Check that references are resolved:
 
-  $ odoc_print a.odocl | jq '.doc[0][1]."`Paragraph"[0][1]'
+  $ odoc_print a.odocl | jq '.content.Module[0].Type[1].doc[0][1]'
   {
-    "`Reference": [
-      {
-        "`Resolved": {
-          "`Identifier": {
-            "`Root": [
-              "<root>",
-              "B"
-            ]
-          }
+    "`Paragraph": [
+      [
+        "a.mli 2:4 2:8",
+        {
+          "`Reference": [
+            {
+              "`Resolved": {
+                "`Identifier": {
+                  "`Root": [
+                    "<root>",
+                    "B"
+                  ]
+                }
+              }
+            },
+            []
+          ]
         }
-      },
-      []
+      ]
     ]
   }
-  $ odoc_print b.odocl | jq '.doc[0][1]."`Paragraph"[0][1]'
+  $ odoc_print b.odocl | jq '.content.Module[0].Type[1].doc[0][1]'
   {
-    "`Reference": [
-      {
-        "`Resolved": {
-          "`Identifier": {
-            "`Root": [
-              "<root>",
-              "A"
-            ]
-          }
+    "`Paragraph": [
+      [
+        "b.mli 2:4 2:8",
+        {
+          "`Reference": [
+            {
+              "`Resolved": {
+                "`Identifier": {
+                  "`Root": [
+                    "<root>",
+                    "A"
+                  ]
+                }
+              }
+            },
+            []
+          ]
         }
-      },
-      []
+      ]
     ]
   }

@@ -1,6 +1,7 @@
 (executable
  (name compile)
- (modules compile))
+ (modules compile)
+ (libraries fpath))
 
 (env
  (_
