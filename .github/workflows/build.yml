@@ -16,6 +16,7 @@ jobs:
         ocaml-version:
           # Don't include every versions. OCaml-CI already covers that
           - 4.11.1
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
