@@ -34,6 +34,14 @@ jobs:
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
 
+      # Pull the Mdx submodule
+      # actions/checkout doesn't support that
+      # Also, this is supposed to be temporary
+      - run: git submodule update --init
+      - run: opam pin add -n ./mdx
+      - run: opam depext -y -t mdx
+      - run: opam install --deps-only mdx
+
       # Build and test script
       - run: opam pin add -n .
       - run: opam depext -y -t odoc
