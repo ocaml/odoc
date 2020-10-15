@@ -1,0 +1,42 @@
+name: "Build"
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build: # Check build on various OSes
+
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        ocaml-version:
+          # Don't include every versions. OCaml-CI already covers that
+          - 4.11.1
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # Clone the project
+      - uses: actions/checkout@v2
+
+      # Setup
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.opam
+          key: ${{ matrix.os }}-${{ matrix.ocaml-version }}-${{ hashFiles('*.opam') }}-opam
+      - name: Setup OCaml ${{ matrix.ocaml-version }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ matrix.ocaml-version }}
+
+      # Build and test script
+      - run: opam pin add -n .
+      - run: opam depext -y -t odoc
+      - run: opam install --deps-only -t odoc
+      - run: opam exec -- dune build
+      - run: opam exec -- dune runtest
