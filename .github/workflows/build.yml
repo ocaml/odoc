@@ -39,16 +39,23 @@ jobs:
       # actions/checkout doesn't support that
       # Also, this is supposed to be temporary
       - run: git submodule update --init
-      - run: opam pin add -n ./mdx
-      - run: opam depext -y -t mdx
-      - run: opam install --deps-only mdx
 
-      # Build and test script
-      - run: opam pin add -n .
-      - run: opam depext -y -t odoc
-      - run: opam install --deps-only -t odoc
-      - run: opam exec -- dune build
-      - run: opam exec -- dune runtest
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          # Mdx dependencies
+          opam pin add -n ./mdx
+          opam depext -y -t mdx
+          opam install --deps-only mdx
+          # -
+          opam pin add -n .
+          opam depext -y -t odoc
+          opam install --deps-only -t odoc
+
+      - name: dune build
+        run: opam exec -- dune build
+      - name: dune runtest
+        run: opam exec -- dune runtest
 
   esy: # Check build using esy
 
