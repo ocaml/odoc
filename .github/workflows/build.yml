@@ -48,3 +48,23 @@ jobs:
       - run: opam install --deps-only -t odoc
       - run: opam exec -- dune build
       - run: opam exec -- dune runtest
+
+  esy: # Check build using esy
+
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12'
+      - uses: actions/checkout@v2
+      - run: npm --global install esy
+      - run: esy install --verbose
+      - run: esy odoc --version
