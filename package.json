@@ -23,7 +23,7 @@
         "oasis",
         "ocaml-*",
         "ocamlfind",
-        "sexplib"
+        "sexplib0"
       ]
     },
     "buildsInSource": "_build"
@@ -41,7 +41,7 @@
     "@opam/markup": "*",
     "@opam/ocamlfind": "1.8.1",
     "@opam/result": "1.4",
-    "@opam/sexplib": "*",
+    "@opam/sexplib0": "*",
     "@opam/tyxml": "4.3.0",
     "@opam/mdx": "1.7.0",
     "@opam/ocamlfind-secondary":"1.8.1",
