@@ -1,7 +1,4 @@
-# odoc &nbsp; [![Build Status][travis-img]][travis]
-
-[travis]: https://travis-ci.org/ocaml/odoc/branches
-[travis-img]: https://api.travis-ci.org/ocaml/odoc.svg?branch=master
+# odoc &nbsp; [![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml%2Fodoc%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml/odoc)
 
 **odoc** is a documentation generator for OCaml. It reads *doc comments* ,
 delimited with `(** ... *)`, and outputs HTML.
