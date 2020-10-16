@@ -1111,6 +1111,18 @@ let suggest_commands script_directory commands =
   Printf.eprintf "\nbash %s\n\n"
     ("_build/default" // test_root // script_directory // promote_script)
 
+let parser_output_desc =
+  let open Odoc_model in
+  let open Odoc_model_desc in
+  let open Type_desc in
+  let ww_to_pair ww = (ww.Error.value, ww.warnings) in
+  let warning_desc = To_string Error.to_string in
+  Indirect (ww_to_pair, Pair (Comment_desc.docs, List warning_desc))
+
+let parser_output_to_string docs_ww =
+  let json = Type_desc_to_yojson.to_yojson parser_output_desc docs_ww in
+  Yojson.Basic.pretty_to_string json
+
 let () =
   mkdir actual_root_directory;
   begin
@@ -1157,11 +1169,7 @@ let () =
           ~containing_definition:dummy_page
           ~location
           ~text:parser_input
-        |> fun parser_output ->
-          let buffer = Buffer.create 1024 in
-          Print.parser_output
-            (Format.formatter_of_buffer buffer) parser_output;
-          Buffer.contents buffer
+        |> parser_output_to_string
       in
 
       let expected =
