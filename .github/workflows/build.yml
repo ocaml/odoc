@@ -12,7 +12,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest Windows doesn't work yet
         ocaml-version:
           # Don't include every versions. OCaml-CI already covers that
           - 4.11.1
@@ -64,7 +64,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest Not working yet.
 
     runs-on: ${{ matrix.os }}
 
