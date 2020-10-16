@@ -1,5 +1,5 @@
 open Odoc_model.Names
-type sexp = Sexplib.Sexp.t =
+type sexp = Sexplib0.Sexp.t =
   | Atom of string
   | List of sexp list
 
@@ -385,6 +385,6 @@ let parser_output formatter {Odoc_model.Error.value; warnings} =
       List [Atom "warnings"; warnings];
     ]
   in
-  Sexplib.Sexp.pp_hum formatter output;
+  Sexplib0.Sexp.pp_hum formatter output;
   Format.pp_print_newline formatter ();
   Format.pp_print_flush formatter ()
