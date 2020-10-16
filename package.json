@@ -36,7 +36,6 @@
     "@opam/cppo": "1.6.5",
     "@opam/dune": "2.7.1",
     "@opam/fpath": "0.7.2",
-    "@opam/js-build-tools": "113.33.04",
     "@opam/lambdasoup": "0.7.1",
     "@opam/markup": "*",
     "@opam/ocamlfind": "1.8.1",

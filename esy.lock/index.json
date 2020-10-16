@@ -1,5 +1,5 @@
 {
-  "checksum": "7c0cbb6f933700c49fb18fa2099a7f67",
+  "checksum": "28966419b039dee26ad0800b10c4fcf8",
   "root": "odoc@link-dev:./package.json",
   "node": {
     "odoc@link-dev:./package.json": {
@@ -21,7 +21,6 @@
         "@opam/mdx@opam:1.7.0@dc38d131",
         "@opam/markup@github:aantron/markup.ml:markup.opam#9f8e77@d41d8cd9",
         "@opam/lambdasoup@opam:0.7.1@4ede102f",
-        "@opam/js-build-tools@opam:113.33.04@0e3bc67c",
         "@opam/fpath@opam:0.7.2@3fd2da53", "@opam/dune@opam:2.7.1@f5f493bc",
         "@opam/cppo@opam:1.6.5@f8ff4f1a",
         "@opam/cmdliner@opam:1.0.2@1c17346c",
@@ -733,32 +732,6 @@
         "ocaml@4.6.1000@d41d8cd9",
         "@opam/markup@github:aantron/markup.ml:markup.opam#9f8e77@d41d8cd9",
         "@opam/dune@opam:2.7.1@f5f493bc"
-      ]
-    },
-    "@opam/js-build-tools@opam:113.33.04@0e3bc67c": {
-      "id": "@opam/js-build-tools@opam:113.33.04@0e3bc67c",
-      "name": "@opam/js-build-tools",
-      "version": "opam:113.33.04",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/md5/25/25e2657622a2be4dac42adc2ea148999#md5:25e2657622a2be4dac42adc2ea148999",
-          "archive:https://ocaml.janestreet.com/ocaml-core/113.33/files/js-build-tools-113.33.04.tar.gz#md5:25e2657622a2be4dac42adc2ea148999"
-        ],
-        "opam": {
-          "name": "js-build-tools",
-          "version": "113.33.04",
-          "path": "esy.lock/opam/js-build-tools.113.33.04"
-        }
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.6.1000@d41d8cd9", "@opam/ocamlfind@opam:1.8.1@ff07b0f9",
-        "@opam/ocamlbuild@opam:0.14.0@6ac75d03",
-        "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@4.6.1000@d41d8cd9", "@opam/ocamlbuild@opam:0.14.0@6ac75d03"
       ]
     },
     "@opam/jbuilder@opam:1.0+beta20.2@053ddcf2": {
