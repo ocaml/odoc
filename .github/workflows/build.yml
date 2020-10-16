@@ -69,10 +69,27 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v2
+
+      # Setup
       - uses: actions/setup-node@v1
         with:
           node-version: '12'
-      - uses: actions/checkout@v2
-      - run: npm --global install esy
-      - run: esy install --verbose
-      - run: esy odoc --version
+
+      - name: Install esy
+        run: npm --global install esy
+
+      # Cache
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.npm
+            ~/.esy
+          key: ${{ matrix.os }}-esy
+
+      - name: Install dependencies # Solve every time (fast)
+        run: esy install --verbose
+
+      - name: Build odoc
+        run: esy odoc --version
