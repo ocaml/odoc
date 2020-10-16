@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 24))
-    (paragraph
-     (((f.ml (1 0) (1 24)) (reference (root foo instance_variable) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","24"]],["`Paragraph",[[["f.ml",["1","0"],["1","24"]],["`Reference",[["`Root",["foo",["`TInstanceVariable"]]],[]]]]]]]],[]]

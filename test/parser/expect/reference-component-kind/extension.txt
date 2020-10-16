@@ -1,4 +1,1 @@
-((output
-  (((f.ml (1 0) (1 16))
-    (paragraph (((f.ml (1 0) (1 16)) (reference (root Foo extension) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","16"]],["`Paragraph",[[["f.ml",["1","0"],["1","16"]],["`Reference",[["`Root",["Foo",["`TExtension"]]],[]]]]]]]],[]]

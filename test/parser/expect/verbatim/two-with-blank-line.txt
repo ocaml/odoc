@@ -1,3 +1,1 @@
-((output
-  (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (3 0) (3 9)) (verbatim bar))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","9"]],["`Verbatim","foo"]],[["f.ml",["3","0"],["3","9"]],["`Verbatim","bar"]]],[]]

@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 23))
-    (paragraph
-     (((f.ml (1 0) (1 23)) (reference (label bar (root foo page)) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","23"]],["`Paragraph",[[["f.ml",["1","0"],["1","23"]],["`Reference",[["`Label",[["`Root",["foo",["`TPage"]]],"bar"]],[]]]]]]]],[]]

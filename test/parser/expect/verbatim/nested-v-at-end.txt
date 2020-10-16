@@ -1,4 +1,1 @@
-((output (((f.ml (1 0) (1 6)) (verbatim vv}))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 4-6:\
-   \n'v}' should be preceded by whitespace.")))
+[[[["f.ml",["1","0"],["1","6"]],["`Verbatim","vv}"]]],["File \"f.ml\", line 1, characters 4-6:\n'v}' should be preceded by whitespace."]]

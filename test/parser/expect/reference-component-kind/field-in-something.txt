@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 16))
-    (paragraph
-     (((f.ml (1 0) (1 16)) (reference (field bar (root foo unknown)) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","16"]],["`Paragraph",[[["f.ml",["1","0"],["1","16"]],["`Reference",[["`Field",[["`Root",["foo",["`TUnknown"]]],"bar"]],[]]]]]]]],[]]

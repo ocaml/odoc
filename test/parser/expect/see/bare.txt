@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 4)) (paragraph (((f.ml (1 0) (1 4)) (word @see)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 0-4:\
-   \n'@see' should be followed by <url>, 'file', or \"document title\".")))
+[[[["f.ml",["1","0"],["1","4"]],["`Paragraph",[[["f.ml",["1","0"],["1","4"]],["`Word","@see"]]]]]],["File \"f.ml\", line 1, characters 0-4:\n'@see' should be followed by <url>, 'file', or \"document title\"."]]

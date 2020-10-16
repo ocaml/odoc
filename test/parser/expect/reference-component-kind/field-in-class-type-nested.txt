@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 31))
-    (paragraph
-     (((f.ml (1 0) (1 31))
-       (reference (field baz (class_type bar (root Foo unknown))) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","31"]],["`Paragraph",[[["f.ml",["1","0"],["1","31"]],["`Reference",[["`Field",[["`ClassType",[["`Root",["Foo",["`TUnknown"]]],"bar"]],"baz"]],[]]]]]]]],[]]

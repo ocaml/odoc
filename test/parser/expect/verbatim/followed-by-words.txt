@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 9)) (verbatim foo))
-   ((f.ml (1 10) (1 13)) (paragraph (((f.ml (1 10) (1 13)) (word bar)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 10-13:\
-   \nParagraph should begin on its own line.")))
+[[[["f.ml",["1","0"],["1","9"]],["`Verbatim","foo"]],[["f.ml",["1","10"],["1","13"]],["`Paragraph",[[["f.ml",["1","10"],["1","13"]],["`Word","bar"]]]]]],["File \"f.ml\", line 1, characters 10-13:\nParagraph should begin on its own line."]]

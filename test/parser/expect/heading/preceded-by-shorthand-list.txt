@@ -1,11 +1,1 @@
-((output
-  (((f.ml (1 0) (1 5))
-    (unordered
-     ((((f.ml (1 2) (1 5)) (paragraph (((f.ml (1 2) (1 5)) (word foo)))))))))
-   ((f.ml (2 0) (2 7))
-    (2
-     (label
-      ((root (f.ml (page f.ml) 00000000000000000000000000000000) f.ml)
-       (label bar)))
-     (((f.ml (2 3) (2 6)) (word Bar)))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","5"]],["`List",[["`Unordered"],[[[["f.ml",["1","2"],["1","5"]],["`Paragraph",[[["f.ml",["1","2"],["1","5"]],["`Word","foo"]]]]]]]]]],[["f.ml",["2","0"],["2","7"]],["`Heading",[["`Subsection"],["`Label",[["`Page",["<root>","f.ml"]],"bar"]],[[["f.ml",["2","3"],["2","6"]],["`Word","Bar"]]]]]]],[]]

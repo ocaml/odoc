@@ -1,7 +1,1 @@
-((output
-  (((f.ml (1 0) (1 35))
-    (paragraph
-     (((f.ml (1 0) (1 35)) (code_span instance-variable-foo.method-bar)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 2-23:\
-   \nExpected 'class-', 'class-type-', or an unqualified reference.")))
+[[[["f.ml",["1","0"],["1","35"]],["`Paragraph",[[["f.ml",["1","0"],["1","35"]],["`Code_span","instance-variable-foo.method-bar"]]]]]],["File \"f.ml\", line 1, characters 2-23:\nExpected 'class-', 'class-type-', or an unqualified reference."]]

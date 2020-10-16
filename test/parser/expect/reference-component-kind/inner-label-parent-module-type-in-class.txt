@@ -1,7 +1,1 @@
-((output
-  (((f.ml (1 0) (1 32))
-    (paragraph
-     (((f.ml (1 0) (1 32)) (code_span class-foo.module-type-Bar.baz)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 2-11:\
-   \nExpected 'module-', 'module-type-', or an unqualified reference.")))
+[[[["f.ml",["1","0"],["1","32"]],["`Paragraph",[[["f.ml",["1","0"],["1","32"]],["`Code_span","class-foo.module-type-Bar.baz"]]]]]],["File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."]]

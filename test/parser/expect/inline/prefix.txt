@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 10))
-    (paragraph (((f.ml (1 0) (1 10)) (word @inlinefoo)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 0-10:\
-   \nUnknown tag '@inlinefoo'.")))
+[[[["f.ml",["1","0"],["1","10"]],["`Paragraph",[[["f.ml",["1","0"],["1","10"]],["`Word","@inlinefoo"]]]]]],["File \"f.ml\", line 1, characters 0-10:\nUnknown tag '@inlinefoo'."]]

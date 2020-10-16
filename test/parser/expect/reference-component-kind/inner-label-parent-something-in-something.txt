@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 14))
-    (paragraph
-     (((f.ml (1 0) (1 14))
-       (reference (dot baz (dot bar (root foo unknown))) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","14"]],["`Paragraph",[[["f.ml",["1","0"],["1","14"]],["`Reference",[["`Dot",[["`Dot",[["`Root",["foo",["`TUnknown"]]],"bar"]],"baz"]],[]]]]]]]],[]]

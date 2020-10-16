@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 10))
-    (paragraph (((f.ml (1 0) (1 10)) (reference (root Foo exception) ())))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 2-9:\
-   \n'exn' is deprecated, use 'exception' instead.")))
+[[[["f.ml",["1","0"],["1","10"]],["`Paragraph",[[["f.ml",["1","0"],["1","10"]],["`Reference",[["`Root",["Foo",["`TException"]]],[]]]]]]]],["File \"f.ml\", line 1, characters 2-9:\n'exn' is deprecated, use 'exception' instead."]]

@@ -1121,7 +1121,7 @@ let parser_output_desc =
 
 let parser_output_to_string docs_ww =
   let json = Type_desc_to_yojson.to_yojson parser_output_desc docs_ww in
-  Yojson.Basic.pretty_to_string json
+  Yojson.Basic.to_string json
 
 let () =
   mkdir actual_root_directory;

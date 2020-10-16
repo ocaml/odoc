@@ -1,7 +1,1 @@
-((output
-  (((f.ml (1 0) (1 31))
-    (paragraph
-     (((f.ml (1 0) (1 31)) (code_span page-foo.bar.constructor-Baz)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 2-10:\
-   \nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference.")))
+[[[["f.ml",["1","0"],["1","31"]],["`Paragraph",[[["f.ml",["1","0"],["1","31"]],["`Code_span","page-foo.bar.constructor-Baz"]]]]]],["File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."]]

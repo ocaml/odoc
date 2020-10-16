@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 7)) (paragraph (((f.ml (1 0) (1 7)) (code_span Foo.)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 6-6:\
-   \nIdentifier in reference should not be empty.")))
+[[[["f.ml",["1","0"],["1","7"]],["`Paragraph",[[["f.ml",["1","0"],["1","7"]],["`Code_span","Foo."]]]]]],["File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."]]

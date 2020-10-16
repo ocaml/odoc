@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 9)) (verbatim foo)) ((f.ml (1 10) (1 19)) (verbatim bar))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 10-19:\
-   \n'{v ... v}' (verbatim text) should begin on its own line.")))
+[[[["f.ml",["1","0"],["1","9"]],["`Verbatim","foo"]],[["f.ml",["1","10"],["1","19"]],["`Verbatim","bar"]]],["File \"f.ml\", line 1, characters 10-19:\n'{v ... v}' (verbatim text) should begin on its own line."]]

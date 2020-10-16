@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word @openfoo)))))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 0-8:\
-   \nUnknown tag '@openfoo'.")))
+[[[["f.ml",["1","0"],["1","8"]],["`Paragraph",[[["f.ml",["1","0"],["1","8"]],["`Word","@openfoo"]]]]]],["File \"f.ml\", line 1, characters 0-8:\nUnknown tag '@openfoo'."]]

@@ -1,6 +1,1 @@
-((output (((f.ml (1 0) (1 4)) (verbatim ""))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 4-4:\
-   \nEnd of text is not allowed in '{v ... v}' (verbatim text)."
-    "File \"f.ml\", line 1, characters 0-4:\
-   \n'{v ... v}' (verbatim text) should not be empty.")))
+[[[["f.ml",["1","0"],["1","4"]],["`Verbatim",""]]],["File \"f.ml\", line 1, characters 4-4:\nEnd of text is not allowed in '{v ... v}' (verbatim text).","File \"f.ml\", line 1, characters 0-4:\n'{v ... v}' (verbatim text) should not be empty."]]

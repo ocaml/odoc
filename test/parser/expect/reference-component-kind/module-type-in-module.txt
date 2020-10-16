@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 29))
-    (paragraph
-     (((f.ml (1 0) (1 29))
-       (reference (module_type Bar (root Foo module)) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","29"]],["`Paragraph",[[["f.ml",["1","0"],["1","29"]],["`Reference",[["`ModuleType",[["`Root",["Foo",["`TModule"]]],"Bar"]],[]]]]]]]],[]]

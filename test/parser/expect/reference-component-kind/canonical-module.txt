@@ -1,3 +1,1 @@
-((output
-  (((f.ml (1 0) (1 21)) (@canonical (root module-Foo) (root Foo module)))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","21"]],["`Tag",["`Canonical",[["`Root","module-Foo"],["`Root",["Foo",["`TModule"]]]]]]]],[]]

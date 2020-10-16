@@ -1,1 +1,1 @@
-((output (((f.ml (1 0) (1 10)) (@see document foo)))) (warnings ()))
+[[[["f.ml",["1","0"],["1","10"]],["`Tag",["`See",[["`Document"],"foo",[]]]]]],[]]

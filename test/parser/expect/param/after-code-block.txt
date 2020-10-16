@@ -1,5 +1,1 @@
-((output
-  (((f.ml (1 0) (1 7)) (code_block foo)) ((f.ml (1 8) (1 18)) (@param foo))))
- (warnings
-  ( "File \"f.ml\", line 1, characters 8-18:\
-   \n'@param' should begin on its own line.")))
+[[[["f.ml",["1","0"],["1","7"]],["`Code_block","foo"]],[["f.ml",["1","8"],["1","18"]],["`Tag",["`Param",["foo",[]]]]]],["File \"f.ml\", line 1, characters 8-18:\n'@param' should begin on its own line."]]

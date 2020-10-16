@@ -1,6 +1,1 @@
-((output
-  (((f.ml (1 0) (1 28))
-    (paragraph
-     (((f.ml (1 0) (1 28))
-       (reference (instance_variable bar (root Foo unknown)) ())))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","28"]],["`Paragraph",[[["f.ml",["1","0"],["1","28"]],["`Reference",[["`InstanceVariable",[["`Root",["Foo",["`TUnknown"]]],"bar"]],[]]]]]]]],[]]

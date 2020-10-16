@@ -1,3 +1,1 @@
-((output
-  (((f.ml (1 0) (1 8)) (paragraph (((f.ml (1 0) (1 8)) (word --option)))))))
- (warnings ()))
+[[[["f.ml",["1","0"],["1","8"]],["`Paragraph",[[["f.ml",["1","0"],["1","8"]],["`Word","--option"]]]]]],[]]
