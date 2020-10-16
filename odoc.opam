@@ -36,7 +36,6 @@ depends: [
   "alcotest" {with-test & >= "0.8.3"}
   "markup" {with-test & >= "0.8.0"}
   "ocamlfind" {with-test}
-  "sexplib" {with-test & >= "113.33.00"}
   "yojson" {with-test}
 
   "bisect_ppx" {with-test & >= "2.0.0"}
