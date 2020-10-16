@@ -543,10 +543,6 @@ div.def table {
 }
 
 td.def {
-  padding-right: 2ex;
-}
-
-.record td.def {
   padding-left: 2ex;
 }
 
@@ -625,7 +621,7 @@ span.at-tag {
 
 .by-name .version {
   font-size: 10px;
-  color: #AAA
+  color: #AAA;
   color: var(--by-name-version-color);
 }
 
