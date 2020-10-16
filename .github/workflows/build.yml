@@ -64,7 +64,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          # - windows-latest Not working yet.
+          - windows-latest
 
     runs-on: ${{ matrix.os }}
 
