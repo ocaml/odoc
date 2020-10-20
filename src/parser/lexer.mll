@@ -73,13 +73,22 @@ let trim_trailing_blank_lines : string -> string = fun s ->
 let trim_leading_whitespace : first_line_offset:int -> string -> string =
  fun ~first_line_offset s ->
   let count_leading_whitespace line =
-    let rec count_leading_whitespace' index =
-      match line.[index] with
-      | ' ' | '\t' -> count_leading_whitespace' (index + 1)
-      | _ -> `Leading_whitespace index
-      | exception Invalid_argument _ -> `Blank_line "\n"
+    let rec count_leading_whitespace' index len =
+      if index = len then None
+      else
+        match line.[index] with
+        | ' ' | '\t' -> count_leading_whitespace' (index + 1) len
+        | _ -> Some index
     in
-    count_leading_whitespace' 0
+    let len = String.length line in
+    (* '\r' may remain because we only split on '\n' below. This is important
+       for the first line, which would be considered not empty without this check. *)
+    let len, ending =
+      if len > 0 && line.[len - 1] = '\r' then (len - 1, "\r\n") else (len, "\n")
+    in
+    match count_leading_whitespace' 0 len with
+    | Some index -> `Leading_whitespace index
+    | None -> `Blank_line ending
   in
 
   let lines = Astring.String.cuts ~sep:"\n" s in
