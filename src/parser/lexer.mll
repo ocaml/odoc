@@ -72,6 +72,7 @@ let trim_trailing_blank_lines : string -> string = fun s ->
 
 let trim_leading_whitespace : first_line_offset:int -> string -> string =
  fun ~first_line_offset s ->
+  (** Returns [None] for an empty, [Some ident] for an indented line. *)
   let count_leading_whitespace line =
     let rec count_leading_whitespace' index len =
       if index = len then None
@@ -83,12 +84,8 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
     let len = String.length line in
     (* '\r' may remain because we only split on '\n' below. This is important
        for the first line, which would be considered not empty without this check. *)
-    let len, ending =
-      if len > 0 && line.[len - 1] = '\r' then (len - 1, "\r\n") else (len, "\n")
-    in
-    match count_leading_whitespace' 0 len with
-    | Some index -> `Leading_whitespace index
-    | None -> `Blank_line ending
+    let len = if len > 0 && line.[len - 1] = '\r' then len - 1 else len in
+    count_leading_whitespace' 0 len
   in
 
   let lines = Astring.String.cuts ~sep:"\n" s in
@@ -96,8 +93,8 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
   let least_amount_of_whitespace =
     List.fold_left (fun least_so_far line ->
       match (count_leading_whitespace line, least_so_far) with
-      | (`Leading_whitespace n, None) -> Some n
-      | (`Leading_whitespace n, Some least) when n < least -> Some n
+      | (Some _ as n', None) -> n'
+      | (Some n as n', Some least) when n < least -> n'
       | _ -> least_so_far)
   in
 
@@ -106,9 +103,9 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
     | [] -> 0, None
     | first_line :: tl ->
       begin match count_leading_whitespace first_line with
-        | `Leading_whitespace n ->
+        | Some n ->
           n, least_amount_of_whitespace (Some (first_line_offset + n)) tl
-        | `Blank_line _ ->
+        | None ->
           0, least_amount_of_whitespace None tl
       end
   in
