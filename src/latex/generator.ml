@@ -575,9 +575,14 @@ and items l =
 
 module Doc = struct
 
+(** Latex uses forward slash even on Windows. *)
+let latex_path ppf path =
+  let path_s = String.concat "/" (Fpath.segs path) in
+  Fmt.string ppf path_s
+
 let link_children ppf children =
   let input_child ppf child =
-    macro "input" Fpath.pp ppf child.Odoc_document.Renderer.filename
+    macro "input" latex_path ppf child.Odoc_document.Renderer.filename
   in
   Fmt.list input_child ppf children
 
