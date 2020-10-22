@@ -16,6 +16,9 @@ jobs:
         ocaml-version:
           # Don't include every versions. OCaml-CI already covers that
           - 4.11.1
+        include:
+          - os: ubuntu-latest # Enable coverage only on a single build
+            send-coverage: true
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -56,6 +59,15 @@ jobs:
         run: opam exec -- dune build
       - name: dune runtest
         run: opam exec -- dune runtest
+
+      - name: Send coverage stats to Coveralls
+        if: matrix.send-coverage == true
+        run: |
+          opam exec -- dune runtest --instrument-with bisect_ppx --force
+          opam exec -- bisect-ppx-report send-to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULL_REQUEST_NUMBER: ${{ github.event.number }}
 
   esy: # Check build using esy
 
