@@ -1,19 +1,9 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-  | exception Not_found -> ""
-
-let () =
-  Jbuild_plugin.V1.send @@
-    {|
 (executable
  (name main)
  (package odoc)
  (public_name odoc)
  (libraries cmdliner odoc_model odoc_odoc)
- (flags (:standard -open StdLabels))
-  |} ^ preprocess ^ {|)
-|}
+ (flags
+  (:standard -open StdLabels))
+ (instrumentation
+  (backend bisect_ppx)))

@@ -1,14 +1,3 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-  | exception Not_found -> ""
-
-let () =
-  Jbuild_plugin.V1.send @@
-    {|
 (rule
  (targets ident_env.ml)
   (deps   (:x ident_env.cppo.ml))
@@ -27,6 +16,6 @@ let () =
 (library
  (name odoc_model)
  (public_name odoc.model)
-    |} ^ preprocess ^ {|
+ (instrumentation
+  (backend bisect_ppx))
  (libraries result compiler-libs.common))
-    |}
