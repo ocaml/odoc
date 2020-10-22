@@ -52,7 +52,7 @@ dune-test : build
 
 .PHONY : coverage
 coverage :
-	BISECT_ENABLE=yes $(DUNE) build $(DUNE_ARGS) @test/runtest --no-buffer -j 1 --force || true
+	$(DUNE) build $(DUNE_ARGS) --instrument-with bisect_ppx @test/runtest --no-buffer -j 1 --force || true
 	bisect-ppx-report html
 	@echo See _coverage/index.html
 

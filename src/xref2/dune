@@ -1,18 +1,8 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-  | exception Not_found -> ""
-
-let () =
-  Jbuild_plugin.V1.send @@
-    {|
 (library
  (name odoc_xref2)
  (public_name odoc.xref2)
- |} ^ preprocess ^ {|
+ (instrumentation
+  (backend bisect_ppx))
  (libraries compiler-libs.common odoc_model unix))
 
 (rule
@@ -62,4 +52,3 @@ let () =
   (progn
    (run ocaml-mdx-test %{x})
    (diff? %{x} %{x}.corrected))))
-|}

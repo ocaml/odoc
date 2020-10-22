@@ -1,20 +1,10 @@
-(* -*- tuareg -*- *)
-
-let preprocess =
-  match Sys.getenv "BISECT_ENABLE" with
-  | "yes" -> "(preprocess (pps bisect_ppx))"
-  | _ -> ""
-  | exception Not_found -> ""
-
-let () =
-  Jbuild_plugin.V1.send @@
-    {|
 (library
  (name odoc_odoc)
  (public_name odoc.odoc)
  (libraries compiler-libs.common fpath odoc_compat odoc_html odoc_manpage
    odoc_latex odoc_loader odoc_model odoc_xref2 tyxml unix)
-  |} ^ preprocess ^ {|)
+ (instrumentation
+  (backend bisect_ppx)))
 
 (documentation
  (package odoc))
@@ -51,4 +41,3 @@ let () =
  (files
   (etc/odoc.css as odoc-theme/default/odoc.css)
   (../vendor/highlight.pack.js as odoc-theme/default/highlight.pack.js)))
-|}

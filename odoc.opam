@@ -40,7 +40,7 @@ depends: [
   "sexplib0" {with-test}
   "conf-jq" {with-test}
 
-  "bisect_ppx" {with-test & >= "2.0.0"}
+  "bisect_ppx" {with-test & >= "2.5.0"}
 ]
 
 build: [
