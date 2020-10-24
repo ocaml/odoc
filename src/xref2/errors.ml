@@ -14,7 +14,9 @@ module Tools_error = struct
       (** The module signature depends upon a forward path *)
     | `UnresolvedPath of
       [ `Module of Cpath.module_ | `ModuleType of Cpath.module_type ]
-      (** The path to the module or module type could not be resolved *) ]
+      (** The path to the module or module type could not be resolved *)
+    | `UnexpandedTypeOf of Component.ModuleType.type_of_desc
+      (** The `module type of` expression could not be expanded *) ]
 
   type simple_module_lookup_error =
     [ `Local of Env.t * Ident.path_module
@@ -110,6 +112,10 @@ module Tools_error = struct
     | `ApplyNotFunctor -> Format.fprintf fmt "Apply module is not a functor"
     | `Class_replaced -> Format.fprintf fmt "Class replaced"
     | `Parent p -> pp_parent fmt p
+    | `UnexpandedTypeOf t ->
+        Format.fprintf fmt "Unexpanded `module type of` expression: %a"
+          Component.Fmt.module_type_type_of_desc t
+
 
   and pp_parent : Format.formatter -> parent_lookup_error -> unit =
    fun fmt err ->

@@ -632,6 +632,11 @@ module Fmt = struct
     | Some x -> Format.fprintf ppf "= %a" module_type_expr x
     | None -> ()
 
+  and module_type_type_of_desc ppf t =
+    match t with
+    | ModuleType.ModPath p -> Format.fprintf ppf "module type of %a" module_path p
+    | StructInclude p -> Format.fprintf ppf "module type of struct include %a end" module_path p
+
   and u_module_type_expr ppf mt =
     let open ModuleType.U in
     match mt with
@@ -640,8 +645,7 @@ module Fmt = struct
     | With (subs, e) ->
       Format.fprintf ppf "%a with [%a]" u_module_type_expr e
         substitution_list subs
-    | TypeOf { t_desc = ModPath p; _ }-> Format.fprintf ppf "module type of %a" module_path p
-    | TypeOf { t_desc = StructInclude p; _ } -> Format.fprintf ppf "module type of struct include %a end" module_path p
+    | TypeOf { t_desc; _ } -> module_type_type_of_desc ppf t_desc
 
   and module_type_expr ppf mt =
     let open ModuleType in

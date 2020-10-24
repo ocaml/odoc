@@ -489,6 +489,8 @@ module Fmt : sig
 
   val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
   
+  val module_type_type_of_desc : Format.formatter -> ModuleType.type_of_desc -> unit
+  
   val u_module_type_expr : Format.formatter -> ModuleType.U.expr -> unit
 
   val module_type_expr : Format.formatter -> ModuleType.expr -> unit
