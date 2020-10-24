@@ -514,7 +514,9 @@ and module_type_expr :
       | Ok (_, _, ce) ->
           let e = Lang_of.simple_expansion Lang_of.empty id ce in
           Some (simple_expansion env id e)
-      | Error _ -> None
+      | Error e ->
+        Errors.report ~what:(`Module_type_expr ce) ~tools_error:e `Expand;
+        None
   in
   match expr with
   | Signature s -> Signature (signature env id s)

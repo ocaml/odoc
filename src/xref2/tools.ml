@@ -4,7 +4,6 @@ open Odoc_model.Names
 open Utils
 open ResultMonad
 
-exception UnexpandedTypeOf
 type ('a, 'b) either = Left of 'a | Right of 'b
 
 type module_modifiers =
@@ -1014,7 +1013,7 @@ and signature_of_u_module_type_expr :
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
   | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
-  | TypeOf _ -> raise UnexpandedTypeOf
+  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc )
 
 and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
     function
@@ -1047,7 +1046,8 @@ and signature_of_module_type_expr :
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.TypeOf { t_expansion = Some e; _ } ->
     Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.TypeOf _ -> raise UnexpandedTypeOf
+  | Component.ModuleType.TypeOf { t_desc; _ } ->
+    Error (`UnexpandedTypeOf t_desc)
 
 and signature_of_module_type :
     Env.t ->
@@ -1463,6 +1463,7 @@ and resolve_module_fragment :
         | Ok (_m : Component.Signature.t) -> f'
         | Error `OpaqueModule -> `OpaqueModule f'
         | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
+        | Error (`UnexpandedTypeOf _ ) -> f'
       in
       Some (fixup_module_cfrag f'')
 
@@ -1548,14 +1549,16 @@ let resolve_module_path env p =
       match signature_of_module_cached env p m with
       | Ok _ -> Ok p
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
-      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p )
+      | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
+      | Error (`UnexpandedTypeOf _) -> Ok p)
 
 let resolve_module_type_path env p =
   resolve_module_type ~mark_substituted:true env p >>= fun (p, mt) ->
   match signature_of_module_type env mt with
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
-  | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
+  | Error (`UnresolvedForwardPath | `UnresolvedPath _)
+  | Error (`UnexpandedTypeOf _) -> Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 

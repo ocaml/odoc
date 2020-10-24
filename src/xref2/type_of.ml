@@ -61,8 +61,8 @@ and module_type_expr env (id : Id.Signature.t) expr =
   | TypeOf t ->
     match module_type_expr_typeof env id t with
     | Ok e -> TypeOf {t with t_expansion = Some (Lang_of.(simple_expansion empty id e)) }
+    | Error (`UnexpandedTypeOf _) -> again := true; expr
     | Error _ -> expr
-    | exception _ -> again := true; expr
 
 and u_module_type_expr env id expr =
   match expr with
@@ -72,8 +72,8 @@ and u_module_type_expr env id expr =
   | TypeOf t ->
     match module_type_expr_typeof env id t with
     | Ok e -> TypeOf {t with t_expansion = Some (Lang_of.(simple_expansion empty id e)) }
+    | Error (`UnexpandedTypeOf _) -> again := true; expr
     | Error _ -> expr
-    | exception _ -> again := true; expr
 
 and functor_parameter env p =
   { p with expr = module_type_expr env (p.id :> Id.Signature.t) p.expr}
