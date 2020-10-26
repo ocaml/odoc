@@ -26,6 +26,11 @@ let resolve_ref' env ref_str : ref =
   | Error (`Msg e) -> failwith e
   | Ok None -> failwith "resolve_reference"
   | Ok (Some r) -> r
+
+let resolve_ref_of_mli mli =
+  let sg = Common.signature_of_mli_string mli in
+  let env = Env.open_signature sg Env.empty in
+  resolve_ref' env
 ```
 
 ## Resolving
@@ -33,7 +38,7 @@ let resolve_ref' env ref_str : ref =
 Env:
 
 ```ocaml
-let test_mli = {|
+let resolve_ref = resolve_ref_of_mli {|
   (** First comment *)
 
   (** {1:L1 title} *)
@@ -79,40 +84,6 @@ let test_mli = {|
   end
 
 |}
-let sg = Common.signature_of_mli_string test_mli
-let env = Env.open_signature sg Env.empty
-```
-
-Helpers:
-
-```ocaml
-let parse_ref ref_str =
-  let open Odoc_model in
-  let dummy_loc = Location_.span [] in
-  let parse acc = Odoc_parser__Reference.parse acc dummy_loc ref_str in
-  let parsed = Error.accumulate_warnings parse in
-  match Error.handle_errors_and_warnings ~warn_error:true parsed with
-  | Ok ref -> ref
-  | Error (`Msg e) -> failwith e
-
-(* Shorten type for nicer output *)
-type ref = Odoc_model.Paths_types.Resolved_reference.any
-
-let resolve_ref' env ref_str : ref =
-  let open Odoc_model in
-  let unresolved = parse_ref ref_str in
-  let resolved =
-    Lookup_failures.catch_failures (fun () ->
-        Ref_tools.resolve_reference env unresolved)
-  in
-  match
-    Lookup_failures.handle_failures ~warn_error:true ~filename:"tests" resolved
-  with
-  | Error (`Msg e) -> failwith e
-  | Ok None -> failwith "resolve_reference"
-  | Ok (Some r) -> r
-
-let resolve_ref = resolve_ref' env
 ```
 
 Explicit, root:
@@ -470,7 +441,7 @@ Substitutions are only available in 4.08 onwards:
 
 <!-- $MDX version>=4.08 -->
 ```ocaml
-let test_mli = {|
+let resolve_ref = resolve_ref_of_mli {|
   type r1 = { rf1 : int }
   type s1 := r1
 
@@ -479,13 +450,6 @@ let test_mli = {|
     type s2 := r2
   end
 |}
-let sg = Common.signature_of_mli_string test_mli
-let env = Env.open_signature sg Env.empty
-let resolve_ref ref_str : ref =
-  let unresolved = parse_ref ref_str in
-  match Ref_tools.resolve_reference env unresolved with
-  | None -> failwith "resolve_reference"
-  | Some r -> r
 ```
 
 <!-- $MDX version>=4.08 -->
@@ -503,7 +467,7 @@ Exception: Failure "resolve_reference".
 ## Ambiguous references
 
 ```ocaml
-let test_mli = {|
+let resolve_ref = resolve_ref_of_mli {|
   type t = X
   val t : t
 
@@ -515,10 +479,6 @@ let test_mli = {|
   end
 
 |}
-let sg = Common.signature_of_mli_string test_mli
-let env = Env.open_signature sg Env.empty
-
-let resolve_ref = resolve_ref' env
 ```
 
 Ambiguous in env:
