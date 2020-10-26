@@ -437,6 +437,89 @@ Known kind:
   (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), r2), rf2)
 ```
 
+Class and class type as type:
+
+```ocaml
+# resolve_ref "type:c1"
+- : ref = `Identifier (`Class (`Root (Common.root, Root), c1))
+# resolve_ref "type:ct1"
+- : ref = `Identifier (`ClassType (`Root (Common.root, Root), ct1))
+```
+
+Constructors in type parent:
+
+```ocaml
+# resolve_ref "t1.C1"
+- : ref =
+`Constructor (`Identifier (`Type (`Root (Common.root, Root), t1)), C1)
+# resolve_ref "constructor:t1.C1"
+- : ref =
+`Constructor (`Identifier (`Type (`Root (Common.root, Root), t1)), C1)
+# resolve_ref "t1.constructor-C1"
+- : ref =
+`Constructor (`Identifier (`Type (`Root (Common.root, Root), t1)), C1)
+# resolve_ref "constructor:type-t1.C1"
+- : ref =
+`Constructor (`Identifier (`Type (`Root (Common.root, Root), t1)), C1)
+# resolve_ref "M.t2.C2"
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2), C2)
+# resolve_ref "constructor:M.t2.C2"
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2), C2)
+# resolve_ref "M.t2.constructor-C2"
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2), C2)
+# resolve_ref "constructor:M.type-t2.C2"
+- : ref =
+`Constructor
+  (`Type (`Identifier (`Module (`Root (Common.root, Root), M)), t2), C2)
+```
+
+Signature parent:
+
+```ocaml
+let resolve_ref = resolve_ref_of_mli {|
+  module M : sig
+    module N : sig
+      type t
+    end
+    module type T = sig
+      type t
+    end
+  end
+  module type MT = sig
+    type t
+  end
+|}
+```
+
+```ocaml
+# resolve_ref "M.module-N.t"
+- : ref =
+`Type (`Module (`Identifier (`Module (`Root (Common.root, Root), M)), N), t)
+# resolve_ref "M.module-type-T.t"
+- : ref =
+`Type
+  (`ModuleType (`Identifier (`Module (`Root (Common.root, Root), M)), T), t)
+# resolve_ref "M.N.type-t"
+- : ref =
+`Type (`Module (`Identifier (`Module (`Root (Common.root, Root), M)), N), t)
+# resolve_ref "M.T.type-t"
+- : ref =
+`Type
+  (`ModuleType (`Identifier (`Module (`Root (Common.root, Root), M)), T), t)
+# resolve_ref "type:M.N.t"
+- : ref =
+`Type (`Module (`Identifier (`Module (`Root (Common.root, Root), M)), N), t)
+# resolve_ref "type:MT.t"
+- : ref =
+`Type (`Identifier (`ModuleType (`Root (Common.root, Root), MT)), t)
+```
+
 Substitutions are only available in 4.08 onwards:
 
 <!-- $MDX version>=4.08 -->
