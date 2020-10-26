@@ -3,4 +3,4 @@
  (public_name odoc.latex)
  (instrumentation
   (backend bisect_ppx))
- (libraries odoc_model odoc_document odoc_compat))
+ (libraries odoc_model odoc_document odoc_compat fmt fpath))
