@@ -376,7 +376,7 @@ let rec documentedSrc (t : DocumentedSrc.t) =
 
 
 and items l =
-  let[@tailrec] rec walk_items
+  let rec walk_items
       ~only_text acc (t : Item.t list) =
     let continue_with rest elts =
       walk_items ~only_text (List.rev_append elts acc) rest
