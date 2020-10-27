@@ -17,12 +17,23 @@ let cmt_filename f =
   | ".mli" -> Fpath.set_ext ".cmti" f
   | _ -> die (spf "Don't know what to do with %a" path f)
 
-let odoc_filename f = Fpath.set_ext ".odoc" f
+let odoc_filename f =
+  let open Fpath in
+  let f =
+    if get_ext f = ".mld" then add_seg (parent f) ("page-" ^ basename f) else f
+  in
+  set_ext ".odoc" f
 
 let () =
   let input_files = List.map Fpath.v (List.tl (Array.to_list Sys.argv)) in
-  let cmt_files = List.map cmt_filename input_files in
+  let mld_files, ocaml_files =
+    List.partition (fun f -> Fpath.get_ext f = ".mld") input_files
+  in
+  let cmt_files =
+    (* Side effect: error on unknown extension *)
+    List.map cmt_filename ocaml_files
+  in
   let odoc_files = List.map odoc_filename input_files in
-  List.iter (run "ocamlc -bin-annot -c %a" path) input_files;
-  List.iter (run "odoc compile --package test %a" path) cmt_files;
+  List.iter (run "ocamlc -bin-annot -c %a" path) ocaml_files;
+  List.iter (run "odoc compile --package test %a" path) (mld_files @ cmt_files);
   List.iter (run "odoc link -I . %a" path) odoc_files
