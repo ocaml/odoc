@@ -547,6 +547,47 @@ Exception: Failure "resolve_reference".
 Exception: Failure "resolve_reference".
 ```
 
+```ocaml
+let resolve_ref = resolve_ref_of_mli {|
+  module type T1 = sig
+    type t
+  end
+
+  module type T2 = sig
+    module N : T1
+  end
+
+  module A : T1
+  module B = A
+  module C : module type of A
+  module D : T1 with type t = A.t
+  module E : T2 with module N = A
+|}
+```
+
+```ocaml
+# resolve_ref "A.t"
+- : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), A)), t)
+# resolve_ref "B.t" (* get_module_path_modifiers is [`Aliased] *)
+- : ref =
+`Type
+  (`SubstAlias
+     (`Identifier (`Module (`Root (Common.root, Root), A)),
+      `Identifier (`Module (`Root (Common.root, Root), B))),
+   t)
+# resolve_ref "C.t"
+Exception: Failure "resolve_reference".
+# resolve_ref "D.t"
+- : ref = `Type (`Identifier (`Module (`Root (Common.root, Root), D)), t)
+# resolve_ref "E.N.t"
+- : ref =
+`Type
+  (`SubstAlias
+     (`Identifier (`Module (`Root (Common.root, Root), A)),
+      `Module (`Identifier (`Module (`Root (Common.root, Root), E)), N)),
+   t)
+```
+
 ## Ambiguous references
 
 ```ocaml
