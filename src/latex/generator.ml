@@ -148,6 +148,8 @@ let entity ~in_source ~verbatim x =
   else
     Txt [escape_entity x]
 
+let small_table_limit = 10
+
 let rec pp_elt ppf = function
   | Txt words ->
     Fmt.list Fmt.string ~sep:none ppf words
@@ -171,7 +173,14 @@ let rec pp_elt ppf = function
   | List {typ; items} -> list typ pp ppf items
   | Description items -> Raw.description pp ppf items
   | Table { row_size=Large|Huge as size; tbl } -> large_table size ppf tbl
-  | Table { row_size=Small|Empty; tbl } -> Raw.small_table pp ppf tbl
+  | Table { row_size=Small|Empty as size; tbl } ->
+    if List.length tbl <= small_table_limit then
+      Fmt.pf ppf "%a%a%a"
+        Raw.break Line
+        (Raw.small_table pp) tbl
+        Raw.break Line
+    else
+      large_table size ppf tbl
   | Label x -> Raw.label ppf x
   | Indented x ->  Raw.indent pp ppf x
   | Ligaturable s -> Fmt.string ppf s
@@ -200,15 +209,18 @@ and href ppf (l,txt) =
 and large_table size ppf tbl =
     let rec row ppf = function
       | [] -> Raw.break ppf Line
-      | [a] -> pp ppf a
+      | [a] -> pp ppf a; Raw.break ppf Line
+      | [a;b] ->
+        Fmt.pf ppf "%a%a%a"
+          pp a
+          Raw.break Aesthetic
+          (Raw.indent pp) b
       | a :: (_ :: _ as q) ->
         Fmt.pf ppf "%a%a%a"
           pp a
           Raw.break Aesthetic
           (Raw.indent row) q  in
-    let matrix ppf m =
-
-      List.iter (row ppf) m in
+    let matrix ppf m = List.iter (row ppf) m in
     match size with
     | Huge -> Raw.break ppf Line; matrix ppf tbl
     | Large | _ -> Raw.indent matrix ppf tbl

@@ -14,50 +14,72 @@
 \label{package-test+u+package+++ml-module-Type-type-triple}\ocamlcodefragment{\ocamltag{keyword}{type} triple = int * int * int}\\
 \label{package-test+u+package+++ml-module-Type-type-nested+u+pair}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}pair = (int * int) * int}\\
 \label{package-test+u+package+++ml-module-Type-type-instance}\ocamlcodefragment{\ocamltag{keyword}{type} instance = int \hyperref[package-test+u+package+++ml-module-Type-type-constructor]{\ocamlinlinecode{constructor}}}\\
-\label{package-test+u+package+++ml-module-Type-type-variant+u+e}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}e = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+e.a}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{\}}\\
-\label{package-test+u+package+++ml-module-Type-type-variant}\ocamlcodefragment{\ocamltag{keyword}{type} variant = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{package-test+u+package+++ml-module-Type-type-variant.A}& \\
+\label{package-test+u+package+++ml-module-Type-type-variant+u+e}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}e = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+e.a}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-variant}\ocamlcodefragment{\ocamltag{keyword}{type} variant = }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{package-test+u+package+++ml-module-Type-type-variant.A}& \\
 \ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} int}\label{package-test+u+package+++ml-module-Type-type-variant.B}& \\
 \ocamlcodefragment{| \ocamltag{constructor}{C}}\label{package-test+u+package+++ml-module-Type-type-variant.C}& foo\\
 \ocamlcodefragment{| \ocamltag{constructor}{D}}\label{package-test+u+package+++ml-module-Type-type-variant.D}& \emph{bar}\\
 \ocamlcodefragment{| \ocamltag{constructor}{E} \ocamltag{keyword}{of} \hyperref[package-test+u+package+++ml-module-Type-type-variant+u+e]{\ocamlinlinecode{variant\_\allowbreak{}e}}}\label{package-test+u+package+++ml-module-Type-type-variant.E}& \\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-variant+u+c}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}c = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+c.a}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{\}}\\
-\label{package-test+u+package+++ml-module-Type-type-gadt}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} gadt = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : int \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.A}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-variant+u+c}\ocamlcodefragment{\ocamltag{keyword}{type} variant\_\allowbreak{}c = \{}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-variant+u+c.a}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-gadt}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} gadt = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : int \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.A}\\
 \ocamlcodefragment{| \ocamltag{constructor}{B} : int $\rightarrow$ string \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.B}\\
 \ocamlcodefragment{| \ocamltag{constructor}{C} : \hyperref[package-test+u+package+++ml-module-Type-type-variant+u+c]{\ocamlinlinecode{variant\_\allowbreak{}c}} $\rightarrow$ unit \hyperref[package-test+u+package+++ml-module-Type-type-gadt]{\ocamlinlinecode{gadt}}}\label{package-test+u+package+++ml-module-Type-type-gadt.C}\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt}\ocamlcodefragment{\ocamltag{keyword}{type} degenerate\_\allowbreak{}gadt = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : \hyperref[package-test+u+package+++ml-module-Type-type-degenerate+u+gadt]{\ocamlinlinecode{degenerate\_\allowbreak{}gadt}}}\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt.A}\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-private+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}variant = \ocamltag{keyword}{private} }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{package-test+u+package+++ml-module-Type-type-private+u+variant.A}\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-record}\ocamlcodefragment{\ocamltag{keyword}{type} record = \{}{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.a}& \\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt}\ocamlcodefragment{\ocamltag{keyword}{type} degenerate\_\allowbreak{}gadt = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} : \hyperref[package-test+u+package+++ml-module-Type-type-degenerate+u+gadt]{\ocamlinlinecode{degenerate\_\allowbreak{}gadt}}}\label{package-test+u+package+++ml-module-Type-type-degenerate+u+gadt.A}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-private+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}variant = \ocamltag{keyword}{private} }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A}}\label{package-test+u+package+++ml-module-Type-type-private+u+variant.A}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-record}\ocamlcodefragment{\ocamltag{keyword}{type} record = \{}\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.a}& \\
 \ocamlinlinecode{\ocamltag{keyword}{mutable} b : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.b}& \\
 \ocamlinlinecode{c : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.c}& foo\\
 \ocamlinlinecode{d : int;\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.d}& \emph{bar}\\
 \ocamlinlinecode{e : a.\allowbreak{} \ocamltag{type-var}{'a};\allowbreak{}}\label{package-test+u+package+++ml-module-Type-type-record.e}& \\
-\end{ocamllongtable}%
-}\ocamlcodefragment{\}}\\
-\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.A}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{\}}\\
+\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.A}\\
 \ocamlinlinecode{| }\ocamlinlinecode{`B \ocamltag{keyword}{of} int}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.B}\\
 \ocamlinlinecode{| }\ocamlinlinecode{`C \ocamltag{keyword}{of} int * unit}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.C}\\
 \ocamlinlinecode{| }\ocamlinlinecode{`D}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant.D}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{ ]}\\
-\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant\_\allowbreak{}extension = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension.polymorphic+u+variant}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant\_\allowbreak{}extension = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension.polymorphic+u+variant}\\
 \ocamlinlinecode{| }\ocamlinlinecode{`E}\label{package-test+u+package+++ml-module-Type-type-polymorphic+u+variant+u+extension.E}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{ ]}\\
-\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}polymorphic\_\allowbreak{}variant = [ }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A \ocamltag{keyword}{of} [ `B | `C ]}\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant.A}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{ ]}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} nested\_\allowbreak{}polymorphic\_\allowbreak{}variant = [ }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{`A \ocamltag{keyword}{of} [ `B | `C ]}\label{package-test+u+package+++ml-module-Type-type-nested+u+polymorphic+u+variant.A}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
 \label{package-test+u+package+++ml-module-Type-type-private+u+extenion#row}\ocamlcodefragment{\ocamltag{keyword}{type} private\_\allowbreak{}extenion\#row}\\
-\label{package-test+u+package+++ml-module-Type-type-private+u+extenion}\ocamlcodefragment{\ocamltag{keyword}{and} private\_\allowbreak{}extenion = \ocamltag{keyword}{private} [> }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-private+u+extenion.polymorphic+u+variant}\\
-\end{ocamllongtable}%
-}\ocamlcodefragment{ ]}\\
+\label{package-test+u+package+++ml-module-Type-type-private+u+extenion}\ocamlcodefragment{\ocamltag{keyword}{and} private\_\allowbreak{}extenion = \ocamltag{keyword}{private} [> }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{| }\ocamlinlinecode{\hyperref[package-test+u+package+++ml-module-Type-type-polymorphic+u+variant]{\ocamlinlinecode{polymorphic\_\allowbreak{}variant}}}\label{package-test+u+package+++ml-module-Type-type-private+u+extenion.polymorphic+u+variant}\\
+\end{ocamltabular}%
+\\
+\ocamlcodefragment{ ]}\\
 \label{package-test+u+package+++ml-module-Type-type-object+u+}\ocamlcodefragment{\ocamltag{keyword}{type} object\_\allowbreak{} = < a : int;\allowbreak{} b : int;\allowbreak{} c : int;\allowbreak{} >}\\
 \label{package-test+u+package+++ml-module-Type-module-type-X}\ocamlcodefragment{\ocamltag{keyword}{module} \ocamltag{keyword}{type} \hyperref[package-test+u+package+++ml-module-Type-module-type-X]{\ocamlinlinecode{X}}}\ocamlcodefragment{ = \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{package-test+u+package+++ml-module-Type-module-type-X-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
 \label{package-test+u+package+++ml-module-Type-module-type-X-type-u}\ocamlcodefragment{\ocamltag{keyword}{type} u}\\
@@ -83,13 +105,19 @@
 \label{package-test+u+package+++ml-module-Type-type-double+u+constrained}\ocamlcodefragment{\ocamltag{keyword}{type} ('a,\allowbreak{} 'b) double\_\allowbreak{}constrained = \ocamltag{type-var}{'a} * \ocamltag{type-var}{'b} \ocamltag{keyword}{constraint} \ocamltag{type-var}{'a} = int \ocamltag{keyword}{constraint} \ocamltag{type-var}{'b} = unit}\\
 \label{package-test+u+package+++ml-module-Type-type-as+u+}\ocamlcodefragment{\ocamltag{keyword}{type} as\_\allowbreak{} = int \ocamltag{keyword}{as} 'a * \ocamltag{type-var}{'a}}\\
 \label{package-test+u+package+++ml-module-Type-type-extensible}\ocamlcodefragment{\ocamltag{keyword}{type} extensible = .\allowbreak{}.\allowbreak{}}\\
-\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[package-test+u+package+++ml-module-Type-type-extensible]{\ocamlinlinecode{extensible}} += }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Extension}}\label{package-test+u+package+++ml-module-Type-extension-Extension}& Documentation for \hyperref[package-test+u+package+++ml-module-Type-extension-Extension]{\ocamlinlinecode{\ocamlinlinecode{Extension}}[p\pageref*{package-test+u+package+++ml-module-Type-extension-Extension}]}.\\
+\ocamlcodefragment{\ocamltag{keyword}{type} \hyperref[package-test+u+package+++ml-module-Type-type-extensible]{\ocamlinlinecode{extensible}} += }\\
+\begin{ocamltabular}{p{0.500\textwidth}p{0.500\textwidth}}\ocamlcodefragment{| \ocamltag{extension}{Extension}}\label{package-test+u+package+++ml-module-Type-extension-Extension}& Documentation for \hyperref[package-test+u+package+++ml-module-Type-extension-Extension]{\ocamlinlinecode{\ocamlinlinecode{Extension}}[p\pageref*{package-test+u+package+++ml-module-Type-extension-Extension}]}.\\
 \ocamlcodefragment{| \ocamltag{extension}{Another\_\allowbreak{}extension}}\label{package-test+u+package+++ml-module-Type-extension-Another+u+extension}& Documentation for \hyperref[package-test+u+package+++ml-module-Type-extension-Another+u+extension]{\ocamlinlinecode{\ocamlinlinecode{Another\_\allowbreak{}extension}}[p\pageref*{package-test+u+package+++ml-module-Type-extension-Another+u+extension}]}.\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-mutually}\ocamlcodefragment{\ocamltag{keyword}{type} mutually = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} \ocamltag{keyword}{of} \hyperref[package-test+u+package+++ml-module-Type-type-recursive]{\ocamlinlinecode{recursive}}}\label{package-test+u+package+++ml-module-Type-type-mutually.A}\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-type-recursive}\ocamlcodefragment{\ocamltag{keyword}{and} recursive = }{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}\begin{ocamllongtable}[l]{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} \hyperref[package-test+u+package+++ml-module-Type-type-mutually]{\ocamlinlinecode{mutually}}}\label{package-test+u+package+++ml-module-Type-type-recursive.B}\\
-\end{ocamllongtable}%
-}\label{package-test+u+package+++ml-module-Type-exception-Foo}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Foo} \ocamltag{keyword}{of} int * int}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-mutually}\ocamlcodefragment{\ocamltag{keyword}{type} mutually = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{A} \ocamltag{keyword}{of} \hyperref[package-test+u+package+++ml-module-Type-type-recursive]{\ocamlinlinecode{recursive}}}\label{package-test+u+package+++ml-module-Type-type-mutually.A}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-type-recursive}\ocamlcodefragment{\ocamltag{keyword}{and} recursive = }\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{B} \ocamltag{keyword}{of} \hyperref[package-test+u+package+++ml-module-Type-type-mutually]{\ocamlinlinecode{mutually}}}\label{package-test+u+package+++ml-module-Type-type-recursive.B}\\
+\end{ocamltabular}%
+\\
+\label{package-test+u+package+++ml-module-Type-exception-Foo}\ocamlcodefragment{\ocamltag{keyword}{exception} \ocamltag{exception}{Foo} \ocamltag{keyword}{of} int * int}\\
 
 
