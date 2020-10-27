@@ -588,6 +588,67 @@ Exception: Failure "resolve_reference".
    t)
 ```
 
+## Failures
+
+Test some error paths.
+
+```ocaml
+let resolve_ref = resolve_ref_of_mli {|
+  module M : sig
+    type t = C
+    type u = { f : t }
+    type obj_sig = < m : int >
+  end
+
+  type obj_env = < m : int >
+|}
+```
+
+```ocaml
+# (* Lookup a field but find a constructor *)
+  resolve_ref "M.field-C"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.t.field-C"
+Exception: Failure "resolve_reference".
+# (* Lookup a class but find a type *)
+  resolve_ref "M.class-t"
+Exception: Failure "resolve_reference".
+# (* Lookup a constructor but find a field *)
+  resolve_ref "M.constructor-f"
+Exception: Failure "resolve_reference".
+# resolve_ref "M.u.constructor-f"
+Exception: Failure "resolve_reference".
+```
+
+Lookup classes but get types
+
+```ocaml
+let resolve_ref = resolve_ref_of_mli {|
+  module M : sig
+    type t = < m : int >
+  end
+  type u = < m : int >
+  class c : object end
+|}
+```
+
+```ocaml
+# resolve_ref "m" (* in env *)
+Exception: Failure "resolve_reference".
+# resolve_ref "method-m"
+Exception: Failure "resolve_reference".
+# resolve_ref "u.method-m" (* Parent is type in env *)
+Exception: Failure "resolve_reference".
+# resolve_ref "M.method-m" (* Parent is sig *)
+Exception: Failure "resolve_reference".
+# resolve_ref "M.t.method-m"
+Exception: Failure "resolve_reference".
+# resolve_ref "c.constructor-C" (* Type in env but find class (parent of constructor is "datatype") *)
+Exception: Failure "resolve_reference".
+# resolve_ref "c.field-f" (* Field in class (parent of field is "label_parent") *)
+Exception: Failure "resolve_reference".
+```
+
 ## Ambiguous references
 
 ```ocaml
