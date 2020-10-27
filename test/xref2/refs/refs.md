@@ -663,6 +663,24 @@ let resolve_ref = resolve_ref_of_mli {|
     module Y : sig end
   end
 
+  module Everything_ambiguous_in_sig : sig
+    include sig type t end
+    (* include sig class r : object end end *) (* assertion failure in the compiler *)
+    (* include sig class type r = object end end *)
+    include sig module type t end
+    (** {1:t Label} *)
+    include sig type r = { t : t } end
+    include sig val t : t end
+    include sig external t : t -> t = "t" end
+    include sig type t := t end
+
+    include sig module T : sig end end
+    include sig module T := X end
+    include sig exception T end
+    include sig type r = .. type r += T end
+  end
+
+
 |}
 ```
 
@@ -690,6 +708,14 @@ Reference to 'u' is ambiguous. Please specify its kind: type-u, val-u.
 Exception: Failure "Warnings have been generated.".
 File "tests":
 Reference to 'Y' is ambiguous. Please specify its kind: constructor-Y, module-Y.
+# resolve_ref "Everything_ambiguous_in_sig.t" (* Some kinds are missing: label, type subst (would be "type-") *)
+Exception: Failure "Warnings have been generated.".
+File "tests":
+Reference to 't' is ambiguous. Please specify its kind: type-t, module-type-t, field-t, val-t, val-t.
+# resolve_ref "Everything_ambiguous_in_sig.T" (* Missing kind: module subst (would be "module-") *)
+Exception: Failure "Warnings have been generated.".
+File "tests":
+Reference to 'T' is ambiguous. Please specify its kind: module-T, exception-T, extension-T.
 ```
 
 Unambiguous:
