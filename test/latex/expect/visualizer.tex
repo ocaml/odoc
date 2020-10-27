@@ -40,8 +40,8 @@
 \newcommand{\ocamlcomment}{\color{gray}\normalfont\small}
 \newcommand{\ocamlstring}{\color{gray}\bfseries}
 \newenvironment{ocamlindent}{\begin{adjustwidth}{2em}{0pt}}{\end{adjustwidth}}
-\newenvironment{ocamllongtable}[2][l]{\begin{longtable}[#1]{#2}}%
-{\end{longtable}}
+\newenvironment{ocamltabular}[1]{\begin{tabular}{#1}}%
+{\end{tabular}}
 
 \lstnewenvironment{ocamlcodeblock}{
   \lstset{

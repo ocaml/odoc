@@ -138,11 +138,8 @@ let latex_path ppf path =
   Fmt.string ppf path_s
 let input ppf x = create "input" latex_path ppf x
 
-let const s ppf = Fmt.pf ppf s
-
-let longtable ~column_desc pp ppf x =
-  env "ocamllongtable"
-    ~opts:[const "l"]
+let ocamltabular ~column_desc pp ppf x =
+  env "ocamltabular"
     ~args:[ column_desc ]
     pp ppf x
 
@@ -157,11 +154,10 @@ let small_table pp ppf tbl =
       Fmt.pf ppf "%t%t" s (repeat (n - 1) s) in
   let cell ppf = Fmt.pf ppf "p{%.3f\\textwidth}" (1.0 /. float_of_int columns) in
   let table ppf tbl =
-    longtable
+    ocamltabular
       (repeat columns cell)
       matrix ppf tbl in
-  Fmt.pf ppf {|{\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%a}|}
-    table tbl
+    table ppf tbl
 
 let ocamltag tag pp ppf x =
   create2 "ocamltag" Fmt.string pp ppf tag x

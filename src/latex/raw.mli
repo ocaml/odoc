@@ -64,8 +64,8 @@ val code_block: 'a t
 val indent: 'a t
 (** expected to be implemented with changepage/adjustwidth*)
 
-val longtable: column_desc:pr -> 'a t
-(** any table implementation that can be split on multiple pages, e.g. longtable*)
+val ocamltabular: column_desc:pr -> 'a t
+(** Any tabular implementation that works well with at most 10 rows *)
 
 
 (** {2 Tags } *)
