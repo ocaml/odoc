@@ -34,7 +34,7 @@ depends: [
   "fmt"
 
   "alcotest" {with-test & >= "0.8.3"}
-  "markup" {with-test & >= "0.8.0"}
+  "markup" {with-test & >= "1.0.0"}
   "ocamlfind" {with-test}
   "yojson" {with-test}
   "sexplib0" {with-test}
