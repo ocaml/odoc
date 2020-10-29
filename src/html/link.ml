@@ -73,6 +73,7 @@ let href ~resolve { Url.Anchor. page; anchor; kind } =
       @ target_from_common_ancestor
     in
     let page = String.concat "/" relative_target in
+    let page = if kind="page" then page ^ ".html" else page in
     begin match anchor with
     | "" -> page
     | anchor -> page ^ "#" ^ anchor
