@@ -588,6 +588,41 @@ Exception: Failure "resolve_reference".
    t)
 ```
 
+Classes as type references:
+
+```ocaml
+let resolve_ref = resolve_ref_of_mli {|
+  module M : sig
+    class cl : object method m : int end
+    class type clt = object method m : int end
+  end
+
+  class cl : object method m : int end
+  class type clt = object method m : int end
+|}
+```
+
+```ocaml
+# resolve_ref "type:M.cl" (* Type reference resolves to class *)
+Exception: Failure "resolve_reference".
+# resolve_ref "type:M.clt"
+Exception: Failure "resolve_reference".
+# resolve_ref "type:cl" (* Root TType reference resolves to class *)
+- : ref = `Identifier (`Class (`Root (Common.root, Root), cl))
+# resolve_ref "type:clt"
+- : ref = `Identifier (`ClassType (`Root (Common.root, Root), clt))
+# resolve_ref "M.type-cl.m" (* Type label parent resolves to class *)
+Exception: Failure "resolve_reference".
+# resolve_ref "M.type-clt.m"
+Exception: Failure "resolve_reference".
+# resolve_ref "type-cl.m" (* Root TType label parent resolves to class *)
+Exception: Failure "resolve_reference".
+# resolve_ref "type-clt.m"
+Exception: Failure "resolve_reference".
+# resolve_ref "method:cl.m"
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), cl)), m)
+```
+
 ## Failures
 
 Test some error paths.
