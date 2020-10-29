@@ -604,21 +604,27 @@ let resolve_ref = resolve_ref_of_mli {|
 
 ```ocaml
 # resolve_ref "type:M.cl" (* Type reference resolves to class *)
-Exception: Failure "resolve_reference".
+- : ref = `Class (`Identifier (`Module (`Root (Common.root, Root), M)), cl)
 # resolve_ref "type:M.clt"
-Exception: Failure "resolve_reference".
+- : ref =
+`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), clt)
 # resolve_ref "type:cl" (* Root TType reference resolves to class *)
 - : ref = `Identifier (`Class (`Root (Common.root, Root), cl))
 # resolve_ref "type:clt"
 - : ref = `Identifier (`ClassType (`Root (Common.root, Root), clt))
 # resolve_ref "M.type-cl.m" (* Type label parent resolves to class *)
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`Class (`Identifier (`Module (`Root (Common.root, Root), M)), cl), m)
 # resolve_ref "M.type-clt.m"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method
+  (`ClassType (`Identifier (`Module (`Root (Common.root, Root), M)), clt), m)
 # resolve_ref "type-cl.m" (* Root TType label parent resolves to class *)
-Exception: Failure "resolve_reference".
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), cl)), m)
 # resolve_ref "type-clt.m"
-Exception: Failure "resolve_reference".
+- : ref =
+`Method (`Identifier (`ClassType (`Root (Common.root, Root), clt)), m)
 # resolve_ref "method:cl.m"
 - : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), cl)), m)
 ```
