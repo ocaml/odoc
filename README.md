@@ -1,4 +1,4 @@
-# odoc &nbsp; [![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml%2Fodoc%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml/odoc)
+# odoc &nbsp; [![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml%2Fodoc%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml/odoc) [![Coverage Status](https://coveralls.io/repos/github/ocaml/odoc/badge.svg)](https://coveralls.io/github/ocaml/odoc)
 
 **odoc** is a documentation generator for OCaml. It reads *doc comments* ,
 delimited with `(** ... *)`, and outputs HTML.
