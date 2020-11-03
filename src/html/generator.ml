@@ -349,17 +349,18 @@ and items ~resolve l : item Html.elt list =
 module Toc = struct
   open Odoc_document.Doctree
 
-  let render_toc (toc : Toc.t) =
-    let rec section {Toc. anchor ; text ; children } =
+  let render_toc ~resolve (toc : Toc.t) =
+    let rec section {Toc. url ; text ; children } =
       let text = inline_nolink text in
       let text =
         (text
          : non_link_phrasing Html.elt list
           :> (Html_types.flow5_without_interactive Html.elt) list)
       in
+      let href = Link.href ~resolve url in
       let link =
         Html.a
-          ~a:[Html.a_href ("#" ^ anchor)] text
+          ~a:[Html.a_href href] text
       in
       match children with
       | [] -> [link]
@@ -377,7 +378,7 @@ module Toc = struct
     | `Closed | `Open | `Default -> false
     | `Inline -> true
 
-  let from_items i = render_toc @@ Toc.compute ~on_sub i
+  let from_items ~resolve ~path i = render_toc ~resolve @@ Toc.compute path ~on_sub i
 end
 
 module Page = struct
@@ -398,7 +399,7 @@ module Page = struct
   and page ?theme_uri ({Page. title; header; items = i; url } as p) =
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
-    let toc = Toc.from_items i in
+    let toc = Toc.from_items ~resolve ~path:url i in
     let subpages = subpages ?theme_uri p in
     let header = items ~resolve header in
     let content = (items ~resolve i :> any Html.elt list) in
