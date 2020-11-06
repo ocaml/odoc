@@ -157,7 +157,19 @@ let small_table pp ppf tbl =
     ocamltabular
       (repeat columns cell)
       matrix ppf tbl in
-    table ppf tbl
+  (* we add line breaks to never insert tables between delimiters,
+     to avoid rendering:
+          | `A
+       [  | `B   ]
+          | `C
+     or
+       field_1: int;
+     { field_2: int;     }
+       field_3: int;
+   *)
+  break ppf Line;
+  table ppf tbl;
+  break ppf Line
 
 let ocamltag tag pp ppf x =
   create2 "ocamltag" Fmt.string pp ppf tag x

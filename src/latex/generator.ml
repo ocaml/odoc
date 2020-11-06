@@ -148,7 +148,14 @@ let entity ~in_source ~verbatim x =
   else
     Txt [escape_entity x]
 
-let small_table_limit = 10
+(** Tables with too many rows are hard to typeset correctly on
+    the same page.
+    Splitting tables on multiple pages is unreliable with longtable + hyperref.
+    Thus we limit the height of the tables that we render as latex tables.
+    This variable is kept separated because we may want to make it tunable
+    by the user.
+*)
+let small_table_height_limit = 10
 
 let rec pp_elt ppf = function
   | Txt words ->
@@ -172,15 +179,12 @@ let rec pp_elt ppf = function
   | Code_fragment x -> Raw.code_fragment pp ppf x
   | List {typ; items} -> list typ pp ppf items
   | Description items -> Raw.description pp ppf items
-  | Table { row_size=Large|Huge as size; tbl } -> large_table size ppf tbl
-  | Table { row_size=Small|Empty as size; tbl } ->
-    if List.length tbl <= small_table_limit then
-      Fmt.pf ppf "%a%a%a"
-        Raw.break Line
-        (Raw.small_table pp) tbl
-        Raw.break Line
+  | Table { row_size=Large|Huge; tbl } -> large_table ppf tbl
+  | Table { row_size=Small|Empty; tbl } ->
+    if List.length tbl <= small_table_height_limit then
+      Raw.small_table pp ppf tbl
     else
-      large_table size ppf tbl
+      large_table ppf tbl
   | Label x -> Raw.label ppf x
   | Indented x ->  Raw.indent pp ppf x
   | Ligaturable s -> Fmt.string ppf s
@@ -206,7 +210,7 @@ and href ppf (l,txt) =
     Raw.href l pp ppf txt;  Raw.footnote ppf l
   | None ->  Raw.url ppf l
 
-and large_table size ppf tbl =
+and large_table ppf tbl =
     let rec row ppf = function
       | [] -> Raw.break ppf Line
       | [a] -> pp ppf a; Raw.break ppf Line
@@ -221,9 +225,7 @@ and large_table size ppf tbl =
           Raw.break Aesthetic
           (Raw.indent row) q  in
     let matrix ppf m = List.iter (row ppf) m in
-    match size with
-    | Huge -> Raw.break ppf Line; matrix ppf tbl
-    | Large | _ -> Raw.indent matrix ppf tbl
+    Raw.indent matrix ppf tbl
 
 and tag s ppf x = Raw.ocamltag s pp ppf x
 
