@@ -629,6 +629,28 @@ let resolve_ref = resolve_ref_of_mli {|
 - : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), cl)), m)
 ```
 
+It is not possible to reference to methods through type references:
+
+```ocaml
+# let resolve_ref = resolve_ref_of_mli {|
+    class c : object method m : int end
+    type t = < m : int >
+  |}
+val resolve_ref : string -> ref = <fun>
+# resolve_ref "type-c.m"
+- : ref = `Method (`Identifier (`Class (`Root (Common.root, Root), c)), m)
+# resolve_ref "type-c.method-m"
+Exception:
+Failure
+ "File \"_none_\", line 1, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
+# resolve_ref "type-t.m"
+Exception: Failure "resolve_reference".
+# resolve_ref "type-t.method-m"
+Exception:
+Failure
+ "File \"_none_\", line 1, characters 0-6:\nExpected 'class-', 'class-type-', or an unqualified reference.".
+```
+
 ## Failures
 
 Test some error paths.
