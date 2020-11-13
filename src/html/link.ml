@@ -14,24 +14,28 @@ module Path = struct
   let for_printing url = List.map snd @@ to_list url
 
   let segment_to_string (kind, name) =
-    if kind = "module" || kind = "cpage" || kind = "page"
-    then name
-    else Printf.sprintf "%s-%s" kind name
-  let for_linking url = List.map segment_to_string @@ to_list url
+    match kind with
+    | "module" | "cpage" -> name
+    | _ -> Printf.sprintf "%s-%s" kind name
 
   let is_leaf_page url = (url.Url.Path.kind = "page")
 
   let rec get_dir {Url.Path. parent ; name ; kind} =
-    let s = segment_to_string (kind, name) in
-    match parent with
-    | None -> Fpath.v s
-    | Some p -> Fpath.(get_dir p / s)
+    let ppath = match parent with | Some p -> get_dir p | None -> [] in
+    match kind with
+    | "page" -> ppath
+    | _ -> ppath @ [segment_to_string (kind, name)]
+
+  let get_file : Url.Path.t -> string = fun t ->
+    match t.kind with
+    | "page" -> t.name ^ ".html"
+    | _ -> "index.html"
+
+  let for_linking : Url.Path.t -> string list = fun url ->
+    get_dir url @ [get_file url]
 
   let as_filename (url : Url.Path.t) =
-    if is_leaf_page url then
-      Fpath.(get_dir url + ".html")
-    else
-      Fpath.(get_dir url / "index.html")
+    Fpath.(v @@ String.concat Fpath.dir_sep @@ for_linking url)
 end
 
 let semantic_uris = ref false
@@ -46,34 +50,51 @@ let rec drop_shared_prefix l1 l2 =
     drop_shared_prefix l1s l2s
   | _, _ -> l1, l2
 
-let href ~resolve { Url.Anchor. page; anchor; kind } =
-  let leaf = if !semantic_uris || kind = "page" then [] else ["index.html"] in
-  let target = Path.for_linking page @ leaf in
-  match resolve with
+let href ~resolve t =
+  let { Url.Anchor. page; anchor; _ } = t in
+
+  let target_loc = Path.for_linking page in
+
   (* If xref_base_uri is defined, do not perform relative URI resolution. *)
+  match resolve with
   | Base xref_base_uri ->
-    let page = xref_base_uri ^ String.concat "/" target in
+    let page = xref_base_uri ^ (String.concat "/" target_loc) in
     begin match anchor with
     | "" -> page
     | anchor -> page ^ "#" ^ anchor
     end
   | Current path ->
-    let current_loc =
-      let l = Path.for_linking path in
-      if Path.is_leaf_page path then
-        (* Sadness. *)
-        List.tl l
-      else l
-    in
+    let current_loc = Path.for_linking path in
+
     let current_from_common_ancestor, target_from_common_ancestor =
-      drop_shared_prefix current_loc target
+      drop_shared_prefix current_loc target_loc
+    in
+
+    let relative_target =
+      match current_from_common_ancestor with
+      | [] -> (* We're already on the right page *)
+        (* If we're already on the right page, the target from our common
+            ancestor can't be anything other than the empty list *)
+        assert(target_from_common_ancestor = []);
+        []
+      | [_] -> (* We're already in the right dir *)
+        target_from_common_ancestor
+      | l -> (* We need to go up some dirs *)
+        List.map (fun _ -> "..") (List.tl l)
+        @ target_from_common_ancestor
+    in
+    let remove_index_html l =
+      match List.rev l with
+      | "index.html" :: rest -> List.rev ("" :: rest)
+      | _ -> l
     in
     let relative_target =
-      List.map (fun _ -> "..") current_from_common_ancestor
-      @ target_from_common_ancestor
+      if !semantic_uris
+      then remove_index_html relative_target
+      else relative_target
     in
-    let page = String.concat "/" relative_target in
-    begin match anchor with
-    | "" -> page
-    | anchor -> page ^ "#" ^ anchor
+    begin match relative_target, anchor with
+    | [], "" -> "#"
+    | page, "" -> String.concat "/" page
+    | page, anchor -> String.concat "/" page ^ "#" ^ anchor
     end

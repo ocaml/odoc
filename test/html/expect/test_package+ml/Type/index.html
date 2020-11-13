@@ -70,7 +70,7 @@
     <a href="#type-nested_pair" class="anchor"></a><code><span class="keyword">type</span> nested_pair = <span>(int * int)</span> * int</code>
    </div>
    <div class="spec type" id="type-instance">
-    <a href="#type-instance" class="anchor"></a><code><span class="keyword">type</span> instance = <span>int <a href="index.html#type-constructor">constructor</a></span></code>
+    <a href="#type-instance" class="anchor"></a><code><span class="keyword">type</span> instance = <span>int <a href="#type-constructor">constructor</a></span></code>
    </div>
    <div class="spec type" id="type-variant_e">
     <a href="#type-variant_e" class="anchor"></a><code><span class="keyword">type</span> variant_e = {</code>
@@ -121,7 +121,7 @@
       </tr>
       <tr id="type-variant.E" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-variant.E" class="anchor"></a><code>| <span class="constructor">E</span> <span class="keyword">of</span> <a href="index.html#type-variant_e">variant_e</a></code>
+        <a href="#type-variant.E" class="anchor"></a><code>| <span class="constructor">E</span> <span class="keyword">of</span> <a href="#type-variant_e">variant_e</a></code>
        </td>
       </tr>
      </tbody>
@@ -146,17 +146,17 @@
      <tbody>
       <tr id="type-gadt.A" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-gadt.A" class="anchor"></a><code>| <span class="constructor">A</span> : <span>int <a href="index.html#type-gadt">gadt</a></span></code>
+        <a href="#type-gadt.A" class="anchor"></a><code>| <span class="constructor">A</span> : <span>int <a href="#type-gadt">gadt</a></span></code>
        </td>
       </tr>
       <tr id="type-gadt.B" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-gadt.B" class="anchor"></a><code>| <span class="constructor">B</span> : int <span>-&gt;</span> <span>string <a href="index.html#type-gadt">gadt</a></span></code>
+        <a href="#type-gadt.B" class="anchor"></a><code>| <span class="constructor">B</span> : int <span>-&gt;</span> <span>string <a href="#type-gadt">gadt</a></span></code>
        </td>
       </tr>
       <tr id="type-gadt.C" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-gadt.C" class="anchor"></a><code>| <span class="constructor">C</span> : <a href="index.html#type-variant_c">variant_c</a> <span>-&gt;</span> <span>unit <a href="index.html#type-gadt">gadt</a></span></code>
+        <a href="#type-gadt.C" class="anchor"></a><code>| <span class="constructor">C</span> : <a href="#type-variant_c">variant_c</a> <span>-&gt;</span> <span>unit <a href="#type-gadt">gadt</a></span></code>
        </td>
       </tr>
      </tbody>
@@ -168,7 +168,7 @@
      <tbody>
       <tr id="type-degenerate_gadt.A" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-degenerate_gadt.A" class="anchor"></a><code>| <span class="constructor">A</span> : <a href="index.html#type-degenerate_gadt">degenerate_gadt</a></code>
+        <a href="#type-degenerate_gadt.A" class="anchor"></a><code>| <span class="constructor">A</span> : <a href="#type-degenerate_gadt">degenerate_gadt</a></code>
        </td>
       </tr>
      </tbody>
@@ -263,7 +263,7 @@
      <tbody>
       <tr id="type-polymorphic_variant_extension.polymorphic_variant" class="anchored">
        <td class="def type">
-        <a href="#type-polymorphic_variant_extension.polymorphic_variant" class="anchor"></a><code>| </code><code><a href="index.html#type-polymorphic_variant">polymorphic_variant</a></code>
+        <a href="#type-polymorphic_variant_extension.polymorphic_variant" class="anchor"></a><code>| </code><code><a href="#type-polymorphic_variant">polymorphic_variant</a></code>
        </td>
       </tr>
       <tr id="type-polymorphic_variant_extension.E" class="anchored">
@@ -297,7 +297,7 @@
      <tbody>
       <tr id="type-private_extenion.polymorphic_variant" class="anchored">
        <td class="def type">
-        <a href="#type-private_extenion.polymorphic_variant" class="anchor"></a><code>| </code><code><a href="index.html#type-polymorphic_variant">polymorphic_variant</a></code>
+        <a href="#type-private_extenion.polymorphic_variant" class="anchor"></a><code>| </code><code><a href="#type-polymorphic_variant">polymorphic_variant</a></code>
        </td>
       </tr>
      </tbody>
@@ -329,7 +329,7 @@
     <a href="#type-binary" class="anchor"></a><code><span class="keyword">type</span> <span>('a, 'b) binary</span></code>
    </div>
    <div class="spec type" id="type-using_binary">
-    <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary = <span><span>(int,&nbsp;int)</span> <a href="index.html#type-binary">binary</a></span></code>
+    <a href="#type-using_binary" class="anchor"></a><code><span class="keyword">type</span> using_binary = <span><span>(int,&nbsp;int)</span> <a href="#type-binary">binary</a></span></code>
    </div>
    <div class="spec type" id="type-name">
     <a href="#type-name" class="anchor"></a><code><span class="keyword">type</span> <span>'custom name</span></code>
@@ -350,7 +350,7 @@
     <a href="#type-upper_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a upper_variant</span> = <span class="type-var">'a</span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&lt; `A <span><span>| `B</span> of int</span> ]</span></code>
    </div>
    <div class="spec type" id="type-named_variant">
-    <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a named_variant</span> = <span class="type-var">'a</span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&lt; <a href="index.html#type-polymorphic_variant">polymorphic_variant</a> ]</span></code>
+    <a href="#type-named_variant" class="anchor"></a><code><span class="keyword">type</span> <span>'a named_variant</span> = <span class="type-var">'a</span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&lt; <a href="#type-polymorphic_variant">polymorphic_variant</a> ]</span></code>
    </div>
    <div class="spec type" id="type-exact_object">
     <a href="#type-exact_object" class="anchor"></a><code><span class="keyword">type</span> <span>'a exact_object</span> = <span class="type-var">'a</span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = &lt; a : int; b : int; &gt;</code>
@@ -371,7 +371,7 @@
     <a href="#type-extensible" class="anchor"></a><code><span class="keyword">type</span> extensible = ..</code>
    </div>
    <div class="spec extension">
-    <code><span class="keyword">type</span> <a href="index.html#type-extensible">extensible</a> += </code>
+    <code><span class="keyword">type</span> <a href="#type-extensible">extensible</a> += </code>
     <table>
      <tbody>
       <tr id="extension-Extension" class="anchored">
@@ -380,7 +380,7 @@
        </td>
        <td class="doc">
         <p>
-         Documentation for <a href="index.html#extension-Extension"><code>Extension</code></a>.
+         Documentation for <a href="#extension-Extension"><code>Extension</code></a>.
         </p>
        </td>
       </tr>
@@ -390,7 +390,7 @@
        </td>
        <td class="doc">
         <p>
-         Documentation for <a href="index.html#extension-Another_extension"><code>Another_extension</code></a>.
+         Documentation for <a href="#extension-Another_extension"><code>Another_extension</code></a>.
         </p>
        </td>
       </tr>
@@ -403,7 +403,7 @@
      <tbody>
       <tr id="type-mutually.A" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-mutually.A" class="anchor"></a><code>| <span class="constructor">A</span> <span class="keyword">of</span> <a href="index.html#type-recursive">recursive</a></code>
+        <a href="#type-mutually.A" class="anchor"></a><code>| <span class="constructor">A</span> <span class="keyword">of</span> <a href="#type-recursive">recursive</a></code>
        </td>
       </tr>
      </tbody>
@@ -415,7 +415,7 @@
      <tbody>
       <tr id="type-recursive.B" class="anchored">
        <td class="def variant constructor">
-        <a href="#type-recursive.B" class="anchor"></a><code>| <span class="constructor">B</span> <span class="keyword">of</span> <a href="index.html#type-mutually">mutually</a></code>
+        <a href="#type-recursive.B" class="anchor"></a><code>| <span class="constructor">B</span> <span class="keyword">of</span> <a href="#type-mutually">mutually</a></code>
        </td>
       </tr>
      </tbody>
