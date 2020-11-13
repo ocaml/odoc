@@ -418,6 +418,10 @@ sig
     `TUnknown
   ]
 
+  type tag_only_child = [
+    `TChild
+  ]
+
   type tag_any = [
     | tag_only_module
     | tag_only_module_type
@@ -433,6 +437,7 @@ sig
     | tag_only_instance_variable
     | tag_only_label
     | tag_only_page
+    | tag_only_child
     | tag_unknown
   ]
 
@@ -470,6 +475,7 @@ sig
     | tag_only_class_type
     | tag_only_type
     | tag_only_page
+    | tag_only_child
   ]
 
   type signature = [
@@ -806,6 +812,8 @@ sig
   type s_method = [ `Method of class_signature * MethodName.t ]
   type s_instance_variable = [ `InstanceVariable of class_signature * InstanceVariableName.t ]
   type s_label = [ `Label of label_parent * LabelName.t ]
+  type s_childpage = [ `ChildPage of Identifier.page ]
+  type s_childmodule = [ `ChildModule of Identifier.module_ ]
 
   type module_no_id = [
     | s_substalias

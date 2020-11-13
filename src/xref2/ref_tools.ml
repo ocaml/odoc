@@ -535,7 +535,8 @@ let rec resolve_label_parent_reference :
         resolve_label_parent_reference env parent
         >>= signature_lookup_result_of_label_parent
         >>= fun p -> LP.in_signature env p name
-    | `Root (name, `TPage) ->
+    | `Root (name, `TPage)
+    | `Root (name, `TChild) ->
         Env.lookup_page name env >>= fun p ->
         let labels =
           List.fold_right
@@ -719,6 +720,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | `Exception (id, _) -> identifier id
         | `Extension (id, _) -> identifier id
         | `Field (id, _) -> identifier id )
+    | `Root (_name, `TChild) -> failwith "Child unimplemented"
     | `Resolved r -> Some r
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
