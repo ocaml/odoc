@@ -8,8 +8,6 @@ Two modules that reference each other:
   (** {!A} *)
 
   $ compile a.mli b.mli
-  Starting link
-  Starting link
 
 Check that references are resolved:
 

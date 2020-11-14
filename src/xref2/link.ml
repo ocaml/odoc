@@ -107,7 +107,6 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
   let imports, env = Env.initial_env t resolver in
-  Format.eprintf "Starting link\n%!";
   {
     t with
     content = content env t.id t.content;
