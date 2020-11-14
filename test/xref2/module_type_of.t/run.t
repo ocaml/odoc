@@ -34,7 +34,6 @@ Compile
 -------
 
   $ compile m.mli
-  Starting link
 
 Tests
 -----

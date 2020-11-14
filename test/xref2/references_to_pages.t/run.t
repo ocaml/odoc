@@ -1,8 +1,6 @@
 # References to pages and items in pages
 
   $ compile p.mld good_references.mli bad_references.mli
-  Starting link
-  Starting link
 
 Every references in `Good_references` should resolve:
 
