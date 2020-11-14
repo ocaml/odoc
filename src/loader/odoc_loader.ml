@@ -36,6 +36,9 @@ let not_an_interface file =
 let wrong_version file =
   Error.raise_exception (Error.filename_only "wrong OCaml version" file)
 
+let error_msg file (msg : string) =
+  Error.raise_exception (Error.filename_only "%s" msg file)
+
 
 
 let read_cmti ~make_root ~parent ~filename () =
@@ -51,7 +54,11 @@ let read_cmti ~make_root ~parent ~filename () =
       | None -> corrupted filename
       | Some digest ->
         let name = cmt_info.cmt_modname in
-        let root = make_root ~module_name:name ~digest in
+        let root =
+          match make_root ~module_name:name ~digest with
+          | Ok root -> root
+          | Error (`Msg m) -> error_msg filename m
+        in
         let (id, doc, items) = Cmti.read_interface parent name intf in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
@@ -100,7 +107,11 @@ let read_cmt ~make_root ~parent ~filename () =
           | exception Not_found -> assert false
       in
       let hidden = Odoc_model.Root.contains_double_underscore name in
-      let root = make_root ~module_name:name ~digest in
+      let root =
+        match make_root ~module_name:name ~digest with
+        | Ok root -> root
+        | Error (`Msg m) -> error_msg filename m
+      in
       let id = `Root(parent, Odoc_model.Names.ModuleName.of_string name) in
       let items =
         List.map (fun file ->
@@ -140,7 +151,11 @@ let read_cmt ~make_root ~parent ~filename () =
           | exception Not_found -> assert false
       in
       let hidden = Odoc_model.Root.contains_double_underscore name in
-      let root = make_root ~module_name:name ~digest in
+      let root =
+        match make_root ~module_name:name ~digest with
+        | Ok root -> root
+        | Error (`Msg m) -> error_msg filename m
+      in
       let (id, doc, items) = Cmt.read_implementation parent name impl in
       let imports =
         List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
@@ -172,7 +187,11 @@ let read_cmi ~make_root ~parent ~filename () =
   | cmi_info ->
     match cmi_info.cmi_crcs with
     | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-      let root = make_root ~module_name:name ~digest:digest in
+      let root =
+        match make_root ~module_name:name ~digest with
+        | Ok root -> root
+        | Error (`Msg m) -> error_msg filename m
+      in
       let (id, doc, items) = Cmi.read_interface parent name (Odoc_model.Compat.signature cmi_info.cmi_sign) in
       let imports =
         List.map (fun (s, d) ->
