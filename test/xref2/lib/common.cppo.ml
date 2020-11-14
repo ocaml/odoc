@@ -40,15 +40,19 @@ let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   ignore(package);
   let file_representation : Odoc_model.Root.Odoc_file.t =
   Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  {Odoc_model.Root.id; file = file_representation; digest}
+  Ok {Odoc_model.Root.id; file = file_representation; digest}
 
-let root = 
-    root_of_compilation_unit
-        ~package:"nopackage"
-        ~hidden:false
-        ~module_name:"Root"
-        ~digest:"nodigest"
-
+let root =
+    let root_result =
+        root_of_compilation_unit
+            ~package:"nopackage"
+            ~hidden:false
+            ~module_name:"Root"
+            ~digest:"nodigest"
+    in
+    match root_result with
+    | Ok r -> r
+    | _ -> failwith "Bad result"
 
 let root_identifier = `Identifier id
 

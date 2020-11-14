@@ -1,4 +1,5 @@
 open Or_error
+open Odoc_model.Names
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
@@ -16,24 +17,31 @@ open Or_error
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+type parent_spec =
+  | Explicit of Odoc_model.Paths.Identifier.ContainerPage.t * string list
+  | Package of Odoc_model.Paths.Identifier.ContainerPage.t
+  | Noparent
 
-let parent directories parent_file_opt package_opt =
+let parent directories parent_name_opt package_opt =
   let ap = Env.Accessible_paths.create ~directories in
-  match parent_file_opt, package_opt with
-  | Some f, _ -> begin
-    let r = Env.lookup_page ap f in
-    match r with
-    | Some r -> begin
-      match r.id with
-      | `RootPage _
-      | `Page _ as container -> Some container
-      | _ -> failwith "Expecting container page"
-      end
-    | None ->
-      failwith "Failed to read parent page"
-    end
-  | None, Some package -> Some (`RootPage (Odoc_model.Names.PageName.of_string package))
-  | None, None -> None
+  let find_parent f =
+    match Env.lookup_page ap f with
+    | Some r -> Ok r
+    | None -> Error (`Msg "Couldn't find specified parent page")
+  in
+  let extract_parent = function
+    | `RootPage _
+    | `Page _ as container -> Ok container
+    | _ -> Error (`Msg "Specified parent is not a parent of this file")
+  in
+  match parent_name_opt, package_opt with
+  | Some f, _ ->
+    find_parent f >>= fun r ->
+    extract_parent r.id >>= fun parent ->
+    Env.fetch_page ap r >>= fun page ->
+    Ok (Explicit (parent, page.children))
+  | None, Some package -> Ok (Package (`RootPage (PageName.of_string package)))
+  | None, None -> Ok Noparent
 
 let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file =
   let filename = Fs.File.to_string input_file in
@@ -63,12 +71,24 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file 
   Compilation_unit.save output compiled;
   Ok ()
 
-let root_of_compilation_unit ~parent ~hidden ~module_name ~digest =
-  let file_representation : Odoc_model.Root.Odoc_file.t =
-    Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
-  {Odoc_model.Root.id = `Root (parent, Odoc_model.Names.ModuleName.of_string module_name); file = file_representation; digest}
+let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
+  let open Odoc_model.Root in
+  let filename = Filename.chop_extension (Fs.File.(to_string @@ basename output)) in
+  let result parent = 
+    let file_representation : Odoc_file.t =
+    Odoc_file.create_unit ~force_hidden:hidden module_name in
+    Ok {id = `Root (parent, ModuleName.of_string module_name); file = file_representation; digest}
+  in
+  match parent_spec with
+  | Noparent -> Error (`Msg "Compilation units require a parent")
+  | Explicit (parent, children) ->
+    if List.mem filename children
+    then result parent
+    else Error (`Msg "Specified parent is not a parent of this file")
+  | Package parent -> result parent
 
-let mld ~parent_opt ~output ~children ~warn_error input =
+let mld ~parent_spec ~output ~children ~warn_error input =
+  let filename = Fs.File.(to_string @@ basename output) in
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
@@ -78,15 +98,26 @@ let mld ~parent_opt ~output ~children ~warn_error input =
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
-  let page_name = Odoc_model.Names.PageName.of_string root_name in
+  let page_name = PageName.of_string root_name in
   let name =
-    match parent_opt, children with
-    | Some p, [] -> `LeafPage (p, page_name )
-    | Some p, _ -> `Page (p, page_name )
-    | None, _ -> `RootPage (page_name) in
+    let check parents_children v =
+      if List.mem filename parents_children
+      then Ok v
+      else Error (`Msg "Specified parent is not a parent of this file")
+    in
+    match parent_spec, children with
+    | Explicit (p, cs), [] ->
+      check cs @@ `LeafPage (p, page_name)
+    | Explicit (p, cs), _ ->
+      check cs @@ `Page (p, page_name )
+    | Package parent, [] -> Ok (`LeafPage (parent, page_name))
+    | Package parent, _ -> Ok (`Page (parent, page_name)) (* This is a bit odd *)
+    | Noparent, _ -> Ok (`RootPage (page_name))
+  in
+  name >>= fun name ->
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
-    {Odoc_model.Root.id = name; file; digest}
+    {Odoc_model.Root.id = (name :> Odoc_model.Paths.Identifier.OdocId.t); file; digest}
   in
   let resolve content =
     let page = Odoc_model.Lang.Page.{ name; root; children; content; digest } in
@@ -94,22 +125,27 @@ let mld ~parent_opt ~output ~children ~warn_error input =
     Ok ()
   in
   Fs.File.read input >>= fun str ->
-  Odoc_loader.read_string name input_s str |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+  Odoc_loader.read_string (name :> Odoc_model.Paths.Identifier.LabelParent.t) input_s str |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
   >>= function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
 let compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~children ~output ~warn_error input =
-  let parent_opt = parent directories parent_name_opt package_opt in
+  parent directories parent_name_opt package_opt >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld"
-  then mld ~parent_opt ~output ~warn_error ~children input
+  then mld ~parent_spec ~output ~warn_error ~children input
   else
     (match ext with
       | ".cmti" -> Ok Odoc_loader.read_cmti
       | ".cmt" -> Ok Odoc_loader.read_cmt
       | ".cmi" -> Ok Odoc_loader.read_cmi
       | _ -> Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")) >>= fun loader ->
-    let parent = match parent_opt with | Some p -> p | None -> failwith "Compilation_units require a parent" in
-    let make_root = root_of_compilation_unit ~parent ~hidden in
+    let parent = match parent_spec with
+      | Noparent -> Error (`Msg "Compilation unit requires a parent")
+      | Explicit (parent, _) -> Ok parent
+      | Package parent -> Ok parent
+    in
+    parent >>= fun parent ->
+    let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
     resolve_and_substitute ~env ~output ~warn_error parent input (loader ~make_root)
