@@ -19,7 +19,8 @@
             "group": {
                 "kind": "test",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
         }
     ]
 }
