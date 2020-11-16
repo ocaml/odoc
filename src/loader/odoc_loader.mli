@@ -3,7 +3,7 @@ open Odoc_model
 
 val read_string :
   Paths.Identifier.LabelParent.t ->
-  Location.t ->
+  string ->
   string ->
   (Comment.docs_or_stop, Error.t) result Error.with_warnings
 

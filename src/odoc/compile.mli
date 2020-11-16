@@ -18,22 +18,8 @@ open Or_error
 
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
 
-val cmti :
-  env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> warn_error:bool -> Fs.File.t ->
-  (unit, [> msg]) result
-
-val cmt :
-  env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> warn_error:bool -> Fs.File.t ->
-  (unit, [> msg]) result
-
-val cmi :
-  env:Env.builder -> package:Odoc_model.Root.Package.t -> hidden:bool ->
-  output:Fs.File.t -> warn_error:bool -> Fs.File.t ->
-  (unit, [> msg]) result
-
-val mld :
-  env:Env.builder -> package:Odoc_model.Root.Package.t ->
+val compile :
+  env:Env.builder -> directories:(Fs.Directory.t list) -> parent_name_opt:string option -> package_opt:Odoc_model.Root.Package.t option ->
+  hidden:bool ->
   output:Fs.File.t -> warn_error:bool -> Fs.File.t ->
   (unit, [> msg]) result

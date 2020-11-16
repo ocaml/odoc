@@ -63,6 +63,7 @@ module File : sig
 
   val set_ext : string -> t -> t
   val has_ext : string -> t -> bool
+  val get_ext : t -> string
 
   val of_string : string -> t
   val to_string : t -> string

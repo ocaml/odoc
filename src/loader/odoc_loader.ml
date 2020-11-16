@@ -4,7 +4,18 @@ module Error = Odoc_model.Error
 
 
 
-let read_string parent_definition location text =
+let read_string parent_definition filename text =
+  let location =
+    let pos =
+      Lexing.{
+        pos_fname = filename;
+        pos_lnum = 0;
+        pos_cnum = 0;
+        pos_bol = 0
+      }
+    in
+    Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
+  in
   Error.catch_errors_and_warnings (fun () ->
     Doc_attr.page parent_definition location text)
 

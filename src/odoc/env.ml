@@ -36,7 +36,6 @@ open Odoc_compat
 
 open Or_error
 
-type t = Odoc_xref2.Env.resolver
 module Accessible_paths = struct
   type t = {
     root_map : Fs.File.t Odoc_model.Root.Hash_table.t;
@@ -197,6 +196,9 @@ let fetch_unit ap root =
       Printf.sprintf "No unit for root: %s\n%!" (Odoc_model.Root.to_string root)
     in
     Error (`Msg msg)
+
+
+type t = Odoc_xref2.Env.resolver
 
 type builder = [ `Unit of Compilation_unit.t | `Page of Page.t ] -> t
 
