@@ -88,7 +88,6 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   | Package parent -> result parent
 
 let mld ~parent_spec ~output ~children ~warn_error input =
-  let filename = Fs.File.(to_string @@ basename output) in
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
@@ -101,7 +100,7 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   let page_name = PageName.of_string root_name in
   let name =
     let check parents_children v =
-      if List.mem filename parents_children
+      if List.mem root_name parents_children
       then Ok v
       else Error (`Msg "Specified parent is not a parent of this file")
     in
