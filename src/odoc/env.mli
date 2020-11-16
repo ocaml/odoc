@@ -19,6 +19,13 @@
     This is the module which does the link between packages, directories and
     {!DocOck}'s needs. *)
 
+module Accessible_paths : sig
+  type t
+  val create : directories:Fs.directory list -> t
+end
+
+val lookup_page : Accessible_paths.t -> string -> Odoc_model.Root.t option
+
 type t = Odoc_xref2.Env.resolver
 
 type builder

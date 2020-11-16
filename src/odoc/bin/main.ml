@@ -100,23 +100,14 @@ end = struct
       in
       Fs.File.(set_ext ".odoc" output)
 
-  let compile hidden directories resolve_fwd_refs dst package_name open_modules input warn_error =
+  let compile hidden directories resolve_fwd_refs dst package_opt parent_name_opt open_modules input warn_error =
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories ~open_modules
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    if Fs.File.has_ext ".cmti" input then
-      Compile.cmti ~env ~package:package_name ~hidden ~output ~warn_error input
-    else if Fs.File.has_ext ".cmt" input then
-      Compile.cmt ~env ~package:package_name ~hidden ~output ~warn_error input
-    else if Fs.File.has_ext ".cmi" input then
-      Compile.cmi ~env ~package:package_name ~hidden ~output ~warn_error input
-    else if Fs.File.has_ext ".mld" input then
-      Compile.mld ~env ~package:package_name ~output ~warn_error input
-    else
-      Error (`Cli_error "Unknown extension, expected one of: cmti, cmt, cmi or mld.\n%!")
+    Compile.compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~output ~warn_error input
 
   let input =
     let doc = "Input cmti, cmt, cmi or mld file" in
@@ -138,17 +129,22 @@ end = struct
     Arg.(value & opt_all string default & info ~docv:"MODULE" ~doc ["open"])
 
   let cmd =
-    let pkg =
-      let doc = "Package the input is part of" in
-      Arg.(required & opt (some string) None &
+    let package_opt =
+      let doc = "Package the input is part of (deprecated - use '--parent')" in
+      Arg.(value & opt (some string) None &
            info ~docs ~docv:"PKG" ~doc ["package"; "pkg"])
+    in
+    let parent_opt =
+      let doc = "Parent page or subpage" in
+      Arg.(value & opt (some string) None &
+           info ~docs ~docv:"PARENT" ~doc ["parent"])
     in
     let resolve_fwd_refs =
       let doc = "Try resolving forward references" in
       Arg.(value & flag & info ~doc ["r";"resolve-fwd-refs"])
     in
     Term.(const handle_error $ (const compile $ hidden $ odoc_file_directories $
-          resolve_fwd_refs $ dst $ pkg $ open_modules $ input $ warn_error))
+          resolve_fwd_refs $ dst $ package_opt $ parent_opt $ open_modules $ input $ warn_error))
 
   let info =
     Term.info "compile"

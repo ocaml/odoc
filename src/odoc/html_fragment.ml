@@ -10,18 +10,6 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
     let file = Odoc_model.Root.Odoc_file.create_page page_name in
     {Odoc_model.Root.id; file; digest}
   in
-  let name = `RootPage (Odoc_model.Names.PageName.of_string page_name) in
-  let location =
-    let pos =
-      Lexing.{
-        pos_fname = input_s;
-        pos_lnum = 0;
-        pos_cnum = 0;
-        pos_bol = 0
-      }
-    in
-    Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
-  in
   let to_html content =
     (* This is a mess. *)
     let page = Odoc_model.Lang.Page.{ name=id; root; content; digest } in
@@ -41,8 +29,8 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   match Fs.File.read input with
   | Error _ as e -> e
   | Ok str ->
-    Odoc_loader.read_string name location str
+    Odoc_loader.read_string id input_s str
     |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
     >>= function
-    | `Docs content -> to_html content
-    | `Stop -> to_html [] (* TODO: Error? *)
+    |`Docs content -> to_html content
+    |`Stop -> to_html [] (* TODO: Error? *)

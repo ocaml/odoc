@@ -17,6 +17,24 @@ open Or_error
  *)
 
 
+let parent directories parent_file_opt package_opt =
+  let ap = Env.Accessible_paths.create ~directories in
+  match parent_file_opt, package_opt with
+  | Some f, _ -> begin
+    let r = Env.lookup_page ap f in
+    match r with
+    | Some r -> begin
+      match r.id with
+      | `RootPage _
+      | `Page _ as container -> Some container
+      | _ -> failwith "Expecting container page"
+      end
+    | None ->
+      failwith "Failed to read parent page"
+    end
+  | None, Some package -> Some (`RootPage (Odoc_model.Names.PageName.of_string package))
+  | None, None -> None
+
 let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file =
   let filename = Fs.File.to_string input_file in
 
@@ -50,27 +68,7 @@ let root_of_compilation_unit ~parent ~hidden ~module_name ~digest =
     Odoc_model.Root.Odoc_file.create_unit ~force_hidden:hidden module_name in
   {Odoc_model.Root.id = `Root (parent, Odoc_model.Names.ModuleName.of_string module_name); file = file_representation; digest}
 
-let cmti ~env ~package ~hidden ~output ~warn_error input =
-  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
-  let make_root = root_of_compilation_unit ~parent ~hidden in
-  let read_file = Odoc_loader.read_cmti ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error parent input read_file
-
-let cmt ~env ~package ~hidden ~output ~warn_error input =
-  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
-  let make_root = root_of_compilation_unit ~parent ~hidden in
-  let read_file = Odoc_loader.read_cmt ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error parent input read_file
-
-let cmi ~env ~package ~hidden ~output ~warn_error input =
-  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
-  let make_root = root_of_compilation_unit ~parent ~hidden in
-  let read_file = Odoc_loader.read_cmi ~make_root in
-  resolve_and_substitute ~env ~output ~warn_error parent input read_file
-
-(* TODO: move most of this to doc-ock. *)
-let mld ~env:_ ~package ~output ~warn_error input =
-  let parent = `RootPage (Odoc_model.Names.PageName.of_string package) in
+let mld ~parent_opt ~output ~warn_error input =
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
@@ -81,21 +79,13 @@ let mld ~env:_ ~package ~output ~warn_error input =
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
   let page_name = Odoc_model.Names.PageName.of_string root_name in
-  let name = `LeafPage (parent, page_name) in
+  let name =
+    match parent_opt with
+    | Some p -> `LeafPage (p, page_name )
+    | None -> `RootPage (page_name) in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page root_name in
     {Odoc_model.Root.id = name; file; digest}
-  in
-  let location =
-    let pos =
-      Lexing.{
-        pos_fname = input_s;
-        pos_lnum = 0;
-        pos_cnum = 0;
-        pos_bol = 0
-      }
-    in
-    Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
   let resolve content =
     let page = Odoc_model.Lang.Page.{ name; root; content; digest } in
@@ -103,7 +93,22 @@ let mld ~env:_ ~package ~output ~warn_error input =
     Ok ()
   in
   Fs.File.read input >>= fun str ->
-  Odoc_loader.read_string name location str |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+  Odoc_loader.read_string name input_s str |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
   >>= function
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
+
+let compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~output ~warn_error input =
+  let parent_opt = parent directories parent_name_opt package_opt in
+  let ext = Fs.File.get_ext input in
+  if ext = ".mld"
+  then mld ~parent_opt ~output ~warn_error input
+  else
+    (match ext with
+      | ".cmti" -> Ok Odoc_loader.read_cmti
+      | ".cmt" -> Ok Odoc_loader.read_cmt
+      | ".cmi" -> Ok Odoc_loader.read_cmi
+      | _ -> Error (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.")) >>= fun loader ->
+    let parent = match parent_opt with | Some p -> p | None -> failwith "Compilation_units require a parent" in
+    let make_root = root_of_compilation_unit ~parent ~hidden in
+    resolve_and_substitute ~env ~output ~warn_error parent input (loader ~make_root)
