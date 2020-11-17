@@ -404,10 +404,9 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
       let m' = Subst.module_ sub m in
       let md' = Component.Delayed.put_val m' in
       Ok (process_module_path env ~add_canonical m' p', md')
-  | Some (`FModule_removed p) -> (
-      match lookup_module ~mark_substituted:false env p with
-      | Ok m -> Ok (p, m)
-      | Error _ as e -> e )
+  | Some (`FModule_removed p) ->
+      lookup_module ~mark_substituted:false env p
+      >>= fun m -> Ok (p, m)
   | None -> Error `Find_failure
 
 and handle_module_type_lookup env id p sg sub =
@@ -447,15 +446,14 @@ and lookup_module :
         of_option ~error:(`Lookup_failure i) (Env.(lookup_by_id s_module) i env)
         >>= fun (`Module (_, m)) -> Ok m
     | `Substituted x -> lookup_module ~mark_substituted env x
-    | `Apply (functor_path, argument_path) -> (
-        match lookup_module ~mark_substituted env functor_path with
-        | Ok functor_module ->
-            let functor_module = Component.Delayed.get functor_module in
-            handle_apply ~mark_substituted:false env functor_path argument_path
-              functor_module
-            |> map_error (fun e -> `Parent (`Parent_expr e))
-            >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
-        | Error _ as e -> e )
+    | `Apply (functor_path, argument_path) ->
+        lookup_module ~mark_substituted env functor_path
+        >>= fun functor_module ->
+        let functor_module = Component.Delayed.get functor_module in
+        handle_apply ~mark_substituted:false env functor_path argument_path
+          functor_module
+        |> map_error (fun e -> `Parent (`Parent_expr e))
+        >>= fun (_, m) -> Ok (Component.Delayed.put_val m)        
     | `Module (parent, name) ->
         let find_in_sg sg sub =
           match Find.careful_module_in_sig sg (ModuleName.to_string name) with
@@ -958,7 +956,7 @@ and module_type_expr_of_module_decl :
           module_type_expr_of_module env m
       | Error _ when Cpath.is_module_forward path ->
           Error `UnresolvedForwardPath
-      | Error _ -> Error (`UnresolvedPath (`Module path)) )
+      | Error e -> Error (`UnresolvedPath (`Module (path, e))) )
   | Component.Module.ModuleType expr -> Ok expr
 
 and module_type_expr_of_module :
@@ -982,7 +980,7 @@ and signature_of_module_path :
       signature_of_module_cached env p' m >>= fun sg ->
       if strengthen then Ok (Strengthen.signature (`Resolved p') sg) else Ok sg
   | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
-  | Error _ -> Error (`UnresolvedPath (`Module path))
+  | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 and handle_signature_with_subs :
     mark_substituted:bool ->
@@ -1007,7 +1005,7 @@ and signature_of_u_module_type_expr :
   | Component.ModuleType.U.Path p -> (
       match resolve_module_type ~mark_substituted env p with
       | Ok (_, mt) -> signature_of_module_type env mt
-      | Error _ -> Error (`UnresolvedPath (`ModuleType p)) )
+      | Error e -> Error (`UnresolvedPath (`ModuleType (p, e))) )
   | Signature s -> Ok s
   | With (subs, s) ->
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
@@ -1032,7 +1030,7 @@ and signature_of_module_type_expr :
   | Component.ModuleType.Path {p_path; _} -> (
       match resolve_module_type ~mark_substituted env p_path with
       | Ok (_, mt) -> signature_of_module_type env mt
-      | Error _ -> Error (`UnresolvedPath (`ModuleType p_path)) )
+      | Error e -> Error (`UnresolvedPath (`ModuleType (p_path, e))) )
   | Component.ModuleType.Signature s -> Ok s
   | Component.ModuleType.With {w_expansion=Some e; _} ->
     Ok (signature_of_simple_expansion e)
@@ -1227,10 +1225,10 @@ and fragmap :
                 resolve_module ~mark_substituted ~add_canonical:false env p
               with
               | Ok (p, _) -> Ok (Right p)
-              | Error _ ->
+              | Error e ->
                   Format.fprintf Format.err_formatter
                     "failed to resolve path: %a\n%!" Component.Fmt.module_path p;
-                  Error (`UnresolvedPath (`Module p))
+                  Error (`UnresolvedPath (`Module (p, e)))
             in
             map_signature None (Some (name, mapfn)) sg.items )
     | TypeEq (frag, equation) -> (

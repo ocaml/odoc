@@ -83,7 +83,8 @@ and aux_expansion_of_module_alias env ~strengthen path =
              Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
       | Ok (Functor _ as x), _ -> Ok x )
-  | Error _ -> Error (`UnresolvedPath (`Module path))
+  | Error e ->
+    Error (`UnresolvedPath (`Module (path, e)))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
    may well change - so we turn resolved fragments back into unresolved ones
@@ -114,7 +115,7 @@ and aux_expansion_of_u_module_type_expr env expr :
   match expr with
   | Component.ModuleType.U.Path p ->
     Tools.resolve_module_type ~mark_substituted:false env p
-    |> map_error (fun _ -> (`UnresolvedPath (`ModuleType p) : signature_of_module_error))
+    |> map_error (fun e -> (`UnresolvedPath (`ModuleType (p, e)) : signature_of_module_error))
     >>= fun (_, mt) -> aux_expansion_of_module_type env mt
     >>= assert_not_functor
   | Signature sg -> Ok (sg)
@@ -131,7 +132,7 @@ and aux_expansion_of_module_type_expr env expr :
   match expr with
   | Path {p_path; _} ->
       Tools.resolve_module_type ~mark_substituted:false env p_path
-      |> map_error (fun _ -> (`UnresolvedPath (`ModuleType p_path) : signature_of_module_error))
+      |> map_error (fun e -> (`UnresolvedPath (`ModuleType (p_path, e)) : signature_of_module_error))
       >>= fun (_, mt) -> aux_expansion_of_module_type env mt
   | Signature s -> Ok (Signature s)
   | With {w_substitutions; w_expr; _} -> (
