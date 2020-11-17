@@ -524,27 +524,20 @@ now no local identifiers.) Finally we can now look up `t`, which
 we then return along with the fully resolved identifier.
 
 ```ocaml env=e1
-# get_ok @@ Tools.resolve_type env
+# fst @@ get_ok @@ Tools.resolve_type env
     (`Dot
       (`Dot
          (`Resolved
             (`Identifier (Common.root_module "A")),
           "B"),
        "t"));;
-- : Cpath.Resolved.type_ * Odoc_xref2.Find.careful_type =
-(`Type
-   (`Module
-      (`Module
-         (`Module (`Identifier (`Module (`Root (`RootPage None, Root), A))),
-          B)),
-    t),
- `FType
-   (t,
-    {Odoc_xref2.Component.TypeDecl.doc = [];
-     equation =
-      {Odoc_xref2.Component.TypeDecl.Equation.params = []; private_ = false;
-       manifest = None; constraints = []};
-     representation = None}))
+- : Cpath.Resolved.type_ =
+`Type
+  (`Module
+     (`Module
+        (`Module (`Identifier (`Module (`Root (`RootPage None, Root), A))),
+         B)),
+   t)
 ```
 
 ### Module aliases
