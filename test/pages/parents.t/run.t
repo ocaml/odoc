@@ -31,12 +31,6 @@ Link and generate the HTML:
 We should see a directory structure here where the module 'Test' is found underneath the top-level directory 'package'. Also, the contents of the
 file 'package.mld' should be written to the file 'package/index.html'.
 
-  $ ls -R html
-  package
-  
-  html/package:
-  Test
-  index.html
-  
-  html/package/Test:
-  index.html
+  $ find html -type f | sort
+  html/package/Test/index.html
+  html/package/index.html
