@@ -56,12 +56,12 @@ And output the HTML:
   $ for i in *.odocl; do odoc html-generate -o html $i; done
 
 Let's see what we've got!
-  $ find html -type f
+  $ find html -type f | sort
   html/top1/index.html
   html/top1/sub1/M1/index.html
   html/top1/sub1/index.html
-  html/top1/sub1/sub3/index.html
   html/top1/sub1/sub3/M3/index.html
+  html/top1/sub1/sub3/index.html
   html/top2/index.html
-  html/top2/sub2/index.html
   html/top2/sub2/M2/index.html
+  html/top2/sub2/index.html

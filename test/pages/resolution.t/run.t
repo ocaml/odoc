@@ -74,10 +74,10 @@ This is the '{!child:M1}' reference
 Let's also check the hierarchy of files produced:
 
   $ odoc support-files -o html
-  $ find html -type f
-  html/top1/index.html
-  html/top1/sub2.html
-  html/top1/sub1/M1/index.html
-  html/top1/sub1/index.html
+  $ find html -type f | sort
   html/highlight.pack.js
   html/odoc.css
+  html/top1/index.html
+  html/top1/sub1/M1/index.html
+  html/top1/sub1/index.html
+  html/top1/sub2.html
