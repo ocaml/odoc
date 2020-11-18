@@ -70,9 +70,9 @@ let trim_trailing_blank_lines : string -> string = fun s ->
     in
     String.sub s 0 trim_from
 
+(** Returns [None] for an empty, [Some ident] for an indented line. *)
 let trim_leading_whitespace : first_line_offset:int -> string -> string =
  fun ~first_line_offset s ->
-  (** Returns [None] for an empty, [Some ident] for an indented line. *)
   let count_leading_whitespace line =
     let rec count_leading_whitespace' index len =
       if index = len then None
