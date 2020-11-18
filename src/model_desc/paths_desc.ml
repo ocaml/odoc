@@ -258,15 +258,18 @@ module General_paths = struct
       | `Root -> C0 "`Root")
 end
 
-(* Indirection seems to be required to make the type open. *)
-let identifier = Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
+let root = Root.t
+let modulename = Names.modulename
 
-let resolved_path =
+(* Indirection seems to be required to make the type open. *)
+let identifier : [< Paths.Identifier.t] Type_desc.t = Indirect ((fun n -> (n :> Paths.Identifier.t)), General_paths.identifier)
+
+let resolved_path : [< Paths.Path.Resolved.t] Type_desc.t =
   Indirect
     ( (fun n -> (n :> General_paths.rp)),
       General_paths.resolved_path )
 
-let path =
+let path : [< Paths.Path.t] Type_desc.t =
   Indirect
     ((fun n -> (n :> General_paths.p)), General_paths.path)
 

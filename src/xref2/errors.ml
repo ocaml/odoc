@@ -181,7 +181,28 @@ let rec kind_of_error = function
   | `Parent (`Parent _ as e) -> kind_of_error (e :> Tools_error.any)
   | _ -> None
 
-let report ~what ?tools_error action =
+open Paths
+type what = [
+  | `Functor_parameter of Identifier.FunctorParameter.t
+  | `Value of Identifier.Value.t
+  | `Class of Identifier.Class.t
+  | `Class_type of Identifier.ClassType.t
+  | `Module of Identifier.Module.t
+  | `Module_type of Identifier.Signature.t
+  | `Module_path of Cpath.module_
+  | `Module_type_path of Cpath.module_type
+  | `Module_type_U of Component.ModuleType.U.expr
+  | `Include of Component.Include.decl
+  | `Package of Cpath.module_type
+  | `Type of Cfrag.type_
+  | `Type_path of Cpath.type_
+  | `With_module of Cfrag.module_
+  | `With_type of Cfrag.type_
+  | `Module_type_expr of Component.ModuleType.expr
+  | `Module_type_u_expr of Component.ModuleType.U.expr
+]
+
+let report ~(what:what) ?tools_error action =
   let kind =
     match tools_error with
     | Some e -> kind_of_error (e :> Tools_error.any)
