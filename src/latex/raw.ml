@@ -155,7 +155,7 @@ let small_table pp ppf tbl =
   let cell ppf = Fmt.pf ppf "p{%.3f\\textwidth}" (1.0 /. float_of_int columns) in
   let table ppf tbl =
     ocamltabular
-      (repeat columns cell)
+      ~column_desc:(repeat columns cell)
       matrix ppf tbl in
   (* we add line breaks to never insert tables between delimiters,
      to avoid rendering:

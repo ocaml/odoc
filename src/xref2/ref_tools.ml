@@ -156,7 +156,7 @@ module M = struct
       else (base_path', base_ref')
     in
     let p, r =
-      match Tools.get_module_path_modifiers env true m with
+      match Tools.get_module_path_modifiers env ~add_canonical:true m with
       | None -> (base_path, base_ref)
       | Some (`SubstAliased cp) ->
           let cp = Tools.reresolve_module env cp in
