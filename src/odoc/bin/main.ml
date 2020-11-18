@@ -101,13 +101,22 @@ end = struct
       Fs.File.(set_ext ".odoc" output)
 
   let compile hidden directories resolve_fwd_refs dst package_opt parent_name_opt open_modules children input warn_error =
+    let open Or_error in
     let env =
       Env.create ~important_digests:(not resolve_fwd_refs) ~directories ~open_modules
     in
     let input = Fs.File.of_string input in
     let output = output_file ~dst ~input in
+    let parent_cli_spec =
+      match parent_name_opt, package_opt with
+      | Some p, None -> Ok (Compile.CliParent p)
+      | None, Some p -> Ok (Compile.CliPackage p)
+      | None, None -> Ok (Compile.CliNoparent)
+      | Some _, Some _ -> Error (`Cli_error "Either --package or --parent should be specified, not both")
+    in
+    parent_cli_spec >>= fun parent_cli_spec ->
     Fs.Directory.mkdir_p (Fs.File.dirname output);
-    Compile.compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~children ~output ~warn_error input
+    Compile.compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output ~warn_error input
 
   let input =
     let doc = "Input cmti, cmt, cmi or mld file" in
@@ -131,7 +140,7 @@ end = struct
   let children =
     let doc = "Specify the odoc file as a child. Can be used multiple times. Only applies to mld files" in
     let default = [] in
-    Arg.(value & opt_all string default & info ~docv:"CHILD" ~doc ["child"])
+    Arg.(value & opt_all string default & info ~docv:"CHILD" ~doc ["c"; "child"])
 
   let cmd =
     let package_opt =
