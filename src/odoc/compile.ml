@@ -22,7 +22,12 @@ type parent_spec =
   | Package of Odoc_model.Paths.Identifier.ContainerPage.t
   | Noparent
 
-let parent directories parent_name_opt package_opt =
+type parent_cli_spec =
+  | CliParent of string
+  | CliPackage of string
+  | CliNoparent
+
+let parent directories parent_cli_spec =
   let ap = Env.Accessible_paths.create ~directories in
   let find_parent f =
     match Env.lookup_page ap f with
@@ -34,14 +39,14 @@ let parent directories parent_name_opt package_opt =
     | `Page _ as container -> Ok container
     | _ -> Error (`Msg "Specified parent is not a parent of this file")
   in
-  match parent_name_opt, package_opt with
-  | Some f, _ ->
+  match parent_cli_spec with
+  | CliParent f ->
     find_parent f >>= fun r ->
     extract_parent r.id >>= fun parent ->
     Env.fetch_page ap r >>= fun page ->
     Ok (Explicit (parent, page.children))
-  | None, Some package -> Ok (Package (`RootPage (PageName.of_string package)))
-  | None, None -> Ok Noparent
+  | CliPackage package -> Ok (Package (`RootPage (PageName.of_string package)))
+  | CliNoparent -> Ok Noparent
 
 let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file =
   let filename = Fs.File.to_string input_file in
@@ -129,8 +134,8 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   | `Stop -> resolve [] (* TODO: Error? *)
   | `Docs content -> resolve content
 
-let compile ~env ~directories ~parent_name_opt ~package_opt ~hidden ~children ~output ~warn_error input =
-  parent directories parent_name_opt package_opt >>= fun parent_spec ->
+let compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output ~warn_error input =
+  parent directories parent_cli_spec >>= fun parent_spec ->
   let ext = Fs.File.get_ext input in
   if ext = ".mld"
   then mld ~parent_spec ~output ~warn_error ~children input

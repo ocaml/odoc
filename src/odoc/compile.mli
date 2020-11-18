@@ -16,10 +16,16 @@
 
 open Or_error
 
+type parent_cli_spec =
+  | CliParent of string
+  | CliPackage of string
+  | CliNoparent
+
 (** Produces .odoc files out of [.cm{i,t,ti}] or .mld files. *)
 
 val compile :
-  env:Env.builder -> directories:(Fs.Directory.t list) -> parent_name_opt:string option -> package_opt:Odoc_model.Root.Package.t option ->
+  env:Env.builder -> directories:(Fs.Directory.t list) ->
+  parent_cli_spec:parent_cli_spec ->
   hidden:bool -> children:string list ->
   output:Fs.File.t -> warn_error:bool -> Fs.File.t ->
   (unit, [> msg]) result
