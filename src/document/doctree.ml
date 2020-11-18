@@ -54,8 +54,7 @@ module Rewire = struct
 
 end
 
-module Toc = struct
-
+module Toc : sig
   type t = one list
 
   and one = {
@@ -63,6 +62,18 @@ module Toc = struct
     text : Inline.t;
     children : t
   }
+
+  val compute : on_sub:(Include.status -> bool) -> Item.t list -> t
+end
+  = struct
+
+    type t = one list
+
+    and one = {
+      anchor : string;
+      text : Inline.t;
+      children : t
+    }
 
   let classify ~on_sub (i : Item.t) : _ Rewire.action = match i with
     | Text _
@@ -86,7 +97,9 @@ module Toc = struct
 end
 
 
-module Subpages = struct
+module Subpages : sig
+  val compute : Page.t -> Subpage.t list
+end = struct
 
   let rec walk_documentedsrc (l : DocumentedSrc.t) =
     Utils.flatmap l ~f:(function

@@ -293,7 +293,7 @@ end = struct
   module Targets = struct
     let list_targets output_dir _ extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
-      Rendering.targets ~renderer:R.renderer ~output:output_dir ~extra odoc_file
+      Rendering.targets_odoc ~renderer:R.renderer ~output:output_dir ~extra odoc_file
     
     let back_compat =
       let doc =

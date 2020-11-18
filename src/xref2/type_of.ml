@@ -85,3 +85,14 @@ and include_ env i =
     | ModuleType t -> ModuleType (u_module_type_expr env i.parent t)
   in
   { i with expansion = { i.expansion with content = signature env i.expansion.content }; decl }
+
+let signature env =
+  let rec loop sg =
+    again := false;
+    let sg' = signature env sg in
+    Tools.reset_caches ();
+    if !again
+    then begin
+      if sg' = sg then sg else loop sg'
+    end else sg' in
+  loop

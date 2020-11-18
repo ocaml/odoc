@@ -62,31 +62,6 @@ let render_document renderer ~output:root_dir ~extra odoctree =
   );
   Ok ()
 
-let targets ~renderer ~output:root_dir ~extra odoctree =
-  document_of_odocl ~syntax:OCaml odoctree
-  >>= fun odoctree -> 
-  let pages = renderer.Renderer.render extra odoctree in
-  Renderer.traverse pages ~f:(fun filename _content ->
-    let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
-    Format.printf "%a\n" Fpath.pp filename);
-  Ok ()
-
-let urls_of_input input =
-  Root.read input >>= function
-  | { file = Page _; _ } ->
-      Page.load input >>= fun odoctree ->
-      let targets = Targets.page odoctree in
-      Ok targets
-  | { file = Compilation_unit _; _ } ->
-      Compilation_unit.load input >>= fun unit ->
-      if unit.hidden
-      then Ok []
-      else
-        (* let root = Compilation_unit.root unit in
-         * let package = root.package in *)
-        let targets = Targets.unit (* ~package *) unit in
-        Ok targets
-
 let render_odoc ~env ~warn_error ~syntax ~renderer ~output extra file =
   document_of_input ~env ~warn_error ~syntax file
   >>= render_document renderer ~output ~extra
@@ -95,15 +70,12 @@ let generate_odoc ~syntax ~renderer ~output extra file =
   document_of_odocl ~syntax file
   >>= render_document renderer ~output ~extra
 
-
-let targets_odoc ~renderer ~output:root_dir input =
-  urls_of_input input >>= fun urls ->
-  let targets = Utils.flatmap urls ~f:(fun url ->
-    let filenames = renderer.Renderer.files_of_url url in
-    List.map (fun filename ->
-      Fpath.normalize @@ Fs.File.append root_dir filename
-    ) filenames
-  )
-  in
-  Ok targets
+let targets_odoc ~renderer ~output:root_dir ~extra odoctree =
+  document_of_odocl ~syntax:OCaml odoctree
+  >>= fun odoctree ->
+  let pages = renderer.Renderer.render extra odoctree in
+  Renderer.traverse pages ~f:(fun filename _content ->
+    let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
+    Format.printf "%a\n" Fpath.pp filename);
+  Ok ()
 

@@ -397,8 +397,32 @@ module LangUtils = struct
             | Module.ModuleType ModuleType.Signature s -> s
             | _ -> raise Not_found
 
-    module Fmt = struct
+    module Fmt : sig
+        open Odoc_model
+        type 'a fmt = Format.formatter -> 'a -> unit
+
+        open Paths
+        val identifier : [< Identifier.t] fmt
+
+        open Lang
+
+        val signature : Signature.t fmt
+        val module_decl : Module.decl fmt
+        val module_ : Module.t fmt
+        val module_type : ModuleType.t fmt
+        val u_module_type_expr : ModuleType.U.expr fmt
+        val functor_parameter : FunctorParameter.t fmt
+        val type_equation : TypeDecl.Equation.t fmt
+        val substitution : ModuleType.substitution fmt
+        val type_expr : TypeExpr.t fmt
+        val resolved_path : Path.Resolved.t fmt
+        val path : Path.t fmt
+        val model_fragment : Fragment.t fmt
+        val model_resolved_fragment : Fragment.Resolved.t fmt
+    end = struct
         open Odoc_model.Lang
+
+        type 'a fmt = Format.formatter -> 'a -> unit
 
         let identifier ppf i =
             Format.fprintf ppf "%a"
