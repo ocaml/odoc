@@ -277,10 +277,10 @@ and subpage ~resolve (subp : Subpage.t) : item Html.elt list =
   items ~resolve subp.content.items
 
 and items ~resolve l : item Html.elt list =
-  let[@tailrec] rec walk_items
+  let rec walk_items
       ~only_text acc (t : Item.t list) : item Html.elt list =
     let continue_with rest elts =
-      walk_items ~only_text (List.rev_append elts acc) rest
+      (walk_items[@tailcall]) ~only_text (List.rev_append elts acc) rest
     in
     match t with
     | [] -> List.rev acc
@@ -296,10 +296,10 @@ and items ~resolve l : item Html.elt list =
           [Html.aside (content :> any Html.elt list)]
       in
       elts
-      |> continue_with rest
+      |> (continue_with[@tailcall]) rest
     | Heading h :: rest ->
       [heading ~resolve h]
-      |> continue_with rest
+      |> (continue_with[@tailcall]) rest
     | Include
         { kind; anchor; doc ; content = { summary; status; content } }
       :: rest ->
@@ -325,7 +325,7 @@ and items ~resolve l : item Html.elt list =
       [Html.div [Html.div ~a
             (anchor_link @ [Html.div ~a:[Html.a_class ["doc"]]
                 (docs @ content)])]]
-      |> continue_with rest
+      |> (continue_with[@tailcall]) rest
 
     | Declaration {Item. kind; anchor ; content ; doc} :: rest ->
       let anchor_attrib, anchor_link = mk_anchor anchor in
@@ -340,7 +340,7 @@ and items ~resolve l : item Html.elt list =
               div (flow_to_item @@ block ~resolve docs);
             ]]
       in
-      continue_with rest elts
+      (continue_with[@tailcall]) rest elts
 
   and items l = walk_items ~only_text:(is_only_text l) [] l in
   items l
