@@ -1,7 +1,10 @@
-# Jbuilder output.
+# Dune output.
 _build
 *.install
 *.merlin
+
+# Editor config
+.vscode
 
 # Bisect_ppx output.
 _coverage/
