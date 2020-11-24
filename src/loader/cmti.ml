@@ -35,7 +35,7 @@ let opt_map f = function
 
 let parenthesise name =
   match name with
-  | "asr" | "land" | "lnot" | "lor" | "lsl" | "lsr"
+  | "asr" | "land" | "lor" | "lsl" | "lsr"
   | "lxor" | "mod" -> "(" ^ name ^ ")"
   | _ ->
     if (String.length name > 0) then

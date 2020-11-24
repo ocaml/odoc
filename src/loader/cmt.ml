@@ -27,7 +27,7 @@ module Env = Odoc_model.Ident_env
 
 let parenthesise name =
   match name with
-  | "asr" | "land" | "lnot" | "lor" | "lsl" | "lsr"
+  | "asr" | "land" | "lor" | "lsl" | "lsr"
   | "lxor" | "mod" -> "(" ^ name ^ ")"
   | _ ->
     if (String.length name > 0) then
