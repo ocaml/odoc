@@ -31,7 +31,7 @@ module Link = struct
        anchor
 
   let rec is_class_or_module_path (url : Odoc_document.Url.Path.t) = match url.kind with
-    | "module" | "page" | "class" | "cpage" ->
+    | "module" | "page" | "class" | "container-page" ->
       begin match url.parent with
       | None -> true
       | Some url -> is_class_or_module_path url
@@ -49,16 +49,16 @@ module Link = struct
     | Some p ->
       let pdir = dir p in
       match url.kind with
-      | "cpage" -> Fpath.(pdir / url.name)
+      | "container-page" -> Fpath.(pdir / url.name)
       | _ -> pdir
 
   let file url =
     let rec l (url : Odoc_document.Url.Path.t) acc =
       match url.kind with
-      | "cpage" -> acc
+      | "container-page" -> acc
       | _ ->
         match url.parent with
-        | None -> assert false (* Only cpage's are allowed to have no parent *)
+        | None -> assert false (* Only container-pages are allowed to have no parent *)
         | Some p ->
           l p (url.name :: acc)
     in

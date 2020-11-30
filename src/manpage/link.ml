@@ -11,7 +11,7 @@ let to_list url =
 let for_printing url = List.map snd @@ to_list url
 
 let segment_to_string (kind, name) =
-  if kind = "module" || kind = "cpage" || kind="page" || kind = "class" || kind = "page"
+  if kind = "module" || kind = "container-page" || kind="page" || kind = "class" || kind = "page"
   then name
   else Printf.sprintf "%s-%s" kind name
 
@@ -28,7 +28,7 @@ let as_filename (url : Url.Path.t) =
   Fpath.(v dir / s + ".3o")
 
 let rec is_class_or_module_path (url : Url.Path.t) = match url.kind with
-  | "module" | "page" | "cpage" | "class" ->
+  | "module" | "page" | "container-page" | "class" ->
     begin match url.parent with
     | None -> true
     | Some url -> is_class_or_module_path url

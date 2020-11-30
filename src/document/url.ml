@@ -93,12 +93,12 @@ module Path = struct
       let page = ModuleName.to_string unit_name in
       mk ~parent kind page
     | `RootPage page_name ->
-      let kind = "cpage" in
+      let kind = "container-page" in
       let page = PageName.to_string page_name in
       mk kind page
     | `Page (parent, page_name) ->
       let parent = from_identifier (parent :> source) in
-      let kind = "cpage" in
+      let kind = "container-page" in
       let page = PageName.to_string page_name in
       mk ~parent kind page
     | `LeafPage (parent, page_name) ->
@@ -172,10 +172,10 @@ module Anchor = struct
         Ok { page ; kind = "module" ; anchor = "" }
       | `RootPage _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page ; kind = "cpage" ; anchor = "" }
+        Ok { page ; kind = "container-page" ; anchor = "" }
       | `Page _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
-        Ok { page ; kind = "cpage" ; anchor = "" }
+        Ok { page ; kind = "container-page" ; anchor = "" }
       | `LeafPage _ as p ->
         let page = Path.from_identifier (p :> Path.source) in
         Ok { page ; kind = "page" ; anchor = "" }

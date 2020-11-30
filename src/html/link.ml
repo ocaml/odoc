@@ -15,7 +15,7 @@ module Path = struct
 
   let segment_to_string (kind, name) =
     match kind with
-    | "module" | "cpage" -> name
+    | "module" | "container-page" -> name
     | _ -> Printf.sprintf "%s-%s" kind name
 
   let is_leaf_page url = (url.Url.Path.kind = "page")
