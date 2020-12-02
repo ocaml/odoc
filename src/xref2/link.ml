@@ -118,7 +118,7 @@ and content env id =
   let open Compilation_unit in
   function
   | Module m -> Module (signature env (id :> Id.Signature.t) m)
-  | Pack _ -> failwith "Unhandled content"
+  | Pack p -> Pack p
 
 and value_ env parent t =
   let open Value in

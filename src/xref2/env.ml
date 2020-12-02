@@ -346,7 +346,19 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
       in
       let ty = Component.Of_Lang.(module_ empty m) in
       ty
-  | Pack _ -> failwith "Unsupported"
+  | Pack _p ->
+      let m =
+        Odoc_model.Lang.Module.
+          {
+            id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
+            doc = unit.doc;
+            type_ = ModuleType (Signature []);
+            canonical = None;
+            hidden = unit.hidden;
+          }
+      in
+      let ty = Component.Of_Lang.(module_ empty m) in
+      ty
 
 let lookup_root_module name env =
   let result =
