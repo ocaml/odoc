@@ -1,7 +1,12 @@
-exception TypeReplacement of Component.TypeExpr.t
-
 exception Invalidated
+
 exception MTOInvalidated
+
+type 'a or_replaced = Not_replaced of 'a | Replaced of Component.TypeExpr.t
+
+let map_replaced f = function
+  | Not_replaced p -> Not_replaced (f p)
+  | Replaced _ as r -> r
 
 open Component
 open Substitution
@@ -201,43 +206,51 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
   | `Dot (p, n) -> `Dot (module_path s p, n)
   | `ModuleType (p', str) -> `ModuleType (resolved_parent_path s p', str)
 
-and resolved_type_path : t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
+and resolved_type_path :
+    t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ or_replaced =
  fun s p ->
   match p with
   | `Local id -> (
       if PathTypeMap.mem id s.type_replacement then
-        raise (TypeReplacement (PathTypeMap.find id s.type_replacement));
-      match try Some (PathTypeMap.find id s.type_) with Not_found -> None with
-      | Some (`Prefixed (_p, rp)) -> rp
-      | Some (`Renamed x) -> `Local x
-      | None -> `Local id )
-  | `Identifier _ -> p
-  | `Substituted p -> `Substituted (resolved_type_path s p)
-  | `Type (p, n) -> `Type (resolved_parent_path s p, n)
-  | `ClassType (p, n) -> `ClassType (resolved_parent_path s p, n)
-  | `Class (p, n) -> `Class (resolved_parent_path s p, n)
+        Replaced (PathTypeMap.find id s.type_replacement)
+      else
+        match
+          try Some (PathTypeMap.find id s.type_) with Not_found -> None
+        with
+        | Some (`Prefixed (_p, rp)) -> Not_replaced rp
+        | Some (`Renamed x) -> Not_replaced (`Local x)
+        | None -> Not_replaced (`Local id) )
+  | `Identifier _ -> Not_replaced p
+  | `Substituted p ->
+      resolved_type_path s p |> map_replaced (fun p -> `Substituted p)
+  | `Type (p, n) -> Not_replaced (`Type (resolved_parent_path s p, n))
+  | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
+  | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
 
-and type_path : t -> Cpath.type_ -> Cpath.type_ =
+and type_path : t -> Cpath.type_ -> Cpath.type_ or_replaced =
  fun s p ->
   match p with
   | `Resolved r -> (
-      try `Resolved (resolved_type_path s r)
+      try resolved_type_path s r |> map_replaced (fun r -> `Resolved r)
       with Invalidated ->
         let path' = Cpath.unresolve_resolved_type_path r in
         type_path s (`Substituted path') )
-  | `Substituted p -> `Substituted (type_path s p)
+  | `Substituted p -> type_path s p |> map_replaced (fun r -> `Substituted r)
   | `Local (id, b) -> (
       if PathTypeMap.mem id s.type_replacement then
-        raise (TypeReplacement (PathTypeMap.find id s.type_replacement));
-      match try Some (PathTypeMap.find id s.type_) with Not_found -> None with
-      | Some (`Prefixed (p, _rp)) -> p
-      | Some (`Renamed x) -> `Local (x, b)
-      | None -> `Local (id, b) )
-  | `Identifier _ -> p
-  | `Dot (p, n) -> `Dot (module_path s p, n)
-  | `Type (p, n) -> `Type (resolved_parent_path s p, n)
-  | `Class (p, n) -> `Class (resolved_parent_path s p, n)
-  | `ClassType (p, n) -> `ClassType (resolved_parent_path s p, n)
+        Replaced (PathTypeMap.find id s.type_replacement)
+      else
+        match
+          try Some (PathTypeMap.find id s.type_) with Not_found -> None
+        with
+        | Some (`Prefixed (p, _rp)) -> Not_replaced p
+        | Some (`Renamed x) -> Not_replaced (`Local (x, b))
+        | None -> Not_replaced (`Local (id, b)) )
+  | `Identifier _ -> Not_replaced p
+  | `Dot (p, n) -> Not_replaced (`Dot (module_path s p, n))
+  | `Type (p, n) -> Not_replaced (`Type (resolved_parent_path s p, n))
+  | `Class (p, n) -> Not_replaced (`Class (resolved_parent_path s p, n))
+  | `ClassType (p, n) -> Not_replaced (`ClassType (resolved_parent_path s p, n))
 
 and resolved_class_type_path :
     t -> Cpath.Resolved.class_type -> Cpath.Resolved.class_type =
@@ -387,27 +400,31 @@ and type_package s p =
 
 and type_expr s t =
   let open Component.TypeExpr in
-  try
-    match t with
-    | Var s -> Var s
-    | Any -> Any
-    | Alias (t, str) -> Alias (type_expr s t, str)
-    | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr s t1, type_expr s t2)
-    | Tuple ts -> Tuple (List.map (type_expr s) ts)
-    | Constr (p, ts) -> Constr (type_path s p, List.map (type_expr s) ts)
-    | Polymorphic_variant v -> Polymorphic_variant (type_poly_var s v)
-    | Object o -> Object (type_object s o)
-    | Class (p, ts) -> Class (class_type_path s p, List.map (type_expr s) ts)
-    | Poly (strs, ts) -> Poly (strs, type_expr s ts)
-    | Package p -> Package (type_package s p)
-  with TypeReplacement y -> y
+  match t with
+  | Var s -> Var s
+  | Any -> Any
+  | Alias (t, str) -> Alias (type_expr s t, str)
+  | Arrow (lbl, t1, t2) -> Arrow (lbl, type_expr s t1, type_expr s t2)
+  | Tuple ts -> Tuple (List.map (type_expr s) ts)
+  | Constr (p, ts) -> (
+      match type_path s p with
+      | Replaced r -> r
+      | Not_replaced p -> Constr (p, List.map (type_expr s) ts) )
+  | Polymorphic_variant v -> Polymorphic_variant (type_poly_var s v)
+  | Object o -> Object (type_object s o)
+  | Class (p, ts) -> Class (class_type_path s p, List.map (type_expr s) ts)
+  | Poly (strs, ts) -> Poly (strs, type_expr s ts)
+  | Package p -> Package (type_package s p)
 
-and simple_expansion : t -> Component.ModuleType.simple_expansion -> Component.ModuleType.simple_expansion = fun s t ->
+and simple_expansion :
+    t ->
+    Component.ModuleType.simple_expansion ->
+    Component.ModuleType.simple_expansion =
+ fun s t ->
   let open Component.ModuleType in
   match t with
   | Signature sg -> Signature (signature s sg)
-  | Functor (arg, sg) ->
-      Functor (functor_parameter s arg, simple_expansion s sg)
+  | Functor (arg, sg) -> Functor (functor_parameter s arg, simple_expansion s sg)
 
 and module_type s t =
   let open Component.ModuleType in
@@ -571,11 +588,13 @@ and extension_constructor s c =
 
 and extension s e =
   let open Component.Extension in
-  {
-    e with
-    type_path = type_path s e.type_path;
-    constructors = List.map (extension_constructor s) e.constructors;
-  }
+  let type_path =
+    match type_path s e.type_path with
+    | Not_replaced p -> p
+    | Replaced (Constr (p, _)) -> p
+    | Replaced _ -> (* What else is possible ? *) assert false
+  and constructors = List.map (extension_constructor s) e.constructors in
+  { e with type_path; constructors }
 
 and external_ s e =
   let open Component.External in
@@ -724,11 +743,9 @@ and rename_bound_idents s sg =
   | Value (id, v) :: rest ->
       let id' = Ident.Rename.value id in
       rename_bound_idents s (Value (id', v) :: sg) rest
-  | External (id, e) :: rest -> (
-      try
+  | External (id, e) :: rest ->
         let id' = Ident.Rename.value id in
         rename_bound_idents s (External (id', e) :: sg) rest
-      with TypeReplacement _ -> rename_bound_idents s sg rest )
   | Class (id, r, c) :: rest ->
       let id' = new_class_id id in
       rename_bound_idents
@@ -818,11 +835,7 @@ and apply_sig_map s items removed =
     | Exception (id, e) :: rest ->
         inner rest (Exception (id, exception_ s e) :: acc)
     | TypExt e :: rest ->
-        inner rest
-          ( try
-              let e' = extension s e in
-              TypExt e' :: acc
-            with TypeReplacement _ -> acc )
+        inner rest ( TypExt (extension s e) :: acc)
     | Value (id, v) :: rest ->
         inner rest
           ( Value
