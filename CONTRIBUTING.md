@@ -150,7 +150,7 @@ When an expect test fails, the string that the code emitted is saved, so that
 the human developer can choose to *replace* the now-incorrect expected string.
 In odoc, a test failure looks like this:
 
-```
+```diff
 -- bold.000 [basic.] Failed --
 in _build/_tests/bold.000.output:
 
