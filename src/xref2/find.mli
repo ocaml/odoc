@@ -95,7 +95,7 @@ val any_in_class_signature : ClassSignature.t -> string -> any_in_class_sig list
 
 (** Lookup removed items *)
 
-type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t ]
+type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 

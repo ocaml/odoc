@@ -93,7 +93,7 @@ let prefix_substitution path sg =
               (`Module (path, name))
               (`Module (path, name))
               map
-        | Component.Signature.RType (id, _) ->
+        | Component.Signature.RType (id, _, _) ->
             let name = Ident.Name.typed_type id in
             Subst.add_type id (`Type (path, name)) (`Type (path, name)) map)
       removed sub
@@ -421,14 +421,14 @@ and handle_type_lookup id p sg =
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
   | Some (`FType (name, _) as t) -> Ok (`Type (p, name), t)
-  | Some (`FType_removed (name, _) as t) -> Ok (`Type (p, name), t)
+  | Some (`FType_removed (name, _, _) as t) -> Ok (`Type (p, name), t)
   | None -> Error `Find_failure
 
 and handle_class_type_lookup id p sg =
   match Find.careful_class_in_sig sg id with
   | Some (`FClass (name, _) as t) -> Ok (`Class (p, name), t)
   | Some (`FClassType (name, _) as t) -> Ok (`ClassType (p, name), t)
-  | Some (`FType_removed (_name, _) as _t) -> Error `Class_replaced
+  | Some (`FType_removed (_name, _, _) as _t) -> Error `Class_replaced
   | None -> Error `Find_failure
 
 and lookup_module :
@@ -549,8 +549,8 @@ and lookup_type :
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
       | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
       | `FType (name, t) -> `FType (name, Subst.type_ sub t)
-      | `FType_removed (name, texpr) ->
-          `FType_removed (name, Subst.type_expr sub texpr)
+      | `FType_removed (name, texpr, eq) ->
+          `FType_removed (name, Subst.type_expr sub texpr, eq)
     in
     Ok t
   in
@@ -594,8 +594,8 @@ and lookup_class_type :
       match t' with
       | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
       | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
-      | `FType_removed (name, texpr) ->
-          `FType_removed (name, Subst.type_expr sub texpr)
+      | `FType_removed (name, texpr, eq) ->
+          `FType_removed (name, Subst.type_expr sub texpr, eq)
     in
     Ok t
   in
@@ -752,8 +752,8 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
         | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
         | `FType (name, t) -> `FType (name, Subst.type_ sub t)
-        | `FType_removed (name, texpr) ->
-            `FType_removed (name, Subst.type_expr sub texpr)
+        | `FType_removed (name, texpr, eq) ->
+            `FType_removed (name, Subst.type_expr sub texpr, eq)
       in
       (* let time3 = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
@@ -792,8 +792,8 @@ and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
         | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
         | `FType (name, t) -> `FType (name, Subst.type_ sub t)
-        | `FType_removed (name, texpr) ->
-            `FType_removed (name, Subst.type_expr sub texpr)
+        | `FType_removed (name, texpr, eq) ->
+            `FType_removed (name, Subst.type_expr sub texpr, eq)
       in
       Ok (p', t)
   | `Identifier (i, _) ->
@@ -824,8 +824,8 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
         match t' with
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
         | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
-        | `FType_removed (name, texpr) ->
-            `FType_removed (name, Subst.type_expr sub texpr)
+        | `FType_removed (name, texpr, eq) ->
+            `FType_removed (name, Subst.type_expr sub texpr, eq)
       in
       (* let time3 = Unix.gettimeofday () in *)
       (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
@@ -858,8 +858,8 @@ and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
         match t' with
         | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
         | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
-        | `FType_removed (name, texpr) ->
-            `FType_removed (name, Subst.type_expr sub texpr)
+        | `FType_removed (name, texpr, eq) ->
+            `FType_removed (name, Subst.type_expr sub texpr, eq)
       in
       Ok (p', t)
 
@@ -1143,12 +1143,12 @@ and fragmap :
                     true,
                     subbed_modules,
                     removed )
-            | Right y ->
+            | Right (texpr, eq) ->
                 Ok
                   ( items,
                     true,
                     subbed_modules,
-                    Component.Signature.RType (id, y) :: removed ) )
+                    Component.Signature.RType (id, texpr, eq) :: removed ) )
         | Component.Signature.Module (id, r, m), _, Some (id', fn)
           when Ident.Name.module_ id = id' -> (
             fn (Component.Delayed.get m) >>= function
@@ -1248,7 +1248,7 @@ and fragmap :
             let new_subst = Component.ModuleType.TypeSubst (frag', equation) in
             handle_intermediate name new_subst
         | name, None ->
-            let mapfn _t = Ok (Right x) in
+            let mapfn _t = Ok (Right (x, equation)) in
             map_signature (Some (name, mapfn)) None sg.items )
     | TypeSubst (_, { Component.TypeDecl.Equation.manifest = None; _ }) ->
         failwith "Unhandled condition: TypeSubst with no manifest"
@@ -1258,8 +1258,8 @@ and fragmap :
     match removed with
     | Component.Signature.RModule (id, p) ->
         Subst.add_module (id :> Ident.path_module) (`Resolved p) p sub
-    | Component.Signature.RType (id, replacement) ->
-        Subst.add_type_replacement (id :> Ident.path_type) replacement sub
+    | Component.Signature.RType (id, r_texpr, r_eq) ->
+        Subst.add_type_replacement (id :> Ident.path_type) r_texpr r_eq sub
   in
 
   let sub = List.fold_right sub_of_removed removed Subst.identity in

@@ -135,20 +135,20 @@ module type Monad/30 = sig
 module SomeMonad/29 : sig
   type t/34
   include : resolved(Monad/30) with [resolved(root(Monad/30).t) = [a] resolved(t/34)] (sig =
-    val map/35 : [a] resolved(t/34) -> a -> b -> [a] resolved(t/34)
-    val join/36 : [a] resolved(t/34) -> [a] resolved(t/34)
+    val map/35 : [a] resolved(t/34) -> a -> b -> [b] resolved(t/34)
+    val join/36 : [[a] resolved(t/34)] resolved(t/34) -> [a] resolved(t/34)
      (removed=[]))
    (removed=[])end
 module ComplexTypeExpr/27 : sig
   type t/37
   include : resolved(Monad/30) with [resolved(root(Monad/30).t) = ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))] (sig =
-    val map/38 : ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) -> a -> b -> ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))
-    val join/39 : ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) -> ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))
+    val map/38 : ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) -> a -> b -> ([resolved(identifier(int)) * b] resolved(t/37) * [b * resolved(identifier(int))] resolved(t/37))
+    val join/39 : ([resolved(identifier(int)) * ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))] resolved(t/37) * [([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) * resolved(identifier(int))] resolved(t/37)) -> ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))
      (removed=[]))
    (removed=[])end
 module Erase/28 : sig
   include : resolved(Monad/30) with [resolved(root(Monad/30).t) = a] (sig =
-    val map/40 : a -> a -> b -> a
+    val map/40 : a -> a -> b -> b
     val join/41 : a -> a
      (removed=[]))
    (removed=[])end
@@ -181,9 +181,9 @@ module type Monad_2/54 = sig
 module SwappedVars/53 : sig
   type t/59
   include : resolved(Monad_2/54) with [resolved(root(Monad_2/54).t) = [b * a] resolved(t/59)] (sig =
-    val map/60 : [b * a] resolved(t/59) -> a -> b -> [b * a] resolved(t/59)
-    val join/61 : [b * a] resolved(t/59) -> [b * a] resolved(t/59)
-    val both/62 : [b * a] resolved(t/59) -> [b * a] resolved(t/59) -> [b * a] resolved(t/59)
+    val map/60 : [err * a] resolved(t/59) -> a -> b -> [err * b] resolved(t/59)
+    val join/61 : [e * [e * a] resolved(t/59)] resolved(t/59) -> [e * a] resolved(t/59)
+    val both/62 : [e * a] resolved(t/59) -> [e * b] resolved(t/59) -> [e * (a * b)] resolved(t/59)
      (removed=[]))
    (removed=[])end
  (removed=[])

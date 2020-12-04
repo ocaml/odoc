@@ -286,7 +286,7 @@ and Signature : sig
        and the path they've been substituted with *)
   type removed_item =
     | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t
+    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
 
   type t = { items : item list; removed : removed_item list }
 end
@@ -391,7 +391,7 @@ and Substitution : sig
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type PathTypeMap.t;
     class_type : subst_class_type PathClassTypeMap.t;
-    type_replacement : TypeExpr.t PathTypeMap.t;
+    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
     module_type_of_invalidating_modules : Ident.path_module list;
   }
@@ -503,8 +503,6 @@ module Fmt : sig
   val type_decl : Format.formatter -> TypeDecl.t -> unit
 
   val type_equation : Format.formatter -> TypeDecl.Equation.t -> unit
-
-  val type_equation2 : Format.formatter -> TypeDecl.Equation.t -> unit
 
   val exception_ : Format.formatter -> Exception.t -> unit
 

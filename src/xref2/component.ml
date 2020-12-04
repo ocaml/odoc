@@ -304,7 +304,8 @@ and Signature : sig
        and the path they've been substituted with *)
   type removed_item =
     | RModule of Ident.module_ * Cpath.Resolved.module_
-    | RType of Ident.type_ * TypeExpr.t
+    | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
+        (** [RType (_, texpr, eq)], [eq.manifest = Some texpr] *)
 
   type t = { items : item list; removed : removed_item list }
 end =
@@ -417,7 +418,7 @@ and Substitution : sig
     module_type : subst_module_type ModuleTypeMap.t;
     type_ : subst_type PathTypeMap.t;
     class_type : subst_class_type PathClassTypeMap.t;
-    type_replacement : TypeExpr.t PathTypeMap.t;
+    type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
     module_type_of_invalidating_modules : Ident.path_module list;
   }
@@ -579,8 +580,8 @@ module Fmt = struct
     | RModule (id, path) ->
         Format.fprintf ppf "module %a (%a)" Ident.fmt id resolved_module_path
           path
-    | RType (id, texpr) ->
-        Format.fprintf ppf "type %a (%a)" Ident.fmt id type_expr texpr
+    | RType (id, texpr, eq) ->
+        Format.fprintf ppf "type %a %a = (%a)" type_params eq.params Ident.fmt id type_expr texpr
 
   and removed_item_list ppf r =
     match r with
@@ -676,12 +677,18 @@ module Fmt = struct
     | Some x -> Format.fprintf ppf "= %a" type_expr x
     | None -> ()
 
-  and type_equation ppf t =
-    match t.TypeDecl.Equation.manifest with
-    | None -> ()
-    | Some m -> Format.fprintf ppf " = %a" type_expr m
+  and type_param ppf t =
+    let desc = match t.Odoc_model.Lang.TypeDecl.desc with Any -> "_" | Var n -> n
+    and variance =
+      match t.variance with Some Pos -> "+" | Some Neg -> "-" | None -> ""
+    and injectivity = if t.injectivity then "!" else "" in
+    Format.fprintf ppf "%s%s%s" variance injectivity desc
 
-  and type_equation2 ppf t =
+  and type_params ppf ts =
+    let pp_sep ppf () = Format.fprintf ppf ", " in
+    Format.fprintf ppf "(%a)" (Format.pp_print_list ~pp_sep type_param) ts
+
+  and type_equation ppf t =
     match t.TypeDecl.Equation.manifest with
     | None -> ()
     | Some m -> Format.fprintf ppf " = %a" type_expr m
@@ -700,7 +707,7 @@ module Fmt = struct
     | TypeEq (frag, decl) ->
         Format.fprintf ppf "%a%a" type_fragment frag type_equation decl
     | TypeSubst (frag, decl) ->
-        Format.fprintf ppf "%a%a" type_fragment frag type_equation2 decl
+        Format.fprintf ppf "%a%a" type_fragment frag type_equation decl
 
   and substitution_list ppf l =
     match l with
