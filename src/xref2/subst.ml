@@ -1,8 +1,12 @@
+open Component
+
 exception Invalidated
 
 exception MTOInvalidated
 
-type 'a or_replaced = Not_replaced of 'a | Replaced of Component.TypeExpr.t
+type 'a or_replaced =
+  | Not_replaced of 'a
+  | Replaced of (TypeExpr.t * TypeDecl.Equation.t)
 
 let map_replaced f = function
   | Not_replaced p -> Not_replaced (f p)
@@ -81,9 +85,8 @@ let add_class_type :
         t.class_type;
   }
 
-let add_type_replacement : Ident.path_type -> Component.TypeExpr.t -> t -> t =
- fun id texp t ->
-  { t with type_replacement = PathTypeMap.add id texp t.type_replacement }
+let add_type_replacement id texp equation t =
+  { t with type_replacement = PathTypeMap.add id (texp, equation) t.type_replacement }
 
 let add_module_substitution : Ident.path_module -> t -> t =
  fun id t ->
@@ -112,6 +115,44 @@ let rename_class_type : Ident.path_class_type -> Ident.path_class_type -> t -> t
   { t with
     class_type = PathClassTypeMap.add id (`Renamed id') t.class_type;
     type_ = PathTypeMap.add (id :> Ident.path_type) (`Renamed (id' :> Ident.path_type)) t.type_ }
+
+let rec substitute_vars vars t =
+  let open TypeExpr in
+  match t with
+  | Var s -> List.assoc s vars
+  | Any -> Any
+  | Alias (t, str) -> Alias (substitute_vars vars t, str)
+  | Arrow (lbl, t1, t2) -> Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
+  | Tuple ts -> Tuple (List.map (substitute_vars vars) ts)
+  | Constr (p, ts) -> Constr (p, List.map (substitute_vars vars) ts)
+  | Polymorphic_variant v -> Polymorphic_variant (substitute_vars_poly_variant vars v)
+  | Object o -> Object (substitute_vars_type_object vars o)
+  | Class (p, ts) -> Class (p, List.map (substitute_vars vars) ts)
+  | Poly (strs, ts) -> Poly (strs, substitute_vars vars ts)
+  | Package p -> Package (substitute_vars_package vars p)
+
+and substitute_vars_package vars p =
+  let open TypeExpr.Package in
+  let subst_subst (p, t) = p, substitute_vars vars t in
+  { p with substitutions = List.map subst_subst p.substitutions }
+
+and substitute_vars_type_object vars o =
+  let open TypeExpr.Object in
+  let subst_field = function
+    | Method m -> Method { m with type_ = substitute_vars vars m.type_ }
+    | Inherit t -> Inherit (substitute_vars vars t)
+  in
+  { o with fields = List.map subst_field o.fields }
+
+and substitute_vars_poly_variant vars v =
+  let open TypeExpr.Polymorphic_variant in
+  let subst_element = function
+    | Type t -> Type (substitute_vars vars t)
+    | Constructor c ->
+      let arguments = List.map (substitute_vars vars) c.Constructor.arguments in
+      Constructor { c with arguments}
+  in
+  { v with elements = List.map subst_element v.elements }
 
 let rec resolved_module_path :
     t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -408,7 +449,14 @@ and type_expr s t =
   | Tuple ts -> Tuple (List.map (type_expr s) ts)
   | Constr (p, ts) -> (
       match type_path s p with
-      | Replaced r -> r
+      | Replaced (t, eq) ->
+          let mk_var acc pexpr param =
+            match param.Odoc_model.Lang.TypeDecl.desc with
+            | Any -> acc
+            | Var n -> (n, type_expr s pexpr) :: acc
+          in
+          let vars = List.fold_left2 mk_var [] ts eq.params in
+          substitute_vars vars t
       | Not_replaced p -> Constr (p, List.map (type_expr s) ts) )
   | Polymorphic_variant v -> Polymorphic_variant (type_poly_var s v)
   | Object o -> Object (type_object s o)
@@ -591,7 +639,7 @@ and extension s e =
   let type_path =
     match type_path s e.type_path with
     | Not_replaced p -> p
-    | Replaced (Constr (p, _)) -> p
+    | Replaced (TypeExpr.Constr (p, _), _) -> p
     | Replaced _ -> (* What else is possible ? *) assert false
   and constructors = List.map (extension_constructor s) e.constructors in
   { e with type_path; constructors }

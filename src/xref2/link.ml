@@ -790,7 +790,8 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
         | Ok (cp', (`FClass _ | `FClassType _)) ->
             let p = Cpath.resolved_type_path_of_cpath cp' in
             Constr (`Resolved p, ts)
-        | Ok (_cp, `FType_removed (_, x)) ->
+        | Ok (_cp, `FType_removed (_, x, _eq)) ->
+            (* Type variables ? *)
             Lang_of.(type_expr empty (parent :> Id.Parent.t) x)
         | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
   | Polymorphic_variant v ->

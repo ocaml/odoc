@@ -103,7 +103,7 @@ let class_in_sig sg name =
         Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
-type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t ]
+type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
@@ -123,8 +123,8 @@ let careful_module_in_sig sg name =
 
 let removed_type_in_sig sg name =
   let removed_type = function
-    | Signature.RType (id, p) when N.type_ id = name ->
-        Some (`FType_removed (N.type' id, p))
+    | Signature.RType (id, p, eq) when N.type_ id = name ->
+        Some (`FType_removed (N.type' id, p, eq))
     | _ -> None
   in
   find_map removed_type sg.Signature.removed
