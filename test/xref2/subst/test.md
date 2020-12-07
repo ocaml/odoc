@@ -202,5 +202,16 @@ Edge cases:
     include S with type 'a t := ([ `A of 'a * 'b ] as 'b) t
   end
   |}
-Exception: Not_found.
+- : Component.Signature.t =
+module type S/69 = sig
+  type t/70
+  val map/71 : ([a] r(t/70)) -> ((a) -> b) -> [b] r(t/70)
+   (removed=[])end
+module M/68 : sig
+  type t/72
+  include : r(S/69) with [r(root(S/69).t) = [(alias (poly_var [ `A of (a * b) ]) b)] r(t/72)] (sig =
+    val map/73 : ([(alias (poly_var [ `A of (a * b) ]) b)] r(t/72)) -> ((a) -> b) -> [(alias (poly_var [ `A of (b * b) ]) b)] r(t/72)
+     (removed=[]))
+   (removed=[])end
+ (removed=[])
 ```

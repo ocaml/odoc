@@ -119,13 +119,15 @@ let rename_class_type : Ident.path_class_type -> Ident.path_class_type -> t -> t
 let rec substitute_vars vars t =
   let open TypeExpr in
   match t with
-  | Var s -> List.assoc s vars
+  | Var s -> ( try List.assoc s vars with Not_found -> t )
   | Any -> Any
   | Alias (t, str) -> Alias (substitute_vars vars t, str)
-  | Arrow (lbl, t1, t2) -> Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
+  | Arrow (lbl, t1, t2) ->
+      Arrow (lbl, substitute_vars vars t1, substitute_vars vars t2)
   | Tuple ts -> Tuple (List.map (substitute_vars vars) ts)
   | Constr (p, ts) -> Constr (p, List.map (substitute_vars vars) ts)
-  | Polymorphic_variant v -> Polymorphic_variant (substitute_vars_poly_variant vars v)
+  | Polymorphic_variant v ->
+      Polymorphic_variant (substitute_vars_poly_variant vars v)
   | Object o -> Object (substitute_vars_type_object vars o)
   | Class (p, ts) -> Class (p, List.map (substitute_vars vars) ts)
   | Poly (strs, ts) -> Poly (strs, substitute_vars vars ts)
@@ -133,7 +135,7 @@ let rec substitute_vars vars t =
 
 and substitute_vars_package vars p =
   let open TypeExpr.Package in
-  let subst_subst (p, t) = p, substitute_vars vars t in
+  let subst_subst (p, t) = (p, substitute_vars vars t) in
   { p with substitutions = List.map subst_subst p.substitutions }
 
 and substitute_vars_type_object vars o =
@@ -149,8 +151,10 @@ and substitute_vars_poly_variant vars v =
   let subst_element = function
     | Type t -> Type (substitute_vars vars t)
     | Constructor c ->
-      let arguments = List.map (substitute_vars vars) c.Constructor.arguments in
-      Constructor { c with arguments}
+        let arguments =
+          List.map (substitute_vars vars) c.Constructor.arguments
+        in
+        Constructor { c with arguments }
   in
   { v with elements = List.map subst_element v.elements }
 
