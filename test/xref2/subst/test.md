@@ -187,3 +187,20 @@ module SwappedVars/53 : sig
    (removed=[])end
  (removed=[])
 ```
+
+Edge cases:
+
+```ocaml
+# compile {|
+  module type S = sig
+    type 'a t
+    val map : 'a t -> ('a -> 'b) -> 'b t
+  end
+
+  module M : sig
+    type 'a t
+    include S with type 'a t := ([ `A of 'a * 'b ] as 'b) t
+  end
+  |}
+Exception: Not_found.
+```
