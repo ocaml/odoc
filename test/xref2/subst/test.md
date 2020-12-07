@@ -76,9 +76,9 @@ type vv/5 = local(SubstituteMe/2,false).v
 AFTER
 ======
 S: sig
-type tt/6 = resolved(local(SubTargets/1)).t
-type uu/7 = resolved(local(SubTargets/1)).u
-type vv/8 = resolved(local(SubTargets/1)).v
+type tt/6 = r(SubTargets/1).t
+type uu/7 = r(SubTargets/1).u
+type vv/8 = r(SubTargets/1).v
  (removed=[])end
 
 - : unit = ()
@@ -129,28 +129,27 @@ let compile mli =
 - : Component.Signature.t =
 module type Monad/30 = sig
   type t/31
-  val map/32 : [a] resolved(t/31) -> a -> b -> [b] resolved(t/31)
-  val join/33 : [[a] resolved(t/31)] resolved(t/31) -> [a] resolved(t/31)
+  val map/32 : ([a] r(t/31)) -> ((a) -> b) -> [b] r(t/31)
+  val join/33 : ([[a] r(t/31)] r(t/31)) -> [a] r(t/31)
    (removed=[])end
 module SomeMonad/29 : sig
   type t/34
-  include : resolved(Monad/30) with [resolved(root(Monad/30).t) = [a] resolved(t/34)] (sig =
-    val map/35 : [a] resolved(t/34) -> a -> b -> [b] resolved(t/34)
-    val join/36 : [[a] resolved(t/34)] resolved(t/34) -> [a] resolved(t/34)
+  include : r(Monad/30) with [r(root(Monad/30).t) = [a] r(t/34)] (sig =
+    val map/35 : ([a] r(t/34)) -> ((a) -> b) -> [b] r(t/34)
+    val join/36 : ([[a] r(t/34)] r(t/34)) -> [a] r(t/34)
      (removed=[]))
    (removed=[])end
 module ComplexTypeExpr/27 : sig
   type t/37
-  include : resolved(Monad/30) with [resolved(root(Monad/30).t) = ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))] (sig =
-    val map/38 : ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) -> a -> b -> ([resolved(identifier(int)) * b] resolved(t/37) * [b * resolved(identifier(int))] resolved(t/37))
-    val join/39 : ([resolved(identifier(int)) * ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))] resolved(t/37) * [([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37)) * resolved(identifier(int))] resolved(t/37)) -> ([resolved(identifier(int)) * a] resolved(t/37) * [a * resolved(identifier(int))] resolved(t/37))
+  include : r(Monad/30) with [r(root(Monad/30).t) = ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))] (sig =
+    val map/38 : (([r(int) * a] r(t/37) * [a * r(int)] r(t/37))) -> ((a) -> b) -> ([r(int) * b] r(t/37) * [b * r(int)] r(t/37))
+    val join/39 : (([r(int) * ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))] r(t/37) * [([r(int) * a] r(t/37) * [a * r(int)] r(t/37)) * r(int)] r(t/37))) -> ([r(int) * a] r(t/37) * [a * r(int)] r(t/37))
      (removed=[]))
    (removed=[])end
 module Erase/28 : sig
-  include : resolved(Monad/30) with [resolved(root(Monad/30).t) = a] (sig =
-    val map/40 : a -> a -> b -> b
-    val join/41 : a -> a
-     (removed=[]))
+  include : r(Monad/30) with [r(root(Monad/30).t) = a] (sig = val map/40 : (a) -> ((a) -> b) -> b
+                                                              val join/41 : (a) -> a
+                                                               (removed=[]))
    (removed=[])end
  (removed=[])
 ```
@@ -174,16 +173,16 @@ More tests with two type variables:
 - : Component.Signature.t =
 module type Monad_2/54 = sig
   type t/55
-  val map/56 : [a * err] resolved(t/55) -> a -> b -> [b * err] resolved(t/55)
-  val join/57 : [[a * e] resolved(t/55) * e] resolved(t/55) -> [a * e] resolved(t/55)
-  val both/58 : [a * e] resolved(t/55) -> [b * e] resolved(t/55) -> [(a * b) * e] resolved(t/55)
+  val map/56 : ([a * err] r(t/55)) -> f:((a) -> b) -> [b * err] r(t/55)
+  val join/57 : ([[a * e] r(t/55) * e] r(t/55)) -> [a * e] r(t/55)
+  val both/58 : ([a * e] r(t/55)) -> ([b * e] r(t/55)) -> [(a * b) * e] r(t/55)
    (removed=[])end
 module SwappedVars/53 : sig
   type t/59
-  include : resolved(Monad_2/54) with [resolved(root(Monad_2/54).t) = [b * a] resolved(t/59)] (sig =
-    val map/60 : [err * a] resolved(t/59) -> a -> b -> [err * b] resolved(t/59)
-    val join/61 : [e * [e * a] resolved(t/59)] resolved(t/59) -> [e * a] resolved(t/59)
-    val both/62 : [e * a] resolved(t/59) -> [e * b] resolved(t/59) -> [e * (a * b)] resolved(t/59)
+  include : r(Monad_2/54) with [r(root(Monad_2/54).t) = [b * a] r(t/59)] (sig =
+    val map/60 : ([err * a] r(t/59)) -> f:((a) -> b) -> [err * b] r(t/59)
+    val join/61 : ([e * [e * a] r(t/59)] r(t/59)) -> [e * a] r(t/59)
+    val both/62 : ([e * a] r(t/59)) -> ([e * b] r(t/59)) -> [e * (a * b)] r(t/59)
      (removed=[]))
    (removed=[])end
  (removed=[])
