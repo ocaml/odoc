@@ -16,6 +16,8 @@ jobs:
         ocaml-version:
           # Don't include every versions. OCaml-CI already covers that
           - 4.11.1
+          - 4.02.3 # OCaml-CI stops at 4.04
+          - 4.03.0 # OCaml-CI stops at 4.04
         include:
           - os: ubuntu-latest # Enable coverage only on a single build
             send-coverage: true
