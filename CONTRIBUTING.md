@@ -63,12 +63,16 @@ To make edits to the HTML generation, run the following commands:
         sudo apt-get install jq
         ```
 2. Set up for development:
+
     ```
-    git clone https://github.com/ocaml/odoc.git
+    git clone --recurse-submodules https://github.com/ocaml/odoc.git
     cd odoc
     opam pin add --no-action odoc .
     opam install --with-test --deps-only odoc
     ```
+
+    If you cloned the repository without the submodules, you can fetch
+    them with: `git submodule update --init`
 
 3. Make changes to the code. To compile it,
 
