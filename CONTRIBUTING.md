@@ -40,8 +40,29 @@ of OCaml language item that needs to be displayed in docs.
 
 To make edits to the HTML generation, run the following commands:
 
-1. Set up for development:
+1. Install requirements:
 
+    - A recent version of [tidy](http://www.html-tidy.org/) (used for
+      HTML validity testing) is required:
+
+        ```
+        # On MacOS (should be version 5.6.0 by the date of this writing)
+        brew install tidy-html5
+        
+        # Debian / Ubuntu
+        sudo apt-get install tidy
+        ```
+
+    - A recent version of [jq](https://github.com/stedolan/jq) is required.
+
+        ```
+        # On MacOS
+        brew install jq
+        
+        # Debian / Ubuntu
+        sudo apt-get install jq
+        ```
+2. Set up for development:
     ```
     git clone https://github.com/ocaml/odoc.git
     cd odoc
@@ -49,18 +70,7 @@ To make edits to the HTML generation, run the following commands:
     opam install --with-test --deps-only odoc
     ```
 
-    Also make sure to install a recent version of
-    [tidy](http://www.html-tidy.org/) (used for HTML validity testing):
-
-    ```
-    # On MacOS (should be version 5.6.0 by the date of this writing)
-    brew install tidy-html5
-
-    # Debian / Ubuntu
-    sudo apt-get install tidy
-    ```
-
-2. Make changes to the code. To compile it,
+3. Make changes to the code. To compile it,
 
     ```
     make
@@ -79,7 +89,7 @@ To make edits to the HTML generation, run the following commands:
     in places, and we can update the tests for you by pushing into your PR. For
     larger changes, see [Testing](#Testing) below.
 
-3. To test odoc against your own project, install it
+4. To test odoc against your own project, install it
 
     ```
     make clean
@@ -93,7 +103,7 @@ To make edits to the HTML generation, run the following commands:
     dune build @doc
     ```
 
-4. If all looks good, send odoc a PR :)
+5. If all looks good, send odoc a PR :)
 
 [css-file]: https://github.com/ocaml/odoc/blob/master/src/odoc/etc/odoc.css
 [to-html-tree]: https://github.com/ocaml/odoc/blob/master/src/html/to_html_tree.ml
