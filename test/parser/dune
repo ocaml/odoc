@@ -1,8 +1,10 @@
 (executable
  (name test)
+ (enabled_if (>= %{ocaml_version} 4.04.1))
  (libraries alcotest markup odoc_model odoc_parser print))
 
 (rule
  (alias runtest)
+ (enabled_if (>= %{ocaml_version} 4.04.1))
  (action (run %{exe:test.exe}))
  (deps test.exe (source_tree expect)))
