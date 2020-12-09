@@ -69,6 +69,7 @@ To make edits to the HTML generation, run the following commands:
     cd odoc
     opam pin add --no-action odoc .
     opam install --with-test --deps-only odoc
+    opam install --deps-only mdx
     ```
 
     If you cloned the repository without the submodules, you can fetch
