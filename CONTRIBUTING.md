@@ -46,7 +46,7 @@ To make edits to the HTML generation, run the following commands:
     git clone https://github.com/ocaml/odoc.git
     cd odoc
     opam pin add --no-action odoc .
-    opam install --deps-only odoc
+    opam install --with-test --deps-only odoc
     ```
 
     Also make sure to install a recent version of
