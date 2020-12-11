@@ -1124,11 +1124,8 @@ struct
         O.documentedSrc @@ path url [inline @@ Text name],
         Some page
     in
-    let expr =
-      attach_expansion
-        (" = ","object","end")
-        expansion (class_type_expr t.expr)
-    in
+    let summary = O.txt " = " ++ class_type_expr t.expr in
+    let expr = attach_expansion (" = ","object","end") expansion summary in
     let content =
       let open Lang.Signature in
       let keyword' =
