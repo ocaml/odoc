@@ -589,6 +589,14 @@ class ['a] param_class :
        method v : 'a
      end
 
+class type let_open =
+  let open List in
+  object end
+
+class let_open' :
+  let open List in
+  object end
+
 type my_unit_object = unit param_class
 
 type 'a my_unit_class = unit #param_class as 'a
