@@ -341,6 +341,15 @@ let read_exception env parent (ext : extension_constructor) =
     let res = opt_map (read_core_type env label_container) res in
         {id; doc; args; res}
 
+let read_self_type env container typ =
+  if typ.ctyp_desc = Ttyp_any then None
+  else Some (read_core_type env container typ)
+
+let read_class_type_constr env label_parent p params =
+  let p = Env.Path.read_class_type env p in
+  let params = List.map (read_core_type env label_parent) params in
+  ClassType.Constr (p, params)
+
 let rec read_class_type_field env parent ctf =
   let open ClassSignature in
   let open Odoc_model.Names in
@@ -369,40 +378,48 @@ let rec read_class_type_field env parent ctf =
     let typ2 = read_core_type env container typ2 in
         Some (Constraint(typ1, typ2))
   | Tctf_inherit cltyp ->
-      Some (Inherit (read_class_signature env parent container cltyp))
-  | Tctf_attribute attr ->
+      Some
+        (Inherit (read_class_signature_of_class_type env parent container cltyp))
+  | Tctf_attribute attr -> (
       match Doc_attr.standalone container attr with
       | None -> None
-      | Some doc -> Some (Comment doc)
+      | Some doc -> Some (Comment doc) )
 
-and read_self_type env container typ =
-  if typ.ctyp_desc = Ttyp_any then None
-  else Some (read_core_type env container typ)
+and read_class_signature env parent label_parent csig =
+  let self = read_self_type env label_parent csig.csig_self in
+  let items =
+    List.fold_left
+      (fun rest item ->
+        match read_class_type_field env parent item with
+        | None -> rest
+        | Some item -> item :: rest)
+      [] csig.csig_fields
+  in
+  let items = List.rev items in
+  ClassType.Signature { ClassSignature.self; items }
 
-and read_class_signature env parent label_parent cltyp =
-  let open ClassType in
-    match cltyp.cltyp_desc with
-    | Tcty_constr(p, _, params) ->
-        let p = Env.Path.read_class_type env p in
-      let params = List.map (read_core_type env label_parent) params in
-          Constr(p, params)
-    | Tcty_signature csig ->
-        let open ClassSignature in
-      let self = read_self_type env label_parent csig.csig_self in
-        let items =
-          List.fold_left
-            (fun rest item ->
-               match read_class_type_field env parent item with
-               | None -> rest
-               | Some item -> item :: rest)
-            [] csig.csig_fields
-        in
-        let items = List.rev items in
-          Signature {self; items}
-    | Tcty_arrow _ -> assert false
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
-    | Tcty_open _ -> assert false
+and read_class_type env parent label_parent cty =
+  let open Class in
+  match cty.cltyp_desc with
+  | Tcty_constr(p, _, params) ->
+      ClassType (read_class_type_constr env label_parent p params)
+  | Tcty_signature csig ->
+      ClassType (read_class_signature env parent label_parent csig)
+  | Tcty_arrow(lbl, arg, res) ->
+      let lbl = read_label lbl in
+    let arg = read_core_type env label_parent arg in
+    let res = read_class_type env parent label_parent res in
+        Arrow(lbl, arg, res)
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
+  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent label_parent cty
+#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+  | Tcty_open (_, cty) -> read_class_type env parent label_parent cty
 #endif
+
+and read_class_signature_of_class_type env parent label_parent cty =
+  match read_class_type env parent label_parent cty with
+  | Class.ClassType ct -> ct
+  | Arrow _ -> assert false
 
 let read_class_type_declaration env parent cltd =
   let open ClassType in
@@ -411,7 +428,11 @@ let read_class_type_declaration env parent cltd =
   let doc = Doc_attr.attached container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
-  let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
+  let expr =
+    read_class_signature_of_class_type env
+      (id :> Identifier.ClassSignature.t)
+      container cltd.ci_expr
+  in
   { id; doc; virtual_; params; expr; expansion = None }
 
 let read_class_type_declarations env parent cltds =
@@ -425,22 +446,6 @@ let read_class_type_declarations env parent cltds =
   end ([], Ordinary) cltds
   |> fst
   |> List.rev
-
-let rec read_class_type env parent label_parent cty =
-  let open Class in
-  match cty.cltyp_desc with
-  | Tcty_constr _ | Tcty_signature _ ->
-    ClassType (read_class_signature env parent label_parent cty)
-  | Tcty_arrow(lbl, arg, res) ->
-      let lbl = read_label lbl in
-    let arg = read_core_type env label_parent arg in
-    let res = read_class_type env parent label_parent res in
-        Arrow(lbl, arg, res)
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
-  | Tcty_open (_, _, _, _, cty) -> read_class_type env parent label_parent cty
-#elif OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-  | Tcty_open (_, cty) -> read_class_type env parent label_parent cty
-#endif
 
 let read_class_description env parent cld =
   let open Class in
