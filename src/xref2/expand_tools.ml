@@ -61,7 +61,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
          where we're aliasing e.g. Stdlib.List which is itself an alias for
          Stdlib__list - we want to strengthen with Stdlib.List rather than
          with Stdlib__list. *)
-      match (aux_expansion_of_module env ~strengthen:false m, m.doc) with
+      match (aux_expansion_of_module env ~strengthen:true m, m.doc) with
       | (Error _ as e), _ -> e
       | Ok (Signature sg), [] ->
           (* Format.eprintf "Maybe strenthening now...\n%!"; *)
