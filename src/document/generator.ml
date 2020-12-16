@@ -1238,17 +1238,21 @@ module Make (Syntax : SYNTAX) = struct
       let doc = Comment.first_to_ir t.doc in
       Item.Declaration { kind; anchor; doc; content }
 
-    and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
-      let is_canonical p =
-        let i = Paths.Path.Resolved.Module.identifier p in
-        i = (base :> Paths.Identifier.Path.Module.t)
+    and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
+      let rec ty_of_se :
+          Lang.ModuleType.simple_expansion -> Lang.ModuleType.expr = function
+        | Signature sg -> Signature sg
+        | Functor (arg, sg) -> Functor (arg, ty_of_se sg)
       in
+      mty_in_decl (base :> Paths.Identifier.Signature.t) (ty_of_se se)
+
+    and mdexpr_in_decl (base : Paths.Identifier.Module.t) md =
       let sig_dotdotdot =
         O.txt Syntax.Type.annotation_separator
         ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (`Resolved p, _) when is_canonical p -> sig_dotdotdot
+      | Alias (_, Some se) -> simple_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
           O.txt " = " ++ mdexpr md
       | Alias _ -> sig_dotdotdot
