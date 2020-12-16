@@ -710,7 +710,7 @@ now we can ask for the signature of this module:
 # let sg = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 val sg : Component.Signature.t =
   {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Module (`LModule (M, 41),
+    [Odoc_xref2.Component.Signature.Module (`LModule (M, 37),
       Odoc_model.Lang.Signature.Ordinary,
       {Odoc_xref2.Component.Delayed.v =
         Some
@@ -721,7 +721,7 @@ val sg : Component.Signature.t =
             None);
           canonical = None; hidden = false};
        get = None});
-     Odoc_xref2.Component.Signature.Module (`LModule (N, 42),
+     Odoc_xref2.Component.Signature.Module (`LModule (N, 38),
       Odoc_model.Lang.Signature.Ordinary,
       {Odoc_xref2.Component.Delayed.v =
         Some
@@ -731,7 +731,7 @@ val sg : Component.Signature.t =
             (Odoc_xref2.Component.ModuleType.Path
               {Odoc_xref2.Component.ModuleType.p_expansion = None;
                p_path =
-                `Dot (`Substituted (`Local (`LModule (M, 41), false)), "S")});
+                `Dot (`Substituted (`Local (`LModule (M, 37), false)), "S")});
           canonical = None; hidden = false};
        get = None})];
    removed = []}
@@ -765,7 +765,7 @@ val m : Component.Module.t Component.Delayed.t =
 # get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 - : Component.Signature.t =
 {Odoc_xref2.Component.Signature.items =
-  [Odoc_xref2.Component.Signature.Type (`LType (t, 50),
+  [Odoc_xref2.Component.Signature.Type (`LType (t, 45),
     Odoc_model.Lang.Signature.Ordinary,
     {Odoc_xref2.Component.Delayed.v =
       Some
@@ -1063,7 +1063,7 @@ val m : Component.Module.t Component.Delayed.t =
 # let sg' = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 val sg' : Component.Signature.t =
   {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 15),
+    [Odoc_xref2.Component.Signature.Module (`LModule (Foo, 14),
       Odoc_model.Lang.Signature.Ordinary,
       {Odoc_xref2.Component.Delayed.v =
         Some
