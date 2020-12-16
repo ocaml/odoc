@@ -210,6 +210,9 @@ let expansion_of_u_module_type_expr env id expr =
   aux_expansion_of_u_module_type_expr env expr >>= fun sg ->
   handle_expansion env id (Signature sg) >>= fun (env, e) -> Ok (env, false, e)
 
+(* Nb. [strengthen=false] here because the only time we are ever expanding module aliases is when either
+   the module is the canonical one or it's an alias to a hidden module. In neither of these cases do we want
+   to strengthen. *)
 let expansion_of_module_alias env id path =
   let open Paths.Identifier in
   aux_expansion_of_module_alias ~strengthen:false env path
