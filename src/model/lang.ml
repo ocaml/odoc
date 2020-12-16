@@ -459,9 +459,9 @@ module rec Page : sig
 end =
   Page
 
-let umty_of_mty : ModuleType.expr -> ModuleType.U.expr = function
-  | Signature sg -> Signature sg
-  | Path { p_path; _ } -> Path p_path
-  | Functor _ -> assert false
-  | TypeOf t -> TypeOf t
-  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
+  | Signature sg -> Some (Signature sg)
+  | Path { p_path; _ } -> Some (Path p_path)
+  | Functor _ -> None
+  | TypeOf t -> Some (TypeOf t)
+  | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))

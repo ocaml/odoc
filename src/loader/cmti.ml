@@ -524,10 +524,14 @@ and read_module_type env parent label_parent mty =
         let res = read_module_type env (`Result parent) label_parent res in
         Functor( f_parameter, res)
 #endif
-    | Tmty_with(body, subs) ->
+    | Tmty_with(body, subs) -> (
       let body = read_module_type env parent label_parent body in
       let subs = List.map (read_with_constraint env label_parent) subs in
-          With {w_substitutions=subs; w_expansion=None; w_expr = Odoc_model.Lang.umty_of_mty body}
+      match Odoc_model.Lang.umty_of_mty body with
+      | Some w_expr ->
+          With {w_substitutions=subs; w_expansion=None; w_expr }
+      | None ->
+        failwith "error")
     | Tmty_typeof mexpr ->
         let decl =
           match mexpr.mod_desc with
@@ -654,7 +658,7 @@ and read_signature_item env parent item =
     | Tsig_open _ -> []
 #endif
     | Tsig_include incl ->
-        [Include (read_include env parent incl)]
+        read_include env parent incl
     | Tsig_class cls ->
         read_class_descriptions env parent cls
     | Tsig_class_type cltyps ->
@@ -686,10 +690,31 @@ and read_include env parent incl =
   let doc = Doc_attr.attached container incl.incl_attributes in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
   let expr = read_module_type env parent container incl.incl_mod in
-  let uexpr = Odoc_model.Lang.umty_of_mty expr in
-  let decl = Include.ModuleType uexpr in
-  let expansion = { content; shadowed; resolved = false} in
-    {parent; doc; decl; expansion; inline=false }
+  let rec contains_signature = function
+    | ModuleType.U.Signature _ -> true
+    | Path _ -> false
+    | With (_, w_expr) -> contains_signature w_expr
+    | TypeOf _ -> false
+  in
+  (* inline type or module substitution is tricky to inline, because the
+     scope of the substitution is to the end of the signature being inlined.
+     If we've got one of those, we fall back to inlining the compiler-computed signature *)
+  let is_inlinable items =
+    not (List.exists
+          (function
+           | Signature.TypeSubstitution _ -> true
+           | ModuleSubstitution _ -> true
+           | _ -> false) items)
+  in
+  match Odoc_model.Lang.umty_of_mty expr with
+  | Some uexpr when not (contains_signature uexpr) ->
+    let decl = Include.ModuleType uexpr in
+    let expansion = { content; shadowed; resolved = false} in
+    [Include {parent; doc; decl; expansion; inline=false }]
+  | Some ModuleType.U.Signature items when is_inlinable items ->
+    items
+  | _ ->
+    content
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
