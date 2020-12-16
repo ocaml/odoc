@@ -503,7 +503,7 @@ and read_structure_item env parent item =
         [Open (read_open env parent o)]
 #endif
     | Tstr_include incl ->
-        [Include (read_include env parent incl)]
+        read_include env parent incl
     | Tstr_class cls ->
         let cls = List.map
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
@@ -527,16 +527,30 @@ and read_include env parent incl =
   let open Include in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container incl.incl_attributes in
-  let decl =
+  let decl_modty =
     match unwrap_module_expr_desc incl.incl_mod.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p)
+    | Tmod_ident(p, _) ->
+      Some (ModuleType.U.TypeOf {t_desc = ModuleType.StructInclude (Env.Path.read_module env p); t_expansion=None })
     | _ ->
       let mty = read_module_expr env parent container incl.incl_mod in
-      ModuleType (umty_of_mty mty)
+      umty_of_mty mty
   in
   let content, shadowed = Cmi.read_signature_noenv env parent (Odoc_model.Compat.signature incl.incl_type) in
-  let expansion = { content; shadowed; resolved = false } in
-    {parent; doc; decl; expansion; inline=false }
+  let rec contains_signature = function
+    | ModuleType.U.Signature _ -> true
+    | Path _ -> false
+    | With (_, w_expr) -> contains_signature w_expr
+    | TypeOf _ -> false
+  in 
+  match decl_modty with
+  | Some m when not (contains_signature m) ->
+    let decl = ModuleType m in
+    let expansion = { content; shadowed; resolved = false } in
+    [Include {parent; doc; decl; expansion; inline=false }]
+  | Some (ModuleType.U.Signature items) ->
+    items
+  | _ ->
+    content
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
