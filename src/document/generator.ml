@@ -1184,7 +1184,7 @@ struct
         | ModuleSubstitution m when internal_module_substitution m ->
           loop rest acc_items
 
-        | Module (recursive, m)    -> continue @@ module_ recursive m
+        | Module (_recursive, m)    -> continue @@ module_ m
         | ModuleType m             -> continue @@ module_type m
         | Class (_recursive, c)     -> continue @@ class_ c
         | ClassType (_recursive, c) -> continue @@ class_type c
@@ -1342,10 +1342,9 @@ struct
       | Some e -> Some (simple_expansion e)
 
   and module_
-    : Odoc_model.Lang.Signature.recursive ->
-      Odoc_model.Lang.Module.t ->
+    : Odoc_model.Lang.Module.t ->
       Item.t
-    = fun recursive t ->
+    = fun t ->
       let modname = Paths.Identifier.name t.id in
       let expansion =
         match t.type_ with
@@ -1383,13 +1382,7 @@ struct
           expansion summary
       in
       let content =
-        let keyword' =
-          match recursive with
-          | Ordinary | Nonrec -> O.keyword "module"
-          | Rec -> O.keyword "module" ++ O.txt " " ++ O.keyword "rec"
-          | And -> O.keyword "and"
-        in
-        O.documentedSrc (keyword' ++ O.txt " ")
+        O.documentedSrc (O.keyword "module" ++ O.txt " ")
         @ modname
         @ modexpr
         @ O.documentedSrc
