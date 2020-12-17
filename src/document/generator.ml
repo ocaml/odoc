@@ -937,11 +937,9 @@ end
 
 module Class :
 sig
-  val class_ :
-    Lang.Signature.recursive -> Lang.Class.t -> Item.t
+  val class_ : Lang.Class.t -> Item.t
 
-  val class_type :
-    Lang.Signature.recursive -> Lang.ClassType.t -> Item.t
+  val class_type : Lang.ClassType.t -> Item.t
 end =
 struct
 
@@ -1059,7 +1057,7 @@ struct
         type_expr ~needs_parentheses:true src ++
         O.txt " " ++ Syntax.Type.arrow ++ O.txt " " ++ class_decl dst
 
-  let class_ recursive (t : Odoc_model.Lang.Class.t) =
+  let class_ (t : Odoc_model.Lang.Class.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1085,14 +1083,8 @@ struct
         (Syntax.Type.annotation_separator,"object","end") expansion summary
     in
     let content =
-      let open Lang.Signature in
-      let keyword' =
-        match recursive with
-        | Ordinary | Nonrec | Rec -> "class"
-        | And -> "and"
-      in
       O.documentedSrc (
-        O.keyword keyword' ++
+        O.keyword "class" ++
         O.txt " " ++
         virtual_ ++
         params ++
@@ -1105,7 +1097,7 @@ struct
     let doc = Comment.first_to_ir t.doc in
     Item.Declaration {kind ; anchor ; doc ; content}
 
-  let class_type recursive (t : Odoc_model.Lang.ClassType.t) =
+  let class_type (t : Odoc_model.Lang.ClassType.t) =
     let name = Paths.Identifier.name t.id in
     let params = format_params ~delim:(`brackets) t.params in
     let virtual_ =
@@ -1127,19 +1119,12 @@ struct
     let summary = O.txt " = " ++ class_type_expr t.expr in
     let expr = attach_expansion (" = ","object","end") expansion summary in
     let content =
-      let open Lang.Signature in
-      let keyword' =
-        match recursive with
-        | Ordinary | Nonrec | Rec ->
-          O.keyword "class" ++ O.txt " " ++ O.keyword "type"
-        | And -> O.keyword "and"
-      in
       O.documentedSrc (
-        keyword' ++
-          O.txt " " ++
-          virtual_ ++
-          params ++
-          O.txt " ")
+        O.keyword "class" ++ O.txt " " ++ O.keyword "type" ++
+        O.txt " " ++
+        virtual_ ++
+        params ++
+        O.txt " ")
       @ cname
       @ expr
     in
@@ -1201,8 +1186,8 @@ struct
 
         | Module (recursive, m)    -> continue @@ module_ recursive m
         | ModuleType m             -> continue @@ module_type m
-        | Class (recursive, c)     -> continue @@ class_ recursive c
-        | ClassType (recursive, c) -> continue @@ class_type recursive c
+        | Class (_recursive, c)     -> continue @@ class_ c
+        | ClassType (_recursive, c) -> continue @@ class_type c
         | Include m                -> continue @@ include_ m
         | ModuleSubstitution m     -> continue @@ module_substitution m
 
