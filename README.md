@@ -19,8 +19,8 @@ The syntax reference is [here][comment-syntax]. There is also an
 [explanation][comment-location] of how to attach comments to specific types,
 values, and other elements in your program.
 
-[comment-syntax]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec357
-[comment-location]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec352
+[comment-syntax]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-syntax
+[comment-location]: http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-placement
 
 <br/>
 
