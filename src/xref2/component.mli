@@ -693,6 +693,11 @@ module Of_Lang : sig
     Odoc_model.Lang.FunctorParameter.parameter ->
     FunctorParameter.parameter
 
+  val simple_expansion :
+    map ->
+    Odoc_model.Lang.ModuleType.simple_expansion ->
+    ModuleType.simple_expansion
+
   val extension : map -> Odoc_model.Lang.Extension.t -> Extension.t
 
   val extension_constructor :
