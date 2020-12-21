@@ -647,8 +647,9 @@ module Fmt = struct
   and simple_expansion ppf (m : ModuleType.simple_expansion) =
     match m with
     | ModuleType.Signature sg -> Format.fprintf ppf "sig: %a" signature sg
-    | Functor (_args, sg) ->
-        Format.fprintf ppf "functor: (...) -> %a" simple_expansion sg
+    | Functor (arg, sg) ->
+        Format.fprintf ppf "functor: (%a) -> %a" functor_parameter arg
+          simple_expansion sg
 
   and module_type ppf mt =
     match mt.expr with
