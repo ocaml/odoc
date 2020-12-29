@@ -10,7 +10,7 @@
 
 :root,
 .light:root {
-  --link-color: #2c5cbd;
+  --link-color: #2C94BD;
   --anchor-hover: #555;
   --anchor-color: #d5d5d5;
   --xref-shadow: #cc6666;
@@ -277,7 +277,7 @@ a.anchor {
 }
 
 .xref-unresolved {
-  color: #2C5CBD;
+  color: #2C94BD;
 }
 .xref-unresolved:hover {
   box-shadow: 0 1px 0 0 #CC6666;
