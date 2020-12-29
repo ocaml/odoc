@@ -10,40 +10,16 @@
 
 :root,
 .light:root {
-  --main-background: #fff;
-  --code-background: f;
-  --line-numbers-background: rgba(0, 0, 0, 0.025);
-  --navbar-background: #eee;
   --link-color: #2c5cbd;
   --anchor-hover: #555;
   --anchor-color: #d5d5d5;
   --xref-shadow: #cc6666;
   --header-shadow: #ddd;
-  --color: #333;
   --by-name-version-color: #aaa;
   --by-name-nav-link-color: #222;
   --target-background: rgba(187, 239, 253, 0.3);
   --target-shadow: rgba(187, 239, 253, 0.8);
   --pre-border-color: #eee;
-
-  --li-code-background: #f6f8fa;
-  --li-code-color: #0d2b3e;
-  --toc-color: #777;
-  --toc-background: #f6f8fa;
-  --toc-list-border: #ccc;
-  --spec-summary-background: #f6f8fa;
-  --spec-summary-hover-background: #ebeff2;
-  --spec-summary-border-color: #5c9cf5;
-  --spec-details-after-background: rgba(0, 4, 15, 0.05);
-  --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
-
-  --hljs-link: #6a737d;
-  --hljs-keyword: #d73a49;
-  --hljs-regexp: #032f62;
-  --hljs-title: #900;
-  --hljs-type: #6f42c1;
-  --hljs-meta: #22863a;
-  --hljs-variable: #005cc5;
 }
 
 .dark:root {
@@ -129,13 +105,9 @@ html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockq
   margin: 0;
   padding: 0;
   border: 0;
-  font-size: inherit;
   font: inherit;
-  line-height: inherit;
   vertical-align: baseline;
-  text-align: inherit;
-  color: inherit;
-  background: transparent;
+
 }
 
 table {
@@ -152,9 +124,7 @@ html {
 }
 
 body {
-  font-family: "Fira Sans", Helvetica, Arial, sans-serif;
   text-align: left;
-  color: #333;
   background: #FFFFFF;
   color: var(--color);
   background-color: var(--main-background);
