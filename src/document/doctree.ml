@@ -63,14 +63,14 @@ module Toc : sig
     children : t
   }
 
-  val compute : on_sub:(Include.status -> bool) -> Item.t list -> t
+  val compute : Url.Path.t -> on_sub:(Include.status -> bool) -> Item.t list -> t
 end
   = struct
 
     type t = one list
 
     and one = {
-      anchor : string;
+      url : Url.t;
       text : Inline.t;
       children : t
     }
