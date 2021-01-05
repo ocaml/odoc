@@ -1,3 +1,4 @@
+open Result
 
 (* Example usage of these:
 

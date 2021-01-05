@@ -25,7 +25,7 @@ module Accessible_paths : sig
 end
 
 val lookup_page : Accessible_paths.t -> string -> Odoc_model.Root.t option
-val fetch_page : Accessible_paths.t -> Odoc_model.Root.t -> (Page.t, [> `Msg of string ]) result
+val fetch_page : Accessible_paths.t -> Odoc_model.Root.t -> (Page.t, [> `Msg of string ]) Result.result
 
 type t = Odoc_xref2.Env.resolver
 
