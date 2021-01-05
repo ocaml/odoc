@@ -1,5 +1,6 @@
 open Or_error
 open Odoc_model.Names
+open Odoc_compat
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
