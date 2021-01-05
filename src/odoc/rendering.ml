@@ -19,8 +19,7 @@ let document_of_input ~env ~warn_error ~syntax input =
   | Page _ ->
     Page.load input >>= fun page ->
     let resolve_env = Env.build env (`Page page) in
-    let env = Odoc_xref2.Env.set_resolver Odoc_xref2.Env.empty resolve_env in
-    Odoc_xref2.Link.resolve_page env page
+    Odoc_xref2.Link.resolve_page resolve_env page
     |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun odoctree ->
     Ok (Renderer.document_of_page ~syntax odoctree)

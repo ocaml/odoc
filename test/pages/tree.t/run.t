@@ -40,9 +40,9 @@ Compile the modules:
   $ ocamlc -c m3.mli -bin-annot
 
 Now compile the pages:
-  $ odoc compile top1.mld --child sub1
-  $ odoc compile top2.mld --child sub2
-  $ odoc compile sub1.mld -I . --parent top1 --child sub3 --child m1
+  $ odoc compile top1.mld --child page-sub1
+  $ odoc compile top2.mld --child page-sub2
+  $ odoc compile sub1.mld -I . --parent top1 --child page-sub3 --child m1
   $ odoc compile sub2.mld -I . --parent top2 --child m2
   $ odoc compile sub3.mld -I . --parent sub1 --child m3
   $ odoc compile m1.cmti -I . --parent sub1

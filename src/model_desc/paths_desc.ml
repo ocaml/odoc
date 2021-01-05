@@ -94,7 +94,8 @@ module General_paths = struct
       | `TType -> C0 "`TType"
       | `TUnknown -> C0 "`TUnknown"
       | `TValue -> C0 "`TValue"
-      | `TChild -> C0 "`TChild" )
+      | `TChildPage -> C0 "`TChildPage"
+      | `TChildModule -> C0 "`TChildModule" )
 
   let rec path : p t =
     Variant

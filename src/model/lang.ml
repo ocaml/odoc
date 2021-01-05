@@ -451,7 +451,7 @@ module rec Page : sig
     name : Identifier.Page.t;
     root : Root.t;
     content : Comment.docs;
-    children : string list;
+    children : Reference.t list;
     digest : Digest.t;
   }
 end =

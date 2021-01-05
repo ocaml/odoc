@@ -101,3 +101,17 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
       |> Semantics.ast_to_comment
          warnings ~sections_allowed ~parent_of_sections:containing_definition
     )
+
+let parse_reference text =
+  let location = Reference.Location_.{
+    file = "";
+    start = { line=0; column=0};
+    end_ = { line=0; column = String.length text}
+  } in
+  let result =
+    Odoc_model.Error.accumulate_warnings begin fun warnings ->
+      Reference.parse warnings location text
+    end in
+  match result.Reference.Error.value with
+  | Ok x -> Ok x
+  | Error m -> Error (`Msg (Odoc_model.Error.to_string m))

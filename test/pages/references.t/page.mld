@@ -1,0 +1,3 @@
+{0 Page}
+Module children are case independent: {!childmodule-Foo} {!childmodule-bar} {!childmodule-Baz} {!childmodule-moo}
+

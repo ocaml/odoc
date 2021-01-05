@@ -18,7 +18,7 @@ open Odoc_model.Names
  *)
 
 type parent_spec =
-  | Explicit of Odoc_model.Paths.Identifier.ContainerPage.t * string list
+  | Explicit of Odoc_model.Paths.Identifier.ContainerPage.t * Odoc_model.Paths.Reference.t list
   | Package of Odoc_model.Paths.Identifier.ContainerPage.t
   | Noparent
 
@@ -29,10 +29,16 @@ type parent_cli_spec =
 
 let parent directories parent_cli_spec =
   let ap = Env.Accessible_paths.create ~directories in
-  let find_parent f =
-    match Env.lookup_page ap f with
-    | Some r -> Ok r
-    | None -> Error (`Msg "Couldn't find specified parent page")
+  let find_parent : Odoc_model.Paths.Reference.t -> (Odoc_model.Root.t, [> `Msg of string ]) Result.result = fun r ->
+    match r with
+    | `Root (p, `TPage)
+    | `Root (p, `TUnknown) -> begin
+      match Env.lookup_page ap p with
+      | Some r -> Ok r
+      | None -> Error (`Msg "Couldn't find specified parent page")
+      end
+    | _ ->
+      Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
     | `RootPage _
@@ -41,7 +47,8 @@ let parent directories parent_cli_spec =
   in
   match parent_cli_spec with
   | CliParent f ->
-    find_parent f >>= fun r ->
+    Odoc_parser.parse_reference f >>= fun r ->
+    find_parent r >>= fun r ->
     extract_parent r.id >>= fun parent ->
     Env.fetch_page ap r >>= fun page ->
     Ok (Explicit (parent, page.children))
@@ -84,15 +91,30 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
     Odoc_file.create_unit ~force_hidden:hidden module_name in
     Ok {id = `Root (parent, ModuleName.of_string module_name); file = file_representation; digest}
   in
+  let check_child : Odoc_model.Paths.Reference.t -> bool = fun c ->
+    match c with
+    | `Root (n, `TUnknown)
+    | `Root (n, `TModule) ->
+      String.uncapitalize_ascii n = String.uncapitalize_ascii filename
+    | _ ->
+      false
+  in
   match parent_spec with
   | Noparent -> Error (`Msg "Compilation units require a parent")
   | Explicit (parent, children) ->
-    if List.mem filename children
+    if List.exists check_child children
     then result parent
     else Error (`Msg "Specified parent is not a parent of this file")
   | Package parent -> result parent
 
 let mld ~parent_spec ~output ~children ~warn_error input =
+  List.fold_left (fun acc child_str ->
+    match acc, Odoc_parser.parse_reference child_str with
+    | Ok acc, Ok r -> Ok (r::acc)
+    | Error m, _ -> Error m
+    | _, Error (`Msg m) -> Error (`Msg ("Failed to parse child reference: " ^ m))
+    | _, Error (_) -> Error (`Msg ("Unknown failure parsing child reference"))) (Ok []) children
+  >>= fun children ->
   let root_name =
     let page_dash_root =
       Filename.chop_extension (Fs.File.(to_string @@ basename output))
@@ -103,9 +125,17 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
   let page_name = PageName.of_string root_name in
+  let check_child : Odoc_model.Paths.Reference.t -> bool = fun c ->
+    match c with
+    | `Root (n, `TUnknown)
+    | `Root (n, `TPage) ->
+      root_name = n
+    | _ ->
+      false
+  in
   let name =
     let check parents_children v =
-      if List.mem root_name parents_children
+      if List.exists check_child parents_children
       then Ok v
       else Error (`Msg "Specified parent is not a parent of this file")
     in

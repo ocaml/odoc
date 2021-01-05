@@ -200,6 +200,7 @@ type what = [
   | `With_type of Cfrag.type_
   | `Module_type_expr of Component.ModuleType.expr
   | `Module_type_u_expr of Component.ModuleType.U.expr
+  | `Child of Reference.t
 ]
 
 let report ~(what:what) ?tools_error action =
@@ -249,3 +250,4 @@ let report ~(what:what) ?tools_error action =
   | `With_type frag -> r "type substitution" type_fragment frag
   | `Module_type_expr cexpr -> r "module type expression" module_type_expr cexpr
   | `Module_type_u_expr cexpr -> r "module type u expression" u_module_type_expr cexpr
+  | `Child rf -> r "child reference" model_reference rf
