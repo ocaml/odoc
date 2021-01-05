@@ -49,7 +49,7 @@ module Accessible_paths = struct
     ; directories }
 
   let find_file_by_name t name =
-    let uname = name ^ ".odoc" in
+    let uname = String.capitalize_ascii name ^ ".odoc" in
     let lname = String.uncapitalize_ascii name ^ ".odoc" in
     let rec loop acc = function
       | [] -> acc

@@ -815,10 +815,18 @@ let build_resolver :
 *)
 let link x y = Lookup_failures.catch_failures (fun () -> unit x y)
 
-let resolve_page env y =
-   Lookup_failures.catch_failures (fun () ->
-      {
-        y with
-        Page.content =
-          List.map (with_location comment_block_element env) y.Page.content;
-      })
+let page env page =
+  let env = Env.set_resolver Env.empty env in
+  let children = List.fold_right (fun child res ->
+    match Ref_tools.resolve_reference env child with
+    | Some r -> ((`Resolved r) :: res)
+    | None -> Errors.report ~what:(`Child child) `Resolve; res) page.Odoc_model.Lang.Page.children [] in
+  {
+      page with
+      Page.content =
+        List.map (with_location comment_block_element env) page.Page.content;
+      children
+    }
+
+let resolve_page env p =
+  Lookup_failures.catch_failures (fun () -> page env p)

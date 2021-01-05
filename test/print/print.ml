@@ -136,7 +136,8 @@ struct
     | `TInstanceVariable -> Atom "instance_variable"
     | `TLabel -> Atom "label"
     | `TPage -> Atom "page"
-    | `TChild -> Atom "child"
+    | `TChildPage -> Atom "childpage"
+    | `TChildModule -> Atom "childmodule"
 
   let rec reference : Reference.t -> sexp = function
     | `Resolved parent ->

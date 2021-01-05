@@ -23,7 +23,8 @@ let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s
   | Some "section" -> Some `TLabel
   | Some "const" -> d w loc "const" "constructor"; Some `TConstructor
   | Some "recfield" -> d w loc "recfield" "field"; Some `TField
-  | Some "child" -> Some `TChild
+  | Some "childpage" -> Some `TChildPage
+  | Some "childmodule" -> Some `TChildModule
   | _ -> None
 
 let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s
@@ -310,7 +311,7 @@ let parse warnings whole_reference_location s : (Paths.Reference.t, Error.t) Res
       | `TInstanceVariable ->
         `InstanceVariable (class_signature next_token tokens, InstanceVariableName.of_string identifier)
       | `TLabel -> `Label (label_parent next_token tokens, LabelName.of_string identifier)
-      | `TChild ->
+      | `TChildPage | `TChildModule ->
         let suggestion =
           Printf.sprintf "'child-%s' should be first." identifier in
         Parse_error.not_allowed

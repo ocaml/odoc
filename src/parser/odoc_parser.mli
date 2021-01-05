@@ -11,3 +11,5 @@ val parse_comment :
   location:Lexing.position ->
   text:string ->
     Odoc_model.Comment.docs Odoc_model.Error.with_warnings
+
+val parse_reference : string -> (Odoc_model.Paths.Reference.t, [> `Msg of string ]) Result.result

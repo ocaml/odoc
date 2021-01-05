@@ -418,8 +418,12 @@ sig
     `TUnknown
   ]
 
-  type tag_only_child = [
-    `TChild
+  type tag_only_child_page = [
+    `TChildPage
+  ]
+
+  type tag_only_child_module = [
+    `TChildModule
   ]
 
   type tag_any = [
@@ -437,7 +441,8 @@ sig
     | tag_only_instance_variable
     | tag_only_label
     | tag_only_page
-    | tag_only_child
+    | tag_only_child_page
+    | tag_only_child_module
     | tag_unknown
   ]
 
@@ -475,7 +480,8 @@ sig
     | tag_only_class_type
     | tag_only_type
     | tag_only_page
-    | tag_only_child
+    | tag_only_child_page
+    | tag_only_child_module
   ]
 
   type signature = [

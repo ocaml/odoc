@@ -17,7 +17,7 @@ Compile the module first
 
 Then we need to compile the package mld file, because when you're passing the '--parent' argument specifying the parent odoc file, it must exist.
 
-  $ odoc compile package.mld --child test
+  $ odoc compile package.mld --child module-test
 
 This will have produced a file called 'page-package.odoc'. Now we can compile the module odoc file passing that file as parent.
 

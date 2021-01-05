@@ -536,7 +536,7 @@ let rec resolve_label_parent_reference :
         >>= signature_lookup_result_of_label_parent
         >>= fun p -> LP.in_signature env p name
     | `Root (name, `TPage)
-    | `Root (name, `TChild) ->
+    | `Root (name, `TChildPage) ->
         Env.lookup_page name env >>= fun p ->
         let labels =
           List.fold_right
@@ -548,6 +548,8 @@ let rec resolve_label_parent_reference :
             p.Odoc_model.Lang.Page.content []
         in
         return (`Page (`Identifier p.Odoc_model.Lang.Page.name, labels))
+    | `Root (name, `TChildModule) ->
+        resolve_signature_reference env (`Root (name, `TModule)) >>= label_parent_res_of_sig_res
 
 and resolve_signature_reference :
     Env.t -> Signature.t -> signature_lookup_result option =
@@ -720,18 +722,19 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | `Exception (id, _) -> identifier id
         | `Extension (id, _) -> identifier id
         | `Field (id, _) -> identifier id )
-    | `Root (name, `TChild) -> begin
-          let page = Env.lookup_page name env in
-          match page with
-          | Some p ->
-            Some (`Identifier (p.name :> Identifier.t))
-          | None ->
-            match Env.lookup_root_module name env with
-            | Some (Resolved (_, id, _, _)) -> Some (`Identifier (id :> Identifier.t))
-            | Some Forward
-            | None -> None
+    | `Root (name, `TChildPage) -> begin
+        match Env.lookup_page name env with
+        | Some p ->
+          Some (`Identifier (p.name :> Identifier.t))
+        | None -> None
       end
-    | `Resolved r -> Some r
+    | `Root (name, `TChildModule) -> begin
+        match Env.lookup_root_module name env with
+        | Some (Resolved (_, id, _, _)) -> Some (`Identifier (id :> Identifier.t))
+        | Some Forward
+        | None -> None
+      end
+  | `Resolved r -> Some r
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
         resolve_signature_reference env parent >>= fun p ->
