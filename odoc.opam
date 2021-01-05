@@ -43,7 +43,7 @@ depends: [
   "markup" {with-test & >= "1.0.0"}
   "ocamlfind" {with-test}
   "yojson" {with-test}
-  ("ocaml" {< "4.04.1"} | "sexplib0" {with-test})
+  ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
   "conf-jq" {with-test}
 
   "bisect_ppx" {with-test & >= "2.5.0"}
