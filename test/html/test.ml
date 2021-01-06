@@ -286,6 +286,9 @@ let source_files_all = [
     ]);
 ]
 
+let source_files_post406 =
+  [ ("bugs_post_406.mli", ["Bugs_post_406/index.html"]) ]
+
 let source_files_post408 =
   [ ("recent.mli", ["Recent/index.html"; "Recent/X/index.html"])
   ; ("recent_impl.ml", ["Recent_impl/index.html"])
@@ -302,6 +305,7 @@ let source_files =
     List.concat
       [ (if major=4 && minor<10 then source_files_pre410 else [])
       ; (if major=4 && minor>8 then source_files_post408 else [])
+      ; (if major=4 && minor>=6 then source_files_post406 else [])
       ; source_files_all ]
   | _ -> source_files_all
 
