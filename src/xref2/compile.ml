@@ -200,24 +200,47 @@ and module_substitution env m =
 and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
  fun env id s ->
   let open Signature in
-  List.map
-    (fun item ->
-      match item with
-      | Module (r, m) -> Module (r, module_ env m)
-      | ModuleSubstitution m -> ModuleSubstitution (module_substitution env m)
-      | Type (r, t) -> Type (r, type_decl env t)
-      | TypeSubstitution t -> TypeSubstitution (type_decl env t)
-      | ModuleType mt -> ModuleType (module_type env mt)
-      | Value v -> Value (value_ env id v)
-      | Comment c -> Comment c
-      | TypExt t -> TypExt (extension env id t)
-      | Exception e -> Exception (exception_ env id e)
-      | External e -> External (external_ env id e)
-      | Class (r, c) -> Class (r, class_ env id c)
-      | ClassType (r, c) -> ClassType (r, class_type env c)
-      | Include i -> Include (include_ env i)
-      | Open o -> Open o)
-    s
+  let items, _ =
+    List.fold_left
+      (fun (items, env) item ->
+        let std i = (i :: items, env) in
+        match item with
+        | Module (r, m) ->
+            let m' = module_ env m in
+            if m == m' then (item :: items, env)
+            else
+              let ty =
+                Component.Delayed.(
+                  put (fun () -> Component.Of_Lang.(module_ empty m')))
+              in
+              let docs = [] in
+              let env' =
+                Env.add_module
+                  (m.id :> Paths.Identifier.Path.Module.t)
+                  ty docs env
+              in
+              (Module (r, m') :: items, env')
+        | ModuleSubstitution m ->
+            std @@ ModuleSubstitution (module_substitution env m)
+        | Type (r, t) -> std @@ Type (r, type_decl env t)
+        | TypeSubstitution t -> std @@ TypeSubstitution (type_decl env t)
+        | ModuleType mt ->
+            let m' = module_type env mt in
+            let ty = Component.Of_Lang.(module_type empty m') in
+            let env' = Env.add_module_type mt.id ty env in
+            (ModuleType (module_type env mt) :: items, env')
+        | Value v -> std @@ Value (value_ env id v)
+        | Comment c -> std @@ Comment c
+        | TypExt t -> std @@ TypExt (extension env id t)
+        | Exception e -> std @@ Exception (exception_ env id e)
+        | External e -> std @@ External (external_ env id e)
+        | Class (r, c) -> std @@ Class (r, class_ env id c)
+        | ClassType (r, c) -> std @@ ClassType (r, class_type env c)
+        | Include i -> std @@ Include (include_ env i)
+        | Open o -> std @@ Open o)
+      ([], env) s
+  in
+  List.rev items
 
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
