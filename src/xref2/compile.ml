@@ -244,9 +244,11 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
 
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
-  let env = Env.open_signature s env in
-  let items = signature_items env id s.items in
-  { s with items }
+  if s.compiled then s
+  else
+    let env = Env.open_signature s env in
+    let items = signature_items env id s.items in
+    { items; compiled = true }
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
