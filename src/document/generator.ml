@@ -1030,7 +1030,9 @@ module Make (Syntax : SYNTAX) = struct
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
-    let rec signature s : Item.t list =
+    let rec signature (s : Lang.Signature.t) = signature_items s.items
+
+    and signature_items s : Item.t list =
       let rec loop l acc_items =
         match l with
         | [] -> List.rev acc_items
@@ -1042,10 +1044,10 @@ module Make (Syntax : SYNTAX) = struct
             | ModuleType m when internal_module_type m -> loop rest acc_items
             | ModuleSubstitution m when internal_module_substitution m ->
                 loop rest acc_items
-            | Module (_recursive, m) -> continue @@ module_ m
+            | Module (_, m) -> continue @@ module_ m
             | ModuleType m -> continue @@ module_type m
-            | Class (_recursive, c) -> continue @@ class_ c
-            | ClassType (_recursive, c) -> continue @@ class_type c
+            | Class (_, c) -> continue @@ class_ c
+            | ClassType (_, c) -> continue @@ class_type c
             | Include m -> continue @@ include_ m
             | ModuleSubstitution m -> continue @@ module_substitution m
             | TypeSubstitution t ->
@@ -1138,10 +1140,10 @@ module Make (Syntax : SYNTAX) = struct
       in
       match extract_functor_params t with
       | None, sg ->
-          let expansion = signature sg in
+          let expansion = signature_items sg.items in
           expansion
       | Some params, sg ->
-          let content = signature sg in
+          let content = signature_items sg.items in
           let params =
             Utils.flatmap params ~f:(fun arg ->
                 let content = functor_parameter arg in

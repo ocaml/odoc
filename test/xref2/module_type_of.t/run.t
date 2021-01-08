@@ -42,7 +42,7 @@ Make sure the expansion of `T` is present
 
 Check that the expansion of `T` contains only 2 modules (the module `X` should have been removed)
 
-  $ odoc_print m.odocl | jq ".content.Module[2].ModuleType.expr.Some.With.w_expansion.Some.Signature" > T_sig.json
+  $ odoc_print m.odocl | jq ".content.Module.items[2].ModuleType.expr.Some.With.w_expansion.Some.Signature.items" > T_sig.json
   $ jq "map(map_values(.id))" < T_sig.json
   [
     {
@@ -89,7 +89,7 @@ Check that the expansion of `T` contains only 2 modules (the module `X` should h
 
 Check that the expansion of 'T.Y' contains only 1 type
 
-  $ jq ".[0].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature" < T_sig.json > T.Y_sig.json
+  $ jq ".[0].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature.items" < T_sig.json > T.Y_sig.json
   $ odoc_print m.odocl | jq "map(keys | .[0])" < T.Y_sig.json
   [
     "Type"
@@ -102,7 +102,7 @@ Verify that T.Y.t has not been strengthened
 
 But that T.Z.t _has_ been strengthened
 
-  $ jq ".[1].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature" < T_sig.json > T.Z_sig.json
+  $ jq ".[1].ModuleType.expr.Some.TypeOf.t_expansion.Some.Signature.items" < T_sig.json > T.Z_sig.json
   $ jq ".[0].Type[1].equation.manifest" < T.Z_sig.json
   {
     "Some": {

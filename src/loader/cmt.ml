@@ -545,12 +545,12 @@ and read_include env parent incl =
   match decl_modty with
   | Some m when not (contains_signature m) ->
     let decl = ModuleType m in
-    let expansion = { content; shadowed; resolved = false } in
+    let expansion = { content; shadowed; } in
     [Include {parent; doc; decl; expansion; inline=false }]
-  | Some (ModuleType.U.Signature items) ->
+  | Some (ModuleType.U.Signature { items; _ }) ->
     items
   | _ ->
-    content
+    content.items
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
@@ -566,17 +566,17 @@ and read_structure env parent str =
          List.rev_append (read_structure_item env parent item) items)
       [] str.str_items
   in
-    List.rev items
+    { items = List.rev items; compiled=false }
 
 let read_implementation root name impl =
   let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
-  let items = read_structure Env.empty id impl in
-  let doc, items =
+  let sg = read_structure Env.empty id impl in
+  let doc, sg =
     let open Signature in
-    match items with
-    | Comment (`Docs doc) :: items -> doc, items
-    | _ -> Doc_attr.empty, items
+    match sg.items with
+    | Comment (`Docs doc) :: items -> doc, {sg with items}
+    | _ -> Doc_attr.empty, sg
   in
-    (id, doc, items)
+    (id, doc, sg)
 
 let _ = Cmti.read_module_expr := read_module_expr

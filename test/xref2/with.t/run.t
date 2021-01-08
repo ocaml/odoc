@@ -22,9 +22,9 @@ be able to link anywhere because we don't render the inner signature anywhere.
 
   $ ./compile.sh
 
-Let's check which module type `.content.Module[0].ModuleType` refers to:
+Let's check which module type `.content.Module.items[0].ModuleType` refers to:
 
-  $ odoc_print test.odocl | jq '.content.Module[0].ModuleType.id' 
+  $ odoc_print test.odocl | jq '.content.Module.items[0].ModuleType.id' 
   {
     "`ModuleType": [
       {
@@ -41,7 +41,7 @@ Let's check which module type `.content.Module[0].ModuleType` refers to:
 
 And it ought to be a simple Signature after compiling and linking.
 
-  $ odoc_print test.odocl | jq '.content.Module[0].ModuleType.expr.Some | keys'
+  $ odoc_print test.odocl | jq '.content.Module.items[0].ModuleType.expr.Some | keys'
   [
     "Signature"
   ]

@@ -135,7 +135,7 @@ and Signature : sig
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 
-  type t = item list
+  type t = { items : item list; compiled : bool }
 end =
   Signature
 
@@ -155,11 +155,7 @@ and Include : sig
     s_class_types : (string * Identifier.ClassType.t) list;
   }
 
-  type expansion = {
-    resolved : bool;
-    shadowed : shadowed;
-    content : Signature.t;
-  }
+  type expansion = { shadowed : shadowed; content : Signature.t }
 
   (* Explicitly unexpanded decl *)
   type decl = Alias of Path.Module.t | ModuleType of ModuleType.U.expr

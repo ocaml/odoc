@@ -408,10 +408,15 @@ let rec signature_items id map items =
   in
   inner items []
 
-and signature id map sg =
+and signature :
+    Paths.Identifier.Signature.t ->
+    maps ->
+    Component.Signature.t ->
+    Lang.Signature.t =
+ fun id map sg ->
   let open Component.Signature in
   (* let map = { map with shadowed = empty_shadow } in *)
-  signature_items id map sg.items
+  { items = signature_items id map sg.items; compiled = sg.compiled }
 
 and class_ map parent id c =
   let open Component.Class in
@@ -576,7 +581,6 @@ and include_ parent map i =
     decl = include_decl map parent i.decl;
     expansion =
       {
-        resolved = false;
         shadowed = i.shadowed;
         content =
           signature parent

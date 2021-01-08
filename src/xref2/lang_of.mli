@@ -63,7 +63,7 @@ val signature_items :
   Identifier.Signature.t ->
   maps ->
   Component.Signature.item list ->
-  Odoc_model.Lang.Signature.t
+  Odoc_model.Lang.Signature.item list
 
 val signature :
   Identifier.Signature.t ->

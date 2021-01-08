@@ -23,7 +23,7 @@ and signature (t : Odoc_model.Lang.Signature.t) =
         | Comment (`Docs _) ->
             add_items ~don't acc is )
   in
-  add_items ~don't:false [] t
+  add_items ~don't:false [] t.items
 
 and simple_expansion (t : Odoc_model.Lang.ModuleType.simple_expansion) =
   match t with

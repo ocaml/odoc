@@ -302,7 +302,7 @@ and Signature : sig
     | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
         (** [RType (_, texpr, eq)], [eq.manifest = Some texpr] *)
 
-  type t = { items : item list; removed : removed_item list }
+  type t = { items : item list; compiled : bool; removed : removed_item list }
 end =
   Signature
 
@@ -1411,7 +1411,7 @@ module LocalIdents = struct
 
   open Lang
 
-  let rec signature s ids =
+  let rec signature_items s ids =
     let open Paths in
     let open Signature in
     List.fold_right
@@ -1452,6 +1452,8 @@ module LocalIdents = struct
         | Include i -> signature i.Include.expansion.content ids
         | Open o -> signature o.Open.expansion ids)
       s ids
+
+  and signature s ids = signature_items s.items ids
 end
 
 module Of_Lang = struct
@@ -2193,7 +2195,7 @@ module Of_Lang = struct
     Open.
       { expansion = apply_sig_map ident_map o.Odoc_model.Lang.Open.expansion }
 
-  and apply_sig_map ident_map items =
+  and apply_sig_map ident_map sg =
     let items =
       List.map
         (let open Odoc_model.Lang.Signature in
@@ -2247,9 +2249,9 @@ module Of_Lang = struct
             ClassType (id, r, class_type ident_map c)
         | Open o -> Open (open_ ident_map o)
         | Include i -> Include (include_ ident_map i))
-        items
+        sg.items
     in
-    { items; removed = [] }
+    { items; removed = []; compiled = sg.compiled }
 
   and with_location :
         'a 'b. (map -> 'a -> 'b) -> map -> 'a Location_.with_location ->

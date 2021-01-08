@@ -352,7 +352,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
           {
             id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
             doc = unit.doc;
-            type_ = ModuleType (Signature []);
+            type_ = ModuleType (Signature { items = []; compiled = true });
             canonical = None;
             hidden = unit.hidden;
           }
@@ -719,7 +719,7 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.Include i ->
             open_signature i.expansion.content env
         | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
-      e s
+      e s.items
 
 let open_unit : Odoc_model.Lang.Compilation_unit.t -> t -> t =
  fun unit env ->

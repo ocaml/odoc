@@ -11,7 +11,7 @@ Two modules that reference each other:
 
 Check that references are resolved:
 
-  $ odoc_print a.odocl | jq '.content.Module[0].Type[1].doc[0][1]'
+  $ odoc_print a.odocl | jq '.content.Module.items[0].Type[1].doc[0][1]'
   {
     "`Paragraph": [
       [
@@ -36,7 +36,7 @@ Check that references are resolved:
       ]
     ]
   }
-  $ odoc_print b.odocl | jq '.content.Module[0].Type[1].doc[0][1]'
+  $ odoc_print b.odocl | jq '.content.Module.items[0].Type[1].doc[0][1]'
   {
     "`Paragraph": [
       [

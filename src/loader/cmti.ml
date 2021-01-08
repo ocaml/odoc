@@ -709,12 +709,12 @@ and read_include env parent incl =
   match Odoc_model.Lang.umty_of_mty expr with
   | Some uexpr when not (contains_signature uexpr) ->
     let decl = Include.ModuleType uexpr in
-    let expansion = { content; shadowed; resolved = false} in
+    let expansion = { content; shadowed; } in
     [Include {parent; doc; decl; expansion; inline=false }]
-  | Some ModuleType.U.Signature items when is_inlinable items ->
+  | Some ModuleType.U.Signature { items; _ } when is_inlinable items ->
     items
   | _ ->
-    content
+    content.items
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
 and read_open env parent o =
@@ -732,15 +732,15 @@ and read_signature env parent sg =
          List.rev_append (read_signature_item env parent item) items)
       [] sg.sig_items
   in
-    List.rev items
+    { items = List.rev items; compiled=false }
 
 let read_interface root name intf =
   let id = `Root(root, Odoc_model.Names.ModuleName.of_string name) in
-  let items = read_signature Env.empty id intf in
-  let doc, items =
+  let sg = read_signature Env.empty id intf in
+  let doc, sg =
     let open Signature in
-    match items with
-    | Comment (`Docs doc) :: items -> doc, items
-    | _ -> Doc_attr.empty, items
+    match sg.items with
+    | Comment (`Docs doc) :: items -> doc, {sg with items}
+    | _ -> Doc_attr.empty, sg
   in
-    (id, doc, items)
+    (id, doc, sg)

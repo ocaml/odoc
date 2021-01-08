@@ -568,7 +568,8 @@ and u_module_type_expr s t =
         TypeOf
           {
             t_desc = module_type_type_of_desc s t_desc;
-            t_expansion = Some (Signature (apply_sig_map s e.items e.removed));
+            t_expansion =
+              Some (Signature (apply_sig_map s e.items e.removed e.compiled));
           }
       with MTOInvalidated -> u_module_type_expr s (Signature e) )
   | TypeOf { t_expansion = Some (Functor _); _ } -> assert false
@@ -698,12 +699,17 @@ and include_ s i =
   {
     i with
     decl = include_decl s i.decl;
-    expansion_ = apply_sig_map s i.expansion_.items i.expansion_.removed;
+    expansion_ =
+      apply_sig_map s i.expansion_.items i.expansion_.removed
+        i.expansion_.compiled;
   }
 
 and open_ s o =
   let open Component.Open in
-  { expansion = apply_sig_map s o.expansion.items o.expansion.removed }
+  {
+    expansion =
+      apply_sig_map s o.expansion.items o.expansion.removed o.expansion.compiled;
+  }
 
 and value s v =
   let open Component.Value in
@@ -862,7 +868,11 @@ and rename_bound_idents s sg =
       in
       rename_bound_idents s
         ( Include
-            { i with Component.Include.expansion_ = { items; removed = [] } }
+            {
+              i with
+              Component.Include.expansion_ =
+                { items; removed = []; compiled = false };
+            }
         :: sg )
         rest
   | Open o :: rest ->
@@ -870,7 +880,12 @@ and rename_bound_idents s sg =
         rename_bound_idents s [] o.Component.Open.expansion.items
       in
       rename_bound_idents s
-        (Open { Component.Open.expansion = { items; removed = [] } } :: sg)
+        ( Open
+            {
+              Component.Open.expansion =
+                { items; removed = []; compiled = false };
+            }
+        :: sg )
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 
@@ -889,9 +904,9 @@ and removed_items s items =
 
 and signature s sg =
   let s, items = rename_bound_idents s [] sg.items in
-  apply_sig_map s items sg.removed
+  apply_sig_map s items sg.removed sg.compiled
 
-and apply_sig_map s items removed =
+and apply_sig_map s items removed compiled =
   let open Component.Signature in
   let rec inner items acc =
     match items with
@@ -942,4 +957,4 @@ and apply_sig_map s items removed =
     | Open o :: rest -> inner rest (Open (open_ s o) :: acc)
     | Comment c :: rest -> inner rest (Comment c :: acc)
   in
-  { items = inner items []; removed = removed_items s removed }
+  { items = inner items []; removed = removed_items s removed; compiled }
