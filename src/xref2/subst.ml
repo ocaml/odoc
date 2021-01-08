@@ -964,4 +964,11 @@ and apply_sig_map s items removed compiled =
     | Open o :: rest -> inner rest (Open (open_ s o) :: acc)
     | Comment c :: rest -> inner rest (Comment c :: acc)
   in
+  let compiled =
+    if
+      List.length s.path_invalidating_modules > 0
+      || List.length s.module_type_of_invalidating_modules > 0
+    then false
+    else compiled
+  in
   { items = inner items []; removed = removed_items s removed; compiled }

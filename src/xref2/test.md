@@ -199,7 +199,7 @@ and so we simply look up the type in the environment, giving a `Component.Type.t
            []));
        constraints = []};
      representation = None})];
- compiled = false}
+ compiled = true}
 ```
 
 ### One module
@@ -1601,7 +1601,7 @@ Odoc_model.Lang.ModuleType.Path
                             t)),
                      [])];
                  res = None}])})];
-       compiled = false});
+       compiled = true});
   p_path =
    `Resolved
      (`ModuleType
