@@ -30,7 +30,9 @@ let document_of_input ~env ~warn_error ~syntax input =
         if hidden then
           {
             unit with
-            content = Odoc_model.Lang.Compilation_unit.Module [];
+            content =
+              Odoc_model.Lang.Compilation_unit.Module
+                { items = []; compiled = false };
             expansion = None;
           }
         else unit

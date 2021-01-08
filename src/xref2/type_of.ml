@@ -16,14 +16,17 @@ let rec signature : Env.t -> Signature.t -> Signature.t =
 and signature_items : Env.t -> Signature.t -> Signature.t =
  fun env s ->
   let open Signature in
-  List.map
-    (fun item ->
-      match item with
-      | Module (r, m) -> Module (r, module_ env m)
-      | ModuleType mt -> ModuleType (module_type env mt)
-      | Include i -> Include (include_ env i)
-      | item -> item)
-    s
+  let items =
+    List.map
+      (fun item ->
+        match item with
+        | Module (r, m) -> Module (r, module_ env m)
+        | ModuleType mt -> ModuleType (module_type env mt)
+        | Include i -> Include (include_ env i)
+        | item -> item)
+      s.items
+  in
+  { s with items }
 
 and module_ env m =
   match m.type_ with

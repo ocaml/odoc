@@ -66,4 +66,5 @@ val apply_sig_map :
   t ->
   Component.Signature.item list ->
   Component.Signature.removed_item list ->
+  bool ->
   Component.Signature.t

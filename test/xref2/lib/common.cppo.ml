@@ -173,73 +173,85 @@ module LangUtils = struct
             open Lang.Signature
             let module_ : string -> (t, Lang.Module.t) lens = fun name ->
                 let module M = Lang.Module in
-                let rec get = function
+                let get sg =
+                    let rec inner = function
                     | [] -> raise Not_found
                     | (Module (_r,m'))::_xs when name_of_id m'.M.id = name ->
                         m'
-                    | _::xs -> get xs
+                    | _::xs -> inner xs
+                    in inner sg.items
                 in
-                let set m =
+                let set m sg =
                     let rec inner = function
                         | [] -> raise Not_found
                         | (Module (r, m'))::xs when name_of_id m'.M.id = name ->
                             (Module (r, m)::xs)
                         | x::xs -> x :: inner xs
-                    in inner
+                    in
+                    {sg with items = inner sg.items}
                 in
                 { get; set }
 
             let module_type : string -> (t, Lang.ModuleType.t) lens = fun name ->
                 let module MT = Lang.ModuleType in
-                let rec get = function
+                let get sg = 
+                    let rec inner = function
                     | [] -> raise Not_found
                     | (ModuleType m')::_xs when name_of_id m'.MT.id = name ->
                         m'
-                    | _::xs -> get xs
+                    | _::xs -> inner xs
+                    in inner sg.items
                 in
-                let set m =
+                let set m sg =
                     let rec inner = function
                         | [] -> raise Not_found
                         | (ModuleType m')::xs when name_of_id m'.MT.id = name ->
                             (ModuleType m::xs)
                         | x::xs -> x :: inner xs
-                    in inner
+                    in
+                    {sg with items = inner sg.items}
                 in
                 { get; set }
 
             let type_ : string -> (t, Lang.TypeDecl.t) lens = fun name ->
                 let module T = Lang.TypeDecl in
-                let rec get = function
+                let get sg =
+                    let rec inner = function
                     | [] -> raise Not_found
                     | (Type (_,t'))::_xs when name_of_id t'.T.id = name ->
                         t'
-                    | _::xs -> get xs
+                    | _::xs -> inner xs
+                    in inner sg.items
                 in
-                let set t =
+                let set t sg =
                     let rec inner = function
                         | [] -> raise Not_found
                         | (Type (r,t'))::xs when name_of_id t'.T.id = name ->
                             (Type (r,t))::xs
                         | x::xs -> x :: inner xs
-                    in inner
+                    in
+                    {sg with items = inner sg.items }
                 in
                 { get; set }
 
             let value : string -> (t, Lang.Value.t) lens = fun name ->
                 let module V = Lang.Value in
-                let rec get = function
+                let get sg =
+                    let rec inner = function
                     | [] -> raise Not_found
                     | (Value v) ::_xs when name_of_id v.V.id = name ->
                         v
-                    | _::xs -> get xs
+                    | _::xs -> inner xs
+                    in inner sg.items
                 in
-                let set v =
+                let set v sg =
                     let rec inner = function
                         | [] -> raise Not_found
                         | (Value v') :: xs when name_of_id v'.V.id = name ->
                             (Value v)::xs
                         | x::xs -> x :: inner xs
-                    in inner
+                    in
+                    {sg with items = inner sg.items}
                 in
                 { get; set }
             
@@ -248,7 +260,7 @@ module LangUtils = struct
                     List.fold_left (fun acc item ->
                         match item with
                         | (Include i) -> i::acc
-                        | _ -> acc) [] l |> List.rev
+                        | _ -> acc) [] l.items |> List.rev
                 in
                 let set _ _ =
                     raise (Invalid_argument "set includes")
@@ -395,7 +407,7 @@ module LangUtils = struct
                         inner rest
                     | _ -> raise Not_found
                 in 
-                inner sg
+                inner sg.items
     end
 
     let sig_of_module : Odoc_model.Lang.Module.t -> Odoc_model.Lang.Signature.t =
@@ -454,7 +466,7 @@ module LangUtils = struct
                         "@[<v 2>type %a@]@," type_decl t
                 | _ ->
                     Format.fprintf ppf
-                        "@[<v 2>unhandled signature@]@,") sg;
+                        "@[<v 2>unhandled signature@]@,") sg.items;
             Format.fprintf ppf "@]"
 
         and module_decl ppf d =

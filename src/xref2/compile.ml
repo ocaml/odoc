@@ -197,7 +197,7 @@ and module_substitution env m =
   let open ModuleSubstitution in
   { m with manifest = module_path env m.manifest }
 
-and signature_items : Env.t -> Id.Signature.t -> Signature.t -> _ =
+and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
  fun env id s ->
   let open Signature in
   List.map
@@ -222,7 +222,8 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.t -> _ =
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
   let env = Env.open_signature s env in
-  signature_items env id s
+  let items = signature_items env id s.items in
+  { s with items }
 
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
@@ -259,9 +260,10 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
-  let remove_top_doc_from_signature =
+  let remove_top_doc_from_signature s =
     let open Signature in
-    function Comment (`Docs _) :: xs -> xs | xs -> xs
+    let items = match s.items with Comment (`Docs _) :: xs -> xs | xs -> xs in
+    { s with items }
   in
   let decl = Component.Of_Lang.(include_decl empty i.decl) in
   let get_expansion () =
@@ -288,14 +290,13 @@ and include_ : Env.t -> Include.t -> Include.t =
               failwith "Expansion shouldn't be anything other than a signature"
         in
         {
-          resolved = true;
           shadowed = i.expansion.shadowed;
           content =
             remove_top_doc_from_signature (signature env i.parent expansion_sg);
         }
   in
   let expansion =
-    if i.expansion.resolved then i.expansion else get_expansion ()
+    if i.expansion.content.compiled then i.expansion else get_expansion ()
   in
   { i with decl = include_decl env i.parent i.decl; expansion }
 

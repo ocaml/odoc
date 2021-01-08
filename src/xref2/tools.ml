@@ -145,7 +145,7 @@ let prefix_signature (path, sg) =
         | Comment c -> Comment c)
       sg.items
   in
-  { items; removed = sg.removed }
+  { items; removed = sg.removed; compiled = sg.compiled }
 
 let simplify_resolved_module_path :
     Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
@@ -1179,7 +1179,8 @@ and fragmap :
               if handled' then
                 map_include_decl i.decl sub >>= fun decl ->
                 let expansion_ =
-                  Component.Signature.{ items = items'; removed = removed' }
+                  Component.Signature.
+                    { items = items'; removed = removed'; compiled = false }
                 in
                 Ok (Component.Signature.Include { i with decl; expansion_ })
               else Ok item
@@ -1282,7 +1283,7 @@ and fragmap :
     in
     (* Need to call `apply_sig_map` directly as we're substituting for an item
        that's declared within the signature *)
-    let sg = Subst.apply_sig_map substituted_sub items [] in
+    let sg = Subst.apply_sig_map substituted_sub items [] false in
     (* Finished marking substituted stuff *)
     sg.items
   in
@@ -1291,7 +1292,11 @@ and fragmap :
 
   let res =
     Subst.signature sub
-      { Component.Signature.items; removed = removed @ sg.removed }
+      {
+        Component.Signature.items;
+        removed = removed @ sg.removed;
+        compiled = false;
+      }
   in
   Ok res
 

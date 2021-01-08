@@ -198,7 +198,12 @@ and signature_item =
     | Include x -> C ("Include", x, include_t)
     | Comment x -> C ("Comment", x, docs_or_stop))
 
-and signature_t : Lang.Signature.t Type_desc.t = List signature_item
+and signature_t : Lang.Signature.t Type_desc.t =
+  Record
+    [
+      F ("items", (fun t -> t.items), List signature_item);
+      F ("compiled", (fun t -> t.compiled), bool);
+    ]
 
 (** {3 Open} *)
 and open_t =
@@ -228,7 +233,6 @@ and include_expansion =
   let open Lang.Include in
   Record
     [
-      F ("resolved", (fun t -> t.resolved), bool);
       F ("shadowed", (fun t -> t.shadowed), include_shadowed);
       F ("content", (fun t -> t.content), signature_t);
     ]

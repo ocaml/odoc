@@ -296,9 +296,11 @@ and module_substitution env m =
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
   let env = Env.open_signature s env in
-  signature_items env id s
+  let items = signature_items env id s.items in
+  { s with items }
 
-and signature_items : Env.t -> Id.Signature.t -> Signature.t -> _ =
+and signature_items :
+    Env.t -> Id.Signature.t -> Signature.item list -> Signature.item list =
  fun env id s ->
   let open Signature in
   List.map
@@ -336,8 +338,13 @@ and extract_doc : Module.decl -> Comment.docs * Module.decl =
   let map_expansion :
       ModuleType.simple_expansion option ->
       Comment.docs * ModuleType.simple_expansion option = function
-    | Some (Signature (Comment (`Docs _doc) :: Comment (`Docs d2) :: sg)) ->
-        (d2, Some (Signature sg))
+    | Some
+        (Signature
+          {
+            items = Comment (`Docs _doc) :: Comment (`Docs d2) :: items;
+            compiled;
+          }) ->
+        (d2, Some (Signature { items; compiled }))
     | e -> ([], e)
   in
   function
@@ -441,9 +448,8 @@ and include_ : Env.t -> Include.t -> Include.t =
     decl;
     expansion =
       {
-        resolved = true;
         shadowed = i.expansion.shadowed;
-        content = signature_items env i.parent i.expansion.content;
+        content = signature env i.parent i.expansion.content;
       };
     inline = should_be_inlined;
     doc;

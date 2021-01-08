@@ -20,7 +20,9 @@ let from_odoc ~env ~warn_error input output =
         if hidden then
           {
             unit with
-            content = Odoc_model.Lang.Compilation_unit.Module [];
+            content =
+              Odoc_model.Lang.Compilation_unit.Module
+                { items = []; compiled = false };
             expansion = None;
           }
         else unit
