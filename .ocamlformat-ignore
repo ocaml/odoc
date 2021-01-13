@@ -1,0 +1,4 @@
+src/compat/*
+src/loader/*
+src/model/*.cppo.ml
+test/xref2/lib/*
