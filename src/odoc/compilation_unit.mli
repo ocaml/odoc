@@ -26,4 +26,4 @@ val units_cache : (string, t) Hashtbl.t
 
 (** {2 Deserialization} *)
 
-val load : Fs.File.t -> (t, [> msg]) result
+val load : Fs.File.t -> (t, [> msg ]) result

@@ -16,7 +16,6 @@
 
 open Or_error
 
-
 val load : string -> in_channel -> (Odoc_model.Root.t, [> msg ]) result
 (** [load fn ic] reads a {!t} from [ic].
     [fn] is the name of the file [ic] is "watching", and is used for error

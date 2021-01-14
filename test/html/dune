@@ -4,7 +4,8 @@
 
 (rule
  (alias runtest)
- (action (run %{exe:test.exe}))
+ (action
+  (run %{exe:test.exe}))
  (deps
   test.exe
   %{workspace_root}/src/odoc/bin/main.exe

@@ -308,8 +308,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
         Ok (arg.Component.FunctorParameter.id, expr)
     | Component.ModuleType.Path { p_path; _ } -> (
         match resolve_module_type ~mark_substituted:false env p_path with
-        | Ok
-            (_, { Component.ModuleType.expr = Some mty'; _ }) ->
+        | Ok (_, { Component.ModuleType.expr = Some mty'; _ }) ->
             find_functor mty'
         | _ -> Error `OpaqueModule )
     | _ -> Error `ApplyNotFunctor
@@ -348,7 +347,7 @@ and get_substituted_module_type :
  fun env expr ->
   (* Format.fprintf Format.err_formatter ">>>expr=%a\n%!"  Component.Fmt.module_type_expr expr; *)
   match expr with
-  | Component.ModuleType.Path {p_path; _} ->
+  | Component.ModuleType.Path { p_path; _ } ->
       if Cpath.is_module_type_substituted p_path then
         match resolve_module_type ~mark_substituted:true env p_path with
         | Ok (resolved_path, _) -> Some resolved_path
@@ -405,8 +404,7 @@ and handle_module_lookup env ~add_canonical id parent sg sub =
       let md' = Component.Delayed.put_val m' in
       Ok (process_module_path env ~add_canonical m' p', md')
   | Some (`FModule_removed p) ->
-      lookup_module ~mark_substituted:false env p
-      >>= fun m -> Ok (p, m)
+      lookup_module ~mark_substituted:false env p >>= fun m -> Ok (p, m)
   | None -> Error `Find_failure
 
 and handle_module_type_lookup env id p sg sub =
@@ -453,7 +451,7 @@ and lookup_module :
         handle_apply ~mark_substituted:false env functor_path argument_path
           functor_module
         |> map_error (fun e -> `Parent (`Parent_expr e))
-        >>= fun (_, m) -> Ok (Component.Delayed.put_val m)        
+        >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
     | `Module (parent, name) ->
         let find_in_sg sg sub =
           match Find.careful_module_in_sig sg (ModuleName.to_string name) with
@@ -641,8 +639,8 @@ and resolve_module :
         lookup_parent ~mark_substituted env parent
         |> map_error (fun e -> (e :> simple_module_lookup_error))
         >>= fun (parent_sig, sub) ->
-        handle_module_lookup env ~add_canonical (ModuleName.to_string id)
-              parent parent_sig sub
+        handle_module_lookup env ~add_canonical (ModuleName.to_string id) parent
+          parent_sig sub
     | `Apply (m1, m2) -> (
         let func = resolve_module ~mark_substituted ~add_canonical env m1 in
         let arg = resolve_module ~mark_substituted ~add_canonical env m2 in
@@ -717,7 +715,8 @@ and resolve_module_type :
         parent parent_sig sub
       |> of_option ~error:`Find_failure
   | `Identifier (i, _) ->
-      of_option ~error:(`Lookup_failureMT i) (Env.(lookup_by_id s_module_type) i env)
+      of_option ~error:(`Lookup_failureMT i)
+        (Env.(lookup_by_id s_module_type) i env)
       >>= fun (`ModuleType (_, mt)) ->
       let p = `Identifier i in
       let p' = process_module_type env mt p in
@@ -871,8 +870,7 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
   | `Substituted x -> `Substituted (reresolve_module env x)
   | `Apply (functor_path, argument_path) ->
       `Apply
-        ( reresolve_module env functor_path,
-          (reresolve_module env argument_path) )
+        (reresolve_module env functor_path, reresolve_module env argument_path)
   | `Module (parent, name) -> `Module (reresolve_parent env parent, name)
   | `Alias (p1, p2) -> `Alias (reresolve_module env p1, reresolve_module env p2)
   | `Subst (p1, p2) ->
@@ -996,11 +994,11 @@ and handle_signature_with_subs :
     (Ok sg) subs
 
 and signature_of_u_module_type_expr :
-  mark_substituted:bool ->
-  Env.t ->
-  Component.ModuleType.U.expr ->
-  (Component.Signature.t, signature_of_module_error) Result.result =
-  fun ~mark_substituted env m ->
+    mark_substituted:bool ->
+    Env.t ->
+    Component.ModuleType.U.expr ->
+    (Component.Signature.t, signature_of_module_error) Result.result =
+ fun ~mark_substituted env m ->
   match m with
   | Component.ModuleType.U.Path p -> (
       match resolve_module_type ~mark_substituted env p with
@@ -1011,12 +1009,12 @@ and signature_of_u_module_type_expr :
       signature_of_u_module_type_expr ~mark_substituted env s >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg subs
   | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
-  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc )
+  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc)
 
-and signature_of_simple_expansion : Component.ModuleType.simple_expansion -> Component.Signature.t =
-    function
-    | Signature sg -> sg
-    | Functor (_, e) -> signature_of_simple_expansion e
+and signature_of_simple_expansion :
+    Component.ModuleType.simple_expansion -> Component.Signature.t = function
+  | Signature sg -> sg
+  | Functor (_, e) -> signature_of_simple_expansion e
 
 and signature_of_module_type_expr :
     mark_substituted:bool ->
@@ -1025,16 +1023,16 @@ and signature_of_module_type_expr :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun ~mark_substituted env m ->
   match m with
-  | Component.ModuleType.Path {p_expansion=Some e; _} ->
-    Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.Path {p_path; _} -> (
+  | Component.ModuleType.Path { p_expansion = Some e; _ } ->
+      Ok (signature_of_simple_expansion e)
+  | Component.ModuleType.Path { p_path; _ } -> (
       match resolve_module_type ~mark_substituted env p_path with
       | Ok (_, mt) -> signature_of_module_type env mt
       | Error e -> Error (`UnresolvedPath (`ModuleType (p_path, e))) )
   | Component.ModuleType.Signature s -> Ok s
-  | Component.ModuleType.With {w_expansion=Some e; _} ->
-    Ok (signature_of_simple_expansion e)
-  | Component.ModuleType.With {w_substitutions; w_expr; _} ->
+  | Component.ModuleType.With { w_expansion = Some e; _ } ->
+      Ok (signature_of_simple_expansion e)
+  | Component.ModuleType.With { w_substitutions; w_expr; _ } ->
       signature_of_u_module_type_expr ~mark_substituted env w_expr >>= fun sg ->
       handle_signature_with_subs ~mark_substituted env sg w_substitutions
   | Component.ModuleType.Functor (Unit, expr) ->
@@ -1043,9 +1041,9 @@ and signature_of_module_type_expr :
       ignore arg;
       signature_of_module_type_expr ~mark_substituted env expr
   | Component.ModuleType.TypeOf { t_expansion = Some e; _ } ->
-    Ok (signature_of_simple_expansion e)
+      Ok (signature_of_simple_expansion e)
   | Component.ModuleType.TypeOf { t_desc; _ } ->
-    Error (`UnexpandedTypeOf t_desc)
+      Error (`UnexpandedTypeOf t_desc)
 
 and signature_of_module_type :
     Env.t ->
@@ -1063,7 +1061,8 @@ and signature_of_module_decl :
  fun env decl ->
   match decl with
   | Component.Module.Alias (_, Some e) -> Ok (signature_of_simple_expansion e)
-  | Component.Module.Alias (p, _) -> signature_of_module_path env ~strengthen:true p
+  | Component.Module.Alias (p, _) ->
+      signature_of_module_path env ~strengthen:true p
   | Component.Module.ModuleType expr ->
       signature_of_module_type_expr ~mark_substituted:false env expr
 
@@ -1071,8 +1070,7 @@ and signature_of_module :
     Env.t ->
     Component.Module.t ->
     (Component.Signature.t, signature_of_module_error) Result.result =
- fun env m ->
-   signature_of_module_decl env m.type_
+ fun env m -> signature_of_module_decl env m.type_
 
 and signature_of_module_cached :
     Env.t ->
@@ -1085,12 +1083,12 @@ and signature_of_module_cached :
   SignatureOfModuleMemo.memoize run env' id
 
 and umty_of_mty : Component.ModuleType.expr -> Component.ModuleType.U.expr =
-    function
-    | Signature sg -> Signature sg
-    | Path { p_path; _ } -> Path p_path
-    | TypeOf t -> TypeOf t
-    | With {w_substitutions; w_expr; _} -> With (w_substitutions, w_expr)
-    | Functor _ -> assert false
+  function
+  | Signature sg -> Signature sg
+  | Path { p_path; _ } -> Path p_path
+  | TypeOf t -> TypeOf t
+  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+  | Functor _ -> assert false
 
 and fragmap :
     mark_substituted:bool ->
@@ -1111,15 +1109,23 @@ and fragmap :
         Ok (ModuleType (Signature sg))
     (* | ModuleType (With (mty', subs')) ->
         Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
-    | ModuleType mty' -> Ok (ModuleType (With {w_substitutions=[ subst ]; w_expansion=None; w_expr = umty_of_mty mty'}))
+    | ModuleType mty' ->
+        Ok
+          (ModuleType
+             (With
+                {
+                  w_substitutions = [ subst ];
+                  w_expansion = None;
+                  w_expr = umty_of_mty mty';
+                }))
   in
   let map_include_decl decl subst =
     let open Component.Include in
     match decl with
     | Alias p ->
-      signature_of_module_path env ~strengthen:true p >>= fun sg ->
-      fragmap ~mark_substituted env subst sg >>= fun sg ->
-      Ok (ModuleType (Signature sg))
+        signature_of_module_path env ~strengthen:true p >>= fun sg ->
+        fragmap ~mark_substituted env subst sg >>= fun sg ->
+        Ok (ModuleType (Signature sg))
     | ModuleType mty' -> Ok (ModuleType (With ([ subst ], mty')))
   in
   let map_module m new_subst =
@@ -1461,7 +1467,7 @@ and resolve_module_fragment :
         | Ok (_m : Component.Signature.t) -> f'
         | Error `OpaqueModule -> `OpaqueModule f'
         | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> f'
-        | Error (`UnexpandedTypeOf _ ) -> f'
+        | Error (`UnexpandedTypeOf _) -> f'
       in
       Some (fixup_module_cfrag f'')
 
@@ -1548,7 +1554,7 @@ let resolve_module_path env p =
       | Ok _ -> Ok p
       | Error `OpaqueModule -> Ok (`OpaqueModule p)
       | Error (`UnresolvedForwardPath | `UnresolvedPath _) -> Ok p
-      | Error (`UnexpandedTypeOf _) -> Ok p)
+      | Error (`UnexpandedTypeOf _) -> Ok p )
 
 let resolve_module_type_path env p =
   resolve_module_type ~mark_substituted:true env p >>= fun (p, mt) ->
@@ -1556,7 +1562,8 @@ let resolve_module_type_path env p =
   | Ok _ -> Ok p
   | Error `OpaqueModule -> Ok (`OpaqueModuleType p)
   | Error (`UnresolvedForwardPath | `UnresolvedPath _)
-  | Error (`UnexpandedTypeOf _) -> Ok p
+  | Error (`UnexpandedTypeOf _) ->
+      Ok p
 
 let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
 

@@ -27,12 +27,11 @@ let save file t =
 
 let units_cache = Hashtbl.create 23 (* because. *)
 
-let load =
-  fun file ->
-    let file = Fs.File.to_string file in
-    match Hashtbl.find units_cache file with
-    | unit -> Ok unit
-    | exception Not_found ->
+let load file =
+  let file = Fs.File.to_string file in
+  match Hashtbl.find units_cache file with
+  | unit -> Ok unit
+  | exception Not_found -> (
       try
         let ic = open_in_bin file in
         let _root = Root.load file ic in
@@ -43,8 +42,6 @@ let load =
       with exn ->
         let msg =
           Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
-            (match exn with
-              | Failure s -> s
-              | _ -> Printexc.to_string exn)
+            (match exn with Failure s -> s | _ -> Printexc.to_string exn)
         in
-        Error (`Msg msg)
+        Error (`Msg msg) )

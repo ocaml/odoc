@@ -3,10 +3,12 @@
  (deps
   (package odoc))
  (action
-  (run ocaml-mdx-test --prelude=%{dep:../lib/prelude.ml} -o %{targets} %{dep:test.md})))
+  (run ocaml-mdx-test --prelude=%{dep:../lib/prelude.ml} -o %{targets}
+    %{dep:test.md})))
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.03))
+ (enabled_if
+  (>= %{ocaml_version} 4.03))
  (action
   (diff test.md test.output)))

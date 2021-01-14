@@ -17,40 +17,36 @@
 let contains_double_underscore s =
   let len = String.length s in
   let rec aux i =
-    if i > len - 2 then false else
-    if s.[i] = '_' && s.[i + 1] = '_' then true
+    if i > len - 2 then false
+    else if s.[i] = '_' && s.[i + 1] = '_' then true
     else aux (i + 1)
   in
   aux 0
 
-module Package =
-struct
+module Package = struct
   type t = string
 
-  module Table = Hashtbl.Make(struct
+  module Table = Hashtbl.Make (struct
     type nonrec t = t
-    let equal : t -> t -> bool = (=)
+
+    let equal : t -> t -> bool = ( = )
+
     let hash : t -> int = Hashtbl.hash
   end)
 end
 
-module Odoc_file =
-struct
-  type compilation_unit = {name : string; hidden : bool}
+module Odoc_file = struct
+  type compilation_unit = { name : string; hidden : bool }
 
-  type t =
-    | Page of string
-    | Compilation_unit of compilation_unit
+  type t = Page of string | Compilation_unit of compilation_unit
 
   let create_unit ~force_hidden name =
     let hidden = force_hidden || contains_double_underscore name in
-    Compilation_unit {name; hidden}
+    Compilation_unit { name; hidden }
 
   let create_page name = Page name
 
-  let name = function
-    | Page name
-    | Compilation_unit {name; _} -> name
+  let name = function Page name | Compilation_unit { name; _ } -> name
 end
 
 type t = {
@@ -59,29 +55,32 @@ type t = {
   digest : Digest.t;
 }
 
-let equal : t -> t -> bool = (=)
+let equal : t -> t -> bool = ( = )
+
 let hash : t -> int = Hashtbl.hash
 
 let to_string t =
   let rec pp fmt (id : Paths.Identifier.OdocId.t) =
     match id with
     | `RootPage p -> Format.fprintf fmt "%a" Names.PageName.fmt p
-    | `LeafPage (parent, name)
-    | `Page (parent, name) ->
-      Format.fprintf fmt "%a::%a" pp (parent :> Paths.Identifier.OdocId.t) Names.PageName.fmt name
+    | `LeafPage (parent, name) | `Page (parent, name) ->
+        Format.fprintf fmt "%a::%a" pp
+          (parent :> Paths.Identifier.OdocId.t)
+          Names.PageName.fmt name
     | `Root (parent, name) ->
-      Format.fprintf fmt "%a::%a" pp (parent :> Paths.Identifier.OdocId.t) Names.ModuleName.fmt name
+        Format.fprintf fmt "%a::%a" pp
+          (parent :> Paths.Identifier.OdocId.t)
+          Names.ModuleName.fmt name
   in
 
-  Format.asprintf "%a"
-    pp t.id
+  Format.asprintf "%a" pp t.id
 
 let compare x y = String.compare x.digest y.digest
 
-module Hash_table =
-  Hashtbl.Make
-    (struct
-      type nonrec t = t
-      let equal = equal
-      let hash = hash
-    end)
+module Hash_table = Hashtbl.Make (struct
+  type nonrec t = t
+
+  let equal = equal
+
+  let hash = hash
+end)

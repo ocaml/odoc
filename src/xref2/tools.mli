@@ -222,11 +222,11 @@ val signature_of_module_type_expr :
     during the link phase. *)
 
 val signature_of_u_module_type_expr :
-    mark_substituted:bool ->
-    Env.t ->
-    Component.ModuleType.U.expr ->
-    (Component.Signature.t, signature_of_module_error) Result.result
-  (** The following functions are use for the resolution of {{!type:Odoc_model.Paths.Fragment.t}Fragments}
+  mark_substituted:bool ->
+  Env.t ->
+  Component.ModuleType.U.expr ->
+  (Component.Signature.t, signature_of_module_error) Result.result
+(** The following functions are use for the resolution of {{!type:Odoc_model.Paths.Fragment.t}Fragments}
       Whilst resolving fragments it is necessary to process them in order, applying
       the 'with' expression of module or type equality or substitution, before resolving
       the next fragment. The function [signature_of_module_type_expr] is used to supply
@@ -234,7 +234,7 @@ val signature_of_u_module_type_expr :
       be [true]. As for the path resolution functions above, the resolve functions may
       be called during compile or link, whereas the reresolve functions should only be called
       during the link phase. *)
-  
+
 val resolve_module_fragment :
   Env.t ->
   Cfrag.root * Component.Signature.t ->

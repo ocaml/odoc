@@ -23,13 +23,15 @@ module Compile : sig
   type t
 
   val name : t -> string
+
   val digest : t -> Digest.t
 end
 
 val for_compile_step : Fs.File.t -> Compile.t list
 (** Takes a [.cm{i,t,ti}] file and returns the list of its dependencies. *)
 
-val for_rendering_step : Fs.Directory.t -> (Odoc_model.Root.t list, [> msg]) result
+val for_rendering_step :
+  Fs.Directory.t -> (Odoc_model.Root.t list, [> msg ]) result
 (** Takes the directory where the .odoc files of a given package are stored and
     returns the list of roots that need to be in odoc's load path to
     render these .odoc files. *)

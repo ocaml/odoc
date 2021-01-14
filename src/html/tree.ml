@@ -16,18 +16,13 @@
 
 module Html = Tyxml.Html
 
-type uri =
-  | Absolute of string
-  | Relative of string
+type uri = Absolute of string | Relative of string
 
 let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   let is_leaf_page = Link.Path.is_leaf_page url in
   let path = Link.Path.for_printing url in
   let rec add_dotdot ~n acc =
-    if n <= 0 then
-      acc
-    else
-      add_dotdot ~n:(n - 1) ("../" ^ acc)
+    if n <= 0 then acc else add_dotdot ~n:(n - 1) ("../" ^ acc)
   in
   let resolve_relative_uri uri =
     (* Remove the first "dot segment". *)
@@ -38,9 +33,9 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
     in
     (* How deep is this page? *)
     let n =
-      List.length path - (
-        (* This is just horrible. *)
-        if is_leaf_page then 1 else 0)
+      List.length path
+      - if (* This is just horrible. *)
+           is_leaf_page then 1 else 0
     in
     add_dotdot uri ~n
   in
@@ -59,16 +54,24 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
     let odoc_css_uri = theme_uri ^ "odoc.css" in
     let highlight_js_uri = support_files_uri ^ "highlight.pack.js" in
 
-    Html.head (Html.title (Html.txt title_string)) [
-      Html.link ~rel:[`Stylesheet] ~href:odoc_css_uri () ;
-      Html.meta ~a:[ Html.a_charset "utf-8" ] () ;
-      Html.meta ~a:[ Html.a_name "generator";
-                     Html.a_content "odoc %%VERSION%%" ] ();
-      Html.meta ~a:[ Html.a_name "viewport";
-                  Html.a_content "width=device-width,initial-scale=1.0"; ] ();
-      Html.script ~a:[Html.a_src highlight_js_uri] (Html.txt "");
-      Html.script (Html.txt "hljs.initHighlightingOnLoad();");
-    ]
+    Html.head
+      (Html.title (Html.txt title_string))
+      [
+        Html.link ~rel:[ `Stylesheet ] ~href:odoc_css_uri ();
+        Html.meta ~a:[ Html.a_charset "utf-8" ] ();
+        Html.meta
+          ~a:[ Html.a_name "generator"; Html.a_content "odoc %%VERSION%%" ]
+          ();
+        Html.meta
+          ~a:
+            [
+              Html.a_name "viewport";
+              Html.a_content "width=device-width,initial-scale=1.0";
+            ]
+          ();
+        Html.script ~a:[ Html.a_src highlight_js_uri ] (Html.txt "");
+        Html.script (Html.txt "hljs.initHighlightingOnLoad();");
+      ]
   in
 
   let breadcrumbs =
@@ -78,45 +81,36 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
     let has_parent = List.length path > 1 in
     if has_parent then
       let l =
-         [
-          Html.a ~a:[Html.a_href up_href] [
-            Html.txt "Up"
-          ];
-          Html.txt " – "
-        ] @
-          (* Create breadcrumbs *)
-          let space = Html.txt " " in
-          let breadcrumb_spec =
-            if is_leaf_page
-            then (fun n x -> n, dot, x)
-            else (fun n x -> n, add_dotdot ~n dot, x)
-          in
-          let rev_path = if is_leaf_page && name = "index"
-            then List.tl (List.rev path)
-            else List.rev path
-          in
-          rev_path |>
-          List.mapi breadcrumb_spec |>
-          List.rev |>
-          Utils.list_concat_map ?sep:(Some([space; Html.entity "#x00BB"; space]))
-            ~f:(fun (n, addr, lbl) ->
-              if n > 0 then
-                [[Html.a ~a:[Html.a_href addr] [Html.txt lbl]]]
-              else
-                [[Html.txt lbl]]
-            ) |>
-          List.flatten
+        [
+          Html.a ~a:[ Html.a_href up_href ] [ Html.txt "Up" ]; Html.txt " – ";
+        ]
+        @
+        (* Create breadcrumbs *)
+        let space = Html.txt " " in
+        let breadcrumb_spec =
+          if is_leaf_page then fun n x -> (n, dot, x)
+          else fun n x -> (n, add_dotdot ~n dot, x)
+        in
+        let rev_path =
+          if is_leaf_page && name = "index" then List.tl (List.rev path)
+          else List.rev path
+        in
+        rev_path |> List.mapi breadcrumb_spec |> List.rev
+        |> Utils.list_concat_map
+             ?sep:(Some [ space; Html.entity "#x00BB"; space ])
+             ~f:(fun (n, addr, lbl) ->
+               if n > 0 then
+                 [ [ Html.a ~a:[ Html.a_href addr ] [ Html.txt lbl ] ] ]
+               else [ [ Html.txt lbl ] ])
+        |> List.flatten
       in
-      [Html.nav l]
-    else
-      []
+      [ Html.nav l ]
+    else []
   in
 
   let body =
-    breadcrumbs
-    @ [Html.header header]
-    @ toc
-    @ [Html.div ~a:[Html.a_class ["content"]] content]
+    breadcrumbs @ [ Html.header header ] @ toc
+    @ [ Html.div ~a:[ Html.a_class [ "content" ] ] content ]
   in
   Html.html head (Html.body body)
 
@@ -124,6 +118,6 @@ let make ?theme_uri ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename url in
   let html = page_creator ?theme_uri ~url title header toc content in
   let content ppf = (Html.pp ()) ppf html in
-  {Odoc_document.Renderer. filename; content; children }
+  { Odoc_document.Renderer.filename; content; children }
 
 let open_details = ref true

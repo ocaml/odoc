@@ -140,34 +140,34 @@ module Tools_error = struct
     | `Fragment_root -> Format.fprintf fmt "Fragment root"
 end
 
- (* Ugh. we need to determine whether this was down to an unexpanded module type error. This is horrendous. *)
- let is_unexpanded_module_type_of =
+(* Ugh. we need to determine whether this was down to an unexpanded module type error. This is horrendous. *)
+let is_unexpanded_module_type_of =
   let open Tools_error in
   let rec inner : any -> bool = function
-  | `Local _ -> false
-  | `Find_failure -> false
-  | `Lookup_failure _ -> false
-  | `Unresolved_apply -> false
-  | `Lookup_failure_root _ -> false
-  | `Parent p -> inner (p :> any)
-  | `Parent_sig p -> inner (p :> any)
-  | `Parent_module_type p -> inner (p :> any)
-  | `Parent_expr p -> inner (p :> any)
-  | `Parent_module p -> inner (p :> any)
-  | `Fragment_root -> false
-  | `OpaqueModule -> false
-  | `UnresolvedForwardPath -> false
-  | `UnexpandedTypeOf _ -> true (* woo *)
-  | `LocalMT _ -> false
-  | `Lookup_failureMT _ -> false
-  | `ApplyNotFunctor -> false
-  | `UnresolvedPath (`Module (_, e)) -> inner (e :> any)
-  | `UnresolvedPath (`ModuleType (_, e)) -> inner (e :> any)
-  | `Lookup_failureT _ -> false
-  | `LocalType _ -> false
-  | `Class_replaced -> false
-  in inner
-
+    | `Local _ -> false
+    | `Find_failure -> false
+    | `Lookup_failure _ -> false
+    | `Unresolved_apply -> false
+    | `Lookup_failure_root _ -> false
+    | `Parent p -> inner (p :> any)
+    | `Parent_sig p -> inner (p :> any)
+    | `Parent_module_type p -> inner (p :> any)
+    | `Parent_expr p -> inner (p :> any)
+    | `Parent_module p -> inner (p :> any)
+    | `Fragment_root -> false
+    | `OpaqueModule -> false
+    | `UnresolvedForwardPath -> false
+    | `UnexpandedTypeOf _ -> true (* woo *)
+    | `LocalMT _ -> false
+    | `Lookup_failureMT _ -> false
+    | `ApplyNotFunctor -> false
+    | `UnresolvedPath (`Module (_, e)) -> inner (e :> any)
+    | `UnresolvedPath (`ModuleType (_, e)) -> inner (e :> any)
+    | `Lookup_failureT _ -> false
+    | `LocalType _ -> false
+    | `Class_replaced -> false
+  in
+  inner
 
 (** To use as [Lookup_failures.kind]. *)
 let rec kind_of_module_cpath = function
@@ -196,8 +196,9 @@ let rec kind_of_error = function
   | _ -> None
 
 open Paths
-type what = [
-  | `Functor_parameter of Identifier.FunctorParameter.t
+
+type what =
+  [ `Functor_parameter of Identifier.FunctorParameter.t
   | `Value of Identifier.Value.t
   | `Class of Identifier.Class.t
   | `Class_type of Identifier.ClassType.t
@@ -214,10 +215,9 @@ type what = [
   | `With_type of Cfrag.type_
   | `Module_type_expr of Component.ModuleType.expr
   | `Module_type_u_expr of Component.ModuleType.U.expr
-  | `Child of Reference.t
-]
+  | `Child of Reference.t ]
 
-let report ~(what:what) ?tools_error action =
+let report ~(what : what) ?tools_error action =
   let kind =
     match tools_error with
     | Some e -> kind_of_error (e :> Tools_error.any)
@@ -263,5 +263,6 @@ let report ~(what:what) ?tools_error action =
   | `With_module frag -> r "module substitution" module_fragment frag
   | `With_type frag -> r "type substitution" type_fragment frag
   | `Module_type_expr cexpr -> r "module type expression" module_type_expr cexpr
-  | `Module_type_u_expr cexpr -> r "module type u expression" u_module_type_expr cexpr
+  | `Module_type_u_expr cexpr ->
+      r "module type u expression" u_module_type_expr cexpr
   | `Child rf -> r "child reference" model_reference rf

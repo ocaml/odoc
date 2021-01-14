@@ -17,9 +17,9 @@
 open Odoc_document
 
 type args = {
-  semantic_uris : bool ;
-  closed_details : bool ;
-  theme_uri : Odoc_html.Tree.uri ;
+  semantic_uris : bool;
+  closed_details : bool;
+  theme_uri : Odoc_html.Tree.uri;
 }
 
 let render args page =
@@ -27,11 +27,6 @@ let render args page =
   Odoc_html.Tree.open_details := not args.closed_details;
   Odoc_html.Generator.render ~theme_uri:args.theme_uri page
 
-let files_of_url url =
-  [Odoc_html.Link.Path.as_filename url]
+let files_of_url url = [ Odoc_html.Link.Path.as_filename url ]
 
-let renderer = {Renderer.
-  name = "html" ;
-  render ;
-  files_of_url ;
-}
+let renderer = { Renderer.name = "html"; render; files_of_url }

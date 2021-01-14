@@ -12,7 +12,8 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
+type value =
+  [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
 
 type label = [ `FLabel of Ident.label ]
 
@@ -46,7 +47,8 @@ type any_in_sig =
   | substitution
   | any_in_type_in_sig ]
 
-type instance_variable = [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
+type instance_variable =
+  [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
 
 type method_ = [ `FMethod of MethodName.t * Method.t ]
 
@@ -95,7 +97,8 @@ val any_in_class_signature : ClassSignature.t -> string -> any_in_class_sig list
 
 (** Lookup removed items *)
 
-type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
+type removed_type =
+  [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 

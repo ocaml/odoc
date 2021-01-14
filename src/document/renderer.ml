@@ -2,14 +2,12 @@
 
 type syntax = OCaml | Reason
 
-let string_of_syntax = function
-  | OCaml -> "ml"
-  | Reason -> "re"
+let string_of_syntax = function OCaml -> "ml" | Reason -> "re"
 
 type page = {
   filename : Fpath.t;
   content : Format.formatter -> unit;
-  children : page list
+  children : page list;
 }
 
 let traverse ~f t =
@@ -20,15 +18,13 @@ let traverse ~f t =
   aux t
 
 type 'a t = {
-  name : string ;
-  render : 'a -> Types.Page.t -> page ;
-  files_of_url : Url.Path.t -> Fpath.t list ;
+  name : string;
+  render : 'a -> Types.Page.t -> page;
+  files_of_url : Url.Path.t -> Fpath.t list;
 }
 
 let document_of_page ~syntax v =
-  match syntax with
-  | Reason -> Reason.page v
-  | OCaml -> ML.page v
+  match syntax with Reason -> Reason.page v | OCaml -> ML.page v
 
 let document_of_compilation_unit ~syntax v =
   match syntax with

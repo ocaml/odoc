@@ -22,10 +22,8 @@ let save file t =
   let dir = Fs.File.dirname file in
   let base = Fs.File.(to_string @@ basename file) in
   let file =
-    if Astring.String.is_prefix ~affix:"page-" base then
-      file
-    else
-      Fs.File.create ~directory:dir ~name:("page-" ^ base)
+    if Astring.String.is_prefix ~affix:"page-" base then file
+    else Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
   Fs.Directory.mkdir_p dir;
   let oc = open_out_bin (Fs.File.to_string file) in
@@ -39,22 +37,20 @@ let load =
     let file = Fs.File.to_string file in
     match Hashtbl.find pages file with
     | page -> Ok page
-    | exception Not_found ->
-      try
-        let ic = open_in_bin file in
-        let res =
-          Root.load file ic >>= fun _root ->
-          let res = Marshal.from_channel ic in
-          Hashtbl.add pages file res;
-          Ok res
-        in
-        close_in ic;
-        res
-      with exn ->
-        let msg =
-          Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
-            (match exn with
-              | Failure s -> s
-              | _ -> Printexc.to_string exn)
-        in
-        Error (`Msg msg)
+    | exception Not_found -> (
+        try
+          let ic = open_in_bin file in
+          let res =
+            Root.load file ic >>= fun _root ->
+            let res = Marshal.from_channel ic in
+            Hashtbl.add pages file res;
+            Ok res
+          in
+          close_in ic;
+          res
+        with exn ->
+          let msg =
+            Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
+              (match exn with Failure s -> s | _ -> Printexc.to_string exn)
+          in
+          Error (`Msg msg) )

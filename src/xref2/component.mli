@@ -61,8 +61,9 @@ end
 *)
 
 module rec Module : sig
-
-  type decl = Alias of Cpath.module_ * ModuleType.simple_expansion option | ModuleType of ModuleType.expr
+  type decl =
+    | Alias of Cpath.module_ * ModuleType.simple_expansion option
+    | ModuleType of ModuleType.expr
 
   type t = {
     doc : CComment.docs;
@@ -152,10 +153,7 @@ and Exception : sig
 end
 
 and FunctorParameter : sig
-  type parameter = {
-    id : Ident.functor_parameter;
-    expr : ModuleType.expr;
-  }
+  type parameter = { id : Ident.functor_parameter; expr : ModuleType.expr }
 
   type t = Named of parameter | Unit
 end
@@ -174,23 +172,23 @@ and ModuleType : sig
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
-  
+
   type typeof_t = {
     t_desc : type_of_desc;
-    t_expansion : simple_expansion option
+    t_expansion : simple_expansion option;
   }
-  
+
   module U : sig
     type expr =
-    | Path of Cpath.module_type
-    | Signature of Signature.t
-    | With of substitution list * expr
-    | TypeOf of typeof_t
+      | Path of Cpath.module_type
+      | Signature of Signature.t
+      | With of substitution list * expr
+      | TypeOf of typeof_t
   end
 
   type path_t = {
     p_expansion : simple_expansion option;
-    p_path : Cpath.module_type
+    p_path : Cpath.module_type;
   }
 
   type with_t = {
@@ -199,7 +197,6 @@ and ModuleType : sig
     w_expr : U.expr;
   }
 
-
   type expr =
     | Path of path_t
     | Signature of Signature.t
@@ -207,10 +204,7 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
 
-  type t = {
-    doc : CComment.docs;
-    expr : expr option;
-  }
+  type t = { doc : CComment.docs; expr : expr option }
 end
 
 and TypeDecl : sig
@@ -488,9 +482,10 @@ module Fmt : sig
   val module_type : Format.formatter -> ModuleType.t -> unit
 
   val simple_expansion : Format.formatter -> ModuleType.simple_expansion -> unit
-  
-  val module_type_type_of_desc : Format.formatter -> ModuleType.type_of_desc -> unit
-  
+
+  val module_type_type_of_desc :
+    Format.formatter -> ModuleType.type_of_desc -> unit
+
   val u_module_type_expr : Format.formatter -> ModuleType.U.expr -> unit
 
   val module_type_expr : Format.formatter -> ModuleType.expr -> unit
@@ -706,7 +701,7 @@ module Of_Lang : sig
   val exception_ : map -> Odoc_model.Lang.Exception.t -> Exception.t
 
   val u_module_type_expr :
-  map -> Odoc_model.Lang.ModuleType.U.expr -> ModuleType.U.expr
+    map -> Odoc_model.Lang.ModuleType.U.expr -> ModuleType.U.expr
 
   val module_type_expr :
     map -> Odoc_model.Lang.ModuleType.expr -> ModuleType.expr

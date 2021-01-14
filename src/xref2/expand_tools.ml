@@ -83,8 +83,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
              Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
       | Ok (Functor _ as x), _ -> Ok x )
-  | Error e ->
-    Error (`UnresolvedPath (`Module (path, e)))
+  | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
    may well change - so we turn resolved fragments back into unresolved ones
@@ -94,57 +93,57 @@ and unresolve_subs subs =
     (function
       | Component.ModuleType.ModuleEq (`Resolved f, m) ->
           Component.ModuleType.ModuleEq (Cfrag.unresolve_module f, m)
-      | ModuleSubst (`Resolved f, m) ->
-          ModuleSubst (Cfrag.unresolve_module f, m)
+      | ModuleSubst (`Resolved f, m) -> ModuleSubst (Cfrag.unresolve_module f, m)
       | TypeEq (`Resolved f, t) -> TypeEq (Cfrag.unresolve_type f, t)
       | TypeSubst (`Resolved f, t) -> TypeSubst (Cfrag.unresolve_type f, t)
       | x -> x)
     subs
 
-and aux_expansion_of_module_type_type_of_desc env t : (expansion, signature_of_module_error) Result.result =
+and aux_expansion_of_module_type_type_of_desc env t :
+    (expansion, signature_of_module_error) Result.result =
   match t with
-  | Component.ModuleType.ModPath p ->  aux_expansion_of_module_alias env ~strengthen:false p
-  | StructInclude p ->  aux_expansion_of_module_alias env ~strengthen:true p
+  | Component.ModuleType.ModPath p ->
+      aux_expansion_of_module_alias env ~strengthen:false p
+  | StructInclude p -> aux_expansion_of_module_alias env ~strengthen:true p
 
-and assert_not_functor =
-  function (Signature sg) -> Ok sg | _ -> assert false
+and assert_not_functor = function Signature sg -> Ok sg | _ -> assert false
 
 and aux_expansion_of_u_module_type_expr env expr :
     (Component.Signature.t, signature_of_module_error) Result.result =
   let open Utils.ResultMonad in
   match expr with
   | Component.ModuleType.U.Path p ->
-    Tools.resolve_module_type ~mark_substituted:false env p
-    |> map_error (fun e -> (`UnresolvedPath (`ModuleType (p, e)) : signature_of_module_error))
-    >>= fun (_, mt) -> aux_expansion_of_module_type env mt
-    >>= assert_not_functor
-  | Signature sg -> Ok (sg)
-  | With (subs, s) -> (
-    aux_expansion_of_u_module_type_expr env s
-    >>= fun sg ->
-    let subs = unresolve_subs subs in
-    Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
-  | TypeOf { t_expansion = Some (Signature sg); _} -> Ok sg
+      Tools.resolve_module_type ~mark_substituted:false env p
+      |> map_error (fun e : signature_of_module_error ->
+             `UnresolvedPath (`ModuleType (p, e)))
+      >>= fun (_, mt) ->
+      aux_expansion_of_module_type env mt >>= assert_not_functor
+  | Signature sg -> Ok sg
+  | With (subs, s) ->
+      aux_expansion_of_u_module_type_expr env s >>= fun sg ->
+      let subs = unresolve_subs subs in
+      Tools.handle_signature_with_subs ~mark_substituted:false env sg subs
+  | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok sg
   | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc)
 
 and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
   match expr with
-  | Path {p_path; _} ->
+  | Path { p_path; _ } ->
       Tools.resolve_module_type ~mark_substituted:false env p_path
-      |> map_error (fun e -> (`UnresolvedPath (`ModuleType (p_path, e)) : signature_of_module_error))
+      |> map_error (fun e : signature_of_module_error ->
+             `UnresolvedPath (`ModuleType (p_path, e)))
       >>= fun (_, mt) -> aux_expansion_of_module_type env mt
   | Signature s -> Ok (Signature s)
-  | With {w_substitutions; w_expr; _} -> (
-      aux_expansion_of_u_module_type_expr env w_expr
-      >>= fun sg ->
-      let subs = unresolve_subs w_substitutions in
-      Tools.handle_signature_with_subs ~mark_substituted:false env sg subs)
+  | With { w_substitutions; w_expr; _ } ->
+      ( aux_expansion_of_u_module_type_expr env w_expr >>= fun sg ->
+        let subs = unresolve_subs w_substitutions in
+        Tools.handle_signature_with_subs ~mark_substituted:false env sg subs )
       >>= fun sg -> Ok (Signature sg)
   | Functor (arg, expr) -> Ok (Functor (arg, expr))
-  | TypeOf {t_expansion = Some (Signature sg); _} -> Ok (Signature sg)
-  | TypeOf {t_desc; _} -> Error (`UnexpandedTypeOf t_desc)
-  
+  | TypeOf { t_expansion = Some (Signature sg); _ } -> Ok (Signature sg)
+  | TypeOf { t_desc; _ } -> Error (`UnexpandedTypeOf t_desc)
+
 and aux_expansion_of_module_type env mt =
   let open Component.ModuleType in
   match mt.expr with
@@ -167,10 +166,7 @@ and handle_expansion env id expansion =
         in
         let m = Component.module_of_functor_argument arg in
         let env' =
-          Env.add_module identifier
-            (Component.Delayed.put_val m)
-            m.doc
-            env
+          Env.add_module identifier (Component.Delayed.put_val m) m.doc env
         in
         let subst =
           Subst.add_module
@@ -179,20 +175,26 @@ and handle_expansion env id expansion =
             (`Identifier identifier) Subst.identity
         in
         let subst =
-          Subst.mto_invalidate_module
-            (arg.id :> Ident.path_module)
-            subst
+          Subst.mto_invalidate_module (arg.id :> Ident.path_module) subst
         in
         (env', Subst.module_type_expr subst expr)
   in
-  let rec expand id env expansion : (Env.t * Component.ModuleType.simple_expansion, _) Result.result =
+  let rec expand id env expansion :
+      (Env.t * Component.ModuleType.simple_expansion, _) Result.result =
     match expansion with
-    | Signature sg -> Ok (env, (Component.ModuleType.Signature sg : Component.ModuleType.simple_expansion))
-    | Functor (arg, expr) -> (
+    | Signature sg ->
+        Ok
+          ( env,
+            ( Component.ModuleType.Signature sg
+              : Component.ModuleType.simple_expansion ) )
+    | Functor (arg, expr) ->
         let env', expr' = handle_argument id arg expr env in
         aux_expansion_of_module_type_expr env' expr' >>= fun res ->
         expand (`Result id) env res >>= fun (env, res) ->
-        Ok (env, (Component.ModuleType.Functor (arg, res) : Component.ModuleType.simple_expansion)))
+        Ok
+          ( env,
+            ( Component.ModuleType.Functor (arg, res)
+              : Component.ModuleType.simple_expansion ) )
   in
   expand id env expansion
 
@@ -207,10 +209,9 @@ let expansion_of_module_type_expr env id expr =
   >>= fun (env, e) -> Ok (env, module_type_expr_needs_recompile expr, e)
 
 let expansion_of_u_module_type_expr env id expr =
-  aux_expansion_of_u_module_type_expr env expr
-  >>= fun sg -> handle_expansion env id (Signature sg)
-  >>= fun (env, e) -> Ok (env, false, e)
-  
+  aux_expansion_of_u_module_type_expr env expr >>= fun sg ->
+  handle_expansion env id (Signature sg) >>= fun (env, e) -> Ok (env, false, e)
+
 let expansion_of_module_alias env id path =
   let open Paths.Identifier in
   aux_expansion_of_module_alias ~strengthen:false env path
@@ -218,7 +219,8 @@ let expansion_of_module_alias env id path =
   >>= fun (env, r) -> Ok (env, false, r)
 
 let expansion_of_module_type_of_desc env id t_desc =
-  aux_expansion_of_module_type_type_of_desc env t_desc >>= handle_expansion env id
+  aux_expansion_of_module_type_type_of_desc env t_desc
+  >>= handle_expansion env id
 
 exception Clash
 
@@ -274,7 +276,7 @@ let collapse_eqns eqn1 eqn2 params =
   let open Lang.TypeDecl in
   let map =
     List.map2
-      (fun v p -> match v.desc with Var x-> Some (x, p) | Any -> None)
+      (fun v p -> match v.desc with Var x -> Some (x, p) | Any -> None)
       eqn2.Equation.params params
   in
   let map =

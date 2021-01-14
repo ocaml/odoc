@@ -18,26 +18,31 @@ open StdLabels
 open Or_error
 
 type directory = Fpath.t
+
 type file = Fpath.t
 
 module File = struct
   type t = file
 
   let dirname = Fpath.parent
+
   let basename = Fpath.base
 
   let append = Fpath.append
 
   let set_ext e p = Fpath.set_ext e p
+
   let has_ext e p = Fpath.has_ext e p
+
   let get_ext e = Fpath.get_ext e
 
   let create ~directory ~name =
     match Fpath.of_string name with
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.create: " ^ e)
-    | Result.Ok psuf -> Fpath.(normalize @@ directory // psuf)
+    | Result.Ok psuf -> Fpath.(normalize @@ (directory // psuf))
 
   let to_string = Fpath.to_string
+
   let of_string s =
     match Fpath.of_string s with
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.File.of_string: " ^ e)
@@ -46,7 +51,13 @@ module File = struct
   let read file =
     let with_ic ~close ic f =
       let close ic = try close ic with Sys_error _ -> () in
-      match f ic with v -> close ic; v | exception e -> close ic; raise e
+      match f ic with
+      | v ->
+          close ic;
+          v
+      | exception e ->
+          close ic;
+          raise e
     in
     let input_one_shot len ic =
       let buf = Bytes.create len in
@@ -57,11 +68,12 @@ module File = struct
     let input_stream file ic =
       let bsize = 65536 (* IO_BUFFER_SIZE *) in
       let buf = Buffer.create bsize in
-      let rec loop () = match Buffer.add_channel buf ic bsize with
-      | () -> loop ()
-      | exception End_of_file -> Result.Ok (Buffer.contents buf)
-      | exception Failure _  ->
-          Result.Error (`Msg (Printf.sprintf "%s: input too large" file))
+      let rec loop () =
+        match Buffer.add_channel buf ic bsize with
+        | () -> loop ()
+        | exception End_of_file -> Result.Ok (Buffer.contents buf)
+        | exception Failure _ ->
+            Result.Error (`Msg (Printf.sprintf "%s: input too large" file))
       in
       loop ()
     in
@@ -77,21 +89,22 @@ module File = struct
       | len ->
           let err = Printf.sprintf "%s: file too large (%d bytes)" file len in
           Result.Error (`Msg err)
-    with
-    | Sys_error e -> Result.Error (`Msg e)
+    with Sys_error e -> Result.Error (`Msg e)
 
+  module Table = Hashtbl.Make (struct
+    type nonrec t = t
 
-  module Table = Hashtbl.Make(struct
-      type nonrec t = t
-      let equal = Fpath.equal
-      let hash = Hashtbl.hash
-    end)
+    let equal = Fpath.equal
+
+    let hash = Hashtbl.hash
+  end)
 end
 
 module Directory = struct
   type t = directory
 
   let dirname = Fpath.parent
+
   let basename = Fpath.base
 
   let append = Fpath.append
@@ -100,16 +113,16 @@ module Directory = struct
     match Fpath.of_string name with
     | Result.Error _ as e -> e
     | Result.Ok psuf ->
-        Result.Ok (Fpath.(normalize @@ to_dir_path @@ p // psuf))
+        Result.Ok Fpath.(normalize @@ to_dir_path @@ (p // psuf))
 
   let reach_from ~dir path =
     match make_path dir path with
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.create: " ^ e)
     | Result.Ok path ->
-      let pstr = Fpath.to_string path in
-      if Sys.file_exists pstr && not (Sys.is_directory pstr) then
-        invalid_arg "Odoc.Fs.Directory.create: not a directory";
-      path
+        let pstr = Fpath.to_string path in
+        if Sys.file_exists pstr && not (Sys.is_directory pstr) then
+          invalid_arg "Odoc.Fs.Directory.create: not a directory";
+        path
 
   let mkdir_p dir =
     let mkdir d =
@@ -118,13 +131,13 @@ module Directory = struct
       | exn -> raise exn
     in
     let rec dirs_to_create p acc =
-      if Sys.file_exists (Fpath.to_string p) then acc else
-        dirs_to_create (Fpath.parent p) (p :: acc)
+      if Sys.file_exists (Fpath.to_string p) then acc
+      else dirs_to_create (Fpath.parent p) (p :: acc)
     in
     List.iter (dirs_to_create dir []) ~f:mkdir
 
-
   let to_string = Fpath.to_string
+
   let of_string s =
     match Fpath.of_string s with
     | Result.Error (`Msg e) -> invalid_arg ("Odoc.Fs.Directory.of_string: " ^ e)
@@ -137,33 +150,35 @@ module Directory = struct
       let dirs, files = List.partition ~f:is_dir files in
       let files = List.find_all ~f:(has_ext ext) files in
       let f acc fn = f acc (Fpath.v fn) in
-      List.fold_left ~f ~init:acc files, dirs
+      (List.fold_left ~f ~init:acc files, dirs)
     in
     let rec loop ext f acc = function
-    | (d :: ds) :: up ->
-        let rdir d = try Array.to_list (Sys.readdir d) with Sys_error _ -> [] in
-        let files = List.rev (List.rev_map ~f:(Filename.concat d) (rdir d)) in
-        let acc, dirs = fold_non_dirs ext f acc files in
-        loop ext f acc (dirs :: ds :: up)
-    | [] :: up -> loop ext f acc up
-    | [] -> acc
+      | (d :: ds) :: up ->
+          let rdir d =
+            try Array.to_list (Sys.readdir d) with Sys_error _ -> []
+          in
+          let files = List.rev (List.rev_map ~f:(Filename.concat d) (rdir d)) in
+          let acc, dirs = fold_non_dirs ext f acc files in
+          loop ext f acc (dirs :: ds :: up)
+      | [] :: up -> loop ext f acc up
+      | [] -> acc
     in
-    loop ext f acc ([Fpath.to_string d] :: []);;
+    loop ext f acc [ [ Fpath.to_string d ] ]
 
   exception Stop_iter of msg
 
   let fold_files_rec_result ?ext f acc d =
     let f acc fn =
-      match f acc fn with
-      | Ok acc -> acc
-      | Error e -> raise (Stop_iter e)
+      match f acc fn with Ok acc -> acc | Error e -> raise (Stop_iter e)
     in
     try Ok (fold_files_rec ?ext f acc d)
     with Stop_iter (`Msg _ as e) -> Error e
 
-  module Table = Hashtbl.Make(struct
-      type nonrec t = t
-      let equal = Fpath.equal
-      let hash = Hashtbl.hash
-    end)
+  module Table = Hashtbl.Make (struct
+    type nonrec t = t
+
+    let equal = Fpath.equal
+
+    let hash = Hashtbl.hash
+  end)
 end

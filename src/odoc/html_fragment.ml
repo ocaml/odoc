@@ -8,16 +8,17 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   let digest = Digest.file input_s in
   let root =
     let file = Odoc_model.Root.Odoc_file.create_page page_name in
-    {Odoc_model.Root.id; file; digest}
+    { Odoc_model.Root.id; file; digest }
   in
   let to_html content =
     (* This is a mess. *)
-    let page = Odoc_model.Lang.Page.{ name=id; root; content; children=[]; digest } in
+    let page =
+      Odoc_model.Lang.Page.{ name = id; root; content; children = []; digest }
+    in
     let resolve_env = Env.build env (`Page page) in
     Odoc_xref2.Link.resolve_page resolve_env page
     |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
     >>= fun resolved ->
-
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in
     let oc = open_out (Fs.File.to_string output) in
@@ -28,9 +29,11 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   in
   match Fs.File.read input with
   | Error _ as e -> e
-  | Ok str ->
-    Odoc_loader.read_string id input_s str
-    |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
-    >>= function
-    |`Docs content -> to_html content
-    |`Stop -> to_html [] (* TODO: Error? *)
+  | Ok str -> (
+      Odoc_loader.read_string id input_s str
+      |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
+      >>= function
+      | `Docs content -> to_html content
+      | `Stop -> to_html [] )
+
+(* TODO: Error? *)

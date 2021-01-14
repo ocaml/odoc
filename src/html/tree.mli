@@ -15,7 +15,6 @@
  *)
 
 open Odoc_document
-
 module Html = Tyxml.Html
 
 (** Supported languages for printing code parts. *)
@@ -23,7 +22,7 @@ module Html = Tyxml.Html
 type uri =
   | Absolute of string
   | Relative of string
-(** The type for absolute and relative URIs. The relative URIs are resolved
+      (** The type for absolute and relative URIs. The relative URIs are resolved
     using the HTML output directory as a target. *)
 
 (** {1 Page creator} *)
@@ -34,8 +33,9 @@ val make :
   header:Html_types.flow5_without_header_footer Html.elt list ->
   toc:Html_types.flow5 Html.elt list ->
   string ->
-  (Html_types.div_content Html.elt) list ->
-  Renderer.page list -> Renderer.page
+  Html_types.div_content Html.elt list ->
+  Renderer.page list ->
+  Renderer.page
 (** [make ?theme_uri (body, children)] calls "the page creator" to turn [body]
     into an [[ `Html ] elt]. If [theme_uri] is provided, it will be used to
     locate the theme files, otherwise the HTML output directory is used. *)
