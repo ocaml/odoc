@@ -356,18 +356,16 @@ let lookup_root_module name env =
         match r.lookup_unit name with
         | Forward_reference -> Some Forward
         | Not_found -> None
-        | Found u -> begin
-          match u.root.id with
-          | `Root _ as id ->
-            let m =
-              Component.Delayed.put (fun () ->
-                  let unit = r.resolve_unit u.root in
-                  module_of_unit unit)
-            in
-            Some (Resolved (u.root.digest, id, u.hidden, m))
-          | _ ->
-            failwith "Expecting root module!"
-          end )
+        | Found u -> (
+            match u.root.id with
+            | `Root _ as id ->
+                let m =
+                  Component.Delayed.put (fun () ->
+                      let unit = r.resolve_unit u.root in
+                      module_of_unit unit)
+                in
+                Some (Resolved (u.root.digest, id, u.hidden, m))
+            | _ -> failwith "Expecting root module!" ) )
   in
   ( match (env.recorder, result) with
   | Some r, Some Forward ->
@@ -388,7 +386,7 @@ type 'a scope = {
 }
 
 type 'a maybe_ambiguous =
-  ('a, [ `Ambiguous of ('a * 'a list) | `Not_found ]) Result.result
+  ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) Result.result
 
 let make_scope ?(root = fun _ _ -> None)
     (filter : _ -> ([< Component.Element.any ] as 'a) option) : 'a scope =
@@ -558,18 +556,24 @@ let lookup_page name env =
       | None -> None
       | Some root -> Some (r.resolve_page root) )
 
-let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t = fun p t ->
+let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
+ fun p t ->
   match p with
   | Unit -> t
   | Named n ->
-    let m = Component.Module.{
-      doc = [];
-      type_ = ModuleType (Component.Of_Lang.(module_type_expr empty n.expr));
-      canonical = None;
-      hidden = false;
-    } in
-    add_module (n.id :> Paths_types.Identifier.reference_module)
-      (Component.Delayed.put_val m) [] t
+      let m =
+        Component.Module.
+          {
+            doc = [];
+            type_ = ModuleType Component.Of_Lang.(module_type_expr empty n.expr);
+            canonical = None;
+            hidden = false;
+          }
+      in
+      add_module
+        (n.id :> Paths_types.Identifier.reference_module)
+        (Component.Delayed.put_val m)
+        [] t
 
 let add_functor_args' :
     Odoc_model.Paths.Identifier.Signature.t ->
@@ -776,7 +780,9 @@ let verify_lookups env lookups =
         | Ok (`Module (id', _)) -> result <> id'
         | Error `Not_found -> false
         | Error (`Ambiguous (hd, tl)) ->
-            not (List.exists (fun (`Module (id', _)) -> result = id') (hd :: tl)) )
+            not
+              (List.exists (fun (`Module (id', _)) -> result = id') (hd :: tl))
+        )
     | FragmentRoot _i -> true
     (* begin
          try

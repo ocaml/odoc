@@ -14,7 +14,11 @@ let rec module_decl =
   let open Lang.Module in
   Variant
     (function
-    | Alias (x, y) -> C ("Alias", ((x :> Paths.Path.t), y), Pair (path, Option simple_expansion))
+    | Alias (x, y) ->
+        C
+          ( "Alias",
+            ((x :> Paths.Path.t), y),
+            Pair (path, Option simple_expansion) )
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
 
 and module_t =
@@ -52,13 +56,26 @@ and moduletype_substitution =
   let open Lang.ModuleType in
   Variant
     (function
-    | ModuleEq (x1, x2) -> C ("ModuleEq", ((x1 :> Paths.Fragment.t), x2), Pair (fragment, module_decl))
+    | ModuleEq (x1, x2) ->
+        C
+          ( "ModuleEq",
+            ((x1 :> Paths.Fragment.t), x2),
+            Pair (fragment, module_decl) )
     | TypeEq (x1, x2) ->
-        C ("TypeEq", ((x1 :> Paths.Fragment.t), x2), Pair (fragment, typedecl_equation))
+        C
+          ( "TypeEq",
+            ((x1 :> Paths.Fragment.t), x2),
+            Pair (fragment, typedecl_equation) )
     | ModuleSubst (x1, x2) ->
-        C ("ModuleSubst", ((x1 :> Paths.Fragment.t), (x2 :> Paths.Path.t)), Pair (fragment, path))
+        C
+          ( "ModuleSubst",
+            ((x1 :> Paths.Fragment.t), (x2 :> Paths.Path.t)),
+            Pair (fragment, path) )
     | TypeSubst (x1, x2) ->
-        C ("TypeSubst", ((x1 :> Paths.Fragment.t), x2), Pair (fragment, typedecl_equation)))
+        C
+          ( "TypeSubst",
+            ((x1 :> Paths.Fragment.t), x2),
+            Pair (fragment, typedecl_equation) ))
 
 and moduletype_type_of_desc =
   let open Lang.ModuleType in
@@ -72,7 +89,8 @@ and simple_expansion =
   Variant
     (function
     | Signature sg -> C ("Signature", sg, signature_t)
-    | Functor (p, e) -> C ("Functor", (p, e), Pair (functorparameter_t, simple_expansion)))
+    | Functor (p, e) ->
+        C ("Functor", (p, e), Pair (functorparameter_t, simple_expansion)))
 
 and moduletype_path_t =
   let open Lang.ModuleType in
@@ -86,7 +104,10 @@ and moduletype_with_t =
   let open Lang.ModuleType in
   Record
     [
-      F ("w_substitutions", (fun t -> t.w_substitutions), List moduletype_substitution);
+      F
+        ( "w_substitutions",
+          (fun t -> t.w_substitutions),
+          List moduletype_substitution );
       F ("w_expansion", (fun t -> t.w_expansion), Option simple_expansion);
       F ("w_expr", (fun t -> t.w_expr), moduletype_u_expr);
     ]
@@ -107,8 +128,7 @@ and moduletype_expr =
     | Signature x -> C ("Signature", x, signature_t)
     | Functor (x1, x2) ->
         C ("Functor", (x1, x2), Pair (functorparameter_t, moduletype_expr))
-    | With t ->
-        C ( "With", t, moduletype_with_t)
+    | With t -> C ("With", t, moduletype_with_t)
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
 
 and moduletype_u_expr =
@@ -118,7 +138,10 @@ and moduletype_u_expr =
     | Path x -> C ("Path", (x :> Paths.Path.t), path)
     | Signature x -> C ("Signature", x, signature_t)
     | With (t, e) ->
-      C ("With", (t, e), Pair (List moduletype_substitution, moduletype_u_expr))
+        C
+          ( "With",
+            (t, e),
+            Pair (List moduletype_substitution, moduletype_u_expr) )
     | TypeOf x -> C ("TypeOf", x, moduletype_typeof_t))
 
 and moduletype_t =
@@ -209,6 +232,7 @@ and include_expansion =
       F ("shadowed", (fun t -> t.shadowed), include_shadowed);
       F ("content", (fun t -> t.content), signature_t);
     ]
+
 and include_decl =
   let open Lang.Include in
   Variant
@@ -528,7 +552,8 @@ and typeexpr_package =
       F ("path", (fun t -> (t.path :> Paths.Path.t)), path);
       F
         ( "substitutions",
-          (fun t -> (t.substitutions :> (Paths.Fragment.t * Lang.TypeExpr.t) list)),
+          (fun t ->
+            (t.substitutions :> (Paths.Fragment.t * Lang.TypeExpr.t) list)),
           List typeexpr_package_substitution );
     ]
 
@@ -569,8 +594,7 @@ and compilation_unit_import =
     (function
     | Unresolved (x1, x2) ->
         C ("Unresolved", (x1, x2), Pair (string, Option Digest.t))
-    | Resolved (x1, x2) ->
-        C ("Resolved", (x1, x2), Pair (root, modulename)))
+    | Resolved (x1, x2) -> C ("Resolved", (x1, x2), Pair (root, modulename)))
 
 and compilation_unit_source =
   let open Lang.Compilation_unit.Source in

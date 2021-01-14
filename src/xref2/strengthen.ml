@@ -24,11 +24,11 @@ let rec signature :
     Signature.t =
  fun prefix ?canonical sg ->
   let open Signature in
-  let (items, strengthened_modules) =
+  let items, strengthened_modules =
     List.fold_left
       (fun (items, s) item ->
-        match item with 
-        | Module (id, r, m) -> begin
+        match item with
+        | Module (id, r, m) -> (
             let name = Ident.Name.module_ id in
             let canonical =
               match canonical with
@@ -42,34 +42,37 @@ let rec signature :
             in
             match module_ ?canonical (`Dot (prefix, name)) (get m) with
             | None -> (item :: items, s)
-            | Some m' ->
-              (Module
+            | Some m' -> (Module (id, r, put (fun () -> m')) :: items, id :: s)
+            )
+        | ModuleType (id, mt) ->
+            ( ModuleType
+                ( id,
+                  put (fun () ->
+                      module_type
+                        (`Dot (prefix, Ident.Name.module_type id))
+                        (get mt)) )
+              :: items,
+              s )
+        | Type (id, r, t) ->
+            ( Type
                 ( id,
                   r,
-                  put (fun () -> m')
-                ) :: items, id :: s)
-            end
-        | ModuleType (id, mt) ->
-            (ModuleType
-              ( id,
-                put (fun () ->
-                    module_type
-                      (`Dot (prefix, Ident.Name.module_type id))
-                      (get mt)) ) :: items, s)
-        | Type (id, r, t) ->
-            (Type
-              ( id,
-                r,
-                put (fun () ->
-                    type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) ) :: items, s)
-        | Exception _ | TypExt _ | Value _ | External _ | Class _
-        | ClassType _ | Include _ | ModuleSubstitution _ | TypeSubstitution _
-        | Comment _ | Open _ ->
+                  put (fun () ->
+                      type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) )
+              :: items,
+              s )
+        | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
+        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _
+        | Open _ ->
             (item :: items, s))
-      ([],[]) sg.items
+      ([], []) sg.items
   in
   (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
-  let substs = List.fold_left (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s) Subst.identity strengthened_modules in
+  let substs =
+    List.fold_left
+      (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
+      Subst.identity strengthened_modules
+  in
   Subst.signature substs { items = List.rev items; removed = sg.removed }
 
 and module_ :
@@ -87,7 +90,9 @@ and module_type :
     Cpath.module_type -> Component.ModuleType.t -> Component.ModuleType.t =
  fun prefix m ->
   let expr =
-    match m.expr with None -> Some (ModuleType.Path {p_path=prefix; p_expansion=None}) | Some _ -> m.expr
+    match m.expr with
+    | None -> Some (ModuleType.Path { p_path = prefix; p_expansion = None })
+    | Some _ -> m.expr
   in
   { m with expr }
 
@@ -98,7 +103,7 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
     let open TypeDecl.Equation in
     let constr_params =
       List.map
-        (fun {Odoc_model.Lang.TypeDecl.desc; _} ->
+        (fun { Odoc_model.Lang.TypeDecl.desc; _ } ->
           match desc with
           | Odoc_model.Lang.TypeDecl.Var x -> TypeExpr.Var x
           | Any -> Any)

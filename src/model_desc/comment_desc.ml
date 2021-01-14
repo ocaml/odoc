@@ -64,8 +64,7 @@ let rec inline_element : general_inline_element t =
     | `Space -> C0 "`Space"
     | `Word x -> C ("`Word", x, string)
     | `Code_span x -> C ("`Code_span", x, string)
-    | `Raw_markup (x1, x2) ->
-        C ("`Raw_markup", (x1, x2), Pair (string, string))
+    | `Raw_markup (x1, x2) -> C ("`Raw_markup", (x1, x2), Pair (string, string))
     | `Styled (x1, x2) -> C ("`Styled", (x1, x2), Pair (style, link_content))
     | `Reference (x1, x2) ->
         C ("`Reference", (x1, x2), Pair (reference, link_content))

@@ -13,9 +13,7 @@ type 'a t =
 
 and 'a field = F : string * ('a -> 'b) * 'b t -> 'a field
 
-and case =
-  | C : string * 'b * 'b t -> case
-  | C0 : string -> case
+and case = C : string * 'b * 'b t -> case | C0 : string -> case
 
 let bool : bool t = To_string string_of_bool
 

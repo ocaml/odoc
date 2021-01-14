@@ -24,94 +24,89 @@ open Result
    The function is meant to be partially applied to its first two arguments, at
    which point it creates the table described above. The remaining function is
    then passed to the lexer, so it can apply the table to its emitted tokens. *)
-let offset_to_location
-    : input:string -> comment_location:Lexing.position ->
-        (int -> Odoc_model.Location_.point) =
-    fun ~input ~comment_location ->
-
+let offset_to_location :
+    input:string ->
+    comment_location:Lexing.position ->
+    int ->
+    Odoc_model.Location_.point =
+ fun ~input ~comment_location ->
   let rec find_newlines line_number input_index newlines_accumulator =
-    if input_index >= String.length input then
-      newlines_accumulator
-    else
+    if input_index >= String.length input then newlines_accumulator
+    else if
       (* This is good enough to detect CR-LF also. *)
-      if input.[input_index] = '\n' then
-        find_newlines
-          (line_number + 1) (input_index + 1)
-          ((line_number + 1, input_index + 1)::newlines_accumulator)
-      else
-        find_newlines line_number (input_index + 1) newlines_accumulator
+      input.[input_index] = '\n'
+    then
+      find_newlines (line_number + 1) (input_index + 1)
+        ((line_number + 1, input_index + 1) :: newlines_accumulator)
+    else find_newlines line_number (input_index + 1) newlines_accumulator
   in
 
-  let reversed_newlines : (int * int) list =
-    find_newlines 1 0 [(1, 0)] in
+  let reversed_newlines : (int * int) list = find_newlines 1 0 [ (1, 0) ] in
 
   fun byte_offset ->
     let rec scan_to_last_newline reversed_newlines_prefix =
       match reversed_newlines_prefix with
-      | [] ->
-        assert false
-      | (line_in_comment, line_start_offset)::prefix ->
-        if line_start_offset > byte_offset then
-          scan_to_last_newline prefix
-        else
-          let column_in_comment = byte_offset - line_start_offset in
-          let line_in_file =
-            line_in_comment + comment_location.Lexing.pos_lnum - 1 in
-          let column_in_file =
-            if line_in_comment = 1 then
-              column_in_comment +
-                comment_location.Lexing.pos_cnum -
-                comment_location.Lexing.pos_bol
-            else
-              column_in_comment
-          in
-          {Odoc_model.Location_.line = line_in_file; column = column_in_file}
+      | [] -> assert false
+      | (line_in_comment, line_start_offset) :: prefix ->
+          if line_start_offset > byte_offset then scan_to_last_newline prefix
+          else
+            let column_in_comment = byte_offset - line_start_offset in
+            let line_in_file =
+              line_in_comment + comment_location.Lexing.pos_lnum - 1
+            in
+            let column_in_file =
+              if line_in_comment = 1 then
+                column_in_comment + comment_location.Lexing.pos_cnum
+                - comment_location.Lexing.pos_bol
+              else column_in_comment
+            in
+            {
+              Odoc_model.Location_.line = line_in_file;
+              column = column_in_file;
+            }
     in
     scan_to_last_newline reversed_newlines
 
-
-
 let make_parser ~location ~text parse =
-  Odoc_model.Error.accumulate_warnings begin fun warnings ->
-    let token_stream =
-      let lexbuf = Lexing.from_string text in
-      let offset_to_location =
-        offset_to_location ~input:text ~comment_location:location in
-      let input : Lexer.input =
-        {
-          file = location.Lexing.pos_fname;
-          offset_to_location;
-          warnings;
-          lexbuf;
-        }
+  Odoc_model.Error.accumulate_warnings (fun warnings ->
+      let token_stream =
+        let lexbuf = Lexing.from_string text in
+        let offset_to_location =
+          offset_to_location ~input:text ~comment_location:location
+        in
+        let input : Lexer.input =
+          {
+            file = location.Lexing.pos_fname;
+            offset_to_location;
+            warnings;
+            lexbuf;
+          }
+        in
+        Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
       in
-      Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
-    in
-    parse warnings token_stream
-  end
+      parse warnings token_stream)
 
-
-let parse_comment_raw ~location ~text =
-  make_parser ~location ~text Syntax.parse
-
+let parse_comment_raw ~location ~text = make_parser ~location ~text Syntax.parse
 
 let parse_comment ~sections_allowed ~containing_definition ~location ~text =
   make_parser ~location ~text (fun warnings token_stream ->
       Syntax.parse warnings token_stream
-      |> Semantics.ast_to_comment
-         warnings ~sections_allowed ~parent_of_sections:containing_definition
-    )
+      |> Semantics.ast_to_comment warnings ~sections_allowed
+           ~parent_of_sections:containing_definition)
 
 let parse_reference text =
-  let location = Reference.Location_.{
-    file = "";
-    start = { line=0; column=0};
-    end_ = { line=0; column = String.length text}
-  } in
+  let location =
+    Reference.Location_.
+      {
+        file = "";
+        start = { line = 0; column = 0 };
+        end_ = { line = 0; column = String.length text };
+      }
+  in
   let result =
-    Odoc_model.Error.accumulate_warnings begin fun warnings ->
-      Reference.parse warnings location text
-    end in
+    Odoc_model.Error.accumulate_warnings (fun warnings ->
+        Reference.parse warnings location text)
+  in
   match result.Reference.Error.value with
   | Ok x -> Ok x
   | Error m -> Error (`Msg (Odoc_model.Error.to_string m))

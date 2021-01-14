@@ -21,18 +21,26 @@
 
 module Accessible_paths : sig
   type t
+
   val create : directories:Fs.directory list -> t
 end
 
 val lookup_page : Accessible_paths.t -> string -> Odoc_model.Root.t option
-val fetch_page : Accessible_paths.t -> Odoc_model.Root.t -> (Page.t, [> `Msg of string ]) Result.result
+
+val fetch_page :
+  Accessible_paths.t ->
+  Odoc_model.Root.t ->
+  (Page.t, [> `Msg of string ]) Result.result
 
 type t = Odoc_xref2.Env.resolver
 
 type builder
 
 val create :
-  ?important_digests:bool -> directories:(Fs.Directory.t list) -> open_modules:string list -> builder
+  ?important_digests:bool ->
+  directories:Fs.Directory.t list ->
+  open_modules:string list ->
+  builder
 (** Prepare the environment for a given list of
     {{!Fs.Directory.t} include directories}
 

@@ -8,6 +8,7 @@
 
 (rule
  (alias runtest)
- (enabled_if (>= %{ocaml_version} 4.06))
+ (enabled_if
+  (>= %{ocaml_version} 4.06))
  (action
   (diff test.md test.output)))

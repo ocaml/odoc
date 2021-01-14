@@ -110,7 +110,6 @@ val add_method :
   t ->
   t
 
-
 val add_module_functor_args :
   Component.Module.t -> Odoc_model.Paths_types.Identifier.path_module -> t -> t
 
@@ -141,7 +140,7 @@ type 'a scope constraint 'a = [< Component.Element.any ]
 (** Target of a lookup *)
 
 type 'a maybe_ambiguous =
-  ('a, [ `Ambiguous of ('a * 'a list) | `Not_found ]) Result.result
+  ('a, [ `Ambiguous of 'a * 'a list | `Not_found ]) Result.result
 
 val lookup_by_name : 'a scope -> string -> t -> 'a maybe_ambiguous
 (** Lookup an element in Env depending on the given [scope].

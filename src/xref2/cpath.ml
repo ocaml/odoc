@@ -102,7 +102,8 @@ let rec resolved_module_hash : Resolved.module_ -> int = function
   | `Module (m, n) -> Hashtbl.hash (6, resolved_parent_hash m, n)
   | `Canonical (m, m2) ->
       Hashtbl.hash (7, resolved_module_hash m, module_hash m2)
-  | `Apply (m1, m2) -> Hashtbl.hash (8, resolved_module_hash m1, resolved_module_hash m2)
+  | `Apply (m1, m2) ->
+      Hashtbl.hash (8, resolved_module_hash m1, resolved_module_hash m2)
   | `Alias (m1, m2) ->
       Hashtbl.hash (9, resolved_module_hash m1, resolved_module_hash m2)
   | `OpaqueModule m -> Hashtbl.hash (10, resolved_module_hash m)
@@ -384,7 +385,8 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
 
 and is_type_hidden : type_ -> bool = function
   | `Resolved r -> is_resolved_type_hidden r
-  | `Identifier (id, b) -> b || is_resolved_type_hidden (`Identifier (id :> Identifier.Path.Type.t))
+  | `Identifier (id, b) ->
+      b || is_resolved_type_hidden (`Identifier (id :> Identifier.Path.Type.t))
   | `Local (_, b) -> b
   | `Substituted p -> is_type_hidden p
   | `Dot (p, _) -> is_module_hidden p

@@ -17,10 +17,9 @@
 open Odoc_document
 
 type args = {
-  semantic_uris : bool ;
-  closed_details : bool ;
-  theme_uri : Odoc_html.Tree.uri ;
+  semantic_uris : bool;
+  closed_details : bool;
+  theme_uri : Odoc_html.Tree.uri;
 }
-
 
 val renderer : args Renderer.t

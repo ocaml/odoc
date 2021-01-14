@@ -18,7 +18,11 @@ type datatype = [ `LType of TypeName.t * int | `LCoreType of TypeName.t ]
 
 type parent = [ signature | datatype | class_signature ]
 
-type label_parent = [ parent | `LRootPage of PageName.t * int | `LPage of PageName.t * int | `LLeafPage of PageName.t * int ]
+type label_parent =
+  [ parent
+  | `LRootPage of PageName.t * int
+  | `LPage of PageName.t * int
+  | `LLeafPage of PageName.t * int ]
 
 type module_ = [ `LRoot of ModuleName.t * int | `LModule of ModuleName.t * int ]
 
@@ -55,9 +59,10 @@ type instance_variable = [ `LInstanceVariable of InstanceVariableName.t * int ]
 
 type label = [ `LLabel of LabelName.t * int ]
 
-type page = [ `LRootPage of PageName.t * int 
-            | `LPage of PageName.t * int
-            | `LLeafPage of PageName.t * int ]
+type page =
+  [ `LRootPage of PageName.t * int
+  | `LPage of PageName.t * int
+  | `LLeafPage of PageName.t * int ]
 
 type any =
   [ signature
@@ -214,7 +219,6 @@ module Of_Identifier = struct
     | `RootPage n -> `LRootPage (n, fresh_int ())
     | `Page (_, n) -> `LPage (n, fresh_int ())
     | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
-
 end
 
 module Name = struct
@@ -414,7 +418,6 @@ let rec fmt_aux ppf (id : any) =
   | `LRootPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
   | `LPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
   | `LLeafPage (n, i) -> Format.fprintf ppf "%s/%d" (PageName.to_string n) i
-
 
 let fmt : Format.formatter -> [< any ] -> unit =
  fun ppf id -> fmt_aux ppf (id :> any)

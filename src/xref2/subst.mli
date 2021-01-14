@@ -23,7 +23,8 @@ val add_class :
 val add_class_type :
   Ident.class_type -> Cpath.class_type -> Cpath.Resolved.class_type -> t -> t
 
-val add_type_replacement : Ident.path_type -> TypeExpr.t -> TypeDecl.Equation.t -> t -> t
+val add_type_replacement :
+  Ident.path_type -> TypeExpr.t -> TypeDecl.Equation.t -> t -> t
 
 val add_module_substitution : Ident.path_module -> t -> t
 

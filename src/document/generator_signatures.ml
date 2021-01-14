@@ -1,50 +1,51 @@
 open Types
 module Lang = Odoc_model.Lang
 
-
-
 type rendered_item = DocumentedSrc.t
 
 type text = Format.formatter -> unit
 
 (** HTML generation syntax customization module. See {!To_re_html_tree} and
     {!To_ml_html_tree}. *)
-module type SYNTAX =
-sig
-  module Obj :
-  sig
+module type SYNTAX = sig
+  module Obj : sig
     val close_tag_closed : string
+
     val close_tag_extendable : string
+
     val field_separator : string
+
     val open_tag_closed : string
+
     val open_tag_extendable : string
   end
 
-  module Type :
-  sig
+  module Type : sig
     val annotation_separator : string
 
     val handle_constructor_params : text -> text -> text
+
     val handle_substitution_params : text -> text -> text
 
     val handle_format_params : string -> string
+
     val type_def_semicolon : bool
+
     val private_keyword : string
+
     val parenthesize_constructor : bool
 
-    module Variant :
-    sig
+    module Variant : sig
       val parenthesize_params : bool
     end
 
-    module Tuple :
-    sig
+    module Tuple : sig
       val element_separator : string
+
       val always_parenthesize : bool
     end
 
-    module Record :
-    sig
+    module Record : sig
       val field_separator : string
     end
 
@@ -54,48 +55,50 @@ sig
 
     val arrow : text
 
-    module Exception :
-    sig
+    module Exception : sig
       val semicolon : bool
     end
 
-    module GADT :
-    sig
+    module GADT : sig
       val arrow : text
     end
 
-    module External :
-    sig
+    module External : sig
       val semicolon : bool
-      val handle_primitives :
-        string list -> Inline.t
+
+      val handle_primitives : string list -> Inline.t
     end
   end
 
-  module Mod :
-  sig
+  module Mod : sig
     val open_tag : text
+
     val close_tag : text
+
     val close_tag_semicolon : bool
+
     val include_semicolon : bool
+
     val functor_keyword : bool
+
     val functor_contraction : bool
   end
 
-  module Class :
-  sig
+  module Class : sig
     val open_tag : text
+
     val close_tag : text
   end
 
-  module Value :
-  sig
+  module Value : sig
     val variable_keyword : string
+
     val semicolon : bool
   end
 end
 
 module type GENERATOR = sig
   val compilation_unit : Lang.Compilation_unit.t -> Page.t
+
   val page : Lang.Page.t -> Page.t
 end

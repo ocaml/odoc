@@ -63,32 +63,32 @@ and ModuleType : sig
   type simple_expansion =
     | Signature of Signature.t
     | Functor of FunctorParameter.t * simple_expansion
-  
+
   type typeof_t = {
     t_desc : type_of_desc;
-    t_expansion : simple_expansion option
+    t_expansion : simple_expansion option;
   }
-  
+
   module U : sig
     type expr =
-        | Path of Path.ModuleType.t
-        | Signature of Signature.t
-        | With of substitution list * expr
-        | TypeOf of typeof_t (* Nb. this may have an expansion! *)
+      | Path of Path.ModuleType.t
+      | Signature of Signature.t
+      | With of substitution list * expr
+      | TypeOf of typeof_t
+
+    (* Nb. this may have an expansion! *)
   end
-  
 
   type path_t = {
     p_expansion : simple_expansion option;
-    p_path : Path.ModuleType.t
+    p_path : Path.ModuleType.t;
   }
 
   type with_t = {
     w_substitutions : substitution list;
     w_expansion : simple_expansion option;
-    w_expr : U.expr
+    w_expr : U.expr;
   }
-
 
   type expr =
     | Path of path_t
@@ -158,13 +158,11 @@ and Include : sig
   type expansion = {
     resolved : bool;
     shadowed : shadowed;
-    content : Signature.t
+    content : Signature.t;
   }
 
   (* Explicitly unexpanded decl *)
-  type decl =
-    | Alias of Path.Module.t
-    | ModuleType of ModuleType.U.expr
+  type decl = Alias of Path.Module.t | ModuleType of ModuleType.U.expr
 
   type t = {
     parent : Identifier.Signature.t;
@@ -210,7 +208,11 @@ and TypeDecl : sig
 
   type param_desc = Any | Var of string
 
-  type param = { desc: param_desc; variance:variance option; injectivity:bool }
+  type param = {
+    desc : param_desc;
+    variance : variance option;
+    injectivity : bool;
+  }
 
   module Equation : sig
     type t = {
@@ -415,7 +417,7 @@ end =
 module rec Compilation_unit : sig
   module Import : sig
     type t =
-        Unresolved of string * Digest.t option
+      | Unresolved of string * Digest.t option
       | Resolved of Root.t * Names.ModuleName.t
   end
 
@@ -457,10 +459,9 @@ module rec Page : sig
 end =
   Page
 
-let umty_of_mty : ModuleType.expr -> ModuleType.U.expr =
-  function
+let umty_of_mty : ModuleType.expr -> ModuleType.U.expr = function
   | Signature sg -> Signature sg
-  | Path { p_path; _} -> Path p_path
+  | Path { p_path; _ } -> Path p_path
   | Functor _ -> assert false
   | TypeOf t -> TypeOf t
-  | With {w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)
+  | With { w_substitutions; w_expr; _ } -> With (w_substitutions, w_expr)

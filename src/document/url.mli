@@ -1,9 +1,7 @@
 open Result
-
 open Odoc_model.Paths
 
 val functor_arg_pos : Identifier.FunctorParameter.t -> int
-
 
 module Error : sig
   type nonrec t =
@@ -15,44 +13,33 @@ module Error : sig
   val to_string : t -> string
 end
 
-
 module Path : sig
+  type t = { kind : string; parent : t option; name : string }
 
-  type t = {
-    kind : string;
-    parent : t option;
-    name : string;
-  }
+  type source =
+    [ Identifier.Page.t | Identifier.Signature.t | Identifier.ClassSignature.t ]
 
-  type source = [
-    | Identifier.Page.t
-    | Identifier.Signature.t
-    | Identifier.ClassSignature.t
-  ]
-
-  val from_identifier : [< source] -> t
+  val from_identifier : [< source ] -> t
 
   val last : t -> string
 end
 
 module Anchor : sig
-
   type t = {
-    page : Path.t ;
+    page : Path.t;
     anchor : string;
-    (** Anchor in {!field-page} where the element is attached *)
-
+        (** Anchor in {!field-page} where the element is attached *)
     kind : string;
-    (** What kind of element the path points to.
+        (** What kind of element the path points to.
         e.g. "module", "module-type", "exception", ... *)
   }
 
   val from_identifier : Identifier.t -> (t, Error.t) result
 
-  val polymorphic_variant
-    : type_ident:Identifier.t
-    -> Odoc_model.Lang.TypeExpr.Polymorphic_variant.element
-    -> t
+  val polymorphic_variant :
+    type_ident:Identifier.t ->
+    Odoc_model.Lang.TypeExpr.Polymorphic_variant.element ->
+    t
 end
 
 type t = Anchor.t
@@ -60,6 +47,7 @@ type t = Anchor.t
 val from_path : Path.t -> t
 
 val from_identifier : stop_before:bool -> Identifier.t -> (t, Error.t) result
+
 val from_identifier_exn : stop_before:bool -> Identifier.t -> t
 
 val kind : Identifier.t -> string

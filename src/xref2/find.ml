@@ -11,7 +11,8 @@ type class_ =
   [ `FClass of ClassName.t * Class.t
   | `FClassType of ClassTypeName.t * ClassType.t ]
 
-type value = [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
+type value =
+  [ `FExternal of ValueName.t * External.t | `FValue of ValueName.t * Value.t ]
 
 type label = [ `FLabel of Ident.label ]
 
@@ -46,7 +47,8 @@ type any_in_sig =
   | substitution
   | any_in_type_in_sig ]
 
-type instance_variable = [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
+type instance_variable =
+  [ `FInstance_variable of InstanceVariableName.t * InstanceVariable.t ]
 
 type method_ = [ `FMethod of MethodName.t * Method.t ]
 
@@ -103,7 +105,8 @@ let class_in_sig sg name =
         Some (`FClassType (N.class_type' id, c))
     | _ -> None)
 
-type removed_type = [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
+type removed_type =
+  [ `FType_removed of TypeName.t * TypeExpr.t * TypeDecl.Equation.t ]
 
 type careful_module = [ module_ | `FModule_removed of Cpath.Resolved.module_ ]
 
@@ -205,9 +208,12 @@ let any_in_sig sg name =
     | Type (id, _, t) when N.type_ id = name ->
         Some (`FType (N.type' id, Delayed.get t))
     | TypeSubstitution (id, ts) when N.type_ id = name -> Some (`FType_subst ts)
-    | Exception (id, exc) when N.exception_ id = name -> Some (`FExn (N.typed_exception id, exc))
-    | Value (id, v) when N.value id = name -> Some (`FValue (N.typed_value id, Delayed.get v))
-    | External (id, vex) when N.value id = name -> Some (`FExternal (N.typed_value id, vex))
+    | Exception (id, exc) when N.exception_ id = name ->
+        Some (`FExn (N.typed_exception id, exc))
+    | Value (id, v) when N.value id = name ->
+        Some (`FValue (N.typed_value id, Delayed.get v))
+    | External (id, vex) when N.value id = name ->
+        Some (`FExternal (N.typed_value id, vex))
     | Class (id, _, c) when N.class_ id = name ->
         Some (`FClass (N.class' id, c))
     | ClassType (id, _, ct) when N.class_type id = name ->
@@ -239,7 +245,8 @@ let value_in_sig sg name =
   filter_in_sig sg (function
     | Signature.Value (id, m) when N.value id = name ->
         Some (`FValue (N.typed_value id, Delayed.get m))
-    | External (id, e) when N.value id = name -> Some (`FExternal (N.typed_value id, e))
+    | External (id, e) when N.value id = name ->
+        Some (`FExternal (N.typed_value id, e))
     | _ -> None)
 
 let label_in_sig sg name =
@@ -249,7 +256,8 @@ let label_in_sig sg name =
 
 let exception_in_sig sg name =
   find_in_sig sg (function
-    | Signature.Exception (id, e) when N.exception_ id = name -> Some (`FExn (N.typed_exception id, e))
+    | Signature.Exception (id, e) when N.exception_ id = name ->
+        Some (`FExn (N.typed_exception id, e))
     | _ -> None)
 
 let extension_in_sig sg name =
