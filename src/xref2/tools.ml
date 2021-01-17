@@ -622,7 +622,8 @@ and resolve_module :
     resolve_module_result =
  fun ~mark_substituted ~add_canonical env' path ->
   let id = (mark_substituted, add_canonical, path) in
-  (* Format.fprintf Format.err_formatter "resolve_module: looking up %a\n%!" Component.Fmt.path p; *)
+  (* let t = Unix.gettimeofday () in
+     Format.fprintf Format.err_formatter "resolve_module: looking up %a\n%!" Component.Fmt.module_path path; *)
   let resolve env (mark_substituted, add_canonical, p) =
     match p with
     | `Dot (parent, id) ->
@@ -1105,10 +1106,19 @@ and fragmap :
     match decl with
     | Alias (path, _) ->
         signature_of_module_path env ~strengthen:true path >>= fun sg ->
-        fragmap ~mark_substituted env subst sg >>= fun sg ->
-        Ok (ModuleType (Signature sg))
-    (* | ModuleType (With (mty', subs')) ->
-        Ok (ModuleType (With (mty', subs' @ [ subst ]))) *)
+        Ok
+          (ModuleType
+             (With
+                {
+                  w_substitutions = [ subst ];
+                  w_expansion = None;
+                  w_expr =
+                    TypeOf
+                      {
+                        t_desc = StructInclude path;
+                        t_expansion = Some (Signature sg);
+                      };
+                }))
     | ModuleType mty' ->
         Ok
           (ModuleType
