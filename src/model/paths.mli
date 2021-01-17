@@ -501,6 +501,8 @@ module Fragment : sig
     type t = Paths_types.Resolved_fragment.any
 
     val identifier : t -> Identifier.t
+
+    val is_hidden : t -> bool
   end
 
   module Signature : sig
