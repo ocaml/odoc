@@ -833,6 +833,15 @@ module Fragment = struct
       | `Class (m, n) -> `Class (Signature.identifier m, n)
       | `ClassType (m, n) -> `ClassType (Signature.identifier m, n)
       | `OpaqueModule m -> identifier (m :> t)
+
+    let rec is_hidden : t -> bool = function
+      | `Root (`ModuleType r) -> Path.is_resolved_hidden (r :> Path.Resolved.t)
+      | `Root (`Module r) -> Path.is_resolved_hidden (r :> Path.Resolved.t)
+      | `Subst (s, _) -> Path.is_resolved_hidden (s :> Path.Resolved.t)
+      | `SubstAlias (s, _) -> Path.is_resolved_hidden (s :> Path.Resolved.t)
+      | `Module (m, _) | `Type (m, _) | `Class (m, _) | `ClassType (m, _) ->
+          is_hidden (m :> t)
+      | `OpaqueModule m -> is_hidden (m :> t)
   end
 
   type t = Paths_types.Fragment.any
