@@ -174,7 +174,9 @@ module Make (Syntax : SYNTAX) = struct
           unresolved [ inline @@ Text txt ]
 
     let from_fragment : Fragment.leaf -> text = function
-      | `Resolved r -> resolved_fragment_to_ir r
+      | `Resolved r
+        when not (Fragment.Resolved.is_hidden (r :> Fragment.Resolved.t)) ->
+          resolved_fragment_to_ir r
       | f ->
           let txt = render_fragment_any (f :> Fragment.t) in
           unresolved [ inline @@ Text txt ]
