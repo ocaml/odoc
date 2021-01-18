@@ -821,6 +821,8 @@ module Fragment = struct
                 (ModuleName.to_string base, Some (`ClassType (m, name))) )
     end
 
+    type leaf = Paths_types.Resolved_fragment.leaf
+
     let rec identifier : t -> Identifier.t = function
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
@@ -897,6 +899,8 @@ module Fragment = struct
           | Branch (base, m) ->
               (ModuleName.to_string base, Some (`Dot (m, name))) )
   end
+
+  type leaf = Paths_types.Fragment.leaf
 end
 
 module Reference = struct
