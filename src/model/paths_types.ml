@@ -231,6 +231,9 @@ module rec Fragment : sig
   type type_ =
     [ `Resolved of Resolved_fragment.type_ | `Dot of signature * string ]
 
+  type leaf =
+    [ `Resolved of Resolved_fragment.leaf | `Dot of signature * string ]
+
   type any =
     [ `Resolved of Resolved_fragment.any | `Dot of signature * string | `Root ]
 end =
@@ -258,6 +261,8 @@ and Resolved_fragment : sig
     [ `Type of signature * TypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+
+  type leaf = [ module_ | type_ ]
 
   (* Absence of `Root here might make coersions annoying *)
   type any =

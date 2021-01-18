@@ -87,10 +87,7 @@ module Make (Syntax : SYNTAX) = struct
   module Link : sig
     val from_path : Paths.Path.t -> text
 
-    val from_fragment :
-      base:Paths.Identifier.Signature.t -> Paths.Fragment.t -> text
-
-    val render_fragment : Paths.Fragment.t -> string
+    val from_fragment : Paths.Fragment.leaf -> text
   end = struct
     open Paths
 
@@ -131,24 +128,28 @@ module Make (Syntax : SYNTAX) = struct
               Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
               O.txt txt )
 
-    let dot prefix suffix =
-      match prefix with "" -> suffix | _ -> prefix ^ "." ^ suffix
+    let dot prefix suffix = prefix ^ "." ^ suffix
 
-    let rec render_fragment : Fragment.t -> string =
+    let rec render_fragment_any : Fragment.t -> string =
      fun fragment ->
       match fragment with
       | `Resolved rr -> render_resolved_fragment rr
+      | `Dot (`Root, suffix) -> suffix
       | `Dot (prefix, suffix) ->
-          dot (render_fragment (prefix :> Fragment.t)) suffix
-      | `Root -> ""
+          dot (render_fragment_any (prefix :> Fragment.t)) suffix
+      | `Root -> assert false
 
     and render_resolved_fragment : Fragment.Resolved.t -> string =
       let open Fragment.Resolved in
       fun fragment ->
         match fragment with
-        | `Root _ -> ""
+        | `Root _ -> assert false
         | `Subst (_, rr) -> render_resolved_fragment (rr :> t)
         | `SubstAlias (_, rr) -> render_resolved_fragment (rr :> t)
+        | `Module (`Root _, s) -> ModuleName.to_string s
+        | `Type (`Root _, s) -> TypeName.to_string s
+        | `Class (`Root _, s) -> ClassName.to_string s
+        | `ClassType (`Root _, s) -> ClassTypeName.to_string s
         | `Module (rr, s) ->
             dot (render_resolved_fragment (rr :> t)) (ModuleName.to_string s)
         | `Type (rr, s) ->
@@ -159,38 +160,24 @@ module Make (Syntax : SYNTAX) = struct
             dot (render_resolved_fragment (rr :> t)) (ClassTypeName.to_string s)
         | `OpaqueModule r -> render_resolved_fragment (r :> t)
 
-    let rec fragment_to_ir :
-        stop_before:bool -> base:Identifier.Signature.t -> Fragment.t -> text =
-     fun ~stop_before ~base fragment ->
+    let resolved_fragment_to_ir : Fragment.Resolved.leaf -> text =
+     fun fragment ->
       let open Fragment in
-      match fragment with
-      | `Root | `Resolved (`Root _) -> (
-          let id = (base :> Identifier.t) in
-          match Url.from_identifier ~stop_before:true id with
-          | Ok href -> resolved href [ inline @@ Text (Identifier.name id) ]
-          | Error (Not_linkable _) ->
-              unresolved [ inline @@ Text (Identifier.name id) ]
-          | Error exn ->
-              Printf.eprintf "[FRAG] Id.href failed: %S\n%!"
-                (Url.Error.to_string exn);
-              unresolved [ inline @@ Text (Identifier.name id) ] )
-      | `Resolved rr -> (
-          let id = Resolved.identifier (rr :> Resolved.t) in
-          let txt = render_resolved_fragment rr in
-          match Url.from_identifier ~stop_before id with
-          | Ok href -> resolved href [ inline @@ Text txt ]
-          | Error (Not_linkable _) -> unresolved [ inline @@ Text txt ]
-          | Error exn ->
-              Printf.eprintf "[FRAG] Id.href failed: %S\n%!"
-                (Url.Error.to_string exn);
-              unresolved [ inline @@ Text txt ] )
-      | `Dot (prefix, suffix) ->
-          let link =
-            fragment_to_ir ~stop_before:true ~base (prefix :> Fragment.t)
-          in
-          link ++ O.txt ("." ^ suffix)
+      let id = Resolved.identifier (fragment :> Resolved.t) in
+      let txt = render_resolved_fragment (fragment :> Resolved.t) in
+      match Url.from_identifier ~stop_before:false id with
+      | Ok href -> resolved href [ inline @@ Text txt ]
+      | Error (Not_linkable _) -> unresolved [ inline @@ Text txt ]
+      | Error exn ->
+          Printf.eprintf "[FRAG] Id.href failed: %S\n%!"
+            (Url.Error.to_string exn);
+          unresolved [ inline @@ Text txt ]
 
-    let from_fragment = fragment_to_ir ~stop_before:false
+    let from_fragment : Fragment.leaf -> text = function
+      | `Resolved r -> resolved_fragment_to_ir r
+      | f ->
+          let txt = render_fragment_any (f :> Fragment.t) in
+          unresolved [ inline @@ Text txt ]
   end
 
   module Type_expression : sig
@@ -347,21 +334,12 @@ module Make (Syntax : SYNTAX) = struct
                 O.txt " " ++ O.keyword "with" ++ O.txt " "
                 ++ O.list
                      ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-                     lst ~f:(package_subst pkg.path) )
+                     lst ~f:package_subst )
 
-    and package_subst (pkg_path : Paths.Path.ModuleType.t)
+    and package_subst
         ((frag_typ, te) : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t) :
         text =
-      let typath =
-        match pkg_path with
-        | `Resolved rp ->
-            let base =
-              ( Paths.Path.Resolved.ModuleType.identifier rp
-                :> Paths.Identifier.Signature.t )
-            in
-            Link.from_fragment ~base (frag_typ :> Paths.Fragment.t)
-        | _ -> O.txt (Link.render_fragment (frag_typ :> Paths.Fragment.t))
-      in
+      let typath = Link.from_fragment (frag_typ :> Paths.Fragment.leaf) in
       O.keyword "type" ++ O.txt " " ++ typath ++ O.txt " = " ++ type_expr te
   end
 
@@ -1270,41 +1248,13 @@ module Make (Syntax : SYNTAX) = struct
       match md with
       | Alias (`Resolved p, _) when is_canonical p -> sig_dotdotdot
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
-          O.txt " = " ++ mdexpr (base :> Paths.Identifier.Signature.t) md
+          O.txt " = " ++ mdexpr md
       | Alias _ -> sig_dotdotdot
       | ModuleType mt -> mty_in_decl (base :> Paths.Identifier.Signature.t) mt
 
-    and extract_path_from_umt ~(default : Paths.Identifier.Signature.t) =
-      let open Odoc_model.Lang.ModuleType.U in
-      function
-      | With (_, umt) -> extract_path_from_umt ~default umt
-      | Path (`Resolved r) ->
-          ( Paths.Path.Resolved.ModuleType.identifier r
-            :> Paths.Identifier.Signature.t )
-      | TypeOf { t_desc = ModPath (`Resolved r); _ }
-      | TypeOf { t_desc = StructInclude (`Resolved r); _ } ->
-          ( Paths.Path.Resolved.Module.identifier r
-            :> Paths.Identifier.Signature.t )
-      | _ -> default
-
-    and extract_path_from_mt ~(default : Paths.Identifier.Signature.t) =
-      let open Odoc_model.Lang.ModuleType in
-      function
-      | Path { p_path = `Resolved r; _ } ->
-          ( Paths.Path.Resolved.ModuleType.identifier r
-            :> Paths.Identifier.Signature.t )
-      | With { w_expr; _ } -> extract_path_from_umt ~default w_expr
-      | TypeOf { t_desc = ModPath (`Resolved r); _ }
-      | TypeOf { t_desc = StructInclude (`Resolved r); _ } ->
-          ( Paths.Path.Resolved.Module.identifier r
-            :> Paths.Identifier.Signature.t )
-      | _ -> default
-
-    and mdexpr :
-        Paths.Identifier.Signature.t -> Odoc_model.Lang.Module.decl -> text =
-     fun base -> function
+    and mdexpr : Odoc_model.Lang.Module.decl -> text = function
       | Alias (mod_path, _) -> Link.from_path (mod_path :> Paths.Path.t)
-      | ModuleType mt -> mty (extract_path_from_mt ~default:base mt) mt
+      | ModuleType mt -> mty mt
 
     and module_type (t : Odoc_model.Lang.ModuleType.t) =
       let modname = Paths.Identifier.name t.id in
@@ -1328,8 +1278,7 @@ module Make (Syntax : SYNTAX) = struct
       let summary =
         match t.expr with
         | None -> O.noop
-        | Some expr ->
-            O.txt " = " ++ mty (t.id :> Paths.Identifier.Signature.t) expr
+        | Some expr -> O.txt " = " ++ mty expr
       in
       let mty = attach_expansion (" = ", "sig", "end") expansion summary in
       let content =
@@ -1360,11 +1309,11 @@ module Make (Syntax : SYNTAX) = struct
           Paths.Path.(is_hidden (m :> t))
       | _ -> false
 
-    and mty_with base subs expr =
-      umty base expr ++ O.txt " " ++ O.keyword "with" ++ O.txt " "
+    and mty_with subs expr =
+      umty expr ++ O.txt " " ++ O.keyword "with" ++ O.txt " "
       ++ O.list
            ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-           ~f:(substitution base) subs
+           ~f:substitution subs
 
     and mty_typeof t_desc =
       match t_desc with
@@ -1379,22 +1328,17 @@ module Make (Syntax : SYNTAX) = struct
           ++ Link.from_path (m :> Paths.Path.t)
           ++ O.txt " " ++ O.keyword "end"
 
-    and umty :
-        Paths.Identifier.Signature.t ->
-        Odoc_model.Lang.ModuleType.U.expr ->
-        text =
-     fun base m ->
+    and umty : Odoc_model.Lang.ModuleType.U.expr -> text =
+     fun m ->
       match m with
       | Path p -> Link.from_path (p :> Paths.Path.t)
-      | With (subs, expr) -> mty_with base subs expr
+      | With (subs, expr) -> mty_with subs expr
       | TypeOf { t_desc; _ } -> mty_typeof t_desc
       | Signature _ ->
           Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
 
-    and mty :
-        Paths.Identifier.Signature.t -> Odoc_model.Lang.ModuleType.expr -> text
-        =
-     fun base m ->
+    and mty : Odoc_model.Lang.ModuleType.expr -> text =
+     fun m ->
       if mty_hidden m then
         Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       else
@@ -1403,7 +1347,7 @@ module Make (Syntax : SYNTAX) = struct
             Link.from_path (mty_path :> Paths.Path.t)
         | Functor (Unit, expr) ->
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
-            ++ O.txt " () " ++ Syntax.Type.arrow ++ O.txt " " ++ mty base expr
+            ++ O.txt " () " ++ Syntax.Type.arrow ++ O.txt " " ++ mty expr
         | Functor (Named arg, expr) ->
             let arg_expr = arg.expr in
             let stop_before = expansion_of_module_type_expr arg_expr = None in
@@ -1419,10 +1363,9 @@ module Make (Syntax : SYNTAX) = struct
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ O.txt " (" ++ name
             ++ O.txt Syntax.Type.annotation_separator
-            ++ mty base arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
-            ++ O.txt " " ++ mty base expr
-        | With { w_substitutions; w_expr; _ } ->
-            mty_with base w_substitutions w_expr
+            ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
+            ++ O.txt " " ++ mty expr
+        | With { w_substitutions; w_expr; _ } -> mty_with w_substitutions w_expr
         | TypeOf { t_desc; _ } -> mty_typeof t_desc
         | Signature _ ->
             Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
@@ -1432,9 +1375,9 @@ module Make (Syntax : SYNTAX) = struct
         =
      fun base -> function
       | (Path _ | Signature _ | With _ | TypeOf _) as m ->
-          O.txt Syntax.Type.annotation_separator ++ mty base m
+          O.txt Syntax.Type.annotation_separator ++ mty m
       | Functor _ as m when not Syntax.Mod.functor_contraction ->
-          O.txt Syntax.Type.annotation_separator ++ mty base m
+          O.txt Syntax.Type.annotation_separator ++ mty m
       | Functor (arg, expr) ->
           let text_arg =
             match arg with
@@ -1456,39 +1399,36 @@ module Make (Syntax : SYNTAX) = struct
                 in
                 O.txt "(" ++ name
                 ++ O.txt Syntax.Type.annotation_separator
-                ++ mty base arg.expr ++ O.txt ")"
+                ++ mty arg.expr ++ O.txt ")"
           in
           O.txt " " ++ text_arg ++ mty_in_decl base expr
 
     (* TODO : Centralize the list juggling for type parameters *)
-    and type_expr_in_subst ~base td typath =
-      let typath = Link.from_fragment ~base typath in
+    and type_expr_in_subst td typath =
+      let typath = Link.from_fragment typath in
       match td.Lang.TypeDecl.Equation.params with
       | [] -> typath
       | l -> Syntax.Type.handle_substitution_params typath (format_params l)
 
-    and substitution :
-        Paths.Identifier.Signature.t ->
-        Odoc_model.Lang.ModuleType.substitution ->
-        text =
-     fun base -> function
+    and substitution : Odoc_model.Lang.ModuleType.substitution -> text =
+      function
       | ModuleEq (frag_mod, md) ->
           O.keyword "module" ++ O.txt " "
-          ++ Link.from_fragment ~base (frag_mod :> Paths.Fragment.t)
-          ++ O.txt " = " ++ mdexpr base md
+          ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
+          ++ O.txt " = " ++ mdexpr md
       | TypeEq (frag_typ, td) ->
           O.keyword "type" ++ O.txt " "
-          ++ type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t)
+          ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
           ++ fst (format_manifest td)
           ++ format_constraints td.Odoc_model.Lang.TypeDecl.Equation.constraints
       | ModuleSubst (frag_mod, mod_path) ->
           O.keyword "module" ++ O.txt " "
-          ++ Link.from_fragment ~base (frag_mod :> Paths.Fragment.t)
+          ++ Link.from_fragment (frag_mod :> Paths.Fragment.leaf)
           ++ O.txt " := "
           ++ Link.from_path (mod_path :> Paths.Path.t)
       | TypeSubst (frag_typ, td) -> (
           O.keyword "type" ++ O.txt " "
-          ++ type_expr_in_subst ~base td (frag_typ :> Paths.Fragment.t)
+          ++ type_expr_in_subst td (frag_typ :> Paths.Fragment.leaf)
           ++ O.txt " := "
           ++
           match td.Lang.TypeDecl.Equation.manifest with
@@ -1518,7 +1458,7 @@ module Make (Syntax : SYNTAX) = struct
         match t.decl with
         | Odoc_model.Lang.Include.Alias mod_path ->
             Link.from_path (mod_path :> Paths.Path.t)
-        | ModuleType mt -> umty (extract_path_from_umt ~default:t.parent mt) mt
+        | ModuleType mt -> umty mt
       in
 
       let content = signature t.expansion.content in

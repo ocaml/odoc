@@ -496,6 +496,8 @@ module Fragment : sig
       val split : t -> string * t option
     end
 
+    type leaf = Paths_types.Resolved_fragment.leaf
+
     type t = Paths_types.Resolved_fragment.any
 
     val identifier : t -> Identifier.t
@@ -518,6 +520,8 @@ module Fragment : sig
 
     val split : t -> string * t option
   end
+
+  type leaf = Paths_types.Fragment.leaf
 
   type t = Paths_types.Fragment.any
 end
