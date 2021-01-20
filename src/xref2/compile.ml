@@ -236,7 +236,30 @@ and signature_items : Env.t -> Id.Signature.t -> Signature.item list -> _ =
         | External e -> std @@ External (external_ env id e)
         | Class (r, c) -> std @@ Class (r, class_ env id c)
         | ClassType (r, c) -> std @@ ClassType (r, class_type env c)
-        | Include i -> std @@ Include (include_ env i)
+        | Include i ->
+            let i' = include_ env i in
+            if i'.expansion == i.expansion then std @@ Include i'
+            else
+              (* Expansion has changed, let's put the new modules into the environment *)
+              let env' =
+                List.fold_left
+                  (fun env item ->
+                    match item with
+                    | Module (_, m) ->
+                        let ty =
+                          Component.Delayed.(
+                            put (fun () -> Component.Of_Lang.(module_ empty m)))
+                        in
+                        let env' =
+                          Env.add_module
+                            (m.id :> Paths.Identifier.Path.Module.t)
+                            ty [] env
+                        in
+                        env'
+                    | _ -> env)
+                  env i'.expansion.content.items
+              in
+              (Include i' :: items, env')
         | Open o -> std @@ Open o)
       ([], env) s
   in
