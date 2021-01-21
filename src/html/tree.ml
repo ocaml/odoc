@@ -114,10 +114,10 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   in
   Html.html head (Html.body body)
 
-let make ?theme_uri ~url ~header ~toc title content children =
+let make ?theme_uri ~indent ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename url in
   let html = page_creator ?theme_uri ~url title header toc content in
-  let content ppf = (Html.pp ()) ppf html in
+  let content ppf = (Html.pp ~indent ()) ppf html in
   { Odoc_document.Renderer.filename; content; children }
 
 let open_details = ref true

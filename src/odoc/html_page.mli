@@ -19,6 +19,7 @@ open Odoc_document
 type args = {
   semantic_uris : bool;
   closed_details : bool;
+  indent : bool;
   theme_uri : Odoc_html.Tree.uri;
 }
 

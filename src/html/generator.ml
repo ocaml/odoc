@@ -368,24 +368,27 @@ module Page = struct
         | `Closed | `Open | `Default -> None
         | `Inline -> Some 0 )
 
-  let rec include_ ?theme_uri { Subpage.content; _ } =
-    [ page ?theme_uri content ]
+  let rec include_ ?theme_uri indent { Subpage.content; _ } =
+    [ page ?theme_uri indent content ]
 
-  and subpages ?theme_uri i =
-    Utils.list_concat_map ~f:(include_ ?theme_uri) @@ Doctree.Subpages.compute i
+  and subpages ?theme_uri indent i =
+    Utils.list_concat_map ~f:(include_ ?theme_uri indent)
+    @@ Doctree.Subpages.compute i
 
-  and page ?theme_uri ({ Page.title; header; items = i; url } as p) =
+  and page ?theme_uri indent ({ Page.title; header; items = i; url } as p) =
     let resolve = Link.Current url in
     let i = Doctree.Shift.compute ~on_sub i in
     let toc = Toc.from_items ~resolve ~path:url i in
-    let subpages = subpages ?theme_uri p in
+    let subpages = subpages ?theme_uri indent p in
     let header = items ~resolve header in
     let content = (items ~resolve i :> any Html.elt list) in
-    let page = Tree.make ?theme_uri ~header ~toc ~url title content subpages in
+    let page =
+      Tree.make ?theme_uri ~indent ~header ~toc ~url title content subpages
+    in
     page
 end
 
-let render ?theme_uri page = Page.page ?theme_uri page
+let render ?theme_uri ~indent page = Page.page ?theme_uri indent page
 
 let doc ~xref_base_uri b =
   let resolve = Link.Base xref_base_uri in

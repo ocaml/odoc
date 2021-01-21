@@ -29,6 +29,7 @@ type uri =
 
 val make :
   ?theme_uri:uri ->
+  indent:bool ->
   url:Url.Path.t ->
   header:Html_types.flow5_without_header_footer Html.elt list ->
   toc:Html_types.flow5 Html.elt list ->
