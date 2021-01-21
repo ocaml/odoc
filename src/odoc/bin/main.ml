@@ -377,6 +377,10 @@ module Odoc_html = Make_renderer (struct
     in
     Arg.(value & flag (info ~doc [ "closed-details" ]))
 
+  let indent =
+    let doc = "Format the output HTML files with indentation" in
+    Arg.(value & flag (info ~doc [ "indent" ]))
+
   (* Very basic validation and normalization for URI paths. *)
   let convert_uri : Odoc_html.Tree.uri Arg.converter =
     let parser str =
@@ -409,10 +413,10 @@ module Odoc_html = Make_renderer (struct
       value & opt convert_uri default & info ~docv:"URI" ~doc [ "theme-uri" ])
 
   let extra_args =
-    let f semantic_uris closed_details theme_uri =
-      { Html_page.semantic_uris; closed_details; theme_uri }
+    let f semantic_uris closed_details indent theme_uri =
+      { Html_page.semantic_uris; closed_details; theme_uri; indent }
     in
-    Term.(const f $ semantic_uris $ closed_details $ theme_uri)
+    Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri)
 end)
 
 module Html_fragment : sig
