@@ -321,13 +321,13 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
   in
 
   let path = `Apply (func_path, substitution) in
-  Ok
-    ( path,
-      Subst.module_
-        (Subst.add_module
-           (arg_id :> Ident.path_module)
-           (`Resolved substitution) substitution Subst.identity)
-        new_module )
+  let subst =
+    Subst.add_module
+      (arg_id :> Ident.path_module)
+      (`Resolved substitution) substitution Subst.identity
+  in
+  let subst = Subst.unresolve_opaque_paths subst in
+  Ok (path, Subst.module_ subst new_module)
 
 and add_canonical_path :
     Env.t ->

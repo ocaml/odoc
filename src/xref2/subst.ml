@@ -26,7 +26,10 @@ let identity =
     type_replacement = PathTypeMap.empty;
     path_invalidating_modules = [];
     module_type_of_invalidating_modules = [];
+    unresolve_opaque_paths = false;
   }
+
+let unresolve_opaque_paths s = { s with unresolve_opaque_paths = true }
 
 let path_invalidate_module id t =
   { t with path_invalidating_modules = id :: t.path_invalidating_modules }
@@ -199,7 +202,9 @@ let rec resolved_module_path :
   | `Hidden p1 -> `Hidden (resolved_module_path s p1)
   | `Canonical (p1, p2) ->
       `Canonical (resolved_module_path s p1, module_path s p2)
-  | `OpaqueModule m -> `OpaqueModule (resolved_module_path s m)
+  | `OpaqueModule m ->
+      if s.unresolve_opaque_paths then raise Invalidated
+      else `OpaqueModule (resolved_module_path s m)
 
 and resolved_parent_path s = function
   | `Module m -> `Module (resolved_module_path s m)
@@ -245,7 +250,9 @@ and resolved_module_type_path :
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
   | `SubstT (m1, m2) ->
       `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
-  | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type_path s m)
+  | `OpaqueModuleType m ->
+      if s.unresolve_opaque_paths then raise Invalidated
+      else `OpaqueModuleType (resolved_module_type_path s m)
 
 and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
  fun s p ->

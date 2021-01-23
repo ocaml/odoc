@@ -5,6 +5,8 @@ type t = Component.Substitution.t
 
 val identity : t
 
+val unresolve_opaque_paths : t -> t
+
 val path_invalidate_module : Ident.path_module -> t -> t
 
 val mto_invalidate_module : Ident.path_module -> t -> t
