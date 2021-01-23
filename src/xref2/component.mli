@@ -388,6 +388,7 @@ and Substitution : sig
     type_replacement : (TypeExpr.t * TypeDecl.Equation.t) PathTypeMap.t;
     path_invalidating_modules : Ident.path_module list;
     module_type_of_invalidating_modules : Ident.path_module list;
+    unresolve_opaque_paths : bool;
   }
 end
 
