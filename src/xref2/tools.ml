@@ -320,7 +320,7 @@ let rec handle_apply ~mark_substituted env func_path arg_path m =
     if mark_substituted then `Substituted arg_path else arg_path
   in
 
-  let path = `Apply (func_path, substitution) in
+  let path = `Apply (func_path, arg_path) in
   let subst =
     Subst.add_module
       (arg_id :> Ident.path_module)
@@ -448,7 +448,7 @@ and lookup_module :
         lookup_module ~mark_substituted env functor_path
         >>= fun functor_module ->
         let functor_module = Component.Delayed.get functor_module in
-        handle_apply ~mark_substituted:false env functor_path argument_path
+        handle_apply ~mark_substituted env functor_path argument_path
           functor_module
         |> map_error (fun e -> `Parent (`Parent_expr e))
         >>= fun (_, m) -> Ok (Component.Delayed.put_val m)
@@ -971,7 +971,7 @@ and signature_of_module_path :
     Cpath.module_ ->
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env ~strengthen path ->
-  match resolve_module ~mark_substituted:false ~add_canonical:true env path with
+  match resolve_module ~mark_substituted:true ~add_canonical:true env path with
   | Ok (p', m) ->
       let m = Component.Delayed.get m in
       (* p' is the path to the aliased module *)
@@ -1271,13 +1271,16 @@ and fragmap :
 
   let sub = List.fold_right sub_of_removed removed Subst.identity in
 
-  let map_items subfn items =
+  let map_items items =
     (* Invalidate resolved paths containing substituted idents - See the `With11`
        test for an example of why this is necessary *)
     let sub_of_substituted x sub =
       let x = (x :> Ident.path_module) in
-      subfn x sub
+      (if mark_substituted then Subst.add_module_substitution x sub else sub)
+      |> Subst.path_invalidate_module x
+      |> Subst.mto_invalidate_module x
     in
+
     let substituted_sub =
       List.fold_right sub_of_substituted subbed_modules Subst.identity
     in
@@ -1288,7 +1291,7 @@ and fragmap :
     sg.items
   in
 
-  let items = map_items Subst.add_module_substitution items in
+  let items = map_items items in
 
   let res =
     Subst.signature sub

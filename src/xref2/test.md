@@ -712,7 +712,7 @@ now we can ask for the signature of this module:
 # let sg = get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 val sg : Component.Signature.t =
   {Odoc_xref2.Component.Signature.items =
-    [Odoc_xref2.Component.Signature.Module (`LModule (M, 37),
+    [Odoc_xref2.Component.Signature.Module (`LModule (M, 32),
       Odoc_model.Lang.Signature.Ordinary,
       {Odoc_xref2.Component.Delayed.v =
         Some
@@ -723,7 +723,7 @@ val sg : Component.Signature.t =
             None);
           canonical = None; hidden = false};
        get = None});
-     Odoc_xref2.Component.Signature.Module (`LModule (N, 38),
+     Odoc_xref2.Component.Signature.Module (`LModule (N, 33),
       Odoc_model.Lang.Signature.Ordinary,
       {Odoc_xref2.Component.Delayed.v =
         Some
@@ -732,8 +732,7 @@ val sg : Component.Signature.t =
            Odoc_xref2.Component.Module.ModuleType
             (Odoc_xref2.Component.ModuleType.Path
               {Odoc_xref2.Component.ModuleType.p_expansion = None;
-               p_path =
-                `Dot (`Substituted (`Local (`LModule (M, 37), false)), "S")});
+               p_path = `Dot (`Local (`LModule (M, 32), false), "S")});
           canonical = None; hidden = false};
        get = None})];
    compiled = false; removed = []}
@@ -755,19 +754,17 @@ val m : Component.Module.t Component.Delayed.t =
           {Odoc_xref2.Component.ModuleType.p_expansion = None;
            p_path =
             `Dot
-              (`Substituted
+              (`Module
                  (`Module
-                    (`Module
-                       (`Identifier
-                          (`Module (`Root (`RootPage None, Root), C))),
-                     M)),
+                    (`Identifier (`Module (`Root (`RootPage None, Root), C))),
+                  M),
                "S")});
       canonical = None; hidden = false};
    get = None}
 # get_ok @@ Tools.signature_of_module env (Component.Delayed.get m);;
 - : Component.Signature.t =
 {Odoc_xref2.Component.Signature.items =
-  [Odoc_xref2.Component.Signature.Type (`LType (t, 45),
+  [Odoc_xref2.Component.Signature.Type (`LType (t, 40),
     Odoc_model.Lang.Signature.Ordinary,
     {Odoc_xref2.Component.Delayed.v =
       Some
@@ -790,16 +787,8 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Subst
-            (`ModuleType
-               (`Alias
-                  (`Identifier (`Module (`Root (`RootPage None, Root), B)),
-                   `Module
-                     (`Identifier (`Module (`Root (`RootPage None, Root), C)),
-                      M)),
-                S),
-             `Module
-               (`Identifier (`Module (`Root (`RootPage None, Root), C)), N)),
+         (`Module
+            (`Identifier (`Module (`Root (`RootPage None, Root), C)), N),
           t)),
    []))
 ```
@@ -1034,12 +1023,9 @@ val p : Cpath.Resolved.module_ =
     (`Apply
        (`Apply
           (`Identifier (`Module (`Root (`RootPage None, Root), App)),
-           `Substituted
-             (`Identifier (`Module (`Root (`RootPage None, Root), Bar)))),
-        `Substituted
-          (`Identifier (`Module (`Root (`RootPage None, Root), Foo)))),
-     `Substituted
-       (`Identifier (`Module (`Root (`RootPage None, Root), FooBarInt))))
+           `Identifier (`Module (`Root (`RootPage None, Root), Bar))),
+        `Identifier (`Module (`Root (`RootPage None, Root), Foo))),
+     `Identifier (`Module (`Root (`RootPage None, Root), FooBarInt)))
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
@@ -1325,39 +1311,19 @@ Some
  (Odoc_model.Lang.TypeExpr.Constr
    (`Resolved
       (`Type
-         (`Subst
-            (`SubstT
+         (`Module
+            (`Subst
                (`ModuleType
                   (`Identifier (`Module (`Root (`RootPage None, Root), Dep6)),
-                   S),
-                `ModuleType
-                  (`Subst
-                     (`ModuleType
-                        (`Identifier
-                           (`Module (`Root (`RootPage None, Root), Dep6)),
-                         T),
-                      `Module
-                        (`Apply
-                           (`Identifier
-                              (`Module (`Root (`RootPage None, Root), Dep7)),
-                            `Identifier
-                              (`Module (`Root (`RootPage None, Root), Dep6))),
-                         M)),
-                   R)),
-             `Module
-               (`Subst
-                  (`ModuleType
+                   T),
+                `Module
+                  (`Apply
                      (`Identifier
-                        (`Module (`Root (`RootPage None, Root), Dep6)),
-                      T),
-                   `Module
-                     (`Apply
-                        (`Identifier
-                           (`Module (`Root (`RootPage None, Root), Dep7)),
-                         `Identifier
-                           (`Module (`Root (`RootPage None, Root), Dep6))),
-                      M)),
-                Y)),
+                        (`Module (`Root (`RootPage None, Root), Dep7)),
+                      `Identifier
+                        (`Module (`Root (`RootPage None, Root), Dep6))),
+                   M)),
+             Y),
           d)),
    []))
 ```

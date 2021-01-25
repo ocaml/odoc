@@ -218,7 +218,7 @@ and module_path : t -> Cpath.module_ -> Cpath.module_ =
       try `Resolved (resolved_module_path s p')
       with Invalidated ->
         let path' = Cpath.unresolve_resolved_module_path p' in
-        module_path s (`Substituted path') )
+        module_path s path' )
   | `Dot (p', str) -> `Dot (module_path s p', str)
   | `Module (p', str) -> `Module (resolved_parent_path s p', str)
   | `Apply (p1, p2) -> `Apply (module_path s p1, module_path s p2)
@@ -261,7 +261,7 @@ and module_type_path : t -> Cpath.module_type -> Cpath.module_type =
       try `Resolved (resolved_module_type_path s r)
       with Invalidated ->
         let path' = Cpath.unresolve_resolved_module_type_path r in
-        module_type_path s (`Substituted path') )
+        module_type_path s path' )
   | `Substituted p -> `Substituted (module_type_path s p)
   | `Local (id, b) -> (
       match try Some (ModuleTypeMap.find id s.module_type) with _ -> None with
@@ -300,7 +300,7 @@ and type_path : t -> Cpath.type_ -> Cpath.type_ or_replaced =
       try resolved_type_path s r |> map_replaced (fun r -> `Resolved r)
       with Invalidated ->
         let path' = Cpath.unresolve_resolved_type_path r in
-        type_path s (`Substituted path') )
+        type_path s path' )
   | `Substituted p -> type_path s p |> map_replaced (fun r -> `Substituted r)
   | `Local (id, b) -> (
       if PathTypeMap.mem id s.type_replacement then

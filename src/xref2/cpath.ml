@@ -249,7 +249,7 @@ let rec is_resolved_module_substituted : Resolved.module_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
   | `Identifier _ -> false
-  | `Subst (a, _) -> is_resolved_module_type_substituted a
+  | `Subst (_a, _) -> false (* is_resolved_module_type_substituted a*)
   | `SubstAlias (a, _)
   | `Hidden a
   | `Canonical (a, _)
@@ -270,7 +270,7 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   | `Substituted _ -> true
   | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
-  | `SubstT _ -> true
+  | `SubstT _ -> false
   | `OpaqueModuleType m -> is_resolved_module_type_substituted m
 
 and is_resolved_type_substituted : Resolved.type_ -> bool = function
