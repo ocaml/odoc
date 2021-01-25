@@ -465,7 +465,7 @@ module (root Root).B : sig
     end
   end
 module (root Root).C : resolved[global((root Root).A)] with [root_module_type(global((root Root).A)).M = = resolved[global((root Root).B)]]
-type (root Root).t = resolved[((global((root Root).B) -> global((root Root).C).M).S subst-> global((root Root).C).N).t]
+type (root Root).t = resolved[global((root Root).C).N.t]
 
 - : unit = ()
 ```
