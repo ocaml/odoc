@@ -71,8 +71,14 @@ let render_odoc ~env ~warn_error ~syntax ~renderer ~output extra file =
 let generate_odoc ~syntax ~renderer ~output extra file =
   document_of_odocl ~syntax file >>= render_document renderer ~output ~extra
 
-let targets_odoc ~renderer ~output:root_dir ~extra odoctree =
-  document_of_odocl ~syntax:OCaml odoctree >>= fun odoctree ->
+let targets_odoc ~env ~warn_error ~syntax ~renderer ~output:root_dir ~extra
+    odoctree =
+  let doc =
+    if Fpath.get_ext odoctree = ".odoc" then
+      document_of_input ~env ~warn_error ~syntax odoctree
+    else document_of_odocl ~syntax:OCaml odoctree
+  in
+  doc >>= fun odoctree ->
   let pages = renderer.Renderer.render extra odoctree in
   Renderer.traverse pages ~f:(fun filename _content ->
       let filename = Fpath.normalize @@ Fs.File.append root_dir filename in
