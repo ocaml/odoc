@@ -56,11 +56,6 @@ and aux_expansion_of_module_alias env ~strengthen path =
         && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p)
       in
       let m = Component.Delayed.get m in
-      (* Strengthen=false here so if we're strengthening a chain of aliases
-         we only strengthen with the 'outer' (first) one. This covers cases
-         where we're aliasing e.g. Stdlib.List which is itself an alias for
-         Stdlib__list - we want to strengthen with Stdlib.List rather than
-         with Stdlib__list. *)
       match (aux_expansion_of_module env ~strengthen:true m, m.doc) with
       | (Error _ as e), _ -> e
       | Ok (Signature sg), [] ->
