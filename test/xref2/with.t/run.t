@@ -10,7 +10,7 @@ be able to link anywhere because we don't render the inner signature anywhere.
   
 
   $ cat compile.sh
-  #!/bin/bash
+  #!/bin/sh
   
   ocamlc -c -bin-annot test.ml
   odoc compile page.mld --child module-test

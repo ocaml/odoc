@@ -72,7 +72,7 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
   let env = Env.build env (`Unit unit) in
 
   Odoc_xref2.Compile.compile env unit
-  |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename
+  |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false ~filename
   >>= fun compiled ->
   (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
      defined, elements. We'd rather it got back the resolved bit so we rebuild an

@@ -878,7 +878,7 @@ and rename_bound_idents s sg =
             {
               i with
               Component.Include.expansion_ =
-                { items; removed = []; compiled = false };
+                { items; removed = []; compiled = i.expansion_.compiled };
             }
         :: sg )
         rest
@@ -890,7 +890,7 @@ and rename_bound_idents s sg =
         ( Open
             {
               Component.Open.expansion =
-                { items; removed = []; compiled = false };
+                { items; removed = []; compiled = o.expansion.compiled };
             }
         :: sg )
         rest

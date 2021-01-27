@@ -30,7 +30,7 @@ let from_odoc ~env ~warn_error input output =
 
       let env = Env.build env (`Unit unit) in
       Odoc_xref2.Link.link env unit
-      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
+      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false
            ~filename:input_s
       >>= fun odoctree ->
       Compilation_unit.save output odoctree;

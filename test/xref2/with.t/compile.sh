@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ocamlc -c -bin-annot test.ml
 odoc compile page.mld --child module-test
