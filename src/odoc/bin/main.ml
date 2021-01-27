@@ -338,13 +338,19 @@ end = struct
   let generate = Generate.(cmd, info)
 
   module Targets = struct
-    let list_targets output_dir _ extra odoc_file =
+    let list_targets output_dir directories extra odoc_file =
       let odoc_file = Fs.File.of_string odoc_file in
-      Rendering.targets_odoc ~renderer:R.renderer ~output:output_dir ~extra
-        odoc_file
+      let env =
+        Env.create ~important_digests:false ~directories ~open_modules:[]
+      in
+      Rendering.targets_odoc ~env ~warn_error:false ~syntax:OCaml
+        ~renderer:R.renderer ~output:output_dir ~extra odoc_file
 
     let back_compat =
-      let doc = "For backwards compatibility. Ignored." in
+      let doc =
+        "For backwards compatibility when processing odoc rather than odocl \
+         files."
+      in
       Arg.(
         value
         & opt_all (convert_directory ()) []

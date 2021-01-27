@@ -20,6 +20,9 @@ val generate_odoc :
   (unit, [> msg ]) result
 
 val targets_odoc :
+  env:Env.builder ->
+  warn_error:bool ->
+  syntax:Renderer.syntax ->
   renderer:'a Renderer.t ->
   output:Fs.directory ->
   extra:'a ->
