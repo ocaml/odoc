@@ -575,8 +575,7 @@ and u_module_type_expr s t =
         TypeOf
           {
             t_desc = module_type_type_of_desc s t_desc;
-            t_expansion =
-              Some (Signature (apply_sig_map s e.items e.removed e.compiled));
+            t_expansion = Some (Signature (apply_sig_map_sg s e));
           }
       with MTOInvalidated -> u_module_type_expr s (Signature e) )
   | TypeOf { t_expansion = Some (Functor _); _ } -> assert false
@@ -706,17 +705,12 @@ and include_ s i =
   {
     i with
     decl = include_decl s i.decl;
-    expansion_ =
-      apply_sig_map s i.expansion_.items i.expansion_.removed
-        i.expansion_.compiled;
+    expansion_ = apply_sig_map_sg s i.expansion_;
   }
 
 and open_ s o =
   let open Component.Open in
-  {
-    expansion =
-      apply_sig_map s o.expansion.items o.expansion.removed o.expansion.compiled;
-  }
+  { expansion = apply_sig_map_sg s o.expansion }
 
 and value s v =
   let open Component.Value in
@@ -912,6 +906,9 @@ and removed_items s items =
 and signature s sg =
   let s, items = rename_bound_idents s [] sg.items in
   apply_sig_map s items sg.removed sg.compiled
+
+and apply_sig_map_sg s (sg : Component.Signature.t) =
+  apply_sig_map s sg.items sg.removed sg.compiled
 
 and apply_sig_map s items removed compiled =
   let open Component.Signature in
