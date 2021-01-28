@@ -44,6 +44,8 @@ Some documentation\.
 .sp 
 \f[CB]type\fR instance = int constructor
 .sp 
+\f[CB]type\fR long = labeled_higher_order \-> [ `Bar | `Baz of triple ] \-> pair \-> labeled \-> higher_order \-> (string \-> int) \-> (int, float, string, Stdlib\.Int64\.t, char, unit) CamlinternalFormatBasics\.fmtty \-> nested_pair \-> arrow \-> Stdlib\.String\.t \-> nested_pair array
+.sp 
 \f[CB]type\fR variant_e = {
 .br 
 .ti +2

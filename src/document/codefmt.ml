@@ -128,7 +128,7 @@ let make () =
 
   (* out_functions is only available in OCaml>=4.06 *)
   (* let out_functions = {Format.
-   *   out_string = (fun );
+   *   out_string = (fun i j s -> push_text @@ String.sub i j s );
    *   out_flush = (fun () -> ());
    *   out_newline = (fun () -> push [inline @@ Linebreak]);
    *   out_spaces = (fun n -> push_text (String.make n ' '));
@@ -163,6 +163,9 @@ let span f ppf = pf ppf "@{<>%t@}" f
 let txt s ppf = Format.pp_print_string ppf s
 
 let noop (_ : Format.formatter) = ()
+let break i j ppf = Format.pp_print_break ppf i j
+let cut = break 0 0
+let sp = break 1 0
 
 let ( ! ) (pp : _ Fmt.t) x ppf = pp ppf x
 
@@ -174,13 +177,13 @@ let rec list ?sep ~f = function
       let tl = list ?sep ~f xs in
       match sep with None -> hd ++ tl | Some sep -> hd ++ sep ++ tl )
 
-let render f = spf "%t" f
+let render f = spf "@[%t@]" (span f)
 
-let code ?attr f = [ inline ?attr @@ Inline.Source (render f) ]
+let code ?attr f = [inline ?attr @@ Inline.Source (render f)]
 
-let documentedSrc f = [ DocumentedSrc.Code (render f) ]
+let documentedSrc f = [DocumentedSrc.Code (render f)]
 
-let codeblock ?attr f = [ block ?attr @@ Block.Source (render f) ]
+let codeblock ?attr f = [block ?attr @@ Block.Source (render f)]
 
 let keyword keyword ppf = pf ppf "@{<keyword>%s@}" keyword
 
