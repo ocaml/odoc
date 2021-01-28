@@ -19,15 +19,18 @@ extensions where odoc goes beyond what is officially supported.
 The following describes the changes between what odoc understands and what is in the OCaml manual.
 
 {4 Omissions}
-- Comments describing class inheritance are not rendered (bug)
-- Odoc does not currently handle ambiguously associated doc comments (bug)
-- Odoc does not ignore tags where they don't make sense (e.g. [@param] tags on instance variables are rendered) (bug)
-- {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-formatting}Alignment elements} are not handled ([{C text}], [{L text}] and [{R text}])
-- Odoc does not recognise {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-html-tags}html tags embedded in comments}
+- Comments describing class inheritance are not rendered ({{:https://github.com/ocaml/odoc/issues/574}github issue}).
+- Odoc handles ambiguous documentation comments as the compiler does (see {{:https://caml.inria.fr/pub/docs/manual-ocaml/doccomments.html}here})
+  rather than treating them as the ocamldoc manual suggests.
+- Odoc does not ignore tags where they don't make sense (e.g. [@param] tags on instance variables are rendered) ({{:https://github.com/ocaml/odoc/issues/575}github issue})
+- {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-formatting}Alignment elements} are not handled ([{C text}], [{L text}] and [{R text}]) ({{:https://github.com/ocaml/odoc/issues/541}github issue})
+- Odoc does not recognise {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-html-tags}html tags embedded in comments} ({{:https://github.com/ocaml/odoc/issues/576}github issue})
+- [{!indexlist}] is not supported ({{:https://github.com/ocaml/odoc/issues/577}github issue})
 
 {4 Improvements}
 - Odoc has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
-- Support for standalone 'mld' files - these are documents using the OCamldoc markup, but rendered as distinct pages.
+- Built-in support for standalone 'mld' files - these are documents using the OCamldoc markup, but rendered as distinct pages.
+- Structured output - odoc can produce output in a structured directory tree rather a set of files.
 - A few extra tags are supported:
   + [@returns] is a synonym for [@return]
   + [@raises] is a synonym for [@raise]
@@ -64,11 +67,11 @@ each release of odoc, and thus we will ensure backward compatibility of the CLI 
 There are currently 3 tools that 'drive' odoc that are considered 'first class' in that we will not make
 releases of odoc whilst knowingly breaking these tools. These are:
 
-- odig
-- dune
-- ocaml
+- Odig
+- Dune
+- OCaml
 
-OCaml here refers to the newly merged configure option to build the standard library documentation with
+OCaml here refers to the newly merged configure option (from 4.12.0) to build the standard library documentation with
 odoc. If the recommended way of invoking odoc changes we will work with the maintainers of these projects
 to ensure they are updated correspondingly.
 
@@ -88,7 +91,12 @@ the HTML are preserved though, implying also that the filenames will also be pre
 
 Odoc has several internal libraries. The only one of these for which we currently expect external users is
 the comment parser. This will soon be removed into an external package to link with separately and will
-have its own lifecycle and support statement. Note that this will perform the same function as the existing
+have its own lifecycle and support statement. Note that this will replace the existing
 [octavius] library, which was the original implementation of odoc's current parser.
+
+{2 Intermediate files}
+
+The intermediate files that odoc produces - [.odoc] and [.odocl] should be considered to be internal only
+and tied to the specific version of odoc.
 
 
