@@ -56,7 +56,10 @@ and source k ?a (t : Source.t) =
   let rec token (x : Source.token) =
     match x with
     | Elt i -> k i
-    | Tag (None, l) -> [ Html.span (tokens l) ]
+    | Tag (None, l) ->
+      let content = tokens l in
+      if content = [] then []
+      else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
   and tokens t = Utils.list_concat_map t ~f:token in
   Utils.optional_elt Html.code ?a (tokens t)
@@ -101,6 +104,7 @@ and inline ?(emph_level = 0) ~resolve (l : Inline.t) : phrasing Html.elt list =
   let one (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
+    | Text "" -> []
     | Text s ->
         if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
     | Entity s ->
@@ -124,6 +128,7 @@ and inline_nolink ?(emph_level = 0) (l : Inline.t) :
   let one (t : Inline.one) =
     let a = class_ t.attr in
     match t.desc with
+    | Text "" -> []
     | Text s ->
         if a = [] then [ Html.txt s ] else [ Html.span ~a [ Html.txt s ] ]
     | Entity s ->
@@ -317,12 +322,13 @@ and items ~resolve l : item Html.elt list =
         let a = class_of_kind kind @ anchor_attrib in
         let content = anchor_link @ documentedSrc ~resolve content in
         let elts =
+          let content = div ~a content in
           match doc with
-          | [] -> [ div ~a content ]
+          | [] -> [ content ]
           | docs ->
               [
-                div
-                  [ div ~a content; div (flow_to_item @@ block ~resolve docs) ];
+                Html.div
+                  [ content; div (flow_to_item @@ block ~resolve docs) ];
               ]
         in
         (continue_with [@tailcall]) rest elts
