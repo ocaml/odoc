@@ -68,7 +68,7 @@ releases of odoc whilst knowingly breaking these tools. These are:
 - dune
 - ocaml
 
-Ocaml here refers to the newly merged configure option to build the standard library documentation with
+OCaml here refers to the newly merged configure option to build the standard library documentation with
 odoc. If the recommended way of invoking odoc changes we will work with the maintainers of these projects
 to ensure they are updated correspondingly.
 
@@ -90,6 +90,5 @@ Odoc has several internal libraries. The only one of these for which we currentl
 the comment parser. This will soon be removed into an external package to link with separately and will
 have its own lifecycle and support statement. Note that this will perform the same function as the existing
 [octavius] library, which was the original implementation of odoc's current parser.
-
 
 
