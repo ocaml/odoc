@@ -1,3 +1,17 @@
+2.0.0~beta1
+-----------
+
+- New model for expanding and cross referencing (@jonludlam, @Julow, @lubegasimon)
+- New document output layer, supporting HTML, LaTeX and man page output (@Drup, @Octachron, @jonludlam, @Julow, @lubegasimon)
+- Experimental parent/child support for structured output (@jonludlam)
+
+1.5.1
+-----
+
+Additions
+
+- Compatibility with OCaml 4.11 (#434, @kit-ty-kate)
+
 1.5.0
 -----
 
