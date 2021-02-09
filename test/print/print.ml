@@ -25,7 +25,7 @@ module Identifier_to_sexp = struct
       | `ModuleType (parent, s) ->
           traverse
             (List [ Atom "module_type"; Atom (ModuleTypeName.to_string s) ]
-            :: acc)
+             :: acc)
             (parent :> Identifier.t)
       | `Type (parent, s) ->
           traverse
@@ -36,7 +36,7 @@ module Identifier_to_sexp = struct
       | `Constructor (parent, s) ->
           traverse
             (List [ Atom "constructor"; Atom (ConstructorName.to_string s) ]
-            :: acc)
+             :: acc)
             (parent :> Identifier.t)
       | `Field (parent, s) ->
           traverse
@@ -53,7 +53,7 @@ module Identifier_to_sexp = struct
       | `CoreException s ->
           List
             (List [ Atom "core_exception"; Atom (ExceptionName.to_string s) ]
-            :: acc)
+             :: acc)
       | `Value (parent, s) ->
           traverse
             (List [ Atom "value"; Atom (ValueName.to_string s) ] :: acc)
@@ -77,7 +77,7 @@ module Identifier_to_sexp = struct
                  Atom "instance_variable";
                  Atom (InstanceVariableName.to_string s);
                ]
-            :: acc)
+             :: acc)
             (parent :> Identifier.t)
       | `Label (parent, s) ->
           traverse

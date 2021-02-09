@@ -874,7 +874,7 @@ and rename_bound_idents s sg =
              Component.Include.expansion_ =
                { items; removed = []; compiled = i.expansion_.compiled };
            }
-        :: sg)
+         :: sg)
         rest
   | Open o :: rest ->
       let s, items =
@@ -886,7 +886,7 @@ and rename_bound_idents s sg =
              Component.Open.expansion =
                { items; removed = []; compiled = o.expansion.compiled };
            }
-        :: sg)
+         :: sg)
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 
@@ -922,7 +922,7 @@ and apply_sig_map s items removed compiled =
                r,
                Component.Delayed.put (fun () ->
                    module_ s (Component.Delayed.get m)) )
-          :: acc)
+           :: acc)
     | ModuleSubstitution (id, m) :: rest ->
         inner rest (ModuleSubstitution (id, module_substitution s m) :: acc)
     | ModuleType (id, mt) :: rest ->
@@ -931,7 +931,7 @@ and apply_sig_map s items removed compiled =
              ( id,
                Component.Delayed.put (fun () ->
                    module_type s (Component.Delayed.get mt)) )
-          :: acc)
+           :: acc)
     | Type (id, r, t) :: rest ->
         inner rest
           (Type
@@ -939,7 +939,7 @@ and apply_sig_map s items removed compiled =
                r,
                Component.Delayed.put (fun () ->
                    type_ s (Component.Delayed.get t)) )
-          :: acc)
+           :: acc)
     | TypeSubstitution (id, t) :: rest ->
         inner rest (TypeSubstitution (id, type_ s t) :: acc)
     | Exception (id, e) :: rest ->
@@ -951,7 +951,7 @@ and apply_sig_map s items removed compiled =
              ( id,
                Component.Delayed.put (fun () ->
                    value s (Component.Delayed.get v)) )
-          :: acc)
+           :: acc)
     | External (id, e) :: rest ->
         inner rest (External (id, external_ s e) :: acc)
     | Class (id, r, c) :: rest -> inner rest (Class (id, r, class_ s c) :: acc)

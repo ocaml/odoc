@@ -1077,6 +1077,6 @@ let parse warnings tokens =
         in
 
         junk input;
-        elements @ (block :: parse_block_elements ())
+        elements @ block :: parse_block_elements ()
   in
   parse_block_elements ()
