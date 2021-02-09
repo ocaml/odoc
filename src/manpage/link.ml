@@ -34,7 +34,7 @@ let rec is_class_or_module_path (url : Url.Path.t) =
   | "module" | "page" | "container-page" | "class" -> (
       match url.parent with
       | None -> true
-      | Some url -> is_class_or_module_path url )
+      | Some url -> is_class_or_module_path url)
   | _ -> false
 
 let should_inline x = not @@ is_class_or_module_path x

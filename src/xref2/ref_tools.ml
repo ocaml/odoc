@@ -191,7 +191,7 @@ module M = struct
     | None -> (
         match Env.lookup_root_module name env with
         | Some (Env.Resolved (_, id, _, m)) -> of_element env (`Module (id, m))
-        | _ -> None )
+        | _ -> None)
 end
 
 module MT = struct
@@ -410,11 +410,11 @@ module F = struct
         >>= function
         | `In_type (_, _, `FConstructor _) -> None
         | `In_type (typ_name, _, `FField _) ->
-            Some (`Field (`Type (parent', typ_name), name)) )
+            Some (`Field (`Type (parent', typ_name), name)))
     | `T (parent', t) -> (
         Find.any_in_type t (FieldName.to_string name) >>= function
         | `FConstructor _ -> None
-        | `FField _ -> Some (`Field ((parent' :> Resolved.Parent.t), name)) )
+        | `FField _ -> Some (`Field ((parent' :> Resolved.Parent.t), name)))
     | `C _ | `CT _ | `Page _ -> None
 
   let of_component _env parent name : t option =
@@ -597,7 +597,7 @@ and resolve_signature_reference :
               module_type_lookup_to_signature_lookup env
                 (MT.of_component env mt
                    (`ModuleType (parent_cp, name))
-                   (`ModuleType (parent, name))) )
+                   (`ModuleType (parent, name))))
     in
     resolve env'
 
@@ -676,7 +676,7 @@ let resolve_reference_dot_sg env ~parent_path ~parent_ref ~parent_sg name =
       let parent = `Type (parent_ref, typ_name) in
       match r with
       | `FConstructor _ -> CS.of_component env parent name >>= resolved1
-      | `FField _ -> F.of_component env parent name >>= resolved1 )
+      | `FField _ -> F.of_component env parent name >>= resolved1)
   | `FModule_subst _ | `FType_subst _ -> None
 
 let resolve_reference_dot_page env page name =
@@ -723,16 +723,16 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | `Constructor (id, _) -> identifier id
         | `Exception (id, _) -> identifier id
         | `Extension (id, _) -> identifier id
-        | `Field (id, _) -> identifier id )
+        | `Field (id, _) -> identifier id)
     | `Root (name, `TChildPage) -> (
         match Env.lookup_page name env with
         | Some p -> Some (`Identifier (p.name :> Identifier.t))
-        | None -> None )
+        | None -> None)
     | `Root (name, `TChildModule) -> (
         match Env.lookup_root_module name env with
         | Some (Resolved (_, id, _, _)) ->
             Some (`Identifier (id :> Identifier.t))
-        | Some Forward | None -> None )
+        | Some Forward | None -> None)
     | `Resolved r -> Some r
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
     | `Module (parent, name) ->
@@ -768,7 +768,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         match Env.lookup_page name env with
         | Some p ->
             Some (`Identifier (p.Odoc_model.Lang.Page.name :> Identifier.t))
-        | None -> None )
+        | None -> None)
     | `Dot (parent, name) -> resolve_reference_dot env parent name
     | `Root (name, `TConstructor) -> CS.in_env env name >>= resolved1
     | `Constructor (parent, name) ->

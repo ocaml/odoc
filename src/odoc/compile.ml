@@ -40,7 +40,7 @@ let parent directories parent_cli_spec =
     | `Root (p, `TPage) | `Root (p, `TUnknown) -> (
         match Env.lookup_page ap p with
         | Some r -> Ok r
-        | None -> Error (`Msg "Couldn't find specified parent page") )
+        | None -> Error (`Msg "Couldn't find specified parent page"))
     | _ -> Error (`Msg "Expecting page as parent")
   in
   let extract_parent = function
@@ -65,10 +65,9 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
   >>= fun unit ->
   if not unit.Odoc_model.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
-      ( if not (Filename.check_suffix filename "cmt") then "" (* ? *)
+      (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
       else
-        Printf.sprintf " Using %S while you should use the .cmti file" filename
-      );
+        Printf.sprintf " Using %S while you should use the .cmti file" filename);
   let env = Env.build env (`Unit unit) in
 
   Odoc_xref2.Compile.compile env unit
@@ -183,13 +182,13 @@ let compile ~env ~directories ~parent_cli_spec ~hidden ~children ~output
   let ext = Fs.File.get_ext input in
   if ext = ".mld" then mld ~parent_spec ~output ~warn_error ~children input
   else
-    ( match ext with
+    (match ext with
     | ".cmti" -> Ok Odoc_loader.read_cmti
     | ".cmt" -> Ok Odoc_loader.read_cmt
     | ".cmi" -> Ok Odoc_loader.read_cmi
     | _ ->
         Error
-          (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld.") )
+          (`Msg "Unknown extension, expected one of: cmti, cmt, cmi or mld."))
     >>= fun loader ->
     let parent =
       match parent_spec with

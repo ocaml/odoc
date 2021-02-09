@@ -24,8 +24,8 @@ module Identifier_to_sexp = struct
           traverse (List [ Atom "parent" ] :: acc) (parent :> Identifier.t)
       | `ModuleType (parent, s) ->
           traverse
-            ( List [ Atom "module_type"; Atom (ModuleTypeName.to_string s) ]
-            :: acc )
+            (List [ Atom "module_type"; Atom (ModuleTypeName.to_string s) ]
+            :: acc)
             (parent :> Identifier.t)
       | `Type (parent, s) ->
           traverse
@@ -35,8 +35,8 @@ module Identifier_to_sexp = struct
           List (List [ Atom "core_type"; Atom (TypeName.to_string s) ] :: acc)
       | `Constructor (parent, s) ->
           traverse
-            ( List [ Atom "constructor"; Atom (ConstructorName.to_string s) ]
-            :: acc )
+            (List [ Atom "constructor"; Atom (ConstructorName.to_string s) ]
+            :: acc)
             (parent :> Identifier.t)
       | `Field (parent, s) ->
           traverse
@@ -52,8 +52,8 @@ module Identifier_to_sexp = struct
             (parent :> Identifier.t)
       | `CoreException s ->
           List
-            ( List [ Atom "core_exception"; Atom (ExceptionName.to_string s) ]
-            :: acc )
+            (List [ Atom "core_exception"; Atom (ExceptionName.to_string s) ]
+            :: acc)
       | `Value (parent, s) ->
           traverse
             (List [ Atom "value"; Atom (ValueName.to_string s) ] :: acc)
@@ -72,12 +72,12 @@ module Identifier_to_sexp = struct
             (parent :> Identifier.t)
       | `InstanceVariable (parent, s) ->
           traverse
-            ( List
-                [
-                  Atom "instance_variable";
-                  Atom (InstanceVariableName.to_string s);
-                ]
-            :: acc )
+            (List
+               [
+                 Atom "instance_variable";
+                 Atom (InstanceVariableName.to_string s);
+               ]
+            :: acc)
             (parent :> Identifier.t)
       | `Label (parent, s) ->
           traverse
@@ -112,7 +112,9 @@ module Path_to_sexp = struct
     | `Subst (mt, m) ->
         List
           [
-            Atom "subst"; resolved (mt :> Resolved.t); resolved (m :> Resolved.t);
+            Atom "subst";
+            resolved (mt :> Resolved.t);
+            resolved (m :> Resolved.t);
           ]
     | `SubstAlias (m, m') ->
         List
@@ -166,7 +168,9 @@ module Path_to_sexp = struct
     | `Alias (m, m') ->
         List
           [
-            Atom "alias"; resolved (m :> Resolved.t); resolved (m' :> Resolved.t);
+            Atom "alias";
+            resolved (m :> Resolved.t);
+            resolved (m' :> Resolved.t);
           ]
     | `SubstT (m, m') ->
         List
@@ -514,8 +518,8 @@ module Comment_to_sexp = struct
           | `Document -> "document"
         in
         List
-          ( [ Atom "@see"; Atom kind; Atom s ]
-          @ List.map (at nestable_block_element) es )
+          ([ Atom "@see"; Atom kind; Atom s ]
+          @ List.map (at nestable_block_element) es)
     | `Since s -> List [ Atom "@since"; Atom s ]
     | `Before (s, es) ->
         List

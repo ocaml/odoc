@@ -25,7 +25,7 @@ module State = struct
     if Stack.is_empty state.context then List.rev state.current
     else (
       leave state;
-      flush state )
+      flush state)
 end
 
 (** Modern implementation using semantic tags, Only for 4.08+ *)
@@ -172,7 +172,7 @@ let rec list ?sep ~f = function
   | x :: xs -> (
       let hd = f x in
       let tl = list ?sep ~f xs in
-      match sep with None -> hd ++ tl | Some sep -> hd ++ sep ++ tl )
+      match sep with None -> hd ++ tl | Some sep -> hd ++ sep ++ tl)
 
 let render f = spf "%t" f
 

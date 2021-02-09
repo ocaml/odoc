@@ -8,7 +8,7 @@ let rec list_concat_map ?sep ~f = function
   | x :: xs -> (
       let hd = f x in
       let tl = list_concat_map ?sep ~f xs in
-      match sep with None -> hd @ tl | Some sep -> hd @ (sep :: tl) )
+      match sep with None -> hd @ tl | Some sep -> hd @ (sep :: tl))
 
 module Link = struct
   let rec flatten_path ppf (x : Odoc_document.Url.Path.t) =
@@ -28,7 +28,7 @@ module Link = struct
     | "module" | "page" | "class" | "container-page" -> (
         match url.parent with
         | None -> true
-        | Some url -> is_class_or_module_path url )
+        | Some url -> is_class_or_module_path url)
     | _ -> false
 
   let should_inline status url =
@@ -44,7 +44,7 @@ module Link = struct
         let pdir = dir p in
         match url.kind with
         | "container-page" -> Fpath.(pdir / url.name)
-        | _ -> pdir )
+        | _ -> pdir)
 
   let file url =
     let rec l (url : Odoc_document.Url.Path.t) acc =
@@ -55,7 +55,7 @@ module Link = struct
           | None ->
               assert false
               (* Only container-pages are allowed to have no parent *)
-          | Some p -> l p (url.name :: acc) )
+          | Some p -> l p (url.name :: acc))
     in
     String.concat "." (l url [])
 
@@ -351,8 +351,8 @@ let rec documentedSrc (t : DocumentedSrc.t) =
         let code, _, rest = take_code t in
         non_empty_code_fragment code @ to_latex rest
     | Alternative (Expansion e) :: rest ->
-        ( if Link.should_inline e.status e.url then to_latex e.expansion
-        else non_empty_code_fragment e.summary )
+        (if Link.should_inline e.status e.url then to_latex e.expansion
+        else non_empty_code_fragment e.summary)
         @ to_latex rest
     | Subpage subp :: rest ->
         Indented (items subp.content.items) :: to_latex rest

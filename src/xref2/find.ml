@@ -57,7 +57,7 @@ type any_in_class_sig = [ instance_variable | method_ ]
 module N = Ident.Name
 
 let rec find_map f = function
-  | hd :: tl -> ( match f hd with Some _ as x -> x | None -> find_map f tl )
+  | hd :: tl -> ( match f hd with Some _ as x -> x | None -> find_map f tl)
   | [] -> None
 
 let find_in_sig sg f =
@@ -65,8 +65,8 @@ let find_in_sig sg f =
     | Signature.Include i :: tl -> (
         match inner f i.Include.expansion_.items with
         | Some _ as x -> x
-        | None -> inner f tl )
-    | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner f tl )
+        | None -> inner f tl)
+    | hd :: tl -> ( match f hd with Some _ as x -> x | None -> inner f tl)
     | [] -> None
   in
   inner f sg.Signature.items
@@ -76,7 +76,7 @@ let filter_in_sig sg f =
     | Signature.Include i :: tl ->
         inner f i.Include.expansion_.items @ inner f tl
     | hd :: tl -> (
-        match f hd with Some x -> x :: inner f tl | None -> inner f tl )
+        match f hd with Some x -> x :: inner f tl | None -> inner f tl)
     | [] -> []
   in
   inner f sg.Signature.items
@@ -192,7 +192,7 @@ let any_in_comment d name =
         match elt.Odoc_model.Location_.value with
         | `Heading (_, label, _) when Ident.Name.label label = name ->
             Some (`FLabel label)
-        | _ -> inner rest )
+        | _ -> inner rest)
     | [] -> None
   in
   inner d
@@ -222,7 +222,7 @@ let any_in_sig sg name =
         let typ = Delayed.get t in
         match any_in_type typ name with
         | Some r -> Some (`In_type (N.type' id, typ, r))
-        | None -> None )
+        | None -> None)
     | TypExt typext -> any_in_typext typext name
     | Comment (`Docs d) -> any_in_comment d name
     | _ -> None)
@@ -290,14 +290,14 @@ let any_in_type_in_sig sg name =
         let t = Delayed.get t in
         match any_in_type t name with
         | Some x -> Some (`In_type (N.type' id, t, x))
-        | None -> None )
+        | None -> None)
     | _ -> None)
 
 let filter_in_class_signature cs f =
   let rec inner = function
     | ClassSignature.Inherit ct_expr :: tl -> inner_inherit ct_expr @ inner tl
     | it :: tl -> (
-        match f it with Some x -> x :: inner tl | None -> inner tl )
+        match f it with Some x -> x :: inner tl | None -> inner tl)
     | [] -> []
   and inner_inherit = function
     | Constr _ -> []

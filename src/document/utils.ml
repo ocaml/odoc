@@ -6,7 +6,7 @@ let rec flatmap ?sep ~f = function
   | x :: xs -> (
       let hd = f x in
       let tl = flatmap ?sep ~f xs in
-      match sep with None -> hd @ tl | Some sep -> hd @ sep @ tl )
+      match sep with None -> hd @ tl | Some sep -> hd @ sep @ tl)
 
 let rec skip_until ~p = function
   | [] -> []

@@ -174,9 +174,9 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
           Html.dl ~a
             (Utils.list_concat_map l ~f:(fun (i, b) ->
                  let i =
-                   ( inline ~resolve i
+                   (inline ~resolve i
                      : phrasing Html.elt list
-                     :> flow Html.elt list )
+                     :> flow Html.elt list)
                  in
                  [ Html.dt i; Html.dd (block ~resolve b) ]));
         ]
@@ -307,8 +307,8 @@ and items ~resolve l : item Html.elt list =
           Html.div
             [
               Html.div ~a
-                ( anchor_link
-                @ [ Html.div ~a:[ Html.a_class [ "doc" ] ] (docs @ content) ] );
+                (anchor_link
+                @ [ Html.div ~a:[ Html.a_class [ "doc" ] ] (docs @ content) ]);
             ];
         ]
         |> (continue_with [@tailcall]) rest
@@ -336,9 +336,9 @@ module Toc = struct
     let rec section { Toc.url; text; children } =
       let text = inline_nolink text in
       let text =
-        ( text
+        (text
           : non_link_phrasing Html.elt list
-          :> Html_types.flow5_without_interactive Html.elt list )
+          :> Html_types.flow5_without_interactive Html.elt list)
       in
       let href = Link.href ~resolve url in
       let link = Html.a ~a:[ Html.a_href href ] text in
@@ -366,7 +366,7 @@ module Page = struct
     | `Include x -> (
         match x.Include.status with
         | `Closed | `Open | `Default -> None
-        | `Inline -> Some 0 )
+        | `Inline -> Some 0)
 
   let rec include_ ?theme_uri indent { Subpage.content; _ } =
     [ page ?theme_uri indent content ]

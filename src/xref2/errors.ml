@@ -176,7 +176,7 @@ let rec kind_of_module_cpath = function
   | `Apply (a, b) -> (
       match kind_of_module_cpath a with
       | Some _ as a -> a
-      | None -> kind_of_module_cpath b )
+      | None -> kind_of_module_cpath b)
   | _ -> None
 
 let rec kind_of_module_type_cpath = function
@@ -225,7 +225,7 @@ let report ~(what : what) ?tools_error action =
         match what with
         | `Include (Component.Include.Alias cp) -> kind_of_module_cpath cp
         | `Module (`Root _) -> Some `Root
-        | _ -> None )
+        | _ -> None)
   in
   let action =
     match action with

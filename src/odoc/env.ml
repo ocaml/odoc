@@ -62,7 +62,7 @@ module Accessible_paths = struct
               let ufile = Fs.File.create ~directory ~name:uname in
               match Unix.stat (Fs.File.to_string ufile) with
               | _ -> loop (ufile :: acc) dirs
-              | exception Unix.Unix_error _ -> loop acc dirs ) )
+              | exception Unix.Unix_error _ -> loop acc dirs))
     in
     loop [] t.directories
 
@@ -175,17 +175,17 @@ let lookup_unit ~important_digests ap target_name import_map =
           (* If we can't find a module that matches the digest, return Not_found *)
           handle_root
           @@ List.find (fun root -> root.Odoc_model.Root.digest = d) roots
-        with Not_found -> Odoc_xref2.Env.Not_found )
+        with Not_found -> Odoc_xref2.Env.Not_found)
   in
   match StringMap.find target_name import_map with
   | Odoc_model.Lang.Compilation_unit.Import.Unresolved (_, digest) -> (
       match digest with
       | None when important_digests -> Odoc_xref2.Env.Forward_reference
-      | _ -> find_root ~digest )
+      | _ -> find_root ~digest)
   | Odoc_model.Lang.Compilation_unit.Import.Resolved (root, _) -> (
       match root.file with
       | Compilation_unit { hidden; _ } -> Found { root; hidden }
-      | Page _ -> assert false )
+      | Page _ -> assert false)
   | exception Not_found ->
       if important_digests then Odoc_xref2.Env.Not_found
       else find_root ~digest:None
@@ -243,8 +243,8 @@ let create ?(important_digests = true) ~directories ~open_modules : builder =
                 | Page _ -> assert false
                 | Compilation_unit { name; hidden } when target_name = name ->
                     Found { root; hidden }
-                | Compilation_unit _ -> Not_found )
-            | x -> x )
+                | Compilation_unit _ -> Not_found)
+            | x -> x)
     in
     let fetch_unit root : (Odoc_model.Lang.Compilation_unit.t, _) Result.result
         =

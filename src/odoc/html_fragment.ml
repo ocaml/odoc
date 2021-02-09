@@ -34,6 +34,6 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
       |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
       >>= function
       | `Docs content -> to_html content
-      | `Stop -> to_html [] )
+      | `Stop -> to_html [])
 
 (* TODO: Error? *)

@@ -451,15 +451,15 @@ and module_of_module_reference : Reference.Module.t -> module_ = function
   | `Resolved r -> `Resolved (resolved_module_of_resolved_module_reference r)
   | `Root (_, _) -> failwith "unhandled"
   | `Dot
-      ( ( ( `Resolved (`Identifier #Identifier.Module.t)
-          | `Dot (_, _)
-          | `Module (_, _) ) as parent ),
+      ( (( `Resolved (`Identifier #Identifier.Module.t)
+         | `Dot (_, _)
+         | `Module (_, _) ) as parent),
         name ) ->
       `Dot (module_of_module_reference parent, name)
   | `Module
-      ( ( ( `Resolved (`Identifier #Identifier.Module.t)
-          | `Dot (_, _)
-          | `Module (_, _) ) as parent ),
+      ( (( `Resolved (`Identifier #Identifier.Module.t)
+         | `Dot (_, _)
+         | `Module (_, _) ) as parent),
         name ) ->
       `Dot (module_of_module_reference parent, ModuleName.to_string name)
   | _ -> failwith "Not a module reference"

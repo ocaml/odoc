@@ -577,19 +577,17 @@ let floatarray_decl =
   let doc =
     [
       `Paragraph
-        ( words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
-          @ [
-              `Space;
-              `Reference
-                ( `Module
-                    ( `Root ("Array", `TModule),
-                      ModuleName.of_string "Floatarray" ),
-                  [] );
-              `Space;
-            ]
-          @ words
-              [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
-        |> List.map (Location_.at predefined_location) );
+        (words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
+         @ [
+             `Space;
+             `Reference
+               ( `Module
+                   (`Root ("Array", `TModule), ModuleName.of_string "Floatarray"),
+                 [] );
+             `Space;
+           ]
+         @ words [ "module."; "It"; "should"; "not"; "be"; "used"; "directly." ]
+        |> List.map (Location_.at predefined_location));
     ]
     |> List.map (Location_.at predefined_location)
   in

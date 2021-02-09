@@ -229,11 +229,11 @@ let make_test_case ?theme_uri ?syntax case =
         pretty_print_html_in_place actual_file;
 
         (* Run HTML validation on output files. *)
-        ( if Tidy.is_present_in_path then
-          let issues = Tidy.validate actual_file in
-          if issues <> [] then (
-            List.iter prerr_endline issues;
-            Alcotest.fail "Tidy validation error" ) );
+        (if Tidy.is_present_in_path then
+         let issues = Tidy.validate actual_file in
+         if issues <> [] then (
+           List.iter prerr_endline issues;
+           Alcotest.fail "Tidy validation error"));
 
         (* Diff the actual outputs with the expected outputs. *)
         diff output)

@@ -1187,7 +1187,7 @@ let () =
         ]
         |> suggest_commands actual_root_directory;
 
-        Alcotest.fail "document tree incorrect" )
+        Alcotest.fail "document tree incorrect")
     in
 
     (case.name, `Quick, run_test_case)

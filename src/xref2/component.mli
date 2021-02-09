@@ -678,8 +678,8 @@ module Of_Lang : sig
 
   val canonical :
     map ->
-    ( Odoc_model.Paths_types.Path.module_
-    * Odoc_model.Paths_types.Reference.module_ )
+    (Odoc_model.Paths_types.Path.module_
+    * Odoc_model.Paths_types.Reference.module_)
     option ->
     (Cpath.module_ * Odoc_model.Paths_types.Reference.module_) option
 

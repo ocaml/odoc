@@ -9,10 +9,10 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      ( Digest.t
+      (Digest.t
       * Odoc_model.Paths.Identifier.Module.t
       * bool
-      * Component.Module.t Component.Delayed.t )
+      * Component.Module.t Component.Delayed.t)
   | Forward
 
 type resolver = {
@@ -198,8 +198,8 @@ val initial_env :
 
 val modules_of :
   t ->
-  ( Odoc_model.Paths.Identifier.Path.Module.t
-  * Component.Module.t Component.Delayed.t )
+  (Odoc_model.Paths.Identifier.Path.Module.t
+  * Component.Module.t Component.Delayed.t)
   list
 
 val len : int ref

@@ -19,7 +19,7 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
       let cp = Component.Of_Lang.(type_path empty p) in
       match Tools.resolve_type_path env cp with
       | Ok p' -> `Resolved (Cpath.resolved_type_path_of_cpath p')
-      | Error _ -> p )
+      | Error _ -> p)
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -30,7 +30,7 @@ and module_type_path :
       let cp = Component.Of_Lang.(module_type_path empty p) in
       match Tools.resolve_module_type_path env cp with
       | Ok p' -> `Resolved (Cpath.resolved_module_type_path_of_cpath p')
-      | Error _ -> p )
+      | Error _ -> p)
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -40,7 +40,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
       let cp = Component.Of_Lang.(module_path empty p) in
       match Tools.resolve_module_path env cp with
       | Ok p' -> `Resolved (Cpath.resolved_module_path_of_cpath p')
-      | Error _ -> p )
+      | Error _ -> p)
 
 and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
     =
@@ -51,7 +51,7 @@ and class_type_path : Env.t -> Paths.Path.ClassType.t -> Paths.Path.ClassType.t
       let cp = Component.Of_Lang.(class_type_path empty p) in
       match Tools.resolve_class_type_path env cp with
       | Ok p' -> `Resolved (Cpath.resolved_class_type_path_of_cpath p')
-      | Error _ -> Cpath.class_type_path_of_cpath cp )
+      | Error _ -> Cpath.class_type_path_of_cpath cp)
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
@@ -473,7 +473,7 @@ and module_type_expr_sub id ~fragment_root (sg_res, env, subs) lsub =
       in
       match sg_and_sub with
       | Ok (sg', sub') -> (Ok sg', env, sub' :: subs)
-      | Error _ -> (sg_res, env, lsub :: subs) )
+      | Error _ -> (sg_res, env, lsub :: subs))
 
 and module_type_map_subs env id cexpr subs =
   let rec find_parent : Component.ModuleType.U.expr -> Cfrag.root option =
@@ -507,7 +507,7 @@ and module_type_map_subs env id cexpr subs =
               (Ok sg, env, []) subs
           in
           let subs = List.rev subs in
-          Some subs )
+          Some subs)
 
 and u_module_type_expr :
     Env.t -> Id.Signature.t -> ModuleType.U.expr -> ModuleType.U.expr =
@@ -537,8 +537,8 @@ and u_module_type_expr :
             in
             match expansion with
             | Ok sg -> Signature Lang_of.(signature id empty sg)
-            | _ -> result )
-        | _ -> result )
+            | _ -> result)
+        | _ -> result)
     | TypeOf { t_desc; t_expansion } ->
         let t_desc =
           match t_desc with
@@ -563,7 +563,7 @@ and module_type_expr :
             Some (simple_expansion env id e)
         | Error e ->
             Errors.report ~what:(`Module_type_expr ce) ~tools_error:e `Expand;
-            None )
+            None)
   in
   match expr with
   | Signature s -> Signature (signature env id s)
@@ -583,7 +583,7 @@ and module_type_expr :
           let subs' = module_type_map_subs env id cexpr w_substitutions in
           match subs' with
           | None -> With { w_substitutions; w_expansion; w_expr }
-          | Some s -> With { w_substitutions = s; w_expansion; w_expr } ) )
+          | Some s -> With { w_substitutions = s; w_expansion; w_expr }))
   | Functor (param, res) ->
       let param' = functor_parameter env param in
       let env' = Env.add_functor_parameter param env in
@@ -703,7 +703,7 @@ and type_expression_package env parent p =
           {
             path = module_type_path env p.path;
             substitutions = List.map substitution p.substitutions;
-          } )
+          })
   | Error _ -> { p with path = Cpath.module_type_path_of_cpath cp }
 
 and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
@@ -725,7 +725,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
       | Ok (_cp, `FType_removed (_, x, _eq)) ->
           (* Substitute type variables ? *)
           Lang_of.(type_expr empty parent x)
-      | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
+      | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent v)
   | Object o -> Object (type_expression_object env parent o)

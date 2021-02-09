@@ -828,7 +828,7 @@ module Fmt = struct
     | Constr (p, args) -> (
         match args with
         | [] -> Format.fprintf ppf "%a" type_path p
-        | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p )
+        | _ -> Format.fprintf ppf "[%a] %a" type_expr_list args type_path p)
     | Polymorphic_variant poly ->
         Format.fprintf ppf "(poly_var %a)" type_expr_polymorphic_variant poly
     | Object x -> type_object ppf x
@@ -1591,8 +1591,8 @@ module Of_Lang = struct
     | #Paths.Identifier.Module.t as id ->
         (Maps.Module.find id ident_map.modules :> Ident.path_module)
     | #Paths.Identifier.FunctorParameter.t as id ->
-        ( Maps.FunctorParameter.find id ident_map.functor_parameters
-          :> Ident.path_module )
+        (Maps.FunctorParameter.find id ident_map.functor_parameters
+          :> Ident.path_module)
     | _ -> raise Not_found
 
   let rec resolved_module_path :
@@ -1658,7 +1658,7 @@ module Of_Lang = struct
     | `Identifier (i, b) -> (
         match identifier find_any_module ident_map i with
         | `Identifier i -> `Identifier (i, b)
-        | `Local i -> `Local (i, b) )
+        | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
     | `Apply (p1, p2) ->
         `Apply (module_path ident_map p1, module_path ident_map p2)
@@ -1673,7 +1673,7 @@ module Of_Lang = struct
     | `Identifier (i, b) -> (
         match identifier Maps.ModuleType.find ident_map.module_types i with
         | `Identifier i -> `Identifier (i, b)
-        | `Local i -> `Local (i, b) )
+        | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
   and type_path : _ -> Odoc_model.Paths.Path.Type.t -> Cpath.type_ =
@@ -1683,7 +1683,7 @@ module Of_Lang = struct
     | `Identifier (i, b) -> (
         match identifier Maps.Path.Type.find ident_map.path_types i with
         | `Identifier i -> `Identifier (i, b)
-        | `Local i -> `Local (i, b) )
+        | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
   and class_type_path :
@@ -1696,7 +1696,7 @@ module Of_Lang = struct
           identifier Maps.Path.ClassType.find ident_map.path_class_types i
         with
         | `Identifier i -> `Identifier (i, b)
-        | `Local i -> `Local (i, b) )
+        | `Local i -> `Local (i, b))
     | `Dot (path', x) -> `Dot (module_path ident_map path', x)
 
   let rec resolved_signature_fragment :

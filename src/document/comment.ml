@@ -102,7 +102,7 @@ module Reference = struct
             let s = source_of_code s in
             [ inline @@ Inline.Source s ]
         | Some s ->
-            [ inline @@ Inline.InternalLink (InternalLink.Unresolved s) ] )
+            [ inline @@ Inline.InternalLink (InternalLink.Unresolved s) ])
     | `Dot (parent, s) -> unresolved ?text (parent :> t) s
     | `Module (parent, s) ->
         unresolved ?text (parent :> t) (ModuleName.to_string s)
@@ -145,7 +145,7 @@ module Reference = struct
         | Error exn ->
             (* FIXME: better error message *)
             Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-            txt )
+            txt)
 
   and unresolved : ?text:Inline.t -> Reference.t -> string -> Inline.t =
    fun ?text parent field ->
