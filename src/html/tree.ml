@@ -104,15 +104,16 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
                else [ [ Html.txt lbl ] ])
         |> List.flatten
       in
-      [ Html.nav l ]
+      [ Html.nav ~a:[ Html.a_class [ "odoc-nav" ] ] l ]
     else []
   in
 
   let body =
-    breadcrumbs @ [ Html.header header ] @ toc
-    @ [ Html.div ~a:[ Html.a_class [ "content" ] ] content ]
+    breadcrumbs @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
+    @ toc
+    @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
-  Html.html head (Html.body body)
+  Html.html head (Html.body ~a:[ Html.a_class [ "odoc" ] ] body)
 
 let make ?theme_uri ~indent ~url ~header ~toc title content children =
   let filename = Link.Path.as_filename url in

@@ -350,7 +350,7 @@ module Toc = struct
     in
     match toc with
     | [] -> []
-    | _ -> [ Html.nav ~a:[ Html.a_class [ "toc" ] ] [ sections toc ] ]
+    | _ -> [ Html.nav ~a:[ Html.a_class [ "odoc-toc" ] ] [ sections toc ] ]
 
   let on_sub : Subpage.status -> bool = function
     | `Closed | `Open | `Default -> false
