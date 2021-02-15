@@ -400,7 +400,7 @@ and read_module_binding env parent mb =
     let doc = List.map Odoc_model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
     | exception Not_found -> None
-    | `Tag (`Canonical p) -> Some p
+    | `Tag (`Canonical p) -> Some (p :> Path.Module.t)
     | _ -> None
   in
   let type_ =
