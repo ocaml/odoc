@@ -42,7 +42,6 @@
     "@opam/result": "1.4",
     "@opam/sexplib0": "*",
     "@opam/tyxml": "4.3.0",
-    "@opam/mdx": "1.7.0",
     "@opam/ocamlfind-secondary":"1.8.1",
     "ocaml": "~4.2.0"
   },

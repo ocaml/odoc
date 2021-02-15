@@ -8,5 +8,3 @@
  (release
   (flags
    (:standard -g -w -18-53))))
-
-(vendored_dirs mdx)
