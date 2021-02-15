@@ -9,7 +9,7 @@
     "Leo White <leo@lpw25.net>"
   ],
   "esy": {
-    "build": "dune build",
+    "build": "dune build -p odoc",
     "release": {
       "releasedBinaries": [
         "odoc"
