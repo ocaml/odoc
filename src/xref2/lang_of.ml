@@ -639,7 +639,7 @@ and module_ map parent id m =
     in
     let identifier = (id :> Odoc_model.Paths_types.Identifier.signature) in
     let canonical = function
-      | Some (p, r) -> Some (Path.module_ map p, r)
+      | Some p -> Some (Path.module_ map p)
       | None -> None
     in
     let map = { map with shadowed = empty_shadow } in

@@ -558,7 +558,7 @@ and read_module_declaration env parent md =
     let doc = List.map Odoc_model.Location_.value doc in
     match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
     | exception Not_found -> None
-    | `Tag (`Canonical (p, r)) -> Some (p, r)
+    | `Tag (`Canonical p) -> Some p
     | _ -> None
   in
   let type_ =

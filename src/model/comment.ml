@@ -60,7 +60,7 @@ type tag =
   | `Since of string
   | `Before of string * nestable_block_element with_location list
   | `Version of string
-  | `Canonical of Path.Module.t * Reference.Module.t
+  | `Canonical of Path.Module.t
   | `Inline
   | `Open
   | `Closed ]

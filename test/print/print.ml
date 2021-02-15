@@ -524,12 +524,10 @@ module Comment_to_sexp = struct
         List
           ([ Atom "@before"; Atom s ] @ List.map (at nestable_block_element) es)
     | `Version s -> List [ Atom "@version"; Atom s ]
-    | `Canonical (p, r) ->
+    | `Canonical p ->
         List
           [
-            Atom "@canonical";
-            Path_to_sexp.path (p :> Odoc_model.Paths.Path.t);
-            Reference_to_sexp.reference (r :> Odoc_model.Paths.Reference.t);
+            Atom "@canonical"; Path_to_sexp.path (p :> Odoc_model.Paths.Path.t);
           ]
     | `Inline -> Atom "@inline"
     | `Open -> Atom "@open"

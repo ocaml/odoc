@@ -38,8 +38,8 @@ and module_t =
       F ("type_", (fun t -> t.type_), module_decl);
       F
         ( "canonical",
-          (fun t -> (t.canonical :> (Paths.Path.t * Paths.Reference.t) option)),
-          Option (Pair (path, reference)) );
+          (fun t -> (t.canonical :> Paths.Path.t option)),
+          Option path );
       F ("hidden", (fun t -> t.hidden), bool);
     ]
 

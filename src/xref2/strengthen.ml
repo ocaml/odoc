@@ -18,10 +18,7 @@ open Component
 open Delayed
 
 let rec signature :
-    Cpath.module_ ->
-    ?canonical:Cpath.module_ * Odoc_model.Paths.Reference.Module.t ->
-    Signature.t ->
-    Signature.t =
+    Cpath.module_ -> ?canonical:Cpath.module_ -> Signature.t -> Signature.t =
  fun prefix ?canonical sg ->
   let open Signature in
   let items, strengthened_modules =
@@ -32,12 +29,7 @@ let rec signature :
             let name = Ident.Name.module_ id in
             let canonical =
               match canonical with
-              | Some (p, r) ->
-                  Some
-                    ( `Dot (p, name),
-                      `Dot
-                        ((r :> Odoc_model.Paths.Reference.LabelParent.t), name)
-                    )
+              | Some p -> Some (`Dot (p, name))
               | None -> None
             in
             match module_ ?canonical (`Dot (prefix, name)) (get m) with
@@ -77,7 +69,7 @@ let rec signature :
     { items = List.rev items; removed = sg.removed; compiled = sg.compiled }
 
 and module_ :
-    ?canonical:Cpath.module_ * Odoc_model.Paths.Reference.Module.t ->
+    ?canonical:Cpath.module_ ->
     Cpath.module_ ->
     Component.Module.t ->
     Component.Module.t option =
