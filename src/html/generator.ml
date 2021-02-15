@@ -321,13 +321,11 @@ and items ~resolve l : item Html.elt list =
         let a = class_of_kind kind @ anchor_attrib in
         let content = anchor_link @ documentedSrc ~resolve content in
         let elts =
-          let content = div ~a content in
-          match doc with
-          | [] -> [ content ]
-          | docs ->
-              [
-                Html.div [ content; div (flow_to_item @@ block ~resolve docs) ];
-              ]
+          let doc = match doc with
+          | [] -> []
+          | docs -> [ div (flow_to_item @@ block ~resolve docs) ]
+          in
+          [ div (div ~a content :: doc) ]
         in
         (continue_with [@tailcall]) rest elts
   and items l = walk_items ~only_text:(is_only_text l) [] l in
