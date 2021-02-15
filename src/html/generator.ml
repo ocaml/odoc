@@ -323,7 +323,9 @@ and items ~resolve l : item Html.elt list =
         let elts =
           let doc = match doc with
           | [] -> []
-          | docs -> [ div (flow_to_item @@ block ~resolve docs) ]
+          | docs ->
+            let a = [ Html.a_class [ "spec-doc" ] ] in
+            [ div ~a (flow_to_item @@ block ~resolve docs) ]
           in
           [ div (div ~a content :: doc) ]
         in
