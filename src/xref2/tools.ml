@@ -339,7 +339,7 @@ and add_canonical_path :
   | `Canonical _ -> p
   | _ -> (
       match m.Component.Module.canonical with
-      | Some (cp, _cr) -> `Canonical (p, cp)
+      | Some cp -> `Canonical (p, cp)
       | None -> p )
 
 and get_substituted_module_type :

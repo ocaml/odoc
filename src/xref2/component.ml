@@ -83,7 +83,7 @@ module rec Module : sig
   type t = {
     doc : CComment.docs;
     type_ : decl;
-    canonical : (Cpath.module_ * Odoc_model.Paths.Reference.Module.t) option;
+    canonical : Cpath.module_ option;
     hidden : bool;
   }
 end =
@@ -1907,12 +1907,9 @@ module Of_Lang = struct
     | Odoc_model.Lang.Include.Alias p -> Include.Alias (module_path ident_map p)
     | ModuleType s -> ModuleType (u_module_type_expr ident_map s)
 
-  and canonical ident_map
-      (canonical :
-        (Odoc_model.Paths.Path.Module.t * Odoc_model.Paths.Reference.Module.t)
-        option) =
+  and canonical ident_map (canonical : Odoc_model.Paths.Path.Module.t option) =
     match canonical with
-    | Some (p, r) -> Some (module_path ident_map p, r)
+    | Some p -> Some (module_path ident_map p)
     | None -> None
 
   and simple_expansion ident_map
@@ -2183,7 +2180,7 @@ module Of_Lang = struct
   and module_of_module_substitution ident_map
       (t : Odoc_model.Lang.ModuleSubstitution.t) =
     let manifest = module_path ident_map t.manifest in
-    let canonical = Some (manifest, `Root ("dummy", `TModule)) in
+    let canonical = Some manifest in
     {
       Module.doc = docs ident_map t.doc;
       type_ = Alias (manifest, None);

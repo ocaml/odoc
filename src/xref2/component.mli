@@ -73,7 +73,7 @@ module rec Module : sig
   type t = {
     doc : CComment.docs;
     type_ : decl;
-    canonical : (Cpath.module_ * Odoc_model.Paths.Reference.Module.t) option;
+    canonical : Cpath.module_ option;
     hidden : bool;
   }
 end
@@ -682,11 +682,7 @@ module Of_Lang : sig
   val include_decl : map -> Odoc_model.Lang.Include.decl -> Include.decl
 
   val canonical :
-    map ->
-    ( Odoc_model.Paths_types.Path.module_
-    * Odoc_model.Paths_types.Reference.module_ )
-    option ->
-    (Cpath.module_ * Odoc_model.Paths_types.Reference.module_) option
+    map -> Odoc_model.Paths_types.Path.module_ option -> Cpath.module_ option
 
   val module_ : map -> Odoc_model.Lang.Module.t -> Module.t
 

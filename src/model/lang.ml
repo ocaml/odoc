@@ -32,7 +32,7 @@ module rec Module : sig
     id : Identifier.Module.t;
     doc : Comment.docs;
     type_ : decl;
-    canonical : (Path.Module.t * Reference.Module.t) option;
+    canonical : Path.Module.t option;
     hidden : bool;
   }
 

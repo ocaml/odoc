@@ -36,7 +36,7 @@ and general_tag =
   | `Since of string
   | `Before of string * general_docs
   | `Version of string
-  | `Canonical of Paths.Path.t * Paths.Reference.t
+  | `Canonical of Paths.Path.t
   | `Inline
   | `Open
   | `Closed ]
@@ -122,7 +122,7 @@ and tag : general_tag t =
     | `Since x -> C ("`Since", x, string)
     | `Before (x1, x2) -> C ("`Before", (x1, x2), Pair (string, docs))
     | `Version x -> C ("`Version", x, string)
-    | `Canonical (x1, x2) -> C ("`Canonical", (x1, x2), Pair (path, reference))
+    | `Canonical x1 -> C ("`Canonical", x1, path)
     | `Inline -> C0 "`Inline"
     | `Open -> C0 "`Open"
     | `Closed -> C0 "`Closed")

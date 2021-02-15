@@ -156,10 +156,9 @@ let tag :
       ok tag
   | `Canonical { value = s; location = r_location } -> (
       let path = Reference.read_path_longident r_location s in
-      let module_ = Reference.read_mod_longident status.warnings r_location s in
-      match (path, module_) with
-      | Result.Ok path, Result.Ok module_ -> ok (`Canonical (path, module_))
-      | Result.Error e, _ | Result.Ok _, Result.Error e ->
+      match path with
+      | Result.Ok path -> ok (`Canonical path)
+      | Result.Error e ->
           Error.warning status.warnings e;
           let placeholder = [ `Word "@canonical"; `Space " "; `Code_span s ] in
           let placeholder = List.map (Location.at location) placeholder in

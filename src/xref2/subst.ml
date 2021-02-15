@@ -646,9 +646,7 @@ and include_decl s t =
 and module_ s t =
   let open Component.Module in
   let type_ = module_decl s t.type_ in
-  let canonical =
-    option_ (fun s (m1, m2) -> (module_path s m1, m2)) s t.canonical
-  in
+  let canonical = option_ (fun s m1 -> module_path s m1) s t.canonical in
   { t with type_; canonical }
 
 and module_substitution s m =
