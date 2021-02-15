@@ -278,7 +278,9 @@ and items ~resolve l : item Html.elt list =
         let content = flow_to_item @@ block ~resolve text in
         let elts =
           if only_text then content
-          else [ Html.aside (content :> any Html.elt list) ]
+          else
+            let a = [ Html.a_class [ "odoc-unattached" ] ] in
+            [ Html.aside ~a (content :> any Html.elt list) ]
         in
         elts |> (continue_with [@tailcall]) rest
     | Heading h :: rest ->
@@ -308,7 +310,7 @@ and items ~resolve l : item Html.elt list =
         let a = class_of_kind kind @ anchor_attrib in
         (* TODO : Why double div ??? *)
         [
-          Html.div
+          Html.div ~a:[ Html.a_class [ "odoc-include" ] ]
             [
               Html.div ~a
                 ( anchor_link
@@ -327,7 +329,7 @@ and items ~resolve l : item Html.elt list =
             let a = [ Html.a_class [ "spec-doc" ] ] in
             [ div ~a (flow_to_item @@ block ~resolve docs) ]
           in
-          [ div (div ~a content :: doc) ]
+          [ div ~a: [ Html.a_class [ "odoc-spec" ]] (div ~a content :: doc) ]
         in
         (continue_with [@tailcall]) rest elts
   and items l = walk_items ~only_text:(is_only_text l) [] l in
