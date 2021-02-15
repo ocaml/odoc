@@ -403,9 +403,11 @@ let parse warnings whole_reference_location s :
             whole_reference_location
           |> Error.raise_exception)
 
+type path = [ `Root of string | `Dot of Odoc_model.Paths.Path.Module.t * string ]
+
 let read_path_longident location s =
   let open Paths.Path in
-  let rec loop : string -> int -> Module.t option =
+  let rec loop : string -> int -> path option =
    fun s pos ->
     try
       let idx = String.rindex_from s pos '.' in
@@ -414,13 +416,13 @@ let read_path_longident location s =
       else
         match loop s (idx - 1) with
         | None -> None
-        | Some parent -> Some (`Dot (parent, name))
+        | Some parent -> Some (`Dot ((parent :> Module.t), name))
     with Not_found ->
       let name = String.sub s 0 (pos + 1) in
       if String.length name = 0 then None else Some (`Root name)
   in
   match loop s (String.length s - 1) with
-  | Some r -> Result.Ok r
+  | Some r -> Result.Ok (r :> path)
   | None -> Result.Error (Parse_error.expected "a valid path" location)
 
 let read_mod_longident warnings location lid :
