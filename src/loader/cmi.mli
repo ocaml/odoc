@@ -24,6 +24,8 @@ val read_interface: Odoc_model.Paths.Identifier.ContainerPage.t -> string -> Odo
   Odoc_model.Comment.docs *
   Odoc_model.Lang.Signature.t
 
+val canonical : Odoc_model.Comment.docs -> [ `Dot of Paths.Path.Module.t * string ] option
+
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
 val read_label : Asttypes.label -> Odoc_model.Lang.TypeExpr.label option
 #else

@@ -332,6 +332,13 @@ let mark_class_declaration cld =
   List.iter mark_type_parameter cld.cty_params;
   mark_class_type cld.cty_params cld.cty_type
 
+let canonical doc : [`Dot of Path.Module.t * string] option =
+  let doc = List.map Odoc_model.Location_.value doc in
+  match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
+  | exception Not_found -> None
+  | `Tag (`Canonical (`Dot (p, n))) -> Some (`Dot (p, n) )
+  | _ -> None
+
 let rec read_type_expr env typ =
   let open TypeExpr in
   let typ = Btype.repr typ in
@@ -615,6 +622,7 @@ let read_type_declaration env parent id decl =
   let id = Env.find_type_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.type_attributes in
+  let canonical = (canonical doc :> Path.Type.t option) in
   let params = mark_type_declaration decl in
   let manifest = opt_map (read_type_expr env) decl.type_manifest in
   let constraints = read_type_constraints env params in
@@ -636,7 +644,7 @@ let read_type_declaration env parent id decl =
   in
   let private_ = (decl.type_private = Private) in
   let equation = Equation.{params; manifest; constraints; private_} in
-    {id; doc; equation; representation}
+    {id; doc; canonical; equation; representation}
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
@@ -849,13 +857,7 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let id = Env.find_module_type env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
-  let canonical =
-    let doc = List.map Odoc_model.Location_.value doc in
-    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
-    | exception Not_found -> None
-    | `Tag (`Canonical (`Dot (p, n))) -> Some (`Dot (p, n) :> Path.ModuleType.t)
-    | _ -> None
-  in
+  let canonical = (canonical doc :> Path.ModuleType.t option) in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
   {id; doc; canonical; expr }
 
@@ -864,13 +866,7 @@ and read_module_declaration env parent ident (md : Odoc_model.Compat.module_decl
   let id = (Env.find_module_identifier env ident :> Identifier.Module.t) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in
-  let canonical =
-    let doc = List.map Odoc_model.Location_.value doc in
-    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
-    | exception Not_found -> None
-    | `Tag (`Canonical p) -> Some (p :> Path.Module.t)
-    | _ -> None
-  in
+  let canonical = (canonical doc :> Path.Module.t option) in
   let type_ =
     match md.md_type with
     | Mty_alias p -> Alias (Env.Path.read_module env p, None)
