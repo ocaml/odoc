@@ -559,6 +559,7 @@ module LangUtils = struct
             | `OpaqueModuleType m -> Format.fprintf ppf "opaquemoduletype(%a)" resolved_path (cast m)
             | `SubstT (_, _)
             | `CanonicalT (_, _)
+            | `CanonicalTy (_, _)
             | `Class (_, _)
             | `ClassType (_, _)
             | `SubstAlias (_, _)

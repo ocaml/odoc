@@ -31,6 +31,7 @@ module rec Resolved : sig
     [ `Local of Ident.path_type
     | `Identifier of Odoc_model.Paths_types.Identifier.path_type
     | `Substituted of type_
+    | `CanonicalTy of type_ * Cpath.type_
     | `Type of parent * TypeName.t
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]
@@ -206,6 +207,8 @@ and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
       `Identifier x
   | `Local _ as y -> raise (LocalPath (ErrType (`Resolved y)))
   | `Substituted y -> resolved_type_path_of_cpath y
+  | `CanonicalTy (t1, t2) ->
+      `CanonicalTy (resolved_type_path_of_cpath t1, type_path_of_cpath t2)
   | `Type (p, m) -> `Type (resolved_module_path_of_cpath_parent p, m)
   | `Class (p, m) -> `Class (resolved_module_path_of_cpath_parent p, m)
   | `ClassType (p, m) -> `ClassType (resolved_module_path_of_cpath_parent p, m)
@@ -291,6 +294,7 @@ and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
   | `Identifier _ -> false
+  | `CanonicalTy (t, _) -> is_resolved_type_substituted t
   | `Type (a, _) | `Class (a, _) | `ClassType (a, _) ->
       is_resolved_parent_substituted a
 
@@ -419,6 +423,8 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `Identifier (`Class (_, _)) -> false
   | `Identifier (`CoreType _) -> false
   | `Substituted p -> is_resolved_type_hidden p
+  | `CanonicalTy (_, `Resolved _) -> false
+  | `CanonicalTy (p, _) -> is_resolved_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -514,6 +520,7 @@ and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
 and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | (`Identifier _ | `Local _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
+  | `CanonicalTy (t1, _) -> unresolve_resolved_type_path t1
   | `Type (p, n) -> `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
   | `Class (p, n) ->
       `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)

@@ -288,6 +288,11 @@ and resolved_type_path :
         | Some (`Prefixed (_p, rp)) -> Not_replaced rp
         | Some (`Renamed x) -> Not_replaced (`Local x)
         | None -> Not_replaced (`Local id) )
+  | `CanonicalTy (t1, t2) -> (
+      match (resolved_type_path s t1, type_path s t2) with
+      | Not_replaced t1', Not_replaced t2' ->
+          Not_replaced (`CanonicalTy (t1', t2'))
+      | x, _ -> x )
   | `Identifier _ -> Not_replaced p
   | `Substituted p ->
       resolved_type_path s p |> map_replaced (fun p -> `Substituted p)

@@ -592,6 +592,7 @@ and lookup_type :
           (Env.(lookup_by_id s_class_type) i env)
         >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
+    | `CanonicalTy (t1, _) -> lookup_type env t1
     | `Substituted s -> lookup_type env s
     | `Type (p, id) -> do_type p (TypeName.to_string id)
     | `Class (p, id) -> do_type p (ClassName.to_string id)
@@ -954,6 +955,7 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     match path with
     | `Identifier _ | `Local _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
+    | `CanonicalTy (p1, p2) -> `CanonicalTy (reresolve_type env p1, p2)
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
     | `Class (p, n) -> `Class (reresolve_parent env p, n)
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)

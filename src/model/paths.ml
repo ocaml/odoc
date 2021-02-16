@@ -558,6 +558,8 @@ module Path = struct
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
       | `CanonicalT (_, `Resolved _) -> false
       | `CanonicalT (x, _) -> inner (x : module_type :> any)
+      | `CanonicalTy (_, `Resolved _) -> false
+      | `CanonicalTy (x, _) -> inner (x : type_ :> any)
       | `OpaqueModule m -> inner (m :> any)
       | `OpaqueModuleType mt -> inner (mt :> any)
     in
@@ -681,8 +683,10 @@ module Path = struct
       let is_hidden m =
         is_resolved_hidden (m : t :> Paths_types.Resolved_path.any)
 
-      let identifier = function
+      let rec identifier : t -> Identifier.Path.Type.t = function
         | `Identifier id -> id
+        | `CanonicalTy (_, `Resolved t) -> identifier t
+        | `CanonicalTy (t, _) -> identifier t
         | `Type (m, n) -> `Type (parent_module_identifier m, n)
         | `Class (m, n) -> `Class (parent_module_identifier m, n)
         | `ClassType (m, n) -> `ClassType (parent_module_identifier m, n)
@@ -721,6 +725,8 @@ module Path = struct
       | `SubstT (p, _) -> identifier (p :> t)
       | `CanonicalT (_, `Resolved p) -> identifier (p :> t)
       | `CanonicalT (p, _) -> identifier (p :> t)
+      | `CanonicalTy (_, `Resolved p) -> identifier (p :> t)
+      | `CanonicalTy (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
   end

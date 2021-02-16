@@ -226,6 +226,8 @@ module General_paths = struct
               Pair (resolved_path, resolved_path) )
       | `CanonicalT (x1, x2) ->
           C ("`CanonicalT", ((x1 :> rp), (x2 :> p)), Pair (resolved_path, path))
+      | `CanonicalTy (x1, x2) ->
+          C ("`CanonicalTy", ((x1 :> rp), (x2 :> p)), Pair (resolved_path, path))
       | `OpaqueModuleType x -> C ("`OpaqueModuleType", (x :> rp), resolved_path)
       | `Type (x1, x2) ->
           C ("`Type", ((x1 :> rp), x2), Pair (resolved_path, Names.typename))

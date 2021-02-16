@@ -941,6 +941,9 @@ module Fmt = struct
           (id :> Odoc_model.Paths.Identifier.t)
     | `Substituted x ->
         Format.fprintf ppf "substituted(%a)" resolved_type_path x
+    | `CanonicalTy (t1, t2) ->
+        Format.fprintf ppf "canonicalty(%a,%a)" resolved_type_path t1 type_path
+          t2
     | `Class (p, t) ->
         Format.fprintf ppf "%a.%s" resolved_parent_path p
           (Odoc_model.Names.ClassName.to_string t)
@@ -1069,6 +1072,11 @@ module Fmt = struct
           (t2 :> t)
     | `CanonicalT (t1, t2) ->
         Format.fprintf ppf "canonicalt(%a,%a)" model_resolved_path
+          (t1 :> t)
+          model_path
+          (t2 :> Odoc_model.Paths.Path.t)
+    | `CanonicalTy (t1, t2) ->
+        Format.fprintf ppf "canonicalty(%a,%a)" model_resolved_path
           (t1 :> t)
           model_path
           (t2 :> Odoc_model.Paths.Path.t)
@@ -1653,6 +1661,8 @@ module Of_Lang = struct
    fun ident_map p ->
     match p with
     | `Identifier i -> identifier Maps.Path.Type.find ident_map.path_types i
+    | `CanonicalTy (p1, p2) ->
+        `CanonicalTy (resolved_type_path ident_map p1, type_path ident_map p2)
     | `Type (p, name) -> `Type (`Module (resolved_module_path ident_map p), name)
     | `Class (p, name) ->
         `Class (`Module (resolved_module_path ident_map p), name)
