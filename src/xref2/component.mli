@@ -257,6 +257,7 @@ and TypeDecl : sig
 
   type t = {
     doc : CComment.docs;
+    canonical : Cpath.type_ option;
     equation : Equation.t;
     representation : Representation.t option;
   }

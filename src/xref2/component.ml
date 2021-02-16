@@ -274,6 +274,7 @@ and TypeDecl : sig
 
   type t = {
     doc : CComment.docs;
+    canonical : Cpath.type_ option;
     equation : Equation.t;
     representation : Representation.t option;
   }
@@ -1782,6 +1783,7 @@ module Of_Lang = struct
     let open Odoc_model.Lang.TypeDecl in
     {
       TypeDecl.doc = docs ident_map ty.doc;
+      canonical = Opt.map (type_path ident_map) ty.canonical;
       equation = type_equation ident_map ty.equation;
       representation =
         Opt.map (type_decl_representation ident_map) ty.representation;

@@ -418,7 +418,20 @@ let list conv s xs = List.map (conv s) xs
 let rec type_ s t =
   let open Component.TypeDecl in
   let representation = option_ type_decl_representation s t.representation in
-  { equation = type_decl_equation s t.equation; representation; doc = t.doc }
+  let canonical =
+    match t.canonical with
+    | Some p -> (
+        match type_path s p with
+        | Not_replaced p' -> Some p'
+        | Replaced _ -> None )
+    | None -> None
+  in
+  {
+    equation = type_decl_equation s t.equation;
+    representation;
+    doc = t.doc;
+    canonical;
+  }
 
 and type_decl_representation s t =
   let open Component.TypeDecl.Representation in
