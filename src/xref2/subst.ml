@@ -508,7 +508,7 @@ and module_type s t =
   let expr =
     match t.expr with Some m -> Some (module_type_expr s m) | None -> None
   in
-  { expr; doc = t.doc }
+  { expr; doc = t.doc; canonical = option_ module_type_path s t.canonical }
 
 and functor_parameter s t =
   let open Component.FunctorParameter in

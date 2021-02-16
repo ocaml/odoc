@@ -209,7 +209,11 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
 
-  type t = { doc : CComment.docs; expr : expr option }
+  type t = {
+    doc : CComment.docs;
+    canonical : Cpath.module_type option;
+    expr : expr option;
+  }
 end
 
 and TypeDecl : sig

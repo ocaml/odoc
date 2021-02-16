@@ -225,7 +225,11 @@ and ModuleType : sig
     | Functor of FunctorParameter.t * expr
     | TypeOf of typeof_t
 
-  type t = { doc : CComment.docs; expr : expr option }
+  type t = {
+    doc : CComment.docs;
+    canonical : Cpath.module_type option;
+    expr : expr option;
+  }
 end =
   ModuleType
 
@@ -2073,7 +2077,11 @@ module Of_Lang = struct
     let expr =
       Opt.map (module_type_expr ident_map) m.Odoc_model.Lang.ModuleType.expr
     in
-    { ModuleType.doc = docs ident_map m.doc; expr }
+    {
+      ModuleType.doc = docs ident_map m.doc;
+      canonical = option module_type_path ident_map m.canonical;
+      expr;
+    }
 
   and value ident_map v =
     let type_ = type_expression ident_map v.Odoc_model.Lang.Value.type_ in

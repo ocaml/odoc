@@ -789,7 +789,7 @@ and module_type :
   {
     Odoc_model.Lang.ModuleType.id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) mty.doc;
-    canonical = None;
+    canonical = Opt.map (Path.module_type map) mty.canonical;
     expr = Opt.map (module_type_expr map sig_id) mty.expr;
   }
 
