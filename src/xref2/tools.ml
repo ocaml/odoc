@@ -485,7 +485,7 @@ and lookup_module_type :
         of_option ~error:(`Lookup_failureMT i)
           (Env.(lookup_by_id s_module_type) i env)
         >>= fun (`ModuleType (_, mt)) -> Ok mt
-    | `Substituted s | `SubstT (_, s) ->
+    | `Substituted s | `CanonicalT (s, _) | `SubstT (_, s) ->
         lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) ->
         let find_in_sg sg sub =
@@ -908,6 +908,7 @@ and reresolve_module_type :
   | `Local _ | `Identifier _ -> path
   | `Substituted x -> `Substituted (reresolve_module_type env x)
   | `ModuleType (parent, name) -> `ModuleType (reresolve_parent env parent, name)
+  | `CanonicalT (_p1, _p2) -> failwith "TODO"
   | `SubstT (p1, p2) ->
       `SubstT (reresolve_module_type env p1, reresolve_module_type env p2)
   | `OpaqueModuleType m -> `OpaqueModuleType (reresolve_module_type env m)
@@ -1360,7 +1361,7 @@ and find_external_module_type_path :
   | `SubstT (x, y) ->
       find_external_module_type_path x >>= fun x ->
       find_external_module_type_path y >>= fun y -> Some (`SubstT (x, y))
-  | `Substituted x ->
+  | `CanonicalT (x, _) | `Substituted x ->
       find_external_module_type_path x >>= fun x -> Some (`Substituted x)
   | `Identifier _ -> Some p
   | `OpaqueModuleType m ->

@@ -556,6 +556,8 @@ module Path = struct
       | `Alias (p1, p2) ->
           inner (p1 : module_ :> any) && inner (p2 : module_ :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
+      | `CanonicalT (_, `Resolved _) -> false
+      | `CanonicalT (x, _) -> inner (x : module_type :> any)
       | `OpaqueModule m -> inner (m :> any)
       | `OpaqueModuleType mt -> inner (mt :> any)
     in
@@ -583,6 +585,8 @@ module Path = struct
           (id : Identifier.ModuleType.t :> Identifier.Signature.t)
       | `ModuleType (m, n) -> `ModuleType (parent_module_identifier m, n)
       | `SubstT (m, _n) -> parent_module_type_identifier m
+      | `CanonicalT (_, `Resolved p) -> parent_module_type_identifier p
+      | `CanonicalT (p, _) -> parent_module_type_identifier p
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
 
     and parent_module_identifier :
@@ -653,6 +657,8 @@ module Path = struct
         | `Identifier id -> id
         | `ModuleType (m, n) -> `ModuleType (parent_module_identifier m, n)
         | `SubstT (s, _) -> identifier s
+        | `CanonicalT (_, `Resolved p) -> identifier p
+        | `CanonicalT (p, _) -> identifier p
         | `OpaqueModuleType mt -> identifier mt
 
       let rec canonical_ident : t -> Identifier.ModuleType.t option = function
@@ -662,6 +668,8 @@ module Path = struct
             | Some x -> Some (`ModuleType ((x :> Identifier.Signature.t), n))
             | None -> None )
         | `SubstT (_, _) -> None
+        | `CanonicalT (_, `Resolved p) -> Some (identifier p)
+        | `CanonicalT (_, _) -> None
         | `OpaqueModuleType m -> canonical_ident (m :> t)
     end
 
@@ -711,6 +719,8 @@ module Path = struct
           if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
           else identifier (sub :> t)
       | `SubstT (p, _) -> identifier (p :> t)
+      | `CanonicalT (_, `Resolved p) -> identifier (p :> t)
+      | `CanonicalT (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
   end

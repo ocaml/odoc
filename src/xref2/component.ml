@@ -911,6 +911,9 @@ module Fmt = struct
     | `SubstT (m1, m2) ->
         Format.fprintf ppf "substt(%a,%a)" resolved_module_type_path m1
           resolved_module_type_path m2
+    | `CanonicalT (m1, m2) ->
+        Format.fprintf ppf "canonicalt(%a,%a)" resolved_module_type_path m1
+          module_type_path m2
     | `OpaqueModuleType m ->
         Format.fprintf ppf "opaquemoduletype(%a)" resolved_module_type_path m
 
@@ -1063,6 +1066,11 @@ module Fmt = struct
           (t1 :> t)
           model_resolved_path
           (t2 :> t)
+    | `CanonicalT (t1, t2) ->
+        Format.fprintf ppf "canonicalt(%a,%a)" model_resolved_path
+          (t1 :> t)
+          model_path
+          (t2 :> Odoc_model.Paths.Path.t)
     | `Apply (funct, arg) ->
         Format.fprintf ppf "%a(%a)" model_resolved_path
           (funct :> t)
@@ -1633,6 +1641,9 @@ module Of_Lang = struct
         `SubstT
           ( resolved_module_type_path ident_map p1,
             resolved_module_type_path ident_map p2 )
+    | `CanonicalT (p1, p2) ->
+        `CanonicalT
+          (resolved_module_type_path ident_map p1, module_type_path ident_map p2)
     | `OpaqueModuleType m ->
         `OpaqueModuleType (resolved_module_type_path ident_map m)
 

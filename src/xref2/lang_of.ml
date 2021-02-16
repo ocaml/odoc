@@ -162,6 +162,8 @@ module Path = struct
     | `Substituted s -> resolved_module_type map s
     | `SubstT (p1, p2) ->
         `SubstT (resolved_module_type map p1, resolved_module_type map p2)
+    | `CanonicalT (p1, p2) ->
+        `CanonicalT (resolved_module_type map p1, module_type map p2)
     | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)
 
   and resolved_type map (p : Cpath.Resolved.type_) :
