@@ -158,6 +158,10 @@ and moduletype_t =
     [
       F ("id", (fun t -> t.id), identifier);
       F ("doc", (fun t -> t.doc), docs);
+      F
+        ( "canonical",
+          (fun t -> (t.canonical :> Paths.Path.t option)),
+          Option path );
       F ("expr", (fun t -> t.expr), Option moduletype_expr);
     ]
 
