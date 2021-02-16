@@ -673,7 +673,9 @@ and type_expression_object env parent o =
 and type_expression_package env parent p =
   let open TypeExpr.Package in
   let cp = Component.Of_Lang.(module_type_path empty p.path) in
-  match Tools.resolve_module_type ~mark_substituted:true env cp with
+  match
+    Tools.resolve_module_type ~mark_substituted:true ~add_canonical:true env cp
+  with
   | Ok (path, mt) -> (
       match Tools.signature_of_module_type env mt with
       | Error e ->
