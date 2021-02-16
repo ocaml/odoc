@@ -33,6 +33,7 @@ let opt_map f = function
   | Some x -> Some (f x)
 
 let read_label = Cmi.read_label
+let canonical = Cmi.canonical
 
 let rec read_core_type env container ctyp =
   let open TypeExpr in
@@ -253,9 +254,10 @@ let read_type_declaration env parent decl =
   let id = Env.find_type_identifier env decl.typ_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container decl.typ_attributes in
+  let canonical = (canonical doc :> Path.Type.t option) in
   let equation = read_type_equation env container decl in
   let representation = read_type_kind env (id :> Identifier.DataType.t) decl.typ_kind in
-    {id; doc; equation; representation}
+    {id; doc; canonical; equation; representation}
 
 let read_type_declarations env parent rec_flag decls =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
@@ -537,13 +539,7 @@ and read_module_type_declaration env parent mtd =
   let id = Env.find_module_type env mtd.mtd_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
-  let canonical =
-    let doc = List.map Odoc_model.Location_.value doc in
-    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
-    | exception Not_found -> None
-    | `Tag (`Canonical (`Dot (p, n))) -> Some (`Dot (p, n) :> Path.ModuleType.t)
-    | _ -> None
-  in
+  let canonical = (canonical doc :> Path.ModuleType.t option) in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t) container) mtd.mtd_type in
     {id; doc; canonical; expr;}
 
@@ -561,13 +557,7 @@ and read_module_declaration env parent md =
 
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container md.md_attributes in
-  let canonical =
-    let doc = List.map Odoc_model.Location_.value doc in
-    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
-    | exception Not_found -> None
-    | `Tag (`Canonical p) -> Some (p :> Path.Module.t)
-    | _ -> None
-  in
+  let canonical = (canonical doc :> Path.Module.t option) in
   let type_ =
     match md.md_type.mty_desc with
     | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p, None)

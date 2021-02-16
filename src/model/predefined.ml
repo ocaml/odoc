@@ -360,7 +360,8 @@ let int_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let char_decl =
   let open TypeDecl in
@@ -372,7 +373,8 @@ let char_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let bytes_decl =
   let open TypeDecl in
@@ -383,7 +385,8 @@ let bytes_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let string_decl =
   let open TypeDecl in
@@ -394,7 +397,8 @@ let string_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let float_decl =
   let open TypeDecl in
@@ -405,7 +409,8 @@ let float_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let bool_decl =
   let open TypeDecl in
@@ -417,7 +422,8 @@ let bool_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [ false_decl; true_decl ]) in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let unit_decl =
   let open TypeDecl in
@@ -429,7 +435,8 @@ let unit_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some (Variant [ void_decl ]) in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let exn_decl =
   let open TypeDecl in
@@ -441,7 +448,8 @@ let exn_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = Some Extensible in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let array_decl =
   let open TypeDecl in
@@ -456,7 +464,8 @@ let array_decl =
   let doc = empty_doc in
   let equation = invariant_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let list_decl =
   let open TypeDecl in
@@ -472,7 +481,8 @@ let list_decl =
   let doc = empty_doc in
   let equation = covariant_equation in
   let representation = Some (Variant [ nil_decl; cons_decl ]) in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let option_decl =
   let open TypeDecl in
@@ -488,7 +498,8 @@ let option_decl =
   let doc = empty_doc in
   let equation = covariant_equation in
   let representation = Some (Variant [ none_decl; some_decl ]) in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let int32_decl =
   let open TypeDecl in
@@ -503,7 +514,8 @@ let int32_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let int64_decl =
   let open TypeDecl in
@@ -518,7 +530,8 @@ let int64_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let nativeint_decl =
   let open TypeDecl in
@@ -534,7 +547,8 @@ let nativeint_decl =
   let doc = empty_doc in
   let equation = nullary_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let lazy_t_decl =
   let open TypeDecl in
@@ -549,7 +563,8 @@ let lazy_t_decl =
   let doc = empty_doc in
   let equation = covariant_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let extension_constructor_decl =
   let open TypeDecl in
@@ -564,7 +579,8 @@ let extension_constructor_decl =
   let doc = empty_doc in
   let equation = covariant_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let floatarray_decl =
   let open TypeDecl in
@@ -594,7 +610,8 @@ let floatarray_decl =
   in
   let equation = covariant_equation in
   let representation = None in
-  { id; doc; equation; representation }
+  let canonical = None in
+  { id; doc; canonical; equation; representation }
 
 let match_failure_decl =
   let open Lang.Exception in

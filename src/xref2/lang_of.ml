@@ -839,6 +839,7 @@ and type_decl map parent id (t : Component.TypeDecl.t) :
     id = identifier;
     equation = type_decl_equation map (parent :> Identifier.Parent.t) t.equation;
     doc = docs (parent :> Identifier.LabelParent.t) t.doc;
+    canonical = None;
     representation =
       Opt.map (type_decl_representation map identifier) t.representation;
   }

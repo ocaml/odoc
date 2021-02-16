@@ -229,6 +229,7 @@ and TypeDecl : sig
   type t = {
     id : Identifier.Type.t;
     doc : Comment.docs;
+    canonical : Path.Type.t option;
     equation : Equation.t;
     representation : Representation.t option;
   }
