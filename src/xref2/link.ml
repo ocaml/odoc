@@ -59,6 +59,8 @@ let rec should_reresolve : Paths.Path.Resolved.t -> bool =
   | `Hidden p -> should_reresolve (p :> t)
   | `Canonical (x, y) ->
       should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
+  | `CanonicalT (x, y) ->
+      should_reresolve (x :> t) || should_resolve (y :> Paths.Path.t)
   | `Apply (x, y) ->
       should_reresolve (x :> t) || should_reresolve (y :> Paths.Path.Resolved.t)
   | `SubstT (x, y) -> should_reresolve (x :> t) || should_reresolve (y :> t)

@@ -169,9 +169,7 @@ and Resolved_path : sig
     | `SubstAlias of module_ * module_
     | `Hidden of module_
     | `Module of module_ * ModuleName.t
-    | (* TODO: The canonical path should be a reference not a path *)
-      `Canonical of
-      module_ * Path.module_
+    | `Canonical of module_ * Path.module_
     | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_ ]
@@ -179,6 +177,7 @@ and Resolved_path : sig
   and module_type =
     [ `Identifier of Identifier.path_module_type
     | `SubstT of module_type * module_type
+    | `CanonicalT of module_type * Path.module_type
     | `ModuleType of module_ * ModuleTypeName.t
     | `OpaqueModuleType of module_type ]
 
@@ -194,6 +193,7 @@ and Resolved_path : sig
 
   type module_type_no_id =
     [ `ModuleType of module_ * ModuleTypeName.t
+    | `CanonicalT of module_type * Path.module_type
     | `SubstT of module_type * module_type
     | `OpaqueModuleType of module_type ]
 

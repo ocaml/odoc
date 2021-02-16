@@ -250,6 +250,8 @@ and resolved_module_type_path :
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
   | `SubstT (m1, m2) ->
       `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
+  | `CanonicalT (m1, m2) ->
+      `CanonicalT (resolved_module_type_path s m1, module_type_path s m2)
   | `OpaqueModuleType m ->
       if s.unresolve_opaque_paths then raise Invalidated
       else `OpaqueModuleType (resolved_module_type_path s m)

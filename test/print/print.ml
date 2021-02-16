@@ -175,6 +175,9 @@ module Path_to_sexp = struct
             resolved (m :> Resolved.t);
             resolved (m' :> Resolved.t);
           ]
+    | `CanonicalT (m, m') ->
+        List
+          [ Atom "canonicalt"; resolved (m :> Resolved.t); path (m' :> Path.t) ]
     | `OpaqueModule m ->
         List [ Atom "opaquemodule"; resolved (m :> Resolved.t) ]
     | `OpaqueModuleType m ->
