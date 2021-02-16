@@ -11,53 +11,47 @@ Two modules that reference each other:
 
 Check that references are resolved:
 
-  $ odoc_print a.odocl | jq '.content.Module.items[0].Type[1].doc[0][1]'
+  $ odoc_print a.odocl | jq '.content.Module.items[0].Type[1].doc[0]'
   {
     "`Paragraph": [
-      [
-        "a.mli 2:4 2:8",
-        {
-          "`Reference": [
-            {
-              "`Resolved": {
-                "`Identifier": {
-                  "`Root": [
-                    {
-                      "`RootPage": "test"
-                    },
-                    "B"
-                  ]
-                }
+      {
+        "`Reference": [
+          {
+            "`Resolved": {
+              "`Identifier": {
+                "`Root": [
+                  {
+                    "`RootPage": "test"
+                  },
+                  "B"
+                ]
               }
-            },
-            []
-          ]
-        }
-      ]
+            }
+          },
+          []
+        ]
+      }
     ]
   }
-  $ odoc_print b.odocl | jq '.content.Module.items[0].Type[1].doc[0][1]'
+  $ odoc_print b.odocl | jq '.content.Module.items[0].Type[1].doc[0]'
   {
     "`Paragraph": [
-      [
-        "b.mli 2:4 2:8",
-        {
-          "`Reference": [
-            {
-              "`Resolved": {
-                "`Identifier": {
-                  "`Root": [
-                    {
-                      "`RootPage": "test"
-                    },
-                    "A"
-                  ]
-                }
+      {
+        "`Reference": [
+          {
+            "`Resolved": {
+              "`Identifier": {
+                "`Root": [
+                  {
+                    "`RootPage": "test"
+                  },
+                  "A"
+                ]
               }
-            },
-            []
-          ]
-        }
-      ]
+            }
+          },
+          []
+        ]
+      }
     ]
   }
