@@ -87,12 +87,13 @@ val resolve_module :
 
 val resolve_module_type :
   mark_substituted:bool ->
+  add_canonical:bool ->
   Env.t ->
   Cpath.module_type ->
   ( Cpath.Resolved.module_type * Component.ModuleType.t,
     simple_module_type_lookup_error )
   Result.result
-(** [resolve_module_type ~mark_substituted env p] takes an unresolved module
+(** [resolve_module_type ~mark_substituted ~add_canonical env p] takes an unresolved module
     type path and an environment and returns a tuple of the resolved module type
     path alongside a representation of the module type itself. *)
 
@@ -172,6 +173,7 @@ val reresolve_parent : Env.t -> Cpath.Resolved.parent -> Cpath.Resolved.parent
 
 val handle_module_type_lookup :
   Env.t ->
+  add_canonical:bool ->
   string ->
   Cpath.Resolved.parent ->
   Component.Signature.t ->

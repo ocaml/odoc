@@ -98,7 +98,8 @@ and aux_expansion_of_u_module_type_expr env expr :
   let open Utils.ResultMonad in
   match expr with
   | Component.ModuleType.U.Path p ->
-      Tools.resolve_module_type ~mark_substituted:false env p
+      Tools.resolve_module_type ~mark_substituted:false ~add_canonical:true env
+        p
       |> map_error (fun e -> `UnresolvedPath (`ModuleType (p, e)))
       >>= fun (_, mt) ->
       aux_expansion_of_module_type env mt >>= assert_not_functor
@@ -114,7 +115,8 @@ and aux_expansion_of_module_type_expr env expr :
     (expansion, signature_of_module_error) Result.result =
   match expr with
   | Path { p_path; _ } ->
-      Tools.resolve_module_type ~mark_substituted:false env p_path
+      Tools.resolve_module_type ~mark_substituted:false ~add_canonical:true env
+        p_path
       |> map_error (fun e -> `UnresolvedPath (`ModuleType (p_path, e)))
       >>= fun (_, mt) -> aux_expansion_of_module_type env mt
   | Signature s -> Ok (Signature s)
