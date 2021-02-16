@@ -3,13 +3,7 @@ open Odoc_model
 open Comment
 open Paths_desc
 
-let location =
-  let open Location_ in
-  let point () p = Printf.sprintf "%d:%d" p.line p.column in
-  To_string
-    (fun s -> Printf.sprintf "%s %a %a" s.file point s.start point s.end_)
-
-let loc_to_pair x = (x.Location_.location, x.value)
+let ignore_loc x = x.Location_.value
 
 type general_inline_element =
   [ `Space
@@ -71,7 +65,7 @@ let rec inline_element : general_inline_element t =
     | `Link (x1, x2) -> C ("`Link", (x1, x2), Pair (string, link_content)))
 
 and link_content : general_link_content t =
-  List (Indirect (loc_to_pair, Pair (location, inline_element)))
+  List (Indirect (ignore_loc, inline_element))
 
 let rec block_element : general_block_element t =
   let heading_level =
@@ -126,8 +120,7 @@ and tag : general_tag t =
     | `Open -> C0 "`Open"
     | `Closed -> C0 "`Closed")
 
-and docs : general_docs t =
-  List (Indirect (loc_to_pair, Pair (location, block_element)))
+and docs : general_docs t = List (Indirect (ignore_loc, block_element))
 
 let docs = Indirect ((fun n -> ((n :> docs) :> general_docs)), docs)
 

@@ -27,7 +27,7 @@ If everything has worked to plan, we'll have resolved references for all of the 
 references should be to the correct identifiers - so top1 should be a RootPage, sub1 is a Page, sub2 is a LeafPage, and m1 is a Root.
 
 This is the '{!childpage-sub1}' reference
-  $ odoc_print page-top1.odocl | jq '.content[1][1]["`Paragraph"][0][1]["`Reference"][0]'
+  $ odoc_print page-top1.odocl | jq '.content[1]["`Paragraph"][0]["`Reference"][0]'
   {
     "`Resolved": {
       "`Identifier": {
@@ -42,7 +42,7 @@ This is the '{!childpage-sub1}' reference
   }
 
 This is the '{!childpage:sub2}' reference
-  $ odoc_print page-top1.odocl | jq '.content[1][1]["`Paragraph"][2][1]["`Reference"][0]'
+  $ odoc_print page-top1.odocl | jq '.content[1]["`Paragraph"][2]["`Reference"][0]'
   {
     "`Resolved": {
       "`Identifier": {
@@ -57,7 +57,7 @@ This is the '{!childpage:sub2}' reference
   }
 
 This is the '{!childmodule:M1}' reference
-  $ odoc_print page-sub1.odocl | jq '.content[1][1]["`Paragraph"][0][1]["`Reference"][0]'
+  $ odoc_print page-sub1.odocl | jq '.content[1]["`Paragraph"][0]["`Reference"][0]'
   {
     "`Resolved": {
       "`Identifier": {
