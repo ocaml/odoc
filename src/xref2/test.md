@@ -377,7 +377,7 @@ val m : Component.Element.module_type option =
   Some
    (`ModuleType
       (`ModuleType (`Root (`RootPage None, Root), M),
-       {Odoc_xref2.Component.ModuleType.doc = [];
+       {Odoc_xref2.Component.ModuleType.doc = []; canonical = None;
         expr =
          Some
           (Odoc_xref2.Component.ModuleType.Signature
@@ -387,6 +387,7 @@ val m : Component.Element.module_type option =
                 {Odoc_xref2.Component.Delayed.v =
                   Some
                    {Odoc_xref2.Component.ModuleType.doc = [];
+                    canonical = None;
                     expr =
                      Some
                       (Odoc_xref2.Component.ModuleType.Signature
@@ -458,7 +459,7 @@ we look up `A` from the environment:
   [Odoc_xref2.Component.Signature.ModuleType (`LModuleType (N, 4),
     {Odoc_xref2.Component.Delayed.v =
       Some
-       {Odoc_xref2.Component.ModuleType.doc = [];
+       {Odoc_xref2.Component.ModuleType.doc = []; canonical = None;
         expr =
          Some
           (Odoc_xref2.Component.ModuleType.Signature
@@ -1498,7 +1499,7 @@ let sg = Common.signature_of_mli_string test_data;;
   [Odoc_model.Lang.Signature.ModuleType
     {Odoc_model.Lang.ModuleType.id =
       `ModuleType (`Root (`RootPage None, Root), M);
-     doc = [];
+     doc = []; canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.Signature
@@ -1523,7 +1524,7 @@ let sg = Common.signature_of_mli_string test_data;;
    Odoc_model.Lang.Signature.ModuleType
     {Odoc_model.Lang.ModuleType.id =
       `ModuleType (`Root (`RootPage None, Root), M1);
-     doc = [];
+     doc = []; canonical = None;
      expr =
       Some
        (Odoc_model.Lang.ModuleType.With
