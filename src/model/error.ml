@@ -8,6 +8,10 @@ type t =
   [ `With_full_location of full_location_payload
   | `With_filename_only of filename_only_payload ]
 
+type 'a with_warnings = { value : 'a; warnings : t list }
+
+type warning_accumulator = t list ref
+
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
 
@@ -49,10 +53,6 @@ let raise_exception error = raise (Conveyed_by_exception error)
 let to_exception = function Ok v -> v | Error error -> raise_exception error
 
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
-
-type 'a with_warnings = { value : 'a; warnings : t list }
-
-type warning_accumulator = t list ref
 
 let accumulate_warnings f =
   let warnings = ref [] in

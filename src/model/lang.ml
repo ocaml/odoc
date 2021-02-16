@@ -105,6 +105,7 @@ and ModuleType : sig
   type t = {
     id : Identifier.ModuleType.t;
     doc : Comment.docs;
+    canonical : Path.ModuleType.t option;
     expr : expr option;
   }
 end =
