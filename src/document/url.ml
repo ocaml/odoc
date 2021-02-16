@@ -31,6 +31,8 @@ let render_path : Odoc_model.Paths.Path.t -> string =
     | `Canonical (p, _) -> render_resolved (p :> t)
     | `CanonicalT (_, `Resolved p) -> render_resolved (p :> t)
     | `CanonicalT (p, _) -> render_resolved (p :> t)
+    | `CanonicalTy (_, `Resolved p) -> render_resolved (p :> t)
+    | `CanonicalTy (p, _) -> render_resolved (p :> t)
     | `Apply (rp, p) ->
         render_resolved (rp :> t)
         ^ "("

@@ -172,6 +172,7 @@ module Path = struct
     | `Identifier (#Odoc_model.Paths_types.Identifier.path_type as y) ->
         `Identifier y
     | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
+    | `CanonicalTy (t1, t2) -> `CanonicalTy (resolved_type map t1, type_ map t2)
     | `Type (p, name) -> `Type (resolved_parent map p, name)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)

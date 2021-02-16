@@ -197,12 +197,18 @@ and Resolved_path : sig
     | `SubstT of module_type * module_type
     | `OpaqueModuleType of module_type ]
 
-  type type_no_id =
-    [ `Type of module_ * TypeName.t
+  type type_ =
+    [ `Identifier of Identifier.path_type
+    | `CanonicalTy of type_ * Path.type_
+    | `Type of module_ * TypeName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t ]
 
-  type type_ = [ `Identifier of Identifier.path_type | type_no_id ]
+  type type_no_id =
+    [ `CanonicalTy of type_ * Path.type_
+    | `Type of module_ * TypeName.t
+    | `Class of module_ * ClassName.t
+    | `ClassType of module_ * ClassTypeName.t ]
 
   type class_type_no_id =
     [ `Class of module_ * ClassName.t | `ClassType of module_ * ClassTypeName.t ]
