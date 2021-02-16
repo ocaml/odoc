@@ -849,8 +849,15 @@ and read_module_type_declaration env parent id (mtd : Odoc_model.Compat.modtype_
   let id = Env.find_module_type env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container mtd.mtd_attributes in
+  let canonical =
+    let doc = List.map Odoc_model.Location_.value doc in
+    match List.find (function `Tag (`Canonical _) -> true | _ -> false) doc with
+    | exception Not_found -> None
+    | `Tag (`Canonical (`Dot (p, n))) -> Some (`Dot (p, n) :> Path.ModuleType.t)
+    | _ -> None
+  in
   let expr = opt_map (read_module_type env (id :> Identifier.Signature.t)) mtd.mtd_type in
-  {id; doc; expr }
+  {id; doc; canonical; expr }
 
 and read_module_declaration env parent ident (md : Odoc_model.Compat.module_declaration) =
   let open Module in
