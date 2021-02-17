@@ -721,10 +721,6 @@ let rec open_signature : Odoc_model.Lang.Signature.t -> t -> t =
         | Odoc_model.Lang.Signature.Open o -> open_signature o.expansion env)
       e s.items
 
-let open_unit : Odoc_model.Lang.Compilation_unit.t -> t -> t =
- fun unit env ->
-  match unit.content with Module s -> open_signature s env | Pack _ -> env
-
 let initial_env :
     Odoc_model.Lang.Compilation_unit.t ->
     resolver ->

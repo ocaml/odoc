@@ -107,18 +107,18 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
   let imports, env = Env.initial_env t resolver in
-  {
-    t with
-    content = content env t.id t.content;
-    doc = comment_docs env t.doc;
-    imports;
-  }
-
-and content env id =
-  let open Compilation_unit in
-  function
-  | Module m -> Module (signature env (id :> Id.Signature.t) m)
-  | Pack p -> Pack p
+  let env = (* Add doc to env *) Env.add_docs t.doc env in
+  let content, env =
+    match t.content with
+    | Module sg ->
+        (* Inline [signature] to keep [env]. *)
+        let env = Env.open_signature sg env in
+        let items = signature_items env (t.id :> Id.Signature.t) sg.items in
+        (Module { sg with items }, env)
+    | Pack _ as p -> (p, env)
+  in
+  let doc = comment_docs env t.doc in
+  { t with content; doc; imports }
 
 and value_ env parent t =
   let open Value in

@@ -189,8 +189,6 @@ val open_class_signature : Odoc_model.Lang.ClassSignature.t -> t -> t
 
 val open_signature : Odoc_model.Lang.Signature.t -> t -> t
 
-val open_unit : Odoc_model.Lang.Compilation_unit.t -> t -> t
-
 val initial_env :
   Odoc_model.Lang.Compilation_unit.t ->
   resolver ->
