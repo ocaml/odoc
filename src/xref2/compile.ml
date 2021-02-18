@@ -714,7 +714,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Constr (path, ts') -> (
       let cp = Component.Of_Lang.(type_path empty path) in
       let ts = List.map (type_expression env parent) ts' in
-      match Tools.resolve_type env cp with
+      match Tools.resolve_type env ~add_canonical:true cp with
       | Ok (cp, (`FType _ | `FClass _ | `FClassType _)) ->
           let p = Cpath.resolved_type_path_of_cpath cp in
           Constr (`Resolved p, ts)

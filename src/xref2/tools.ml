@@ -172,6 +172,14 @@ let simplify_resolved_module_type_path :
       `ModuleType (`Module (simplify_resolved_module_path env m), p)
   | _ -> cpath
 
+let simplify_resolved_type_path :
+    Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
+ fun env cpath ->
+  match cpath with
+  | `Type (`Module m, p) ->
+      `Type (`Module (simplify_resolved_module_path env m), p)
+  | _ -> cpath
+
 open Errors.Tools_error
 
 type resolve_module_result =
@@ -754,77 +762,87 @@ and resolve_module_type :
       |> map_error (fun e -> `Parent (`Parent_module_type e))
       >>= fun (p, m) -> Ok (`Substituted p, m)
 
-and resolve_type : Env.t -> Cpath.type_ -> resolve_type_result =
- fun env p ->
-  match p with
-  | `Dot (parent, id) ->
-      (* let start_time = Unix.gettimeofday () in *)
-      resolve_module ~mark_substituted:true ~add_canonical:true env parent
-      |> map_error (fun e -> `Parent (`Parent_module e))
-      >>= fun (p, m) ->
-      let m = Component.Delayed.get m in
-      (* let time1 = Unix.gettimeofday () in *)
-      signature_of_module_cached env p m
-      |> map_error (fun e -> `Parent (`Parent_sig e))
-      >>= fun sg ->
-      (* let time1point5 = Unix.gettimeofday () in *)
-      let sub = prefix_substitution (`Module p) sg in
-      (* let time2 = Unix.gettimeofday () in *)
-      handle_type_lookup id (`Module p) sg >>= fun (p', t') ->
-      let t =
-        match t' with
-        | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
-        | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
-        | `FType (name, t) -> `FType (name, Subst.type_ sub t)
-        | `FType_removed (name, texpr, eq) ->
-            `FType_removed (name, Subst.type_expr sub texpr, eq)
-      in
-      (* let time3 = Unix.gettimeofday () in *)
-      (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
-      Ok (p', t)
-  | `Type (parent, id) ->
-      lookup_parent ~mark_substituted:true env parent
-      |> map_error (fun e -> (e :> simple_type_lookup_error))
-      >>= fun (parent_sig, sub) ->
-      let result =
-        match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
-        | Some (`FType (name, t)) ->
-            Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
-        | None -> None
-      in
-      of_option ~error:`Find_failure result
-  | `Class (parent, id) ->
-      lookup_parent ~mark_substituted:true env parent
-      |> map_error (fun e -> (e :> simple_type_lookup_error))
-      >>= fun (parent_sig, sub) ->
-      let t =
-        match Find.type_in_sig parent_sig (ClassName.to_string id) with
-        | Some (`FClass (name, t)) ->
-            Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
-        | Some _ -> None
-        | None -> None
-      in
-      of_option ~error:`Find_failure t
-  | `ClassType (parent, id) ->
-      lookup_parent ~mark_substituted:true env parent
-      |> map_error (fun e -> (e :> simple_type_lookup_error))
-      >>= fun (parent_sg, sub) ->
-      handle_type_lookup (ClassTypeName.to_string id) parent parent_sg
-      >>= fun (p', t') ->
-      let t =
-        match t' with
-        | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
-        | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
-        | `FType (name, t) -> `FType (name, Subst.type_ sub t)
-        | `FType_removed (name, texpr, eq) ->
-            `FType_removed (name, Subst.type_expr sub texpr, eq)
-      in
-      Ok (p', t)
-  | `Identifier (i, _) ->
-      lookup_type env (`Identifier i) >>= fun t -> Ok (`Identifier i, t)
-  | `Resolved r -> lookup_type env r >>= fun t -> Ok (r, t)
-  | `Local (l, _) -> Error (`LocalType (env, l))
-  | `Substituted s -> resolve_type env s >>= fun (p, m) -> Ok (`Substituted p, m)
+and resolve_type :
+    Env.t -> add_canonical:bool -> Cpath.type_ -> resolve_type_result =
+ fun env ~add_canonical p ->
+  let result =
+    match p with
+    | `Dot (parent, id) ->
+        (* let start_time = Unix.gettimeofday () in *)
+        resolve_module ~mark_substituted:true ~add_canonical:true env parent
+        |> map_error (fun e -> `Parent (`Parent_module e))
+        >>= fun (p, m) ->
+        let m = Component.Delayed.get m in
+        (* let time1 = Unix.gettimeofday () in *)
+        signature_of_module_cached env p m
+        |> map_error (fun e -> `Parent (`Parent_sig e))
+        >>= fun sg ->
+        (* let time1point5 = Unix.gettimeofday () in *)
+        let sub = prefix_substitution (`Module p) sg in
+        (* let time2 = Unix.gettimeofday () in *)
+        handle_type_lookup id (`Module p) sg >>= fun (p', t') ->
+        let t =
+          match t' with
+          | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
+          | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
+          | `FType (name, t) -> `FType (name, Subst.type_ sub t)
+          | `FType_removed (name, texpr, eq) ->
+              `FType_removed (name, Subst.type_expr sub texpr, eq)
+        in
+        (* let time3 = Unix.gettimeofday () in *)
+        (* Format.fprintf Format.err_formatter "lookup: %f vs sig_of_mod: %f vs prefix_sub: %f vs rest: %f\n%!" (time1 -. start_time) (time1point5 -. time1) (time2 -. time1point5) (time3 -. time2); *)
+        Ok (p', t)
+    | `Type (parent, id) ->
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> simple_type_lookup_error))
+        >>= fun (parent_sig, sub) ->
+        let result =
+          match Find.datatype_in_sig parent_sig (TypeName.to_string id) with
+          | Some (`FType (name, t)) ->
+              Some (`Type (parent, name), `FType (name, Subst.type_ sub t))
+          | None -> None
+        in
+        of_option ~error:`Find_failure result
+    | `Class (parent, id) ->
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> simple_type_lookup_error))
+        >>= fun (parent_sig, sub) ->
+        let t =
+          match Find.type_in_sig parent_sig (ClassName.to_string id) with
+          | Some (`FClass (name, t)) ->
+              Some (`Class (parent, name), `FClass (name, Subst.class_ sub t))
+          | Some _ -> None
+          | None -> None
+        in
+        of_option ~error:`Find_failure t
+    | `ClassType (parent, id) ->
+        lookup_parent ~mark_substituted:true env parent
+        |> map_error (fun e -> (e :> simple_type_lookup_error))
+        >>= fun (parent_sg, sub) ->
+        handle_type_lookup (ClassTypeName.to_string id) parent parent_sg
+        >>= fun (p', t') ->
+        let t =
+          match t' with
+          | `FClass (name, c) -> `FClass (name, Subst.class_ sub c)
+          | `FClassType (name, ct) -> `FClassType (name, Subst.class_type sub ct)
+          | `FType (name, t) -> `FType (name, Subst.type_ sub t)
+          | `FType_removed (name, texpr, eq) ->
+              `FType_removed (name, Subst.type_expr sub texpr, eq)
+        in
+        Ok (p', t)
+    | `Identifier (i, _) ->
+        lookup_type env (`Identifier i) >>= fun t -> Ok (`Identifier i, t)
+    | `Resolved r -> lookup_type env r >>= fun t -> Ok (r, t)
+    | `Local (l, _) -> Error (`LocalType (env, l))
+    | `Substituted s ->
+        resolve_type env ~add_canonical s >>= fun (p, m) ->
+        Ok (`Substituted p, m)
+  in
+  result >>= fun (p, t) ->
+  match t with
+  | `FType (_, { canonical = Some c; _ }) ->
+      if add_canonical then Ok (`CanonicalTy (p, c), t) else result
+  | _ -> result
 
 and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
     =
@@ -955,7 +973,13 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     match path with
     | `Identifier _ | `Local _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
-    | `CanonicalTy (p1, p2) -> `CanonicalTy (reresolve_type env p1, p2)
+    | `CanonicalTy (p1, p2) -> (
+        match resolve_type ~add_canonical:false env p2 with
+        | Ok (p, _) ->
+            `CanonicalTy
+              ( reresolve_type env p1,
+                `Resolved (simplify_resolved_type_path env p) )
+        | Error _ | (exception _) -> `CanonicalTy (reresolve_type env p1, p2) )
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
     | `Class (p, n) -> `Class (reresolve_parent env p, n)
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
@@ -1592,7 +1616,7 @@ and class_signature_of_class_type_expr :
   match e with
   | Signature s -> Some s
   | Constr (p, _) -> (
-      match resolve_type env (p :> Cpath.type_) with
+      match resolve_type env ~add_canonical:true (p :> Cpath.type_) with
       | Ok (_, `FClass (_, c)) -> class_signature_of_class env c
       | Ok (_, `FClassType (_, c)) -> class_signature_of_class_type env c
       | _ -> None )
@@ -1625,7 +1649,8 @@ let resolve_module_type_path env p =
   | Error (`UnexpandedTypeOf _) ->
       Ok p
 
-let resolve_type_path env p = resolve_type env p >>= fun (p, _) -> Ok p
+let resolve_type_path env p =
+  resolve_type env ~add_canonical:true p >>= fun (p, _) -> Ok p
 
 let resolve_class_type_path env p =
   resolve_class_type env p >>= fun (p, _) -> Ok p

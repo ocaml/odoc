@@ -173,6 +173,7 @@ and Resolved_path : sig
     | `Apply of module_ * module_
     | `Alias of module_ * module_
     | `OpaqueModule of module_ ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.Module.t *)
 
   and module_type =
     [ `Identifier of Identifier.path_module_type
