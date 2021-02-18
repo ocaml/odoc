@@ -26,17 +26,17 @@
    </p>
   </header>
   <div class="odoc-content">
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-foo">
      <a href="#val-foo" class="anchor"></a><code><span><span class="keyword">let</span> foo: int;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This is normal commented text.
      </p>
     </div>
    </div>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      The next value is <code>bar</code>, and it should be missing from the documentation. There is also an entire module, <code>M</code>, which should also be hidden. It contains a nested stop comment, but that stop comment should not turn documentation back on in this outer module, because stop comments respect scope.
     </p>
@@ -47,11 +47,15 @@
      Now, we have a nested module, and it has a stop comment between its two items. We want to see that the first item is displayed, but the second is missing, and the stop comment disables documenation only in that module, and not in this outer module.
     </p>
    </aside>
-   <div class="spec module" id="module-N">
-    <a href="#module-N" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="N/index.html">N</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-N">
+     <a href="#module-N" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="N/index.html">N</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-lol">
-    <a href="#val-lol" class="anchor"></a><code><span><span class="keyword">let</span> lol: int;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-lol">
+     <a href="#val-lol" class="anchor"></a><code><span><span class="keyword">let</span> lol: int;</span></code>
+    </div>
    </div>
   </div>
  </body>
