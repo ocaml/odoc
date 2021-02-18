@@ -25,11 +25,12 @@ As HTML, should render as a description list.
     <script src="../../highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
    </head>
-   <body>
-    <nav><a href="../index.html">Up</a> – <a href="../index.html">test</a>
-      &#x00BB; Main
+   <body class="odoc">
+    <nav class="odoc-nav"><a href="../index.html">Up</a> – 
+     <a href="../index.html">test</a> &#x00BB; Main
     </nav>
-    <header><h1>Module <code>Main</code></h1>
+    <header class="odoc-preamble">
+     <h1>Module <code><span>Main</span></code></h1>
      <dl class="modules">
       <dt><a href="../External/index.html"><code>External</code></a></dt>
       <dd><p class="synopsis">Doc for <code>External</code>.</p></dd>
@@ -45,15 +46,17 @@ As HTML, should render as a description list.
       </dd>
      </dl>
     </header>
-    <div class="content">
-     <div>
+    <div class="odoc-content">
+     <div class="odoc-spec">
       <div class="spec module" id="module-Internal" class="anchored">
        <a href="#module-Internal" class="anchor"></a>
-       <code><span class="keyword">module</span> 
-        <a href="Internal/index.html">Internal</a> : 
-        <span class="keyword">sig</span> ... <span class="keyword">end</span>
-        </code>
-      </div><div><p>Doc for <code>Internal</code>.</p></div>
+       <code><span><span class="keyword">module</span> </span>
+        <span><a href="Internal/index.html">Internal</a></span>
+        <span> : <span class="keyword">sig</span> ... 
+         <span class="keyword">end</span>
+        </span>
+       </code>
+      </div><div class="spec-doc"><p>Doc for <code>Internal</code>.</p></div>
      </div>
     </div>
    </body>
