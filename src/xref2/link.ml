@@ -826,7 +826,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
       if not (Paths.Path.is_hidden (path :> Paths.Path.t)) then Constr (path, ts)
       else
         let cp = Component.Of_Lang.(type_path empty path') in
-        match Tools.resolve_type env cp with
+        match Tools.resolve_type env ~add_canonical:true cp with
         | Ok (cp', `FType (_, t)) ->
             let cp' = Tools.reresolve_type env cp' in
             let p = Cpath.resolved_type_path_of_cpath cp' in

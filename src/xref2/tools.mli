@@ -99,6 +99,7 @@ val resolve_module_type :
 
 val resolve_type :
   Env.t ->
+  add_canonical:bool ->
   Cpath.type_ ->
   ( Cpath.Resolved.type_ * Find.careful_type,
     simple_type_lookup_error )
