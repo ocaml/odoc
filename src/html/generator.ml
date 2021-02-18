@@ -201,14 +201,6 @@ let div : ([< Html_types.div_attrib ], [< item ], [> Html_types.div ]) Html.star
     =
   Html.Unsafe.node "div"
 
-let rec is_only_text l =
-  let is_text : Item.t -> _ = function
-    | Heading _ | Text _ -> true
-    | Declaration _ -> false
-    | Include { content = { content; _ }; _ } -> is_only_text content
-  in
-  List.for_all is_text l
-
 let class_of_kind kind =
   match kind with Some spec -> class_ [ "spec"; spec ] | None -> []
 
@@ -263,9 +255,9 @@ and subpage ~resolve (subp : Subpage.t) : item Html.elt list =
   items ~resolve subp.content.items
 
 and items ~resolve l : item Html.elt list =
-  let rec walk_items ~only_text acc (t : Item.t list) : item Html.elt list =
+  let rec walk_items acc (t : Item.t list) : item Html.elt list =
     let continue_with rest elts =
-      (walk_items [@tailcall]) ~only_text (List.rev_append elts acc) rest
+      (walk_items [@tailcall]) (List.rev_append elts acc) rest
     in
     match t with
     | [] -> List.rev acc
@@ -326,7 +318,7 @@ and items ~resolve l : item Html.elt list =
           [ div ~a: [ Html.a_class [ "odoc-spec" ]] (div ~a content :: doc) ]
         in
         (continue_with [@tailcall]) rest elts
-  and items l = walk_items ~only_text:(is_only_text l) [] l in
+  and items l = walk_items [] l in
   items l
 
 module Toc = struct
