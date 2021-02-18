@@ -62,7 +62,7 @@
    <h2 id="text-only">
     <a href="#text-only" class="anchor"></a>Text only
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Foo bar.
     </p>
@@ -70,7 +70,7 @@
    <h2 id="aside-only">
     <a href="#aside-only" class="anchor"></a>Aside only
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Foo bar.
     </p>
@@ -78,8 +78,10 @@
    <h2 id="value-only">
     <a href="#value-only" class="anchor"></a>Value only
    </h2>
-   <div class="spec value" id="val-foo">
-    <a href="#val-foo" class="anchor"></a><code><span><span class="keyword">let</span> foo: unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-foo">
+     <a href="#val-foo" class="anchor"></a><code><span><span class="keyword">let</span> foo: unit;</span></code>
+    </div>
    </div>
    <h2 id="empty-section">
     <a href="#empty-section" class="anchor"></a>Empty section
@@ -93,7 +95,7 @@
    <h2 id="this-section-title-has-markup">
     <a href="#this-section-title-has-markup" class="anchor"></a><em>This</em> <code>section</code> <b>title</b> <sub>has</sub> <sup>markup</sup>
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      But links are impossible thanks to the parser, so we never have trouble rendering a section title in a table of contents – no link will be nested inside another link.
     </p>

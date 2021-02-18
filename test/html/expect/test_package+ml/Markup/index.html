@@ -83,7 +83,7 @@
    <h2 id="sections">
     <a href="#sections" class="anchor"></a>Sections
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Let's get these done first, because sections will be used to break up the rest of this test.
     </p>
@@ -94,7 +94,7 @@
    <h3 id="subsection-headings">
     <a href="#subsection-headings" class="anchor"></a>Subsection headings
    </h3>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      and
     </p>
@@ -102,7 +102,7 @@
    <h4 id="sub-subsection-headings">
     <a href="#sub-subsection-headings" class="anchor"></a>Sub-subsection headings
    </h4>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      but odoc has banned deeper headings. There are also title headings, but they are only allowed in mld files.
     </p>
@@ -110,7 +110,7 @@
    <h4 id="anchors">
     <a href="#anchors" class="anchor"></a>Anchors
    </h4>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Sections can have attached <a href="#anchors">Anchors</a>, and it is possible to <a href="#anchors">link</a> to them. Links to section headers should not be set in source code style.
     </p>
@@ -118,7 +118,7 @@
    <h5 id="paragraph">
     <a href="#paragraph" class="anchor"></a>Paragraph
    </h5>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Individual paragraphs can have a heading.
     </p>
@@ -126,7 +126,7 @@
    <h6 id="subparagraph">
     <a href="#subparagraph" class="anchor"></a>Subparagraph
    </h6>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Parts of a longer paragraph that can be considered alone can also have headings.
     </p>
@@ -134,7 +134,7 @@
    <h2 id="styling">
     <a href="#styling" class="anchor"></a>Styling
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      This paragraph has some styled elements: <b>bold</b> and <i>italic</i>, <b><i>bold italic</i></b>, <em>emphasis</em>, <em><em class="odd">emphasis</em> within emphasis</em>, <b><i>bold italic</i></b>, super<sup>script</sup>, sub<sub>script</sub>. The line spacing should be enough for superscripts and subscripts not to look odd.
     </p>
@@ -157,7 +157,7 @@
    <h2 id="links-and-references">
     <a href="#links-and-references" class="anchor"></a>Links and references
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      This is a <a href="#">link</a>. It sends you to the top of this page. Links can have markup inside them: <a href="#"><b>bold</b></a>, <a href="#"><i>italics</i></a>, <a href="#"><em>emphasis</em></a>, <a href="#">super<sup>script</sup></a>, <a href="#">sub<sub>script</sub></a>, and <a href="#"><code>code</code></a>. Links can also be nested <em><a href="#">inside</a></em> markup. Links cannot be nested inside each other. This link has no replacement text: <a href="#">#</a>. The text is filled in by odoc. This is a shorthand link: <a href="#">#</a>. The text is also filled in by odoc in this case.
     </p>
@@ -168,7 +168,7 @@
    <h2 id="preformatted-text">
     <a href="#preformatted-text" class="anchor"></a>Preformatted text
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      This is a code block:
     </p>
@@ -187,7 +187,7 @@ let bar =
    <h2 id="lists">
     <a href="#lists" class="anchor"></a>Lists
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <ul>
      <li>
       This is a
@@ -265,7 +265,7 @@ let bar =
    <h2 id="unicode">
     <a href="#unicode" class="anchor"></a>Unicode
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
     </p>
@@ -273,7 +273,7 @@ let bar =
    <h2 id="raw-html">
     <a href="#raw-html" class="anchor"></a>Raw HTML
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Raw HTML can be <input type="text" placeholder="inserted"> as inline elements into sentences.
     </p>
@@ -285,7 +285,7 @@ let bar =
    <h2 id="modules">
     <a href="#modules" class="anchor"></a>Modules
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <dl class="modules"></dl>
     <dl class="modules">
      <dt>
@@ -311,7 +311,7 @@ let bar =
    <h2 id="tags">
     <a href="#tags" class="anchor"></a>Tags
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Each comment can end with zero or more tags. Here are some examples:
     </p>
@@ -420,11 +420,11 @@ let bar =
      </dd>
     </dl>
    </aside>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-foo">
      <a href="#val-foo" class="anchor"></a><code><span><span class="keyword">val</span> foo : unit</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Comments in structure items <b>support</b> <em>markup</em>, t<sup>o</sup><sub>o</sub>.
      </p>

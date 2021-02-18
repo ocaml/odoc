@@ -23,14 +23,16 @@
    </h1>
   </header>
   <div class="odoc-content">
-   <div class="spec type" id="type-opt'">
-    <a href="#type-opt'" class="anchor"></a><code><span><span class="keyword">type</span> <span>'a opt'</span></span><span> = <span>int option</span></span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-opt'">
+     <a href="#type-opt'" class="anchor"></a><code><span><span class="keyword">type</span> <span>'a opt'</span></span><span> = <span>int option</span></span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-foo'">
      <a href="#val-foo'" class="anchor"></a><code><span><span class="keyword">val</span> foo' : <span>?⁠bar:<span class="type-var">'a</span> <span>-&gt;</span></span> <span>unit <span>-&gt;</span></span> unit</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Similar to <code>Bugs</code>, but the printed type of <code>~bar</code> should be <code>int</code>, not <code>'a</code>. This probably requires fixing in the compiler. See <a href="https://github.com/ocaml/odoc/pull/230#issuecomment-433226807">https://github.com/ocaml/odoc/pull/230#issuecomment-433226807</a>.
      </p>

@@ -155,7 +155,7 @@
    </ul>
   </nav>
   <div class="odoc-content">
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      You may find more information about this HTML documentation renderer at <a href="https://github.com/dsheets/ocamlary">github.com/dsheets/ocamlary</a>.
     </p>
@@ -225,31 +225,31 @@
    <h4 id="basic-module-stuff">
     <a href="#basic-module-stuff" class="anchor"></a>Basic module stuff
    </h4>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-Empty">
      <a href="#module-Empty" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Empty/index.html">Empty</a></span><span>: { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain, empty module
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-Empty">
      <a href="#module-type-Empty" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-Empty/index.html">Empty</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       An ambiguous, misnamed module type
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-MissingComment">
      <a href="#module-type-MissingComment" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-MissingComment/index.html">MissingComment</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       An ambiguous, misnamed module type
      </p>
@@ -258,11 +258,11 @@
    <h6 id="s9000">
     <a href="#s9000" class="anchor"></a>Level 9000
    </h6>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-EmptyAlias">
      <a href="#module-EmptyAlias" class="anchor"></a><code><span><span class="keyword">module</span> </span><span>EmptyAlias</span><span> = <a href="Empty/index.html">Empty</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain module alias of <code>Empty</code>
      </p>
@@ -271,78 +271,82 @@
    <h4 id="emptySig">
     <a href="#emptySig" class="anchor"></a>EmptySig
    </h4>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-EmptySig">
      <a href="#module-type-EmptySig" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-EmptySig/index.html">EmptySig</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain, empty module signature
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-EmptySigAlias">
      <a href="#module-type-EmptySigAlias" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-EmptySigAlias/index.html">EmptySigAlias</a></span><span> = <a href="module-type-EmptySig/index.html">EmptySig</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain, empty module signature alias of
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-ModuleWithSignature">
      <a href="#module-ModuleWithSignature" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="ModuleWithSignature/index.html">ModuleWithSignature</a></span><span>: <a href="module-type-EmptySig/index.html">EmptySig</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain module of a signature of <a href="#exception-EmptySig"><code>EmptySig</code></a> (reference)
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-ModuleWithSignatureAlias">
      <a href="#module-ModuleWithSignatureAlias" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="ModuleWithSignatureAlias/index.html">ModuleWithSignatureAlias</a></span><span>: <a href="module-type-EmptySigAlias/index.html">EmptySigAlias</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A plain module with an alias signature
      </p>
     </div>
    </div>
-   <div class="spec module" id="module-One">
-    <a href="#module-One" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="One/index.html">One</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-One">
+     <a href="#module-One" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="One/index.html">One</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-SigForMod">
      <a href="#module-type-SigForMod" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-SigForMod/index.html">SigForMod</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       There's a signature in a module in this signature.
      </p>
     </div>
    </div>
-   <div class="spec module-type" id="module-type-SuperSig">
-    <a href="#module-type-SuperSig" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-SuperSig/index.html">SuperSig</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-SuperSig">
+     <a href="#module-type-SuperSig" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-SuperSig/index.html">SuperSig</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      For a good time, see <a href="module-type-SuperSig/index.html#subSig"><code>SuperSig.SubSigA:subSig</code></a> or <a href="module-type-SuperSig/index.html#subSig"><code>SuperSig.SubSigB:subSig</code></a> or <a href="module-type-SuperSig/module-type-EmptySig/index.html"><code>SuperSig.EmptySig</code></a>. Section <a href="#s9000">Level 9000</a> is also interesting. <a href="#exception-EmptySig"><code>EmptySig</code></a> is a general reference but <a href="#emptySig">EmptySig</a> is the section and <a href="module-type-EmptySig/index.html"><code>EmptySig</code></a> is the module signature.
     </p>
    </aside>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-Buffer">
      <a href="#module-Buffer" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Buffer/index.html">Buffer</a></span><span>: { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       <code>Buffer</code>.t
      </p>
     </div>
    </div>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Some text before exception title.
     </p>
@@ -350,56 +354,56 @@
    <h4 id="basic-exception-stuff">
     <a href="#basic-exception-stuff" class="anchor"></a>Basic exception stuff
    </h4>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      After exception title.
     </p>
    </aside>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-Kaboom">
      <a href="#exception-Kaboom" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">Kaboom</span>(unit)</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Unary exception constructor
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-Kablam">
      <a href="#exception-Kablam" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">Kablam</span>(unit, unit)</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Binary exception constructor
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-Kapow">
      <a href="#exception-Kapow" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">Kapow</span>(<span>(unit, unit)</span>)</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Unary exception constructor over binary tuple
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-EmptySig">
      <a href="#exception-EmptySig" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">EmptySig</span></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       <a href="#exception-EmptySig"><code>EmptySig</code></a> is general but <a href="module-type-EmptySig/index.html"><code>EmptySig</code></a> is a module and <a href="#exception-EmptySig"><code>EmptySig</code></a> is this exception.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-EmptySigAlias">
      <a href="#exception-EmptySigAlias" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">EmptySigAlias</span></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       <a href="#exception-EmptySigAlias"><code>EmptySigAlias</code></a> is this exception.
      </p>
@@ -408,21 +412,21 @@
    <h4 id="basic-type-and-value-stuff-with-advanced-doc-comments">
     <a href="#basic-type-and-value-stuff-with-advanced-doc-comments" class="anchor"></a>Basic type and value stuff with advanced doc comments
    </h4>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-a_function">
      <a href="#type-a_function" class="anchor"></a><code><span><span class="keyword">type</span> a_function('a, 'b)</span><span> = <span><span class="type-var">'a</span> <span>=&gt;</span></span> <span class="type-var">'b</span></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       <a href="#val-a_function"><code>a_function</code></a> is general but <a href="#type-a_function"><code>a_function</code></a> is this type and <a href="#val-a_function"><code>a_function</code></a> is the value below.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-a_function">
      <a href="#val-a_function" class="anchor"></a><code><span><span class="keyword">let</span> a_function: <span>x:int <span>=&gt;</span></span> int;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This is <code>a_function</code> with param and return type.
      </p>
@@ -448,17 +452,21 @@
      </dl>
     </div>
    </div>
-   <div class="spec value" id="val-fun_fun_fun">
-    <a href="#val-fun_fun_fun" class="anchor"></a><code><span><span class="keyword">let</span> fun_fun_fun: <a href="#type-a_function">a_function</a><span>(<a href="#type-a_function">a_function</a><span>(int,&nbsp;int)</span>,&nbsp;<a href="#type-a_function">a_function</a><span>(unit,&nbsp;unit)</span>)</span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-fun_fun_fun">
+     <a href="#val-fun_fun_fun" class="anchor"></a><code><span><span class="keyword">let</span> fun_fun_fun: <a href="#type-a_function">a_function</a><span>(<a href="#type-a_function">a_function</a><span>(int,&nbsp;int)</span>,&nbsp;<a href="#type-a_function">a_function</a><span>(unit,&nbsp;unit)</span>)</span>;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-fun_maybe">
-    <a href="#val-fun_maybe" class="anchor"></a><code><span><span class="keyword">let</span> fun_maybe: <span>?⁠yes:unit <span>=&gt;</span></span> <span>unit <span>=&gt;</span></span> int;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-fun_maybe">
+     <a href="#val-fun_maybe" class="anchor"></a><code><span><span class="keyword">let</span> fun_maybe: <span>?⁠yes:unit <span>=&gt;</span></span> <span>unit <span>=&gt;</span></span> int;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-not_found">
      <a href="#val-not_found" class="anchor"></a><code><span><span class="keyword">let</span> not_found: <span>unit <span>=&gt;</span></span> unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <dl>
       <dt>
        raises Not_found
@@ -471,11 +479,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-ocaml_org">
      <a href="#val-ocaml_org" class="anchor"></a><code><span><span class="keyword">let</span> ocaml_org: string;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <dl>
       <dt>
        see <a href="http://ocaml.org/">http://ocaml.org/</a>
@@ -488,11 +496,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-some_file">
      <a href="#val-some_file" class="anchor"></a><code><span><span class="keyword">let</span> some_file: string;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <dl>
       <dt>
        see <code>some_file</code>
@@ -505,11 +513,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-some_doc">
      <a href="#val-some_doc" class="anchor"></a><code><span><span class="keyword">let</span> some_doc: string;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <dl>
       <dt>
        see some_doc
@@ -522,11 +530,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-since_mesozoic">
      <a href="#val-since_mesozoic" class="anchor"></a><code><span><span class="keyword">let</span> since_mesozoic: unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This value was introduced in the Mesozoic era.
      </p>
@@ -540,11 +548,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-changing">
      <a href="#val-changing" class="anchor"></a><code><span><span class="keyword">let</span> changing: unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
      </p>
@@ -578,11 +586,11 @@
      </dl>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-with_foo">
      <a href="#val-with_foo" class="anchor"></a><code><span><span class="keyword">let</span> with_foo: unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This value has a custom tag <code>foo</code>. @foo the body of the custom <code>foo</code> tag
      </p>
@@ -591,134 +599,180 @@
    <h4 id="some-operators">
     <a href="#some-operators" class="anchor"></a>Some Operators
    </h4>
-   <div class="spec value" id="val-(~-)">
-    <a href="#val-(~-)" class="anchor"></a><code><span><span class="keyword">let</span> (~-): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(~-)">
+     <a href="#val-(~-)" class="anchor"></a><code><span><span class="keyword">let</span> (~-): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(!)">
-    <a href="#val-(!)" class="anchor"></a><code><span><span class="keyword">let</span> (!): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(!)">
+     <a href="#val-(!)" class="anchor"></a><code><span><span class="keyword">let</span> (!): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(@)">
-    <a href="#val-(@)" class="anchor"></a><code><span><span class="keyword">let</span> (@): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(@)">
+     <a href="#val-(@)" class="anchor"></a><code><span><span class="keyword">let</span> (@): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-($)">
-    <a href="#val-($)" class="anchor"></a><code><span><span class="keyword">let</span> ($): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-($)">
+     <a href="#val-($)" class="anchor"></a><code><span><span class="keyword">let</span> ($): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(%)">
-    <a href="#val-(%)" class="anchor"></a><code><span><span class="keyword">let</span> (%): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(%)">
+     <a href="#val-(%)" class="anchor"></a><code><span><span class="keyword">let</span> (%): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(&amp;)">
-    <a href="#val-(&amp;)" class="anchor"></a><code><span><span class="keyword">let</span> (&amp;): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(&amp;)">
+     <a href="#val-(&amp;)" class="anchor"></a><code><span><span class="keyword">let</span> (&amp;): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(*)">
-    <a href="#val-(*)" class="anchor"></a><code><span><span class="keyword">let</span> (*): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(*)">
+     <a href="#val-(*)" class="anchor"></a><code><span><span class="keyword">let</span> (*): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(-)">
-    <a href="#val-(-)" class="anchor"></a><code><span><span class="keyword">let</span> (-): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(-)">
+     <a href="#val-(-)" class="anchor"></a><code><span><span class="keyword">let</span> (-): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(+)">
-    <a href="#val-(+)" class="anchor"></a><code><span><span class="keyword">let</span> (+): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(+)">
+     <a href="#val-(+)" class="anchor"></a><code><span><span class="keyword">let</span> (+): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(-?)">
-    <a href="#val-(-?)" class="anchor"></a><code><span><span class="keyword">let</span> (-?): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(-?)">
+     <a href="#val-(-?)" class="anchor"></a><code><span><span class="keyword">let</span> (-?): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(/)">
-    <a href="#val-(/)" class="anchor"></a><code><span><span class="keyword">let</span> (/): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(/)">
+     <a href="#val-(/)" class="anchor"></a><code><span><span class="keyword">let</span> (/): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(:=)">
-    <a href="#val-(:=)" class="anchor"></a><code><span><span class="keyword">let</span> (:=): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(:=)">
+     <a href="#val-(:=)" class="anchor"></a><code><span><span class="keyword">let</span> (:=): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(=)">
-    <a href="#val-(=)" class="anchor"></a><code><span><span class="keyword">let</span> (=): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(=)">
+     <a href="#val-(=)" class="anchor"></a><code><span><span class="keyword">let</span> (=): unit;</span></code>
+    </div>
    </div>
-   <div class="spec value" id="val-(land)">
-    <a href="#val-(land)" class="anchor"></a><code><span><span class="keyword">let</span> (land): unit;</span></code>
+   <div class="odoc-spec">
+    <div class="spec value" id="val-(land)">
+     <a href="#val-(land)" class="anchor"></a><code><span><span class="keyword">let</span> (land): unit;</span></code>
+    </div>
    </div>
    <h4 id="advanced-module-stuff">
     <a href="#advanced-module-stuff" class="anchor"></a>Advanced Module Stuff
    </h4>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-CollectionModule">
      <a href="#module-CollectionModule" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="CollectionModule/index.html">CollectionModule</a></span><span>: { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>CollectionModule</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-COLLECTION">
      <a href="#module-type-COLLECTION" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-COLLECTION/index.html">COLLECTION</a></span><span> = <span class="keyword">module</span> <span class="keyword">type</span> <span class="keyword">of</span> <a href="CollectionModule/index.html">CollectionModule</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       module type of
      </p>
     </div>
    </div>
-   <div class="spec module" id="module-Recollection">
-    <a href="#module-Recollection" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Recollection/index.html">Recollection</a></span><span>: <span> (<a href="Recollection/argument-1-C/index.html">C</a>: <a href="module-type-COLLECTION/index.html">COLLECTION</a>) <span>=&gt;</span></span> <a href="module-type-COLLECTION/index.html">COLLECTION</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-collection">collection</a> = list(<a href="Recollection/argument-1-C/index.html#type-element">C.element</a>)</span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-element">element</a> = <a href="Recollection/argument-1-C/index.html#type-collection">C.collection</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Recollection">
+     <a href="#module-Recollection" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Recollection/index.html">Recollection</a></span><span>: <span> (<a href="Recollection/argument-1-C/index.html">C</a>: <a href="module-type-COLLECTION/index.html">COLLECTION</a>) <span>=&gt;</span></span> <a href="module-type-COLLECTION/index.html">COLLECTION</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-collection">collection</a> = list(<a href="Recollection/argument-1-C/index.html#type-element">C.element</a>)</span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="module-type-COLLECTION/index.html#type-element">element</a> = <a href="Recollection/argument-1-C/index.html#type-collection">C.collection</a></span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-MMM">
-    <a href="#module-type-MMM" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-MMM/index.html">MMM</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-MMM">
+     <a href="#module-type-MMM" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-MMM/index.html">MMM</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-RECOLLECTION">
-    <a href="#module-type-RECOLLECTION" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-RECOLLECTION/index.html">RECOLLECTION</a></span><span> = <a href="module-type-MMM/index.html">MMM</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-MMM/C/index.html">C</a> = <a href="Recollection/index.html">Recollection(CollectionModule)</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-RECOLLECTION">
+     <a href="#module-type-RECOLLECTION" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-RECOLLECTION/index.html">RECOLLECTION</a></span><span> = <a href="module-type-MMM/index.html">MMM</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-MMM/C/index.html">C</a> = <a href="Recollection/index.html">Recollection(CollectionModule)</a></span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-RecollectionModule">
-    <a href="#module-type-RecollectionModule" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-RecollectionModule/index.html">RecollectionModule</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-RecollectionModule">
+     <a href="#module-type-RecollectionModule" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-RecollectionModule/index.html">RecollectionModule</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-A">
-    <a href="#module-type-A" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-A/index.html">A</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-A">
+     <a href="#module-type-A" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-A/index.html">A</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-B">
-    <a href="#module-type-B" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-B/index.html">B</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-B">
+     <a href="#module-type-B" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-B/index.html">B</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-C">
      <a href="#module-type-C" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-C/index.html">C</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This module type includes two signatures.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module" id="module-FunctorTypeOf">
      <a href="#module-FunctorTypeOf" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="FunctorTypeOf/index.html">FunctorTypeOf</a></span><span>: <span> (<a href="FunctorTypeOf/argument-1-Collection/index.html">Collection</a>: <span class="keyword">module</span> <span class="keyword">type</span> <span class="keyword">of</span> <a href="CollectionModule/index.html">CollectionModule</a>) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>FunctorTypeOf</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec module-type" id="module-type-IncludeModuleType">
      <a href="#module-type-IncludeModuleType" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-IncludeModuleType/index.html">IncludeModuleType</a></span><span> = { ... }</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>IncludeModuleType</code>.
      </p>
     </div>
    </div>
-   <div class="spec module-type" id="module-type-ToInclude">
-    <a href="#module-type-ToInclude" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-ToInclude/index.html">ToInclude</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-ToInclude">
+     <a href="#module-type-ToInclude" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-ToInclude/index.html">ToInclude</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <a href="module-type-ToInclude/index.html">ToInclude</a><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec module" id="module-IncludedA">
-        <a href="#module-IncludedA" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="IncludedA/index.html">IncludedA</a></span><span>: { ... }</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec module" id="module-IncludedA">
+         <a href="#module-IncludedA" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="IncludedA/index.html">IncludedA</a></span><span>: { ... }</span><span>;</span></code>
+        </div>
        </div>
-       <div class="spec module-type" id="module-type-IncludedB">
-        <a href="#module-type-IncludedB" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-IncludedB/index.html">IncludedB</a></span><span> = { ... }</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec module-type" id="module-type-IncludedB">
+         <a href="#module-type-IncludedB" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-IncludedB/index.html">IncludedB</a></span><span> = { ... }</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
@@ -727,7 +781,7 @@
    <h4 id="advanced-type-stuff">
     <a href="#advanced-type-stuff" class="anchor"></a>Advanced Type Stuff
    </h4>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-record">
      <a href="#type-record" class="anchor"></a><code><span><span class="keyword">type</span> record</span><span> = </span><span>{</span></code>
      <table>
@@ -756,7 +810,7 @@
      </table>
      <code><span>}</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>record</code>.
      </p>
@@ -765,58 +819,62 @@
      </p>
     </div>
    </div>
-   <div class="spec type" id="type-mutable_record">
-    <a href="#type-mutable_record" class="anchor"></a><code><span><span class="keyword">type</span> mutable_record</span><span> = </span><span>{</span></code>
-    <table>
-     <tbody>
-      <tr id="type-mutable_record.a" class="anchored">
-       <td class="def record field">
-        <a href="#type-mutable_record.a" class="anchor"></a><code><span><span class="keyword">mutable</span> a: int,</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         <code>a</code> is first and mutable
-        </p>
-       </td>
-      </tr>
-      <tr id="type-mutable_record.b" class="anchored">
-       <td class="def record field">
-        <a href="#type-mutable_record.b" class="anchor"></a><code><span>b: unit,</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         <code>b</code> is second and immutable
-        </p>
-       </td>
-      </tr>
-      <tr id="type-mutable_record.c" class="anchored">
-       <td class="def record field">
-        <a href="#type-mutable_record.c" class="anchor"></a><code><span><span class="keyword">mutable</span> c: int,</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         <code>c</code> is third and mutable
-        </p>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>}</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-mutable_record">
+     <a href="#type-mutable_record" class="anchor"></a><code><span><span class="keyword">type</span> mutable_record</span><span> = </span><span>{</span></code>
+     <table>
+      <tbody>
+       <tr id="type-mutable_record.a" class="anchored">
+        <td class="def record field">
+         <a href="#type-mutable_record.a" class="anchor"></a><code><span><span class="keyword">mutable</span> a: int,</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          <code>a</code> is first and mutable
+         </p>
+        </td>
+       </tr>
+       <tr id="type-mutable_record.b" class="anchored">
+        <td class="def record field">
+         <a href="#type-mutable_record.b" class="anchor"></a><code><span>b: unit,</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          <code>b</code> is second and immutable
+         </p>
+        </td>
+       </tr>
+       <tr id="type-mutable_record.c" class="anchored">
+        <td class="def record field">
+         <a href="#type-mutable_record.c" class="anchor"></a><code><span><span class="keyword">mutable</span> c: int,</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          <code>c</code> is third and mutable
+         </p>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>}</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-universe_record">
-    <a href="#type-universe_record" class="anchor"></a><code><span><span class="keyword">type</span> universe_record</span><span> = </span><span>{</span></code>
-    <table>
-     <tbody>
-      <tr id="type-universe_record.nihilate" class="anchored">
-       <td class="def record field">
-        <a href="#type-universe_record.nihilate" class="anchor"></a><code><span>nihilate: a. <span><span class="type-var">'a</span> <span>=&gt;</span></span> unit,</span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>}</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-universe_record">
+     <a href="#type-universe_record" class="anchor"></a><code><span><span class="keyword">type</span> universe_record</span><span> = </span><span>{</span></code>
+     <table>
+      <tbody>
+       <tr id="type-universe_record.nihilate" class="anchored">
+        <td class="def record field">
+         <a href="#type-universe_record.nihilate" class="anchor"></a><code><span>nihilate: a. <span><span class="type-var">'a</span> <span>=&gt;</span></span> unit,</span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>}</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-variant">
      <a href="#type-variant" class="anchor"></a><code><span><span class="keyword">type</span> variant</span><span> = </span></code>
      <table>
@@ -865,7 +923,7 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>variant</code>.
      </p>
@@ -874,7 +932,7 @@
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-poly_variant">
      <a href="#type-poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> poly_variant</span><span> = </span><span>[ </span></code>
      <table>
@@ -893,7 +951,7 @@
      </table>
      <code><span> ]</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>poly_variant</code>.
      </p>
@@ -902,7 +960,7 @@
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-full_gadt">
      <a href="#type-full_gadt" class="anchor"></a><code><span><span class="keyword">type</span> full_gadt(_, _)</span><span> = </span></code>
      <table>
@@ -931,7 +989,7 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>full_gadt</code>.
      </p>
@@ -940,7 +998,7 @@
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-partial_gadt">
      <a href="#type-partial_gadt" class="anchor"></a><code><span><span class="keyword">type</span> partial_gadt('a)</span><span> = </span></code>
      <table>
@@ -964,7 +1022,7 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>partial_gadt</code>.
      </p>
@@ -973,27 +1031,27 @@
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-alias">
      <a href="#type-alias" class="anchor"></a><code><span><span class="keyword">type</span> alias</span><span> = <a href="#type-variant">variant</a></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>alias</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-tuple">
      <a href="#type-tuple" class="anchor"></a><code><span><span class="keyword">type</span> tuple</span><span> = <span>(<span>(<a href="#type-alias">alias</a>, <a href="#type-alias">alias</a>)</span>, <a href="#type-alias">alias</a>, <span>(<a href="#type-alias">alias</a>, <a href="#type-alias">alias</a>)</span>)</span></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>tuple</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-variant_alias">
      <a href="#type-variant_alias" class="anchor"></a><code><span><span class="keyword">type</span> variant_alias</span><span> = <a href="#type-variant">variant</a></span><span> = </span></code>
      <table>
@@ -1022,13 +1080,13 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>variant_alias</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-record_alias">
      <a href="#type-record_alias" class="anchor"></a><code><span><span class="keyword">type</span> record_alias</span><span> = <a href="#type-record">record</a></span><span> = </span><span>{</span></code>
      <table>
@@ -1047,13 +1105,13 @@
      </table>
      <code><span>}</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>record_alias</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-poly_variant_union">
      <a href="#type-poly_variant_union" class="anchor"></a><code><span><span class="keyword">type</span> poly_variant_union</span><span> = </span><span>[ </span></code>
      <table>
@@ -1072,93 +1130,113 @@
      </table>
      <code><span> ]</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>poly_variant_union</code>.
      </p>
     </div>
    </div>
-   <div class="spec type" id="type-poly_poly_variant">
-    <a href="#type-poly_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> poly_poly_variant('a)</span><span> = </span><span>[ </span></code>
-    <table>
-     <tbody>
-      <tr id="type-poly_poly_variant.TagA" class="anchored">
-       <td class="def constructor">
-        <a href="#type-poly_poly_variant.TagA" class="anchor"></a><code><span>| </span></code><code><span>`TagA(<span class="type-var">'a</span>)</span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span> ]</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-poly_poly_variant">
+     <a href="#type-poly_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> poly_poly_variant('a)</span><span> = </span><span>[ </span></code>
+     <table>
+      <tbody>
+       <tr id="type-poly_poly_variant.TagA" class="anchored">
+        <td class="def constructor">
+         <a href="#type-poly_poly_variant.TagA" class="anchor"></a><code><span>| </span></code><code><span>`TagA(<span class="type-var">'a</span>)</span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span> ]</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-bin_poly_poly_variant">
-    <a href="#type-bin_poly_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> bin_poly_poly_variant('a, 'b)</span><span> = </span><span>[ </span></code>
-    <table>
-     <tbody>
-      <tr id="type-bin_poly_poly_variant.TagA" class="anchored">
-       <td class="def constructor">
-        <a href="#type-bin_poly_poly_variant.TagA" class="anchor"></a><code><span>| </span></code><code><span>`TagA(<span class="type-var">'a</span>)</span></code>
-       </td>
-      </tr>
-      <tr id="type-bin_poly_poly_variant.ConstrB" class="anchored">
-       <td class="def constructor">
-        <a href="#type-bin_poly_poly_variant.ConstrB" class="anchor"></a><code><span>| </span></code><code><span>`ConstrB(<span class="type-var">'b</span>)</span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span> ]</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-bin_poly_poly_variant">
+     <a href="#type-bin_poly_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> bin_poly_poly_variant('a, 'b)</span><span> = </span><span>[ </span></code>
+     <table>
+      <tbody>
+       <tr id="type-bin_poly_poly_variant.TagA" class="anchored">
+        <td class="def constructor">
+         <a href="#type-bin_poly_poly_variant.TagA" class="anchor"></a><code><span>| </span></code><code><span>`TagA(<span class="type-var">'a</span>)</span></code>
+        </td>
+       </tr>
+       <tr id="type-bin_poly_poly_variant.ConstrB" class="anchored">
+        <td class="def constructor">
+         <a href="#type-bin_poly_poly_variant.ConstrB" class="anchor"></a><code><span>| </span></code><code><span>`ConstrB(<span class="type-var">'b</span>)</span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span> ]</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-open_poly_variant">
-    <a href="#type-open_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant('a)</span><span> = <span>[&gt; `TagA ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-open_poly_variant">
+     <a href="#type-open_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant('a)</span><span> = <span>[&gt; `TagA ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-open_poly_variant2">
-    <a href="#type-open_poly_variant2" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant2('a)</span><span> = <span>[&gt; <span>`ConstrB<span>(int)</span></span> ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-open_poly_variant2">
+     <a href="#type-open_poly_variant2" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant2('a)</span><span> = <span>[&gt; <span>`ConstrB<span>(int)</span></span> ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-open_poly_variant_alias">
-    <a href="#type-open_poly_variant_alias" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant_alias('a)</span><span> = <a href="#type-open_poly_variant2">open_poly_variant2</a>(<a href="#type-open_poly_variant">open_poly_variant</a>(<span class="type-var">'a</span>))</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-open_poly_variant_alias">
+     <a href="#type-open_poly_variant_alias" class="anchor"></a><code><span><span class="keyword">type</span> open_poly_variant_alias('a)</span><span> = <a href="#type-open_poly_variant2">open_poly_variant2</a>(<a href="#type-open_poly_variant">open_poly_variant</a>(<span class="type-var">'a</span>))</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-poly_fun">
-    <a href="#type-poly_fun" class="anchor"></a><code><span><span class="keyword">type</span> poly_fun('a)</span><span> = <span><span>[&gt; <span>`ConstrB<span>(int)</span></span> ]</span> <span class="keyword">as</span> 'a <span>=&gt;</span></span> <span class="type-var">'a</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-poly_fun">
+     <a href="#type-poly_fun" class="anchor"></a><code><span><span class="keyword">type</span> poly_fun('a)</span><span> = <span><span>[&gt; <span>`ConstrB<span>(int)</span></span> ]</span> <span class="keyword">as</span> 'a <span>=&gt;</span></span> <span class="type-var">'a</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-poly_fun_constraint">
-    <a href="#type-poly_fun_constraint" class="anchor"></a><code><span><span class="keyword">type</span> poly_fun_constraint('a)</span><span> = <span><span class="type-var">'a</span> <span>=&gt;</span></span> <span class="type-var">'a</span></span><span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&gt; `TagA ]</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-poly_fun_constraint">
+     <a href="#type-poly_fun_constraint" class="anchor"></a><code><span><span class="keyword">type</span> poly_fun_constraint('a)</span><span> = <span><span class="type-var">'a</span> <span>=&gt;</span></span> <span class="type-var">'a</span></span><span> <span class="keyword">constraint</span> <span class="type-var">'a</span> = <span>[&gt; `TagA ]</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-closed_poly_variant">
-    <a href="#type-closed_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> closed_poly_variant('a)</span><span> = <span>[&lt; `One <span>| `Two</span> ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-closed_poly_variant">
+     <a href="#type-closed_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> closed_poly_variant('a)</span><span> = <span>[&lt; `One <span>| `Two</span> ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-clopen_poly_variant">
-    <a href="#type-clopen_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> clopen_poly_variant('a)</span><span> = <span>[&lt; `One <span><span>| `Two</span><span>(int)</span></span> <span>| `Three</span> Two Three ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-clopen_poly_variant">
+     <a href="#type-clopen_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> clopen_poly_variant('a)</span><span> = <span>[&lt; `One <span><span>| `Two</span><span>(int)</span></span> <span>| `Three</span> Two Three ]</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-nested_poly_variant">
-    <a href="#type-nested_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> nested_poly_variant</span><span> = </span><span>[ </span></code>
-    <table>
-     <tbody>
-      <tr id="type-nested_poly_variant.A" class="anchored">
-       <td class="def constructor">
-        <a href="#type-nested_poly_variant.A" class="anchor"></a><code><span>| </span></code><code><span>`A</span></code>
-       </td>
-      </tr>
-      <tr id="type-nested_poly_variant.B" class="anchored">
-       <td class="def constructor">
-        <a href="#type-nested_poly_variant.B" class="anchor"></a><code><span>| </span></code><code><span>`B(<span>[ `B1 <span>| `B2</span> ]</span>)</span></code>
-       </td>
-      </tr>
-      <tr id="type-nested_poly_variant.C" class="anchored">
-       <td class="def constructor">
-        <a href="#type-nested_poly_variant.C" class="anchor"></a><code><span>| </span></code><code><span>`C</span></code>
-       </td>
-      </tr>
-      <tr id="type-nested_poly_variant.D" class="anchored">
-       <td class="def constructor">
-        <a href="#type-nested_poly_variant.D" class="anchor"></a><code><span>| </span></code><code><span>`D(<span>[ <span>`D1<span>(<span>[ `D1a ]</span>)</span></span> ]</span>)</span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span> ]</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-nested_poly_variant">
+     <a href="#type-nested_poly_variant" class="anchor"></a><code><span><span class="keyword">type</span> nested_poly_variant</span><span> = </span><span>[ </span></code>
+     <table>
+      <tbody>
+       <tr id="type-nested_poly_variant.A" class="anchored">
+        <td class="def constructor">
+         <a href="#type-nested_poly_variant.A" class="anchor"></a><code><span>| </span></code><code><span>`A</span></code>
+        </td>
+       </tr>
+       <tr id="type-nested_poly_variant.B" class="anchored">
+        <td class="def constructor">
+         <a href="#type-nested_poly_variant.B" class="anchor"></a><code><span>| </span></code><code><span>`B(<span>[ `B1 <span>| `B2</span> ]</span>)</span></code>
+        </td>
+       </tr>
+       <tr id="type-nested_poly_variant.C" class="anchored">
+        <td class="def constructor">
+         <a href="#type-nested_poly_variant.C" class="anchor"></a><code><span>| </span></code><code><span>`C</span></code>
+        </td>
+       </tr>
+       <tr id="type-nested_poly_variant.D" class="anchored">
+        <td class="def constructor">
+         <a href="#type-nested_poly_variant.D" class="anchor"></a><code><span>| </span></code><code><span>`D(<span>[ <span>`D1<span>(<span>[ `D1a ]</span>)</span></span> ]</span>)</span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span> ]</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-full_gadt_alias">
      <a href="#type-full_gadt_alias" class="anchor"></a><code><span><span class="keyword">type</span> full_gadt_alias('a, 'b)</span><span> = <a href="#type-full_gadt">full_gadt</a><span>(<span class="type-var">'a</span>,&nbsp;<span class="type-var">'b</span>)</span></span><span> = </span></code>
      <table>
@@ -1187,13 +1265,13 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>full_gadt_alias</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-partial_gadt_alias">
      <a href="#type-partial_gadt_alias" class="anchor"></a><code><span><span class="keyword">type</span> partial_gadt_alias('a)</span><span> = <a href="#type-partial_gadt">partial_gadt</a>(<span class="type-var">'a</span>)</span><span> = </span></code>
      <table>
@@ -1217,23 +1295,23 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <code>partial_gadt_alias</code>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec exception" id="exception-Exn_arrow">
      <a href="#exception-Exn_arrow" class="anchor"></a><code><span><span class="keyword">exception</span> </span><span><span class="exception">Exn_arrow</span>(unit) : exn</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <a href="#exception-Exn_arrow"><code>Exn_arrow</code></a>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-mutual_constr_a">
      <a href="#type-mutual_constr_a" class="anchor"></a><code><span><span class="keyword">type</span> mutual_constr_a</span><span> = </span></code>
      <table>
@@ -1257,13 +1335,13 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <a href="#type-mutual_constr_a"><code>mutual_constr_a</code></a> then <a href="#type-mutual_constr_b"><code>mutual_constr_b</code></a>.
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-mutual_constr_b">
      <a href="#type-mutual_constr_b" class="anchor"></a><code><span><span class="keyword">and</span> mutual_constr_b</span><span> = </span></code>
      <table>
@@ -1287,408 +1365,532 @@
      </table>
      <code><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       This comment is for <a href="#type-mutual_constr_b"><code>mutual_constr_b</code></a> then <a href="#type-mutual_constr_a"><code>mutual_constr_a</code></a>.
      </p>
     </div>
    </div>
-   <div class="spec type" id="type-rec_obj">
-    <a href="#type-rec_obj" class="anchor"></a><code><span><span class="keyword">type</span> rec_obj</span><span> = <span>{. f: int, g: <span>unit <span>=&gt;</span></span> unit, h: <a href="#type-rec_obj">rec_obj</a>, }</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-rec_obj">
+     <a href="#type-rec_obj" class="anchor"></a><code><span><span class="keyword">type</span> rec_obj</span><span> = <span>{. f: int, g: <span>unit <span>=&gt;</span></span> unit, h: <a href="#type-rec_obj">rec_obj</a>, }</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-open_obj">
-    <a href="#type-open_obj" class="anchor"></a><code><span><span class="keyword">type</span> open_obj('a)</span><span> = <span>{.. f: int, g: <span>unit <span>=&gt;</span></span> unit, }</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-open_obj">
+     <a href="#type-open_obj" class="anchor"></a><code><span><span class="keyword">type</span> open_obj('a)</span><span> = <span>{.. f: int, g: <span>unit <span>=&gt;</span></span> unit, }</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-oof">
-    <a href="#type-oof" class="anchor"></a><code><span><span class="keyword">type</span> oof('a)</span><span> = <span><span>{.. a: unit, }</span> <span class="keyword">as</span> 'a <span>=&gt;</span></span> <span class="type-var">'a</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-oof">
+     <a href="#type-oof" class="anchor"></a><code><span><span class="keyword">type</span> oof('a)</span><span> = <span><span>{.. a: unit, }</span> <span class="keyword">as</span> 'a <span>=&gt;</span></span> <span class="type-var">'a</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-any_obj">
-    <a href="#type-any_obj" class="anchor"></a><code><span><span class="keyword">type</span> any_obj('a)</span><span> = <span>{.. }</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-any_obj">
+     <a href="#type-any_obj" class="anchor"></a><code><span><span class="keyword">type</span> any_obj('a)</span><span> = <span>{.. }</span> <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-empty_obj">
-    <a href="#type-empty_obj" class="anchor"></a><code><span><span class="keyword">type</span> empty_obj</span><span> = <span>{. }</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-empty_obj">
+     <a href="#type-empty_obj" class="anchor"></a><code><span><span class="keyword">type</span> empty_obj</span><span> = <span>{. }</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-one_meth">
-    <a href="#type-one_meth" class="anchor"></a><code><span><span class="keyword">type</span> one_meth</span><span> = <span>{. meth: unit, }</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-one_meth">
+     <a href="#type-one_meth" class="anchor"></a><code><span><span class="keyword">type</span> one_meth</span><span> = <span>{. meth: unit, }</span></span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-ext">
      <a href="#type-ext" class="anchor"></a><code><span><span class="keyword">type</span> ext</span><span> = </span><span>..</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A mystery wrapped in an ellipsis
      </p>
     </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ExtA" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtA" class="anchor"></a><code><span>| </span><span><span class="extension">ExtA</span></span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ExtA" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtA" class="anchor"></a><code><span>| </span><span><span class="extension">ExtA</span></span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ExtB" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtB" class="anchor"></a><code><span>| </span><span><span class="extension">ExtB</span></span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ExtB" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtB" class="anchor"></a><code><span>| </span><span><span class="extension">ExtB</span></span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ExtC" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtC" class="anchor"></a><code><span>| </span><span><span class="extension">ExtC</span>(unit)</span></code>
-       </td>
-      </tr>
-      <tr id="extension-ExtD" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtD" class="anchor"></a><code><span>| </span><span><span class="extension">ExtD</span>(<a href="#type-ext">ext</a>)</span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ExtC" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtC" class="anchor"></a><code><span>| </span><span><span class="extension">ExtC</span>(unit)</span></code>
+        </td>
+       </tr>
+       <tr id="extension-ExtD" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtD" class="anchor"></a><code><span>| </span><span><span class="extension">ExtD</span>(<a href="#type-ext">ext</a>)</span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ExtE" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtE" class="anchor"></a><code><span>| </span><span><span class="extension">ExtE</span></span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ExtE" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtE" class="anchor"></a><code><span>| </span><span><span class="extension">ExtE</span></span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ExtF" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ExtF" class="anchor"></a><code><span>| </span><span><span class="extension">ExtF</span></span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-ext">ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ExtF" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ExtF" class="anchor"></a><code><span>| </span><span><span class="extension">ExtF</span></span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-poly_ext">
      <a href="#type-poly_ext" class="anchor"></a><code><span><span class="keyword">type</span> poly_ext('a)</span><span> = </span><span>..</span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       'a poly_ext
      </p>
     </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-poly_ext">poly_ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-Foo" class="anchored">
-       <td class="def extension">
-        <a href="#extension-Foo" class="anchor"></a><code><span>| </span><span><span class="extension">Foo</span>(<span class="type-var">'b</span>)</span></code>
-       </td>
-      </tr>
-      <tr id="extension-Bar" class="anchored">
-       <td class="def extension">
-        <a href="#extension-Bar" class="anchor"></a><code><span>| </span><span><span class="extension">Bar</span>(<span class="type-var">'b</span>, <span class="type-var">'b</span>)</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         'b poly_ext
-        </p>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-poly_ext">poly_ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-Foo" class="anchored">
+        <td class="def extension">
+         <a href="#extension-Foo" class="anchor"></a><code><span>| </span><span><span class="extension">Foo</span>(<span class="type-var">'b</span>)</span></code>
+        </td>
+       </tr>
+       <tr id="extension-Bar" class="anchored">
+        <td class="def extension">
+         <a href="#extension-Bar" class="anchor"></a><code><span>| </span><span><span class="extension">Bar</span>(<span class="type-var">'b</span>, <span class="type-var">'b</span>)</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          'b poly_ext
+         </p>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-poly_ext">poly_ext</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-Quux" class="anchored">
-       <td class="def extension">
-        <a href="#extension-Quux" class="anchor"></a><code><span>| </span><span><span class="extension">Quux</span>(<span class="type-var">'c</span>)</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         'c poly_ext
-        </p>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-poly_ext">poly_ext</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-Quux" class="anchored">
+        <td class="def extension">
+         <a href="#extension-Quux" class="anchor"></a><code><span>| </span><span><span class="extension">Quux</span>(<span class="type-var">'c</span>)</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          'c poly_ext
+         </p>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-ExtMod">
-    <a href="#module-ExtMod" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="ExtMod/index.html">ExtMod</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-ExtMod">
+     <a href="#module-ExtMod" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="ExtMod/index.html">ExtMod</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="ExtMod/index.html#type-t">ExtMod.t</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ZzzTop0" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ZzzTop0" class="anchor"></a><code><span>| </span><span><span class="extension">ZzzTop0</span></span></code>
-       </td>
-       <td class="doc">
-        <p>
-         It's got the rock
-        </p>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="ExtMod/index.html#type-t">ExtMod.t</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ZzzTop0" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ZzzTop0" class="anchor"></a><code><span>| </span><span><span class="extension">ZzzTop0</span></span></code>
+        </td>
+        <td class="doc">
+         <p>
+          It's got the rock
+         </p>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="ExtMod/index.html#type-t">ExtMod.t</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-ZzzTop" class="anchored">
-       <td class="def extension">
-        <a href="#extension-ZzzTop" class="anchor"></a><code><span>| </span><span><span class="extension">ZzzTop</span>(unit)</span></code>
-       </td>
-       <td class="doc">
-        <p>
-         and it packs a unit.
-        </p>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="ExtMod/index.html#type-t">ExtMod.t</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-ZzzTop" class="anchored">
+        <td class="def extension">
+         <a href="#extension-ZzzTop" class="anchor"></a><code><span>| </span><span><span class="extension">ZzzTop</span>(unit)</span></code>
+        </td>
+        <td class="doc">
+         <p>
+          and it packs a unit.
+         </p>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec external" id="val-launch_missiles">
      <a href="#val-launch_missiles" class="anchor"></a><code><span><span class="keyword">let</span> launch_missiles: <span>unit <span>=&gt;</span></span> unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Rotate keys on my mark...
      </p>
     </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec type" id="type-my_mod">
      <a href="#type-my_mod" class="anchor"></a><code><span><span class="keyword">type</span> my_mod</span><span> = <span>(<span class="keyword">module</span> <a href="module-type-COLLECTION/index.html">COLLECTION</a>)</span></span><span>;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       A brown paper package tied up with string
      </p>
     </div>
    </div>
-   <div class="spec class" id="class-empty_class">
-    <a href="#class-empty_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-empty_class/index.html">empty_class</a></span><span>: { ... }</span></code>
+   <div class="odoc-spec">
+    <div class="spec class" id="class-empty_class">
+     <a href="#class-empty_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-empty_class/index.html">empty_class</a></span><span>: { ... }</span></code>
+    </div>
    </div>
-   <div class="spec class" id="class-one_method_class">
-    <a href="#class-one_method_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-one_method_class/index.html">one_method_class</a></span><span>: { ... }</span></code>
+   <div class="odoc-spec">
+    <div class="spec class" id="class-one_method_class">
+     <a href="#class-one_method_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-one_method_class/index.html">one_method_class</a></span><span>: { ... }</span></code>
+    </div>
    </div>
-   <div class="spec class" id="class-two_method_class">
-    <a href="#class-two_method_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-two_method_class/index.html">two_method_class</a></span><span>: { ... }</span></code>
+   <div class="odoc-spec">
+    <div class="spec class" id="class-two_method_class">
+     <a href="#class-two_method_class" class="anchor"></a><code><span><span class="keyword">class</span>  </span><span><a href="class-two_method_class/index.html">two_method_class</a></span><span>: { ... }</span></code>
+    </div>
    </div>
-   <div class="spec class" id="class-param_class">
-    <a href="#class-param_class" class="anchor"></a><code><span><span class="keyword">class</span> ('a) </span><span><a href="class-param_class/index.html">param_class</a></span><span>: <span><span class="type-var">'a</span> <span>=&gt;</span></span> { ... }</span></code>
+   <div class="odoc-spec">
+    <div class="spec class" id="class-param_class">
+     <a href="#class-param_class" class="anchor"></a><code><span><span class="keyword">class</span> ('a) </span><span><a href="class-param_class/index.html">param_class</a></span><span>: <span><span class="type-var">'a</span> <span>=&gt;</span></span> { ... }</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-my_unit_object">
-    <a href="#type-my_unit_object" class="anchor"></a><code><span><span class="keyword">type</span> my_unit_object</span><span> = <a href="class-param_class/index.html">param_class</a>(unit)</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-my_unit_object">
+     <a href="#type-my_unit_object" class="anchor"></a><code><span><span class="keyword">type</span> my_unit_object</span><span> = <a href="class-param_class/index.html">param_class</a>(unit)</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-my_unit_class">
-    <a href="#type-my_unit_class" class="anchor"></a><code><span><span class="keyword">type</span> my_unit_class('a)</span><span> = <span class="xref-unresolved">param_class</span>(unit) <span class="keyword">as</span> 'a</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-my_unit_class">
+     <a href="#type-my_unit_class" class="anchor"></a><code><span><span class="keyword">type</span> my_unit_class('a)</span><span> = <span class="xref-unresolved">param_class</span>(unit) <span class="keyword">as</span> 'a</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep1">
-    <a href="#module-Dep1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep1/index.html">Dep1</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep1">
+     <a href="#module-Dep1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep1/index.html">Dep1</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep2">
-    <a href="#module-Dep2" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep2/index.html">Dep2</a></span><span>: <span> (<a href="Dep2/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep2">
+     <a href="#module-Dep2" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep2/index.html">Dep2</a></span><span>: <span> (<a href="Dep2/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-dep1">
-    <a href="#type-dep1" class="anchor"></a><code><span><span class="keyword">type</span> dep1</span><span> = <a href="Dep1/module-type-S/class-c/index.html">Dep2(Dep1).B.c</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-dep1">
+     <a href="#type-dep1" class="anchor"></a><code><span><span class="keyword">type</span> dep1</span><span> = <a href="Dep1/module-type-S/class-c/index.html">Dep2(Dep1).B.c</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep3">
-    <a href="#module-Dep3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep3/index.html">Dep3</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep3">
+     <a href="#module-Dep3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep3/index.html">Dep3</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep4">
-    <a href="#module-Dep4" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep4/index.html">Dep4</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep4">
+     <a href="#module-Dep4" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep4/index.html">Dep4</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep5">
-    <a href="#module-Dep5" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep5/index.html">Dep5</a></span><span>: <span> (<a href="Dep5/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep5">
+     <a href="#module-Dep5" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep5/index.html">Dep5</a></span><span>: <span> (<a href="Dep5/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-dep2">
-    <a href="#type-dep2" class="anchor"></a><code><span><span class="keyword">type</span> dep2</span><span> = <a href="Dep4/module-type-T/index.html#type-b">Dep5(Dep4).Z.X.b</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-dep2">
+     <a href="#type-dep2" class="anchor"></a><code><span><span class="keyword">type</span> dep2</span><span> = <a href="Dep4/module-type-T/index.html#type-b">Dep5(Dep4).Z.X.b</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-dep3">
-    <a href="#type-dep3" class="anchor"></a><code><span><span class="keyword">type</span> dep3</span><span> = <a href="Dep3/index.html#type-a">Dep5(Dep4).Z.Y.a</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-dep3">
+     <a href="#type-dep3" class="anchor"></a><code><span><span class="keyword">type</span> dep3</span><span> = <a href="Dep3/index.html#type-a">Dep5(Dep4).Z.Y.a</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep6">
-    <a href="#module-Dep6" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep6/index.html">Dep6</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep6">
+     <a href="#module-Dep6" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep6/index.html">Dep6</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep7">
-    <a href="#module-Dep7" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep7/index.html">Dep7</a></span><span>: <span> (<a href="Dep7/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep7">
+     <a href="#module-Dep7" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep7/index.html">Dep7</a></span><span>: <span> (<a href="Dep7/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-dep4">
-    <a href="#type-dep4" class="anchor"></a><code><span><span class="keyword">type</span> dep4</span><span> = <a href="Dep6/module-type-T/Y/index.html#type-d">Dep7(Dep6).M.Y.d</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-dep4">
+     <a href="#type-dep4" class="anchor"></a><code><span><span class="keyword">type</span> dep4</span><span> = <a href="Dep6/module-type-T/Y/index.html#type-d">Dep7(Dep6).M.Y.d</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep8">
-    <a href="#module-Dep8" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep8/index.html">Dep8</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep8">
+     <a href="#module-Dep8" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep8/index.html">Dep8</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep9">
-    <a href="#module-Dep9" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep9/index.html">Dep9</a></span><span>: <span> (<a href="Dep9/argument-1-X/index.html">X</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep9">
+     <a href="#module-Dep9" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep9/index.html">Dep9</a></span><span>: <span> (<a href="Dep9/argument-1-X/index.html">X</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-Dep10">
-    <a href="#module-type-Dep10" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-Dep10/index.html">Dep10</a></span><span> = <a href="Dep8/module-type-T/index.html">Dep9(Dep8).T</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="Dep8/module-type-T/index.html#type-t">t</a> = int</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-Dep10">
+     <a href="#module-type-Dep10" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-Dep10/index.html">Dep10</a></span><span> = <a href="Dep8/module-type-T/index.html">Dep9(Dep8).T</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="Dep8/module-type-T/index.html#type-t">t</a> = int</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep11">
-    <a href="#module-Dep11" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep11/index.html">Dep11</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep11">
+     <a href="#module-Dep11" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep11/index.html">Dep11</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep12">
-    <a href="#module-Dep12" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep12/index.html">Dep12</a></span><span>: <span> (<a href="Dep12/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep12">
+     <a href="#module-Dep12" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep12/index.html">Dep12</a></span><span>: <span> (<a href="Dep12/argument-1-Arg/index.html">Arg</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-Dep13">
-    <a href="#module-Dep13" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep13/index.html">Dep13</a></span><span>: <a href="Dep11/module-type-S/index.html">Dep12(Dep11).T</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Dep13">
+     <a href="#module-Dep13" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Dep13/index.html">Dep13</a></span><span>: <a href="Dep11/module-type-S/index.html">Dep12(Dep11).T</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-dep5">
-    <a href="#type-dep5" class="anchor"></a><code><span><span class="keyword">type</span> dep5</span><span> = <a href="Dep13/class-c/index.html">Dep13.c</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-dep5">
+     <a href="#type-dep5" class="anchor"></a><code><span><span class="keyword">type</span> dep5</span><span> = <a href="Dep13/class-c/index.html">Dep13.c</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-With1">
-    <a href="#module-type-With1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With1/index.html">With1</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-With1">
+     <a href="#module-type-With1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With1/index.html">With1</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With2">
-    <a href="#module-With2" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With2/index.html">With2</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With2">
+     <a href="#module-With2" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With2/index.html">With2</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With3">
-    <a href="#module-With3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With3/index.html">With3</a></span><span>: <a href="module-type-With1/index.html">With1</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> = <a href="With2/index.html">With2</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With3">
+     <a href="#module-With3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With3/index.html">With3</a></span><span>: <a href="module-type-With1/index.html">With1</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> = <a href="With2/index.html">With2</a></span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-with1">
-    <a href="#type-with1" class="anchor"></a><code><span><span class="keyword">type</span> with1</span><span> = <a href="With3/N/index.html#type-t">With3.N.t</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-with1">
+     <a href="#type-with1" class="anchor"></a><code><span><span class="keyword">type</span> with1</span><span> = <a href="With3/N/index.html#type-t">With3.N.t</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With4">
-    <a href="#module-With4" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With4/index.html">With4</a></span><span>: <a href="module-type-With1/index.html">With1</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> := <a href="With2/index.html">With2</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With4">
+     <a href="#module-With4" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With4/index.html">With4</a></span><span>: <a href="module-type-With1/index.html">With1</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="module-type-With1/M/index.html">M</a> := <a href="With2/index.html">With2</a></span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-with2">
-    <a href="#type-with2" class="anchor"></a><code><span><span class="keyword">type</span> with2</span><span> = <a href="With4/N/index.html#type-t">With4.N.t</a></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-with2">
+     <a href="#type-with2" class="anchor"></a><code><span><span class="keyword">type</span> with2</span><span> = <a href="With4/N/index.html#type-t">With4.N.t</a></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With5">
-    <a href="#module-With5" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With5/index.html">With5</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With5">
+     <a href="#module-With5" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With5/index.html">With5</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With6">
-    <a href="#module-With6" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With6/index.html">With6</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With6">
+     <a href="#module-With6" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With6/index.html">With6</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With7">
-    <a href="#module-With7" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With7/index.html">With7</a></span><span>: <span> (<a href="With7/argument-1-X/index.html">X</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With7">
+     <a href="#module-With7" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With7/index.html">With7</a></span><span>: <span> (<a href="With7/argument-1-X/index.html">X</a>: { ... }) <span>=&gt;</span></span> { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-With8">
-    <a href="#module-type-With8" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With8/index.html">With8</a></span><span> = <a href="With6/module-type-T/index.html">With7(With6).T</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="With6/module-type-T/M/index.html">M</a> = <a href="With5/index.html">With5</a></span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="With5/N/index.html#type-t">M.N.t</a> = <a href="With5/N/index.html#type-t">With5.N.t</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-With8">
+     <a href="#module-type-With8" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With8/index.html">With8</a></span><span> = <a href="With6/module-type-T/index.html">With7(With6).T</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="With6/module-type-T/M/index.html">M</a> = <a href="With5/index.html">With5</a></span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="With5/N/index.html#type-t">M.N.t</a> = <a href="With5/N/index.html#type-t">With5.N.t</a></span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With9">
-    <a href="#module-With9" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With9/index.html">With9</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With9">
+     <a href="#module-With9" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With9/index.html">With9</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-With10">
-    <a href="#module-With10" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With10/index.html">With10</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-With10">
+     <a href="#module-With10" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="With10/index.html">With10</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-With11">
-    <a href="#module-type-With11" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With11/index.html">With11</a></span><span> = <a href="With10/module-type-T/index.html">With7(With10).T</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="With10/module-type-T/M/index.html">M</a> = <a href="With9/index.html">With9</a></span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="With9/module-type-S/index.html#type-t">N.t</a> = int</span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-With11">
+     <a href="#module-type-With11" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-With11/index.html">With11</a></span><span> = <a href="With10/module-type-T/index.html">With7(With10).T</a> <span class="keyword">with</span> <span><span class="keyword">module</span> <a href="With10/module-type-T/M/index.html">M</a> = <a href="With9/index.html">With9</a></span> <span class="keyword">and</span> <span><span class="keyword">type</span> <a href="With9/module-type-S/index.html#type-t">N.t</a> = int</span></span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-NestedInclude1">
-    <a href="#module-type-NestedInclude1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-NestedInclude1/index.html">NestedInclude1</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-NestedInclude1">
+     <a href="#module-type-NestedInclude1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-NestedInclude1/index.html">NestedInclude1</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <a href="module-type-NestedInclude1/index.html">NestedInclude1</a><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec module-type" id="module-type-NestedInclude2">
-        <a href="#module-type-NestedInclude2" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-NestedInclude2/index.html">NestedInclude2</a></span><span> = { ... }</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec module-type" id="module-type-NestedInclude2">
+         <a href="#module-type-NestedInclude2" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-NestedInclude2/index.html">NestedInclude2</a></span><span> = { ... }</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
     </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <a href="module-type-NestedInclude2/index.html">NestedInclude2</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="module-type-NestedInclude2/index.html#type-nested_include">nested_include</a> = int</span><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec type" id="type-nested_include">
-        <a href="#type-nested_include" class="anchor"></a><code><span><span class="keyword">type</span> nested_include</span><span> = int</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec type" id="type-nested_include">
+         <a href="#type-nested_include" class="anchor"></a><code><span><span class="keyword">type</span> nested_include</span><span> = int</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
     </div>
    </div>
-   <div class="spec module" id="module-DoubleInclude1">
-    <a href="#module-DoubleInclude1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="DoubleInclude1/index.html">DoubleInclude1</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-DoubleInclude1">
+     <a href="#module-DoubleInclude1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="DoubleInclude1/index.html">DoubleInclude1</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-DoubleInclude3">
-    <a href="#module-DoubleInclude3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="DoubleInclude3/index.html">DoubleInclude3</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-DoubleInclude3">
+     <a href="#module-DoubleInclude3" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="DoubleInclude3/index.html">DoubleInclude3</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <span class="keyword">module</span> <span class="keyword">type</span> <span class="keyword">of</span> <a href="DoubleInclude3/DoubleInclude2/index.html">DoubleInclude3.DoubleInclude2</a><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec type" id="type-double_include">
-        <a href="#type-double_include" class="anchor"></a><code><span><span class="keyword">type</span> double_include</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec type" id="type-double_include">
+         <a href="#type-double_include" class="anchor"></a><code><span><span class="keyword">type</span> double_include</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
     </div>
    </div>
-   <div class="spec module" id="module-IncludeInclude1">
-    <a href="#module-IncludeInclude1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="IncludeInclude1/index.html">IncludeInclude1</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-IncludeInclude1">
+     <a href="#module-IncludeInclude1" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="IncludeInclude1/index.html">IncludeInclude1</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <span class="keyword">module</span> <span class="keyword">type</span> <span class="keyword">of</span> <a href="IncludeInclude1/index.html">IncludeInclude1</a><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec module-type" id="module-type-IncludeInclude2">
-        <a href="#module-type-IncludeInclude2" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-IncludeInclude2/index.html">IncludeInclude2</a></span><span> = { ... }</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec module-type" id="module-type-IncludeInclude2">
+         <a href="#module-type-IncludeInclude2" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-IncludeInclude2/index.html">IncludeInclude2</a></span><span> = { ... }</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
     </div>
    </div>
-   <div>
+   <div class="odoc-include">
     <div class="spec include">
      <div class="doc">
       <details open="open">
        <summary>
         <span class="def"><code><span><span class="keyword">include</span> <a href="module-type-IncludeInclude2/index.html">IncludeInclude2</a><span class="keyword">;</span></span></code></span>
        </summary>
-       <div class="spec type" id="type-include_include">
-        <a href="#type-include_include" class="anchor"></a><code><span><span class="keyword">type</span> include_include</span><span>;</span></code>
+       <div class="odoc-spec">
+        <div class="spec type" id="type-include_include">
+         <a href="#type-include_include" class="anchor"></a><code><span><span class="keyword">type</span> include_include</span><span>;</span></code>
+        </div>
        </div>
       </details>
      </div>
@@ -1697,7 +1899,7 @@
    <h2 id="indexmodules">
     <a href="#indexmodules" class="anchor"></a>Trying the {!modules: ...} command.
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      With ocamldoc, toplevel units will be linked and documented, while submodules will behave as simple references.
     </p>
@@ -1730,7 +1932,7 @@
    <h4 id="weirder-usages-involving-module-types">
     <a href="#weirder-usages-involving-module-types" class="anchor"></a>Weirder usages involving module types
    </h4>
-   <aside>
+   <aside class="odoc-unattached">
     <dl class="modules">
      <dt>
       <code>IncludeInclude1</code>.IncludeInclude2
@@ -1749,14 +1951,16 @@
    <h2 id="playing-with-@canonical-paths">
     <a href="#playing-with-@canonical-paths" class="anchor"></a>Playing with @canonical paths
    </h2>
-   <div class="spec module" id="module-CanonicalTest">
-    <a href="#module-CanonicalTest" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="CanonicalTest/index.html">CanonicalTest</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-CanonicalTest">
+     <a href="#module-CanonicalTest" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="CanonicalTest/index.html">CanonicalTest</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div>
+   <div class="odoc-spec">
     <div class="spec value" id="val-test">
      <a href="#val-test" class="anchor"></a><code><span><span class="keyword">let</span> test: <span><a href="CanonicalTest/Base/List/index.html#type-t">CanonicalTest.Base.List.t</a>(<span class="type-var">'a</span>) <span>=&gt;</span></span> unit;</span></code>
     </div>
-    <div>
+    <div class="spec-doc">
      <p>
       Some ref to <a href="CanonicalTest/Base__Tests/C/index.html#type-t"><code>CanonicalTest.Base__Tests.C.t</code></a> and <a href="CanonicalTest/Base/List/index.html#val-id"><code>CanonicalTest.Base__Tests.L.id</code></a>. But also to <a href="CanonicalTest/Base__/List/index.html"><code>CanonicalTest.Base__.List</code></a> and <a href="CanonicalTest/Base__/List/index.html#type-t"><code>CanonicalTest.Base__.List.t</code></a>
      </p>
@@ -1765,13 +1969,15 @@
    <h2 id="aliases">
     <a href="#aliases" class="anchor"></a>Aliases again
    </h2>
-   <div class="spec module" id="module-Aliases">
-    <a href="#module-Aliases" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Aliases/index.html">Aliases</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Aliases">
+     <a href="#module-Aliases" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Aliases/index.html">Aliases</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
    <h2 id="section-title-splicing">
     <a href="#section-title-splicing" class="anchor"></a>Section title splicing
    </h2>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      I can refer to
     </p>
@@ -1815,13 +2021,17 @@
    <h2 id="new-reference-syntax">
     <a href="#new-reference-syntax" class="anchor"></a>New reference syntax
    </h2>
-   <div class="spec module-type" id="module-type-M">
-    <a href="#module-type-M" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-M/index.html">M</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-M">
+     <a href="#module-type-M" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-M/index.html">M</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module" id="module-M">
-    <a href="#module-M" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="M/index.html">M</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-M">
+     <a href="#module-M" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="M/index.html">M</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Here goes:
     </p>
@@ -1837,10 +2047,12 @@
      </li>
     </ul>
    </aside>
-   <div class="spec module" id="module-Only_a_module">
-    <a href="#module-Only_a_module" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Only_a_module/index.html">Only_a_module</a></span><span>: { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module" id="module-Only_a_module">
+     <a href="#module-Only_a_module" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="Only_a_module/index.html">Only_a_module</a></span><span>: { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <aside>
+   <aside class="odoc-unattached">
     <p>
      Some here should fail:
     </p>
@@ -1856,27 +2068,35 @@
      </li>
     </ul>
    </aside>
-   <div class="spec module-type" id="module-type-TypeExt">
-    <a href="#module-type-TypeExt" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-TypeExt/index.html">TypeExt</a></span><span> = { ... }</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-TypeExt">
+     <a href="#module-type-TypeExt" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-TypeExt/index.html">TypeExt</a></span><span> = { ... }</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec type" id="type-new_t">
-    <a href="#type-new_t" class="anchor"></a><code><span><span class="keyword">type</span> new_t</span><span> = </span><span>..</span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec type" id="type-new_t">
+     <a href="#type-new_t" class="anchor"></a><code><span><span class="keyword">type</span> new_t</span><span> = </span><span>..</span><span>;</span></code>
+    </div>
    </div>
-   <div class="spec extension">
-    <code><span><span class="keyword">type</span> <a href="#type-new_t">new_t</a> += </span></code>
-    <table>
-     <tbody>
-      <tr id="extension-C" class="anchored">
-       <td class="def extension">
-        <a href="#extension-C" class="anchor"></a><code><span>| </span><span><span class="extension">C</span></span></code>
-       </td>
-      </tr>
-     </tbody>
-    </table>
-    <code><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec extension">
+     <code><span><span class="keyword">type</span> <a href="#type-new_t">new_t</a> += </span></code>
+     <table>
+      <tbody>
+       <tr id="extension-C" class="anchored">
+        <td class="def extension">
+         <a href="#extension-C" class="anchor"></a><code><span>| </span><span><span class="extension">C</span></span></code>
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <code><span>;</span></code>
+    </div>
    </div>
-   <div class="spec module-type" id="module-type-TypeExtPruned">
-    <a href="#module-type-TypeExtPruned" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-TypeExtPruned/index.html">TypeExtPruned</a></span><span> = <a href="module-type-TypeExt/index.html">TypeExt</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="module-type-TypeExt/index.html#type-t">t</a> := <a href="#type-new_t">new_t</a></span></span><span>;</span></code>
+   <div class="odoc-spec">
+    <div class="spec module-type" id="module-type-TypeExtPruned">
+     <a href="#module-type-TypeExtPruned" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-TypeExtPruned/index.html">TypeExtPruned</a></span><span> = <a href="module-type-TypeExt/index.html">TypeExt</a> <span class="keyword">with</span> <span><span class="keyword">type</span> <a href="module-type-TypeExt/index.html#type-t">t</a> := <a href="#type-new_t">new_t</a></span></span><span>;</span></code>
+    </div>
    </div>
   </div>
  </body>
