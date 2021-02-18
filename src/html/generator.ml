@@ -276,13 +276,7 @@ and items ~resolve l : item Html.elt list =
             | _ -> Stop_and_keep)
         in
         let content = flow_to_item @@ block ~resolve text in
-        let elts =
-          if only_text then content
-          else
-            let a = [ Html.a_class [ "odoc-unattached" ] ] in
-            [ Html.aside ~a (content :> any Html.elt list) ]
-        in
-        elts |> (continue_with [@tailcall]) rest
+        content |> (continue_with [@tailcall]) rest
     | Heading h :: rest ->
         [ heading ~resolve h ] |> (continue_with [@tailcall]) rest
     | Include { kind; anchor; doc; content = { summary; status; content } }
