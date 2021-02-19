@@ -19,6 +19,7 @@ open Names
 
 module Id = Paths.Identifier
 module P = Paths.Path
+open Typedtree
 
 type type_ident = Paths.Identifier.Path.Type.t
 
@@ -27,6 +28,7 @@ type t =
     module_paths : P.Module.t Ident.tbl;
     module_types : Id.ModuleType.t Ident.tbl;
     types : Id.DataType.t Ident.tbl;
+    values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
     shadowed : Ident.t list }
@@ -36,6 +38,7 @@ let empty =
     module_paths = Ident.empty;
     module_types = Ident.empty;
     types = Ident.empty;
+    values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
     shadowed = [] }
@@ -46,6 +49,7 @@ type extracted_item = [
     `Module of Ident.t * bool
   | `ModuleType of Ident.t * bool
   | `Type of Ident.t * bool
+  | `Value of Ident.t * bool
   | `Class of Ident.t * Ident.t * Ident.t * Ident.t * bool
   | `ClassType of Ident.t * Ident.t * Ident.t * bool
 ]
@@ -71,6 +75,9 @@ let rec extract_signature_type_items items =
 
     | Sig_modtype(id, _, Exported) :: rest ->
       `ModuleType (id, false) :: extract_signature_type_items rest
+    
+    | Sig_value(id, _, Exported) :: rest ->
+      `Value (id, false) :: extract_signature_type_items rest
 
     | Sig_class(id, _, _, Exported) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
@@ -80,7 +87,7 @@ let rec extract_signature_type_items items =
       :: Sig_type(cl_id, _, _, _) :: rest ->
       `ClassType (id, obj_id, cl_id, false) :: extract_signature_type_items rest
 
-    | (Sig_value _ | Sig_typext _) :: rest -> 
+    | Sig_typext _ :: rest -> 
         extract_signature_type_items rest
 
     | Sig_class_type(_, _, _, Hidden) :: Sig_type(_, _, _, _)
@@ -89,7 +96,8 @@ let rec extract_signature_type_items items =
         :: Sig_type(_, _, _, _) :: Sig_type(_, _, _, _) :: rest
     | Sig_modtype(_, _, Hidden) :: rest
     | Sig_module(_, _, _, _, Hidden) :: rest
-    | Sig_type(_, _, _, Hidden) :: rest ->
+    | Sig_type(_, _, _, Hidden) :: rest
+    | Sig_value (_, _, Hidden) :: rest ->
         extract_signature_type_items rest
 
     | Sig_class _ :: _
@@ -116,7 +124,10 @@ let rec extract_extended_open_items items =
       `Module (id, true) :: extract_extended_open_items rest
 
     | Sig_modtype(id, _, _) :: rest ->
-      `ModuleType (id, true) :: extract_extended_open_items rest    
+      `ModuleType (id, true) :: extract_extended_open_items rest
+    
+    | Sig_value(id, _, _) :: rest ->
+      `Value (id, true) :: extract_extended_open_items rest
     
     | Sig_class(id, _, _, _) :: Sig_class_type(ty_id, _, _, _)
         :: Sig_type(obj_id, _, _, _) :: Sig_type(cl_id, _, _, _) :: rest ->
@@ -126,7 +137,7 @@ let rec extract_extended_open_items items =
       :: Sig_type(cl_id, _, _, _) :: rest ->
       `ClassType (id, obj_id, cl_id, true) :: extract_extended_open_items rest
 
-    | (Sig_value _ | Sig_typext _) :: rest ->
+    |  Sig_typext _ :: rest ->
         extract_extended_open_items rest
 
     | Sig_class _ :: _
@@ -171,6 +182,8 @@ let extract_signature_tree_item item =
     | Tsig_recmodule mds ->
       List.map (fun md -> `Module (md.md_id, false)) mds
 #endif
+    | Tsig_value {val_id; _} ->
+      [`Value (val_id, false)]
     | Tsig_modtype mtd ->
       [`ModuleType (mtd.mtd_id, false)]
     | Tsig_include incl ->
@@ -204,13 +217,30 @@ let extract_signature_tree_item item =
     | Tsig_typesubst ts ->
       List.map (fun decl -> `Type (decl.typ_id, false)) ts
 #endif
-    | Tsig_value _ | Tsig_typext _
+    | Tsig_typext _
     | Tsig_exception _ | Tsig_open _
     | Tsig_attribute _ -> []
 
 let extract_signature_tree_items sg =
   let open Typedtree in
     List.map extract_signature_tree_item sg.sig_items |> List.flatten
+
+let rec read_pattern pat =
+  match pat.pat_desc with
+  | Tpat_var(id, _) -> [`Value(id, false)]
+  | Tpat_alias(pat, id, _) -> `Value(id, false) :: read_pattern pat
+  | Tpat_record(pats, _) -> 
+    List.concat (List.map (fun (_, _, pat) -> read_pattern pat) pats)
+  | Tpat_construct(_, _, pats) 
+  | Tpat_array pats
+  | Tpat_tuple pats -> List.concat (List.map read_pattern pats)
+  | Tpat_or(pat, _, _)
+  | Tpat_variant(_, Some pat, _)
+  | Tpat_lazy pat -> read_pattern pat
+  | Tpat_any | Tpat_constant _ | Tpat_variant(_, None, _) -> []
+#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08 && OCAML_MINOR < 11
+  | Tpat_exception pat -> read_pattern pat
+#endif
 
 let extract_structure_tree_item item =
   let open Typedtree in
@@ -220,8 +250,16 @@ let extract_structure_tree_item item =
 #else
     | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
 #endif
-        List.map
-          (fun decl -> `Type (decl.typ_id, false)) decls
+        List.map (fun decl -> `Type (decl.typ_id, false)) decls
+
+
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 03
+    | Tstr_value (_, vbs )->
+#else
+    | Tstr_value (_rec_flag, vbs) -> (*TODO: handle rec_flag *)
+#endif
+    List.map (fun vb -> read_pattern vb.vb_pat) vbs |> List.flatten
+
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     | Tstr_module { mb_id = Some id; _} ->
       [`Module (id, false)]
@@ -275,7 +313,7 @@ let extract_structure_tree_item item =
     | Tstr_open o ->
       ((extract_extended_open o) :> extracted_items list)
 #endif
-    | Tstr_eval _ | Tstr_value _
+    | Tstr_eval _
     | Tstr_primitive _ | Tstr_typext _
     | Tstr_exception _
     | Tstr_attribute _ -> []
@@ -289,12 +327,16 @@ let flatten_extracted : extracted_items list -> extracted_item list = fun items 
     | `Type _ 
     | `Module _
     | `ModuleType _
+    | `Value _
     | `Class _
     | `ClassType _ as x -> [x]
     | `Include xs -> xs) items |> List.flatten
 
 let type_name_exists name items =
   List.exists (function | `Type (id', _) when Ident.name id' = name -> true | _ -> false) items
+
+let value_name_exists name items =
+    List.exists (function | `Value (id', _) when Ident.name id' = name -> true | _ -> false) items
 
 let module_name_exists name items =
   List.exists (function | `Module (id', _) when Ident.name id' = name -> true | _ -> false) items
@@ -321,6 +363,18 @@ let env_of_items parent items env =
       in
       let types = Ident.add t identifier env.types in      
       inner rest { env with types; shadowed }
+
+    | `Value (t,force_shadowed) :: rest ->
+      let name = Ident.name t in
+      let is_shadowed = force_shadowed || value_name_exists name rest in
+        let identifier, shadowed =
+        if is_shadowed
+        then `Value(parent, ValueName.internal_of_string name), t :: env.shadowed
+        else `Value(parent, ValueName.of_string name), env.shadowed
+      in
+      let values = Ident.add t identifier env.values in      
+      inner rest { env with values; shadowed }
+
     | `ModuleType (t, force_shadowed) :: rest ->
       let name = Ident.name t in
       let is_shadowed = force_shadowed || module_type_name_exists name rest in
@@ -408,6 +462,9 @@ let find_module_type env id =
 let find_type_identifier env id =
   Ident.find_same id env.types
 
+let find_value_identifier env id =
+  Ident.find_same id env.values
+
 let find_type env id =
   try
     (Ident.find_same id env.types :> Id.Path.Type.t)
@@ -423,7 +480,7 @@ let find_type env id =
             | Some id -> (id :> type_ident)
             | None -> raise Not_found
         else raise Not_found
-        
+                
 let find_class_type env id =
   try
     (Ident.find_same id env.classes :> Id.Path.ClassType.t)

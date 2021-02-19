@@ -1018,6 +1018,12 @@ module Make (Syntax : SYNTAX) = struct
       | `Type (_, name) when TypeName.is_internal name -> true
       | _ -> false
 
+    let internal_value v =
+      let open Lang.Value in
+      match v.id with
+      | `Value (_, name) when ValueName.is_internal name -> true
+      | _ -> false
+
     let internal_module_type t =
       let open Lang.ModuleType in
       match t.id with
@@ -1041,6 +1047,7 @@ module Make (Syntax : SYNTAX) = struct
             match (item : Lang.Signature.item) with
             | Module (_, m) when internal_module m -> loop rest acc_items
             | Type (_, t) when internal_type t -> loop rest acc_items
+            | Value v when internal_value v -> loop rest acc_items
             | ModuleType m when internal_module_type m -> loop rest acc_items
             | ModuleSubstitution m when internal_module_substitution m ->
                 loop rest acc_items

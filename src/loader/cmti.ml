@@ -33,18 +33,6 @@ let opt_map f = function
   | None -> None
   | Some x -> Some (f x)
 
-let parenthesise name =
-  match name with
-  | "asr" | "land" | "lor" | "lsl" | "lsr"
-  | "lxor" | "mod" -> "(" ^ name ^ ")"
-  | _ ->
-    if (String.length name > 0) then
-      match name.[0] with
-      | 'a' .. 'z' | '\223' .. '\246' | '\248' .. '\255' | '_'
-      | 'A' .. 'Z' | '\192' .. '\214' | '\216' .. '\222' -> name
-      | _ -> "(" ^ name ^ ")"
-    else name
-
 let read_label = Cmi.read_label
 
 let rec read_core_type env container ctyp =
@@ -158,9 +146,7 @@ let rec read_core_type env container ctyp =
 
 let read_value_description env parent vd =
   let open Signature in
-  let open Odoc_model.Names in
-  let name = parenthesise (Ident.name vd.val_id) in
-  let id = `Value(parent, ValueName.of_string name) in
+  let id = Env.find_value_identifier env vd.val_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
@@ -201,7 +187,7 @@ let read_type_parameter (ctyp, var_and_injectivity)  =
 let read_label_declaration env parent label_parent ld =
   let open TypeDecl.Field in
   let open Odoc_model.Names in
-  let name = parenthesise (Ident.name ld.ld_id) in
+  let name = Ident.name ld.ld_id in
   let id = `Field(parent, FieldName.of_string name) in
   let doc = Doc_attr.attached label_parent ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
@@ -223,7 +209,7 @@ let read_constructor_declaration_arguments env parent label_parent arg =
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
   let open Odoc_model.Names in
-  let name = parenthesise (Ident.name cd.cd_id) in
+  let name = Ident.name cd.cd_id in
   let id = `Constructor(parent, ConstructorName.of_string name) in
   let container = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
@@ -296,7 +282,7 @@ let read_type_substitutions env parent decls =
 let read_extension_constructor env parent ext =
   let open Extension.Constructor in
   let open Odoc_model.Names in
-  let name = parenthesise (Ident.name ext.ext_id) in
+  let name = Ident.name ext.ext_id in
   let id = `Extension(parent, ExtensionName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
@@ -326,7 +312,7 @@ let read_type_extension env parent tyext =
 let read_exception env parent (ext : extension_constructor) =
   let open Exception in
   let open Odoc_model.Names in
-  let name = parenthesise (Ident.name ext.ext_id) in
+  let name = Ident.name ext.ext_id in
   let id = `Exception(parent, ExceptionName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
@@ -350,7 +336,6 @@ let rec read_class_type_field env parent ctf =
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
-      let name = parenthesise name in
       let id = `InstanceVariable(parent, InstanceVariableName.of_string name) in
       let mutable_ = (mutable_ = Mutable) in
       let virtual_ = (virtual_ = Virtual) in
@@ -358,7 +343,6 @@ let rec read_class_type_field env parent ctf =
         Some (InstanceVariable {id; doc; mutable_; virtual_; type_})
   | Tctf_method(name, private_, virtual_, typ) ->
       let open Method in
-      let name = parenthesise name in
       let id = `Method(parent, MethodName.of_string name) in
       let private_ = (private_ = Private) in
       let virtual_ = (virtual_ = Virtual) in
@@ -500,7 +484,7 @@ and read_module_type env parent label_parent mty =
             let name, env =
               match id_opt with
               | Some id ->
-                parenthesise (Ident.name id), Env.add_parameter parent id (ParameterName.of_ident id) env
+                 Ident.name id, Env.add_parameter parent id (ParameterName.of_ident id) env
               | None -> "_", env
             in
             let id = `Parameter(parent, ParameterName.of_string name) in
@@ -515,7 +499,7 @@ and read_module_type env parent label_parent mty =
           match arg with
           | None -> Odoc_model.Lang.FunctorParameter.Unit
           | Some arg ->
-              let name = parenthesise (Ident.name id) in
+              let name = Ident.name id in
               let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
               let arg = read_module_type env id label_parent arg in
               Named { FunctorParameter. id; expr = arg }

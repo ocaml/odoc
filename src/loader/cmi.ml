@@ -35,18 +35,6 @@ let opt_iter f = function
   | None -> ()
   | Some x -> f x
 
-let parenthesise name =
-  match name with
-  | "asr" | "land" | "lor" | "lsl" | "lsr"
-  | "lxor" | "mod" -> "(" ^ name ^ ")"
-  | _ ->
-    if (String.length name > 0) then
-      match name.[0] with
-      | 'a' .. 'z' | '\223' .. '\246' | '\248' .. '\255' | '_'
-      | 'A' .. 'Z' | '\192' .. '\214' | '\216' .. '\222' -> name
-      | _ -> "(" ^ name ^ ")"
-    else name
-
 let read_label lbl =
   let open TypeExpr in
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
@@ -516,8 +504,7 @@ and read_object env fi nm =
 
 let read_value_description env parent id vd =
   let open Signature in
-  let name = parenthesise (Ident.name id) in
-  let id = `Value(parent, Odoc_model.Names.ValueName.of_string name) in
+  let id = Env.find_value_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container vd.val_attributes in
     mark_value_description vd;
@@ -538,7 +525,7 @@ let read_value_description env parent id vd =
 
 let read_label_declaration env parent ld =
   let open TypeDecl.Field in
-  let name = parenthesise (Ident.name ld.ld_id) in
+  let name = Ident.name ld.ld_id in
   let id = `Field(parent, Odoc_model.Names.FieldName.of_string name) in
   let doc =
     Doc_attr.attached
@@ -564,7 +551,7 @@ let read_constructor_declaration_arguments env parent arg =
 
 let read_constructor_declaration env parent cd =
   let open TypeDecl.Constructor in
-  let name = parenthesise (Ident.name cd.cd_id) in
+  let name = Ident.name cd.cd_id in
   let id = `Constructor(parent, Odoc_model.Names.ConstructorName.of_string name) in
   let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container cd.cd_attributes in
@@ -654,7 +641,7 @@ let read_type_declaration env parent id decl =
 
 let read_extension_constructor env parent id ext =
   let open Extension.Constructor in
-  let name = parenthesise (Ident.name id) in
+  let name = Ident.name id in
   let id = `Extension(parent, Odoc_model.Names.ExtensionName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container ext.ext_attributes in
@@ -687,7 +674,7 @@ let read_type_extension env parent id ext rest =
 
 let read_exception env parent id ext =
   let open Exception in
-  let name = parenthesise (Ident.name id) in
+  let name = Ident.name id in
   let id = `Exception(parent, Odoc_model.Names.ExceptionName.of_string name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc = Doc_attr.attached container ext.ext_attributes in
@@ -701,7 +688,6 @@ let read_exception env parent id ext =
 
 let read_method env parent concrete (name, kind, typ) =
   let open Method in
-  let name = parenthesise name in
   let id = `Method(parent, Odoc_model.Names.MethodName.of_string name) in
   let doc = Doc_attr.empty in
   let private_ = (Btype.field_kind_repr kind) <> Fpresent in
@@ -711,7 +697,6 @@ let read_method env parent concrete (name, kind, typ) =
 
 let read_instance_variable env parent (name, mutable_, virtual_, typ) =
   let open InstanceVariable in
-  let name = parenthesise name in
   let id = `InstanceVariable(parent, Odoc_model.Names.InstanceVariableName.of_string name) in
   let doc = Doc_attr.empty in
   let mutable_ = (mutable_ = Mutable) in
@@ -849,7 +834,7 @@ let rec read_module_type env parent (mty : Odoc_model.Compat.module_type) =
           | Unit -> Odoc_model.Lang.FunctorParameter.Unit, env
           | Named (id_opt, arg) ->
               let name, env = match id_opt with
-                | Some id -> parenthesise (Ident.name id),  Env.add_parameter parent id (ParameterName.of_ident id) env
+                | Some id -> Ident.name id,  Env.add_parameter parent id (ParameterName.of_ident id) env
                 | None -> "_", env
               in
               let id = `Parameter(parent, Odoc_model.Names.ParameterName.of_string name) in
@@ -914,6 +899,11 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     match items with
     | Sig_value(id, v, _) :: rest ->
         let vd = read_value_description env parent id v in
+        let shadowed =
+          if Env.is_shadowed env id
+          then { shadowed with s_values = (Ident.name id, (Env.find_value_identifier env id)) :: shadowed.s_values }
+          else shadowed
+        in
           loop (vd :: acc, shadowed) rest
     | Sig_type(id, _, _, _) :: rest
         when Btype.is_row_name (Ident.name id) ->
@@ -986,7 +976,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
 
     | [] -> ({items = List.rev acc; compiled=false}, shadowed)
   in
-    loop ([],{s_modules=[]; s_module_types=[]; s_types=[]; s_classes=[]; s_class_types=[]}) items
+    loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 
 and read_signature env parent (items : Odoc_model.Compat.signature) =
   let env = Env.handle_signature_type_items parent items env in

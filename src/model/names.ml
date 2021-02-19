@@ -1,3 +1,20 @@
+let parenthesise name =
+  match name with
+  | "asr" | "land" | "lor" | "lsl" | "lsr" | "lxor" | "mod" -> "(" ^ name ^ ")"
+  | _ ->
+      if String.length name > 0 then
+        match name.[0] with
+        | 'a' .. 'z'
+        | '\223' .. '\246'
+        | '\248' .. '\255'
+        | '_'
+        | 'A' .. 'Z'
+        | '\192' .. '\214'
+        | '\216' .. '\222' ->
+            name
+        | _ -> "(" ^ name ^ ")"
+      else name
+
 module type Name = sig
   type t
 
@@ -31,12 +48,13 @@ module Name : Name = struct
 
   let to_string = function
     | Std s -> s
-    | Internal (s, i) -> Printf.sprintf "$%s$%d" s i
+    | Internal (s, i) -> Printf.sprintf "{%s}%d" s i
 
   let to_string_unsafe = function Std s -> s | Internal (s, _i) -> s
 
   let of_string s =
-    if String.length s > 0 && s.[0] = '$' then raise (Invalid_argument s)
+    let s = parenthesise s in
+    if String.length s > 0 && s.[0] = '{' then raise (Invalid_argument s)
     else Std s
 
   let of_ident id = of_string (Ident.name id)
@@ -123,7 +141,7 @@ module ConstructorName = SimpleName
 module FieldName = SimpleName
 module ExtensionName = SimpleName
 module ExceptionName = SimpleName
-module ValueName = SimpleName
+module ValueName = Name
 module ClassName = Name
 module ClassTypeName = Name
 module MethodName = SimpleName

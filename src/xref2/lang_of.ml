@@ -22,6 +22,7 @@ let empty_shadow =
   {
     s_modules = [];
     s_module_types = [];
+    s_values = [];
     s_types = [];
     s_classes = [];
     s_class_types = [];
@@ -558,6 +559,7 @@ and combine_shadowed s1 s2 =
   {
     s_modules = s1.s_modules @ s2.s_modules;
     s_module_types = s1.s_module_types @ s2.s_module_types;
+    s_values = s1.s_values @ s2.s_values;
     s_types = s1.s_types @ s2.s_types;
     s_classes = s1.s_classes @ s2.s_classes;
     s_class_types = s1.s_class_types @ s2.s_class_types;

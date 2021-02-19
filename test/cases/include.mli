@@ -29,3 +29,20 @@ end
 include Not_inlined_and_opened
 (** @open
     @closed *)
+
+(* This demostrates that overridden values are never rendered*)
+module type Inherent_Module =
+sig
+  val a : t
+end
+
+include Inherent_Module
+
+
+module type Dorminant_Module =
+sig
+  include Inherent_Module
+  val a : u
+end
+
+include Dorminant_Module
