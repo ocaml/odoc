@@ -30,7 +30,7 @@ let validate file =
         "-ashtml";
       ]
   in
-  let cmd = Printf.sprintf "tidy %s %s" options file in
+  let cmd = Printf.sprintf "tidy %s %S" options file in
   let ((_, _, stderr) as proc) = Unix.open_process_full cmd [||] in
 
   let errors_and_warnings =
