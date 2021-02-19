@@ -221,6 +221,7 @@ and include_shadowed =
         ( "s_module_types",
           (fun t -> t.s_module_types),
           List (Pair (string, identifier)) );
+      F ("s_values", (fun t -> t.s_values), List (Pair (string, identifier)));
       F ("s_types", (fun t -> t.s_types), List (Pair (string, identifier)));
       F ("s_classes", (fun t -> t.s_classes), List (Pair (string, identifier)));
       F

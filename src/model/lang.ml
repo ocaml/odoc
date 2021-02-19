@@ -150,6 +150,7 @@ and Include : sig
   type shadowed = {
     s_modules : (string * Identifier.Module.t) list;
     s_module_types : (string * Identifier.ModuleType.t) list;
+    s_values : (string * Identifier.Value.t) list;
     s_types : (string * Identifier.Type.t) list;
     s_classes : (string * Identifier.Class.t) list;
     s_class_types : (string * Identifier.ClassType.t) list;
