@@ -159,3 +159,9 @@ uutf/dune-project : uutf
 .PHONY : distclean
 distclean :
 	rm -rf $(DUNIVERSE_DEPS) dune-local
+
+.PHONY : promote-html
+promote-html:
+	EXPECTED=`cat _build/default/test/html/_scratch/expected`; \
+	ACTUAL=`cat _build/default/test/html/_scratch/actual`; \
+	mkdir -p "`dirname "$$EXPECTED"`" && cp "$$ACTUAL" "$$EXPECTED"
