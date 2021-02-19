@@ -240,6 +240,11 @@ let make_test_case ?theme_uri ?syntax case =
   in
   (Case.name case, `Slow, run)
 
+let make_input file sub_modules =
+  let base = String.capitalize_ascii (Filename.chop_extension file) in
+  let index p = String.concat Filename.dir_sep (p @ [ "index.html" ]) in
+  (file, index [ base ] :: List.map (fun m -> index [ base; m ]) sub_modules)
+
 let source_files_all =
   [
     ("val.mli", [ "Val/index.html" ]);
@@ -274,6 +279,14 @@ let source_files_all =
     ("stop.mli", [ "Stop/index.html" ]);
     ("bugs.ml", [ "Bugs/index.html" ]);
     ("alias.ml", [ "Alias/index.html"; "Alias/X/index.html" ]);
+    make_input "toplevel_comments.mli"
+      [
+        "module-type-T";
+        "Include_inline";
+        "Include_inline'";
+        "module-type-Include_inline_T";
+        "module-type-Include_inline_T'";
+      ];
   ]
 
 let source_files_post406 =
