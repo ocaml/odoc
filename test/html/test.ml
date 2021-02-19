@@ -285,6 +285,10 @@ let source_files_all =
         "Include_inline'";
         "module-type-Include_inline_T";
         "module-type-Include_inline_T'";
+        "M";
+        "M'";
+        "M''";
+        "Alias";
       ];
   ]
 

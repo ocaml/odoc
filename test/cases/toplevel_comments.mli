@@ -35,3 +35,18 @@ module type Include_inline_T' = sig
   (** part 3
       @inline *)
 end
+
+module M : sig
+  (** Doc of [M] *)
+end
+
+module M' : sig end
+(** Doc of [M'] from outside *)
+
+(** Doc of [M''], part 1. *)
+module M'' : sig
+  (** Doc of [M''], part 2. *)
+end
+
+module Alias : T
+(** Doc of [Alias]. *)
