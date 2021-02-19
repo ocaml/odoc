@@ -51,94 +51,94 @@ let invariant_equation =
   let constraints = [] in
   { params; private_; manifest; constraints }
 
-let bool_identifier = `CoreType (TypeName.of_string "bool")
+let bool_identifier = `CoreType (TypeName.make_std "bool")
 
-let int_identifier = `CoreType (TypeName.of_string "int")
+let int_identifier = `CoreType (TypeName.make_std "int")
 
-let char_identifier = `CoreType (TypeName.of_string "char")
+let char_identifier = `CoreType (TypeName.make_std "char")
 
-let bytes_identifier = `CoreType (TypeName.of_string "bytes")
+let bytes_identifier = `CoreType (TypeName.make_std "bytes")
 
-let string_identifier = `CoreType (TypeName.of_string "string")
+let string_identifier = `CoreType (TypeName.make_std "string")
 
-let float_identifier = `CoreType (TypeName.of_string "float")
+let float_identifier = `CoreType (TypeName.make_std "float")
 
-let unit_identifier = `CoreType (TypeName.of_string "unit")
+let unit_identifier = `CoreType (TypeName.make_std "unit")
 
-let exn_identifier = `CoreType (TypeName.of_string "exn")
+let exn_identifier = `CoreType (TypeName.make_std "exn")
 
-let array_identifier = `CoreType (TypeName.of_string "array")
+let array_identifier = `CoreType (TypeName.make_std "array")
 
-let list_identifier = `CoreType (TypeName.of_string "list")
+let list_identifier = `CoreType (TypeName.make_std "list")
 
-let option_identifier = `CoreType (TypeName.of_string "option")
+let option_identifier = `CoreType (TypeName.make_std "option")
 
-let int32_identifier = `CoreType (TypeName.of_string "int32")
+let int32_identifier = `CoreType (TypeName.make_std "int32")
 
-let int64_identifier = `CoreType (TypeName.of_string "int64")
+let int64_identifier = `CoreType (TypeName.make_std "int64")
 
-let nativeint_identifier = `CoreType (TypeName.of_string "nativeint")
+let nativeint_identifier = `CoreType (TypeName.make_std "nativeint")
 
-let lazy_t_identifier = `CoreType (TypeName.of_string "lazy_t")
+let lazy_t_identifier = `CoreType (TypeName.make_std "lazy_t")
 
 let extension_constructor_identifier =
-  `CoreType (TypeName.of_string "extension_constructor")
+  `CoreType (TypeName.make_std "extension_constructor")
 
-let floatarray_identifier = `CoreType (TypeName.of_string "floatarray")
+let floatarray_identifier = `CoreType (TypeName.make_std "floatarray")
 
 let false_identifier =
-  `Constructor (bool_identifier, ConstructorName.of_string "false")
+  `Constructor (bool_identifier, ConstructorName.make_std "false")
 
 let true_identifier =
-  `Constructor (bool_identifier, ConstructorName.of_string "true")
+  `Constructor (bool_identifier, ConstructorName.make_std "true")
 
 let void_identifier =
-  `Constructor (unit_identifier, ConstructorName.of_string "()")
+  `Constructor (unit_identifier, ConstructorName.make_std "()")
 
 let nil_identifier =
-  `Constructor (list_identifier, ConstructorName.of_string "([])")
+  `Constructor (list_identifier, ConstructorName.make_std "([])")
 
 let cons_identifier =
-  `Constructor (list_identifier, ConstructorName.of_string "(::)")
+  `Constructor (list_identifier, ConstructorName.make_std "(::)")
 
 let none_identifier =
-  `Constructor (option_identifier, ConstructorName.of_string "None")
+  `Constructor (option_identifier, ConstructorName.make_std "None")
 
 let some_identifier =
-  `Constructor (option_identifier, ConstructorName.of_string "Some")
+  `Constructor (option_identifier, ConstructorName.make_std "Some")
 
 let match_failure_identifier =
-  `CoreException (ExceptionName.of_string "Match_failure")
+  `CoreException (ExceptionName.make_std "Match_failure")
 
 let assert_failure_identifier =
-  `CoreException (ExceptionName.of_string "Assert_failure")
+  `CoreException (ExceptionName.make_std "Assert_failure")
 
 let invalid_argument_identifier =
-  `CoreException (ExceptionName.of_string "Invalid_argument")
+  `CoreException (ExceptionName.make_std "Invalid_argument")
 
-let failure_identifier = `CoreException (ExceptionName.of_string "Failure")
+let failure_identifier = `CoreException (ExceptionName.make_std "Failure")
 
-let not_found_identifier = `CoreException (ExceptionName.of_string "Not_found")
+let not_found_identifier = `CoreException (ExceptionName.make_std "Not_found")
 
 let out_of_memory_identifier =
-  `CoreException (ExceptionName.of_string "Out_of_memory")
+  `CoreException (ExceptionName.make_std "Out_of_memory")
 
 let stack_overflow_identifier =
-  `CoreException (ExceptionName.of_string "Stack_overflow")
+  `CoreException (ExceptionName.make_std "Stack_overflow")
 
-let sys_error_identifier = `CoreException (ExceptionName.of_string "Sys_error")
+let sys_error_identifier = `CoreException (ExceptionName.make_std "Sys_error")
 
 let end_of_file_identifier =
-  `CoreException (ExceptionName.of_string "End_of_file")
+  `CoreException (ExceptionName.make_std "End_of_file")
 
 let division_by_zero_identifier =
-  `CoreException (ExceptionName.of_string "Division_by_zero")
+  `CoreException (ExceptionName.make_std "Division_by_zero")
 
 let sys_blocked_io_identifier =
-  `CoreException (ExceptionName.of_string "Sys_blocked_io")
+  `CoreException (ExceptionName.make_std "Sys_blocked_io")
 
 let undefined_recursive_module_identifier =
-  `CoreException (ExceptionName.of_string "Undefined_recursive_module")
+  `CoreException (ExceptionName.make_std "Undefined_recursive_module")
 
 let core_type_identifier = function
   | "int" -> Some int_identifier
@@ -582,8 +582,7 @@ let floatarray_decl =
               `Space;
               `Reference
                 ( `Module
-                    ( `Root ("Array", `TModule),
-                      ModuleName.of_string "Floatarray" ),
+                    (`Root ("Array", `TModule), ModuleName.make_std "Floatarray"),
                   [] );
               `Space;
             ]

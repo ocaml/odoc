@@ -858,9 +858,8 @@ module Fragment = struct
         | Resolved.Branch (base, m) -> Branch (base, `Resolved m) )
     | `Dot (m, name) -> (
         match split_parent m with
-        | Base None -> Branch (ModuleName.of_string name, `Root)
-        | Base (Some i) ->
-            Branch (ModuleName.of_string name, `Resolved (`Root i))
+        | Base None -> Branch (ModuleName.make_std name, `Root)
+        | Base (Some i) -> Branch (ModuleName.make_std name, `Resolved (`Root i))
         | Branch (base, m) -> Branch (base, `Dot (m, name)) )
 
   module Signature = struct

@@ -618,7 +618,7 @@ and typ_ext map parent t =
 
 and extension_constructor map parent c =
   let open Component.Extension.Constructor in
-  let identifier = `Extension (parent, ExtensionName.of_string c.name) in
+  let identifier = `Extension (parent, ExtensionName.make_std c.name) in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) c.doc;
@@ -793,7 +793,7 @@ and type_decl_field :
     Component.TypeDecl.Field.t ->
     Odoc_model.Lang.TypeDecl.Field.t =
  fun map parent f ->
-  let identifier = `Field (parent, FieldName.of_string f.name) in
+  let identifier = `Field (parent, FieldName.make_std f.name) in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) f.doc;
@@ -843,7 +843,7 @@ and type_decl_constructor :
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
-  let identifier = `Constructor (id, ConstructorName.of_string t.name) in
+  let identifier = `Constructor (id, ConstructorName.make_std t.name) in
   {
     id = identifier;
     doc = docs (id :> Identifier.LabelParent.t) t.doc;

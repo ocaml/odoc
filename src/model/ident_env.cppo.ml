@@ -359,7 +359,7 @@ let env_of_items parent items env =
         let identifier, shadowed =
         if is_shadowed
         then `Type(parent, TypeName.internal_of_string name), t :: env.shadowed
-        else `Type(parent, TypeName.of_string name), env.shadowed
+        else `Type(parent, TypeName.make_std name), env.shadowed
       in
       let types = Ident.add t identifier env.types in      
       inner rest { env with types; shadowed }
@@ -370,7 +370,7 @@ let env_of_items parent items env =
         let identifier, shadowed =
         if is_shadowed
         then `Value(parent, ValueName.internal_of_string name), t :: env.shadowed
-        else `Value(parent, ValueName.of_string name), env.shadowed
+        else `Value(parent, ValueName.make_std name), env.shadowed
       in
       let values = Ident.add t identifier env.values in      
       inner rest { env with values; shadowed }
@@ -381,7 +381,7 @@ let env_of_items parent items env =
       let identifier, shadowed =
         if is_shadowed 
         then `ModuleType(parent, ModuleTypeName.internal_of_string name), t :: env.shadowed
-        else `ModuleType(parent, ModuleTypeName.of_string name), env.shadowed
+        else `ModuleType(parent, ModuleTypeName.make_std name), env.shadowed
       in
       let module_types = Ident.add t identifier env.module_types in
       inner rest { env with module_types; shadowed }
@@ -391,7 +391,7 @@ let env_of_items parent items env =
       let identifier, shadowed =
         if is_shadowed 
         then `Module(parent, ModuleName.internal_of_string name), t :: env.shadowed
-        else `Module(parent, ModuleName.of_string name), env.shadowed
+        else `Module(parent, ModuleName.make_std name), env.shadowed
       in
       let path = `Identifier(identifier, is_shadowed) in
       let modules = Ident.add t identifier env.modules in
@@ -403,7 +403,7 @@ let env_of_items parent items env =
       let identifier, shadowed =
         if is_shadowed 
         then `Class(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.shadowed
-        else `Class(parent, ClassName.of_string name), env.shadowed
+        else `Class(parent, ClassName.make_std name), env.shadowed
       in
       let classes =
         List.fold_right (fun id classes -> Ident.add id identifier classes)
@@ -415,7 +415,7 @@ let env_of_items parent items env =
       let identifier, shadowed =
         if is_shadowed 
         then `ClassType(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.shadowed
-        else `ClassType(parent, ClassTypeName.of_string name), env.shadowed
+        else `ClassType(parent, ClassTypeName.make_std name), env.shadowed
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)

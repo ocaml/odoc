@@ -22,7 +22,7 @@ module type Name = sig
 
   val to_string_unsafe : t -> string
 
-  val of_string : string -> t
+  val make_std : string -> t
 
   val of_ident : Ident.t -> t
 
@@ -52,12 +52,12 @@ module Name : Name = struct
 
   let to_string_unsafe = function Std s -> s | Internal (s, _i) -> s
 
-  let of_string s =
+  let make_std s =
     let s = parenthesise s in
     if String.length s > 0 && s.[0] = '{' then raise (Invalid_argument s)
     else Std s
 
-  let of_ident id = of_string (Ident.name id)
+  let of_ident id = make_std (Ident.name id)
 
   let internal_of_string id =
     incr internal_counter;
@@ -95,7 +95,7 @@ module type SimpleName = sig
 
   val to_string : t -> string
 
-  val of_string : string -> t
+  val make_std : string -> t
 
   val of_ident : Ident.t -> t
 
@@ -113,9 +113,9 @@ module SimpleName : SimpleName = struct
 
   let to_string s = s
 
-  let of_string s = s
+  let make_std s = s
 
-  let of_ident id = of_string (Ident.name id)
+  let of_ident id = make_std (Ident.name id)
 
   let equal (x : t) (y : t) = x = y
 

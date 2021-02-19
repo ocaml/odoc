@@ -27,7 +27,7 @@ module type Name = sig
   (** [to_string_unsafe] will allow even internal names to be turned into
         strings. Use with caution. *)
 
-  val of_string : string -> t
+  val make_std : string -> t
 
   val of_ident : Ident.t -> t
 
@@ -55,7 +55,7 @@ module type SimpleName = sig
 
   val to_string : t -> string
 
-  val of_string : string -> t
+  val make_std : string -> t
 
   val of_ident : Ident.t -> t
 
