@@ -113,7 +113,7 @@ let read_cmt ~make_root ~parent ~filename () =
         | Ok root -> root
         | Error (`Msg m) -> error_msg filename m
       in
-      let id = `Root(parent, Odoc_model.Names.ModuleName.of_string name) in
+      let id = `Root(parent, Odoc_model.Names.ModuleName.make_std name) in
       let items =
         List.map (fun file ->
           let pref = Misc.chop_extensions file in
@@ -123,7 +123,7 @@ let read_cmt ~make_root ~parent ~filename () =
       let items = List.sort String.compare items in
       let items =
         List.map (fun name ->
-          let id = `Module(id, Odoc_model.Names.ModuleName.of_string name) in
+          let id = `Module(id, Odoc_model.Names.ModuleName.make_std name) in
           let path = `Root name in
           {Odoc_model.Lang.Compilation_unit.Packed.id; path})
           items

@@ -237,8 +237,7 @@ let section_heading :
     | None -> generate_heading_label content
   in
   let label =
-    `Label
-      (status.parent_of_sections, Odoc_model.Names.LabelName.of_string label)
+    `Label (status.parent_of_sections, Odoc_model.Names.LabelName.make_std label)
   in
 
   match (status.sections_allowed, level) with

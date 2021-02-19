@@ -348,7 +348,7 @@ module EC = struct
     Some (`Identifier id :> t)
 
   let of_component _env ~parent_ref name : t option =
-    Some (`Extension (parent_ref, ExtensionName.of_string name))
+    Some (`Extension (parent_ref, ExtensionName.make_std name))
 
   let in_signature _env ((parent', parent_cp, sg) : signature_lookup_result)
       name : t option =
@@ -390,7 +390,7 @@ module CS = struct
     | `FField _ -> None
 
   let of_component _env parent name : t option =
-    Some (`Constructor (parent, ConstructorName.of_string name))
+    Some (`Constructor (parent, ConstructorName.make_std name))
 end
 
 module F = struct
@@ -421,7 +421,7 @@ module F = struct
     Some
       (`Field
         ( (parent : Resolved.DataType.t :> Resolved.Parent.t),
-          FieldName.of_string name ))
+          FieldName.make_std name ))
 end
 
 module MM = struct

@@ -171,11 +171,10 @@ let parse warnings whole_reference_location s :
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TModule ->
-            `Module
-              (signature next_token tokens, ModuleName.of_string identifier)
+            `Module (signature next_token tokens, ModuleName.make_std identifier)
         | `TModuleType ->
             `ModuleType
-              (signature next_token tokens, ModuleTypeName.of_string identifier)
+              (signature next_token tokens, ModuleTypeName.make_std identifier)
         | _ ->
             expected [ "module"; "module-type" ] location
             |> Error.raise_exception )
@@ -197,18 +196,17 @@ let parse warnings whole_reference_location s :
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TModule ->
-            `Module
-              (signature next_token tokens, ModuleName.of_string identifier)
+            `Module (signature next_token tokens, ModuleName.make_std identifier)
         | `TModuleType ->
             `ModuleType
-              (signature next_token tokens, ModuleTypeName.of_string identifier)
+              (signature next_token tokens, ModuleTypeName.make_std identifier)
         | `TType ->
-            `Type (signature next_token tokens, TypeName.of_string identifier)
+            `Type (signature next_token tokens, TypeName.make_std identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.of_string identifier)
+            `Class (signature next_token tokens, ClassName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.of_string identifier)
+              (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
@@ -230,10 +228,10 @@ let parse warnings whole_reference_location s :
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.of_string identifier)
+            `Class (signature next_token tokens, ClassName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.of_string identifier)
+              (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
             expected [ "class"; "class-type" ] location |> Error.raise_exception
         )
@@ -251,7 +249,7 @@ let parse warnings whole_reference_location s :
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TType ->
-            `Type (signature next_token tokens, TypeName.of_string identifier)
+            `Type (signature next_token tokens, TypeName.make_std identifier)
         | _ -> expected [ "type" ] location |> Error.raise_exception )
   in
 
@@ -272,18 +270,17 @@ let parse warnings whole_reference_location s :
         match kind with
         | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
         | `TModule ->
-            `Module
-              (signature next_token tokens, ModuleName.of_string identifier)
+            `Module (signature next_token tokens, ModuleName.make_std identifier)
         | `TModuleType ->
             `ModuleType
-              (signature next_token tokens, ModuleTypeName.of_string identifier)
+              (signature next_token tokens, ModuleTypeName.make_std identifier)
         | `TType ->
-            `Type (signature next_token tokens, TypeName.of_string identifier)
+            `Type (signature next_token tokens, TypeName.make_std identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.of_string identifier)
+            `Class (signature next_token tokens, ClassName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.of_string identifier)
+              (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
@@ -320,42 +317,40 @@ let parse warnings whole_reference_location s :
         match kind with
         | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
         | `TModule ->
-            `Module
-              (signature next_token tokens, ModuleName.of_string identifier)
+            `Module (signature next_token tokens, ModuleName.make_std identifier)
         | `TModuleType ->
             `ModuleType
-              (signature next_token tokens, ModuleTypeName.of_string identifier)
+              (signature next_token tokens, ModuleTypeName.make_std identifier)
         | `TType ->
-            `Type (signature next_token tokens, TypeName.of_string identifier)
+            `Type (signature next_token tokens, TypeName.make_std identifier)
         | `TConstructor ->
             `Constructor
-              (datatype next_token tokens, ConstructorName.of_string identifier)
+              (datatype next_token tokens, ConstructorName.make_std identifier)
         | `TField ->
-            `Field (parent next_token tokens, FieldName.of_string identifier)
+            `Field (parent next_token tokens, FieldName.make_std identifier)
         | `TExtension ->
             `Extension
-              (signature next_token tokens, ExtensionName.of_string identifier)
+              (signature next_token tokens, ExtensionName.make_std identifier)
         | `TException ->
             `Exception
-              (signature next_token tokens, ExceptionName.of_string identifier)
+              (signature next_token tokens, ExceptionName.make_std identifier)
         | `TValue ->
-            `Value (signature next_token tokens, ValueName.of_string identifier)
+            `Value (signature next_token tokens, ValueName.make_std identifier)
         | `TClass ->
-            `Class (signature next_token tokens, ClassName.of_string identifier)
+            `Class (signature next_token tokens, ClassName.make_std identifier)
         | `TClassType ->
             `ClassType
-              (signature next_token tokens, ClassTypeName.of_string identifier)
+              (signature next_token tokens, ClassTypeName.make_std identifier)
         | `TMethod ->
             `Method
-              ( class_signature next_token tokens,
-                MethodName.of_string identifier )
+              (class_signature next_token tokens, MethodName.make_std identifier)
         | `TInstanceVariable ->
             `InstanceVariable
               ( class_signature next_token tokens,
-                InstanceVariableName.of_string identifier )
+                InstanceVariableName.make_std identifier )
         | `TLabel ->
             `Label
-              (label_parent next_token tokens, LabelName.of_string identifier)
+              (label_parent next_token tokens, LabelName.make_std identifier)
         | `TChildPage | `TChildModule ->
             let suggestion =
               Printf.sprintf "'child-%s' should be first." identifier

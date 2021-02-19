@@ -53,7 +53,7 @@ let parent directories parent_cli_spec =
       find_parent r >>= fun r ->
       extract_parent r.id >>= fun parent ->
       Env.fetch_page ap r >>= fun page -> Ok (Explicit (parent, page.children))
-  | CliPackage package -> Ok (Package (`RootPage (PageName.of_string package)))
+  | CliPackage package -> Ok (Package (`RootPage (PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
 let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
@@ -95,7 +95,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
     in
     Ok
       {
-        id = `Root (parent, ModuleName.of_string module_name);
+        id = `Root (parent, ModuleName.make_std module_name);
         file = file_representation;
         digest;
       }
@@ -134,7 +134,7 @@ let mld ~parent_spec ~output ~children ~warn_error input =
   in
   let input_s = Fs.File.to_string input in
   let digest = Digest.file input_s in
-  let page_name = PageName.of_string root_name in
+  let page_name = PageName.make_std root_name in
   let check_child : Odoc_model.Paths.Reference.t -> bool =
    fun c ->
     match c with

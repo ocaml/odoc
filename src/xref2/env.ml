@@ -187,7 +187,7 @@ let add_type identifier t env =
   let open_typedecl cs =
     let add_cons elts (cons : TypeDecl.Constructor.t) =
       let ident =
-        `Constructor (identifier, ConstructorName.of_string cons.name)
+        `Constructor (identifier, ConstructorName.make_std cons.name)
       in
       add_to_elts
         (Odoc_model.Paths.Identifier.name ident)
@@ -197,7 +197,7 @@ let add_type identifier t env =
       let ident =
         `Field
           ( (identifier :> Odoc_model.Paths_types.Identifier.parent),
-            FieldName.of_string field.name )
+            FieldName.make_std field.name )
       in
       add_to_elts
         (Odoc_model.Paths.Identifier.name ident)
@@ -746,7 +746,7 @@ let initial_env :
           match resolver.lookup_unit str with
           | Forward_reference -> (import :: imports, env)
           | Found x ->
-              let name = Names.ModuleName.of_string str in
+              let name = Names.ModuleName.make_std str in
               (Import.Resolved (x.root, name) :: imports, env)
           | Not_found -> (import :: imports, env) ))
     t.imports ([], initial_env)

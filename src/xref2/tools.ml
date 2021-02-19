@@ -1431,7 +1431,7 @@ and resolve_signature_fragment :
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, ppath, sg) ->
       of_result (find_module_with_replacement env sg name) >>= fun m' ->
-      let mname = ModuleName.of_string name in
+      let mname = ModuleName.make_std name in
       let new_path = `Module (ppath, mname) in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
@@ -1469,7 +1469,7 @@ and resolve_module_fragment :
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, sg) ->
       of_result (find_module_with_replacement env sg name) >>= fun m' ->
-      let mname = ModuleName.of_string name in
+      let mname = ModuleName.make_std name in
       let new_frag = `Module (pfrag, mname) in
       let m' = Component.Delayed.get m' in
       let modifier = get_module_path_modifiers env ~add_canonical:false m' in
@@ -1501,7 +1501,7 @@ and resolve_type_fragment :
       let open OptionMonad in
       resolve_signature_fragment env (p, sg) parent
       >>= fun (pfrag, _ppath, _sg) ->
-      let result = fixup_type_cfrag (`Type (pfrag, TypeName.of_string name)) in
+      let result = fixup_type_cfrag (`Type (pfrag, TypeName.make_std name)) in
       (* Format.fprintf Format.err_formatter "resolve_type_fragment: fragment=%a\n%!" Component.Fmt.resolved_type_fragment result; *)
       Some result
 

@@ -1123,7 +1123,7 @@ let () =
         let dummy_filename = "f.ml" in
 
         let dummy_page =
-          `RootPage (Odoc_model.Names.PageName.of_string dummy_filename)
+          `RootPage (Odoc_model.Names.PageName.make_std dummy_filename)
         in
 
         let location =

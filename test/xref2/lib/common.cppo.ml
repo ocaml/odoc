@@ -34,8 +34,8 @@ let cmt_of_string s =
     let p = Parse.implementation l in
     Typemod.type_implementation "" "" "" env p
 
-let parent = `RootPage (Odoc_model.Names.PageName.of_string "None")
-let id = `Root (parent, Odoc_model.Names.ModuleName.of_string "Root")
+let parent = `RootPage (Odoc_model.Names.PageName.make_std "None")
+let id = `Root (parent, Odoc_model.Names.ModuleName.make_std "Root")
 
 let root_of_compilation_unit ~package ~hidden ~module_name ~digest =
   ignore(package);
@@ -57,7 +57,7 @@ let root =
 
 let root_identifier = `Identifier id
 
-let root_module name = `Module (id, Odoc_model.Names.ModuleName.of_string name)
+let root_module name = `Module (id, Odoc_model.Names.ModuleName.make_std name)
 
 let root_pp fmt (_ : Odoc_model.Root.t) = Format.fprintf fmt "Common.root"
 
