@@ -176,7 +176,7 @@ let diff =
   fun output ->
     let actual_file = Env.path `scratch // output in
     let expected_file = Env.path `expect // output in
-    let cmd = sprintf "diff -u -b %s %s" expected_file actual_file in
+    let cmd = sprintf "diff -N -u -b %s %s" expected_file actual_file in
     match Sys.command cmd with
     | 0 -> ()
     | 1 when !already_failed ->
@@ -198,9 +198,7 @@ let diff =
         write_file Env.(path `scratch // "expected") root_expected_file;
 
         prerr_endline "\nTo promote the actual output to expected, run:";
-        Printf.eprintf "cp `cat %s` `cat %s` && make test\n\n"
-          Env.(path ~from_root:true `scratch // "actual")
-          Env.(path ~from_root:true `scratch // "expected");
+        prerr_endline "make promote-html && make test\n";
 
         already_failed := true;
         Alcotest.fail "generated HTML should match expected"
@@ -225,15 +223,16 @@ let make_test_case ?theme_uri ?syntax case =
       (fun output ->
         let actual_file = Env.path `scratch // output in
 
-        (* Pretty-print output HTML for better diffing. *)
-        pretty_print_html_in_place actual_file;
+        if Sys.file_exists actual_file then (
+          (* Pretty-print output HTML for better diffing. *)
+          pretty_print_html_in_place actual_file;
 
-        (* Run HTML validation on output files. *)
-        ( if Tidy.is_present_in_path then
-          let issues = Tidy.validate actual_file in
-          if issues <> [] then (
-            List.iter prerr_endline issues;
-            Alcotest.fail "Tidy validation error" ) );
+          (* Run HTML validation on output files. *)
+          if Tidy.is_present_in_path then
+            let issues = Tidy.validate actual_file in
+            if issues <> [] then (
+              List.iter prerr_endline issues;
+              Alcotest.fail "Tidy validation error" ) );
 
         (* Diff the actual outputs with the expected outputs. *)
         diff output)
