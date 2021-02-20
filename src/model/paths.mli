@@ -99,6 +99,17 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
+  module FunctorResult : sig
+    type t = Paths_types.Identifier.functor_result
+
+    val equal : t -> t -> bool
+
+    val hash : t -> int
+
+    val compare : t -> t -> int
+  end
+
+
   module ModuleType : sig
     type t = Paths_types.Identifier.module_type
 
@@ -478,7 +489,7 @@ end
 (** OCaml path fragments for specifying module substitutions *)
 module Fragment : sig
   module Resolved : sig
-    module Signature : sig
+        module Signature : sig
       type t = Paths_types.Resolved_fragment.signature
 
       val split : t -> string * t option

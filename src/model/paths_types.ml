@@ -4,10 +4,13 @@ open Names
 module Identifier = struct
   type container_page =
     [ `RootPage of PageName.t | `Page of container_page * PageName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ContainerPage.t *)
 
   type page = [ container_page | `LeafPage of container_page * PageName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Page.t *)
 
   type odoc_id = [ page | `Root of container_page * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.OdocId.t *)
 
   type signature =
     [ `Root of container_page * ModuleName.t
@@ -15,51 +18,73 @@ module Identifier = struct
     | `Parameter of signature * ParameterName.t
     | `Result of signature
     | `ModuleType of signature * ModuleTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Signature.t *)
 
   type class_signature =
     [ `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ClassSignature.t *)
 
   type datatype = [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.DataType.t *)
 
   type parent = [ signature | datatype | class_signature ]
+  (** @canonical Odoc_model.Paths.Identifier.Parent.t *)
 
   type label_parent = [ parent | page ]
+  (** @canonical Odoc_model.Paths.Identifier.LabelParent.t *)
 
   type root_module = [ `Root of container_page * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.RootModule.t *)
 
   type module_ = [ root_module | `Module of signature * ModuleName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Module.t *)
 
   type functor_parameter = [ `Parameter of signature * ParameterName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.FunctorParameter.t *)
 
   type functor_result = [ `Result of signature ]
+  (** @canonical Odoc_model.Paths.Identifier.FunctorResult.t *)
 
   type module_type = [ `ModuleType of signature * ModuleTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ModuleType.t *)
 
   type type_ = [ `Type of signature * TypeName.t | `CoreType of TypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Type.t *)
 
   type constructor = [ `Constructor of type_ * ConstructorName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Constructor.t *)
 
   type field = [ `Field of parent * FieldName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Field.t *)
 
   type extension = [ `Extension of signature * ExtensionName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Extension.t *)
 
   type exception_ =
     [ `Exception of signature * ExceptionName.t
     | `CoreException of ExceptionName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Exception.t *)
 
   type value = [ `Value of signature * ValueName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Value.t *)
 
   type class_ = [ `Class of signature * ClassName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Class.t *)
 
   type class_type = [ `ClassType of signature * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.ClassType.t *)
 
   type method_ = [ `Method of class_signature * MethodName.t ]
+    (** @canonical Odoc_model.Paths.Identifier.Method.t *)
+
 
   type instance_variable =
     [ `InstanceVariable of class_signature * InstanceVariableName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.InstanceVariable.t *)
 
   type label = [ `Label of label_parent * LabelName.t ]
+  (** @canonical Odoc_model.Paths.Identifier.Label.t *)
 
   type any =
     [ signature
@@ -83,17 +108,25 @@ module Identifier = struct
     | instance_variable
     | label
     | page ]
+      (** @canonical Odoc_model.Paths.Identifier.t *)
+
 
   type path_module = [ module_ | functor_parameter | functor_result ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.Module.t *)
 
   type path_module_type = module_type
+  (** @canonical Odoc_model.Paths.Identifier.Path.ModuleType.t *)
 
   type path_type = [ type_ | class_ | class_type ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.Type.t *)
 
   type path_class_type = [ class_ | class_type ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.ClassType.t *)
 
   type path_any =
     [ path_module | path_module_type | path_type | path_class_type ]
+  (** @canonical Odoc_model.Paths.Identifier.Path.t *)
+
 
   type fragment_module = path_module
 
@@ -136,21 +169,26 @@ module rec Path : sig
     | `Forward of string
     | `Dot of module_ * string
     | `Apply of module_ * module_ ]
+  (** @canonical Odoc_model.Paths.Path.Module.t *)
+
 
   type module_type =
     [ `Resolved of Resolved_path.module_type
     | `Identifier of Identifier.path_module_type * bool
     | `Dot of module_ * string ]
+  (** @canonical Odoc_model.Paths.Path.ModuleType.t *)
 
   type type_ =
     [ `Resolved of Resolved_path.type_
     | `Identifier of Identifier.path_type * bool
     | `Dot of module_ * string ]
+  (** @canonical Odoc_model.Paths.Path.Type.t *)
 
   type class_type =
     [ `Resolved of Resolved_path.class_type
     | `Identifier of Identifier.path_class_type * bool
     | `Dot of module_ * string ]
+  (** @canonical Odoc_model.Paths.Path.ClassType.t *)
 
   type any =
     [ `Resolved of Resolved_path.any
@@ -159,6 +197,8 @@ module rec Path : sig
     | `Forward of string
     | `Dot of module_ * string
     | `Apply of module_ * module_ ]
+    (** @canonical Odoc_model.Paths.Path.t *)
+
 end =
   Path
 
@@ -181,48 +221,42 @@ and Resolved_path : sig
     | `CanonicalT of module_type * Path.module_type
     | `ModuleType of module_ * ModuleTypeName.t
     | `OpaqueModuleType of module_type ]
-
-  type module_no_id =
-    [ `Subst of module_type * module_
-    | `SubstAlias of module_ * module_
-    | `Hidden of module_
-    | `Module of module_ * ModuleName.t
-    | `Canonical of module_ * Path.module_
-    | `Apply of module_ * module_
-    | `Alias of module_ * module_
-    | `OpaqueModule of module_ ]
-
-  type module_type_no_id =
-    [ `ModuleType of module_ * ModuleTypeName.t
-    | `CanonicalT of module_type * Path.module_type
-    | `SubstT of module_type * module_type
-    | `OpaqueModuleType of module_type ]
-
+  (** @canonical Odoc_model.Paths.Path.Resolved.ModuleType.t *)
+  
   type type_ =
     [ `Identifier of Identifier.path_type
     | `CanonicalTy of type_ * Path.type_
     | `Type of module_ * TypeName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.Type.t *)
 
-  type type_no_id =
-    [ `CanonicalTy of type_ * Path.type_
-    | `Type of module_ * TypeName.t
+  type class_type =
+    [ `Identifier of Identifier.path_class_type
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t ]
 
-  type class_type_no_id =
-    [ `Class of module_ * ClassName.t | `ClassType of module_ * ClassTypeName.t ]
-
-  type class_type =
-    [ `Identifier of Identifier.path_class_type | class_type_no_id ]
-
   type any =
     [ `Identifier of Identifier.any
-    | module_no_id
-    | module_type_no_id
-    | type_no_id
-    | class_type_no_id ]
+    | `Subst of module_type * module_
+    | `SubstAlias of module_ * module_
+    | `Hidden of module_
+    | `Module of module_ * ModuleName.t
+    | `Canonical of module_ * Path.module_
+    | `Apply of module_ * module_
+    | `Alias of module_ * module_
+    | `OpaqueModule of module_
+    | `ModuleType of module_ * ModuleTypeName.t
+    | `CanonicalT of module_type * Path.module_type
+    | `SubstT of module_type * module_type
+    | `OpaqueModuleType of module_type
+    | `CanonicalTy of type_ * Path.type_
+    | `Type of module_ * TypeName.t
+    | `Class of module_ * ClassName.t
+    | `ClassType of module_ * ClassTypeName.t
+    | `Class of module_ * ClassName.t
+    | `ClassType of module_ * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Path.Resolved.t *)
 end =
   Resolved_path
 
@@ -231,18 +265,26 @@ module rec Fragment : sig
     [ `Resolved of Resolved_fragment.signature
     | `Dot of signature * string
     | `Root ]
+    (** @canonical Odoc_model.Paths.Fragment.Signature.t *)
+
 
   type module_ =
     [ `Resolved of Resolved_fragment.module_ | `Dot of signature * string ]
+    (** @canonical Odoc_model.Paths.Fragment.Module.t *)
 
   type type_ =
     [ `Resolved of Resolved_fragment.type_ | `Dot of signature * string ]
+        (** @canonical Odoc_model.Paths.Fragment.Type.t *)
+
 
   type leaf =
     [ `Resolved of Resolved_fragment.leaf | `Dot of signature * string ]
+    (** @canonical Odoc_model.Paths.Fragment.leaf *)
 
   type any =
     [ `Resolved of Resolved_fragment.any | `Dot of signature * string | `Root ]
+        (** @canonical Odoc_model.Paths.Fragment.t *)
+
 end =
   Fragment
 
@@ -250,6 +292,7 @@ and Resolved_fragment : sig
   type root =
     [ `ModuleType of Resolved_path.module_type
     | `Module of Resolved_path.module_ ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.root *)
 
   type signature =
     [ `Root of root
@@ -257,19 +300,24 @@ and Resolved_fragment : sig
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `OpaqueModule of module_ ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.Signature.t *)
+
 
   and module_ =
     [ `Subst of Resolved_path.module_type * module_
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `OpaqueModule of module_ ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.Module.t *)
 
   type type_ =
     [ `Type of signature * TypeName.t
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.Type.t *)
 
   type leaf = [ module_ | type_ ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.leaf *)
 
   (* Absence of `Root here might make coersions annoying *)
   type any =
@@ -281,6 +329,8 @@ and Resolved_fragment : sig
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `OpaqueModule of module_ ]
+  (** @canonical Odoc_model.Paths.Fragment.Resolved.t *)
+
 end =
   Resolved_fragment
 
@@ -320,49 +370,49 @@ module rec Reference : sig
   type tag_only_child_module = [ `TChildModule ]
 
   type tag_any =
-    [ tag_only_module
-    | tag_only_module_type
-    | tag_only_type
-    | tag_only_constructor
-    | tag_only_field
-    | tag_only_extension
-    | tag_only_exception
-    | tag_only_value
-    | tag_only_class
-    | tag_only_class_type
-    | tag_only_method
-    | tag_only_instance_variable
-    | tag_only_label
-    | tag_only_page
-    | tag_only_child_page
-    | tag_only_child_module
-    | tag_unknown ]
+    [ `TModule
+    | `TModuleType
+    | `TType
+    | `TConstructor
+    | `TField
+    | `TExtension
+    | `TException
+    | `TValue
+    | `TClass
+    | `TClassType
+    | `TMethod
+    | `TInstanceVariable
+    | `TLabel
+    | `TPage
+    | `TChildPage
+    | `TChildModule
+    | `TUnknown ]
 
-  type tag_signature = [ tag_unknown | tag_only_module | tag_only_module_type ]
+  type tag_signature = [ `TUnknown | `TModule | `TModuleType ]
 
   type tag_class_signature =
-    [ tag_unknown | tag_only_class | tag_only_class_type ]
+    [ `TUnknown | `TClass | `TClassType ]
 
-  type tag_datatype = [ tag_unknown | tag_only_type ]
+  type tag_datatype = [ `TUnknown | `TType ]
 
   type tag_parent =
-    [ tag_unknown
-    | tag_only_module
-    | tag_only_module_type
-    | tag_only_class
-    | tag_only_class_type
-    | tag_only_type ]
+    [ `TUnknown
+    | `TModule
+    | `TModuleType
+    | `TClass
+    | `TClassType
+    | `TType ]
 
   type tag_label_parent =
-    [ tag_unknown
-    | tag_only_module
-    | tag_only_module_type
-    | tag_only_class
-    | tag_only_class_type
-    | tag_only_type
-    | tag_only_page
-    | tag_only_child_page
-    | tag_only_child_module ]
+    [ `TUnknown
+    | `TModule
+    | `TModuleType
+    | `TClass
+    | `TClassType
+    | `TType
+    | `TPage
+    | `TChildPage
+    | `TChildModule ]
 
   type signature =
     [ `Resolved of Resolved_reference.signature
@@ -370,6 +420,7 @@ module rec Reference : sig
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t
     | `ModuleType of signature * ModuleTypeName.t ]
+    (** @canonical Odoc_model.Paths.Reference.Signature.t *)
 
   and class_signature =
     [ `Resolved of Resolved_reference.class_signature
@@ -377,12 +428,14 @@ module rec Reference : sig
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+    (** @canonical Odoc_model.Paths.Reference.ClassSignature.t *)
 
   and datatype =
     [ `Resolved of Resolved_reference.datatype
     | `Root of string * tag_datatype
     | `Dot of label_parent * string
     | `Type of signature * TypeName.t ]
+    (** @canonical Odoc_model.Paths.Reference.DataType.t *)
 
   and parent =
     [ `Resolved of Resolved_reference.parent
@@ -393,6 +446,7 @@ module rec Reference : sig
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
+    (** @canonical Odoc_model.Paths.Reference.Parent.t *)
 
   and label_parent =
     [ `Resolved of Resolved_reference.label_parent
@@ -403,128 +457,110 @@ module rec Reference : sig
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
-
-  type tag_module = [ tag_only_module | tag_unknown ]
+        (** @canonical Odoc_model.Paths.Reference.LabelParent.t *)
 
   type module_ =
     [ `Resolved of Resolved_reference.module_
-    | `Root of string * tag_module
+    | `Root of string * [`TModule | `TUnknown ]
     | `Dot of label_parent * string
     | `Module of signature * ModuleName.t ]
-
-  type tag_module_type = [ tag_only_module_type | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Module.t *)
 
   type module_type =
     [ `Resolved of Resolved_reference.module_type
-    | `Root of string * tag_module_type
+    | `Root of string * [`TModuleType | `TUnknown]
     | `Dot of label_parent * string
     | `ModuleType of signature * ModuleTypeName.t ]
-
-  type tag_type =
-    [ tag_only_type | tag_only_class | tag_only_class_type | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.ModuleType.t *)
 
   type type_ =
     [ `Resolved of Resolved_reference.type_
-    | `Root of string * tag_type
+    | `Root of string * [`TType | `TClass | `TClassType | `TUnknown ]
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
-
-  type tag_constructor =
-    [ tag_only_constructor
-    | tag_only_extension
-    | tag_only_exception
-    | tag_unknown ]
+        (** @canonical Odoc_model.Paths.Reference.Type.t *)
 
   type constructor =
     [ `Resolved of Resolved_reference.constructor
-    | `Root of string * tag_constructor
+    | `Root of string * [ `TConstructor | `TExtension | `TException | `TUnknown ]
     | `Dot of label_parent * string
     | `Constructor of datatype * ConstructorName.t
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
-
-  type tag_field = [ tag_only_field | tag_unknown ]
+        (** @canonical Odoc_model.Paths.Reference.Constructor.t *)
 
   type field =
     [ `Resolved of Resolved_reference.field
-    | `Root of string * tag_field
+    | `Root of string * [`TField | `TUnknown ]
     | `Dot of label_parent * string
     | `Field of parent * FieldName.t ]
-
-  type tag_extension = [ tag_only_extension | tag_only_exception | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Field.t *)
 
   type extension =
     [ `Resolved of Resolved_reference.extension
-    | `Root of string * tag_extension
+    | `Root of string * [`TExtension | `TException | `TUnknown ]
     | `Dot of label_parent * string
     | `Extension of signature * ExtensionName.t
     | `Exception of signature * ExceptionName.t ]
-
-  type tag_exception = [ tag_only_exception | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Extension.t *)
 
   type exception_ =
     [ `Resolved of Resolved_reference.exception_
-    | `Root of string * tag_exception
+    | `Root of string * [`TException | `TUnknown ]
     | `Dot of label_parent * string
     | `Exception of signature * ExceptionName.t ]
-
-  type tag_value = [ tag_only_value | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Exception.t *)
 
   type value =
     [ `Resolved of Resolved_reference.value
-    | `Root of string * tag_value
+    | `Root of string * [`TValue | `TUnknown]
     | `Dot of label_parent * string
     | `Value of signature * ValueName.t ]
-
-  type tag_class = [ tag_only_class | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Value.t *)
 
   type class_ =
     [ `Resolved of Resolved_reference.class_
-    | `Root of string * tag_class
+    | `Root of string * [`TClass | `TUnknown ]
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t ]
-
-  type tag_class_type = [ tag_only_class | tag_only_class_type | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Class.t *)
 
   type class_type =
     [ `Resolved of Resolved_reference.class_type
-    | `Root of string * tag_class_type
+    | `Root of string * [ `TClass | `TClassType | `TUnknown ]
     | `Dot of label_parent * string
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
-
-  type tag_method = [ tag_only_method | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.ClassType.t *)
 
   type method_ =
     [ `Resolved of Resolved_reference.method_
-    | `Root of string * tag_method
+    | `Root of string * [`TMethod | `TUnknown ]
     | `Dot of label_parent * string
     | `Method of class_signature * MethodName.t ]
-
-  type tag_instance_variable = [ tag_only_instance_variable | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Method.t *)
 
   type instance_variable =
     [ `Resolved of Resolved_reference.instance_variable
-    | `Root of string * tag_instance_variable
+    | `Root of string * [`TInstanceVariable | `TUnknown ]
     | `Dot of label_parent * string
     | `InstanceVariable of class_signature * InstanceVariableName.t ]
-
-  type tag_label = [ tag_only_label | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.InstanceVariable.t *)
 
   type label =
     [ `Resolved of Resolved_reference.label
-    | `Root of string * tag_label
+    | `Root of string * [`TLabel | `TUnknown]
     | `Dot of label_parent * string
     | `Label of label_parent * LabelName.t ]
-
-  type tag_page = [ tag_only_page | tag_unknown ]
+    (** @canonical Odoc_model.Paths.Reference.Label.t *)
 
   type page =
     [ `Resolved of Resolved_reference.page
-    | `Root of string * tag_page
+    | `Root of string * [`TPage | `TUnknown ]
     | `Dot of label_parent * string ]
+    (** @canonical Odoc_model.Paths.Reference.Page.t *)
 
   type any =
     [ `Resolved of Resolved_reference.any
@@ -543,6 +579,8 @@ module rec Reference : sig
     | `Method of class_signature * MethodName.t
     | `InstanceVariable of class_signature * InstanceVariableName.t
     | `Label of label_parent * LabelName.t ]
+        (** @canonical Odoc_model.Paths.Reference.t *)
+
 end =
   Reference
 
@@ -555,6 +593,7 @@ and Resolved_reference : sig
      the actual hierarchy made more explicit. *)
   type datatype =
     [ `Identifier of Identifier.datatype | `Type of signature * TypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.DataType.t *)
 
   and module_ =
     [ `Identifier of Identifier.path_module
@@ -562,6 +601,7 @@ and Resolved_reference : sig
     | `SubstAlias of Resolved_path.module_ * module_
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_ ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Module.t *)
 
   (* Signature is [ module | moduletype ] *)
   and signature =
@@ -571,11 +611,13 @@ and Resolved_reference : sig
     | `Module of signature * ModuleName.t
     | `Canonical of module_ * Reference.module_
     | `ModuleType of signature * ModuleTypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Signature.t *)
 
   and class_signature =
     [ `Identifier of Identifier.class_signature
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.ClassSignature.t *)
 
   (* parent is [ signature | class_signature ] *)
   and parent =
@@ -588,6 +630,7 @@ and Resolved_reference : sig
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Parent.t *)
 
   (* The only difference between parent and label_parent
      is that the Identifier allows more types *)
@@ -601,118 +644,84 @@ and Resolved_reference : sig
     | `Class of signature * ClassName.t
     | `ClassType of signature * ClassTypeName.t
     | `Type of signature * TypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.LabelParent.t *)
 
-  type s_substalias = [ `SubstAlias of Resolved_path.module_ * module_ ]
+   type module_type =
+    [ `Identifier of Identifier.reference_module_type | `ModuleType of signature * ModuleTypeName.t  ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.ModuleType.t *)
 
-  type s_module = [ `Module of signature * ModuleName.t ]
-
-  type s_canonical = [ `Canonical of module_ * Reference.module_ ]
-
-  type s_module_type = [ `ModuleType of signature * ModuleTypeName.t ]
-
-  type s_type = [ `Type of signature * TypeName.t ]
-
-  type s_hidden = [ `Hidden of module_ ]
-
-  type s_constructor = [ `Constructor of datatype * ConstructorName.t ]
-
-  type s_field = [ `Field of parent * FieldName.t ]
-
-  type s_extension = [ `Extension of signature * ExtensionName.t ]
-
-  type s_exception = [ `Exception of signature * ExceptionName.t ]
-
-  type s_value = [ `Value of signature * ValueName.t ]
-
-  type s_class = [ `Class of signature * ClassName.t ]
-
-  type s_class_type = [ `ClassType of signature * ClassTypeName.t ]
-
-  type s_method = [ `Method of class_signature * MethodName.t ]
-
-  type s_instance_variable =
-    [ `InstanceVariable of class_signature * InstanceVariableName.t ]
-
-  type s_label = [ `Label of label_parent * LabelName.t ]
-
-  type s_childpage = [ `ChildPage of Identifier.page ]
-
-  type s_childmodule = [ `ChildModule of Identifier.module_ ]
-
-  type module_no_id = [ s_substalias | s_module | s_hidden | s_canonical ]
-
-  type signature_no_id = [ module_no_id | s_module_type ]
-
-  type class_signature_no_id = [ s_class | s_class_type ]
-
-  type datatype_no_id = [ | s_type ]
-
-  type parent_no_id =
-    [ signature_no_id | class_signature_no_id | datatype_no_id ]
-
-  type module_type =
-    [ `Identifier of Identifier.reference_module_type | s_module_type ]
 
   type type_ =
     [ `Identifier of Identifier.reference_type
-    | s_type
-    | s_class
-    | s_class_type ]
+    |`Type of signature * TypeName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Type.t *)
 
   type constructor =
     [ `Identifier of Identifier.reference_constructor
-    | s_constructor
-    | s_extension
-    | s_exception ]
+    | `Constructor of datatype * ConstructorName.t 
+    | `Extension of signature * ExtensionName.t
+    | `Exception of signature * ExceptionName.t  ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Constructor.t *)
 
-  type constructor_no_id = [ s_constructor | s_extension | s_exception ]
 
-  type field = [ `Identifier of Identifier.reference_field | s_field ]
+  type field = [ `Identifier of Identifier.reference_field | `Field of parent * FieldName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Field.t *)
 
   type extension =
-    [ `Identifier of Identifier.reference_extension | s_exception | s_extension ]
-
-  type extension_no_id = [ s_exception | s_extension ]
+    [ `Identifier of Identifier.reference_extension |  `Extension of signature * ExtensionName.t
+    | `Exception of signature * ExceptionName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Extension.t *)
 
   type exception_ =
-    [ `Identifier of Identifier.reference_exception | s_exception ]
+    [ `Identifier of Identifier.reference_exception | `Exception of signature * ExceptionName.t  ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Exception.t *)
 
-  type value = [ `Identifier of Identifier.reference_value | s_value ]
+  type value = [ `Identifier of Identifier.reference_value | `Value of signature * ValueName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Value.t *)
 
-  type class_ = [ `Identifier of Identifier.reference_class | s_class ]
+  type class_ = [ `Identifier of Identifier.reference_class |  `Class of signature * ClassName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Class.t *)
 
   type class_type =
-    [ `Identifier of Identifier.reference_class_type | s_class | s_class_type ]
+    [ `Identifier of Identifier.reference_class_type |  `Class of signature * ClassName.t | `ClassType of signature * ClassTypeName.t]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.ClassType.t *)
 
-  type class_type_no_id = [ s_class | s_class_type ]
-
-  type method_ = [ `Identifier of Identifier.reference_method | s_method ]
+  type method_ = [ `Identifier of Identifier.reference_method | `Method of class_signature * MethodName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Method.t *)
 
   type instance_variable =
     [ `Identifier of Identifier.reference_instance_variable
-    | s_instance_variable ]
+    | `InstanceVariable of class_signature * InstanceVariableName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.InstanceVariable.t *)
 
-  type label = [ `Identifier of Identifier.reference_label | s_label ]
+  type label = [ `Identifier of Identifier.reference_label | `Label of label_parent * LabelName.t ]
+      (** @canonical Odoc_model.Paths.Reference.Resolved.Label.t *)
 
   type page = [ `Identifier of Identifier.reference_page ]
+    (** @canonical Odoc_model.Paths.Reference.Resolved.Page.t *)
+
 
   type any =
     [ `Identifier of Identifier.any
-    | s_substalias
-    | s_module
-    | s_hidden
-    | s_canonical
-    | s_module_type
-    | s_type
-    | s_constructor
-    | s_field
-    | s_extension
-    | s_exception
-    | s_value
-    | s_class
-    | s_class_type
-    | s_method
-    | s_instance_variable
-    | s_label ]
+    |  `SubstAlias of Resolved_path.module_ * module_ 
+    | `Module of signature * ModuleName.t
+    | `Hidden of module_ 
+    | `Canonical of module_ * Reference.module_ 
+    | `ModuleType of signature * ModuleTypeName.t
+    | `Type of signature * TypeName.t 
+    | `Constructor of datatype * ConstructorName.t
+    | `Field of parent * FieldName.t
+    | `Extension of signature * ExtensionName.t 
+    | `Exception of signature * ExceptionName.t
+    | `Value of signature * ValueName.t
+    | `Class of signature * ClassName.t
+    | `ClassType of signature * ClassTypeName.t
+    | `Method of class_signature * MethodName.t 
+    | `InstanceVariable of class_signature * InstanceVariableName.t 
+    | `Label of label_parent * LabelName.t ]
+          (** @canonical Odoc_model.Paths.Reference.Resolved.t *)
+
 end =
   Resolved_reference
