@@ -56,7 +56,7 @@ module General_paths = struct
 
   type id_t = Paths.Identifier.t
 
-  type tag = Paths_types.Reference.tag_any
+  type tag = Paths.Reference.tag_any
 
   let rec identifier : Paths.Identifier.t t =
     Variant
@@ -371,7 +371,7 @@ module General_paths = struct
               ((x1 :> rr), x2),
               Pair (resolved_reference, Names.valuename) ))
 
-  let resolved_fragment_root : Paths_types.Resolved_fragment.root t =
+  let resolved_fragment_root : Paths.Fragment.Resolved.root t =
     Variant
       (function
       | `ModuleType x -> C ("`ModuleType", (x :> rp), resolved_path)

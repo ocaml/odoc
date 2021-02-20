@@ -153,13 +153,13 @@ module Of_Identifier = struct
     | `Page (_, n) -> `LPage (n, fresh_int ())
     | `LeafPage (_, n) -> `LLeafPage (n, fresh_int ())
 
-  let module_ : Odoc_model.Paths_types.Identifier.module_ -> module_ =
+  let module_ : Odoc_model.Paths.Identifier.Module.t -> module_ =
    fun (`Module (_, n) | `Root (_, n)) ->
     let i = fresh_int () in
     `LModule (n, i)
 
   let functor_parameter :
-      Odoc_model.Paths_types.Identifier.functor_parameter -> functor_parameter =
+      Odoc_model.Paths.Identifier.FunctorParameter.t -> functor_parameter =
    fun (`Parameter (_, n)) -> `LParameter (n, fresh_int ())
 
   let path_module : Path.Module.t -> path_module =

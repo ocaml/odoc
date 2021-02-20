@@ -157,7 +157,7 @@ let simplify_resolved_module_path :
     | Some _ -> `Identifier id
     | None -> (
         match id with
-        | `Module ((#Odoc_model.Paths_types.Identifier.module_ as parent), name)
+        | `Module ((#Odoc_model.Paths.Identifier.Module.t as parent), name)
           ->
             `Module (`Module (check_ident parent), name)
         | _ -> failwith "Bad canonical path" )

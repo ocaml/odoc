@@ -120,7 +120,7 @@ and class_type env c =
       Tools.class_signature_of_class_type env c' >>= fun sg ->
       let cs =
         Lang_of.class_signature Lang_of.empty
-          (c.id :> Paths_types.Identifier.path_class_type)
+          (c.id :> Paths.Identifier.Path.ClassType.t)
           sg
       in
       let compiled = class_signature env (c.id :> Id.ClassSignature.t) cs in
@@ -175,7 +175,7 @@ and class_ env parent c =
       Tools.class_signature_of_class env c' >>= fun sg ->
       let cs =
         Lang_of.class_signature Lang_of.empty
-          (c.id :> Paths_types.Identifier.path_class_type)
+          (c.id :> Paths.Identifier.Path.ClassType.t)
           sg
       in
       Some (class_signature env (c.id :> Id.ClassSignature.t) cs)

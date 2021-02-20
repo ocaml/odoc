@@ -28,10 +28,10 @@ type resolver = {
 let unique_id = ref 0
 
 type lookup_type =
-  | Module of Odoc_model.Paths_types.Identifier.path_module
-  | ModuleType of Odoc_model.Paths_types.Identifier.module_type
+  | Module of Odoc_model.Paths.Identifier.Path.Module.t
+  | ModuleType of Odoc_model.Paths.Identifier.Path.ModuleType.t
   | RootModule of string * [ `Forward | `Resolved of Digest.t ] option
-  | ModuleByName of string * Odoc_model.Paths_types.Identifier.path_module
+  | ModuleByName of string * Odoc_model.Paths.Identifier.Path.Module.t
   | FragmentRoot of int
 
 let pp_lookup_type fmt =
@@ -196,7 +196,7 @@ let add_type identifier t env =
     and add_field elts (field : TypeDecl.Field.t) =
       let ident =
         `Field
-          ( (identifier :> Odoc_model.Paths_types.Identifier.parent),
+          ( (identifier :> Odoc_model.Paths.Identifier.Parent.t),
             FieldName.make_std field.name )
       in
       add_to_elts
@@ -389,8 +389,8 @@ let lookup_root_module name env =
   result
 
 type value_or_external =
-  [ `External of Odoc_model.Paths_types.Identifier.value * Component.External.t
-  | `Value of Odoc_model.Paths_types.Identifier.value * Component.Value.t ]
+  [ `External of Odoc_model.Paths.Identifier.Value.t * Component.External.t
+  | `Value of Odoc_model.Paths.Identifier.Value.t * Component.Value.t ]
 
 type 'a scope = {
   filter : Component.Element.any -> ([< Component.Element.any ] as 'a) option;
@@ -583,7 +583,7 @@ let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
           }
       in
       add_module
-        (n.id :> Paths_types.Identifier.reference_module)
+        (n.id :> Paths.Identifier.Path.Module.t)
         (Component.Delayed.put_val m)
         [] t
 
