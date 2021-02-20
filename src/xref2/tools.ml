@@ -167,18 +167,28 @@ let simplify_resolved_module_path :
 let simplify_resolved_module_type_path :
     Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
  fun env cpath ->
-  match cpath with
-  | `ModuleType (`Module m, p) ->
-      `ModuleType (`Module (simplify_resolved_module_path env m), p)
-  | _ -> cpath
+  let path = Lang_of.(Path.resolved_module_type empty cpath) in
+  let id = Odoc_model.Paths.Path.Resolved.ModuleType.identifier path in
+  match Env.(lookup_by_id s_module_type) id env with
+  | Some _ -> `Identifier id
+  | None -> (
+      match cpath with
+      | `ModuleType (`Module m, p) ->
+          `ModuleType (`Module (simplify_resolved_module_path env m), p)
+      | _ -> cpath )
 
 let simplify_resolved_type_path :
     Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
  fun env cpath ->
-  match cpath with
-  | `Type (`Module m, p) ->
-      `Type (`Module (simplify_resolved_module_path env m), p)
-  | _ -> cpath
+  let path = Lang_of.(Path.resolved_type empty cpath) in
+  let id = Odoc_model.Paths.Path.Resolved.Type.identifier path in
+  match Env.(lookup_by_id s_type) id env with
+  | Some _ -> `Identifier id
+  | None -> (
+      match cpath with
+      | `Type (`Module m, p) ->
+          `Type (`Module (simplify_resolved_module_path env m), p)
+      | _ -> cpath )
 
 open Errors.Tools_error
 

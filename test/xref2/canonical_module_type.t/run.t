@@ -37,19 +37,19 @@ constructor where the second element of the tuple is Resolved.
         },
         {
           "`Resolved": {
-            "`ModuleType": [
-              {
-                "`Identifier": {
+            "`Identifier": {
+              "`ModuleType": [
+                {
                   "`Root": [
                     {
                       "`RootPage": "x"
                     },
                     "Test"
                   ]
-                }
-              },
-              "Y"
-            ]
+                },
+                "Y"
+              ]
+            }
           }
         }
       ]
