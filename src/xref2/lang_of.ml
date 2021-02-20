@@ -91,7 +91,7 @@ module Path = struct
   and type_ map (p : Cpath.type_) : Odoc_model.Paths.Path.Type.t =
     match p with
     | `Substituted x -> type_ map x
-    | `Identifier ((#Odoc_model.Paths_types.Identifier.path_type as y), b) ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.Type.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.PathTypeMap.find id map.path_type, b)
@@ -109,7 +109,7 @@ module Path = struct
       =
     match p with
     | `Substituted x -> class_type map x
-    | `Identifier ((#Odoc_model.Paths_types.Identifier.path_class_type as y), b)
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b)
       ->
         `Identifier (y, b)
     | `Local (id, b) ->
@@ -169,7 +169,7 @@ module Path = struct
   and resolved_type map (p : Cpath.Resolved.type_) :
       Odoc_model.Paths.Path.Resolved.Type.t =
     match p with
-    | `Identifier (#Odoc_model.Paths_types.Identifier.path_type as y) ->
+    | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as y) ->
         `Identifier y
     | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
     | `CanonicalTy (t1, t2) -> `CanonicalTy (resolved_type map t1, type_ map t2)
@@ -181,7 +181,7 @@ module Path = struct
   and resolved_class_type map (p : Cpath.Resolved.class_type) :
       Odoc_model.Paths.Path.Resolved.ClassType.t =
     match p with
-    | `Identifier (#Odoc_model.Paths_types.Identifier.path_class_type as y) ->
+    | `Identifier (#Odoc_model.Paths.Identifier.Path.ClassType.t as y) ->
         `Identifier y
     | `Local id ->
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type)
@@ -385,7 +385,7 @@ let rec signature_items id map items =
         inner rest
           ( Exception
               (exception_ map
-                 (id :> Odoc_model.Paths_types.Identifier.signature)
+                 (id :> Odoc_model.Paths.Identifier.Signature.t)
                  id' e)
           :: acc )
     | TypExt t :: rest -> inner rest (TypExt (typ_ext map id t) :: acc)
@@ -436,7 +436,7 @@ and class_ map parent id c =
     params = c.params;
     type_ =
       class_decl map
-        (identifier :> Paths_types.Identifier.path_class_type)
+        (identifier :> Paths.Identifier.Path.ClassType.t)
         c.type_;
     expansion;
   }
@@ -474,7 +474,7 @@ and class_type map parent id c =
     params = c.params;
     expr =
       class_type_expr map
-        (identifier :> Paths_types.Identifier.path_class_type)
+        (identifier :> Paths.Identifier.Path.ClassType.t)
         c.expr;
     expansion;
   }
@@ -574,7 +574,7 @@ and combine_shadowed s1 s2 =
 
 and include_decl :
     maps ->
-    Odoc_model.Paths_types.Identifier.signature ->
+    Odoc_model.Paths.Identifier.Signature.t ->
     Component.Include.decl ->
     Odoc_model.Lang.Include.decl =
  fun map identifier d ->
@@ -638,9 +638,9 @@ and module_ map parent id m =
   try
     let open Component.Module in
     let id =
-      (Component.ModuleMap.find id map.module_ :> Paths_types.Identifier.module_)
+      (Component.ModuleMap.find id map.module_ :> Paths.Identifier.Module.t)
     in
-    let identifier = (id :> Odoc_model.Paths_types.Identifier.signature) in
+    let identifier = (id :> Odoc_model.Paths.Identifier.Signature.t) in
     let canonical = function
       | Some p -> Some (Path.module_ map p)
       | None -> None
@@ -670,7 +670,7 @@ and module_substitution map parent id m =
 
 and module_decl :
     maps ->
-    Odoc_model.Paths_types.Identifier.signature ->
+    Odoc_model.Paths.Identifier.Signature.t ->
     Component.Module.decl ->
     Odoc_model.Lang.Module.decl =
  fun map identifier d ->
@@ -798,7 +798,7 @@ and module_type :
 
 and type_decl_constructor_argument :
     maps ->
-    Paths_types.Identifier.parent ->
+    Paths.Identifier.Parent.t ->
     Component.TypeDecl.Constructor.argument ->
     Odoc_model.Lang.TypeDecl.Constructor.argument =
  fun map parent a ->
@@ -854,12 +854,12 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
       Record
         (List.map
            (type_decl_field map
-              (id :> Odoc_model.Paths_types.Identifier.parent))
+              (id :> Odoc_model.Paths.Identifier.Parent.t))
            fs)
 
 and type_decl_constructor :
     maps ->
-    Odoc_model.Paths_types.Identifier.type_ ->
+    Odoc_model.Paths.Identifier.Type.t ->
     Component.TypeDecl.Constructor.t ->
     Odoc_model.Lang.TypeDecl.Constructor.t =
  fun map id t ->
@@ -869,7 +869,7 @@ and type_decl_constructor :
     doc = docs (id :> Identifier.LabelParent.t) t.doc;
     args =
       type_decl_constructor_argument map
-        (id :> Odoc_model.Paths_types.Identifier.parent)
+        (id :> Odoc_model.Paths.Identifier.Parent.t)
         t.args;
     res = Opt.map (type_expr map (id :> Identifier.Parent.t)) t.res;
   }
@@ -948,7 +948,7 @@ and functor_parameter map f : Odoc_model.Lang.FunctorParameter.parameter =
     Odoc_model.Lang.FunctorParameter.id = identifier;
     expr =
       module_type_expr map
-        (identifier :> Odoc_model.Paths_types.Identifier.signature)
+        (identifier :> Odoc_model.Paths.Identifier.Signature.t)
         f.expr;
   }
 

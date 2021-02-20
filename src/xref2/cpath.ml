@@ -29,7 +29,7 @@ module rec Resolved : sig
 
   and type_ =
     [ `Local of Ident.path_type
-    | `Identifier of Odoc_model.Paths_types.Identifier.path_type
+    | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t
     | `Substituted of type_
     | `CanonicalTy of type_ * Cpath.type_
     | `Type of parent * TypeName.t
@@ -39,7 +39,7 @@ module rec Resolved : sig
   and class_type =
     [ `Local of Ident.path_class_type
     | `Substituted of class_type
-    | `Identifier of Odoc_model.Paths_types.Identifier.path_class_type
+    | `Identifier of Odoc_model.Paths.Identifier.Path.ClassType.t
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]
 end =
@@ -69,7 +69,7 @@ and Cpath : sig
     [ `Resolved of Resolved.type_
     | `Substituted of type_
     | `Local of Ident.path_type * bool
-    | `Identifier of Odoc_model.Paths_types.Identifier.path_type * bool
+    | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t * bool
     | `Dot of module_ * string
     | `Type of Resolved.parent * TypeName.t
     | `Class of Resolved.parent * ClassName.t
@@ -79,7 +79,7 @@ and Cpath : sig
     [ `Resolved of Resolved.class_type
     | `Substituted of class_type
     | `Local of Ident.path_class_type * bool
-    | `Identifier of Odoc_model.Paths_types.Identifier.path_class_type * bool
+    | `Identifier of Odoc_model.Paths.Identifier.Path.ClassType.t * bool
     | `Dot of module_ * string
     | `Class of Resolved.parent * ClassName.t
     | `ClassType of Resolved.parent * ClassTypeName.t ]
@@ -203,7 +203,7 @@ and resolved_module_type_path_of_cpath :
 
 and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   function
-  | `Identifier (#Odoc_model.Paths_types.Identifier.path_type as x) ->
+  | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as x) ->
       `Identifier x
   | `Local _ as y -> raise (LocalPath (ErrType (`Resolved y)))
   | `Substituted y -> resolved_type_path_of_cpath y
@@ -215,7 +215,7 @@ and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
 
 and resolved_class_type_path_of_cpath :
     Resolved.class_type -> Path.Resolved.ClassType.t = function
-  | `Identifier (#Odoc_model.Paths_types.Identifier.path_class_type as x) ->
+  | `Identifier (#Odoc_model.Paths.Identifier.Path.ClassType.t as x) ->
       `Identifier x
   | `Local ident ->
       raise

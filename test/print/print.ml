@@ -193,7 +193,7 @@ module Reference_to_sexp = struct
   module Reference = Odoc_model.Paths.Reference
   module Resolved = Odoc_model.Paths.Reference.Resolved
 
-  let tag : Odoc_model.Paths_types.Reference.tag_any -> sexp = function
+  let tag : Odoc_model.Paths.Reference.tag_any -> sexp = function
     | `TUnknown -> Atom "unknown"
     | `TModule -> Atom "module"
     | `TModuleType -> Atom "module_type"

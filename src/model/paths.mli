@@ -498,6 +498,8 @@ module Fragment : sig
 
     type leaf = Paths_types.Resolved_fragment.leaf
 
+    type root = Paths_types.Resolved_fragment.root
+  
     type t = Paths_types.Resolved_fragment.any
 
     val identifier : t -> Identifier.t
@@ -689,4 +691,5 @@ module rec Reference : sig
   end
 
   type t = Paths_types.Reference.any
+  type tag_any = Paths_types.Reference.tag_any
 end

@@ -553,19 +553,19 @@ module Fmt : sig
 
   val class_type_path : Format.formatter -> Cpath.class_type -> unit
 
-  val model_path : Format.formatter -> Odoc_model.Paths_types.Path.any -> unit
+  val model_path : Format.formatter -> Odoc_model.Paths.Path.t -> unit
 
   val model_resolved_path :
-    Format.formatter -> Odoc_model.Paths_types.Resolved_path.any -> unit
+    Format.formatter -> Odoc_model.Paths.Path.Resolved.t -> unit
 
   val model_identifier :
-    Format.formatter -> Odoc_model.Paths_types.Identifier.any -> unit
+    Format.formatter -> Odoc_model.Paths.Identifier.t -> unit
 
   val model_fragment :
-    Format.formatter -> Odoc_model.Paths_types.Fragment.any -> unit
+    Format.formatter -> Odoc_model.Paths.Fragment.t -> unit
 
   val model_resolved_fragment :
-    Format.formatter -> Odoc_model.Paths_types.Resolved_fragment.any -> unit
+    Format.formatter -> Odoc_model.Paths.Fragment.Resolved.t -> unit
 
   val resolved_root_fragment : Format.formatter -> Cfrag.root -> unit
 
@@ -584,10 +584,10 @@ module Fmt : sig
   val type_fragment : Format.formatter -> Cfrag.type_ -> unit
 
   val model_resolved_reference :
-    Format.formatter -> Odoc_model.Paths_types.Resolved_reference.any -> unit
+    Format.formatter -> Odoc_model.Paths.Reference.Resolved.t -> unit
 
   val model_reference :
-    Format.formatter -> Odoc_model.Paths_types.Reference.any -> unit
+    Format.formatter -> Odoc_model.Paths.Reference.t -> unit
 end
 
 module Of_Lang : sig
@@ -600,53 +600,53 @@ module Of_Lang : sig
 
   val resolved_module_path :
     map ->
-    Odoc_model.Paths_types.Resolved_path.module_ ->
+    Odoc_model.Paths.Path.Resolved.Module.t ->
     Cpath.Resolved.module_
 
   val resolved_module_type_path :
     map ->
-    Odoc_model.Paths_types.Resolved_path.module_type ->
+    Odoc_model.Paths.Path.Resolved.ModuleType.t ->
     Cpath.Resolved.module_type
 
   val resolved_type_path :
-    map -> Odoc_model.Paths_types.Resolved_path.type_ -> Cpath.Resolved.type_
+    map -> Odoc_model.Paths.Path.Resolved.Type.t -> Cpath.Resolved.type_
 
   val resolved_class_type_path :
     map ->
-    Odoc_model.Paths_types.Resolved_path.class_type ->
+    Odoc_model.Paths.Path.Resolved.ClassType.t ->
     Cpath.Resolved.class_type
 
-  val module_path : map -> Odoc_model.Paths_types.Path.module_ -> Cpath.module_
+  val module_path : map -> Odoc_model.Paths.Path.Module.t -> Cpath.module_
 
   val module_type_path :
-    map -> Odoc_model.Paths_types.Path.module_type -> Cpath.module_type
+    map -> Odoc_model.Paths.Path.ModuleType.t -> Cpath.module_type
 
-  val type_path : map -> Odoc_model.Paths_types.Path.type_ -> Cpath.type_
+  val type_path : map -> Odoc_model.Paths.Path.Type.t -> Cpath.type_
 
   val class_type_path :
-    map -> Odoc_model.Paths_types.Path.class_type -> Cpath.class_type
+    map -> Odoc_model.Paths.Path.ClassType.t -> Cpath.class_type
 
   val resolved_signature_fragment :
     map ->
-    Odoc_model.Paths_types.Resolved_fragment.signature ->
+    Odoc_model.Paths.Fragment.Resolved.Signature.t ->
     Cfrag.resolved_signature
 
   val resolved_module_fragment :
     map ->
-    Odoc_model.Paths_types.Resolved_fragment.module_ ->
+    Odoc_model.Paths.Fragment.Resolved.Module.t ->
     Cfrag.resolved_module
 
   val resolved_type_fragment :
-    map -> Odoc_model.Paths_types.Resolved_fragment.type_ -> Cfrag.resolved_type
+    map -> Odoc_model.Paths.Fragment.Resolved.Type.t -> Cfrag.resolved_type
 
   val signature_fragment :
-    map -> Odoc_model.Paths_types.Fragment.signature -> Cfrag.signature
+    map -> Odoc_model.Paths.Fragment.Signature.t -> Cfrag.signature
 
   val module_fragment :
-    map -> Odoc_model.Paths_types.Fragment.module_ -> Cfrag.module_
+    map -> Odoc_model.Paths.Fragment.Module.t -> Cfrag.module_
 
   val type_fragment :
-    map -> Odoc_model.Paths_types.Fragment.type_ -> Cfrag.type_
+    map -> Odoc_model.Paths.Fragment.Type.t -> Cfrag.type_
 
   val type_decl : map -> Odoc_model.Lang.TypeDecl.t -> TypeDecl.t
 
@@ -687,7 +687,7 @@ module Of_Lang : sig
   val include_decl : map -> Odoc_model.Lang.Include.decl -> Include.decl
 
   val canonical :
-    map -> Odoc_model.Paths_types.Path.module_ option -> Cpath.module_ option
+    map -> Odoc_model.Paths.Path.Module.t option -> Cpath.module_ option
 
   val module_ : map -> Odoc_model.Lang.Module.t -> Module.t
 

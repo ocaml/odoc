@@ -1067,6 +1067,7 @@ module Reference = struct
   end
 
   type t = Paths_types.Reference.any
+  type tag_any = Paths_types.Reference.tag_any
 
   module Signature = struct
     type t = Paths_types.Reference.signature
