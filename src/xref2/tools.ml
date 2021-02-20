@@ -1048,6 +1048,10 @@ and signature_of_module_path :
   | Ok (p', m) ->
       let m = Component.Delayed.get m in
       (* p' is the path to the aliased module *)
+      let strengthen =
+        strengthen
+        && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p')
+      in
       signature_of_module_cached env p' m >>= fun sg ->
       if strengthen then Ok (Strengthen.signature (`Resolved p') sg) else Ok sg
   | Error _ when Cpath.is_module_forward path -> Error `UnresolvedForwardPath
