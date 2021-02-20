@@ -267,6 +267,17 @@ module Identifier = struct
     let compare x y = compare (x :> any) (y :> any)
   end
 
+  module FunctorResult = struct
+    type t = Paths_types.Identifier.functor_result
+
+    let equal x y = equal (x :> any) (y :> any)
+
+    let hash x = hash (x :> any)
+
+    let compare x y = compare (x :> any) (y :> any)    
+  end
+
+
   module ModuleType = struct
     type t = Paths_types.Identifier.module_type
 
