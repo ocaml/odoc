@@ -19,7 +19,6 @@ open Names
 
 module Id = Paths.Identifier
 module P = Paths.Path
-open Typedtree
 
 type type_ident = Paths.Identifier.Path.Type.t
 
@@ -226,6 +225,7 @@ let extract_signature_tree_items sg =
     List.map extract_signature_tree_item sg.sig_items |> List.flatten
 
 let rec read_pattern pat =
+  let open Typedtree in
   match pat.pat_desc with
   | Tpat_var(id, _) -> [`Value(id, false)]
   | Tpat_alias(pat, id, _) -> `Value(id, false) :: read_pattern pat
