@@ -54,8 +54,7 @@ module Name : Name = struct
 
   let make_std s =
     let s = parenthesise s in
-    if String.length s > 0 && s.[0] = '{' then raise (Invalid_argument s)
-    else Std s
+    Std s
 
   let of_ident id = make_std (Ident.name id)
 

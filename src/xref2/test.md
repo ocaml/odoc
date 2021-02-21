@@ -372,7 +372,7 @@ by the module type `N`. However, `N` is not defined at the top level
 here, so it has a local identifier. We can see this by looking up module `M` from the environment:
 
 ```ocaml env=e1
-# let m = Env.(lookup_by_id s_module_type) (`ModuleType (Common.id, Odoc_model.Names.ModuleTypeName.of_string "M")) env;;
+# let m = Env.(lookup_by_id s_module_type) (`ModuleType (Common.id, Odoc_model.Names.ModuleTypeName.make_std "M")) env;;
 val m : Component.Element.module_type option =
   Some
    (`ModuleType
@@ -743,7 +743,7 @@ look up module `N` from within this and find its signature:
 
 ```ocaml env=e1
 # let m = get_ok @@ Tools.lookup_module ~mark_substituted:true env
-      (`Module (`Module (`Identifier (Common.root_module "C")), ModuleName.of_string "N"));;
+      (`Module (`Module (`Identifier (Common.root_module "C")), ModuleName.make_std "N"));;
 val m : Component.Module.t Component.Delayed.t =
   {Odoc_xref2.Component.Delayed.v =
     Some
