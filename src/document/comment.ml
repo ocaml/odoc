@@ -206,6 +206,18 @@ and inline_element_list elements =
        (fun elt -> inline_element elt.Odoc_model.Location_.value)
        elements
 
+let module_references (ms : Comment.module_reference list) =
+  let module_reference m =
+    [
+      block
+      @@ Inline
+           (Reference.to_ir ~stop_before:false
+              (m.Comment.module_reference :> Odoc_model.Paths.Reference.t));
+    ]
+  in
+  let items = List.map module_reference ms in
+  block ~attr:[ "modules" ] @@ Block.List (Unordered, items)
+
 let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
   match content with
@@ -214,13 +226,7 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
   | `Paragraph content -> block @@ Block.Paragraph (inline_element_list content)
   | `Code_block code -> block @@ Source (source_of_code code)
   | `Verbatim s -> block @@ Verbatim s
-  | `Modules ms ->
-      let items =
-        List.map
-          (fun r -> [ block @@ Inline (Reference.to_ir ~stop_before:false r) ])
-          (ms :> Odoc_model.Paths.Reference.t list)
-      in
-      block ~attr:[ "modules" ] @@ Block.List (Unordered, items)
+  | `Modules ms -> module_references ms
   | `List (kind, items) ->
       let kind =
         match kind with

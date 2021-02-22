@@ -20,7 +20,7 @@ type general_block_element =
   [ `Paragraph of general_link_content
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Paths.Reference.t list
+  | `Modules of Comment.module_reference list
   | `List of
     [ `Unordered | `Ordered ] * general_block_element with_location list list
   | `Heading of heading_level * Paths.Identifier.Label.t * general_link_content
@@ -67,6 +67,13 @@ let rec inline_element : general_inline_element t =
 and link_content : general_link_content t =
   List (Indirect (ignore_loc, inline_element))
 
+let module_reference =
+  let simplify m =
+    ( (m.module_reference :> Paths.Reference.t),
+      (m.module_synopsis :> general_link_content option) )
+  in
+  Indirect (simplify, Pair (reference, Option link_content))
+
 let rec block_element : general_block_element t =
   let heading_level =
     Variant
@@ -87,7 +94,7 @@ let rec block_element : general_block_element t =
     | `Paragraph x -> C ("`Paragraph", x, link_content)
     | `Code_block x -> C ("`Code_block", x, string)
     | `Verbatim x -> C ("`Verbatim", x, string)
-    | `Modules x -> C ("`Modules", x, List reference)
+    | `Modules x -> C ("`Modules", x, List module_reference)
     | `List (x1, x2) ->
         C ("`List", (x1, (x2 :> general_docs list)), Pair (list_kind, List docs))
     | `Heading (x1, x2, x3) ->

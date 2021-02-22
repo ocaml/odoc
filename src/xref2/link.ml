@@ -175,9 +175,14 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
   | `Modules refs ->
       let refs =
         List.map
-          (fun r ->
-            match Ref_tools.resolve_module_reference env r with
-            | Some (r, _, _) -> `Resolved r
+          (fun (r : Comment.module_reference) ->
+            match Ref_tools.resolve_module_reference env r.module_reference with
+            | Some (r, _, m) ->
+                ignore m.doc;
+                {
+                  Comment.module_reference = `Resolved r;
+                  module_synopsis = None;
+                }
             | None -> r)
           refs
       in

@@ -126,7 +126,8 @@ let rec nestable_block_element :
             match
               Reference.read_mod_longident status.warnings location value
             with
-            | Result.Ok r -> r :: acc
+            | Result.Ok r ->
+                { Comment.module_reference = r; module_synopsis = None } :: acc
             | Result.Error error ->
                 Error.warning status.warnings error;
                 acc)
