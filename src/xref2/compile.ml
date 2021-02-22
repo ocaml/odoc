@@ -308,11 +308,6 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
 and include_ : Env.t -> Include.t -> Include.t =
  fun env i ->
   let open Include in
-  let remove_top_doc_from_signature s =
-    let open Signature in
-    let items = match s.items with Comment (`Docs _) :: xs -> xs | xs -> xs in
-    { s with items }
-  in
   let decl = Component.Of_Lang.(include_decl empty i.decl) in
   let get_expansion () =
     match
@@ -339,8 +334,7 @@ and include_ : Env.t -> Include.t -> Include.t =
         in
         {
           shadowed = i.expansion.shadowed;
-          content =
-            remove_top_doc_from_signature (signature env i.parent expansion_sg);
+          content = signature env i.parent expansion_sg;
         }
   in
   let expansion =
