@@ -34,6 +34,11 @@ let synopsis_from_comment docs =
       | _ -> None)
     docs
 
+let remove_top_doc_from_signature s =
+  let open Signature in
+  let items = match s.items with Comment (`Docs _) :: xs -> xs | xs -> xs in
+  { s with items }
+
 exception Loop
 
 let rec is_forward : Paths.Path.Module.t -> bool = function
@@ -417,14 +422,12 @@ and module_ : Env.t -> Module.t -> Module.t =
                 Alias (`Resolved p, Some (simple_expansion env sg_id le))
             | Error _ -> Alias (`Resolved p, e)
           else Alias (`Resolved p, e)
-      | Alias _ -> type_
-      | ModuleType mty -> ModuleType mty
+      | Alias _ | ModuleType _ -> type_
     in
     let doc, type_ =
       match m.doc with [] -> extract_doc type_ | _ -> (m.doc, type_)
     in
-    let result = { m with doc = comment_docs env doc; type_ } in
-    result
+    { m with doc = comment_docs env doc; type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -470,17 +473,15 @@ and include_ : Env.t -> Include.t -> Include.t =
     let is_inline_tag element = element.Location_.value = `Tag `Inline in
     List.exists is_inline_tag doc
   in
-  {
-    i with
-    decl;
-    expansion =
-      {
-        shadowed = i.expansion.shadowed;
-        content = signature env i.parent i.expansion.content;
-      };
-    inline = should_be_inlined;
-    doc;
-  }
+  let expansion =
+    let content = signature env i.parent i.expansion.content in
+    let content =
+      if should_be_inlined then content
+      else remove_top_doc_from_signature content
+    in
+    { i.expansion with content }
+  in
+  { i with decl; expansion; inline = should_be_inlined; doc }
 
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =
