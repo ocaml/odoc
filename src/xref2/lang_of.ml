@@ -109,8 +109,7 @@ module Path = struct
       =
     match p with
     | `Substituted x -> class_type map x
-    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b)
-      ->
+    | `Identifier ((#Odoc_model.Paths.Identifier.Path.ClassType.t as y), b) ->
         `Identifier (y, b)
     | `Local (id, b) ->
         `Identifier (Component.PathClassTypeMap.find id map.path_class_type, b)
@@ -435,9 +434,7 @@ and class_ map parent id c =
     virtual_ = c.virtual_;
     params = c.params;
     type_ =
-      class_decl map
-        (identifier :> Paths.Identifier.Path.ClassType.t)
-        c.type_;
+      class_decl map (identifier :> Paths.Identifier.Path.ClassType.t) c.type_;
     expansion;
   }
 
@@ -853,8 +850,7 @@ and type_decl_representation map id (t : Component.TypeDecl.Representation.t) :
   | Record fs ->
       Record
         (List.map
-           (type_decl_field map
-              (id :> Odoc_model.Paths.Identifier.Parent.t))
+           (type_decl_field map (id :> Odoc_model.Paths.Identifier.Parent.t))
            fs)
 
 and type_decl_constructor :

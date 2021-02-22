@@ -203,8 +203,7 @@ and resolved_module_type_path_of_cpath :
 
 and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   function
-  | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as x) ->
-      `Identifier x
+  | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as x) -> `Identifier x
   | `Local _ as y -> raise (LocalPath (ErrType (`Resolved y)))
   | `Substituted y -> resolved_type_path_of_cpath y
   | `CanonicalTy (t1, t2) ->

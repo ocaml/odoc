@@ -561,8 +561,7 @@ module Fmt : sig
   val model_identifier :
     Format.formatter -> Odoc_model.Paths.Identifier.t -> unit
 
-  val model_fragment :
-    Format.formatter -> Odoc_model.Paths.Fragment.t -> unit
+  val model_fragment : Format.formatter -> Odoc_model.Paths.Fragment.t -> unit
 
   val model_resolved_fragment :
     Format.formatter -> Odoc_model.Paths.Fragment.Resolved.t -> unit
@@ -586,8 +585,7 @@ module Fmt : sig
   val model_resolved_reference :
     Format.formatter -> Odoc_model.Paths.Reference.Resolved.t -> unit
 
-  val model_reference :
-    Format.formatter -> Odoc_model.Paths.Reference.t -> unit
+  val model_reference : Format.formatter -> Odoc_model.Paths.Reference.t -> unit
 end
 
 module Of_Lang : sig
@@ -599,9 +597,7 @@ module Of_Lang : sig
     ('a -> 'b -> 'c) -> 'b -> 'a -> [> `Identifier of 'a | `Local of 'c ]
 
   val resolved_module_path :
-    map ->
-    Odoc_model.Paths.Path.Resolved.Module.t ->
-    Cpath.Resolved.module_
+    map -> Odoc_model.Paths.Path.Resolved.Module.t -> Cpath.Resolved.module_
 
   val resolved_module_type_path :
     map ->
@@ -632,9 +628,7 @@ module Of_Lang : sig
     Cfrag.resolved_signature
 
   val resolved_module_fragment :
-    map ->
-    Odoc_model.Paths.Fragment.Resolved.Module.t ->
-    Cfrag.resolved_module
+    map -> Odoc_model.Paths.Fragment.Resolved.Module.t -> Cfrag.resolved_module
 
   val resolved_type_fragment :
     map -> Odoc_model.Paths.Fragment.Resolved.Type.t -> Cfrag.resolved_type
@@ -645,8 +639,7 @@ module Of_Lang : sig
   val module_fragment :
     map -> Odoc_model.Paths.Fragment.Module.t -> Cfrag.module_
 
-  val type_fragment :
-    map -> Odoc_model.Paths.Fragment.Type.t -> Cfrag.type_
+  val type_fragment : map -> Odoc_model.Paths.Fragment.Type.t -> Cfrag.type_
 
   val type_decl : map -> Odoc_model.Lang.TypeDecl.t -> TypeDecl.t
 

@@ -274,9 +274,8 @@ module Identifier = struct
 
     let hash x = hash (x :> any)
 
-    let compare x y = compare (x :> any) (y :> any)    
+    let compare x y = compare (x :> any) (y :> any)
   end
-
 
   module ModuleType = struct
     type t = Paths_types.Identifier.module_type
@@ -1078,6 +1077,7 @@ module Reference = struct
   end
 
   type t = Paths_types.Reference.any
+
   type tag_any = Paths_types.Reference.tag_any
 
   module Signature = struct

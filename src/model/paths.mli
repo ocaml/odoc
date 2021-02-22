@@ -109,7 +109,6 @@ module Identifier : sig
     val compare : t -> t -> int
   end
 
-
   module ModuleType : sig
     type t = Paths_types.Identifier.module_type
 
@@ -489,7 +488,7 @@ end
 (** OCaml path fragments for specifying module substitutions *)
 module Fragment : sig
   module Resolved : sig
-        module Signature : sig
+    module Signature : sig
       type t = Paths_types.Resolved_fragment.signature
 
       val split : t -> string * t option
@@ -510,7 +509,7 @@ module Fragment : sig
     type leaf = Paths_types.Resolved_fragment.leaf
 
     type root = Paths_types.Resolved_fragment.root
-  
+
     type t = Paths_types.Resolved_fragment.any
 
     val identifier : t -> Identifier.t
@@ -702,5 +701,6 @@ module rec Reference : sig
   end
 
   type t = Paths_types.Reference.any
+
   type tag_any = Paths_types.Reference.tag_any
 end

@@ -77,22 +77,13 @@ val add_label_title :
   t
 
 val add_class :
-  Odoc_model.Paths.Identifier.Class.t ->
-  Component.Class.t ->
-  t ->
-  t
+  Odoc_model.Paths.Identifier.Class.t -> Component.Class.t -> t -> t
 
 val add_class_type :
-  Odoc_model.Paths.Identifier.ClassType.t ->
-  Component.ClassType.t ->
-  t ->
-  t
+  Odoc_model.Paths.Identifier.ClassType.t -> Component.ClassType.t -> t -> t
 
 val add_exception :
-  Odoc_model.Paths.Identifier.Exception.t ->
-  Component.Exception.t ->
-  t ->
-  t
+  Odoc_model.Paths.Identifier.Exception.t -> Component.Exception.t -> t -> t
 
 val add_extension_constructor :
   Odoc_model.Paths.Identifier.Extension.t ->
@@ -105,19 +96,13 @@ val add_docs : Odoc_model.Comment.docs -> t -> t
 val add_comment : Odoc_model.Comment.docs_or_stop -> t -> t
 
 val add_method :
-  Odoc_model.Paths.Identifier.Method.t ->
-  Component.Method.t ->
-  t ->
-  t
+  Odoc_model.Paths.Identifier.Method.t -> Component.Method.t -> t -> t
 
 val add_module_functor_args :
   Component.Module.t -> Odoc_model.Paths.Identifier.Path.Module.t -> t -> t
 
 val add_module_type_functor_args :
-  Component.ModuleType.t ->
-  Odoc_model.Paths.Identifier.ModuleType.t ->
-  t ->
-  t
+  Component.ModuleType.t -> Odoc_model.Paths.Identifier.ModuleType.t -> t -> t
 
 val lookup_fragment_root : t -> (int * Component.Signature.t) option
 
