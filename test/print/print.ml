@@ -479,8 +479,11 @@ module Comment_to_sexp = struct
           [
             Atom "modules";
             List
-              (List.map Reference_to_sexp.reference
-                 (ps :> Odoc_model.Paths.Reference.t list));
+              (List.map
+                 (fun m ->
+                   Reference_to_sexp.reference
+                     (m.Comment.module_reference :> Odoc_model.Paths.Reference.t))
+                 ps);
           ]
     | `List (kind, items) ->
         let kind =

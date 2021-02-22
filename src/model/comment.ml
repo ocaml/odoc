@@ -29,11 +29,20 @@ type inline_element =
   | `Reference of Reference.t * link_content
   | `Link of string * link_content ]
 
+type paragraph = inline_element with_location list
+
+type module_reference = {
+  module_reference : Reference.Module.t;
+  module_synopsis : paragraph option;
+}
+(** The [{!modules: ...}] markup. [module_synopsis] is initially [None], it is
+    resolved during linking. *)
+
 type nestable_block_element =
-  [ `Paragraph of inline_element with_location list
+  [ `Paragraph of paragraph
   | `Code_block of string
   | `Verbatim of string
-  | `Modules of Reference.Module.t list
+  | `Modules of module_reference list
   | `List of
     [ `Unordered | `Ordered ] * nestable_block_element with_location list list
   ]

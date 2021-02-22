@@ -5,11 +5,11 @@
 Everything should resolve:
 
   $ odoc_print main.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[]'
-  {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}}
-  {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}}
-  {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}}
-  {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}}}
-  {"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}}
+  [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}},"None"]
+  [{"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}},"None"]
+  [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}},"None"]
+  [{"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}}},"None"]
+  [{"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}},"None"]
 
 As HTML, should render as a description list.
 
