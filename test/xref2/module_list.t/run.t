@@ -5,11 +5,11 @@
 Everything should resolve:
 
   $ odoc_print main.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[]'
-  [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}},"None"]
-  [{"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}},"None"]
+  [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"External"},{"`Word":"."}]}]
+  [{"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"X"},{"`Word":"."}]}]
   [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}},"None"]
-  [{"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}}},"None"]
-  [{"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}},"None"]
+  [{"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"Internal"},{"`Word":"."}]}]
+  [{"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Word":"Internal."},{"`Code_span":"X"},{"`Word":"."}]}]
 
 As HTML, should render as a description list.
 
