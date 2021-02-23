@@ -988,7 +988,8 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
             `CanonicalTy
               ( reresolve_type env p1,
                 `Resolved (simplify_resolved_type_path env p) )
-        | Error _ | (exception _) -> `CanonicalTy (reresolve_type env p1, p2) )
+        | Error _ -> `CanonicalTy (reresolve_type env p1, p2)
+        | exception _ -> `CanonicalTy (reresolve_type env p1, p2) )
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
     | `Class (p, n) -> `Class (reresolve_parent env p, n)
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
