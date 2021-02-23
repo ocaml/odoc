@@ -32,14 +32,14 @@ As HTML, should render as a description list.
     <header><h1>Module <code>Main</code></h1>
      <dl class="modules">
       <dt><a href="../External/index.html"><code>External</code></a></dt>
-      <dd><p>Doc for <code>External</code>.</p></dd>
+      <dd><p class="synopsis">Doc for <code>External</code>.</p></dd>
       <dt><a href="../External/X/index.html"><code>External.X</code></a></dt>
-      <dd><p>Doc for <code>X</code>.</p></dd>
+      <dd><p class="synopsis">Doc for <code>X</code>.</p></dd>
       <dt><a href="#"><code>Main</code></a></dt><dd></dd>
       <dt><a href="Internal/index.html"><code>Internal</code></a></dt>
-      <dd><p>Doc for <code>Internal</code>.</p></dd>
+      <dd><p class="synopsis">Doc for <code>Internal</code>.</p></dd>
       <dt><a href="Internal/Y/index.html"><code>Internal.Y</code></a></dt>
-      <dd><p>Doc for Internal.<code>X</code>.</p></dd>
+      <dd><p class="synopsis">Doc for Internal.<code>X</code>.</p></dd>
      </dl>
     </header>
     <div class="content">

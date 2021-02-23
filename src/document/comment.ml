@@ -213,7 +213,11 @@ let module_references ms =
         (m.module_reference :> Odoc_model.Paths.Reference.t)
     and synopsis =
       match m.module_synopsis with
-      | Some synopsis -> [ block @@ Paragraph (inline_element_list synopsis) ]
+      | Some synopsis ->
+          [
+            block ~attr:[ "synopsis" ]
+            @@ Paragraph (inline_element_list synopsis);
+          ]
       | None -> []
     in
     (reference, synopsis)
