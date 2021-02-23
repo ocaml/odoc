@@ -227,14 +227,13 @@ Raw HTML can be  as inline elements into sentences\.
 .in 
 .sp 
 .fi 
-.sp 
-\(bu X
-.sp 
-\(bu X
+@X: 
 .br 
-\(bu Y
+@X: 
 .br 
-\(bu Z
+@Y: 
+.br 
+@Z: 
 .nf 
 .sp 
 .in 3
