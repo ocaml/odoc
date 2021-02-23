@@ -692,7 +692,9 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   let hidden_path =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
-      when Paths.Path.Resolved.Type.is_hidden path ->
+      when Paths.Path.Resolved.Type.is_hidden path
+           || Paths.Path.Resolved.Type.canonical_ident path
+              = (Some t.id :> Paths.Identifier.Path.Type.t option) ->
         Some (path, params)
     | _ -> None
   in
@@ -706,21 +708,20 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
         let p' =
           Component.Of_Lang.resolved_type_path Component.Of_Lang.empty p
         in
-        Format.eprintf "found hidden path: %a\n%!"
-          Component.Fmt.resolved_type_path p';
+        (* Format.eprintf "found hidden path: %a\n%!"
+           Component.Fmt.resolved_type_path p'; *)
         match Tools.lookup_type env p' with
         | Ok (`FType (_, t')) ->
-            {
-              default with
-              equation =
-                ( try
-                    Expand_tools.collapse_eqns default.equation
-                      (Lang_of.type_decl_equation Lang_of.empty
-                         (parent :> Id.Parent.t)
-                         t'.equation)
-                      params
-                  with _ -> default.equation );
-            }
+            let equation =
+              try
+                Expand_tools.collapse_eqns default.equation
+                  (Lang_of.type_decl_equation Lang_of.empty
+                     (parent :> Id.Parent.t)
+                     t'.equation)
+                  params
+              with _ -> default.equation
+            in
+            { default with equation = type_decl_equation env parent equation }
         | Ok (`FClass _ | `FClassType _ | `FType_removed _) | Error _ -> default
         )
     | None -> default
