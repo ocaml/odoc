@@ -11,31 +11,19 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
-let string_ends_with_char suffix s =
-  let len = String.length s in
-  len > 0 && s.[len - 1] = suffix
-
 let rec list_find_map f = function
   | hd :: tl -> (
       match f hd with Some _ as x -> x | None -> list_find_map f tl )
   | [] -> None
 
-(** The synopsis is the first sentence of the first paragraph of a comment.
-    Headings, tags and other {!Comment.block_element} that are not [`Paragraph]
-    or [`List] are skipped. *)
+(** The synopsis is the first paragraph of a comment. Headings, tags and other
+    {!Comment.block_element} that are not [`Paragraph] or [`List] are skipped.
+    *)
 let synopsis_from_comment docs =
   let open Location_ in
-  let rec from_paragraph = function
-    | [] -> []
-    | ({ value = `Word w; _ } as hd) :: ({ value = `Space; _ } :: _ | [])
-      when string_ends_with_char '.' w ->
-        (* Stop at the first word ending with '.' that is followed by a space *)
-        [ hd ]
-    | hd :: tl -> hd :: from_paragraph tl
-  in
   let rec from_element elem =
     match elem.value with
-    | `Paragraph p -> Some (from_paragraph p)
+    | `Paragraph p -> Some p
     | `List (_, items) -> list_find_map (list_find_map from_element) items
     | _ -> None
   in

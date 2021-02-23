@@ -9,7 +9,7 @@ Everything should resolve:
   [{"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"X"},{"`Word":"."}]}]
   [{"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}},"None"]
   [{"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"Internal"},{"`Word":"."}]}]
-  [{"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Word":"Internal."},{"`Code_span":"X"},{"`Word":"."}]}]
+  [{"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}},{"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Word":"Internal."},{"`Code_span":"X"},{"`Word":"."},"`Space",{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"sentence."}]}]
 
 As HTML, should render as a description list.
 
@@ -39,7 +39,10 @@ As HTML, should render as a description list.
       <dt><a href="Internal/index.html"><code>Internal</code></a></dt>
       <dd><p class="synopsis">Doc for <code>Internal</code>.</p></dd>
       <dt><a href="Internal/Y/index.html"><code>Internal.Y</code></a></dt>
-      <dd><p class="synopsis">Doc for Internal.<code>X</code>.</p></dd>
+      <dd>
+       <p class="synopsis">Doc for Internal.<code>X</code>. An other sentence.
+       </p>
+      </dd>
      </dl>
     </header>
     <div class="content">
