@@ -447,6 +447,8 @@ module rec Path : sig
       val is_hidden : t -> bool
 
       val identifier : t -> Identifier.Path.Type.t
+
+      val canonical_ident : t -> Identifier.Path.Type.t option
     end
 
     module ClassType : sig

@@ -700,6 +700,21 @@ module Path = struct
         | `Type (m, n) -> `Type (parent_module_identifier m, n)
         | `Class (m, n) -> `Class (parent_module_identifier m, n)
         | `ClassType (m, n) -> `ClassType (parent_module_identifier m, n)
+
+      let canonical_ident : t -> Identifier.Path.Type.t option =
+        let parent m default fn =
+          match Module.canonical_ident m with
+          | Some x -> fn (x :> Identifier.Signature.t)
+          | None -> default
+        in
+        function
+        | `Identifier _ -> None
+        | `CanonicalTy (_, `Resolved t) -> Some (identifier t)
+        | `CanonicalTy (_, _) -> None
+        | `Type (m, n) -> parent m None (fun sg -> Some (`Type (sg, n)))
+        | `Class (m, n) -> parent m None (fun sg -> Some (`Class (sg, n)))
+        | `ClassType (m, n) ->
+            parent m None (fun sg -> Some (`ClassType (sg, n)))
     end
 
     module ClassType = struct
