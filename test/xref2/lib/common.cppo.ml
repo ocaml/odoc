@@ -604,6 +604,7 @@ let my_compilation_unit id docs s =
     ; hidden = false
     ; content = Module s
     ; expansion = None
+    ; linked = false
 }
 
 let mkenv () =

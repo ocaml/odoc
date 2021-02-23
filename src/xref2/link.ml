@@ -141,7 +141,7 @@ let rec unit (resolver : Env.resolver) t =
     | Pack _ as p -> (p, env)
   in
   let doc = comment_docs env t.doc in
-  { t with content; doc; imports }
+  { t with content; doc; imports; linked = true }
 
 and value_ env parent t =
   let open Value in
@@ -871,7 +871,9 @@ let build_resolver :
  fun ?equal:_ ?hash:_ lookup_unit resolve_unit lookup_page resolve_page ->
   { Env.lookup_unit; resolve_unit; lookup_page; resolve_page }
 *)
-let link x y = Lookup_failures.catch_failures (fun () -> unit x y)
+let link x y =
+  Lookup_failures.catch_failures (fun () ->
+      if y.Lang.Compilation_unit.linked then y else unit x y)
 
 let page env page =
   let env = Env.set_resolver Env.empty env in
@@ -890,6 +892,9 @@ let page env page =
     Page.content =
       List.map (with_location comment_block_element env) page.Page.content;
     children;
+    linked = true;
   }
 
-let resolve_page env p = Lookup_failures.catch_failures (fun () -> page env p)
+let resolve_page env p =
+  Lookup_failures.catch_failures (fun () ->
+      if p.Lang.Page.linked then p else page env p)

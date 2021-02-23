@@ -441,6 +441,7 @@ module rec Compilation_unit : sig
     hidden : bool;
     content : content;
     expansion : Signature.t option;
+    linked : bool;  (** Whether this unit has been linked. *)
   }
 end =
   Compilation_unit
@@ -452,6 +453,7 @@ module rec Page : sig
     content : Comment.docs;
     children : Reference.t list;
     digest : Digest.t;
+    linked : bool;
   }
 end =
   Page

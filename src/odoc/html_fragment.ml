@@ -13,7 +13,8 @@ let from_mld ~xref_base_uri ~env ~output ~warn_error input =
   let to_html content =
     (* This is a mess. *)
     let page =
-      Odoc_model.Lang.Page.{ name = id; root; content; children = []; digest }
+      Odoc_model.Lang.Page.
+        { name = id; root; content; children = []; digest; linked = false }
     in
     let resolve_env = Env.build env (`Page page) in
     Odoc_xref2.Link.resolve_page resolve_env page
