@@ -83,10 +83,17 @@ The parser supports any ASCII-compatible encoding, in particuλar UTF-8.
 Raw HTML can be  as inline elements into sentences.
 
 \subsection{Modules\label{modules}}%
-\begin{itemize}\item{\ocamlinlinecode{X}}\end{itemize}%
-\begin{itemize}\item{\ocamlinlinecode{X}}%
-\item{\ocamlinlinecode{Y}}%
-\item{\ocamlinlinecode{Z}}\end{itemize}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\end{description}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[\ocamlinlinecode{X}]{}\end{description}%
+\begin{description}\kern-\topsep
+\makeatletter\advance\@topsepadd-\topsep\makeatother% topsep is hardcoded
+\item[\ocamlinlinecode{X}]{}%
+\item[\ocamlinlinecode{Y}]{}%
+\item[\ocamlinlinecode{Z}]{}\end{description}%
 \subsection{Tags\label{tags}}%
 Each comment can end with zero or more tags. Here are some examples:
 

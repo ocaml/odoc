@@ -30,13 +30,17 @@ As HTML, should render as a description list.
       &#x00BB; Main
     </nav>
     <header><h1>Module <code>Main</code></h1>
-     <ul class="modules">
-      <li><a href="../External/index.html"><code>External</code></a></li>
-      <li><a href="../External/X/index.html"><code>External.X</code></a></li>
-      <li><a href="#"><code>Main</code></a></li>
-      <li><a href="Internal/index.html"><code>Internal</code></a></li>
-      <li><a href="Internal/Y/index.html"><code>Internal.Y</code></a></li>
-     </ul>
+     <dl class="modules">
+      <dt><a href="../External/index.html"><code>External</code></a></dt>
+      <dd><p>Doc for <code>External</code>.</p></dd>
+      <dt><a href="../External/X/index.html"><code>External.X</code></a></dt>
+      <dd><p>Doc for <code>X</code>.</p></dd>
+      <dt><a href="#"><code>Main</code></a></dt><dd></dd>
+      <dt><a href="Internal/index.html"><code>Internal</code></a></dt>
+      <dd><p>Doc for <code>Internal</code>.</p></dd>
+      <dt><a href="Internal/Y/index.html"><code>Internal.Y</code></a></dt>
+      <dd><p>Doc for Internal.<code>X</code>.</p></dd>
+     </dl>
     </header>
     <div class="content">
      <div>

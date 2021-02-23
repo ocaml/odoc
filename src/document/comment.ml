@@ -206,17 +206,20 @@ and inline_element_list elements =
        (fun elt -> inline_element elt.Odoc_model.Location_.value)
        elements
 
-let module_references (ms : Comment.module_reference list) =
-  let module_reference m =
-    [
-      block
-      @@ Inline
-           (Reference.to_ir ~stop_before:false
-              (m.Comment.module_reference :> Odoc_model.Paths.Reference.t));
-    ]
+let module_references ms =
+  let module_reference (m : Comment.module_reference) =
+    let reference =
+      Reference.to_ir ~stop_before:false
+        (m.module_reference :> Odoc_model.Paths.Reference.t)
+    and synopsis =
+      match m.module_synopsis with
+      | Some synopsis -> [ block @@ Paragraph (inline_element_list synopsis) ]
+      | None -> []
+    in
+    (reference, synopsis)
   in
   let items = List.map module_reference ms in
-  block ~attr:[ "modules" ] @@ Block.List (Unordered, items)
+  block ~attr:[ "modules" ] @@ Description items
 
 let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
