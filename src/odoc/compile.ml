@@ -164,7 +164,10 @@ let mld ~parent_spec ~output ~children ~warn_error input =
     }
   in
   let resolve content =
-    let page = Odoc_model.Lang.Page.{ name; root; children; content; digest } in
+    let page =
+      Odoc_model.Lang.Page.
+        { name; root; children; content; digest; linked = false }
+    in
     Page.save output page;
     Ok ()
   in
