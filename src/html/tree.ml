@@ -109,7 +109,8 @@ let page_creator ?(theme_uri = Relative "./") ~url name header toc content =
   in
 
   let body =
-    breadcrumbs @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
+    breadcrumbs
+    @ [ Html.header ~a:[ Html.a_class [ "odoc-preamble" ] ] header ]
     @ toc
     @ [ Html.div ~a:[ Html.a_class [ "odoc-content" ] ] content ]
   in
