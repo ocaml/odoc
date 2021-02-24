@@ -36,17 +36,15 @@
      </p>
     </div>
    </div>
-   <aside class="odoc-unattached">
-    <p>
-     The next value is <code>bar</code>, and it should be missing from the documentation. There is also an entire module, <code>M</code>, which should also be hidden. It contains a nested stop comment, but that stop comment should not turn documentation back on in this outer module, because stop comments respect scope.
-    </p>
-    <p>
-     Documentation is on again.
-    </p>
-    <p>
-     Now, we have a nested module, and it has a stop comment between its two items. We want to see that the first item is displayed, but the second is missing, and the stop comment disables documenation only in that module, and not in this outer module.
-    </p>
-   </aside>
+   <p>
+    The next value is <code>bar</code>, and it should be missing from the documentation. There is also an entire module, <code>M</code>, which should also be hidden. It contains a nested stop comment, but that stop comment should not turn documentation back on in this outer module, because stop comments respect scope.
+   </p>
+   <p>
+    Documentation is on again.
+   </p>
+   <p>
+    Now, we have a nested module, and it has a stop comment between its two items. We want to see that the first item is displayed, but the second is missing, and the stop comment disables documenation only in that module, and not in this outer module.
+   </p>
    <div class="odoc-spec">
     <div class="spec module" id="module-N">
      <a href="#module-N" class="anchor"></a><code><span><span class="keyword">module</span> </span><span><a href="N/index.html">N</a></span><span>: { ... }</span><span>;</span></code>
