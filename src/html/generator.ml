@@ -296,7 +296,8 @@ and items ~resolve l : item Html.elt list =
         let a = class_of_kind kind @ anchor_attrib in
         (* TODO : Why double div ??? *)
         [
-          Html.div ~a:[ Html.a_class [ "odoc-include" ] ]
+          Html.div
+            ~a:[ Html.a_class [ "odoc-include" ] ]
             [
               Html.div ~a
                 ( anchor_link
@@ -309,13 +310,14 @@ and items ~resolve l : item Html.elt list =
         let a = class_of_kind kind @ anchor_attrib in
         let content = anchor_link @ documentedSrc ~resolve content in
         let elts =
-          let doc = match doc with
-          | [] -> []
-          | docs ->
-            let a = [ Html.a_class [ "spec-doc" ] ] in
-            [ div ~a (flow_to_item @@ block ~resolve docs) ]
+          let doc =
+            match doc with
+            | [] -> []
+            | docs ->
+                let a = [ Html.a_class [ "spec-doc" ] ] in
+                [ div ~a (flow_to_item @@ block ~resolve docs) ]
           in
-          [ div ~a: [ Html.a_class [ "odoc-spec" ]] (div ~a content :: doc) ]
+          [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
         in
         (continue_with [@tailcall]) rest elts
   and items l = walk_items [] l in
