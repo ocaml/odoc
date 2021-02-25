@@ -380,8 +380,7 @@ and extract_doc : Module.decl -> Comment.docs * Module.decl =
     | e -> ([], e)
   in
   function
-  | Alias (p, expansion) -> (
-      match map_expansion expansion with d, e -> (d, Alias (p, e)) )
+  | Alias (_, Some e) as alias -> (e.a_doc, alias)
   | ModuleType (Path { p_path; p_expansion }) -> (
       match map_expansion p_expansion with
       | d, e -> (d, ModuleType (Path { p_path; p_expansion = e })) )
@@ -403,7 +402,7 @@ and module_ : Env.t -> Module.t -> Module.t =
     let type_ = module_decl env sg_id m.type_ in
     let type_ =
       match type_ with
-      | Alias (`Resolved p, e) ->
+      | Alias (`Resolved p, _) ->
           let hidden_alias =
             Paths.Path.is_hidden (`Resolved (p :> Paths.Path.Resolved.t))
           in
@@ -417,11 +416,13 @@ and module_ : Env.t -> Module.t -> Module.t =
             match
               Expand_tools.expansion_of_module_alias env m.id (`Resolved cp)
             with
-            | Ok (_, _, e) ->
+            | Ok (_, _, e, doc) ->
                 let le = Lang_of.(simple_expansion empty sg_id e) in
-                Alias (`Resolved p, Some (simple_expansion env sg_id le))
-            | Error _ -> Alias (`Resolved p, e)
-          else Alias (`Resolved p, e)
+                let a_doc = Lang_of.docs (sg_id :> Id.LabelParent.t) doc
+                and a_expansion = simple_expansion env sg_id le in
+                Alias (`Resolved p, Some { a_doc; a_expansion })
+            | Error _ -> type_
+          else type_
       | Alias _ | ModuleType _ -> type_
     in
     let doc, type_ =
@@ -435,7 +436,16 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias (p, e) ->
-      Alias (module_path env p, Opt.map (simple_expansion env id) e)
+      Alias (module_path env p, Opt.map (module_alias_expansion env id) e)
+
+and module_alias_expansion :
+    Env.t -> Id.Signature.t -> Module.alias_expansion -> Module.alias_expansion
+    =
+ fun env id e ->
+  {
+    a_doc = comment_docs env e.a_doc;
+    a_expansion = simple_expansion env id e.a_expansion;
+  }
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->

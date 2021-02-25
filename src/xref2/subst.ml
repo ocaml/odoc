@@ -632,8 +632,11 @@ and module_type_substitution s sub =
 
 and module_decl s t =
   match t with
-  | Alias (p, e) -> Alias (module_path s p, option_ simple_expansion s e)
+  | Alias (p, e) -> Alias (module_path s p, option_ module_alias_expansion s e)
   | ModuleType t -> ModuleType (module_type_expr s t)
+
+and module_alias_expansion s t =
+  { t with a_expansion = simple_expansion s t.a_expansion }
 
 and include_decl s t =
   match t with
@@ -646,7 +649,7 @@ and module_ s t =
   let canonical =
     option_ (fun s (m1, m2) -> (module_path s m1, m2)) s t.canonical
   in
-  { t with type_; canonical; doc = t.doc }
+  { t with type_; canonical }
 
 and module_substitution s m =
   let open Component.ModuleSubstitution in
