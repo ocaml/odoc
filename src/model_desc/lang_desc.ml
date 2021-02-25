@@ -216,18 +216,12 @@ and include_shadowed =
   let open Lang.Include in
   Record
     [
-      F ("s_modules", (fun t -> t.s_modules), List (Pair (string, identifier)));
-      F
-        ( "s_module_types",
-          (fun t -> t.s_module_types),
-          List (Pair (string, identifier)) );
-      F ("s_values", (fun t -> t.s_values), List (Pair (string, identifier)));
-      F ("s_types", (fun t -> t.s_types), List (Pair (string, identifier)));
-      F ("s_classes", (fun t -> t.s_classes), List (Pair (string, identifier)));
-      F
-        ( "s_class_types",
-          (fun t -> t.s_class_types),
-          List (Pair (string, identifier)) );
+      F ("s_modules", (fun t -> t.s_modules), List string);
+      F ("s_module_types", (fun t -> t.s_module_types), List string);
+      F ("s_values", (fun t -> t.s_values), List string);
+      F ("s_types", (fun t -> t.s_types), List string);
+      F ("s_classes", (fun t -> t.s_classes), List string);
+      F ("s_class_types", (fun t -> t.s_class_types), List string);
     ]
 
 and include_expansion =
