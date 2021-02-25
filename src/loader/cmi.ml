@@ -901,7 +901,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
         let vd = read_value_description env parent id v in
         let shadowed =
           if Env.is_shadowed env id
-          then { shadowed with s_values = (Ident.name id, (Env.find_value_identifier env id)) :: shadowed.s_values }
+          then { shadowed with s_values = Ident.name id :: shadowed.s_values }
           else shadowed
         in
           loop (vd :: acc, shadowed) rest
@@ -912,7 +912,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
         let decl = read_type_declaration env parent id decl in
         let shadowed =
           if Env.is_shadowed env id
-          then { shadowed with s_types = (Ident.name id, decl.id) :: shadowed.s_types }
+          then { shadowed with s_types = Ident.name id :: shadowed.s_types }
           else shadowed
         in
         loop (Type (read_type_rec_status rec_status, decl)::acc, shadowed) rest
@@ -937,7 +937,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           let md = read_module_declaration env parent id md in
           let shadowed =
             if Env.is_shadowed env id
-            then { shadowed with s_modules = (Ident.name id, md.id) :: shadowed.s_modules }
+            then { shadowed with s_modules = Ident.name id :: shadowed.s_modules }
             else shadowed
           in
             loop (Module (read_module_rec_status rec_status, md)::acc, shadowed) rest
@@ -945,7 +945,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           let mtd = read_module_type_declaration env parent id mtd in
           let shadowed =
             if Env.is_shadowed env id
-            then { shadowed with s_module_types = (Ident.name id, mtd.id) :: shadowed.s_module_types }
+            then { shadowed with s_module_types = Ident.name id :: shadowed.s_module_types }
             else shadowed
           in
             loop (ModuleType mtd :: acc, shadowed) rest
@@ -954,7 +954,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
           let cl = read_class_declaration env parent id cl in
           let shadowed =
             if Env.is_shadowed env id
-            then { shadowed with s_classes = (Ident.name id, cl.id) :: shadowed.s_classes }
+            then { shadowed with s_classes = Ident.name id :: shadowed.s_classes }
             else shadowed
           in
             loop (Class (read_type_rec_status rec_status, cl)::acc, shadowed) rest
@@ -962,7 +962,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
         let cltyp = read_class_type_declaration env parent id cltyp in
         let shadowed =
           if Env.is_shadowed env id
-          then { shadowed with s_class_types = (Ident.name id, cltyp.id) :: shadowed.s_class_types }
+          then { shadowed with s_class_types = Ident.name id :: shadowed.s_class_types }
           else shadowed
         in
         loop (ClassType (read_type_rec_status rec_status, cltyp)::acc, shadowed) rest

@@ -247,8 +247,11 @@ module ExtractIDs = struct
   let rec type_decl parent map id =
     let name = Ident.Name.type_ id in
     let identifier =
-      if List.mem_assoc name map.shadowed.s_types then
-        List.assoc name map.shadowed.s_types
+      if List.mem name map.shadowed.s_types then
+        `Type
+          ( parent,
+            Odoc_model.Names.TypeName.internal_of_string (Ident.Name.type_ id)
+          )
       else `Type (parent, Ident.Name.typed_type id)
     in
     {
@@ -262,20 +265,19 @@ module ExtractIDs = struct
     }
 
   and module_ parent map id =
-    let name' = Ident.Name.typed_module id in
-    let name = ModuleName.to_string name' in
+    let name = Ident.Name.module_ id in
     let identifier =
-      if List.mem_assoc name map.shadowed.s_modules then
-        List.assoc name map.shadowed.s_modules
-      else `Module (parent, name')
+      if List.mem name map.shadowed.s_modules then
+        `Module (parent, ModuleName.internal_of_string name)
+      else `Module (parent, Ident.Name.typed_module id)
     in
     { map with module_ = Component.ModuleMap.add id identifier map.module_ }
 
   and module_type parent map id =
     let name = Ident.Name.module_type id in
     let identifier =
-      if List.mem_assoc name map.shadowed.s_module_types then
-        List.assoc name map.shadowed.s_module_types
+      if List.mem name map.shadowed.s_module_types then
+        `ModuleType (parent, ModuleTypeName.internal_of_string name)
       else `ModuleType (parent, Ident.Name.typed_module_type id)
     in
     {
@@ -286,8 +288,8 @@ module ExtractIDs = struct
   and class_ parent map id =
     let name = Ident.Name.class_ id in
     let identifier =
-      if List.mem_assoc name map.shadowed.s_classes then
-        List.assoc name map.shadowed.s_classes
+      if List.mem name map.shadowed.s_classes then
+        `Class (parent, ClassName.internal_of_string name)
       else `Class (parent, Ident.Name.typed_class id)
     in
     {
@@ -308,8 +310,8 @@ module ExtractIDs = struct
   and class_type parent map (id : Ident.class_type) =
     let name = Ident.Name.class_type id in
     let identifier =
-      if List.mem_assoc name map.shadowed.s_class_types then
-        List.assoc name map.shadowed.s_class_types
+      if List.mem name map.shadowed.s_class_types then
+        `ClassType (parent, ClassTypeName.internal_of_string name)
       else `ClassType (parent, Ident.Name.typed_class_type id)
     in
     {
@@ -522,7 +524,12 @@ and instance_variable map parent id i =
 
 and external_ map parent id e =
   let open Component.External in
-  let identifier = `Value (parent, Ident.Name.typed_value id) in
+  let name = Ident.Name.value id in
+  let identifier =
+    if List.mem name map.shadowed.s_values then
+      `Value (parent, ValueName.internal_of_string name)
+    else `Value (parent, Ident.Name.typed_value id)
+  in
   {
     id = identifier;
     doc = docs (parent :> Identifier.LabelParent.t) e.doc;
