@@ -163,8 +163,11 @@ let span f ppf = pf ppf "@{<>%t@}" f
 let txt s ppf = Format.pp_print_string ppf s
 
 let noop (_ : Format.formatter) = ()
+
 let break i j ppf = Format.pp_print_break ppf i j
+
 let cut = break 0 0
+
 let sp = break 1 0
 
 let ( ! ) (pp : _ Fmt.t) x ppf = pp ppf x
@@ -179,11 +182,11 @@ let rec list ?sep ~f = function
 
 let render f = spf "@[%t@]" (span f)
 
-let code ?attr f = [inline ?attr @@ Inline.Source (render f)]
+let code ?attr f = [ inline ?attr @@ Inline.Source (render f) ]
 
-let documentedSrc f = [DocumentedSrc.Code (render f)]
+let documentedSrc f = [ DocumentedSrc.Code (render f) ]
 
-let codeblock ?attr f = [block ?attr @@ Block.Source (render f)]
+let codeblock ?attr f = [ block ?attr @@ Block.Source (render f) ]
 
 let keyword keyword ppf = pf ppf "@{<keyword>%s@}" keyword
 
