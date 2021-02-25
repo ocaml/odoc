@@ -71,8 +71,13 @@ module Opt = struct
 end
 
 module rec Module : sig
+  type alias_expansion = {
+    a_doc : CComment.docs;
+    a_expansion : ModuleType.simple_expansion;
+  }
+
   type decl =
-    | Alias of Cpath.module_ * ModuleType.simple_expansion option
+    | Alias of Cpath.module_ * alias_expansion option
     | ModuleType of ModuleType.expr
 
   type t = {
@@ -1887,9 +1892,15 @@ module Of_Lang = struct
     match m with
     | Odoc_model.Lang.Module.Alias (p, e) ->
         Module.Alias
-          (module_path ident_map p, option simple_expansion ident_map e)
+          (module_path ident_map p, option module_alias_expansion ident_map e)
     | Odoc_model.Lang.Module.ModuleType s ->
         Module.ModuleType (module_type_expr ident_map s)
+
+  and module_alias_expansion ident_map e =
+    {
+      Module.a_doc = docs ident_map e.a_doc;
+      a_expansion = simple_expansion ident_map e.a_expansion;
+    }
 
   and include_decl ident_map m =
     match m with

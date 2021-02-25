@@ -1061,7 +1061,8 @@ and signature_of_module_decl :
     (Component.Signature.t, signature_of_module_error) Result.result =
  fun env decl ->
   match decl with
-  | Component.Module.Alias (_, Some e) -> Ok (signature_of_simple_expansion e)
+  | Component.Module.Alias (_, Some e) ->
+      Ok (signature_of_simple_expansion e.a_expansion)
   | Component.Module.Alias (p, _) ->
       signature_of_module_path env ~strengthen:true p
   | Component.Module.ModuleType expr ->

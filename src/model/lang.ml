@@ -19,8 +19,13 @@ open Paths
 (** {3 Modules} *)
 
 module rec Module : sig
+  type alias_expansion = {
+    a_doc : Comment.docs;
+    a_expansion : ModuleType.simple_expansion;
+  }
+
   type decl =
-    | Alias of (Path.Module.t * ModuleType.simple_expansion option)
+    | Alias of (Path.Module.t * alias_expansion option)
     | ModuleType of ModuleType.expr
 
   type t = {

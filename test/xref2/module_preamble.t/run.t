@@ -1,3 +1,10 @@
+Simulate a wrapped library. `A` is the entry point (eg. `Stdlib`), the other
+modules are accessible through `A` (eg. `Stdlib.Int64`).
+
+We test that the "wrapped" modules (eg. `A.B`, rendered to `html/A/B`) have their
+documentation in their preamble
+and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered.
+
   $ ocamlc -bin-annot -o a__b.cmi -c b.mli
   $ ocamlc -bin-annot -o a__b.cmo -c b.ml
   $ ocamlc -bin-annot -o a.cmi -c a.mli
@@ -70,8 +77,9 @@
       &#x00BB; B
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A.B</span></code></h1>
+     <p>Module B.</p><p>Some documentation.</p>
     </header>
-    <div class="odoc-content"><p>Module B.</p><p>Some documentation.</p>
+    <div class="odoc-content">
      <div class="odoc-spec">
       <div class="spec type" id="type-t" class="anchored">
        <a href="#type-t" class="anchor"></a>

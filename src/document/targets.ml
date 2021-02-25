@@ -55,7 +55,7 @@ and module_ (t : Odoc_model.Lang.Module.t) =
   let url = Url.Path.from_identifier t.id in
   let subpages =
     match t.type_ with
-    | Alias (_, Some e) -> simple_expansion e
+    | Alias (_, Some e) -> simple_expansion e.a_expansion
     | Alias (_, None) -> []
     | ModuleType expr -> module_type_expr expr
   in
