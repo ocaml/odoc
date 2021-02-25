@@ -57,9 +57,8 @@ and source k ?a (t : Source.t) =
     match x with
     | Elt i -> k i
     | Tag (None, l) ->
-      let content = tokens l in
-      if content = [] then []
-      else [ Html.span content ]
+        let content = tokens l in
+        if content = [] then [] else [ Html.span content ]
     | Tag (Some s, l) -> [ Html.span ~a:[ Html.a_class [ s ] ] (tokens l) ]
   and tokens t = Utils.list_concat_map t ~f:token in
   Utils.optional_elt Html.code ?a (tokens t)
@@ -327,8 +326,7 @@ and items ~resolve l : item Html.elt list =
           | [] -> [ content ]
           | docs ->
               [
-                Html.div
-                  [ content; div (flow_to_item @@ block ~resolve docs) ];
+                Html.div [ content; div (flow_to_item @@ block ~resolve docs) ];
               ]
         in
         (continue_with [@tailcall]) rest elts
