@@ -313,8 +313,10 @@ let extract_structure_tree_item item =
     | Tstr_open o ->
       ((extract_extended_open o) :> extracted_items list)
 #endif
+    | Tstr_primitive {val_id; _} ->
+      [`Value (val_id, false)]
     | Tstr_eval _
-    | Tstr_primitive _ | Tstr_typext _
+    | Tstr_typext _
     | Tstr_exception _
     | Tstr_attribute _ -> []
 
