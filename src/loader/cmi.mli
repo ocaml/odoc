@@ -17,8 +17,6 @@
 
 
 module Paths = Odoc_model.Paths
-module Ident_env = Odoc_model.Ident_env
-
 
 
 val read_interface: Odoc_model.Paths.Identifier.ContainerPage.t -> string -> Odoc_model.Compat.signature ->

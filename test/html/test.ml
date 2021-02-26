@@ -289,6 +289,9 @@ let source_files_post408 =
 
 let source_files_pre410 = [ ("bugs_pre_410.ml", [ "Bugs_pre_410/index.html" ]) ]
 
+let source_files_post404 =
+  [ ("stop_dead_link_doc.mli", [ "Stop_dead_link_doc/index.html" ]) ]
+
 let source_files =
   let cur =
     Astring.String.cuts ~sep:"." Sys.ocaml_version
@@ -301,6 +304,7 @@ let source_files =
           (if major = 4 && minor < 10 then source_files_pre410 else []);
           (if major = 4 && minor > 8 then source_files_post408 else []);
           (if major = 4 && minor >= 6 then source_files_post406 else []);
+          (if major = 4 && minor >= 4 then source_files_post404 else []);
           source_files_all;
         ]
   | _ -> source_files_all

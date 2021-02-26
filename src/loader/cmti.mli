@@ -15,7 +15,6 @@
  *)
 
 module Paths = Odoc_model.Paths
-module Ident_env = Odoc_model.Ident_env
 
 val read_module_expr : (Ident_env.t -> Paths.Identifier.Signature.t -> Paths.Identifier.LabelParent.t -> Typedtree.module_expr -> Odoc_model.Lang.ModuleType.expr) ref
 val read_interface :

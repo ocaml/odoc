@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Odoc_model
 open Predefined
 open Names
 
@@ -30,7 +31,8 @@ type t =
     values: Id.Value.t Ident.tbl;
     classes : Id.Class.t Ident.tbl;
     class_types : Id.ClassType.t Ident.tbl;
-    shadowed : Ident.t list }
+    hidden : Ident.t list; (* we use term hidden to mean shadowed and idents_in_doc_off_mode items*)
+  }
 
 let empty =
   { modules = Ident.empty;
@@ -40,7 +42,8 @@ let empty =
     values = Ident.empty;
     classes = Ident.empty;
     class_types = Ident.empty;
-    shadowed = [] }
+    hidden = [];
+  }
 
 (* The boolean is an override for whether it should be hidden - true only for
    items introduced by extended open *)
@@ -153,55 +156,63 @@ let extract_extended_open o =
 #endif
 
 
-let extract_signature_tree_item item =
+let rec extract_signature_tree_items hide_item items =
   let open Typedtree in
-    match item.sig_desc with
+  match items with
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
-    | Tsig_type decls ->
+  | { sig_desc = Tsig_type decls; _} :: rest ->
 #else
-    | Tsig_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+  | { sig_desc = Tsig_type (_, decls); _} :: rest ->
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, false)) decls
+    List.map (fun decl -> `Type (decl.typ_id, hide_item))
+      decls @ extract_signature_tree_items hide_item rest
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
-    | Tsig_module { md_id = Some id; _ } ->
-        [`Module (id, false)]
-    | Tsig_module _ ->
-        []
-    | Tsig_recmodule mds ->
-        List.fold_right
-          (fun md items ->
-            match md.md_id with
-            | Some id -> `Module (id, false) :: items
-            | None -> items)
-          mds []
-#else
-    | Tsig_module { md_id; _ } ->
-      [`Module (md_id, false)]
-    | Tsig_recmodule mds ->
-      List.map (fun md -> `Module (md.md_id, false)) mds
+  | { sig_desc = Tsig_module { md_id = Some id; _ }; _} :: rest ->
+      [`Module (id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_module _; _ } :: rest ->
+      extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_recmodule mds; _} :: rest ->
+    List.fold_right (
+      fun md items ->
+        match md.md_id with
+        | Some id -> `Module (id, hide_item) :: items
+        | None -> items)
+      mds [] @ extract_signature_tree_items hide_item rest
+#else 
+  | { sig_desc = Tsig_module{ md_id; _}; _} :: rest ->
+      [`Module (md_id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_recmodule mds; _ } :: rest ->
+    List.map (fun md -> `Module (md.md_id, hide_item))
+      mds @ extract_signature_tree_items hide_item rest
 #endif
-    | Tsig_value {val_id; _} ->
-      [`Value (val_id, false)]
-    | Tsig_modtype mtd ->
-      [`ModuleType (mtd.mtd_id, false)]
-    | Tsig_include incl ->
-      [`Include (extract_signature_type_items (Compat.signature incl.incl_type))]
-    | Tsig_class cls ->
-        List.map
-          (fun cld ->
-             let typehash =
-#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
-              cld.ci_id_typesharp
-#else
-              cld.ci_id_typehash
-#endif
-            in
-            `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, false)) cls
-    | Tsig_class_type cltyps ->
+  | { sig_desc = Tsig_value {val_id; _}; _ } :: rest->
+      [`Value (val_id, hide_item)] @ extract_signature_tree_items hide_item rest 
+  | { sig_desc = Tsig_modtype mtd; _} :: rest ->
+      [`ModuleType (mtd.mtd_id, hide_item)] @ extract_signature_tree_items hide_item rest
+  | {sig_desc = Tsig_include incl; _ } :: rest ->
+      [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_signature_tree_items hide_item rest
+  | {sig_desc = Tsig_attribute attr; _ } :: rest -> begin
+      match Doc_attr.parse_attribute attr with
+      | Some ("/*", _) -> extract_signature_tree_items (not hide_item) rest 
+      | _ -> extract_signature_tree_items hide_item rest
+    end
+  | {sig_desc = Tsig_class cls; _} :: rest ->
       List.map
-        (fun clty ->
+        (fun cld ->
             let typehash =
+#if OCAML_MAJOR = 4 && OCAML_MINOR < 04
+            cld.ci_id_typesharp
+#else
+            cld.ci_id_typehash
+#endif
+          in
+          `Class (cld.ci_id_class, cld.ci_id_class_type, cld.ci_id_object, typehash, hide_item))
+            cls @ extract_signature_tree_items hide_item rest
+  | { sig_desc = Tsig_class_type cltyps; _ } :: rest ->
+    List.map
+      (fun clty ->
+          let typehash =
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 04
               clty.ci_id_typesharp
 #else
@@ -209,77 +220,86 @@ let extract_signature_tree_item item =
 #endif
             in
             
-            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, false )) cltyps
+            `ClassType (clty.ci_id_class_type, clty.ci_id_object, typehash, hide_item))
+              cltyps @ extract_signature_tree_items hide_item rest
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-    | Tsig_modsubst ms ->
-      [`Module (ms.ms_id, false)]
-    | Tsig_typesubst ts ->
-      List.map (fun decl -> `Type (decl.typ_id, false)) ts
+    | { sig_desc = Tsig_modsubst ms; _} :: rest ->
+      [`Module (ms.ms_id, hide_item)] @ extract_signature_tree_items hide_item rest
+    | { sig_desc = Tsig_typesubst ts; _} :: rest ->
+      List.map (fun decl -> `Type (decl.typ_id, hide_item)) 
+        ts @ extract_signature_tree_items hide_item rest
 #endif
-    | Tsig_typext _
-    | Tsig_exception _ | Tsig_open _
-    | Tsig_attribute _ -> []
+    | { sig_desc = Tsig_typext _; _} :: rest
+    | { sig_desc = Tsig_exception _; _} :: rest
+    | { sig_desc = Tsig_open _;_} :: rest -> extract_signature_tree_items hide_item rest
+    | [] -> []
 
-let extract_signature_tree_items sg =
-  let open Typedtree in
-    List.map extract_signature_tree_item sg.sig_items |> List.flatten
-
-let rec read_pattern pat =
+let rec read_pattern hide_item pat =
   let open Typedtree in
   match pat.pat_desc with
-  | Tpat_var(id, _) -> [`Value(id, false)]
-  | Tpat_alias(pat, id, _) -> `Value(id, false) :: read_pattern pat
+  | Tpat_var(id, _) -> [`Value(id, hide_item)]
+  | Tpat_alias(pat, id, _) -> `Value(id, hide_item) :: read_pattern hide_item pat
   | Tpat_record(pats, _) -> 
-    List.concat (List.map (fun (_, _, pat) -> read_pattern pat) pats)
+      List.concat (List.map (fun (_, _, pat) -> read_pattern hide_item pat) pats)
   | Tpat_construct(_, _, pats) 
   | Tpat_array pats
-  | Tpat_tuple pats -> List.concat (List.map read_pattern pats)
+  | Tpat_tuple pats -> List.concat (List.map (fun pat -> read_pattern hide_item pat) pats)
   | Tpat_or(pat, _, _)
   | Tpat_variant(_, Some pat, _)
-  | Tpat_lazy pat -> read_pattern pat
+  | Tpat_lazy pat -> read_pattern hide_item pat
   | Tpat_any | Tpat_constant _ | Tpat_variant(_, None, _) -> []
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08 && OCAML_MINOR < 11
-  | Tpat_exception pat -> read_pattern pat
+  | Tpat_exception pat -> read_pattern hide_item pat
 #endif
 
-let extract_structure_tree_item item =
+let rec extract_structure_tree_items hide_item items =
   let open Typedtree in
-    match item.str_desc with
+    match items with
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
-    | Tstr_type decls ->
+    | { str_desc = Tstr_type decls; _ } :: rest ->
 #else
-    | Tstr_type (_rec_flag, decls) -> (* TODO: handle rec_flag *)
+    | { str_desc = Tstr_type (_, decls); _ } :: rest -> (* TODO: handle rec_flag *)
 #endif
-        List.map (fun decl -> `Type (decl.typ_id, false)) decls
+        List.map (fun decl -> `Type (decl.typ_id, hide_item))
+          decls @ extract_structure_tree_items hide_item rest
 
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 03
-    | Tstr_value (_, vbs )->
+    | { str_desc = Tstr_value (_, vbs ); _} :: rest ->
 #else
-    | Tstr_value (_rec_flag, vbs) -> (*TODO: handle rec_flag *)
+    | { str_desc = Tstr_value (_, vbs); _ } :: rest -> (*TODO: handle rec_flag *)
 #endif
-    List.map (fun vb -> read_pattern vb.vb_pat) vbs |> List.flatten
+   ( List.map (fun vb -> read_pattern hide_item vb.vb_pat) vbs
+      |> List.flatten) @ extract_structure_tree_items hide_item rest
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
-    | Tstr_module { mb_id = Some id; _} ->
-      [`Module (id, false)]
-    | Tstr_module _ -> []
-    | Tstr_recmodule mbs ->
+    | { str_desc = Tstr_module { mb_id = Some id; _}; _} :: rest ->
+      [`Module (id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_module _; _} :: rest -> extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_recmodule mbs; _ } :: rest ->
         List.fold_right 
           (fun mb items ->
             match mb.mb_id with
-            | Some id -> `Module (id, false) :: items
-            | None -> items) mbs []
+            | Some id -> `Module (id, hide_item) :: items
+            | None -> items) mbs [] @ extract_structure_tree_items hide_item rest
 #else
-    | Tstr_module { mb_id; _} -> [`Module (mb_id, false)]
-    | Tstr_recmodule mbs ->
-        List.map (fun mb -> `Module (mb.mb_id, false)) mbs
+    | { str_desc = Tstr_module { mb_id; _}; _} :: rest ->
+        [`Module (mb_id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_recmodule mbs; _} :: rest ->
+        List.map (fun mb -> `Module (mb.mb_id, hide_item))
+          mbs @ extract_structure_tree_items hide_item rest
 #endif
-    | Tstr_modtype mtd ->
-        [`ModuleType (mtd.mtd_id, false)]
-    | Tstr_include incl ->
-        [`Include (extract_signature_type_items (Compat.signature incl.incl_type))]
-    | Tstr_class cls ->
+    | { str_desc = Tstr_modtype mtd; _ } :: rest ->
+        [`ModuleType (mtd.mtd_id, hide_item)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_include incl; _ } :: rest ->
+        [`Include (extract_signature_type_items (Compat.signature incl.incl_type))] @ extract_structure_tree_items hide_item rest
+
+    | { str_desc = Tstr_attribute attr; _} :: rest -> begin
+        match Doc_attr.parse_attribute attr with
+        | Some ("/*", _) -> extract_structure_tree_items (not hide_item) rest
+        | _ -> extract_structure_tree_items hide_item rest
+      end
+    | { str_desc = Tstr_class cls; _ } :: rest ->
         List.map
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
           (fun (cld, _, _) ->
@@ -293,9 +313,9 @@ let extract_structure_tree_item item =
 #else
                cld.ci_id_typehash,
 #endif
-               false
-             )) cls
-    | Tstr_class_type cltyps ->
+              hide_item
+             )) cls @ extract_structure_tree_items hide_item rest
+    | {str_desc = Tstr_class_type cltyps; _ } :: rest ->
         List.map
           (fun (_, _, clty) ->
              `ClassType (clty.ci_id_class_type,
@@ -305,24 +325,21 @@ let extract_structure_tree_item item =
 #else
                clty.ci_id_typehash,
 #endif
-              false
-             )) cltyps
+              hide_item
+             )) cltyps @ extract_structure_tree_items hide_item rest
 #if OCAML_MAJOR = 4 && OCAML_MINOR < 08
-    | Tstr_open _ -> []
+    | { str_desc = Tstr_open _; _} :: rest -> extract_structure_tree_items hide_item rest
 #else
-    | Tstr_open o ->
-      ((extract_extended_open o) :> extracted_items list)
+    | { str_desc = Tstr_open o; _ } :: rest ->
+        ((extract_extended_open o) :> extracted_items list)  @ extract_structure_tree_items hide_item rest
 #endif
-    | Tstr_primitive {val_id; _} ->
-      [`Value (val_id, false)]
-    | Tstr_eval _
-    | Tstr_typext _
-    | Tstr_exception _
-    | Tstr_attribute _ -> []
+    | { str_desc = Tstr_primitive {val_id; _}; _} :: rest ->
+      [`Value (val_id, false)] @ extract_structure_tree_items hide_item rest
+    | { str_desc = Tstr_eval _; _} :: rest 
+    | { str_desc = Tstr_typext _; _} :: rest
+    | {str_desc = Tstr_exception _; _ } :: rest -> extract_structure_tree_items hide_item rest
+    | [] -> []
 
-let extract_structure_tree_items str =
-  let open Typedtree in
-    List.map extract_structure_tree_item str.str_items |> List.flatten
 
 let flatten_extracted : extracted_items list -> extracted_item list = fun items ->
   List.map (function
@@ -355,88 +372,90 @@ let class_type_name_exists name items =
 let env_of_items parent items env =
   let rec inner items env =
     match items with
-    | `Type (t,force_shadowed) :: rest ->
+    | `Type (t, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || type_name_exists name rest in
-        let identifier, shadowed =
-        if is_shadowed
-        then `Type(parent, TypeName.internal_of_string name), t :: env.shadowed
-        else `Type(parent, TypeName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || type_name_exists name rest in
+        let identifier, hidden =
+        if is_hidden
+        then `Type(parent, TypeName.internal_of_string name), t :: env.hidden
+        else `Type(parent, TypeName.make_std name), env.hidden
       in
       let types = Ident.add t identifier env.types in      
-      inner rest { env with types; shadowed }
+      inner rest { env with types; hidden }
 
-    | `Value (t,force_shadowed) :: rest ->
+    | `Value (t, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || value_name_exists name rest in
-        let identifier, shadowed =
-        if is_shadowed
-        then `Value(parent, ValueName.internal_of_string name), t :: env.shadowed
-        else `Value(parent, ValueName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || value_name_exists name rest in
+      let identifier, hidden =
+        if is_hidden
+        then `Value(parent, ValueName.internal_of_string name), t :: env.hidden
+        else `Value(parent, ValueName.make_std name), env.hidden
       in
       let values = Ident.add t identifier env.values in      
-      inner rest { env with values; shadowed }
+      inner rest { env with values; hidden }
 
-    | `ModuleType (t, force_shadowed) :: rest ->
+    | `ModuleType (t, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || module_type_name_exists name rest in
-      let identifier, shadowed =
-        if is_shadowed 
-        then `ModuleType(parent, ModuleTypeName.internal_of_string name), t :: env.shadowed
-        else `ModuleType(parent, ModuleTypeName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || module_type_name_exists name rest in
+      let identifier, hidden =
+        if is_hidden
+        then `ModuleType(parent, ModuleTypeName.internal_of_string name), t :: env.hidden
+        else `ModuleType(parent, ModuleTypeName.make_std name), env.hidden
       in
       let module_types = Ident.add t identifier env.module_types in
-      inner rest { env with module_types; shadowed }
-    | `Module (t, force_shadowed) :: rest ->
+      inner rest { env with module_types; hidden }
+
+    | `Module (t, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || module_name_exists name rest in
-      let identifier, shadowed =
-        if is_shadowed 
-        then `Module(parent, ModuleName.internal_of_string name), t :: env.shadowed
-        else `Module(parent, ModuleName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || module_name_exists name rest in
+      let identifier, hidden =
+        if is_hidden 
+        then `Module(parent, ModuleName.internal_of_string name), t :: env.hidden
+        else `Module(parent, ModuleName.make_std name), env.hidden
       in
-      let path = `Identifier(identifier, is_shadowed) in
+      let path = `Identifier(identifier, is_hidden) in
       let modules = Ident.add t identifier env.modules in
       let module_paths = Ident.add t path env.module_paths in
-      inner rest { env with modules; module_paths; shadowed }
-    | `Class (t,t2,t3,t4,force_shadowed) :: rest ->
+      inner rest { env with modules; module_paths; hidden }
+
+    | `Class (t,t2,t3,t4, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || class_name_exists name rest in
-      let identifier, shadowed =
-        if is_shadowed 
-        then `Class(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.shadowed
-        else `Class(parent, ClassName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || class_name_exists name rest in
+      let identifier, hidden =
+        if is_hidden 
+        then `Class(parent, ClassName.internal_of_string name), t :: t2 :: t3 :: t4 :: env.hidden
+        else `Class(parent, ClassName.make_std name), env.hidden
       in
       let classes =
         List.fold_right (fun id classes -> Ident.add id identifier classes)
           [t; t2; t3; t4] env.classes in
-      inner rest { env with classes; shadowed }
-    | `ClassType (t,t2,t3,force_shadowed) :: rest ->
+      inner rest { env with classes; hidden }
+
+    | `ClassType (t,t2,t3, is_hidden_item) :: rest ->
       let name = Ident.name t in
-      let is_shadowed = force_shadowed || class_type_name_exists name rest in
-      let identifier, shadowed =
-        if is_shadowed 
-        then `ClassType(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.shadowed
-        else `ClassType(parent, ClassTypeName.make_std name), env.shadowed
+      let is_hidden = is_hidden_item || class_type_name_exists name rest in
+      let identifier, hidden =
+        if is_hidden 
+        then `ClassType(parent, ClassTypeName.internal_of_string name), t :: t2 :: t3 :: env.hidden
+        else `ClassType(parent, ClassTypeName.make_std name), env.hidden
       in
       let class_types =
         List.fold_right (fun id class_types -> Ident.add id identifier class_types)
           [t; t2; t3] env.class_types in
-      inner rest { env with class_types; shadowed }
+      inner rest { env with class_types; hidden }
+
     | [] -> env
     in inner items env
-  
-
 
 
 let add_signature_tree_items : Paths.Identifier.Signature.t -> Typedtree.signature -> t -> t = 
   fun parent sg env ->
-    let items = extract_signature_tree_items sg |> flatten_extracted in
+    let items = extract_signature_tree_items false sg.sig_items |> flatten_extracted in
     env_of_items parent items env
 
 let add_structure_tree_items : Paths.Identifier.Signature.t -> Typedtree.structure -> t -> t =
   fun parent sg env ->
-  let items = extract_structure_tree_items sg |> flatten_extracted in
+  let items = extract_structure_tree_items false sg.str_items |> flatten_extracted in
   env_of_items parent items env
 
 let handle_signature_type_items : Paths.Identifier.Signature.t -> Compat.signature -> t -> t =
@@ -495,9 +514,9 @@ let find_class_identifier env id =
 let find_class_type_identifier env id =
   Ident.find_same id env.class_types
 
-let is_shadowed env id =
-  List.mem id env.shadowed
-
+let is_shadowed
+ env id =
+    List.mem id env.hidden
 module Path = struct
 
   let read_module_ident env id =

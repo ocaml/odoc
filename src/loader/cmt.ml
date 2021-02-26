@@ -23,7 +23,7 @@ module OCamlPath = Path
 open Odoc_model.Paths
 open Odoc_model.Lang
 
-module Env = Odoc_model.Ident_env
+module Env = Ident_env
 
 
 let read_core_type env ctyp =

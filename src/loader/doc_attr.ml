@@ -28,7 +28,7 @@ let empty : Odoc_model.Comment.docs = empty_body
 
 
 
-let load_payload : Parsetree.payload -> (string * Location.t) option = function
+let load_payload : Parsetree.payload -> string * Location.t = function
   | PStr [{pstr_desc =
       Pstr_eval ({pexp_desc =
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
@@ -39,9 +39,21 @@ let load_payload : Parsetree.payload -> (string * Location.t) option = function
         Pexp_constant (Pconst_string (text, _, _))
 #endif
    ; pexp_loc = loc; _}, _); _}] ->
-    Some (text, loc)
-  | _ ->
-    None
+     (text, loc)
+  | _ -> assert false
+
+
+    let parse_attribute : Parsetree.attribute -> (string * Location.t) option = function
+    #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
+      | { attr_name = { Location.txt =
+          ("text" | "ocaml.text"); loc = _loc}; attr_payload; _ } -> begin
+    #else
+      | ({Location.txt =
+          ("text" | "ocaml.text"); loc = _loc}, attr_payload) -> begin
+    #endif
+      Some (load_payload attr_payload)
+        end
+      | _ -> None
 
 let attached parent attrs =
   let ocaml_deprecated = ref None in
@@ -56,7 +68,7 @@ let attached parent attrs =
           ("doc" | "ocaml.doc"); loc = _loc}, attr_payload) :: rest -> begin
 #endif
         match load_payload attr_payload with
-        | Some (str, loc) -> begin
+        | (str, loc) -> begin
             let start_pos = loc.Location.loc_start in
             let start_pos =
               {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
@@ -70,7 +82,6 @@ let attached parent attrs =
             in
             loop false 0 (acc @ parsed) rest
           end
-        | None -> (* TODO *) assert false
       end
     | _ :: rest -> loop first nb_deprecated acc rest
     | [] -> begin
@@ -96,32 +107,15 @@ let read_string parent loc str : Odoc_model.Comment.docs_or_stop =
 
 let page = read_string
 
-let standalone parent
-    : Parsetree.attribute -> Odoc_model.Comment.docs_or_stop option =
-
-  function
-#if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
-  | { attr_name = { Location.txt =
-        ("text" | "ocaml.text"); loc = _loc}; attr_payload; _ } -> begin
-#else
-  | ({Location.txt =
-        ("text" | "ocaml.text"); loc = _loc}, attr_payload) -> begin
-#endif
-      match load_payload attr_payload with
-      | Some ("/*", _loc) -> Some `Stop
-      | Some (str, loc) ->
-        let loc' =
-          { loc with
-            loc_start = { loc.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 } }
-        in
-        Some (read_string parent loc' str)
-      | None ->
-        (* TODO *)
-        assert false
-          (* let doc : Odoc_model.Comment.t =
-            Error (invalid_attribute_error parent loc) in
-            Some (Documentation doc) *)
-    end
+let standalone parent(attr : Parsetree.attribute): Odoc_model.Comment.docs_or_stop option = 
+  match parse_attribute attr with
+  | Some ("/*", _loc) -> Some `Stop
+  | Some (str, loc) ->
+    let loc' =
+      { loc with
+        loc_start = { loc.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 } }
+    in
+    Some (read_string parent loc' str)
   | _ -> None
 
 let standalone_multiple parent attrs =

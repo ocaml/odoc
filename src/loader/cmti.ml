@@ -23,9 +23,8 @@ open Odoc_model.Paths
 open Odoc_model.Lang
 open Odoc_model.Names
 
-module Env = Odoc_model.Ident_env
+module Env = Ident_env
 module Paths = Odoc_model.Paths
-module Ident_env = Odoc_model.Ident_env
 
 let read_module_expr : (Ident_env.t -> Identifier.Signature.t -> Identifier.LabelParent.t -> Typedtree.module_expr -> ModuleType.expr) ref = ref (fun _ _ _ _ -> failwith "unset")
 
