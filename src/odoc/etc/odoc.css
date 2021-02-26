@@ -77,6 +77,7 @@
     --border: #333;
     --navbar-border: #333;
     --code-color: #ccc;
+    --by-name-nav-link-color: var(--color);
 
     --li-code-background: #373737;
     --li-code-color: #999;
@@ -509,29 +510,11 @@ td.doc *:first-child {
 
 /* Odig package index */
 
-.by-name ol, .by-tag ol {
-  list-style-type: none;
-  margin-left: 0;
-}
-
-.by-name ol ol, .by-tag ol ol {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.by-name li, .by-tag li {
-  margin-left: 0;
-}
-
-.by-name .version {
-  font-size: 10px;
-  color: #AAA;
-  color: var(--by-name-version-color);
-}
-
-.by-name nav {
-  margin-bottom: 10px;
-}
+.packages { list-style-type: none; margin-left: -3ex; }
+.packages li { padding-left: 3ex; text-indent: -3ex }
+.packages li a.anchor { padding-right: 0.5ch; padding-left: 3ch; }
+.packages .version { font-size: 10px; color: var(--by-name-version-color); }
+.packages .synopsis { padding-left: 1ch }
 
 .by-name nav a {
   text-transform: uppercase;
@@ -549,14 +532,9 @@ td.doc *:first-child {
   display: inline-block;
 }
 
-.by-tag>ol>li {
-  margin-top: 10px;
-}
-
-.by-tag>ol>li>span, .by-tag>ol>li>ol, .by-tag>ol>li>ol>li {
-  display: inline-block;
-  margin-right: 1ex;
-}
+.by-tag ol { list-style-type: none; }
+.by-tag ol.tags li { margin-left: 1ch; display: inline-block }
+.by-tag td:first-child { text-transform: uppercase; }
 
 /* Odig package page */
 
