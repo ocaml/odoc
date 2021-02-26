@@ -501,6 +501,12 @@ td.doc *:first-child {
 .at-tags li { padding-left: 3ex; text-indent: -3ex; }
 .at-tags .at-tag { text-transform: capitalize }
 
+/* Lists of modules */
+
+.modules { list-style-type: none; margin-left: -3ex; }
+.modules li { padding-left: 3ex; text-indent: -3ex; margin-top: 5px }
+.modules .synopsis { padding-left: 1ch; }
+
 /* FIXME random other things to review. */
 
 .heading {
@@ -583,32 +589,6 @@ td.doc *:first-child {
 
 .package .version {
   font-size: 14px;
-}
-
-h1+.modules, h1+.sel {
-  margin-top: 10px
-}
-
-.sel {
-  font-weight: normal;
-  font-style: italic;
-  font-size: 14px;
-  margin-top: 20px;
-}
-
-.sel + .modules {
-  margin-top: 10px;
-  margin-bottom: 20px;
-  margin-left: 1ex;
-}
-
-.modules {
-  margin: 0;
-}
-
-.modules .module {
-  min-width: 8ex;
-  padding-right: 2ex;
 }
 
 .package.info {
