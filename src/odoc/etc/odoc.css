@@ -495,6 +495,12 @@ td.doc *:first-child {
   margin-top: 0em;
 }
 
+/* Lists of @tags */
+
+.at-tags { list-style-type: none; margin-left: -3ex; }
+.at-tags li { padding-left: 3ex; text-indent: -3ex; }
+.at-tags .at-tag { text-transform: capitalize }
+
 /* FIXME random other things to review. */
 
 .heading {
