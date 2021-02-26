@@ -507,30 +507,9 @@ td.doc *:first-child {
 .modules li { padding-left: 3ex; text-indent: -3ex; margin-top: 5px }
 .modules .synopsis { padding-left: 1ch; }
 
-/* FIXME random other things to review. */
-
-.heading {
-  margin-top: 10px;
-  border-bottom: solid;
-  border-width: 1px;
-  border-color: #DDD;
-  border-color: var(--header-shadow);
-  text-align: right;
-  font-weight: normal;
-  font-style: italic;
-}
-
-.heading + .sig {
-  margin-top: -20px;
-}
-
-.heading + .parameters {
-  margin-top: -20px;
-}
-
 /* Odig package index */
 
-.by-name ol, .by-tag ol, .errors ol {
+.by-name ol, .by-tag ol {
   list-style-type: none;
   margin-left: 0;
 }
@@ -540,7 +519,7 @@ td.doc *:first-child {
   margin-bottom: 0;
 }
 
-.by-name li, .by-tag li, .errors li {
+.by-name li, .by-tag li {
   margin-left: 0;
 }
 
