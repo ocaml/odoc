@@ -143,7 +143,9 @@ let href x pp ppf y =
 let item ?options = create "item" ?options
 
 let description pp ppf x =
-  let elt ppf (d, elt) = item ~options:[ bind pp d ] pp ppf elt in
+  (* printing description inside a group make them more robust *)
+  let group_printer d ppf = Fmt.pf ppf "{%a}" pp d in
+  let elt ppf (d, elt) = item ~options:[ group_printer d ] pp ppf elt in
   let all ppf x =
     Fmt.pf ppf
       {|\kern-\topsep
@@ -151,7 +153,9 @@ let description pp ppf x =
 |};
     Fmt.list ~sep:(fun ppf () -> break ppf Aesthetic) elt ppf x
   in
-  raw_description all ppf x
+  match x with
+  | [] -> () (* empty description are not supported *)
+  | _ :: _ -> raw_description all ppf x
 
 let url ppf s =
   create "url" Fmt.string ppf (Escape.text ~code_hyphenation:false s)
