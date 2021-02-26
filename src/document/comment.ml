@@ -215,8 +215,7 @@ let module_references ms =
       match m.module_synopsis with
       | Some synopsis ->
           [
-            block ~attr:[ "synopsis" ]
-            @@ Inline (inline_element_list synopsis);
+            block ~attr:[ "synopsis" ] @@ Inline (inline_element_list synopsis);
           ]
       | None -> []
     in
@@ -254,58 +253,56 @@ and nestable_block_element_list elements =
   |> List.map nestable_block_element
 
 let tag : Comment.tag -> Block.description_item option =
-fun t ->
+ fun t ->
   let item ?value ~tag def =
     let sp = inline (Text " ") in
-    let tag_name = inline ~attr:["at-tag"] (Text tag) in
-    let tag_value = match value with
+    let tag_name = inline ~attr:[ "at-tag" ] (Text tag) in
+    let tag_value =
+      match value with
       | None -> []
-      | Some t -> [sp; inline ~attr:["value"] t]
+      | Some t -> [ sp; inline ~attr:[ "value" ] t ]
     in
     let term = tag_name :: tag_value in
-    Some { Block.item_attr = [tag]; term; def }
+    Some { Block.item_attr = [ tag ]; term; def }
   in
   let text_def s =
-    [{ Block.attr = []; desc = Block.Inline [ inline @@ Text s ] }]
+    [ { Block.attr = []; desc = Block.Inline [ inline @@ Text s ] } ]
   in
   match t with
-  | `Author s ->
-    item ~tag:"author" (text_def s)
+  | `Author s -> item ~tag:"author" (text_def s)
   | `Deprecated content ->
-    item ~tag:"deprecated" (nestable_block_element_list content)
+      item ~tag:"deprecated" (nestable_block_element_list content)
   | `Param (name, content) ->
-    let value = Inline.Text name in
-    item ~tag:"parameter" ~value (nestable_block_element_list content)
+      let value = Inline.Text name in
+      item ~tag:"parameter" ~value (nestable_block_element_list content)
   | `Raise (name, content) ->
-    let value = Inline.Text name in
-    item ~tag:"raises" ~value (nestable_block_element_list content)
-  | `Return content ->
-    item ~tag:"returns" (nestable_block_element_list content)
+      let value = Inline.Text name in
+      item ~tag:"raises" ~value (nestable_block_element_list content)
+  | `Return content -> item ~tag:"returns" (nestable_block_element_list content)
   | `See (kind, target, content) ->
-    let value =
-      match kind with
-      | `Url -> Inline.Link (target, [ inline @@ Text target ])
-      | `File -> Inline.Source (source_of_code target)
-      | `Document -> Inline.Text target
-    in
-    item ~tag:"see" ~value (nestable_block_element_list content)
-  | `Since s ->
-    item ~tag:"since" (text_def s)
+      let value =
+        match kind with
+        | `Url -> Inline.Link (target, [ inline @@ Text target ])
+        | `File -> Inline.Source (source_of_code target)
+        | `Document -> Inline.Text target
+      in
+      item ~tag:"see" ~value (nestable_block_element_list content)
+  | `Since s -> item ~tag:"since" (text_def s)
   | `Before (version, content) ->
-    let value = Inline.Text version in
-    item ~tag:"before" ~value (nestable_block_element_list content)
-  | `Version s ->
-    item ~tag:"version" (text_def s)
+      let value = Inline.Text version in
+      item ~tag:"before" ~value (nestable_block_element_list content)
+  | `Version s -> item ~tag:"version" (text_def s)
   | `Canonical _ | `Inline | `Open | `Closed -> None
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function
   | #Comment.nestable_block_element as e -> [ nestable_block_element e ]
-  | `Tag t ->
-    match tag t with
-    | None -> []
-    | Some t ->
-      [ block ~attr:["at-tags"] @@ Description [t] ] (* TODO collaesce tags *)
+  | `Tag t -> (
+      match tag t with
+      | None -> []
+      | Some t -> [ block ~attr:[ "at-tags" ] @@ Description [ t ] ] )
+
+(* TODO collaesce tags *)
 
 let block_element : Comment.block_element -> Block.t = function
   | #Comment.attached_block_element as e -> attached_block_element e
