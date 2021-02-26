@@ -248,10 +248,7 @@ module ExtractIDs = struct
     let name = Ident.Name.type_ id in
     let identifier =
       if List.mem name map.shadowed.s_types then
-        `Type
-          ( parent,
-            Odoc_model.Names.TypeName.internal_of_string (Ident.Name.type_ id)
-          )
+        `Type (parent, Odoc_model.Names.TypeName.internal_of_string name)
       else `Type (parent, Ident.Name.typed_type id)
     in
     {
