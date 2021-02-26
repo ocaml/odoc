@@ -219,7 +219,7 @@ let module_references ms =
           ]
       | None -> []
     in
-    { Block.item_attr = []; term = reference; def = synopsis }
+    { Description.attr = []; key = reference; definition = synopsis }
   in
   let items = List.map module_reference ms in
   block ~attr:[ "modules" ] @@ Description items
@@ -252,9 +252,9 @@ and nestable_block_element_list elements =
   |> List.map Odoc_model.Location_.value
   |> List.map nestable_block_element
 
-let tag : Comment.tag -> Block.description_item option =
+let tag : Comment.tag -> Description.one option =
  fun t ->
-  let item ?value ~tag def =
+  let item ?value ~tag definition =
     let sp = inline (Text " ") in
     let tag_name = inline ~attr:[ "at-tag" ] (Text tag) in
     let tag_value =
@@ -262,10 +262,10 @@ let tag : Comment.tag -> Block.description_item option =
       | None -> []
       | Some t -> [ sp; inline ~attr:[ "value" ] t ]
     in
-    let term = tag_name :: tag_value in
-    Some { Block.item_attr = [ tag ]; term; def }
+    let key = tag_name :: tag_value in
+    Some { Description.attr = [ tag ]; key; definition }
   in
-  let text_def s = [block (Block.Inline [ inline @@ Text s ])] in
+  let text_def s = [ block (Block.Inline [ inline @@ Text s ]) ] in
   match t with
   | `Author s -> item ~tag:"author" (text_def s)
   | `Deprecated content ->
