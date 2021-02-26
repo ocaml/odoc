@@ -317,11 +317,11 @@ let rec block ~in_source (l : Block.t) =
         [ List { typ; items = List.map (block ~in_source:false) l } ]
     | Description l ->
         [
-          Description
-            (List.map
-               (fun (i, b) ->
-                 (inline ~in_source ~verbatim:false i, block ~in_source b))
-               l);
+          let item i =
+            inline ~in_source ~verbatim:false i.Block.term,
+            block ~in_source i.Block.def
+          in
+          Description (List.map item l)
         ]
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Verbatim s ]

@@ -175,14 +175,15 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
         [ mk ~a (List.map (fun x -> Html.li (block ~resolve x)) l) ]
     | Description l ->
         [
-          Html.dl ~a
-            (Utils.list_concat_map l ~f:(fun (i, b) ->
-                 let i =
-                   ( inline ~resolve i
-                     : phrasing Html.elt list
-                     :> flow Html.elt list )
-                 in
-                 [ Html.dt i; Html.dd (block ~resolve b) ]));
+          let item i =
+            let term =
+              ( inline ~resolve i.Block.term
+                : phrasing Html.elt list
+                :> flow Html.elt list )
+            in
+            [ Html.dt term; Html.dd (block ~resolve i.Block.def) ]
+          in
+          Html.dl ~a (Utils.list_concat_map l ~f:item)
         ]
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Html.pre ~a [ Html.txt s ] ]
