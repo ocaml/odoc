@@ -220,7 +220,7 @@ let module_references ms =
           ]
       | None -> []
     in
-    (reference, synopsis)
+    { Block.item_attr = []; term = reference; def = synopsis }
   in
   let items = List.map module_reference ms in
   block ~attr:[ "modules" ] @@ Description items
@@ -255,7 +255,9 @@ and nestable_block_element_list elements =
 
 let tag : Comment.tag -> Block.t =
  fun t ->
-  let description a b = [ block @@ Description [ (a, b) ] ] in
+   let description a b =
+    [ block @@ Description [ { Block.item_attr = []; term = a; def = b } ] ]
+  in
   match t with
   | `Author s ->
       description

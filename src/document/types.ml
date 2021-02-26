@@ -61,11 +61,13 @@ and Block : sig
 
   and one = { attr : Class.t; desc : desc }
 
+  and description_item = { item_attr : Class.t; term : Inline.t; def : t }
+
   and desc =
     | Inline of Inline.t
     | Paragraph of Inline.t
     | List of list_type * t list
-    | Description of (Inline.t * t) list
+    | Description of description_item list
     | Source of Source.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t
