@@ -31,20 +31,22 @@ As HTML, should render as a description list.
     </nav>
     <header class="odoc-preamble">
      <h1>Module <code><span>Main</span></code></h1>
-     <dl class="modules">
-      <dt><a href="../External/index.html"><code>External</code></a></dt>
-      <dd><p class="synopsis">Doc for <code>External</code>.</p></dd>
-      <dt><a href="../External/X/index.html"><code>External.X</code></a></dt>
-      <dd><p class="synopsis">Doc for <code>X</code>.</p></dd>
-      <dt><a href="#"><code>Main</code></a></dt><dd></dd>
-      <dt><a href="Internal/index.html"><code>Internal</code></a></dt>
-      <dd><p class="synopsis">Doc for <code>Internal</code>.</p></dd>
-      <dt><a href="Internal/Y/index.html"><code>Internal.Y</code></a></dt>
-      <dd>
-       <p class="synopsis">Doc for Internal.<code>X</code>. An other sentence.
-       </p>
-      </dd>
-     </dl>
+     <ul class="modules">
+      <li><a href="../External/index.html"><code>External</code></a> 
+       <span class="synopsis">Doc for <code>External</code>.</span>
+      </li>
+      <li><a href="../External/X/index.html"><code>External.X</code></a>
+        <span class="synopsis">Doc for <code>X</code>.</span>
+      </li><li><a href="#"><code>Main</code></a> </li>
+      <li><a href="Internal/index.html"><code>Internal</code></a> 
+       <span class="synopsis">Doc for <code>Internal</code>.</span>
+      </li>
+      <li><a href="Internal/Y/index.html"><code>Internal.Y</code></a> 
+       <span class="synopsis">Doc for Internal.<code>X</code>. An other
+         sentence.
+       </span>
+      </li>
+     </ul>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
