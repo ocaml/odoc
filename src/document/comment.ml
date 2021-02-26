@@ -216,7 +216,7 @@ let module_references ms =
       | Some synopsis ->
           [
             block ~attr:[ "synopsis" ]
-            @@ Paragraph (inline_element_list synopsis);
+            @@ Inline (inline_element_list synopsis);
           ]
       | None -> []
     in
