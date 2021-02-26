@@ -318,8 +318,8 @@ let rec block ~in_source (l : Block.t) =
     | Description l ->
         [
           (let item i =
-             ( inline ~in_source ~verbatim:false i.Block.term,
-               block ~in_source i.Block.def )
+             ( inline ~in_source ~verbatim:false i.Description.key,
+               block ~in_source i.Description.definition )
            in
            Description (List.map item l));
         ]

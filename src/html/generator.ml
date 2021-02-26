@@ -176,13 +176,13 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     | Description l ->
         [
           (let item i =
-             let a = class_ i.Block.item_attr in
+             let a = class_ i.Description.attr in
              let term =
-               ( inline ~resolve i.Block.term
+               ( inline ~resolve i.Description.key
                  : phrasing Html.elt list
                  :> flow Html.elt list )
              in
-             let def = block ~resolve i.Block.def in
+             let def = block ~resolve i.Description.definition in
              Html.li ~a (term @ (Html.txt " " :: def))
            in
            Html.ul ~a (List.map item l));

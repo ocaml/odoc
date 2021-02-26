@@ -51,6 +51,13 @@ and Inline : sig
 end =
   Inline
 
+and Description : sig
+  type one = { attr : Class.t; key : Inline.t; definition : Block.t }
+
+  type t = one list
+end =
+  Description
+
 and Heading : sig
   type t = { label : string option; level : int; title : Inline.t }
 end =
@@ -61,13 +68,11 @@ and Block : sig
 
   and one = { attr : Class.t; desc : desc }
 
-  and description_item = { item_attr : Class.t; term : Inline.t; def : t }
-
   and desc =
     | Inline of Inline.t
     | Paragraph of Inline.t
     | List of list_type * t list
-    | Description of description_item list
+    | Description of Description.t
     | Source of Source.t
     | Verbatim of string
     | Raw_markup of Raw_markup.t

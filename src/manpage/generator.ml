@@ -330,9 +330,9 @@ let rec block (l : Block.t) =
               | _ -> Stop_and_keep)
           in
           let f i =
-            let term = inline i.Block.term in
-            let def = block i.Block.def in
-            indent 2 (str "@" ++ term ++ str ":" ++ sp ++ def)
+            let key = inline i.Description.key in
+            let def = block i.Description.definition in
+            indent 2 (str "@" ++ key ++ str ":" ++ sp ++ def)
           in
           list ~sep:break (List.map f descrs) ++ continue rest
       | Source content ->
