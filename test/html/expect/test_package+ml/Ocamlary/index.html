@@ -77,14 +77,11 @@
    <p>
     David Sheets is the author.
    </p>
-   <dl>
-    <dt>
-     author
-    </dt>
-    <dd>
-     David Sheets
-    </dd>
-   </dl>
+   <ul class="at-tags">
+    <li class="author">
+     <span class="at-tag">author</span> David Sheets
+    </li>
+   </ul>
   </header>
   <nav class="odoc-toc">
    <ul>
@@ -172,24 +169,14 @@
    <p>
     Here is an index table of <code>Empty</code> modules:
    </p>
-   <dl class="modules">
-    <dt>
-     <a href="Empty/index.html"><code>Empty</code></a>
-    </dt>
-    <dd>
-     <p class="synopsis">
-      A plain, empty module
-     </p>
-    </dd>
-    <dt>
-     <a href="Empty/index.html"><code>EmptyAlias</code></a>
-    </dt>
-    <dd>
-     <p class="synopsis">
-      A plain module alias of <code>Empty</code>
-     </p>
-    </dd>
-   </dl>
+   <ul class="modules">
+    <li>
+     <a href="Empty/index.html"><code>Empty</code></a> <span class="synopsis">A plain, empty module</span>
+    </li>
+    <li>
+     <a href="Empty/index.html"><code>EmptyAlias</code></a> <span class="synopsis">A plain module alias of <code>Empty</code></span>
+    </li>
+   </ul>
    <p>
     Here is a table of links to indexes: <code>indexlist</code>
    </p>
@@ -422,26 +409,22 @@
      <p>
       This is <code>a_function</code> with param and return type.
      </p>
-     <dl>
-      <dt>
-       parameter x
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="parameter">
+       <span class="at-tag">parameter</span> <span class="value">x</span>
        <p>
         the <code>x</code> coordinate
        </p>
-      </dd>
-     </dl>
-     <dl>
-      <dt>
-       returns
-      </dt>
-      <dd>
+      </li>
+     </ul>
+     <ul class="at-tags">
+      <li class="returns">
+       <span class="at-tag">returns</span>
        <p>
         the <code>y</code> coordinate
        </p>
-      </dd>
-     </dl>
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -459,16 +442,14 @@
      <a href="#val-not_found" class="anchor"></a><code><span><span class="keyword">val</span> not_found : <span>unit <span>-&gt;</span></span> unit</span></code>
     </div>
     <div class="spec-doc">
-     <dl>
-      <dt>
-       raises Not_found
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="raises">
+       <span class="at-tag">raises</span> <span class="value">Not_found</span>
        <p>
         That's all it does
        </p>
-      </dd>
-     </dl>
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -476,16 +457,14 @@
      <a href="#val-ocaml_org" class="anchor"></a><code><span><span class="keyword">val</span> ocaml_org : string</span></code>
     </div>
     <div class="spec-doc">
-     <dl>
-      <dt>
-       see <a href="http://ocaml.org/">http://ocaml.org/</a>
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="see">
+       <span class="at-tag">see</span> <a href="http://ocaml.org/" class="value">http://ocaml.org/</a>
        <p>
         The OCaml Web site
        </p>
-      </dd>
-     </dl>
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -493,16 +472,14 @@
      <a href="#val-some_file" class="anchor"></a><code><span><span class="keyword">val</span> some_file : string</span></code>
     </div>
     <div class="spec-doc">
-     <dl>
-      <dt>
-       see <code>some_file</code>
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="see">
+       <span class="at-tag">see</span> <code class="value">some_file</code>
        <p>
         The file called <code>some_file</code>
        </p>
-      </dd>
-     </dl>
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -510,16 +487,14 @@
      <a href="#val-some_doc" class="anchor"></a><code><span><span class="keyword">val</span> some_doc : string</span></code>
     </div>
     <div class="spec-doc">
-     <dl>
-      <dt>
-       see some_doc
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="see">
+       <span class="at-tag">see</span> <span class="value">some_doc</span>
        <p>
         The document called <code>some_doc</code>
        </p>
-      </dd>
-     </dl>
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -530,14 +505,11 @@
      <p>
       This value was introduced in the Mesozoic era.
      </p>
-     <dl>
-      <dt>
-       since
-      </dt>
-      <dd>
-       mesozoic
-      </dd>
-     </dl>
+     <ul class="at-tags">
+      <li class="since">
+       <span class="at-tag">since</span> mesozoic
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -548,34 +520,27 @@
      <p>
       This value has had changes in 1.0.0, 1.1.0, and 1.2.0.
      </p>
-     <dl>
-      <dt>
-       before 1.0.0
-      </dt>
-      <dd>
+     <ul class="at-tags">
+      <li class="before">
+       <span class="at-tag">before</span> <span class="value">1.0.0</span>
        <p>
         before 1.0.0
        </p>
-      </dd>
-     </dl>
-     <dl>
-      <dt>
-       before 1.1.0
-      </dt>
-      <dd>
+      </li>
+     </ul>
+     <ul class="at-tags">
+      <li class="before">
+       <span class="at-tag">before</span> <span class="value">1.1.0</span>
        <p>
         before 1.1.0
        </p>
-      </dd>
-     </dl>
-     <dl>
-      <dt>
-       version
-      </dt>
-      <dd>
-       1.2.0
-      </dd>
-     </dl>
+      </li>
+     </ul>
+     <ul class="at-tags">
+      <li class="version">
+       <span class="at-tag">version</span> 1.2.0
+      </li>
+     </ul>
     </div>
    </div>
    <div class="odoc-spec">
@@ -1880,45 +1845,34 @@
    <p>
     With odoc, everything should be resolved (and linked) but only toplevel units will be documented.
    </p>
-   <dl class="modules">
-    <dt>
+   <ul class="modules">
+    <li>
      <a href="Dep1/X/index.html"><code>Dep1.X</code></a>
-    </dt>
-    <dd></dd>
-    <dt>
+    </li>
+    <li>
      <code>DocOckTypes</code>
-    </dt>
-    <dd></dd>
-    <dt>
+    </li>
+    <li>
      <a href="IncludeInclude1/index.html"><code>Ocamlary.IncludeInclude1</code></a>
-    </dt>
-    <dd></dd>
-    <dt>
-     <a href="#"><code>Ocamlary</code></a>
-    </dt>
-    <dd>
-     <p class="synopsis">
-      This is an <i>interface</i> with <b>all</b> of the <em>module system</em> features. <code>C This text is centered. </code> <code>L This text is left-aligned. </code> <code>R This text is right-aligned. </code> This documentation demonstrates:
-     </p>
-    </dd>
-   </dl>
+    </li>
+    <li>
+     <a href="#"><code>Ocamlary</code></a> <span class="synopsis">This is an <i>interface</i> with <b>all</b> of the <em>module system</em> features. <code>C This text is centered. </code> <code>L This text is left-aligned. </code> <code>R This text is right-aligned. </code> This documentation demonstrates:</span>
+    </li>
+   </ul>
    <h4 id="weirder-usages-involving-module-types">
     <a href="#weirder-usages-involving-module-types" class="anchor"></a>Weirder usages involving module types
    </h4>
-   <dl class="modules">
-    <dt>
+   <ul class="modules">
+    <li>
      <code>IncludeInclude1</code>.IncludeInclude2
-    </dt>
-    <dd></dd>
-    <dt>
+    </li>
+    <li>
      <code>Dep4</code>.T
-    </dt>
-    <dd></dd>
-    <dt>
+    </li>
+    <li>
      <a href="module-type-A/Q/index.html"><code>A.Q</code></a>
-    </dt>
-    <dd></dd>
-   </dl>
+    </li>
+   </ul>
    <h2 id="playing-with-@canonical-paths">
     <a href="#playing-with-@canonical-paths" class="anchor"></a>Playing with @canonical paths
    </h2>
