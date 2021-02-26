@@ -265,9 +265,7 @@ let tag : Comment.tag -> Block.description_item option =
     let term = tag_name :: tag_value in
     Some { Block.item_attr = [ tag ]; term; def }
   in
-  let text_def s =
-    [ { Block.attr = []; desc = Block.Inline [ inline @@ Text s ] } ]
-  in
+  let text_def s = [block (Block.Inline [ inline @@ Text s ])] in
   match t with
   | `Author s -> item ~tag:"author" (text_def s)
   | `Deprecated content ->
