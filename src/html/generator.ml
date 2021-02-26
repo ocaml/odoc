@@ -176,14 +176,16 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
     | Description l ->
         [
           let item i =
+            let a = class_ i.Block.item_attr in
             let term =
               ( inline ~resolve i.Block.term
                 : phrasing Html.elt list
                 :> flow Html.elt list )
             in
-            [ Html.dt term; Html.dd (block ~resolve i.Block.def) ]
+            let def = block ~resolve i.Block.def in
+            Html.li ~a (term @ Html.txt " " :: def)
           in
-          Html.dl ~a (Utils.list_concat_map l ~f:item)
+          Html.ul ~a (List.map item l)
         ]
     | Raw_markup r -> raw_markup r
     | Verbatim s -> [ Html.pre ~a [ Html.txt s ] ]
