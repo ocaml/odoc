@@ -1,7 +1,7 @@
 (**
-   Compatibility module reexporting ~equivalent functions based on the current
-   OCaml version
- *)
+  Compatibility module reexporting ~equivalent functions based on the current
+  OCaml version
+*)
 module String =
 struct
   include String

@@ -23,9 +23,8 @@ open Odoc_model.Paths
 open Odoc_model.Lang
 open Odoc_model.Names
 
-module Env = Odoc_model.Ident_env
+module Env = Ident_env
 module Paths = Odoc_model.Paths
-module Ident_env = Odoc_model.Ident_env
 
 let opt_map f = function
   | None -> None
