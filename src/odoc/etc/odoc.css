@@ -20,6 +20,12 @@
   --target-background: rgba(187, 239, 253, 0.3);
   --target-shadow: rgba(187, 239, 253, 0.8);
   --pre-border-color: #eee;
+  --code-background: #f6f8fa;
+  --spec-summary-border-color: #5c9cf5;
+  --spec-summary-background: var(--code-background);
+  --spec-summary-hover-background: #ebeff2;
+  --spec-details-after-background: rgba(0, 4, 15, 0.05);
+  --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
 }
 
 .dark:root {
@@ -84,9 +90,7 @@
     --toc-color: #777;
     --toc-background: #252525;
     --toc-list-border: #ccc;
-    --spec-summary-background: var(--code-background);
     --spec-summary-hover-background: #ebeff2;
-    --spec-summary-border-color: #5c9cf5;
     --spec-details-after-background: rgba(0, 4, 15, 0.05);
     --spec-details-after-shadow: rgba(204, 204, 204, 0.53);
 
@@ -393,17 +397,14 @@ pre code {
 /* Module member specification */
 
 .spec {
-  background-color: #f6f8fa;
   background-color: var(--spec-summary-background);
   border-radius: 3px;
-  border-left: 4px solid #5c9cf5;
   border-left: 4px solid var(--spec-summary-border-color);
   border-right: 5px solid transparent;
   padding: 0.35em 0.5em;
 }
 
 .odoc-include details summary:hover {
-  background-color: #ebeff2;
   background-color: var(--spec-summary-hover-background);
 }
 
