@@ -50,7 +50,7 @@ module ML = Generator.Make (struct
 
     let any = "_"
 
-    let arrow = O.span (O.entity "#45" ++ O.entity "gt")
+    let arrow = O.span ~attr:"arrow" (O.entity "#45" ++ O.entity "gt")
 
     module Exception = struct
       let semicolon = false

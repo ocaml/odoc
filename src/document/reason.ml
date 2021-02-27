@@ -48,7 +48,7 @@ module Reason = Generator.Make (struct
 
     let any = "_"
 
-    let arrow = O.span (O.txt "=" ++ O.entity "gt")
+    let arrow = O.span ~attr:"arrow" (O.txt "=" ++ O.entity "gt")
 
     module Exception = struct
       let semicolon = true
