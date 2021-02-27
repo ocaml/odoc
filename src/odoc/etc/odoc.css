@@ -394,6 +394,8 @@ pre code {
   font-weight: 500;
 }
 
+.arrow { white-space: nowrap }
+
 /* Module member specification */
 
 .spec {
