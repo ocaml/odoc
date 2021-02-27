@@ -158,7 +158,7 @@ let ( ++ ) f g ppf =
   f ppf;
   g ppf
 
-let span f ppf = pf ppf "@{<>%t@}" f
+let span ?(attr = "") f ppf = pf ppf "@{<%s>%t@}" attr f
 
 let txt s ppf = Format.pp_print_string ppf s
 
