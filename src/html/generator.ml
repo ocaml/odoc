@@ -207,6 +207,12 @@ let div : ([< Html_types.div_attrib ], [< item ], [> Html_types.div ]) Html.star
 let class_of_kind kind =
   match kind with Some spec -> class_ [ "spec"; spec ] | None -> []
 
+let spec_doc_div ~resolve = function
+  | [] -> []
+  | docs ->
+      let a = [ Html.a_class [ "spec-doc" ] ] in
+      [ div ~a (flow_to_item @@ block ~resolve docs) ]
+
 let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
   let open DocumentedSrc in
   let take_code l =
@@ -276,53 +282,37 @@ and items ~resolve l : item Html.elt list =
         [ heading ~resolve h ] |> (continue_with [@tailcall]) rest
     | Include { kind; anchor; doc; content = { summary; status; content } }
       :: rest ->
+        let doc = spec_doc_div ~resolve doc in
         let included_html = (items content :> any Html.elt list) in
-        let docs = (block ~resolve doc :> any Html.elt list) in
-        let summary = source (inline ~resolve) summary in
-        let content : any Html.elt list =
-          let mk b =
-            let a = if b then [ Html.a_open () ] else [] in
-            [
-              Html.details ~a
-                (Html.summary
-                   [ Html.span ~a:[ Html.a_class [ "def" ] ] summary ])
-                included_html;
-            ]
+        let content =
+          let details ~open' =
+            let open' = if open' then [ Html.a_open () ] else [] in
+            let summary =
+              let anchor_attrib, anchor_link = mk_anchor anchor in
+              let a = class_of_kind kind @ anchor_attrib in
+              Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
+            in
+            [ Html.details ~a:open' summary included_html ]
           in
           match status with
           | `Inline -> included_html
-          | `Closed -> mk false
-          | `Open -> mk true
-          | `Default -> mk !Tree.open_details
+          | `Closed -> details ~open':false
+          | `Open -> details ~open':true
+          | `Default -> details ~open':!Tree.open_details
         in
-        let anchor_attrib, anchor_link = mk_anchor anchor in
-        let a = class_of_kind kind @ anchor_attrib in
-        (* TODO : Why double div ??? *)
-        [
-          Html.div
-            ~a:[ Html.a_class [ "odoc-include" ] ]
-            [
-              Html.div ~a
-                ( anchor_link
-                @ [ Html.div ~a:[ Html.a_class [ "doc" ] ] (docs @ content) ] );
-            ];
-        ]
-        |> (continue_with [@tailcall]) rest
+        let inc =
+          [ Html.div ~a:[ Html.a_class [ "odoc-include" ] ] (doc @ content) ]
+        in
+        (continue_with [@tailcall]) rest inc
     | Declaration { Item.kind; anchor; content; doc } :: rest ->
         let anchor_attrib, anchor_link = mk_anchor anchor in
         let a = class_of_kind kind @ anchor_attrib in
         let content = anchor_link @ documentedSrc ~resolve content in
-        let elts =
-          let doc =
-            match doc with
-            | [] -> []
-            | docs ->
-                let a = [ Html.a_class [ "spec-doc" ] ] in
-                [ div ~a (flow_to_item @@ block ~resolve docs) ]
-          in
+        let spec =
+          let doc = spec_doc_div ~resolve doc in
           [ div ~a:[ Html.a_class [ "odoc-spec" ] ] (div ~a content :: doc) ]
         in
-        (continue_with [@tailcall]) rest elts
+        (continue_with [@tailcall]) rest spec
   and items l = walk_items [] l in
   items l
 
