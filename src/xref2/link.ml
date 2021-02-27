@@ -888,6 +888,7 @@ let link x y =
 
 let page env page =
   let env = Env.set_resolver Env.empty env in
+  let env = Env.add_docs page.Page.content env in
   let children =
     List.fold_right
       (fun child res ->
