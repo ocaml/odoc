@@ -392,7 +392,7 @@ pre code {
 
 /* Module member specification */
 
-.spec:not(.include), .spec.include details summary {
+.spec {
   background-color: #f6f8fa;
   background-color: var(--spec-summary-background);
   border-radius: 3px;
@@ -402,7 +402,7 @@ pre code {
   padding: 0.35em 0.5em;
 }
 
-.spec.include details summary:hover {
+.odoc-include details summary:hover {
   background-color: #ebeff2;
   background-color: var(--spec-summary-hover-background);
 }
@@ -443,11 +443,11 @@ div.doc>*:first-child {
 
 /* Collapsible inlined include and module */
 
-.spec.include details {
+.odoc-include details {
   position: relative;
 }
 
-.spec.include details:after {
+.odoc-include details:after {
   z-index: -100;
   display: block;
   content: " ";
@@ -463,7 +463,7 @@ div.doc>*:first-child {
   box-shadow: 0 0px 0 1px var(--spec-details-after-shadow);
 }
 
-.spec.include details summary {
+.odoc-include details summary {
   position: relative;
   margin-bottom: 20px;
   cursor: pointer;
@@ -471,7 +471,7 @@ div.doc>*:first-child {
 }
 
 /* FIXME: Does not work in Firefox. */
-details summary::-webkit-details-marker {
+.odoc-include details summary::-webkit-details-marker {
   color: #888;
   transform: scaleX(-1);
   position: absolute;
