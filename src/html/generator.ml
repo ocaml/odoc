@@ -204,8 +204,7 @@ let div : ([< Html_types.div_attrib ], [< item ], [> Html_types.div ]) Html.star
     =
   Html.Unsafe.node "div"
 
-let class_of_kind kind =
-  match kind with Some spec -> class_ [ "spec"; spec ] | None -> []
+let spec_class = function [] -> [] | attr -> class_ ("spec" :: attr)
 
 let spec_doc_div ~resolve = function
   | [] -> []
@@ -280,7 +279,7 @@ and items ~resolve l : item Html.elt list =
         content |> (continue_with [@tailcall]) rest
     | Heading h :: rest ->
         [ heading ~resolve h ] |> (continue_with [@tailcall]) rest
-    | Include { kind; anchor; doc; content = { summary; status; content } }
+    | Include { attr; anchor; doc; content = { summary; status; content } }
       :: rest ->
         let doc = spec_doc_div ~resolve doc in
         let included_html = (items content :> any Html.elt list) in
@@ -289,7 +288,7 @@ and items ~resolve l : item Html.elt list =
             let open' = if open' then [ Html.a_open () ] else [] in
             let summary =
               let anchor_attrib, anchor_link = mk_anchor anchor in
-              let a = class_of_kind kind @ anchor_attrib in
+              let a = spec_class attr @ anchor_attrib in
               Html.summary ~a @@ anchor_link @ source (inline ~resolve) summary
             in
             [ Html.details ~a:open' summary included_html ]
@@ -304,9 +303,9 @@ and items ~resolve l : item Html.elt list =
           [ Html.div ~a:[ Html.a_class [ "odoc-include" ] ] (doc @ content) ]
         in
         (continue_with [@tailcall]) rest inc
-    | Declaration { Item.kind; anchor; content; doc } :: rest ->
+    | Declaration { Item.attr; anchor; content; doc } :: rest ->
         let anchor_attrib, anchor_link = mk_anchor anchor in
-        let a = class_of_kind kind @ anchor_attrib in
+        let a = spec_class attr @ anchor_attrib in
         let content = anchor_link @ documentedSrc ~resolve content in
         let spec =
           let doc = spec_doc_div ~resolve doc in

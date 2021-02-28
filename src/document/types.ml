@@ -128,7 +128,7 @@ end =
 
 and Item : sig
   type 'a item = {
-    kind : string option;
+    attr : Class.t;
     anchor : Url.Anchor.t option;
     content : 'a;
     doc : Block.t;
