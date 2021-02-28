@@ -11,7 +11,7 @@ test_package+ml\.External
 .SH Documentation
 .sp 
 .nf 
-\f[CB]val\fR foo : unit \-> unit
+\f[CB]val\fR foo : unit \f[CB]\->\fR unit
 .fi 
 .br 
 .ti +2

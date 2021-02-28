@@ -67,7 +67,7 @@ a : int;
 | \f[CB]A\fR : int gadt
 .br 
 .ti +2
-| \f[CB]B\fR : int \-> string gadt
+| \f[CB]B\fR : int \f[CB]\->\fR string gadt
 .br 
 .ti +4
 (* foo *)
@@ -79,7 +79,7 @@ a : int;
 a : int;
 .br 
 .ti +4
-} \-> unit gadt
+} \f[CB]\->\fR unit gadt
 .br 
 .sp 
 \f[CB]type\fR polymorphic_variant = [ 
@@ -111,13 +111,13 @@ a : int;
 \f[CB]type\fR empty_conj = 
 .br 
 .ti +2
-| \f[CB]X\fR : [< `X of & \f[CB]'a\fR & int * float ] \-> empty_conj
+| \f[CB]X\fR : [< `X of & \f[CB]'a\fR & int * float ] \f[CB]\->\fR empty_conj
 .br 
 .sp 
 \f[CB]type\fR conj = 
 .br 
 .ti +2
-| \f[CB]X\fR : [< `X of int & [< `B of int & float ] ] \-> conj
+| \f[CB]X\fR : [< `X of int & [< `B of int & float ] ] \f[CB]\->\fR conj
 .br 
 .sp 
 \f[CB]val\fR empty_conj : [< `X of & \f[CB]'a\fR & int * float ]
