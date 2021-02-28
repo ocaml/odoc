@@ -406,10 +406,6 @@ pre code {
   padding: 0.35em 0.5em;
 }
 
-.odoc-include details summary:hover {
-  background-color: var(--spec-summary-hover-background);
-}
-
 div.spec, .def-doc {
   margin-bottom: 20px;
 }
@@ -466,15 +462,19 @@ div.def-doc>*:first-child {
   box-shadow: 0 0px 0 1px var(--spec-details-after-shadow);
 }
 
-.odoc-include details summary {
+.odoc-include summary {
   position: relative;
   margin-bottom: 20px;
   cursor: pointer;
   outline: none;
 }
 
+.odoc-include summary:hover {
+  background-color: var(--spec-summary-hover-background);
+}
+
 /* FIXME: Does not work in Firefox. */
-.odoc-include details summary::-webkit-details-marker {
+.odoc-include summary::-webkit-details-marker {
   color: #888;
   transform: scaleX(-1);
   position: absolute;
