@@ -410,7 +410,7 @@ pre code {
   background-color: var(--spec-summary-hover-background);
 }
 
-div.spec, .doc {
+div.spec, .def-doc {
   margin-bottom: 20px;
 }
 
@@ -435,12 +435,12 @@ div.def {
   padding-left: 2ex;
 }
 
-div.def+div.doc {
+div.def+div.def-doc {
   margin-left: 1ex;
   margin-top: 2.5px
 }
 
-div.doc>*:first-child {
+div.def-doc>*:first-child {
   margin-top: 0;
 }
 
@@ -495,7 +495,7 @@ td.def {
   padding-left: 2ex;
 }
 
-td.doc *:first-child {
+td.def-doc *:first-child {
   margin-top: 0em;
 }
 
