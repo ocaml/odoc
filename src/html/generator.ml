@@ -245,7 +245,7 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
           in
           let doc =
             Utils.optional_elt Html.td
-              ~a:(class_ [ "doc" ])
+              ~a:(class_ [ "def-doc" ])
               (block ~resolve doc)
           in
           let a, link = mk_anchor anchor in
