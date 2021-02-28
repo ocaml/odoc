@@ -50,27 +50,27 @@
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-arrow">
-     <a href="#type-arrow" class="anchor"></a><code><span><span class="keyword">type</span> arrow</span><span> = <span>int <span>-&gt;</span></span> int</span></code>
+     <a href="#type-arrow" class="anchor"></a><code><span><span class="keyword">type</span> arrow</span><span> = <span>int <span class="arrow">-&gt;</span></span> int</span></code>
     </div>
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-higher_order">
-     <a href="#type-higher_order" class="anchor"></a><code><span><span class="keyword">type</span> higher_order</span><span> = <span><span>(<span>int <span>-&gt;</span></span> int)</span> <span>-&gt;</span></span> int</span></code>
+     <a href="#type-higher_order" class="anchor"></a><code><span><span class="keyword">type</span> higher_order</span><span> = <span><span>(<span>int <span class="arrow">-&gt;</span></span> int)</span> <span class="arrow">-&gt;</span></span> int</span></code>
     </div>
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-labeled">
-     <a href="#type-labeled" class="anchor"></a><code><span><span class="keyword">type</span> labeled</span><span> = <span>l:int <span>-&gt;</span></span> int</span></code>
+     <a href="#type-labeled" class="anchor"></a><code><span><span class="keyword">type</span> labeled</span><span> = <span>l:int <span class="arrow">-&gt;</span></span> int</span></code>
     </div>
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-optional">
-     <a href="#type-optional" class="anchor"></a><code><span><span class="keyword">type</span> optional</span><span> = <span>?⁠l:int <span>-&gt;</span></span> int</span></code>
+     <a href="#type-optional" class="anchor"></a><code><span><span class="keyword">type</span> optional</span><span> = <span>?⁠l:int <span class="arrow">-&gt;</span></span> int</span></code>
     </div>
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-labeled_higher_order">
-     <a href="#type-labeled_higher_order" class="anchor"></a><code><span><span class="keyword">type</span> labeled_higher_order</span><span> = <span><span>(<span>l:int <span>-&gt;</span></span> int)</span> <span>-&gt;</span></span> <span><span>(<span>?⁠l:int <span>-&gt;</span></span> int)</span> <span>-&gt;</span></span> int</span></code>
+     <a href="#type-labeled_higher_order" class="anchor"></a><code><span><span class="keyword">type</span> labeled_higher_order</span><span> = <span><span>(<span>l:int <span class="arrow">-&gt;</span></span> int)</span> <span class="arrow">-&gt;</span></span> <span><span>(<span>?⁠l:int <span class="arrow">-&gt;</span></span> int)</span> <span class="arrow">-&gt;</span></span> int</span></code>
     </div>
    </div>
    <div class="odoc-spec">
@@ -100,7 +100,7 @@
    </div>
    <div class="odoc-spec">
     <div class="spec type" id="type-long">
-     <a href="#type-long" class="anchor"></a><code><span><span class="keyword">type</span> long</span><span> = <span><a href="#type-labeled_higher_order">labeled_higher_order</a> <span>-&gt;</span></span> <span><span>[ `Bar <span><span>| `Baz</span> of <a href="#type-triple">triple</a></span> ]</span> <span>-&gt;</span></span> <span><a href="#type-pair">pair</a> <span>-&gt;</span></span> <span><a href="#type-labeled">labeled</a> <span>-&gt;</span></span> <span><a href="#type-higher_order">higher_order</a> <span>-&gt;</span></span> <span><span>(<span>string <span>-&gt;</span></span> int)</span> <span>-&gt;</span></span> <span><span><span>(int,&nbsp;float,&nbsp;char,&nbsp;string,&nbsp;char,&nbsp;unit)</span> <span class="xref-unresolved">CamlinternalFormatBasics</span>.fmtty</span> <span>-&gt;</span></span> <span><a href="#type-nested_pair">nested_pair</a> <span>-&gt;</span></span> <span><a href="#type-arrow">arrow</a> <span>-&gt;</span></span> <span>string <span>-&gt;</span></span> <span><a href="#type-nested_pair">nested_pair</a> array</span></span></code>
+     <a href="#type-long" class="anchor"></a><code><span><span class="keyword">type</span> long</span><span> = <span><a href="#type-labeled_higher_order">labeled_higher_order</a> <span class="arrow">-&gt;</span></span> <span><span>[ `Bar <span><span>| `Baz</span> of <a href="#type-triple">triple</a></span> ]</span> <span class="arrow">-&gt;</span></span> <span><a href="#type-pair">pair</a> <span class="arrow">-&gt;</span></span> <span><a href="#type-labeled">labeled</a> <span class="arrow">-&gt;</span></span> <span><a href="#type-higher_order">higher_order</a> <span class="arrow">-&gt;</span></span> <span><span>(<span>string <span class="arrow">-&gt;</span></span> int)</span> <span class="arrow">-&gt;</span></span> <span><span><span>(int,&nbsp;float,&nbsp;char,&nbsp;string,&nbsp;char,&nbsp;unit)</span> <span class="xref-unresolved">CamlinternalFormatBasics</span>.fmtty</span> <span class="arrow">-&gt;</span></span> <span><a href="#type-nested_pair">nested_pair</a> <span class="arrow">-&gt;</span></span> <span><a href="#type-arrow">arrow</a> <span class="arrow">-&gt;</span></span> <span>string <span class="arrow">-&gt;</span></span> <span><a href="#type-nested_pair">nested_pair</a> array</span></span></code>
     </div>
    </div>
    <div class="odoc-spec">
@@ -137,7 +137,7 @@
         <td class="def variant constructor">
          <a href="#type-variant.C" class="anchor"></a><code><span>| </span><span><span class="constructor">C</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           foo
          </p>
@@ -147,7 +147,7 @@
         <td class="def variant constructor">
          <a href="#type-variant.D" class="anchor"></a><code><span>| </span><span><span class="constructor">D</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           <em>bar</em>
          </p>
@@ -189,12 +189,12 @@
        </tr>
        <tr id="type-gadt.B" class="anchored">
         <td class="def variant constructor">
-         <a href="#type-gadt.B" class="anchor"></a><code><span>| </span><span><span class="constructor">B</span> : int <span>-&gt;</span> <span>string <a href="#type-gadt">gadt</a></span></span></code>
+         <a href="#type-gadt.B" class="anchor"></a><code><span>| </span><span><span class="constructor">B</span> : int <span class="arrow">-&gt;</span> <span>string <a href="#type-gadt">gadt</a></span></span></code>
         </td>
        </tr>
        <tr id="type-gadt.C" class="anchored">
         <td class="def variant constructor">
-         <a href="#type-gadt.C" class="anchor"></a><code><span>| </span><span><span class="constructor">C</span> : <a href="#type-variant_c">variant_c</a> <span>-&gt;</span> <span>unit <a href="#type-gadt">gadt</a></span></span></code>
+         <a href="#type-gadt.C" class="anchor"></a><code><span>| </span><span><span class="constructor">C</span> : <a href="#type-variant_c">variant_c</a> <span class="arrow">-&gt;</span> <span>unit <a href="#type-gadt">gadt</a></span></span></code>
         </td>
        </tr>
       </tbody>
@@ -248,7 +248,7 @@
         <td class="def record field">
          <a href="#type-record.c" class="anchor"></a><code><span>c : int;</span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           foo
          </p>
@@ -258,7 +258,7 @@
         <td class="def record field">
          <a href="#type-record.d" class="anchor"></a><code><span>d : int;</span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           <em>bar</em>
          </p>
@@ -470,7 +470,7 @@
     </div>
    </div>
    <div class="odoc-spec">
-    <div class="spec extension">
+    <div class="spec type extension">
      <code><span><span class="keyword">type</span> <a href="#type-extensible">extensible</a> += </span></code>
      <table>
       <tbody>
@@ -478,7 +478,7 @@
         <td class="def extension">
          <a href="#extension-Extension" class="anchor"></a><code><span>| </span><span><span class="extension">Extension</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           Documentation for <a href="#extension-Extension"><code>Extension</code></a>.
          </p>
@@ -488,7 +488,7 @@
         <td class="def extension">
          <a href="#extension-Another_extension" class="anchor"></a><code><span>| </span><span><span class="extension">Another_extension</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           Documentation for <a href="#extension-Another_extension"><code>Another_extension</code></a>.
          </p>

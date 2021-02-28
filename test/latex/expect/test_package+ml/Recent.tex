@@ -24,13 +24,13 @@
 \end{ocamlindent}%
 \label{container-page-test+u+package+++ml-module-Recent-type-gadt}\ocamlcodefragment{\ocamltag{keyword}{type} \_\allowbreak{} gadt = }\begin{ocamlindent}\ocamlcodefragment{| \ocamltag{constructor}{A} : int \hyperref[container-page-test+u+package+++ml-module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.A}%
 \begin{ocamlindent}\end{ocamlindent}%
-\ocamlcodefragment{| \ocamltag{constructor}{B} : int $\rightarrow$ string \hyperref[container-page-test+u+package+++ml-module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.B}%
+\ocamlcodefragment{| \ocamltag{constructor}{B} : int \ocamltag{arrow}{$\rightarrow$} string \hyperref[container-page-test+u+package+++ml-module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.B}%
 \begin{ocamlindent}foo\end{ocamlindent}%
 \ocamlcodefragment{| \ocamltag{constructor}{C} : \{}\\
 \begin{ocamltabular}{p{1.000\textwidth}}\ocamlinlinecode{a : int;\allowbreak{}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.a}\\
 \end{ocamltabular}%
 \\
-\ocamlcodefragment{\} $\rightarrow$ unit \hyperref[container-page-test+u+package+++ml-module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.C}%
+\ocamlcodefragment{\} \ocamltag{arrow}{$\rightarrow$} unit \hyperref[container-page-test+u+package+++ml-module-Recent-type-gadt]{\ocamlinlinecode{gadt}}}\label{container-page-test+u+package+++ml-module-Recent-type-gadt.C}%
 \begin{ocamlindent}\end{ocamlindent}%
 \end{ocamlindent}%
 \label{container-page-test+u+package+++ml-module-Recent-type-polymorphic+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} polymorphic\_\allowbreak{}variant = [ }\\
@@ -44,11 +44,11 @@
 \label{container-page-test+u+package+++ml-module-Recent-type-empty+u+variant}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}variant = |}\\
 \label{container-page-test+u+package+++ml-module-Recent-type-nonrec+u+}\ocamlcodefragment{\ocamltag{keyword}{type} \ocamltag{keyword}{nonrec} nonrec\_\allowbreak{} = int}\\
 \label{container-page-test+u+package+++ml-module-Recent-type-empty+u+conj}\ocamlcodefragment{\ocamltag{keyword}{type} empty\_\allowbreak{}conj = }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of \& \ocamltag{type-var}{'a} \& int * float ] $\rightarrow$ \hyperref[container-page-test+u+package+++ml-module-Recent-type-empty+u+conj]{\ocamlinlinecode{empty\_\allowbreak{}conj}}}\label{container-page-test+u+package+++ml-module-Recent-type-empty+u+conj.X}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of \& \ocamltag{type-var}{'a} \& int * float ] \ocamltag{arrow}{$\rightarrow$} \hyperref[container-page-test+u+package+++ml-module-Recent-type-empty+u+conj]{\ocamlinlinecode{empty\_\allowbreak{}conj}}}\label{container-page-test+u+package+++ml-module-Recent-type-empty+u+conj.X}\\
 \end{ocamltabular}%
 \\
 \label{container-page-test+u+package+++ml-module-Recent-type-conj}\ocamlcodefragment{\ocamltag{keyword}{type} conj = }\\
-\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of int \& [< `B of int \& float ] ] $\rightarrow$ \hyperref[container-page-test+u+package+++ml-module-Recent-type-conj]{\ocamlinlinecode{conj}}}\label{container-page-test+u+package+++ml-module-Recent-type-conj.X}\\
+\begin{ocamltabular}{p{1.000\textwidth}}\ocamlcodefragment{| \ocamltag{constructor}{X} : [< `X of int \& [< `B of int \& float ] ] \ocamltag{arrow}{$\rightarrow$} \hyperref[container-page-test+u+package+++ml-module-Recent-type-conj]{\ocamlinlinecode{conj}}}\label{container-page-test+u+package+++ml-module-Recent-type-conj.X}\\
 \end{ocamltabular}%
 \\
 \label{container-page-test+u+package+++ml-module-Recent-val-empty+u+conj}\ocamlcodefragment{\ocamltag{keyword}{val} empty\_\allowbreak{}conj : [< `X of \& \ocamltag{type-var}{'a} \& int * float ]}\\

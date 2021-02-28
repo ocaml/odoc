@@ -30,7 +30,7 @@
    </div>
    <div class="odoc-spec">
     <div class="spec module-type" id="module-type-S1">
-     <a href="#module-type-S1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-S1/index.html">S1</a></span><span> = <span class="keyword">functor</span><span> (<a href="module-type-S1/argument-1-_/index.html">_</a> : <a href="module-type-S/index.html">S</a>) <span>-&gt;</span></span> <a href="module-type-S/index.html">S</a></span></code>
+     <a href="#module-type-S1" class="anchor"></a><code><span><span class="keyword">module</span> <span class="keyword">type</span> </span><span><a href="module-type-S1/index.html">S1</a></span><span> = <span class="keyword">functor</span><span> (<a href="module-type-S1/argument-1-_/index.html">_</a> : <a href="module-type-S/index.html">S</a>) <span class="arrow">-&gt;</span></span> <a href="module-type-S/index.html">S</a></span></code>
     </div>
    </div>
    <div class="odoc-spec">
@@ -52,7 +52,7 @@
         <td class="def variant constructor">
          <a href="#type-variant.C" class="anchor"></a><code><span>| </span><span><span class="constructor">C</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           foo
          </p>
@@ -62,7 +62,7 @@
         <td class="def variant constructor">
          <a href="#type-variant.D" class="anchor"></a><code><span>| </span><span><span class="constructor">D</span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           <em>bar</em>
          </p>
@@ -99,9 +99,9 @@
        </tr>
        <tr id="type-gadt.B" class="anchored">
         <td class="def variant constructor">
-         <a href="#type-gadt.B" class="anchor"></a><code><span>| </span><span><span class="constructor">B</span> : int <span>-&gt;</span> <span>string <a href="#type-gadt">gadt</a></span></span></code>
+         <a href="#type-gadt.B" class="anchor"></a><code><span>| </span><span><span class="constructor">B</span> : int <span class="arrow">-&gt;</span> <span>string <a href="#type-gadt">gadt</a></span></span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           foo
          </p>
@@ -119,7 +119,7 @@
            </tr>
           </tbody>
          </table>
-         <code><span>}</span><span> <span>-&gt;</span> <span>unit <a href="#type-gadt">gadt</a></span></span></code>
+         <code><span>}</span><span> <span class="arrow">-&gt;</span> <span>unit <a href="#type-gadt">gadt</a></span></span></code>
         </td>
        </tr>
       </tbody>
@@ -145,7 +145,7 @@
         <td class="def constructor">
          <a href="#type-polymorphic_variant.C" class="anchor"></a><code><span>| </span></code><code><span>`C</span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           foo
          </p>
@@ -155,7 +155,7 @@
         <td class="def constructor">
          <a href="#type-polymorphic_variant.D" class="anchor"></a><code><span>| </span></code><code><span>`D</span></code>
         </td>
-        <td class="doc">
+        <td class="def-doc">
          <p>
           bar
          </p>
@@ -183,7 +183,7 @@
       <tbody>
        <tr id="type-empty_conj.X" class="anchored">
         <td class="def variant constructor">
-         <a href="#type-empty_conj.X" class="anchor"></a><code><span>| </span><span><span class="constructor">X</span> : <span>[&lt; <span>`X of &amp; <span class="type-var">'a</span> &amp; int * float</span> ]</span> <span>-&gt;</span> <a href="#type-empty_conj">empty_conj</a></span></code>
+         <a href="#type-empty_conj.X" class="anchor"></a><code><span>| </span><span><span class="constructor">X</span> : <span>[&lt; <span>`X of &amp; <span class="type-var">'a</span> &amp; int * float</span> ]</span> <span class="arrow">-&gt;</span> <a href="#type-empty_conj">empty_conj</a></span></code>
         </td>
        </tr>
       </tbody>
@@ -197,7 +197,7 @@
       <tbody>
        <tr id="type-conj.X" class="anchored">
         <td class="def variant constructor">
-         <a href="#type-conj.X" class="anchor"></a><code><span>| </span><span><span class="constructor">X</span> : <span>[&lt; <span>`X of int &amp; <span>[&lt; <span>`B of int &amp; float</span> ]</span></span> ]</span> <span>-&gt;</span> <a href="#type-conj">conj</a></span></code>
+         <a href="#type-conj.X" class="anchor"></a><code><span>| </span><span><span class="constructor">X</span> : <span>[&lt; <span>`X of int &amp; <span>[&lt; <span>`B of int &amp; float</span> ]</span></span> ]</span> <span class="arrow">-&gt;</span> <a href="#type-conj">conj</a></span></code>
         </td>
        </tr>
       </tbody>
