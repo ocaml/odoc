@@ -72,94 +72,11 @@ module Identifier = struct
 
   let label_parent n = label_parent_aux (n :> t)
 
-  let constructor_id : t -> int = function
-    | `Root _ -> 1
-    | `RootPage _ -> 2
-    | `Module _ -> 3
-    | `Parameter _ -> 4
-    | `Result _ -> 5
-    | `ModuleType _ -> 6
-    | `Type _ -> 7
-    | `CoreType _ -> 8
-    | `Constructor _ -> 9
-    | `Field _ -> 10
-    | `Extension _ -> 11
-    | `Exception _ -> 12
-    | `CoreException _ -> 13
-    | `Value _ -> 14
-    | `Class _ -> 15
-    | `ClassType _ -> 16
-    | `Method _ -> 17
-    | `InstanceVariable _ -> 18
-    | `Label _ -> 19
-    | `Page _ -> 20
-    | `LeafPage _ -> 21
-
-  let std_compare = compare
-
-  let rec compare : t -> t -> int =
-   fun x y ->
-    match (x, y) with
-    | `Root (r, s), `Root (r', s') ->
-        let s = ModuleName.compare s s' in
-        if s <> 0 then s else compare (r :> t) (r' :> t)
-    | `RootPage s, `RootPage s' -> PageName.compare s s'
-    | `Page (r, s), `Page (r', s') ->
-        let s = PageName.compare s s' in
-        if s <> 0 then s else compare (r :> t) (r' :> t)
-    | `LeafPage (r, s), `LeafPage (r', s') ->
-        let s = PageName.compare s s' in
-        if s <> 0 then s else compare (r :> t) (r' :> t)
-    | `Module (p, s), `Module (p', s') ->
-        let s = ModuleName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Parameter (p, s), `Parameter (p', s') ->
-        let s = ParameterName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Result p, `Result p' -> compare (p :> t) (p' :> t)
-    | `ModuleType (p, s), `ModuleType (p', s') ->
-        let s = ModuleTypeName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Type (p, s), `Type (p', s') ->
-        let s = TypeName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `CoreType s, `CoreType s' -> TypeName.compare s s'
-    | `Constructor (p, s), `Constructor (p', s') ->
-        let s = ConstructorName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Field (p, s), `Field (p', s') ->
-        let s = FieldName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Extension (p, s), `Extension (p', s') ->
-        let s = ExtensionName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Exception (p, s), `Exception (p', s') ->
-        let s = ExceptionName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `CoreException s, `CoreException s' -> ExceptionName.compare s s'
-    | `Value (p, s), `Value (p', s') ->
-        let s = ValueName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Class (p, s), `Class (p', s') ->
-        let s = ClassName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `ClassType (p, s), `ClassType (p', s') ->
-        let s = ClassTypeName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Method (p, s), `Method (p', s') ->
-        let s = MethodName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `InstanceVariable (p, s), `InstanceVariable (p', s') ->
-        let s = InstanceVariableName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | `Label (p, s), `Label (p', s') ->
-        let s = LabelName.compare s s' in
-        if s <> 0 then s else compare (p :> t) (p' :> t)
-    | x, y -> std_compare (constructor_id x) (constructor_id y)
-
-  let equal : t -> t -> bool = fun x y -> compare x y = 0
+  let equal = ( = )
 
   let hash = Hashtbl.hash
+
+  let compare = compare
 
   type any = t
 
