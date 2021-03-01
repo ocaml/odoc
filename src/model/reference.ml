@@ -1,14 +1,13 @@
-module Error = Odoc_model.Error
-module Location_ = Odoc_model.Location_
-module Paths = Odoc_model.Paths
+module Error = Odoc_parser.Error
+module Location_ = Odoc_parser.Location_
 
 let deprecated_reference_kind warnings location kind replacement =
-  Parse_error.deprecated_reference_kind kind replacement location
+  Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location
   |> Error.warning warnings
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
 let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s :
-    Odoc_model.Paths.Reference.tag_any option =
+    Paths.Reference.tag_any option =
   let d = deprecated_reference_kind in
   match s with
   | Some "module" -> Some `TModule
@@ -36,7 +35,7 @@ let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s :
   | _ -> None
 
 let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s :
-    Odoc_model.Paths.Reference.tag_any option =
+    Paths.Reference.tag_any option =
   let d = deprecated_reference_kind in
   match s with
   | Some "class-type" -> Some `TClassType
@@ -66,8 +65,7 @@ let match_extra_odoc_reference_kind (_warnings as w) (_location as loc) s :
 
    A secondary reason to delay parsing, and store strings in the token list, is
    that we need the strings for user-friendly error reporting. *)
-let match_reference_kind warnings location s :
-    Odoc_model.Paths.Reference.tag_any =
+let match_reference_kind warnings location s : Paths.Reference.tag_any =
   match s with
   | None -> `TUnknown
   | Some s as wrapped -> (
@@ -79,7 +77,7 @@ let match_reference_kind warnings location s :
       match result with
       | Some kind -> kind
       | None ->
-          Parse_error.unknown_reference_qualifier s location
+          Odoc_parser.Parse_error.unknown_reference_qualifier s location
           |> Error.raise_exception )
 
 (* The string is scanned right-to-left, because we are interested in right-most
@@ -115,7 +113,8 @@ let tokenize location s =
     let location = Location_.in_string s ~offset ~length location in
 
     if identifier = "" then
-      Parse_error.should_not_be_empty ~what:"Identifier in reference" location
+      Odoc_parser.Parse_error.should_not_be_empty
+        ~what:"Identifier in reference" location
       |> Error.raise_exception;
 
     (identifier, location)
@@ -150,12 +149,12 @@ let expected allowed location =
         String.concat ", "
           (List.map (Printf.sprintf "'%s-'") allowed @ [ unqualified ])
   in
-  Parse_error.expected allowed location
+  Odoc_parser.Parse_error.expected allowed location
 
 let parse warnings whole_reference_location s :
     (Paths.Reference.t, Error.t) Result.result =
   let open Paths.Reference in
-  let open Odoc_model.Names in
+  let open Names in
   let rec signature (kind, identifier, location) tokens : Signature.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
@@ -305,8 +304,8 @@ let parse warnings whole_reference_location s :
                 let new_kind_string =
                   match kind with Some s -> s | None -> ""
                 in
-                Parse_error.reference_kinds_do_not_match old_kind_string
-                  new_kind_string whole_reference_location
+                Odoc_parser.Parse_error.reference_kinds_do_not_match
+                  old_kind_string new_kind_string whole_reference_location
                 |> Error.warning warnings );
               new_kind )
     in
@@ -355,7 +354,7 @@ let parse warnings whole_reference_location s :
             let suggestion =
               Printf.sprintf "'child-%s' should be first." identifier
             in
-            Parse_error.not_allowed ~what:"Child label"
+            Odoc_parser.Parse_error.not_allowed ~what:"Child label"
               ~in_what:"the last component of a reference path" ~suggestion
               location
             |> Error.raise_exception
@@ -363,7 +362,7 @@ let parse warnings whole_reference_location s :
             let suggestion =
               Printf.sprintf "'page-%s' should be first." identifier
             in
-            Parse_error.not_allowed ~what:"Page label"
+            Odoc_parser.Parse_error.not_allowed ~what:"Page label"
               ~in_what:"the last component of a reference path" ~suggestion
               location
             |> Error.raise_exception )
@@ -399,11 +398,11 @@ let parse warnings whole_reference_location s :
       | last_token :: tokens ->
           start_from_last_component last_token old_kind tokens
       | [] ->
-          Parse_error.should_not_be_empty ~what:"reference target"
+          Odoc_parser.Parse_error.should_not_be_empty ~what:"reference target"
             whole_reference_location
           |> Error.raise_exception)
 
-type path = [ `Root of string | `Dot of Odoc_model.Paths.Path.Module.t * string ]
+type path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
 
 let read_path_longident location s =
   let open Paths.Path in
@@ -423,7 +422,8 @@ let read_path_longident location s =
   in
   match loop s (String.length s - 1) with
   | Some r -> Result.Ok (r :> path)
-  | None -> Result.Error (Parse_error.expected "a valid path" location)
+  | None ->
+      Result.Error (Odoc_parser.Parse_error.expected "a valid path" location)
 
 let read_mod_longident warnings location lid :
     (Paths.Reference.Module.t, Error.t) Result.result =
@@ -435,5 +435,6 @@ let read_mod_longident warnings location lid :
         ->
           Result.Ok r
       | _ ->
-          Result.Error (Parse_error.expected "a reference to a module" location)
-      )
+          Result.Error
+            (Odoc_parser.Parse_error.expected "a reference to a module"
+               location) )

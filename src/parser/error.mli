@@ -1,12 +1,6 @@
-type full_location_payload = Odoc_parser.Error.full_location_payload = {
-  location : Location_.span;
-  message : string;
-}
+type full_location_payload = { location : Location_.span; message : string }
 
-type filename_only_payload = Odoc_parser.Error.filename_only_payload = {
-  file : string;
-  message : string;
-}
+type filename_only_payload = { file : string; message : string }
 
 type t =
   [ `With_full_location of full_location_payload
@@ -28,12 +22,9 @@ val to_exception : ('a, t) Result.result -> 'a
 
 val catch : (unit -> 'a) -> ('a, t) Result.result
 
-type 'a with_warnings = 'a Odoc_parser.Error.with_warnings = {
-  value : 'a;
-  warnings : t list;
-}
+type 'a with_warnings = { value : 'a; warnings : t list }
 
-type warning_accumulator = Odoc_parser.Error.warning_accumulator
+type warning_accumulator = t list ref
 
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 

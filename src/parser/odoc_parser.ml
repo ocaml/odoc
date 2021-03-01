@@ -1,5 +1,8 @@
 module Ast = Ast
-open Result
+module Location_ = Location_
+module Error = Error
+module Parse_error = Parse_error
+module Token = Token
 
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
@@ -25,10 +28,7 @@ open Result
    which point it creates the table described above. The remaining function is
    then passed to the lexer, so it can apply the table to its emitted tokens. *)
 let offset_to_location :
-    input:string ->
-    comment_location:Lexing.position ->
-    int ->
-    Odoc_model.Location_.point =
+    input:string -> comment_location:Lexing.position -> int -> Location_.point =
  fun ~input ~comment_location ->
   let rec find_newlines line_number input_index newlines_accumulator =
     if input_index >= String.length input then newlines_accumulator
@@ -60,15 +60,12 @@ let offset_to_location :
                 - comment_location.Lexing.pos_bol
               else column_in_comment
             in
-            {
-              Odoc_model.Location_.line = line_in_file;
-              column = column_in_file;
-            }
+            { Location_.line = line_in_file; column = column_in_file }
     in
     scan_to_last_newline reversed_newlines
 
-let make_parser ~location ~text parse =
-  Odoc_model.Error.accumulate_warnings (fun warnings ->
+let parse_comment_raw ~location ~text =
+  Error.accumulate_warnings (fun warnings ->
       let token_stream =
         let lexbuf = Lexing.from_string text in
         let offset_to_location =
@@ -84,29 +81,4 @@ let make_parser ~location ~text parse =
         in
         Stream.from (fun _token_index -> Some (Lexer.token input lexbuf))
       in
-      parse warnings token_stream)
-
-let parse_comment_raw ~location ~text = make_parser ~location ~text Syntax.parse
-
-let parse_comment ~sections_allowed ~containing_definition ~location ~text =
-  make_parser ~location ~text (fun warnings token_stream ->
-      Syntax.parse warnings token_stream
-      |> Semantics.ast_to_comment warnings ~sections_allowed
-           ~parent_of_sections:containing_definition)
-
-let parse_reference text =
-  let location =
-    Reference.Location_.
-      {
-        file = "";
-        start = { line = 0; column = 0 };
-        end_ = { line = 0; column = String.length text };
-      }
-  in
-  let result =
-    Odoc_model.Error.accumulate_warnings (fun warnings ->
-        Reference.parse warnings location text)
-  in
-  match result.Reference.Error.value with
-  | Ok x -> Ok x
-  | Error m -> Error (`Msg (Odoc_model.Error.to_string m))
+      Syntax.parse warnings token_stream)

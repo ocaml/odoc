@@ -1,15 +1,8 @@
-type point = Odoc_parser.Location_.point = { line : int; column : int }
+type point = { line : int; column : int }
 
-type span = Odoc_parser.Location_.span = {
-  file : string;
-  start : point;
-  end_ : point;
-}
+type span = { file : string; start : point; end_ : point }
 
-type +'a with_location = 'a Odoc_parser.Location_.with_location = {
-  location : span;
-  value : 'a;
-}
+type +'a with_location = { location : span; value : 'a }
 
 let at location value = { location; value }
 

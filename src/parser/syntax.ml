@@ -17,8 +17,7 @@
      sequence of block elements, so [block_element_list] is the top-level
      parser. It is also used for list item and tag content. *)
 
-module Location = Odoc_model.Location_
-module Error = Odoc_model.Error
+module Location = Location_
 
 type 'a with_location = 'a Location.with_location
 
@@ -721,9 +720,7 @@ let rec block_element_list :
         warn_if_after_text next_token;
 
         let block = paragraph input in
-        let block =
-          Odoc_model.Location_.map (accepted_in_all_contexts context) block
-        in
+        let block = Location_.map (accepted_in_all_contexts context) block in
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Code_block s | `Verbatim s) as token; location } as next_token

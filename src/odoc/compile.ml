@@ -49,7 +49,7 @@ let parent directories parent_cli_spec =
   in
   match parent_cli_spec with
   | CliParent f ->
-      Odoc_parser.parse_reference f >>= fun r ->
+      Odoc_model.Semantics.parse_reference f >>= fun r ->
       find_parent r >>= fun r ->
       extract_parent r.id >>= fun parent ->
       Env.fetch_page ap r >>= fun page -> Ok (Explicit (parent, page.children))
@@ -117,7 +117,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
 let mld ~parent_spec ~output ~children ~warn_error input =
   List.fold_left
     (fun acc child_str ->
-      match (acc, Odoc_parser.parse_reference child_str) with
+      match (acc, Odoc_model.Semantics.parse_reference child_str) with
       | Ok acc, Ok r -> Ok (r :: acc)
       | Error m, _ -> Error m
       | _, Error (`Msg m) ->

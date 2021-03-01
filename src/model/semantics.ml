@@ -1,7 +1,5 @@
 open Odoc_compat
-module Location = Odoc_model.Location_
-module Error = Odoc_model.Error
-module Comment = Odoc_model.Comment
+module Location = Location_
 
 type 'a with_location = 'a Location.with_location
 
@@ -13,18 +11,19 @@ type ast_leaf_inline_element =
 
 type status = {
   warnings : Error.warning_accumulator;
-  sections_allowed : Ast.sections_allowed;
-  parent_of_sections : Odoc_model.Paths.Identifier.LabelParent.t;
+  sections_allowed : Odoc_parser.Ast.sections_allowed;
+  parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
-(* TODO This and Token.describe probably belong in Parse_error. *)
+(* TODO This and Token.describe probably belong in Odoc_parser.Parse_error. *)
 let describe_element = function
-  | `Reference (`Simple, _, _) -> Token.describe (`Simple_reference "")
+  | `Reference (`Simple, _, _) ->
+      Odoc_parser.Token.describe (`Simple_reference "")
   | `Reference (`With_text, _, _) ->
-      Token.describe (`Begin_reference_with_replacement_text "")
-  | `Link _ -> Token.describe (`Begin_link_with_replacement_text "")
+      Odoc_parser.Token.describe (`Begin_reference_with_replacement_text "")
+  | `Link _ -> Odoc_parser.Token.describe (`Begin_link_with_replacement_text "")
   | `Heading (level, _, _) ->
-      Token.describe (`Begin_section_heading (level, None))
+      Odoc_parser.Token.describe (`Begin_section_heading (level, None))
 
 let leaf_inline_element :
     status ->
@@ -41,18 +40,20 @@ let leaf_inline_element :
              || String.contains invalid_target '%'
              || String.contains invalid_target '}' ->
           Error.warning status.warnings
-            (Parse_error.invalid_raw_markup_target invalid_target location);
+            (Odoc_parser.Parse_error.invalid_raw_markup_target invalid_target
+               location);
           Location.same element (`Code_span s)
       | None ->
           Error.warning status.warnings
-            (Parse_error.default_raw_markup_target_not_supported location);
+            (Odoc_parser.Parse_error.default_raw_markup_target_not_supported
+               location);
           Location.same element (`Code_span s)
       | Some target -> Location.same element (`Raw_markup (target, s)) )
 
 let rec non_link_inline_element :
     status ->
     surrounding:_ ->
-    Ast.inline_element with_location ->
+    Odoc_parser.Ast.inline_element with_location ->
     Comment.non_link_inline_element with_location =
  fun status ~surrounding element ->
   match element with
@@ -64,7 +65,7 @@ let rec non_link_inline_element :
       |> Location.same element
   | ( { value = `Reference (_, _, content); _ }
     | { value = `Link (_, content); _ } ) as element ->
-      Parse_error.not_allowed
+      Odoc_parser.Parse_error.not_allowed
         ~what:(describe_element element.value)
         ~in_what:(describe_element surrounding)
         element.location
@@ -78,7 +79,7 @@ and non_link_inline_elements status ~surrounding elements =
 
 let rec inline_element :
     status ->
-    Ast.inline_element with_location ->
+    Odoc_parser.Ast.inline_element with_location ->
     Comment.inline_element with_location =
  fun status element ->
   match element with
@@ -111,7 +112,7 @@ and inline_elements status elements = List.map (inline_element status) elements
 
 let rec nestable_block_element :
     status ->
-    Ast.nestable_block_element with_location ->
+    Odoc_parser.Ast.nestable_block_element with_location ->
     Comment.nestable_block_element with_location =
  fun status element ->
   match element with
@@ -145,9 +146,9 @@ and nestable_block_elements status elements =
 let tag :
     location:Location.span ->
     status ->
-    Ast.tag ->
+    Odoc_parser.Ast.tag ->
     ( Comment.block_element with_location,
-      Ast.block_element with_location )
+      Odoc_parser.Ast.block_element with_location )
     Result.result =
  fun ~location status tag ->
   let ok t = Result.Ok (Location.at location (`Tag t)) in
@@ -237,12 +238,13 @@ let section_heading :
     | None -> generate_heading_label content
   in
   let label =
-    `Label (status.parent_of_sections, Odoc_model.Names.LabelName.make_std label)
+    `Label (status.parent_of_sections, Names.LabelName.make_std label)
   in
 
   match (status.sections_allowed, level) with
   | `None, _any_level ->
-      Error.warning status.warnings (Parse_error.headings_not_allowed location);
+      Error.warning status.warnings
+        (Odoc_parser.Parse_error.headings_not_allowed location);
       let content = (content :> Comment.inline_element with_location list) in
       let element =
         Location.at location
@@ -250,7 +252,8 @@ let section_heading :
       in
       (top_heading_level, element)
   | `No_titles, 0 ->
-      Error.warning status.warnings (Parse_error.titles_not_allowed location);
+      Error.warning status.warnings
+        (Odoc_parser.Parse_error.titles_not_allowed location);
       let element = `Heading (`Title, label, content) in
       let element = Location.at location element in
       let top_heading_level =
@@ -268,7 +271,7 @@ let section_heading :
         | 5 -> `Subparagraph
         | _ ->
             Error.warning status.warnings
-              (Parse_error.bad_heading_level level location);
+              (Odoc_parser.Parse_error.bad_heading_level level location);
             (* Implicitly promote to level-5. *)
             `Subparagraph
       in
@@ -277,8 +280,9 @@ let section_heading :
         when status.sections_allowed = `All && level <= top_level && level <= 5
         ->
           Error.warning status.warnings
-            (Parse_error.heading_level_should_be_lower_than_top_level level
-               top_level location)
+            (Odoc_parser.Parse_error
+             .heading_level_should_be_lower_than_top_level level top_level
+               location)
       | _ -> () );
       let element = `Heading (level', label, content) in
       let element = Location.at location element in
@@ -293,20 +297,20 @@ let validate_first_page_heading status ast_element =
       match ast_element with
       | { Location.value = `Heading (_, _, _); _ } -> ()
       | _invalid_ast_element ->
-          let filename = Odoc_model.Names.PageName.to_string name ^ ".mld" in
+          let filename = Names.PageName.to_string name ^ ".mld" in
           Error.warning status.warnings
-            (Parse_error.page_heading_required filename) )
+            (Odoc_parser.Parse_error.page_heading_required filename) )
   | _not_a_page -> ()
 
 let top_level_block_elements :
     status ->
-    Ast.block_element with_location list ->
+    Odoc_parser.Ast.block_element with_location list ->
     Comment.block_element with_location list =
  fun status ast_elements ->
   let rec traverse :
       top_heading_level:int option ->
       Comment.block_element with_location list ->
-      Ast.block_element with_location list ->
+      Odoc_parser.Ast.block_element with_location list ->
       Comment.block_element with_location list =
    fun ~top_heading_level comment_elements_acc ast_elements ->
     match ast_elements with
@@ -317,7 +321,7 @@ let top_level_block_elements :
           validate_first_page_heading status ast_element;
 
         match ast_element with
-        | { value = #Ast.nestable_block_element; _ } as element ->
+        | { value = #Odoc_parser.Ast.nestable_block_element; _ } as element ->
             let element = nestable_block_element status element in
             let element = (element :> Comment.block_element with_location) in
             traverse ~top_heading_level
@@ -352,3 +356,32 @@ let top_level_block_elements :
 let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
   let status = { warnings; sections_allowed; parent_of_sections } in
   top_level_block_elements status ast
+
+let parse_comment ~sections_allowed ~containing_definition ~location ~text =
+  let ast = Odoc_parser.parse_comment_raw ~location ~text in
+  let comment =
+    Error.accumulate_warnings (fun warnings ->
+        ast_to_comment warnings ~sections_allowed
+          ~parent_of_sections:containing_definition ast.Odoc_parser.Error.value)
+  in
+  {
+    Error.value = comment.value;
+    Error.warnings = ast.Odoc_parser.Error.warnings @ comment.Error.warnings;
+  }
+
+let parse_reference text =
+  let location =
+    Reference.Location_.
+      {
+        file = "";
+        start = { line = 0; column = 0 };
+        end_ = { line = 0; column = String.length text };
+      }
+  in
+  let result =
+    Error.accumulate_warnings (fun warnings ->
+        Reference.parse warnings location text)
+  in
+  match result.Reference.Error.value with
+  | Ok x -> Ok x
+  | Error m -> Error (`Msg (Error.to_string m))

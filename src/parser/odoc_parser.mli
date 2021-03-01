@@ -1,16 +1,11 @@
 module Ast = Ast
+module Location_ = Location_
+module Error = Error
+module Parse_error = Parse_error
+module Token = Token
+
+val offset_to_location :
+  input:string -> comment_location:Lexing.position -> int -> Location_.point
 
 val parse_comment_raw :
-  location:Lexing.position ->
-  text:string ->
-  Ast.docs Odoc_model.Error.with_warnings
-
-val parse_comment :
-  sections_allowed:Ast.sections_allowed ->
-  containing_definition:Odoc_model.Paths.Identifier.LabelParent.t ->
-  location:Lexing.position ->
-  text:string ->
-  Odoc_model.Comment.docs Odoc_model.Error.with_warnings
-
-val parse_reference :
-  string -> (Odoc_model.Paths.Reference.t, [> `Msg of string ]) Result.result
+  location:Lexing.position -> text:string -> Ast.docs Error.with_warnings

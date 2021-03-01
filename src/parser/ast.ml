@@ -1,4 +1,4 @@
-type 'a with_location = 'a Odoc_model.Location_.with_location
+type 'a with_location = 'a Location_.with_location
 
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 

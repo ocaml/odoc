@@ -73,7 +73,7 @@ let attached parent attrs =
             let start_pos =
               {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
             let parsed =
-              Odoc_parser.parse_comment
+              Odoc_model.Semantics.parse_comment
                 ~sections_allowed:`All
                 ~containing_definition:parent
                 ~location:start_pos
@@ -96,7 +96,7 @@ let attached parent attrs =
 let read_string parent loc str : Odoc_model.Comment.docs_or_stop =
   let start_pos = loc.Location.loc_start in
   let doc : Odoc_model.Comment.docs =
-    Odoc_parser.parse_comment
+    Odoc_model.Semantics.parse_comment
       ~sections_allowed:`All
       ~containing_definition:parent
       ~location:start_pos
