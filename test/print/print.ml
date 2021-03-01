@@ -175,10 +175,10 @@ module Path_to_sexp = struct
             resolved (m :> Resolved.t);
             resolved (m' :> Resolved.t);
           ]
-    | `CanonicalT (m, m') ->
+    | `CanonicalModuleType (m, m') ->
         List
           [ Atom "canonicalt"; resolved (m :> Resolved.t); path (m' :> Path.t) ]
-    | `CanonicalTy (m, m') ->
+    | `CanonicalType (m, m') ->
         List
           [
             Atom "canonicalty"; resolved (m :> Resolved.t); path (m' :> Path.t);

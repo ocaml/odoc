@@ -24,14 +24,14 @@ module rec Resolved : sig
     | `Identifier of Identifier.ModuleType.t
     | `ModuleType of parent * ModuleTypeName.t
     | `SubstT of module_type * module_type
-    | `CanonicalT of module_type * Cpath.module_type
+    | `CanonicalModuleType of module_type * Cpath.module_type
     | `OpaqueModuleType of module_type ]
 
   and type_ =
     [ `Local of Ident.path_type
     | `Identifier of Odoc_model.Paths.Identifier.Path.Type.t
     | `Substituted of type_
-    | `CanonicalTy of type_ * Cpath.type_
+    | `CanonicalType of type_ * Cpath.type_
     | `Type of parent * TypeName.t
     | `Class of parent * ClassName.t
     | `ClassType of parent * ClassTypeName.t ]
@@ -134,7 +134,7 @@ and resolved_module_type_hash : Resolved.module_type -> int = function
   | `SubstT (p1, p2) ->
       Hashtbl.hash
         (23, resolved_module_type_hash p1, resolved_module_type_hash p2)
-  | `CanonicalT (p1, p2) ->
+  | `CanonicalModuleType (p1, p2) ->
       Hashtbl.hash (24, resolved_module_type_hash p1, module_type_hash p2)
   | `OpaqueModuleType m -> Hashtbl.hash (25, resolved_module_type_hash m)
 
@@ -195,8 +195,8 @@ and resolved_module_type_path_of_cpath :
       `SubstT
         ( resolved_module_type_path_of_cpath p1,
           resolved_module_type_path_of_cpath p2 )
-  | `CanonicalT (p1, p2) ->
-      `CanonicalT
+  | `CanonicalModuleType (p1, p2) ->
+      `CanonicalModuleType
         (resolved_module_type_path_of_cpath p1, module_type_path_of_cpath p2)
   | `OpaqueModuleType m ->
       `OpaqueModuleType (resolved_module_type_path_of_cpath m)
@@ -206,8 +206,8 @@ and resolved_type_path_of_cpath : Resolved.type_ -> Path.Resolved.Type.t =
   | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as x) -> `Identifier x
   | `Local _ as y -> raise (LocalPath (ErrType (`Resolved y)))
   | `Substituted y -> resolved_type_path_of_cpath y
-  | `CanonicalTy (t1, t2) ->
-      `CanonicalTy (resolved_type_path_of_cpath t1, type_path_of_cpath t2)
+  | `CanonicalType (t1, t2) ->
+      `CanonicalType (resolved_type_path_of_cpath t1, type_path_of_cpath t2)
   | `Type (p, m) -> `Type (resolved_module_path_of_cpath_parent p, m)
   | `Class (p, m) -> `Class (resolved_module_path_of_cpath_parent p, m)
   | `ClassType (p, m) -> `ClassType (resolved_module_path_of_cpath_parent p, m)
@@ -286,14 +286,14 @@ and is_resolved_module_type_substituted : Resolved.module_type -> bool =
   | `Identifier _ -> false
   | `ModuleType (a, _) -> is_resolved_parent_substituted a
   | `SubstT _ -> false
-  | `CanonicalT (m, _) | `OpaqueModuleType m ->
+  | `CanonicalModuleType (m, _) | `OpaqueModuleType m ->
       is_resolved_module_type_substituted m
 
 and is_resolved_type_substituted : Resolved.type_ -> bool = function
   | `Local _ -> false
   | `Substituted _ -> true
   | `Identifier _ -> false
-  | `CanonicalTy (t, _) -> is_resolved_type_substituted t
+  | `CanonicalType (t, _) -> is_resolved_type_substituted t
   | `Type (a, _) | `Class (a, _) | `ClassType (a, _) ->
       is_resolved_parent_substituted a
 
@@ -398,8 +398,8 @@ and is_resolved_module_type_hidden : Resolved.module_type -> bool = function
   | `ModuleType (p, _) -> is_resolved_parent_hidden ~weak_canonical_test:false p
   | `SubstT (p1, p2) ->
       is_resolved_module_type_hidden p1 || is_resolved_module_type_hidden p2
-  | `CanonicalT (_, `Resolved _) -> false
-  | `CanonicalT (p, _) -> is_resolved_module_type_hidden p
+  | `CanonicalModuleType (_, `Resolved _) -> false
+  | `CanonicalModuleType (p, _) -> is_resolved_module_type_hidden p
   | `OpaqueModuleType m -> is_resolved_module_type_substituted m
 
 and is_type_hidden : type_ -> bool = function
@@ -422,8 +422,8 @@ and is_resolved_type_hidden : Resolved.type_ -> bool = function
   | `Identifier (`Class (_, _)) -> false
   | `Identifier (`CoreType _) -> false
   | `Substituted p -> is_resolved_type_hidden p
-  | `CanonicalTy (_, `Resolved _) -> false
-  | `CanonicalTy (p, _) -> is_resolved_type_hidden p
+  | `CanonicalType (_, `Resolved _) -> false
+  | `CanonicalType (p, _) -> is_resolved_type_hidden p
   | `Type (p, _) | `Class (p, _) | `ClassType (p, _) ->
       is_resolved_parent_hidden ~weak_canonical_test:false p
 
@@ -509,7 +509,7 @@ and unresolve_resolved_module_type_path : Resolved.module_type -> module_type =
   | `ModuleType (p, n) ->
       `Dot (unresolve_resolved_parent_path p, ModuleTypeName.to_string n)
   | `SubstT (_, m) -> unresolve_resolved_module_type_path m
-  | `CanonicalT (p, _) -> unresolve_resolved_module_type_path p
+  | `CanonicalModuleType (p, _) -> unresolve_resolved_module_type_path p
   | `OpaqueModuleType m -> unresolve_resolved_module_type_path m
 
 and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
@@ -519,7 +519,7 @@ and unresolve_resolved_parent_path : Resolved.parent -> module_ = function
 and unresolve_resolved_type_path : Resolved.type_ -> type_ = function
   | (`Identifier _ | `Local _) as p -> `Resolved p
   | `Substituted x -> unresolve_resolved_type_path x
-  | `CanonicalTy (t1, _) -> unresolve_resolved_type_path t1
+  | `CanonicalType (t1, _) -> unresolve_resolved_type_path t1
   | `Type (p, n) -> `Dot (unresolve_resolved_parent_path p, TypeName.to_string n)
   | `Class (p, n) ->
       `Dot (unresolve_resolved_parent_path p, ClassName.to_string n)

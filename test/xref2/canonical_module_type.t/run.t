@@ -1,5 +1,5 @@
 In this test we're marking a ModuleType with a canonical path, then referencing
-it later in the file. The resulting resolved path should contain a `CanonicalT
+it later in the file. The resulting resolved path should contain a `CanonicalModuleType
 constructor where the second element of the tuple is Resolved.
 
   $ cat test.mli
@@ -19,7 +19,7 @@ constructor where the second element of the tuple is Resolved.
   $ odoc_print test.odocl | jq ".content.Module.items[2].ModuleType.expr.Some.Path.p_path"
   {
     "`Resolved": {
-      "`CanonicalT": [
+      "`CanonicalModuleType": [
         {
           "`Identifier": {
             "`ModuleType": [

@@ -566,10 +566,10 @@ module Path = struct
       | `Alias (p1, p2) ->
           inner (p1 : module_ :> any) && inner (p2 : module_ :> any)
       | `SubstT (p1, p2) -> inner (p1 :> any) || inner (p2 :> any)
-      | `CanonicalT (_, `Resolved _) -> false
-      | `CanonicalT (x, _) -> inner (x : module_type :> any)
-      | `CanonicalTy (_, `Resolved _) -> false
-      | `CanonicalTy (x, _) -> inner (x : type_ :> any)
+      | `CanonicalModuleType (_, `Resolved _) -> false
+      | `CanonicalModuleType (x, _) -> inner (x : module_type :> any)
+      | `CanonicalType (_, `Resolved _) -> false
+      | `CanonicalType (x, _) -> inner (x : type_ :> any)
       | `OpaqueModule m -> inner (m :> any)
       | `OpaqueModuleType mt -> inner (mt :> any)
     in
@@ -597,8 +597,8 @@ module Path = struct
           (id : Identifier.ModuleType.t :> Identifier.Signature.t)
       | `ModuleType (m, n) -> `ModuleType (parent_module_identifier m, n)
       | `SubstT (m, _n) -> parent_module_type_identifier m
-      | `CanonicalT (_, `Resolved p) -> parent_module_type_identifier p
-      | `CanonicalT (p, _) -> parent_module_type_identifier p
+      | `CanonicalModuleType (_, `Resolved p) -> parent_module_type_identifier p
+      | `CanonicalModuleType (p, _) -> parent_module_type_identifier p
       | `OpaqueModuleType mt -> parent_module_type_identifier mt
 
     and parent_module_identifier :
@@ -669,8 +669,8 @@ module Path = struct
         | `Identifier id -> id
         | `ModuleType (m, n) -> `ModuleType (parent_module_identifier m, n)
         | `SubstT (s, _) -> identifier s
-        | `CanonicalT (_, `Resolved p) -> identifier p
-        | `CanonicalT (p, _) -> identifier p
+        | `CanonicalModuleType (_, `Resolved p) -> identifier p
+        | `CanonicalModuleType (p, _) -> identifier p
         | `OpaqueModuleType mt -> identifier mt
 
       let rec canonical_ident : t -> Identifier.ModuleType.t option = function
@@ -680,8 +680,8 @@ module Path = struct
             | Some x -> Some (`ModuleType ((x :> Identifier.Signature.t), n))
             | None -> None )
         | `SubstT (_, _) -> None
-        | `CanonicalT (_, `Resolved p) -> Some (identifier p)
-        | `CanonicalT (_, _) -> None
+        | `CanonicalModuleType (_, `Resolved p) -> Some (identifier p)
+        | `CanonicalModuleType (_, _) -> None
         | `OpaqueModuleType m -> canonical_ident (m :> t)
     end
 
@@ -695,8 +695,8 @@ module Path = struct
 
       let rec identifier : t -> Identifier.Path.Type.t = function
         | `Identifier id -> id
-        | `CanonicalTy (_, `Resolved t) -> identifier t
-        | `CanonicalTy (t, _) -> identifier t
+        | `CanonicalType (_, `Resolved t) -> identifier t
+        | `CanonicalType (t, _) -> identifier t
         | `Type (m, n) -> `Type (parent_module_identifier m, n)
         | `Class (m, n) -> `Class (parent_module_identifier m, n)
         | `ClassType (m, n) -> `ClassType (parent_module_identifier m, n)
@@ -709,8 +709,8 @@ module Path = struct
         in
         function
         | `Identifier _ -> None
-        | `CanonicalTy (_, `Resolved t) -> Some (identifier t)
-        | `CanonicalTy (_, _) -> None
+        | `CanonicalType (_, `Resolved t) -> Some (identifier t)
+        | `CanonicalType (_, _) -> None
         | `Type (m, n) -> parent m None (fun sg -> Some (`Type (sg, n)))
         | `Class (m, n) -> parent m None (fun sg -> Some (`Class (sg, n)))
         | `ClassType (m, n) ->
@@ -748,10 +748,10 @@ module Path = struct
           if is_path_hidden (`Resolved (sub :> t)) then identifier (orig :> t)
           else identifier (sub :> t)
       | `SubstT (p, _) -> identifier (p :> t)
-      | `CanonicalT (_, `Resolved p) -> identifier (p :> t)
-      | `CanonicalT (p, _) -> identifier (p :> t)
-      | `CanonicalTy (_, `Resolved p) -> identifier (p :> t)
-      | `CanonicalTy (p, _) -> identifier (p :> t)
+      | `CanonicalModuleType (_, `Resolved p) -> identifier (p :> t)
+      | `CanonicalModuleType (p, _) -> identifier (p :> t)
+      | `CanonicalType (_, `Resolved p) -> identifier (p :> t)
+      | `CanonicalType (p, _) -> identifier (p :> t)
       | `OpaqueModule m -> identifier (m :> t)
       | `OpaqueModuleType mt -> identifier (mt :> t)
   end

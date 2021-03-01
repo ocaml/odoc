@@ -213,14 +213,14 @@ and Resolved_path : sig
   and module_type =
     [ `Identifier of Identifier.path_module_type
     | `SubstT of module_type * module_type
-    | `CanonicalT of module_type * Path.module_type
+    | `CanonicalModuleType of module_type * Path.module_type
     | `ModuleType of module_ * ModuleTypeName.t
     | `OpaqueModuleType of module_type ]
   (** @canonical Odoc_model.Paths.Path.Resolved.ModuleType.t *)
 
   type type_ =
     [ `Identifier of Identifier.path_type
-    | `CanonicalTy of type_ * Path.type_
+    | `CanonicalType of type_ * Path.type_
     | `Type of module_ * TypeName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t ]
@@ -242,10 +242,10 @@ and Resolved_path : sig
     | `Alias of module_ * module_
     | `OpaqueModule of module_
     | `ModuleType of module_ * ModuleTypeName.t
-    | `CanonicalT of module_type * Path.module_type
+    | `CanonicalModuleType of module_type * Path.module_type
     | `SubstT of module_type * module_type
     | `OpaqueModuleType of module_type
-    | `CanonicalTy of type_ * Path.type_
+    | `CanonicalType of type_ * Path.type_
     | `Type of module_ * TypeName.t
     | `Class of module_ * ClassName.t
     | `ClassType of module_ * ClassTypeName.t
