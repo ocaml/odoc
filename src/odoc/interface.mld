@@ -26,6 +26,8 @@ The following describes the changes between what odoc understands and what is in
 - {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#ss:ocamldoc-formatting}Alignment elements} are not handled ([{C text}], [{L text}] and [{R text}]) ({{:https://github.com/ocaml/odoc/issues/541}github issue})
 - Odoc does not recognise {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-html-tags}html tags embedded in comments} ({{:https://github.com/ocaml/odoc/issues/576}github issue})
 - [{!indexlist}] is not supported ({{:https://github.com/ocaml/odoc/issues/577}github issue})
+- When rendering [{!modules:...}] lists, the first paragraph is used instead of
+  the {{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sss:ocamldoc-preamble}first sentence}.
 
 {4 Improvements}
 - Odoc has a better mechanism for disambiguating references in comments. See 'reference syntax' later in this document.
