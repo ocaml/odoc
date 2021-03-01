@@ -278,7 +278,7 @@ module LookupModuleMemo = MakeMemo (struct
 
   let equal = ( = )
 
-  let hash (b, m) = Hashtbl.hash (b, Cpath.resolved_module_hash m)
+  let hash = Hashtbl.hash
 end)
 
 module LookupParentMemo = MakeMemo (struct
@@ -291,7 +291,7 @@ module LookupParentMemo = MakeMemo (struct
 
   let equal = ( = )
 
-  let hash (b, p) = Hashtbl.hash (b, Cpath.resolved_parent_hash p)
+  let hash = Hashtbl.hash
 end)
 
 module LookupAndResolveMemo = MakeMemo (struct
@@ -301,7 +301,7 @@ module LookupAndResolveMemo = MakeMemo (struct
 
   let equal = ( = )
 
-  let hash (b1, b2, p) = Hashtbl.hash (b1, b2, Cpath.module_hash p)
+  let hash = Hashtbl.hash
 end)
 
 module SignatureOfModuleMemo = MakeMemo (struct
@@ -311,7 +311,7 @@ module SignatureOfModuleMemo = MakeMemo (struct
 
   let equal = ( = )
 
-  let hash p = Cpath.resolved_module_hash p
+  let hash = Hashtbl.hash
 end)
 
 let disable_all_caches () =
