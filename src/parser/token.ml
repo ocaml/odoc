@@ -4,6 +4,8 @@
 
 type section_heading = [ `Begin_section_heading of int * string option ]
 
+type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
+
 type tag =
   [ `Tag of
     [ `Author of string
@@ -49,7 +51,7 @@ type t =
     string
   | `Code_span of string
   | `Raw_markup of string option * string
-  | `Begin_style of Odoc_model.Comment.style
+  | `Begin_style of style
   | (* Other inline element markup. *)
     `Simple_reference of string
   | `Begin_reference_with_replacement_text of string

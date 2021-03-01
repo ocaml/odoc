@@ -1135,7 +1135,7 @@ let () =
           }
         in
 
-        Odoc_parser.parse_comment ~sections_allowed
+        Odoc_model.Semantics.parse_comment ~sections_allowed
           ~containing_definition:dummy_page ~location ~text:parser_input
         |> fun parser_output ->
         let buffer = Buffer.create 1024 in

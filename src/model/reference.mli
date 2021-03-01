@@ -1,6 +1,5 @@
-module Error = Odoc_model.Error
-module Location_ = Odoc_model.Location_
-module Paths = Odoc_model.Paths
+module Error = Odoc_parser.Error
+module Location_ = Odoc_parser.Location_
 
 type path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
 
