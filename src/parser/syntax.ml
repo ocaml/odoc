@@ -19,7 +19,6 @@
 
 module Location = Odoc_model.Location_
 module Error = Odoc_model.Error
-module Comment = Odoc_model.Comment
 
 type 'a with_location = 'a Location.with_location
 
@@ -43,13 +42,14 @@ let peek input =
 let npeek n input = Stream.npeek n input.tokens
 
 (* {2 Non-link inline elements} *)
+type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
 (* Convenient abbreviation for use in patterns. *)
 type token_that_always_begins_an_inline_element =
   [ `Word of string
   | `Code_span of string
   | `Raw_markup of string option * string
-  | `Begin_style of Comment.style
+  | `Begin_style of style
   | `Simple_reference of string
   | `Begin_reference_with_replacement_text of string
   | `Simple_link of string
