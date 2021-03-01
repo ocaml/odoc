@@ -4,9 +4,6 @@ open Odoc_compat
 let bad_markup : ?suggestion:string -> string -> Location.span -> Error.t =
  fun ?suggestion -> Error.make ?suggestion "'%s': bad markup."
 
-let bad_heading_level : int -> Location.span -> Error.t =
-  Error.make "'%d': bad heading level (0-5 allowed)."
-
 let leading_zero_in_heading_level : string -> Location.span -> Error.t =
   Error.make "'%s': leading zero in heading level."
 
@@ -40,23 +37,6 @@ let no_leading_whitespace_in_verbatim : Location.span -> Error.t =
 let no_trailing_whitespace_in_verbatim : Location.span -> Error.t =
   Error.make "'v}' should be preceded by whitespace."
 
-let page_heading_required : string -> Error.t =
-  Error.filename_only "Pages (.mld files) should start with a heading."
-
-let heading_level_should_be_lower_than_top_level :
-    int -> int -> Location.span -> Error.t =
- fun this_heading_level top_heading_level ->
-  Error.make "%s: heading level should be lower than top heading level '%d'."
-    (String.capitalize_ascii
-       (Token.print (`Begin_section_heading (this_heading_level, None))))
-    top_heading_level
-
-let headings_not_allowed : Location.span -> Error.t =
-  Error.make "Headings not allowed in this comment."
-
-let titles_not_allowed : Location.span -> Error.t =
-  Error.make "Title-level headings {0 ...} are only allowed in pages."
-
 let stray_at : Location.span -> Error.t = Error.make "Stray '@'."
 
 let stray_cr : Location.span -> Error.t =
@@ -83,19 +63,6 @@ let unpaired_right_brace : Location.span -> Error.t =
 
 let unpaired_right_bracket : Location.span -> Error.t =
   Error.make ~suggestion:"try '\\]'." "Unpaired ']' (end of code)."
-
-let invalid_raw_markup_target : string -> Location.span -> Error.t =
-  Error.make
-    ~suggestion:
-      (Printf.sprintf "try %s." (Token.print (`Raw_markup (Some "html", ""))))
-    "'{%%%s:': bad raw markup target."
-
-let default_raw_markup_target_not_supported : Location.span -> Error.t =
-  Error.make
-    ~suggestion:
-      (Printf.sprintf "try %s." (Token.print (`Raw_markup (Some "html", ""))))
-    "%s needs a target language."
-    (Token.describe (`Raw_markup (None, "")))
 
 let expected : string -> Location.span -> Error.t = Error.make "Expected %s."
 

@@ -1,6 +1,45 @@
 open Odoc_compat
 module Location = Location_
 
+(* Errors *)
+let invalid_raw_markup_target : string -> Location.span -> Error.t =
+  Error.make
+    ~suggestion:
+      (Printf.sprintf "try %s."
+         (Odoc_parser.Token.print (`Raw_markup (Some "html", ""))))
+    "'{%%%s:': bad raw markup target."
+
+let default_raw_markup_target_not_supported : Location.span -> Error.t =
+  Error.make
+    ~suggestion:
+      (Printf.sprintf "try %s."
+         (Odoc_parser.Token.print (`Raw_markup (Some "html", ""))))
+    "%s needs a target language."
+    (Odoc_parser.Token.describe (`Raw_markup (None, "")))
+
+let headings_not_allowed : Location.span -> Error.t =
+  Error.make "Headings not allowed in this comment."
+
+let titles_not_allowed : Location.span -> Error.t =
+  Error.make "Title-level headings {0 ...} are only allowed in pages."
+
+let bad_heading_level : int -> Location.span -> Error.t =
+  Error.make "'%d': bad heading level (0-5 allowed)."
+
+let heading_level_should_be_lower_than_top_level :
+    int -> int -> Location.span -> Error.t =
+ fun this_heading_level top_heading_level ->
+  Error.make "%s: heading level should be lower than top heading level '%d'."
+    (String.capitalize_ascii
+       (Odoc_parser.Token.print
+          (`Begin_section_heading (this_heading_level, None))))
+    top_heading_level
+
+let page_heading_required : string -> Error.t =
+  Error.filename_only "Pages (.mld files) should start with a heading."
+
+(* End of errors *)
+
 type 'a with_location = 'a Location.with_location
 
 type ast_leaf_inline_element =
@@ -16,14 +55,6 @@ type status = {
 }
 
 (* TODO This and Token.describe probably belong in Odoc_parser.Parse_error. *)
-let describe_element = function
-  | `Reference (`Simple, _, _) ->
-      Odoc_parser.Token.describe (`Simple_reference "")
-  | `Reference (`With_text, _, _) ->
-      Odoc_parser.Token.describe (`Begin_reference_with_replacement_text "")
-  | `Link _ -> Odoc_parser.Token.describe (`Begin_link_with_replacement_text "")
-  | `Heading (level, _, _) ->
-      Odoc_parser.Token.describe (`Begin_section_heading (level, None))
 
 let leaf_inline_element :
     status ->
@@ -40,13 +71,11 @@ let leaf_inline_element :
              || String.contains invalid_target '%'
              || String.contains invalid_target '}' ->
           Error.warning status.warnings
-            (Odoc_parser.Parse_error.invalid_raw_markup_target invalid_target
-               location);
+            (invalid_raw_markup_target invalid_target location);
           Location.same element (`Code_span s)
       | None ->
           Error.warning status.warnings
-            (Odoc_parser.Parse_error.default_raw_markup_target_not_supported
-               location);
+            (default_raw_markup_target_not_supported location);
           Location.same element (`Code_span s)
       | Some target -> Location.same element (`Raw_markup (target, s)) )
 
@@ -66,8 +95,8 @@ let rec non_link_inline_element :
   | ( { value = `Reference (_, _, content); _ }
     | { value = `Link (_, content); _ } ) as element ->
       Odoc_parser.Parse_error.not_allowed
-        ~what:(describe_element element.value)
-        ~in_what:(describe_element surrounding)
+        ~what:(Odoc_parser.Token.describe_element element.value)
+        ~in_what:(Odoc_parser.Token.describe_element surrounding)
         element.location
       |> Error.warning status.warnings;
 
@@ -243,8 +272,7 @@ let section_heading :
 
   match (status.sections_allowed, level) with
   | `None, _any_level ->
-      Error.warning status.warnings
-        (Odoc_parser.Parse_error.headings_not_allowed location);
+      Error.warning status.warnings (headings_not_allowed location);
       let content = (content :> Comment.inline_element with_location list) in
       let element =
         Location.at location
@@ -252,8 +280,7 @@ let section_heading :
       in
       (top_heading_level, element)
   | `No_titles, 0 ->
-      Error.warning status.warnings
-        (Odoc_parser.Parse_error.titles_not_allowed location);
+      Error.warning status.warnings (titles_not_allowed location);
       let element = `Heading (`Title, label, content) in
       let element = Location.at location element in
       let top_heading_level =
@@ -270,8 +297,7 @@ let section_heading :
         | 4 -> `Paragraph
         | 5 -> `Subparagraph
         | _ ->
-            Error.warning status.warnings
-              (Odoc_parser.Parse_error.bad_heading_level level location);
+            Error.warning status.warnings (bad_heading_level level location);
             (* Implicitly promote to level-5. *)
             `Subparagraph
       in
@@ -280,8 +306,7 @@ let section_heading :
         when status.sections_allowed = `All && level <= top_level && level <= 5
         ->
           Error.warning status.warnings
-            (Odoc_parser.Parse_error
-             .heading_level_should_be_lower_than_top_level level top_level
+            (heading_level_should_be_lower_than_top_level level top_level
                location)
       | _ -> () );
       let element = `Heading (level', label, content) in
@@ -298,8 +323,7 @@ let validate_first_page_heading status ast_element =
       | { Location.value = `Heading (_, _, _); _ } -> ()
       | _invalid_ast_element ->
           let filename = Names.PageName.to_string name ^ ".mld" in
-          Error.warning status.warnings
-            (Odoc_parser.Parse_error.page_heading_required filename) )
+          Error.warning status.warnings (page_heading_required filename) )
   | _not_a_page -> ()
 
 let top_level_block_elements :

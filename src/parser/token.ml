@@ -147,3 +147,10 @@ let describe : [< t | `Comment ] -> string = function
   | `Tag `Open -> "'@open'"
   | `Tag `Closed -> "'@closed'"
   | `Comment -> "top-level text"
+
+let describe_element = function
+  | `Reference (`Simple, _, _) -> describe (`Simple_reference "")
+  | `Reference (`With_text, _, _) ->
+      describe (`Begin_reference_with_replacement_text "")
+  | `Link _ -> describe (`Begin_link_with_replacement_text "")
+  | `Heading (level, _, _) -> describe (`Begin_section_heading (level, None))
