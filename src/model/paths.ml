@@ -72,32 +72,6 @@ module Identifier = struct
 
   let label_parent n = label_parent_aux (n :> t)
 
-  let rec hash (id : t) =
-    let open Paths_types.Identifier in
-    match id with
-    | `Root (r, s) -> Hashtbl.hash (1, hash (r : container_page :> any), s)
-    | `RootPage s -> Hashtbl.hash (2, s)
-    | `Page (r, s) -> Hashtbl.hash (0, hash (r : container_page :> any), s)
-    | `LeafPage (r, s) -> Hashtbl.hash (20, hash (r : container_page :> any), s)
-    | `Module (id, s) -> Hashtbl.hash (3, hash (id : signature :> any), s)
-    | `Parameter (id, s) -> Hashtbl.hash (4, hash (id : signature :> any), s)
-    | `Result s -> Hashtbl.hash (5, hash (s : signature :> any))
-    | `ModuleType (id, s) -> Hashtbl.hash (6, hash (id : signature :> any), s)
-    | `Type (id, s) -> Hashtbl.hash (7, hash (id : signature :> any), s)
-    | `CoreType s -> Hashtbl.hash (8, s)
-    | `Constructor (id, s) -> Hashtbl.hash (9, hash (id : type_ :> any), s)
-    | `Field (id, s) -> Hashtbl.hash (10, hash (id : parent :> any), s)
-    | `Extension (id, s) -> Hashtbl.hash (11, hash (id : signature :> any), s)
-    | `Exception (id, s) -> Hashtbl.hash (12, hash (id : signature :> any), s)
-    | `CoreException s -> Hashtbl.hash (13, s)
-    | `Value (id, s) -> Hashtbl.hash (14, hash (id : signature :> any), s)
-    | `Class (id, s) -> Hashtbl.hash (15, hash (id : signature :> any), s)
-    | `ClassType (id, s) -> Hashtbl.hash (16, hash (id : signature :> any), s)
-    | `Method (id, s) -> Hashtbl.hash (17, hash (id : class_signature :> any), s)
-    | `InstanceVariable (id, s) ->
-        Hashtbl.hash (18, hash (id : class_signature :> any), s)
-    | `Label (id, s) -> Hashtbl.hash (19, hash (id : label_parent :> any), s)
-
   let constructor_id : t -> int = function
     | `Root _ -> 1
     | `RootPage _ -> 2
@@ -185,6 +159,8 @@ module Identifier = struct
 
   let equal : t -> t -> bool = fun x y -> compare x y = 0
 
+  let hash = Hashtbl.hash
+
   type any = t
 
   module Signature = struct
@@ -192,7 +168,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -202,7 +178,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -212,7 +188,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -222,7 +198,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -232,7 +208,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -242,7 +218,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -252,7 +228,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -262,7 +238,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -282,7 +258,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -292,7 +268,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -302,7 +278,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -312,7 +288,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -322,7 +298,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -332,7 +308,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -342,7 +318,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -352,7 +328,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -362,7 +338,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -372,7 +348,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -382,7 +358,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -392,7 +368,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -402,7 +378,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -412,7 +388,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -422,7 +398,7 @@ module Identifier = struct
 
     let equal x y = equal (x :> any) (y :> any)
 
-    let hash x = hash (x :> any)
+    let hash = Hashtbl.hash
 
     let compare x y = compare (x :> any) (y :> any)
   end
@@ -433,7 +409,7 @@ module Identifier = struct
 
       let equal x y = equal (x :> any) (y :> any)
 
-      let hash x = hash (x :> any)
+      let hash = Hashtbl.hash
 
       let compare x y = compare (x :> any) (y :> any)
     end
@@ -443,7 +419,7 @@ module Identifier = struct
 
       let equal x y = equal (x :> any) (y :> any)
 
-      let hash x = hash (x :> any)
+      let hash = Hashtbl.hash
 
       let compare x y = compare (x :> any) (y :> any)
     end
@@ -453,7 +429,7 @@ module Identifier = struct
 
       let equal x y = equal (x :> any) (y :> any)
 
-      let hash x = hash (x :> any)
+      let hash = Hashtbl.hash
 
       let compare x y = compare (x :> any) (y :> any)
     end
@@ -463,7 +439,7 @@ module Identifier = struct
 
       let equal x y = equal (x :> any) (y :> any)
 
-      let hash x = hash (x :> any)
+      let hash = Hashtbl.hash
 
       let compare x y = compare (x :> any) (y :> any)
     end
