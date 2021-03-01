@@ -161,8 +161,8 @@ module Path = struct
     | `Substituted s -> resolved_module_type map s
     | `SubstT (p1, p2) ->
         `SubstT (resolved_module_type map p1, resolved_module_type map p2)
-    | `CanonicalT (p1, p2) ->
-        `CanonicalT (resolved_module_type map p1, module_type map p2)
+    | `CanonicalModuleType (p1, p2) ->
+        `CanonicalModuleType (resolved_module_type map p1, module_type map p2)
     | `OpaqueModuleType m -> `OpaqueModuleType (resolved_module_type map m)
 
   and resolved_type map (p : Cpath.Resolved.type_) :
@@ -171,7 +171,8 @@ module Path = struct
     | `Identifier (#Odoc_model.Paths.Identifier.Path.Type.t as y) ->
         `Identifier y
     | `Local id -> `Identifier (Component.PathTypeMap.find id map.path_type)
-    | `CanonicalTy (t1, t2) -> `CanonicalTy (resolved_type map t1, type_ map t2)
+    | `CanonicalType (t1, t2) ->
+        `CanonicalType (resolved_type map t1, type_ map t2)
     | `Type (p, name) -> `Type (resolved_parent map p, name)
     | `Class (p, name) -> `Class (resolved_parent map p, name)
     | `ClassType (p, name) -> `ClassType (resolved_parent map p, name)

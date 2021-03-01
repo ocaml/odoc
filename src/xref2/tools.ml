@@ -373,8 +373,11 @@ and add_canonical_path_mt :
     Cpath.Resolved.module_type =
  fun m p ->
   match p with
-  | `CanonicalT _ -> p
-  | _ -> ( match m.canonical with Some cp -> `CanonicalT (p, cp) | None -> p )
+  | `CanonicalModuleType _ -> p
+  | _ -> (
+      match m.canonical with
+      | Some cp -> `CanonicalModuleType (p, cp)
+      | None -> p )
 
 and get_substituted_module_type :
     Env.t -> Component.ModuleType.expr -> Cpath.Resolved.module_type option =
@@ -523,7 +526,7 @@ and lookup_module_type :
         of_option ~error:(`Lookup_failureMT i)
           (Env.(lookup_by_id s_module_type) i env)
         >>= fun (`ModuleType (_, mt)) -> Ok mt
-    | `Substituted s | `CanonicalT (s, _) | `SubstT (_, s) ->
+    | `Substituted s | `CanonicalModuleType (s, _) | `SubstT (_, s) ->
         lookup_module_type ~mark_substituted env s
     | `ModuleType (parent, name) ->
         let find_in_sg sg sub =
@@ -609,7 +612,7 @@ and lookup_type :
           (Env.(lookup_by_id s_class_type) i env)
         >>= fun (`ClassType (`ClassType (_, name), t)) ->
         Ok (`FClassType (name, t))
-    | `CanonicalTy (t1, _) -> lookup_type env t1
+    | `CanonicalType (t1, _) -> lookup_type env t1
     | `Substituted s -> lookup_type env s
     | `Type (p, id) -> do_type p (TypeName.to_string id)
     | `Class (p, id) -> do_type p (ClassName.to_string id)
@@ -850,7 +853,7 @@ and resolve_type :
   result >>= fun (p, t) ->
   match t with
   | `FType (_, { canonical = Some c; _ }) ->
-      if add_canonical then Ok (`CanonicalTy (p, c), t) else result
+      if add_canonical then Ok (`CanonicalType (p, c), t) else result
   | _ -> result
 
 and resolve_class_type : Env.t -> Cpath.class_type -> resolve_class_type_result
@@ -959,19 +962,19 @@ and reresolve_module_type :
   | `Local _ | `Identifier _ -> path
   | `Substituted x -> `Substituted (reresolve_module_type env x)
   | `ModuleType (parent, name) -> `ModuleType (reresolve_parent env parent, name)
-  | `CanonicalT (p1, `Resolved p2) ->
-      `CanonicalT
+  | `CanonicalModuleType (p1, `Resolved p2) ->
+      `CanonicalModuleType
         (reresolve_module_type env p1, `Resolved (reresolve_module_type env p2))
-  | `CanonicalT (p1, p2) -> (
+  | `CanonicalModuleType (p1, p2) -> (
       match
         resolve_module_type ~mark_substituted:true ~add_canonical:false env p2
       with
       | Ok (p2', _) ->
-          `CanonicalT
+          `CanonicalModuleType
             ( reresolve_module_type env p1,
               `Resolved (simplify_resolved_module_type_path env p2') )
-      | Error _ -> `CanonicalT (reresolve_module_type env p1, p2)
-      | exception _ -> `CanonicalT (reresolve_module_type env p1, p2) )
+      | Error _ -> `CanonicalModuleType (reresolve_module_type env p1, p2)
+      | exception _ -> `CanonicalModuleType (reresolve_module_type env p1, p2) )
   | `SubstT (p1, p2) ->
       `SubstT (reresolve_module_type env p1, reresolve_module_type env p2)
   | `OpaqueModuleType m -> `OpaqueModuleType (reresolve_module_type env m)
@@ -982,14 +985,14 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     match path with
     | `Identifier _ | `Local _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
-    | `CanonicalTy (p1, p2) -> (
+    | `CanonicalType (p1, p2) -> (
         match resolve_type ~add_canonical:false env p2 with
         | Ok (p, _) ->
-            `CanonicalTy
+            `CanonicalType
               ( reresolve_type env p1,
                 `Resolved (simplify_resolved_type_path env p) )
-        | Error _ -> `CanonicalTy (reresolve_type env p1, p2)
-        | exception _ -> `CanonicalTy (reresolve_type env p1, p2) )
+        | Error _ -> `CanonicalType (reresolve_type env p1, p2)
+        | exception _ -> `CanonicalType (reresolve_type env p1, p2) )
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
     | `Class (p, n) -> `Class (reresolve_parent env p, n)
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
@@ -1438,7 +1441,7 @@ and find_external_module_type_path :
   | `SubstT (x, y) ->
       find_external_module_type_path x >>= fun x ->
       find_external_module_type_path y >>= fun y -> Some (`SubstT (x, y))
-  | `CanonicalT (x, _) | `Substituted x ->
+  | `CanonicalModuleType (x, _) | `Substituted x ->
       find_external_module_type_path x >>= fun x -> Some (`Substituted x)
   | `Identifier _ -> Some p
   | `OpaqueModuleType m ->

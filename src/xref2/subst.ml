@@ -250,8 +250,9 @@ and resolved_module_type_path :
   | `ModuleType (p, n) -> `ModuleType (resolved_parent_path s p, n)
   | `SubstT (m1, m2) ->
       `SubstT (resolved_module_type_path s m1, resolved_module_type_path s m2)
-  | `CanonicalT (m1, m2) ->
-      `CanonicalT (resolved_module_type_path s m1, module_type_path s m2)
+  | `CanonicalModuleType (m1, m2) ->
+      `CanonicalModuleType
+        (resolved_module_type_path s m1, module_type_path s m2)
   | `OpaqueModuleType m ->
       if s.unresolve_opaque_paths then raise Invalidated
       else `OpaqueModuleType (resolved_module_type_path s m)
@@ -288,10 +289,10 @@ and resolved_type_path :
         | Some (`Prefixed (_p, rp)) -> Not_replaced rp
         | Some (`Renamed x) -> Not_replaced (`Local x)
         | None -> Not_replaced (`Local id) )
-  | `CanonicalTy (t1, t2) -> (
+  | `CanonicalType (t1, t2) -> (
       match (resolved_type_path s t1, type_path s t2) with
       | Not_replaced t1', Not_replaced t2' ->
-          Not_replaced (`CanonicalTy (t1', t2'))
+          Not_replaced (`CanonicalType (t1', t2'))
       | x, _ -> x )
   | `Identifier _ -> Not_replaced p
   | `Substituted p ->
