@@ -1,4 +1,5 @@
 module Location = Location_
+open Result
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
@@ -36,7 +37,7 @@ let not_allowed :
     Error.t =
  fun ?suggestion ~what ~in_what ->
   Error.make ?suggestion "%s is not allowed in %s."
-    (String.capitalize_ascii what)
+    (Astring.String.Ascii.capitalize what)
     in_what
 
 let describe_element = function
@@ -78,6 +79,7 @@ let leaf_inline_element :
              || String.contains invalid_target '}' ->
           Error.warning status.warnings
             (invalid_raw_markup_target invalid_target location);
+
           Location.same element (`Code_span s)
       | None ->
           Error.warning status.warnings
@@ -242,7 +244,7 @@ let generate_heading_label : Comment.link_content -> string =
            let c =
              match c with
              | ' ' | '\t' | '\r' | '\n' -> '-'
-             | _ -> Char.lowercase_ascii c
+             | _ -> Astring.Char.Ascii.lowercase c
            in
            Bytes.set result index c);
     Bytes.unsafe_to_string result
@@ -256,7 +258,7 @@ let generate_heading_label : Comment.link_content -> string =
         let anchor =
           match element.Location.value with
           | `Space -> anchor ^ "-"
-          | `Word w -> anchor ^ String.lowercase_ascii w
+          | `Word w -> anchor ^ Astring.String.Ascii.lowercase w
           | `Code_span c -> anchor ^ replace_spaces_with_hyphens_and_lowercase c
           | `Raw_markup _ ->
               (* TODO Perhaps having raw markup in a section heading should be an
