@@ -116,7 +116,7 @@ let read_cmt ~make_root ~parent ~filename () =
       let items =
         List.map (fun file ->
           let pref = Misc.chop_extensions file in
-          String.capitalize_ascii (Filename.basename pref))
+          Astring.String.Ascii.capitalize (Filename.basename pref))
           files
       in
       let items = List.sort String.compare items in
