@@ -1,9 +1,6 @@
 type full_location_payload = { location : Location_.span; message : string }
 
-type filename_only_payload = { file : string; message : string }
-
-type t =
-  [ `With_full_location of full_location_payload ]
+type t = full_location_payload
 
 val make :
   ?suggestion:string ->

@@ -3,13 +3,13 @@ type full_location_payload = Odoc_parser.Error.full_location_payload = {
   message : string;
 }
 
-type filename_only_payload = Odoc_parser.Error.filename_only_payload = {
+type filename_only_payload = {
   file : string;
   message : string;
 }
 
 type t =
-  [ Odoc_parser.Error.t
+  [ `With_full_location of Odoc_parser.Error.t
   | `With_filename_only of filename_only_payload ]
 
 val make :
