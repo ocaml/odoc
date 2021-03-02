@@ -5,13 +5,13 @@ type full_location_payload = Odoc_parser.Error.full_location_payload = {
   message : string;
 }
 
-type filename_only_payload = Odoc_parser.Error.filename_only_payload = {
+type filename_only_payload = {
   file : string;
   message : string;
 }
 
 type t =
-  [ Odoc_parser.Error.t
+  [ `With_full_location of Odoc_parser.Error.t
   | `With_filename_only of filename_only_payload ]
 
 let kasprintf k fmt =
@@ -115,4 +115,4 @@ let handle_errors_and_warnings ~warn_error = function
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
 
 let t_of_parser_t : Odoc_parser.Error.t -> t = fun x ->
-    (x :> t)
+    (`With_full_location x :> t)

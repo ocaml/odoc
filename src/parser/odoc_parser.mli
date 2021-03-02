@@ -7,13 +7,7 @@ module Error : sig
     message : string;
   }
 
-  type filename_only_payload = Error.filename_only_payload = {
-    file : string;
-    message : string;
-  }
-
-  type t =
-    [ `With_full_location of full_location_payload ]
+  type t = full_location_payload
 
   type 'a with_warnings = { value : 'a; warnings : t list }
 
