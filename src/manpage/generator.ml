@@ -267,7 +267,7 @@ let entity e =
 
 let raw_markup (t : Raw_markup.t) =
   let target, content = t in
-  match Odoc_compat.String.lowercase_ascii target with
+  match Astring.String.Ascii.lowercase target with
   | "manpage" | "troff" | "roff" -> String content
   | _ -> noop
 

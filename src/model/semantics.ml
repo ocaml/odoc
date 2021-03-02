@@ -1,4 +1,3 @@
-open Odoc_compat
 module Location = Location_
 
 (* Errors *)

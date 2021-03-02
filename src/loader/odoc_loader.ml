@@ -1,4 +1,3 @@
-open Odoc_compat
 open Result
 
 module Error = Odoc_model.Error

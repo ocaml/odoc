@@ -1,4 +1,3 @@
-open Odoc_compat
 open Printf
 
 (* Utils *)
@@ -241,7 +240,7 @@ let make_test_case ?theme_uri ?syntax case =
   (Case.name case, `Slow, run)
 
 let make_input file sub_modules =
-  let base = String.capitalize_ascii (Filename.chop_extension file) in
+  let base = Astring.String.Ascii.capitalize (Filename.chop_extension file) in
   let index p = String.concat Filename.dir_sep (p @ [ "index.html" ]) in
   (file, index [ base ] :: List.map (fun m -> index [ base; m ]) sub_modules)
 
