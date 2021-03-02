@@ -1,24 +1,16 @@
 module Ast = Ast
+
 module Location = Location
 
-module Error : sig
-  type full_location_payload = Error.full_location_payload = {
-    location : Location.span;
-    message : string;
-  }
+module Parse_error = Parse_error
 
-  type t = full_location_payload
+module Token = Token
+
+module Error : sig
+  type t = Error.t = { location : Location.span; message : string }
 
   type 'a with_warnings = { value : 'a; warnings : t list }
-
-  type warning_accumulator = t list ref
-  
-  val warning : warning_accumulator -> t -> unit
-
 end
-
-module Parse_error = Parse_error
-module Token = Token
 
 val offset_to_location :
   input:string -> comment_location:Lexing.position -> int -> Location.point

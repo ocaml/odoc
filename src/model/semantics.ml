@@ -38,6 +38,17 @@ let heading_level_should_be_lower_than_top_level :
 let page_heading_required : string -> Error.t =
   Error.filename_only "Pages (.mld files) should start with a heading."
 
+let not_allowed :
+    ?suggestion:string ->
+    what:string ->
+    in_what:string ->
+    Location.span ->
+    Error.t =
+ fun ?suggestion ~what ~in_what ->
+  Error.make ?suggestion "%s is not allowed in %s."
+    (String.capitalize_ascii what)
+    in_what
+
 (* End of errors *)
 
 type 'a with_location = 'a Location.with_location
@@ -53,8 +64,6 @@ type status = {
   sections_allowed : Odoc_parser.Ast.sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
-
-(* TODO This and Token.describe probably belong in Odoc_parser.Parse_error. *)
 
 let leaf_inline_element :
     status ->
@@ -94,11 +103,11 @@ let rec non_link_inline_element :
       |> Location.same element
   | ( { value = `Reference (_, _, content); _ }
     | { value = `Link (_, content); _ } ) as element ->
-      Odoc_parser.Parse_error.not_allowed
+      not_allowed
         ~what:(Odoc_parser.Token.describe_element element.value)
         ~in_what:(Odoc_parser.Token.describe_element surrounding)
         element.location
-      |> Error.t_of_parser_t |> Error.warning status.warnings;
+      |> Error.warning status.warnings;
 
       `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
       |> Location.same element
@@ -390,7 +399,9 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
   in
   {
     Error.value = comment.value;
-    Error.warnings = (ast.Odoc_parser.Error.warnings |> List.map Error.t_of_parser_t) @ comment.Error.warnings;
+    Error.warnings =
+      (ast.Odoc_parser.Error.warnings |> List.map Error.t_of_parser_t)
+      @ comment.Error.warnings;
   }
 
 let parse_reference text =
