@@ -1,8 +1,6 @@
 module Ast = Ast
 module Location = Location
 module Error = Error
-module Parse_error = Parse_error
-module Token = Token
 
 (* odoc uses an ocamllex lexer. The "engine" for such lexers is the standard
    [Lexing] module.
@@ -64,7 +62,7 @@ let offset_to_location :
     in
     scan_to_last_newline reversed_newlines
 
-let parse_comment_raw ~location ~text =
+let parse_comment ~location ~text =
   Error.accumulate_warnings (fun warnings ->
       let token_stream =
         let lexbuf = Lexing.from_string text in

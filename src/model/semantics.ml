@@ -2,19 +2,12 @@ module Location = Location_
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
-  Error.make
-    ~suggestion:
-      (Printf.sprintf "try %s."
-         (Odoc_parser.Token.print (`Raw_markup (Some "html", ""))))
+  Error.make ~suggestion:"try '{%html:...%}'."
     "'{%%%s:': bad raw markup target."
 
 let default_raw_markup_target_not_supported : Location.span -> Error.t =
-  Error.make
-    ~suggestion:
-      (Printf.sprintf "try %s."
-         (Odoc_parser.Token.print (`Raw_markup (Some "html", ""))))
-    "%s needs a target language."
-    (Odoc_parser.Token.describe (`Raw_markup (None, "")))
+  Error.make ~suggestion:"try '{%html:...%}'."
+    "'{%%...%%}' (raw markup) needs a target language."
 
 let headings_not_allowed : Location.span -> Error.t =
   Error.make "Headings not allowed in this comment."
@@ -29,9 +22,7 @@ let heading_level_should_be_lower_than_top_level :
     int -> int -> Location.span -> Error.t =
  fun this_heading_level top_heading_level ->
   Error.make "%s: heading level should be lower than top heading level '%d'."
-    (String.capitalize_ascii
-       (Odoc_parser.Token.print
-          (`Begin_section_heading (this_heading_level, None))))
+    (Printf.sprintf "'{%i'" this_heading_level)
     top_heading_level
 
 let page_heading_required : string -> Error.t =
@@ -47,6 +38,13 @@ let not_allowed :
   Error.make ?suggestion "%s is not allowed in %s."
     (String.capitalize_ascii what)
     in_what
+
+let describe_element = function
+  | `Reference (`Simple, _, _) -> "'{!...}' (cross-reference)"
+  | `Reference (`With_text, _, _) -> "'{{!...} ...}' (cross-reference)"
+  | `Link _ -> "'{{:...} ...}' (external link)"
+  | `Heading (level, _, _) ->
+      Printf.sprintf "'{%i ...}' (section heading)" level
 
 (* End of errors *)
 
@@ -87,9 +85,21 @@ let leaf_inline_element :
           Location.same element (`Code_span s)
       | Some target -> Location.same element (`Raw_markup (target, s)) )
 
+type surrounding =
+  [ `Heading of
+    int
+    * string option
+    * Odoc_parser.Ast.inline_element Location_.with_location list
+  | `Link of
+    string * Odoc_parser.Ast.inline_element Location_.with_location list
+  | `Reference of
+    [ `Simple | `With_text ]
+    * string Location_.with_location
+    * Odoc_parser.Ast.inline_element Location_.with_location list ]
+
 let rec non_link_inline_element :
     status ->
-    surrounding:_ ->
+    surrounding:surrounding ->
     Odoc_parser.Ast.inline_element with_location ->
     Comment.non_link_inline_element with_location =
  fun status ~surrounding element ->
@@ -103,8 +113,8 @@ let rec non_link_inline_element :
   | ( { value = `Reference (_, _, content); _ }
     | { value = `Link (_, content); _ } ) as element ->
       not_allowed
-        ~what:(Odoc_parser.Token.describe_element element.value)
-        ~in_what:(Odoc_parser.Token.describe_element surrounding)
+        ~what:(describe_element element.value)
+        ~in_what:(describe_element surrounding)
         element.location
       |> Error.warning status.warnings;
 
@@ -267,7 +277,11 @@ let section_heading :
  fun status ~top_heading_level location heading ->
   let (`Heading (level, label, content)) = heading in
 
-  let content = non_link_inline_elements status ~surrounding:heading content in
+  let content =
+    non_link_inline_elements status
+      ~surrounding:(heading :> surrounding)
+      content
+  in
 
   let label =
     match label with
@@ -390,7 +404,7 @@ let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
   top_level_block_elements status ast
 
 let parse_comment ~sections_allowed ~containing_definition ~location ~text =
-  let ast = Odoc_parser.parse_comment_raw ~location ~text in
+  let ast = Odoc_parser.parse_comment ~location ~text in
   let comment =
     Error.accumulate_warnings (fun warnings ->
         ast_to_comment warnings ~sections_allowed

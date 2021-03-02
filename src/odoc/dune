@@ -1,17 +1,8 @@
 (library
  (name odoc_odoc)
  (public_name odoc.odoc)
- (libraries
-  compiler-libs.common
-  fpath
-  odoc_html
-  odoc_manpage
-  odoc_latex
-  odoc_loader
-  odoc_model
-  odoc_xref2
-  tyxml
-  unix)
+ (libraries compiler-libs.common fpath odoc_html odoc_manpage odoc_latex
+   odoc_loader odoc_model odoc_xref2 tyxml unix)
  (instrumentation
   (backend bisect_ppx)))
 
