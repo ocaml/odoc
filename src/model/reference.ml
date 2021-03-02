@@ -1,7 +1,6 @@
 let deprecated_reference_kind warnings location kind replacement =
-  (Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location |> Error.t_of_parser_t)
-    |> Error.warning warnings
- 
+  Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location
+  |> Error.t_of_parser_t |> Error.warning warnings
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
 let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s :
@@ -75,8 +74,8 @@ let match_reference_kind warnings location s : Paths.Reference.tag_any =
       match result with
       | Some kind -> kind
       | None ->
-          (Odoc_parser.Parse_error.unknown_reference_qualifier s location |> Error.t_of_parser_t)
-          |> Error.raise_exception )
+          Odoc_parser.Parse_error.unknown_reference_qualifier s location
+          |> Error.t_of_parser_t |> Error.raise_exception )
 
 (* The string is scanned right-to-left, because we are interested in right-most
    hyphens. The tokens are also returned in right-to-left order, because the
@@ -111,9 +110,9 @@ let tokenize location s =
     let location = Location_.in_string s ~offset ~length location in
 
     if identifier = "" then
-      (Odoc_parser.Parse_error.should_not_be_empty
-        ~what:"Identifier in reference" location |> Error.t_of_parser_t)
-      |> Error.raise_exception;
+      Odoc_parser.Parse_error.should_not_be_empty
+        ~what:"Identifier in reference" location
+      |> Error.t_of_parser_t |> Error.raise_exception;
 
     (identifier, location)
   and scan_kind identifier identifier_location started_at index tokens =
@@ -218,8 +217,8 @@ let parse warnings whole_reference_location s :
         match kind with
         | (`TUnknown | `TClass | `TClassType) as kind -> `Root (identifier, kind)
         | _ ->
-            expected [ "class"; "class-type" ] location |> Error.t_of_parser_t |> Error.raise_exception
-        )
+            expected [ "class"; "class-type" ] location
+            |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -230,8 +229,8 @@ let parse warnings whole_reference_location s :
             `ClassType
               (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
-            expected [ "class"; "class-type" ] location |> Error.t_of_parser_t |> Error.raise_exception
-        )
+            expected [ "class"; "class-type" ] location
+            |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let datatype (kind, identifier, location) tokens : DataType.t =
@@ -240,14 +239,18 @@ let parse warnings whole_reference_location s :
     | [] -> (
         match kind with
         | (`TUnknown | `TType) as kind -> `Root (identifier, kind)
-        | _ -> expected [ "type" ] location |> Error.t_of_parser_t |> Error.raise_exception )
+        | _ ->
+            expected [ "type" ] location
+            |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TType ->
             `Type (signature next_token tokens, TypeName.make_std identifier)
-        | _ -> expected [ "type" ] location |> Error.t_of_parser_t |> Error.raise_exception )
+        | _ ->
+            expected [ "type" ] location
+            |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
@@ -421,7 +424,9 @@ let read_path_longident location s =
   match loop s (String.length s - 1) with
   | Some r -> Result.Ok (r :> path)
   | None ->
-      Result.Error (Odoc_parser.Parse_error.expected "a valid path" location |> Error.t_of_parser_t)
+      Result.Error
+        ( Odoc_parser.Parse_error.expected "a valid path" location
+        |> Error.t_of_parser_t )
 
 let read_mod_longident warnings location lid :
     (Paths.Reference.Module.t, Error.t) Result.result =
@@ -434,5 +439,5 @@ let read_mod_longident warnings location lid :
           Result.Ok r
       | _ ->
           Result.Error
-            (Odoc_parser.Parse_error.expected "a reference to a module"
-               location |> Error.t_of_parser_t) )
+            ( Odoc_parser.Parse_error.expected "a reference to a module" location
+            |> Error.t_of_parser_t ) )

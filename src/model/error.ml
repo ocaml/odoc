@@ -1,14 +1,11 @@
 open Result
 
-type full_location_payload = Odoc_parser.Error.full_location_payload = {
+type full_location_payload = Odoc_parser.Error.t = {
   location : Location_.span;
   message : string;
 }
 
-type filename_only_payload = {
-  file : string;
-  message : string;
-}
+type filename_only_payload = { file : string; message : string }
 
 type t =
   [ `With_full_location of Odoc_parser.Error.t
@@ -56,10 +53,7 @@ let to_exception = function Ok v -> v | Error error -> raise_exception error
 
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
-type 'a with_warnings = {
-  value : 'a;
-  warnings : t list;
-}
+type 'a with_warnings = { value : 'a; warnings : t list }
 
 type warning_accumulator = t list ref
 
@@ -114,5 +108,5 @@ let handle_errors_and_warnings ~warn_error = function
   | { value = Ok _ as ok; warnings = [] } -> ok
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
 
-let t_of_parser_t : Odoc_parser.Error.t -> t = fun x ->
-    (`With_full_location x :> t)
+let t_of_parser_t : Odoc_parser.Error.t -> t =
+ fun x -> (`With_full_location x :> t)

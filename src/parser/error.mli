@@ -1,13 +1,9 @@
-type full_location_payload = { location : Location.span; message : string }
-
-type t = full_location_payload
+type t = { location : Location.span; message : string }
 
 val make :
   ?suggestion:string ->
   ('a, Format.formatter, unit, Location.span -> t) format4 ->
   'a
-
-val to_string : t -> string
 
 type 'a with_warnings = { value : 'a; warnings : t list }
 
