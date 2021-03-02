@@ -1,5 +1,5 @@
 val ast_to_comment :
-  Odoc_parser.Error.warning_accumulator ->
+  Error.warning_accumulator ->
   sections_allowed:Odoc_parser.Ast.sections_allowed ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
   Odoc_parser.Ast.docs ->

@@ -1,6 +1,28 @@
 module Ast = Ast
 module Location_ = Location_
-module Error = Error
+
+module Error : sig
+  type full_location_payload = Error.full_location_payload = {
+    location : Location_.span;
+    message : string;
+  }
+
+  type filename_only_payload = Error.filename_only_payload = {
+    file : string;
+    message : string;
+  }
+
+  type t =
+    [ `With_full_location of full_location_payload ]
+
+  type 'a with_warnings = { value : 'a; warnings : t list }
+
+  type warning_accumulator = t list ref
+  
+  val warning : warning_accumulator -> t -> unit
+
+end
+
 module Parse_error = Parse_error
 module Token = Token
 

@@ -98,7 +98,7 @@ let rec non_link_inline_element :
         ~what:(Odoc_parser.Token.describe_element element.value)
         ~in_what:(Odoc_parser.Token.describe_element surrounding)
         element.location
-      |> Error.warning status.warnings;
+      |> Error.t_of_parser_t |> Error.warning status.warnings;
 
       `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
       |> Location.same element
@@ -390,12 +390,12 @@ let parse_comment ~sections_allowed ~containing_definition ~location ~text =
   in
   {
     Error.value = comment.value;
-    Error.warnings = ast.Odoc_parser.Error.warnings @ comment.Error.warnings;
+    Error.warnings = (ast.Odoc_parser.Error.warnings |> List.map Error.t_of_parser_t) @ comment.Error.warnings;
   }
 
 let parse_reference text =
   let location =
-    Reference.Location_.
+    Location_.
       {
         file = "";
         start = { line = 0; column = 0 };
@@ -406,6 +406,6 @@ let parse_reference text =
     Error.accumulate_warnings (fun warnings ->
         Reference.parse warnings location text)
   in
-  match result.Reference.Error.value with
+  match result.Error.value with
   | Ok x -> Ok x
   | Error m -> Error (`Msg (Error.to_string m))

@@ -1,9 +1,9 @@
-module Error = Odoc_parser.Error
 module Location_ = Odoc_parser.Location_
 
 let deprecated_reference_kind warnings location kind replacement =
-  Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location
-  |> Error.warning warnings
+  (Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location |> Error.t_of_parser_t)
+    |> Error.warning warnings
+ 
 
 (* http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#sec359. *)
 let match_ocamldoc_reference_kind (_warnings as w) (_location as loc) s :
@@ -77,7 +77,7 @@ let match_reference_kind warnings location s : Paths.Reference.tag_any =
       match result with
       | Some kind -> kind
       | None ->
-          Odoc_parser.Parse_error.unknown_reference_qualifier s location
+          (Odoc_parser.Parse_error.unknown_reference_qualifier s location |> Error.t_of_parser_t)
           |> Error.raise_exception )
 
 (* The string is scanned right-to-left, because we are interested in right-most
@@ -113,8 +113,8 @@ let tokenize location s =
     let location = Location_.in_string s ~offset ~length location in
 
     if identifier = "" then
-      Odoc_parser.Parse_error.should_not_be_empty
-        ~what:"Identifier in reference" location
+      (Odoc_parser.Parse_error.should_not_be_empty
+        ~what:"Identifier in reference" location |> Error.t_of_parser_t)
       |> Error.raise_exception;
 
     (identifier, location)
@@ -164,7 +164,7 @@ let parse warnings whole_reference_location s :
             `Root (identifier, kind)
         | _ ->
             expected [ "module"; "module-type" ] location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -176,7 +176,7 @@ let parse warnings whole_reference_location s :
               (signature next_token tokens, ModuleTypeName.make_std identifier)
         | _ ->
             expected [ "module"; "module-type" ] location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
   and parent (kind, identifier, location) tokens : Parent.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
@@ -189,7 +189,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -210,7 +210,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let class_signature (kind, identifier, location) tokens : ClassSignature.t =
@@ -220,7 +220,7 @@ let parse warnings whole_reference_location s :
         match kind with
         | (`TUnknown | `TClass | `TClassType) as kind -> `Root (identifier, kind)
         | _ ->
-            expected [ "class"; "class-type" ] location |> Error.raise_exception
+            expected [ "class"; "class-type" ] location |> Error.t_of_parser_t |> Error.raise_exception
         )
     | next_token :: tokens -> (
         match kind with
@@ -232,7 +232,7 @@ let parse warnings whole_reference_location s :
             `ClassType
               (signature next_token tokens, ClassTypeName.make_std identifier)
         | _ ->
-            expected [ "class"; "class-type" ] location |> Error.raise_exception
+            expected [ "class"; "class-type" ] location |> Error.t_of_parser_t |> Error.raise_exception
         )
   in
 
@@ -242,14 +242,14 @@ let parse warnings whole_reference_location s :
     | [] -> (
         match kind with
         | (`TUnknown | `TType) as kind -> `Root (identifier, kind)
-        | _ -> expected [ "type" ] location |> Error.raise_exception )
+        | _ -> expected [ "type" ] location |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TType ->
             `Type (signature next_token tokens, TypeName.make_std identifier)
-        | _ -> expected [ "type" ] location |> Error.raise_exception )
+        | _ -> expected [ "type" ] location |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
@@ -264,7 +264,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type"; "page" ]
               location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
     | next_token :: tokens -> (
         match kind with
         | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
@@ -284,7 +284,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let start_from_last_component (kind, identifier, location) old_kind tokens =
@@ -306,7 +306,7 @@ let parse warnings whole_reference_location s :
                 in
                 Odoc_parser.Parse_error.reference_kinds_do_not_match
                   old_kind_string new_kind_string whole_reference_location
-                |> Error.warning warnings );
+                |> Error.t_of_parser_t |> Error.warning warnings );
               new_kind )
     in
 
@@ -357,7 +357,7 @@ let parse warnings whole_reference_location s :
             Odoc_parser.Parse_error.not_allowed ~what:"Child label"
               ~in_what:"the last component of a reference path" ~suggestion
               location
-            |> Error.raise_exception
+            |> Error.t_of_parser_t |> Error.raise_exception
         | `TPage ->
             let suggestion =
               Printf.sprintf "'page-%s' should be first." identifier
@@ -365,7 +365,7 @@ let parse warnings whole_reference_location s :
             Odoc_parser.Parse_error.not_allowed ~what:"Page label"
               ~in_what:"the last component of a reference path" ~suggestion
               location
-            |> Error.raise_exception )
+            |> Error.t_of_parser_t |> Error.raise_exception )
   in
 
   let old_kind, s, location =
@@ -400,7 +400,7 @@ let parse warnings whole_reference_location s :
       | [] ->
           Odoc_parser.Parse_error.should_not_be_empty ~what:"reference target"
             whole_reference_location
-          |> Error.raise_exception)
+          |> Error.t_of_parser_t |> Error.raise_exception)
 
 type path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
 
@@ -423,7 +423,7 @@ let read_path_longident location s =
   match loop s (String.length s - 1) with
   | Some r -> Result.Ok (r :> path)
   | None ->
-      Result.Error (Odoc_parser.Parse_error.expected "a valid path" location)
+      Result.Error (Odoc_parser.Parse_error.expected "a valid path" location |> Error.t_of_parser_t)
 
 let read_mod_longident warnings location lid :
     (Paths.Reference.Module.t, Error.t) Result.result =
@@ -437,4 +437,4 @@ let read_mod_longident warnings location lid :
       | _ ->
           Result.Error
             (Odoc_parser.Parse_error.expected "a reference to a module"
-               location) )
+               location |> Error.t_of_parser_t) )
