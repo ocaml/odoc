@@ -28,4 +28,3 @@ let span spans =
 
 let nudge_start offset span =
   { span with start = { span.start with column = span.start.column + offset } }
-
