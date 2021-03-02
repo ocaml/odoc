@@ -1,4 +1,4 @@
-open Odoc_compat
+let capitalize_ascii = Astring.String.Ascii.capitalize
 
 let bad_markup : ?suggestion:string -> string -> Location.span -> Error.t =
  fun ?suggestion -> Error.make ?suggestion "'%s': bad markup."
@@ -8,16 +8,16 @@ let leading_zero_in_heading_level : string -> Location.span -> Error.t =
 
 let should_not_be_empty : what:string -> Location.span -> Error.t =
  fun ~what ->
-  Error.make "%s should not be empty." (String.capitalize_ascii what)
+  Error.make "%s should not be empty." (capitalize_ascii what)
 
 let should_begin_on_its_own_line : what:string -> Location.span -> Error.t =
  fun ~what ->
-  Error.make "%s should begin on its own line." (String.capitalize_ascii what)
+  Error.make "%s should begin on its own line." (capitalize_ascii what)
 
 let should_be_followed_by_whitespace : what:string -> Location.span -> Error.t =
  fun ~what ->
   Error.make "%s should be followed by space, a tab, or a new line."
-    (String.capitalize_ascii what)
+    (capitalize_ascii what)
 
 let not_allowed :
     ?suggestion:string ->
@@ -27,7 +27,7 @@ let not_allowed :
     Error.t =
  fun ?suggestion ~what ~in_what ->
   Error.make ?suggestion "%s is not allowed in %s."
-    (String.capitalize_ascii what)
+    (capitalize_ascii what)
     in_what
 
 let no_leading_whitespace_in_verbatim : Location.span -> Error.t =

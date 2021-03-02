@@ -1,4 +1,3 @@
-open Odoc_compat
 open Printf
 
 (* Utils *)

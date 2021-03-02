@@ -1,6 +1,5 @@
 open Or_error
 open Odoc_model.Names
-open Odoc_compat
 
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
@@ -104,7 +103,7 @@ let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
    fun c ->
     match c with
     | `Root (n, `TUnknown) | `Root (n, `TModule) ->
-        String.uncapitalize_ascii n = String.uncapitalize_ascii filename
+        Astring.String.Ascii.(uncapitalize n = uncapitalize filename)
     | _ -> false
   in
   match parent_spec with

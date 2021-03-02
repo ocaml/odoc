@@ -1,5 +1,3 @@
-open Odoc_compat
-
 (*
  * Copyright (c) 2014 Leo White <leo@lpw25.net>
  *
@@ -50,8 +48,8 @@ module Accessible_paths = struct
     }
 
   let find_file_by_name t name =
-    let uname = String.capitalize_ascii name ^ ".odoc" in
-    let lname = String.uncapitalize_ascii name ^ ".odoc" in
+    let uname = Astring.String.Ascii.capitalize name ^ ".odoc" in
+    let lname = Astring.String.Ascii.uncapitalize name ^ ".odoc" in
     let rec loop acc = function
       | [] -> acc
       | directory :: dirs -> (

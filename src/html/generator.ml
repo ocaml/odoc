@@ -43,7 +43,7 @@ let class_ (l : Class.t) = if l = [] then [] else [ Html.a_class l ]
 
 and raw_markup (t : Raw_markup.t) =
   let target, content = t in
-  match Odoc_compat.String.lowercase_ascii target with
+  match Astring.String.Ascii.lowercase target with
   | "html" ->
       (* This is OK because we output *textual* HTML.
          In theory, we should try to parse the HTML with lambdasoup and rebuild
