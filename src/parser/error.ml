@@ -1,4 +1,4 @@
-type full_location_payload = { location : Location_.span; message : string }
+type full_location_payload = { location : Location.span; message : string }
 
 type t = full_location_payload
 

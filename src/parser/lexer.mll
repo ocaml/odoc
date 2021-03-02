@@ -130,12 +130,6 @@ let trim_leading_whitespace : first_line_offset:int -> string -> string =
     in
     String.concat "\n" lines
 
-
-
-module Location = Location_
-
-
-
 type input = {
   file : string;
   offset_to_location : int -> Location.point;
@@ -167,7 +161,7 @@ let with_location_adjustments
     | Some s -> end_ - String.length s
   in
   let location = {
-    Location_.file = input.file;
+    Location.file = input.file;
     start = input.offset_to_location start;
     end_ = input.offset_to_location end_;
   }
