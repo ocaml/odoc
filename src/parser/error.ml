@@ -1,12 +1,9 @@
-open Result
-
 type full_location_payload = { location : Location_.span; message : string }
 
 type filename_only_payload = { file : string; message : string }
 
 type t =
-  [ `With_full_location of full_location_payload
-  | `With_filename_only of filename_only_payload ]
+  [ `With_full_location of full_location_payload ]
 
 let kasprintf k fmt =
   Format.(kfprintf (fun _ -> k (flush_str_formatter ())) str_formatter fmt)
@@ -20,10 +17,6 @@ let kmake k ?suggestion format =
 
 let make ?suggestion format =
   let k message location = `With_full_location { location; message } in
-  kmake k ?suggestion format
-
-let filename_only ?suggestion format =
-  let k message file = `With_filename_only { file; message } in
   kmake k ?suggestion format
 
 let to_string = function
@@ -41,14 +34,6 @@ let to_string = function
         message
   | `With_filename_only { file; message } ->
       Printf.sprintf "File \"%s\":\n%s" file message
-
-exception Conveyed_by_exception of t
-
-let raise_exception error = raise (Conveyed_by_exception error)
-
-let to_exception = function Ok v -> v | Error error -> raise_exception error
-
-let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
 type 'a with_warnings = { value : 'a; warnings : t list }
 

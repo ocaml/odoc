@@ -11,7 +11,7 @@ type filename_only_payload = Odoc_parser.Error.filename_only_payload = {
 }
 
 type t =
-  [ `With_full_location of full_location_payload
+  [ Odoc_parser.Error.t
   | `With_filename_only of filename_only_payload ]
 
 let kasprintf k fmt =
@@ -56,7 +56,7 @@ let to_exception = function Ok v -> v | Error error -> raise_exception error
 
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
-type 'a with_warnings = 'a Odoc_parser.Error.with_warnings = {
+type 'a with_warnings = {
   value : 'a;
   warnings : t list;
 }
@@ -113,3 +113,6 @@ let handle_errors_and_warnings ~warn_error = function
       Error (`Msg (to_string e))
   | { value = Ok _ as ok; warnings = [] } -> ok
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
+
+let t_of_parser_t : Odoc_parser.Error.t -> t = fun x ->
+    (x :> t)

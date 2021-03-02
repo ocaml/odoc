@@ -9,7 +9,7 @@ type filename_only_payload = Odoc_parser.Error.filename_only_payload = {
 }
 
 type t =
-  [ `With_full_location of full_location_payload
+  [ Odoc_parser.Error.t
   | `With_filename_only of filename_only_payload ]
 
 val make :
@@ -28,12 +28,12 @@ val to_exception : ('a, t) Result.result -> 'a
 
 val catch : (unit -> 'a) -> ('a, t) Result.result
 
-type 'a with_warnings = 'a Odoc_parser.Error.with_warnings = {
+type 'a with_warnings = {
   value : 'a;
   warnings : t list;
 }
 
-type warning_accumulator = Odoc_parser.Error.warning_accumulator
+type warning_accumulator = t list ref
 
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 
@@ -60,3 +60,5 @@ val handle_errors_and_warnings :
   ('a, [> `Msg of string ]) Result.result
 (** Like [handle_warnings] but works on the output of
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
+
+val t_of_parser_t : Odoc_parser.Error.t -> t 
