@@ -111,6 +111,12 @@ let emph pp = create "emph" pp
 
 let bold pp = create "bold" pp
 
+let left pp = create "left" pp
+
+let center pp = create "center" pp
+
+let right pp = create "right" pp
+
 let subscript pp = create "textsubscript" pp
 
 let superscript pp = create "textsuperscript" pp

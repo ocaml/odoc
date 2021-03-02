@@ -1,5 +1,7 @@
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
+type paragraph_style = [`Left | `Center | `Right]
+
 module rec Class : sig
   type t = string list
 end =
@@ -52,7 +54,7 @@ end =
   Inline
 
 and Heading : sig
-  type t = { label : string option; level : int; title : Inline.t }
+  type t = { label : string option; level : int; title : Inline.t; p_style: paragraph_style option }
 end =
   Heading
 
@@ -63,7 +65,7 @@ and Block : sig
 
   and desc =
     | Inline of Inline.t
-    | Paragraph of Inline.t
+    | Paragraph of paragraph_style option * Inline.t
     | List of list_type * t list
     | Description of (Inline.t * t) list
     | Source of Source.t

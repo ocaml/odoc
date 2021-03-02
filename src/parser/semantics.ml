@@ -23,7 +23,7 @@ let describe_element = function
   | `Reference (`With_text, _, _) ->
       Token.describe (`Begin_reference_with_replacement_text "")
   | `Link _ -> Token.describe (`Begin_link_with_replacement_text "")
-  | `Heading (level, _, _) ->
+  | `Heading (level, _, _, _) ->
       Token.describe (`Begin_section_heading (level, None))
 
 let leaf_inline_element :
@@ -115,8 +115,8 @@ let rec nestable_block_element :
     Comment.nestable_block_element with_location =
  fun status element ->
   match element with
-  | { value = `Paragraph content; location } ->
-      Location.at location (`Paragraph (inline_elements status content))
+  | { value = `Paragraph (p_style, content); location } ->
+      Location.at location (`Paragraph (p_style, (inline_elements status content)))
   | ({ value = `Code_block _; _ } | { value = `Verbatim _; _ }) as element ->
       element
   | { value = `Modules modules; location } ->
@@ -162,7 +162,7 @@ let tag :
           Error.warning status.warnings e;
           let placeholder = [ `Word "@canonical"; `Space " "; `Code_span s ] in
           let placeholder = List.map (Location.at location) placeholder in
-          Error (Location.at location (`Paragraph placeholder)) )
+          Error (Location.at location (`Paragraph (None, placeholder))) )
   | `Deprecated content ->
       ok (`Deprecated (nestable_block_elements status content))
   | `Param (name, content) ->
@@ -227,7 +227,7 @@ let section_heading :
     [ `Heading of _ ] ->
     int option * Comment.block_element with_location =
  fun status ~top_heading_level location heading ->
-  let (`Heading (level, label, content)) = heading in
+  let (`Heading (level, label, content, _)) = heading in
 
   let content = non_link_inline_elements status ~surrounding:heading content in
 
@@ -246,12 +246,12 @@ let section_heading :
       let content = (content :> Comment.inline_element with_location list) in
       let element =
         Location.at location
-          (`Paragraph [ Location.at location (`Styled (`Bold, content)) ])
+          (`Paragraph (None, [ Location.at location (`Styled (`Bold, content)) ]))
       in
       (top_heading_level, element)
   | `No_titles, 0 ->
       Error.warning status.warnings (Parse_error.titles_not_allowed location);
-      let element = `Heading (`Title, label, content) in
+      let element = `Heading (`Title, label, content, None) in
       let element = Location.at location element in
       let top_heading_level =
         match top_heading_level with None -> Some level | some -> some
@@ -280,7 +280,7 @@ let section_heading :
             (Parse_error.heading_level_should_be_lower_than_top_level level
                top_level location)
       | _ -> () );
-      let element = `Heading (level', label, content) in
+      let element = `Heading (level', label, content, None) in
       let element = Location.at location element in
       let top_heading_level =
         match top_heading_level with None -> Some level | some -> some
@@ -291,7 +291,7 @@ let validate_first_page_heading status ast_element =
   match status.parent_of_sections with
   | `RootPage name | `Page (_, name) | `LeafPage (_, name) -> (
       match ast_element with
-      | { Location.value = `Heading (_, _, _); _ } -> ()
+      | { Location.value = `Heading (_, _, _, _); _ } -> ()
       | _invalid_ast_element ->
           let filename = Odoc_model.Names.PageName.to_string name ^ ".mld" in
           Error.warning status.warnings

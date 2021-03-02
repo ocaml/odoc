@@ -49,6 +49,12 @@ val superscript : 'a t
 
 val section : 'a t
 
+val left : 'a t
+
+val center : 'a t
+
+val right : 'a t
+
 val subsection : 'a t
 
 val subsubsection : 'a t

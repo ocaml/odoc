@@ -23,7 +23,7 @@ let synopsis_from_comment docs =
   let open Location_ in
   let rec from_element elem =
     match elem.value with
-    | `Paragraph p -> Some p
+    | `Paragraph( _, p )-> Some p
     | `List (_, items) -> list_find_map (list_find_map from_element) items
     | _ -> None
   in
@@ -195,8 +195,8 @@ and comment_inline_element :
 
 and comment_nestable_block_element env (x : Comment.nestable_block_element) =
   match x with
-  | `Paragraph elts ->
-      `Paragraph (List.map (with_location comment_inline_element env) elts)
+  | `Paragraph (p_style, elts) ->
+      `Paragraph (p_style, List.map (with_location comment_inline_element env) elts)
   | (`Code_block _ | `Verbatim _) as x -> x
   | `List (x, ys) ->
       `List

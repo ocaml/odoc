@@ -20,6 +20,9 @@ let rec to_yojson : type a. a t -> a -> yojson =
   | Triple (t1, t2, t3) ->
       let a1, a2, a3 = a in
       `List [ to_yojson t1 a1; to_yojson t2 a2; to_yojson t3 a3 ]
+  | Fourfold (t1, t2, t3, t4) ->
+      let a1, a2, a3, a4 = a in
+      `List [ to_yojson t1 a1; to_yojson t2 a2; to_yojson t3 a3; to_yojson t4 a4 ]
   | List t -> `List (List.map (to_yojson t) a)
   | Option t -> (
       match a with

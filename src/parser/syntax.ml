@@ -366,7 +366,7 @@ let paragraph : input -> Ast.nestable_block_element with_location =
   in
 
   let elements = paragraph_line [] |> additional_lines in
-  `Paragraph elements
+    `Paragraph (None, elements)
   |> Location.at (Location.span (List.map Location.location elements))
 
 (* {2 Block elements} *)
@@ -608,7 +608,7 @@ let rec block_element_list :
           junk input;
           let words = List.map (Location.at location) (tag_to_words tag) in
           let paragraph =
-            `Paragraph words
+            `Paragraph (None, words)
             |> accepted_in_all_contexts context
             |> Location.at location
           in
@@ -846,7 +846,7 @@ let rec block_element_list :
           in
           let location = Location.span [ location; brace_location ] in
           let paragraph =
-            `Paragraph content
+            `Paragraph (None, content)
             |> accepted_in_all_contexts context
             |> Location.at location
           in
@@ -889,10 +889,30 @@ let rec block_element_list :
               |> Error.warning input.warnings;
 
             let location = Location.span [ location; brace_location ] in
-            let heading = `Heading (level, label, content) in
+            let heading = `Heading (level, label, content, None) in
             let heading = Location.at location heading in
             let acc = heading :: acc in
             consume_block_elements ~parsed_a_tag `After_text acc )
+    | { value = `Begin_paragraph_style p_style as token; location } ->
+      junk input;
+      let content, brace_location =
+        delimited_inline_element_list ~parent_markup: token
+         ~parent_markup_location: location ~requires_leading_whitespace: true input
+      in
+      let location = Location.span [ location; brace_location ] in
+      if content = [] then
+        Parse_error.should_not_be_empty
+          ~what:(Token.describe token)
+          location
+        |> Error.warning input.warnings;
+      
+      let paragraph =
+        `Paragraph (Some p_style, content)
+        |> accepted_in_all_contexts context
+        |> Location.at location
+      in
+      consume_block_elements ~parsed_a_tag `At_start_of_line
+        (paragraph :: acc)
   in
 
   let where_in_line =
@@ -1073,7 +1093,7 @@ let parse warnings tokens =
 
         let block =
           Location.same last_token
-            (`Paragraph [ Location.same last_token (`Word "}") ])
+            (`Paragraph (None, [ Location.same last_token (`Word "}") ]))
         in
 
         junk input;

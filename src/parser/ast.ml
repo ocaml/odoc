@@ -2,6 +2,8 @@ type 'a with_location = 'a Odoc_model.Location_.with_location
 
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
+type paragraph_style = [`Left | `Center | `Right]
+
 type reference_kind = [ `Simple | `With_text ]
 
 type inline_element =
@@ -15,7 +17,7 @@ type inline_element =
   | `Link of string * inline_element with_location list ]
 
 type nestable_block_element =
-  [ `Paragraph of inline_element with_location list
+  [ `Paragraph of paragraph_style option * inline_element with_location list
   | `Code_block of string
   | `Verbatim of string
   | `Modules of string with_location list
@@ -44,7 +46,7 @@ type tag =
 
 type block_element =
   [ nestable_block_element
-  | `Heading of int * string option * inline_element with_location list
+  | `Heading of int * string option * inline_element with_location list * paragraph_style option
   | `Tag of tag ]
 
 type docs = block_element with_location list

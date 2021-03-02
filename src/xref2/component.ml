@@ -1,5 +1,7 @@
 module Maps = Odoc_model.Paths.Identifier.Maps
 
+type paragraph_style = [ `Left | `Center | `Right]
+
 module ModuleMap = Map.Make (struct
   type t = Ident.module_
 
@@ -431,7 +433,6 @@ and Substitution : sig
   }
 end =
   Substitution
-
 and CComment : sig
   type block_element =
     [ Odoc_model.Comment.nestable_block_element
@@ -439,6 +440,7 @@ and CComment : sig
       Odoc_model.Comment.heading_level
       * Ident.label
       * Odoc_model.Comment.link_content
+      * paragraph_style option
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
@@ -2302,8 +2304,10 @@ module Of_Lang = struct
       _ -> Odoc_model.Comment.block_element -> CComment.block_element =
    fun _ b ->
     match b with
-    | `Heading (l, id, content) ->
-        `Heading (l, Ident.Of_Identifier.label id, content)
+    | `Heading (l, id, content, Some p_style) ->
+        `Heading (l, Ident.Of_Identifier.label id, content, Some p_style)
+    | `Heading (l, id, content, None) ->
+        `Heading (l, Ident.Of_Identifier.label id, content, None)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
 

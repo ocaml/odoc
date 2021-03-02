@@ -16,6 +16,7 @@ type elt =
   | Raw of string
   | Tag of string * t
   | Style of [ `Emphasis | `Bold | `Superscript | `Subscript | `Italic ] * t
+  | Paragraph_style of [ `Left | `Center | `Right ] * t
   | Code_block of t
   | Inlined_code of t
   | Code_fragment of t

@@ -478,7 +478,7 @@ module Comment_to_sexp = struct
 
   let rec nestable_block_element : Comment.nestable_block_element -> sexp =
     function
-    | `Paragraph es ->
+    | `Paragraph (_, es) ->
         List [ Atom "paragraph"; List (List.map (at inline_element) es) ]
     | `Code_block c -> List [ Atom "code_block"; Atom c ]
     | `Verbatim t -> List [ Atom "verbatim"; Atom t ]
@@ -543,7 +543,7 @@ module Comment_to_sexp = struct
 
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e
-    | `Heading (level, label, es) ->
+    | `Heading (level, label, es, _) ->
         let label =
           List
             [

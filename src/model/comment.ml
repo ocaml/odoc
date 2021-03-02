@@ -6,6 +6,8 @@ type 'a with_location = 'a Location_.with_location
 
 type style = [ `Bold | `Italic | `Emphasis | `Superscript | `Subscript ]
 
+type paragraph_style = [`Left | `Center | `Right]
+
 type raw_markup_target = string
 
 type leaf_inline_element =
@@ -39,7 +41,7 @@ type module_reference = {
     resolved during linking. *)
 
 type nestable_block_element =
-  [ `Paragraph of paragraph
+  [ `Paragraph of paragraph_style option * inline_element with_location list
   | `Code_block of string
   | `Verbatim of string
   | `Modules of module_reference list
@@ -79,7 +81,7 @@ type attached_block_element = [ nestable_block_element | `Tag of tag ]
 
 type block_element =
   [ nestable_block_element
-  | `Heading of heading_level * Identifier.Label.t * link_content
+  | `Heading of heading_level * Identifier.Label.t * link_content * paragraph_style option
   | `Tag of tag ]
 
 type docs = block_element with_location list

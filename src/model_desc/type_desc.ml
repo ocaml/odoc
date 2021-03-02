@@ -6,6 +6,7 @@ type 'a t =
   | Variant : ('a -> case) -> 'a t
   | Pair : 'a t * 'b t -> ('a * 'b) t
   | Triple : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
+  | Fourfold : 'a t * 'b t * 'c t * 'd t -> ('a * 'b * 'c * 'd) t
   | List : 'a t -> 'a list t
   | Option : 'a t -> 'a option t
   | To_string : ('a -> string) -> 'a t

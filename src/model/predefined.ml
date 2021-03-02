@@ -593,7 +593,7 @@ let floatarray_decl =
   let doc =
     [
       `Paragraph
-        ( words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
+        ( None, words [ "This"; "type"; "is"; "used"; "to"; "implement"; "the" ]
           @ [
               `Space;
               `Reference

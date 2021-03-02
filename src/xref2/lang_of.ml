@@ -965,8 +965,8 @@ and block_element parent
     Odoc_model.Comment.block_element Odoc_model.Location_.with_location =
   let value =
     match d.Odoc_model.Location_.value with
-    | `Heading (l, id, content) -> (
-        try `Heading (l, `Label (parent, Ident.Name.typed_label id), content)
+    | `Heading (l, id, content, p_style) -> (
+        try `Heading (l, `Label (parent, Ident.Name.typed_label id), content, p_style)
         with Not_found ->
           Format.fprintf Format.err_formatter "Failed to find id: %a\n"
             Ident.fmt id;

@@ -145,7 +145,7 @@ let add_docs (docs : Odoc_model.Comment.docs) env =
   List.fold_right
     (fun element env ->
       match element.Odoc_model.Location_.value with
-      | `Heading (_, label, nested_elements) ->
+      | `Heading (_, label, nested_elements, _) ->
           let env = add_label label env in
           let env = add_label_title label nested_elements env in
           env
@@ -159,7 +159,7 @@ let add_cdocs p (docs : Component.CComment.docs) env =
   List.fold_right
     (fun element env ->
       match element.Odoc_model.Location_.value with
-      | `Heading (_, `LLabel (name, _), nested_elements) ->
+      | `Heading (_, `LLabel (name, _), nested_elements, _) ->
           let label = `Label (Paths.Identifier.label_parent p, name) in
           let env = add_label label env in
           let env = add_label_title label nested_elements env in

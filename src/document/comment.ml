@@ -216,7 +216,7 @@ let module_references ms =
       | Some synopsis ->
           [
             block ~attr:[ "synopsis" ]
-            @@ Paragraph (inline_element_list synopsis);
+            @@ Paragraph (None, inline_element_list synopsis);
           ]
       | None -> []
     in
@@ -228,9 +228,10 @@ let module_references ms =
 let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
   match content with
-  | `Paragraph [ { value = `Raw_markup (target, s); _ } ] ->
+  | `Paragraph (None, [ { value = `Raw_markup (target, s); _ } ]) ->
       block @@ Block.Raw_markup (target, s)
-  | `Paragraph content -> block @@ Block.Paragraph (inline_element_list content)
+  | `Paragraph (Some p_style, content) -> block @@ Block.Paragraph (Some p_style, (inline_element_list content))
+  | `Paragraph (None, content) -> block @@ Block.Paragraph (None, (inline_element_list content))
   | `Code_block code -> block @@ Source (source_of_code code)
   | `Verbatim s -> block @@ Verbatim s
   | `Modules ms -> module_references ms
@@ -241,7 +242,7 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
         | `Ordered -> Block.Ordered
       in
       let f = function
-        | [ { Odoc_model.Location_.value = `Paragraph content; _ } ] ->
+        | [ { Odoc_model.Location_.value = `Paragraph (None, content); _ } ] ->
             [ block @@ Block.Inline (inline_element_list content) ]
         | item -> nestable_block_element_list item
       in
@@ -307,12 +308,16 @@ let attached_block_element : Comment.attached_block_element -> Block.t =
 
 let block_element : Comment.block_element -> Block.t = function
   | #Comment.attached_block_element as e -> attached_block_element e
-  | `Heading (_, `Label (_, _), content) ->
+  | `Heading (_, `Label (_, _), content, Some p_style) ->
       (* We are not supposed to receive Heading in this context.
          TODO: Remove heading in attached documentation in the model *)
-      [ block @@ Paragraph (non_link_inline_element_list content) ]
+      [ block @@ Paragraph (Some p_style, (non_link_inline_element_list content)) ]
+  | `Heading (_, `Label (_, _), content, None) ->
+    (* We are not supposed to receive Heading in this context.
+        TODO: Remove heading in attached documentation in the model *)
+    [ block @@ Paragraph (None, (non_link_inline_element_list content)) ]
 
-let heading (`Heading (level, `Label (_, label), content)) =
+let heading (`Heading (level, `Label (_, label), content, p_style)) =
   let label = Odoc_model.Names.LabelName.to_string label in
   let title = non_link_inline_element_list content in
   let level =
@@ -325,7 +330,11 @@ let heading (`Heading (level, `Label (_, label), content)) =
     | `Subparagraph -> 5
   in
   let label = Some label in
-  Item.Heading { label; level; title }
+  let p_style = match p_style with
+    | Some ps -> Some ps
+    | None -> None
+  in
+   Item.Heading { label; level; title; p_style }
 
 let item_element : Comment.block_element -> Item.t list = function
   | #Comment.attached_block_element as e ->

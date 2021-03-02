@@ -15,6 +15,8 @@ module PathClassTypeMap : Map.S with type key = Ident.path_class_type
 
 module IdentMap : Map.S with type key = Ident.any
 
+type paragraph_style = [ `Left | `Center | `Right]
+
 (** Delayed is a bit like Lazy.t but may in the future offer the chance to peek inside
     to be able to optimize the calculation *)
 module Delayed : sig
@@ -409,6 +411,7 @@ and CComment : sig
       Odoc_model.Comment.heading_level
       * Ident.label
       * Odoc_model.Comment.link_content
+      * paragraph_style option
     | `Tag of Odoc_model.Comment.tag ]
 
   type docs = block_element Odoc_model.Comment.with_location list
