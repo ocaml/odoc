@@ -1,5 +1,5 @@
 module Ast = Ast
-module Location_ = Location_
+module Location = Location
 module Error = Error
 module Parse_error = Parse_error
 module Token = Token
@@ -28,7 +28,7 @@ module Token = Token
    which point it creates the table described above. The remaining function is
    then passed to the lexer, so it can apply the table to its emitted tokens. *)
 let offset_to_location :
-    input:string -> comment_location:Lexing.position -> int -> Location_.point =
+    input:string -> comment_location:Lexing.position -> int -> Location.point =
  fun ~input ~comment_location ->
   let rec find_newlines line_number input_index newlines_accumulator =
     if input_index >= String.length input then newlines_accumulator
@@ -60,7 +60,7 @@ let offset_to_location :
                 - comment_location.Lexing.pos_bol
               else column_in_comment
             in
-            { Location_.line = line_in_file; column = column_in_file }
+            { Location.line = line_in_file; column = column_in_file }
     in
     scan_to_last_newline reversed_newlines
 

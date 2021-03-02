@@ -1,5 +1,3 @@
-module Location_ = Odoc_parser.Location_
-
 let deprecated_reference_kind warnings location kind replacement =
   (Odoc_parser.Parse_error.deprecated_reference_kind kind replacement location |> Error.t_of_parser_t)
     |> Error.warning warnings

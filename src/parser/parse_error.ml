@@ -1,4 +1,3 @@
-module Location = Location_
 open Odoc_compat
 
 let bad_markup : ?suggestion:string -> string -> Location.span -> Error.t =
