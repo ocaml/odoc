@@ -66,7 +66,8 @@ val signature : t -> Component.Signature.t -> Component.Signature.t
 
 val apply_sig_map :
   t ->
-  Component.Signature.item list ->
-  Component.Signature.removed_item list ->
-  bool ->
-  Component.Signature.t
+  Signature.item list ->
+  Signature.removed_item list ->
+  Signature.item list * Signature.removed_item list * bool
+(** Apply substitutions. The third value is [false] if the corresponding
+    signature needs to be compiled again and [true] otherwise. *)

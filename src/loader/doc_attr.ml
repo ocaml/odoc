@@ -1,5 +1,3 @@
-open Result
-
 (*
  * Copyright (c) 2014 Leo White <lpw25@cl.cam.ac.uk>
  *
@@ -16,7 +14,8 @@ open Result
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
+open Result
+open Odoc_model
 
 module Paths = Odoc_model.Paths
 
@@ -128,3 +127,8 @@ let standalone_multiple parent attrs =
       [] attrs
   in
     List.rev coms
+
+let extract_top_comment items =
+  match items with
+  | Lang.Signature.Comment (`Docs doc) :: tl -> (tl, doc)
+  | _ -> (items, empty)

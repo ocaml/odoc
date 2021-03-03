@@ -59,7 +59,7 @@ let read_cmti ~make_root ~parent ~filename () =
           | Ok root -> root
           | Error (`Msg m) -> error_msg filename m
         in
-        let (id, doc, items) = Cmti.read_interface parent name intf in
+        let (id, items) = Cmti.read_interface parent name intf in
         let imports =
           List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
         in
@@ -70,6 +70,7 @@ let read_cmti ~make_root ~parent ~filename () =
         in
         let interface = true in
         let hidden = Odoc_model.Root.contains_double_underscore name in
+        let doc = Doc_attr.empty in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
@@ -156,13 +157,14 @@ let read_cmt ~make_root ~parent ~filename () =
         | Ok root -> root
         | Error (`Msg m) -> error_msg filename m
       in
-      let (id, doc, items) = Cmt.read_implementation parent name impl in
+      let (id, items) = Cmt.read_implementation parent name impl in
       let imports =
         List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
       let imports =
         List.map (fun (s, d) ->
           Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
+      let doc = Doc_attr.empty in
       let source =
         match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
         | Some file, Some digest ->
@@ -192,13 +194,14 @@ let read_cmi ~make_root ~parent ~filename () =
         | Ok root -> root
         | Error (`Msg m) -> error_msg filename m
       in
-      let (id, doc, items) = Cmi.read_interface parent name (Odoc_model.Compat.signature cmi_info.cmi_sign) in
+      let (id, items) = Cmi.read_interface parent name (Odoc_model.Compat.signature cmi_info.cmi_sign) in
       let imports =
         List.map (fun (s, d) ->
           Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
       let interface = true in
       let hidden = Odoc_model.Root.contains_double_underscore name in
+      let doc = Doc_attr.empty in
       let source = None in
       let content = Odoc_model.Lang.Compilation_unit.Module items in
       {Odoc_model.Lang.Compilation_unit.id; root; doc; digest; imports;

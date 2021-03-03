@@ -22,7 +22,7 @@ let from_odoc ~env ~warn_error input output =
             unit with
             content =
               Odoc_model.Lang.Compilation_unit.Module
-                { items = []; compiled = false };
+                { items = []; compiled = false; doc = [] };
             expansion = None;
           }
         else unit

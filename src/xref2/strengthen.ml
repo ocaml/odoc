@@ -65,8 +65,7 @@ let rec signature :
       (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
       Subst.identity strengthened_modules
   in
-  Subst.signature substs
-    { items = List.rev items; removed = sg.removed; compiled = sg.compiled }
+  Subst.signature substs { sg with items = List.rev items }
 
 and module_ :
     ?canonical:Cpath.module_ ->

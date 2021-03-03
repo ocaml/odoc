@@ -545,20 +545,16 @@ and read_structure env parent str =
   let items =
     List.fold_left
       (fun items item ->
-         List.rev_append (read_structure_item env parent item) items)
+        List.rev_append (read_structure_item env parent item) items)
       [] str.str_items
+    |> List.rev
   in
-    { items = List.rev items; compiled=false }
+  let items, doc = Doc_attr.extract_top_comment items in
+  { items; compiled = false; doc }
 
 let read_implementation root name impl =
-  let id = `Root(root, Odoc_model.Names.ModuleName.make_std name) in
+  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg = read_structure Env.empty id impl in
-  let doc, sg =
-    let open Signature in
-    match sg.items with
-    | Comment (`Docs doc) :: items -> doc, {sg with items}
-    | _ -> Doc_attr.empty, sg
-  in
-    (id, doc, sg)
+  (id, sg)
 
 let _ = Cmti.read_module_expr := read_module_expr

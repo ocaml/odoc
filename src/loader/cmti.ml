@@ -703,24 +703,18 @@ and read_open env parent o =
 #endif
 
 and read_signature env parent sg =
-  let env =
-    Env.add_signature_tree_items parent sg env
-  in
+  let env = Env.add_signature_tree_items parent sg env in
   let items =
     List.fold_left
       (fun items item ->
-         List.rev_append (read_signature_item env parent item) items)
+        List.rev_append (read_signature_item env parent item) items)
       [] sg.sig_items
+    |> List.rev
   in
-    { items = List.rev items; compiled=false }
+  let items, doc = Doc_attr.extract_top_comment items in
+  { items; compiled = false; doc }
 
 let read_interface root name intf =
-  let id = `Root(root, Odoc_model.Names.ModuleName.make_std name) in
+  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
   let sg = read_signature Env.empty id intf in
-  let doc, sg =
-    let open Signature in
-    match sg.items with
-    | Comment (`Docs doc) :: items -> doc, {sg with items}
-    | _ -> Doc_attr.empty, sg
-  in
-    (id, doc, sg)
+  (id, sg)

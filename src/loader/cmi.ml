@@ -976,7 +976,7 @@ and read_signature_noenv env parent (items : Odoc_model.Compat.signature) =
     | Sig_class_type _ :: _
     | Sig_class _ :: _ -> assert false
 
-    | [] -> ({items = List.rev acc; compiled=false}, shadowed)
+    | [] -> ({items = List.rev acc; compiled=false; doc = [] }, shadowed)
   in
     loop ([],{s_modules=[]; s_module_types=[]; s_values=[];s_types=[]; s_classes=[]; s_class_types=[]}) items
 
@@ -986,7 +986,6 @@ and read_signature env parent (items : Odoc_model.Compat.signature) =
 
 
 let read_interface root name intf =
-  let id = `Root(root, Odoc_model.Names.ModuleName.make_std name) in
-  let doc = Doc_attr.empty in
+  let id = `Root (root, Odoc_model.Names.ModuleName.make_std name) in
   let items = read_signature Env.empty id intf in
-    (id, doc, items)
+  (id, items)

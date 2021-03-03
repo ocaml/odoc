@@ -19,10 +19,11 @@
 module Paths = Odoc_model.Paths
 
 
-val read_interface: Odoc_model.Paths.Identifier.ContainerPage.t -> string -> Odoc_model.Compat.signature ->
-  Paths.Identifier.RootModule.t *
-  Odoc_model.Comment.docs *
-  Odoc_model.Lang.Signature.t
+val read_interface :
+  Odoc_model.Paths.Identifier.ContainerPage.t ->
+  string ->
+  Odoc_model.Compat.signature ->
+  Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
 val canonical : Odoc_model.Comment.docs -> [ `Dot of Paths.Path.Module.t * string ] option
 

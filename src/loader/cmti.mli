@@ -16,14 +16,19 @@
 
 module Paths = Odoc_model.Paths
 
-val read_module_expr : (Ident_env.t -> Paths.Identifier.Signature.t -> Paths.Identifier.LabelParent.t -> Typedtree.module_expr -> Odoc_model.Lang.ModuleType.expr) ref
+val read_module_expr :
+  (Ident_env.t ->
+  Paths.Identifier.Signature.t ->
+  Paths.Identifier.LabelParent.t ->
+  Typedtree.module_expr ->
+  Odoc_model.Lang.ModuleType.expr)
+  ref
+
 val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t ->
   string ->
   Typedtree.signature ->
-  Paths.Identifier.RootModule.t
-  * Odoc_model.Comment.docs
-  * Odoc_model.Lang.Signature.t
+  Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
 val read_module_type :
   Ident_env.t ->

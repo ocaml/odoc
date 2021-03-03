@@ -6,7 +6,7 @@ Everything should resolve:
 
   $ odoc_print main.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[] | .[]'
   {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}}
-  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"External"},{"`Word":"."}]}
+  "None"
   {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}}
   {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"X"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}}

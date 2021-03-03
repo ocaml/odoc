@@ -352,7 +352,8 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
           {
             id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
             doc = unit.doc;
-            type_ = ModuleType (Signature { items = []; compiled = true });
+            type_ =
+              ModuleType (Signature { items = []; compiled = true; doc = [] });
             canonical = None;
             hidden = unit.hidden;
           }
