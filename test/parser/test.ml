@@ -169,6 +169,27 @@ let tests : test_suite list =
         t "no-whitespace" "{_foo}";
         t "v-verbose" "{_uv}";
       ] );
+    ( "center-align",
+      [
+        t "basic" "{C foo}";
+        t "extra-leading-whitespace" "{C  \t foo}";
+        t "leading-newline" "{C\nfoo}";
+        t "leading-newline-and-whitespace" "{C\n foo}";
+      ]);
+    ( "left-align",
+      [
+        t "basic" "{L foo}";
+        t "extra-leading-whitespace" "{L  \t foo}";
+        t "leading-newline" "{L\nfoo}";
+        t "leading-newline-and-whitespace" "{L\n foo}";
+      ]);
+    ( "right-align",
+      [
+        t "basic" "{R foo}";
+        t "extra-leading-whitespace" "{R  \t foo}";
+        t "leading-newline" "{R\nfoo}";
+        t "leading-newline-and-whitespace" "{R\n foo}";
+      ]);
     ( "simple-reference",
       [
         t "basic" "{!foo}";
@@ -1066,9 +1087,6 @@ let tests : test_suite list =
         (* test "index list"
            "{!indexlist}"
            (Ok []); *)
-        t "left-alignment" "{L foo}";
-        t "center-alignment" "{C foo}";
-        t "right-alignment" "{R foo}";
         t "custom-style" "{c foo}";
         t "custom-tag" "@custom";
         t "custom-reference-kind" "{!custom:foo}";
