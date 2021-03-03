@@ -1,3 +1,23 @@
+2.0.0~beta2
+-----------
+
+Additions
+
+- Add the ability to specifiy canonical paths for types and module types (@jonludlam, #596)
+- Several improvements to the HTML tree (@dbuenzli, #600, #605, #589, @Drup, #579)
+- Render module synopses in `{!modules:...}` (@Julow, #597)
+
+Bugs fixed
+
+- Fix for resolving references in mld files (@jonludlam, #611)
+- Fix placement of documentation in module aliases (@Julow, #606)
+- Fix breakage involving includes and shadowing (@jonludlam, #603)
+- Don't link to hidden items (@lubegasimon, #583)
+- Don't remove docs of inlined includes (@Julow, #595)
+- Don't render shadowed values (@lubegasimon, #580)
+- Fix unresolved references in the first comment of a file (@Julow, #592)
+
+
 2.0.0~beta1
 -----------
 
