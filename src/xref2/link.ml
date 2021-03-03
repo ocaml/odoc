@@ -144,9 +144,10 @@ let rec unit (resolver : Env.resolver) t =
     match t.content with
     | Module sg ->
         (* Inline [signature] to keep [env]. *)
-        let env = Env.open_signature sg env in
-        let items = signature_items env (t.id :> Id.Signature.t) sg.items in
-        (Module { sg with items }, env)
+        let env = Env.open_signature sg env |> Env.add_docs sg.doc in
+        let items = signature_items env (t.id :> Id.Signature.t) sg.items
+        and doc = comment_docs env sg.doc in
+        (Module { sg with items; doc }, env)
     | Pack _ as p -> (p, env)
   in
   let doc = comment_docs env t.doc in
@@ -331,9 +332,9 @@ and module_substitution env m =
 
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
-  let env = Env.open_signature s env in
-  let items = signature_items env id s.items in
-  { s with items }
+  let env = Env.open_signature s env |> Env.add_docs s.doc in
+  let items = signature_items env id s.items and doc = comment_docs env s.doc in
+  { s with items; doc }
 
 and signature_items :
     Env.t -> Id.Signature.t -> Signature.item list -> Signature.item list =
@@ -376,11 +377,9 @@ and extract_doc : Module.decl -> Comment.docs * Module.decl =
       Comment.docs * ModuleType.simple_expansion option = function
     | Some
         (Signature
-          {
-            items = Comment (`Docs _doc) :: Comment (`Docs d2) :: items;
-            compiled;
-          }) ->
-        (d2, Some (Signature { items; compiled }))
+          ( { items = Comment (`Docs _doc) :: Comment (`Docs d2) :: items; _ }
+          as sg )) ->
+        (d2, Some (Signature { sg with items }))
     | e -> ([], e)
   in
   function

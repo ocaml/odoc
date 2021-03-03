@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
+open Odoc_model
 
 module Paths = Odoc_model.Paths
 
@@ -50,3 +50,7 @@ val standalone_multiple :
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
     Odoc_model.Comment.docs_or_stop list
+
+val extract_top_comment :
+  Lang.Signature.item list -> Lang.Signature.item list * Comment.docs
+(** Extract the first comment of a signature. Returns the remaining items. *)

@@ -885,30 +885,16 @@ and rename_bound_idents s sg =
            s)
         (ClassType (id', r, c) :: sg)
         rest
-  | Include i :: rest ->
-      let s, items =
-        rename_bound_idents s [] i.Component.Include.expansion_.items
-      in
+  | Include ({ expansion_; _ } as i) :: rest ->
+      let s, items = rename_bound_idents s [] expansion_.items in
       rename_bound_idents s
-        ( Include
-            {
-              i with
-              Component.Include.expansion_ =
-                { items; removed = []; compiled = i.expansion_.compiled };
-            }
+        ( Include { i with expansion_ = { expansion_ with items; removed = [] } }
         :: sg )
         rest
-  | Open o :: rest ->
-      let s, items =
-        rename_bound_idents s [] o.Component.Open.expansion.items
-      in
+  | Open { expansion } :: rest ->
+      let s, items = rename_bound_idents s [] expansion.items in
       rename_bound_idents s
-        ( Open
-            {
-              Component.Open.expansion =
-                { items; removed = []; compiled = o.expansion.compiled };
-            }
-        :: sg )
+        (Open { expansion = { expansion with items; removed = [] } } :: sg)
         rest
   | (Comment _ as item) :: rest -> rename_bound_idents s (item :: sg) rest
 
@@ -927,12 +913,14 @@ and removed_items s items =
 
 and signature s sg =
   let s, items = rename_bound_idents s [] sg.items in
-  apply_sig_map s items sg.removed sg.compiled
+  let items, removed, dont_recompile = apply_sig_map s items sg.removed in
+  { sg with items; removed; compiled = sg.compiled && dont_recompile }
 
 and apply_sig_map_sg s (sg : Component.Signature.t) =
-  apply_sig_map s sg.items sg.removed sg.compiled
+  let items, removed, dont_recompile = apply_sig_map s sg.items sg.removed in
+  { sg with items; removed; compiled = sg.compiled && dont_recompile }
 
-and apply_sig_map s items removed compiled =
+and apply_sig_map s items removed =
   let open Component.Signature in
   let rec inner items acc =
     match items with
@@ -983,11 +971,8 @@ and apply_sig_map s items removed compiled =
     | Open o :: rest -> inner rest (Open (open_ s o) :: acc)
     | Comment c :: rest -> inner rest (Comment c :: acc)
   in
-  let compiled =
-    if
-      List.length s.path_invalidating_modules > 0
-      || List.length s.module_type_of_invalidating_modules > 0
-    then false
-    else compiled
+  let dont_recompile =
+    List.length s.path_invalidating_modules = 0
+    && List.length s.module_type_of_invalidating_modules = 0
   in
-  { items = inner items []; removed = removed_items s removed; compiled }
+  (inner items [], removed_items s removed, dont_recompile)

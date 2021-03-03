@@ -312,7 +312,12 @@ and Signature : sig
     | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
         (** [RType (_, texpr, eq)], [eq.manifest = Some texpr] *)
 
-  type t = { items : item list; compiled : bool; removed : removed_item list }
+  type t = {
+    items : item list;
+    compiled : bool;
+    removed : removed_item list;
+    doc : CComment.docs;
+  }
 end =
   Signature
 
@@ -2291,7 +2296,7 @@ module Of_Lang = struct
         | Include i -> Include (include_ ident_map i))
         sg.items
     in
-    { items; removed = []; compiled = sg.compiled }
+    { items; removed = []; compiled = sg.compiled; doc = docs ident_map sg.doc }
 
   and with_location :
         'a 'b. (map -> 'a -> 'b) -> map -> 'a Location_.with_location ->

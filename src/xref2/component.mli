@@ -292,7 +292,12 @@ and Signature : sig
     | RModule of Ident.module_ * Cpath.Resolved.module_
     | RType of Ident.type_ * TypeExpr.t * TypeDecl.Equation.t
 
-  type t = { items : item list; compiled : bool; removed : removed_item list }
+  type t = {
+    items : item list;
+    compiled : bool;
+    removed : removed_item list;
+    doc : CComment.docs;
+  }
 end
 
 and Open : sig

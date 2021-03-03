@@ -32,7 +32,7 @@ let document_of_input ~env ~warn_error ~syntax input =
             unit with
             content =
               Odoc_model.Lang.Compilation_unit.Module
-                { items = []; compiled = false };
+                { items = []; compiled = false; doc = [] };
             expansion = None;
           }
         else unit

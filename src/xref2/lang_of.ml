@@ -419,7 +419,11 @@ and signature :
  fun id map sg ->
   let open Component.Signature in
   (* let map = { map with shadowed = empty_shadow } in *)
-  { items = signature_items id map sg.items; compiled = sg.compiled }
+  {
+    items = signature_items id map sg.items;
+    compiled = sg.compiled;
+    doc = docs (id :> Identifier.LabelParent.t) sg.doc;
+  }
 
 and class_ map parent id c =
   let open Component.Class in

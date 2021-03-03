@@ -215,6 +215,7 @@ and signature_t : Lang.Signature.t Type_desc.t =
     [
       F ("items", (fun t -> t.items), List signature_item);
       F ("compiled", (fun t -> t.compiled), bool);
+      F ("doc", (fun t -> t.doc), docs);
     ]
 
 (** {3 Open} *)

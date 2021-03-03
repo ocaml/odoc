@@ -71,7 +71,7 @@ let model_of_string_impl str =
 
 let signature_of_mli_string str =
     Odoc_xref2.Ident.reset ();
-    let _, _, sg = model_of_string str in
+    let _, sg = model_of_string str in
     sg
 
 let string_of_file f =
@@ -594,11 +594,11 @@ module LangUtils = struct
 
 end
 
-let my_compilation_unit id docs s =
+let my_compilation_unit id s =
     { Odoc_model.Lang.Compilation_unit.
       id = id
     ; root = root
-    ; doc = docs
+    ; doc = []
     ; digest = "nodigest"
     ; imports = []
     ; source = None
@@ -628,6 +628,6 @@ let resolve unit =
 
 
 let resolve_from_string s =
-    let id, docs, sg = model_of_string s in
-    let unit = my_compilation_unit id docs sg in
+    let id, sg = model_of_string s in
+    let unit = my_compilation_unit id sg in
     resolve unit

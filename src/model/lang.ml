@@ -141,7 +141,11 @@ and Signature : sig
     | Include of Include.t
     | Comment of Comment.docs_or_stop
 
-  type t = { items : item list; compiled : bool }
+  type t = {
+    items : item list;
+    compiled : bool;
+    doc : Comment.docs;  (** The top comment. *)
+  }
 end =
   Signature
 
