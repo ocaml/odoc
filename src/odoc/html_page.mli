@@ -21,6 +21,7 @@ type args = {
   closed_details : bool;
   indent : bool;
   theme_uri : Odoc_html.Tree.uri;
+  support_uri : Odoc_html.Tree.uri;
 }
 
 val renderer : args Renderer.t

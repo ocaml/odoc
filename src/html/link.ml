@@ -17,16 +17,21 @@ module Path = struct
     | "module" | "container-page" -> name
     | _ -> Printf.sprintf "%s-%s" kind name
 
-  let is_leaf_page url = url.Url.Path.kind = "page"
+  let is_leaf_page url =
+    url.Url.Path.kind = "page" || url.Url.Path.kind = "file"
 
   let rec get_dir { Url.Path.parent; name; kind } =
     let ppath = match parent with Some p -> get_dir p | None -> [] in
     match kind with
-    | "page" -> ppath
+    | "page" | "file" -> ppath
     | _ -> ppath @ [ segment_to_string (kind, name) ]
 
   let get_file : Url.Path.t -> string =
-   fun t -> match t.kind with "page" -> t.name ^ ".html" | _ -> "index.html"
+   fun t ->
+    match t.kind with
+    | "page" -> t.name ^ ".html"
+    | "file" -> t.name
+    | _ -> "index.html"
 
   let for_linking : Url.Path.t -> string list =
    fun url -> get_dir url @ [ get_file url ]
