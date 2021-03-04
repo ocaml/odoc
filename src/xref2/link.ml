@@ -139,19 +139,12 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
   let imports, env = Env.initial_env t resolver in
-  let env = (* Add doc to env *) Env.add_docs t.doc env in
-  let content, env =
+  let content =
     match t.content with
-    | Module sg ->
-        (* Inline [signature] to keep [env]. *)
-        let env = Env.open_signature sg env |> Env.add_docs sg.doc in
-        let items = signature_items env (t.id :> Id.Signature.t) sg.items
-        and doc = comment_docs env sg.doc in
-        (Module { sg with items; doc }, env)
-    | Pack _ as p -> (p, env)
+    | Module sg -> Module (signature env (t.id :> Id.Signature.t) sg)
+    | Pack _ as p -> p
   in
-  let doc = comment_docs env t.doc in
-  { t with content; doc; imports; linked = true }
+  { t with content; imports; linked = true }
 
 and value_ env parent t =
   let open Value in

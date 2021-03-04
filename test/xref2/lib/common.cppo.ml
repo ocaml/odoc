@@ -598,7 +598,6 @@ let my_compilation_unit id s =
     { Odoc_model.Lang.Compilation_unit.
       id = id
     ; root = root
-    ; doc = []
     ; digest = "nodigest"
     ; imports = []
     ; source = None

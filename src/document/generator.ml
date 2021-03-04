@@ -1559,7 +1559,7 @@ module Make (Syntax : SYNTAX) = struct
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) : Page.t =
       let title = Paths.Identifier.name t.id in
-      let header = format_title `Mod title @ Comment.standalone t.doc in
+      let header = format_title `Mod title in
       let url = Url.Path.from_identifier t.id in
       let items =
         match t.content with

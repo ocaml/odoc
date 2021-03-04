@@ -70,7 +70,6 @@ let read_cmti ~make_root ~parent ~filename () =
         in
         let interface = true in
         let hidden = Odoc_model.Root.contains_double_underscore name in
-        let doc = Doc_attr.empty in
         let source =
           match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
           | Some file, Some digest ->
@@ -79,7 +78,7 @@ let read_cmti ~make_root ~parent ~filename () =
           | _, _ -> None
         in
         let content = Odoc_model.Lang.Compilation_unit.Module items in
-        {Odoc_model.Lang.Compilation_unit.id; root; doc; digest; imports; source;
+        {Odoc_model.Lang.Compilation_unit.id; root; digest; imports; source;
          interface; hidden; content; expansion = None; linked = false}
       end
     | _ -> not_an_interface filename
@@ -134,10 +133,9 @@ let read_cmt ~make_root ~parent ~filename () =
         List.map (fun (s, d) ->
           Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
-      let doc = Doc_attr.empty in
       let source = None in
       let content = Odoc_model.Lang.Compilation_unit.Pack items in
-      {Odoc_model.Lang.Compilation_unit.id; root; doc; digest; imports;
+      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
           source; interface; hidden; content; expansion = None; linked = false}
 
     | Implementation impl ->
@@ -164,7 +162,6 @@ let read_cmt ~make_root ~parent ~filename () =
         List.map (fun (s, d) ->
           Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
       in
-      let doc = Doc_attr.empty in
       let source =
         match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
         | Some file, Some digest ->
@@ -173,7 +170,7 @@ let read_cmt ~make_root ~parent ~filename () =
         | _, _ -> None
       in
       let content = Odoc_model.Lang.Compilation_unit.Module items in
-      {Odoc_model.Lang.Compilation_unit.id; root; doc; digest; imports;
+      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
        source; interface; hidden; content; expansion = None; linked = false}
 
     | _ -> not_an_implementation filename
@@ -201,10 +198,9 @@ let read_cmi ~make_root ~parent ~filename () =
       in
       let interface = true in
       let hidden = Odoc_model.Root.contains_double_underscore name in
-      let doc = Doc_attr.empty in
       let source = None in
       let content = Odoc_model.Lang.Compilation_unit.Module items in
-      {Odoc_model.Lang.Compilation_unit.id; root; doc; digest; imports;
+      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
        source; interface; hidden; content; expansion = None; linked = false}
 
     | _ -> corrupted filename
