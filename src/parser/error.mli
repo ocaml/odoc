@@ -7,7 +7,7 @@ val make :
 
 type 'a with_warnings = { value : 'a; warnings : t list }
 
-type warning_accumulator = t list ref
+type warning_accumulator
 
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 
