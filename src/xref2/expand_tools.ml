@@ -33,14 +33,13 @@ let rec aux_expansion_of_module :
     Component.Module.t ->
     (expansion, signature_of_module_error) Result.result =
   let open Component.Module in
-  fun env ~strengthen m ->
-    match m.type_ with
-    | Alias (path, _) ->
-        aux_expansion_of_module_alias env ~strengthen path
-        >>= fun (expansion, _doc) -> Ok expansion
-    | ModuleType expr ->
-        (* TODO: Should [expr] be [ModuleType.t] ? (eg. include the [doc] field) *)
-        aux_expansion_of_module_type_expr env expr
+  fun env ~strengthen m -> aux_expansion_of_module_decl env ~strengthen m.type_
+
+and aux_expansion_of_module_decl env ~strengthen ty =
+  let open Component.Module in
+  match ty with
+  | Alias (path, _) -> aux_expansion_of_module_alias env ~strengthen path
+  | ModuleType expr -> aux_expansion_of_module_type_expr env expr
 
 and aux_expansion_of_module_alias env ~strengthen path =
   (* Format.eprintf "aux_expansion_of_module_alias (strengthen=%b, path=%a)\n%!"
@@ -57,14 +56,28 @@ and aux_expansion_of_module_alias env ~strengthen path =
         && not (Cpath.is_resolved_module_hidden ~weak_canonical_test:true p)
       in
       let m = Component.Delayed.get m in
-      match aux_expansion_of_module env ~strengthen:true m with
-      | Error _ as e -> e
-      | Ok (Signature sg) when strengthen ->
+      match (aux_expansion_of_module env ~strengthen:true m, m.doc) with
+      | (Error _ as e), _ -> e
+      | Ok (Signature sg), [] ->
+          (* Format.eprintf "Maybe strenthening now...\n%!"; *)
           let sg' =
-            Strengthen.signature ?canonical:m.canonical (`Resolved p) sg
+            if strengthen then
+              Strengthen.signature ?canonical:m.canonical (`Resolved p) sg
+            else sg
           in
-          Ok (Signature sg', m.doc)
-      | Ok x -> Ok (x, m.doc) )
+          Ok (Signature sg')
+      | Ok (Signature sg), docs ->
+          (* Format.eprintf "Maybe strenthening now...\n%!"; *)
+          let sg' =
+            if strengthen then
+              Strengthen.signature ?canonical:m.canonical (`Resolved p) sg
+            else sg
+          in
+          (* Format.eprintf "Before:\n%a\n\n%!After\n%a\n\n%!"
+             Component.Fmt.signature sg
+             Component.Fmt.signature sg'; *)
+          Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
+      | Ok (Functor _ as x), _ -> Ok x )
   | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
@@ -86,10 +99,7 @@ and aux_expansion_of_module_type_type_of_desc env t :
   match t with
   | Component.ModuleType.ModPath p ->
       aux_expansion_of_module_alias env ~strengthen:false p
-      >>= fun (expansion, _doc) -> Ok expansion
-  | StructInclude p ->
-      aux_expansion_of_module_alias env ~strengthen:true p
-      >>= fun (expansion, _doc) -> Ok expansion
+  | StructInclude p -> aux_expansion_of_module_alias env ~strengthen:true p
 
 and assert_not_functor = function Signature sg -> Ok sg | _ -> assert false
 
@@ -203,9 +213,8 @@ let expansion_of_u_module_type_expr env id expr =
 let expansion_of_module_alias env id path =
   let open Paths.Identifier in
   aux_expansion_of_module_alias ~strengthen:false env path
-  >>= fun (expansion, doc) ->
-  handle_expansion env (id : Module.t :> Signature.t) expansion
-  >>= fun (env, r) -> Ok (env, false, r, doc)
+  >>= handle_expansion env (id : Module.t :> Signature.t)
+  >>= fun (env, r) -> Ok (env, false, r)
 
 let expansion_of_module_type_of_desc env id t_desc =
   aux_expansion_of_module_type_type_of_desc env t_desc

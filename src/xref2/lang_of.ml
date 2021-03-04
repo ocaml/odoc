@@ -679,19 +679,8 @@ and module_decl :
   match d with
   | Component.Module.Alias (p, s) ->
       Odoc_model.Lang.Module.Alias
-        (Path.module_ map p, Opt.map (module_alias_expansion map identifier) s)
+        (Path.module_ map p, Opt.map (simple_expansion map identifier) s)
   | ModuleType mty -> ModuleType (module_type_expr map identifier mty)
-
-and module_alias_expansion :
-    maps ->
-    Identifier.Signature.t ->
-    Component.Module.alias_expansion ->
-    Lang.Module.alias_expansion =
- fun map identifier t ->
-  {
-    a_doc = docs (identifier :> Identifier.LabelParent.t) t.a_doc;
-    a_expansion = simple_expansion map identifier t.a_expansion;
-  }
 
 and mty_substitution map identifier = function
   | Component.ModuleType.ModuleEq (frag, decl) ->

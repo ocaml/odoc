@@ -385,11 +385,9 @@ and module_ : Env.t -> Module.t -> Module.t =
             match
               Expand_tools.expansion_of_module_alias env m.id (`Resolved cp)
             with
-            | Ok (_, _, e, doc) ->
+            | Ok (_, _, e) ->
                 let le = Lang_of.(simple_expansion empty sg_id e) in
-                let a_doc = Lang_of.docs (sg_id :> Id.LabelParent.t) doc
-                and a_expansion = simple_expansion env sg_id le in
-                Alias (`Resolved p, Some { a_doc; a_expansion })
+                Alias (`Resolved p, Some (simple_expansion env sg_id le))
             | Error _ -> type_
           else type_
       | Alias _ | ModuleType _ -> type_
@@ -402,16 +400,7 @@ and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
   match decl with
   | ModuleType expr -> ModuleType (module_type_expr env id expr)
   | Alias (p, e) ->
-      Alias (module_path env p, Opt.map (module_alias_expansion env id) e)
-
-and module_alias_expansion :
-    Env.t -> Id.Signature.t -> Module.alias_expansion -> Module.alias_expansion
-    =
- fun env id e ->
-  {
-    a_doc = comment_docs env e.a_doc;
-    a_expansion = simple_expansion env id e.a_expansion;
-  }
+      Alias (module_path env p, Opt.map (simple_expansion env id) e)
 
 and include_decl : Env.t -> Id.Signature.t -> Include.decl -> Include.decl =
  fun env id decl ->

@@ -18,16 +18,8 @@ let rec module_decl =
         C
           ( "Alias",
             ((x :> Paths.Path.t), y),
-            Pair (path, Option module_alias_expansion) )
+            Pair (path, Option simple_expansion) )
     | ModuleType x -> C ("ModuleType", x, moduletype_expr))
-
-and module_alias_expansion =
-  let open Lang.Module in
-  Record
-    [
-      F ("a_doc", (fun t -> t.a_doc), docs);
-      F ("a_expansion", (fun t -> t.a_expansion), simple_expansion);
-    ]
 
 and module_t =
   let open Lang.Module in
