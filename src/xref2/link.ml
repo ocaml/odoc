@@ -34,11 +34,6 @@ let synopsis_from_comment docs =
       | _ -> None)
     docs
 
-let remove_top_doc_from_signature s =
-  let open Signature in
-  let items = match s.items with Comment (`Docs _) :: xs -> xs | xs -> xs in
-  { s with items }
-
 exception Loop
 
 let rec is_forward : Paths.Path.Module.t -> bool = function
@@ -364,28 +359,6 @@ and simple_expansion :
       let env' = Env.add_functor_parameter arg env in
       Functor (functor_argument env arg, simple_expansion env' id sg)
 
-and extract_doc : Module.decl -> Comment.docs * Module.decl =
-  let map_expansion :
-      ModuleType.simple_expansion option ->
-      Comment.docs * ModuleType.simple_expansion option = function
-    | Some
-        (Signature
-          ( { items = Comment (`Docs _doc) :: Comment (`Docs d2) :: items; _ }
-          as sg )) ->
-        (d2, Some (Signature { sg with items }))
-    | e -> ([], e)
-  in
-  function
-  | Alias (_, Some e) as alias -> (e.a_doc, alias)
-  | ModuleType (Path { p_path; p_expansion }) -> (
-      match map_expansion p_expansion with
-      | d, e -> (d, ModuleType (Path { p_path; p_expansion = e })) )
-  | ModuleType (With { w_substitutions; w_expansion; w_expr }) -> (
-      match map_expansion w_expansion with
-      | d, e ->
-          (d, ModuleType (With { w_substitutions; w_expansion = e; w_expr })) )
-  | mty -> ([], mty)
-
 and module_ : Env.t -> Module.t -> Module.t =
  fun env m ->
   let open Module in
@@ -421,10 +394,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    let doc, type_ =
-      match m.doc with [] -> extract_doc type_ | _ -> (m.doc, type_)
-    in
-    { m with doc = comment_docs env doc; type_ }
+    { m with doc = comment_docs env m.doc; type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -481,10 +451,6 @@ and include_ : Env.t -> Include.t -> Include.t =
   in
   let expansion =
     let content = signature env i.parent i.expansion.content in
-    let content =
-      if should_be_inlined then content
-      else remove_top_doc_from_signature content
-    in
     { i.expansion with content }
   in
   { i with decl; expansion; inline = should_be_inlined; doc }
