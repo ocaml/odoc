@@ -1241,18 +1241,15 @@ module Make (Syntax : SYNTAX) = struct
       let modname = Paths.Identifier.name t.id in
       let expansion =
         match t.type_ with
-        | Alias (_, Some e) -> Some (simple_expansion e.a_expansion, e.a_doc)
+        | Alias (_, Some e) -> Some (simple_expansion e)
         | Alias (_, None) -> None
-        | ModuleType e -> (
-            match expansion_of_module_type_expr e with
-            | Some e -> Some (e, t.doc)
-            | None -> None )
+        | ModuleType e -> expansion_of_module_type_expr e
       in
       let modname, status, expansion =
         match expansion with
         | None -> (O.documentedSrc (O.txt modname), `Default, None)
-        | Some (items, expansion_doc) ->
-            let doc = Comment.standalone expansion_doc in
+        | Some items ->
+            let doc = Comment.standalone t.doc in
             let status =
               match t.type_ with
               | ModuleType (Signature _) -> `Inline
@@ -1296,7 +1293,7 @@ module Make (Syntax : SYNTAX) = struct
         ++ Syntax.Mod.open_tag ++ O.txt " ... " ++ Syntax.Mod.close_tag
       in
       match md with
-      | Alias (_, Some se) -> simple_expansion_in_decl base se.a_expansion
+      | Alias (_, Some se) -> simple_expansion_in_decl base se
       | Alias (p, _) when not Paths.Path.(is_hidden (p :> t)) ->
           O.txt " = " ++ mdexpr md
       | Alias _ -> sig_dotdotdot

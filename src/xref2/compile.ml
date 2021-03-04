@@ -319,7 +319,7 @@ and include_ : Env.t -> Include.t -> Include.t =
       match decl with
       | Alias p ->
           Expand_tools.aux_expansion_of_module_alias env ~strengthen:true p
-          >>= fun (expansion, _doc) -> Expand_tools.assert_not_functor expansion
+          >>= Expand_tools.assert_not_functor
       | ModuleType mty ->
           Expand_tools.aux_expansion_of_u_module_type_expr env mty
     with

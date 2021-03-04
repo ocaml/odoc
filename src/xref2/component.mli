@@ -61,13 +61,8 @@ end
 *)
 
 module rec Module : sig
-  type alias_expansion = {
-    a_doc : CComment.docs;
-    a_expansion : ModuleType.simple_expansion;
-  }
-
   type decl =
-    | Alias of Cpath.module_ * alias_expansion option
+    | Alias of Cpath.module_ * ModuleType.simple_expansion option
     | ModuleType of ModuleType.expr
 
   type t = {
