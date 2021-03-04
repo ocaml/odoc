@@ -640,7 +640,6 @@ and compilation_unit_t =
     [
       F ("id", (fun t -> t.id), identifier);
       F ("root", (fun t -> t.root), root);
-      F ("doc", (fun t -> t.doc), docs);
       F ("digest", (fun t -> t.digest), Digest.t);
       F ("imports", (fun t -> t.imports), List compilation_unit_import);
       F ("source", (fun t -> t.source), Option compilation_unit_source);

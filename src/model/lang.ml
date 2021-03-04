@@ -444,7 +444,6 @@ module rec Compilation_unit : sig
   type t = {
     id : Identifier.RootModule.t;
     root : Root.t;
-    doc : Comment.docs;
     digest : Digest.t;
     imports : Import.t list;
     source : Source.t option;
