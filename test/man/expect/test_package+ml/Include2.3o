@@ -18,4 +18,8 @@ test_package+ml\.Include2
 Comment about X that should not appear when including X below\.
 .nf 
 .sp 
+.fi 
+Comment about X that should not appear when including X below\.
+.nf 
+.sp 
 \f[CB]type\fR t = int

@@ -41,6 +41,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
      <a href="../index.html">test</a> &#x00BB; A
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A</span></code></h1>
+     <p>Module A.</p>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">
@@ -76,6 +77,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
       &#x00BB; B
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A.B</span></code></h1>
+     <p>Module B.</p><p>Some documentation.</p>
     </header>
     <div class="odoc-content">
      <div class="odoc-spec">

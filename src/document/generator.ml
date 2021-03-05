@@ -1036,7 +1036,8 @@ module Make (Syntax : SYNTAX) = struct
   open Class
 
   module Module : sig
-    val signature : Lang.Signature.t -> Item.t list
+    val signature : Lang.Signature.t -> Comment.Comment.docs * Item.t list
+    (** Returns [header_doc, content]. *)
   end = struct
     let internal_module m =
       let open Lang.Module in
@@ -1068,9 +1069,7 @@ module Make (Syntax : SYNTAX) = struct
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
-    let rec signature (s : Lang.Signature.t) = signature_items s.items
-
-    and signature_items s : Item.t list =
+    let rec signature (s : Lang.Signature.t) =
       let rec loop l acc_items =
         match l with
         | [] -> List.rev acc_items
@@ -1108,7 +1107,7 @@ module Make (Syntax : SYNTAX) = struct
                 let items = Sectioning.comment_items c in
                 loop rest (List.rev_append items acc_items) )
       in
-      loop s []
+      (s.doc, loop s.items [])
 
     and functor_parameter :
         Odoc_model.Lang.FunctorParameter.parameter -> DocumentedSrc.t =
@@ -1124,11 +1123,14 @@ module Make (Syntax : SYNTAX) = struct
         | None ->
             let modname = O.txt (Paths.Identifier.name arg.id) in
             (modname, O.documentedSrc modtyp)
-        | Some items ->
+        | Some (expansion_doc, items) ->
             let url = Url.Path.from_identifier arg.id in
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
-              let header = format_title `Arg (make_name_from_path url) in
+              let header =
+                format_title `Arg (make_name_from_path url)
+                @ Comment.standalone expansion_doc
+              in
               let title = name in
               let content = { Page.items; title; header; url } in
               let summary = O.render modtyp in
@@ -1163,7 +1165,8 @@ module Make (Syntax : SYNTAX) = struct
       Item.Declaration { kind; anchor; doc; content }
 
     and simple_expansion :
-        Odoc_model.Lang.ModuleType.simple_expansion -> Item.t list =
+        Odoc_model.Lang.ModuleType.simple_expansion ->
+        Comment.Comment.docs * Item.t list =
      fun t ->
       let rec extract_functor_params
           (f : Odoc_model.Lang.ModuleType.simple_expansion) =
@@ -1178,11 +1181,9 @@ module Make (Syntax : SYNTAX) = struct
             (Some (add_to params), sg)
       in
       match extract_functor_params t with
-      | None, sg ->
-          let expansion = signature_items sg.items in
-          expansion
+      | None, sg -> signature sg
       | Some params, sg ->
-          let content = signature_items sg.items in
+          let sg_doc, content = signature sg in
           let params =
             Utils.flatmap params ~f:(fun arg ->
                 let content = functor_parameter arg in
@@ -1211,10 +1212,11 @@ module Make (Syntax : SYNTAX) = struct
               }
             :: content
           in
-          prelude @ content
+          (sg_doc, prelude @ content)
 
     and expansion_of_module_type_expr :
-        Odoc_model.Lang.ModuleType.expr -> Item.t list option =
+        Odoc_model.Lang.ModuleType.expr ->
+        (Comment.Comment.docs * Item.t list) option =
      fun t ->
       let rec simple_expansion_of (t : Odoc_model.Lang.ModuleType.expr) =
         match t with
@@ -1248,8 +1250,8 @@ module Make (Syntax : SYNTAX) = struct
       let modname, status, expansion =
         match expansion with
         | None -> (O.documentedSrc (O.txt modname), `Default, None)
-        | Some items ->
-            let doc = Comment.standalone t.doc in
+        | Some (expansion_doc, items) ->
+            let doc = Comment.standalone expansion_doc in
             let status =
               match t.type_ with
               | ModuleType (Signature _) -> `Inline
@@ -1313,8 +1315,8 @@ module Make (Syntax : SYNTAX) = struct
       let modname, expansion =
         match expansion with
         | None -> (O.documentedSrc @@ O.txt modname, None)
-        | Some items ->
-            let doc = Comment.standalone t.doc in
+        | Some (expansion_doc, items) ->
+            let doc = Comment.standalone expansion_doc in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let title = modname in
@@ -1512,7 +1514,7 @@ module Make (Syntax : SYNTAX) = struct
         | ModuleType mt -> umty mt
       in
 
-      let content = signature t.expansion.content in
+      let sg_doc, content = signature t.expansion.content in
       let summary =
         O.render
           ( O.keyword "include" ++ O.txt " " ++ include_decl
@@ -1521,7 +1523,7 @@ module Make (Syntax : SYNTAX) = struct
       let content = { Include.content; status; summary } in
       let kind = Some "include" in
       let anchor = None in
-      let doc = Comment.first_to_ir t.doc in
+      let doc = Comment.first_to_ir sg_doc in
       Item.Include { kind; anchor; doc; content }
   end
 
@@ -1556,13 +1558,13 @@ module Make (Syntax : SYNTAX) = struct
 
     let compilation_unit (t : Odoc_model.Lang.Compilation_unit.t) : Page.t =
       let title = Paths.Identifier.name t.id in
-      let header = format_title `Mod title in
       let url = Url.Path.from_identifier t.id in
-      let items =
+      let unit_doc, items =
         match t.content with
         | Module sign -> signature sign
-        | Pack packed -> pack packed
+        | Pack packed -> ([], pack packed)
       in
+      let header = format_title `Mod title @ Comment.standalone unit_doc in
       { Page.title; header; items; url }
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
