@@ -6,7 +6,7 @@ Everything should resolve:
 
   $ odoc_print main.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[] | .[]'
   {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}}}
-  "None"
+  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"External"},{"`Word":"."}]}
   {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]}}
   {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"X"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}}}
@@ -16,15 +16,15 @@ Everything should resolve:
   {"`Resolved":{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"Y"]}}
   {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Word":"Internal."},{"`Code_span":"X"},{"`Word":"."},"`Space",{"`Word":"An"},"`Space",{"`Word":"other"},"`Space",{"`Word":"sentence."}]}
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Z"]}}}
-  "None"
+  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"Z"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"F"]}}}
-  "None"
+  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"F ()"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Type_of"]}}}
   "None"
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Type_of_str"]}}}
-  "None"
+  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"of"},"`Space",{"`Code_span":"Type_of_str"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"With_type"]}}}
-  "None"
+  {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"T"},{"`Word":"."}]}
   {"`Resolved":{"`SubstAlias":[{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"X"]},{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Alias"]}}]}}
   "None"
   {"`Resolved":{"`SubstAlias":[{"`Canonical":[{"`Module":[{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Internal"]}},"C1"]},{"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"C1"]}}}]},{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"C1"]}}]}}
