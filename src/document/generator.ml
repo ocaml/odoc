@@ -1069,6 +1069,9 @@ module Make (Syntax : SYNTAX) = struct
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
 
+    let doc_of_expansion ~decl_doc ~expansion_doc =
+      Comment.standalone decl_doc @ Comment.standalone expansion_doc
+
     let rec signature (s : Lang.Signature.t) =
       let rec loop l acc_items =
         match l with
@@ -1251,7 +1254,7 @@ module Make (Syntax : SYNTAX) = struct
         match expansion with
         | None -> (O.documentedSrc (O.txt modname), `Default, None)
         | Some (expansion_doc, items) ->
-            let doc = Comment.standalone expansion_doc in
+            let doc = doc_of_expansion ~decl_doc:t.doc ~expansion_doc in
             let status =
               match t.type_ with
               | ModuleType (Signature _) -> `Inline
@@ -1316,7 +1319,7 @@ module Make (Syntax : SYNTAX) = struct
         match expansion with
         | None -> (O.documentedSrc @@ O.txt modname, None)
         | Some (expansion_doc, items) ->
-            let doc = Comment.standalone expansion_doc in
+            let doc = doc_of_expansion ~decl_doc:t.doc ~expansion_doc in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
             let title = modname in
