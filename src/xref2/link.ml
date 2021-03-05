@@ -199,10 +199,16 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
           (fun (r : Comment.module_reference) ->
             match Ref_tools.resolve_module_reference env r.module_reference with
             | Some (r, _, m) ->
-                {
-                  Comment.module_reference = `Resolved r;
-                  module_synopsis = synopsis_from_comment m.doc;
-                }
+                let module_synopsis =
+                  match synopsis_from_comment m.doc with
+                  | Some _ as s -> s
+                  | None -> (
+                      (* If there is no doc, look at the expansion. *)
+                      match Tools.signature_of_module env m with
+                      | Ok sg -> synopsis_from_comment sg.doc
+                      | Error _ -> None )
+                in
+                { Comment.module_reference = `Resolved r; module_synopsis }
             | None -> r)
           refs
       in
