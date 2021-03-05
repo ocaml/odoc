@@ -8,6 +8,14 @@ test_package+ml\.Nested\.X
 \fBModule Nested\.X\fR
 .in 
 .sp 
+.fi 
+This is module X\.
+.nf 
+.sp 
+.fi 
+Some additional comments\.
+.nf 
+.sp 
 .in 3
 \fB2 Type\fR
 .in 

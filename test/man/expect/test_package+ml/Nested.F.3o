@@ -8,6 +8,14 @@ test_package+ml\.Nested\.F
 \fBModule Nested\.F\fR
 .in 
 .sp 
+.fi 
+This is a functor F\.
+.nf 
+.sp 
+.fi 
+Some additional comments\.
+.nf 
+.sp 
 .in 3
 \fB3 Type\fR
 .in 
