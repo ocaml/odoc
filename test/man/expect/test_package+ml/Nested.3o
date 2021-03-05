@@ -19,7 +19,7 @@ This comment needs to be here before #235 is fixed\.
 \fB1 Module\fR
 .in 
 .sp 
-\f[CB]module\fR X :  \f[CB]sig\fR \.\.\. \f[CB]end\fR
+\f[CB]module\fR X : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2
@@ -33,11 +33,6 @@ This is module X\.
 \f[CB]module\fR \f[CB]type\fR Y = \f[CB]sig\fR
 .br 
 .ti +2
-.sp 
-.ti +2
-\fB2\.1\.1 Type\fR
-.sp 
-.ti +2
 \f[CB]type\fR t
 .fi 
 .br 
@@ -46,7 +41,7 @@ Some type\.
 .nf 
 .sp 
 .ti +2
-\fB2\.1\.2 Values\fR
+\fB2\.1\.1 Values\fR
 .sp 
 .ti +2
 \f[CB]val\fR y : t
@@ -68,7 +63,7 @@ This is module type Y\.
 \fB3 Functor\fR
 .in 
 .sp 
-\f[CB]module\fR F (Arg1 : Y) (Arg2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR) :  \f[CB]sig\fR \.\.\. \f[CB]end\fR
+\f[CB]module\fR F (Arg1 : Y) (Arg2 : \f[CB]sig\fR \.\.\. \f[CB]end\fR) : \f[CB]sig\fR \.\.\. \f[CB]end\fR
 .fi 
 .br 
 .ti +2
