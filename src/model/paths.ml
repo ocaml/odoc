@@ -433,6 +433,7 @@ module Path = struct
   type t = Paths_types.Path.any
 
   let rec is_resolved_hidden : Paths_types.Resolved_path.any -> bool =
+   fun x ->
     let open Paths_types.Resolved_path in
     let rec inner = function
       | `Identifier (`ModuleType (_, m)) when Names.ModuleTypeName.is_internal m
@@ -466,7 +467,7 @@ module Path = struct
       | `OpaqueModule m -> inner (m :> any)
       | `OpaqueModuleType mt -> inner (mt :> any)
     in
-    inner
+    inner x
 
   and is_path_hidden : Paths_types.Path.any -> bool =
     let open Paths_types.Path in
