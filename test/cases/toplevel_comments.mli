@@ -50,3 +50,21 @@ end
 
 module Alias : T
 (** Doc of [Alias]. *)
+
+(** Doc of [c1], part 1. *)
+class c1 :
+  int
+  -> object
+
+       (** Doc of [c1], part 2. *)
+     end
+
+(** Doc of [ct], part 1. *)
+class type ct =
+  object
+
+    (** Doc of [ct], part 2. *)
+  end
+
+class c2 : ct
+(** Doc of [c2]. *)

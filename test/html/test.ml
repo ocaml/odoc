@@ -289,6 +289,9 @@ let source_files_all =
         "M'";
         "M''";
         "Alias";
+        "class-c1";
+        "class-type-ct";
+        "class-c2";
       ];
   ]
 
