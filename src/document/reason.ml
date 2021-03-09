@@ -97,6 +97,10 @@ module Reason = Generator.Make (struct
 
     let semicolon = true
   end
+
+  module Comment = struct
+    let markers = ("/*", "*/")
+  end
 end)
 
 include Reason

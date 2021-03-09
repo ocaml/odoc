@@ -95,6 +95,10 @@ module type SYNTAX = sig
 
     val semicolon : bool
   end
+
+  module Comment : sig
+    val markers : string * string
+  end
 end
 
 module type GENERATOR = sig

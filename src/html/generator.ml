@@ -222,10 +222,12 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
   in
   let take_descr l =
     Doctree.Take.until l ~classify:(function
-      | Documented { attrs; anchor; code; doc } ->
-          Accum [ { DocumentedSrc.attrs; anchor; code = `D code; doc } ]
-      | Nested { attrs; anchor; code; doc } ->
-          Accum [ { DocumentedSrc.attrs; anchor; code = `N code; doc } ]
+      | Documented { attrs; anchor; code; doc; markers } ->
+          Accum
+            [ { DocumentedSrc.attrs; anchor; code = `D code; doc; markers } ]
+      | Nested { attrs; anchor; code; doc; markers } ->
+          Accum
+            [ { DocumentedSrc.attrs; anchor; code = `N code; doc; markers } ]
       | _ -> Stop_and_keep)
   in
   let rec to_html t : item Html.elt list =
@@ -237,16 +239,30 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
     | Subpage subp :: _ -> subpage ~resolve subp
     | (Documented _ | Nested _) :: _ ->
         let l, _, rest = take_descr t in
-        let one { DocumentedSrc.attrs; anchor; code; doc } =
+        let one { DocumentedSrc.attrs; anchor; code; doc; markers } =
           let content =
             match code with
             | `D code -> (inline ~resolve code :> item Html.elt list)
             | `N n -> to_html n
           in
           let doc =
-            Utils.optional_elt Html.td
-              ~a:(class_ [ "def-doc" ])
-              (block ~resolve doc)
+            match doc with
+            | [] -> []
+            | doc ->
+                let opening, closing = markers in
+                [
+                  Html.td
+                    ~a:(class_ [ "def-doc" ])
+                    ( Html.span
+                        ~a:(class_ [ "comment-delim" ])
+                        [ Html.txt opening ]
+                      :: block ~resolve doc
+                    @ [
+                        Html.span
+                          ~a:(class_ [ "comment-delim" ])
+                          [ Html.txt closing ];
+                      ] );
+                ]
           in
           let a, link = mk_anchor anchor in
           let content =

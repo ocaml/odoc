@@ -93,6 +93,10 @@ module ML = Generator.Make (struct
 
     let semicolon = false
   end
+
+  module Comment = struct
+    let markers = ("(*", "*)")
+  end
 end)
 
 include ML
