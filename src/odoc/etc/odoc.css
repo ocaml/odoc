@@ -351,6 +351,22 @@ h4 {
   font-size: 1.12em;
 }
 
+/* Comment delimiters, hidden but accessible to screen readers and 
+   selected for copy/pasting */
+
+/* Taken from bootstrap */
+/* See also https://stackoverflow.com/a/27769435/4220738 */
+.comment-delim {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Preformatted and code */
 

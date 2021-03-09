@@ -409,7 +409,8 @@ module Make (Syntax : SYNTAX) = struct
                let anchor = Some url in
                let rhs = Comment.to_ir fld.doc in
                let doc = if not (Comment.has_doc fld.doc) then [] else rhs in
-               DocumentedSrc.Documented { anchor; attrs; code; doc })
+               let markers = Syntax.Comment.markers in
+               DocumentedSrc.Documented { anchor; attrs; code; doc; markers })
       in
       let content =
         O.documentedSrc (O.txt "{") @ rows @ O.documentedSrc (O.txt "}")
@@ -513,7 +514,8 @@ module Make (Syntax : SYNTAX) = struct
                    let doc =
                      if not (Comment.has_doc cstr.doc) then [] else rhs
                    in
-                   DocumentedSrc.Nested { anchor; attrs; code; doc })
+                   let markers = Syntax.Comment.markers in
+                   DocumentedSrc.Nested { anchor; attrs; code; doc; markers })
           in
           rows
 
@@ -528,7 +530,8 @@ module Make (Syntax : SYNTAX) = struct
             O.documentedSrc (O.txt "| ") @ constructor id t.args t.res
           in
           let doc = Comment.to_ir t.doc in
-          DocumentedSrc.Nested { anchor; attrs; code; doc }
+          let markers = Syntax.Comment.markers in
+          DocumentedSrc.Nested { anchor; attrs; code; doc; markers }
 
     let extension (t : Odoc_model.Lang.Extension.t) =
       let content =
@@ -596,20 +599,21 @@ module Make (Syntax : SYNTAX) = struct
                 ),
                 match doc with [] -> None | _ -> Some (Comment.to_ir doc) ) )
         in
+        let markers = Syntax.Comment.markers in
         try
           let url = Url.Anchor.polymorphic_variant ~type_ident item in
           let attrs = [ "def"; url.kind ] in
           let anchor = Some url in
           let code = O.code (O.txt "| ") @ cstr in
           let doc = match doc with None -> [] | Some doc -> doc in
-          DocumentedSrc.Documented { attrs; anchor; code; doc }
+          DocumentedSrc.Documented { attrs; anchor; code; doc; markers }
         with Failure s ->
           Printf.eprintf "ERROR: %s\n%!" s;
           let code = O.code (O.txt "| ") @ cstr in
           let attrs = [ "def"; kind_approx ] in
           let doc = [] in
           let anchor = None in
-          DocumentedSrc.Documented { attrs; anchor; code; doc }
+          DocumentedSrc.Documented { attrs; anchor; code; doc; markers }
       in
       let variants = List.map row t.elements in
       let intro, ending =

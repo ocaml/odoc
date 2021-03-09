@@ -359,10 +359,28 @@ let rec documentedSrc (t : DocumentedSrc.t) =
     | (Documented _ | Nested _) :: _ ->
         let take_descr l =
           Doctree.Take.until l ~classify:(function
-            | Documented { attrs; anchor; code; doc } ->
-                Accum [ { DocumentedSrc.attrs; anchor; code = `D code; doc } ]
-            | Nested { attrs; anchor; code; doc } ->
-                Accum [ { DocumentedSrc.attrs; anchor; code = `N code; doc } ]
+            | Documented { attrs; anchor; code; doc; markers } ->
+                Accum
+                  [
+                    {
+                      DocumentedSrc.attrs;
+                      anchor;
+                      code = `D code;
+                      doc;
+                      markers;
+                    };
+                  ]
+            | Nested { attrs; anchor; code; doc; markers } ->
+                Accum
+                  [
+                    {
+                      DocumentedSrc.attrs;
+                      anchor;
+                      code = `N code;
+                      doc;
+                      markers;
+                    };
+                  ]
             | _ -> Stop_and_keep)
         in
         let l, _, rest = take_descr t in

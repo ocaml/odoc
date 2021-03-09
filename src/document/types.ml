@@ -87,6 +87,7 @@ and DocumentedSrc : sig
     anchor : Url.Anchor.t option;
     code : 'a;
     doc : Block.t;
+    markers : string * string;
   }
 
   type t = one list
