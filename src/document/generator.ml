@@ -81,6 +81,9 @@ let attach_expansion ?(status = `Default) (eq, o, e) page text =
       DocumentedSrc.
         [ Alternative (Expansion { summary; url; status; expansion }) ]
 
+let doc_of_expansion ~decl_doc ~expansion_doc =
+  Comment.standalone decl_doc @ Comment.standalone expansion_doc
+
 include Generator_signatures
 
 module Make (Syntax : SYNTAX) = struct
@@ -948,7 +951,7 @@ module Make (Syntax : SYNTAX) = struct
                 loop rest (List.rev_append items acc_items) )
       in
       (* FIXME: use [t.self] *)
-      loop c.items []
+      (c.doc, loop c.items [])
 
     let rec class_decl (cd : Odoc_model.Lang.Class.decl) =
       match cd with
@@ -977,10 +980,12 @@ module Make (Syntax : SYNTAX) = struct
         match t.expansion with
         | None -> (O.documentedSrc @@ O.txt name, None)
         | Some csig ->
-            let doc = Comment.standalone t.doc in
-            let items = class_signature csig in
+            let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
-            let header = format_title `Class (make_name_from_path url) @ doc in
+            let header =
+              format_title `Class (make_name_from_path url)
+              @ doc_of_expansion ~decl_doc:t.doc ~expansion_doc
+            in
             let page = { Page.title = name; header; items; url } in
             (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
       in
@@ -1013,9 +1018,11 @@ module Make (Syntax : SYNTAX) = struct
         | None -> (O.documentedSrc @@ O.txt name, None)
         | Some csig ->
             let url = Url.Path.from_identifier t.id in
-            let doc = Comment.standalone t.doc in
-            let items = class_signature csig in
-            let header = format_title `Cty (make_name_from_path url) @ doc in
+            let expansion_doc, items = class_signature csig in
+            let header =
+              format_title `Cty (make_name_from_path url)
+              @ doc_of_expansion ~decl_doc:t.doc ~expansion_doc
+            in
             let page = { Page.title = name; header; items; url } in
             (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
       in
@@ -1068,9 +1075,6 @@ module Make (Syntax : SYNTAX) = struct
       match t.id with
       | `Module (_, name) when ModuleName.is_internal name -> true
       | _ -> false
-
-    let doc_of_expansion ~decl_doc ~expansion_doc =
-      Comment.standalone decl_doc @ Comment.standalone expansion_doc
 
     let rec signature (s : Lang.Signature.t) =
       let rec loop l acc_items =

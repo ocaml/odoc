@@ -377,7 +377,7 @@ and ClassSignature : sig
     | Inherit of ClassType.expr
     | Comment of CComment.docs_or_stop
 
-  type t = { self : TypeExpr.t option; items : item list }
+  type t = { self : TypeExpr.t option; items : item list; doc : CComment.docs }
 end =
   ClassSignature
 
@@ -2177,7 +2177,11 @@ module Of_Lang = struct
           | Comment c -> Comment (docs_or_stop ident_map c))
         sg.items
     in
-    { ClassSignature.self = Opt.map (type_expression ident_map) sg.self; items }
+    {
+      ClassSignature.self = Opt.map (type_expression ident_map) sg.self;
+      items;
+      doc = docs ident_map sg.doc;
+    }
 
   and method_ ident_map m =
     let open Odoc_model.Lang.Method in

@@ -383,7 +383,8 @@ and read_class_signature env parent label_parent cltyp =
             [] csig.csig_fields
         in
         let items = List.rev items in
-          Signature {self; items}
+        let items, doc = Doc_attr.extract_top_comment_class items in
+        Signature {self; items; doc}
     | Tcty_arrow _ -> assert false
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 06 && OCAML_MINOR < 08
   | Tcty_open (_, _, _, _, cty) -> read_class_signature env parent label_parent cty

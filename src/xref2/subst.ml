@@ -769,6 +769,7 @@ and class_signature_item s =
 and class_signature s sg =
   let open Component.ClassSignature in
   {
+    sg with
     self = option_ type_expr s sg.self;
     items = List.map (class_signature_item s) sg.items;
   }
