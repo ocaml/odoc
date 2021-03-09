@@ -497,8 +497,8 @@ and class_signature map parent sg =
         | Comment c ->
             Comment (docs_or_stop (parent :> Identifier.LabelParent.t) c))
       sg.items
-  in
-  { self = Opt.map (type_expr map pparent) sg.self; items }
+  and doc = docs (parent :> Identifier.LabelParent.t) sg.doc in
+  { self = Opt.map (type_expr map pparent) sg.self; items; doc }
 
 and method_ map parent id m =
   let open Component.Method in

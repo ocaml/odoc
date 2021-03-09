@@ -132,3 +132,8 @@ let extract_top_comment items =
   match items with
   | Lang.Signature.Comment (`Docs doc) :: tl -> (tl, doc)
   | _ -> (items, empty)
+
+let extract_top_comment_class items =
+  match items with
+  | Lang.ClassSignature.Comment (`Docs doc) :: tl -> (tl, doc)
+  | _ -> items, empty

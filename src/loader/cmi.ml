@@ -755,7 +755,7 @@ let rec read_class_signature env parent params =
         List.map (read_method env parent csig.csig_concr) methods
       in
       let items = constraints @ instance_variables @ methods in
-        Signature {self; items}
+      Signature {self; items; doc = []}
   | Cty_arrow _ -> assert false
 
 let rec read_virtual = function

@@ -54,3 +54,7 @@ val standalone_multiple :
 val extract_top_comment :
   Lang.Signature.item list -> Lang.Signature.item list * Comment.docs
 (** Extract the first comment of a signature. Returns the remaining items. *)
+
+val extract_top_comment_class :
+  Lang.ClassSignature.item list -> Lang.ClassSignature.item list * Comment.docs
+(** Extract the first comment of a class signature. Returns the remaining items. *)

@@ -176,7 +176,8 @@ and read_class_signature env parent params cltyp =
             [] csig.csig_fields
         in
         let items = constraints @ List.rev items in
-          Signature {self; items}
+        let items, doc = Doc_attr.extract_top_comment_class items in
+        Signature {self; items; doc}
     | Tcty_arrow _ -> assert false
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
     | Tcty_open _ -> assert false
@@ -263,7 +264,8 @@ and read_class_structure env parent params cl =
             [] cstr.cstr_fields
         in
         let items = constraints @ List.rev items in
-          Signature {self; items}
+        let items, doc = Doc_attr.extract_top_comment_class items in
+        Signature {self; items; doc}
     | Tcl_fun _ -> assert false
     | Tcl_let(_, _, _, cl) -> read_class_structure env parent params cl
     | Tcl_constraint(cl, None, _, _, _) -> read_class_structure env parent params cl

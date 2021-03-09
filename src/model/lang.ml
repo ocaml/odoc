@@ -334,7 +334,7 @@ and ClassSignature : sig
     | Inherit of ClassType.expr
     | Comment of Comment.docs_or_stop
 
-  type t = { self : TypeExpr.t option; items : item list }
+  type t = { self : TypeExpr.t option; items : item list; doc : Comment.docs }
 end =
   ClassSignature
 

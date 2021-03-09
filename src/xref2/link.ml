@@ -297,6 +297,7 @@ and class_signature env parent c =
   {
     self = Opt.map (type_expression env parent []) c.self;
     items = List.map map_item c.items;
+    doc = comment_docs env c.doc;
   }
 
 and method_ env parent m =

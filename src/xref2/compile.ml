@@ -151,6 +151,7 @@ and class_signature env parent c =
     | Comment c -> Comment c
   in
   {
+    c with
     self = Opt.map (type_expression env container) c.self;
     items = List.map map_item c.items;
   }
