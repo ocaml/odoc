@@ -128,9 +128,13 @@ let standalone_multiple parent attrs =
   in
     List.rev coms
 
-let extract_top_comment items =
+let rec extract_top_comment items =
   match items with
   | Lang.Signature.Comment (`Docs doc) :: tl -> (tl, doc)
+  | (Open _ as skipped) :: tl ->
+      (* Skip opens *)
+      let items, doc = extract_top_comment tl in
+      (skipped :: items, doc)
   | _ -> (items, empty)
 
 let extract_top_comment_class items =

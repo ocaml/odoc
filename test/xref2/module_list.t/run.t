@@ -1,6 +1,6 @@
 # Testing {!modules:...} lists
 
-  $ compile external.mli main.mli
+  $ compile external.mli starts_with_open.mli main.mli
 
 Everything should resolve:
 
@@ -33,5 +33,7 @@ Everything should resolve:
   "None"
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Inline_include"]}}}
   "None"
+  {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Starts_with_open"]}}}
+  {"Some":[{"`Word":"Synopsis"},"`Space",{"`Word":"of"},"`Space",{"`Code_span":"Starts_with_open"},{"`Word":"."}]}
 
 'Type_of' and 'Alias' don't have a summary. `C1` and `C2` neither, we expect at least `C2` to have one.
