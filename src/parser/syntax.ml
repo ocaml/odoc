@@ -890,6 +890,25 @@ let rec block_element_list :
             let heading = Location.at location heading in
             let acc = heading :: acc in
             consume_block_elements ~parsed_a_tag `After_text acc )
+    | { value = `Begin_paragraph_style _ as token; location } ->
+        junk input;
+        let content, brace_location =
+          delimited_inline_element_list ~parent_markup:token
+            ~parent_markup_location:location ~requires_leading_whitespace:true
+            input
+        in
+        let location = Location.span [ location; brace_location ] in
+
+        Parse_error.markup_should_not_be_used ~what:(Token.describe token)
+          location
+        |> Error.warning input.warnings;
+
+        let paragraph =
+          `Paragraph content
+          |> accepted_in_all_contexts context
+          |> Location.at location
+        in
+        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph :: acc)
   in
 
   let where_in_line =

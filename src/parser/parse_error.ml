@@ -9,6 +9,11 @@ let leading_zero_in_heading_level : string -> Location.span -> Error.t =
 let should_not_be_empty : what:string -> Location.span -> Error.t =
  fun ~what -> Error.make "%s should not be empty." (capitalize_ascii what)
 
+let markup_should_not_be_used : what:string -> Location.span -> Error.t =
+ fun ~what ->
+  Error.make "%s should not be used because it has no effect."
+    (capitalize_ascii what)
+
 let should_begin_on_its_own_line : what:string -> Location.span -> Error.t =
  fun ~what ->
   Error.make "%s should begin on its own line." (capitalize_ascii what)
