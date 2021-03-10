@@ -37,6 +37,7 @@ module type Include_inline_T' = sig
 end
 
 module M : sig
+
   (** Doc of [M] *)
 end
 
@@ -45,6 +46,7 @@ module M' : sig end
 
 (** Doc of [M''], part 1. *)
 module M'' : sig
+
   (** Doc of [M''], part 2. *)
 end
 

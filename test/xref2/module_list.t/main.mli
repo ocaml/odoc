@@ -14,22 +14,29 @@ module Internal : sig
       @canonical Main.C1 *)
 
   module C2 : sig
+
     (* Doc for [C2]. *)
   end
   (** @canonical Main.C2 *)
 end
 
 module Z : sig
+
   (** Doc for [Z]. *)
 end
 
 module F () : sig
+
   (** Doc for [F ()]. *)
 end
 
 module Type_of : module type of F ()
 
+(* Without the extra blank lines in sig/struct, OCaml<4.06 doesn't see the doc
+   comments. *)
+
 module Type_of_str : module type of struct
+
   (** Doc of [Type_of_str]. *)
 end
 
