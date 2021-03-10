@@ -304,6 +304,15 @@ rule token input = parse
 
   | "{e"
     { emit input (`Begin_style `Emphasis) }
+  
+  | "{L"
+    { emit input (`Begin_paragraph_style `Left) }
+  
+  | "{C"
+    { emit input (`Begin_paragraph_style  `Center) }
+  
+  | "{R"
+    { emit input (`Begin_paragraph_style  `Right) }
 
   | "{^"
     { emit input (`Begin_style `Superscript) }
