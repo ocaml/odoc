@@ -1,5 +1,5 @@
 (** {!modules:External External.X Main Internal Internal.Y Z F Type_of
-    Type_of_str With_type Alias C1 C2 Inline_include} *)
+    Type_of_str With_type Alias C1 C2 Inline_include Starts_with_open} *)
 
 (** Doc for [Internal].
 
