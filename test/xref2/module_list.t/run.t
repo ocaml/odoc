@@ -33,5 +33,7 @@ Everything should resolve:
   "None"
   {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Inline_include"]}}}
   "None"
+  {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Heading"]}}}
+  {"Some":[{"`Word":"Heading"}]}
 
 'Type_of' and 'Alias' don't have a summary. `C1` and `C2` neither, we expect at least `C2` to have one.

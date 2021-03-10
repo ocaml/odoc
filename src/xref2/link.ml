@@ -25,13 +25,17 @@ let synopsis_from_comment docs =
     match elem.value with
     | `Paragraph p -> Some p
     | `List (_, items) -> list_find_map (list_find_map from_element) items
-    | _ -> None
+    | `Verbatim _ | `Code_block _ | `Modules _ ->
+        (* Skip some elements *)
+        None
   in
   list_find_map
     (function
       | { value = #Comment.nestable_block_element; _ } as elem ->
           from_element elem
-      | _ -> None)
+      | { value = `Heading (_, _, p); _ } ->
+          Some (p : Comment.link_content :> Comment.paragraph)
+      | { value = `Tag _; _ } -> None)
     docs
 
 exception Loop

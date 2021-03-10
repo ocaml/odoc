@@ -1,5 +1,5 @@
 (** {!modules:External External.X Main Internal Internal.Y Z F Type_of
-    Type_of_str With_type Alias C1 C2 Inline_include} *)
+    Type_of_str With_type Alias C1 C2 Inline_include Heading} *)
 
 (** Doc for [Internal].
 
@@ -56,3 +56,8 @@ module Inline_include : sig
   include T
   (** @inline *)
 end
+
+module Heading : sig end
+(** {1 Heading}
+
+    The synopsis is the heading's text. *)
