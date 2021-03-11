@@ -231,7 +231,7 @@ let make_test_case ?theme_uri ?syntax case =
             let issues = Tidy.validate actual_file in
             if issues <> [] then (
               List.iter prerr_endline issues;
-              Alcotest.fail "Tidy validation error" ) );
+              Alcotest.fail "Tidy validation error"));
 
         (* Diff the actual outputs with the expected outputs. *)
         diff output)

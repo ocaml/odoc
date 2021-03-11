@@ -13,7 +13,7 @@ end
 
 let rec list_find_map f = function
   | hd :: tl -> (
-      match f hd with Some _ as x -> x | None -> list_find_map f tl )
+      match f hd with Some _ as x -> x | None -> list_find_map f tl)
   | [] -> None
 
 (** The synopsis is the first paragraph of a comment. Headings, tags and other
@@ -90,7 +90,7 @@ let type_path : Env.t -> Paths.Path.Type.t -> Paths.Path.Type.t =
             `Resolved (Cpath.resolved_type_path_of_cpath result)
         | Error e ->
             Errors.report ~what:(`Type_path cp) ~tools_error:e `Lookup;
-            Cpath.type_path_of_cpath cp )
+            Cpath.type_path_of_cpath cp)
 
 and module_type_path :
     Env.t -> Paths.Path.ModuleType.t -> Paths.Path.ModuleType.t =
@@ -101,8 +101,8 @@ and module_type_path :
     match cp with
     | `Resolved p ->
         `Resolved
-          ( Tools.reresolve_module_type env p
-          |> Cpath.resolved_module_type_path_of_cpath )
+          (Tools.reresolve_module_type env p
+          |> Cpath.resolved_module_type_path_of_cpath)
     | _ -> (
         match Tools.resolve_module_type_path env cp with
         | Ok p' ->
@@ -110,7 +110,7 @@ and module_type_path :
             `Resolved (Cpath.resolved_module_type_path_of_cpath result)
         | Error e ->
             Errors.report ~what:(`Module_type_path cp) ~tools_error:e `Resolve;
-            Cpath.module_type_path_of_cpath cp )
+            Cpath.module_type_path_of_cpath cp)
 
 and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
  fun env p ->
@@ -129,7 +129,7 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
         | Error _ when is_forward p -> p
         | Error e ->
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
-            Cpath.module_path_of_cpath cp )
+            Cpath.module_path_of_cpath cp)
 
 let rec unit (resolver : Env.resolver) t =
   let open Compilation_unit in
@@ -174,12 +174,12 @@ and comment_inline_element :
           `Reference (`Resolved x, [])
       | None ->
           (* Format.fprintf Format.err_formatter "XXXXXXXXXX FAILED to resolve reference: %a\n%!" (Component.Fmt.model_reference) r; *)
-          `Reference (r, []) )
+          `Reference (r, []))
   | `Reference (r, content) as orig -> (
       (* Format.fprintf Format.err_formatter "XXXXXXXXXX about to resolve contentful reference: %a\n" (Component.Fmt.model_reference) r; *)
       match Ref_tools.resolve_reference env r with
       | Some x -> `Reference (`Resolved x, content)
-      | None -> orig )
+      | None -> orig)
   | y -> y
 
 and comment_nestable_block_element env (x : Comment.nestable_block_element) =
@@ -206,7 +206,7 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
                       (* If there is no doc, look at the expansion. *)
                       match Tools.signature_of_module env m with
                       | Ok sg -> synopsis_from_comment sg.doc
-                      | Error _ -> None )
+                      | Error _ -> None)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | None -> r)
@@ -487,8 +487,8 @@ and handle_fragments env id sg subs =
                   Component.Of_Lang.(resolved_module_fragment empty f)
                 in
                 `Resolved
-                  ( Tools.reresolve_module_fragment env cfrag
-                  |> Lang_of.(Path.resolved_module_fragment empty) )
+                  (Tools.reresolve_module_fragment env cfrag
+                  |> Lang_of.(Path.resolved_module_fragment empty))
             | _ -> frag
           in
           let sg' =
@@ -505,8 +505,8 @@ and handle_fragments env id sg subs =
                   Component.Of_Lang.(resolved_type_fragment empty f)
                 in
                 `Resolved
-                  ( Tools.reresolve_type_fragment env cfrag
-                  |> Lang_of.(Path.resolved_type_fragment empty) )
+                  (Tools.reresolve_type_fragment env cfrag
+                  |> Lang_of.(Path.resolved_type_fragment empty))
             | _ -> frag
           in
           let sg' =
@@ -523,8 +523,8 @@ and handle_fragments env id sg subs =
                   Component.Of_Lang.(resolved_module_fragment empty f)
                 in
                 `Resolved
-                  ( Tools.reresolve_module_fragment env cfrag
-                  |> Lang_of.(Path.resolved_module_fragment empty) )
+                  (Tools.reresolve_module_fragment env cfrag
+                  |> Lang_of.(Path.resolved_module_fragment empty))
             | _ -> frag
           in
           let sg' =
@@ -541,8 +541,8 @@ and handle_fragments env id sg subs =
                   Component.Of_Lang.(resolved_type_fragment empty f)
                 in
                 `Resolved
-                  ( Tools.reresolve_type_fragment env cfrag
-                  |> Lang_of.(Path.resolved_type_fragment empty) )
+                  (Tools.reresolve_type_fragment env cfrag
+                  |> Lang_of.(Path.resolved_type_fragment empty))
             | _ -> frag
           in
           let sg' =
@@ -570,7 +570,7 @@ and u_module_type_expr :
           With (handle_fragments env id sg subs, u_module_type_expr env id expr)
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Resolve;
-          unresolved )
+          unresolved)
   | TypeOf { t_desc = StructInclude p; t_expansion } ->
       TypeOf { t_desc = StructInclude (module_path env p); t_expansion }
   | TypeOf { t_desc = ModPath p; t_expansion } ->
@@ -605,7 +605,7 @@ and module_type_expr :
             }
       | Error e ->
           Errors.report ~what:(`Module_type_U cexpr) ~tools_error:e `Expand;
-          unresolved )
+          unresolved)
   | Functor (arg, res) ->
       let arg' = functor_argument env arg in
       let env = Env.add_functor_parameter arg env in
@@ -727,9 +727,9 @@ and type_expression_polyvar env parent visited v =
   let element = function
     | Type t ->
         Type
-          ( match type_expression env parent visited t with
+          (match type_expression env parent visited t with
           | Constr _ as x -> x
-          | _ -> t )
+          | _ -> t)
         (* These have to remain Constrs *)
     | Constructor c -> Constructor (constructor c)
   in
@@ -811,7 +811,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
                          declaration (%s)\n\
                          %!"
                         (Printexc.to_string e);
-                      Constr (`Resolved p, ts) )
+                      Constr (`Resolved p, ts))
               | _ -> Constr (`Resolved p, ts)
             else Constr (`Resolved p, ts)
         | Ok (cp', (`FClass _ | `FClassType _)) ->
@@ -820,7 +820,7 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
         | Ok (_cp, `FType_removed (_, x, _eq)) ->
             (* Type variables ? *)
             Lang_of.(type_expr empty (parent :> Id.Parent.t) x)
-        | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts) )
+        | Error _ -> Constr (Cpath.type_path_of_cpath cp, ts))
   | Polymorphic_variant v ->
       Polymorphic_variant (type_expression_polyvar env parent visited v)
   | Object o -> Object (type_expression_object env parent visited o)

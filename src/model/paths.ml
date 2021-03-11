@@ -542,7 +542,7 @@ module Path = struct
         | `Module (p, n) -> (
             match canonical_ident p with
             | Some x -> Some (`Module ((x :> Identifier.Signature.t), n))
-            | None -> None )
+            | None -> None)
         | `Canonical (_, `Resolved p) -> Some (identifier p)
         | `Canonical (_, _) -> None
         | `Apply (_, _) -> None
@@ -571,7 +571,7 @@ module Path = struct
         | `ModuleType (p, n) -> (
             match Module.canonical_ident p with
             | Some x -> Some (`ModuleType ((x :> Identifier.Signature.t), n))
-            | None -> None )
+            | None -> None)
         | `SubstT (_, _) -> None
         | `CanonicalModuleType (_, `Resolved p) -> Some (identifier p)
         | `CanonicalModuleType (_, _) -> None
@@ -691,7 +691,7 @@ module Fragment = struct
       | `Module (p, name) -> (
           match split_parent p with
           | Base i -> Branch (name, `Root i)
-          | Branch (base, m) -> Branch (base, `Module (m, name)) )
+          | Branch (base, m) -> Branch (base, `Module (m, name)))
 
     module Signature = struct
       type t = Paths_types.Resolved_fragment.signature
@@ -705,7 +705,7 @@ module Fragment = struct
             match split_parent m with
             | Base _ -> (ModuleName.to_string name, None)
             | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Module (m, name))) )
+                (ModuleName.to_string base, Some (`Module (m, name))))
 
       let rec identifier : t -> Identifier.Signature.t = function
         | `Root (`ModuleType i) ->
@@ -730,7 +730,7 @@ module Fragment = struct
             match split_parent m with
             | Base _ -> (ModuleName.to_string name, None)
             | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Module (m, name))) )
+                (ModuleName.to_string base, Some (`Module (m, name))))
         | `OpaqueModule m -> split m
     end
 
@@ -742,17 +742,17 @@ module Fragment = struct
             match split_parent m with
             | Base _ -> (TypeName.to_string name, None)
             | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Type (m, name))) )
+                (ModuleName.to_string base, Some (`Type (m, name))))
         | `Class (m, name) -> (
             match split_parent m with
             | Base _ -> (ClassName.to_string name, None)
             | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`Class (m, name))) )
+                (ModuleName.to_string base, Some (`Class (m, name))))
         | `ClassType (m, name) -> (
             match split_parent m with
             | Base _ -> (ClassTypeName.to_string name, None)
             | Branch (base, m) ->
-                (ModuleName.to_string base, Some (`ClassType (m, name))) )
+                (ModuleName.to_string base, Some (`ClassType (m, name))))
     end
 
     type leaf = Paths_types.Resolved_fragment.leaf
@@ -761,7 +761,8 @@ module Fragment = struct
       | `Root (`ModuleType _r) -> assert false
       | `Root (`Module _r) -> assert false
       | `Subst (s, _) -> Path.Resolved.identifier (s :> Path.Resolved.t)
-      | `SubstAlias (p, _) -> (Path.Resolved.Module.identifier p :> Identifier.t)
+      | `SubstAlias (p, _) ->
+          (Path.Resolved.Module.identifier p :> Identifier.t)
       | `Module (m, n) -> `Module (Signature.identifier m, n)
       | `Type (m, n) -> `Type (Signature.identifier m, n)
       | `Class (m, n) -> `Class (Signature.identifier m, n)
@@ -789,12 +790,12 @@ module Fragment = struct
     | `Resolved r -> (
         match Resolved.split_parent r with
         | Resolved.Base i -> Base (Some i)
-        | Resolved.Branch (base, m) -> Branch (base, `Resolved m) )
+        | Resolved.Branch (base, m) -> Branch (base, `Resolved m))
     | `Dot (m, name) -> (
         match split_parent m with
         | Base None -> Branch (ModuleName.make_std name, `Root)
         | Base (Some i) -> Branch (ModuleName.make_std name, `Resolved (`Root i))
-        | Branch (base, m) -> Branch (base, `Dot (m, name)) )
+        | Branch (base, m) -> Branch (base, `Dot (m, name)))
 
   module Signature = struct
     type t = Paths_types.Fragment.signature
@@ -809,7 +810,7 @@ module Fragment = struct
           match split_parent m with
           | Base _ -> (name, None)
           | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))) )
+              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   module Module = struct
@@ -824,7 +825,7 @@ module Fragment = struct
           match split_parent m with
           | Base _ -> (name, None)
           | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))) )
+              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   module Type = struct
@@ -839,7 +840,7 @@ module Fragment = struct
           match split_parent m with
           | Base _ -> (name, None)
           | Branch (base, m) ->
-              (ModuleName.to_string base, Some (`Dot (m, name))) )
+              (ModuleName.to_string base, Some (`Dot (m, name))))
   end
 
   type leaf = Paths_types.Fragment.leaf

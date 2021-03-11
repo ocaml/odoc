@@ -21,7 +21,7 @@ and signature (t : Odoc_model.Lang.Signature.t) =
         | Open _ | ModuleSubstitution _ | TypeSubstitution _ | Type _ | TypExt _
         | Exception _ | Value _ | External _ | Class _ | ClassType _
         | Comment (`Docs _) ->
-            add_items ~don't acc is )
+            add_items ~don't acc is)
   in
   add_items ~don't:false [] t.items
 

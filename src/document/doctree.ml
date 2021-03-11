@@ -17,7 +17,7 @@ module Take = struct
           | Rec x -> loop acc (x @ rest)
           | Accum v -> loop (List.rev_append v acc) rest
           | Stop_and_keep -> (List.rev acc, None, b :: rest)
-          | Stop_and_accum (v, e) -> (List.rev_append acc v, e, rest) )
+          | Stop_and_accum (v, e) -> (List.rev_append acc v, e, rest))
     in
     loop [] items
 end
@@ -37,7 +37,7 @@ module Rewire = struct
               if level > current_level then
                 let children, rest = loop level [] rest in
                 loop current_level (node h children :: acc) rest
-              else (List.rev acc, l) )
+              else (List.rev acc, l))
     in
     let trees, rest = loop (-1) [] items in
     assert (rest = []);

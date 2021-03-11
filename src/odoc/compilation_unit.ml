@@ -44,4 +44,4 @@ let load file =
           Printf.sprintf "Error while unmarshalling %S: %s\n%!" file
             (match exn with Failure s -> s | _ -> Printexc.to_string exn)
         in
-        Error (`Msg msg) )
+        Error (`Msg msg))

@@ -252,15 +252,15 @@ and delimited_inline_element_list :
         let element = Location.same next_token (`Space ws) in
         consume_elements ~at_start_of_line:true (element :: acc)
     | (`Minus | `Plus) as bullet ->
-        ( if at_start_of_line then
-          let suggestion =
-            Printf.sprintf "move %s so it isn't the first thing on the line."
-              (Token.print bullet)
-          in
-          Parse_error.not_allowed ~what:(Token.describe bullet)
-            ~in_what:(Token.describe parent_markup)
-            ~suggestion next_token.location
-          |> Error.warning input.warnings );
+        (if at_start_of_line then
+         let suggestion =
+           Printf.sprintf "move %s so it isn't the first thing on the line."
+             (Token.print bullet)
+         in
+         Parse_error.not_allowed ~what:(Token.describe bullet)
+           ~in_what:(Token.describe parent_markup)
+           ~suggestion next_token.location
+         |> Error.warning input.warnings);
 
         let acc = inline_element input next_token.location bullet :: acc in
         consume_elements ~at_start_of_line:false acc
@@ -564,7 +564,7 @@ let rec block_element_list :
         | Top_level -> (List.rev acc, next_token, where_in_line)
         | In_shorthand_list -> (List.rev acc, next_token, where_in_line)
         | In_explicit_list -> (List.rev acc, next_token, where_in_line)
-        | In_tag -> (List.rev acc, next_token, where_in_line) )
+        | In_tag -> (List.rev acc, next_token, where_in_line))
     (* Whitespace. This can terminate some kinds of block elements. It is also
        necessary to track it to interpret [`Minus] and [`Plus] correctly, as
        well as to ensure that all block elements begin on their own line. *)
@@ -582,7 +582,7 @@ let rec block_element_list :
         (* Otherwise, blank lines are pretty much like single newlines. *)
         | _ ->
             junk input;
-            consume_block_elements ~parsed_a_tag `At_start_of_line acc )
+            consume_block_elements ~parsed_a_tag `At_start_of_line acc)
     (* Explicit list items ([{li ...}] and [{- ...}]) can never appear directly
        in block content. They can only appear inside [{ul ...}] and [{ol ...}].
        So, catch those. *)
@@ -713,7 +713,7 @@ let rec block_element_list :
             | (`Inline | `Open | `Closed) as tag ->
                 let tag = Location.at location (`Tag tag) in
                 consume_block_elements ~parsed_a_tag:true `After_text
-                  (tag :: acc) ) )
+                  (tag :: acc)))
     | { value = #token_that_always_begins_an_inline_element; _ } as next_token
       ->
         warn_if_after_tags next_token;
@@ -802,12 +802,12 @@ let rec block_element_list :
         let acc = block :: acc in
         consume_block_elements ~parsed_a_tag `After_text acc
     | { value = (`Minus | `Plus) as token; location } as next_token -> (
-        ( match where_in_line with
+        (match where_in_line with
         | `After_text | `After_shorthand_bullet ->
             Parse_error.should_begin_on_its_own_line
               ~what:(Token.describe token) location
             |> Error.warning input.warnings
-        | _ -> () );
+        | _ -> ());
 
         warn_if_after_tags next_token;
 
@@ -828,7 +828,7 @@ let rec block_element_list :
             let block = accepted_in_all_contexts context block in
             let block = Location.at location block in
             let acc = block :: acc in
-            consume_block_elements ~parsed_a_tag where_in_line acc )
+            consume_block_elements ~parsed_a_tag where_in_line acc)
     | { value = `Begin_section_heading (level, label) as token; location } as
       next_token -> (
         warn_if_after_tags next_token;
@@ -889,7 +889,7 @@ let rec block_element_list :
             let heading = `Heading (level, label, content) in
             let heading = Location.at location heading in
             let acc = heading :: acc in
-            consume_block_elements ~parsed_a_tag `After_text acc )
+            consume_block_elements ~parsed_a_tag `After_text acc)
     | { value = `Begin_paragraph_style _ as token; location } ->
         junk input;
         let content, brace_location =
@@ -908,7 +908,8 @@ let rec block_element_list :
           |> accepted_in_all_contexts context
           |> Location.at location
         in
-        consume_block_elements ~parsed_a_tag `At_start_of_line (paragraph :: acc)
+        consume_block_elements ~parsed_a_tag `At_start_of_line
+          (paragraph :: acc)
   in
 
   let where_in_line =
@@ -963,7 +964,7 @@ and shorthand_list_items :
             |> Error.warning input.warnings;
 
           let acc = content :: acc in
-          consume_list_items stream_head where_in_line acc )
+          consume_list_items stream_head where_in_line acc)
         else (List.rev acc, where_in_line)
   in
 
@@ -1009,26 +1010,26 @@ and explicit_list_items :
 
         (* '{li', represented by [`Begin_list_item `Li], must be followed by
            whitespace. *)
-        ( if kind = `Li then
-          match (peek input).value with
-          | `Space _ | `Single_newline _ | `Blank_line _ | `Right_brace ->
-              ()
-              (* The presence of [`Right_brace] above requires some explanation:
+        (if kind = `Li then
+         match (peek input).value with
+         | `Space _ | `Single_newline _ | `Blank_line _ | `Right_brace ->
+             ()
+             (* The presence of [`Right_brace] above requires some explanation:
 
-                 - It is better to be silent about missing whitespace if the next
-                   token is [`Right_brace], because the error about an empty list
-                   item will be generated below, and that error is more important to
-                   the user.
-                 - The [`Right_brace] token also happens to include all whitespace
-                   before it, as a convenience for the rest of the parser. As a
-                   result, not ignoring it could be wrong: there could in fact be
-                   whitespace in the concrete syntax immediately after '{li', just
-                   it is not represented as [`Space], [`Single_newline], or
-                   [`Blank_line]. *)
-          | _ ->
-              Parse_error.should_be_followed_by_whitespace next_token.location
-                ~what:(Token.print token)
-              |> Error.warning input.warnings );
+                - It is better to be silent about missing whitespace if the next
+                  token is [`Right_brace], because the error about an empty list
+                  item will be generated below, and that error is more important to
+                  the user.
+                - The [`Right_brace] token also happens to include all whitespace
+                  before it, as a convenience for the rest of the parser. As a
+                  result, not ignoring it could be wrong: there could in fact be
+                  whitespace in the concrete syntax immediately after '{li', just
+                  it is not represented as [`Space], [`Single_newline], or
+                  [`Blank_line]. *)
+         | _ ->
+             Parse_error.should_be_followed_by_whitespace next_token.location
+               ~what:(Token.print token)
+             |> Error.warning input.warnings);
 
         let content, token_after_list_item, _where_in_line =
           block_element_list In_explicit_list ~parent_markup:token input
@@ -1039,13 +1040,13 @@ and explicit_list_items :
             ~what:(Token.describe token)
           |> Error.warning input.warnings;
 
-        ( match token_after_list_item.value with
+        (match token_after_list_item.value with
         | `Right_brace -> junk input
         | `End ->
             Parse_error.not_allowed token_after_list_item.location
               ~what:(Token.describe `End)
               ~in_what:(Token.describe token)
-            |> Error.warning input.warnings );
+            |> Error.warning input.warnings);
 
         let acc = content :: acc in
         consume_list_items acc
@@ -1093,6 +1094,6 @@ let parse warnings tokens =
         in
 
         junk input;
-        elements @ (block :: parse_block_elements ())
+        elements @ block :: parse_block_elements ()
   in
   parse_block_elements ()

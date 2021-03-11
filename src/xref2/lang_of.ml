@@ -60,9 +60,9 @@ module Path = struct
     | `Substituted x -> module_ map x
     | `Local (id, b) ->
         `Identifier
-          ( ( try lookup_module map id
-              with Not_found ->
-                failwith (Format.asprintf "Not_found: %a" Ident.fmt id) ),
+          ( (try lookup_module map id
+             with Not_found ->
+               failwith (Format.asprintf "Not_found: %a" Ident.fmt id)),
             b )
     | `Identifier (i, b) -> `Identifier (i, b)
     | `Resolved x -> `Resolved (resolved_module map x)
@@ -126,9 +126,9 @@ module Path = struct
     match p with
     | `Local id ->
         `Identifier
-          ( try lookup_module map id
-            with Not_found ->
-              failwith (Format.asprintf "Not_found: %a" Ident.fmt id) )
+          (try lookup_module map id
+           with Not_found ->
+             failwith (Format.asprintf "Not_found: %a" Ident.fmt id))
     | `Substituted x -> resolved_module map x
     | `Identifier y -> `Identifier y
     | `Subst (mty, m) ->
@@ -149,7 +149,7 @@ module Path = struct
     | `FragmentRoot -> (
         match map.fragment_root with
         | Some r -> resolved_parent map (r :> Cpath.Resolved.parent)
-        | None -> failwith "Invalid" )
+        | None -> failwith "Invalid")
 
   and resolved_module_type map (p : Cpath.Resolved.module_type) :
       Odoc_model.Paths.Path.Resolved.ModuleType.t =
@@ -232,8 +232,8 @@ module Path = struct
     | `Root (`ModuleType p) -> `Root (`ModuleType (resolved_module_type map p))
     | `Root (`Module p) -> `Root (`Module (resolved_module map p))
     | (`OpaqueModule _ | `Subst _ | `SubstAlias _ | `Module _) as x ->
-        ( resolved_module_fragment map x
-          :> Odoc_model.Paths.Fragment.Resolved.Signature.t )
+        (resolved_module_fragment map x
+          :> Odoc_model.Paths.Fragment.Resolved.Signature.t)
 
   and resolved_type_fragment :
       maps -> Cfrag.resolved_type -> Odoc_model.Paths.Fragment.Resolved.Type.t =
@@ -376,18 +376,18 @@ let rec signature_items id map items =
           (Odoc_model.Lang.Signature.Module (r, module_ map parent id m) :: acc)
     | ModuleType (id, m) :: rest ->
         inner rest
-          ( Odoc_model.Lang.Signature.ModuleType (module_type map parent id m)
-          :: acc )
+          (Odoc_model.Lang.Signature.ModuleType (module_type map parent id m)
+           :: acc)
     | Type (id, r, t) :: rest ->
         let t = Component.Delayed.get t in
         inner rest (Type (r, type_decl map parent id t) :: acc)
     | Exception (id', e) :: rest ->
         inner rest
-          ( Exception
-              (exception_ map
-                 (id :> Odoc_model.Paths.Identifier.Signature.t)
-                 id' e)
-          :: acc )
+          (Exception
+             (exception_ map
+                (id :> Odoc_model.Paths.Identifier.Signature.t)
+                id' e)
+           :: acc)
     | TypExt t :: rest -> inner rest (TypExt (typ_ext map id t) :: acc)
     | Value (id, v) :: rest ->
         let v = Component.Delayed.get v in
@@ -963,7 +963,7 @@ and block_element parent
         with Not_found ->
           Format.fprintf Format.err_formatter "Failed to find id: %a\n"
             Ident.fmt id;
-          raise Not_found )
+          raise Not_found)
     | `Tag t -> `Tag t
     | #Odoc_model.Comment.nestable_block_element as n -> n
   in

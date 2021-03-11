@@ -91,7 +91,7 @@ end = struct
             "ERROR: the name of the .odoc file produced from a .mld must start \
              with 'page-'\n\
              %!";
-          exit 1 );
+          exit 1);
         output
     | None ->
         let output =
@@ -180,9 +180,9 @@ end = struct
     in
     Term.(
       const handle_error
-      $ ( const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs
-        $ dst $ package_opt $ parent_opt $ open_modules $ children $ input
-        $ warn_error ))
+      $ (const compile $ hidden $ odoc_file_directories $ resolve_fwd_refs $ dst
+       $ package_opt $ parent_opt $ open_modules $ children $ input $ warn_error
+        ))
 
   let info =
     Term.info "compile"
@@ -296,8 +296,8 @@ end = struct
       in
       Term.(
         const handle_error
-        $ ( const process $ R.extra_args $ hidden $ odoc_file_directories
-          $ dst ~create:true () $ syntax $ input $ warn_error ))
+        $ (const process $ R.extra_args $ hidden $ odoc_file_directories
+         $ dst ~create:true () $ syntax $ input $ warn_error))
 
     let info =
       let doc =
@@ -325,8 +325,8 @@ end = struct
       in
       Term.(
         const handle_error
-        $ ( const generate $ R.extra_args $ hidden $ dst ~create:true ()
-          $ syntax $ input ))
+        $ (const generate $ R.extra_args $ hidden $ dst ~create:true () $ syntax
+         $ input))
 
     let info =
       let doc =
@@ -466,8 +466,8 @@ end = struct
     in
     Term.(
       const handle_error
-      $ ( const html_fragment $ odoc_file_directories $ xref_base_uri $ output
-        $ input $ warn_error ))
+      $ (const html_fragment $ odoc_file_directories $ xref_base_uri $ output
+       $ input $ warn_error))
 
   let info =
     Term.info ~doc:"Generates an html fragment file from an mld one"
