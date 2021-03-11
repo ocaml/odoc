@@ -690,12 +690,15 @@ let tests : test_suite list =
       ] );
     ( "reference-component-kind",
       [
+        t "no-kind-with-quotes" "{!\"foo\".\"bar\"}";
         t "no-kind" "{!foo}";
         t "class" "{!class-foo}";
         t "class-type" "{!class-type-foo}";
         t "class-type-alt" "{!classtype-foo}";
         t "constructor" "{!constructor-Foo}";
         t "constructor-alt" "{!const-Foo}";
+        t "dash-in-page-name" "{!page-\"foo-bar\"}";
+        t "dot-and-dash-in-page-name" "{!page-\"foo-bar.v0.0.1\"}";
         t "exception" "{!exception-Foo}";
         t "exception-alt" "{!exn-Foo}";
         t "extension" "{!extension-Foo}";
@@ -704,6 +707,7 @@ let tests : test_suite list =
         t "heading" "{!section-foo}";
         t "heading-alt" "{!label-foo}";
         t "instance-variable" "{!instance-variable-foo}";
+        t "kind-with-quotes" "{!module-type-\"Bar\".module-\"Moo\".class-\"There\"}";
         t "method" "{!method-foo}";
         t "module" "{!module-Foo}";
         t "module-type" "{!module-type-Foo}";
@@ -998,6 +1002,7 @@ let tests : test_suite list =
         t "canonical-empty-name" "@canonical Foo.";
         t "internal-whitespace" "{!foo. bar .baz}";
         t "replacement-text-empty-identifier" "{{!val-} foo}";
+        t "reference-with-unmatched-quotation" "{!\"\"foo\"}";
       ] );
     ( "bad-markup",
       [
