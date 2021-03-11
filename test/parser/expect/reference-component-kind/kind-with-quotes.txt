@@ -1,0 +1,6 @@
+((output
+  (((f.ml (1 0) (1 47))
+    (paragraph
+     (((f.ml (1 0) (1 47))
+       (reference (class There (module Moo (root Bar module_type))) ())))))))
+ (warnings ()))
