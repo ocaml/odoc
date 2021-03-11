@@ -707,7 +707,8 @@ let tests : test_suite list =
         t "heading" "{!section-foo}";
         t "heading-alt" "{!label-foo}";
         t "instance-variable" "{!instance-variable-foo}";
-        t "kind-with-quotes" "{!module-type-\"Bar\".module-\"Moo\".class-\"There\"}";
+        t "kind-with-quotes"
+          "{!module-type-\"Bar\".module-\"Moo\".class-\"There\"}";
         t "method" "{!method-foo}";
         t "module" "{!module-Foo}";
         t "module-type" "{!module-type-Foo}";
@@ -1192,7 +1193,7 @@ let () =
         ]
         |> suggest_commands actual_root_directory;
 
-        Alcotest.fail "document tree incorrect" )
+        Alcotest.fail "document tree incorrect")
     in
 
     (case.name, `Quick, run_test_case)

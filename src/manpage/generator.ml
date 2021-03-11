@@ -94,11 +94,11 @@ module Roff = struct
           let c = String.unsafe_get s i in
           if not (markup_text_need_esc c) then (
             Bytes.unsafe_set b k c;
-            loop (i + 1) (k + 1) )
+            loop (i + 1) (k + 1))
           else (
             Bytes.unsafe_set b k '\\';
             Bytes.unsafe_set b (k + 1) c;
-            loop (i + 1) (k + 2) )
+            loop (i + 1) (k + 2))
       in
       loop 0 0
 
@@ -191,7 +191,7 @@ module Roff = struct
       | [] -> ()
       | h :: t ->
           let is_macro = next_is_macro t in
-          ( match h with
+          (match h with
           | Concat l -> many ~indent ppf l
           | String s -> Format.pp_print_string ppf s
           | Font (s, t) -> pp_font ppf s "%a" (one ~indent) t
@@ -209,7 +209,7 @@ module Roff = struct
               newline_if ppf (not is_macro)
           | Indent (i, content) ->
               let indent = indent + i in
-              one ~indent ppf content );
+              one ~indent ppf content);
           many ~indent ppf t
     and one ~indent ppf x = many ~indent ppf @@ collapse x in
     Format.pp_set_margin ppf max_int;
@@ -245,7 +245,7 @@ let strip l =
             loop acc t
         | Source code ->
             let acc = loop_source acc code in
-            loop acc t )
+            loop acc t)
   and loop_source acc = function
     | [] -> acc
     | Source.Elt content :: t -> loop_source (List.rev_append content acc) t
@@ -278,7 +278,7 @@ let rec source_code (s : Source.t) =
       match h with
       | Source.Elt i -> inline (strip i) ++ source_code t
       | Tag (None, s) -> source_code s ++ source_code t
-      | Tag (Some _, s) -> font "CB" (source_code s) ++ source_code t )
+      | Tag (Some _, s) -> font "CB" (source_code s) ++ source_code t)
 
 and inline (l : Inline.t) =
   match l with
@@ -303,7 +303,7 @@ and inline (l : Inline.t) =
       | InternalLink (Resolved (_, content) | Unresolved content) ->
           font "CI" (inline @@ strip content) ++ inline rest
       | Source content -> source_code content ++ inline rest
-      | Raw_markup t -> raw_markup t ++ inline rest )
+      | Raw_markup t -> raw_markup t ++ inline rest)
 
 let rec block (l : Block.t) =
   match l with
@@ -338,7 +338,7 @@ let rec block (l : Block.t) =
       | Source content ->
           env "EX" "EE" "" (source_code content) ++ continue rest
       | Verbatim content -> env "EX" "EE" "" (str "%s" content) ++ continue rest
-      | Raw_markup t -> raw_markup t ++ continue rest )
+      | Raw_markup t -> raw_markup t ++ continue rest)
 
 let next_heading, reset_heading =
   let heading_stack = ref [] in
@@ -402,7 +402,7 @@ let rec documentedSrc (l : DocumentedSrc.t) =
               if expansion_not_inlined url then
                 let c, rest = take_code l in
                 source_code c ++ continue rest
-              else documentedSrc expansion )
+              else documentedSrc expansion)
       | Subpage p -> subpage p.content ++ continue rest
       | Documented _ | Nested _ ->
           let lines, _, rest =
@@ -429,7 +429,7 @@ let rec documentedSrc (l : DocumentedSrc.t) =
             content ++ doc
           in
           let l = list ~sep:break (List.map f lines) in
-          indent 2 (break ++ l) ++ break_if_nonempty rest ++ continue rest )
+          indent 2 (break ++ l) ++ break_if_nonempty rest ++ continue rest)
 
 and subpage { title = _; header = _; items; url = _ } =
   let content = items in
@@ -469,7 +469,7 @@ and item ~nested (l : Item.t list) =
               | [] -> s
               | doc -> s ++ indent 2 (break ++ block doc)
           in
-          d ++ continue rest )
+          d ++ continue rest)
 
 let on_sub subp =
   match subp with

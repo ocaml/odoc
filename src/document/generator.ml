@@ -129,7 +129,7 @@ module Make (Syntax : SYNTAX) = struct
           | Error (Url.Error.Not_linkable _) -> O.txt txt
           | Error exn ->
               Printf.eprintf "Id.href failed: %S\n%!" (Url.Error.to_string exn);
-              O.txt txt )
+              O.txt txt)
 
     let dot prefix suffix = prefix ^ "." ^ suffix
 
@@ -230,9 +230,9 @@ module Make (Syntax : SYNTAX) = struct
                     | _ ->
                         let arguments = style_arguments ~constant arguments in
                         O.span
-                          ( if Syntax.Type.Variant.parenthesize_params then
-                            constr ++ arguments
-                          else constr ++ O.txt " of " ++ arguments )
+                          (if Syntax.Type.Variant.parenthesize_params then
+                           constr ++ arguments
+                          else constr ++ O.txt " of " ++ arguments)
                   in
                   if add_pipe then O.txt " " ++ res else res
             in
@@ -240,13 +240,13 @@ module Make (Syntax : SYNTAX) = struct
       in
       let elements = style_elements ~add_pipe:false t.elements in
       O.span
-        ( match t.kind with
+        (match t.kind with
         | Fixed -> O.txt "[ " ++ elements ++ O.txt " ]"
         | Open -> O.txt "[> " ++ elements ++ O.txt " ]"
         | Closed [] -> O.txt "[< " ++ elements ++ O.txt " ]"
         | Closed lst ->
             let constrs = String.concat " " lst in
-            O.txt "[< " ++ elements ++ O.txt (" " ^ constrs ^ " ]") )
+            O.txt "[< " ++ elements ++ O.txt (" " ^ constrs ^ " ]"))
 
     and te_object (t : Odoc_model.Lang.TypeExpr.Object.t) =
       let fields =
@@ -299,17 +299,17 @@ module Make (Syntax : SYNTAX) = struct
       | Arrow (None, src, dst) ->
           let res =
             O.span
-              ( type_expr ~needs_parentheses:true src
-              ++ O.txt " " ++ Syntax.Type.arrow )
+              (type_expr ~needs_parentheses:true src
+              ++ O.txt " " ++ Syntax.Type.arrow)
             ++ O.txt " " ++ type_expr dst
           in
           if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
       | Arrow (Some lbl, src, dst) ->
           let res =
             O.span
-              ( label lbl ++ O.txt ":"
+              (label lbl ++ O.txt ":"
               ++ type_expr ~needs_parentheses:true src
-              ++ O.sp ++ Syntax.Type.arrow )
+              ++ O.sp ++ Syntax.Type.arrow)
             ++ O.sp ++ type_expr dst
           in
           if not needs_parentheses then res else enclose ~l:"(" res ~r:")"
@@ -334,7 +334,7 @@ module Make (Syntax : SYNTAX) = struct
           O.txt (String.concat " " polyvars ^ ". ") ++ type_expr t
       | Package pkg ->
           enclose ~l:"(" ~r:")"
-            ( O.keyword "module" ++ O.txt " "
+            (O.keyword "module" ++ O.txt " "
             ++ Link.from_path (pkg.path :> Paths.Path.t)
             ++
             match pkg.substitutions with
@@ -343,7 +343,7 @@ module Make (Syntax : SYNTAX) = struct
                 O.txt " " ++ O.keyword "with" ++ O.txt " "
                 ++ O.list
                      ~sep:(O.txt " " ++ O.keyword "and" ++ O.txt " ")
-                     lst ~f:package_subst )
+                     lst ~f:package_subst)
 
     and package_subst
         ((frag_typ, te) : Paths.Fragment.Type.t * Odoc_model.Lang.TypeExpr.t) :
@@ -390,11 +390,11 @@ module Make (Syntax : SYNTAX) = struct
                *   [O.a ~a:[O.a_href ("#" ^ anchor); O.a_class ["anchor"]] []
                *   ; *)
               O.code
-                ( (if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
+                ((if mutable_ then O.keyword "mutable" ++ O.txt " " else O.noop)
                 ++ O.txt name
                 ++ O.txt Syntax.Type.annotation_separator
                 ++ type_expr typ
-                ++ O.txt Syntax.Type.Record.field_separator )
+                ++ O.txt Syntax.Type.Record.field_separator)
               (* ] *)
             in
             (url, attrs, cell)
@@ -447,14 +447,14 @@ module Make (Syntax : SYNTAX) = struct
               ~f:(type_expr ~needs_parentheses:is_gadt)
           in
           O.documentedSrc
-            ( cstr
-            ++ ( if Syntax.Type.Variant.parenthesize_params then
-                 O.txt "(" ++ params ++ O.txt ")"
+            (cstr
+            ++ (if Syntax.Type.Variant.parenthesize_params then
+                O.txt "(" ++ params ++ O.txt ")"
                else
-                 ( if is_gadt then O.txt Syntax.Type.annotation_separator
-                 else O.txt " " ++ O.keyword "of" ++ O.txt " " )
-                 ++ params )
-            ++ ret_type )
+                 (if is_gadt then O.txt Syntax.Type.annotation_separator
+                 else O.txt " " ++ O.keyword "of" ++ O.txt " ")
+                 ++ params)
+            ++ ret_type)
       | Record fields ->
           if is_gadt then
             O.documentedSrc (cstr ++ O.txt Syntax.Type.annotation_separator)
@@ -536,9 +536,9 @@ module Make (Syntax : SYNTAX) = struct
     let extension (t : Odoc_model.Lang.Extension.t) =
       let content =
         O.documentedSrc
-          ( O.keyword "type" ++ O.txt " "
+          (O.keyword "type" ++ O.txt " "
           ++ Link.from_path (t.type_path :> Paths.Path.t)
-          ++ O.txt " += " )
+          ++ O.txt " += ")
         @ List.map extension_constructor t.constructors
         @ O.documentedSrc
             (if Syntax.Type.type_def_semicolon then O.txt ";" else O.noop)
@@ -571,7 +571,7 @@ module Make (Syntax : SYNTAX) = struct
           | Constructor { constant; name; arguments; doc; _ } -> (
               let cstr = "`" ^ name in
               ( "constructor",
-                ( match arguments with
+                (match arguments with
                 | [] -> O.code (O.txt cstr)
                 | _ ->
                     (* Multiple arguments in a polymorphic variant constructor correspond
@@ -592,12 +592,11 @@ module Make (Syntax : SYNTAX) = struct
                       if constant then O.txt "& " ++ params else params
                     in
                     O.code
-                      ( O.txt cstr
+                      (O.txt cstr
                       ++
                       if Syntax.Type.Variant.parenthesize_params then params
-                      else O.txt " " ++ O.keyword "of" ++ O.txt " " ++ params )
-                ),
-                match doc with [] -> None | _ -> Some (Comment.to_ir doc) ) )
+                      else O.txt " " ++ O.keyword "of" ++ O.txt " " ++ params)),
+                match doc with [] -> None | _ -> Some (Comment.to_ir doc) ))
         in
         let markers = Syntax.Comment.markers in
         try
@@ -650,14 +649,14 @@ module Make (Syntax : SYNTAX) = struct
         String.concat "" final
       in
       O.txt
-        ( match params with
+        (match params with
         | [] -> ""
         | [ x ] -> format_param x |> Syntax.Type.handle_format_params
         | lst -> (
             let params = String.concat ", " (List.map format_param lst) in
             (match delim with `parens -> "(" | `brackets -> "[")
             ^ params
-            ^ match delim with `parens -> ")" | `brackets -> "]" ) )
+            ^ match delim with `parens -> ")" | `brackets -> "]"))
 
     let format_constraints constraints =
       O.list constraints ~f:(fun (t1, t2) ->
@@ -677,9 +676,9 @@ module Make (Syntax : SYNTAX) = struct
       | Some t ->
           let manifest =
             O.txt (if is_substitution then " := " else " = ")
-            ++ ( if private_ then
-                 O.keyword Syntax.Type.private_keyword ++ O.txt " "
-               else O.noop )
+            ++ (if private_ then
+                O.keyword Syntax.Type.private_keyword ++ O.txt " "
+               else O.noop)
             ++ type_expr t
           in
           (manifest, false)
@@ -698,11 +697,11 @@ module Make (Syntax : SYNTAX) = struct
             in
             let manifest =
               O.documentedSrc
-                ( O.txt (if is_substitution then " := " else " = ")
+                (O.txt (if is_substitution then " := " else " = ")
                 ++
                 if t.equation.private_ then
                   O.keyword Syntax.Type.private_keyword ++ O.txt " "
-                else O.noop )
+                else O.noop)
               @ code
             in
             (manifest, false)
@@ -724,11 +723,11 @@ module Make (Syntax : SYNTAX) = struct
             in
             if List.length content > 0 then
               O.documentedSrc
-                ( O.txt " = "
+                (O.txt " = "
                 ++
                 if need_private then
                   O.keyword Syntax.Type.private_keyword ++ O.txt " "
-                else O.noop )
+                else O.noop)
               @ content
             else []
       in
@@ -769,11 +768,11 @@ module Make (Syntax : SYNTAX) = struct
       let name = Paths.Identifier.name t.id in
       let content =
         O.documentedSrc
-          ( O.keyword Syntax.Value.variable_keyword
+          (O.keyword Syntax.Value.variable_keyword
           ++ O.txt " " ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
           ++ type_expr t.type_
-          ++ if Syntax.Value.semicolon then O.txt ";" else O.noop )
+          ++ if Syntax.Value.semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value" ] in
       let anchor = path_to_id t.id in
@@ -784,11 +783,11 @@ module Make (Syntax : SYNTAX) = struct
       let name = Paths.Identifier.name t.id in
       let content =
         O.documentedSrc
-          ( O.keyword Syntax.Value.variable_keyword
+          (O.keyword Syntax.Value.variable_keyword
           ++ O.txt " " ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
           ++ type_expr t.type_
-          ++ if Syntax.Type.External.semicolon then O.txt ";" else O.noop )
+          ++ if Syntax.Type.External.semicolon then O.txt ";" else O.noop)
       in
       let attr = [ "value"; "external" ] in
       let anchor = path_to_id t.id in
@@ -836,7 +835,7 @@ module Make (Syntax : SYNTAX) = struct
                   take_until_heading_or_end (element :: input_comment)
                 in
                 let item = Item.Text content in
-                loop input_comment (item :: acc) )
+                loop input_comment (item :: acc))
       in
       loop input0 []
 
@@ -887,9 +886,9 @@ module Make (Syntax : SYNTAX) = struct
       in
       let content =
         O.documentedSrc
-          ( O.keyword "method" ++ O.txt " " ++ private_ ++ virtual_ ++ O.txt name
+          (O.keyword "method" ++ O.txt " " ++ private_ ++ virtual_ ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
-          ++ type_expr t.type_ )
+          ++ type_expr t.type_)
       in
       let attr = [ "method" ] in
       let anchor = path_to_id t.id in
@@ -906,9 +905,9 @@ module Make (Syntax : SYNTAX) = struct
       in
       let content =
         O.documentedSrc
-          ( O.keyword "val" ++ O.txt " " ++ mutable_ ++ virtual_ ++ O.txt name
+          (O.keyword "val" ++ O.txt " " ++ mutable_ ++ virtual_ ++ O.txt name
           ++ O.txt Syntax.Type.annotation_separator
-          ++ type_expr t.type_ )
+          ++ type_expr t.type_)
       in
       let attr = [ "value"; "instance-variable" ] in
       let anchor = path_to_id t.id in
@@ -952,7 +951,7 @@ module Make (Syntax : SYNTAX) = struct
                 loop rest acc_items
             | Comment (`Docs c) ->
                 let items = Sectioning.comment_items c in
-                loop rest (List.rev_append items acc_items) )
+                loop rest (List.rev_append items acc_items))
       in
       (* FIXME: use [t.self] *)
       (c.doc, loop c.items [])
@@ -963,14 +962,14 @@ module Make (Syntax : SYNTAX) = struct
       (* TODO: factorize the following with [type_expr] *)
       | Arrow (None, src, dst) ->
           O.span
-            ( type_expr ~needs_parentheses:true src
-            ++ O.txt " " ++ Syntax.Type.arrow )
+            (type_expr ~needs_parentheses:true src
+            ++ O.txt " " ++ Syntax.Type.arrow)
           ++ O.txt " " ++ class_decl dst
       | Arrow (Some lbl, src, dst) ->
           O.span
-            ( label lbl ++ O.txt ":"
+            (label lbl ++ O.txt ":"
             ++ type_expr ~needs_parentheses:true src
-            ++ O.txt " " ++ Syntax.Type.arrow )
+            ++ O.txt " " ++ Syntax.Type.arrow)
           ++ O.txt " " ++ class_decl dst
 
     let class_ (t : Odoc_model.Lang.Class.t) =
@@ -1034,8 +1033,8 @@ module Make (Syntax : SYNTAX) = struct
       let expr = attach_expansion (" = ", "object", "end") expansion summary in
       let content =
         O.documentedSrc
-          ( O.keyword "class" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
-          ++ virtual_ ++ params ++ O.txt " " )
+          (O.keyword "class" ++ O.txt " " ++ O.keyword "type" ++ O.txt " "
+         ++ virtual_ ++ params ++ O.txt " ")
         @ cname @ expr
       in
       let attr = [ "class-type" ] in
@@ -1116,7 +1115,7 @@ module Make (Syntax : SYNTAX) = struct
                 loop rest acc_items
             | Comment (`Docs c) ->
                 let items = Sectioning.comment_items c in
-                loop rest (List.rev_append items acc_items) )
+                loop rest (List.rev_append items acc_items))
       in
       (s.doc, loop s.items [])
 
@@ -1243,7 +1242,7 @@ module Make (Syntax : SYNTAX) = struct
         | Functor (f_parameter, e) -> (
             match simple_expansion_of e with
             | Some e -> Some (Functor (f_parameter, e))
-            | None -> None )
+            | None -> None)
       in
       match simple_expansion_of t with
       | None -> None
@@ -1424,7 +1423,7 @@ module Make (Syntax : SYNTAX) = struct
             in
             (if Syntax.Mod.functor_keyword then O.keyword "functor" else O.noop)
             ++ O.span
-                 ( O.txt " (" ++ name
+                 (O.txt " (" ++ name
                  ++ O.txt Syntax.Type.annotation_separator
                  ++ mty arg_expr ++ O.txt ")" ++ O.txt " " ++ Syntax.Type.arrow
                  )
@@ -1497,7 +1496,7 @@ module Make (Syntax : SYNTAX) = struct
           ++
           match td.Lang.TypeDecl.Equation.manifest with
           | None -> assert false (* cf loader/cmti *)
-          | Some te -> type_expr te )
+          | Some te -> type_expr te)
 
     and include_ (t : Odoc_model.Lang.Include.t) =
       let decl_hidden =
@@ -1528,8 +1527,8 @@ module Make (Syntax : SYNTAX) = struct
       let sg_doc, content = signature t.expansion.content in
       let summary =
         O.render
-          ( O.keyword "include" ++ O.txt " " ++ include_decl
-          ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop )
+          (O.keyword "include" ++ O.txt " " ++ include_decl
+          ++ if Syntax.Mod.include_semicolon then O.keyword ";" else O.noop)
       in
       let content = { Include.content; status; summary } in
       let attr = [ "include" ] in

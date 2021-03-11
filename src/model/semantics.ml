@@ -85,7 +85,7 @@ let leaf_inline_element :
           Error.warning status.warnings
             (default_raw_markup_target_not_supported location);
           Location.same element (`Code_span s)
-      | Some target -> Location.same element (`Raw_markup (target, s)) )
+      | Some target -> Location.same element (`Raw_markup (target, s)))
 
 type surrounding =
   [ `Heading of
@@ -107,8 +107,8 @@ let rec non_link_inline_element :
  fun status ~surrounding element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
-      ( leaf_inline_element status element
-        :> Comment.non_link_inline_element with_location )
+      (leaf_inline_element status element
+        :> Comment.non_link_inline_element with_location)
   | { value = `Styled (style, content); _ } ->
       `Styled (style, non_link_inline_elements status ~surrounding content)
       |> Location.same element
@@ -133,8 +133,8 @@ let rec inline_element :
  fun status element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
-      ( leaf_inline_element status element
-        :> Comment.inline_element with_location )
+      (leaf_inline_element status element
+        :> Comment.inline_element with_location)
   | { value = `Styled (style, content); location } ->
       `Styled (style, inline_elements status content) |> Location.at location
   | { value = `Reference (kind, target, content) as value; location } -> (
@@ -152,7 +152,7 @@ let rec inline_element :
             | `Simple -> `Code_span target
             | `With_text -> `Styled (`Emphasis, content)
           in
-          inline_element status (Location.at location placeholder) )
+          inline_element status (Location.at location placeholder))
   | { value = `Link (target, content) as value; location } ->
       `Link (target, non_link_inline_elements status ~surrounding:value content)
       |> Location.at location
@@ -212,7 +212,7 @@ let tag :
           Error.warning status.warnings e;
           let placeholder = [ `Word "@canonical"; `Space " "; `Code_span s ] in
           let placeholder = List.map (Location.at location) placeholder in
-          Error (Location.at location (`Paragraph placeholder)) )
+          Error (Location.at location (`Paragraph placeholder)))
   | `Deprecated content ->
       ok (`Deprecated (nestable_block_elements status content))
   | `Param (name, content) ->
@@ -325,14 +325,14 @@ let section_heading :
             (* Implicitly promote to level-5. *)
             `Subparagraph
       in
-      ( match top_heading_level with
+      (match top_heading_level with
       | Some top_level
         when status.sections_allowed = `All && level <= top_level && level <= 5
         ->
           Error.warning status.warnings
             (heading_level_should_be_lower_than_top_level level top_level
                location)
-      | _ -> () );
+      | _ -> ());
       let element = `Heading (level', label, content) in
       let element = Location.at location element in
       let top_heading_level =
@@ -347,7 +347,7 @@ let validate_first_page_heading status ast_element =
       | { Location.value = `Heading (_, _, _); _ } -> ()
       | _invalid_ast_element ->
           let filename = Names.PageName.to_string name ^ ".mld" in
-          Error.warning status.warnings (page_heading_required filename) )
+          Error.warning status.warnings (page_heading_required filename))
   | _not_a_page -> ()
 
 let top_level_block_elements :
@@ -383,7 +383,7 @@ let top_level_block_elements :
                   ast_elements
             | Result.Error placeholder ->
                 traverse ~top_heading_level comment_elements_acc
-                  (placeholder :: ast_elements) )
+                  (placeholder :: ast_elements))
         | { value = `Heading _ as heading; _ } ->
             let top_heading_level, element =
               section_heading status ~top_heading_level
@@ -391,7 +391,7 @@ let top_level_block_elements :
             in
             traverse ~top_heading_level
               (element :: comment_elements_acc)
-              ast_elements )
+              ast_elements)
   in
   let top_heading_level =
     (* Non-page documents have a generated title. *)

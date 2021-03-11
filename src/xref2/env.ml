@@ -11,10 +11,10 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      ( Digest.t
+      (Digest.t
       * Odoc_model.Paths.Identifier.Module.t
       * bool
-      * Component.Module.t Component.Delayed.t )
+      * Component.Module.t Component.Delayed.t)
   | Forward
 
 type resolver = {
@@ -124,8 +124,8 @@ let add_label identifier env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -136,8 +136,8 @@ let add_label_title label elts env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     titles = Maps.Label.add label elts env.titles;
   }
 
@@ -171,9 +171,9 @@ let add_module identifier m docs env =
   {
     env with
     id =
-      ( incr unique_id;
-        (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
-        !unique_id );
+      (incr unique_id;
+       (*Format.fprintf Format.err_formatter "unique_id=%d\n%!" !unique_id; *)
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -218,8 +218,8 @@ let add_type identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -232,8 +232,8 @@ let add_module_type identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -246,8 +246,8 @@ let add_value identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -260,8 +260,8 @@ let add_external identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -274,8 +274,8 @@ let add_class identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -288,8 +288,8 @@ let add_class_type identifier t env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -306,8 +306,8 @@ let add_exception identifier e env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -320,8 +320,8 @@ let add_extension_constructor identifier ec env =
   {
     env with
     id =
-      ( incr unique_id;
-        !unique_id );
+      (incr unique_id;
+       !unique_id);
     elts =
       add_to_elts
         (Odoc_model.Paths.Identifier.name identifier)
@@ -378,15 +378,15 @@ let lookup_root_module name env =
                       module_of_unit unit)
                 in
                 Some (Resolved (u.root.digest, id, u.hidden, m))
-            | _ -> failwith "Expecting root module!" ) )
+            | _ -> failwith "Expecting root module!"))
   in
-  ( match (env.recorder, result) with
+  (match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <- RootModule (name, Some `Forward) :: r.lookups
   | Some r, Some (Resolved (digest, _, _, _)) ->
       r.lookups <- RootModule (name, Some (`Resolved digest)) :: r.lookups
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
-  | None, _ -> () );
+  | None, _ -> ());
   result
 
 type value_or_external =
@@ -432,7 +432,7 @@ let lookup_by_name scope name env =
       record_lookup_results results;
       Error (`Ambiguous (x, tl))
   | [] -> (
-      match scope.root name env with Some x -> Ok x | None -> Error `Not_found )
+      match scope.root name env with Some x -> Ok x | None -> Error `Not_found)
 
 open Odoc_model.Paths
 
@@ -463,7 +463,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
         match (result :> Component.Element.any) with
         | `Module (id, _) -> r.lookups <- Module id :: r.lookups
         | `ModuleType (id, _) -> r.lookups <- ModuleType id :: r.lookups
-        | _ -> () )
+        | _ -> ())
     | None -> ()
   in
   match disam_id id (lookup_by_name' scope (Identifier.name id) env) with
@@ -473,7 +473,7 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
   | None -> (
       match (id :> Identifier.t) with
       | `Root (_, name) -> scope.root (ModuleName.to_string name) env
-      | _ -> None )
+      | _ -> None)
 
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
@@ -567,7 +567,7 @@ let lookup_page name env =
   | Some r -> (
       match r.lookup_page name with
       | None -> None
-      | Some root -> Some (r.resolve_page root) )
+      | Some root -> Some (r.resolve_page root))
 
 let add_functor_parameter : Odoc_model.Lang.FunctorParameter.t -> t -> t =
  fun p t ->
@@ -745,7 +745,7 @@ let initial_env :
           | Found x ->
               let name = Names.ModuleName.make_std str in
               (Import.Resolved (x.root, name) :: imports, env)
-          | Not_found -> (import :: imports, env) ))
+          | Not_found -> (import :: imports, env)))
     t.imports ([], initial_env)
 
 let modules_of env =
@@ -769,14 +769,14 @@ let verify_lookups env lookups =
               match r.lookup_unit name with
               | Forward_reference -> Some `Forward
               | Not_found -> None
-              | Found u -> Some (`Resolved u.root.digest) )
+              | Found u -> Some (`Resolved u.root.digest))
         in
         match (res, actual_result) with
         | None, None -> false
         | Some `Forward, Some `Forward -> false
         | Some (`Resolved digest1), Some (`Resolved digest2) ->
             digest1 <> digest2
-        | _ -> true )
+        | _ -> true)
     | ModuleType id ->
         let actually_found =
           match lookup_by_id s_module_type id env with
@@ -790,8 +790,7 @@ let verify_lookups env lookups =
         | Error `Not_found -> false
         | Error (`Ambiguous (hd, tl)) ->
             not
-              (List.exists (fun (`Module (id', _)) -> result = id') (hd :: tl))
-        )
+              (List.exists (fun (`Module (id', _)) -> result = id') (hd :: tl)))
     | FragmentRoot _i -> true
     (* begin
          try
@@ -804,7 +803,7 @@ let verify_lookups env lookups =
   let result = not (List.exists bad_lookup lookups) in
   (* If we're recording lookups, make sure it looks like we
       looked all this stuff up *)
-  ( match (result, env.recorder) with
+  (match (result, env.recorder) with
   | true, Some r -> r.lookups <- r.lookups @ lookups
-  | _ -> () );
+  | _ -> ());
   result

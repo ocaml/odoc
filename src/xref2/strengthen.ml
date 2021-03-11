@@ -34,8 +34,7 @@ let rec signature :
             in
             match module_ ?canonical (`Dot (prefix, name)) (get m) with
             | None -> (item :: items, s)
-            | Some m' -> (Module (id, r, put (fun () -> m')) :: items, id :: s)
-            )
+            | Some m' -> (Module (id, r, put (fun () -> m')) :: items, id :: s))
         | ModuleType (id, mt) ->
             ( ModuleType
                 ( id,

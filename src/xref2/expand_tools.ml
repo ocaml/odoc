@@ -77,7 +77,7 @@ and aux_expansion_of_module_alias env ~strengthen path =
              Component.Fmt.signature sg
              Component.Fmt.signature sg'; *)
           Ok (Signature { sg' with items = Comment (`Docs docs) :: sg'.items })
-      | Ok (Functor _ as x), _ -> Ok x )
+      | Ok (Functor _ as x), _ -> Ok x)
   | Error e -> Error (`UnresolvedPath (`Module (path, e)))
 
 (* We need to reresolve fragments in expansions as the root of the fragment
@@ -180,16 +180,16 @@ and handle_expansion env id expansion =
     | Signature sg ->
         Ok
           ( env,
-            ( Component.ModuleType.Signature sg
-              : Component.ModuleType.simple_expansion ) )
+            (Component.ModuleType.Signature sg
+              : Component.ModuleType.simple_expansion) )
     | Functor (arg, expr) ->
         let env', expr' = handle_argument id arg expr env in
         aux_expansion_of_module_type_expr env' expr' >>= fun res ->
         expand (`Result id) env res >>= fun (env, res) ->
         Ok
           ( env,
-            ( Component.ModuleType.Functor (arg, res)
-              : Component.ModuleType.simple_expansion ) )
+            (Component.ModuleType.Functor (arg, res)
+              : Component.ModuleType.simple_expansion) )
   in
   expand id env expansion
 
@@ -229,7 +229,7 @@ let rec type_expr map t =
       try List.assoc v map
       with _ ->
         Format.eprintf "Failed to list assoc %s\n%!" v;
-        failwith "bah" )
+        failwith "bah")
   | Any -> Any
   | Alias (t, s) ->
       if List.mem_assoc s map then raise Clash else Alias (type_expr map t, s)
@@ -285,7 +285,7 @@ let collapse_eqns eqn1 eqn2 params =
   {
     eqn1 with
     Equation.manifest =
-      ( match eqn2.manifest with
+      (match eqn2.manifest with
       | None -> None
-      | Some t -> Some (type_expr map t) );
+      | Some t -> Some (type_expr map t));
   }

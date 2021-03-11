@@ -100,8 +100,7 @@ let match_reference_kind warnings location s : Paths.Reference.tag_any =
       in
       match result with
       | Some kind -> kind
-      | None -> unknown_reference_qualifier s location |> Error.raise_exception
-      )
+      | None -> unknown_reference_qualifier s location |> Error.raise_exception)
 
 (* The string is scanned right-to-left, because we are interested in right-most
    hyphens. The tokens are also returned in right-to-left order, because the
@@ -134,7 +133,7 @@ let tokenize location s =
             (String.rindex_from s (index - 1) '"' - 1)
             tokens
         with _ ->
-          Error.raise_exception (Error.make "Unmatched quotation!" location) )
+          Error.raise_exception (Error.make "Unmatched quotation!" location))
     | _ -> scan_identifier started_at open_parenthesis_count (index - 1) tokens
   and identifier_ended started_at index =
     let offset = index + 1 in
@@ -196,7 +195,7 @@ let parse warnings whole_reference_location s :
             `Root (identifier, kind)
         | _ ->
             expected [ "module"; "module-type" ] location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -208,7 +207,7 @@ let parse warnings whole_reference_location s :
               (signature next_token tokens, ModuleTypeName.make_std identifier)
         | _ ->
             expected [ "module"; "module-type" ] location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
   and parent (kind, identifier, location) tokens : Parent.t =
     let kind = match_reference_kind warnings location kind in
     match tokens with
@@ -221,7 +220,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
@@ -242,7 +241,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
   in
 
   let class_signature (kind, identifier, location) tokens : ClassSignature.t =
@@ -274,14 +273,14 @@ let parse warnings whole_reference_location s :
     | [] -> (
         match kind with
         | (`TUnknown | `TType) as kind -> `Root (identifier, kind)
-        | _ -> expected [ "type" ] location |> Error.raise_exception )
+        | _ -> expected [ "type" ] location |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
         | `TUnknown ->
             `Dot ((parent next_token tokens :> LabelParent.t), identifier)
         | `TType ->
             `Type (signature next_token tokens, TypeName.make_std identifier)
-        | _ -> expected [ "type" ] location |> Error.raise_exception )
+        | _ -> expected [ "type" ] location |> Error.raise_exception)
   in
 
   let rec label_parent (kind, identifier, location) tokens : LabelParent.t =
@@ -296,7 +295,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type"; "page" ]
               location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
     | next_token :: tokens -> (
         match kind with
         | `TUnknown -> `Dot (label_parent next_token tokens, identifier)
@@ -316,7 +315,7 @@ let parse warnings whole_reference_location s :
             expected
               [ "module"; "module-type"; "type"; "class"; "class-type" ]
               location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
   in
 
   let start_from_last_component (kind, identifier, location) old_kind tokens =
@@ -332,14 +331,14 @@ let parse warnings whole_reference_location s :
           match new_kind with
           | `TUnknown -> old_kind
           | _ ->
-              ( if old_kind <> new_kind then
-                let new_kind_string =
-                  match kind with Some s -> s | None -> ""
-                in
-                reference_kinds_do_not_match old_kind_string new_kind_string
-                  whole_reference_location
-                |> Error.warning warnings );
-              new_kind )
+              (if old_kind <> new_kind then
+               let new_kind_string =
+                 match kind with Some s -> s | None -> ""
+               in
+               reference_kinds_do_not_match old_kind_string new_kind_string
+                 whole_reference_location
+               |> Error.warning warnings);
+              new_kind)
     in
 
     match tokens with
@@ -397,7 +396,7 @@ let parse warnings whole_reference_location s :
             not_allowed ~what:"Page label"
               ~in_what:"the last component of a reference path" ~suggestion
               location
-            |> Error.raise_exception )
+            |> Error.raise_exception)
   in
 
   let old_kind, s, location =
@@ -407,7 +406,7 @@ let parse warnings whole_reference_location s :
       | ')' -> (
           match String.rindex_from s index '(' with
           | index -> find_old_reference_kind_separator (index - 1)
-          | exception (Not_found as exn) -> raise exn )
+          | exception (Not_found as exn) -> raise exn)
       | _ -> find_old_reference_kind_separator (index - 1)
       | exception Invalid_argument _ -> raise Not_found
     in
@@ -464,4 +463,4 @@ let read_mod_longident warnings location lid :
       | (`Root (_, (`TUnknown | `TModule)) | `Dot (_, _) | `Module (_, _)) as r
         ->
           Result.Ok r
-      | _ -> Result.Error (expected_err "a reference to a module" location) )
+      | _ -> Result.Error (expected_err "a reference to a module" location))

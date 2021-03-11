@@ -53,7 +53,7 @@ let href ~resolve t =
   match resolve with
   | Base xref_base_uri -> (
       let page = xref_base_uri ^ String.concat "/" target_loc in
-      match anchor with "" -> page | anchor -> page ^ "#" ^ anchor )
+      match anchor with "" -> page | anchor -> page ^ "#" ^ anchor)
   | Current path -> (
       let current_loc = Path.for_linking path in
 
@@ -88,4 +88,4 @@ let href ~resolve t =
       match (relative_target, anchor) with
       | [], "" -> "#"
       | page, "" -> String.concat "/" page
-      | page, anchor -> String.concat "/" page ^ "#" ^ anchor )
+      | page, anchor -> String.concat "/" page ^ "#" ^ anchor)

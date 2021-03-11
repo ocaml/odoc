@@ -48,7 +48,7 @@ let rec resolved_signature_split_parent :
   | `Module (p, name) -> (
       match resolved_signature_split_parent p with
       | RBase i -> RBranch (name, `Module (`Root i, name))
-      | RBranch (base, m) -> RBranch (base, `Module (m, name)) )
+      | RBranch (base, m) -> RBranch (base, `Module (m, name)))
 
 (* Note that this returns an unresolved fragment by design *)
 let rec signature_split_parent : signature -> base_name = function
@@ -56,11 +56,11 @@ let rec signature_split_parent : signature -> base_name = function
   | `Resolved r -> (
       match resolved_signature_split_parent r with
       | RBase _ -> Base None
-      | RBranch (base, m) -> Branch (base, `Resolved m) )
+      | RBranch (base, m) -> Branch (base, `Resolved m))
   | `Dot (m, name) -> (
       match signature_split_parent m with
       | Base _ -> Branch (ModuleName.make_std name, `Root)
-      | Branch (base, m) -> Branch (base, `Dot (m, name)) )
+      | Branch (base, m) -> Branch (base, `Dot (m, name)))
 
 let rec resolved_module_split :
     resolved_module -> string * resolved_module option = function
@@ -70,7 +70,7 @@ let rec resolved_module_split :
       match resolved_signature_split_parent m with
       | RBase _ -> (ModuleName.to_string name, None)
       | RBranch (base, m) ->
-          (ModuleName.to_string base, Some (`Module (m, name))) )
+          (ModuleName.to_string base, Some (`Module (m, name))))
   | `OpaqueModule m -> resolved_module_split m
 
 let module_split : module_ -> string * module_ option = function
@@ -81,7 +81,7 @@ let module_split : module_ -> string * module_ option = function
   | `Dot (m, name) -> (
       match signature_split_parent m with
       | Base _ -> (name, None)
-      | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))) )
+      | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))))
 
 let resolved_type_split : resolved_type -> string * resolved_type option =
   function
@@ -99,7 +99,7 @@ let resolved_type_split : resolved_type -> string * resolved_type option =
       match resolved_signature_split_parent m with
       | RBase _ -> (ClassTypeName.to_string name, None)
       | RBranch (base, m) ->
-          (ModuleName.to_string base, Some (`ClassType (m, name))) )
+          (ModuleName.to_string base, Some (`ClassType (m, name))))
 
 let type_split : type_ -> string * type_ option = function
   | `Resolved r ->
@@ -109,7 +109,7 @@ let type_split : type_ -> string * type_ option = function
   | `Dot (m, name) -> (
       match signature_split_parent m with
       | Base _ -> (name, None)
-      | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))) )
+      | Branch (base, m) -> (ModuleName.to_string base, Some (`Dot (m, name))))
 
 let rec unresolve_module : resolved_module -> module_ = function
   | `OpaqueModule m | `Subst (_, m) | `SubstAlias (_, m) -> unresolve_module m

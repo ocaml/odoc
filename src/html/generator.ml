@@ -178,12 +178,12 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
           (let item i =
              let a = class_ i.Description.attr in
              let term =
-               ( inline ~resolve i.Description.key
+               (inline ~resolve i.Description.key
                  : phrasing Html.elt list
-                 :> flow Html.elt list )
+                 :> flow Html.elt list)
              in
              let def = block ~resolve i.Description.definition in
-             Html.li ~a (term @ (Html.txt " " :: def))
+             Html.li ~a (term @ Html.txt " " :: def)
            in
            Html.ul ~a (List.map item l));
         ]
@@ -253,15 +253,15 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
                 [
                   Html.td
                     ~a:(class_ [ "def-doc" ])
-                    ( Html.span
-                        ~a:(class_ [ "comment-delim" ])
-                        [ Html.txt opening ]
-                      :: block ~resolve doc
+                    (Html.span
+                       ~a:(class_ [ "comment-delim" ])
+                       [ Html.txt opening ]
+                     :: block ~resolve doc
                     @ [
                         Html.span
                           ~a:(class_ [ "comment-delim" ])
                           [ Html.txt closing ];
-                      ] );
+                      ]);
                 ]
           in
           let a, link = mk_anchor anchor in
@@ -338,9 +338,9 @@ module Toc = struct
     let rec section { Toc.url; text; children } =
       let text = inline_nolink text in
       let text =
-        ( text
+        (text
           : non_link_phrasing Html.elt list
-          :> Html_types.flow5_without_interactive Html.elt list )
+          :> Html_types.flow5_without_interactive Html.elt list)
       in
       let href = Link.href ~resolve url in
       let link = Html.a ~a:[ Html.a_href href ] text in
@@ -368,7 +368,7 @@ module Page = struct
     | `Include x -> (
         match x.Include.status with
         | `Closed | `Open | `Default -> None
-        | `Inline -> Some 0 )
+        | `Inline -> Some 0)
 
   let rec include_ ?theme_uri indent { Subpage.content; _ } =
     [ page ?theme_uri indent content ]

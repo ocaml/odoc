@@ -76,7 +76,7 @@ and module_type_expr env (id : Id.Signature.t) expr =
         ->
           again := true;
           expr
-      | Error _e -> expr )
+      | Error _e -> expr)
 
 and u_module_type_expr env id expr =
   match expr with
@@ -93,7 +93,7 @@ and u_module_type_expr env id expr =
         ->
           again := true;
           expr
-      | Error _e -> expr )
+      | Error _e -> expr)
 
 and functor_parameter env p =
   { p with expr = module_type_expr env (p.id :> Id.Signature.t) p.expr }

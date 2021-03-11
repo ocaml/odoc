@@ -238,7 +238,7 @@ module Anchor = struct
         | { page; anchor = _; kind } ->
             (* Really ad-hoc and shitty, but it works. *)
             if kind = "page" then Ok { page; anchor; kind }
-            else Ok { page; anchor; kind = "" } )
+            else Ok { page; anchor; kind = "" })
 
   (* | _ ->
      Error (Unexpected_anchor ("label " ^ anchor)) *)
@@ -263,7 +263,7 @@ module Anchor = struct
         | Constructor { name; _ } ->
             let kind = "constructor" in
             let suffix = name in
-            add_suffix ~kind url suffix )
+            add_suffix ~kind url suffix)
 end
 
 type t = Anchor.t
