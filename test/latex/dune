@@ -4,6 +4,7 @@
 
 (rule
  (alias runtest)
+ (package odoc)
  (action
   (run %{exe:test.exe}))
  (deps

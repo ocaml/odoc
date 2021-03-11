@@ -1,6 +1,6 @@
 open Result
 
-type full_location_payload = Odoc_parser.Error.t = {
+type full_location_payload = Octavius.Error.t = {
   location : Location_.span;
   message : string;
 }
@@ -8,7 +8,7 @@ type full_location_payload = Odoc_parser.Error.t = {
 type filename_only_payload = { file : string; message : string }
 
 type t =
-  [ `With_full_location of Odoc_parser.Error.t
+  [ `With_full_location of Octavius.Error.t
   | `With_filename_only of filename_only_payload ]
 
 let kasprintf k fmt =
@@ -113,9 +113,9 @@ let handle_errors_and_warnings ~warn_error = function
   | { value = Ok _ as ok; warnings = [] } -> ok
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
 
-let t_of_parser_t : Odoc_parser.Error.t -> t =
+let t_of_parser_t : Octavius.Error.t -> t =
  fun x -> (`With_full_location x :> t)
 
-let raise_parser_warnings { Odoc_parser.Error.value; warnings } =
+let raise_parser_warnings { Octavius.Error.value; warnings } =
   raise_warnings' (List.map t_of_parser_t warnings);
   value

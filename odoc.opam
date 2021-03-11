@@ -52,5 +52,8 @@ depends: [
 
 build: [
   ["dune" "subst"] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs
+    "@install"
+    "@runtest" {with-test}
+]
 ]

@@ -1,4 +1,4 @@
-open Odoc_parser
+open Octavius
 
 type sexp = Sexplib0.Sexp.t = Atom of string | List of sexp list
 
@@ -113,9 +113,9 @@ module Ast_to_sexp = struct
   let docs : Ast.docs -> sexp = fun f -> List (List.map (at block_element) f)
 end
 
-let error err = Atom (Odoc_parser.Error.to_string err)
+let error err = Atom (Octavius.Error.to_string err)
 
-let parser_output formatter { Odoc_parser.Error.value; warnings } =
+let parser_output formatter { Octavius.Error.value; warnings } =
   let value = Ast_to_sexp.docs value in
   let warnings = List (List.map error warnings) in
   let output =
@@ -134,7 +134,7 @@ let test ?(location = { Location.line = 1; column = 0 }) str =
       pos_cnum = location.column;
     }
   in
-  let ast = Odoc_parser.parse_comment ~location ~text:str in
+  let ast = Octavius.parse_comment ~location ~text:str in
   Format.printf "%a" parser_output ast
 
 [@@@ocaml.warning "-32"]

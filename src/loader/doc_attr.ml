@@ -73,7 +73,7 @@ let attached internal_tags parent attrs =
 #endif
         let str, loc = load_payload attr_payload in
         let ast_docs =
-          Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
+          Octavius.parse_comment ~location:(pad_loc loc) ~text:str
           |> Error.raise_parser_warnings
         in
         loop (List.rev_append ast_docs acc) rest
@@ -135,7 +135,7 @@ let extract_top_comment internal_tags ~classify parent items =
             match parse_attribute attr with
             | Some (text, loc) ->
                 let ast_docs =
-                  Odoc_parser.parse_comment ~location:(pad_loc loc) ~text
+                  Octavius.parse_comment ~location:(pad_loc loc) ~text
                   |> Error.raise_parser_warnings
                 in
                 (tl, ast_docs)

@@ -1,5 +1,5 @@
 module Location = Location_
-module Ast = Odoc_parser.Ast
+module Ast = Octavius.Ast
 open Result
 
 type internal_tags_removed =
@@ -119,7 +119,7 @@ type ast_leaf_inline_element =
 
 type status = {
   warnings : Error.warning_accumulator;
-  sections_allowed : Odoc_parser.Ast.sections_allowed;
+  sections_allowed : Octavius.Ast.sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
@@ -151,18 +151,17 @@ type surrounding =
   [ `Heading of
     int
     * string option
-    * Odoc_parser.Ast.inline_element Location_.with_location list
-  | `Link of
-    string * Odoc_parser.Ast.inline_element Location_.with_location list
+    * Octavius.Ast.inline_element Location_.with_location list
+  | `Link of string * Octavius.Ast.inline_element Location_.with_location list
   | `Reference of
     [ `Simple | `With_text ]
     * string Location_.with_location
-    * Odoc_parser.Ast.inline_element Location_.with_location list ]
+    * Octavius.Ast.inline_element Location_.with_location list ]
 
 let rec non_link_inline_element :
     status ->
     surrounding:surrounding ->
-    Odoc_parser.Ast.inline_element with_location ->
+    Octavius.Ast.inline_element with_location ->
     Comment.non_link_inline_element with_location =
  fun status ~surrounding element ->
   match element with
@@ -188,7 +187,7 @@ and non_link_inline_elements status ~surrounding elements =
 
 let rec inline_element :
     status ->
-    Odoc_parser.Ast.inline_element with_location ->
+    Octavius.Ast.inline_element with_location ->
     Comment.inline_element with_location =
  fun status element ->
   match element with
@@ -221,7 +220,7 @@ and inline_elements status elements = List.map (inline_element status) elements
 
 let rec nestable_block_element :
     status ->
-    Odoc_parser.Ast.nestable_block_element with_location ->
+    Octavius.Ast.nestable_block_element with_location ->
     Comment.nestable_block_element with_location =
  fun status element ->
   match element with
@@ -415,7 +414,7 @@ let top_level_block_elements status ast_elements =
           validate_first_page_heading status ast_element;
 
         match ast_element with
-        | { value = #Odoc_parser.Ast.nestable_block_element; _ } as element ->
+        | { value = #Octavius.Ast.nestable_block_element; _ } as element ->
             let element = nestable_block_element status element in
             let element = (element :> Comment.block_element with_location) in
             traverse ~top_heading_level
@@ -480,16 +479,16 @@ let ast_to_comment warnings ~internal_tags ~sections_allowed ~parent_of_sections
 
 let parse_comment ~internal_tags ~sections_allowed ~containing_definition
     ~location ~text =
-  let ast = Odoc_parser.parse_comment ~location ~text in
+  let ast = Octavius.parse_comment ~location ~text in
   let comment =
     Error.accumulate_warnings (fun warnings ->
         ast_to_comment warnings ~internal_tags ~sections_allowed
-          ~parent_of_sections:containing_definition ast.Odoc_parser.Error.value)
+          ~parent_of_sections:containing_definition ast.Octavius.Error.value)
   in
   {
     Error.value = comment.value;
     Error.warnings =
-      (ast.Odoc_parser.Error.warnings |> List.map Error.t_of_parser_t)
+      (ast.Octavius.Error.warnings |> List.map Error.t_of_parser_t)
       @ comment.Error.warnings;
   }
 
