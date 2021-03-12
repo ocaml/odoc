@@ -260,7 +260,6 @@ let entity e =
   match e with
   | "#45" -> escaped "\\-"
   | "gt" -> str ">"
-  | "#8288" -> noop
   | s -> str "&%s;" s
 
 (* Should hopefully make people notice and report *)
