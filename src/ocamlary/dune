@@ -1,0 +1,4 @@
+(library
+ (name ocamlary)
+ (public_name odoc.ocamlary)
+ (virtual_modules ocamlary))
