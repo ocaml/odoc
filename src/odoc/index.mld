@@ -36,6 +36,8 @@ in turn will become [intro.html].
 Similarly, a [Game.cmti] will be compiled to [Game.odoc] which in turn will become
 [Game/index.html].
 
+A sample rendering of OCaml constructs can be found in the {!Ocamlary}.
+
 {1:getting-started Getting Started with [odoc]}
 
 You can install [odoc] today through [opam]:
@@ -131,4 +133,3 @@ $ ./mk-docs.sh MyPackageName ${path_to_docs_folder}
 << Generating HTML...
 >> Done!
 ]}
-
