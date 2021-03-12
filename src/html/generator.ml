@@ -193,6 +193,14 @@ let rec block ~resolve (l : Block.t) : flow Html.elt list =
   in
   Utils.list_concat_map l ~f:one
 
+let classify_comment ~resolve (b : Block.t) = match b with
+  | [] ->
+    `Empty
+  | [ {desc = Inline i | Paragraph i; attr} ] ->
+    `Inline (attr, inline ~resolve i)
+  | _ ->
+    `Block (block ~resolve b)
+
 (* This coercion is actually sound, but is not currently accepted by Tyxml.
    See https://github.com/ocsigen/tyxml/pull/265 for details
    Can be replaced by a simple type coercion once this is fixed
@@ -211,6 +219,26 @@ let spec_doc_div ~resolve = function
   | docs ->
       let a = [ Html.a_class [ "spec-doc" ] ] in
       [ div ~a (flow_to_item @@ block ~resolve docs) ]
+
+let attached_doc ~resolve markers doc =
+  let opening, closing = markers in
+  let delim s =
+    [Html.span ~a:(class_ [ "comment-delim" ]) [Html.txt s]]
+  in
+  match classify_comment ~resolve doc with
+  | `Empty -> []
+  | `Inline (attr, i) -> 
+    [ Html.span ~a:(class_ ("def-doc" :: attr)) (
+        delim opening
+        @ i
+        @ delim closing
+      )]
+  | `Block b ->
+    [ Html.div ~a:(class_ [ "def-doc" ]) (
+        delim opening
+        @ b
+        @ delim closing
+      )]
 
 let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
   let open DocumentedSrc in
@@ -245,20 +273,7 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
             | `D code -> (inline ~resolve code :> item Html.elt list)
             | `N n -> to_html n
           in
-          let doc =
-            match doc with
-            | [] -> []
-            | doc ->
-              let opening, closing = markers in
-              let delim s =
-                [Html.span ~a:(class_ [ "comment-delim" ]) [Html.txt s]]
-              in
-              [ Html.div ~a:(class_ [ "def-doc" ]) (
-                  delim opening
-                  @ block ~resolve doc
-                  @ delim closing
-                )]
-          in
+          let doc = attached_doc ~resolve markers doc in
           let a, link = mk_anchor anchor in
           let content = (content :> any Html.elt list) in
           Html.li ~a:(a @ class_ attrs) (link @ content @ doc)
