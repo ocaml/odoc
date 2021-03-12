@@ -81,8 +81,26 @@ let attach_expansion ?(status = `Default) (eq, o, e) page text =
       DocumentedSrc.
         [ Alternative (Expansion { summary; url; status; expansion }) ]
 
-let doc_of_expansion ~decl_doc ~expansion_doc =
-  Comment.standalone decl_doc @ Comment.standalone expansion_doc
+(** Returns the preamble as an item. Stop the preamble at the first heading of
+    level 2 or more. The rest is inserted into [items]. *)
+let prepare_preamble comment items =
+  let preamble, first_comment =
+    Utils.split_at
+      ~f:(function
+        | { Odoc_model.Location_.value = `Heading (level, _, _); _ }
+          when Comment.heading_level level < 2 ->
+            true
+        | _ -> false)
+      comment
+  in
+  (Comment.standalone preamble, Comment.standalone first_comment @ items)
+
+let make_expansion_page title kind url ?(header_title = make_name_from_path url)
+    comments items =
+  let comment = List.concat comments in
+  let preamble, items = prepare_preamble comment items in
+  let header = format_title kind header_title @ preamble in
+  { Page.title; header; items; url }
 
 include Generator_signatures
 
@@ -985,11 +1003,9 @@ module Make (Syntax : SYNTAX) = struct
         | Some csig ->
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
-            let header =
-              format_title `Class (make_name_from_path url)
-              @ doc_of_expansion ~decl_doc:t.doc ~expansion_doc
+            let page =
+              make_expansion_page name `Class url [ t.doc; expansion_doc ] items
             in
-            let page = { Page.title = name; header; items; url } in
             (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
       in
       let summary =
@@ -1022,11 +1038,9 @@ module Make (Syntax : SYNTAX) = struct
         | Some csig ->
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
-            let header =
-              format_title `Cty (make_name_from_path url)
-              @ doc_of_expansion ~decl_doc:t.doc ~expansion_doc
+            let page =
+              make_expansion_page name `Cty url [ t.doc; expansion_doc ] items
             in
-            let page = { Page.title = name; header; items; url } in
             (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
       in
       let summary = O.txt " = " ++ class_type_expr t.expr in
@@ -1137,12 +1151,9 @@ module Make (Syntax : SYNTAX) = struct
             let url = Url.Path.from_identifier arg.id in
             let modname = path url [ inline @@ Text name ] in
             let type_with_expansion =
-              let header =
-                format_title `Arg (make_name_from_path url)
-                @ Comment.standalone expansion_doc
+              let content =
+                make_expansion_page name `Arg url [ expansion_doc ] items
               in
-              let title = name in
-              let content = { Page.items; title; header; url } in
               let summary = O.render modtyp in
               let status = `Default in
               let expansion =
@@ -1261,7 +1272,6 @@ module Make (Syntax : SYNTAX) = struct
         match expansion with
         | None -> (O.documentedSrc (O.txt modname), `Default, None)
         | Some (expansion_doc, items) ->
-            let doc = doc_of_expansion ~decl_doc:t.doc ~expansion_doc in
             let status =
               match t.type_ with
               | ModuleType (Signature _) -> `Inline
@@ -1269,9 +1279,10 @@ module Make (Syntax : SYNTAX) = struct
             in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
-            let title = modname in
-            let header = format_title `Mod (make_name_from_path url) @ doc in
-            let page = { Page.items; title; header; url } in
+            let page =
+              make_expansion_page modname `Mod url [ t.doc; expansion_doc ]
+                items
+            in
             (O.documentedSrc link, status, Some page)
       in
       let summary = mdexpr_in_decl t.id t.type_ in
@@ -1326,12 +1337,12 @@ module Make (Syntax : SYNTAX) = struct
         match expansion with
         | None -> (O.documentedSrc @@ O.txt modname, None)
         | Some (expansion_doc, items) ->
-            let doc = doc_of_expansion ~decl_doc:t.doc ~expansion_doc in
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
-            let title = modname in
-            let header = format_title `Mty (make_name_from_path url) @ doc in
-            let page = { Page.items; title; header; url } in
+            let page =
+              make_expansion_page modname `Mty url [ t.doc; expansion_doc ]
+                items
+            in
             (O.documentedSrc link, Some page)
       in
       let summary =
@@ -1574,8 +1585,7 @@ module Make (Syntax : SYNTAX) = struct
         | Module sign -> signature sign
         | Pack packed -> ([], pack packed)
       in
-      let header = format_title `Mod title @ Comment.standalone unit_doc in
-      { Page.title; header; items; url }
+      make_expansion_page title ~header_title:title `Mod url [ unit_doc ] items
 
     let page (t : Odoc_model.Lang.Page.t) : Page.t =
       let name =

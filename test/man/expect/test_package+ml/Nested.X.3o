@@ -15,14 +15,14 @@ This is module X\.
 .fi 
 Some additional comments\.
 .nf 
-.sp 
-.in 3
-\fB2 Type\fR
-.in 
-.sp 
 .SH Documentation
 .sp 
 .nf 
+.sp 
+.in 3
+\fB1 Type\fR
+.in 
+.sp 
 \f[CB]type\fR t
 .fi 
 .br 
@@ -31,7 +31,7 @@ Some type\.
 .nf 
 .sp 
 .in 3
-\fB1 Values\fR
+\fB2 Values\fR
 .in 
 .sp 
 \f[CB]val\fR x : t

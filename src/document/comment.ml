@@ -309,18 +309,18 @@ let block_element : Comment.block_element -> Block.t = function
          TODO: Remove heading in attached documentation in the model *)
       [ block @@ Paragraph (non_link_inline_element_list content) ]
 
+let heading_level = function
+  | `Title -> 0
+  | `Section -> 1
+  | `Subsection -> 2
+  | `Subsubsection -> 3
+  | `Paragraph -> 4
+  | `Subparagraph -> 5
+
 let heading (`Heading (level, `Label (_, label), content)) =
   let label = Odoc_model.Names.LabelName.to_string label in
   let title = non_link_inline_element_list content in
-  let level =
-    match level with
-    | `Title -> 0
-    | `Section -> 1
-    | `Subsection -> 2
-    | `Subsubsection -> 3
-    | `Paragraph -> 4
-    | `Subparagraph -> 5
-  in
+  let level = heading_level level in
   let label = Some label in
   Item.Heading { label; level; title }
 

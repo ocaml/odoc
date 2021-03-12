@@ -33,6 +33,11 @@ This is module X\.
 \f[CB]module\fR \f[CB]type\fR Y = \f[CB]sig\fR
 .br 
 .ti +2
+.sp 
+.ti +2
+\fB2\.1\.1 Type\fR
+.sp 
+.ti +2
 \f[CB]type\fR t
 .fi 
 .br 
@@ -41,7 +46,7 @@ Some type\.
 .nf 
 .sp 
 .ti +2
-\fB2\.1\.1 Values\fR
+\fB2\.1\.2 Values\fR
 .sp 
 .ti +2
 \f[CB]val\fR y : t
