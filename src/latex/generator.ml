@@ -108,10 +108,7 @@ let list kind pp ppf x =
   | [] -> (* empty list are not supported *) ()
   | _ -> list (Fmt.list ~sep:(fun ppf () -> Raw.break ppf Aesthetic) elt) ppf x
 
-let escape_entity = function
-  | "#45" -> "-"
-  | "gt" -> ">"
-  | s -> s
+let escape_entity = function "#45" -> "-" | "gt" -> ">" | s -> s
 
 let filter_map f x =
   List.rev
