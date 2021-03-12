@@ -111,7 +111,6 @@ let list kind pp ppf x =
 let escape_entity = function
   | "#45" -> "-"
   | "gt" -> ">"
-  | "#8288" -> ""
   | s -> s
 
 let filter_map f x =

@@ -44,7 +44,7 @@ let make_name_from_path { Url.Path.name; parent; _ } =
 let label t ppf =
   match t with
   | Odoc_model.Lang.TypeExpr.Label s -> O.pf ppf "%s" s
-  | Optional s -> O.pf ppf "?%t%s" (O.entity "#8288") s
+  | Optional s -> O.pf ppf "?%s" s
 
 let tag tag t ppf = O.pf ppf "@{<%s>%t@}" tag t
 
