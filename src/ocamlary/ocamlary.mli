@@ -16,14 +16,12 @@
  *)
 
 (** This is an {i interface} with {b all} of the {e module system} features.
-    {C This text is centered. }
-    {L This text is left-aligned. }
-    {R This text is right-aligned. }
     This documentation demonstrates:
 - comment formatting
 - unassociated comments
 - documentation sections
-- module system documentation including {ol
+- module system documentation including
+ {ol
  {- submodules}
  {- module aliases}
  {- module types}
@@ -47,19 +45,23 @@ A numbered list:
 *)
 
 (**
-   This is some verbatim text: {v verbatim v}
+   This is some verbatim text:
+   {v verbatim v}
 *)
 
 (**
-    This is some verbatim text: {v [][df[]]}} v}
+    This is some verbatim text:
+    {v [][df[]]}} v}
 *)
 
 (**
-    Here is some raw LaTeX: {% $e^{i\pi} = -1$ %}
+    Here is some raw LaTeX:
+    {%latex: $e^{i\pi} = -1$ %}
 *)
 
 (**
-    Here is an index table of [Empty] modules: {!modules:Empty EmptyAlias}
+    Here is an index table of [Empty] modules:
+    {!modules: Empty EmptyAlias}
 *)
 
 (**
@@ -108,7 +110,7 @@ module type MissingComment = sig
   type t
 end
 
-(** {9000:s9000 Level 9000 } *)
+(** {1:s9000 Section 9000 } *)
 
 module EmptyAlias = Empty
 (** A plain module alias of [Empty] *)
@@ -119,10 +121,12 @@ module type EmptySig = sig end
 (** A plain, empty module signature *)
 
 module type EmptySigAlias = EmptySig
-(** A plain, empty module signature alias of {[EmptySig]} (preformatted). *)
+(** A plain, empty module signature alias of
+    {[EmptySig]}
+    (preformatted). *)
 
 module ModuleWithSignature : EmptySig
-(** A plain module of a signature of {!EmptySig} (reference) *)
+(** A plain module of a signature of {!module-type:EmptySig} (reference) *)
 
 module ModuleWithSignatureAlias : EmptySigAlias
 (** A plain module with an alias signature
@@ -171,8 +175,8 @@ end
 (** For a good time, see
     {!SuperSig.SubSigA.subSig} or {!SuperSig.SubSigB.subSig} or
     {!SuperSig.EmptySig}. Section {!s9000} is also
-    interesting. {!EmptySig} is a general reference but
-    {!section:emptySig} is the section and {!modtype:EmptySig} is the
+    interesting.
+    {!section:emptySig} is the section and {!module-type:EmptySig} is the
     module signature. *)
 
 (** {!Buffer.t} *)
@@ -180,7 +184,11 @@ module Buffer : sig
   val f : Buffer.t -> unit
 end
 
-(** Some text before exception title. {3 Basic exception stuff} After exception title. *)
+(** Some text before exception title.
+
+ {3 Basic exception stuff}
+
+ After exception title. *)
 
 exception Kaboom of unit
 (** Unary exception constructor *)
@@ -192,7 +200,7 @@ exception Kapow of (unit * unit)
 (** Unary exception constructor over binary tuple *)
 
 exception EmptySig
-(** {!EmptySig} is general but {!modtype:EmptySig} is a module and
+(** {!module-type:EmptySig} is a module and
     {!exception:EmptySig} is this exception. *)
 
 exception EmptySigAlias
@@ -201,7 +209,7 @@ exception EmptySigAlias
 (** {3 Basic type and value stuff with advanced doc comments } *)
 
 type ('a, 'b) a_function = 'a -> 'b
-(** {!a_function} is general but {!type:a_function} is this type and
+(** {!type:a_function} is this type and
     {!val:a_function} is the value below. *)
 
 val a_function : x:int -> int
@@ -241,11 +249,6 @@ val changing : unit
    @version 1.2.0
 *)
 
-val with_foo : unit
-(** This value has a custom tag [foo].
-    @foo the body of the custom [foo] tag
-*)
-
 (** {3 Some Operators } *)
 
 val ( ~- ) : unit
@@ -259,7 +262,7 @@ val ( $ ) : unit
 val ( % ) : unit
 
 (* Disabling the following four until we figure out what to do about
-   https://github.com/ocsigen/tyxml/issues/264 
+   https://github.com/ocsigen/tyxml/issues/264
 
 val ( ^ ) : unit
 
@@ -356,8 +359,8 @@ end
 
 (** This module type includes two signatures.
    {ul
-   {- it includes {!A}}
-   {- it includes {!B} with some substitution}} *)
+   {- it includes {!module-type:A}}
+   {- it includes {!module-type:B} with some substitution}} *)
 module type C = sig
   include A
 
@@ -979,13 +982,13 @@ module Aliases : sig
 
   (** {3:incl include of Foo}
 
-      Just for giggle, let's see what happens when we include {!Foo}. *)
+      Just for giggle, let's see what happens when we include {!module-Foo}. *)
 
   include module type of Foo
 
   type testa = A.t
 
-  (** And also, let's refer to {!type:A.t} and {!Foo.B.id} *)
+  (** And also, let's refer to {!type:module-A.t} and {!Foo.B.id} *)
 
   module P1 : sig
     (** @canonical Ocamlary.Aliases.P2.Z *)
@@ -1037,7 +1040,6 @@ module M : sig
 end
 
 (** Here goes:
-    - [{!M.t}] : {!M.t}
     - [{!module-M.t}] : {!module-M.t}
     - [{!module-type-M.t}] : {!module-type-M.t} *)
 
