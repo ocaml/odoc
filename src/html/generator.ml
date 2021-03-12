@@ -249,29 +249,21 @@ let rec documentedSrc ~resolve (t : DocumentedSrc.t) : item Html.elt list =
             match doc with
             | [] -> []
             | doc ->
-                let opening, closing = markers in
-                [
-                  Html.td
-                    ~a:(class_ [ "def-doc" ])
-                    (Html.span
-                       ~a:(class_ [ "comment-delim" ])
-                       [ Html.txt opening ]
-                     :: block ~resolve doc
-                    @ [
-                        Html.span
-                          ~a:(class_ [ "comment-delim" ])
-                          [ Html.txt closing ];
-                      ]);
-                ]
+              let opening, closing = markers in
+              let delim s =
+                [Html.span ~a:(class_ [ "comment-delim" ]) [Html.txt s]]
+              in
+              [ Html.div ~a:(class_ [ "def-doc" ]) (
+                  delim opening
+                  @ block ~resolve doc
+                  @ delim closing
+                )]
           in
           let a, link = mk_anchor anchor in
-          let content =
-            let c = link @ content in
-            Html.td ~a:(class_ attrs) (c :> any Html.elt list)
-          in
-          Html.tr ~a (content :: doc)
+          let content = (content :> any Html.elt list) in
+          Html.li ~a:(a @ class_ attrs) (link @ content @ doc)
         in
-        Html.table (List.map one l) :: to_html rest
+        Html.ol (List.map one l) :: to_html rest
   in
   to_html t
 
