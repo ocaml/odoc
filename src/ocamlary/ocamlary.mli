@@ -110,24 +110,24 @@ end
 
 (** {9000:s9000 Level 9000 } *)
 
-(** A plain module alias of [Empty] *)
 module EmptyAlias = Empty
+(** A plain module alias of [Empty] *)
 
 (** {3:emptySig EmptySig} *)
 
-(** A plain, empty module signature *)
 module type EmptySig = sig end
+(** A plain, empty module signature *)
 
-(** A plain, empty module signature alias of {[EmptySig]} (preformatted). *)
 module type EmptySigAlias = EmptySig
+(** A plain, empty module signature alias of {[EmptySig]} (preformatted). *)
 
-(** A plain module of a signature of {!EmptySig} (reference) *)
 module ModuleWithSignature : EmptySig
+(** A plain module of a signature of {!EmptySig} (reference) *)
 
+module ModuleWithSignatureAlias : EmptySigAlias
 (** A plain module with an alias signature
     @deprecated I don't like this element any more.
 *)
-module ModuleWithSignatureAlias : EmptySigAlias
 
 module One : sig
   type one
@@ -182,27 +182,27 @@ end
 
 (** Some text before exception title. {3 Basic exception stuff} After exception title. *)
 
-(** Unary exception constructor *)
 exception Kaboom of unit
+(** Unary exception constructor *)
 
-(** Binary exception constructor *)
 exception Kablam of unit * unit
+(** Binary exception constructor *)
 
-(** Unary exception constructor over binary tuple *)
 exception Kapow of (unit * unit)
+(** Unary exception constructor over binary tuple *)
 
+exception EmptySig
 (** {!EmptySig} is general but {!modtype:EmptySig} is a module and
     {!exception:EmptySig} is this exception. *)
-exception EmptySig
 
-(** {!exception:EmptySigAlias} is this exception. *)
 exception EmptySigAlias
+(** {!exception:EmptySigAlias} is this exception. *)
 
 (** {3 Basic type and value stuff with advanced doc comments } *)
 
+type ('a, 'b) a_function = 'a -> 'b
 (** {!a_function} is general but {!type:a_function} is this type and
     {!val:a_function} is the value below. *)
-type ('a, 'b) a_function = 'a -> 'b
 
 val a_function : x:int -> int
 (**
@@ -297,35 +297,35 @@ val ( land ) : unit
 
 (** This comment is for [CollectionModule]. *)
 module CollectionModule : sig
-  (** This comment is for [collection]. *)
   type collection
+  (** This comment is for [collection]. *)
 
   type element
 
   (** This comment is for [InnerModuleA]. *)
   module InnerModuleA : sig
-    (** This comment is for [t]. *)
     type t = collection
+    (** This comment is for [t]. *)
 
     (** This comment is for [InnerModuleA']. *)
     module InnerModuleA' : sig
-      (** This comment is for [t]. *)
       type t = (unit, unit) a_function
+      (** This comment is for [t]. *)
     end
 
     (** This comment is for [InnerModuleTypeA']. *)
     module type InnerModuleTypeA' = sig
-      (** This comment is for [t]. *)
       type t = InnerModuleA'.t
+      (** This comment is for [t]. *)
     end
   end
 
-  (** This comment is for [InnerModuleTypeA]. *)
   module type InnerModuleTypeA = InnerModuleA.InnerModuleTypeA'
+  (** This comment is for [InnerModuleTypeA]. *)
 end
 
-(** module type of *)
 module type COLLECTION = module type of CollectionModule
+(** module type of *)
 
 module Recollection : functor (C : COLLECTION) ->
   COLLECTION
@@ -375,14 +375,14 @@ end
 
 (** This comment is for [FunctorTypeOf]. *)
 module FunctorTypeOf (Collection : module type of CollectionModule) : sig
-  (** This comment is for [t]. *)
   type t = Collection.collection
+  (** This comment is for [t]. *)
 end
 
 (** This comment is for [IncludeModuleType]. *)
 module type IncludeModuleType = sig
-  (** This comment is for [include EmptySigAlias]. *)
   include EmptySigAlias
+  (** This comment is for [include EmptySigAlias]. *)
 end
 
 module type ToInclude = sig
@@ -424,9 +424,7 @@ type variant =
 (** This comment is also for [variant]. *)
 
 (** This comment is for [poly_variant]. *)
-type poly_variant =
-  [ `TagA
-  | `ConstrB of int ]
+type poly_variant = [ `TagA | `ConstrB of int ]
 (** Wow! It was a polymorphic variant! *)
 
 (** This comment is for [full_gadt]. *)
@@ -444,11 +442,11 @@ type 'a partial_gadt =
   | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt  (** *)
 (** Wow! It was a mixed GADT! *)
 
-(** This comment is for [alias]. *)
 type alias = variant
+(** This comment is for [alias]. *)
 
-(** This comment is for [tuple]. *)
 type tuple = (alias * alias) * alias * (alias * alias)
+(** This comment is for [tuple]. *)
 
 (** This comment is for [variant_alias]. *)
 type variant_alias = variant =
@@ -457,11 +455,11 @@ type variant_alias = variant =
   | ConstrC of int * int
   | ConstrD of (int * int)
 
-(** This comment is for [record_alias]. *)
 type record_alias = record = { field1 : int; field2 : int }
+(** This comment is for [record_alias]. *)
 
-(** This comment is for [poly_variant_union]. *)
 type poly_variant_union = [ poly_variant | `TagC ]
+(** This comment is for [poly_variant_union]. *)
 
 type 'a poly_poly_variant = [ `TagA of 'a ]
 
@@ -506,8 +504,8 @@ type 'a partial_gadt_alias = 'a partial_gadt =
   | OfTag of 'a partial_gadt_alias
   | ExistGadtTag : ('a -> 'b) -> 'a partial_gadt_alias
 
-(** This comment is for {!Exn_arrow}. *)
 exception Exn_arrow : unit -> exn
+(** This comment is for {!Exn_arrow}. *)
 
 (** This comment is for {!mutual_constr_a} then {!mutual_constr_b}. *)
 type mutual_constr_a =
@@ -533,8 +531,8 @@ type empty_obj = < >
 
 type one_meth = < meth : unit >
 
-(** A mystery wrapped in an ellipsis *)
 type ext = ..
+(** A mystery wrapped in an ellipsis *)
 
 type ext += ExtA
 
@@ -546,8 +544,8 @@ type ext += ExtE
 
 type ext += private ExtF
 
-(** 'a poly_ext *)
 type 'a poly_ext = ..
+(** 'a poly_ext *)
 
 type 'b poly_ext += Foo of 'b | Bar of 'b * 'b  (** 'b poly_ext *)
 
@@ -566,8 +564,8 @@ type ExtMod.t += ZzzTop of unit  (** and it packs a unit. *)
 external launch_missiles : unit -> unit = "tetris"
 (** Rotate keys on my mark... *)
 
-(** A brown paper package tied up with string*)
 type my_mod = (module COLLECTION)
+(** A brown paper package tied up with string*)
 
 class empty_class : object end
 
@@ -866,8 +864,8 @@ module CanonicalTest : sig
   end
 
   module Base__ : sig
-    (** @canonical Ocamlary.CanonicalTest.Base.List *)
     module List = Base__List
+    (** @canonical Ocamlary.CanonicalTest.Base.List *)
   end
 
   module Base : sig
@@ -933,17 +931,17 @@ module Aliases : sig
   end
 
   module Foo__ : sig
-    (** @canonical Ocamlary.Aliases.Foo.A *)
     module A = Foo__A
+    (** @canonical Ocamlary.Aliases.Foo.A *)
 
-    (** @canonical Ocamlary.Aliases.Foo.B *)
     module B = Foo__B
+    (** @canonical Ocamlary.Aliases.Foo.B *)
 
-    (** @canonical Ocamlary.Aliases.Foo.C *)
     module C = Foo__C
+    (** @canonical Ocamlary.Aliases.Foo.C *)
 
-    (** @canonical Ocamlary.Aliases.Foo.D *)
     module D = Foo__D
+    (** @canonical Ocamlary.Aliases.Foo.D *)
 
     module E = Foo__E
   end
@@ -1052,14 +1050,16 @@ end
     - [{!module-Only_a_module.t}] : {!module-Only_a_module.t}
     - [{!module-type-Only_a_module.t}] : {!module-type-Only_a_module.t} : {{!module-type-Only_a_module.t}test}*)
 
-
 module type TypeExt = sig
   type t = ..
+
   type t += C
+
   val f : t -> unit
 end
 
 type new_t = ..
-type new_t += C
-module type TypeExtPruned = TypeExt with type t := new_t
 
+type new_t += C
+
+module type TypeExtPruned = TypeExt with type t := new_t
