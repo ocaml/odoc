@@ -11,28 +11,8 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
-let rec list_find_map f = function
-  | hd :: tl -> (
-      match f hd with Some _ as x -> x | None -> list_find_map f tl)
-  | [] -> None
-
-(** The synopsis is the first paragraph of a comment. Headings, tags and other
-    {!Comment.block_element} that are not [`Paragraph] or [`List] are skipped.
-    *)
-let synopsis_from_comment docs =
-  let open Location_ in
-  let rec from_element elem =
-    match elem.value with
-    | `Paragraph p -> Some p
-    | `List (_, items) -> list_find_map (list_find_map from_element) items
-    | _ -> None
-  in
-  list_find_map
-    (function
-      | { value = #Comment.nestable_block_element; _ } as elem ->
-          from_element elem
-      | _ -> None)
-    docs
+let synopsis_from_comment parent docs =
+  Odoc_model.Comment.synopsis (Lang_of.docs parent docs)
 
 exception Loop
 
@@ -131,35 +111,12 @@ and module_path : Env.t -> Paths.Path.Module.t -> Paths.Path.Module.t =
             Errors.report ~what:(`Module_path cp) ~tools_error:e `Resolve;
             Cpath.module_path_of_cpath cp)
 
-let rec unit (resolver : Env.resolver) t =
-  let open Compilation_unit in
-  let imports, env = Env.initial_env t resolver in
-  let content =
-    match t.content with
-    | Module sg -> Module (signature env (t.id :> Id.Signature.t) sg)
-    | Pack _ as p -> p
-  in
-  { t with content; imports; linked = true }
-
-and value_ env parent t =
-  let open Value in
-  (* Format.fprintf Format.err_formatter "Handling %a\n%!" Component.Fmt.model_identifier (t.id :> Id.t); *)
-  let result =
-    {
-      t with
-      doc = comment_docs env t.doc;
-      type_ = type_expression env parent [] t.type_;
-    }
-  in
-  (* Format.fprintf Format.err_formatter "Done\n%!"; *)
-  result
-
-and comment_inline_element :
+let rec comment_inline_element :
     Env.t -> Comment.inline_element -> Comment.inline_element =
  fun env x ->
   match x with
   | `Styled (s, ls) ->
-      `Styled (s, List.map (with_location comment_inline_element env) ls)
+      `Styled (s, List.map (with_location (comment_inline_element env)) ls)
   | `Reference (r, []) -> (
       (* Format.fprintf Format.err_formatter "XXXXXXXXXX about to resolve reference: %a\n%!" (Component.Fmt.model_reference) r; *)
       match Ref_tools.resolve_reference env r with
@@ -182,16 +139,18 @@ and comment_inline_element :
       | None -> orig)
   | y -> y
 
-and comment_nestable_block_element env (x : Comment.nestable_block_element) =
+and comment_nestable_block_element env parent
+    (x : Comment.nestable_block_element) =
   match x with
   | `Paragraph elts ->
-      `Paragraph (List.map (with_location comment_inline_element env) elts)
+      `Paragraph (List.map (with_location (comment_inline_element env)) elts)
   | (`Code_block _ | `Verbatim _) as x -> x
   | `List (x, ys) ->
       `List
         ( x,
           List.map
-            (List.map (with_location comment_nestable_block_element env))
+            (List.map
+               (with_location (comment_nestable_block_element env parent)))
             ys )
   | `Modules refs ->
       let refs =
@@ -200,12 +159,12 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
             match Ref_tools.resolve_module_reference env r.module_reference with
             | Some (r, _, m) ->
                 let module_synopsis =
-                  match synopsis_from_comment m.doc with
+                  match synopsis_from_comment parent m.doc with
                   | Some _ as s -> s
                   | None -> (
                       (* If there is no doc, look at the expansion. *)
                       match Tools.signature_of_module env m with
-                      | Ok sg -> synopsis_from_comment sg.doc
+                      | Ok sg -> synopsis_from_comment parent sg.doc
                       | Error _ -> None)
                 in
                 { Comment.module_reference = `Resolved r; module_synopsis }
@@ -214,36 +173,56 @@ and comment_nestable_block_element env (x : Comment.nestable_block_element) =
       in
       `Modules refs
 
-and comment_block_element env (x : Comment.block_element) =
+and comment_block_element env parent (x : Comment.block_element) =
   match x with
   | #Comment.nestable_block_element as x ->
-      (comment_nestable_block_element env x :> Comment.block_element)
+      (comment_nestable_block_element env parent x :> Comment.block_element)
   | `Heading _ as x -> x
   | `Tag _ as x -> x
 
 and with_location :
-    type a.
-    (Env.t -> a -> a) ->
-    Env.t ->
-    a Location_.with_location ->
-    a Location_.with_location =
- fun fn env x ->
-  let value =
-    Lookup_failures.with_location x.location (fun () -> fn env x.value)
-  in
+    type a. (a -> a) -> a Location_.with_location -> a Location_.with_location =
+ fun fn x ->
+  let value = Lookup_failures.with_location x.location (fun () -> fn x.value) in
   { x with value }
 
-and comment_docs env d = List.map (with_location comment_block_element env) d
+and comment_docs env parent d =
+  List.map
+    (with_location (comment_block_element env (parent :> Id.LabelParent.t)))
+    d
 
-and comment env = function
+and comment env parent = function
   | `Stop -> `Stop
-  | `Docs d -> `Docs (comment_docs env d)
+  | `Docs d -> `Docs (comment_docs env parent d)
+
+let rec unit (resolver : Env.resolver) t =
+  let open Compilation_unit in
+  let imports, env = Env.initial_env t resolver in
+  let content =
+    match t.content with
+    | Module sg -> Module (signature env (t.id :> Id.Signature.t) sg)
+    | Pack _ as p -> p
+  in
+  { t with content; imports; linked = true }
+
+and value_ env parent t =
+  let open Value in
+  (* Format.fprintf Format.err_formatter "Handling %a\n%!" Component.Fmt.model_identifier (t.id :> Id.t); *)
+  let result =
+    {
+      t with
+      doc = comment_docs env parent t.doc;
+      type_ = type_expression env parent [] t.type_;
+    }
+  in
+  (* Format.fprintf Format.err_formatter "Done\n%!"; *)
+  result
 
 and exception_ env parent e =
   let open Exception in
   let res = Opt.map (type_expression env parent []) e.res in
   let args = type_decl_constructor_argument env parent e.args in
-  let doc = comment_docs env e.doc in
+  let doc = comment_docs env parent e.doc in
   { e with res; args; doc }
 
 and extension env parent t =
@@ -254,12 +233,12 @@ and extension env parent t =
       c with
       args = type_decl_constructor_argument env parent c.args;
       res = Opt.map (type_expression env parent []) c.res;
-      doc = comment_docs env c.doc;
+      doc = comment_docs env parent c.doc;
     }
   in
   let type_path = type_path env t.type_path in
   let constructors = List.map constructor t.constructors in
-  let doc = comment_docs env t.doc in
+  let doc = comment_docs env parent t.doc in
   { t with type_path; constructors; doc }
 
 and external_ env parent e =
@@ -267,7 +246,7 @@ and external_ env parent e =
   {
     e with
     type_ = type_expression env parent [] e.type_;
-    doc = comment_docs env e.doc;
+    doc = comment_docs env parent e.doc;
   }
 
 and class_type_expr env parent =
@@ -279,7 +258,7 @@ and class_type_expr env parent =
 
 and class_type env parent c =
   let open ClassType in
-  let doc = comment_docs env c.doc in
+  let doc = comment_docs env parent c.doc in
   { c with expr = class_type_expr env parent c.expr; doc }
 
 and class_signature env parent c =
@@ -297,17 +276,17 @@ and class_signature env parent c =
   {
     self = Opt.map (type_expression env parent []) c.self;
     items = List.map map_item c.items;
-    doc = comment_docs env c.doc;
+    doc = comment_docs env parent c.doc;
   }
 
 and method_ env parent m =
   let open Method in
-  let doc = comment_docs env m.doc in
+  let doc = comment_docs env parent m.doc in
   { m with type_ = type_expression env parent [] m.type_; doc }
 
 and instance_variable env parent i =
   let open InstanceVariable in
-  let doc = comment_docs env i.doc in
+  let doc = comment_docs env parent i.doc in
   { i with type_ = type_expression env parent [] i.type_; doc }
 
 and class_ env parent c =
@@ -317,18 +296,19 @@ and class_ env parent c =
     | Arrow (lbl, expr, decl) ->
         Arrow (lbl, type_expression env parent [] expr, map_decl decl)
   in
-  let doc = comment_docs env c.doc in
+  let doc = comment_docs env parent c.doc in
   { c with type_ = map_decl c.type_; doc }
 
-and module_substitution env m =
+and module_substitution env parent m =
   let open ModuleSubstitution in
-  let doc = comment_docs env m.doc in
+  let doc = comment_docs env parent m.doc in
   { m with manifest = module_path env m.manifest; doc }
 
 and signature : Env.t -> Id.Signature.t -> Signature.t -> _ =
  fun env id s ->
   let env = Env.open_signature s env |> Env.add_docs s.doc in
-  let items = signature_items env id s.items and doc = comment_docs env s.doc in
+  let items = signature_items env id s.items
+  and doc = comment_docs env id s.doc in
   { s with items; doc }
 
 and signature_items :
@@ -339,12 +319,13 @@ and signature_items :
     (fun item ->
       match item with
       | Module (r, m) -> Module (r, module_ env m)
-      | ModuleSubstitution m -> ModuleSubstitution (module_substitution env m)
+      | ModuleSubstitution m ->
+          ModuleSubstitution (module_substitution env id m)
       | Type (r, t) -> Type (r, type_decl env id t)
       | TypeSubstitution t -> TypeSubstitution (type_decl env id t)
       | ModuleType mt -> ModuleType (module_type env mt)
       | Value v -> Value (value_ env id v)
-      | Comment c -> Comment (comment env c)
+      | Comment c -> Comment (comment env id c)
       | TypExt t -> TypExt (extension env id t)
       | Exception e -> Exception (exception_ env id e)
       | External e -> External (external_ env id e)
@@ -399,7 +380,7 @@ and module_ : Env.t -> Module.t -> Module.t =
           else type_
       | Alias _ | ModuleType _ -> type_
     in
-    { m with doc = comment_docs env m.doc; type_ }
+    { m with doc = comment_docs env sg_id m.doc; type_ }
 
 and module_decl : Env.t -> Id.Signature.t -> Module.decl -> Module.decl =
  fun env id decl ->
@@ -431,7 +412,7 @@ and module_type : Env.t -> ModuleType.t -> ModuleType.t =
          true
        | _ -> false
      in*)
-  let doc = comment_docs env m.doc in
+  let doc = comment_docs env sg_id m.doc in
   { m with expr = expr'; doc }
 
 and include_ : Env.t -> Include.t -> Include.t =
@@ -440,7 +421,7 @@ and include_ : Env.t -> Include.t -> Include.t =
   let decl = include_decl env i.parent i.decl in
   (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
         (Component.Of_Lang.(module_decl empty i.decl)); *)
-  let doc = comment_docs env i.doc in
+  let doc = comment_docs env i.parent i.doc in
   let should_be_inlined =
     let is_inline_tag element = element.Location_.value = `Tag `Inline in
     List.exists is_inline_tag doc
@@ -642,7 +623,7 @@ and type_decl : Env.t -> Id.Signature.t -> TypeDecl.t -> TypeDecl.t =
   (* Format.eprintf "Handling type decl %a\n%!" Component.Fmt.model_identifier
             (t.id :> Paths.Identifier.t); *)
   let equation = type_decl_equation env parent t.equation in
-  let doc = comment_docs env t.doc in
+  let doc = comment_docs env parent t.doc in
   let hidden_path =
     match equation.Equation.manifest with
     | Some (Constr (`Resolved path, params))
@@ -697,7 +678,7 @@ and type_decl_equation env parent t =
 
 and type_decl_field env parent f =
   let open TypeDecl.Field in
-  let doc = comment_docs env f.doc in
+  let doc = comment_docs env parent f.doc in
   { f with type_ = type_expression env parent [] f.type_; doc }
 
 and type_decl_constructor_argument env parent c =
@@ -708,7 +689,7 @@ and type_decl_constructor_argument env parent c =
 
 and type_decl_constructor env parent c =
   let open TypeDecl.Constructor in
-  let doc = comment_docs env c.doc in
+  let doc = comment_docs env parent c.doc in
   let args = type_decl_constructor_argument env parent c.args in
   let res = Opt.map (type_expression env parent []) c.res in
   { c with doc; args; res }
@@ -717,7 +698,7 @@ and type_expression_polyvar env parent visited v =
   let open TypeExpr.Polymorphic_variant in
   let constructor c =
     let open Constructor in
-    let doc = comment_docs env c.doc in
+    let doc = comment_docs env parent c.doc in
     {
       c with
       arguments = List.map (type_expression env parent visited) c.arguments;
@@ -860,8 +841,7 @@ let page env page =
   in
   {
     page with
-    Page.content =
-      List.map (with_location comment_block_element env) page.Page.content;
+    Page.content = comment_docs env page.Page.name page.content;
     children;
     linked = true;
   }
