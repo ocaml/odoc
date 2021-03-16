@@ -77,9 +77,18 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
       &#x00BB; B
     </nav>
     <header class="odoc-preamble"><h1>Module <code><span>A.B</span></code></h1>
-     <p>Module B.</p><p>Some documentation.</p>
+     <p>Module B. This paragraph is the synopsis.</p>
+     <p>This paragraph and the previous are part of the preamble.</p>
     </header>
+    <nav class="odoc-toc">
+     <ul><li><a href="#an-heading">An heading</a></li></ul>
+    </nav>
     <div class="odoc-content">
+     <h3 id="an-heading"><a href="#an-heading" class="anchor"></a>An heading
+     </h3>
+     <p>This paragraph is not part of the preamble. It'll be rendered in
+       the &quot;content&quot;.
+     </p>
      <div class="odoc-spec">
       <div class="spec type" id="type-t" class="anchored">
        <a href="#type-t" class="anchor"></a>

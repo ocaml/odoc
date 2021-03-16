@@ -81,16 +81,13 @@ let attach_expansion ?(status = `Default) (eq, o, e) page text =
       DocumentedSrc.
         [ Alternative (Expansion { summary; url; status; expansion }) ]
 
-(** Returns the preamble as an item. Stop the preamble at the first heading of
-    level 2 or more. The rest is inserted into [items]. *)
+(** Returns the preamble as an item. Stop the preamble at the first heading. The
+    rest is inserted into [items]. *)
 let prepare_preamble comment items =
   let preamble, first_comment =
     Utils.split_at
       ~f:(function
-        | { Odoc_model.Location_.value = `Heading (level, _, _); _ }
-          when Comment.heading_level level < 2 ->
-            true
-        | _ -> false)
+        | { Odoc_model.Location_.value = `Heading _; _ } -> true | _ -> false)
       comment
   in
   (Comment.standalone preamble, Comment.standalone first_comment @ items)
