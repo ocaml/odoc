@@ -227,9 +227,7 @@ let module_references ms =
 let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
  fun content ->
   match content with
-  | `Paragraph [ { value = `Raw_markup (target, s); _ } ] ->
-      block @@ Block.Raw_markup (target, s)
-  | `Paragraph content -> block @@ Block.Paragraph (inline_element_list content)
+  | `Paragraph p -> paragraph p
   | `Code_block code -> block @@ Source (source_of_code code)
   | `Verbatim s -> block @@ Verbatim s
   | `Modules ms -> module_references ms
@@ -246,6 +244,11 @@ let rec nestable_block_element : Comment.nestable_block_element -> Block.one =
       in
       let items = List.map f items in
       block @@ Block.List (kind, items)
+
+and paragraph : Comment.paragraph -> Block.one = function
+  | [ { value = `Raw_markup (target, s); _ } ] ->
+      block @@ Block.Raw_markup (target, s)
+  | p -> block @@ Block.Paragraph (inline_element_list p)
 
 and nestable_block_element_list elements =
   elements
@@ -329,10 +332,16 @@ let item_element : Comment.block_element -> Item.t list = function
       [ Item.Text (attached_block_element e) ]
   | `Heading _ as h -> [ heading h ]
 
-let first_to_ir = function
-  | { Odoc_model.Location_.value = `Paragraph _ as first_paragraph; _ } :: _ ->
-      block_element first_paragraph
-  | _ -> []
+(** The documentation of the expansion is used if there is no comment attached
+    to the declaration. *)
+let synopsis ~decl_doc ~expansion_doc =
+  let expansion_doc = match expansion_doc with Some d -> d | None -> [] in
+  match Comment.synopsis decl_doc with
+  | Some p -> [ paragraph p ]
+  | None -> (
+      match Comment.synopsis expansion_doc with
+      | Some p -> [ paragraph p ]
+      | None -> [])
 
 let standalone docs =
   Utils.flatmap ~f:item_element
