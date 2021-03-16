@@ -86,24 +86,13 @@ type docs = block_element with_location list
 
 type docs_or_stop = [ `Docs of docs | `Stop ]
 
-(** The synopsis is the first paragraph of a comment. Headings, tags and other
-    {!Comment.block_element} that are not [`Paragraph] or [`List] are skipped.
-    *)
-let synopsis docs =
-  let rec list_find_map f = function
-    | hd :: tl -> (
-        match f hd with Some _ as x -> x | None -> list_find_map f tl)
-    | [] -> None
-  in
+(** The synopsis is the first element of a comment if it is a paragraph or a
+    list. In the case of a list, the first item is considered. Otherwise, there
+    is no synopsis. *)
+let rec synopsis docs =
   let open Location_ in
-  let rec from_element elem =
-    match elem.value with
-    | `Paragraph p -> Some p
-    | `List (_, items) -> list_find_map (list_find_map from_element) items
-    | _ -> None
-  in
-  list_find_map
-    (function
-      | { value = #nestable_block_element; _ } as elem -> from_element elem
-      | _ -> None)
-    docs
+  match docs with
+  | { value = `Paragraph p; _ } :: _ -> Some p
+  | { value = `List (_, first_item :: _); _ } :: _ ->
+      synopsis (first_item :> docs)
+  | _ -> None
