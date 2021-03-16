@@ -994,16 +994,18 @@ module Make (Syntax : SYNTAX) = struct
         if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop
       in
 
-      let cname, expansion =
+      let cname, expansion, expansion_doc =
         match t.expansion with
-        | None -> (O.documentedSrc @@ O.txt name, None)
+        | None -> (O.documentedSrc @@ O.txt name, None, None)
         | Some csig ->
             let expansion_doc, items = class_signature csig in
             let url = Url.Path.from_identifier t.id in
             let page =
               make_expansion_page name `Class url [ t.doc; expansion_doc ] items
             in
-            (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
+            ( O.documentedSrc @@ path url [ inline @@ Text name ],
+              Some page,
+              Some expansion_doc )
       in
       let summary =
         O.txt Syntax.Type.annotation_separator ++ class_decl t.type_
@@ -1020,7 +1022,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "class" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.first_to_ir t.doc in
+      let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content }
 
     let class_type (t : Odoc_model.Lang.ClassType.t) =
@@ -1029,16 +1031,18 @@ module Make (Syntax : SYNTAX) = struct
       let virtual_ =
         if t.virtual_ then O.keyword "virtual" ++ O.txt " " else O.noop
       in
-      let cname, expansion =
+      let cname, expansion, expansion_doc =
         match t.expansion with
-        | None -> (O.documentedSrc @@ O.txt name, None)
+        | None -> (O.documentedSrc @@ O.txt name, None, None)
         | Some csig ->
             let url = Url.Path.from_identifier t.id in
             let expansion_doc, items = class_signature csig in
             let page =
               make_expansion_page name `Cty url [ t.doc; expansion_doc ] items
             in
-            (O.documentedSrc @@ path url [ inline @@ Text name ], Some page)
+            ( O.documentedSrc @@ path url [ inline @@ Text name ],
+              Some page,
+              Some expansion_doc )
       in
       let summary = O.txt " = " ++ class_type_expr t.expr in
       let expr = attach_expansion (" = ", "object", "end") expansion summary in
@@ -1050,7 +1054,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "class-type" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.first_to_ir t.doc in
+      let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content }
   end
 
@@ -1265,9 +1269,9 @@ module Make (Syntax : SYNTAX) = struct
         | Alias (_, None) -> None
         | ModuleType e -> expansion_of_module_type_expr e
       in
-      let modname, status, expansion =
+      let modname, status, expansion, expansion_doc =
         match expansion with
-        | None -> (O.documentedSrc (O.txt modname), `Default, None)
+        | None -> (O.documentedSrc (O.txt modname), `Default, None, None)
         | Some (expansion_doc, items) ->
             let status =
               match t.type_ with
@@ -1280,7 +1284,7 @@ module Make (Syntax : SYNTAX) = struct
               make_expansion_page modname `Mod url [ t.doc; expansion_doc ]
                 items
             in
-            (O.documentedSrc link, status, Some page)
+            (O.documentedSrc link, status, Some page, Some expansion_doc)
       in
       let summary = mdexpr_in_decl t.id t.type_ in
       let modexpr =
@@ -1296,7 +1300,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "module" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.first_to_ir t.doc in
+      let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content }
 
     and simple_expansion_in_decl (base : Paths.Identifier.Module.t) se =
@@ -1330,9 +1334,9 @@ module Make (Syntax : SYNTAX) = struct
         | None -> None
         | Some e -> expansion_of_module_type_expr e
       in
-      let modname, expansion =
+      let modname, expansion, expansion_doc =
         match expansion with
-        | None -> (O.documentedSrc @@ O.txt modname, None)
+        | None -> (O.documentedSrc @@ O.txt modname, None, None)
         | Some (expansion_doc, items) ->
             let url = Url.Path.from_identifier t.id in
             let link = path url [ inline @@ Text modname ] in
@@ -1340,7 +1344,7 @@ module Make (Syntax : SYNTAX) = struct
               make_expansion_page modname `Mty url [ t.doc; expansion_doc ]
                 items
             in
-            (O.documentedSrc link, Some page)
+            (O.documentedSrc link, Some page, Some expansion_doc)
       in
       let summary =
         match t.expr with
@@ -1357,7 +1361,7 @@ module Make (Syntax : SYNTAX) = struct
       in
       let attr = [ "module-type" ] in
       let anchor = path_to_id t.id in
-      let doc = Comment.first_to_ir t.doc in
+      let doc = Comment.synopsis ~decl_doc:t.doc ~expansion_doc in
       Item.Declaration { attr; anchor; doc; content }
 
     and umty_hidden : Odoc_model.Lang.ModuleType.U.expr -> bool = function
@@ -1541,7 +1545,7 @@ module Make (Syntax : SYNTAX) = struct
       let content = { Include.content; status; summary } in
       let attr = [ "include" ] in
       let anchor = None in
-      let doc = Comment.first_to_ir sg_doc in
+      let doc = Comment.synopsis ~decl_doc:[] ~expansion_doc:(Some sg_doc) in
       Item.Include { attr; anchor; doc; content }
   end
 
