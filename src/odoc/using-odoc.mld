@@ -26,6 +26,124 @@ complementary notes.
 
 ...
 
+{2 Top-comment}
+
+The top-comment is the first item of a signature, if it is a documentation
+comment. For example, in an [.mli] file:
+
+{[
+(** This is the top-comment of the current module. *)
+
+module M : sig
+  (** This is the top-comment of [M]. *)
+
+  (* ... *)
+end
+
+module type T = sig
+  (** This is the top-comment of [T]. *)
+
+  (* ... *)
+end
+
+class c =
+  object
+    (** This is the top-comment of [c]. *)
+
+    (* ... *)
+  end
+]}
+
+As an exception, [open] items are allowed to be placed before the top-comment.
+For example:
+
+{[
+(* Copyright header *)
+
+open Base
+
+(** This is the top-comment *)
+
+(* ... *)
+]}
+
+Note that the top-comment can't be attached to a declaration, for example:
+
+{[
+(** This is {e not} the top-comment because it's attached to [t]. *)
+type t
+]}
+
+{2 Preamble}
+
+The preamble is composed of the comment attached to a declaration and the
+top-comment of the expansion.
+It is special only because it will be placed in the [header] part of the page,
+just before the TOC (if any), and is used to compute the {e synopsis}.
+
+{[
+(** This is the comment attached to the declaration. *)
+module M : sig
+  (** This is the top-comment of the expansion. *)
+
+  (* ... *)
+end
+]}
+
+The preamble stops at the first heading, the rest is moved into the [content]
+part of the page. For example, the next two snippets will {e render} the same
+way:
+
+{[
+module M : sig
+  (** Preamble.
+
+      {1 Heading}
+
+      This paragraph is not part of the preamble. *)
+end
+]}
+
+{[
+module M : sig
+  (** Preamble. *)
+
+  (** {1 Heading}
+
+      This paragraph is not part of the preamble. *)
+end
+]}
+
+The comment attached to the declaration shouldn't contain any heading.
+
+{2 Synopsis}
+
+The synopsis of a module (a module type, a class, etc..) is the first
+paragraph of the {!preamble}, {e if} the preamble starts with a paragraph.
+
+It is rendered near declarations and in [{!modules:...}] lists.
+
+Note that the synopsis is computed on top of the {e preamble}, in these two
+examples, the synopsis is the same:
+
+{[
+(** This paragraph is the synopsis of the module [M].
+
+    This paragraph is no longer the synopsis and won't be rendered in the
+    current page near the declaration of [M]. This paragraph will be part of
+    [M]'s preamble. *)
+module M : sig
+  (* ... *)
+end
+]}
+
+{[
+module M : sig
+  (** This paragraph is the synopsis of the module [M]. *)
+
+  (* ... *)
+end
+]}
 
 {1:doc-pages Writing documentation pages}
 
