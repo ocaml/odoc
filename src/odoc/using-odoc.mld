@@ -24,7 +24,49 @@ complementary notes.
 
 {1:interfaces Documenting your interfaces}
 
-...
+Odoc is built to produce documentation for your {e libraries}, and the unit of
+organisation is the {e module}. Documentation is written by putting special
+{{!comments} comments} into the source of the {e module} or {e module
+interface}, and correctly placing these is critical to producing good output.
+Odoc expects the documentation to be structured in a logical way, and will work
+best if the following conventions are applied.
+
+The overall structure is that modules start with a {{!preamble} preamble} or
+'Lead Section' that serves as an overview of the most important information
+about module. This is followed by the content of the module, organised into {e
+sections} and {e subsections}, the structure of which will be used to populate
+a {e table of contents} which will be structurally placed immediately after the
+preamble.
+
+The first paragraph of the preamble will be treated as the module {{!synopsis}
+synopsis}, and will be used as a short description of the module when it
+appears in a list of modules elsewhere in the documentation of the library.
+
+{2 Comments}
+
+Documentation comments are delimited with [(** ] (exactly two [*]) and [*)] and
+can be attached to a declaration or be floating in a signature.
+{{:https://caml.inria.fr/pub/docs/manual-ocaml/doccomments.html}This is defined
+by OCaml.} It is also possible to attach documentation comments to individual
+record fields, constructors, function arguments, class items, etc..
+
+{[
+(** This is the top-comment. It documents the whole module and will be used to
+    derive the preamble and the synopsis. *)
+
+type t
+(** This comment is attached to [t]. *)
+
+(** This comment is "floating", it can be used to define sections.
+
+    {1 This is a heading} *)
+
+(* ... *)
+]}
+
+The documentation can be formatted, Odoc accepts the same markup language as
+{{:https://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html#s%3Aocamldoc-comments}
+ocamldoc} with some exceptions, see {!page-interface.Changes}.
 
 {2 Top-comment}
 
