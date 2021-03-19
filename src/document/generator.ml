@@ -1545,7 +1545,16 @@ module Make (Syntax : SYNTAX) = struct
       let content = { Include.content; status; summary } in
       let attr = [ "include" ] in
       let anchor = None in
-      let doc = Comment.synopsis ~decl_doc:[] ~expansion_doc:(Some sg_doc) in
+      let doc =
+        (* Documentation attached to includes behave differently than other
+           declarations, which show only the synopsis. We can't only show the
+           synopsis because no page is generated to render it and we'd loose
+           the full documentation.
+           As an exception, the synopsis from the expansion is used iff there
+           is no documentation. *)
+        if t.doc <> [] then Comment.to_ir t.doc
+        else Comment.synopsis ~decl_doc:[] ~expansion_doc:(Some sg_doc)
+      in
       Item.Include { attr; anchor; doc; content }
   end
 
