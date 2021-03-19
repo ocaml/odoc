@@ -252,7 +252,7 @@ let source_files_all =
     ("module.mli", [ "Module/index.html" ]);
     ("interlude.mli", [ "Interlude/index.html" ]);
     ("include.mli", [ "Include/index.html" ]);
-    ("include2.ml", [ "Include2/index.html" ]);
+    make_input "include2.ml" [ "Y_include_synopsis"; "Y_include_doc" ];
     ( "include_sections.mli",
       [
         "Include_sections/index.html";

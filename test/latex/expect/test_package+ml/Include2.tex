@@ -6,5 +6,16 @@
 \ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[container-page-test+u+package+++ml-module-Include2-module-X]{\ocamlinlinecode{X}} \ocamltag{keyword}{end}Comment about X that should not appear when including X below.
 
 \label{container-page-test+u+package+++ml-module-Include2-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = int}\\
+\label{container-page-test+u+package+++ml-module-Include2-module-Y}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y]{\ocamlinlinecode{Y}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}\label{container-page-test+u+package+++ml-module-Include2-module-Y-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}Top-comment of Y.\end{ocamlindent}%
+\medbreak
+\label{container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+synopsis}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+synopsis]{\ocamlinlinecode{Y\_\allowbreak{}include\_\allowbreak{}synopsis}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}Top-comment of Y.\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y]{\ocamlinlinecode{Y}} \ocamltag{keyword}{end}\label{container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+synopsis-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y-type-t]{\ocamlinlinecode{Y.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\begin{ocamlindent}The \ocamlinlinecode{include Y} below should have the synopsis from \ocamlinlinecode{Y}'s top-comment attached to it.\end{ocamlindent}%
+\medbreak
+\label{container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+doc}\ocamlcodefragment{\ocamltag{keyword}{module} \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+doc]{\ocamlinlinecode{Y\_\allowbreak{}include\_\allowbreak{}doc}}}\ocamlcodefragment{ : \ocamltag{keyword}{sig}}\begin{ocamlindent}Top-comment of Y.\ocamltag{keyword}{include} \ocamltag{keyword}{module} \ocamltag{keyword}{type} \ocamltag{keyword}{of} \ocamltag{keyword}{struct} \ocamltag{keyword}{include} \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y]{\ocamlinlinecode{Y}} \ocamltag{keyword}{end}\label{container-page-test+u+package+++ml-module-Include2-module-Y+u+include+u+doc-type-t}\ocamlcodefragment{\ocamltag{keyword}{type} t = \hyperref[container-page-test+u+package+++ml-module-Include2-module-Y-type-t]{\ocamlinlinecode{Y.\allowbreak{}t}}}\\
+\end{ocamlindent}%
+\ocamlcodefragment{\ocamltag{keyword}{end}}\\
 
 
