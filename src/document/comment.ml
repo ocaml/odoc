@@ -335,13 +335,8 @@ let item_element : Comment.block_element -> Item.t list = function
 (** The documentation of the expansion is used if there is no comment attached
     to the declaration. *)
 let synopsis ~decl_doc ~expansion_doc =
-  let expansion_doc = match expansion_doc with Some d -> d | None -> [] in
-  match Comment.synopsis decl_doc with
-  | Some p -> [ paragraph p ]
-  | None -> (
-      match Comment.synopsis expansion_doc with
-      | Some p -> [ paragraph p ]
-      | None -> [])
+  let ([], Some docs | docs, _) = (decl_doc, expansion_doc) in
+  match Comment.synopsis docs with Some p -> [ paragraph p ] | None -> []
 
 let standalone docs =
   Utils.flatmap ~f:item_element

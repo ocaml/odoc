@@ -53,7 +53,7 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
          <span class="keyword">end</span>
         </span>
        </code>
-      </div><div class="spec-doc"><p>Module B.</p></div>
+      </div>
      </div>
     </div>
    </body>
