@@ -86,13 +86,8 @@ type docs = block_element with_location list
 
 type docs_or_stop = [ `Docs of docs | `Stop ]
 
-(** The synopsis is the first element of a comment if it is a paragraph or a
-    list. In the case of a list, the first item is considered. Otherwise, there
-    is no synopsis. *)
-let rec synopsis docs =
-  let open Location_ in
-  match docs with
-  | { value = `Paragraph p; _ } :: _ -> Some p
-  | { value = `List (_, first_item :: _); _ } :: _ ->
-      synopsis (first_item :> docs)
+(** The synopsis is the first element of a comment if it is a paragraph.
+    Otherwise, there is no synopsis. *)
+let synopsis = function
+  | { Location_.value = `Paragraph p; _ } :: _ -> Some p
   | _ -> None
