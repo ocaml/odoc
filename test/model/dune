@@ -1,0 +1,6 @@
+(library
+ (name odoc_model_test)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect))
+ (libraries sexplib0 odoc_model type_desc_to_yojson))
