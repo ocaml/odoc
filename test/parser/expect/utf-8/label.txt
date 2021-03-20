@@ -1,4 +1,0 @@
-((output
-  (((f.ml (1 0) (1 10))
-    (2 (label ((f.ml) (label "\206\187"))) (((f.ml (1 6) (1 9)) (word Bar)))))))
- (warnings ()))
