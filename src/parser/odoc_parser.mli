@@ -4,6 +4,8 @@ module Location = Location
 module Error : sig
   type t = Error.t = { location : Location.span; message : string }
 
+  val to_string : t -> string
+
   type 'a with_warnings = { value : 'a; warnings : t list }
 end
 
