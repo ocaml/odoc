@@ -1,25 +1,15 @@
 open Result
-
 module Error = Odoc_model.Error
-
-
 
 let read_string parent_definition filename text =
   let location =
     let pos =
-      Lexing.{
-        pos_fname = filename;
-        pos_lnum = 0;
-        pos_cnum = 0;
-        pos_bol = 0
-      }
+      Lexing.{ pos_fname = filename; pos_lnum = 0; pos_cnum = 0; pos_bol = 0 }
     in
     Location.{ loc_start = pos; loc_end = pos; loc_ghost = true }
   in
   Error.catch_errors_and_warnings (fun () ->
-    Doc_attr.page parent_definition location text)
-
-
+      Doc_attr.page parent_definition location text)
 
 let corrupted file =
   Error.raise_exception (Error.filename_only "corrupted" file)
@@ -39,177 +29,148 @@ let wrong_version file =
 let error_msg file (msg : string) =
   Error.raise_exception (Error.filename_only "%s" msg file)
 
+exception Corrupted
 
+exception Not_an_implementation
+
+exception Not_an_interface
+
+exception Make_root_error of string
+
+let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
+    content =
+  let open Odoc_model.Lang.Compilation_unit in
+  let interface, digest =
+    match interface with
+    | Some digest -> (true, digest)
+    | None -> (
+        match List.assoc name imports with
+        | Some digest -> (false, digest)
+        | None -> raise Corrupted
+        | exception Not_found -> raise Corrupted)
+  in
+  let root =
+    match make_root ~module_name:name ~digest with
+    | Ok root -> root
+    | Error (`Msg m) -> raise (Make_root_error m)
+  in
+  let imports = List.filter (fun (name', _) -> name <> name') imports in
+  let imports = List.map (fun (s, d) -> Import.Unresolved (s, d)) imports in
+  let source =
+    match sourcefile with
+    | Some (Some file, Some digest, build_dir) ->
+        Some { Source.file; digest; build_dir }
+    | _ -> None
+  in
+  {
+    id;
+    root;
+    digest;
+    imports;
+    source;
+    interface;
+    hidden = Odoc_model.Root.contains_double_underscore name;
+    content;
+    expansion = None;
+    linked = false;
+  }
+
+let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
+    sg =
+  let content = Odoc_model.Lang.Compilation_unit.Module sg in
+  make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
+    content
 
 let read_cmti ~make_root ~parent ~filename () =
-  match Cmt_format.read_cmt filename with
-  | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_interface filename
-  | exception Cmt_format.Error (Not_a_typedtree _) ->
-    not_a_typedtree filename
-  | cmt_info ->
-    match cmt_info.cmt_annots with
-    | Interface intf ->
-      begin match cmt_info.cmt_interface_digest with
-      | None -> corrupted filename
-      | Some digest ->
-        let name = cmt_info.cmt_modname in
-        let root =
-          match make_root ~module_name:name ~digest with
-          | Ok root -> root
-          | Error (`Msg m) -> error_msg filename m
-        in
-        let (id, items) = Cmti.read_interface parent name intf in
-        let imports =
-          List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports
-        in
-        let imports =
-          List.map (fun (s, d) ->
-            Odoc_model.Lang.Compilation_unit.Import.Unresolved (s, d))
-          imports
-        in
-        let interface = true in
-        let hidden = Odoc_model.Root.contains_double_underscore name in
-        let source =
-          match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
-          | Some file, Some digest ->
-            let build_dir = cmt_info.cmt_builddir in
-            Some {Odoc_model.Lang.Compilation_unit.Source.file; digest; build_dir}
-          | _, _ -> None
-        in
-        let content = Odoc_model.Lang.Compilation_unit.Module items in
-        {Odoc_model.Lang.Compilation_unit.id; root; digest; imports; source;
-         interface; hidden; content; expansion = None; linked = false}
-      end
-    | _ -> not_an_interface filename
+  let cmt_info = Cmt_format.read_cmt filename in
+  match cmt_info.cmt_annots with
+  | Interface intf -> (
+      match cmt_info.cmt_interface_digest with
+      | None -> raise Corrupted
+      | Some _ as interface ->
+          let name = cmt_info.cmt_modname in
+          let sourcefile =
+            ( cmt_info.cmt_sourcefile,
+              cmt_info.cmt_source_digest,
+              cmt_info.cmt_builddir )
+          in
+          let id, sg = Cmti.read_interface parent name intf in
+          compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
+            ~interface ~sourcefile ~name ~id sg)
+  | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename () =
   match Cmt_format.read_cmt filename with
   | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_implementation filename
-  | exception Cmi_format.Error (Wrong_version_interface _) ->
-    wrong_version filename
-  | exception Cmi_format.Error (Corrupted_interface _) ->
-    corrupted filename
-  | exception Cmt_format.Error (Not_a_typedtree _) ->
-    not_a_typedtree filename
-  | cmt_info ->
-    match cmt_info.cmt_annots with
-    | Packed(_, files) ->
+      raise Not_an_implementation
+  | cmt_info -> (
       let name = cmt_info.cmt_modname in
-      let interface, digest =
-        match cmt_info.cmt_interface_digest with
-        | Some digest -> true, digest
-        | None ->
-          match List.assoc name cmt_info.cmt_imports with
-          | Some digest -> false, digest
-          | None -> assert false
-          | exception Not_found -> assert false
+      let sourcefile =
+        ( cmt_info.cmt_sourcefile,
+          cmt_info.cmt_source_digest,
+          cmt_info.cmt_builddir )
       in
-      let hidden = Odoc_model.Root.contains_double_underscore name in
-      let root =
-        match make_root ~module_name:name ~digest with
-        | Ok root -> root
-        | Error (`Msg m) -> error_msg filename m
-      in
-      let id = `Root(parent, Odoc_model.Names.ModuleName.make_std name) in
-      let items =
-        List.map (fun file ->
-          let pref = Misc.chop_extensions file in
-          Astring.String.Ascii.capitalize (Filename.basename pref))
-          files
-      in
-      let items = List.sort String.compare items in
-      let items =
-        List.map (fun name ->
-          let id = `Module(id, Odoc_model.Names.ModuleName.make_std name) in
-          let path = `Root name in
-          {Odoc_model.Lang.Compilation_unit.Packed.id; path})
-          items
-      in
-      let imports =
-        List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
-      let imports =
-        List.map (fun (s, d) ->
-          Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
-      in
-      let source = None in
-      let content = Odoc_model.Lang.Compilation_unit.Pack items in
-      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
-          source; interface; hidden; content; expansion = None; linked = false}
-
-    | Implementation impl ->
-      let name = cmt_info.cmt_modname in
-      let interface, digest =
-        match cmt_info.cmt_interface_digest with
-        | Some digest -> true, digest
-        | None ->
-          match List.assoc name cmt_info.cmt_imports with
-          | Some digest -> false, digest
-          | None -> assert false
-          | exception Not_found -> assert false
-      in
-      let hidden = Odoc_model.Root.contains_double_underscore name in
-      let root =
-        match make_root ~module_name:name ~digest with
-        | Ok root -> root
-        | Error (`Msg m) -> error_msg filename m
-      in
-      let (id, items) = Cmt.read_implementation parent name impl in
-      let imports =
-        List.filter (fun (name', _) -> name <> name') cmt_info.cmt_imports in
-      let imports =
-        List.map (fun (s, d) ->
-          Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
-      in
-      let source =
-        match cmt_info.cmt_sourcefile, cmt_info.cmt_source_digest with
-        | Some file, Some digest ->
-          let build_dir = cmt_info.cmt_builddir in
-          Some {Odoc_model.Lang.Compilation_unit.Source.file; digest; build_dir}
-        | _, _ -> None
-      in
-      let content = Odoc_model.Lang.Compilation_unit.Module items in
-      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
-       source; interface; hidden; content; expansion = None; linked = false}
-
-    | _ -> not_an_implementation filename
+      let interface = cmt_info.cmt_interface_digest in
+      let imports = cmt_info.cmt_imports in
+      match cmt_info.cmt_annots with
+      | Packed (_, files) ->
+          let id = `Root (parent, Odoc_model.Names.ModuleName.make_std name) in
+          let items =
+            List.map
+              (fun file ->
+                let pref = Misc.chop_extensions file in
+                Astring.String.Ascii.capitalize (Filename.basename pref))
+              files
+          in
+          let items = List.sort String.compare items in
+          let items =
+            List.map
+              (fun name ->
+                let id =
+                  `Module (id, Odoc_model.Names.ModuleName.make_std name)
+                in
+                let path = `Root name in
+                { Odoc_model.Lang.Compilation_unit.Packed.id; path })
+              items
+          in
+          let content = Odoc_model.Lang.Compilation_unit.Pack items in
+          make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
+            ~id content
+      | Implementation impl ->
+          let id, sg = Cmt.read_implementation parent name impl in
+          compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
+            ~name ~id sg
+      | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
-  match Cmi_format.read_cmi filename with
-  | exception Cmi_format.Error (Not_an_interface _) ->
-    not_an_interface filename
-  | exception Cmi_format.Error (Wrong_version_interface _) ->
-    wrong_version filename
-  | exception Cmi_format.Error (Corrupted_interface _) ->
-    corrupted filename
-  | cmi_info ->
-    match cmi_info.cmi_crcs with
-    | (name, Some digest) :: imports when name = cmi_info.cmi_name ->
-      let root =
-        match make_root ~module_name:name ~digest with
-        | Ok root -> root
-        | Error (`Msg m) -> error_msg filename m
+  let cmi_info = Cmi_format.read_cmi filename in
+  match cmi_info.cmi_crcs with
+  | (name, (Some _ as interface)) :: imports when name = cmi_info.cmi_name ->
+      let id, sg =
+        Cmi.read_interface parent name
+          (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
-      let (id, items) = Cmi.read_interface parent name (Odoc_model.Compat.signature cmi_info.cmi_sign) in
-      let imports =
-        List.map (fun (s, d) ->
-          Odoc_model.Lang.Compilation_unit.Import.Unresolved(s, d)) imports
-      in
-      let interface = true in
-      let hidden = Odoc_model.Root.contains_double_underscore name in
-      let source = None in
-      let content = Odoc_model.Lang.Compilation_unit.Module items in
-      {Odoc_model.Lang.Compilation_unit.id; root; digest; imports;
-       source; interface; hidden; content; expansion = None; linked = false}
+      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
+  | _ -> raise Corrupted
 
-    | _ -> corrupted filename
+(** Catch errors from reading the object files and some internal errors *)
+let wrap_errors ~filename f =
+  Odoc_model.Error.catch_errors_and_warnings (fun () ->
+      try f () with
+      | Cmi_format.Error (Not_an_interface _) -> not_an_interface filename
+      | Cmt_format.Error (Not_a_typedtree _) -> not_a_typedtree filename
+      | Cmi_format.Error (Wrong_version_interface _) -> wrong_version filename
+      | Cmi_format.Error (Corrupted_interface _) -> corrupted filename
+      | Corrupted -> corrupted filename
+      | Not_an_implementation -> not_an_implementation filename
+      | Not_an_interface -> not_an_interface filename
+      | Make_root_error m -> error_msg filename m)
 
 let read_cmti ~make_root ~parent ~filename =
-  Odoc_model.Error.catch_errors_and_warnings (read_cmti ~make_root ~parent ~filename)
+  wrap_errors ~filename (read_cmti ~make_root ~parent ~filename)
 
 let read_cmt ~make_root ~parent ~filename =
-  Odoc_model.Error.catch_errors_and_warnings (read_cmt ~make_root ~parent ~filename)
+  wrap_errors ~filename (read_cmt ~make_root ~parent ~filename)
 
 let read_cmi ~make_root ~parent ~filename =
-  Odoc_model.Error.catch_errors_and_warnings (read_cmi ~make_root ~parent ~filename)
+  wrap_errors ~filename (read_cmi ~make_root ~parent ~filename)
