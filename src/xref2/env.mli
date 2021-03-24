@@ -9,10 +9,7 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t
-      * Odoc_model.Paths.Identifier.Module.t
-      * bool
-      * Component.Module.t Component.Delayed.t)
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {

@@ -11,10 +11,7 @@ type lookup_unit_result =
 
 type root =
   | Resolved of
-      (Digest.t
-      * Odoc_model.Paths.Identifier.Module.t
-      * bool
-      * Component.Module.t Component.Delayed.t)
+      (Digest.t * Odoc_model.Paths.Identifier.Module.t * Component.Module.t)
   | Forward
 
 type resolver = {
@@ -372,18 +369,15 @@ let lookup_root_module name env =
         | Found u -> (
             match u.root.id with
             | `Root _ as id ->
-                let m =
-                  Component.Delayed.put (fun () ->
-                      let unit = r.resolve_unit u.root in
-                      module_of_unit unit)
-                in
-                Some (Resolved (u.root.digest, id, u.hidden, m))
+                let unit = r.resolve_unit u.root in
+                let m = module_of_unit unit in
+                Some (Resolved (u.root.digest, id, m))
             | _ -> failwith "Expecting root module!"))
   in
   (match (env.recorder, result) with
   | Some r, Some Forward ->
       r.lookups <- RootModule (name, Some `Forward) :: r.lookups
-  | Some r, Some (Resolved (digest, _, _, _)) ->
+  | Some r, Some (Resolved (digest, _, _)) ->
       r.lookups <- RootModule (name, Some (`Resolved digest)) :: r.lookups
   | Some r, None -> r.lookups <- RootModule (name, None) :: r.lookups
   | None, _ -> ());
@@ -477,8 +471,8 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
 
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
-  | Some (Resolved (_, id, _, m)) ->
-      Some (`Module ((id :> Identifier.Path.Module.t), m))
+  | Some (Resolved (_, id, m)) ->
+      Some (`Module ((id :> Identifier.Path.Module.t), Component.Delayed.put (fun () -> m)))
   | Some Forward | None -> None
 
 let s_signature : Component.Element.signature scope =
