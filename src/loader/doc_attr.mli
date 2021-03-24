@@ -15,10 +15,7 @@
  *)
 
 open Odoc_model
-
 module Paths = Odoc_model.Paths
-
-
 
 val empty : Odoc_model.Comment.docs
 
@@ -27,13 +24,13 @@ val parse_attribute : Parsetree.attribute -> (string * Location.t) option
 val attached :
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
-    Odoc_model.Comment.docs
+  Odoc_model.Comment.docs
 
 val page :
   Paths.Identifier.LabelParent.t ->
   Location.t ->
   string ->
-    Odoc_model.Comment.docs_or_stop
+  Odoc_model.Comment.docs_or_stop
 (** The parent identifier is used to define labels in the given string (i.e.
     for things like [{1:some_section Some title}]) and the location is used for
     error messages.
@@ -44,12 +41,12 @@ val page :
 val standalone :
   Paths.Identifier.LabelParent.t ->
   Parsetree.attribute ->
-    Odoc_model.Comment.docs_or_stop option
+  Odoc_model.Comment.docs_or_stop option
 
 val standalone_multiple :
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
-    Odoc_model.Comment.docs_or_stop list
+  Odoc_model.Comment.docs_or_stop list
 
 val extract_top_comment :
   Lang.Signature.item list -> Lang.Signature.item list * Comment.docs
