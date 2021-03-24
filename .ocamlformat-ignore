@@ -1,4 +1,9 @@
 src/compat/*
-src/loader/*
+src/loader/cmi.ml
+src/loader/cmi.mli
+src/loader/cmt.ml
+src/loader/cmti.ml
+src/loader/doc_attr.ml
+src/loader/*.cppo.ml
 src/model/*.cppo.ml
 test/xref2/lib/*
