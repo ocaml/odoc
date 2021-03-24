@@ -447,6 +447,7 @@ module rec Compilation_unit : sig
     content : content;
     expansion : Signature.t option;
     linked : bool;  (** Whether this unit has been linked. *)
+    canonical : Path.Module.t option;
   }
 end =
   Compilation_unit
