@@ -712,12 +712,12 @@ and resolve_module :
     | `Root r -> (
         (* Format.fprintf Format.err_formatter "Looking up module %s by name...%!" r; *)
         match Env.lookup_root_module r env with
-        | Some (Env.Resolved (_, p, hidden, m)) ->
+        | Some (Env.Resolved (_, p, m)) ->
             let p =
               `Identifier (p :> Odoc_model.Paths.Identifier.Path.Module.t)
             in
-            let p = if hidden then `Hidden p else p in
-            Ok (p, m)
+            let p = process_module_path env ~add_canonical m p in
+            Ok (p, Component.Delayed.put_val m)
         | Some Env.Forward ->
             Error (`Parent (`Parent_sig `UnresolvedForwardPath))
         | None ->

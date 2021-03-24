@@ -190,7 +190,8 @@ module M = struct
     | Some e -> of_element env e
     | None -> (
         match Env.lookup_root_module name env with
-        | Some (Env.Resolved (_, id, _, m)) -> of_element env (`Module (id, m))
+        | Some (Env.Resolved (_, id, m)) ->
+            of_element env (`Module (id, Component.Delayed.put_val m))
         | _ -> None)
 end
 
@@ -730,8 +731,7 @@ let resolve_reference : Env.t -> t -> Resolved.t option =
         | None -> None)
     | `Root (name, `TChildModule) -> (
         match Env.lookup_root_module name env with
-        | Some (Resolved (_, id, _, _)) ->
-            Some (`Identifier (id :> Identifier.t))
+        | Some (Resolved (_, id, _)) -> Some (`Identifier (id :> Identifier.t))
         | Some Forward | None -> None)
     | `Resolved r -> Some r
     | `Root (name, `TModule) -> M.in_env env name >>= resolved
