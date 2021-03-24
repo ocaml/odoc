@@ -337,7 +337,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
             id = (unit.id :> Odoc_model.Paths.Identifier.Module.t);
             doc = [];
             type_ = ModuleType (Signature s);
-            canonical = None;
+            canonical = unit.canonical;
             hidden = unit.hidden;
           }
       in
@@ -351,7 +351,7 @@ let module_of_unit : Odoc_model.Lang.Compilation_unit.t -> Component.Module.t =
             doc = [];
             type_ =
               ModuleType (Signature { items = []; compiled = true; doc = [] });
-            canonical = None;
+            canonical = unit.canonical;
             hidden = unit.hidden;
           }
       in
@@ -472,7 +472,9 @@ let lookup_by_id (scope : 'a scope) id env : 'a option =
 let lookup_root_module_fallback name t =
   match lookup_root_module name t with
   | Some (Resolved (_, id, m)) ->
-      Some (`Module ((id :> Identifier.Path.Module.t), Component.Delayed.put (fun () -> m)))
+      Some
+        (`Module
+          ((id :> Identifier.Path.Module.t), Component.Delayed.put_val m))
   | Some Forward | None -> None
 
 let s_signature : Component.Element.signature scope =

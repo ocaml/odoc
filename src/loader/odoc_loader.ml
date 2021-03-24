@@ -38,7 +38,7 @@ exception Not_an_interface
 exception Make_root_error of string
 
 let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    content =
+    ?canonical content =
   let open Odoc_model.Lang.Compilation_unit in
   let interface, digest =
     match interface with
@@ -73,13 +73,17 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     content;
     expansion = None;
     linked = false;
+    canonical;
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
     sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
+  let canonical =
+    (Cmi.canonical sg.doc :> Odoc_model.Paths.Path.Module.t option)
+  in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
-    content
+    ?canonical content
 
 let read_cmti ~make_root ~parent ~filename () =
   let cmt_info = Cmt_format.read_cmt filename in

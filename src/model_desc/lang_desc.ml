@@ -639,6 +639,10 @@ and compilation_unit_t =
       F ("hidden", (fun t -> t.hidden), bool);
       F ("content", (fun t -> t.content), compilation_unit_content);
       F ("expansion", (fun t -> t.expansion), Option signature_t);
+      F
+        ( "canonical",
+          (fun t -> (t.canonical :> Paths.Path.t option)),
+          Option path );
     ]
 
 (** {3 Page} *)
