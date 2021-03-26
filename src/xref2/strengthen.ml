@@ -25,16 +25,15 @@ let rec signature :
     List.fold_left
       (fun (items, s) item ->
         match item with
-        | Module (id, r, m) -> (
+        | Module (id, r, m) ->
             let name = Ident.Name.module_ id in
             let canonical =
               match canonical with
               | Some p -> Some (`Dot (p, name))
               | None -> None
             in
-            match module_ ?canonical (`Dot (prefix, name)) (get m) with
-            | None -> (item :: items, s)
-            | Some m' -> (Module (id, r, put (fun () -> m')) :: items, id :: s))
+            let m' = module_ ?canonical (`Dot (prefix, name)) (get m) in
+            (Module (id, r, put (fun () -> m')) :: items, id :: s)
         | ModuleType (id, mt) ->
             ( ModuleType
                 ( id,
@@ -70,11 +69,8 @@ and module_ :
     ?canonical:Cpath.module_ ->
     Cpath.module_ ->
     Component.Module.t ->
-    Component.Module.t option =
- fun ?canonical prefix m ->
-  match m.type_ with
-  | Alias _ -> None
-  | ModuleType _ -> Some { m with canonical; type_ = Alias (prefix, None) }
+    Component.Module.t =
+ fun ?canonical prefix m -> { m with canonical; type_ = Alias (prefix, None) }
 
 (* nuke the expansion as this could otherwise lead to inconsistencies - e.g. 'AlreadyASig' *)
 and module_type :
