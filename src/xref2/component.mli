@@ -304,6 +304,7 @@ and Include : sig
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
+    strengthened : Cpath.module_ option;
     doc : CComment.docs;
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;

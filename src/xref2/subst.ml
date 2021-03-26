@@ -724,6 +724,7 @@ and include_ s i =
   {
     i with
     decl = include_decl s i.decl;
+    strengthened = option_ module_path s i.strengthened;
     expansion_ = apply_sig_map_sg s i.expansion_;
   }
 

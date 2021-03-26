@@ -329,7 +329,14 @@ and include_ : Env.t -> Include.t -> Include.t =
         i.expansion
     | Ok sg ->
         let map = { Lang_of.empty with shadowed = i.expansion.shadowed } in
-        let e = Lang_of.(simple_expansion map i.parent (Signature sg)) in
+        let sg' =
+          match i.strengthened with
+          | Some p ->
+              let cp = Component.Of_Lang.(module_path empty p) in
+              Strengthen.signature cp sg
+          | None -> sg
+        in
+        let e = Lang_of.(simple_expansion map i.parent (Signature sg')) in
 
         let expansion_sg =
           match e with

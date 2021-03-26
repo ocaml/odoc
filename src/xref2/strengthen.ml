@@ -20,8 +20,18 @@ open Delayed
 let rec signature :
     Cpath.module_ -> ?canonical:Cpath.module_ -> Signature.t -> Signature.t =
  fun prefix ?canonical sg ->
+  let sg', strengthened_modules = sig_items prefix ?canonical sg in
+  (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
+  let substs =
+    List.fold_left
+      (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
+      Subst.identity strengthened_modules
+  in
+  Subst.signature substs sg'
+
+and sig_items prefix ?canonical sg =
   let open Signature in
-  let items, strengthened_modules =
+  let items, ids =
     List.fold_left
       (fun (items, s) item ->
         match item with
@@ -51,19 +61,15 @@ let rec signature :
                       type_decl (`Dot (prefix, Ident.Name.type_ id)) (get t)) )
               :: items,
               s )
+        | Include i ->
+            let i', strengthened = include_ prefix i in
+            (Include i' :: items, strengthened @ s)
         | Exception _ | TypExt _ | Value _ | External _ | Class _ | ClassType _
-        | Include _ | ModuleSubstitution _ | TypeSubstitution _ | Comment _
-        | Open _ ->
+        | ModuleSubstitution _ | TypeSubstitution _ | Comment _ | Open _ ->
             (item :: items, s))
       ([], []) sg.items
   in
-  (* Format.eprintf "Invalidating modules: %a\n%!" (Format.pp_print_list Ident.fmt) strengthened_modules; *)
-  let substs =
-    List.fold_left
-      (fun s mid -> Subst.path_invalidate_module (mid :> Ident.path_module) s)
-      Subst.identity strengthened_modules
-  in
-  Subst.signature substs { sg with items = List.rev items }
+  ({ sg with items = List.rev items }, ids)
 
 and module_ :
     ?canonical:Cpath.module_ ->
@@ -109,3 +115,8 @@ and type_decl : Cpath.type_ -> TypeDecl.t -> TypeDecl.t =
     }
   in
   { t with equation }
+
+and include_ : Cpath.module_ -> Include.t -> Include.t * Ident.module_ list =
+ fun path i ->
+  let expansion_, strengthened = sig_items path i.expansion_ in
+  ({ i with expansion_; strengthened = Some path }, strengthened)
