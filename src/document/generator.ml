@@ -1536,7 +1536,7 @@ module Make (Syntax : SYNTAX) = struct
         | ModuleType mt -> umty mt
       in
 
-      let sg_doc, content = signature t.expansion.content in
+      let _, content = signature t.expansion.content in
       let summary =
         O.render
           (O.keyword "include" ++ O.txt " " ++ include_decl
@@ -1550,10 +1550,8 @@ module Make (Syntax : SYNTAX) = struct
            declarations, which show only the synopsis. We can't only show the
            synopsis because no page is generated to render it and we'd loose
            the full documentation.
-           As an exception, the synopsis from the expansion is used iff there
-           is no documentation. *)
-        if t.doc <> [] then Comment.to_ir t.doc
-        else Comment.synopsis ~decl_doc:[] ~expansion_doc:(Some sg_doc)
+           The documentation from the expansion is not used. *)
+        Comment.to_ir t.doc
       in
       Item.Include { attr; anchor; doc; content }
   end
