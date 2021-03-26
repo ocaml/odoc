@@ -326,6 +326,7 @@ and Include : sig
 
   type t = {
     parent : Odoc_model.Paths.Identifier.Signature.t;
+    strengthened : Cpath.module_ option;
     doc : CComment.docs;
     status : [ `Default | `Inline | `Closed | `Open ];
     shadowed : Odoc_model.Lang.Include.shadowed;
@@ -2119,6 +2120,7 @@ module Of_Lang = struct
       shadowed = i.expansion.shadowed;
       expansion_ = apply_sig_map ident_map i.expansion.content;
       status = i.status;
+      strengthened = option module_path ident_map i.strengthened;
       decl;
     }
 

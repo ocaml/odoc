@@ -168,6 +168,7 @@ and Include : sig
 
   type t = {
     parent : Identifier.Signature.t;
+    strengthened : Path.Module.t option;
     doc : Comment.docs;
     status : [ `Inline | `Closed | `Open | `Default ];
     decl : decl;

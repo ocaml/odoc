@@ -1278,7 +1278,9 @@ and fragmap :
                       compiled = false;
                     }
                 in
-                Ok (Component.Signature.Include { i with decl; expansion_ })
+                Ok
+                  (Component.Signature.Include
+                     { i with decl; expansion_; strengthened = None })
               else Ok item
             in
             component >>= fun c ->

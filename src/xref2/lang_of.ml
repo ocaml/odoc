@@ -599,6 +599,7 @@ and include_ parent map i =
             i.expansion_;
       };
     status = i.status;
+    strengthened = Opt.map (Path.module_ map) i.strengthened;
   }
 
 and open_ parent map o =
