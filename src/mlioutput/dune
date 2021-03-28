@@ -1,0 +1,6 @@
+(library
+ (name odoc_mli)
+ (public_name odoc.mli)
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries odoc_model odoc_document))

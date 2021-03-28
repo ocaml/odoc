@@ -482,6 +482,14 @@ module Odoc_manpage = Make_renderer (struct
   let extra_args = Term.const ()
 end)
 
+module Odoc_mli = Make_renderer (struct
+  type args = unit
+
+  let renderer = Mli_output.renderer
+
+  let extra_args = Term.const ()
+end)
+
 module Odoc_latex = Make_renderer (struct
   type args = Latex.args
 
@@ -624,6 +632,9 @@ let () =
       Odoc_manpage.process;
       Odoc_manpage.targets;
       Odoc_manpage.generate;
+      Odoc_mli.process;
+      Odoc_mli.targets;
+      Odoc_mli.generate;
       Odoc_latex.process;
       Odoc_latex.targets;
       Odoc_latex.generate;
