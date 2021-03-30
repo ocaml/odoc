@@ -758,3 +758,5 @@ module Of_Lang : sig
 end
 
 val module_of_functor_argument : FunctorParameter.parameter -> Module.t
+
+val extract_signature_doc : Signature.t -> CComment.docs
