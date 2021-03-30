@@ -2321,3 +2321,9 @@ let module_of_functor_argument (arg : FunctorParameter.parameter) =
     canonical = None;
     hidden = false;
   }
+
+(** This is equivalent to {!Lang.extract_signature_doc}. *)
+let extract_signature_doc (s : Signature.t) =
+  match (s.doc, s.items) with
+  | [], Include { expansion_; status = `Inline; _ } :: _ -> expansion_.doc
+  | doc, _ -> doc

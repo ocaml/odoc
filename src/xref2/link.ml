@@ -11,8 +11,22 @@ module Opt = struct
   let map f = function Some x -> Some (f x) | None -> None
 end
 
-let synopsis_from_comment parent docs =
-  Odoc_model.Comment.synopsis (Lang_of.docs parent docs)
+(** Equivalent to {!Comment.synopsis}. *)
+let synopsis_from_comment (docs : Component.CComment.docs) =
+  match docs with
+  | ({ value = #Comment.nestable_block_element; _ } as e) :: _ ->
+      (* Only the first element is considered. *)
+      Comment.synopsis [ e ]
+  | _ -> None
+
+let synopsis_of_module env (m : Component.Module.t) =
+  match synopsis_from_comment m.doc with
+  | Some _ as s -> s
+  | None -> (
+      (* If there is no doc, look at the expansion. *)
+      match Tools.signature_of_module env m with
+      | Ok sg -> synopsis_from_comment (Component.extract_signature_doc sg)
+      | Error _ -> None)
 
 exception Loop
 
@@ -158,19 +172,7 @@ and comment_nestable_block_element env parent
           (fun (r : Comment.module_reference) ->
             match Ref_tools.resolve_module_reference env r.module_reference with
             | Some (r, _, m) ->
-                let module_synopsis =
-                  match synopsis_from_comment parent m.doc with
-                  | Some _ as s -> s
-                  | None -> (
-                      (* If there is no doc, look at the expansion.
-                         This doesn't implement the "@inline includes" special
-                         case. The handling of the synopsis and the preamble
-                         should be moved to xref2 and store into Lang to solve
-                         that. *)
-                      match Tools.signature_of_module env m with
-                      | Ok sg -> synopsis_from_comment parent sg.doc
-                      | Error _ -> None)
-                in
+                let module_synopsis = synopsis_of_module env m in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | None -> r)
           refs
