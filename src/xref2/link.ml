@@ -162,7 +162,11 @@ and comment_nestable_block_element env parent
                   match synopsis_from_comment parent m.doc with
                   | Some _ as s -> s
                   | None -> (
-                      (* If there is no doc, look at the expansion. *)
+                      (* If there is no doc, look at the expansion.
+                         This doesn't implement the "@inline includes" special
+                         case. The handling of the synopsis and the preamble
+                         should be moved to xref2 and store into Lang to solve
+                         that. *)
                       match Tools.signature_of_module env m with
                       | Ok sg -> synopsis_from_comment parent sg.doc
                       | Error _ -> None)

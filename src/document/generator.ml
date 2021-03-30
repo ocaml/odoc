@@ -1132,7 +1132,7 @@ module Make (Syntax : SYNTAX) = struct
                 let items = Sectioning.comment_items c in
                 loop rest (List.rev_append items acc_items))
       in
-      (s.doc, loop s.items [])
+      (Lang.extract_signature_doc s, loop s.items [])
 
     and functor_parameter :
         Odoc_model.Lang.FunctorParameter.parameter -> DocumentedSrc.t =
