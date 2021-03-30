@@ -470,3 +470,14 @@ let umty_of_mty : ModuleType.expr -> ModuleType.U.expr option = function
   | Functor _ -> None
   | TypeOf t -> Some (TypeOf t)
   | With { w_substitutions; w_expr; _ } -> Some (With (w_substitutions, w_expr))
+
+(** Query the top-comment of a signature. This is [s.doc] most of the time with
+    an exception for signature starting with an inline includes. *)
+let extract_signature_doc (s : Signature.t) =
+  match (s.doc, s.items) with
+  | [], Include { expansion; status = `Inline; _ } :: _ ->
+      (* A signature that starts with an [@inline] include inherits the
+         top-comment from the expansion. This comment is not rendered for
+         [include] items. *)
+      expansion.content.doc
+  | doc, _ -> doc
