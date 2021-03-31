@@ -35,5 +35,16 @@ Everything should resolve:
   {"Some":[{"`Word":"Doc"},"`Space",{"`Word":"for"},"`Space",{"`Code_span":"T"},{"`Word":"."}]}
   {"`Resolved":{"`Identifier":{"`Root":[{"`RootPage":"test"},"Starts_with_open"]}}}
   {"Some":[{"`Word":"Synopsis"},"`Space",{"`Word":"of"},"`Space",{"`Code_span":"Starts_with_open"},{"`Word":"."}]}
+  {"`Resolved":{"`Identifier":{"`Module":[{"`Root":[{"`RootPage":"test"},"Main"]},"Resolve_synopsis"]}}}
+  {"Some":[{"`Reference":[{"`Root":["t","`TUnknown"]},[]]}]}
+  {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"External"]}},"Resolve_synopsis"]}}
+  {"Some":[{"`Reference":[{"`Root":["t","`TUnknown"]},[]]}]}
+
+References in the synopses above should be resolved.
+'External' contains a module list too:
+
+  $ odoc_print external.odocl | jq -c '.. | .["`Modules"]? | select(.) | .[] | .[]'
+  {"`Resolved":{"`Module":[{"`Identifier":{"`Root":[{"`RootPage":"test"},"Main"]}},"Resolve_synopsis"]}}
+  {"Some":[{"`Reference":[{"`Root":["t","`TUnknown"]},[]]}]}
 
 'Type_of' and 'Alias' don't have a summary. `C1` and `C2` neither, we expect at least `C2` to have one.

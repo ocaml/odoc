@@ -292,6 +292,7 @@ let source_files_all =
         "class-c1";
         "class-type-ct";
         "class-c2";
+        "Ref_in_synopsis";
       ];
   ]
 
