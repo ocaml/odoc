@@ -70,3 +70,12 @@ class type ct =
 
 class c2 : ct
 (** Doc of [c2]. *)
+
+module Ref_in_synopsis : sig
+  (** {!t}.
+
+      This reference should resolve in the context of this module, even when
+      used as a synopsis. *)
+
+  type t
+end

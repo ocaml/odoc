@@ -1,5 +1,6 @@
 (** {!modules:External External.X Main Internal Internal.Y Z F Type_of
-    Type_of_str With_type Alias C1 C2 Inline_include Starts_with_open} *)
+    Type_of_str With_type Alias C1 C2 Inline_include Starts_with_open
+    Resolve_synopsis External.Resolve_synopsis} *)
 
 (** Doc for [Internal].
 
@@ -55,4 +56,12 @@ module C2 = Internal.C2
 module Inline_include : sig
   include T
   (** @inline *)
+end
+
+module Resolve_synopsis : sig
+  (** {!t}
+
+      This reference should be resolved when included the list. *)
+
+  type t
 end
