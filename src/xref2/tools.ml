@@ -147,48 +147,6 @@ let prefix_signature (path, sg) =
   in
   { sg with items }
 
-let simplify_resolved_module_path :
-    Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_ =
- fun env cpath ->
-  let path = Lang_of.(Path.resolved_module empty cpath) in
-  let id = Odoc_model.Paths.Path.Resolved.Module.identifier path in
-  let rec check_ident id =
-    match Env.(lookup_by_id s_module) id env with
-    | Some _ -> `Identifier id
-    | None -> (
-        match id with
-        | `Module ((#Odoc_model.Paths.Identifier.Module.t as parent), name) ->
-            `Module (`Module (check_ident parent), name)
-        | _ -> failwith "Bad canonical path")
-  in
-  check_ident id
-
-let simplify_resolved_module_type_path :
-    Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
- fun env cpath ->
-  let path = Lang_of.(Path.resolved_module_type empty cpath) in
-  let id = Odoc_model.Paths.Path.Resolved.ModuleType.identifier path in
-  match Env.(lookup_by_id s_module_type) id env with
-  | Some _ -> `Identifier id
-  | None -> (
-      match cpath with
-      | `ModuleType (`Module m, p) ->
-          `ModuleType (`Module (simplify_resolved_module_path env m), p)
-      | _ -> cpath)
-
-let simplify_resolved_type_path :
-    Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
- fun env cpath ->
-  let path = Lang_of.(Path.resolved_type empty cpath) in
-  let id = Odoc_model.Paths.Path.Resolved.Type.identifier path in
-  match Env.(lookup_by_id s_type) id env with
-  | Some _ -> `Identifier id
-  | None -> (
-      match cpath with
-      | `Type (`Module m, p) ->
-          `Type (`Module (simplify_resolved_module_path env m), p)
-      | _ -> cpath)
-
 open Errors.Tools_error
 
 type resolve_module_result =
@@ -937,17 +895,93 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       `Hidden p'
   | `Canonical (p, `Resolved p2) ->
       `Canonical (reresolve_module env p, `Resolved (reresolve_module env p2))
-  | `Canonical (p, p2) -> (
-      match
-        resolve_module ~mark_substituted:true ~add_canonical:false env p2
-      with
-      | Ok (p2', _) ->
-          `Canonical
-            ( reresolve_module env p,
-              `Resolved (simplify_resolved_module_path env p2') )
-      | Error _ -> `Canonical (reresolve_module env p, p2)
-      | exception _ -> `Canonical (reresolve_module env p, p2))
+  | `Canonical (p, p2) ->
+      `Canonical (reresolve_module env p, handle_canonical_module env p2)
   | `OpaqueModule m -> `OpaqueModule (reresolve_module env m)
+
+and handle_canonical_module env p2 =
+  let resolve p =
+    match resolve_module ~mark_substituted:true ~add_canonical:false env p with
+    | Ok (p, _) -> Some p
+    | Error _ -> None
+  in
+  let rec get_cpath = function
+    | `Root _ as p -> resolve p
+    | `Dot (p, n) -> (
+        match get_cpath p with
+        | None -> None
+        | Some parent -> (
+            let fallback = `Dot (`Resolved parent, n) in
+            match parent with
+            | `Identifier pid -> (
+                let p' =
+                  `Identifier
+                    ( `Module
+                        ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
+                          Odoc_model.Names.ModuleName.make_std n ),
+                      false )
+                in
+                match resolve p' with None -> resolve fallback | x -> x)
+            | _ -> resolve fallback))
+    | _ -> None
+  in
+  match get_cpath p2 with Some p -> `Resolved p | None -> p2
+
+and handle_canonical_module_type env p2 =
+  let resolve p =
+    match
+      resolve_module_type ~mark_substituted:true ~add_canonical:false env p
+    with
+    | Ok (p, _) -> `Resolved p
+    | Error _ -> p2
+  in
+  match p2 with
+  | `Dot (p, n) -> (
+      match handle_canonical_module env p with
+      | `Resolved r as p' -> (
+          let fallback = `Dot (p', n) in
+          match r with
+          | `Identifier pid -> (
+              let p' =
+                `Identifier
+                  ( `ModuleType
+                      ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
+                        Odoc_model.Names.ModuleTypeName.make_std n ),
+                    false )
+              in
+              match resolve p' with
+              | `Resolved _ as x -> x
+              | _ -> resolve fallback)
+          | _ -> resolve fallback)
+      | _ -> p2)
+  | _ -> p2
+
+and handle_canonical_type env p2 =
+  let resolve p =
+    match resolve_type ~add_canonical:false env p with
+    | Ok (p, _) -> `Resolved p
+    | Error _ -> p2
+  in
+  match p2 with
+  | `Dot (p, n) -> (
+      match handle_canonical_module env p with
+      | `Resolved r as p' -> (
+          let fallback = `Dot (p', n) in
+          match r with
+          | `Identifier pid -> (
+              let p' =
+                `Identifier
+                  ( `Type
+                      ( (pid :> Odoc_model.Paths.Identifier.Signature.t),
+                        Odoc_model.Names.TypeName.make_std n ),
+                    false )
+              in
+              match resolve p' with
+              | `Resolved _ as x -> x
+              | _ -> resolve fallback)
+          | _ -> resolve fallback)
+      | _ -> p2)
+  | _ -> p2
 
 and reresolve_module_type :
     Env.t -> Cpath.Resolved.module_type -> Cpath.Resolved.module_type =
@@ -959,16 +993,9 @@ and reresolve_module_type :
   | `CanonicalModuleType (p1, `Resolved p2) ->
       `CanonicalModuleType
         (reresolve_module_type env p1, `Resolved (reresolve_module_type env p2))
-  | `CanonicalModuleType (p1, p2) -> (
-      match
-        resolve_module_type ~mark_substituted:true ~add_canonical:false env p2
-      with
-      | Ok (p2', _) ->
-          `CanonicalModuleType
-            ( reresolve_module_type env p1,
-              `Resolved (simplify_resolved_module_type_path env p2') )
-      | Error _ -> `CanonicalModuleType (reresolve_module_type env p1, p2)
-      | exception _ -> `CanonicalModuleType (reresolve_module_type env p1, p2))
+  | `CanonicalModuleType (p1, p2) ->
+      `CanonicalModuleType
+        (reresolve_module_type env p1, handle_canonical_module_type env p2)
   | `SubstT (p1, p2) ->
       `SubstT (reresolve_module_type env p1, reresolve_module_type env p2)
   | `OpaqueModuleType m -> `OpaqueModuleType (reresolve_module_type env m)
@@ -979,14 +1006,8 @@ and reresolve_type : Env.t -> Cpath.Resolved.type_ -> Cpath.Resolved.type_ =
     match path with
     | `Identifier _ | `Local _ -> path
     | `Substituted s -> `Substituted (reresolve_type env s)
-    | `CanonicalType (p1, p2) -> (
-        match resolve_type ~add_canonical:false env p2 with
-        | Ok (p, _) ->
-            `CanonicalType
-              ( reresolve_type env p1,
-                `Resolved (simplify_resolved_type_path env p) )
-        | Error _ -> `CanonicalType (reresolve_type env p1, p2)
-        | exception _ -> `CanonicalType (reresolve_type env p1, p2))
+    | `CanonicalType (p1, p2) ->
+        `CanonicalType (reresolve_type env p1, handle_canonical_type env p2)
     | `Type (p, n) -> `Type (reresolve_parent env p, n)
     | `Class (p, n) -> `Class (reresolve_parent env p, n)
     | `ClassType (p, n) -> `ClassType (reresolve_parent env p, n)
