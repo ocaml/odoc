@@ -941,13 +941,7 @@ and reresolve_module : Env.t -> Cpath.Resolved.module_ -> Cpath.Resolved.module_
       match
         resolve_module ~mark_substituted:true ~add_canonical:false env p2
       with
-      | Ok (`Alias (_, p2'), _) ->
-          `Canonical
-            ( reresolve_module env p,
-              `Resolved (simplify_resolved_module_path env p2') )
       | Ok (p2', _) ->
-          (* See, e.g. Base.Sexp for an example of where the canonical path might not be
-             a simple alias *)
           `Canonical
             ( reresolve_module env p,
               `Resolved (simplify_resolved_module_path env p2') )
