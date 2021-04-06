@@ -1,6 +1,0 @@
-(library
- (name print)
- (enabled_if
-  (>= %{ocaml_version} 4.04.1))
- ; Due to sexplib0 dependency
- (libraries odoc_model sexplib0))
