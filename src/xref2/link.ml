@@ -422,15 +422,11 @@ and include_ : Env.t -> Include.t -> Include.t =
   (* Format.eprintf "include_: %a\n%!" Component.Fmt.module_decl
         (Component.Of_Lang.(module_decl empty i.decl)); *)
   let doc = comment_docs env i.parent i.doc in
-  let should_be_inlined =
-    let is_inline_tag element = element.Location_.value = `Tag `Inline in
-    List.exists is_inline_tag doc
-  in
   let expansion =
     let content = signature env i.parent i.expansion.content in
     { i.expansion with content }
   in
-  { i with decl; expansion; inline = should_be_inlined; doc }
+  { i with decl; expansion; doc }
 
 and functor_parameter_parameter :
     Env.t -> FunctorParameter.parameter -> FunctorParameter.parameter =

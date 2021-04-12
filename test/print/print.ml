@@ -537,14 +537,6 @@ module Comment_to_sexp = struct
         List
           ([ Atom "@before"; Atom s ] @ List.map (at nestable_block_element) es)
     | `Version s -> List [ Atom "@version"; Atom s ]
-    | `Canonical p ->
-        List
-          [
-            Atom "@canonical"; Path_to_sexp.path (p :> Odoc_model.Paths.Path.t);
-          ]
-    | `Inline -> Atom "@inline"
-    | `Open -> Atom "@open"
-    | `Closed -> Atom "@closed"
 
   let block_element : Comment.block_element -> sexp = function
     | #Comment.nestable_block_element as e -> nestable_block_element e

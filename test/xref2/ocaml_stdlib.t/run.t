@@ -17,4 +17,4 @@ Imitate the way the stdlib is built and how its documentation should be built.
 The page for Main should include the synopsis from X:
 
   $ cat html/ocaml/Main/index.html | grep "Synopsis"
-  [1]
+      </div><div class="spec-doc"><p>Synopsis</p></div>

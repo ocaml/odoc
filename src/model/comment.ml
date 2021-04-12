@@ -47,8 +47,6 @@ type nestable_block_element =
     [ `Unordered | `Ordered ] * nestable_block_element with_location list list
   ]
 
-type canonical_path = [ `Root of string | `Dot of Path.Module.t * string ]
-
 type tag =
   [ `Author of string
   | `Deprecated of nestable_block_element with_location list
@@ -61,11 +59,7 @@ type tag =
     * nestable_block_element with_location list
   | `Since of string
   | `Before of string * nestable_block_element with_location list
-  | `Version of string
-  | `Canonical of canonical_path
-  | `Inline
-  | `Open
-  | `Closed ]
+  | `Version of string ]
 
 type heading_level =
   [ `Title

@@ -25,7 +25,12 @@ val read_interface :
   Odoc_model.Compat.signature ->
   Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
 
-val canonical : Odoc_model.Comment.docs -> [ `Dot of Paths.Path.Module.t * string ] option
+val find_status_tag :
+  Odoc_model.Semantics.internal_tags -> [ `Default | `Inline | `Open | `Closed ]
+
+val find_canonical_tag :
+  Odoc_model.Semantics.internal_tags ->
+  [ `Dot of Paths.Path.Module.t * string ] option
 
 #if OCAML_MAJOR = 4 && OCAML_MINOR = 02
 val read_label : Asttypes.label -> Odoc_model.Lang.TypeExpr.label option
