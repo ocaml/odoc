@@ -54,6 +54,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
         </span>
        </code>
       </div>
+      <div class="spec-doc"><p>Module B. This paragraph is the synopsis.</p>
+      </div>
      </div>
     </div>
    </body>

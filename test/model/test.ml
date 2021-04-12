@@ -3,14 +3,32 @@ open Odoc_model_desc
 
 type sections_allowed = [ `All | `No_titles | `None ]
 
+let ignore_loc x = x.Location_.value
+
 let warning_desc = Type_desc.To_string Error.to_string
+
+let internal_tags_desc =
+  Type_desc.Variant
+    (function
+    | `Canonical x1 ->
+        C
+          ( "`Canonical",
+            (x1 : Semantics.canonical_path :> Paths.Path.t),
+            Paths_desc.path )
+    | `Inline -> C0 "`Inline"
+    | `Open -> C0 "`Open"
+    | `Closed -> C0 "`Closed")
 
 let parser_output_desc =
   let open Odoc_model.Error in
-  let open Odoc_model_desc.Type_desc in
+  let open Type_desc in
   Record
     [
-      F ("value", (fun t -> t.value), Comment_desc.docs);
+      F ("value", (fun t -> fst t.value), Comment_desc.docs);
+      F
+        ( "internal_tags",
+          (fun t -> snd t.value),
+          List (Indirect (ignore_loc, internal_tags_desc)) );
       F ("warnings", (fun t -> t.warnings), List warning_desc);
     ]
 
@@ -53,6 +71,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -68,6 +87,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -83,6 +103,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -99,6 +120,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -116,6 +138,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -132,6 +155,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -149,6 +173,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -164,6 +189,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -173,6 +199,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -184,6 +211,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": " " } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-3:\nIdentifier in reference should not be empty."
           ]
@@ -201,6 +229,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -220,6 +249,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 5-5:\nEnd of text is not allowed in '{!...}' (cross-reference)."
           ]
@@ -231,6 +261,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ":foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nUnknown reference qualifier ''."
           ]
@@ -242,6 +273,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": " :foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-3:\nUnknown reference qualifier ''."
           ]
@@ -253,6 +285,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val:" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."
           ]
@@ -264,6 +297,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val: " } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-7:\nIdentifier in reference should not be empty."
           ]
@@ -281,6 +315,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -290,6 +325,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "va l:foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-6:\nUnknown reference qualifier 'va l'."
           ]
@@ -307,6 +343,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -316,6 +353,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val:foo:bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'val:foo'."
           ]
@@ -333,6 +371,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -348,6 +387,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -363,6 +403,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 9-9:\nEnd of text is not allowed in '{!...}' (cross-reference)."
           ]
@@ -380,6 +421,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -395,6 +437,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -410,6 +453,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -425,6 +469,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
   end in
@@ -438,6 +483,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "foo" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -449,6 +495,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Raw_markup": [ "html", " foo bar " ] } ] }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -458,6 +505,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", " " ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -467,6 +515,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -478,6 +527,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Raw_markup": [ "html", "<e>foo</e>" ] } ] }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -487,6 +537,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "foo:bar" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -496,6 +547,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."
           ]
@@ -507,6 +559,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-8:\n'{%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -518,6 +571,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-9:\n'{% :': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -529,6 +583,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, character 0 to line 2, character 6:\n'{%\n:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -540,6 +595,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-6:\n'{%%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -551,6 +607,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "%" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -560,6 +617,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-12:\n'{%%%foo%%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -571,6 +629,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "%%foo%%" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -580,6 +639,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-10:\n'{%{%:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -591,6 +651,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "{%" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -600,6 +661,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-6:\n'{%}:': bad raw markup target.\nSuggestion: try '{%html:...%}'."
           ]
@@ -611,6 +673,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "}" ] } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -620,6 +683,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nEnd of text is not allowed in '{%...%}' (raw markup).",
             "File \"f.ml\", line 1, characters 0-2:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."
@@ -632,6 +696,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Raw_markup": [ "html", "" ] } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 7-7:\nEnd of text is not allowed in '{%...%}' (raw markup)."
           ]
@@ -643,6 +708,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "}" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-3:\nEnd of text is not allowed in '{%...%}' (raw markup).",
             "File \"f.ml\", line 1, characters 0-3:\n'{%...%}' (raw markup) needs a target language.\nSuggestion: try '{%html:...%}'."
@@ -667,6 +733,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
           ]
@@ -686,6 +753,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'6': bad heading level (0-5 allowed)."
           ]
@@ -712,6 +780,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages.",
             "File \"f.ml\", line 2, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
@@ -722,7 +791,11 @@ let%expect_test _ =
       test "foo";
       [%expect
         {|
-        { "value": [ { "`Paragraph": [ { "`Word": "foo" } ] } ], "warnings": [] } |}]
+        {
+          "value": [ { "`Paragraph": [ { "`Word": "foo" } ] } ],
+          "internal_tags": [],
+          "warnings": []
+        } |}]
 
     let heading_after_paragraph =
       test "foo\n{0 Bar}";
@@ -739,6 +812,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
           ]
@@ -765,6 +839,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -789,6 +864,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
           ]
@@ -822,6 +898,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -839,6 +916,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -856,6 +934,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
           ]
@@ -882,6 +961,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages.",
             "File \"f.ml\", line 2, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
@@ -909,6 +989,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -940,6 +1021,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages.",
             "File \"f.ml\", line 2, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages.",
@@ -968,6 +1050,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'6': bad heading level (0-5 allowed).",
             "File \"f.ml\", line 2, characters 0-7:\n'6': bad heading level (0-5 allowed)."
@@ -995,6 +1078,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-7:\n'6': bad heading level (0-5 allowed)."
           ]
@@ -1018,6 +1102,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1035,6 +1120,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1052,6 +1138,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1069,6 +1156,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1086,6 +1174,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-2:\n'{2' should be followed by space, a tab, or a new line."
           ]
@@ -1105,6 +1194,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-2:\n'{3' should be followed by space, a tab, or a new line."
           ]
@@ -1124,6 +1214,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1141,6 +1232,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1158,6 +1250,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."
           ]
@@ -1177,6 +1270,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{3 ...}' (section heading)."
           ]
@@ -1196,6 +1290,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1213,6 +1308,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1230,6 +1326,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-0:\nBlank line is not allowed in '{2 ...}' (section heading)."
           ]
@@ -1249,6 +1346,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1266,6 +1364,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1283,6 +1382,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1300,6 +1400,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1324,6 +1425,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1341,6 +1443,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1366,6 +1469,7 @@ let%expect_test _ =
             },
             { "`Paragraph": [ { "`Word": "}" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-5:\n'{2 ...}' (section heading) is not allowed in '{2 ...}' (section heading).",
             "File \"f.ml\", line 1, characters 0-2:\n'{2 ...}' (section heading) should not be empty.",
@@ -1387,6 +1491,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-4:\n'{2 ...}' (section heading) is not allowed in '-' (bulleted list item).\nSuggestion: move '{2' outside of any other markup."
           ]
@@ -1407,6 +1512,7 @@ let%expect_test _ =
             },
             { "`Paragraph": [ { "`Word": "bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 8-11:\nParagraph should begin on its own line."
           ]
@@ -1427,6 +1533,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) should begin on its own line."
           ]
@@ -1447,6 +1554,7 @@ let%expect_test _ =
             },
             { "`Paragraph": [ { "`Word": "bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1465,6 +1573,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1482,6 +1591,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1499,6 +1609,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1516,6 +1627,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-3:\nHeading label should not be empty."
           ]
@@ -1535,6 +1647,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-6:\n'{2 ...}' (section heading) should not be empty."
           ]
@@ -1554,6 +1667,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-6:\n'{2 ...}' (section heading) should not be empty."
           ]
@@ -1568,6 +1682,7 @@ let%expect_test _ =
             { "`List": [ "`Unordered", [] ] },
             { "`Paragraph": [ { "`Word": "}" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 4-6:\n'{2 ...}' (section heading) is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move '{2 ...}' (section heading) outside the list.",
             "File \"f.ml\", line 1, characters 7-10:\n'Foo' is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move 'Foo' into a list item, '{li ...}' or '{- ...}'.",
@@ -1596,6 +1711,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1622,6 +1738,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-2:\n'{2 ...}' (section heading) is not allowed in '{li ...}' (list item).\nSuggestion: move '{2' outside of any other markup."
           ]
@@ -1641,6 +1758,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-8:\n'22': bad heading level (0-5 allowed)."
           ]
@@ -1660,6 +1778,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-12:\n'22': bad heading level (0-5 allowed)."
           ]
@@ -1679,6 +1798,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 1-3:\n'02': leading zero in heading level."
           ]
@@ -1698,6 +1818,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 1-7:\n'02': leading zero in heading level."
           ]
@@ -1717,6 +1838,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\nTitle-level headings {0 ...} are only allowed in pages."
           ]
@@ -1736,6 +1858,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'6': bad heading level (0-5 allowed)."
           ]
@@ -1755,6 +1878,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-11:\n'{{:...} ...}' (external link) is not allowed in '{2 ...}' (section heading)."
           ]
@@ -1774,6 +1898,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-9:\n'{!...}' (cross-reference) is not allowed in '{2 ...}' (section heading)."
           ]
@@ -1800,6 +1925,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -1824,6 +1950,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
   end in
@@ -1834,7 +1961,12 @@ let%expect_test _ =
     let basic =
       test "@author Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let empty =
       test "@author";
@@ -1842,6 +1974,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Tag": { "`Author": "" } } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'@author' should not be empty."
           ]
@@ -1853,6 +1986,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Tag": { "`Author": "" } } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-7:\n'@author' should not be empty."
           ]
@@ -1861,22 +1995,42 @@ let%expect_test _ =
     let extra_whitespace =
       test "@author  Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let newline =
       test "@author Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let cr_lf =
       test "@author Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let blank_line =
       test "@author Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let followed_by_junk =
       test "@author Foo\nbar";
@@ -1887,6 +2041,7 @@ let%expect_test _ =
             { "`Tag": { "`Author": "Foo" } },
             { "`Paragraph": [ { "`Word": "bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-3:\nParagraph is not allowed in the tags section.\nSuggestion: move 'bar' before any tags."
           ]
@@ -1901,6 +2056,7 @@ let%expect_test _ =
             { "`Tag": { "`Author": "Foo" } },
             { "`Paragraph": [ { "`Code_span": "bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-5:\nParagraph is not allowed in the tags section.\nSuggestion: move '[...]' (code) before any tags."
           ]
@@ -1912,6 +2068,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Tag": { "`Author": "Foo" } }, { "`Code_block": "bar" } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-7:\n'{[...]}' (code block) is not allowed in the tags section.\nSuggestion: move '{[...]}' (code block) before any tags."
           ]
@@ -1923,6 +2080,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Tag": { "`Author": "Foo" } }, { "`Verbatim": "bar" } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-9:\n'{v ... v}' (verbatim text) is not allowed in the tags section.\nSuggestion: move '{v ... v}' (verbatim text) before any tags."
           ]
@@ -1937,6 +2095,7 @@ let%expect_test _ =
             { "`Tag": { "`Author": "foo" } },
             { "`Modules": [ [ { "`Root": [ "Foo", "`TUnknown" ] }, "None" ] ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-14:\n'{!modules ...}' is not allowed in the tags section.\nSuggestion: move '{!modules ...}' before any tags."
           ]
@@ -1956,6 +2115,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-3:\n'{ul ...}' (bulleted list) is not allowed in the tags section.\nSuggestion: move '{ul ...}' (bulleted list) before any tags."
           ]
@@ -1975,6 +2135,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-1:\n'-' (bulleted list item) is not allowed in the tags section.\nSuggestion: move '-' (bulleted list item) before any tags."
           ]
@@ -1995,6 +2156,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-2:\n'{2 ...}' (section heading) is not allowed in the tags section.\nSuggestion: move '{2 ...}' (section heading) before any tags."
           ]
@@ -2009,6 +2171,7 @@ let%expect_test _ =
             { "`Tag": { "`Author": "Foo" } },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2021,18 +2184,29 @@ let%expect_test _ =
             { "`Tag": { "`Author": "Foo" } },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
     let in_author =
       test "@author Foo @author Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo @author Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo @author Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let in_author_at_start =
       test "@author @author Foo";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "@author Foo" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "@author Foo" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let preceded_by_paragraph =
       test "foo\n@author Bar";
@@ -2043,13 +2217,19 @@ let%expect_test _ =
             { "`Paragraph": [ { "`Word": "foo" } ] },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
     let no_markup =
       test "@author Foo [Bar]";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo [Bar]" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo [Bar]" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let in_paragraph =
       test "foo @author Bar";
@@ -2060,6 +2240,7 @@ let%expect_test _ =
             { "`Paragraph": [ { "`Word": "foo" }, "`Space" ] },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 4-15:\n'@author' should begin on its own line."
           ]
@@ -2071,6 +2252,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "@author Foo" } ] } ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2083,6 +2265,7 @@ let%expect_test _ =
             { "`Paragraph": [ { "`Styled": [ "`Bold", [] ] } ] },
             { "`Tag": { "`Author": "Foo}" } }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-15:\n'@author' is not allowed in '{b ...}' (boldface text).",
             "File \"f.ml\", line 1, characters 0-2:\n'{b ...}' (boldface text) should not be empty.",
@@ -2105,6 +2288,7 @@ let%expect_test _ =
             },
             { "`Tag": { "`Author": "Foo}" } }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 3-15:\n'@author' is not allowed in '{2 ...}' (section heading).",
             "File \"f.ml\", line 1, characters 0-2:\n'{2 ...}' (section heading) should not be empty.",
@@ -2126,6 +2310,7 @@ let%expect_test _ =
             },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2153,6 +2338,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup."
           ]
@@ -2181,6 +2367,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\n'@author' is not allowed in '-' (bulleted list item).\nSuggestion: move '@author' outside of any other markup."
           ]
@@ -2210,6 +2397,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 12-25:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.",
             "File \"f.ml\", line 1, characters 25-25:\nEnd of text is not allowed in '{li ...}' (list item).",
@@ -2240,6 +2428,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 8-21:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.",
             "File \"f.ml\", line 1, characters 21-21:\nEnd of text is not allowed in '{li ...}' (list item).",
@@ -2271,6 +2460,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 2, characters 0-13:\n'@author' is not allowed in '{li ...}' (list item).\nSuggestion: move '@author' outside of any other markup.",
             "File \"f.ml\", line 2, characters 13-13:\nEnd of text is not allowed in '{li ...}' (list item).",
@@ -2284,6 +2474,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`List": [ "`Unordered", [] ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 4-16:\n'@author' is not allowed in '{ul ...}' (bulleted list).\nSuggestion: move '@author' outside the list.",
             "File \"f.ml\", line 1, characters 16-16:\nEnd of text is not allowed in '{ul ...}' (bulleted list).",
@@ -2294,12 +2485,22 @@ let%expect_test _ =
     let in_code_block =
       test "{[@author Foo]}";
       [%expect
-        {| { "value": [ { "`Code_block": "@author Foo" } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Code_block": "@author Foo" } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let in_verbatim =
       test "{v @author Foo v}";
       [%expect
-        {| { "value": [ { "`Verbatim": "@author Foo" } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Verbatim": "@author Foo" } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let after_code_block =
       test "{[foo]} @author Bar";
@@ -2307,6 +2508,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Code_block": "foo" }, { "`Tag": { "`Author": "Bar" } } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 8-19:\n'@author' should begin on its own line."
           ]
@@ -2318,6 +2520,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Verbatim": "foo" }, { "`Tag": { "`Author": "Bar" } } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 10-21:\n'@author' should begin on its own line."
           ]
@@ -2338,6 +2541,7 @@ let%expect_test _ =
             },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 8-19:\n'@author' should begin on its own line."
           ]
@@ -2357,6 +2561,7 @@ let%expect_test _ =
             },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 14-25:\n'@author' should begin on its own line."
           ]
@@ -2365,7 +2570,12 @@ let%expect_test _ =
     let preceded_by_whitespace =
       test "@author Foo Bar";
       [%expect
-        {| { "value": [ { "`Tag": { "`Author": "Foo Bar" } } ], "warnings": [] } |}]
+        {|
+          {
+            "value": [ { "`Tag": { "`Author": "Foo Bar" } } ],
+            "internal_tags": [],
+            "warnings": []
+          } |}]
 
     let second_preceded_by_whitespace =
       test "@author Foo\n @author Bar";
@@ -2376,6 +2586,7 @@ let%expect_test _ =
             { "`Tag": { "`Author": "Foo" } },
             { "`Tag": { "`Author": "Bar" } }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2385,6 +2596,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Word": "@authorfoo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 0-10:\nUnknown tag '@authorfoo'."
           ]
@@ -2411,6 +2623,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2426,6 +2639,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2441,6 +2655,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2456,6 +2671,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2471,6 +2687,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\n'classtype' is deprecated, use 'class-type' instead."
           ]
@@ -2488,6 +2705,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2503,6 +2721,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\n'const' is deprecated, use 'constructor' instead."
           ]
@@ -2520,6 +2739,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2535,6 +2755,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2550,6 +2771,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2565,6 +2787,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\n'exn' is deprecated, use 'exception' instead."
           ]
@@ -2582,6 +2805,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2597,6 +2821,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2612,6 +2837,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-14:\n'recfield' is deprecated, use 'field' instead."
           ]
@@ -2629,6 +2855,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2644,6 +2871,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\n'label' is deprecated, use 'section' instead."
           ]
@@ -2663,6 +2891,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2693,6 +2922,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2708,6 +2938,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2723,6 +2954,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2738,6 +2970,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2753,6 +2986,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\n'modtype' is deprecated, use 'module-type' instead."
           ]
@@ -2770,6 +3004,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2785,6 +3020,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2800,6 +3036,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2815,6 +3052,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\n'value' is deprecated, use 'val' instead."
           ]
@@ -2837,6 +3075,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2867,6 +3106,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -2876,6 +3116,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -2887,6 +3128,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "-foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-6:\nUnknown reference qualifier ''."
           ]
@@ -2898,6 +3140,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val-" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."
           ]
@@ -2909,6 +3152,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'foo'."
           ]
@@ -2920,6 +3164,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ".foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -2931,6 +3176,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "Foo." } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-6:\nIdentifier in reference should not be empty."
           ]
@@ -2942,6 +3188,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "Foo.-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-10:\nUnknown reference qualifier ''."
           ]
@@ -2953,6 +3200,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "Foo.val-" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 10-10:\nIdentifier in reference should not be empty."
           ]
@@ -2964,6 +3212,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "module-.foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 9-9:\nIdentifier in reference should not be empty."
           ]
@@ -2975,6 +3224,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nUnknown reference qualifier 'foo'."
           ]
@@ -2997,6 +3247,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3017,6 +3268,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3037,6 +3289,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3057,6 +3310,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3077,6 +3331,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3097,6 +3352,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3117,6 +3373,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3126,6 +3383,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "constructor-Foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3137,6 +3395,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "exception-Foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3148,6 +3407,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "extension-Foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3159,6 +3419,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "field-foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3170,6 +3431,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "section-foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3183,6 +3445,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "instance-variable-foo.bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3194,6 +3457,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "method-foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3205,6 +3469,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val-foo.bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', 'page-', or an unqualified reference."
           ]
@@ -3232,6 +3497,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3257,6 +3523,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3287,6 +3554,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3312,6 +3580,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3337,6 +3606,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3367,6 +3637,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3376,6 +3647,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.page-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3389,6 +3661,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.constructor-Bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3402,6 +3675,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.exception-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3415,6 +3689,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.extension-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3426,6 +3701,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.field-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3437,6 +3713,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.section-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3450,6 +3727,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.instance-variable-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3461,6 +3739,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.method-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3472,6 +3751,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "Foo.val-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -3483,6 +3763,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ".module-Foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -3505,6 +3786,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3525,6 +3807,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3545,6 +3828,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3554,6 +3838,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "class-foo.module-Bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3567,6 +3852,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-type-foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-16:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3580,6 +3866,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "constructor-Foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3593,6 +3880,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "exception-Foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3606,6 +3894,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "extension-Foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3617,6 +3906,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "field-foo.module-Bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3630,6 +3920,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "section-foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3645,6 +3936,7 @@ let%expect_test _ =
               "`Paragraph": [ { "`Code_span": "instance-variable-foo.module-Bar" } ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3658,6 +3950,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "method-foo.module-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3669,6 +3962,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.module-Bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3680,6 +3974,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "type-foo.module-Bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3691,6 +3986,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val-foo.module-Bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3718,6 +4014,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3743,6 +4040,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3773,6 +4071,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3784,6 +4083,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.class-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3797,6 +4097,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.class-type-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-20:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3810,6 +4111,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.constructor-Bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3823,6 +4125,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.exception-Bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3836,6 +4139,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.extension-Bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3849,6 +4153,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.field-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3862,6 +4167,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.section-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3879,6 +4185,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3892,6 +4199,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.method-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3905,6 +4213,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.page-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3918,6 +4227,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.type-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3931,6 +4241,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.val-bar.module-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -3953,6 +4264,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3973,6 +4285,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -3998,6 +4311,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4009,6 +4323,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.module-type-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -4022,6 +4337,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.module-type-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -4044,6 +4360,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4064,6 +4381,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4084,6 +4402,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4093,6 +4412,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "class-foo.type-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -4104,6 +4424,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.type-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -4115,6 +4436,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ".constructor-Foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -4139,6 +4461,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4159,6 +4482,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4170,6 +4494,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4183,6 +4508,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-type-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-16:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4196,6 +4522,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "constructor-Foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4209,6 +4536,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "exception-Foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4222,6 +4550,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "extension-Foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4235,6 +4564,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "field-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4248,6 +4578,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "section-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4265,6 +4596,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-23:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4278,6 +4610,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "method-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4291,6 +4624,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "module-Foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4304,6 +4638,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "module-type-Foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4317,6 +4652,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4330,6 +4666,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "val-foo.constructor-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4357,6 +4694,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4382,6 +4720,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4393,6 +4732,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.class-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4410,6 +4750,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-20:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4427,6 +4768,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4442,6 +4784,7 @@ let%expect_test _ =
               "`Paragraph": [ { "`Code_span": "Foo.exception-Bar.constructor-Baz" } ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4457,6 +4800,7 @@ let%expect_test _ =
               "`Paragraph": [ { "`Code_span": "Foo.extension-Bar.constructor-Baz" } ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4470,6 +4814,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.field-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4483,6 +4828,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.section-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4500,6 +4846,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-27:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4513,6 +4860,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.method-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4526,6 +4874,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.module-Bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4543,6 +4892,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4556,6 +4906,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.page-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4569,6 +4920,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.val-bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-13:\nExpected 'type-' or an unqualified reference."
           ]
@@ -4580,6 +4932,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ".field-foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -4602,6 +4955,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4622,6 +4976,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4642,6 +4997,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4662,6 +5018,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4682,6 +5039,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4702,6 +5060,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4713,6 +5072,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "constructor-Foo.field-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4726,6 +5086,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "exception-Foo.field-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4739,6 +5100,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "extension-Foo.field-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4750,6 +5112,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "field-foo.field-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4763,6 +5126,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "section-foo.field-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4776,6 +5140,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "instance-variable-foo.field-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-23:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4787,6 +5152,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "method-foo.field-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4798,6 +5164,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.field-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4809,6 +5176,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val-foo.field-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4836,6 +5204,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4861,6 +5230,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4891,6 +5261,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4916,6 +5287,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4941,6 +5313,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4971,6 +5344,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -4982,6 +5356,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.constructor-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -4995,6 +5370,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.exception-Bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5008,6 +5384,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.extension-Bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5021,6 +5398,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.field-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5034,6 +5412,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.section-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5051,6 +5430,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-27:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5064,6 +5444,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.method-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5077,6 +5458,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.page-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5090,6 +5472,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.val-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-13:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5112,6 +5495,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5132,6 +5516,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5143,6 +5528,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.exception-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5156,6 +5542,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.exception-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5178,6 +5565,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5198,6 +5586,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5209,6 +5598,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.extension-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5222,6 +5612,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.extension-Bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5244,6 +5635,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5264,6 +5656,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5273,6 +5666,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "class-foo.val-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5284,6 +5678,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.val-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5306,6 +5701,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5326,6 +5722,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5335,6 +5732,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "class-foo.class-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5346,6 +5744,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.class-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5368,6 +5767,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5388,6 +5788,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5399,6 +5800,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.class-type-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5412,6 +5814,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.class-type-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -5423,6 +5826,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": ".method-foo" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-2:\nIdentifier in reference should not be empty."
           ]
@@ -5445,6 +5849,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5465,6 +5870,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5485,6 +5891,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5496,6 +5903,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "constructor-Foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5509,6 +5917,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "exception-Foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5522,6 +5931,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "extension-Foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5533,6 +5943,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "field-foo.method-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5546,6 +5957,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "section-foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-13:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5561,6 +5973,7 @@ let%expect_test _ =
               "`Paragraph": [ { "`Code_span": "instance-variable-foo.method-bar" } ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-23:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5574,6 +5987,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "method-foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5587,6 +6001,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "module-Foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5600,6 +6015,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "module-type-Foo.method-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-17:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5611,6 +6027,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "page-foo.method-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5622,6 +6039,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "type-foo.method-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5633,6 +6051,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "val-foo.method-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5660,6 +6079,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5685,6 +6105,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5715,6 +6136,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5726,6 +6148,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.constructor-Bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5739,6 +6162,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.exception-Bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5752,6 +6176,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.extension-Bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-19:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5765,6 +6190,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.field-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-15:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5778,6 +6204,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.section-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-17:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5795,6 +6222,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-27:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5808,6 +6236,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.method-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5821,6 +6250,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.module-Bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-16:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5834,6 +6264,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.module-type-Bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-21:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5847,6 +6278,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "foo.page-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5860,6 +6292,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.type-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5873,6 +6306,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "Foo.val-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-13:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5900,6 +6334,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5913,6 +6348,7 @@ let%expect_test _ =
               "`Paragraph": [ { "`Code_span": "module-Foo.instance-variable-bar" } ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-12:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5940,6 +6376,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5951,6 +6388,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.instance-variable-bar" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -5973,6 +6411,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -5993,6 +6432,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6013,6 +6453,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6033,6 +6474,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6042,6 +6484,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.page-bar" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nPage label is not allowed in the last component of a reference path.\nSuggestion: 'page-bar' should be first."
           ]
@@ -6069,6 +6512,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6094,6 +6538,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6119,6 +6564,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6130,6 +6576,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -6157,6 +6604,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6168,6 +6616,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.module-Bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6200,6 +6649,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6215,6 +6665,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6242,6 +6693,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6253,6 +6705,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.type-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6280,6 +6733,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6291,6 +6745,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.class-bar.field-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6320,6 +6775,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6335,6 +6791,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6362,6 +6819,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6387,6 +6845,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6412,6 +6871,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6423,6 +6883,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.module-Bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6455,6 +6916,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6466,6 +6928,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.module-type-Bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6493,6 +6956,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6504,6 +6968,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.type-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6531,6 +6996,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6542,6 +7008,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.class-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6569,6 +7036,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6580,6 +7048,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.class-bar.baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6591,6 +7060,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "foo.page-bar.baz" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 6-14:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -6618,6 +7088,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6629,6 +7100,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -6656,6 +7128,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6667,6 +7140,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.class-bar.method-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6696,6 +7170,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6711,6 +7186,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6738,6 +7214,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6749,6 +7226,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.bar.type-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -6776,6 +7254,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6787,6 +7266,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "class-foo.module-Bar.type-baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6819,6 +7299,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6834,6 +7315,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6861,6 +7343,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6872,6 +7355,7 @@ let%expect_test _ =
           "value": [
             { "`Paragraph": [ { "`Code_span": "page-foo.bar.constructor-Baz" } ] }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-10:\nExpected 'module-', 'module-type-', 'type-', 'class-', 'class-type-', or an unqualified reference."
           ]
@@ -6899,6 +7383,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6914,6 +7399,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-11:\nExpected 'module-', 'module-type-', or an unqualified reference."
           ]
@@ -6931,6 +7417,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-15:\nOld-style reference kind ('val:') does not match new ('type-')."
           ]
@@ -6948,6 +7435,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -6963,6 +7451,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-7:\n'value' is deprecated, use 'val' instead."
           ]
@@ -6973,7 +7462,8 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [ { "`Tag": { "`Canonical": { "`Root": "Foo" } } } ],
+          "value": [],
+          "internal_tags": [ { "`Canonical": { "`Root": "Foo" } } ],
           "warnings": []
         } |}]
 
@@ -6982,7 +7472,8 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [ { "`Tag": { "`Canonical": { "`Root": "module-Foo" } } } ],
+          "value": [],
+          "internal_tags": [ { "`Canonical": { "`Root": "module-Foo" } } ],
           "warnings": []
         } |}]
 
@@ -6991,8 +7482,9 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            { "`Tag": { "`Canonical": { "`Dot": [ { "`Root": "Foo" }, "Bar" ] } } }
+          "value": [],
+          "internal_tags": [
+            { "`Canonical": { "`Dot": [ { "`Root": "Foo" }, "Bar" ] } }
           ],
           "warnings": []
         } |}]
@@ -7002,7 +7494,8 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [ { "`Tag": { "`Canonical": { "`Root": "val-foo" } } } ],
+          "value": [],
+          "internal_tags": [ { "`Canonical": { "`Root": "val-foo" } } ],
           "warnings": []
         } |}]
 
@@ -7011,12 +7504,9 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            {
-              "`Tag": {
-                "`Canonical": { "`Dot": [ { "`Root": "bar" }, "page-foo" ] }
-              }
-            }
+          "value": [],
+          "internal_tags": [
+            { "`Canonical": { "`Dot": [ { "`Root": "bar" }, "page-foo" ] } }
           ],
           "warnings": []
         } |}]
@@ -7026,15 +7516,8 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            {
-              "`Paragraph": [
-                { "`Word": "@canonical" },
-                "`Space",
-                { "`Code_span": ".Foo" }
-              ]
-            }
-          ],
+          "value": [],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."
           ]
@@ -7045,15 +7528,8 @@ let%expect_test _ =
       [%expect
         {|
         {
-          "value": [
-            {
-              "`Paragraph": [
-                { "`Word": "@canonical" },
-                "`Space",
-                { "`Code_span": "Foo." }
-              ]
-            }
-          ],
+          "value": [],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 11-15:\nExpected a valid path."
           ]
@@ -7081,6 +7557,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": []
         } |}]
 
@@ -7096,6 +7573,7 @@ let%expect_test _ =
               ]
             }
           ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 7-7:\nIdentifier in reference should not be empty."
           ]
@@ -7107,6 +7585,7 @@ let%expect_test _ =
         {|
         {
           "value": [ { "`Paragraph": [ { "`Code_span": "\"\"foo\"" } ] } ],
+          "internal_tags": [],
           "warnings": [
             "File \"f.ml\", line 1, characters 2-9:\nUnmatched quotation!"
           ]

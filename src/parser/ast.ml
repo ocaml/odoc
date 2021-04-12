@@ -24,7 +24,10 @@ type nestable_block_element =
     * [ `Light | `Heavy ]
     * nestable_block_element with_location list list ]
 
-type tag =
+type internal_tag =
+  [ `Canonical of string with_location | `Inline | `Open | `Closed ]
+
+type external_tag =
   [ `Author of string
   | `Deprecated of nestable_block_element with_location list
   | `Param of string * nestable_block_element with_location list
@@ -36,16 +39,14 @@ type tag =
     * nestable_block_element with_location list
   | `Since of string
   | `Before of string * nestable_block_element with_location list
-  | `Version of string
-  | `Canonical of string with_location
-  | `Inline
-  | `Open
-  | `Closed ]
+  | `Version of string ]
+
+type tag = [ internal_tag | external_tag ]
+
+type heading = int * string option * inline_element with_location list
 
 type block_element =
-  [ nestable_block_element
-  | `Heading of int * string option * inline_element with_location list
-  | `Tag of tag ]
+  [ nestable_block_element | `Heading of heading | `Tag of tag ]
 
 type docs = block_element with_location list
 

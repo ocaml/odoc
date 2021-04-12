@@ -255,7 +255,7 @@ and nestable_block_element_list elements =
   |> List.map Odoc_model.Location_.value
   |> List.map nestable_block_element
 
-let tag : Comment.tag -> Description.one option =
+let tag : Comment.tag -> Description.one =
  fun t ->
   let item ?value ~tag definition =
     let sp = inline (Text " ") in
@@ -266,7 +266,7 @@ let tag : Comment.tag -> Description.one option =
       | Some t -> [ sp; inline ~attr:[ "value" ] t ]
     in
     let key = tag_name :: tag_value in
-    Some { Description.attr = [ tag ]; key; definition }
+    { Description.attr = [ tag ]; key; definition }
   in
   let text_def s = [ block (Block.Inline [ inline @@ Text s ]) ] in
   match t with
@@ -293,15 +293,11 @@ let tag : Comment.tag -> Description.one option =
       let value = Inline.Text version in
       item ~tag:"before" ~value (nestable_block_element_list content)
   | `Version s -> item ~tag:"version" (text_def s)
-  | `Canonical _ | `Inline | `Open | `Closed -> None
 
 let attached_block_element : Comment.attached_block_element -> Block.t =
   function
   | #Comment.nestable_block_element as e -> [ nestable_block_element e ]
-  | `Tag t -> (
-      match tag t with
-      | None -> []
-      | Some t -> [ block ~attr:[ "at-tags" ] @@ Description [ t ] ])
+  | `Tag t -> [ block ~attr:[ "at-tags" ] @@ Description [ tag t ] ]
 
 (* TODO collaesce tags *)
 

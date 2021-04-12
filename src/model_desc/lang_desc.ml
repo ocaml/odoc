@@ -8,6 +8,14 @@ module Digest = struct
   let t : Digest.t t = To_string (fun _ -> "<digest>")
 end
 
+let inline_status =
+  Variant
+    (function
+    | `Default -> C0 "`Default"
+    | `Open -> C0 "`Open"
+    | `Closed -> C0 "`Closed"
+    | `Inline -> C0 "`Inline")
+
 (** {3 Module} *)
 
 let rec module_decl =
@@ -251,7 +259,7 @@ and include_t =
       F ("parent", (fun t -> t.parent), identifier);
       F ("doc", (fun t -> t.doc), docs);
       F ("decl", (fun t -> t.decl), include_decl);
-      F ("inline", (fun t -> t.inline), bool);
+      F ("status", (fun t -> t.status), inline_status);
       F ("expansion", (fun t -> t.expansion), include_expansion);
     ]
 

@@ -1,5 +1,18 @@
 module Location = Location_
+module Ast = Odoc_parser.Ast
 open Result
+
+type canonical_path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
+
+type internal_tag = [ `Canonical of canonical_path | `Inline | `Open | `Closed ]
+
+type internal_tags = internal_tag Comment.with_location list
+
+type internal_tags_removed =
+  [ `Tag of Ast.external_tag
+  | `Heading of Ast.heading
+  | Ast.nestable_block_element ]
+(** {!Ast.block_element} without internal tags. *)
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
@@ -195,24 +208,14 @@ and nestable_block_elements status elements =
 let tag :
     location:Location.span ->
     status ->
-    Odoc_parser.Ast.tag ->
+    Ast.external_tag ->
     ( Comment.block_element with_location,
-      Odoc_parser.Ast.block_element with_location )
+      internal_tags_removed with_location )
     Result.result =
  fun ~location status tag ->
   let ok t = Result.Ok (Location.at location (`Tag t)) in
   match tag with
-  | (`Author _ | `Since _ | `Version _ | `Inline | `Open | `Closed) as tag ->
-      ok tag
-  | `Canonical { value = s; location = r_location } -> (
-      let path = Reference.read_path_longident r_location s in
-      match path with
-      | Result.Ok path -> ok (`Canonical path)
-      | Result.Error e ->
-          Error.warning status.warnings e;
-          let placeholder = [ `Word "@canonical"; `Space " "; `Code_span s ] in
-          let placeholder = List.map (Location.at location) placeholder in
-          Error (Location.at location (`Paragraph placeholder)))
+  | (`Author _ | `Since _ | `Version _) as tag -> ok tag
   | `Deprecated content ->
       ok (`Deprecated (nestable_block_elements status content))
   | `Param (name, content) ->
@@ -350,15 +353,11 @@ let validate_first_page_heading status ast_element =
           Error.warning status.warnings (page_heading_required filename))
   | _not_a_page -> ()
 
-let top_level_block_elements :
-    status ->
-    Odoc_parser.Ast.block_element with_location list ->
-    Comment.block_element with_location list =
- fun status ast_elements ->
+let top_level_block_elements status ast_elements =
   let rec traverse :
       top_heading_level:int option ->
       Comment.block_element with_location list ->
-      Odoc_parser.Ast.block_element with_location list ->
+      internal_tags_removed with_location list ->
       Comment.block_element with_location list =
    fun ~top_heading_level comment_elements_acc ast_elements ->
     match ast_elements with
@@ -401,9 +400,37 @@ let top_level_block_elements :
   in
   traverse ~top_heading_level [] ast_elements
 
+let strip_internal_tags status ast :
+    internal_tags_removed with_location list * internal_tags =
+  let rec loop internal_tags ast' = function
+    | ({ Location.value = `Tag (#Ast.internal_tag as tag); _ } as wloc) :: tl
+      -> (
+        let next tag =
+          loop ({ wloc with value = tag } :: internal_tags) ast' tl
+        in
+        match tag with
+        | (`Inline | `Open | `Closed) as tag -> next tag
+        | `Canonical { Location.value = s; location = r_location } -> (
+            match Reference.read_path_longident r_location s with
+            | Result.Ok path -> next (`Canonical path)
+            | Result.Error e ->
+                Error.warning status.warnings e;
+                loop internal_tags ast' tl))
+    | ({
+         value =
+           `Tag #Ast.external_tag | `Heading _ | #Ast.nestable_block_element;
+         _;
+       } as hd)
+      :: tl ->
+        loop internal_tags (hd :: ast') tl
+    | [] -> (List.rev ast', List.rev internal_tags)
+  in
+  loop [] [] ast
+
 let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
   let status = { warnings; sections_allowed; parent_of_sections } in
-  top_level_block_elements status ast
+  let ast, internal_tags = strip_internal_tags status ast in
+  (top_level_block_elements status ast, internal_tags)
 
 let parse_comment ~sections_allowed ~containing_definition ~location ~text =
   let ast = Odoc_parser.parse_comment ~location ~text in

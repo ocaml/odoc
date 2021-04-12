@@ -1516,18 +1516,7 @@ module Make (Syntax : SYNTAX) = struct
         | Alias p -> Paths.Path.(is_hidden (p :> t))
         | ModuleType mty -> umty_hidden mty
       in
-      let status =
-        let is_open_tag element =
-          element.Odoc_model.Location_.value = `Tag `Open
-        in
-        let is_closed_tag element =
-          element.Odoc_model.Location_.value = `Tag `Closed
-        in
-        if t.inline || decl_hidden then `Inline
-        else if List.exists is_open_tag t.doc then `Open
-        else if List.exists is_closed_tag t.doc then `Closed
-        else `Default
-      in
+      let status = if decl_hidden then `Inline else t.status in
 
       let include_decl =
         match t.decl with

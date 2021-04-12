@@ -28,7 +28,9 @@ val read_interface :
   Odoc_model.Paths.Identifier.ContainerPage.t ->
   string ->
   Typedtree.signature ->
-  Paths.Identifier.RootModule.t * Odoc_model.Lang.Signature.t
+  Paths.Identifier.RootModule.t
+  * Odoc_model.Lang.Signature.t
+  * Odoc_model.Semantics.internal_tags
 
 val read_module_type :
   Ident_env.t ->

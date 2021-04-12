@@ -20,7 +20,6 @@ open Odoc_model
 module Paths = Odoc_model.Paths
 
 
-
 let empty_body = []
 
 let empty : Odoc_model.Comment.docs = empty_body
@@ -55,9 +54,7 @@ let load_payload : Parsetree.payload -> string * Location.t = function
       | _ -> None
 
 let attached parent attrs =
-  let ocaml_deprecated = ref None in
-  let rec loop first nb_deprecated acc
-      : _ -> (Odoc_model.Comment.docs, Odoc_model.Error.t) result =
+  let rec loop acc internal_tags =
     function
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
     | {Parsetree.attr_name = { Location.txt =
@@ -71,7 +68,7 @@ let attached parent attrs =
             let start_pos = loc.Location.loc_start in
             let start_pos =
               {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
-            let parsed =
+            let parsed, parsed_internal_tags =
               Odoc_model.Semantics.parse_comment
                 ~sections_allowed:`All
                 ~containing_definition:parent
@@ -79,42 +76,41 @@ let attached parent attrs =
                 ~text:str
               |> Odoc_model.Error.raise_warnings
             in
-            loop false 0 (acc @ parsed) rest
+            loop (acc @ parsed) (internal_tags @ parsed_internal_tags) rest
           end
       end
-    | _ :: rest -> loop first nb_deprecated acc rest
-    | [] -> begin
-        match nb_deprecated, !ocaml_deprecated with
-        | 0, Some _tag -> Ok acc
-        | _, _ -> Ok acc
-      end
+    | _ :: rest -> loop acc internal_tags rest
+    | [] -> Ok (acc, internal_tags)
   in
-    loop true 0 empty_body attrs
+  loop empty_body [] attrs
   |> Odoc_model.Error.to_exception
 
-let read_string parent loc str : Odoc_model.Comment.docs_or_stop =
+let read_string parent loc str =
   let start_pos = loc.Location.loc_start in
-  let doc : Odoc_model.Comment.docs =
-    Odoc_model.Semantics.parse_comment
-      ~sections_allowed:`All
-      ~containing_definition:parent
-      ~location:start_pos
-      ~text:str
-    |> Odoc_model.Error.raise_warnings
+  Odoc_model.Semantics.parse_comment
+    ~sections_allowed:`All
+    ~containing_definition:parent
+    ~location:start_pos
+    ~text:str
+  |> Odoc_model.Error.raise_warnings
+
+let read_string_comment parent loc str =
+  let loc_start =
+    { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
   in
+  read_string parent { loc with loc_start } str
+
+let page parent loc str =
+  let doc, _ = read_string parent loc str in
   `Docs doc
 
-let page = read_string
-
-let standalone parent(attr : Parsetree.attribute): Odoc_model.Comment.docs_or_stop option = 
+let standalone parent (attr : Parsetree.attribute) :
+    Odoc_model.Comment.docs_or_stop option =
   match parse_attribute attr with
   | Some ("/*", _loc) -> Some `Stop
   | Some (str, loc) ->
-    let loc' =
-      { loc with
-        loc_start = { loc.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 } }
-    in
-    Some (read_string parent loc' str)
+      let doc, _ = read_string_comment parent loc str in
+      Some (`Docs doc)
   | _ -> None
 
 let standalone_multiple parent attrs =
@@ -128,14 +124,28 @@ let standalone_multiple parent attrs =
   in
     List.rev coms
 
-let rec extract_top_comment items =
+let rec extract_top_comment ~classify parent items =
   match items with
-  | Lang.Signature.Comment (`Docs doc) :: tl -> (tl, doc)
-  | (Open _ as skipped) :: tl ->
-      (* Skip opens *)
-      let items, doc = extract_top_comment tl in
-      (skipped :: items, doc)
-  | _ -> (items, empty)
+  | [] -> (items, empty, [])
+  | hd :: tl -> (
+      match classify hd with
+      | Some (`Attribute attr) -> (
+          match parse_attribute attr with
+          | None -> (items, empty, [])
+          | Some (str, loc) ->
+              let doc, internal_tags =
+                read_string_comment
+                  (parent
+                    : Paths.Identifier.Signature.t
+                    :> Paths.Identifier.LabelParent.t)
+                  loc str
+              in
+              (tl, doc, internal_tags))
+      | Some `Open ->
+          (* Skip opens *)
+          let items, doc, tags = extract_top_comment ~classify parent tl in
+          (hd :: items, doc, tags)
+      | None -> (items, empty, []))
 
 let extract_top_comment_class items =
   match items with

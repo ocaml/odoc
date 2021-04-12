@@ -598,7 +598,7 @@ and include_ parent map i =
             { map with shadowed = combine_shadowed map.shadowed i.shadowed }
             i.expansion_;
       };
-    inline = false;
+    status = i.status;
   }
 
 and open_ parent map o =

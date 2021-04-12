@@ -169,8 +169,8 @@ and Include : sig
   type t = {
     parent : Identifier.Signature.t;
     doc : Comment.docs;
+    status : [ `Inline | `Closed | `Open | `Default ];
     decl : decl;
-    inline : bool;
     expansion : expansion;
   }
 end =
