@@ -2,17 +2,36 @@ module Location = Location_
 module Ast = Odoc_parser.Ast
 open Result
 
-type canonical_path = [ `Root of string | `Dot of Paths.Path.Module.t * string ]
-
-type internal_tag = [ `Canonical of canonical_path | `Inline | `Open | `Closed ]
-
-type internal_tags = internal_tag Comment.with_location list
-
 type internal_tags_removed =
   [ `Tag of Ast.external_tag
   | `Heading of Ast.heading
   | Ast.nestable_block_element ]
 (** {!Ast.block_element} without internal tags. *)
+
+type _ handle_internal_tags =
+  | Expect_status
+      : [ `Default | `Inline | `Open | `Closed ] handle_internal_tags
+  | Expect_canonical
+      : [ `Dot of Paths.Path.Module.t * string ] option handle_internal_tags
+  | Expect_none : unit handle_internal_tags
+
+let rec find_tag f = function
+  | [] -> None
+  | hd :: tl -> (
+      match f hd.Location.value with Some _ as x -> x | None -> find_tag f tl)
+
+let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
+  | Expect_status -> (
+      match
+        find_tag
+          (function (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
+          tags
+      with
+      | Some status -> status
+      | None -> `Default)
+  | Expect_canonical ->
+      find_tag (function `Canonical (`Dot _ as p) -> Some p | _ -> None) tags
+  | Expect_none -> ()
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =
@@ -401,13 +420,11 @@ let top_level_block_elements status ast_elements =
   traverse ~top_heading_level [] ast_elements
 
 let strip_internal_tags status ast :
-    internal_tags_removed with_location list * internal_tags =
-  let rec loop internal_tags ast' = function
+    internal_tags_removed with_location list * _ =
+  let rec loop tags ast' = function
     | ({ Location.value = `Tag (#Ast.internal_tag as tag); _ } as wloc) :: tl
       -> (
-        let next tag =
-          loop ({ wloc with value = tag } :: internal_tags) ast' tl
-        in
+        let next tag = loop ({ wloc with value = tag } :: tags) ast' tl in
         match tag with
         | (`Inline | `Open | `Closed) as tag -> next tag
         | `Canonical { Location.value = s; location = r_location } -> (
@@ -415,28 +432,30 @@ let strip_internal_tags status ast :
             | Result.Ok path -> next (`Canonical path)
             | Result.Error e ->
                 Error.warning status.warnings e;
-                loop internal_tags ast' tl))
+                loop tags ast' tl))
     | ({
          value =
            `Tag #Ast.external_tag | `Heading _ | #Ast.nestable_block_element;
          _;
        } as hd)
       :: tl ->
-        loop internal_tags (hd :: ast') tl
-    | [] -> (List.rev ast', List.rev internal_tags)
+        loop tags (hd :: ast') tl
+    | [] -> (List.rev ast', List.rev tags)
   in
   loop [] [] ast
 
-let ast_to_comment warnings ~sections_allowed ~parent_of_sections ast =
+let ast_to_comment warnings ~internal_tags ~sections_allowed ~parent_of_sections
+    ast =
   let status = { warnings; sections_allowed; parent_of_sections } in
-  let ast, internal_tags = strip_internal_tags status ast in
-  (top_level_block_elements status ast, internal_tags)
+  let ast, tags = strip_internal_tags status ast in
+  (top_level_block_elements status ast, handle_internal_tags tags internal_tags)
 
-let parse_comment ~sections_allowed ~containing_definition ~location ~text =
+let parse_comment ~internal_tags ~sections_allowed ~containing_definition
+    ~location ~text =
   let ast = Odoc_parser.parse_comment ~location ~text in
   let comment =
     Error.accumulate_warnings (fun warnings ->
-        ast_to_comment warnings ~sections_allowed
+        ast_to_comment warnings ~internal_tags ~sections_allowed
           ~parent_of_sections:containing_definition ast.Odoc_parser.Error.value)
   in
   {

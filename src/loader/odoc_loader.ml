@@ -77,12 +77,8 @@ let make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
   }
 
 let compilation_unit_of_sig ~make_root ~imports ~interface ?sourcefile ~name ~id
-    ~internal_tags sg =
+    ?canonical sg =
   let content = Odoc_model.Lang.Compilation_unit.Module sg in
-  let canonical =
-    (Cmi.find_canonical_tag internal_tags
-      :> Odoc_model.Paths.Path.Module.t option)
-  in
   make_compilation_unit ~make_root ~imports ~interface ?sourcefile ~name ~id
     ?canonical content
 
@@ -99,9 +95,9 @@ let read_cmti ~make_root ~parent ~filename () =
               cmt_info.cmt_source_digest,
               cmt_info.cmt_builddir )
           in
-          let id, sg, internal_tags = Cmti.read_interface parent name intf in
+          let id, sg, canonical = Cmti.read_interface parent name intf in
           compilation_unit_of_sig ~make_root ~imports:cmt_info.cmt_imports
-            ~interface ~sourcefile ~name ~id ~internal_tags sg)
+            ~interface ~sourcefile ~name ~id ?canonical sg)
   | _ -> raise Not_an_interface
 
 let read_cmt ~make_root ~parent ~filename () =
@@ -142,11 +138,9 @@ let read_cmt ~make_root ~parent ~filename () =
           make_compilation_unit ~make_root ~imports ~interface ~sourcefile ~name
             ~id content
       | Implementation impl ->
-          let id, sg, internal_tags =
-            Cmt.read_implementation parent name impl
-          in
+          let id, sg, canonical = Cmt.read_implementation parent name impl in
           compilation_unit_of_sig ~make_root ~imports ~interface ~sourcefile
-            ~name ~id ~internal_tags sg
+            ~name ~id ?canonical sg
       | _ -> raise Not_an_implementation)
 
 let read_cmi ~make_root ~parent ~filename () =
@@ -157,8 +151,7 @@ let read_cmi ~make_root ~parent ~filename () =
         Cmi.read_interface parent name
           (Odoc_model.Compat.signature cmi_info.cmi_sign)
       in
-      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id
-        ~internal_tags:[] sg
+      compilation_unit_of_sig ~make_root ~imports ~interface ~name ~id sg
   | _ -> raise Corrupted
 
 (** Catch errors from reading the object files and some internal errors *)

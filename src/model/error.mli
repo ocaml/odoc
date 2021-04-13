@@ -56,3 +56,5 @@ val handle_errors_and_warnings :
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 
 val t_of_parser_t : Odoc_parser.Error.t -> t
+
+val raise_parser_warnings : 'a Odoc_parser.Error.with_warnings -> 'a

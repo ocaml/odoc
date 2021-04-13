@@ -76,8 +76,11 @@ let with_ref r f =
 
 let raised_warnings = ref []
 
+let raise_warnings' warnings =
+  raised_warnings := List.rev_append warnings !raised_warnings
+
 let raise_warnings with_warnings =
-  raised_warnings := List.rev_append with_warnings.warnings !raised_warnings;
+  raise_warnings' with_warnings.warnings;
   with_warnings.value
 
 let catch_warnings f =
@@ -110,3 +113,7 @@ let handle_errors_and_warnings ~warn_error = function
 
 let t_of_parser_t : Odoc_parser.Error.t -> t =
  fun x -> (`With_full_location x :> t)
+
+let raise_parser_warnings { Odoc_parser.Error.value; warnings } =
+  raise_warnings' (List.map t_of_parser_t warnings);
+  value
