@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Result
 open Odoc_model
 
 module Paths = Odoc_model.Paths
@@ -53,8 +52,17 @@ let load_payload : Parsetree.payload -> string * Location.t = function
         end
       | _ -> None
 
-let attached parent attrs =
-  let rec loop acc internal_tags =
+let pad_loc loc =
+  { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
+
+let ast_to_comment ~internal_tags parent ast_docs =
+  Error.accumulate_warnings (fun warnings ->
+      Odoc_model.Semantics.ast_to_comment warnings ~internal_tags
+        ~sections_allowed:`All ~parent_of_sections:parent ast_docs)
+  |> Error.raise_warnings
+
+let attached internal_tags parent attrs =
+  let rec loop acc =
     function
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 08
     | {Parsetree.attr_name = { Location.txt =
@@ -63,45 +71,36 @@ let attached parent attrs =
     | ({Location.txt =
           ("doc" | "ocaml.doc"); loc = _loc}, attr_payload) :: rest -> begin
 #endif
-        match load_payload attr_payload with
-        | (str, loc) -> begin
-            let start_pos = loc.Location.loc_start in
-            let start_pos =
-              {start_pos with pos_cnum = start_pos.pos_cnum + 3} in
-            let parsed, parsed_internal_tags =
-              Odoc_model.Semantics.parse_comment
-                ~sections_allowed:`All
-                ~containing_definition:parent
-                ~location:start_pos
-                ~text:str
-              |> Odoc_model.Error.raise_warnings
-            in
-            loop (acc @ parsed) (internal_tags @ parsed_internal_tags) rest
-          end
+        let str, loc = load_payload attr_payload in
+        let ast_docs =
+          Odoc_parser.parse_comment ~location:(pad_loc loc) ~text:str
+          |> Error.raise_parser_warnings
+        in
+        loop (List.rev_append ast_docs acc) rest
       end
-    | _ :: rest -> loop acc internal_tags rest
-    | [] -> Ok (acc, internal_tags)
+    | _ :: rest -> loop acc rest
+    | [] -> List.rev acc
   in
-  loop empty_body [] attrs
-  |> Odoc_model.Error.to_exception
+  let ast_docs = loop [] attrs in
+  ast_to_comment ~internal_tags parent ast_docs
 
-let read_string parent loc str =
-  let start_pos = loc.Location.loc_start in
+let read_string internal_tags parent location str =
   Odoc_model.Semantics.parse_comment
+    ~internal_tags
     ~sections_allowed:`All
     ~containing_definition:parent
-    ~location:start_pos
+    ~location
     ~text:str
   |> Odoc_model.Error.raise_warnings
 
-let read_string_comment parent loc str =
-  let loc_start =
-    { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
-  in
-  read_string parent { loc with loc_start } str
+let read_string_comment internal_tags parent loc str =
+  read_string internal_tags parent (pad_loc loc) str
 
 let page parent loc str =
-  let doc, _ = read_string parent loc str in
+  let doc, () =
+    read_string Odoc_model.Semantics.Expect_none parent loc.Location.loc_start
+      str
+  in
   `Docs doc
 
 let standalone parent (attr : Parsetree.attribute) :
@@ -109,7 +108,7 @@ let standalone parent (attr : Parsetree.attribute) :
   match parse_attribute attr with
   | Some ("/*", _loc) -> Some `Stop
   | Some (str, loc) ->
-      let doc, _ = read_string_comment parent loc str in
+      let doc, () = read_string_comment Semantics.Expect_none parent loc str in
       Some (`Docs doc)
   | _ -> None
 
@@ -124,28 +123,32 @@ let standalone_multiple parent attrs =
   in
     List.rev coms
 
-let rec extract_top_comment ~classify parent items =
-  match items with
-  | [] -> (items, empty, [])
-  | hd :: tl -> (
-      match classify hd with
-      | Some (`Attribute attr) -> (
-          match parse_attribute attr with
-          | None -> (items, empty, [])
-          | Some (str, loc) ->
-              let doc, internal_tags =
-                read_string_comment
-                  (parent
-                    : Paths.Identifier.Signature.t
-                    :> Paths.Identifier.LabelParent.t)
-                  loc str
-              in
-              (tl, doc, internal_tags))
-      | Some `Open ->
-          (* Skip opens *)
-          let items, doc, tags = extract_top_comment ~classify parent tl in
-          (hd :: items, doc, tags)
-      | None -> (items, empty, []))
+let extract_top_comment internal_tags ~classify parent items =
+  let rec extract ~classify = function
+    | hd :: tl as items -> (
+        match classify hd with
+        | Some (`Attribute attr) -> (
+            match parse_attribute attr with
+            | Some (text, loc) ->
+                let ast_docs =
+                  Odoc_parser.parse_comment ~location:(pad_loc loc) ~text
+                  |> Error.raise_parser_warnings
+                in
+                (tl, ast_docs)
+            | None -> (items, []))
+        | Some `Open ->
+            let items, ast_docs = extract ~classify tl in
+            (hd :: items, ast_docs)
+        | None -> (items, []))
+    | [] -> ([], [])
+  in
+  let items, ast_docs = extract ~classify items in
+  let docs, tags =
+    ast_to_comment ~internal_tags
+      (parent : Paths.Identifier.Signature.t :> Paths.Identifier.LabelParent.t)
+      ast_docs
+  in
+  (items, docs, tags)
 
 let extract_top_comment_class items =
   match items with

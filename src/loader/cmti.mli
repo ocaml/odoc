@@ -30,7 +30,9 @@ val read_interface :
   Typedtree.signature ->
   Paths.Identifier.RootModule.t
   * Odoc_model.Lang.Signature.t
-  * Odoc_model.Semantics.internal_tags
+  * Paths.Path.Module.t option
+(** Returns [id, sg, canonical_path]. [canonical_path] is the path set from the
+    [@canonical] tag. *)
 
 val read_module_type :
   Ident_env.t ->

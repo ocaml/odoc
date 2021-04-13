@@ -22,9 +22,10 @@ val empty : Odoc_model.Comment.docs
 val parse_attribute : Parsetree.attribute -> (string * Location.t) option
 
 val attached :
+  'tags Semantics.handle_internal_tags ->
   Paths.Identifier.LabelParent.t ->
   Parsetree.attributes ->
-  Odoc_model.Comment.docs * Semantics.internal_tags
+  Odoc_model.Comment.docs * 'tags
 
 val page :
   Paths.Identifier.LabelParent.t ->
@@ -49,10 +50,11 @@ val standalone_multiple :
   Odoc_model.Comment.docs_or_stop list
 
 val extract_top_comment :
+  'tags Semantics.handle_internal_tags ->
   classify:('item -> [ `Attribute of Parsetree.attribute | `Open ] option) ->
   Paths.Identifier.Signature.t ->
   'item list ->
-  'item list * Comment.docs * Semantics.internal_tags
+  'item list * Comment.docs * 'tags
 (** Extract the first comment of a signature. Returns the remaining items. *)
 
 val extract_top_comment_class :
