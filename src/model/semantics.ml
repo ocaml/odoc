@@ -15,10 +15,26 @@ type _ handle_internal_tags =
       : [ `Dot of Paths.Path.Module.t * string ] option handle_internal_tags
   | Expect_none : unit handle_internal_tags
 
+let describe_internal_tag = function
+  | `Canonical _ -> "@canonical"
+  | `Inline -> "@inline"
+  | `Open -> "@open"
+  | `Closed -> "@closed"
+
+let unexpected_tag { Location.value; location } =
+  Error.raise_warning
+  @@ Error.make "Unexpected tag '%s' at this location."
+       (describe_internal_tag value)
+       location
+
 let rec find_tag f = function
   | [] -> None
   | hd :: tl -> (
-      match f hd.Location.value with Some _ as x -> x | None -> find_tag f tl)
+      match f hd.Location.value with
+      | Some _ as x -> x
+      | None ->
+          unexpected_tag hd;
+          find_tag f tl)
 
 let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
   | Expect_status -> (
@@ -31,7 +47,10 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
       | None -> `Default)
   | Expect_canonical ->
       find_tag (function `Canonical (`Dot _ as p) -> Some p | _ -> None) tags
-  | Expect_none -> ()
+  | Expect_none ->
+      (* Will raise warnings. *)
+      ignore (find_tag (fun _ -> None) tags);
+      ()
 
 (* Errors *)
 let invalid_raw_markup_target : string -> Location.span -> Error.t =

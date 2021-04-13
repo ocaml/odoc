@@ -79,6 +79,8 @@ let raised_warnings = ref []
 let raise_warnings' warnings =
   raised_warnings := List.rev_append warnings !raised_warnings
 
+let raise_warning t = raised_warnings := t :: !raised_warnings
+
 let raise_warnings with_warnings =
   raise_warnings' with_warnings.warnings;
   with_warnings.value

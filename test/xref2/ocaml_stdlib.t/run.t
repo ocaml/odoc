@@ -9,6 +9,8 @@ Imitate the way the stdlib is built and how its documentation should be built.
   [1]
 
   $ odoc compile --pkg ocaml -o main.odoc main.cmti -I .
+  File "main.mli", line 3, characters 4-17:
+  Unexpected tag '@canonical' at this location.
   $ odoc compile --pkg ocaml -o main__x.odoc main__x.cmti -I .
 
   $ odoc html --indent -o html main__x.odoc -I .
