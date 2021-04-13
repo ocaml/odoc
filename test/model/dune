@@ -1,8 +1,10 @@
-(library
- (name odoc_model_test)
- (inline_tests)
- (enabled_if
-  (>= %{ocaml_version} 4.04.1))
- (preprocess
-  (pps ppx_expect))
- (libraries sexplib0 odoc_model type_desc_to_yojson))
+; Use the 'compile' helper program defined in xref2 tests
+
+(env
+ (_
+  (binaries
+   (../odoc_print/odoc_print.exe as odoc_print)
+   (../xref2/compile.exe as compile))))
+
+(cram
+ (deps %{bin:odoc} %{bin:odoc_print} %{bin:compile}))
