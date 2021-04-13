@@ -33,6 +33,9 @@ val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 
 val warning : warning_accumulator -> t -> unit
 
+val raise_warning : t -> unit
+(** Raise a warning that need to be caught with [catch_warnings]. *)
+
 val raise_warnings : 'a with_warnings -> 'a
 (** Accumulate warnings into a global variable. See [catch_warnings]. *)
 

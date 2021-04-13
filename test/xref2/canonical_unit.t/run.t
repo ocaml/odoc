@@ -4,6 +4,8 @@ top-comment.
 The module Test__X is expected to be referenced through Test.X.
 
   $ compile test__x.mli test.ml
+  File "test.ml", line 15, characters 6-24:
+  Unexpected tag '@canonical' at this location.
 
 Test__x has a 'canonical' field:
 

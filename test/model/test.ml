@@ -6981,32 +6981,27 @@ let%expect_test _ =
 
     let canonical_something =
       test "@canonical Foo";
-      [%expect
-        {|
+      [%expect {|
         { "value": [], "warnings": [] } |}]
 
     let canonical_module =
       test "@canonical module-Foo";
-      [%expect
-        {|
+      [%expect {|
         { "value": [], "warnings": [] } |}]
 
     let canonical_path =
       test "@canonical Foo.Bar";
-      [%expect
-        {|
+      [%expect {|
         { "value": [], "warnings": [] } |}]
 
     let canonical_val =
       test "@canonical val-foo";
-      [%expect
-        {|
+      [%expect {|
         { "value": [], "warnings": [] } |}]
 
     let canonical_bad_parent =
       test "@canonical bar.page-foo";
-      [%expect
-        {|
+      [%expect {|
         { "value": [], "warnings": [] } |}]
 
     let canonical_empty_component =

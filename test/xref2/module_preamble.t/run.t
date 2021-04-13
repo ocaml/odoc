@@ -13,6 +13,8 @@ and that "hidden" modules (eg. `A__b`, rendered to `html/A__b`) are not rendered
 
   $ odoc compile --pkg test -o a__b.odoc -I . a__b.cmti
   $ odoc compile --pkg test -o a.odoc -I . a.cmti
+  File "a.mli", line 4, characters 4-17:
+  Unexpected tag '@canonical' at this location.
 
   $ odoc link -I . a__b.odoc
   $ odoc link -I . a.odoc
