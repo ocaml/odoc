@@ -27,6 +27,12 @@ val attached :
   Parsetree.attributes ->
   Odoc_model.Comment.docs * 'tags
 
+val attached_no_tag :
+  Paths.Identifier.LabelParent.t ->
+  Parsetree.attributes ->
+  Odoc_model.Comment.docs
+(** Shortcut for [attached Semantics.Expect_none]. *)
+
 val page :
   Paths.Identifier.LabelParent.t ->
   Location.t ->
