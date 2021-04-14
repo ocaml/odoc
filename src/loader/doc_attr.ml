@@ -84,6 +84,10 @@ let attached internal_tags parent attrs =
   let ast_docs = loop [] attrs in
   ast_to_comment ~internal_tags parent ast_docs
 
+let attached_no_tag parent attrs =
+  let x, () = attached Semantics.Expect_none parent attrs in
+  x
+
 let read_string internal_tags parent location str =
   Odoc_model.Semantics.parse_comment
     ~internal_tags

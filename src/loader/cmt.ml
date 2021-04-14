@@ -71,7 +71,7 @@ let rec read_pattern env parent doc pat =
 
 let read_value_binding env parent vb =
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container vb.vb_attributes in
+  let doc = Doc_attr.attached_no_tag container vb.vb_attributes in
     read_pattern env parent doc vb.vb_pat
 
 let read_value_bindings env parent vbs =
@@ -93,7 +93,7 @@ let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env tyext.tyext_path in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container tyext.tyext_attributes in
+  let doc = Doc_attr.attached_no_tag container tyext.tyext_attributes in
   let type_params =
     List.map (fun (ctyp, _) -> ctyp.ctyp_type) tyext.tyext_params
   in
@@ -123,7 +123,7 @@ let rec read_class_type_field env parent ctf =
   let open Odoc_model.Names in
 
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ctf.ctf_attributes in
+  let doc = Doc_attr.attached_no_tag container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -204,7 +204,7 @@ let rec read_class_field env parent cf =
   let open ClassSignature in
   let open Odoc_model.Names in
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container (cf.cf_attributes) in
+  let doc = Doc_attr.attached_no_tag container (cf.cf_attributes) in
   match cf.cf_desc with
   | Tcf_val({txt = name; _}, mutable_, _, kind, _) ->
       let open InstanceVariable in
@@ -306,7 +306,7 @@ let read_class_declaration env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cld.ci_attributes in
+  let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
     Cmi.mark_class_declaration cld.ci_decl;
     let virtual_ = (cld.ci_virt = Virtual) in
     let clparams =

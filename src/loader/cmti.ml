@@ -116,7 +116,7 @@ let rec read_core_type env container ctyp =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 06
                   let name = name.txt in
 #endif
-                let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container attributes in
+                let doc = Doc_attr.attached_no_tag container attributes in
                 Constructor {name; constant; arguments; doc}
               | Tinherit typ -> Type (read_core_type env container typ)
           end
@@ -147,7 +147,7 @@ let read_value_description env parent vd =
   let open Signature in
   let id = Env.find_value_identifier env vd.val_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container vd.val_attributes in
+  let doc = Doc_attr.attached_no_tag container vd.val_attributes in
   let type_ = read_core_type env container vd.val_desc in
   match vd.val_prim with
   | [] -> Value {Value.id; doc; type_}
@@ -188,7 +188,7 @@ let read_label_declaration env parent label_parent ld =
   let open Odoc_model.Names in
   let name = Ident.name ld.ld_id in
   let id = `Field(parent, FieldName.make_std name) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none label_parent ld.ld_attributes in
+  let doc = Doc_attr.attached_no_tag label_parent ld.ld_attributes in
   let mutable_ = (ld.ld_mutable = Mutable) in
   let type_ = read_core_type env label_parent ld.ld_type in
     {id; doc; mutable_; type_}
@@ -212,7 +212,7 @@ let read_constructor_declaration env parent cd =
   let id = `Constructor(parent, ConstructorName.make_std name) in
   let container = (parent : Identifier.DataType.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none label_container cd.cd_attributes in
+  let doc = Doc_attr.attached_no_tag label_container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments
       env container label_container cd.cd_args
@@ -286,7 +286,7 @@ let read_extension_constructor env parent ext =
   let id = `Extension(parent, ExtensionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none label_container ext.ext_attributes in
+  let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
   | Text_decl(args, res) ->
@@ -301,7 +301,7 @@ let read_type_extension env parent tyext =
   let open Extension in
   let type_path = Env.Path.read_type env tyext.tyext_path in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container tyext.tyext_attributes in
+  let doc = Doc_attr.attached_no_tag container tyext.tyext_attributes in
   let type_params = List.map read_type_parameter tyext.tyext_params in
   let private_ = (tyext.tyext_private = Private) in
   let constructors =
@@ -316,7 +316,7 @@ let read_exception env parent (ext : extension_constructor) =
   let id = `Exception(parent, ExceptionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.Parent.t) in
   let label_container = (container :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none label_container ext.ext_attributes in
+  let doc = Doc_attr.attached_no_tag label_container ext.ext_attributes in
   match ext.ext_kind with
   | Text_rebind _ -> assert false
   | Text_decl(args, res) ->
@@ -332,7 +332,7 @@ let rec read_class_type_field env parent ctf =
   let open Odoc_model.Names in
 
   let container = (parent : Identifier.ClassSignature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ctf.ctf_attributes in
+  let doc = Doc_attr.attached_no_tag container ctf.ctf_attributes in
   match ctf.ctf_desc with
   | Tctf_val(name, mutable_, virtual_, typ) ->
       let open InstanceVariable in
@@ -395,7 +395,7 @@ let read_class_type_declaration env parent cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env cltd.ci_id_class_type in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cltd.ci_attributes in
+  let doc = Doc_attr.attached_no_tag container cltd.ci_attributes in
   let virtual_ = (cltd.ci_virt = Virtual) in
   let params = List.map read_type_parameter cltd.ci_params in
   let expr = read_class_signature env (id :> Identifier.ClassSignature.t) container cltd.ci_expr in
@@ -433,7 +433,7 @@ let read_class_description env parent cld =
   let open Class in
   let id = Env.find_class_identifier env cld.ci_id_class in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cld.ci_attributes in
+  let doc = Doc_attr.attached_no_tag container cld.ci_attributes in
   let virtual_ = (cld.ci_virt = Virtual) in
   let params = List.map read_type_parameter cld.ci_params in
   let type_ = read_class_type env (id :> Identifier.ClassSignature.t) container cld.ci_expr in

@@ -505,7 +505,7 @@ let read_value_description env parent id vd =
   let open Signature in
   let id = Env.find_value_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container vd.val_attributes in
+  let doc = Doc_attr.attached_no_tag container vd.val_attributes in
     mark_value_description vd;
     let type_ = read_type_expr env vd.val_type in
     match vd.val_kind with
@@ -526,8 +526,8 @@ let read_label_declaration env parent ld =
   let open TypeDecl.Field in
   let name = Ident.name ld.ld_id in
   let id = `Field(parent, Odoc_model.Names.FieldName.make_std name) in
-  let doc, () =
-    Doc_attr.attached Odoc_model.Semantics.Expect_none
+  let doc =
+    Doc_attr.attached_no_tag
       (parent :> Identifier.LabelParent.t) ld.ld_attributes
   in
   let mutable_ = (ld.ld_mutable = Mutable) in
@@ -553,7 +553,7 @@ let read_constructor_declaration env parent cd =
   let name = Ident.name cd.cd_id in
   let id = `Constructor(parent, Odoc_model.Names.ConstructorName.make_std name) in
   let container = (parent : Identifier.DataType.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cd.cd_attributes in
+  let doc = Doc_attr.attached_no_tag container cd.cd_attributes in
   let args =
     read_constructor_declaration_arguments env
       (parent :> Identifier.Parent.t) cd.cd_args
@@ -646,7 +646,7 @@ let read_extension_constructor env parent id ext =
   let name = Ident.name id in
   let id = `Extension(parent, Odoc_model.Names.ExtensionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ext.ext_attributes in
+  let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
   let args =
     read_constructor_declaration_arguments env
       (parent : Identifier.Signature.t :> Identifier.Parent.t) ext.ext_args
@@ -679,7 +679,7 @@ let read_exception env parent id ext =
   let name = Ident.name id in
   let id = `Exception(parent, Odoc_model.Names.ExceptionName.make_std name) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container ext.ext_attributes in
+  let doc = Doc_attr.attached_no_tag container ext.ext_attributes in
     mark_exception ext;
     let args =
       read_constructor_declaration_arguments env
@@ -777,7 +777,7 @@ let read_class_type_declaration env parent id cltd =
   let open ClassType in
   let id = Env.find_class_type_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cltd.clty_attributes in
+  let doc = Doc_attr.attached_no_tag container cltd.clty_attributes in
     mark_class_type_declaration cltd;
     let params =
       List.map2
@@ -812,7 +812,7 @@ let read_class_declaration env parent id cld =
   let open Class in
   let id = Env.find_class_identifier env id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
-  let doc, () = Doc_attr.attached Odoc_model.Semantics.Expect_none container cld.cty_attributes in
+  let doc = Doc_attr.attached_no_tag container cld.cty_attributes in
     mark_class_declaration cld;
     let params =
       List.map2
