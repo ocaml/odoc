@@ -21,19 +21,23 @@ let describe_internal_tag = function
   | `Open -> "@open"
   | `Closed -> "@closed"
 
-let unexpected_tag { Location.value; location } =
+let warn_unexpected_tag { Location.value; location } =
   Error.raise_warning
   @@ Error.make "Unexpected tag '%s' at this location."
        (describe_internal_tag value)
        location
 
+let warn_root_canonical location =
+  Error.raise_warning
+  @@ Error.make "Canonical paths must contain a dot, eg. X.Y." location
+
 let rec find_tag f = function
   | [] -> None
   | hd :: tl -> (
       match f hd.Location.value with
-      | Some _ as x -> x
+      | Some x -> Some (x, hd.location)
       | None ->
-          unexpected_tag hd;
+          warn_unexpected_tag hd;
           find_tag f tl)
 
 let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
@@ -43,10 +47,15 @@ let handle_internal_tags (type a) tags : a handle_internal_tags -> a = function
           (function (`Inline | `Open | `Closed) as t -> Some t | _ -> None)
           tags
       with
-      | Some status -> status
+      | Some (status, _) -> status
       | None -> `Default)
-  | Expect_canonical ->
-      find_tag (function `Canonical (`Dot _ as p) -> Some p | _ -> None) tags
+  | Expect_canonical -> (
+      match find_tag (function `Canonical p -> Some p | _ -> None) tags with
+      | Some (`Root _, location) ->
+          warn_root_canonical location;
+          None
+      | Some ((`Dot _ as p), _) -> Some p
+      | None -> None)
   | Expect_none ->
       (* Will raise warnings. *)
       ignore (find_tag (fun _ -> None) tags);
