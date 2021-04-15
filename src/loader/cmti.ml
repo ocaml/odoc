@@ -536,14 +536,35 @@ and read_module_type env parent label_parent mty =
         decl
     | Tmty_alias _ -> assert false
 
+(** Like [read_module_type] but handle the canonical tag in the top-comment. If
+    [canonical] is [Some _], no tag is expected in the top-comment. *)
+and read_module_type_maybe_canonical env parent container ~canonical mty =
+  match (canonical, mty.mty_desc) with
+  | None, Tmty_signature sg ->
+      let sg, canonical =
+        read_signature Odoc_model.Semantics.Expect_canonical env parent sg
+      in
+      (ModuleType.Signature sg, canonical)
+  | _, _ -> (read_module_type env parent container mty, canonical)
+
 and read_module_type_declaration env parent mtd =
   let open ModuleType in
   let id = Env.find_module_type env mtd.mtd_id in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mtd.mtd_attributes in
+  let expr, canonical =
+    match mtd.mtd_type with
+    | Some mty ->
+        let expr, canonical =
+          read_module_type_maybe_canonical env
+            (id :> Identifier.Signature.t)
+            container ~canonical mty
+        in
+        (Some expr, canonical)
+    | None -> (None, canonical)
+  in
   let canonical = (canonical :> Path.ModuleType.t option) in
-  let expr = opt_map (read_module_type env (id :> Identifier.Signature.t) container) mtd.mtd_type in
-    {id; doc; canonical; expr;}
+  { id; doc; canonical; expr }
 
 and read_module_declaration env parent md =
   let open Module in
@@ -556,15 +577,20 @@ and read_module_declaration env parent md =
   let id = Env.find_module_identifier env md.md_id in
 #endif
   let id = (id :> Identifier.Module.t) in
-
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container md.md_attributes in
-  let canonical = (canonical :> Path.Module.t option) in
-  let type_ =
+  let type_, canonical =
     match md.md_type.mty_desc with
-    | Tmty_alias(p, _) -> Alias (Env.Path.read_module env p, None)
-    | _ -> ModuleType (read_module_type env (id :> Identifier.Signature.t) container md.md_type)
+    | Tmty_alias (p, _) -> (Alias (Env.Path.read_module env p, None), canonical)
+    | _ ->
+        let expr, canonical =
+          read_module_type_maybe_canonical env
+            (id :> Identifier.Signature.t)
+            container ~canonical md.md_type
+        in
+        (ModuleType expr, canonical)
   in
+  let canonical = (canonical :> Path.Module.t option) in
   let hidden =
 #if OCAML_MAJOR=4 && OCAML_MINOR >= 10
     match canonical, md.md_id with
@@ -576,7 +602,6 @@ and read_module_declaration env parent md =
     | _ -> false
 #endif
   in
-  
   Some {id; doc; type_; canonical; hidden}
 
 and read_module_declarations env parent mds =

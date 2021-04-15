@@ -23,13 +23,11 @@ constructor where the second element of the tuple is Resolved.
 
   $ ocamlc -c -bin-annot test.mli
   $ odoc compile --package x test.cmti
-  File "test.mli", line 8, characters 6-24:
-  Unexpected tag '@canonical' at this location.
   $ odoc link test.odoc
 
 Every module type aliases and the path they link to:
 
   $ odoc_print test.odocl | jq -c '.content.Module.items | .[] | select(.ModuleType.expr.Some.Path) | .ModuleType | { "from": .id, "to": .expr.Some.Path.p_path }'
-  {"from":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"X"]},"to":{"`Resolved":{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"B"]}}}}
+  {"from":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"X"]},"to":{"`Resolved":{"`CanonicalModuleType":[{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"B"]}},{"`Resolved":{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"X"]}}}]}}}
   {"from":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"Y"]},"to":{"`Resolved":{"`CanonicalModuleType":[{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"A"]}},{"`Resolved":{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"Y"]}}}]}}}
   {"from":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"Z"]},"to":{"`Resolved":{"`CanonicalModuleType":[{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"A"]}},{"`Resolved":{"`Identifier":{"`ModuleType":[{"`Root":[{"`RootPage":"x"},"Test"]},"Y"]}}}]}}}
