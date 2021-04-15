@@ -387,6 +387,17 @@ and unwrap_module_expr_desc = function
       unwrap_module_expr_desc mexpr.mod_desc
   | desc -> desc
 
+(** Like [read_module_expr] but handle the canonical tag in the top-comment. *)
+and read_module_expr_maybe_canonical env parent container ~canonical mexpr =
+  let open ModuleType in
+  match (canonical, mexpr.mod_desc) with
+  | None, Tmod_structure str ->
+      let sg, canonical =
+        read_structure Odoc_model.Semantics.Expect_canonical env parent str
+      in
+      (Signature sg, canonical)
+  | _ -> (read_module_expr env parent container mexpr, canonical)
+
 and read_module_binding env parent mb =
   let open Module in
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
@@ -400,12 +411,17 @@ and read_module_binding env parent mb =
   let id = (id :> Identifier.Module.t) in
   let container = (parent : Identifier.Signature.t :> Identifier.LabelParent.t) in
   let doc, canonical = Doc_attr.attached Odoc_model.Semantics.Expect_canonical container mb.mb_attributes in
-  let canonical = (canonical :> Path.Module.t option) in
-  let type_ =
+  let type_, canonical =
     match unwrap_module_expr_desc mb.mb_expr.mod_desc with
-    | Tmod_ident(p, _) -> Alias (Env.Path.read_module env p, None)
-    | _ -> ModuleType (read_module_expr env (id :> Identifier.Signature.t) container mb.mb_expr)
+    | Tmod_ident (p, _) -> (Alias (Env.Path.read_module env p, None), canonical)
+    | _ ->
+        let id = (id :> Identifier.Signature.t) in
+        let expr, canonical =
+          read_module_expr_maybe_canonical env id container ~canonical mb.mb_expr
+        in
+        (ModuleType expr, canonical)
   in
+  let canonical = (canonical :> Path.Module.t option) in
   let hidden =
 #if OCAML_MAJOR = 4 && OCAML_MINOR >= 10
     match canonical, mb.mb_id with
