@@ -425,6 +425,64 @@ module Odoc_html = Make_renderer (struct
     Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri)
 end)
 
+module Odoc_thtml = Make_renderer (struct
+  type args = Thtml_page.args
+
+  let renderer = Thtml_page.renderer
+
+  let semantic_uris =
+    let doc = "Generate pretty (semantic) links" in
+    Arg.(value & flag (info ~doc [ "semantic-uris"; "pretty-uris" ]))
+
+  let closed_details =
+    let doc =
+      "If this flag is passed <details> tags (used for includes) will be \
+       closed by default."
+    in
+    Arg.(value & flag (info ~doc [ "closed-details" ]))
+
+  let indent =
+    let doc = "Format the output HTML files with indentation" in
+    Arg.(value & flag (info ~doc [ "indent" ]))
+
+  (* Very basic validation and normalization for URI paths. *)
+  let convert_uri : Odoc_thtml.Tree.uri Arg.converter =
+    let parser str =
+      if String.length str = 0 then `Error "invalid URI"
+      else
+        (* The URI is absolute if it starts with a scheme or with '/'. *)
+        let is_absolute =
+          List.exists [ "http"; "https"; "file"; "data"; "ftp" ]
+            ~f:(fun scheme ->
+              Astring.String.is_prefix ~affix:(scheme ^ ":") str)
+          || str.[0] = '/'
+        in
+        let last_char = str.[String.length str - 1] in
+        let str = if last_char <> '/' then str ^ "/" else str in
+        `Ok Odoc_thtml.Tree.(if is_absolute then Absolute str else Relative str)
+    in
+    let printer ppf = function
+      | Odoc_thtml.Tree.Absolute uri | Odoc_thtml.Tree.Relative uri ->
+          Format.pp_print_string ppf uri
+    in
+    (parser, printer)
+
+  let theme_uri =
+    let doc =
+      "Where to look for theme files (e.g. `URI/odoc.css'). Relative URIs are \
+       resolved using `--output-dir' as a target."
+    in
+    let default = Odoc_thtml.Tree.Relative "./" in
+    Arg.(
+      value & opt convert_uri default & info ~docv:"URI" ~doc [ "theme-uri" ])
+
+  let extra_args =
+    let f semantic_uris closed_details indent theme_uri =
+      { Thtml_page.semantic_uris; closed_details; theme_uri; indent }
+    in
+    Term.(const f $ semantic_uris $ closed_details $ indent $ theme_uri)
+end)
+
 module Html_fragment : sig
   val cmd : unit Term.t
 
@@ -621,6 +679,9 @@ let () =
       Odoc_html.process;
       Odoc_html.targets;
       Odoc_html.generate;
+      Odoc_thtml.process;
+      Odoc_thtml.targets;
+      Odoc_thtml.generate;
       Odoc_manpage.process;
       Odoc_manpage.targets;
       Odoc_manpage.generate;

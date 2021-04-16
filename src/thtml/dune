@@ -1,0 +1,6 @@
+(library
+ (name odoc_thtml)
+ (public_name odoc.thtml)
+ (instrumentation
+  (backend bisect_ppx))
+ (libraries odoc_model odoc_document tyxml))
