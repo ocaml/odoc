@@ -176,6 +176,9 @@ val initial_env :
   resolver ->
   Odoc_model.Lang.Compilation_unit.Import.t list * t
 
+val inherit_resolver : t -> t
+(** Create an empty environment reusing the same resolver. *)
+
 val modules_of :
   t ->
   (Odoc_model.Paths.Identifier.Path.Module.t

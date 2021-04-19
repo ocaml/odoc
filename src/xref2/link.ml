@@ -153,11 +153,17 @@ let rec comment_inline_element :
       | None -> orig)
   | y -> y
 
+and paragraph env elts =
+  List.map (with_location (comment_inline_element env)) elts
+
+and resolve_external_synopsis env synopsis =
+  let env = Env.inherit_resolver env in
+  paragraph env synopsis
+
 and comment_nestable_block_element env parent
     (x : Comment.nestable_block_element) =
   match x with
-  | `Paragraph elts ->
-      `Paragraph (List.map (with_location (comment_inline_element env)) elts)
+  | `Paragraph elts -> `Paragraph (paragraph env elts)
   | (`Code_block _ | `Verbatim _) as x -> x
   | `List (x, ys) ->
       `List
@@ -172,7 +178,11 @@ and comment_nestable_block_element env parent
           (fun (r : Comment.module_reference) ->
             match Ref_tools.resolve_module_reference env r.module_reference with
             | Some (r, _, m) ->
-                let module_synopsis = synopsis_of_module env m in
+                let module_synopsis =
+                  Opt.map
+                    (resolve_external_synopsis env)
+                    (synopsis_of_module env m)
+                in
                 { Comment.module_reference = `Resolved r; module_synopsis }
             | None -> r)
           refs

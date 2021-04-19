@@ -59,9 +59,8 @@ module Inline_include : sig
 end
 
 module Resolve_synopsis : sig
-  (** {!t}
-
-      This reference should be resolved when included the list. *)
+  (** This should be resolved when included: {!Main.Resolve_synopsis.t}. These
+      shouldn't: {!t} {!Resolve_synopsis.t} *)
 
   type t
 end

@@ -744,6 +744,9 @@ let initial_env :
           | Not_found -> (import :: imports, env)))
     t.imports ([], initial_env)
 
+let inherit_resolver env =
+  match env.resolver with Some r -> set_resolver empty r | None -> empty
+
 let modules_of env =
   let f acc = function `Module (id, m) -> (id, m) :: acc | _ -> acc in
   StringMap.fold (fun _ e acc -> List.fold_left f acc e) env.elts []
