@@ -42,8 +42,8 @@ and sig_items prefix ?canonical sg =
               | Some p -> Some (`Dot (p, name))
               | None -> None
             in
-            let m' = module_ ?canonical (`Dot (prefix, name)) (get m) in
-            (Module (id, r, put (fun () -> m')) :: items, id :: s)
+            let m' () = module_ ?canonical (`Dot (prefix, name)) (get m) in
+            (Module (id, r, put m') :: items, id :: s)
         | ModuleType (id, mt) ->
             ( ModuleType
                 ( id,
