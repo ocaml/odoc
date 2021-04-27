@@ -6981,28 +6981,58 @@ let%expect_test _ =
 
     let canonical_something =
       test "@canonical Foo";
-      [%expect {|
-        { "value": [], "warnings": [] } |}]
+      [%expect
+        {|
+        {
+          "value": [],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-14:\nUnexpected tag '@canonical' at this location."
+          ]
+        } |}]
 
     let canonical_module =
       test "@canonical module-Foo";
-      [%expect {|
-        { "value": [], "warnings": [] } |}]
+      [%expect
+        {|
+        {
+          "value": [],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-21:\nUnexpected tag '@canonical' at this location."
+          ]
+        } |}]
 
     let canonical_path =
       test "@canonical Foo.Bar";
-      [%expect {|
-        { "value": [], "warnings": [] } |}]
+      [%expect
+        {|
+        {
+          "value": [],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-18:\nUnexpected tag '@canonical' at this location."
+          ]
+        } |}]
 
     let canonical_val =
       test "@canonical val-foo";
-      [%expect {|
-        { "value": [], "warnings": [] } |}]
+      [%expect
+        {|
+        {
+          "value": [],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-18:\nUnexpected tag '@canonical' at this location."
+          ]
+        } |}]
 
     let canonical_bad_parent =
       test "@canonical bar.page-foo";
-      [%expect {|
-        { "value": [], "warnings": [] } |}]
+      [%expect
+        {|
+        {
+          "value": [],
+          "warnings": [
+            "File \"f.ml\", line 1, characters 0-23:\nUnexpected tag '@canonical' at this location."
+          ]
+        } |}]
 
     let canonical_empty_component =
       test "@canonical .Foo";

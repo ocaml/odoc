@@ -56,9 +56,8 @@ let pad_loc loc =
   { loc.Location.loc_start with pos_cnum = loc.loc_start.pos_cnum + 3 }
 
 let ast_to_comment ~internal_tags parent ast_docs =
-  Error.accumulate_warnings (fun warnings ->
-      Odoc_model.Semantics.ast_to_comment warnings ~internal_tags
-        ~sections_allowed:`All ~parent_of_sections:parent ast_docs)
+  Odoc_model.Semantics.ast_to_comment ~internal_tags ~sections_allowed:`All
+    ~parent_of_sections:parent ast_docs
   |> Error.raise_warnings
 
 let attached internal_tags parent attrs =

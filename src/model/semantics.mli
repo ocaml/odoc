@@ -7,12 +7,11 @@ type _ handle_internal_tags =
   | Expect_none : unit handle_internal_tags
 
 val ast_to_comment :
-  Error.warning_accumulator ->
   internal_tags:'tags handle_internal_tags ->
   sections_allowed:Odoc_parser.Ast.sections_allowed ->
   parent_of_sections:Paths.Identifier.LabelParent.t ->
   Odoc_parser.Ast.docs ->
-  Comment.docs * 'tags
+  (Comment.docs * 'tags) Error.with_warnings
 
 val parse_comment :
   internal_tags:'tags handle_internal_tags ->
