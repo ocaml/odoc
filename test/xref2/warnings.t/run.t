@@ -1,0 +1,27 @@
+Test the behavior of warnings generated while compiling and linking.
+
+  $ ocamlc -c -bin-annot b.mli
+  $ ocamlc -c -bin-annot a.mli
+
+A contains both parsing errors and a reference to B that isn't compiled yet:
+
+  $ odoc compile --warn-error --package test a.cmti
+  File "a.mli", line 8, characters 23-23:
+  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 22-23:
+  Identifier in reference should not be empty.
+  ERROR: Warnings have been generated.
+  [1]
+
+  $ odoc compile --package test b.cmti
+  $ odoc compile --package test a.cmti
+  File "a.mli", line 8, characters 23-23:
+  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 22-23:
+  Identifier in reference should not be empty.
+
+A contains linking errors:
+
+  $ odoc link a.odoc
+  File "a.odoc":
+  Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B
