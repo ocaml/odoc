@@ -472,26 +472,22 @@ let strip_internal_tags status ast :
   in
   loop [] [] ast
 
-let ast_to_comment warnings ~internal_tags ~sections_allowed ~parent_of_sections
-    ast =
-  let status = { warnings; sections_allowed; parent_of_sections } in
-  let ast, tags = strip_internal_tags status ast in
-  (top_level_block_elements status ast, handle_internal_tags tags internal_tags)
+let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast =
+  Error.accumulate_warnings (fun warnings ->
+      let status = { warnings; sections_allowed; parent_of_sections } in
+      let ast, tags = strip_internal_tags status ast in
+      ( top_level_block_elements status ast,
+        handle_internal_tags tags internal_tags ))
 
 let parse_comment ~internal_tags ~sections_allowed ~containing_definition
     ~location ~text =
-  let ast = Odoc_parser.parse_comment ~location ~text in
-  let comment =
-    Error.accumulate_warnings (fun warnings ->
-        ast_to_comment warnings ~internal_tags ~sections_allowed
-          ~parent_of_sections:containing_definition ast.Odoc_parser.Error.value)
-  in
-  {
-    Error.value = comment.value;
-    Error.warnings =
-      (ast.Odoc_parser.Error.warnings |> List.map Error.t_of_parser_t)
-      @ comment.Error.warnings;
-  }
+  Error.catch_warnings (fun () ->
+      let ast =
+        Odoc_parser.parse_comment ~location ~text |> Error.raise_parser_warnings
+      in
+      ast_to_comment ~internal_tags ~sections_allowed
+        ~parent_of_sections:containing_definition ast
+      |> Error.raise_warnings)
 
 let parse_reference text =
   let location =
