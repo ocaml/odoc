@@ -1,14 +1,16 @@
 (* Compile *)
 
+open Odoc_model
+
 val signature :
-  Env.t ->
-  Odoc_model.Paths.Identifier.Signature.t ->
-  Odoc_model.Lang.Signature.t ->
-  Odoc_model.Lang.Signature.t
+  Env.t -> Paths.Identifier.Signature.t -> Lang.Signature.t -> Lang.Signature.t
+(** For testing purpose. May call [Lookup_failures.report]. *)
 
 val compile :
+  filename:string ->
   Env.t ->
-  Odoc_model.Lang.Compilation_unit.t ->
-  Odoc_model.Lang.Compilation_unit.t Lookup_failures.with_failures
+  Lang.Compilation_unit.t ->
+  Lang.Compilation_unit.t Error.with_warnings
+(** [filename] is used for generating warnings. *)
 
 val resolve_page : 'a -> 'b -> 'b

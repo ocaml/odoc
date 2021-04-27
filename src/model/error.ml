@@ -53,16 +53,19 @@ let to_exception = function Ok v -> v | Error error -> raise_exception error
 
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
-type 'a with_warnings = { value : 'a; warnings : t list }
+type warning = { w : t; non_fatal : bool }
 
-type warning_accumulator = t list ref
+type 'a with_warnings = { value : 'a; warnings : warning list }
+
+type warning_accumulator = warning list ref
 
 let accumulate_warnings f =
   let warnings = ref [] in
   let value = f warnings in
   { value; warnings = List.rev !warnings }
 
-let warning accumulator error = accumulator := error :: !accumulator
+let warning accumulator ?(non_fatal = false) w =
+  accumulator := { w; non_fatal } :: !accumulator
 
 let with_ref r f =
   let saved = !r in
@@ -79,7 +82,8 @@ let raised_warnings = ref []
 let raise_warnings' warnings =
   raised_warnings := List.rev_append warnings !raised_warnings
 
-let raise_warning t = raised_warnings := t :: !raised_warnings
+let raise_warning ?(non_fatal = false) w =
+  raised_warnings := { w; non_fatal } :: !raised_warnings
 
 let raise_warnings with_warnings =
   raise_warnings' with_warnings.warnings;
@@ -94,28 +98,30 @@ let catch_warnings f =
 
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
 
-let print_warnings = List.iter (fun w -> prerr_endline (to_string w))
+let print_warnings = List.iter (fun w -> prerr_endline (to_string w.w))
 
 (* When there is warnings. *)
 let handle_warn_error ~warn_error warnings ok =
   print_warnings warnings;
-  if warn_error then Error (`Msg "Warnings have been generated.") else Ok ok
+  let maybe_fatal = List.exists (fun w -> not w.non_fatal) warnings in
+  if maybe_fatal && warn_error then Error (`Msg "Warnings have been generated.")
+  else Ok ok
 
 let handle_warnings ~warn_error ww =
-  match ww.warnings with
-  | [] -> Ok ww.value
-  | _ :: _ as warnings -> handle_warn_error ~warn_error warnings ww.value
+  handle_warn_error ~warn_error ww.warnings ww.value
 
 let handle_errors_and_warnings ~warn_error = function
   | { value = Error e; warnings } ->
       print_warnings warnings;
       Error (`Msg (to_string e))
-  | { value = Ok _ as ok; warnings = [] } -> ok
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
 
 let t_of_parser_t : Odoc_parser.Error.t -> t =
  fun x -> (`With_full_location x :> t)
 
 let raise_parser_warnings { Odoc_parser.Error.value; warnings } =
-  raise_warnings' (List.map t_of_parser_t warnings);
+  (* Parsing errors may be fatal. *)
+  let non_fatal = false in
+  raise_warnings'
+    (List.map (fun p -> { w = t_of_parser_t p; non_fatal }) warnings);
   value

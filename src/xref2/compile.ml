@@ -740,6 +740,7 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 
-let compile x y = Lookup_failures.catch_failures (fun () -> unit x y)
+let compile ~filename x y =
+  Lookup_failures.catch_failures ~filename (fun () -> unit x y)
 
 let resolve_page _resolver y = y

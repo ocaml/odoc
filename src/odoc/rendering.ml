@@ -13,9 +13,8 @@ let document_of_input ~resolver ~warn_error ~syntax input =
   Odoc_file.load input >>= function
   | Odoc_file.Page_content page ->
       let env = Resolver.build_env_for_page resolver page in
-      Odoc_xref2.Link.resolve_page env page
-      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
-           ~filename:input_s
+      Odoc_xref2.Link.resolve_page ~filename:input_s env page
+      |> Odoc_model.Error.handle_warnings ~warn_error
       >>= fun odoctree -> Ok (Renderer.document_of_page ~syntax odoctree)
   | Unit_content m ->
       (* If hidden, we should not generate HTML. See
@@ -32,15 +31,8 @@ let document_of_input ~resolver ~warn_error ~syntax input =
         else m
       in
       let env = Resolver.build_env_for_unit resolver m in
-      (* let startlink = Unix.gettimeofday () in *)
-      (* Format.fprintf Format.err_formatter "**** Link...\n%!"; *)
-      let linked = Odoc_xref2.Link.link env m in
-      (* let finishlink = Unix.gettimeofday () in *)
-      (* Format.fprintf Format.err_formatter "**** Finished: Link=%f\n%!" (finishlink -. startlink); *)
-      (* Printf.fprintf stderr "num_times: %d\n%!" !Odoc_xref2.Tools.num_times; *)
-      linked
-      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
-           ~filename:input_s
+      Odoc_xref2.Link.link ~filename:input_s env m
+      |> Odoc_model.Error.handle_warnings ~warn_error
       >>= fun odoctree ->
       Odoc_xref2.Tools.reset_caches ();
 

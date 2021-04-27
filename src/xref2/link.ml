@@ -821,8 +821,8 @@ and type_expression : Env.t -> Id.Signature.t -> _ -> _ =
   | Poly (strs, t) -> Poly (strs, type_expression env parent visited t)
   | Package p -> Package (type_expression_package env parent visited p)
 
-let link x y =
-  Lookup_failures.catch_failures (fun () ->
+let link ~filename x y =
+  Lookup_failures.catch_failures ~filename (fun () ->
       if y.Lang.Compilation_unit.linked then y else unit x y)
 
 let page env page =
@@ -843,6 +843,6 @@ let page env page =
     linked = true;
   }
 
-let resolve_page env p =
-  Lookup_failures.catch_failures (fun () ->
+let resolve_page ~filename env p =
+  Lookup_failures.catch_failures ~filename (fun () ->
       if p.Lang.Page.linked then p else page env p)

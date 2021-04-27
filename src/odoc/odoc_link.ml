@@ -5,9 +5,8 @@ let from_odoc ~resolver ~warn_error input output =
   Odoc_file.load input >>= function
   | Page_content page ->
       let env = Resolver.build_env_for_page resolver page in
-      Odoc_xref2.Link.resolve_page env page
-      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
-           ~filename:input_s
+      Odoc_xref2.Link.resolve_page ~filename:input_s env page
+      |> Odoc_model.Error.handle_warnings ~warn_error
       >>= fun odoctree ->
       Odoc_file.save_page output odoctree;
 
@@ -26,9 +25,8 @@ let from_odoc ~resolver ~warn_error input output =
       in
 
       let env = Resolver.build_env_for_unit resolver m in
-      Odoc_xref2.Link.link env m
-      |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false
-           ~filename:input_s
+      Odoc_xref2.Link.link ~filename:input_s env m
+      |> Odoc_model.Error.handle_warnings ~warn_error:false
       >>= fun odoctree ->
       Odoc_file.save_unit output odoctree;
 
