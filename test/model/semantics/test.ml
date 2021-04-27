@@ -3,7 +3,8 @@ open Odoc_model_desc
 
 type sections_allowed = [ `All | `No_titles | `None ]
 
-let warning_desc = Type_desc.To_string Error.to_string
+let warning_desc =
+  Type_desc.To_string (fun w -> Error.to_string w.Odoc_model.Error.w)
 
 let parser_output_desc =
   let open Odoc_model.Error in

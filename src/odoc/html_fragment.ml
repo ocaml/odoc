@@ -17,8 +17,8 @@ let from_mld ~xref_base_uri ~resolver ~output ~warn_error input =
         { name = id; root; content; children = []; digest; linked = false }
     in
     let env = Resolver.build_env_for_page resolver page in
-    Odoc_xref2.Link.resolve_page env page
-    |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error ~filename:input_s
+    Odoc_xref2.Link.resolve_page ~filename:input_s env page
+    |> Odoc_model.Error.handle_warnings ~warn_error
     >>= fun resolved ->
     let page = Odoc_document.Comment.to_ir resolved.content in
     let html = Odoc_html.Generator.doc ~xref_base_uri page in

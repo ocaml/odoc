@@ -25,16 +25,24 @@ val to_exception : ('a, t) Result.result -> 'a
 
 val catch : (unit -> 'a) -> ('a, t) Result.result
 
-type 'a with_warnings = { value : 'a; warnings : t list }
+type warning = {
+  w : t;
+  non_fatal : bool;
+      (** If [true], the warning won't be made fatal in [warn_error] mode. *)
+}
 
-type warning_accumulator = t list ref
+type 'a with_warnings = { value : 'a; warnings : warning list }
+
+type warning_accumulator = warning list ref
 
 val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
 
-val warning : warning_accumulator -> t -> unit
+val warning : warning_accumulator -> ?non_fatal:bool -> t -> unit
+(** Accumulate a warning. [non_fatal] is [false] by default. *)
 
-val raise_warning : t -> unit
-(** Raise a warning that need to be caught with [catch_warnings]. *)
+val raise_warning : ?non_fatal:bool -> t -> unit
+(** Raise a warning that need to be caught with [catch_warnings]. [non_fatal] is
+    [false] by default. *)
 
 val raise_warnings : 'a with_warnings -> 'a
 (** Accumulate warnings into a global variable. See [catch_warnings]. *)
@@ -59,5 +67,7 @@ val handle_errors_and_warnings :
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 
 val t_of_parser_t : Odoc_parser.Error.t -> t
+(** Convert a parsing error into a [t]. *)
 
 val raise_parser_warnings : 'a Odoc_parser.Error.with_warnings -> 'a
+(** Like {!raise_warnings} but handle parsing errors. *)
