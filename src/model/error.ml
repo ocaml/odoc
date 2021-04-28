@@ -49,11 +49,13 @@ exception Conveyed_by_exception of t
 
 let raise_exception error = raise (Conveyed_by_exception error)
 
-let to_exception = function Ok v -> v | Error error -> raise_exception error
-
 let catch f = try Ok (f ()) with Conveyed_by_exception error -> Error error
 
-type warning = { w : t; non_fatal : bool }
+type warning = {
+  w : t;
+  non_fatal : bool;
+      (** If [true], the warning won't be made fatal in [warn_error] mode. *)
+}
 
 type 'a with_warnings = { value : 'a; warnings : warning list }
 
@@ -107,6 +109,8 @@ let handle_errors_and_warnings ~warn_error = function
       print_warnings warnings;
       Error (`Msg (to_string e))
   | { value = Ok ok; warnings } -> handle_warn_error ~warn_error warnings ok
+
+let unpack_warnings ww = (ww.value, List.map (fun w -> w.w) ww.warnings)
 
 let t_of_parser_t : Odoc_parser.Error.t -> t =
  fun x -> (`With_full_location x :> t)

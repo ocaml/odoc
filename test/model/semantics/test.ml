@@ -3,17 +3,17 @@ open Odoc_model_desc
 
 type sections_allowed = [ `All | `No_titles | `None ]
 
-let warning_desc =
-  Type_desc.To_string (fun w -> Error.to_string w.Odoc_model.Error.w)
+let warning_desc = Type_desc.To_string Error.to_string
 
 let parser_output_desc =
-  let open Odoc_model.Error in
   let open Type_desc in
-  Record
-    [
-      F ("value", (fun t -> fst t.value), Comment_desc.docs);
-      F ("warnings", (fun t -> t.warnings), List warning_desc);
-    ]
+  Indirect
+    ( Error.unpack_warnings,
+      Record
+        [
+          F ("value", fst, Indirect (fst, Comment_desc.docs));
+          F ("warnings", snd, List warning_desc);
+        ] )
 
 let test ?(sections_allowed = `No_titles)
     ?(location = { Location_.line = 1; column = 0 }) str =
