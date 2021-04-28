@@ -57,16 +57,6 @@ type warning = { w : t; non_fatal : bool }
 
 type 'a with_warnings = { value : 'a; warnings : warning list }
 
-type warning_accumulator = warning list ref
-
-let accumulate_warnings f =
-  let warnings = ref [] in
-  let value = f warnings in
-  { value; warnings = List.rev !warnings }
-
-let warning accumulator ?(non_fatal = false) w =
-  accumulator := { w; non_fatal } :: !accumulator
-
 let with_ref r f =
   let saved = !r in
   try
@@ -95,6 +85,8 @@ let catch_warnings f =
       let value = f () in
       let warnings = List.rev !raised_warnings in
       { value; warnings })
+
+type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
 
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
 

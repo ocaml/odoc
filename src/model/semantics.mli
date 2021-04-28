@@ -21,5 +21,4 @@ val parse_comment :
   text:string ->
   (Comment.docs * 'tags) Error.with_warnings
 
-val parse_reference :
-  string -> (Paths.Reference.t, [> `Msg of string ]) Result.result
+val parse_reference : string -> Paths.Reference.t Error.with_errors_and_warnings

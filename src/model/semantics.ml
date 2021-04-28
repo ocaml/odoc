@@ -1,6 +1,5 @@
 module Location = Location_
 module Ast = Odoc_parser.Ast
-open Result
 
 type internal_tags_removed =
   [ `Tag of Ast.external_tag
@@ -118,16 +117,14 @@ type ast_leaf_inline_element =
   | `Raw_markup of string option * string ]
 
 type status = {
-  warnings : Error.warning_accumulator;
   sections_allowed : Odoc_parser.Ast.sections_allowed;
   parent_of_sections : Paths.Identifier.LabelParent.t;
 }
 
 let leaf_inline_element :
-    status ->
     ast_leaf_inline_element with_location ->
     Comment.leaf_inline_element with_location =
- fun status element ->
+ fun element ->
   match element with
   | { value = `Word _ | `Code_span _; _ } as element -> element
   | { value = `Space _; _ } -> Location.same element `Space
@@ -137,13 +134,12 @@ let leaf_inline_element :
         when String.trim invalid_target = ""
              || String.contains invalid_target '%'
              || String.contains invalid_target '}' ->
-          Error.warning status.warnings
+          Error.raise_warning
             (invalid_raw_markup_target invalid_target location);
 
           Location.same element (`Code_span s)
       | None ->
-          Error.warning status.warnings
-            (default_raw_markup_target_not_supported location);
+          Error.raise_warning (default_raw_markup_target_not_supported location);
           Location.same element (`Code_span s)
       | Some target -> Location.same element (`Raw_markup (target, s)))
 
@@ -167,7 +163,7 @@ let rec non_link_inline_element :
  fun status ~surrounding element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
-      (leaf_inline_element status element
+      (leaf_inline_element element
         :> Comment.non_link_inline_element with_location)
   | { value = `Styled (style, content); _ } ->
       `Styled (style, non_link_inline_elements status ~surrounding content)
@@ -178,7 +174,7 @@ let rec non_link_inline_element :
         ~what:(describe_element element.value)
         ~in_what:(describe_element surrounding)
         element.location
-      |> Error.warning status.warnings;
+      |> Error.raise_warning;
 
       `Styled (`Emphasis, non_link_inline_elements status ~surrounding content)
       |> Location.same element
@@ -193,20 +189,19 @@ let rec inline_element :
  fun status element ->
   match element with
   | { value = #ast_leaf_inline_element; _ } as element ->
-      (leaf_inline_element status element
-        :> Comment.inline_element with_location)
+      (leaf_inline_element element :> Comment.inline_element with_location)
   | { value = `Styled (style, content); location } ->
       `Styled (style, inline_elements status content) |> Location.at location
   | { value = `Reference (kind, target, content) as value; location } -> (
       let { Location.value = target; location = target_location } = target in
-      match Reference.parse status.warnings target_location target with
+      match Error.raise_warnings (Reference.parse target_location target) with
       | Result.Ok target ->
           let content =
             non_link_inline_elements status ~surrounding:value content
           in
           Location.at location (`Reference (target, content))
       | Result.Error error ->
-          Error.warning status.warnings error;
+          Error.raise_warning error;
           let placeholder =
             match kind with
             | `Simple -> `Code_span target
@@ -234,12 +229,12 @@ let rec nestable_block_element :
         List.fold_left
           (fun acc { Location.value; location } ->
             match
-              Reference.read_mod_longident status.warnings location value
+              Error.raise_warnings (Reference.read_mod_longident location value)
             with
             | Result.Ok r ->
                 { Comment.module_reference = r; module_synopsis = None } :: acc
             | Result.Error error ->
-                Error.warning status.warnings error;
+                Error.raise_warning error;
                 acc)
           [] modules
         |> List.rev
@@ -346,7 +341,7 @@ let section_heading :
 
   match (status.sections_allowed, level) with
   | `None, _any_level ->
-      Error.warning status.warnings (headings_not_allowed location);
+      Error.raise_warning (headings_not_allowed location);
       let content = (content :> Comment.inline_element with_location list) in
       let element =
         Location.at location
@@ -354,7 +349,7 @@ let section_heading :
       in
       (top_heading_level, element)
   | `No_titles, 0 ->
-      Error.warning status.warnings (titles_not_allowed location);
+      Error.raise_warning (titles_not_allowed location);
       let element = `Heading (`Title, label, content) in
       let element = Location.at location element in
       let top_heading_level =
@@ -371,7 +366,7 @@ let section_heading :
         | 4 -> `Paragraph
         | 5 -> `Subparagraph
         | _ ->
-            Error.warning status.warnings (bad_heading_level level location);
+            Error.raise_warning (bad_heading_level level location);
             (* Implicitly promote to level-5. *)
             `Subparagraph
       in
@@ -379,7 +374,7 @@ let section_heading :
       | Some top_level
         when status.sections_allowed = `All && level <= top_level && level <= 5
         ->
-          Error.warning status.warnings
+          Error.raise_warning
             (heading_level_should_be_lower_than_top_level level top_level
                location)
       | _ -> ());
@@ -397,7 +392,7 @@ let validate_first_page_heading status ast_element =
       | { Location.value = `Heading (_, _, _); _ } -> ()
       | _invalid_ast_element ->
           let filename = Names.PageName.to_string name ^ ".mld" in
-          Error.warning status.warnings (page_heading_required filename))
+          Error.raise_warning (page_heading_required filename))
   | _not_a_page -> ()
 
 let top_level_block_elements status ast_elements =
@@ -447,8 +442,7 @@ let top_level_block_elements status ast_elements =
   in
   traverse ~top_heading_level [] ast_elements
 
-let strip_internal_tags status ast :
-    internal_tags_removed with_location list * _ =
+let strip_internal_tags ast : internal_tags_removed with_location list * _ =
   let rec loop tags ast' = function
     | ({ Location.value = `Tag (#Ast.internal_tag as tag); _ } as wloc) :: tl
       -> (
@@ -456,10 +450,12 @@ let strip_internal_tags status ast :
         match tag with
         | (`Inline | `Open | `Closed) as tag -> next tag
         | `Canonical { Location.value = s; location = r_location } -> (
-            match Reference.read_path_longident r_location s with
+            match
+              Error.raise_warnings (Reference.read_path_longident r_location s)
+            with
             | Result.Ok path -> next (`Canonical path)
             | Result.Error e ->
-                Error.warning status.warnings e;
+                Error.raise_warning e;
                 loop tags ast' tl))
     | ({
          value =
@@ -473,9 +469,9 @@ let strip_internal_tags status ast :
   loop [] [] ast
 
 let ast_to_comment ~internal_tags ~sections_allowed ~parent_of_sections ast =
-  Error.accumulate_warnings (fun warnings ->
-      let status = { warnings; sections_allowed; parent_of_sections } in
-      let ast, tags = strip_internal_tags status ast in
+  Error.catch_warnings (fun () ->
+      let status = { sections_allowed; parent_of_sections } in
+      let ast, tags = strip_internal_tags ast in
       ( top_level_block_elements status ast,
         handle_internal_tags tags internal_tags ))
 
@@ -498,10 +494,4 @@ let parse_reference text =
         end_ = { line = 0; column = String.length text };
       }
   in
-  let result =
-    Error.accumulate_warnings (fun warnings ->
-        Reference.parse warnings location text)
-  in
-  match result.Error.value with
-  | Ok x -> Ok x
-  | Error m -> Error (`Msg (Error.to_string m))
+  Reference.parse location text

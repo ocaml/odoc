@@ -33,13 +33,6 @@ type warning = {
 
 type 'a with_warnings = { value : 'a; warnings : warning list }
 
-type warning_accumulator = warning list ref
-
-val accumulate_warnings : (warning_accumulator -> 'a) -> 'a with_warnings
-
-val warning : warning_accumulator -> ?non_fatal:bool -> t -> unit
-(** Accumulate a warning. [non_fatal] is [false] by default. *)
-
 val raise_warning : ?non_fatal:bool -> t -> unit
 (** Raise a warning that need to be caught with [catch_warnings]. [non_fatal] is
     [false] by default. *)
@@ -50,8 +43,10 @@ val raise_warnings : 'a with_warnings -> 'a
 val catch_warnings : (unit -> 'a) -> 'a with_warnings
 (** Catch warnings accumulated by [raise_warning]. Safe to nest. *)
 
-val catch_errors_and_warnings :
-  (unit -> 'a) -> ('a, t) Result.result with_warnings
+type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
+(** Subtype of [with_warnings]. *)
+
+val catch_errors_and_warnings : (unit -> 'a) -> 'a with_errors_and_warnings
 (** Combination of [catch] and [catch_warnings]. *)
 
 val handle_warnings :
@@ -61,7 +56,7 @@ val handle_warnings :
 
 val handle_errors_and_warnings :
   warn_error:bool ->
-  ('a, t) Result.result with_warnings ->
+  'a with_errors_and_warnings ->
   ('a, [> `Msg of string ]) Result.result
 (** Like [handle_warnings] but works on the output of
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
