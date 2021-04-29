@@ -84,7 +84,7 @@ let unit_name (Odoc_file.Unit_content { root; _ } | Page_content { root; _ }) =
 let load_units_from_files paths =
   let safe_read file acc =
     match Odoc_file.load file with
-    | Ok u -> u :: acc
+    | Ok u -> u.content :: acc
     | Error (`Msg msg) ->
         let warning =
           Odoc_model.Error.filename_only "%s" msg (Fs.File.to_string file)

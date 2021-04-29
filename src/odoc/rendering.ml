@@ -2,42 +2,18 @@ open Odoc_document
 open Or_error
 
 let document_of_odocl ~syntax input =
-  Odoc_file.load input >>= function
+  Odoc_file.load input >>= fun unit ->
+  match unit.content with
   | Odoc_file.Page_content odoctree ->
       Ok (Renderer.document_of_page ~syntax odoctree)
   | Unit_content odoctree ->
       Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
 
 let document_of_input ~resolver ~warn_error ~syntax input =
-  let input_s = Fs.File.to_string input in
-  Odoc_file.load input >>= function
-  | Odoc_file.Page_content page ->
-      let env = Resolver.build_env_for_page resolver page in
-      Odoc_xref2.Link.resolve_page ~filename:input_s env page
-      |> Odoc_model.Error.handle_warnings ~warn_error
-      >>= fun odoctree -> Ok (Renderer.document_of_page ~syntax odoctree)
-  | Unit_content m ->
-      (* If hidden, we should not generate HTML. See
-           https://github.com/ocaml/odoc/issues/99. *)
-      let m =
-        if Odoc_model.Root.Odoc_file.hidden m.root.file then
-          {
-            m with
-            content =
-              Odoc_model.Lang.Compilation_unit.Module
-                { items = []; compiled = false; doc = [] };
-            expansion = None;
-          }
-        else m
-      in
-      let env = Resolver.build_env_for_unit resolver m in
-      Odoc_xref2.Link.link ~filename:input_s env m
-      |> Odoc_model.Error.handle_warnings ~warn_error
-      >>= fun odoctree ->
-      Odoc_xref2.Tools.reset_caches ();
-
-      Odoc_file.save_unit Fs.File.(set_ext ".odocl" input) odoctree;
-      Ok (Renderer.document_of_compilation_unit ~syntax odoctree)
+  let output = Fs.File.(set_ext ".odocl" input) in
+  Odoc_link.from_odoc ~resolver ~warn_error input output >>= function
+  | `Page page -> Ok (Renderer.document_of_page ~syntax page)
+  | `Module m -> Ok (Renderer.document_of_compilation_unit ~syntax m)
 
 let render_document renderer ~output:root_dir ~extra odoctree =
   let pages = renderer.Renderer.render extra odoctree in
@@ -63,7 +39,7 @@ let targets_odoc ~resolver ~warn_error ~syntax ~renderer ~output:root_dir ~extra
   let doc =
     if Fpath.get_ext odoctree = ".odoc" then
       document_of_input ~resolver ~warn_error ~syntax odoctree
-    else document_of_odocl ~syntax:OCaml odoctree
+    else document_of_odocl ~syntax odoctree
   in
   doc >>= fun odoctree ->
   let pages = renderer.Renderer.render extra odoctree in

@@ -236,7 +236,9 @@ end = struct
     let resolver =
       Resolver.create ~important_digests:false ~directories ~open_modules
     in
-    Odoc_link.from_odoc ~resolver ~warn_error input output
+    match Odoc_link.from_odoc ~resolver ~warn_error input output with
+    | Error _ as e -> e
+    | Ok _ -> Ok ()
 
   let dst =
     let doc =

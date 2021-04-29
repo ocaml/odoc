@@ -71,13 +71,12 @@ let resolve_imports resolver imports =
           | None -> unresolved))
     imports
 
-let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
-    read_file =
+(** Raises warnings and errors. *)
+let resolve_and_substitute ~resolver parent input_file read_file =
   let filename = Fs.File.to_string input_file in
-
-  read_file ~parent ~filename
-  |> Odoc_model.Error.handle_errors_and_warnings ~warn_error
-  >>= fun unit ->
+  let unit =
+    read_file ~parent ~filename |> Odoc_model.Error.raise_errors_and_warnings
+  in
   if not unit.Odoc_model.Lang.Compilation_unit.interface then
     Printf.eprintf "WARNING: not processing the \"interface\" file.%s\n%!"
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
@@ -86,10 +85,10 @@ let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
   (* Resolve imports, used by the [link-deps] command. *)
   let unit = { unit with imports = resolve_imports resolver unit.imports } in
   let env = Resolver.build_env_for_unit resolver unit in
-
-  Odoc_xref2.Compile.compile ~filename env unit
-  |> Odoc_model.Error.handle_warnings ~warn_error:false
-  >>= fun compiled ->
+  let compiled =
+    Odoc_xref2.Compile.compile ~filename env unit
+    |> Odoc_model.Error.raise_warnings
+  in
   (* [expand unit] fetches [unit] from [env] to get the expansion of local, previously
      defined, elements. We'd rather it got back the resolved bit so we rebuild an
      environment with the resolved unit.
@@ -97,8 +96,7 @@ let resolve_and_substitute ~resolver ~output ~warn_error parent input_file
      working on. *)
   (*    let expand_env = Env.build env (`Unit resolved) in*)
   (*    let expanded = Odoc_xref2.Expand.expand (Env.expander expand_env) resolved in *)
-  Odoc_file.save_unit output compiled;
-  Ok ()
+  compiled
 
 let root_of_compilation_unit ~parent_spec ~hidden ~output ~module_name ~digest =
   let open Odoc_model.Root in
@@ -177,7 +175,7 @@ let mld ~parent_spec ~output ~children ~warn_error input =
       Odoc_model.Lang.Page.
         { name; root; children; content; digest; linked = false }
     in
-    Odoc_file.save_page output page;
+    Odoc_file.save_page output ~warnings:[] page;
     Ok ()
   in
   Fs.File.read input >>= fun str ->
@@ -211,5 +209,13 @@ let compile ~resolver ~parent_cli_spec ~hidden ~children ~output ~warn_error
     in
     parent >>= fun parent ->
     let make_root = root_of_compilation_unit ~parent_spec ~hidden ~output in
-    resolve_and_substitute ~resolver ~output ~warn_error parent input
-      (loader ~make_root)
+    let result =
+      Odoc_model.Error.catch_errors_and_warnings (fun () ->
+          resolve_and_substitute ~resolver parent input (loader ~make_root))
+    in
+    (* Extract warnings to write them into the output file *)
+    let _, warnings = Odoc_model.Error.unpack_warnings result in
+    Odoc_model.Error.handle_errors_and_warnings ~warn_error result
+    >>= fun unit ->
+    Odoc_file.save_unit output ~warnings unit;
+    Ok ()
