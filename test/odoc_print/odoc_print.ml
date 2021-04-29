@@ -10,7 +10,8 @@ let print_json_desc desc x =
 
 let run inp =
   let inp = Fpath.v inp in
-  Odoc_file.load inp >>= function
+  Odoc_file.load inp >>= fun unit ->
+  match unit.content with
   | Odoc_file.Page_content page ->
       print_json_desc Lang_desc.page_t page;
       Ok ()

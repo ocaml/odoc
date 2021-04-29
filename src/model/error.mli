@@ -31,6 +31,8 @@ val catch_warnings : (unit -> 'a) -> 'a with_warnings
 type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
 (** Subtype of [with_warnings]. *)
 
+val raise_errors_and_warnings : 'a with_errors_and_warnings -> 'a
+
 val catch_errors_and_warnings : (unit -> 'a) -> 'a with_errors_and_warnings
 (** Combination of [catch] and [catch_warnings]. *)
 
@@ -47,7 +49,6 @@ val handle_errors_and_warnings :
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 
 val unpack_warnings : 'a with_warnings -> 'a * t list
-(** For testing purpose. *)
 
 val t_of_parser_t : Odoc_parser.Error.t -> t
 (** Convert a parsing error into a [t]. *)

@@ -90,6 +90,9 @@ let catch_warnings f =
 
 type 'a with_errors_and_warnings = ('a, t) Result.result with_warnings
 
+let raise_errors_and_warnings we =
+  match raise_warnings we with Ok x -> x | Error e -> raise_exception e
+
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
 
 let print_warnings = List.iter (fun w -> prerr_endline (to_string w.w))

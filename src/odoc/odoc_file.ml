@@ -17,7 +17,11 @@
 open Odoc_model
 open Or_error
 
-type t = Page_content of Lang.Page.t | Unit_content of Lang.Compilation_unit.t
+type content =
+  | Page_content of Lang.Page.t
+  | Unit_content of Lang.Compilation_unit.t
+
+type t = { content : content; warnings : Odoc_model.Error.t list }
 
 (** Written at the top of the files. Checked when loading. *)
 let magic = "odoc-%%VERSION%%"
@@ -31,17 +35,18 @@ let save_unit file (root : Root.t) (t : t) =
   Marshal.to_channel oc t [];
   close_out oc
 
-let save_page file page =
+let save_page file ~warnings page =
   let dir = Fs.File.dirname file in
   let base = Fs.File.(to_string @@ basename file) in
   let file =
     if Astring.String.is_prefix ~affix:"page-" base then file
     else Fs.File.create ~directory:dir ~name:("page-" ^ base)
   in
-  save_unit file page.Lang.Page.root (Page_content page)
+  save_unit file page.Lang.Page.root { content = Page_content page; warnings }
 
-let save_unit file m =
-  save_unit file m.Lang.Compilation_unit.root (Unit_content m)
+let save_unit file ~warnings m =
+  save_unit file m.Lang.Compilation_unit.root
+    { content = Unit_content m; warnings }
 
 let load_ file f =
   let file = Fs.File.to_string file in
