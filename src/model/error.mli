@@ -48,6 +48,9 @@ val handle_errors_and_warnings :
 (** Like [handle_warnings] but works on the output of
     [catch_errors_and_warnings]. Error case is converted into a [`Msg]. *)
 
+val print_errors : t list -> unit
+(** Used internally by {!handle_warnings}. *)
+
 val unpack_warnings : 'a with_warnings -> 'a * t list
 
 val t_of_parser_t : Odoc_parser.Error.t -> t

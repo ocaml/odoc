@@ -95,7 +95,11 @@ let raise_errors_and_warnings we =
 
 let catch_errors_and_warnings f = catch_warnings (fun () -> catch f)
 
-let print_warnings = List.iter (fun w -> prerr_endline (to_string w.w))
+let print_error t = prerr_endline (to_string t)
+
+let print_errors = List.iter print_error
+
+let print_warnings = List.iter (fun w -> print_error w.w)
 
 (* When there is warnings. *)
 let handle_warn_error ~warn_error warnings ok =

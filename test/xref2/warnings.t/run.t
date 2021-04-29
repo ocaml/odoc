@@ -20,8 +20,22 @@ A contains both parsing errors and a reference to B that isn't compiled yet:
   File "a.mli", line 8, characters 22-23:
   Identifier in reference should not be empty.
 
+  $ odoc errors a.odoc
+  File "a.mli", line 8, characters 23-23:
+  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 22-23:
+  Identifier in reference should not be empty.
+
 A contains linking errors:
 
   $ odoc link a.odoc
+  File "a.odoc":
+  Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B
+
+  $ odoc errors a.odocl
+  File "a.mli", line 8, characters 23-23:
+  End of text is not allowed in '{!...}' (cross-reference).
+  File "a.mli", line 8, characters 22-23:
+  Identifier in reference should not be empty.
   File "a.odoc":
   Failed to lookup type unresolvedroot(B).t Parent_module: Lookup failure (root module): B

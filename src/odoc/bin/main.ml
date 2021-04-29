@@ -618,6 +618,26 @@ module Targets = struct
   end
 end
 
+module Odoc_error = struct
+  let errors input =
+    let open Odoc_odoc in
+    let open Or_error in
+    let input = Fs.File.of_string input in
+    Odoc_file.load input >>= fun unit ->
+    Odoc_model.Error.print_errors unit.warnings;
+    Ok ()
+
+  let input =
+    let doc = "Input odoc or odocl file" in
+    Arg.(required & pos 0 (some file) None & info ~doc ~docv:"FILE" [])
+
+  let cmd = Term.(const handle_error $ (const errors $ input))
+
+  let info =
+    Term.info "errors"
+      ~doc:"Print errors that occurred while an .odoc file was generated."
+end
+
 let () =
   Printexc.record_backtrace true;
   let subcommands =
@@ -641,6 +661,7 @@ let () =
       Targets.Compile.(cmd, info);
       Targets.Support_files.(cmd, info);
       Odoc_link.(cmd, info);
+      Odoc_error.(cmd, info);
     ]
   in
   let default =
