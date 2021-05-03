@@ -6,16 +6,10 @@ val signature :
   Odoc_model.Lang.Signature.t ->
   Odoc_model.Lang.Signature.t
 
-type msg = [ `Msg of string ]
-
 val build_resolver :
-  ?equal:(Odoc_model.Root.t -> Odoc_model.Root.t -> bool) ->
-  ?hash:(Odoc_model.Root.t -> int) ->
   string list ->
   (string -> Env.lookup_unit_result) ->
-  (Odoc_model.Root.t -> (Odoc_model.Lang.Compilation_unit.t, msg) Result.result) ->
-  (string -> Odoc_model.Root.t option) ->
-  (Odoc_model.Root.t -> (Odoc_model.Lang.Page.t, msg) Result.result) ->
+  (string -> Env.lookup_page_result) ->
   Env.resolver
 
 val compile :

@@ -33,7 +33,7 @@ let parent directories parent_cli_spec =
   let ap = Env.Accessible_paths.create ~directories in
   let find_parent :
       Odoc_model.Paths.Reference.t ->
-      (Odoc_model.Root.t, [> `Msg of string ]) Result.result =
+      (Odoc_model.Lang.Page.t, [> `Msg of string ]) Result.result =
    fun r ->
     match r with
     | `Root (p, `TPage) | `Root (p, `TUnknown) -> (
@@ -49,9 +49,9 @@ let parent directories parent_cli_spec =
   match parent_cli_spec with
   | CliParent f ->
       Odoc_model.Semantics.parse_reference f >>= fun r ->
-      find_parent r >>= fun r ->
-      extract_parent r.id >>= fun parent ->
-      Env.fetch_page ap r >>= fun page -> Ok (Explicit (parent, page.children))
+      find_parent r >>= fun page ->
+      extract_parent page.name >>= fun parent ->
+      Ok (Explicit (parent, page.children))
   | CliPackage package -> Ok (Package (`RootPage (PageName.make_std package)))
   | CliNoparent -> Ok Noparent
 
@@ -67,7 +67,7 @@ let resolve_and_substitute ~env ~output ~warn_error parent input_file read_file
       (if not (Filename.check_suffix filename "cmt") then "" (* ? *)
       else
         Printf.sprintf " Using %S while you should use the .cmti file" filename);
-  let env = Env.build env (`Unit unit) in
+  let env = Env.build_from_module env unit in
 
   Odoc_xref2.Compile.compile env unit
   |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false ~filename

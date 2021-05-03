@@ -741,35 +741,13 @@ and type_expression : Env.t -> Id.Parent.t -> _ -> _ =
   | Poly (strs, t) -> Poly (strs, type_expression env parent t)
   | Package p -> Package (type_expression_package env parent p)
 
-type msg = [ `Msg of string ]
-
-exception Fetch_failed of msg
-
 let build_resolver :
-    ?equal:(Root.t -> Root.t -> bool) ->
-    ?hash:(Root.t -> int) ->
     string list ->
     (string -> Env.lookup_unit_result) ->
-    (Root.t -> (Compilation_unit.t, _) Result.result) ->
-    (string -> Root.t option) ->
-    (Root.t -> (Page.t, _) Result.result) ->
+    (string -> Page.t option) ->
     Env.resolver =
- fun ?equal:_ ?hash:_ open_units lookup_unit resolve_unit lookup_page
-     resolve_page ->
-  let resolve_unit root =
-    match resolve_unit root with
-    | Ok unit -> unit
-    | Error (`Msg s) ->
-        Format.eprintf "Fetch_failed: %s\n%!" s;
-        raise (Fetch_failed (`Msg s))
-  and resolve_page root =
-    match resolve_page root with
-    | Ok page -> page
-    | Error (`Msg s) ->
-        Format.eprintf "Fetch_failed (resolving page): %s\n%!" s;
-        raise (Fetch_failed (`Msg s))
-  in
-  { Env.lookup_unit; resolve_unit; lookup_page; resolve_page; open_units }
+ fun open_units lookup_unit lookup_page ->
+  { Env.lookup_unit; lookup_page; open_units }
 
 let compile x y = Lookup_failures.catch_failures (fun () -> unit x y)
 

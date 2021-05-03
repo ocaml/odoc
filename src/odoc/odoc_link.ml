@@ -6,7 +6,7 @@ let from_odoc ~env ~warn_error input output =
   match root.file with
   | Page _ ->
       Page.load input >>= fun page ->
-      let resolve_env = Env.build env (`Page page) in
+      let resolve_env = Env.build_from_page env page in
       Odoc_xref2.Link.resolve_page resolve_env page
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error
            ~filename:input_s
@@ -28,7 +28,7 @@ let from_odoc ~env ~warn_error input output =
         else unit
       in
 
-      let env = Env.build env (`Unit unit) in
+      let env = Env.build_from_module env unit in
       Odoc_xref2.Link.link env unit
       |> Odoc_xref2.Lookup_failures.handle_failures ~warn_error:false
            ~filename:input_s
